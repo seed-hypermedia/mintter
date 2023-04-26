@@ -19,12 +19,12 @@ import {
   statement,
   ul,
 } from '@mintter/shared'
-import {Paragraph, YStack} from '@mintter/ui'
 import {Event, listen} from '@tauri-apps/api/event'
 import debounce from 'lodash.debounce'
 import {
   ElementType,
   PropsWithChildren,
+  ReactNode,
   useEffect,
   useMemo,
   useState,
@@ -45,6 +45,7 @@ import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
+  children: ReactNode
   mode?: EditorMode
   value: ChildrenOf<any> | Array<FlowContent>
   onChange?: (value: Descendant[]) => void
@@ -124,24 +125,6 @@ export function Editor({
   )
 
   if (mode == EditorMode.Draft) {
-    // return (
-    //   <YStack alignSelf="center" backgroundColor="red" width="100%" maxWidth={}>
-    //     <YStack tag="ul">
-    //       <YStack tag="li">
-    //         <Paragraph>
-    //           Collaborative editors like Google Docs allow people to work on a
-    //           rich-text document in real-time, which is convenient when users
-    //           want to immediately see each others’ changes. However, sometimes
-    //           people prefer a more asynchronous collaboration style, where they
-    //           can work on a private copy of a document for a while and share
-    //           their updates later. The algorithms underpinning services like
-    //           Google Docs are not designed to support this use case.
-    //         </Paragraph>
-    //       </YStack>
-    //     </YStack>
-    //   </YStack>
-    // )
-
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
         <DragContext.Provider value={contextValues}>

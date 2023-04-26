@@ -56,11 +56,11 @@ export function Root() {
 
   return (
     <StyleProvider>
-      <QueryClientProvider client={appQueryClient}>
-        <Suspense>
-          <Hydrate state={dehydrateState}>
-            <ErrorBoundary FallbackComponent={AppError}>
-              <ThemeProvider value={themeService}>
+      <ThemeProvider value={themeService}>
+        <QueryClientProvider client={appQueryClient}>
+          <Suspense>
+            <Hydrate state={dehydrateState}>
+              <ErrorBoundary FallbackComponent={AppError}>
                 <NavigationProvider>
                   <App />
                 </NavigationProvider>
@@ -68,12 +68,12 @@ export function Root() {
                   position="bottom-right"
                   toastOptions={{className: 'toaster'}}
                 />
-              </ThemeProvider>
-            </ErrorBoundary>
-          </Hydrate>
-        </Suspense>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
+              </ErrorBoundary>
+            </Hydrate>
+          </Suspense>
+          <ReactQueryDevtools />
+        </QueryClientProvider>
+      </ThemeProvider>
     </StyleProvider>
   )
 }
@@ -149,7 +149,7 @@ export function StyleProvider({
       disableRootThemeClass
       {...rest}
     >
-      <Theme name="blue">{children}</Theme>
+      <Theme name="mint">{children}</Theme>
     </TamaguiProvider>
   )
 }

@@ -44,7 +44,7 @@ function FooterContactsButton() {
   const navigate = useNavigate()
   const summary = useConnectionSummary()
   return (
-    <XStack alignItems="center" theme="blue" gap="$2">
+    <XStack alignItems="center" theme="mint" gap="$2">
       <Button
         size="$1"
         chromeless={route.key != 'connections'}

@@ -115,7 +115,7 @@ function StyleProvider({
       disableRootThemeClass
       {...rest}
     >
-      <Theme name="blue">{children}</Theme>
+      <Theme name="mint">{children}</Theme>
     </TamaguiProvider>
   )
 }

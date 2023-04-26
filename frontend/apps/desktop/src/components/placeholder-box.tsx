@@ -1,26 +1,20 @@
 import {css, keyframes, styled} from '@app/stitches.config'
+import {LinearGradient, XStack} from '@mintter/ui'
+import {SizeTokens} from '@mintter/ui'
 
-const loadingAnimation = keyframes({
-  '100%': {transform: 'translateX(100%)'},
-})
-const placeholderWrapperStyle = css({
-  width: '$full',
-  backgroundColor: '$base-component-bg-normal',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:after': {
-    content: `''`,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    transform: 'translateX(-100%)',
-    height: '100%',
-    width: '100%',
-    zIndex: '45',
-    backgroundImage:
-      'linear-gradient(90deg, transparent, $colors$base-component-bg-active, transparent)',
-    animation: `${loadingAnimation} 1.6s infinite`,
-  },
-})
-
-export const Placeholder = styled('div', placeholderWrapperStyle)
+export const Placeholder = ({
+  width = '100%',
+  height = 16,
+}: {
+  width?: SizeTokens | number | string
+  height?: SizeTokens | number | string
+}) => {
+  return (
+    <XStack
+      width={width}
+      height={height}
+      backgroundColor="$gray4"
+      borderRadius="$1"
+    />
+  )
+}

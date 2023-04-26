@@ -109,8 +109,8 @@ export default function DraftPage() {
                       value={draftState.children}
                       //@ts-ignore
                       onChange={(content: GroupingContent[]) => {
+                        mouseService.send('DISABLE.CHANGE')
                         // TODO: need to check when content can be a string
-                        console.log('=== content:', content)
                         if (
                           (!content && typeof content == 'string') ||
                           !isDaemonReady
@@ -118,7 +118,6 @@ export default function DraftPage() {
                           return
 
                         saveDraft.mutate({editor, content})
-                        mouseService.send('DISABLE.CHANGE')
                       }}
                     />
                     {import.meta.env.DEV && (
@@ -175,41 +174,30 @@ function useInitialFocus(editor: SlateEditor) {
 function DraftShell() {
   // TODO: update shell
   return (
-    <Box
-      css={{
-        marginTop: '60px',
-        width: '$full',
-        maxWidth: '$prose-width',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$7',
-        marginInline: 'auto',
-      }}
+    <YStack
+      marginTop="$7"
+      width="100%"
+      maxWidth="600px"
+      gap="$6"
+      marginHorizontal="auto"
     >
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
-    </Box>
+    </YStack>
   )
 }
 
 function BlockPlaceholder() {
   return (
-    <Box
-      css={{
-        width: '$prose-width',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$2',
-      }}
-    >
-      <Placeholder css={{height: 16, width: '$full'}} />
-      <Placeholder css={{height: 16, width: '92%'}} />
-      <Placeholder css={{height: 16, width: '84%'}} />
-      <Placeholder css={{height: 16, width: '90%'}} />
-    </Box>
+    <YStack width="600px" gap="$2">
+      <Placeholder width="100%" />
+      <Placeholder width="92%" />
+      <Placeholder width="84%" />
+      <Placeholder width="90%" />
+    </YStack>
   )
 }
 

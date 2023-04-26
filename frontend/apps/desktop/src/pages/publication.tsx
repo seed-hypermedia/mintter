@@ -400,10 +400,10 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication({
     documentId: docId,
   })
+
   const navigate = useNavigate()
   const route = useNavRoute()
   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
-  const client = useQueryClient()
   if (isLoading) return null
   if (version === pub?.version) return null
   if (!pub?.version) return null

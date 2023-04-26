@@ -463,7 +463,7 @@ function StepWrapper({children}: {children: ReactNode}) {
       maxWidth={1024}
     >
       <YStack alignItems="flex-start" padding="$6">
-        <MintterIcon size="$2" color="blue" />
+        <MintterIcon size="$2" color="mint" />
       </YStack>
 
       <YStack flex={1} padding="$6" gap="$5">

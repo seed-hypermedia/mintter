@@ -62,7 +62,7 @@ function PublishedURLs({
     return <MintterURLRow doc={doc} />
   return (
     <>
-      <SizableText size="$3" fontWeight="700" theme="blue">
+      <SizableText size="$3" fontWeight="700" theme="mint">
         Public on the Web:
       </SizableText>
       {publications.data?.map((pub) => {
@@ -104,14 +104,14 @@ function PublishButtons({
   if (sitesList?.length === 0) return null
   return (
     <>
-      <SizableText size="$3" fontWeight="700" theme="blue">
+      <SizableText size="$3" fontWeight="700" theme="mint">
         Publish to:
       </SizableText>
       {sitesList?.map((site) => {
         return (
           <Button
             size="$4"
-            theme="blue"
+            theme="mint"
             key={site.hostname}
             onPress={() => {
               onPublish(site.hostname)
@@ -218,6 +218,7 @@ export function PublishShareButton() {
       appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([doc])
+      appInvalidateQueries([queryKeys.GET_PUBLICATION, doc])
       republishDoc.mutateAsync(publishedDoc)
       navReplace({
         key: 'publication',

@@ -259,7 +259,7 @@ export function getDocumentTitle(doc?: EditorDraft) {
     : 'Untitled Document'
 }
 
-type SaveDraftInput = {
+export type SaveDraftInput = {
   content: GroupingContent[]
   editor: Editor
 }
