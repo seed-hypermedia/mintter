@@ -688,7 +688,12 @@ export function InsertLinkButton() {
           icon={LinkIcon}
         />
       </Popover.Trigger>
-      <Adapt when="sm" platform="web">
+
+      <Adapt
+        // @ts-ignore
+        when="sm"
+        platform="web"
+      >
         <Popover.Sheet modal dismissOnSnapToBottom>
           <Popover.Sheet.Frame padding="$4">
             <Adapt.Contents />

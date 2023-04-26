@@ -46,7 +46,8 @@ export function ContactsPrompt({
           <TextArea
             value={peer}
             onChangeText={setPeer}
-            rows={3}
+            multiline
+            numberOfLines={4}
             data-testid="add-contact-input"
           />
           <Prompt.Actions>

@@ -155,7 +155,7 @@ function ImageComponent({service, element}: InnerImageProps) {
             }}
             backgroundColor="var(--base-background-normal)"
             value={element.alt}
-            onChange={(val: string) =>
+            onChangeText={(val: string) =>
               send({type: 'CAPTION.UPDATE', value: val})
             }
             onKeyPress={(event: any) => {

@@ -624,7 +624,8 @@ export function CommentForm({
     >
       <TextArea
         id="comment"
-        cols={3}
+        multiline
+        numberOfLines={3}
         placeholder="initial comment here"
         value={comment}
         onChangeText={onChange}
