@@ -719,7 +719,12 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
           gap: '1em',
         }}
       >
-        <Fieldset>
+        <Fieldset
+          paddingHorizontal={0}
+          margin={0}
+          borderColor="transparent"
+          borderWidth={0}
+        >
           <Label htmlFor="host">site domain or invite url</Label>
           <Input
             ref={hostRef}

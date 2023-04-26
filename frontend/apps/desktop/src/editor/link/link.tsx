@@ -6,10 +6,9 @@ import {useMouse} from '@app/mouse-context'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
-import { useFloating } from '@floating-ui/react-dom'
+import {useFloating} from '@floating-ui/react-dom'
 import {
   Embed,
   embed,
@@ -20,7 +19,15 @@ import {
   MINTTER_LINK_PREFIX,
   text,
 } from '@mintter/shared'
-import {Fieldset, Input, Label} from '@mintter/ui'
+import {
+  Button,
+  Fieldset,
+  Input,
+  Label,
+  Link as LinkIcon,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {Text} from '@tamagui/web'
 import {open} from '@tauri-apps/api/shell'
@@ -38,14 +45,12 @@ import {
 import {
   ReactEditor,
   RenderElementProps,
-  useFocused,
-  useSelected,
   useSlate,
   useSlateSelection,
   useSlateStatic,
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
-import {findPath, getEditorBlock, getSelectedNodes, isCollapsed, NodeRef} from '../utils'
+import {findPath, getEditorBlock, getSelectedNodes, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -543,14 +548,13 @@ export function InsertLinkButton() {
   const selection = useSlateSelection()
   const {reference, refs} = useFloating()
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function handleSubmit() {
     //@ts-ignore
     const linkSpans = refs.reference.current as HTMLSpanElement[]
     if (linkSpans) {
       for (const span of linkSpans) {
         const parent = span.parentElement
-        if (parent && parent.nodeName === "SPAN") {
+        if (parent && parent.nodeName === 'SPAN') {
           const initialText = parent.innerText
           span.remove()
           parent.innerText = initialText
@@ -576,6 +580,93 @@ export function InsertLinkButton() {
     }
   }
 
+  function handleChange(open: boolean) {
+    if (!open) {
+      //@ts-ignore
+      const linkSpans = refs.reference.current as HTMLSpanElement[]
+      if (linkSpans) {
+        for (const span of linkSpans) {
+          const parent = span.parentElement
+          if (parent && parent.nodeName === 'SPAN') {
+            const initialText = parent.innerText
+            span.remove()
+            parent.innerText = initialText
+          }
+        }
+      }
+    } else {
+      if (selection) {
+        const {anchor, focus} = selection
+
+        let start, end
+
+        if (Path.isAfter(anchor.path, focus.path)) {
+          start = focus
+          end = anchor
+        } else {
+          start = anchor
+          end = focus
+        }
+        const nodes = getSelectedNodes(editor, start.path, end.path)
+        if (nodes.length === 1) {
+          const domRange = ReactEditor.toDOMRange(editor, selection)
+          const linkSpan = document.createElement('span')
+          linkSpan.style.backgroundColor = 'var(--primary-active)'
+          linkSpan.style.color = 'white'
+          try {
+            domRange.surroundContents(linkSpan)
+          } catch (e) {
+            console.log(e)
+          }
+          //@ts-ignore
+          reference([linkSpan])
+        } else {
+          const linkSpans: HTMLSpanElement[] = []
+          for (const [index, node] of nodes.entries()) {
+            let domRange
+            if (index === 0)
+              domRange = ReactEditor.toDOMRange(editor, {
+                anchor: start,
+                focus: {
+                  path: node.entry[1],
+                  offset: Editor.leaf(editor, node.entry[1], {
+                    edge: 'start',
+                  })[0].text.length,
+                },
+              })
+            else if (index === nodes.length - 1)
+              domRange = ReactEditor.toDOMRange(editor, {
+                anchor: {path: node.entry[1], offset: 0},
+                focus: end,
+              })
+            else
+              domRange = ReactEditor.toDOMRange(editor, {
+                anchor: {path: node.entry[1], offset: 0},
+                focus: {
+                  path: node.entry[1],
+                  offset: Editor.leaf(editor, node.entry[1], {
+                    edge: 'start',
+                  })[0].text.length,
+                },
+              })
+            const linkSpan = document.createElement('span')
+            linkSpan.style.backgroundColor = 'var(--primary-active)'
+            linkSpan.style.color = 'white'
+            try {
+              domRange.surroundContents(linkSpan)
+            } catch (e) {
+              console.log(e)
+            }
+            linkSpans.push(linkSpan)
+            if (node.pathRef) node.pathRef.unref()
+          }
+          //@ts-ignore
+          reference(linkSpans)
+        }
+      }
+    }
+  }
+
   useEffect(() => {
     if (!editor) return
     const linkEntry = Editor.above<LinkType>(editor, {
@@ -589,149 +680,60 @@ export function InsertLinkButton() {
 
   return (
     // <Tooltip content={<span>Add Link</span>}>
-    <PopoverPrimitive.Root onOpenChange={(open) => {
-      if (!open) {
-        //@ts-ignore
-        const linkSpans = refs.reference.current as HTMLSpanElement[]
-        if (linkSpans) {
-          for (const span of linkSpans) {
-            const parent = span.parentElement
-            if (parent && parent.nodeName === "SPAN") {
-              const initialText = parent.innerText
-              span.remove()
-              parent.innerText = initialText
-            }
-          }
-        }
-      } else {
-        if (selection) {
-          const {anchor, focus} = selection
-
-          let start, end
-
-          if (Path.isAfter(anchor.path, focus.path)) {
-            start = focus
-            end = anchor
-          } else {
-            start = anchor
-            end = focus
-          }
-          const nodes = getSelectedNodes(editor, start.path, end.path)
-          if (nodes.length === 1) {
-            const domRange = ReactEditor.toDOMRange(editor, selection)
-            const linkSpan = document.createElement("span");
-            linkSpan.style.backgroundColor = "var(--primary-active)"
-            linkSpan.style.color = "white"
-            try {
-              domRange.surroundContents(linkSpan)
-            } catch (e) {
-              console.log(e)
-            }
-            //@ts-ignore
-            reference([linkSpan])
-          } else {
-            const linkSpans: HTMLSpanElement[] = []
-            for (const [index, node] of nodes.entries()) {
-              let domRange
-              if (index === 0) 
-                domRange = ReactEditor.toDOMRange(editor, {anchor: start, focus: {path: node.entry[1], offset: Editor.leaf(editor, node.entry[1], {edge: 'start'})[0].text.length}})
-              else if (index === nodes.length-1) 
-                domRange = ReactEditor.toDOMRange(editor, {anchor: {path: node.entry[1], offset: 0}, focus: end})
-              else 
-                domRange = ReactEditor.toDOMRange(editor, {anchor: {path: node.entry[1], offset: 0}, focus: {path: node.entry[1], offset: Editor.leaf(editor, node.entry[1], {edge: 'start'})[0].text.length}})
-              const linkSpan = document.createElement("span");
-              linkSpan.style.backgroundColor = "var(--primary-active)"
-              linkSpan.style.color = "white"
-              try {
-                domRange.surroundContents(linkSpan)
-              } catch (e) {
-                console.log(e)
-              }
-              linkSpans.push(linkSpan)
-              if (node.pathRef)
-                node.pathRef.unref()
-            }
-            //@ts-ignore
-            reference(linkSpans)
-          }
-        }
-      }
-    }}>
+    <PopoverPrimitive.Root onOpenChange={handleChange}>
       <PopoverPrimitive.Trigger asChild>
         <Button
-          variant="ghost"
-          size="0"
-          color="muted"
           data-testid="toolbar-link-button"
-        >
-          <Icon name="Link" size="2" />
-        </Button>
+          chromeless
+          size="$1"
+          icon={LinkIcon}
+        />
       </PopoverPrimitive.Trigger>
 
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content sideOffset={35}>
-          <Box
-            css={{
-              zIndex: '$max',
-              boxShadow: '$menu',
-              backgroundColor: '$base-background-normal',
-              borderRadius: '2px',
-              transition: 'opacity 0.5s',
-              display: 'flex',
-              gap: '$2',
-              paddingHorizontal: '$2',
-              padding: '$5',
-              width: '300px',
-              flexDirection: 'column',
-            }}
+          <YStack
+            elevation={6}
+            borderRadius="$3"
+            width={300}
+            backgroundColor="$backgroundStrong"
+            padding="$2"
           >
-            <Box
-              as="form"
-              onSubmit={handleSubmit}
-              css={{
-                width: '$full',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '$5',
-              }}
+            <Fieldset
+              paddingHorizontal="$2"
+              margin={0}
+              borderColor="transparent"
+              borderWidth={0}
             >
-              <Fieldset>
-                <Label htmlFor="address">Link Address</Label>
-                <Input
-                  keyboardType="url"
-                  id="address"
-                  data-testid="modal-link-input"
-                  value={link}
-                  onChangeText={setLink}
-                />
-              </Fieldset>
-              <Box
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
+              <Label size="$2" htmlFor="address">
+                Link Address
+              </Label>
+              <Input
+                size="$2"
+                keyboardType="url"
+                id="address"
+                data-testid="modal-link-input"
+                value={link}
+                onChangeText={setLink}
+                placeholder="https://.. or mintter://..."
+              />
+            </Fieldset>
+            <XStack space justifyContent="space-between" alignItems="center">
+              <Button size="$2" onPress={handleSubmit}>
+                save
+              </Button>
+              <Button
+                onPress={handleRemove}
+                data-testid="modal-link-remove-button"
+                disabled={!isLink}
+                theme="red"
+                size="$1"
+                paddingHorizontal="$2"
               >
-                <Button size="1" type="submit">
-                  save
-                </Button>
-                <Button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleRemove()
-                  }}
-                  data-testid="modal-link-remove-button"
-                  disabled={!isLink}
-                  variant="outlined"
-                  color="danger"
-                  size="1"
-                >
-                  <span>remove link</span>
-                </Button>
-              </Box>
-            </Box>
-          </Box>
+                remove link
+              </Button>
+            </XStack>
+          </YStack>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>

@@ -157,5 +157,3 @@ export var config = createTamagui({
     pointerCoarse: {pointer: 'coarse'},
   }),
 })
-
-console.log('🚀 ~ file: tamagui.config.ts:6 ~ tokens:', config)

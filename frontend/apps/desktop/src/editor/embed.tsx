@@ -80,7 +80,7 @@ function Embed({
   const mouseService = useMouse()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
-  const navigateReplace = useNavigate('replace')
+  // const navigateReplace = useNavigate('replace')
   const route = useNavRoute()
 
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
@@ -106,15 +106,17 @@ function Embed({
     if (isShiftKey) {
       navigate(destRoute)
     } else {
-      if (
-        route.key === 'publication' &&
-        route.documentId === docId &&
-        route.versionId === version
-      ) {
-        navigateReplace(destRoute)
-      } else {
-        spawn(destRoute)
-      }
+      // TODO: Eric, make sure why this code was here!
+      // if (
+      //   route.key === 'publication' &&
+      //   route.documentId === docId &&
+      //   route.versionId === version
+      // ) {
+      //   navigateReplace(destRoute)
+      // } else {
+      //   spawn(destRoute)
+      // }
+      spawn(destRoute)
     }
   }
 
