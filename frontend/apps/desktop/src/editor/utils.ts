@@ -23,7 +23,7 @@ import {
 } from '@mintter/shared'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
-import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
+import type {Ancestor, Descendant, NodeEntry, PathRef, Point, Span} from 'slate'
 import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
@@ -550,4 +550,71 @@ export function useBlockFlash(ref: any, id: string) {
   }, [route, id])
 
   return active
+}
+
+export type NodeRef = {
+  entry: NodeEntry<FlowContent>
+  pathRef: PathRef | null
+  isChild: boolean
+}
+
+export function getSelectedNodes(
+  editor: Editor,
+  startPath: Path,
+  endPath: Path,
+) {
+  const startNode = Editor.above(editor, {
+    at: startPath,
+    mode: 'lowest',
+    match: isFlowContent,
+  })
+  const endNode = Editor.above(editor, {
+    at: endPath,
+    mode: 'lowest',
+    match: isFlowContent,
+  })
+
+  const nodes: NodeRef[] = []
+
+  if (!startNode || !endNode) return nodes
+  if (Path.equals(startPath, endPath))
+    return [{entry: startNode, pathRef: null, isChild: false}]
+
+  let currentNode = startNode
+
+  while (!Path.isAfter(currentNode[1], endNode[1])) {
+    nodes.push({
+      entry: currentNode,
+      pathRef: Editor.pathRef(editor, currentNode[1]),
+      isChild: false,
+    })
+    const descendants = Node.descendants(currentNode[0])
+    for (const des of descendants) {
+      des[1] = [...currentNode[1], ...des[1]]
+      if (des[0].type === 'statement' && !Path.isAfter(des[1], endPath)) {
+        nodes.push({
+          entry: des as NodeEntry<FlowContent>,
+          pathRef: Editor.pathRef(editor, des[1]),
+          isChild: true,
+        })
+      }
+    }
+    let nextNode: NodeEntry<FlowContent> | undefined
+    try {
+      nextNode = Editor.node(
+        editor,
+        Path.next(currentNode[1]),
+      ) as NodeEntry<FlowContent>
+    } catch {
+      nextNode = Editor.next(editor, {
+        at: nodes[nodes.length - 1].entry[1],
+        match: isFlowContent,
+        mode: 'lowest',
+      })
+    }
+    if (!nextNode) break
+    currentNode = nextNode
+  }
+
+  return nodes
 }

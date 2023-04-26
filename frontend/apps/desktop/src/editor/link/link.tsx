@@ -9,6 +9,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
+import { useFloating } from '@floating-ui/react-dom'
 import {
   Embed,
   embed,
@@ -37,11 +38,14 @@ import {
 import {
   ReactEditor,
   RenderElementProps,
+  useFocused,
+  useSelected,
   useSlate,
+  useSlateSelection,
   useSlateStatic,
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
-import {findPath, getEditorBlock, isCollapsed} from '../utils'
+import {findPath, getEditorBlock, getSelectedNodes, isCollapsed, NodeRef} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -411,19 +415,23 @@ export function insertLink(
   }
 
   const newLink = link({url}, isCollapsed(selection) ? [text(url)] : [])
-
-  if (isCollapsed(selection)) {
-    Transforms.insertNodes(editor, newLink, {at: selection})
-  } else {
-    Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
-    Transforms.collapse(editor, {edge: 'end'})
+  try {
+    if (isCollapsed(selection)) {
+      Transforms.insertNodes(editor, newLink, {at: selection})
+    } else {
+      Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
+      Transforms.collapse(editor, {edge: 'end'})
+    }
+    let nextPath = Path.next(selection.focus.path)
+    Transforms.insertNodes(editor, text(''), {
+      at: nextPath,
+    })
+  
+    addLinkChange(editor, selection)
   }
-  let nextPath = Path.next(selection.focus.path)
-  Transforms.insertNodes(editor, text(''), {
-    at: nextPath,
-  })
-
-  addLinkChange(editor, selection)
+  catch {
+    console.log('broken smth')
+  }
 }
 
 export function isLinkActive(
@@ -535,9 +543,23 @@ export function InsertLinkButton() {
   const [link, setLink] = useState('')
   const editor = useSlate()
   const isLink = isLinkActive(editor)
+  const selection = useSlateSelection()
+  const {reference, refs} = useFloating()
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    //@ts-ignore
+    const spans = refs.reference.current as HTMLSpanElement[]
+    if (spans) {
+      for (const span of spans) {
+        const parent = span.parentElement
+        if (parent && parent.nodeName === "SPAN") {
+          const initialText = parent.innerText
+          span.remove()
+          parent.innerText = initialText
+        }
+      }
+    }
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
       console.log('ADD LINK', event, editor)
@@ -570,7 +592,74 @@ export function InsertLinkButton() {
 
   return (
     // <Tooltip content={<span>Add Link</span>}>
-    <PopoverPrimitive.Root>
+    <PopoverPrimitive.Root onOpenChange={(open) => {
+      if (!open) {
+        //@ts-ignore
+        const spans = refs.reference.current as HTMLSpanElement[]
+        if (spans) {
+          for (const span of spans) {
+            const parent = span.parentElement
+            if (parent && parent.nodeName === "SPAN") {
+              const initialText = parent.innerText
+              span.remove()
+              parent.innerText = initialText
+            }
+          }
+        }
+      } else {
+        if (selection) {
+          const {anchor, focus} = selection
+
+          let start, end
+
+          if (Path.isAfter(anchor.path, focus.path)) {
+            start = focus
+            end = anchor
+          } else {
+            start = anchor
+            end = focus
+          }
+          const nodes = getSelectedNodes(editor, start.path, end.path)
+          if (nodes.length === 1) {
+            const domRange = ReactEditor.toDOMRange(editor, selection)
+            const linkSpan = document.createElement("span");
+            linkSpan.style.backgroundColor = "var(--primary-active)"
+            linkSpan.style.color = "white"
+            try {
+              domRange.surroundContents(linkSpan)
+            } catch (e) {
+              console.log(e)
+            }
+            //@ts-ignore
+            reference([linkSpan])
+          } else {
+            const spans: HTMLSpanElement[] = []
+            for (const [index, node] of nodes.entries()) {
+              let domRange
+              if (index === 0) 
+                domRange = ReactEditor.toDOMRange(editor, {anchor: start, focus: {path: node.entry[1], offset: Editor.leaf(editor, node.entry[1], {edge: 'start'})[0].text.length}})
+              else if (index === nodes.length-1) 
+                domRange = ReactEditor.toDOMRange(editor, {anchor: {path: node.entry[1], offset: 0}, focus: end})
+              else 
+                domRange = ReactEditor.toDOMRange(editor, {anchor: {path: node.entry[1], offset: 0}, focus: {path: node.entry[1], offset: Editor.leaf(editor, node.entry[1], {edge: 'start'})[0].text.length}})
+              const linkSpan = document.createElement("span");
+              linkSpan.style.backgroundColor = "var(--primary-active)"
+              linkSpan.style.color = "white"
+              try {
+                domRange.surroundContents(linkSpan)
+              } catch (e) {
+                console.log(e)
+              }
+              spans.push(linkSpan)
+              if (node.pathRef)
+                node.pathRef.unref()
+            }
+            //@ts-ignore
+            reference(spans)
+          }
+        }
+      }
+    }}>
       <PopoverPrimitive.Trigger asChild>
         <Button
           variant="ghost"

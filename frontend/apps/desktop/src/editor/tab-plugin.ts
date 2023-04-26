@@ -8,6 +8,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, PathRef, Transforms} from 'slate'
 import type {EditorPlugin} from './types'
+import {getSelectedNodes, NodeRef} from './utils'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -24,12 +25,6 @@ export const createTabPlugin = (): EditorPlugin => {
       }
     },
   }
-}
-
-type NodeRef = {
-  entry: NodeEntry<FlowContent>
-  pathRef: PathRef | null
-  isChild: boolean
 }
 
 function moveStatement(editor: Editor, up: boolean) {
@@ -173,61 +168,4 @@ function liftNode(editor: Editor, node: NodeRef) {
 
   if (!ref || !ref.current) throw new Error('couldnt track path')
   Transforms.liftNodes(editor, {at: ref.current})
-}
-
-function getSelectedNodes(editor: Editor, startPath: Path, endPath: Path) {
-  const startNode = Editor.above(editor, {
-    at: startPath,
-    mode: 'lowest',
-    match: isFlowContent,
-  })
-  const endNode = Editor.above(editor, {
-    at: endPath,
-    mode: 'lowest',
-    match: isFlowContent,
-  })
-
-  const nodes: NodeRef[] = []
-
-  if (!startNode || !endNode) return nodes
-  if (Path.equals(startPath, endPath))
-    return [{entry: startNode, pathRef: null, isChild: false}]
-
-  let currentNode = startNode
-
-  while (!Path.isAfter(currentNode[1], endNode[1])) {
-    nodes.push({
-      entry: currentNode,
-      pathRef: Editor.pathRef(editor, currentNode[1]),
-      isChild: false,
-    })
-    const descendants = Node.descendants(currentNode[0])
-    for (const des of descendants) {
-      des[1] = [...currentNode[1], ...des[1]]
-      if (des[0].type === 'statement' && !Path.isAfter(des[1], endPath)) {
-        nodes.push({
-          entry: des as NodeEntry<FlowContent>,
-          pathRef: Editor.pathRef(editor, des[1]),
-          isChild: true,
-        })
-      }
-    }
-    let nextNode: NodeEntry<FlowContent> | undefined
-    try {
-      nextNode = Editor.node(
-        editor,
-        Path.next(currentNode[1]),
-      ) as NodeEntry<FlowContent>
-    } catch {
-      nextNode = Editor.next(editor, {
-        at: nodes[nodes.length - 1].entry[1],
-        match: isFlowContent,
-        mode: 'lowest',
-      })
-    }
-    if (!nextNode) break
-    currentNode = nextNode
-  }
-
-  return nodes
 }

@@ -223,7 +223,7 @@ function HoveringToolbar({children}: {children: ReactNode}) {
     setMouseDown(false)
   }
 
-  const {x, y, reference, floating, strategy, refs} = useFloating({
+  const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
   })
