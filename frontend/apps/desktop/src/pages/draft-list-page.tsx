@@ -61,7 +61,7 @@ export function DraftListItem({draft}: {draft: Document}) {
 
   function goToItem(event: React.MouseEvent) {
     event.preventDefault()
-    const route: DraftRoute = {key: 'draft', documentId: draft.id}
+    const route: DraftRoute = {key: 'draft', draftId: draft.id}
     if (event.metaKey || event.shiftKey) {
       spawn(route)
     } else {
@@ -109,7 +109,7 @@ export function DraftListItem({draft}: {draft: Document}) {
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() => {
-                  spawn({key: 'draft', documentId: draft.id})
+                  spawn({key: 'draft', draftId: draft.id})
                 }}
                 asChild
               >

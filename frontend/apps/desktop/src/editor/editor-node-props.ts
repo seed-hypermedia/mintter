@@ -61,16 +61,15 @@ export function usePhrasingProps(
     })
 
     const version = route.key == 'publication' ? route.versionId : undefined
-    const docId =
-      route.key == 'draft' || route.key == 'publication'
-        ? route.documentId
-        : undefined
+    const draftId = route.key == 'draft' ? route.draftId : undefined
+    const docId = route.key == 'publication' ? route.documentId : undefined
+    const highlightDocId = docId || draftId
 
     let elementProps = {
       'data-element-type': element.type,
       'data-parent-block': parentBlock?.[0].id,
       'data-parent-group': parentGroup?.[0].type,
-      'data-highlight': `${docId}/${parentBlock?.[0].id}`,
+      'data-highlight': `${highlightDocId}/${parentBlock?.[0].id}`,
       'data-reference': version
         ? `${MINTTER_LINK_PREFIX}${docId}?v=${version}#${parentBlock?.[0].id}`
         : undefined,

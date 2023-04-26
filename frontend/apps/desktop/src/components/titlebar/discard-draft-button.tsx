@@ -4,8 +4,10 @@ import {Button} from '@mintter/ui'
 
 export default function DiscardDraftButton() {
   const route = useNavRoute()
-  const navigate = useNavigate()
-  const draftId = route.key === 'draft' ? route.documentId : null
+  const backplace = useNavigate('backplace')
+  const draftId = route.key === 'draft' ? route.draftId : null
+  const contextDocumentId =
+    route.key === 'draft' ? route.contextDocumentId : null
   const deleteModal = useDeleteDraftDialog(
     draftId,
     ({onClick}) => (
@@ -14,7 +16,11 @@ export default function DiscardDraftButton() {
       </Button>
     ),
     () => {
-      navigate({key: 'drafts'})
+      if (contextDocumentId) {
+        backplace({key: 'publication', documentId: contextDocumentId})
+      } else {
+        backplace({key: 'drafts'})
+      }
     },
   )
   if (route.key !== 'draft') return null

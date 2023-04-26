@@ -120,7 +120,7 @@ export default function QuickSwitcher() {
                   setOpen(false)
                   navigate({
                     key: 'draft',
-                    documentId: draft.id,
+                    draftId: draft.id,
                   })
                 }}
               >

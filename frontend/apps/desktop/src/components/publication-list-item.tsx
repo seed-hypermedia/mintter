@@ -112,7 +112,11 @@ export function PublicationListItem({
           onPress={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            navigate({key: 'draft', documentId: hasDraft.id})
+            navigate({
+              key: 'draft',
+              draftId: hasDraft.id,
+              contextDocumentId: publication.document?.id,
+            })
           }}
           size="$1"
         >

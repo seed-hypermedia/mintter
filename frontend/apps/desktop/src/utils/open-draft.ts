@@ -3,20 +3,28 @@ import {queryKeys} from '@app/models/query-keys'
 import {appInvalidateQueries} from '@app/query-client'
 import {toast} from 'react-hot-toast'
 import {Document} from '@mintter/shared'
-import {useNavigate} from './navigation'
+import {DraftRoute, useNavigate, useNavRoute} from './navigation'
 
 export function useOpenDraft() {
   const navigate = useNavigate()
+  const route = useNavRoute()
+  const contextDocumentId =
+    route.key === 'publication' ? route.documentId : undefined
   const spawn = useNavigate('spawn')
   function openNewDraft(newWindow = true) {
     draftsClient
       .createDraft({})
       .then((doc: Document) => {
+        const draftRoute: DraftRoute = {
+          key: 'draft',
+          draftId: doc.id,
+          contextDocumentId,
+        }
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         if (newWindow) {
-          spawn({key: 'draft', documentId: doc.id})
+          spawn(draftRoute)
         } else {
-          navigate({key: 'draft', documentId: doc.id})
+          navigate(draftRoute)
         }
       })
       .catch(() => {

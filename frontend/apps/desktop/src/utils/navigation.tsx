@@ -33,7 +33,11 @@ export type PublicationRoute = {
     | PublicationCommentsAccessory
 }
 export type DraftsRoute = {key: 'drafts'}
-export type DraftRoute = {key: 'draft'; documentId: string}
+export type DraftRoute = {
+  key: 'draft'
+  draftId: string
+  contextDocumentId?: string
+}
 export type SettingsRoute = {key: 'settings'}
 
 export type NavRoute =
@@ -49,9 +53,15 @@ export type NavRoute =
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
+export type BackplaceAction = {type: 'backplace'; route: NavRoute}
 export type PopAction = {type: 'pop'}
 export type ForwardAction = {type: 'forward'}
-export type NavAction = PushAction | ReplaceAction | PopAction | ForwardAction
+export type NavAction =
+  | PushAction
+  | ReplaceAction
+  | BackplaceAction
+  | PopAction
+  | ForwardAction
 
 export type NavState = {
   routes: NavRoute[]
@@ -79,6 +89,25 @@ function navStateReducer(state: NavState, action: NavAction): NavState {
         routeIndex: state.routeIndex,
         lastAction: action.type,
       }
+
+    case 'backplace': {
+      if (state.routeIndex === 0) {
+        return {
+          routes: [action.route],
+          routeIndex: 0,
+          lastAction: action.type,
+        }
+      }
+      return {
+        ...state,
+        routes: [
+          ...state.routes.slice(0, state.routes.length - 1),
+          action.route,
+        ],
+        routeIndex: state.routeIndex,
+        lastAction: action.type,
+      }
+    }
     case 'pop': {
       if (state.routeIndex === 0) return state
       return {
@@ -176,15 +205,19 @@ export function useNavigationDispatch() {
   return nav.dispatch
 }
 
-export type NavMode = 'push' | 'replace' | 'spawn'
+export type NavMode = 'push' | 'replace' | 'spawn' | 'backplace'
 
 export function useNavigate(mode: NavMode = 'push') {
   const dispatch = useNavigationDispatch()
   return (route: NavRoute) => {
     if (mode === 'spawn') {
       openWindow(encodeRouteToPath(route))
-    } else {
-      dispatch({type: mode === 'replace' ? 'replace' : 'push', route})
+    } else if (mode === 'push') {
+      dispatch({type: 'push', route})
+    } else if (mode === 'replace') {
+      dispatch({type: 'replace', route})
+    } else if (mode === 'backplace') {
+      dispatch({type: 'backplace', route})
     }
   }
 }

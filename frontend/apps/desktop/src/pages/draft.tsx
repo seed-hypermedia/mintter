@@ -39,7 +39,7 @@ export default function DraftPage() {
     throw new Error('Draft actor must be passed to DraftPage')
 
   const [debugValue, setDebugValue] = useState(false)
-  const docId = route.documentId
+  const docId = route.draftId // TODO, clean this up when draftId != docId
   const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
 
   const {

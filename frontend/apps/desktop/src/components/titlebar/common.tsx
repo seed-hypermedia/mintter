@@ -240,7 +240,7 @@ export function NavMenu() {
 
 function WriteActions({route}: {route: PublicationRoute}) {
   const draftList = useDraftList()
-  const navigate = useNavigate('push')
+  const navigateReplace = useNavigate('replace')
   let [errorMessage, setError] = useState('')
 
   const hasExistingDraft = draftList.data?.documents.some(
@@ -252,7 +252,11 @@ function WriteActions({route}: {route: PublicationRoute}) {
       let draft = await draftsClient.createDraft({
         existingDocumentId: route.documentId,
       })
-      navigate({key: 'draft', documentId: draft.id})
+      navigateReplace({
+        key: 'draft',
+        draftId: draft.id,
+        contextDocumentId: route.documentId,
+      })
     } catch (error) {
       setError(JSON.stringify(error))
     }

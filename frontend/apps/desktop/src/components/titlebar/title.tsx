@@ -118,7 +118,7 @@ function DraftTitle({
   size?: SizeTokens
 }) {
   const title = useDraftTitle({
-    documentId: route.documentId,
+    documentId: route.draftId,
   })
   const displayTitle = title ?? 'Untitled Draft'
   return (

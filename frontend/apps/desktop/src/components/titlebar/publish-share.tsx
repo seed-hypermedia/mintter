@@ -183,7 +183,7 @@ export function PublishShareButton() {
     route.key == 'publication'
       ? route.documentId
       : route.key == 'draft'
-      ? route.documentId
+      ? route.draftId
       : ''
   const versionId = route.key == 'publication' ? route.versionId : undefined
   const {data: pub} = usePublication({
@@ -256,6 +256,7 @@ export function PublishShareButton() {
           disabled={!isDaemonReady || isSaving.current}
           isDraft={route.key === 'draft'}
           onPress={(e) => {
+            toast('yes')
             e.preventDefault()
             if (isOpen) {
               setIsOpen(false)
