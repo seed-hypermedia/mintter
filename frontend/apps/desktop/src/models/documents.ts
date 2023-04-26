@@ -184,8 +184,15 @@ export function usePublishDraft(
   return useMutation({
     ...opts,
     mutationFn: (documentId) => draftsClient.publishDraft({documentId}),
-    onSuccess: (...args) => {
-      opts?.onSuccess?.(...args)
+    onSuccess: (pub, variables, ...rest) => {
+      appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+      appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
+      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+      appInvalidateQueries([queryKeys.GET_PUBLICATION, pub.document?.id])
+      appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, pub.document?.id])
+      appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
+      appInvalidateQueries([queryKeys, pub.document?.id])
+      opts?.onSuccess?.(pub, variables, ...rest)
     },
   })
 }
