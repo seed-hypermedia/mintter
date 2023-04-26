@@ -29,6 +29,7 @@ import {
   Menu,
   Separator,
   SizableText,
+  Stack,
   TitlebarSection,
   XGroup,
   XStack,
@@ -140,7 +141,10 @@ export function SitesNavDropdownItems() {
           asChild
         >
           <XStack alignItems="center">
-            <Globe size={16} />
+            <Stack flex={0} flexShrink={0} flexGrow={0}>
+              <Globe size={16} />
+            </Stack>
+
             <SizableText size="$2">
               {hostnameStripProtocol(site.hostname)}
             </SizableText>
