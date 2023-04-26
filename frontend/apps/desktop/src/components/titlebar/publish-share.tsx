@@ -1,13 +1,11 @@
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
 import {useDraft, usePublication, usePublishDraft} from '@app/models/documents'
-import {queryKeys} from '@app/models/query-keys'
 import {
   useDocPublications,
   useDocRepublish,
   useSiteList,
 } from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
-import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
@@ -16,7 +14,7 @@ import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {Button, ExternalLink, Globe, SizableText, Spinner} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {GestureReponderEvent} from '@tamagui/web'
-import {QueryClient, UseQueryResult} from '@tanstack/react-query'
+import {UseQueryResult} from '@tanstack/react-query'
 import {useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
@@ -214,22 +212,15 @@ export function PublishShareButton() {
   let navReplace = useNavigate('replace')
   const publish = usePublishDraft({
     onSuccess: (publishedDoc, doc) => {
-      if (!publishedDoc?.document?.id) return
-      appQueryClient.removeQueries([
-        queryKeys.GET_DRAFT,
-        publishedDoc?.document?.id,
-      ])
-      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-      appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
-      appInvalidateQueries([doc])
-      appInvalidateQueries([queryKeys.GET_PUBLICATION, doc])
-      republishDoc.mutateAsync(publishedDoc)
+      if (!publishedDoc) return
+
       navReplace({
         key: 'publication',
         documentId: doc,
         versionId: publishedDoc.version,
       })
+
+      republishDoc.mutateAsync(publishedDoc)
       toast.success('Draft published Successfully!')
     },
   })
@@ -256,7 +247,6 @@ export function PublishShareButton() {
           disabled={!isDaemonReady || isSaving.current}
           isDraft={route.key === 'draft'}
           onPress={(e) => {
-            toast('yes')
             e.preventDefault()
             if (isOpen) {
               setIsOpen(false)
