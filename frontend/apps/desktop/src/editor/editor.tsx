@@ -45,7 +45,7 @@ import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
-  children: ReactNode
+  children?: ReactNode
   mode?: EditorMode
   value: ChildrenOf<any> | Array<FlowContent>
   onChange?: (value: Descendant[]) => void

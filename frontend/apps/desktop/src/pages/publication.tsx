@@ -198,6 +198,7 @@ export default function PublicationPage() {
                         {editorValue && (
                           <>
                             <Editor
+                              key={versionId}
                               editor={editor}
                               mode={EditorMode.Publication}
                               value={editorValue}
@@ -315,41 +316,30 @@ export default function PublicationPage() {
 function PublicationShell() {
   // TODO: update shell
   return (
-    <Box
-      css={{
-        marginTop: '60px',
-        width: '$full',
-        maxWidth: '$prose-width',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$7',
-        marginInline: 'auto',
-      }}
+    <YStack
+      marginTop="$7"
+      width="100%"
+      maxWidth="600px"
+      gap="$6"
+      marginHorizontal="auto"
     >
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
-    </Box>
+    </YStack>
   )
 }
 
 function BlockPlaceholder() {
   return (
-    <Box
-      css={{
-        width: '$prose-width',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$2',
-      }}
-    >
-      <Placeholder css={{height: 16, width: '$full'}} />
-      <Placeholder css={{height: 16, width: '92%'}} />
-      <Placeholder css={{height: 16, width: '84%'}} />
-      <Placeholder css={{height: 16, width: '90%'}} />
-    </Box>
+    <YStack width="600px" gap="$2">
+      <Placeholder width="100%" />
+      <Placeholder width="92%" />
+      <Placeholder width="84%" />
+      <Placeholder width="90%" />
+    </YStack>
   )
 }
 

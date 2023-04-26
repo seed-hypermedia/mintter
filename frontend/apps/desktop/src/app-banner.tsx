@@ -1,12 +1,5 @@
-import {Box} from '@components/box'
-import {SizableText} from '@mintter/ui'
-import {keyframes} from '@stitches/react'
+import {getVariable, SizableText, useTheme, XStack} from '@mintter/ui'
 import {MouseEventHandler, ReactNode} from 'react'
-
-const slideDown = keyframes({
-  '0%': {transform: 'translateY(-100%)', opacity: 0},
-  '100%': {transform: 'translateY(0)', opacity: 1},
-})
 
 export function AppBanner({
   children,
@@ -15,37 +8,42 @@ export function AppBanner({
   children: ReactNode
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
 }) {
+  const theme = useTheme()
+
+  const color = getVariable(
+    ('yellow3' in theme ? theme['yellow3'] : undefined) ||
+      'yellow3' ||
+      null ||
+      '#f00',
+  )
+  console.log('🚀 ~ file: app-banner.tsx:15 ~ color:', color)
   return (
-    <Box
-      css={{
+    <XStack
+      backgroundColor={color.val}
+      width="100%"
+      position="absolute"
+      top={0}
+      left={0}
+      enterStyle={{
         opacity: 0,
-        animation: `${slideDown} 200ms`,
-        animationDelay: '300ms',
-        animationFillMode: 'forwards',
-        paddingInline: '$4',
-        paddingBlock: '$2',
-        background: '$warning-background-subtle',
-        cursor: 'pointer',
-        borderBottom: '1px solid blue',
-        borderColor: '$warning-border-normal',
-        transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        '&:hover': {
-          background: '$warning-background-normal',
-        },
-        position: 'absolute',
-        width: '$full',
-        // top: 40,
-        left: 0,
-        zIndex: '$max',
+        transform: [{translateY: -32}],
       }}
+      exitStyle={{
+        opacity: 0,
+        transform: [{translateY: -32}],
+      }}
+      transform={[{translateY: 0}]}
+      opacity={1}
+      padding="$1"
+      cursor="pointer"
+      paddingHorizontal="$3"
       {...props}
     >
       {children}
-    </Box>
+    </XStack>
   )
 }
 
-// export function BannerText({css, ...props}: TextProps & {css?: CSS}) {
 export function BannerText(props: any) {
-  return <SizableText {...props} size="$1" textAlign="center" theme="yellow" />
+  return <SizableText {...props} size="$1" textAlign="center" />
 }

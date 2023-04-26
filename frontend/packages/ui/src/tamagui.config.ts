@@ -1,12 +1,15 @@
-import {createTamagui} from 'tamagui'
+import {Variable} from '@tamagui/web'
+import {createTamagui, createTokens} from 'tamagui'
 import {createInterFont} from '@tamagui/font-inter'
 import {shorthands} from '@tamagui/shorthands'
-import {themes, tokens} from '@tamagui/themes'
+import {themes, radius, space, zIndex, size} from '@tamagui/themes'
+
 import {createMedia} from '@tamagui/react-native-media-driver'
+import * as colors from '@tamagui/colors'
 
 import {animations} from './animations'
 
-const headingFont = createInterFont({
+var headingFont = createInterFont({
   size: {
     6: 15,
   },
@@ -38,7 +41,7 @@ const headingFont = createInterFont({
   },
 })
 
-const bodyFont = createInterFont(
+var bodyFont = createInterFont(
   {
     face: {
       700: {normal: 'InterBold'},
@@ -50,7 +53,73 @@ const bodyFont = createInterFont(
   },
 )
 
-export const config = createTamagui({
+export const colorTokens = {
+  light: {
+    mint: colors.mint,
+    blue: colors.blue,
+    gray: colors.gray,
+    green: colors.green,
+    red: colors.red,
+    yellow: colors.yellow,
+  },
+  dark: {
+    mint: colors.mintDark,
+    blue: colors.blueDark,
+    gray: colors.grayDark,
+    green: colors.greenDark,
+    red: colors.redDark,
+    yellow: colors.yellowDark,
+  },
+}
+
+export const darkColors = {
+  ...colorTokens.dark.mint,
+  ...colorTokens.dark.blue,
+  ...colorTokens.dark.gray,
+  ...colorTokens.dark.green,
+  ...colorTokens.dark.red,
+  ...colorTokens.dark.yellow,
+}
+
+export const lightColors = {
+  ...colorTokens.light.mint,
+  ...colorTokens.light.blue,
+  ...colorTokens.light.gray,
+  ...colorTokens.light.green,
+  ...colorTokens.light.red,
+  ...colorTokens.light.yellow,
+}
+
+export const color = {
+  ...postfixObjKeys(lightColors, 'Light'),
+  ...postfixObjKeys(darkColors, 'Dark'),
+}
+
+function postfixObjKeys<
+  A extends {[key: string]: Variable<string> | string},
+  B extends string,
+>(
+  obj: A,
+  postfix: B,
+): {
+  [Key in `${keyof A extends string ? keyof A : never}${B}`]:
+    | Variable<string>
+    | string
+} {
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [`${k}${postfix}`, v]),
+  ) as any
+}
+
+export var tokens = createTokens({
+  color,
+  radius,
+  zIndex,
+  size,
+  space,
+})
+
+export var config = createTamagui({
   animations,
   shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: true,
@@ -78,3 +147,5 @@ export const config = createTamagui({
     pointerCoarse: {pointer: 'coarse'},
   }),
 })
+
+console.log('🚀 ~ file: tamagui.config.ts:6 ~ tokens:', config)

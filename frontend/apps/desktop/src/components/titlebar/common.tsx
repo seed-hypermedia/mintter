@@ -99,7 +99,7 @@ export function NavigationButtons() {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XGroup>
+    <XGroup backgroundColor="transparent">
       <XGroup.Item>
         <Button
           size="$2"
