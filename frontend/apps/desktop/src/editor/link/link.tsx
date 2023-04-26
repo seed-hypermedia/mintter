@@ -415,23 +415,18 @@ export function insertLink(
   }
 
   const newLink = link({url}, isCollapsed(selection) ? [text(url)] : [])
-  try {
-    if (isCollapsed(selection)) {
-      Transforms.insertNodes(editor, newLink, {at: selection})
-    } else {
-      Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
-      Transforms.collapse(editor, {edge: 'end'})
-    }
-    let nextPath = Path.next(selection.focus.path)
-    Transforms.insertNodes(editor, text(''), {
-      at: nextPath,
-    })
-  
-    addLinkChange(editor, selection)
+  if (isCollapsed(selection)) {
+    Transforms.insertNodes(editor, newLink, {at: selection})
+  } else {
+    Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
+    Transforms.collapse(editor, {edge: 'end'})
   }
-  catch {
-    console.log('broken smth')
-  }
+  let nextPath = Path.next(selection.focus.path)
+  Transforms.insertNodes(editor, text(''), {
+    at: nextPath,
+  })
+
+  addLinkChange(editor, selection)
 }
 
 export function isLinkActive(
@@ -549,9 +544,9 @@ export function InsertLinkButton() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     //@ts-ignore
-    const spans = refs.reference.current as HTMLSpanElement[]
-    if (spans) {
-      for (const span of spans) {
+    const linkSpans = refs.reference.current as HTMLSpanElement[]
+    if (linkSpans) {
+      for (const span of linkSpans) {
         const parent = span.parentElement
         if (parent && parent.nodeName === "SPAN") {
           const initialText = parent.innerText
@@ -595,9 +590,9 @@ export function InsertLinkButton() {
     <PopoverPrimitive.Root onOpenChange={(open) => {
       if (!open) {
         //@ts-ignore
-        const spans = refs.reference.current as HTMLSpanElement[]
-        if (spans) {
-          for (const span of spans) {
+        const linkSpans = refs.reference.current as HTMLSpanElement[]
+        if (linkSpans) {
+          for (const span of linkSpans) {
             const parent = span.parentElement
             if (parent && parent.nodeName === "SPAN") {
               const initialText = parent.innerText
@@ -633,7 +628,7 @@ export function InsertLinkButton() {
             //@ts-ignore
             reference([linkSpan])
           } else {
-            const spans: HTMLSpanElement[] = []
+            const linkSpans: HTMLSpanElement[] = []
             for (const [index, node] of nodes.entries()) {
               let domRange
               if (index === 0) 
@@ -650,12 +645,12 @@ export function InsertLinkButton() {
               } catch (e) {
                 console.log(e)
               }
-              spans.push(linkSpan)
+              linkSpans.push(linkSpan)
               if (node.pathRef)
                 node.pathRef.unref()
             }
             //@ts-ignore
-            reference(spans)
+            reference(linkSpans)
           }
         }
       }
