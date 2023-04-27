@@ -269,7 +269,7 @@ function Mnemonics(props: OnboardingStepProps) {
             <XStack>
               <Button
                 size="$2"
-                chromeless={!useOwnSeed}
+                theme="green"
                 onPress={() => {
                   if (useOwnSeed) {
                     // refetch here is so that user always sees new words when they click "generate a new seed"
