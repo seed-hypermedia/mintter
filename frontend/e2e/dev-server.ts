@@ -1,6 +1,6 @@
 import {spawn, ChildProcess} from 'child_process'
 import {join} from 'path'
-import {remove} from 'fs-extra'
+import {remove, existsSync, rmSync} from 'fs-extra'
 
 const filterControlCharacters = (data: Buffer): string => {
   // Match ASCII control characters (0-31) and extended ASCII control characters (127-159)
@@ -34,13 +34,14 @@ const runDaemon = (
 }
 
 function startup() {
+  let dbPath = join(mttRootDir, '.mtt-test')
+  if (existsSync(dbPath)) {
+    console.log('== removed previows backend database')
+    rmSync(dbPath, {recursive: true, force: true})
+  }
   const daemons: ChildProcess[] = [
     // ./dev run-backend -repo-path /Users/ericvicenti/Code/mintter/test-mtt-data
-    runDaemon('Daemon', './dev', [
-      'run-backend',
-      '-repo-path',
-      join(mttRootDir, '.mtt-test'),
-    ]),
+    runDaemon('Daemon', './dev', ['run-backend', '-repo-path', dbPath]),
     runDaemon('Vite', 'yarn', ['desktop']),
   ]
 
