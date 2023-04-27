@@ -190,10 +190,10 @@ export function usePublishDraft(
       opts?.onSuccess?.(pub, variables, ...rest)
 
       setTimeout(() => {
-        // do this on the next frame to wait for the draft component to unmount
+        // do this later to wait for the draft component to unmount
         appInvalidateQueries([queryKeys.GET_DRAFT, pub.document?.id])
         // otherwise it will re-query for a draft that no longer exists and an error happens
-      }, 1)
+      }, 250)
     },
   })
 }
