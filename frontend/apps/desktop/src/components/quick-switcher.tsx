@@ -61,9 +61,9 @@ export default function QuickSwitcher() {
               key="mtt-link"
               value={search}
               onSelect={() => {
-                if (isMintterScheme(search)) {
+                let [docId, version, block] = getIdsfromUrl(search)
+                if (docId && isMintterScheme(search)) {
                   setOpen(false)
-                  let [docId, version, block] = getIdsfromUrl(search)
                   navigate({
                     key: 'publication',
                     documentId: docId,

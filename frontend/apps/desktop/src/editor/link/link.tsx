@@ -207,8 +207,8 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     })
   }, [linkQuery.data, url, props.mode])
 
-  if (isMintterScheme(url)) {
-    const [docId, version, blockId] = getIdsfromUrl(url)
+  const [docId, version, blockId] = getIdsfromUrl(url)
+  if (isMintterScheme(url) && docId) {
     return (
       <MintterLink
         ref={ref}

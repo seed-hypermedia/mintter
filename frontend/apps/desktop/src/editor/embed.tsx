@@ -96,6 +96,7 @@ function Embed({
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
     // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
+    if (!docId) return
 
     const destRoute: PublicationRoute = {
       key: 'publication',
@@ -106,16 +107,6 @@ function Embed({
     if (isShiftKey) {
       navigate(destRoute)
     } else {
-      // TODO: Eric, make sure why this code was here!
-      // if (
-      //   route.key === 'publication' &&
-      //   route.documentId === docId &&
-      //   route.versionId === version
-      // ) {
-      //   navigateReplace(destRoute)
-      // } else {
-      //   spawn(destRoute)
-      // }
       spawn(destRoute)
     }
   }
