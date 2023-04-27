@@ -521,7 +521,7 @@ function StepWrapper({children}: {children: ReactNode}) {
       <YStack
         borderRadius="$7"
         elevation="$12"
-        backgroundColor="$blue1"
+        backgroundColor="$background1"
         minWidth={678}
         minHeight={500}
         maxWidth={1024}

@@ -68,31 +68,6 @@ export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
   let isOnline = useDaemonOnline()
 
-  // let contactsListQuery = useQuery({
-  //   enabled: isDaemonReady,
-  //   queryKey: [queryKeys.GET_CONTACTS_LIST],
-  //   queryFn: () => accountsClient.listAccounts({}),
-  // })
-
-  // let contactListService = useInterpret(() => contactsListMachine, {
-  //   actions: {
-  //     triggerRefetch: () => {
-  //       contactsListQuery.refetch()
-  //     },
-  //     assignErrorMessage: assign({
-  //       errorMessage: (_, event) => event.errorMessage,
-  //     }),
-  //   },
-  // })
-
-  // if (contactsListQuery.status == 'error') {
-  //   contactListService.send({
-  //     type: 'CONTACTS.LIST.ERROR',
-  //     errorMessage: JSON.stringify(contactsListQuery.error),
-  //   })
-  //   return <div className="main-footer">{children}</div>
-  // }
-
   return (
     <FooterWrapper>
       {!isDaemonReady ? (

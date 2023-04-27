@@ -1,14 +1,11 @@
 import {styled, XStack} from 'tamagui'
 
 export const FooterWrapper = styled(XStack, {
-  theme: 'gray',
   marginHorizontal: -1,
   paddingVertical: 0,
   width: '100%',
-  // minHeight: 40,
   borderColor: 'transparent',
-  backgroundColor: '$gray1',
-  borderTopColor: '$gray5',
+  borderTopColor: '$color5',
   borderWidth: '1px',
   alignItems: 'stretch',
   borderStyle: 'solid',
