@@ -1,6 +1,6 @@
 import {useDraftList, usePublicationList} from '@app/models/documents'
 import {fetchWebLink} from '@app/models/web-links'
-import {isMintterLink} from '@app/utils/is-mintter-link'
+import {isMintterScheme} from '@app/utils/is-mintter-link'
 import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl, getIdsfromUrlMaybe} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
@@ -54,14 +54,14 @@ export default function QuickSwitcher() {
       ) : (
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {(isMintterLink(search) ||
+          {(isMintterScheme(search) ||
             search.startsWith('http://') ||
             search.startsWith('https://')) && (
             <Command.Item
               key="mtt-link"
               value={search}
               onSelect={() => {
-                if (isMintterLink(search)) {
+                if (isMintterScheme(search)) {
                   setOpen(false)
                   let [docId, version, block] = getIdsfromUrl(search)
                   navigate({

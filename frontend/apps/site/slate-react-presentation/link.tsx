@@ -14,7 +14,7 @@ type ElementLinkProps = {
 
 export function ElementLink({element, ...props}: ElementLinkProps) {
   let url = useMemo(() => {
-    if (isMintterLink(element.url)) {
+    if (isMintterScheme(element.url)) {
       let [docId, version, block] = getIdsfromUrl(element.url)
       if (version) {
         if (block) {
@@ -49,6 +49,6 @@ export function ElementLink({element, ...props}: ElementLinkProps) {
   )
 }
 
-function isMintterLink(entry: string): boolean {
+function isMintterScheme(entry: string): boolean {
   return entry.startsWith(MINTTER_LINK_PREFIX)
 }

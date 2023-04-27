@@ -3,7 +3,7 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {usePublication} from '@app/models/documents'
 import {useWebLink} from '@app/models/web-links'
 import {useMouse} from '@app/mouse-context'
-import {isMintterLink} from '@app/utils/is-mintter-link'
+import {isMintterScheme} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
@@ -128,7 +128,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
     editor.insertData = (data: DataTransfer) => {
       const text = data.getData('text/plain')
       if (text) {
-        if (isMintterLink(text)) {
+        if (isMintterScheme(text)) {
           if (hasBlockId(text)) {
             wrapMintterLink(editor, text)
           } else {
@@ -177,30 +177,37 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     props.mode == EditorMode.Draft,
   )
   const {url} = props.element
+  const elChildren = props.element.children
   let editor = useSlateStatic()
 
   useEffect(() => {
     if (props.mode !== EditorMode.Draft) return
     if (!linkQuery.data) return
-    if (isMintterLink(url)) return
+    if (isMintterScheme(url)) return
     let at = findPath(props.element)
+
     const {documentId, documentVersion, documentTitle} = linkQuery.data
     const title = documentTitle || url
     let outputMintterUrl = `${MINTTER_LINK_PREFIX}${documentId}`
     if (documentVersion) {
       outputMintterUrl += `?v=${documentVersion}`
     }
+    const wasURLTextVisible =
+      elChildren.length === 1 &&
+      elChildren[0].type === 'text' &&
+      elChildren[0].text === url
+    const newChildren = wasURLTextVisible ? [text(title)] : elChildren
     Editor.withoutNormalizing(editor, () => {
       Transforms.insertNodes(
         editor,
-        link({url: outputMintterUrl}, [text(title)]),
+        link({url: outputMintterUrl}, newChildren),
         {at},
       )
       Transforms.removeNodes(editor, {at: Path.next(at)})
     })
   }, [linkQuery.data, url, props.mode])
 
-  if (isMintterLink(url)) {
+  if (isMintterScheme(url)) {
     const [docId, version, blockId] = getIdsfromUrl(url)
     return (
       <MintterLink
@@ -562,7 +569,7 @@ export function InsertLinkButton() {
       }
     }
     if (!editor) return
-    if (link && (isUrl(link) || isMintterLink(link))) {
+    if (link && (isUrl(link) || isMintterScheme(link))) {
       ReactEditor.focus(editor)
       insertLink(editor, {url: link, selection: editor.selection, wrap: true})
       Transforms.move(editor, {
