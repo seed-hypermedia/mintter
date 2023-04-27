@@ -1,5 +1,5 @@
 import appError from '@app/errors'
-import {useMyAccount, useSetProfile} from '@app/models/accounts'
+import {useSetProfile} from '@app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@app/models/daemon'
 import {NotFoundPage} from '@app/pages/base'
 import {AvatarForm} from '@components/avatar-form'
@@ -7,23 +7,30 @@ import {MintterIcon} from '@components/mintter-icon'
 import {Tooltip} from '@components/tooltip'
 import {Profile as ProfileType} from '@mintter/shared'
 import {
+  AnimatePresence,
   Button,
   Copy,
+  ErrorIcon,
   Fieldset,
   H1,
+  H2,
   H3,
   Input,
   Label,
   Next,
   Paragraph,
+  ParagraphProps,
   Prev,
+  Reload,
   SizableText,
   Text,
   TextArea,
+  Twitter,
+  useTheme,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useMutation, useQuery} from '@tanstack/react-query'
+import {open} from '@tauri-apps/api/shell'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {
   createContext,
@@ -36,6 +43,8 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
+
+const CONTENT_MAX_WIDTH = 500
 
 export function Onboarding() {
   return (
@@ -83,21 +92,20 @@ function Welcome(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <YStack flex={1} flexShrink={0}>
-          <CurrentStep />
-          <H1>Welcome to</H1>
+        <StepTitleSection>
+          <H2>Welcome to</H2>
           <H1>Mintter</H1>
-        </YStack>
+        </StepTitleSection>
 
         <YStack flex={2} gap="$5">
-          <Paragraph size="$6" maxWidth={500}>
+          <StepParagraph>
             Welcome to Mintter, the decentralized knowledge collaboration app
             that fosters constructive dialogue and critical debate.
-          </Paragraph>
-          <Paragraph size="$6" maxWidth={500}>
+          </StepParagraph>
+          <StepParagraph>
             Join us today to create and join communities, share knowledge, and
             connect with experts and peers around the world.
-          </Paragraph>
+          </StepParagraph>
         </YStack>
       </XStack>
 
@@ -117,22 +125,32 @@ function Welcome(props: OnboardingStepProps) {
 function Mnemonics(props: OnboardingStepProps) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
+  const [error, setError] = useState('')
   const mnemonics = useMnemonics()
 
   const register = useAccountRegistration({
-    onError: () => appError('Failed to register your words.'),
+    onError: () => {
+      setError('Failed to register your words.')
+      appError('Failed to register your words.')
+    },
     onSuccess: () => props.dispatch({type: 'next'}),
   })
 
   const handleSubmit = useCallback(() => {
-    const words =
-      useOwnSeed && ownSeed
-        ? ownSeed
-            .split(' ')
-            .map((s) => s.split(','))
-            .flat(1)
-        : mnemonics.data
-    if (!words) throw new Error('No words to submit')
+    if (useOwnSeed && !ownSeed) {
+      setError('must provide mnemonics')
+    }
+    const words = useOwnSeed
+      ? ownSeed
+          .split(' ')
+          .map((s) => s.split(','))
+          .flat(1)
+      : mnemonics.data
+    if (!words) {
+      setError('No mnemonics')
+      return
+    }
+
     register.mutate(words)
   }, [mnemonics.data, ownSeed, useOwnSeed])
 
@@ -150,36 +168,51 @@ function Mnemonics(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <YStack flex={1} flexShrink={0}>
-          <CurrentStep />
-          <H1>Your Keys.</H1>
+        <StepTitleSection>
+          <H2>Your Keys.</H2>
           <H1>Your Data.</H1>
-        </YStack>
+        </StepTitleSection>
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
-            <Paragraph size="$6">
+            <StepParagraph>
               Please save these words securely! This will allow you to recreate
               your account and recover associated funds:
-            </Paragraph>
+            </StepParagraph>
             {useOwnSeed ? (
-              <XStack
-                backgroundColor="$backgroundHover"
-                borderRadius="$5"
-                elevation="$3"
-              >
-                <TextArea
-                  fontSize={20}
-                  tabIndex={-1}
-                  flex={1}
-                  placeholder="food barrel buzz ..."
-                  minHeight={130}
-                  onChangeText={setOwnSeed}
-                  fontFamily="monospace"
-                  fontWeight="700"
-                  borderColor="$backgroundHover"
-                  borderWidth="$0.5"
-                />
-              </XStack>
+              <YStack gap="$2">
+                <XStack
+                  backgroundColor="$backgroundHover"
+                  borderRadius="$5"
+                  elevation="$3"
+                >
+                  <TextArea
+                    fontSize={18}
+                    flex={1}
+                    placeholder="food barrel buzz ..."
+                    minHeight={130}
+                    onChangeText={setOwnSeed}
+                    fontFamily="monospace"
+                    fontWeight="500"
+                    borderColor="$backgroundHover"
+                    borderWidth="$0.5"
+                  />
+                </XStack>
+                {error || register.status == 'error' ? (
+                  <XStack
+                    alignItems="center"
+                    gap="$2"
+                    backgroundColor="$red10"
+                    borderRadius="$1"
+                    paddingHorizontal="$4"
+                    paddingVertical={0}
+                  >
+                    <ErrorIcon size={12} color="$red1" />
+                    <SizableText size="$1" fontWeight="600" color="$red1">
+                      {error}
+                    </SizableText>
+                  </XStack>
+                ) : null}
+              </YStack>
             ) : mnemonics.isError ? (
               <XStack
                 padding="$4"
@@ -192,7 +225,7 @@ function Mnemonics(props: OnboardingStepProps) {
               >
                 <SizableText
                   fontFamily="monospace"
-                  fontSize={16}
+                  fontSize={14}
                   fontWeight="700"
                   display="block"
                   color="$color"
@@ -202,32 +235,45 @@ function Mnemonics(props: OnboardingStepProps) {
               </XStack>
             ) : (
               <XStack
-                padding="$4"
+                padding="$2"
+                space
                 backgroundColor="$background"
                 borderRadius="$5"
                 elevation="$3"
                 minHeight={130}
                 borderColor="$backgroundHover"
                 borderWidth="$0.5"
+                alignItems="flex-start"
               >
                 <SizableText
+                  padding="$2"
                   fontFamily="monospace"
-                  fontSize={20}
+                  fontSize={18}
                   fontWeight="700"
                   display="block"
                 >
                   {mnemonics.data?.join(', ')}
                 </SizableText>
-                <Tooltip content="Copy your seed">
-                  <Button
-                    icon={Copy}
-                    onPress={onCopy}
-                    size="$2"
-                    position="absolute"
-                    top="$2"
-                    right="$2"
-                  />
-                </Tooltip>
+                <XStack>
+                  <Tooltip content="regenerate words">
+                    <Button
+                      flex={0}
+                      flexShrink={0}
+                      icon={Reload}
+                      onPress={() => mnemonics.refetch()}
+                      size="$2"
+                    />
+                  </Tooltip>
+                  <Tooltip content="Copy words to clipboard">
+                    <Button
+                      flex={0}
+                      flexShrink={0}
+                      icon={Copy}
+                      onPress={onCopy}
+                      size="$2"
+                    />
+                  </Tooltip>
+                </XStack>
               </XStack>
             )}
             <XStack>
@@ -279,50 +325,37 @@ function Profile(props: OnboardingStepProps) {
     onError: (e) => appError('Failed to set your profile', e),
     onSuccess: () => props.dispatch({type: 'next'}),
   })
-  const [displayAvatar, setDisplayAvatar] = useState<string | null>(null)
-  const submitValue = useRef({alias: '', bio: '', avatar: ''} as ProfileType)
+
+  const submitValue = useRef({alias: '', bio: ''} as ProfileType)
   function onSubmit() {
     setProfile.mutate(submitValue.current)
   }
-  const avatarUrl = displayAvatar
-    ? `http://localhost:55001/ipfs/${displayAvatar}`
-    : undefined
-  console.log({avatarUrl})
+
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <YStack flex={1} flexShrink={0}>
-          <CurrentStep />
-          <H1>Profile</H1>
+        <StepTitleSection>
+          <H2>Profile</H2>
           <H1>Information</H1>
-          <AvatarForm
-            onAvatarUpload={async (avatar) => {
-              console.log('has new avatar', avatar)
-              submitValue.current.avatar = avatar
-              setDisplayAvatar(avatar)
-            }}
-            url={avatarUrl}
-          />
-          {displayAvatar === null ? (
-            <Text>Drag or click to select a profile photo</Text>
-          ) : null}
-        </YStack>
+        </StepTitleSection>
 
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
-            <Paragraph size="$6">
+            <StepParagraph>
               Link your personal data with your new Mintter account. You can
               fill this information later if you prefer.
-            </Paragraph>
-            <XStack>
-              <YStack>
+            </StepParagraph>
+            <XStack maxWidth={CONTENT_MAX_WIDTH}>
+              <YStack flex={1}>
                 <Fieldset
                   paddingHorizontal={0}
                   margin={0}
                   borderColor="transparent"
                   borderWidth={0}
                 >
-                  <Label htmlFor="alias">Alias</Label>
+                  <Label size="$2" htmlFor="alias">
+                    Alias
+                  </Label>
                   <Input
                     id="alias"
                     onChangeText={(val) => (submitValue.current.alias = val)}
@@ -335,9 +368,14 @@ function Profile(props: OnboardingStepProps) {
                   borderColor="transparent"
                   borderWidth={0}
                 >
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label size="$2" htmlFor="bio">
+                    Bio
+                  </Label>
                   <TextArea
                     id="bio"
+                    multiline
+                    minHeight={100}
+                    numberOfLines={4}
                     onChangeText={(val: string) =>
                       (submitValue.current.bio = val)
                     }
@@ -376,23 +414,22 @@ function Analytics(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <YStack flex={1} flexShrink={0}>
-          <CurrentStep />
-          <H1>Crash</H1>
+        <StepTitleSection>
+          <H2>Crash</H2>
           <H1>Analytics</H1>
-        </YStack>
+        </StepTitleSection>
 
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
-            <Paragraph size="$6">
+            <StepParagraph>
               Pre-release versions of Mintter automatically send anonymized
               crash reports when things go wrong. This helps us fix bugs and
               improve performance.
-            </Paragraph>
-            <Paragraph size="$6">
+            </StepParagraph>
+            <StepParagraph>
               We strongly believe privacy is a basic human right, so the full
               release of Mintter will never send your data to anyone.
-            </Paragraph>
+            </StepParagraph>
           </YStack>
         </YStack>
       </XStack>
@@ -422,17 +459,40 @@ function Complete() {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <YStack flex={1} flexShrink={0}>
-          <CurrentStep />
+        <StepTitleSection>
           <H1>You are Ready!</H1>
-        </YStack>
+        </StepTitleSection>
 
         <YStack flex={2}>
-          <YStack gap="$5" maxWidth={500}>
-            <H3>
+          <YStack gap="$5" width={440}>
+            <H3 width={360}>
               You just created your Mintter account. Please share it with others
               and help us spread the word.
             </H3>
+            <XStack gap="$2">
+              <Button
+                theme="blue"
+                size="$2"
+                onPress={() => {
+                  open(
+                    `https://twitter.com/intent/tweet?url=https%3A%2F%2Fmintter.com%3Fsource%3Donboarding&via=mintterteam&text=Just%20created%20my%20Mintter%20account%21%20join%20the%20P2P%20revolution%21&hashtags=mintter`,
+                  )
+                }}
+                icon={Twitter}
+              >
+                Tweet about it
+              </Button>
+              <Button
+                theme="blue"
+                size="$2"
+                onPress={() => {
+                  open(`https://twitter.com/mintterteam`)
+                }}
+                icon={Twitter}
+              >
+                @mintterteam
+              </Button>
+            </XStack>
           </YStack>
         </YStack>
       </XStack>
@@ -451,25 +511,47 @@ function Complete() {
 }
 
 function StepWrapper({children}: {children: ReactNode}) {
+  const theme = useTheme()
+  console.log('🚀 ~ file: onboarding.tsx:456 ~ StepWrapper ~ theme:', theme)
   return (
-    <YStack
-      borderRadius="$7"
-      elevation="$12"
-      backgroundColor="$blue1"
-      minWidth={678}
-      minHeight={300}
-      width="60%"
-      height="60%"
-      maxWidth={1024}
-    >
-      <YStack alignItems="flex-start" padding="$6">
-        <MintterIcon size="$2" color="mint" />
-      </YStack>
+    <AnimatePresence enterVariant="fromLeft" exitVariant="fromRight">
+      <YStack
+        borderRadius="$7"
+        elevation="$12"
+        backgroundColor="$blue1"
+        minWidth={678}
+        minHeight={500}
+        maxWidth={1024}
+        // enterStyle={{x: -200, opacity: 0, scale: 0.9}}
+        // exitStyle={{x: 200, opacity: 0, scale: 0.9}}
+        enterStyle={{opacity: 0, scale: 0.9}}
+        exitStyle={{opacity: 0, scale: 0.9}}
+        // transform={[{translateX: 0}]}
+        scale={1}
+        x={0}
+        y={0}
+        opacity={1}
+        animation={[
+          'lazy',
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+      >
+        <YStack alignItems="flex-start" padding="$6">
+          <MintterIcon
+            size="$2"
+            color={theme.color8?.val || 'hsl(0, 0%, 81.0%)'}
+          />
+        </YStack>
 
-      <YStack flex={1} padding="$6" gap="$5">
-        {children}
+        <YStack flex={1} padding="$6" gap="$5">
+          {children}
+        </YStack>
       </YStack>
-    </YStack>
+    </AnimatePresence>
   )
 }
 
@@ -488,6 +570,25 @@ function CurrentStep() {
   )
 }
 
+function StepParagraph({children, ...props}: ParagraphProps) {
+  return (
+    <Paragraph size="$5" maxWidth={CONTENT_MAX_WIDTH}>
+      {children}
+    </Paragraph>
+  )
+}
+
+function StepTitleSection({children}: {children: ReactNode}) {
+  return (
+    <YStack flex={0} flexShrink={0} width={240}>
+      <CurrentStep />
+      {children}
+    </YStack>
+  )
+}
+
+// ==== context
+
 export let obSteps = [
   'welcome',
   'mnemonics',
@@ -498,7 +599,7 @@ export let obSteps = [
 
 type OBState = {
   stepIndex: number
-  key: typeof obSteps[number]
+  key: (typeof obSteps)[number]
 }
 
 type OBAction = {type: 'next'} | {type: 'prev'}

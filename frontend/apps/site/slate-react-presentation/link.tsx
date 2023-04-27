@@ -8,7 +8,7 @@ import {
 } from '@mintter/shared'
 
 type ElementLinkProps = {
-  'data-type': string
+  // 'data-type': string
   element: LinkType
 }
 

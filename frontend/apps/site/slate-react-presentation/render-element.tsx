@@ -77,6 +77,7 @@ export function useRenderElement() {
           <Image
             width="100%"
             height={400}
+            source={{uri: (element as ImageType).url}}
             src={(element as ImageType).url}
             alt={(element as ImageType).alt}
           />

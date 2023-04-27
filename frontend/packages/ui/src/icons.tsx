@@ -50,4 +50,6 @@ export {
   ImagePlus as ImageIcon,
   ArrowRight as Next,
   ArrowLeft as Prev,
+  AlertOctagon as ErrorIcon,
+  Twitter,
 } from '@tamagui/lucide-icons'
