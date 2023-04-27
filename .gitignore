@@ -94,3 +94,5 @@ frontend/apps/forge/*
 /playwright-report/
 /playwright/.cache/
 .mtt-test
+
+_env.scss
