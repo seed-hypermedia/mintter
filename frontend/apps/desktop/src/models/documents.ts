@@ -14,14 +14,11 @@ import {
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
-  MutationCache,
-  MutationOptions,
+  UseMutationOptions,
   QueryClient,
-  QueryOptions,
   useMutation,
   useQueries,
   useQuery,
-  useQueryClient,
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
@@ -66,13 +63,12 @@ export function useDraftList() {
         documents,
       }
     },
-    onError: (err) => {
-      console.log(`useDraftList error: ${err}`)
-    },
   })
 }
 
-export function useDeleteDraft(opts: MutationOptions<void, unknown, string>) {
+export function useDeleteDraft(
+  opts: UseMutationOptions<void, unknown, string>,
+) {
   return useMutation({
     ...opts,
     mutationFn: async (documentId) => {
@@ -86,7 +82,7 @@ export function useDeleteDraft(opts: MutationOptions<void, unknown, string>) {
 }
 
 export function useDeletePublication(
-  opts: MutationOptions<void, unknown, string>,
+  opts: UseMutationOptions<void, unknown, string>,
 ) {
   return useMutation({
     ...opts,
@@ -179,7 +175,7 @@ function sortDocuments(a?: Timestamp, b?: Timestamp) {
 }
 
 export function usePublishDraft(
-  opts?: MutationOptions<Publication, unknown, string>,
+  opts?: UseMutationOptions<Publication, unknown, string>,
 ) {
   return useMutation({
     ...opts,
@@ -354,7 +350,6 @@ function useCacheListener<T = unknown>(queryKey: string[]) {
         event.action.type == 'success' &&
         compareArrays(queryKey, event.query.queryKey)
       ) {
-        console.log('=== CACHE VALID', event.action)
         setData(event.action.data)
       }
     })

@@ -78,7 +78,6 @@ export const plugins: EditorPlugin[] = [
     configureEditor: (editor) => {
       const {apply} = editor
       editor.apply = (operation) => {
-        console.log('=== APLY', operation)
         if (operation.type == 'set_selection') {
           //@ts-ignore
           if (editor.dragging) {

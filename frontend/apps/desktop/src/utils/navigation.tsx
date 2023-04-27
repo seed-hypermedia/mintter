@@ -131,6 +131,9 @@ const initRouteEncoded = window.location.pathname.slice(1)
 const homeRoute: HomeRoute = {key: 'home'}
 let initRoute: NavRoute = homeRoute
 try {
+  if (initRouteEncoded === '') {
+    initRoute = homeRoute
+  }
   initRoute = decodeRouteFromPath(initRouteEncoded)
 } catch (e) {
   console.error('Error parsing initial route! ', e)
