@@ -30,9 +30,8 @@ function getMintterPublicURL(docId: string, version: string) {
 }
 
 function MintterURLRow({doc}: {doc: Publication}) {
-  const {title, url} = useMemo(
+  const {url} = useMemo(
     () => ({
-      title: doc.document?.title,
       url: doc.document
         ? getMintterPublicURL(doc.document.id, doc.version)
         : '',
@@ -40,7 +39,7 @@ function MintterURLRow({doc}: {doc: Publication}) {
     [doc],
   )
 
-  return <AccessURLRow url={url} title={title} />
+  return <AccessURLRow url={url} title={hostnameStripProtocol(url)} />
 }
 
 function PublishedURLs({
