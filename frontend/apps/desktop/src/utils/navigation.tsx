@@ -139,6 +139,22 @@ try {
   console.error('Error parsing initial route! ', e)
 }
 
+function simpleStringy(obj: any): string {
+  if (Array.isArray(obj)) {
+    return obj.map(simpleStringy).join(', ')
+  }
+  if (obj === null) return 'null'
+  if (typeof obj === 'string') return obj
+  if (typeof obj === 'number') return String(obj)
+  if (typeof obj === 'boolean') return String(obj)
+  if (typeof obj === 'object') {
+    return Object.entries(obj)
+      .map(([k, v]) => `${k}: ${simpleStringy(v)}`)
+      .join(', ')
+  }
+  return '?'
+}
+
 export function NavigationProvider({
   children,
   initialNav = {
@@ -159,12 +175,15 @@ export function NavigationProvider({
   }, [activeRoute, lastAction])
 
   useEffect(() => {
-    console.log(`=== nav state
-  ${routes.map((r, i) => {
-    const {key, ...rest} = r
-    return `${i === routeIndex ? '🟢' : '⚪️'} ${key} ${JSON.stringify(rest)}
-    `
-  })}`)
+    console.log(
+      `${routes.map((r, i) => {
+        const {key, ...rest} = r
+        return `${i === routeIndex ? '✅' : '⏺️'} ${key} :: ${simpleStringy(
+          rest,
+        )}`
+      }).join(`
+`)}`,
+    )
   }, [routes, routeIndex])
 
   // go to pub with pending edit

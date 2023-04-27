@@ -61,7 +61,7 @@ const DEV_INTERCEPTORS = [loggingInterceptor, prodInter]
 
 let grpcBaseURL = getGRPCHost()
 
-console.log('🚀 client.ts ', {
+console.log('⚙️ Client Config ', {
   grpcBaseURL,
   GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
   VERCEL_ENV: process.env.VERCEL_ENV,

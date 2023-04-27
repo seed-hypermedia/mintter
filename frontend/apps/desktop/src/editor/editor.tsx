@@ -66,7 +66,6 @@ export function Editor({
   as = 'div',
   readOnly = false,
 }: PropsWithChildren<EditorProps>) {
-  // console.log('🚀 ~ file: editor.tsx:68 ~ draftState value:', value)
   if (!editor) {
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
   }

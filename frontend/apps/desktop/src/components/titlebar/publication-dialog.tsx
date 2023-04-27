@@ -102,9 +102,6 @@ function PublishDialogForm({
   )
 }
 export function usePublicationDialog() {
-  console.log(
-    '🚀 ~ file: publication-dialog.tsx:103 ~ usePublicationDialog ~ usePublicationDialog:',
-  )
   const route = useNavRoute()
   const [openSiteHostname, setOpenSiteHostname] = useState<null | string>(null)
   function open(hostname: string) {
