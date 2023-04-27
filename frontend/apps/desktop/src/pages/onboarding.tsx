@@ -1,8 +1,6 @@
 import appError from '@app/errors'
 import {useSetProfile} from '@app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@app/models/daemon'
-import {NotFoundPage} from '@app/pages/base'
-import {AvatarForm} from '@components/avatar-form'
 import {MintterIcon} from '@components/mintter-icon'
 import {Tooltip} from '@components/tooltip'
 import {Profile as ProfileType} from '@mintter/shared'
@@ -23,7 +21,7 @@ import {
   Prev,
   Reload,
   SizableText,
-  Text,
+  StepWrapper as StyledStepWrapper,
   TextArea,
   Twitter,
   useTheme,
@@ -56,34 +54,26 @@ export function Onboarding() {
 
 export function OnboardingSteps() {
   let obValue = useOnboarding()
-  let StepComponent = getComponent(obValue.state.key)
+  let direction = obValue.state.direction
+  const enterVariant = direction == 1 || direction == 0 ? 'isRight' : 'isLeft'
+  const exitVariant = direction === 1 ? 'isLeft' : 'isRight'
   return (
-    <YStack
-      fullscreen
-      alignItems="center"
-      justifyContent="center"
-      // backgroundColor="$blue12"
-    >
-      <StepComponent {...obValue} />
-    </YStack>
+    <AnimatePresence enterVariant={enterVariant} exitVariant={exitVariant}>
+      {obValue.state.key == 'welcome' && (
+        <Welcome key={obValue.state.key} {...obValue} />
+      )}
+      {obValue.state.key == 'mnemonics' && (
+        <Mnemonics key={obValue.state.key} {...obValue} />
+      )}
+      {obValue.state.key == 'profile' && (
+        <Profile key={obValue.state.key} {...obValue} />
+      )}
+      {obValue.state.key == 'analytics' && (
+        <Analytics key={obValue.state.key} {...obValue} />
+      )}
+      {obValue.state.key == 'complete' && <Complete key={obValue.state.key} />}
+    </AnimatePresence>
   )
-}
-
-function getComponent(step: OBState['key']) {
-  switch (step) {
-    case 'welcome':
-      return Welcome
-    case 'mnemonics':
-      return Mnemonics
-    case 'profile':
-      return Profile
-    case 'analytics':
-      return Analytics
-    case 'complete':
-      return Complete
-    default:
-      return NotFoundPage
-  }
 }
 
 type OnboardingStepProps = OBContext
@@ -512,9 +502,22 @@ function Complete() {
 
 function StepWrapper({children}: {children: ReactNode}) {
   const theme = useTheme()
-  console.log('🚀 ~ file: onboarding.tsx:456 ~ StepWrapper ~ theme:', theme)
   return (
-    <AnimatePresence enterVariant="fromLeft" exitVariant="fromRight">
+    <StyledStepWrapper
+      fullscreen
+      x={0}
+      opacity={1}
+      alignItems="center"
+      justifyContent="center"
+      animation={[
+        'lazy',
+        {
+          opacity: {
+            overshootClamping: true,
+          },
+        },
+      ]}
+    >
       <YStack
         borderRadius="$7"
         elevation="$12"
@@ -522,23 +525,6 @@ function StepWrapper({children}: {children: ReactNode}) {
         minWidth={678}
         minHeight={500}
         maxWidth={1024}
-        // enterStyle={{x: -200, opacity: 0, scale: 0.9}}
-        // exitStyle={{x: 200, opacity: 0, scale: 0.9}}
-        enterStyle={{opacity: 0, scale: 0.9}}
-        exitStyle={{opacity: 0, scale: 0.9}}
-        // transform={[{translateX: 0}]}
-        scale={1}
-        x={0}
-        y={0}
-        opacity={1}
-        animation={[
-          'lazy',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
       >
         <YStack alignItems="flex-start" padding="$6">
           <MintterIcon
@@ -551,7 +537,7 @@ function StepWrapper({children}: {children: ReactNode}) {
           {children}
         </YStack>
       </YStack>
-    </AnimatePresence>
+    </StyledStepWrapper>
   )
 }
 
@@ -600,6 +586,7 @@ export let obSteps = [
 type OBState = {
   stepIndex: number
   key: (typeof obSteps)[number]
+  direction: 0 | 1 | -1
 }
 
 type OBAction = {type: 'next'} | {type: 'prev'}
@@ -623,6 +610,7 @@ function obStateReducer(state: OBState, action: OBAction): OBState {
         ...state,
         stepIndex,
         key,
+        direction: 1,
       }
     case 'prev':
       if (state.stepIndex == 0) return state
@@ -632,6 +620,7 @@ function obStateReducer(state: OBState, action: OBAction): OBState {
         ...state,
         stepIndex,
         key,
+        direction: -1,
       }
     default:
       return state
@@ -643,6 +632,7 @@ export function OnboardingProvider({
   initialStep = {
     stepIndex: 0,
     key: obSteps[0],
+    direction: 0,
   },
 }: {
   children: ReactNode
@@ -688,6 +678,13 @@ export function useOBStepIndex() {
   if (!ob)
     throw new Error('useOBStepIndex must be used within a OnboardingProvider')
   return ob.state.stepIndex
+}
+
+export function useOBDirection() {
+  const ob = useContext(OnboardingContext)
+  if (!ob)
+    throw new Error('useOBStepIndex must be used within a OnboardingProvider')
+  return ob.state.direction
 }
 
 export function useOBDispatch() {
