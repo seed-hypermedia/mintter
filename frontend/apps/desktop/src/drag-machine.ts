@@ -180,7 +180,7 @@ export const createDragMachine = (editor: Editor) => {
             }
             return {
               dragOverRef: hoveredElement,
-              isTop: context.isTop,
+              isTop: false,
               toPath: hoveredPath,
               nestedGroup,
             }
@@ -259,15 +259,13 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup[i].removeAttribute('data-action')
             }
           }
-          if (fromPath && toPath && editor) {
-            if (fromPath === toPath || fromPath === null || toPath === null)
-              return
+          if (fromPath && toPath && fromPath !== toPath) {
             if (Path.isAncestor(fromPath, toPath)) return
-            const parentToGroup = Editor.above<Group>(editor, {
-              match: isGroupContent,
-              mode: 'lowest',
-              at: toPath,
-            })
+            // const parentToGroup = Editor.above<Group>(editor, {
+            //   match: isGroupContent,
+            //   mode: 'lowest',
+            //   at: toPath,
+            // })
             const parentFromGroup = Editor.above<Group>(editor, {
               match: isGroupContent,
               mode: 'lowest',
@@ -280,13 +278,13 @@ export const createDragMachine = (editor: Editor) => {
               let to = toPath
               if (
                 !isTop &&
-                ((parentToGroup && isLastBlock(parentToGroup, toPath)) ||
-                  (parentFromGroup && isLastBlock(parentFromGroup, fromPath)) ||
+                ((parentFromGroup && isLastBlock(parentFromGroup, fromPath)) ||
+                  fromPath.length !== toPath.length ||
                   (context.nestedGroup &&
-                    context.nestedGroup[0] === dragOverRef))
-              ) {
+                    dragOverRef &&
+                    context.nestedGroup.includes(dragOverRef as HTMLElement)))
+              )
                 to = Path.next(toPath)
-              }
               Transforms.moveNodes(editor, {
                 at: fromPath,
                 to,
