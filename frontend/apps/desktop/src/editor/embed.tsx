@@ -161,7 +161,7 @@ function Embed({
         as="span"
         editor={editor}
         mode={EditorMode.Embed}
-        value={state.context.block?.children}
+        value={[state.context.block]}
         onChange={() => {
           // noop
         }}

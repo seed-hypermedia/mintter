@@ -174,6 +174,7 @@ type LinkProps = Omit<RenderElementProps, 'element'> & {
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+  const {element, mode} = props
   const linkQuery = useWebLink(
     props.element.url,
     props.mode == EditorMode.Draft,
@@ -181,33 +182,45 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   const {url} = props.element
   const elChildren = props.element.children
   let editor = useSlateStatic()
+  const isEmbedInsertion = !!element.data?.isEmbedInsertion
 
   useEffect(() => {
     if (props.mode !== EditorMode.Draft) return
     if (!linkQuery.data) return
     if (isMintterScheme(url)) return
     let at = findPath(props.element)
-
+    const [, origBlockId] = url.match(/\#(.*)$/) || []
     const {documentId, documentVersion, documentTitle} = linkQuery.data
-    const title = documentTitle || url
     let outputMintterUrl = `${MINTTER_LINK_PREFIX}${documentId}`
     if (documentVersion) {
       outputMintterUrl += `?v=${documentVersion}`
     }
-    const wasURLTextVisible =
-      elChildren.length === 1 &&
-      elChildren[0].type === 'text' &&
-      elChildren[0].text === url
-    const newChildren = wasURLTextVisible ? [text(title)] : elChildren
-    Editor.withoutNormalizing(editor, () => {
-      Transforms.insertNodes(
-        editor,
-        link({url: outputMintterUrl}, newChildren),
-        {at},
-      )
-      Transforms.removeNodes(editor, {at: Path.next(at)})
-    })
-  }, [linkQuery.data, url, props.mode])
+    if (origBlockId) {
+      outputMintterUrl += `#${origBlockId}`
+    }
+    debugger
+    if (isEmbedInsertion) {
+      const newEmbed: Embed = embed({url: outputMintterUrl}, [text('')])
+      Transforms.removeNodes(editor, {at: at.slice(0, -1)})
+      Transforms.insertNodes(editor, newEmbed, {at: at.slice(0, -2)})
+    } else {
+      const title = documentTitle || url
+
+      const wasURLTextVisible =
+        elChildren.length === 1 &&
+        elChildren[0].type === 'text' &&
+        elChildren[0].text === url
+      const newChildren = wasURLTextVisible ? [text(title)] : elChildren
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.insertNodes(
+          editor,
+          link({url: outputMintterUrl}, newChildren),
+          {at},
+        )
+        Transforms.removeNodes(editor, {at: Path.next(at)})
+      })
+    }
+  }, [linkQuery.data, url, props.mode, isEmbedInsertion])
 
   const [docId, version, blockId] = getIdsfromUrl(url)
   if (isMintterScheme(url) && docId) {
@@ -503,7 +516,13 @@ export function wrapLink(
   }
 
   const newLink: LinkType = link(
-    {url},
+    {
+      url,
+      data: {
+        // if the selection is empty while pasting this link, we want to paste as an embed, but we haven't looked up this URL yet so we defer to the link component by passing isEmbedInsertion:true
+        isEmbedInsertion: isCollapsed(selection),
+      },
+    },
     isCollapsed(selection) ? [text(url)] : [],
   )
 
