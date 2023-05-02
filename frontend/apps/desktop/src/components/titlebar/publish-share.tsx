@@ -11,13 +11,22 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
 import {AccessURLRow} from '@components/url'
 import {Publication, WebPublicationRecord} from '@mintter/shared'
-import {Button, ExternalLink, Globe, SizableText, Spinner} from '@mintter/ui'
+import {
+  Button,
+  Copy,
+  ExternalLink,
+  Globe,
+  SizableText,
+  Spinner,
+} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {GestureReponderEvent} from '@tamagui/web'
 import {UseQueryResult} from '@tanstack/react-query'
 import {useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
+import {Tooltip} from '@components/tooltip'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 
 const forceProductionURL = true
 
@@ -295,6 +304,23 @@ export function PublishShareButton() {
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
+      <Tooltip content="Copy document reference">
+        <Button
+          chromeless
+          size="$2"
+          onPress={() => {
+            const {document, version} = pub || {}
+            const {id, webUrl} = document || {}
+            if (!id) throw new Error('No document id')
+            const host = webUrl || 'https://mintter.com'
+            let docUrl = `${host}/p/${id}?v=${version}`
+            copyTextToClipboard(docUrl)
+            toast.success('Copied document reference')
+          }}
+          icon={Copy}
+        />
+      </Tooltip>
+
       {publicationDialog.content}
     </>
   )

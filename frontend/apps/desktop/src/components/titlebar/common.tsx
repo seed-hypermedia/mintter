@@ -16,8 +16,6 @@ import {useOpenDraft} from '@app/utils/open-draft'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Avatar} from '@components/avatar'
 import {ContactsPrompt} from '@components/contacts-prompt'
-import {Icon} from '@components/icon'
-import {Tooltip} from '@components/tooltip'
 import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {
   Add,
@@ -64,13 +62,11 @@ export function ActionButtons(props: TitleBarProps) {
 
   return (
     <TitlebarSection>
-      {onCopy && (
+      {/* {onCopy && (
         <Tooltip content="Copy document reference">
           <Button chromeless size="$2" onPress={onCopy} icon={Copy} />
-
-          {/* </Button> */}
         </Tooltip>
-      )}
+      )} */}
 
       {route.key == 'publication' ? <WriteActions route={route} /> : null}
 
