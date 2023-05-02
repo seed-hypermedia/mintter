@@ -141,6 +141,29 @@ describe('Transform: blockToSlate', () => {
     expect(blockToSlate(input)).toEqual(output)
   })
 
+  test('should return colors', () => {
+    let input = new Block({
+      id: 'blockId',
+      type: 'statement',
+      text: 'red green',
+      annotations: [
+        {type: 'color', starts: [0], ends: [4], attributes: {color: 'red'}},
+        {type: 'color', starts: [4], ends: [9], attributes: {color: 'green'}},
+      ],
+      attributes: {},
+      revision: '',
+    })
+
+    let output = statement({id: 'blockId', revision: ''}, [
+      paragraph([
+        text('red ', {color: 'red'}),
+        text('green', {color: 'green'}),
+      ]),
+    ])
+
+    expect(blockToSlate(input as Block)).toEqual(output)
+  })
+
   test('should transform no ASCII characters (emojis)', () => {
     let input = new Block({
       id: 'blockId',

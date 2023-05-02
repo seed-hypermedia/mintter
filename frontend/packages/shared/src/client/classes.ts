@@ -49,6 +49,10 @@ export class AnnotationSet {
       return `${type}-${attributes.conversationId}`
     }
 
+    if (attributes && attributes.color) {
+      return `${type}-${attributes.color}`
+    }
+
     return type
   }
 

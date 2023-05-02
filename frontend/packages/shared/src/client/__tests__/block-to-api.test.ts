@@ -96,6 +96,27 @@ describe('Transform: blockToApi', () => {
     expect(blockToApi(input)).toEqual(output)
   })
 
+  test.only('should return colors', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        text('red ', {color: 'red'}),
+        text('green', {color: 'green'}),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: 'red green',
+      annotations: [
+        {type: 'color', starts: [0], ends: [4], attributes: {color: 'red'}},
+        {type: 'color', starts: [4], ends: [9], attributes: {color: 'green'}},
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
   test('should transform no ASCII characters (emojis)', () => {
     let input: Statement = statement({id: 'blockId'}, [
       paragraph([text('hello '), text('from 👨‍👩‍👧‍👦 family', {strong: true})]),
