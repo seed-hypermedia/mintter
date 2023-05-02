@@ -13,6 +13,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 RUN yarn site:prod
 
+
 FROM node:18-alpine AS production
 COPY --from=builder /app/frontend/apps/site/.next/standalone .
 COPY --from=builder /app/frontend/apps/site/.next/static ./frontend/apps/site/.next/static

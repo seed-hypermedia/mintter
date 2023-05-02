@@ -24,15 +24,20 @@ import {
   Back,
   Button,
   Copy,
+  Draft,
+  File,
   Forward,
   Globe,
   Menu,
   Separator,
+  Settings,
   SizableText,
   Stack,
   TitlebarSection,
+  User,
   XGroup,
   XStack,
+  YStack,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -47,7 +52,7 @@ export function ActionButtons(props: TitleBarProps) {
   const isDaemonReady = useDaemonReady()
 
   const onCopy =
-    route.key === 'publication'
+    route.key == 'publication'
       ? () => {
           let reference = `${MINTTER_LINK_PREFIX}${route.documentId}`
           if (route.versionId) reference += `?v=${route.versionId}`
@@ -67,13 +72,13 @@ export function ActionButtons(props: TitleBarProps) {
         </Tooltip>
       )}
 
-      {route.key === 'publication' ? <WriteActions route={route} /> : null}
+      {route.key == 'publication' ? <WriteActions route={route} /> : null}
 
       <PublishShareButton />
 
-      {route.key === 'draft' ? null : (
+      {route.key == 'draft' ? null : (
         <div className="button-group">
-          {route.key === 'connections' ? (
+          {route.key == 'connections' ? (
             <ContactsPrompt />
           ) : (
             <Button
@@ -139,17 +144,9 @@ export function SitesNavDropdownItems() {
           key={site.hostname}
           onSelect={() => navigate({key: 'site', hostname: site.hostname})}
           asChild
-        >
-          <XStack alignItems="center">
-            <Stack flex={0} flexShrink={0} flexGrow={0}>
-              <Globe size={16} />
-            </Stack>
-
-            <SizableText size="$2">
-              {hostnameStripProtocol(site.hostname)}
-            </SizableText>
-          </XStack>
-        </Dropdown.Item>
+          icon={Globe}
+          title={hostnameStripProtocol(site.hostname)}
+        />
       ))}
     </>
   )
@@ -161,7 +158,7 @@ function AccountDropdownItem() {
   const {data: account} = useMyAccount()
   return (
     <Dropdown.Item
-      disabled={route.key === 'account' && route.accountId === account?.id}
+      disabled={route.key == 'account' && route.accountId == account?.id}
       onSelect={() => {
         if (!account?.id) {
           appError('Account has not loaded.')
@@ -169,15 +166,15 @@ function AccountDropdownItem() {
         }
         navigate({key: 'account', accountId: account?.id})
       }}
-    >
-      <Avatar
-        size="$1"
-        alias={account?.profile?.alias || '.'}
-        accountId={account?.id}
-      />
-      <span>{account?.profile?.alias || '<me>'}</span>
-      <Dropdown.RightSlot></Dropdown.RightSlot>
-    </Dropdown.Item>
+      icon={
+        <Avatar
+          size="$1"
+          alias={account?.profile?.alias || '.'}
+          accountId={account?.id}
+        />
+      }
+      title={account?.profile?.alias || '<me>'}
+    />
   )
 }
 
@@ -188,53 +185,69 @@ export function NavMenu() {
   return (
     <XStack paddingRight="$2">
       <Dropdown.Root>
-        <Dropdown.Trigger asChild>
-          <Button size="$2" chromeless>
-            <Menu size={16} />
-          </Button>
-        </Dropdown.Trigger>
+        <Dropdown.Trigger icon={Menu} />
+
         <Dropdown.Portal>
-          <Dropdown.Content>
+          <Dropdown.Content side="bottom" align="start">
             <AccountDropdownItem />
             <Separator />
             <Dropdown.Item
-              disabled={route.key === 'home'}
+              disabled={route.key == 'home'}
               data-testid="menu-item-inbox"
               onSelect={() => navigate({key: 'home'})}
-            >
-              <Icon name="File" />
-              <span>All Publications</span>
-              <Dropdown.RightSlot>&#8984; 1</Dropdown.RightSlot>
-            </Dropdown.Item>
+              title="All Publications"
+              icon={File}
+              iconAfter={
+                <SizableText size="$1" color="$mint5">
+                  &#8984; 1
+                </SizableText>
+              }
+            />
             <Dropdown.Item
-              disabled={route.key === 'drafts'}
+              disabled={route.key == 'drafts'}
               data-testid="menu-item-drafts"
               onSelect={() => navigate({key: 'drafts'})}
-            >
-              <Icon name="PencilAdd" />
-              <span>Drafts</span>
-              <Dropdown.RightSlot>&#8984; 8</Dropdown.RightSlot>
-            </Dropdown.Item>
+              icon={Draft}
+              title="Drafts"
+              iconAfter={
+                <SizableText size="$1" color="$mint5">
+                  &#8984; 8
+                </SizableText>
+              }
+            />
             <Dropdown.Item
-              disabled={route.key === 'connections'}
+              disabled={route.key == 'connections'}
               onSelect={() => navigate({key: 'connections'})}
-            >
-              <Icon name="Person" />
-              Connections
-              <Dropdown.RightSlot>&#8984; 9</Dropdown.RightSlot>
-            </Dropdown.Item>
+              icon={User}
+              title="Connections"
+              iconAfter={
+                <SizableText size="$1" color="$mint5">
+                  &#8984; 9
+                </SizableText>
+              }
+            />
             <SitesNavDropdownItems />
             <Separator />
-            <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
-              <Icon name="QuickSwitcher" />
-              Quick Switcher
-              <Dropdown.RightSlot>&#8984; K</Dropdown.RightSlot>
-            </Dropdown.Item>
-            <Dropdown.Item onSelect={() => spawn({key: 'settings'})}>
-              <Icon name="GearOutlined" />
-              Settings
-              <Dropdown.RightSlot>&#8984; ,</Dropdown.RightSlot>
-            </Dropdown.Item>
+            <Dropdown.Item
+              onSelect={() => tauriEmit('open_quick_switcher')}
+              title="Quick Switcher"
+              iconAfter={
+                <SizableText size="$1" color="$mint5">
+                  &#8984; K
+                </SizableText>
+              }
+            />
+
+            <Dropdown.Item
+              onSelect={() => tauriEmit('open_quick_switcher')}
+              icon={Settings}
+              title="Quick Settings"
+              iconAfter={
+                <SizableText size="$1" color="$mint5">
+                  &#8984; ,
+                </SizableText>
+              }
+            />
           </Dropdown.Content>
         </Dropdown.Portal>
       </Dropdown.Root>
@@ -248,7 +261,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
   let [errorMessage, setError] = useState('')
 
   const hasExistingDraft = draftList.data?.documents.some(
-    (draft) => draft.id === route.documentId,
+    (draft) => draft.id == route.documentId,
   )
 
   async function handleEdit() {

@@ -40,7 +40,7 @@ import {
   EditorMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
-import './styles/editor.scss'
+import './styles/editor.css'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
 

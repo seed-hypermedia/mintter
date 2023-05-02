@@ -76,6 +76,7 @@ module.exports = function () {
   }
 
   if (!process.env.MINTTER_IS_GATEWAY) {
+    console.log('===> NEXT STANDALONE BUILD <===')
     config.output = 'standalone'
   }
 

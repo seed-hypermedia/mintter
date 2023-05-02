@@ -109,11 +109,6 @@ export function usePublicationDialog() {
     setOpenSiteHostname(hostname)
   }
 
-  console.log(
-    'openSiteHostname && route.key == publication',
-    openSiteHostname && route.key == 'publication',
-  )
-
   return {
     content: (
       <DialogPrimitive.Root

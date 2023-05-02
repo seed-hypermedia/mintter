@@ -8,24 +8,21 @@ export const AppMain = styled(YStack, {
 })
 
 export const MainStyled = styled(YStack, {
-  name: 'MAIN-STYLED',
   flex: 1,
 })
 
 export const MainWrapper = ({
   children,
-  onScroll,
   noScroll = false,
-}: {
-  children: ReactNode
-  onScroll?: ScrollViewProps['onScroll']
+  ...props
+}: ScrollViewProps & {
   noScroll?: boolean
 }) => (
-  <MainStyled flex={1}>
+  <MainStyled>
     {noScroll ? (
       <>{children}</>
     ) : (
-      <ScrollView onScroll={onScroll}>{children}</ScrollView>
+      <ScrollView {...props}>{children}</ScrollView>
     )}
   </MainStyled>
 )

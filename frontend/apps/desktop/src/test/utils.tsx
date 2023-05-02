@@ -13,7 +13,6 @@ import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {nanoid} from 'nanoid'
 import {ReactNode, Suspense} from 'react'
-import {BlockHighLighter} from '../editor/block-highlighter'
 import {MouseProvider} from '../mouse-context'
 import {mouseMachine} from '../mouse-machine'
 import {globalStyles} from '../stitches.config'
@@ -194,9 +193,7 @@ export function TestPublicationProvider({children}: {children: ReactNode}) {
   let mouseService = useInterpret(() => mouseMachine)
   return (
     <div>
-      <MouseProvider value={mouseService}>
-        <BlockHighLighter>{children}</BlockHighLighter>
-      </MouseProvider>
+      <MouseProvider value={mouseService}>{children}</MouseProvider>
     </div>
   )
 }

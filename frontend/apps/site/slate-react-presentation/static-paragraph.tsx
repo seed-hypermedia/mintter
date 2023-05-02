@@ -24,12 +24,14 @@ export function StaticParagraph({element, ...props}) {
 
   return (
     <Paragraph
+      ref={ref}
       fontWeight="800"
       size={size as any}
-      ref={ref}
       display="inline-flex"
-      mb="$4"
-      mt="$5"
+      marginBottom="$3"
+      marginTop="$4"
+      paddingHorizontal="$4"
+      paddingVertical="$2"
       {...props}
     />
   )

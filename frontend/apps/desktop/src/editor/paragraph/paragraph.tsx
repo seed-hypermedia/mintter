@@ -1,26 +1,31 @@
-import {usePhrasingProps} from '@app/editor/editor-node-props'
-import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {useDrag} from '@app/drag-context'
+import {HIGHLIGHTER} from '@app/editor/code'
+import {usePhrasingProps} from '@app/editor/editor-node-props'
+import {findPath} from '@app/editor/utils'
+import {useBlockObserve} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
-import {Box} from '@components/box'
 import {
+  Code as CodeType,
   FlowContent,
-  Group,
   isBlockquote,
   isCode,
   isFlowContent,
-  isGroupContent,
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@mintter/shared'
-import {useEffect, useMemo, useRef} from 'react'
+import {SizableText, XStack, YStack} from '@mintter/ui'
+import {useMemo, useRef} from 'react'
+import {BUNDLED_LANGUAGES, Lang} from 'shiki'
 import {Editor, Node, Path, Transforms} from 'slate'
-import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
+import {
+  ReactEditor,
+  RenderElementProps,
+  useSlate,
+  useSlateStatic,
+} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {red} from '@radix-ui/colors'
-import {useActor, useSelector} from '@xstate/react'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -71,30 +76,18 @@ function Paragraph({
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlate()
-  let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
+  let {elementProps, parentNode} = usePhrasingProps(editor, element)
   // dragProps
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
   }
+  let paddingLeft = useMemo(
+    () => (elementProps['data-parent-group'] == 'group' ? '$2' : 0),
+    [elementProps],
+  )
   useBlockObserve(mode, pRef)
-  let mouseService = useMouse()
   let dragService = useDrag()
-
-  let mouseProps =
-    mode == EditorMode.Publication
-      ? {
-          onMouseEnter: () => {
-            mouseService.send({
-              type: 'HIGHLIGHT.ENTER',
-              ref: elementProps['data-highlight'] as string,
-            })
-          },
-          onMouseLeave: () => {
-            mouseService.send('HIGHLIGHT.LEAVE')
-          },
-        }
-      : {}
 
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -117,60 +110,7 @@ function Paragraph({
         initialPath = initialPath.slice(0, -2)
       }
 
-      // const childGroup = Editor.after(editor, path, {
-      //   match: isGroupContent,
-      //   mode: 'lowest',
-      //   at: path,
-      // })
-
-      // console.log(childGroup);
-      // console.log(parentBlock);
-      // console.log(e.clientX);
-
-      // if (!childGroup) {
-      //   const firstParent = Editor.node(editor, ancestorPath.slice(0, 2) as Path);
-      //   let groupStatements = [];
-      //   let groupElements = [];
-      //   const descendantsGen = Node.nodes(firstParent[0], {
-      //     to: ancestorPath.slice(2),
-      //     // pass: (entry) => { return entry[0].type === 'statement' },
-      //   });
-      //   for (let des of descendantsGen)
-      //   {
-      //     if (des[0].type === 'statement') {
-      //       des[1] = [...ancestorPath.slice(0, 2), ...des[1]]
-      //       groupStatements.push(des);
-      //     }
-      //   }
-      //   for (const statement of groupStatements) {
-      //     groupElements.push(ReactEditor.toDOMNode(editor, statement[0]))
-      //   }
-      //   // const ancestorsGen = Node.ancestors(node, path);
-      //   // let ancestors = [];
-      //   // for (const anc of ancestorsGen) {
-      //   //   // ancestors.push(anc);
-      //   //   console.log(anc);
-      //   // }
-      //   // console.log(ancestors);
-      //   // // const pathGen = Path.ancestors(path);
-      //   // let paths = []
-      //   // for (const pth of pathGen) {
-      //   //   paths.push(pth);
-      //   // }
-      //   // console.log(paths);
-      //   // console.log(e.clientX);
-      //   dragService?.send({
-      //     type: 'DRAG.OVER.BOTTOM',
-      //     currentX: e.clientX,
-      //     nodes: groupStatements,
-      //     nestedElements: groupElements,
-      //   })
-      //   return;
-      // }
-
       const domNode = ReactEditor.toDOMNode(editor, node)
-
-      // console.log(domNode.offsetLeft, domNode.getBoundingClientRect())
 
       dragService?.send({
         type: 'DRAG.OVER',
@@ -183,49 +123,162 @@ function Paragraph({
 
   if (mode == EditorMode.Embed) {
     return (
-      <Box as="span" {...attributes} {...elementProps} {...otherProps}>
+      <SizableText
+        selectionColor="$color10"
+        size="$5"
+        tag="span"
+        color="$color9"
+        fontWeight="600"
+        padding="$1"
+        // borderRadius="$2"
+        // backgroundColor="$background"
+        // hoverStyle={{
+        //   backgroundColor: '$color9',
+        //   color: '$background',
+        // }}
+        {...attributes}
+        {...elementProps}
+        {...otherProps}
+      >
         {children}
-      </Box>
+      </SizableText>
     )
   }
 
   if (isCode(parentNode)) {
     return (
-      <Box
-        as="pre"
-        {...attributes}
-        {...elementProps}
-        {...mouseProps}
-        {...otherProps}
+      <Code
+        attributes={attributes}
+        elementProps={elementProps}
+        otherProps={otherProps}
+        element={element}
+        mode={mode}
       >
-        <code>{children}</code>
-      </Box>
+        {children}
+      </Code>
     )
   }
 
   if (isBlockquote(parentNode)) {
     return (
-      <Box
-        as="blockquote"
-        {...attributes}
-        {...elementProps}
-        {...mouseProps}
-        {...otherProps}
+      <Blockquote
+        attributes={attributes}
+        elementProps={elementProps}
+        otherProps={otherProps}
+        element={element}
+        mode={mode}
       >
-        <p>{children}</p>
-      </Box>
+        {children}
+      </Blockquote>
     )
   }
 
   return (
-    <p
+    <SizableText
+      tag="p"
+      size="$5"
+      marginLeft={paddingLeft}
       {...attributes}
       {...elementProps}
-      {...mouseProps}
       {...otherProps}
       // onDragOver={onDragOver}
     >
       {children}
-    </p>
+    </SizableText>
+  )
+}
+
+function Code({
+  children,
+  element,
+  attributes,
+  elementProps,
+  otherProps,
+  mode,
+  paddingLeft,
+}: any) {
+  let editor = useSlateStatic()
+  let path = findPath(element)
+  let lang = (element as CodeType).lang || ''
+
+  function setLanguage(lang: any) {
+    const {...newData} = (element as CodeType).data || {}
+    delete newData[HIGHLIGHTER]
+
+    Transforms.setNodes(editor, {lang, data: newData}, {at: path})
+  }
+
+  return (
+    <YStack
+      tag="pre"
+      {...attributes}
+      {...elementProps}
+      {...otherProps}
+      padding="$4"
+      borderRadius="$4"
+      margin={0}
+      elevation="$2"
+      marginLeft={paddingLeft}
+    >
+      <SizableText
+        size="$5"
+        tag="code"
+        fontFamily="$mono"
+        wordWrap="break-word"
+        whiteSpace="break-spaces"
+      >
+        {children}
+      </SizableText>
+      {mode == EditorMode.Draft ? (
+        <XStack
+          //@ts-ignore
+          contentEditable={false}
+          position="absolute"
+          top={-12}
+          right={-8}
+        >
+          <select
+            id="lang-selection"
+            name="lang-selection"
+            value={lang}
+            onChange={(e) => setLanguage(e.target.value as Lang)}
+          >
+            <option value="">Select a Language</option>
+            {BUNDLED_LANGUAGES.map((lang) => (
+              <option value={lang.id} key={lang.id}>
+                {lang.id}
+              </option>
+            ))}
+          </select>
+        </XStack>
+      ) : null}
+    </YStack>
+  )
+}
+
+function Blockquote({
+  children,
+  attributes,
+  elementProps,
+  otherProps,
+  paddingLeft,
+}: any) {
+  return (
+    <YStack
+      tag="blockquote"
+      {...attributes}
+      {...elementProps}
+      {...otherProps}
+      padding="$2"
+      paddingLeft="$4"
+      margin={0}
+      marginLeft={paddingLeft}
+      borderLeftWidth={5}
+      borderLeftColor="$color6"
+    >
+      <SizableText size="$7" fontWeight="500" color="$color9">
+        {children}
+      </SizableText>
+    </YStack>
   )
 }

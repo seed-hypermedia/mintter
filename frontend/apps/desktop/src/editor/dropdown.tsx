@@ -1,98 +1,116 @@
-import {css, styled} from '@app/stitches.config'
+import {
+  ButtonProps,
+  YStack,
+  SizableText,
+  SizableTextProps,
+  ListItem,
+} from '@mintter/ui'
+import {Button} from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
+import {forwardRef} from 'react'
 
-export const dropdownContentStyle = css({
-  minWidth: 220,
-  background: '$base-background-subtle',
-  boxShadow: '$menu',
-  borderRadius: '$2',
-  overflow: 'hidden',
-  zIndex: '$max',
+// export const dropdownContentStyle = css({
+//   minWidth: 220,
+//   background: '$base-background-subtle',
+//   boxShadow: '$menu',
+//   borderRadius: '$2',
+//   overflow: 'hidden',
+//   zIndex: '$max',
+// })
+
+const Content = ({children, ...props}: any) => {
+  return (
+    <DropdownMenuPrimitive.Content asChild {...props}>
+      <YStack
+        //@ts-ignore
+        contentEditable={false}
+        minWidth={220}
+        elevation="$5"
+        backgroundColor="$background"
+        borderRadius="$3"
+        overflow="hidden"
+        zIndex="$max"
+      >
+        {children}
+      </YStack>
+    </DropdownMenuPrimitive.Content>
+  )
+}
+
+var RightSlot = SizableText
+
+export const ElementDropdown = forwardRef((props: ButtonProps, ref: any) => {
+  return (
+    <DropdownMenuPrimitive.Trigger asChild ref={ref}>
+      <Button size="$2" {...props} />
+    </DropdownMenuPrimitive.Trigger>
+  )
 })
 
-export const dropdownItemStyle = css({
-  display: 'flex',
-  fontSize: '$2',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'start',
-  fontFamily: '$base',
-  gap: '$4',
-  paddingVertical: '$3',
-  paddingHorizontal: '$4',
-  borderRadius: '$2',
-  cursor: 'pointer',
+function Label(props: SizableTextProps) {
+  return (
+    <DropdownMenuPrimitive.Label asChild>
+      <SizableText
+        outlineStyle="none"
+        backgroundColor="$background"
+        size="$2"
+        paddingHorizontal="$4"
+        outlineColor="transparent"
+        {...props}
+      />
+    </DropdownMenuPrimitive.Label>
+  )
+}
 
-  '&:focus': {
-    outline: 'none',
-    backgroundColor: '$base-component-bg-normal',
-    cursor: 'pointer',
-  },
-
-  '&[data-disabled]': {
-    cursor: 'default',
-    opacity: 0.5,
-  },
-  '&[data-highlighted]': {
-    backgroundColor: '$primary-component-bg-normal',
-    color: '$primary-text-low',
-  },
-})
-
-export var dropdownLabel = css({
-  userSelect: 'none',
-})
-
-const DropdownContent = styled(
-  DropdownMenuPrimitive.Content,
-  dropdownContentStyle,
-)
-const DropdownSubContent = styled(
-  DropdownMenuPrimitive.SubContent,
-  dropdownContentStyle,
-)
-const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
-const DropdownSubTrigger = styled(
-  DropdownMenuPrimitive.SubTrigger,
-  dropdownItemStyle,
-)
-
-const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
-  height: 1,
-  backgroundColor: '$base-border-subtle',
-  margin: '0.5rem',
-})
-
-var RightSlot = styled('div', {
-  marginLeft: 'auto',
-  paddingLeft: 20,
-  color: '$base-text-low',
-  '[data-highlighted] > &': {color: '$primary-active'},
-  '[data-disabled] &': {color: '$primary-component-bg-normal'},
-})
+function Item({children, title, icon, iconAfter, ...props}: any) {
+  return (
+    <DropdownMenuPrimitive.Item {...props}>
+      <ListItem
+        hoverTheme
+        pressTheme
+        focusTheme
+        paddingVertical="$2"
+        paddingHorizontal="$4"
+        textAlign="left"
+        outlineColor="transparent"
+        space="$2"
+        title={
+          title ? <SizableText fontSize="600">{title}</SizableText> : undefined
+        }
+        icon={icon}
+        iconAfter={iconAfter}
+      >
+        {children}
+      </ListItem>
+    </DropdownMenuPrimitive.Item>
+  )
+}
 
 export const Dropdown = {
   ...DropdownMenuPrimitive,
-  Content: DropdownContent,
-  SubContent: DropdownSubContent,
-  Item: DropdownItem,
-  SubTrigger: DropdownSubTrigger,
-  Separator: StyledSeparator,
+  // Content,
+  Trigger: ElementDropdown,
+  Label,
+  Content,
+  // SubContent: DropdownSubContent,
+  Item,
+  // SubTrigger: DropdownSubTrigger,
+  // Separator: StyledSeparator,
   RightSlot,
 }
 
-export var ElementDropdown = styled('button', {
-  all: 'unset',
-  zIndex: 10,
-  padding: 0,
-  blockSize: '1.2rem',
-  inlineSize: '1.2rem',
-  borderRadius: '$2',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  '&:hover': {
-    cursor: 'pointer',
-    backgroundColor: '$base-component-bg-normal',
-  },
-})
+// export var ElementDropdown = styled('button', {
+//   all: 'unset',
+//   zIndex: 10,
+//   padding: 0,
+//   blockSize: '1.2rem',
+//   inlineSize: '1.2rem',
+//   borderRadius: '$2',
+//   display: 'flex',
+//   alignItems: 'center',
+//   justifyContent: 'center',
+//   '&:hover': {
+//     cursor: 'pointer',
+//     backgroundColor: '$base-component-bg-normal',
+//   },
+// })

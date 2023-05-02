@@ -3,19 +3,28 @@ import {
   createId,
   GroupingContent,
   isFlowContent,
+  isGroup,
   isGroupContent,
   isOrderedList,
+  isUnorderedList,
   ol,
+  OrderedList,
   statement,
   ul,
 } from '@mintter/shared'
+import {YStack} from '@mintter/ui'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, resetGroupingContent, toggleList} from '../utils'
+import {
+  BLOCK_GAP,
+  isFirstChild,
+  resetGroupingContent,
+  toggleList,
+} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 export const ELEMENT_ORDERED_LIST = 'orderedList'
@@ -179,19 +188,29 @@ export function Group({
     () => ({
       ...attributes,
       'data-element-type': (element as GroupingContent).type,
-      start: isOrderedList(element) ? element.start : 1,
+      start: isUnorderedList(element)
+        ? undefined
+        : (element as OrderedList).start || 1,
     }),
     [element, attributes],
   )
 
-  let Component = useMemo(
-    () => (isOrderedList(element) ? 'ol' : 'ul'),
-    [element],
-  )
+  let tag = useMemo(() => (isOrderedList(element) ? 'ol' : 'ul'), [element])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
   }
 
-  return <Component {...elementProps}>{children}</Component>
+  return (
+    <YStack
+      tag={tag}
+      marginLeft={isGroup(element) ? 0 : -32}
+      {...elementProps}
+      gap={BLOCK_GAP}
+      // borderWidth={1}
+      // borderColor="gray"
+    >
+      {children}
+    </YStack>
+  )
 }

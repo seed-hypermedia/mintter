@@ -47,11 +47,7 @@ export function useRenderElement() {
       case 'statement':
         return <Block id={element.id}>{children}</Block>
       case 'heading':
-        return (
-          <Block id={element.id} mb>
-            {children}
-          </Block>
-        )
+        return <Block id={element.id}>{children}</Block>
       case 'blockquote':
         return (
           <Block type={element.type} id={element.id}>
@@ -107,7 +103,8 @@ function Group({
       margin={0}
       padding={0}
       marginLeft="-$4"
-      paddingLeft="$4"
+      gap="$2"
+      // paddingLeft="$4"
       tag={tag}
       start={start}
       className={`group-type-${type}`}
@@ -175,7 +172,6 @@ function Block({
   const isHovered = id == hoveredId
   return (
     <YStack
-      marginVertical="$2"
       tag="li"
       {...props}
       className={`list-item`}

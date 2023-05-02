@@ -16,12 +16,13 @@ import {
   Statement as StatementType,
   text,
 } from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {ElementDrag} from '../drag-section'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, useBlockFlash} from '../utils'
+import {isFirstChild} from '../utils'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -239,11 +240,12 @@ function Statement({
   let {blockProps} = useBlockProps(element)
 
   if (mode == EditorMode.Embed) {
-    return (
-      <span {...attributes} {...blockProps}>
-        {children}
-      </span>
-    )
+    // return (
+    //   <SizableText size="$5" {...attributes} {...blockProps}>
+    //     {children}
+    //   </SizableText>
+    // )
+    return children
   }
 
   return (

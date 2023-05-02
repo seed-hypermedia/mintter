@@ -1,4 +1,4 @@
-import {Variable} from '@tamagui/web'
+import {createFont, Variable, GenericFont} from '@tamagui/web'
 import {createTamagui, createTokens} from 'tamagui'
 import {createInterFont} from '@tamagui/font-inter'
 import {shorthands} from '@tamagui/shorthands'
@@ -50,6 +50,36 @@ var bodyFont = createInterFont(
   {
     sizeSize: (size) => Math.round(size * 1.1),
     sizeLineHeight: (size) => Math.round(size * 1.1 + (size > 20 ? 10 : 10)),
+  },
+)
+
+const monoFont = createGenericFont(
+  `"ui-monospace", "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace`,
+  {
+    weight: {
+      1: '500',
+    },
+    size: {
+      1: 11,
+      2: 12,
+      3: 13,
+      4: 13,
+      5: 14,
+      6: 16,
+      7: 18,
+      8: 20,
+      9: 24,
+      10: 32,
+      11: 46,
+      12: 62,
+      13: 72,
+      14: 92,
+      15: 114,
+      16: 124,
+    },
+  },
+  {
+    sizeLineHeight: (x) => x * 1.5,
   },
 )
 
@@ -137,6 +167,7 @@ export var config = createTamagui({
   fonts: {
     heading: headingFont,
     body: bodyFont,
+    mono: monoFont,
   },
   themes: tamaguiDefaults.themes,
   tokens,
@@ -157,3 +188,46 @@ export var config = createTamagui({
     pointerCoarse: {pointer: 'coarse'},
   }),
 })
+
+const genericFontSizes = {
+  1: 10,
+  2: 11,
+  3: 12,
+  4: 14,
+  5: 15,
+  6: 16,
+  7: 20,
+  8: 22,
+  9: 30,
+  10: 42,
+  11: 52,
+  12: 62,
+  13: 72,
+  14: 92,
+  15: 114,
+  16: 124,
+} as const
+
+export function createGenericFont<
+  A extends GenericFont<keyof typeof genericFontSizes>,
+>(
+  family: string,
+  font: Partial<A> = {},
+  {
+    sizeLineHeight = (val) => val * 1.35,
+  }: {
+    sizeLineHeight?: (val: number) => number
+  } = {},
+): A {
+  const size = font.size || genericFontSizes
+  return createFont({
+    family,
+    size,
+    lineHeight: Object.fromEntries(
+      Object.entries(size).map(([k, v]) => [k, sizeLineHeight(+v)]),
+    ) as typeof size,
+    weight: {0: '300'},
+    letterSpacing: {4: 0},
+    ...(font as any),
+  })
+}

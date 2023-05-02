@@ -21,11 +21,13 @@ import {
 import {
   Adapt,
   Button,
+  ExternalLink,
   Fieldset,
   Input,
   Label,
   Link as LinkIcon,
   Popover,
+  SizableText,
   XStack,
   YGroup,
 } from '@mintter/ui'
@@ -306,23 +308,30 @@ function RenderMintterLink(
   return (
     <>
       <InlineChromiumBugfix />
-      <Text
+      <SizableText
         {...attributes}
         tag="a"
         fontFamily="inherit"
         letterSpacing="inherit"
+        // @ts-ignore
         href={props.element.url}
         // color={'#0E868E'}
         // color="$blue"
         // @ts-ignore not sure what the Text ref is..
         ref={ref}
-        {...linkProps}
+        size="$5"
         onClick={onClick}
         display="inline"
+        fontWeight="500"
+        color="$color9"
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
-        data-highlight={blockRef ? `${documentId}/${blockRef}` : documentId}
-        data-reference={props.element.url}
+        hoverTheme
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: '$color4',
+        }}
+        {...linkProps}
       />
       <InlineChromiumBugfix />
     </>
@@ -345,31 +354,38 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     <Tooltip
       inline
       content={
-        <span>
-          {props.element.url}
-          <Icon size="1" name="ExternalLink" color="opposite" />
-        </span>
+        <XStack gap="$1" alignItems="center">
+          <SizableText size="$1">{props.element.url}</SizableText>
+          <ExternalLink size={12} />
+        </XStack>
       }
     >
       <>
         <InlineChromiumBugfix />
 
-        <Text
+        <SizableText
           tag="a"
           // color="$color8"
           fontFamily="inherit"
           letterSpacing="inherit"
           // @ts-ignore add the href prop to this element
           href={props.element.url}
-          color={props.hintPureWebLink ? '$color10' : '$color'}
           display="inline"
           // @ts-ignore not sure what the Text ref is..
           ref={ref}
+          color={props.hintPureWebLink ? '$blue10' : '$color'}
+          fontWeight="500"
+          hoverTheme
+          size="$5"
+          hoverStyle={{
+            cursor: 'pointer',
+            backgroundColor: '$blue4',
+          }}
           onClick={onClick}
           {...props.attributes}
         >
           {props.children}
-        </Text>
+        </SizableText>
         <InlineChromiumBugfix />
       </>
     </Tooltip>

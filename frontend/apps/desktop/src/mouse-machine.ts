@@ -82,6 +82,7 @@ export var mouseMachine = createMachine(
             on: {
               'MOUSE.MOVE': [
                 {
+                  internal: true,
                   actions: ['assignCurrentBound'],
                   description:
                     'will capture the mouse movement on the pag emain component and store in in context',
@@ -200,17 +201,13 @@ export var mouseMachine = createMachine(
           return event.observer
         },
       }),
-      assignCurrentBound: assign((context, event) => {
-        let currentBound = context.visibleBounds.find(([, rect]) =>
-          event.type == 'MOUSE.MOVE'
-            ? event.position >= rect.top && event.position <= rect.bottom
-            : false,
-        )
-
-        return {
-          currentBound,
-          // highlightRef: currentBound ? currentBound[1].dataset.highlight : '',
-        }
+      assignCurrentBound: assign({
+        currentBound: (context, event) =>
+          context.visibleBounds.find(([, rect]) =>
+            event.type == 'MOUSE.MOVE'
+              ? event.position >= rect.top && event.position <= rect.bottom
+              : false,
+          ),
       }),
       blockObserve: (context, event) => {
         context.observer?.observe(event.entry)

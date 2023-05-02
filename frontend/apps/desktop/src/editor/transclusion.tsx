@@ -13,7 +13,6 @@ import {
   isEmbed,
   Publication,
 } from '@mintter/shared'
-import {XStack} from '@mintter/ui'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
@@ -23,10 +22,10 @@ import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
 
-export const ELEMENT_EMBED = 'embed'
+export const ELEMENT_TRANSCLUSION = 'embed'
 
-export const createEmbedPlugin = (): EditorPlugin => ({
-  name: ELEMENT_EMBED,
+export const createTransclusionPlugin = (): EditorPlugin => ({
+  name: ELEMENT_TRANSCLUSION,
   configureEditor(editor) {
     const {isVoid, isInline} = editor
 
@@ -87,14 +86,13 @@ function Embed({
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
   let client = useQueryClient()
   let [state] = useMachine(() =>
-    // @ts-ignore
     createEmbedMachine({url: (element as EmbedType).url, client}),
   )
   let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed), [])
   let selected = useSelected()
   let focused = useFocused()
 
-  function onOpenInNewWindow(event: MouseEvent<HTMLElement>) {
+  async function onOpenInNewWindow(event: MouseEvent<HTMLElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
     // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
@@ -139,23 +137,14 @@ function Embed({
   }
 
   return (
-    <XStack
-      tag="q"
+    <q
       cite={(element as EmbedType).url}
       {...attributes}
-      flex={0}
-      display="inline"
-      backgroundColor={focused && selected ? '$color4' : 'transparent'}
-      // @ts-ignore
+      className={focused && selected ? 'selected' : undefined}
       contentEditable={false}
-      hoverStyle={{
-        cursor: 'pointer',
-        backgroundColor: '$color4',
-      }}
-      borderRadius="$1"
       onClick={onOpenInNewWindow}
-      onPointerEnter={mouseEnter}
-      onPointerLeave={mouseLeave}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
     >
       <Editor
         as="span"
@@ -168,7 +157,7 @@ function Embed({
         readOnly
       />
       {children}
-    </XStack>
+    </q>
   )
 }
 
@@ -194,7 +183,7 @@ function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
     {
       id: 'transclusion-machine',
       predictableActionArguments: true,
-      tsTypes: {} as import('./embed.typegen').Typegen0,
+      tsTypes: {} as import('./transclusion.typegen').Typegen0,
       schema: {
         context: {} as EmbedMachineContext,
         services: {} as EmbedMachineServices,

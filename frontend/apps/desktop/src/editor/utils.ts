@@ -1,3 +1,4 @@
+import {FontSizeTokens, SizeTokens} from '@mintter/ui'
 import {useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {
@@ -618,3 +619,15 @@ export function getSelectedNodes(
 
   return nodes
 }
+
+export const headingMap: {
+  [key: number]: {tag: string; size: number}
+} = {
+  2: {tag: 'h2', size: 56},
+  4: {tag: 'h3', size: 40},
+  6: {tag: 'h4', size: 32},
+  8: {tag: 'h5', size: 24},
+  10: {tag: 'h6', size: 16},
+}
+
+export const BLOCK_GAP: SizeTokens = '$3'

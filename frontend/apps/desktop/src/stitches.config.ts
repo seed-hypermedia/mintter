@@ -485,13 +485,6 @@ export const globalStyles = globalCss({
       fontSize: '$2',
     },
   },
-  p: {
-    fontFamily: '$alt',
-    fontSize: '$3',
-    '@bp1': {
-      // fontSize: '$4',
-    },
-  },
   blockquote: {
     marginInlineStart: 0,
     paddingInlineStart: '$5',
@@ -511,10 +504,6 @@ export const globalStyles = globalCss({
     marginInlineEnd: '$4',
     fontSize: '$4',
     whiteSpace: 'pre',
-  },
-  '::selection': {
-    backgroundColor: '$primary-active',
-    color: 'white',
   },
 })
 

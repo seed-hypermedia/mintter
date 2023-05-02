@@ -1,67 +1,100 @@
-import {deleteFileMachine} from '@app/delete-machine'
-import {debug} from '@app/utils/logger'
-import {Alert} from '@components/alert'
-import {overlayStyles} from '@components/dialog-styles'
-import {useActor} from '@xstate/react'
-import {MouseEvent, PropsWithChildren} from 'react'
-import {InterpreterFrom} from 'xstate'
+import {ReactNode} from 'react'
+import {
+  AlertDialog,
+  AlertDialogContentProps,
+  AlertDialogProps,
+  HeadingProps,
+  ParagraphProps,
+  XStack,
+  XStackProps,
+  YStack,
+} from '@mintter/ui'
 
-export type DeleteDialogProps = PropsWithChildren<{
+export type DeleteDialogProps = AlertDialogProps & {
+  dialogContentProps?: AlertDialogContentProps
+  trigger?: (props: {onPress: () => void}) => JSX.Element
+  cancelButton?: ReactNode
+  actionButton?: ReactNode
+  contentStackProps?: XStackProps
+  actionStackProps?: XStackProps
   title: string
+  titleProps?: HeadingProps
   description: string
-  deleteRef: InterpreterFrom<typeof deleteFileMachine>
-}>
+  descriptionProps?: ParagraphProps
+}
 
 export function DeleteDialog({
-  children,
-  deleteRef,
+  trigger,
+  cancelButton,
+  actionButton,
+  actionStackProps,
+  titleProps,
+  descriptionProps,
   title,
   description,
+  contentStackProps,
+  dialogContentProps,
+  ...dialogProps
 }: DeleteDialogProps) {
-  let [state, send] = useActor(deleteRef)
   return (
-    <Alert.Root
-      open={state.matches('open')}
-      onOpenChange={(newVal: boolean) => {
-        debug('TOGGLE ALERT', state.value, newVal)
-        newVal ? send('DELETE.OPEN') : send('DELETE.CANCEL')
-      }}
-    >
-      <Alert.Trigger asChild>{children}</Alert.Trigger>
-      <Alert.Portal>
-        <Alert.Overlay className={overlayStyles()} />
-        <Alert.Content>
-          <Alert.Title color="danger" data-testid="delete-dialog-title">
-            {title}
-          </Alert.Title>
-          <Alert.Description>{description}</Alert.Description>
-          {state.context.errorMessage && (
-            <Alert.Description data-testid="delete-dialog-error" color="danger">
-              Something went wrong on deletion
-            </Alert.Description>
-          )}
-          <Alert.Actions>
-            <Alert.Cancel
-              data-testid="delete-dialog-cancel"
-              disabled={state.matches('open.deleting')}
-            >
-              Cancel
-            </Alert.Cancel>
-            <Alert.Action
-              color="danger"
-              data-testid="delete-dialog-confirm"
-              disabled={state.matches('open.deleting')}
-              onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation()
-                e.preventDefault()
-                send('DELETE.CONFIRM')
-              }}
-            >
-              Delete
-            </Alert.Action>
-          </Alert.Actions>
-        </Alert.Content>
-      </Alert.Portal>
-    </Alert.Root>
+    <AlertDialog {...dialogProps}>
+      {trigger && (
+        <AlertDialog.Trigger asChild>
+          {trigger({onPress: () => {}})}
+        </AlertDialog.Trigger>
+      )}
+
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay
+          key="overlay"
+          animation="quick"
+          opacity={0.5}
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
+        />
+        <AlertDialog.Content
+          elevate
+          key="content"
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+          exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+          x={0}
+          scale={1}
+          opacity={1}
+          y={0}
+          padding={0}
+          {...dialogContentProps}
+        >
+          <YStack
+            space
+            backgroundColor="$background"
+            padding="$4"
+            borderRadius="$3"
+            {...contentStackProps}
+          >
+            <AlertDialog.Title {...titleProps}>{title}</AlertDialog.Title>
+            <AlertDialog.Description {...descriptionProps}>
+              {description}
+            </AlertDialog.Description>
+
+            <XStack space="$3" justifyContent="flex-end" {...actionStackProps}>
+              {cancelButton && (
+                <AlertDialog.Cancel asChild>{cancelButton}</AlertDialog.Cancel>
+              )}
+              {actionButton && (
+                <AlertDialog.Action asChild>{actionButton}</AlertDialog.Action>
+              )}
+            </XStack>
+          </YStack>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog>
   )
 }

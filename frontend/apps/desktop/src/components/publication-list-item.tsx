@@ -1,7 +1,7 @@
 import {publicationsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown} from '@app/editor/dropdown'
-import {prefetchPublication} from '@app/models/documents'
+import {prefetchPublication, useDeletePublication} from '@app/models/documents'
 import {queryKeys} from '@app/models/query-keys'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
@@ -30,6 +30,7 @@ import {
   Separator,
 } from '@mintter/ui'
 import {AccountLinkAvatar} from './account-link-avatar'
+import {usePopoverState} from '@app/use-popover-state'
 
 export function PublicationListItem({
   publication,
@@ -42,34 +43,16 @@ export function PublicationListItem({
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
-  const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
   const docId = publication.document?.id
-  if (!docId) throw new Error('PublicationListItem requires id')
-
-  const deleteService = useInterpret(
-    () =>
-      deleteFileMachine.withContext({
-        documentId: publication.document!.id,
-        version: publication.version,
-        errorMessage: '',
-      }),
-    {
-      services: {
-        performDelete: (context) => {
-          return publicationsClient.deletePublication({
-            documentId: context.documentId,
-          })
-        },
-      },
-      actions: {
-        persistDelete: () => {
-          client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-        },
-      },
+  const popoverState = usePopoverState()
+  const dialogState = usePopoverState()
+  const deletePub = useDeletePublication({
+    onSuccess: () => {
+      dialogState.onOpenChange(false)
     },
-  )
-  const [deleteState] = useActor(deleteService)
+  })
+  if (!docId) throw new Error('PublicationListItem requires id')
 
   function goToItem(event: MouseEvent) {
     event.preventDefault()
@@ -144,32 +127,20 @@ export function PublicationListItem({
           : '...'}
       </Text>
       <XStack>
-        <Dropdown.Root>
-          <Dropdown.Trigger asChild>
-            <Button size="$1" circular data-trigger>
-              <MoreHorizontal size={12} />
-            </Button>
-          </Dropdown.Trigger>
+        <Dropdown.Root {...popoverState}>
+          <Dropdown.Trigger icon={MoreHorizontal} circular data-trigger />
           <Dropdown.Portal>
             <Dropdown.Content
               align="end"
               data-testid="library-item-dropdown-root"
-              hidden={deleteState.matches('open')}
             >
-              <Dropdown.Item data-testid="copy-item" onSelect={onCopy} asChild>
-                <ListItem
-                  icon={Copy}
-                  size="$2"
-                  hoverTheme
-                  pressTheme
-                  paddingVertical="$2"
-                  paddingHorizontal="$4"
-                  textAlign="left"
-                  space="$0"
-                >
-                  Copy Document ID
-                </ListItem>
-              </Dropdown.Item>
+              <Dropdown.Item
+                data-testid="copy-item"
+                onSelect={onCopy}
+                asChild
+                title="Copy Document ID"
+                icon={Copy}
+              />
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() =>
@@ -179,49 +150,47 @@ export function PublicationListItem({
                     versionId: publication.version,
                   })
                 }
-                asChild
-              >
-                <ListItem
-                  icon={ExternalLink}
-                  size="$2"
-                  hoverTheme
-                  pressTheme
-                  paddingVertical="$2"
-                  paddingHorizontal="$4"
-                  textAlign="left"
-                  space="$0"
-                >
-                  Open in new Window
-                </ListItem>
-              </Dropdown.Item>
+                title="Open in new Window"
+                icon={ExternalLink}
+              />
               <Separator />
-              <DeleteDialog
-                deleteRef={deleteService}
-                title="Delete document"
-                description="Are you sure you want to delete this document? This action is not reversible."
-              >
-                <Dropdown.Item
-                  data-testid="delete-item"
-                  onSelect={(e) => e.preventDefault()}
-                  asChild
-                >
-                  <ListItem
-                    icon={Delete}
-                    size="$2"
-                    hoverTheme
-                    pressTheme
-                    paddingVertical="$2"
-                    paddingHorizontal="$4"
-                    textAlign="left"
-                    space="$0"
-                  >
-                    Delete Document
-                  </ListItem>
-                </Dropdown.Item>
-              </DeleteDialog>
+              <Dropdown.Item
+                title="Delete Publication"
+                onSelect={() => {
+                  popoverState.onOpenChange(false)
+                  dialogState.onOpenChange(true)
+                }}
+                icon={Delete}
+              />
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
+        <DeleteDialog
+          {...dialogState}
+          title="Delete document"
+          description="Are you sure you want to delete this document? This action is not reversible."
+          cancelButton={
+            <Button
+              onPress={() => {
+                dialogState.onOpenChange(false)
+              }}
+              chromeless
+            >
+              Cancel
+            </Button>
+          }
+          actionButton={
+            <Button
+              theme="red"
+              onPress={() => {
+                deletePub.mutate(docId)
+                dialogState.onOpenChange(false)
+              }}
+            >
+              Delete
+            </Button>
+          }
+        />
       </XStack>
     </Button>
   )

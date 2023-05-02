@@ -4,35 +4,27 @@ import {
   createId,
   isCode,
   isParagraph,
-  paragraph,
   statement,
   text,
+  paragraph,
 } from '@mintter/shared'
-import {useCurrentTheme} from '@app/theme'
-import {useEffect} from 'react'
-import {
-  BUNDLED_LANGUAGES,
-  getHighlighter,
-  Highlighter,
-  Lang,
-  setCDN,
-} from 'shiki'
+
+import {getHighlighter, Highlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
+import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
-import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
-import {useBlockConversations} from '@app/editor/comments/conversations-context'
+import {lowerPoint, resetFlowContent} from '../utils'
 
-import {BlockTools} from '@app/editor/blocktools'
-import {ElementDrag} from '../drag-section'
+export const HIGHLIGHTER = Symbol('shiki highlighter')
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
-const HIGHLIGHTER = Symbol('shiki highlighter')
+
 // TODO make this user configurable in the future
 const THEMES = {
   light: 'github-light',
@@ -85,8 +77,12 @@ export const createCodePlugin = (): EditorPlugin => {
       return (ev) => {
         if (ev.key == 'Enter') {
           // TODO horacio: cancel this when inside block that is a child of a code block
+          const p = Editor.above(editor, {match: isParagraph})
           const code = Editor.above(editor, {match: isCode})
-          if (code) {
+
+          if (p && code) {
+            let parent = Path.parent(p[1])
+            if (!Path.equals(parent, code[1])) return
             ev.preventDefault()
             if (ev.shiftKey) {
               const [, codePath] = code
@@ -94,7 +90,12 @@ export const createCodePlugin = (): EditorPlugin => {
                 let newPath = Path.next(codePath)
                 Transforms.insertNodes(
                   editor,
-                  statement({id: createId()}, [paragraph([text('')])]),
+                  statement(
+                    {
+                      id: createId(),
+                    },
+                    [paragraph([text('')])],
+                  ),
                   {
                     at: newPath,
                   },
@@ -197,69 +198,20 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  let editor = useSlateStatic()
-  let path = findPath(element)
   let {blockProps} = useBlockProps(element)
-  let lang = (element as CodeType).lang || ''
-
-  let inRoute = useBlockFlash(attributes.ref, element.id)
-
-  function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
-    const {...newData} = (element as CodeType).data || {}
-    delete newData[HIGHLIGHTER]
-
-    Transforms.setNodes(
-      editor,
-      {lang: e.target.value as Lang, data: newData},
-      {at: path},
-    )
-  }
-
-  const theme = useCurrentTheme()
-
-  useEffect(() => {
-    // TODO make this user configurable in the future
-    const codeTheme = THEMES[theme]
-
-    const {...newData} = (element as CodeType).data || {}
-    delete newData[HIGHLIGHTER]
-
-    Transforms.setNodes(
-      editor,
-      {data: {...newData, theme: codeTheme}},
-      {at: path},
-    )
-  }, [theme, editor])
 
   if (mode == EditorMode.Embed) {
-    return (
-      <span {...attributes} {...blockProps}>
-        {children}
-      </span>
-    )
+    // return (
+    //   <SizableText size="$5" {...attributes} {...blockProps}>
+    //     {children}
+    //   </SizableText>
+    // )
+    return children
   }
 
   return (
     <ElementDrag element={element} attributes={attributes}>
       {children}
-      {/* <BlockTools block={element as CodeType} /> */}
-      {mode == EditorMode.Draft ? (
-        <div className="code-selector-wrapper" contentEditable={false}>
-          <select
-            id="lang-selection"
-            name="lang-selection"
-            value={lang}
-            onChange={setLanguage}
-          >
-            <option value="">Select a Language</option>
-            {BUNDLED_LANGUAGES.map((lang) => (
-              <option value={lang.id} key={lang.id}>
-                {lang.id}
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : null}
     </ElementDrag>
   )
 }

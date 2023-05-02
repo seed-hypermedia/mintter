@@ -26,11 +26,10 @@ export function useBlockProps(element: FlowContent) {
 
   function memoizedProps() {
     return {
+      blockPath: path,
       blockProps: {
         'data-element-type': element.type,
         'data-block-id': element.id,
-        'data-parent-group': parentGroup?.[0].type,
-        'data-revision': element.revision,
       },
       parentNode: parentGroup?.[0],
       parentPath: parentGroup?.[1],
@@ -60,19 +59,14 @@ export function usePhrasingProps(
       at: path,
     })
 
-    const version = route.key == 'publication' ? route.versionId : undefined
-    const draftId = route.key == 'draft' ? route.draftId : undefined
-    const docId = route.key == 'publication' ? route.documentId : undefined
-    const highlightDocId = docId || draftId
+    // const version = route.key == 'publication' ? route.versionId : undefined
+    // const draftId = route.key == 'draft' ? route.draftId : undefined
+    // const docId = route.key == 'publication' ? route.documentId : undefined
 
     let elementProps = {
       'data-element-type': element.type,
       'data-parent-block': parentBlock?.[0].id,
       'data-parent-group': parentGroup?.[0].type,
-      'data-highlight': `${highlightDocId}/${parentBlock?.[0].id}`,
-      'data-reference': version
-        ? `${MINTTER_LINK_PREFIX}${docId}?v=${version}#${parentBlock?.[0].id}`
-        : undefined,
     }
 
     return {
@@ -97,8 +91,6 @@ export function usePhrasingProps(
   //     return {
   //       elementProps: {
   //         'data-element-type': element.type,
-  //         'data-reference': `${docId}/${parentBlock?.[0].id}`,
-  //         'data-highlight':
   //       },
   //       parentNode: parentBlock?.[0],
   //       parentPath: parentBlock?.[1],

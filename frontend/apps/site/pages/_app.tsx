@@ -25,7 +25,7 @@ import type {AppProps} from 'next/app'
 import {useMemo, useState} from 'react'
 import {trpc} from '../trpc'
 import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
-import tamaguiConfig from 'tamagui.config'
+import tamaguiConfig from '../tamagui.config'
 import {Toaster} from 'react-hot-toast'
 
 export default trpc.withTRPC(App)
@@ -39,7 +39,7 @@ function App({Component, pageProps}: AppProps) {
   // memo to avoid re-render on dark/light change
   const contents = useMemo(() => {
     return <Component {...pageProps} />
-  }, [pageProps])
+  }, [Component, pageProps])
 
   return (
     <QueryClientProvider client={client}>

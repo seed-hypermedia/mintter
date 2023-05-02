@@ -9,12 +9,13 @@ import {
   isStaticParagraph,
   statement,
 } from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {ElementDrag} from '../drag-section'
 import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, resetFlowContent, useBlockFlash} from '../utils'
+import {isFirstChild, resetFlowContent} from '../utils'
 
 export const ELEMENT_HEADING = 'heading'
 
@@ -115,11 +116,12 @@ function Heading({
   //@ts-ignore
   let {blockProps} = useBlockProps(element)
   if (mode == EditorMode.Embed) {
-    return (
-      <span {...attributes} {...blockProps}>
-        {children}
-      </span>
-    )
+    // return (
+    //   <SizableText size="$5" {...attributes} {...blockProps}>
+    //     {children}
+    //   </SizableText>
+    // )
+    return children
   }
 
   return (

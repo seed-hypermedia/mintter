@@ -1,5 +1,6 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {prefetchDraft, useDraftList} from '@app/models/documents'
+import {usePopoverState} from '@app/use-popover-state'
 import {DraftRoute, useNavigate} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
@@ -10,9 +11,7 @@ import {
   Button,
   ButtonText,
   Container,
-  Delete,
   ExternalLink,
-  ListItem,
   MainWrapper,
   MoreHorizontal,
   Separator,
@@ -58,6 +57,10 @@ export function DraftListItem({draft}: {draft: Document}) {
   const spawn = useNavigate('spawn')
   let client = useQueryClient()
   let title = draft.title || 'Untitled Document'
+  const popoverState = usePopoverState()
+  const {deleteDialog, ...dialogState} = useDeleteDraftDialog({
+    id: draft.id,
+  })
 
   function goToItem(event: React.MouseEvent) {
     event.preventDefault()
@@ -95,12 +98,9 @@ export function DraftListItem({draft}: {draft: Document}) {
         {draft.updateTime ? formattedDate(draft.updateTime) : '...'}
       </Text>
       <XStack>
-        <Dropdown.Root>
-          <Dropdown.Trigger asChild>
-            <Button size="$1" circular data-trigger>
-              <MoreHorizontal size={12} />
-            </Button>
-          </Dropdown.Trigger>
+        <Dropdown.Root {...popoverState}>
+          <Dropdown.Trigger circular data-trigger icon={MoreHorizontal} />
+
           <Dropdown.Portal>
             <Dropdown.Content
               align="end"
@@ -112,51 +112,21 @@ export function DraftListItem({draft}: {draft: Document}) {
                   spawn({key: 'draft', draftId: draft.id})
                 }}
                 asChild
-              >
-                <ListItem
-                  icon={ExternalLink}
-                  size="$2"
-                  hoverTheme
-                  pressTheme
-                  paddingVertical="$2"
-                  paddingHorizontal="$4"
-                  textAlign="left"
-                  space="$0"
-                >
-                  Open in new Window
-                </ListItem>
-              </Dropdown.Item>
-              {useDeleteDraftDialog(draft.id, ({onClick}) => {
-                return (
-                  <>
-                    <Separator />
-                    <Dropdown.Item
-                      data-testid="delete-item"
-                      onSelect={(e) => {
-                        e.preventDefault()
-                        onClick()
-                      }}
-                      asChild
-                    >
-                      <ListItem
-                        icon={Delete}
-                        size="$2"
-                        hoverTheme
-                        pressTheme
-                        paddingVertical="$2"
-                        paddingHorizontal="$4"
-                        textAlign="left"
-                        space="$0"
-                      >
-                        Delete Draft
-                      </ListItem>
-                    </Dropdown.Item>
-                  </>
-                )
-              })}
+                title="Open in new Window"
+                icon={ExternalLink}
+              />
+              <Separator />
+              <Dropdown.Item
+                title="new delete"
+                onSelect={() => {
+                  popoverState.onOpenChange(false)
+                  dialogState.onOpenChange(true)
+                }}
+              />
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
+        {deleteDialog}
       </XStack>
     </Button>
   )

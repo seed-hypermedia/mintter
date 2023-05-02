@@ -2,6 +2,7 @@ import {Dropdown} from '@app/editor/dropdown'
 import {useAccount} from '@app/models/accounts'
 import {prefetchPublication, usePublication} from '@app/models/documents'
 import {useSitePublications} from '@app/models/sites'
+import {usePopoverState} from '@app/use-popover-state'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
 import {EmptyList} from '@components/empty-list'
@@ -18,7 +19,6 @@ import {
   Container,
   Copy,
   Delete,
-  ListItem,
   MainWrapper,
   MoreHorizontal,
   Separator,
@@ -97,10 +97,12 @@ function WebPublicationListItem({
       versionId: webPub.version,
     })
   }
-  const [unpublishDialog, onUnpublishClick] = useUnpublishDialog(
+  const popoverState = usePopoverState()
+  const {deleteDialog, ...dialogState} = useUnpublishDialog({
+    pub: webPub,
     hostname,
-    webPub,
-  )
+  })
+
   const {data: publication} = usePublication({
     documentId: webPub.documentId,
     versionId: webPub.version,
@@ -159,12 +161,8 @@ function WebPublicationListItem({
           : '...'}
       </Text>
       <XStack>
-        <Dropdown.Root>
-          <Dropdown.Trigger asChild>
-            <Button size="$1" circular data-trigger>
-              <MoreHorizontal size={12} />
-            </Button>
-          </Dropdown.Trigger>
+        <Dropdown.Root {...popoverState}>
+          <Dropdown.Trigger circular data-trigger icon={MoreHorizontal} />
           <Dropdown.Portal>
             <Dropdown.Content
               align="start"
@@ -179,46 +177,24 @@ function WebPublicationListItem({
                   toast.success('Document ID copied successfully')
                 }}
                 asChild
-              >
-                <ListItem
-                  icon={Copy}
-                  size="$2"
-                  hoverTheme
-                  pressTheme
-                  paddingVertical="$2"
-                  paddingHorizontal="$4"
-                  textAlign="left"
-                  space="$0"
-                >
-                  Copy Document ID
-                </ListItem>
-              </Dropdown.Item>
+                icon={Copy}
+                title="Copy Document ID"
+              />
               <Separator />
               <Dropdown.Item
                 data-testid="delete-item"
-                onSelect={(e) => {
-                  e.preventDefault()
-                  onUnpublishClick()
+                onSelect={() => {
+                  popoverState.onOpenChange(false)
+                  dialogState.onOpenChange(true)
                 }}
                 asChild
-              >
-                <ListItem
-                  icon={Delete}
-                  size="$2"
-                  hoverTheme
-                  pressTheme
-                  paddingVertical="$2"
-                  paddingHorizontal="$4"
-                  textAlign="left"
-                  space="$0"
-                >
-                  Un-Publish Document
-                </ListItem>
-              </Dropdown.Item>
-              {unpublishDialog}
+                title="Un-Publish Document"
+                icon={Delete}
+              />
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
+        {deleteDialog}
       </XStack>
     </Button>
   )

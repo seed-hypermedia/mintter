@@ -1,68 +1,56 @@
 import {useDeleteDraft} from '@app/models/documents'
-import {ReactElement, ReactNode, useState} from 'react'
-import {Alert} from './alert'
-import {overlayStyles} from './dialog-styles'
+import {usePopoverState} from '@app/use-popover-state'
+import {DeleteDialog} from '@components/delete-dialog'
+import {Button, XStack} from '@mintter/ui'
+import {ReactNode} from 'react'
 
-export function useDeleteDraftDialog(
-  docId: string | null,
-  renderTrigger: (props: {onClick: () => void}) => JSX.Element,
-  onSuccess?: () => void,
-): ReactElement | null {
-  const [isOpen, setIsOpen] = useState(false)
+export function useDeleteDraftDialog({
+  id = null,
+  trigger,
+  onSuccess,
+}: {
+  id: string | null
+  trigger?: (props: {onPress: () => void}) => JSX.Element
+  onSuccess?: () => void
+}) {
+  const dialogState = usePopoverState()
   const deleteDraft = useDeleteDraft({
     onSuccess: () => {
-      setIsOpen(false)
+      dialogState.onOpenChange(false)
       onSuccess?.()
     },
   })
-  if (!docId) return null
-  return (
-    <Alert.Root open={isOpen} onOpenChange={setIsOpen}>
-      <Alert.Trigger asChild>
-        {renderTrigger({onClick: () => {}})}
-      </Alert.Trigger>
-      <Alert.Portal>
-        <Alert.Overlay className={overlayStyles()} />
-        <Alert.Content>
-          <>
-            <Alert.Title color="danger" data-testid="delete-draft-dialog-title">
-              Discard Draft
-            </Alert.Title>
-            <Alert.Description>
-              Permanently delete this draft document?
-            </Alert.Description>
-            {deleteDraft.error && (
-              <Alert.Description
-                data-testid="delete-draft-dialog-error"
-                color="danger"
-              >
-                Something went wrong on deletion
-              </Alert.Description>
-            )}
-            <Alert.Actions>
-              <Alert.Cancel
-                data-testid="delete-draft-dialog-cancel"
-                disabled={deleteDraft.isLoading}
-              >
-                Cancel
-              </Alert.Cancel>
-              <Alert.Action
-                color="danger"
-                data-testid="delete-draft-dialog-confirm"
-                disabled={deleteDraft.isLoading}
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  deleteDraft.mutate(docId)
-                  // DO MUTATE
-                }}
-              >
-                Delete
-              </Alert.Action>
-            </Alert.Actions>
-          </>
-        </Alert.Content>
-      </Alert.Portal>
-    </Alert.Root>
-  )
+
+  return {
+    ...dialogState,
+    deleteDialog: !id ? null : (
+      <DeleteDialog
+        {...dialogState}
+        trigger={trigger}
+        title="Discard Draft"
+        description="Permanently delete this draft document?"
+        cancelButton={
+          <Button
+            onPress={() => {
+              dialogState.onOpenChange(false)
+            }}
+            chromeless
+          >
+            Cancel
+          </Button>
+        }
+        actionButton={
+          <Button
+            theme="red"
+            onPress={() => {
+              deleteDraft.mutate(id)
+              dialogState.onOpenChange(false)
+            }}
+          >
+            Delete
+          </Button>
+        }
+      />
+    ),
+  }
 }

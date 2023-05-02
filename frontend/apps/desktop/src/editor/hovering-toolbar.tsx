@@ -7,7 +7,6 @@ import {appInvalidateQueries} from '@app/query-client'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
@@ -22,7 +21,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {TextArea} from '@mintter/ui'
+import {Copy, TextArea, Button, ImageIcon, Comment, XStack} from '@mintter/ui'
 import {css} from '@stitches/react'
 import {useInterpret, useSelector} from '@xstate/react'
 import {
@@ -93,7 +92,7 @@ export function EditorHoveringToolbar() {
         <FormatButton format={MARK_EMPHASIS} icon="Emphasis" />
         <FormatButton format={MARK_UNDERLINE} icon="Underline" />
         <FormatButton format={MARK_CODE} icon="Code" />
-        <Tooltip content={<span>Text color</span>}>
+        <Tooltip content="Text color">
           {!codeInSelection ? (
             <input
               type="color"
@@ -141,24 +140,9 @@ function FormatButton({
 
   return (
     <Button
-      variant="ghost"
-      size="0"
-      color="muted"
-      css={
-        isMarkActive(editor, format)
-          ? {
-              backgroundColor: '$base-component-bg-active',
-              color: '$base-text-high',
-              '&:hover': {
-                backgroundColor: '$base-border-normal !important',
-                color: '$base-text-high !important',
-              },
-            }
-          : {
-              // noop
-            }
-      }
-      onClick={() => toggleFormat(editor, format)}
+      size="$1"
+      themeInverse={isMarkActive(editor, format)}
+      onPress={() => toggleFormat(editor, format)}
     >
       <Icon name={icon} size="2" />
     </Button>
@@ -168,25 +152,14 @@ function FormatButton({
 function InsertImageButton() {
   const editor = useSlate()
 
-  function insertImageHandler(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) {
-    event.preventDefault()
-
+  function insertImageHandler() {
     let img = image({url: ''}, [text('')])
     Transforms.insertNodes(editor, [text(''), img, text('')])
   }
 
   return (
     <Tooltip content={<span>Insert Image</span>}>
-      <Button
-        onClick={insertImageHandler}
-        variant="ghost"
-        size="0"
-        color="muted"
-      >
-        <Icon name="Image" size="2" />
-      </Button>
+      <Button onPress={insertImageHandler} size="$1" icon={ImageIcon} />
     </Tooltip>
   )
 }
@@ -294,22 +267,18 @@ export function EditorHoveringActions({
   css: BlockCSS
 }) {
   return (
-    <Box
+    <XStack
+      //@ts-ignore
       contentEditable={false}
-      css={{
-        background: '$base-background-normal',
-        borderRadius: '$2',
-        display: 'flex',
-        boxShadow: '$menu',
-        ...css,
-      }}
+      backgroundColor="$backgroundStrong"
+      borderRadius="$2"
+      elevation="$3"
     >
       {onCopyLink && (
         <Button
-          variant="ghost"
-          color="primary"
-          size="1"
-          onClick={() => {
+          size="$2"
+          icon={Copy}
+          onPress={() => {
             let link = onCopyLink()
             if (link) {
               copyTextToClipboard(link).then(() => {
@@ -321,39 +290,12 @@ export function EditorHoveringActions({
               })
             }
           }}
-          css={{
-            background: '$base-background-normal',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$2',
-            '&:hover': {
-              background: '$base-background-normal',
-            },
-          }}
-        >
-          <Icon name="Copy" />
-        </Button>
+        />
       )}
       {onComment && features.comments && (
-        <Button
-          variant="ghost"
-          color="primary"
-          size="1"
-          onClick={onComment}
-          css={{
-            background: '$base-background-normal',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$2',
-            '&:hover': {
-              background: '$base-background-normal',
-            },
-          }}
-        >
-          <Icon name="MessageBubble" />
-        </Button>
+        <Button size="$1" onPress={onComment} icon={Comment} />
       )}
-    </Box>
+    </XStack>
   )
 }
 
@@ -630,9 +572,7 @@ export function CommentForm({
         value={comment}
         onChangeText={onChange}
       />
-      <Button variant="solid" color="muted" size="2">
-        submit
-      </Button>
+      <Button size="$2">submit</Button>
     </Box>
   )
 }

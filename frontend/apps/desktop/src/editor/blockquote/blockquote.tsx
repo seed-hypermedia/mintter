@@ -1,4 +1,3 @@
-import {BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -10,11 +9,12 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {ElementDrag} from '../drag-section'
 import type {EditorPlugin} from '../types'
-import {resetFlowContent, useBlockFlash} from '../utils'
+import {resetFlowContent} from '../utils'
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote'
 
@@ -76,14 +76,13 @@ function BlockQuote({
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element as BlockquoteType)
 
-  let inRoute = useBlockFlash(attributes.ref, (element as BlockquoteType).id)
-
   if (mode == EditorMode.Embed) {
-    return (
-      <span {...attributes} {...blockProps}>
-        {children}
-      </span>
-    )
+    // return (
+    //   <SizableText size="$5" {...attributes} {...blockProps}>
+    //     {children}
+    //   </SizableText>
+    // )
+    return children
   }
 
   return (

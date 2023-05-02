@@ -49,6 +49,8 @@ export function Paragraph({element, ...props}: ParagraphProps) {
         tag="p"
         className={clsx({inline: type == 'transclusion'})}
         {...props}
+        paddingHorizontal="$4"
+        paddingVertical="$2"
       />
     )
   }

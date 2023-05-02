@@ -2,7 +2,6 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
-import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -76,80 +75,77 @@ export default function DraftPage() {
     >
       <MouseProvider value={mouseService}>
         <DragProvider value={dragService}>
-          <BlockHighLighter>
-            <MainWrapper>
-              <YStack
-                onScroll={() => {
-                  mouseService.send('DISABLE.SCROLL')
+          <MainWrapper
+            onScroll={() => {
+              mouseService.send('DISABLE.SCROLL')
+            }}
+          >
+            <YStack
+              onPointerMove={(event) => {
+                mouseService.send({
+                  type: 'MOUSE.MOVE',
+                  position: event.nativeEvent.clientY,
+                })
+              }}
+              onPointerLeave={() => {
+                mouseService.send('DISABLE.CHANGE')
+              }}
+              onPointerUp={() => {
+                dragService.send('DROPPED')
+                mouseService.send('DISABLE.DRAG.END')
+              }}
+              // if (!canEdit) {
+              //   mainService.send('NOT.EDITING')
+              // }
+            >
+              {!isDaemonReady ? <NotSavingBanner /> : null}
+              {draftState.children.length ? (
+                <>
+                  <Editor
+                    editor={editor}
+                    value={draftState.children}
+                    //@ts-ignore
+                    onChange={(content: GroupingContent[]) => {
+                      mouseService.send('DISABLE.CHANGE')
+                      // TODO: need to check when content can be a string
+                      if (
+                        (!content && typeof content == 'string') ||
+                        !isDaemonReady
+                      )
+                        return
 
-                  // if (!canEdit) {
-                  //   mainService.send('NOT.EDITING')
-                  // }
-                }}
-                // @ts-ignore
-                onMouseMove={(event) => {
-                  mouseService.send({
-                    type: 'MOUSE.MOVE',
-                    position: event.clientY,
-                  })
-                }}
-                onMouseLeave={() => {
-                  mouseService.send('DISABLE.CHANGE')
-                }}
-                onMouseUp={() => {
-                  dragService.send('DROPPED')
-                  mouseService.send('DISABLE.DRAG.END')
-                }}
-              >
-                {!isDaemonReady ? <NotSavingBanner /> : null}
-                {draftState.children.length ? (
-                  <>
-                    <Editor
-                      editor={editor}
-                      value={draftState.children}
-                      //@ts-ignore
-                      onChange={(content: GroupingContent[]) => {
-                        mouseService.send('DISABLE.CHANGE')
-                        // TODO: need to check when content can be a string
-                        if (
-                          (!content && typeof content == 'string') ||
-                          !isDaemonReady
-                        )
-                          return
-
-                        saveDraft.mutate({editor, content})
-                      }}
-                    />
-                    {import.meta.env.DEV && (
-                      <YStack maxWidth="500px" marginHorizontal="auto">
-                        <Button
-                          size="$1"
-                          theme="gray"
-                          width="100%"
-                          onPress={() => setDebugValue((v) => !v)}
+                      saveDraft.mutate({editor, content})
+                    }}
+                  />
+                  {import.meta.env.DEV && (
+                    <YStack maxWidth="500px" marginHorizontal="auto">
+                      <Button
+                        size="$1"
+                        theme="gray"
+                        width="100%"
+                        onPress={() => setDebugValue((v) => !v)}
+                      >
+                        toggle value
+                      </Button>
+                      {debugValue && (
+                        <XStack
+                          tag="pre"
+                          {...{
+                            whiteSpace: 'wrap',
+                          }}
                         >
-                          toggle value
-                        </Button>
-                        {debugValue && (
-                          <XStack
-                            tag="pre"
-                            {...{
-                              whiteSpace: 'wrap',
-                            }}
-                          >
-                            <SizableText tag="code" size="$1">
-                              {JSON.stringify(draftState?.children, null, 3)}
-                            </SizableText>
-                          </XStack>
-                        )}
-                      </YStack>
-                    )}
-                  </>
-                ) : null}
-              </YStack>
-            </MainWrapper>
-            <Footer />
-          </BlockHighLighter>
+                          <SizableText tag="code" size="$1">
+                            {JSON.stringify(draftState?.children, null, 3)}
+                          </SizableText>
+                        </XStack>
+                      )}
+                    </YStack>
+                  )}
+                </>
+              ) : null}
+            </YStack>
+          </MainWrapper>
+          <Footer />
         </DragProvider>
       </MouseProvider>
     </ErrorBoundary>

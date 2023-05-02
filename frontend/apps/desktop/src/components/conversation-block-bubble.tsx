@@ -39,6 +39,7 @@ export function ConversationBlockBubble({block}: {block: FlowContent}) {
   if (conversations.length) {
     return (
       <Button
+        theme="blue"
         onPress={() => {
           onConversationsOpen(conversations.map((c) => c.id))
         }}

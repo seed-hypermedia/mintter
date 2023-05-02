@@ -1,13 +1,14 @@
 import {useDrag} from '@app/drag-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {headingMap} from '@app/editor/utils'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {
   isStaticParagraph,
   StaticParagraph as StaticParagraphType,
 } from '@mintter/shared'
-import {SizableText} from '@mintter/ui'
+import {SizableText, SizeTokens} from '@mintter/ui'
 import {MouseEvent, useMemo, useRef} from 'react'
 import {Path} from 'slate'
 import {RenderElementProps, useSlate} from 'slate-react'
@@ -44,13 +45,16 @@ function StaticParagraph({
   let dragService = useDrag()
   let {elementProps, parentPath} = usePhrasingProps(editor, element)
 
+  let paddingLeft = useMemo(
+    () => (elementProps['data-parent-group'] == 'group' ? '$2' : 0),
+    [elementProps],
+  )
+
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
   }
   useBlockObserve(mode, pRef)
-
-  let mouseService = useMouse()
 
   let dragProps = {
     onMouseOver: (e: MouseEvent) => {
@@ -66,39 +70,27 @@ function StaticParagraph({
     },
   }
 
-  let mouseProps =
-    mode != EditorMode.Discussion
-      ? {
-          onMouseEnter: () => {
-            mouseService.send({
-              type: 'HIGHLIGHT.ENTER',
-              ref: elementProps['data-highlight'] as string,
-            })
-          },
-          onMouseLeave: () => {
-            mouseService.send('HIGHLIGHT.LEAVE')
-          },
-        }
-      : {}
-
-  let as = useMemo(() => {
-    const headingMap: {[key: number]: string} = {
-      2: 'h2',
-      4: 'h3',
-      6: 'h4',
-      8: 'h5',
-      10: 'h6',
-    }
+  let elementTags = useMemo(() => {
+    let defaultValue = {tag: 'p', size: 16, height: 24}
     if (parentPath) {
-      return headingMap[parentPath.length] || 'p'
+      return headingMap[parentPath.length] || defaultValue
     }
 
-    return 'p'
+    return defaultValue
   }, [parentPath])
 
   if (mode == EditorMode.Embed) {
     return (
-      <SizableText tag="span" {...attributes} {...otherProps}>
+      <SizableText
+        size="$5"
+        selectionColor="$color10"
+        tag="span"
+        color="$color9"
+        fontWeight="600"
+        padding="$1"
+        {...attributes}
+        {...otherProps}
+      >
         {children}
       </SizableText>
     )
@@ -106,10 +98,14 @@ function StaticParagraph({
 
   return (
     <SizableText
-      tag={as}
+      tag={elementTags.tag}
+      size={elementTags.size}
+      fontWeight="700"
+      // paddingLeft={paddingLeft}
+      alignItems="center"
+      // size="$5"
       {...attributes}
       {...elementProps}
-      {...mouseProps}
       {...otherProps}
       {...dragProps}
     >
