@@ -148,7 +148,7 @@ export function SitesNavDropdownItems() {
   )
 }
 
-function AccountDropdownItem() {
+export function AccountDropdownItem() {
   const navigate = useNavigate()
   const route = useNavRoute()
   const {data: account} = useMyAccount()
@@ -235,9 +235,9 @@ export function NavMenu() {
             />
 
             <Dropdown.Item
-              onSelect={() => tauriEmit('open_quick_switcher')}
+              onSelect={() => spawn({key: 'settings'})}
               icon={Settings}
-              title="Quick Settings"
+              title="Settings"
               iconAfter={
                 <SizableText size="$1" color="$mint5">
                   &#8984; ,

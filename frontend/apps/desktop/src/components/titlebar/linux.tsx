@@ -1,20 +1,27 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {Icon} from '@components/icon'
 import {TitleBarProps} from '@components/titlebar'
 import {
-  Button,
   TitlebarWrapper,
   TitlebarRow,
   TitlebarSection,
-  Menu as MenuIcon,
+  Menu,
   XStack,
   Separator,
+  SizableText,
+  User,
+  Draft,
+  File,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
-import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
+import {
+  AccountDropdownItem,
+  ActionButtons,
+  NavigationButtons,
+  SitesNavDropdownItems,
+} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
@@ -65,11 +72,12 @@ export default function TitleBarLinux(props: TitleBarProps) {
       platform="linux"
       data-tauri-drag-region
       data-has-focus={focus}
+      paddingLeft={100}
     >
       <TitlebarRow>
         <TitlebarSection data-tauri-drag-region>
           <MintterIcon />
-          <Menu />
+          <NavMenu />
           <NavigationButtons />
           <DiscardDraftButton />
         </TitlebarSection>
@@ -89,66 +97,102 @@ export default function TitleBarLinux(props: TitleBarProps) {
   )
 }
 
-function Menu() {
+function NavMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
-  const editingEnabled = route.key === 'draft'
-
+  const editingEnabled = route.key == 'draft'
+  const spawn = useNavigate('spawn')
   return (
     <Dropdown.Root>
-      <Dropdown.Trigger asChild>
-        <Button size="$2">
-          <MenuIcon size={16} />
-        </Button>
-      </Dropdown.Trigger>
+      <Dropdown.Trigger
+        chromeless
+        outlineColor="transparent"
+        outlineStyle="none"
+        icon={Menu}
+      />
       <Dropdown.Portal>
-        <Dropdown.Content>
+        <Dropdown.Content side="bottom" align="start">
+          <AccountDropdownItem />
+          <Separator />
           <Dropdown.Item
-            disabled={route.key === 'home'}
+            disabled={route.key == 'home'}
             data-testid="menu-item-inbox"
             onSelect={() => navigate({key: 'home'})}
-          >
-            <Icon name="File" />
-            <span>Inbox</span>
-          </Dropdown.Item>
+            icon={File}
+            title="All Publications"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+1
+              </SizableText>
+            }
+          />
           <Dropdown.Item
-            disabled={route.key === 'drafts'}
+            disabled={route.key == 'drafts'}
             data-testid="menu-item-drafts"
             onSelect={() => navigate({key: 'drafts'})}
-          >
-            <Icon name="PencilAdd" />
-            <span>Drafts</span>
-          </Dropdown.Item>
-
-          <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
-            Quick Switcher
-            <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={() => navigate({key: 'connections'})}>
-            Connections
-            <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
-          </Dropdown.Item>
-
+            icon={Draft}
+            title="Drafts"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+8
+              </SizableText>
+            }
+          />
+          <Dropdown.Item
+            disabled={route.key == 'connections'}
+            onSelect={() => navigate({key: 'connections'})}
+            icon={User}
+            title="Connections"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+9
+              </SizableText>
+            }
+          />
           <SitesNavDropdownItems />
-
           <Separator />
+          <Dropdown.Item
+            onSelect={() => tauriEmit('open_quick_switcher')}
+            title="Quick Switcher"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+K
+              </SizableText>
+            }
+          />
 
-          <MenuItem
+          <Dropdown.Item
             title="New Window"
-            accelerator="Ctrl+N"
-            onSelect={() => invoke('new_invoke')}
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+N
+              </SizableText>
+            }
+            onSelect={() => spawn({key: 'home'})}
+          />
+
+          <MenuItem
+            title="Reload"
+            accelerator="Ctrl+R"
+            onSelect={() => window.location.reload()}
           />
 
           <Separator />
 
-          <MenuItem
+          {/* <Dropdown.Item
             title="Find..."
-            accelerator="Ctrl+F"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                Ctrl+F
+              </SizableText>
+            }
             onSelect={() => tauriEmit('open_find')}
-          />
+          /> */}
 
           <Dropdown.Sub>
-            <Dropdown.SubTrigger>Format</Dropdown.SubTrigger>
+            <Dropdown.SubTrigger disabled={!editingEnabled}>
+              Format
+            </Dropdown.SubTrigger>
             <Dropdown.SubContent>
               <MenuItem
                 title="Strong"
@@ -240,17 +284,6 @@ function Menu() {
             </Dropdown.SubContent>
           </Dropdown.Sub>
 
-          <Dropdown.Sub>
-            <Dropdown.SubTrigger>View</Dropdown.SubTrigger>
-            <Dropdown.SubContent>
-              <MenuItem
-                title="Reload"
-                accelerator="Ctrl+R"
-                onSelect={() => window.location.reload()}
-              />
-            </Dropdown.SubContent>
-          </Dropdown.Sub>
-
           <Separator />
 
           <MenuItem
@@ -258,8 +291,6 @@ function Menu() {
             accelerator="Ctrl+,"
             onSelect={() => invoke('open_preferences')}
           />
-
-          <Separator />
 
           <MenuItem
             title="Documentation"
@@ -288,34 +319,39 @@ export interface MenuItemProps {
   accelerator?: string
   disabled?: boolean
   onSelect: () => void
+  icon?: any
 }
 
-function MenuItem(props: MenuItemProps) {
+function MenuItem({accelerator, ...props}: MenuItemProps) {
   useEffect(() => {
-    if (props.accelerator) {
-      const keys = props.accelerator.split('+')
+    if (accelerator) {
+      const keys = accelerator.split('+')
 
       window.addEventListener('keyup', (e) => {
         if (
           keys.every((k) => {
-            if (k === 'Alt') return e.altKey
-            if (k === 'Shift') return e.shiftKey
-            if (k === 'Ctrl') return e.ctrlKey
-            k === e.key
+            if (k == 'Alt') return e.altKey
+            if (k == 'Shift') return e.shiftKey
+            if (k == 'Ctrl') return e.ctrlKey
+            k == e.key
           })
         ) {
-          console.log(`triggered acc ${props.accelerator}!`)
+          console.log(`triggered acc ${accelerator}!`)
         }
       })
     }
-  }, [props.accelerator])
+  }, [accelerator])
 
   return (
-    <Dropdown.Item onSelect={props.onSelect} disabled={props.disabled}>
-      {props.title}
-      {props.accelerator && (
-        <Dropdown.RightSlot>{props.accelerator}</Dropdown.RightSlot>
-      )}
-    </Dropdown.Item>
+    <Dropdown.Item
+      iconAfter={
+        accelerator ? (
+          <SizableText size="$1" color="$mint5">
+            {accelerator}
+          </SizableText>
+        ) : undefined
+      }
+      {...props}
+    />
   )
 }

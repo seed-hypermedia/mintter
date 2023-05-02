@@ -50,7 +50,7 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {getCurrent} from '@tauri-apps/api/window'
-import {useEffect} from 'react'
+import {useEffect, useMemo} from 'react'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from '../mintter-icon'
@@ -146,7 +146,312 @@ export default function TitleBarWindows(props: TitleBarProps) {
 function SystemMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
-  const editingDisabled = route.key !== 'draft'
+  const editingDisabled = route.key != 'draft'
+  const spawn = useNavigate('spawn')
+
+  const menuItems: Array<MenuItemElement> = useMemo(
+    () => [
+      {
+        id: 'mintter',
+        title: 'Mintter',
+        children: [
+          {
+            id: 'about',
+            title: 'About Mintter',
+            onSelect: () => invoke('open_about'),
+            icon: Info,
+          },
+          {
+            id: 'preferences',
+            title: 'Preferences...',
+            accelerator: 'Ctrl+,',
+            onSelect: () => spawn({key: 'settings'}),
+            icon: Settings,
+          },
+          {
+            id: 'hide',
+            title: 'Hide',
+            accelerator: 'Ctrl+H',
+            onSelect: () => getCurrent().hide(),
+            icon: Hide,
+          },
+          {
+            id: 'quit',
+            title: 'Quit Mintter',
+            onSelect: () => process.exit(0),
+            icon: Delete,
+          },
+        ],
+      },
+      {
+        title: 'File',
+        id: 'file',
+        children: [
+          {
+            id: 'newwindow',
+            title: 'New Window',
+            accelerator: 'Ctrl+N',
+            onSelect: () => spawn({key: 'home'}),
+            icon: AddSquare,
+          },
+          {
+            id: 'close',
+            title: 'Close',
+            accelerator: 'Ctrl+F4',
+            onSelect: () => getCurrent().close(),
+            icon: Close,
+          },
+          {
+            id: 'closeallwindows',
+            title: 'Close all Window',
+            accelerator: 'Ctrl+Shift+Alt+W',
+            onSelect: () => invoke('close_all_windows'),
+            icon: CloseAll,
+          },
+        ],
+      },
+      {
+        title: 'Edit',
+        id: 'edit',
+        disabled: editingDisabled,
+        children: [
+          {
+            id: 'undo',
+            title: 'Undo',
+            accelerator: 'Ctrl+Z',
+            onSelect: () => {
+              // TODO: implement me
+            },
+            icon: Undo,
+            disabled: editingDisabled,
+          },
+          {
+            id: 'redo',
+            title: 'Redo',
+            accelerator: 'Ctrl+Shift+Z',
+            onSelect: () => {
+              // TODO: implement me
+            },
+            icon: Redo,
+            disabled: true,
+          },
+          {
+            id: 'copy',
+            title: 'Copy',
+            accelerator: 'Ctrl+C',
+            onSelect: () => {
+              // TODO: implement me
+            },
+            icon: Copy,
+            // TODO: send event when there's a selected text that the user can select
+            disabled: true,
+          },
+          {
+            id: 'cut',
+            title: 'Cut',
+            accelerator: 'Ctrl+X',
+            onSelect: () => {
+              // TODO: implement me
+            },
+            icon: Cut,
+            // TODO: send event when there's a selected text that the user can
+            disabled: true,
+          },
+          {
+            id: 'paste',
+            title: 'Paste',
+            accelerator: 'Ctrl+V',
+            onSelect: () => {
+              // TODO: implement me
+            },
+            icon: Paste,
+            // TODO: send event when the clipboard is not empty
+            disabled: true,
+          },
+          {
+            id: 'selectall',
+            title: 'Select All',
+            accelerator: 'Ctrl+A',
+            onSelect: () => {
+              // TODO: implement me: send an event to select all the text
+            },
+            icon: SelectAll,
+            disabled: editingDisabled,
+          },
+          // {
+          //   id: 'find',
+          //   title: 'Find...',
+          //   accelerator: 'Ctrl+F',
+          //   onSelect: () => {
+          //     // TODO: implement me
+          //   },
+          //   icon: Search,
+          // },
+        ],
+      },
+      {
+        id: 'format',
+        title: 'Format',
+        disabled: editingDisabled,
+        children: [
+          {
+            id: 'strong',
+            title: 'Strong',
+            accelerator: 'Ctrl+B',
+            onSelect: () => tauriEmit('format_mark', 'strong'),
+            icon: Strong,
+            disabled: true,
+          },
+          {
+            id: 'emphasis',
+            title: 'Emphasis',
+            accelerator: 'Ctrl+I',
+            onSelect: () => tauriEmit('format_mark', 'emphasis'),
+            icon: Emphasis,
+            disabled: true,
+          },
+          {
+            id: 'code',
+            title: 'Code',
+            accelerator: 'Ctrl+E',
+            onSelect: () => tauriEmit('format_mark', 'code'),
+            icon: Code,
+            disabled: true,
+          },
+          {
+            id: 'underline',
+            title: 'Underline',
+            accelerator: 'Ctrl+U',
+            onSelect: () => tauriEmit('format_mark', 'underline'),
+            icon: Underline,
+            disabled: true,
+          },
+          {
+            id: 'strikethrough',
+            title: 'Strikethrough',
+            onSelect: () => tauriEmit('format_mark', 'strikethrough'),
+            icon: Strikethrough,
+            disabled: true,
+          },
+          {
+            id: 'subscript',
+            title: 'Subscript',
+            onSelect: () => tauriEmit('format_mark', 'subscript'),
+            icon: Subscript,
+            disabled: true,
+          },
+          {
+            id: 'superscript',
+            title: 'Superscript',
+            onSelect: () => tauriEmit('format_mark', 'superscript'),
+            icon: Superscript,
+            disabled: true,
+          },
+          {
+            id: 'heading',
+            title: 'Heading',
+            onSelect: () => tauriEmit('format_block', 'heading'),
+            icon: HeadingIcon,
+            disabled: true,
+          },
+          {
+            id: 'statement',
+            title: 'Statement',
+            onSelect: () => tauriEmit('format_block', 'heading'),
+            icon: Statement,
+            disabled: true,
+          },
+          {
+            id: 'blockquote',
+            title: 'Blockquote',
+            onSelect: () => tauriEmit('format_block', 'blockquote'),
+            icon: BlockQuote,
+            disabled: true,
+          },
+          {
+            id: 'codeblock',
+            title: 'Code Block',
+            onSelect: () => tauriEmit('format_block', 'codeblock'),
+            icon: CodeBlock,
+            disabled: true,
+          },
+          {
+            id: 'unorderedlist',
+            title: 'Unordered List',
+            onSelect: () => tauriEmit('format_block', 'unordered_list'),
+            icon: UnorderedList,
+            disabled: true,
+          },
+          {
+            id: 'orderedlist',
+            title: 'Ordered List',
+            onSelect: () => tauriEmit('format_block', 'ordered_list'),
+            icon: OrderedList,
+            disabled: true,
+          },
+          {
+            id: 'group',
+            title: 'Plain List',
+            onSelect: () => tauriEmit('format_block', 'group'),
+            icon: GroupIcon,
+            disabled: true,
+          },
+        ],
+      },
+      {
+        id: 'view',
+        title: 'View',
+        children: [
+          {
+            id: 'reload',
+            title: 'Reload',
+            accelerator: 'Ctrl+R',
+            onSelect: () => window.location.reload(),
+            icon: Reload,
+          },
+          {
+            id: 'quickswitcher',
+            title: 'Quick Switcher',
+            accelerator: 'Ctrl+K',
+            onSelect: () => tauriEmit('open_quick_switcher'),
+            icon: Search,
+          },
+          {
+            id: 'connections',
+            title: 'Connections',
+            accelerator: 'Ctrl+9',
+            onSelect: () => {},
+            icon: Reload,
+          },
+        ],
+      },
+      {
+        id: 'help',
+        title: 'Help',
+        children: [
+          {
+            id: 'documentation',
+            title: 'Documentation',
+            onSelect: () => invoke('open_documentation'),
+            icon: Documentation,
+          },
+          {
+            id: 'releasenotes',
+            title: 'Release Notes',
+            onSelect: () => invoke('open_release_notes'),
+            icon: ReleaseNotes,
+          },
+          {
+            id: 'acknowledgements',
+            title: 'Acknowledgements',
+            onSelect: () => invoke('open_acknowledgements'),
+            icon: Acknowledgements,
+          },
+        ],
+      },
+    ],
+    [editingDisabled],
+  )
 
   return (
     <NavigationMenu.Root asChild>
@@ -166,16 +471,10 @@ function SystemMenu() {
                           <YGroup bordered position="absolute" minWidth={200}>
                             {item.children.map((p) => (
                               <MenuItem
-                                disabled={
-                                  p.checkDisable ? editingDisabled : false
-                                }
+                                disabled={p.disabled}
                                 key={p.id}
                                 {...p}
-                                onSelect={
-                                  p.id != 'connections'
-                                    ? p.onSelect
-                                    : () => navigate({key: 'connections'})
-                                }
+                                onSelect={p.onSelect}
                               />
                             ))}
                           </YGroup>
@@ -261,299 +560,5 @@ type SubMenuItemElement = {
   onSelect: () => void
   icon: ListItemProps['icon']
   accelerator?: string
-  checkDisable?: boolean
+  disabled?: boolean
 }
-
-var menuItems: Array<MenuItemElement> = [
-  {
-    id: 'mintter',
-    title: 'Mintter',
-    children: [
-      {
-        id: 'about',
-        title: 'About Mintter',
-        onSelect: () => invoke('open_about'),
-        icon: Info,
-      },
-      {
-        id: 'preferences',
-        title: 'Preferences...',
-        accelerator: 'Ctrl+,',
-        onSelect: () => invoke('open_preferences'),
-        icon: Settings,
-      },
-      {
-        id: 'hide',
-        title: 'Hide',
-        accelerator: 'Ctrl+H',
-        onSelect: () => getCurrent().hide(),
-        icon: Hide,
-      },
-      {
-        id: 'quit',
-        title: 'Quit Mintter',
-        onSelect: () => process.exit(0),
-        icon: Delete,
-      },
-    ],
-  },
-  {
-    title: 'File',
-    id: 'file',
-    children: [
-      {
-        id: 'newwindow',
-        title: 'New Window',
-        accelerator: 'Ctrl+N',
-        onSelect: () => invoke('new_window'),
-        icon: AddSquare,
-      },
-      {
-        id: 'close',
-        title: 'Close',
-        accelerator: 'Ctrl+F4',
-        onSelect: () => getCurrent().close(),
-        icon: Close,
-      },
-      {
-        id: 'closeallwindows',
-        title: 'Close all Window',
-        accelerator: 'Ctrl+Shift+Alt+W',
-        onSelect: () => invoke('close_all_windows'),
-        icon: CloseAll,
-      },
-    ],
-  },
-  {
-    title: 'Edit',
-    id: 'edit',
-    children: [
-      {
-        id: 'undo',
-        title: 'Undo',
-        accelerator: 'Ctrl+Z',
-        onSelect: () => {
-          // implement me
-        },
-        icon: Undo,
-        checkDisable: true,
-      },
-      {
-        id: 'redo',
-        title: 'Redo',
-        accelerator: 'Ctrl+Shift+Z',
-        onSelect: () => {
-          // implement me
-        },
-        icon: Redo,
-        checkDisable: true,
-      },
-      {
-        id: 'copy',
-        title: 'Copy',
-        accelerator: 'Ctrl+C',
-        onSelect: () => {
-          // implement me
-        },
-        icon: Copy,
-        checkDisable: true,
-      },
-      {
-        id: 'cut',
-        title: 'Cut',
-        accelerator: 'Ctrl+X',
-        onSelect: () => {
-          // implement me
-        },
-        icon: Cut,
-        checkDisable: true,
-      },
-      {
-        id: 'paste',
-        title: 'Paste',
-        accelerator: 'Ctrl+V',
-        onSelect: () => {
-          // implement me
-        },
-        icon: Paste,
-        checkDisable: true,
-      },
-      {
-        id: 'selectall',
-        title: 'Select All',
-        accelerator: 'Ctrl+A',
-        onSelect: () => {
-          // implement me
-        },
-        icon: SelectAll,
-        checkDisable: true,
-      },
-      {
-        id: 'find',
-        title: 'Find...',
-        accelerator: 'Ctrl+F',
-        onSelect: () => tauriEmit('open_find'),
-        icon: Search,
-      },
-    ],
-  },
-  {
-    id: 'format',
-    title: 'Format',
-    children: [
-      {
-        id: 'strong',
-        title: 'Strong',
-        accelerator: 'Ctrl+B',
-        onSelect: () => tauriEmit('format_mark', 'strong'),
-        icon: Strong,
-        checkDisable: true,
-      },
-      {
-        id: 'emphasis',
-        title: 'Emphasis',
-        accelerator: 'Ctrl+I',
-        onSelect: () => tauriEmit('format_mark', 'emphasis'),
-        icon: Emphasis,
-        checkDisable: true,
-      },
-      {
-        id: 'code',
-        title: 'Code',
-        accelerator: 'Ctrl+E',
-        onSelect: () => tauriEmit('format_mark', 'code'),
-        icon: Code,
-        checkDisable: true,
-      },
-      {
-        id: 'underline',
-        title: 'Underline',
-        accelerator: 'Ctrl+U',
-        onSelect: () => tauriEmit('format_mark', 'underline'),
-        icon: Underline,
-        checkDisable: true,
-      },
-      {
-        id: 'strikethrough',
-        title: 'Strikethrough',
-        onSelect: () => tauriEmit('format_mark', 'strikethrough'),
-        icon: Strikethrough,
-        checkDisable: true,
-      },
-      {
-        id: 'subscript',
-        title: 'Subscript',
-        onSelect: () => tauriEmit('format_mark', 'subscript'),
-        icon: Subscript,
-        checkDisable: true,
-      },
-      {
-        id: 'superscript',
-        title: 'Superscript',
-        onSelect: () => tauriEmit('format_mark', 'superscript'),
-        icon: Superscript,
-        checkDisable: true,
-      },
-      {
-        id: 'heading',
-        title: 'Heading',
-        onSelect: () => tauriEmit('format_block', 'heading'),
-        icon: HeadingIcon,
-        checkDisable: true,
-      },
-      {
-        id: 'statement',
-        title: 'Statement',
-        onSelect: () => tauriEmit('format_block', 'heading'),
-        icon: Statement,
-        checkDisable: true,
-      },
-      {
-        id: 'blockquote',
-        title: 'Blockquote',
-        onSelect: () => tauriEmit('format_block', 'blockquote'),
-        icon: BlockQuote,
-        checkDisable: true,
-      },
-      {
-        id: 'codeblock',
-        title: 'Code Block',
-        onSelect: () => tauriEmit('format_block', 'codeblock'),
-        icon: CodeBlock,
-        checkDisable: true,
-      },
-      {
-        id: 'unorderedlist',
-        title: 'Unordered List',
-        onSelect: () => tauriEmit('format_block', 'unordered_list'),
-        icon: UnorderedList,
-        checkDisable: true,
-      },
-      {
-        id: 'orderedlist',
-        title: 'Ordered List',
-        onSelect: () => tauriEmit('format_block', 'ordered_list'),
-        icon: OrderedList,
-        checkDisable: true,
-      },
-      {
-        id: 'group',
-        title: 'Plain List',
-        onSelect: () => tauriEmit('format_block', 'group'),
-        icon: GroupIcon,
-        checkDisable: true,
-      },
-    ],
-  },
-  {
-    id: 'view',
-    title: 'View',
-    children: [
-      {
-        id: 'reload',
-        title: 'Reload',
-        accelerator: 'Ctrl+R',
-        onSelect: () => window.location.reload(),
-        icon: Reload,
-      },
-      {
-        id: 'quickswitcher',
-        title: 'Quick Switcher',
-        accelerator: 'Ctrl+K',
-        onSelect: () => tauriEmit('open_quick_switcher'),
-        icon: Search,
-      },
-      {
-        id: 'connections',
-        title: 'Connections',
-        accelerator: 'Ctrl+9',
-        onSelect: () => {},
-        icon: Reload,
-      },
-    ],
-  },
-  {
-    id: 'help',
-    title: 'Help',
-    children: [
-      {
-        id: 'documentation',
-        title: 'Documentation',
-        onSelect: () => invoke('open_documentation'),
-        icon: Documentation,
-      },
-      {
-        id: 'releasenotes',
-        title: 'Release Notes',
-        onSelect: () => invoke('open_release_notes'),
-        icon: ReleaseNotes,
-      },
-      {
-        id: 'acknowledgements',
-        title: 'Acknowledgements',
-        onSelect: () => invoke('open_acknowledgements'),
-        icon: Acknowledgements,
-      },
-    ],
-  },
-]

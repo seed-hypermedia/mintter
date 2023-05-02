@@ -4,6 +4,7 @@ import {
   SizableText,
   SizableTextProps,
   ListItem,
+  useTheme,
 } from '@mintter/ui'
 import {Button} from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
@@ -18,7 +19,10 @@ import {forwardRef} from 'react'
 //   zIndex: '$max',
 // })
 
-const Content = ({children, ...props}: any) => {
+const Content = ({
+  children,
+  ...props
+}: DropdownMenuPrimitive.DropdownMenuContentProps) => {
   return (
     <DropdownMenuPrimitive.Content asChild {...props}>
       <YStack
@@ -37,6 +41,28 @@ const Content = ({children, ...props}: any) => {
   )
 }
 
+const SubContent = ({
+  children,
+  ...props
+}: DropdownMenuPrimitive.DropdownMenuSubContentProps) => {
+  return (
+    <DropdownMenuPrimitive.SubContent asChild {...props}>
+      <YStack
+        //@ts-ignore
+        contentEditable={false}
+        minWidth={300}
+        elevation="$7"
+        backgroundColor="$background"
+        borderRadius="$3"
+        overflow="hidden"
+        zIndex="$max"
+      >
+        {children}
+      </YStack>
+    </DropdownMenuPrimitive.SubContent>
+  )
+}
+
 var RightSlot = SizableText
 
 export const ElementDropdown = forwardRef((props: ButtonProps, ref: any) => {
@@ -47,13 +73,29 @@ export const ElementDropdown = forwardRef((props: ButtonProps, ref: any) => {
   )
 })
 
+export const SubTrigger = forwardRef((props: SizableTextProps, ref: any) => {
+  return (
+    <DropdownMenuPrimitive.SubTrigger asChild ref={ref}>
+      <SizableText
+        outlineStyle="none"
+        backgroundColor="$background"
+        paddingHorizontal="$4"
+        paddingVertical="$2"
+        outlineColor="transparent"
+        {...props}
+        // onPress={props.onSelect}
+      />
+    </DropdownMenuPrimitive.SubTrigger>
+  )
+})
+
 function Label(props: SizableTextProps) {
   return (
     <DropdownMenuPrimitive.Label asChild>
       <SizableText
         outlineStyle="none"
         backgroundColor="$background"
-        size="$2"
+        size="$1"
         paddingHorizontal="$4"
         outlineColor="transparent"
         {...props}
@@ -62,9 +104,11 @@ function Label(props: SizableTextProps) {
   )
 }
 
-function Item({children, title, icon, iconAfter, ...props}: any) {
+function Item({children, title, icon, iconAfter, disabled, ...props}: any) {
+  const theme = useTheme()
+  console.log('🚀 ~ file: dropdown.tsx:108 ~ Item ~ theme:', theme)
   return (
-    <DropdownMenuPrimitive.Item {...props}>
+    <DropdownMenuPrimitive.Item {...props} disabled={disabled}>
       <ListItem
         hoverTheme
         pressTheme
@@ -74,8 +118,19 @@ function Item({children, title, icon, iconAfter, ...props}: any) {
         textAlign="left"
         outlineColor="transparent"
         space="$2"
+        opacity={disabled ? 0.5 : 1}
+        userSelect="none"
+        cursor={disabled ? 'not-allowed' : 'pointer'}
         title={
-          title ? <SizableText fontSize="600">{title}</SizableText> : undefined
+          title ? (
+            <SizableText
+              fontSize="600"
+              cursor={disabled ? 'not-allowed' : 'pointer'}
+              userSelect="none"
+            >
+              {title}
+            </SizableText>
+          ) : undefined
         }
         icon={icon}
         iconAfter={iconAfter}
@@ -92,9 +147,10 @@ export const Dropdown = {
   Trigger: ElementDropdown,
   Label,
   Content,
-  // SubContent: DropdownSubContent,
+  SubContent,
   Item,
-  // SubTrigger: DropdownSubTrigger,
+
+  SubTrigger,
   // Separator: StyledSeparator,
   RightSlot,
 }
