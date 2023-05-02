@@ -45,6 +45,7 @@ import {isMarkActive, toggleFormat} from './utils'
 
 export function EditorHoveringToolbar() {
   const editor = useSlate()
+  const selection = useSlateSelection()
   const [selectionColor, setSelectionColor] = useState<string>('')
 
   useEffect(() => {
@@ -53,14 +54,24 @@ export function EditorHoveringToolbar() {
       mode: 'all',
     })
 
+    try {
+      const leaf = Editor.leaf(editor, editor.selection as Range);
+      if (leaf[0].color) {
+        setSelectionColor(leaf[0].color)
+        return;
+      }
+    }
+    catch {
+      // No leaf
+    }
+
     const selectionColors = new Set([...nodes].map(([node]) => node.color))
 
     const maybeColor =
       selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
     setSelectionColor(maybeColor || '#000000')
-    // console.log(selectionColor)
-  }, [editor])
+  }, [editor, selection])
 
   const codeInSelection = useMemo(
     () => [...Editor.nodes(editor)].some(([node]) => isCode(node)),
@@ -98,12 +109,13 @@ export function EditorHoveringToolbar() {
               type="color"
               className={textSelectorStyles()}
               value={selectionColor}
-              onChange={(ev) =>
-                Transforms.setNodes(
-                  editor,
-                  {color: ev.target.value},
-                  {match: Text.isText, split: true, mode: 'highest'},
-                )
+              onChange={(ev) => {
+                  Transforms.setNodes(
+                    editor,
+                    {color: ev.target.value},
+                    {match: Text.isText, split: true, mode: 'highest'},
+                  )
+                }
               }
             />
           ) : null}
