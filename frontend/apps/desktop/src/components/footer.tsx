@@ -98,6 +98,18 @@ export default function Footer({children}: {children?: ReactNode}) {
         </Box>
       ) : null} */}
       <FooterContactsButton />
+      <XStack alignItems="center" paddingHorizontal="$2">
+        <SizableText
+          fontSize={10}
+          userSelect="none"
+          hoverStyle={{
+            cursor: 'default',
+          }}
+          color="$color8"
+        >{`Alpha (App v.${import.meta.env.PACKAGE_VERSION}, Tauri v. ${
+          import.meta.env.TAURI_PLATFORM_VERSION
+        })`}</SizableText>
+      </XStack>
 
       <XStack
         flex={1}
