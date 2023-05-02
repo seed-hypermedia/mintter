@@ -400,7 +400,7 @@ func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string
 	return resp.PayReq, err
 }
 
-// RequestRemoteInvoice quequest a remote peer via lndhub an invoice of amount
+// RequestRemoteInvoice request a remote peer via lndhub an invoice of amount
 // sats (in satoshis). The remote user can be either a lnaddres user or a
 // mintter account ID. We accept a short memo or description of purpose of
 // payment, to attach along with the invoice. The generated invoice will have
@@ -420,7 +420,7 @@ func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, am
 	}
 
 	err = c.do(ctx, conn, httpRequest{
-		URL:    apiBaseURL + requestInvoiceRoute + "/" + remoteUser + "?amount=" + strconv.FormatInt(amountSats*1000, 10) + "&memo=" + strings.ReplaceAll(memo, " ", "+"),
+		URL:    apiBaseURL + requestInvoiceRoute + "?user=" + remoteUser + "&amount=" + strconv.FormatInt(amountSats*1000, 10) + "&memo=" + strings.ReplaceAll(memo, " ", "+"),
 		Method: http.MethodGet,
 	}, 2, &resp)
 

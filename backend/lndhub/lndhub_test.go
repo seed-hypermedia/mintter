@@ -18,6 +18,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/stretchr/testify/require"
 )
@@ -92,14 +93,18 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, invoiceMemo, *decodedInvoice.Description)
 	require.EqualValues(t, invoiceAmt, uint64(decodedInvoice.MilliSat.ToSatoshis()))
-	const zeroAmt = 0
+
 	const invoiceMemo2 = "zero invoice test amount"
-	payreq, err = lndHubClient.RequestRemoteInvoice(ctx, newNickname, zeroAmt, invoiceMemo2)
+	_, err = lndHubClient.RequestRemoteInvoice(ctx, newNickname, 0, invoiceMemo2)
+	require.Error(t, err)
+	const invoiceMemo3 = "non-zero invoice test amount"
+	const amt = 233
+	payreq, err = lndHubClient.RequestRemoteInvoice(ctx, newNickname, amt, invoiceMemo3)
 	require.NoError(t, err)
 	decodedInvoice, err = DecodeInvoice(payreq)
 	require.NoError(t, err)
-	require.EqualValues(t, invoiceMemo2, *decodedInvoice.Description)
-	require.Nil(t, decodedInvoice.MilliSat) // when amt is zero, the result is nil
+	require.EqualValues(t, invoiceMemo3, *decodedInvoice.Description)
+	require.EqualValues(t, amt, decodedInvoice.MilliSat.ToSatoshis().ToUnit(btcutil.AmountSatoshi)) // when amt is zero, the result is nil
 	invoices, err := lndHubClient.ListReceivedInvoices(ctx)
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, len(invoices), 1)

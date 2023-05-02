@@ -266,7 +266,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		}
 		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, ret.Address, creds.Login, creds.Password, creds.Nickname)
 		if err != nil {
-			srv.log.Debug(err.Error())
+			srv.log.Debug("Could not insert wallet", zap.String("Login", creds.Login), zap.String("Nickname", creds.Nickname), zap.Error(err))
 			return ret, err
 		}
 		creds.Nickname = newWallet.Nickname
