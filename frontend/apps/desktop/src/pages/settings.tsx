@@ -326,7 +326,7 @@ function AppSettings() {
             textOverflow="ellipsis"
             userSelect="text"
           >
-            VERSION_HERE
+            {import.meta.env.PACKAGE_VERSION}
           </SizableText>
         </TableList.Item>
         <Separator />
@@ -339,7 +339,7 @@ function AppSettings() {
             flexShrink={0}
             flexGrow={0}
           >
-            other
+            Tauri version
           </SizableText>
           <YStack flex={1} position="relative">
             <SizableText
@@ -349,7 +349,7 @@ function AppSettings() {
               textOverflow="ellipsis"
               userSelect="text"
             >
-              other data
+              {import.meta.env.TAURI_PLATFORM_VERSION}
             </SizableText>
           </YStack>
         </TableList.Item>

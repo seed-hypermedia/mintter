@@ -1,7 +1,7 @@
 {
   "name": "@mintter/desktop",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "dev": "NODE_ENV=development TAMAGUI_TARGET=web vite --host --clearScreen false",
     "dev:extract": "EXTRACT=1 yarn dev",

@@ -4,6 +4,7 @@ import {defineConfig, searchForWorkspaceRoot} from 'vite'
 import {writeFileSync} from 'fs'
 import path from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import packageJson from './package.json'
 
 const shouldExtract = process.env.EXTRACT === '1'
 let isTest = process.env.NODE_ENV == 'test'
@@ -58,6 +59,9 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : undefined,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
+  },
+  define: {
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version),
   },
   plugins: [
     tsconfigPaths(),

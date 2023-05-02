@@ -12,6 +12,7 @@
 
 .editor [data-slate-placeholder='true'] {
   white-space: nowrap;
+  /* margin-top: -1.5em; */
 }
 
 .editor ul,

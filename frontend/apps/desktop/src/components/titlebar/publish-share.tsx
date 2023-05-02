@@ -1,4 +1,4 @@
-import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
+import {MINTTER_GATEWAY_URL} from '@app/constants'
 import {useDraft, usePublication, usePublishDraft} from '@app/models/documents'
 import {
   useDocPublications,
@@ -32,7 +32,7 @@ const forceProductionURL = true
 
 function getMintterPublicURL(docId: string, version: string) {
   return `${
-    isProduction || forceProductionURL
+    import.meta.env.PROD || forceProductionURL
       ? MINTTER_GATEWAY_URL
       : 'http://localhost:3000'
   }/p/${docId}?v=${version}`
