@@ -21,7 +21,18 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {Copy, TextArea, Button, ImageIcon, Comment, XStack} from '@mintter/ui'
+import {
+  Copy,
+  TextArea,
+  Button,
+  ImageIcon,
+  Comment,
+  XStack,
+  Strong,
+  Emphasis,
+  Underline,
+  Code,
+} from '@mintter/ui'
 import {css} from '@stitches/react'
 import {useInterpret, useSelector} from '@xstate/react'
 import {
@@ -55,13 +66,12 @@ export function EditorHoveringToolbar() {
     })
 
     try {
-      const leaf = Editor.leaf(editor, editor.selection as Range);
+      const leaf = Editor.leaf(editor, editor.selection as Range)
       if (leaf[0].color) {
         setSelectionColor(leaf[0].color)
-        return;
+        return
       }
-    }
-    catch {
+    } catch {
       // No leaf
     }
 
@@ -80,49 +90,43 @@ export function EditorHoveringToolbar() {
 
   return (
     <HoveringToolbar>
-      <Box
-        css={{
-          zIndex: '$max',
-          boxShadow: '$menu',
-          padding: '$2',
-          backgroundColor: '$base-background-normal',
-          borderRadius: '2px',
-          transition: 'opacity 0.5s',
-          display: 'flex',
-          gap: '$2',
-          paddingHorizontal: '$2',
-          '& > *': {
-            display: 'inline-block',
-          },
-          '& > * + *': {
-            marginLeft: 2,
-          },
-        }}
+      <XStack
+        alignItems="center"
+        gap="$2"
+        elevation="$3"
+        padding="$2"
+        backgroundColor="$backgroundStrong"
+        borderRadius="$3"
       >
-        <FormatButton format={MARK_STRONG} icon="Strong" />
-        <FormatButton format={MARK_EMPHASIS} icon="Emphasis" />
-        <FormatButton format={MARK_UNDERLINE} icon="Underline" />
-        <FormatButton format={MARK_CODE} icon="Code" />
+        <FormatButton format={MARK_STRONG} icon={Strong} />
+        <FormatButton format={MARK_EMPHASIS} icon={Emphasis} />
+        <FormatButton format={MARK_UNDERLINE} icon={Underline} />
+        <FormatButton format={MARK_CODE} icon={Code} />
         <Tooltip content="Text color">
           {!codeInSelection ? (
-            <input
-              type="color"
-              className={textSelectorStyles()}
-              value={selectionColor}
-              onChange={(ev) => {
+            <XStack
+              borderWidth={1}
+              borderColor="$borderColor"
+              borderRadius="$2"
+            >
+              <input
+                type="color"
+                className={textSelectorStyles()}
+                value={selectionColor}
+                onChange={(ev) => {
                   Transforms.setNodes(
                     editor,
                     {color: ev.target.value},
                     {match: Text.isText, split: true, mode: 'highest'},
                   )
-                }
-              }
-            />
+                }}
+              />
+            </XStack>
           ) : null}
         </Tooltip>
         <InsertLinkButton />
         <InsertImageButton />
-      </Box>
+      </XStack>
     </HoveringToolbar>
   )
 }
@@ -141,23 +145,19 @@ const textSelectorStyles = css({
   },
 })
 
-function FormatButton({
-  format,
-  icon,
-}: {
-  format: Mark
-  icon: keyof typeof icons
-}) {
+function FormatButton({format, icon}: {format: Mark; icon: any}) {
   const editor = useSlate()
 
   return (
-    <Button
-      size="$1"
-      themeInverse={isMarkActive(editor, format)}
-      onPress={() => toggleFormat(editor, format)}
-    >
-      <Icon name={icon} size="2" />
-    </Button>
+    <Tooltip content={format}>
+      <Button
+        size="$2"
+        themeInverse={isMarkActive(editor, format)}
+        onPress={() => toggleFormat(editor, format)}
+        icon={icon}
+        chromeless={!isMarkActive(editor, format)}
+      />
+    </Tooltip>
   )
 }
 
@@ -171,7 +171,12 @@ function InsertImageButton() {
 
   return (
     <Tooltip content={<span>Insert Image</span>}>
-      <Button onPress={insertImageHandler} size="$1" icon={ImageIcon} />
+      <Button
+        onPress={insertImageHandler}
+        chromeless
+        size="$2"
+        icon={ImageIcon}
+      />
     </Tooltip>
   )
 }
@@ -211,6 +216,7 @@ function HoveringToolbar({children}: {children: ReactNode}) {
   const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
+    strategy: 'absolute',
   })
 
   useEffect(() => {
@@ -233,21 +239,19 @@ function HoveringToolbar({children}: {children: ReactNode}) {
   }, [reference, inFocus, selection, mouseDown])
 
   return (
-    <Box
+    <XStack
       ref={floating}
-      css={{
-        position: strategy,
-        top: y && y > 0 ? y : -999,
-        left: x && x > 0 ? x : -999,
-        zIndex: '$max',
-      }}
-      onMouseDown={(e) => {
+      position="absolute"
+      top={y && y > 0 ? y : -999}
+      left={x && x > 0 ? x : -999}
+      zIndex={10000}
+      onPointerDown={(e) => {
         // prevent toolbar from taking focus away from editor
         e.preventDefault()
       }}
     >
       {children}
-    </Box>
+    </XStack>
   )
 }
 
@@ -305,7 +309,7 @@ export function EditorHoveringActions({
         />
       )}
       {onComment && features.comments && (
-        <Button size="$1" onPress={onComment} icon={Comment} />
+        <Button size="$2" onPress={onComment} icon={Comment} />
       )}
     </XStack>
   )
