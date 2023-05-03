@@ -1,9 +1,9 @@
+import {useListen} from '@app/ipc'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
-import {Heading, YStack, Button} from '@mintter/ui'
-import {listen as tauriListen} from '@tauri-apps/api/event'
-import {lazy, useEffect} from 'react'
+import {Button, Heading, YStack} from '@mintter/ui'
+import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
@@ -46,19 +46,15 @@ export default function Main() {
   const isSettings = navR.key === 'settings'
   const navigate = useNavigate()
   const PageComponent = getPageComponent(navR)
-  useEffect(() => {
-    let unlisten: () => void
-    tauriListen<NavRoute>('open_route', (event) => {
-      // we might fix this by using zod for routes and validating them
+
+  useListen<NavRoute>(
+    'open_route',
+    (event) => {
       const route = event.payload
       navigate(route)
-    }).then((a) => {
-      unlisten = a
-    })
-    return () => {
-      unlisten?.()
-    }
-  }, [navigate])
+    },
+    [navigate],
+  )
 
   return (
     <YStack fullscreen>

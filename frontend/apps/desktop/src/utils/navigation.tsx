@@ -1,3 +1,4 @@
+import {invoke} from '@app/ipc'
 import {Buffer} from 'buffer'
 import {
   createContext,
@@ -6,7 +7,6 @@ import {
   useEffect,
   useReducer,
 } from 'react'
-import {openWindow} from './open-window'
 import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
 
 global.Buffer = global.Buffer || Buffer
@@ -242,4 +242,8 @@ export function useNavigate(mode: NavMode = 'push') {
       dispatch({type: 'backplace', route})
     }
   }
+}
+
+export function openWindow(path: string) {
+  invoke('plugin:window|open', {path})
 }

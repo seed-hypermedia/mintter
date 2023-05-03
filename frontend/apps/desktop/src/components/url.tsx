@@ -23,7 +23,7 @@ export function AccessURLRow({
 }) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
   return (
-    <XGroup borderColor="$gray7" borderWidth="$0.5" borderRadius="$3">
+    <XGroup borderColor="$color6" borderWidth="$0.5" borderRadius="$3">
       <XGroup.Item>
         <Button
           flex={1}

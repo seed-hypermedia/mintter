@@ -1,5 +1,7 @@
 import {useDrag} from '@app/drag-context'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {useVisibleConnection} from '@app/editor/visible-connection'
+import {send, useListen} from '@app/ipc'
 import {useMouse} from '@app/mouse-context'
 import {useNavRoute} from '@app/utils/navigation'
 import {
@@ -10,7 +12,7 @@ import {
   isOrderedList,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
-import React, {useContext, useMemo} from 'react'
+import React, {useContext, useMemo, useState} from 'react'
 import {RenderElementProps, useSlate} from 'slate-react'
 import {DraftBlocktools, PublicationBlocktools} from './blocktools'
 import DragContext from './drag-context'
@@ -19,18 +21,13 @@ import {BLOCK_GAP, findPath, useBlockFlash} from './utils'
 
 export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
-export const ElementDrag = ({
-  children,
-  element,
-  attributes,
-  onHoverIn,
-  onHoverOut,
-}: RenderElementProps & {onHoverOut?: any; onHoverIn?: any}) => {
+export const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
   let editor = useSlate()
   let path = findPath(element)
   let route = useNavRoute()
+  let {highlight} = useVisibleConnection((element as FlowContent).id)
 
   const onDrop = (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault()
@@ -60,7 +57,7 @@ export const ElementDrag = ({
     }
   }, [blockProps])
 
-  let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
+  // let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
 
   const dragContext = useContext(DragContext)
   const {drag, setDrag, clearDrag} = dragContext
@@ -95,9 +92,8 @@ export const ElementDrag = ({
         if (!drag) return
         clearDrag()
       }}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
       gap="$2"
+      backgroundColor={highlight ? '$yellow3' : 'transparent'}
     >
       <XStack
         //@ts-ignore

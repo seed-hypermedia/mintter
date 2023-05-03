@@ -12,6 +12,7 @@ export function Paragraph({element, ...props}: ParagraphProps) {
   let ref = useRef<HTMLParagraphElement>(null)
   let {type} = useSlatePresentation()
   let [state, send, service] = useMachine(() => paragraphMachine)
+  
   let parentType = useSelector(
     service,
     (state) => state.context.parentRef?.dataset.type,
@@ -36,7 +37,7 @@ export function Paragraph({element, ...props}: ParagraphProps) {
       return (
         <Codeblock
           {...props}
-          lang={state.context.parentRef.lang}
+          lang={state.context.parentRef?.lang}
           element={element}
         />
       )

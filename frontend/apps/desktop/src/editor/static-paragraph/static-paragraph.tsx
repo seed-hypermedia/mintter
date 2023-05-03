@@ -2,6 +2,8 @@ import {useDrag} from '@app/drag-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {headingMap} from '@app/editor/utils'
+import {useHoverVisibleConnection} from '@app/editor/visible-connection'
+import {send} from '@app/ipc'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {
@@ -43,7 +45,8 @@ function StaticParagraph({
 }: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
   let editor = useSlate()
   let dragService = useDrag()
-  let {elementProps, parentPath} = usePhrasingProps(editor, element)
+  let {elementProps, parentPath, parentNode} = usePhrasingProps(editor, element)
+  let hoverProps = useHoverVisibleConnection(parentNode?.id)
 
   let paddingLeft = useMemo(
     () => (elementProps['data-parent-group'] == 'group' ? '$2' : 0),
@@ -53,6 +56,7 @@ function StaticParagraph({
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
+    ...hoverProps,
   }
   useBlockObserve(mode, pRef)
 

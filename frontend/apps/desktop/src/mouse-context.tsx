@@ -39,9 +39,6 @@ export const useCurrentTarget = createMouseSelector((state) => {
   return null
 }, CurrentTargetCompare)
 
-export const useHighlightRef = createMouseSelector(
-  (state) => state.context.highlightRef,
-)
 
 function CurrentTargetCompare(
   prevTarget?: HTMLElement | null,

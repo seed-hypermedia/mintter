@@ -17,7 +17,9 @@ export function SiteHead({
       <Container my="$7" mx="$0" px="$4">
         <XStack>
           <NextLink href="/" aria-label="home page">
-            <SiteTitle cur="pointer">{siteInfo?.title}</SiteTitle>
+            <SiteTitle color="$color" cursor="pointer">
+              {siteInfo?.title}
+            </SiteTitle>
           </NextLink>
         </XStack>
       </Container>

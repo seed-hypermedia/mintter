@@ -24,13 +24,13 @@ import {attachConsole, debug} from 'tauri-plugin-log-api'
 import {globalStyles} from './stitches.config'
 
 import {DaemonStatusProvider} from '@app/node-status-context'
-import {listen} from '@tauri-apps/api/event'
 import tamaguiConfig from '../tamagui.config'
 import {appQueryClient} from './query-client'
 import './styles/root.css'
 import './styles/root.scss'
 import './styles/toaster.scss'
 import {NavigationProvider} from './utils/navigation'
+import {listen, useListen} from '@app/ipc'
 
 import('./updater')
 
@@ -108,34 +108,6 @@ function usePageZoom() {
       document.body.style = `zoom: ${val};`
     })
   }, [])
-
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    listen('change_zoom', async (event: {payload: 'zoomIn' | 'zoomOut'}) => {
-      let currentZoom = (await store.get<number>('zoom')) || 1
-      let newVal =
-        event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
-      // @ts-ignore
-      document.body.style = `zoom: ${newVal};`
-      store.set('zoom', currentZoom)
-    }).then((f) => (unlisten = f))
-
-    return () => unlisten?.()
-  }, [])
-
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    listen('reset_zoom', async (event: {payload: 'zoomReset'}) => {
-      console.log('RESET ZOOM!', event)
-      // @ts-ignore
-      document.body.style = `zoom: 1;`
-      store.set('zoom', 1)
-    }).then((f) => (unlisten = f))
-
-    return () => unlisten?.()
-  }, [])
 }
 
 export function StyleProvider({
@@ -153,3 +125,23 @@ export function StyleProvider({
     </TamaguiProvider>
   )
 }
+
+listen<string>('reset_zoom', (event) => {
+  console.log('RESET ZOOM!', event)
+  // @ts-ignore
+  document.body.style = `zoom: 1;`
+  store.set('zoom', 1)
+}).then((unlisten) => {
+  // noop
+})
+
+listen<'zoomIn' | 'zoomOut'>('change_zoom', async (event) => {
+  let currentZoom = (await store.get<number>('zoom')) || 1
+  let newVal =
+    event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
+  // @ts-ignore
+  document.body.style = `zoom: ${newVal};`
+  store.set('zoom', currentZoom)
+}).then((unlisten) => {
+  // noop
+})

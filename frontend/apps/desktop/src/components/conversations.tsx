@@ -19,7 +19,6 @@ import {
 } from '@mintter/shared'
 import {SizableText, Text, TextArea} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
-import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 
@@ -28,35 +27,8 @@ export const Conversations = features.comments ? RealConversations : () => null
 export function RealConversations() {
   const context = useConversations()
 
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    return () => unlisten?.()
-  }, [])
-
   const {documentId, conversations, highlights} = context
   const {data} = conversations || {}
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    appWindow
-      .onFocusChanged(({payload: focused}) => {
-        if (!isSubscribed) {
-          return unlisten()
-        }
-
-        if (focused) {
-          conversations?.refetch?.()
-        }
-      })
-      .then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
 
   return (
     <Box

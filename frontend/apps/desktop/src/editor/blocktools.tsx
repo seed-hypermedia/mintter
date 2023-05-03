@@ -1,18 +1,13 @@
+import {features} from '@app/constants'
 import {useDrag} from '@app/drag-context'
-import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
-import {ELEMENT_CODE} from '@app/editor/code'
+import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {Dropdown} from '@app/editor/dropdown'
-import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {ELEMENT_STATEMENT} from '@app/editor/statement'
 import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
-import {
-  MouseInterpret,
-  useCurrentBound,
-  useCurrentTarget,
-  useMouse,
-} from '@app/mouse-context'
+import {MouseInterpret, useCurrentBound, useMouse} from '@app/mouse-context'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {
   blockquote,
   code,
@@ -20,6 +15,7 @@ import {
   group,
   heading,
   image,
+  MINTTER_LINK_PREFIX,
   ol,
   statement,
   ul,
@@ -35,8 +31,6 @@ import {
   Drag,
   HeadingIcon,
   ImageIcon,
-  ListItem,
-  ListItemProps,
   Menu,
   OrderedList,
   SizableText,
@@ -46,16 +40,11 @@ import {
   XStack,
 } from '@mintter/ui'
 import {useSelector} from '@xstate/react'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {forwardRef, Fragment, useMemo, useState} from 'react'
+import {Fragment, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
-import {EditorHoveringActions} from './hovering-toolbar'
 import './styles/blocktools.scss'
-import {features} from '@app/constants'
-import {ConversationBlockBubble} from '@components/conversation-block-bubble'
-import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 
 export function DraftBlocktools({current}: {current: NodeEntry<FlowContent>}) {
   let btProps = useBlockToolsProps(current)
@@ -136,27 +125,18 @@ export function PublicationBlocktools({
   current: NodeEntry<FlowContent>
 }) {
   let {show} = useBlockToolsProps(current)
-  let target = useCurrentTarget()
+  let route = useNavRoute()
 
-  // let [match, setMatch] = useState(false)
+  const onCopy = () => {
+    if (route.key == 'publication') {
+      let reference = `${MINTTER_LINK_PREFIX}${route.documentId}`
+      if (route.versionId) reference += `?v=${route.versionId}`
+      if (current[0]) reference += `#${current[0].id}`
+      copyTextToClipboard(reference)
+      toast.success('Document reference copied!')
+    }
+  }
 
-  // useEffect(() => {
-  //   let responsiveMedia = window.matchMedia('(max-width: 768px)')
-  //   if (typeof responsiveMedia.addEventListener == 'function') {
-  //     responsiveMedia.addEventListener('change', handler)
-  //   } else if (typeof responsiveMedia.addListener == 'function') {
-  //     responsiveMedia.addListener(handler)
-  //   } else {
-  //     error('matchMedia support error', responsiveMedia)
-  //   }
-
-  //   setMatch(responsiveMedia.matches)
-  //   function handler(event: MediaQueryListEvent) {
-  //     setMatch(event.matches)
-  //   }
-  // }, [])
-
-  const copyUrl = target?.dataset.reference
   return (
     <XStack alignItems="center">
       <Button
@@ -164,12 +144,7 @@ export function PublicationBlocktools({
         size="$2"
         theme="blue"
         icon={Copy}
-        onPress={() => {
-          if (!copyUrl) return
-          copyTextToClipboard(copyUrl).then(() => {
-            toast.success(`Copied link to block`)
-          })
-        }}
+        onPress={onCopy}
       />
       {features.comments && current[0] ? (
         <ConversationBlockBubble block={current[0]} />
@@ -177,11 +152,6 @@ export function PublicationBlocktools({
 
       <CitationNumber block={current[0]} />
     </XStack>
-    // <EditorHoveringActions
-    //   onCopyLink={copyUrl ? () => copyUrl : undefined}
-    //   onComment={props.onComment}
-    //   copyLabel="block"
-    // />
   )
 }
 

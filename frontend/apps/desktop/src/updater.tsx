@@ -1,5 +1,5 @@
+import {listen} from '@app/ipc'
 import {Button} from '@mintter/ui'
-import {Event, listen} from '@tauri-apps/api/event'
 import {relaunch} from '@tauri-apps/api/process'
 import {
   checkUpdate,
@@ -14,7 +14,7 @@ checkUpdate()
 const TOAST_ID = 'updater'
 
 let ul1: () => void
-listen('tauri://update-available', (res: Event<UpdateManifest>) => {
+listen<UpdateManifest>('tauri://update-available', (res) => {
   toast(
     <UpdateAvailable version={res.payload.version} body={res.payload.body} />,
     {duration: Infinity, id: TOAST_ID},

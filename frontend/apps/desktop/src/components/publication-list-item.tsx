@@ -1,8 +1,6 @@
-import {publicationsClient} from '@app/api-clients'
-import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown} from '@app/editor/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
-import {queryKeys} from '@app/models/query-keys'
+import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
 import {
@@ -11,26 +9,21 @@ import {
   MINTTER_LINK_PREFIX,
   Publication,
 } from '@mintter/shared'
-import {useQueryClient} from '@tanstack/react-query'
-import {useActor, useInterpret} from '@xstate/react'
-import Highlighter from 'react-highlight-words'
-import {toast} from 'react-hot-toast'
-import {DeleteDialog} from './delete-dialog'
-import {MouseEvent} from 'react'
 import {
-  XStack,
-  Text,
   Button,
   ButtonText,
-  MoreHorizontal,
-  ListItem,
   Copy,
-  ExternalLink,
   Delete,
+  ExternalLink,
+  MoreHorizontal,
   Separator,
+  Text,
+  XStack,
 } from '@mintter/ui'
+import {MouseEvent} from 'react'
+import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {usePopoverState} from '@app/use-popover-state'
+import {DeleteDialog} from './delete-dialog'
 
 export function PublicationListItem({
   publication,

@@ -1,6 +1,7 @@
 import {draftsClient} from '@app/api-clients'
 import {Dropdown} from '@app/editor/dropdown'
 import appError from '@app/errors'
+import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
 import {useSiteList} from '@app/models/sites'
@@ -21,7 +22,6 @@ import {
   Add,
   Back,
   Button,
-  Copy,
   Draft,
   File,
   Forward,
@@ -30,14 +30,11 @@ import {
   Separator,
   Settings,
   SizableText,
-  Stack,
   TitlebarSection,
   User,
   XGroup,
   XStack,
-  YStack,
 } from '@mintter/ui'
-import {emit as tauriEmit} from '@tauri-apps/api/event'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useState} from 'react'
 import toast from 'react-hot-toast'
@@ -225,7 +222,7 @@ export function NavMenu() {
             <SitesNavDropdownItems />
             <Separator />
             <Dropdown.Item
-              onSelect={() => tauriEmit('open_quick_switcher')}
+              onSelect={() => send('open_quick_switcher')}
               title="Quick Switcher"
               iconAfter={
                 <SizableText size="$1" color="$mint5">

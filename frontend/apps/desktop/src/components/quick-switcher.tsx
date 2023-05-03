@@ -4,7 +4,7 @@ import {isMintterScheme} from '@app/utils/is-mintter-link'
 import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl, getIdsfromUrlMaybe} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
-import {listen} from '@tauri-apps/api/event'
+import {listen, useListen} from '@app/ipc'
 import {Command} from 'cmdk'
 import {useEffect, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -19,18 +19,12 @@ export default function QuickSwitcher() {
   const navigate = useNavigate()
 
   // Toggle the menu when ⌘K is pressed
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    listen('open_quick_switcher', () => {
-      if (document.hasFocus()) {
-        // FIXME: this is a *hack* until we just send this event to the current window from tauri
-        setOpen(true)
-      }
-    }).then((f) => (unlisten = f))
-
-    return () => unlisten?.()
-  }, [])
+  useListen('open_quick_switcher', () => {
+    if (document.hasFocus()) {
+      // FIXME: this is a *hack* until we just send this event to the current window from tauri
+      setOpen(true)
+    }
+  })
 
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
 

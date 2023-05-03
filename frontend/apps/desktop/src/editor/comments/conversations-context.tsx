@@ -1,4 +1,5 @@
 import {features} from '@app/constants'
+import {useWindowListen} from '@app/ipc'
 import {useDocConversations} from '@app/models/comments'
 import {
   Annotation,
@@ -10,13 +11,11 @@ import {
 } from '@mintter/shared'
 import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
 import {UseQueryResult} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
 import {
   createContext,
   PropsWithChildren,
   ReactNode,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -127,16 +126,9 @@ export function RealConversationsProvider({
     return res
   }, [queryResult.data, blocksD])
 
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    listen<{conversations: Array<string>}>('selector_click', (event) => {
-      console.log('CLICK ON SELECTOR!', event)
-      setHighlights(event.payload.conversations)
-    }).then((f) => (unlisten = f))
-
-    return () => unlisten?.()
-  }, [])
+  useWindowListen<{conversations: Array<string>}>('selector_click', (event) => {
+    setHighlights(event.payload.conversations)
+  })
 
   return (
     <conversationsContext.Provider

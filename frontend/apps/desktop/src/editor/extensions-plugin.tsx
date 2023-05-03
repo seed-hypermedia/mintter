@@ -1,4 +1,4 @@
-import {invoke} from '@tauri-apps/api'
+import {invoke} from '@app/ipc'
 import {lazy, Suspense} from 'react'
 import {EditorPlugin} from './types'
 

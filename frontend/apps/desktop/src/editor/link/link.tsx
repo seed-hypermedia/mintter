@@ -273,8 +273,6 @@ function RenderMintterLink(
   const navigate = useNavigate()
   const spawn = useNavigate()
   const navigateReplace = useNavigate('replace')
-
-  let mouseService = useMouse()
   const route = useNavRoute()
 
   const {mintterLink, attributes, ...linkProps} = props
@@ -308,14 +306,14 @@ function RenderMintterLink(
   }
 
   function mouseEnter() {
-    mouseService.send({
-      type: 'HIGHLIGHT.ENTER',
-      ref: blockRef ? `${documentId}/${blockRef}` : documentId,
-    })
+    // mouseService.send({
+    //   type: 'HIGHLIGHT.ENTER',
+    //   ref: blockRef ? `${documentId}/${blockRef}` : documentId,
+    // })
   }
 
   function mouseLeave() {
-    mouseService.send('HIGHLIGHT.LEAVE')
+    // mouseService.send('HIGHLIGHT.LEAVE')
   }
 
   return (

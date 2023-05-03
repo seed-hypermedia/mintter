@@ -1,8 +1,8 @@
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorPlugin} from '@app/editor/types'
+import {windowSend} from '@app/ipc'
 import {isParagraph} from '@mintter/shared'
-import {appWindow} from '@tauri-apps/api/window'
 import {MouseEventHandler, useEffect, useMemo, useRef} from 'react'
 import {Range, SetNodeOperation} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -20,7 +20,7 @@ export function createCommentsPlugin(): EditorPlugin {
         let ref = useRef<HTMLSpanElement>(null)
         const emitSelectorClick: MouseEventHandler = (e) => {
           e.preventDefault()
-          appWindow.emit('selector_click', {
+          windowSend('selector_click', {
             conversations: leaf.conversations,
           })
         }

@@ -2,8 +2,11 @@ import {publicationsClient} from '@app/api-clients'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
+import {
+  useHoverVisibleConnection,
+  useVisibleConnection,
+} from '@app/editor/visible-connection'
 import {queryKeys} from '@app/models/query-keys'
-import {useMouse} from '@app/mouse-context'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {
   blockNodeToSlate,
@@ -78,13 +81,14 @@ function Embed({
 }: RenderElementProps & {
   mode: EditorMode
 }) {
-  const mouseService = useMouse()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   // const navigateReplace = useNavigate('replace')
   const route = useNavRoute()
 
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
+  let {highlight} = useVisibleConnection(blockId)
+  let hoverProps = useHoverVisibleConnection(blockId)
   let client = useQueryClient()
   let [state] = useMachine(() =>
     // @ts-ignore
@@ -131,13 +135,6 @@ function Embed({
     )
   }
 
-  function mouseEnter() {
-    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: `${docId}/${blockId}`})
-  }
-  function mouseLeave() {
-    mouseService.send('HIGHLIGHT.LEAVE')
-  }
-
   return (
     <XStack
       tag="q"
@@ -145,17 +142,25 @@ function Embed({
       {...attributes}
       flex={0}
       display="inline"
-      backgroundColor={focused && selected ? '$color4' : 'transparent'}
+      backgroundColor={
+        highlight ? '$yellow3' : focused && selected ? '$color4' : 'transparent'
+      }
       // @ts-ignore
       contentEditable={false}
       hoverStyle={{
         cursor: 'pointer',
-        backgroundColor: '$color4',
+        backgroundColor: highlight ? '$yellow3' : '$color4',
       }}
       borderRadius="$1"
       onClick={onOpenInNewWindow}
-      onPointerEnter={mouseEnter}
-      onPointerLeave={mouseLeave}
+      {...hoverProps}
+      onMouseEnter={(event) => {
+        console.log('MOUSE ENTER', blockId)
+
+        event.preventDefault()
+        event.stopPropagation()
+        hoverProps.onHoverIn()
+      }}
     >
       <Editor
         as="span"

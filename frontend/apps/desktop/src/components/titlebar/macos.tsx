@@ -45,7 +45,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
-          backgroundColor={'$gray1'}
         >
           <ActionButtons {...props} />
         </XStack>

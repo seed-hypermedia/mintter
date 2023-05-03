@@ -3,6 +3,7 @@ import {
   EditorHoveringToolbar,
   PublicationToolbar,
 } from '@app/editor/hovering-toolbar'
+import {useWindowListen} from '@app/ipc'
 import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
@@ -19,7 +20,6 @@ import {
   statement,
   ul,
 } from '@mintter/shared'
-import {Event, listen} from '@tauri-apps/api/event'
 import debounce from 'lodash.debounce'
 import {
   ElementType,
@@ -203,101 +203,62 @@ function useSelectAll(editor: EditorType, mode: EditorMode) {
 }
 
 function useTauriListeners(editor: EditorType) {
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
+  useWindowListen<string>('format_mark', (event) => {
+    if (!isMark(event.payload)) return
 
-    listen('format_mark', (event: Event<string>) => {
-      if (!isSubscribed) {
-        return unlisten()
-      }
-
-      if (!isMark(event.payload)) return
-
-      toggleFormat(editor, event.payload)
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
+    toggleFormat(editor, event.payload)
   })
 
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
+  useWindowListen<string>('format_block', (event) => {
+    if (!editor.selection) return
 
-    listen('format_block', (event: Event<string>) => {
-      if (!isSubscribed) {
-        unlisten()
-      }
+    const set = setType(
+      {
+        heading,
+        statement,
+        blockquote,
+        codeblock: code,
+      }[event.payload],
+    )
 
-      if (!editor.selection) return
+    const [element, path] =
+      EditorType.above(editor, {
+        at: editor.selection,
+        match: isFlowContent,
+      }) || []
 
-      const set = setType(
-        {
-          heading,
-          statement,
-          blockquote,
-          codeblock: code,
-        }[event.payload],
-      )
+    if (!element || !path) throw new Error('whut')
 
-      const [element, path] =
-        EditorType.above(editor, {
-          at: editor.selection,
-          match: isFlowContent,
-        }) || []
-
-      if (!element || !path) throw new Error('whut')
-
-      set(editor, {at: path, element})
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
+    set(editor, {at: path, element})
   })
 
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
+  useWindowListen<string>('format_list', (event) => {
+    if (
+      !editor.selection ||
+      !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
+    )
+      return
 
-    listen('format_list', (event: Event<string>) => {
-      if (!isSubscribed) {
-        return unlisten()
-      }
+    const set = setList(
+      {
+        ordered_list: ol,
+        unordered_list: ul,
+        group,
+      }[event.payload]!,
+    )
 
-      if (
-        !editor.selection ||
-        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
-      )
-        return
+    const [element, path] =
+      EditorType.above(editor, {
+        at: editor.selection,
+        match: isFlowContent,
+      }) || []
 
-      const set = setList(
-        {
-          ordered_list: ol,
-          unordered_list: ul,
-          group,
-        }[event.payload]!,
-      )
+    if (!element || !path) throw new Error('whut')
 
-      const [element, path] =
-        EditorType.above(editor, {
-          at: editor.selection,
-          match: isFlowContent,
-        }) || []
-
-      if (!element || !path) throw new Error('whut')
-
-      if (path) {
-        set(editor, {element, at: path})
-      } else {
-        error('whut')
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
+    if (path) {
+      set(editor, {element, at: path})
+    } else {
+      error('whut')
     }
   })
 }

@@ -47,8 +47,7 @@ import {
   Container,
 } from '@mintter/ui'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
-import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {invoke} from '@tauri-apps/api/tauri'
+import {invoke, send} from '@app/ipc'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useMemo} from 'react'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
@@ -89,7 +88,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
     <TitlebarWrapper platform="windows" data-tauri-drag-region>
       <TitlebarRow
         minHeight={28}
-        backgroundColor="$gray3"
+        backgroundColor="$color3"
         data-tauri-drag-region
       >
         <TitlebarSection data-tauri-drag-region flex={1}>
@@ -134,7 +133,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
-          backgroundColor={'$gray1'}
+          backgroundColor="$color1"
         >
           <ActionButtons {...props} />
         </XStack>
@@ -298,7 +297,7 @@ function SystemMenu() {
             id: 'strong',
             title: 'Strong',
             accelerator: 'Ctrl+B',
-            onSelect: () => tauriEmit('format_mark', 'strong'),
+            onSelect: () => send('format_mark', 'strong'),
             icon: Strong,
             disabled: true,
           },
@@ -306,7 +305,7 @@ function SystemMenu() {
             id: 'emphasis',
             title: 'Emphasis',
             accelerator: 'Ctrl+I',
-            onSelect: () => tauriEmit('format_mark', 'emphasis'),
+            onSelect: () => send('format_mark', 'emphasis'),
             icon: Emphasis,
             disabled: true,
           },
@@ -314,7 +313,7 @@ function SystemMenu() {
             id: 'code',
             title: 'Code',
             accelerator: 'Ctrl+E',
-            onSelect: () => tauriEmit('format_mark', 'code'),
+            onSelect: () => send('format_mark', 'code'),
             icon: Code,
             disabled: true,
           },
@@ -322,77 +321,77 @@ function SystemMenu() {
             id: 'underline',
             title: 'Underline',
             accelerator: 'Ctrl+U',
-            onSelect: () => tauriEmit('format_mark', 'underline'),
+            onSelect: () => send('format_mark', 'underline'),
             icon: Underline,
             disabled: true,
           },
           {
             id: 'strikethrough',
             title: 'Strikethrough',
-            onSelect: () => tauriEmit('format_mark', 'strikethrough'),
+            onSelect: () => send('format_mark', 'strikethrough'),
             icon: Strikethrough,
             disabled: true,
           },
           {
             id: 'subscript',
             title: 'Subscript',
-            onSelect: () => tauriEmit('format_mark', 'subscript'),
+            onSelect: () => send('format_mark', 'subscript'),
             icon: Subscript,
             disabled: true,
           },
           {
             id: 'superscript',
             title: 'Superscript',
-            onSelect: () => tauriEmit('format_mark', 'superscript'),
+            onSelect: () => send('format_mark', 'superscript'),
             icon: Superscript,
             disabled: true,
           },
           {
             id: 'heading',
             title: 'Heading',
-            onSelect: () => tauriEmit('format_block', 'heading'),
+            onSelect: () => send('format_block', 'heading'),
             icon: HeadingIcon,
             disabled: true,
           },
           {
             id: 'statement',
             title: 'Statement',
-            onSelect: () => tauriEmit('format_block', 'heading'),
+            onSelect: () => send('format_block', 'heading'),
             icon: Statement,
             disabled: true,
           },
           {
             id: 'blockquote',
             title: 'Blockquote',
-            onSelect: () => tauriEmit('format_block', 'blockquote'),
+            onSelect: () => send('format_block', 'blockquote'),
             icon: BlockQuote,
             disabled: true,
           },
           {
             id: 'codeblock',
             title: 'Code Block',
-            onSelect: () => tauriEmit('format_block', 'codeblock'),
+            onSelect: () => send('format_block', 'codeblock'),
             icon: CodeBlock,
             disabled: true,
           },
           {
             id: 'unorderedlist',
             title: 'Unordered List',
-            onSelect: () => tauriEmit('format_block', 'unordered_list'),
+            onSelect: () => send('format_block', 'unordered_list'),
             icon: UnorderedList,
             disabled: true,
           },
           {
             id: 'orderedlist',
             title: 'Ordered List',
-            onSelect: () => tauriEmit('format_block', 'ordered_list'),
+            onSelect: () => send('format_block', 'ordered_list'),
             icon: OrderedList,
             disabled: true,
           },
           {
             id: 'group',
             title: 'Plain List',
-            onSelect: () => tauriEmit('format_block', 'group'),
+            onSelect: () => send('format_block', 'group'),
             icon: GroupIcon,
             disabled: true,
           },
@@ -413,7 +412,7 @@ function SystemMenu() {
             id: 'quickswitcher',
             title: 'Quick Switcher',
             accelerator: 'Ctrl+K',
-            onSelect: () => tauriEmit('open_quick_switcher'),
+            onSelect: () => send('open_quick_switcher'),
             icon: Search,
           },
           {

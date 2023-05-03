@@ -2,6 +2,11 @@ import {useDrag} from '@app/drag-context'
 import {HIGHLIGHTER} from '@app/editor/code'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {findPath} from '@app/editor/utils'
+import {
+  useHoverVisibleConnection,
+  useVisibleConnection,
+} from '@app/editor/visible-connection'
+import {send, useListen} from '@app/ipc'
 import {useBlockObserve} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {
@@ -15,7 +20,7 @@ import {
   Paragraph as ParagraphType,
 } from '@mintter/shared'
 import {SizableText, XStack, YStack} from '@mintter/ui'
-import {useMemo, useRef} from 'react'
+import {useMemo, useRef, useState} from 'react'
 import {BUNDLED_LANGUAGES, Lang} from 'shiki'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {
@@ -79,8 +84,12 @@ function Paragraph({
   let {elementProps, parentNode} = usePhrasingProps(editor, element)
   // dragProps
   let pRef = useRef<HTMLElement | undefined>()
+  let {highlight} = useVisibleConnection(parentNode?.id)
+  let hoverProps = useHoverVisibleConnection(parentNode?.id)
+
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
+    ...hoverProps,
   }
   let paddingLeft = useMemo(
     () => (elementProps['data-parent-group'] == 'group' ? '$2' : 0),
@@ -130,6 +139,7 @@ function Paragraph({
         color="$color9"
         fontWeight="600"
         padding="$1"
+        backgroundColor={highlight ? '$yellow3' : 'transparent'}
         // borderRadius="$2"
         // backgroundColor="$background"
         // hoverStyle={{

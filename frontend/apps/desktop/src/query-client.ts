@@ -1,5 +1,5 @@
+import {listen, send} from '@app/ipc'
 import {QueryClient, QueryKey} from '@tanstack/react-query'
-import {emit as tauriEmit, listen as tauriListen} from '@tauri-apps/api/event'
 
 export const appQueryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +20,7 @@ export const appQueryClient = new QueryClient({
   },
 })
 
-tauriListen('invalidate_queries', (event) => {
+listen('invalidate_queries', (event) => {
   const queryKey = event.payload as QueryKey
   appQueryClient.invalidateQueries(queryKey)
 }).then((unlisten) => {
@@ -29,5 +29,5 @@ tauriListen('invalidate_queries', (event) => {
 
 export function appInvalidateQueries(queryKeys: QueryKey) {
   appQueryClient.invalidateQueries(queryKeys)
-  tauriEmit('invalidate_queries', queryKeys)
+  send('invalidate_queries', queryKeys)
 }

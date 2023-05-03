@@ -121,7 +121,7 @@ function CopyBlockLinkButton({id}: {id: string}) {
         <Tooltip.Trigger position="absolute" right={'$1'} top={'$1'}>
           <Button
             size="$2"
-            backgroundColor={'$gray1'}
+            backgroundColor={'$mint1'}
             onPress={() => {
               const {pathname, origin, search} = window.location
               navigator.clipboard.writeText(

@@ -13,8 +13,7 @@ import {
   Draft,
   File,
 } from '@mintter/ui'
-import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {invoke} from '@tauri-apps/api/tauri'
+import {invoke, send} from '@app/ipc'
 import {useEffect, useState} from 'react'
 import {
   AccountDropdownItem,
@@ -152,7 +151,7 @@ function NavMenu() {
           <SitesNavDropdownItems />
           <Separator />
           <Dropdown.Item
-            onSelect={() => tauriEmit('open_quick_switcher')}
+            onSelect={() => send('open_quick_switcher')}
             title="Quick Switcher"
             iconAfter={
               <SizableText size="$1" color="$mint5">
@@ -186,7 +185,7 @@ function NavMenu() {
                 Ctrl+F
               </SizableText>
             }
-            onSelect={() => tauriEmit('open_find')}
+            onSelect={() => send('open_find')}
           /> */}
 
           <Dropdown.Sub>
@@ -197,40 +196,40 @@ function NavMenu() {
               <MenuItem
                 title="Strong"
                 accelerator="Ctrl+B"
-                onSelect={() => tauriEmit('format_mark', 'strong')}
+                onSelect={() => send('format_mark', 'strong')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Emphasis"
                 accelerator="Ctrl+I"
-                onSelect={() => tauriEmit('format_mark', 'emphasis')}
+                onSelect={() => send('format_mark', 'emphasis')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Code"
                 accelerator="Ctrl+E"
-                onSelect={() => tauriEmit('format_mark', 'code')}
+                onSelect={() => send('format_mark', 'code')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Underline"
                 accelerator="Ctrl+U"
-                onSelect={() => tauriEmit('format_mark', 'underline')}
+                onSelect={() => send('format_mark', 'underline')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Strikethrough"
-                onSelect={() => tauriEmit('format_mark', 'strikethrough')}
+                onSelect={() => send('format_mark', 'strikethrough')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Subscript"
-                onSelect={() => tauriEmit('format_mark', 'subscript')}
+                onSelect={() => send('format_mark', 'subscript')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Superscript"
-                onSelect={() => tauriEmit('format_mark', 'superscript')}
+                onSelect={() => send('format_mark', 'superscript')}
                 disabled={!editingEnabled}
               />
 
@@ -239,25 +238,25 @@ function NavMenu() {
               <MenuItem
                 title="Heading"
                 accelerator="Ctrl+Shift+H"
-                onSelect={() => tauriEmit('format_block', 'heading')}
+                onSelect={() => send('format_block', 'heading')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Statement"
                 accelerator="Ctrl+Shif+S"
-                onSelect={() => tauriEmit('format_block', 'statement')}
+                onSelect={() => send('format_block', 'statement')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Blockquote"
                 accelerator="Ctrl+Shift+Q"
-                onSelect={() => tauriEmit('format_block', 'blockquote')}
+                onSelect={() => send('format_block', 'blockquote')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Code Block"
                 accelerator="Ctrl+Shift+E"
-                onSelect={() => tauriEmit('format_block', 'codeblock')}
+                onSelect={() => send('format_block', 'codeblock')}
                 disabled={!editingEnabled}
               />
 
@@ -266,19 +265,19 @@ function NavMenu() {
               <MenuItem
                 title="Bullet List"
                 accelerator="Ctrl+Shift+7"
-                onSelect={() => tauriEmit('format_list', 'unordered_list')}
+                onSelect={() => send('format_list', 'unordered_list')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Numbered List"
                 accelerator="Ctrl+Shift+8"
-                onSelect={() => tauriEmit('format_list', 'ordered_list')}
+                onSelect={() => send('format_list', 'ordered_list')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Plain List"
                 accelerator="Ctrl+Shift+9"
-                onSelect={() => tauriEmit('format_list', 'group')}
+                onSelect={() => send('format_list', 'group')}
                 disabled={!editingEnabled}
               />
             </Dropdown.SubContent>

@@ -142,7 +142,7 @@ function WebPublicationListItem({
       )}
       <Button
         size="$1"
-        theme="$gray5"
+        theme="$color5"
         onPress={goToItem}
         data-testid="list-item-author"
         className={`item-author`}

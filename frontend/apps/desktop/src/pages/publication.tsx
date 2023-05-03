@@ -12,7 +12,6 @@ import {usePublication} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {Box} from '@components/box'
 import {ChangesList} from '@components/changes-list'
 import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
@@ -38,8 +37,6 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useQueryClient} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
 import {useInterpret} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
@@ -48,6 +45,7 @@ import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 
+import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
 
 function pluralS(length = 0) {
@@ -105,32 +103,10 @@ export default function PublicationPage() {
     status == 'success' ? docId : undefined,
   )
 
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('update_focus_window_route', (event) => {
-      if (event.payload && typeof event.payload == 'string') {
-        let [tBlock] = event.payload.split('/').reverse()
-        setFocusBlock(tBlock)
-        // setLocation(`/p/${tDoc}/${tVersion}/${tBlock}`, {replace: true})
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
+  useWindowListen('selector_click', (event) => {
+    // TODO: send the conversationID through this event to highlight the appropiate conversation in the panel
+    replace({...route, accessory: {key: 'comments'}})
   })
-
-  useEffect(() => {
-    let unlisten: () => void | undefined
-
-    listen<{conversations: Array<string>}>('selector_click', (event) => {
-      replace({...route, accessory: {key: 'comments'}})
-    }).then((f) => (unlisten = f))
-
-    return () => unlisten?.()
-  }, [])
 
   if (status == 'error') {
     return (

@@ -1,5 +1,3 @@
-import {invoke} from '@tauri-apps/api'
-import {listen, UnlistenFn} from '@tauri-apps/api/event'
 import {assign, createMachine} from 'xstate'
 
 type VisibleBlock = [blockId: string, ref: HTMLElement]
@@ -17,9 +15,6 @@ type MouseEvent =
   | {type: 'DISABLE.BLOCKTOOLS.CLOSE'}
   | {type: 'DISABLE.SCROLL'}
   | {type: 'INIT.OBSERVER'; observer: IntersectionObserver}
-  | {type: 'HIGHLIGHT.ENTER'; ref: string}
-  | {type: 'HIGHLIGHT.LEAVE'}
-  | {type: 'HIGHLIGHT.FROM.WINDOWS'; ref: string}
   | {type: 'DISABLE.DRAG.START'}
   | {type: 'DISABLE.DRAG.END'}
 
@@ -28,23 +23,18 @@ type MouseContext = {
   observer?: IntersectionObserver
   visibleBlocks: Array<VisibleBlock>
   currentBound?: Bound
-  highlightRef: string
 }
 
 export var mouseMachine = createMachine(
   {
     predictableActionArguments: true,
-    context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
+    context: {visibleBounds: [], visibleBlocks: []},
     tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
     schema: {context: {} as MouseContext, events: {} as MouseEvent},
     invoke: [
       {
         src: 'boundsListener',
         id: 'boundsListener',
-      },
-      {
-        src: 'windowListener',
-        id: 'windowListener',
       },
       {
         src: 'windowBlurService',
@@ -147,37 +137,10 @@ export var mouseMachine = createMachine(
           'when the window gets inactive, the machine should get inactive too',
         target: '.inactive',
       },
-
-      'HIGHLIGHT.ENTER': {
-        actions: ['assignHighlightRef', 'emitAll'],
-      },
-
-      'HIGHLIGHT.LEAVE': {
-        actions: ['clearHighlightRef', 'emitAll'],
-      },
-
-      'HIGHLIGHT.FROM.WINDOWS': {
-        actions: ['assignHighlightRef'],
-        description:
-          'this event is triggered from the tauri window listener to update the ref hovered in all windows. (apply new style on page main component)',
-      },
     },
   },
   {
     actions: {
-      emitAll: (_, event) => {
-        invoke('emit_all', {
-          event: 'hover_ref',
-          payload: event.type == 'HIGHLIGHT.ENTER' ? event.ref : undefined,
-        })
-      },
-      assignHighlightRef: assign({
-        highlightRef: (_, event) => event.ref,
-      }),
-      clearHighlightRef: assign({
-        // eslint-disable-next-line
-        highlightRef: (c) => '',
-      }),
       clearBlockBounds: assign({
         // eslint-disable-next-line
         visibleBounds: (c) => [],
@@ -245,26 +208,6 @@ export var mouseMachine = createMachine(
 
         function onBlur() {
           sendBack('DISABLE.WINDOW.BLUR')
-        }
-      },
-      windowListener: () => (sendBack) => {
-        var unlisten: undefined | UnlistenFn
-
-        bootListener()
-
-        async function bootListener() {
-          unlisten = await listen<string>('hover_ref', (event) => {
-            // let ref = event.payload ?? undefined
-            // let currentRef = document.body.dataset.hoverRef
-            // if (ref != currentRef) {
-            //   sendBack({type: 'FROM.WINDOWS', ref})
-            // }
-            sendBack({type: 'HIGHLIGHT.FROM.WINDOWS', ref: event.payload})
-          })
-        }
-
-        return () => {
-          unlisten?.()
         }
       },
       boundsListener: () => (sendBack) => {
