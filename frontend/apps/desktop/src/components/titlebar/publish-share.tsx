@@ -206,6 +206,9 @@ export function PublishShareButton() {
   const publicationDialog = usePublicationDialog()
   const isDaemonReady = useDaemonReady()
   const publications = useDocPublications(documentId)
+  const publishedWebHost = pub?.document
+    ? pub.document.webUrl || 'https://mintter.com'
+    : null
   let isSaving = useRef(false)
   const republishDoc = useDocRepublish({
     onSuccess: (webPubs) => {
@@ -312,8 +315,8 @@ export function PublishShareButton() {
             const {document, version} = pub || {}
             const {id, webUrl} = document || {}
             if (!id) throw new Error('No document id')
-            const host = webUrl || 'https://mintter.com'
-            let docUrl = `${host}/p/${id}?v=${version}`
+            if (!publishedWebHost) throw new Error('Document not loaded')
+            let docUrl = `${publishedWebHost}/p/${id}?v=${version}`
             copyTextToClipboard(docUrl)
             toast.success('Copied document reference')
           }}
