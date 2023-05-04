@@ -96,39 +96,6 @@ function Paragraph({
     [elementProps],
   )
   useBlockObserve(mode, pRef)
-  let dragService = useDrag()
-
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    // const domNode = ReactEditor.toDOMNode(editor, element)
-    const path = ReactEditor.findPath(editor, element)
-
-    const parentBlock = Editor.above<FlowContent>(editor, {
-      match: isFlowContent,
-      mode: 'lowest',
-      at: path,
-    })
-
-    if (parentBlock) {
-      const [node, ancestorPath] = parentBlock
-
-      let initialPath = ancestorPath
-
-      while (initialPath.length !== 2) {
-        initialPath = initialPath.slice(0, -2)
-      }
-
-      const domNode = ReactEditor.toDOMNode(editor, node)
-
-      dragService?.send({
-        type: 'DRAG.OVER',
-        toPath: ancestorPath,
-        element: domNode as HTMLLIElement,
-      })
-    }
-    return false
-  }
 
   if (mode == EditorMode.Embed) {
     return (

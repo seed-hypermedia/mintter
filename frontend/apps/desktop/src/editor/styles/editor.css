@@ -50,13 +50,13 @@ q:after {
 
 /* === DRAGGING === */
 
-[data-action='dragged-bottom']::after {
+/* [data-action='dragged-bottom']::after {
   content: '';
   position: absolute;
   bottom: -7px;
   height: 3px;
   width: 100%;
-  background-color: red
+  background-color: #007aff;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -103,7 +103,7 @@ q:after {
   width: 20px;
   background-color: #007aff;
   left: 0%;
-}
+} */
 
 /*
 

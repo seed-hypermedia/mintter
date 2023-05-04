@@ -29,7 +29,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {Descendant, Editor as EditorType, Transforms} from 'slate'
+import {Descendant, Editor as EditorType, NodeEntry, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
 import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {
@@ -42,7 +42,7 @@ import {
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.css'
 import type {EditorPlugin} from './types'
-import {setList, setType, toggleFormat} from './utils'
+import {findPath, setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   children?: ReactNode
@@ -83,14 +83,12 @@ export function Editor({
           if (draggedNode) return
           setDraggedNode(node)
           e.preventDefault()
-          const path = ReactEditor.findPath(editor, node)
-
-          const domNode = ReactEditor.toDOMNode(editor, node)
+          const path = findPath(node)
 
           dragService?.send({
             type: 'DRAG.OVER',
             toPath: path,
-            element: domNode as HTMLLIElement,
+            element: [node, path] as NodeEntry<FlowContent>,
             currentPosX: e.clientX,
             currentPosY: e.clientY,
           })

@@ -12,7 +12,7 @@ import {
   statement,
   ul,
 } from '@mintter/shared'
-import {YStack} from '@mintter/ui'
+import {XStack, YStack} from '@mintter/ui'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -21,6 +21,7 @@ import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {
   BLOCK_GAP,
+  findPath,
   isFirstChild,
   resetGroupingContent,
   toggleList,
@@ -207,6 +208,7 @@ export function Group({
       marginLeft={isGroup(element) ? 0 : -32}
       {...elementProps}
       gap={BLOCK_GAP}
+      position="relative"
       // borderWidth={1}
       // borderColor="gray"
     >
