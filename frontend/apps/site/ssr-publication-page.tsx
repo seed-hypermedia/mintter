@@ -9,6 +9,7 @@ import {
 import Head from 'next/head'
 import {HighlightProvider} from 'slate-react-presentation/highlight'
 import {HoverProvider} from 'slate-react-presentation/hover'
+import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
@@ -66,7 +67,9 @@ export default function PublicationPage({
               content={publication?.document?.title}
             />
           </Head>
-          <ArticleContainer fd={media.gtSm ? 'row' : 'column-reverse'}>
+          <ArticleContainer
+            flexDirection={media.gtSm ? 'row' : 'column-reverse'}
+          >
             <MainContainer>
               {slateChildren ? (
                 <SlateReactPresentation
@@ -80,10 +83,13 @@ export default function PublicationPage({
             </MainContainer>
             <SideContainer>
               {metadata ? (
-                <PublicationMetadata
-                  publication={publication}
-                  author={author}
-                />
+                <>
+                  <PublicationMetadata
+                    publication={publication}
+                    author={author}
+                  />
+                  {publication && <WebTipping publication={publication} />}
+                </>
               ) : null}
             </SideContainer>
           </ArticleContainer>
