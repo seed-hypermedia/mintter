@@ -2,7 +2,7 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
-import {Editor} from '@app/editor/editor'
+import {Editor, useTauriListeners} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {useEditorDraft, useSaveDraft} from '@app/models/documents'
@@ -11,7 +11,6 @@ import {mouseMachine} from '@app/mouse-machine'
 import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
-import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {
@@ -56,6 +55,7 @@ export default function DraftPage() {
   let isDaemonReady = useDaemonReady()
 
   useInitialFocus(editor)
+  useTauriListeners(editor)
 
   // TODO: safe when loading the first time a new draft: this is to load the epty block generated when start inside the `editorValue` useMemo
   const saveDraft = useSaveDraft(docId)

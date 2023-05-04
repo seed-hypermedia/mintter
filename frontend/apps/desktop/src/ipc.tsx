@@ -40,21 +40,27 @@ export function useListen<T = unknown>(
 export function useWindowListen<T = unknown>(
   cmd: string,
   handler: EventCallback<T>,
+  deps: React.DependencyList = [],
 ) {
   useEffect(() => {
     let isSubscribed = true
     let unlisten: () => void
 
-    windowListen(cmd, (event: Event<T>) => {
-      if (!isSubscribed) {
-        return unlisten()
-      }
+    appWindow
+      .listen(cmd, (event: Event<T>) => {
+        if (!isSubscribed) {
+          return unlisten()
+        }
 
-      handler(event)
-    }).then((_unlisten) => (unlisten = _unlisten))
+        handler(event)
+      })
+      .then((_unlisten) => (unlisten = _unlisten))
+      .catch((err) => {
+        console.error(`=== useWindowListen ERROR: ${err}`)
+      })
 
     return () => {
       isSubscribed = false
     }
-  })
+  }, [...deps, windowListen])
 }

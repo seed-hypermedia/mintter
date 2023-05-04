@@ -23,11 +23,9 @@ export function useHoverVisibleConnection(blockId?: string) {
   return useMemo(
     () => ({
       onHoverIn: () => {
-        console.log('HOVER IN', blockId)
         send('hover_block', blockId)
       },
       onHoverOut: () => {
-        console.log('HOVER OUT', blockId)
         send('hover_block', '')
       },
     }),

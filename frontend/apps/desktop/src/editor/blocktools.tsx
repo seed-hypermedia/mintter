@@ -55,7 +55,7 @@ export function DraftBlocktools({current}: {current: NodeEntry<FlowContent>}) {
   let [block, path] = current
 
   return (
-    <XStack alignItems="center" opacity={show ? 1 : 0}>
+    <XStack alignItems="center" opacity={show ? 1 : 0} gap="$1">
       <Dropdown.Root
         open={localOpen}
         onOpenChange={(isOpen) => {

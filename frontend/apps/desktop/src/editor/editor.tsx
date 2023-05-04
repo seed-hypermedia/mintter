@@ -73,8 +73,7 @@ export function Editor({
   const dragService = useDrag()
   const [draggedNode, setDraggedNode] = useState<HoveredNode>(null)
 
-  useSelectAll(editor, mode)
-  useTauriListeners(editor)
+  // useSelectAll(editor, mode)
 
   let contextValues: DragContextValues = useMemo(
     () => ({
@@ -202,63 +201,75 @@ function useSelectAll(editor: EditorType, mode: EditorMode) {
   }, [])
 }
 
-function useTauriListeners(editor: EditorType) {
-  useWindowListen<string>('format_mark', (event) => {
-    if (!isMark(event.payload)) return
+export function useTauriListeners(editor: EditorType) {
+  useWindowListen<string>(
+    'format_mark',
+    (event) => {
+      if (!isMark(event.payload)) return
 
-    toggleFormat(editor, event.payload)
-  })
+      toggleFormat(editor, event.payload)
+    },
+    [],
+  )
 
-  useWindowListen<string>('format_block', (event) => {
-    if (!editor.selection) return
+  useWindowListen<string>(
+    'format_block',
+    (event) => {
+      if (!editor.selection) return
 
-    const set = setType(
-      {
-        heading,
-        statement,
-        blockquote,
-        codeblock: code,
-      }[event.payload],
-    )
+      const set = setType(
+        {
+          heading,
+          statement,
+          blockquote,
+          codeblock: code,
+        }[event.payload],
+      )
 
-    const [element, path] =
-      EditorType.above(editor, {
-        at: editor.selection,
-        match: isFlowContent,
-      }) || []
+      const [element, path] =
+        EditorType.above(editor, {
+          at: editor.selection,
+          match: isFlowContent,
+        }) || []
 
-    if (!element || !path) throw new Error('whut')
+      if (!element || !path) throw new Error('whut')
 
-    set(editor, {at: path, element})
-  })
+      set(editor, {at: path, element})
+    },
+    [],
+  )
 
-  useWindowListen<string>('format_list', (event) => {
-    if (
-      !editor.selection ||
-      !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
-    )
-      return
+  useWindowListen<string>(
+    'format_list',
+    (event) => {
+      if (
+        !editor.selection ||
+        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
+      )
+        return
 
-    const set = setList(
-      {
-        ordered_list: ol,
-        unordered_list: ul,
-        group,
-      }[event.payload]!,
-    )
+      const set = setList(
+        {
+          ordered_list: ol,
+          unordered_list: ul,
+          group,
+        }[event.payload]!,
+      )
 
-    const [element, path] =
-      EditorType.above(editor, {
-        at: editor.selection,
-        match: isFlowContent,
-      }) || []
+      const [element, path] =
+        EditorType.above(editor, {
+          at: editor.selection,
+          match: isFlowContent,
+        }) || []
 
-    if (!element || !path) throw new Error('whut')
+      if (!element || !path) throw new Error('whut')
 
-    if (path) {
-      set(editor, {element, at: path})
-    } else {
-      error('whut')
-    }
-  })
+      if (path) {
+        set(editor, {element, at: path})
+      } else {
+        error('whut')
+      }
+    },
+    [],
+  )
 }
