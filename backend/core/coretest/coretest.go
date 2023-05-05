@@ -4,7 +4,6 @@ package coretest
 import (
 	"mintter/backend/core"
 
-	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
 )
 
@@ -36,12 +35,8 @@ var fakeUsers = map[string]struct {
 
 // Tester is a fake test user with full identity.
 type Tester struct {
-	AccountID cid.Cid
-	DeviceID  cid.Cid
-
-	Device  core.KeyPair
-	Account core.KeyPair
-
+	Device   core.KeyPair
+	Account  core.KeyPair
 	Identity core.Identity
 }
 
@@ -74,12 +69,8 @@ func NewTester(name string) Tester {
 	}
 
 	return Tester{
-		AccountID: acc.CID(),
-		DeviceID:  dev.CID(),
-
-		Device:  dev,
-		Account: acc,
-
+		Device:   dev,
+		Account:  acc,
 		Identity: core.NewIdentity(acc.PublicKey, dev),
 	}
 }

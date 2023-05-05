@@ -14,10 +14,10 @@ func TestList(t *testing.T) {
 		value string
 		posid ID
 	}{
-		{value: "b1", posid: ID{"a", 1}},
-		{value: "b2", posid: ID{"a", 2}},
-		{value: "b3", posid: ID{"a", 3}},
-		{value: "b4", posid: ID{"a", 4}},
+		{value: "b1", posid: ID{"a", 1, 0}},
+		{value: "b2", posid: ID{"a", 2, 0}},
+		{value: "b3", posid: ID{"a", 3, 0}},
+		{value: "b4", posid: ID{"a", 4, 0}},
 	}
 
 	for _, tt := range in {

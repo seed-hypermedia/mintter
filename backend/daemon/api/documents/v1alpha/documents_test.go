@@ -4,8 +4,11 @@ import (
 	"context"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/hlc"
@@ -16,7 +19,6 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/ipfs/go-cid"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -220,21 +222,17 @@ func TestAPICreateDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	start := hlc.FromTime(time.Now().Add(-500 * time.Millisecond)).Pack()
+	start := time.Now().Add(-3 * time.Second).UnixMicro()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 	require.NotEqual(t, "", doc.Id)
-	c, err := cid.Decode(doc.Id)
-	require.Equal(t, int(cid.DagCBOR), int(c.Prefix().Codec))
-	require.NoError(t, err)
-	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Author)
+	require.Equal(t, api.me.MustGet().Account().Principal().String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 
 	require.Greater(t, doc.CreateTime.AsTime().UnixMicro(), start)
 	require.Greater(t, doc.UpdateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, doc.UpdateTime.AsTime().UnixMicro(), doc.CreateTime.AsTime().UnixMicro())
 }
 
 func TestAPICreateDraft_OnlyOneDraftAllowed(t *testing.T) {
@@ -271,7 +269,7 @@ func TestAPIGetDraft_WithUpdate(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	start := hlc.FromTime(time.Now().Add(-500 * time.Millisecond)).Pack()
+	start := time.Now().Add(-1 * time.Second).UTC().UnixMicro()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -950,8 +948,11 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	require.NoError(t, fut.Resolve(u.Identity))
 
 	srv := NewServer(fut.ReadOnly, db, nil, nil)
+	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
+	require.NoError(t, err)
 
-	_, err := srv.me.Await(context.Background())
+	_, err = srv.me.Await(context.Background())
 	require.NoError(t, err)
 
 	return srv

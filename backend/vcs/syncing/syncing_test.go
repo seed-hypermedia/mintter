@@ -27,8 +27,8 @@ func TestPermanodeFromMap(t *testing.T) {
 	tests := []struct {
 		In vcs.Permanode
 	}{
-		{In: sqlitevcs.NewDocumentPermanode(alice.AccountID, hlc.NewClock().Now())},
-		{In: sqlitevcs.NewAccountPermanode(alice.AccountID)},
+		{In: sqlitevcs.NewDocumentPermanode(alice.Identity.AccountID(), hlc.NewClock().Now())},
+		{In: sqlitevcs.NewAccountPermanode(alice.Identity.AccountID())},
 	}
 
 	for _, tt := range tests {

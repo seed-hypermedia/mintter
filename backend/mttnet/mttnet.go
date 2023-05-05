@@ -42,12 +42,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Prototcol values.
+// Protocol values.
 const (
-	ProtocolVersion = "0.0.3"
-	ProtocolName    = "mintter"
-
-	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
+	ProtocolID protocol.ID = "/mintter/0.0.4"
 
 	protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 )

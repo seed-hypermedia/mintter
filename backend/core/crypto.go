@@ -1,6 +1,7 @@
 package core
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"encoding"
 	"errors"
@@ -36,6 +37,7 @@ var (
 // Signer signs data and produces cryptographic signature.
 type Signer interface {
 	Sign([]byte) (Signature, error)
+	SignatureSize() int
 }
 
 // CIDer provides CID of an object.
@@ -151,6 +153,16 @@ func (pk PublicKey) CID() cid.Cid {
 	return cid.NewCidV1(pk.codec, mh)
 }
 
+// String creates string representation of the public key.
+func (pk PublicKey) String() string {
+	return pk.CID().String()
+}
+
+// Principal returns the principal representation of the public key.
+func (pk PublicKey) Principal() Principal {
+	return PrincipalFromPubKey(pk.k)
+}
+
 // Codec returns multicodec of the public key.
 func (pk PublicKey) Codec() uint64 {
 	return pk.codec
@@ -205,6 +217,18 @@ func NewKeyPair(codec uint64, priv *crypto.Ed25519PrivateKey) (kp KeyPair, err e
 // Sign implements Signer.
 func (kp KeyPair) Sign(data []byte) (Signature, error) {
 	return kp.k.Sign(data)
+}
+
+// SignatureSize returns the number of bytes that for the signature of this key type.
+func (kp KeyPair) SignatureSize() int {
+	switch kp.k.Type() {
+	case crypto.Ed25519:
+		return ed25519.SignatureSize
+	case crypto.Secp256k1:
+		panic("TODO: implement support for secp256k1")
+	default:
+		panic("BUG: unsupported key type")
+	}
 }
 
 // Wrapped returns the wrapped libp2p key.

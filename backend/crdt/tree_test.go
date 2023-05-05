@@ -84,11 +84,11 @@ func TestMove_ConcurrentCycle(t *testing.T) {
 			bmvid := d.newID("bob")
 
 			if i == 0 {
-				require.NoError(t, d.integrateMove(amvid, "b2", "b3", listStart))
-				require.NoError(t, d.integrateMove(bmvid, "b3", "b2", listStart))
+				require.NoError(t, d.Integrate(amvid, "b2", "b3", listStart))
+				require.NoError(t, d.Integrate(bmvid, "b3", "b2", listStart))
 			} else {
-				require.NoError(t, d.integrateMove(bmvid, "b3", "b2", listStart))
-				require.NoError(t, d.integrateMove(amvid, "b2", "b3", listStart))
+				require.NoError(t, d.Integrate(bmvid, "b3", "b2", listStart))
+				require.NoError(t, d.Integrate(amvid, "b2", "b3", listStart))
 			}
 
 			want := []testWant{
@@ -142,11 +142,11 @@ func TestMove_ConcurrentCommute(t *testing.T) {
 			b3 := d.nodes["b3"].pos
 
 			if i == 0 {
-				require.NoError(t, d.integrateMove(amvid, "b2", RootNodeID, listStart))
-				require.NoError(t, d.integrateMove(bmvid, "b2", RootNodeID, b3.id))
+				require.NoError(t, d.Integrate(amvid, "b2", RootNodeID, listStart))
+				require.NoError(t, d.Integrate(bmvid, "b2", RootNodeID, b3.id))
 			} else {
-				require.NoError(t, d.integrateMove(bmvid, "b2", RootNodeID, b3.id))
-				require.NoError(t, d.integrateMove(amvid, "b2", RootNodeID, listStart))
+				require.NoError(t, d.Integrate(bmvid, "b2", RootNodeID, b3.id))
+				require.NoError(t, d.Integrate(amvid, "b2", RootNodeID, listStart))
 			}
 
 			want := []testWant{
@@ -176,8 +176,8 @@ func TestMove_OutdatedSuperseeding(t *testing.T) {
 
 	aliceMoveID := d.newID("alice")
 
-	require.NoError(t, d.integrateMove(bobMoveID, "b2", "b3", listStart))
-	require.NoError(t, d.integrateMove(aliceMoveID, "b3", "b2", listStart))
+	require.NoError(t, d.Integrate(bobMoveID, "b2", "b3", listStart))
+	require.NoError(t, d.Integrate(aliceMoveID, "b3", "b2", listStart))
 
 	want := []testWant{
 		{"b1", RootNodeID, listStart, d.nodes["b1"].pos.id},
@@ -247,14 +247,6 @@ func TestDelete(t *testing.T) {
 	testPlacement(t, want, d.Iterator())
 }
 
-func TestEmptyParent(t *testing.T) {
-	t.Parallel()
-
-	d := NewTree(NewVectorClock())
-
-	require.Error(t, d.MoveNode("alice", "b1", "", listStart))
-}
-
 func TestBadParent(t *testing.T) {
 	t.Parallel()
 
@@ -307,6 +299,31 @@ func TestUndoRedo(t *testing.T) {
 		{"b4", "b2", d.nodes["b3"].pos.id, d.nodes["b4"].pos.id},
 	}
 	testPlacement(t, want, d.Iterator())
+}
+
+func TestFindChildPosition(t *testing.T) {
+	d := NewTree(NewVectorClock())
+
+	require.NoError(t, d.SetNodePosition("alice", "b1", RootNodeID, ""))
+	require.NoError(t, d.SetNodePosition("alice", "b2", "b1", ""))
+
+	_, err := d.FindChildPosition(RootNodeID, "b2")
+	require.Error(t, err)
+
+	pos, err := d.FindNodePosition("b2")
+	require.NoError(t, err)
+	require.Equal(t, "b1", pos.list.id)
+	require.Nil(t, pos.Prev())
+	require.Nil(t, pos.PrevAlive())
+
+	require.NoError(t, d.SetNodePosition("alice", "b3", "b1", ""))
+
+	// Try to find position again after prepend.
+	pos, err = d.FindNodePosition("b2")
+	require.NoError(t, err)
+	require.Equal(t, "b1", pos.list.id)
+	require.NotNil(t, pos.Prev())
+	require.Equal(t, "b3", pos.PrevAlive().value.(*TreeNode).id)
 }
 
 func TestSetNodePosition(t *testing.T) {

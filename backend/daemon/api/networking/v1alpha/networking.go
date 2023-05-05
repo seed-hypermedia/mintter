@@ -73,6 +73,7 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse device ID[%s] as PID: %w", did.String(), err)
 		}
+
 		connectedness := net.Libp2p().Network().Connectedness(pid)
 		if in.Status >= 0 && in.Status != networking.ConnectionStatus(connectedness) {
 			continue

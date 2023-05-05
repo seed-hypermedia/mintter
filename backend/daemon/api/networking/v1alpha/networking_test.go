@@ -24,7 +24,7 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	ctx := context.Background()
 
 	did := alice.Device.CID()
-	acc := alice.AccountID
+	acc := alice.Account.CID()
 
 	pinfo, err := api.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
 		DeviceId: did.String(),
@@ -40,7 +40,7 @@ func TestNetworkingListPeers(t *testing.T) {
 	ctx := context.Background()
 
 	did := alice.Device.CID()
-	acc := alice.AccountID
+	acc := alice.Account.CID()
 	pid := alice.Device.ID()
 	pList, err := api.ListPeers(ctx, &networking.ListPeersRequest{Status: 0})
 	require.NoError(t, err)

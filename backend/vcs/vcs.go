@@ -12,21 +12,7 @@ import (
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
-	"github.com/polydawn/refmt/obj/atlas"
 )
-
-var hlcAtlas = atlas.BuildEntry(hlc.Time{}).Transform().
-	TransformMarshal(atlas.MakeMarshalTransformFunc(func(t hlc.Time) (int64, error) {
-		return t.Pack(), nil
-	})).
-	TransformUnmarshal(atlas.MakeUnmarshalTransformFunc(func(in int64) (hlc.Time, error) {
-		return hlc.Unpack(in), nil
-	})).
-	Complete()
-
-func init() {
-	cbornode.RegisterCborType(hlcAtlas)
-}
 
 // ObjectType is a type for describing types of our IPLD data.
 // Generally, IPLD data is a free-form JSON-like structure,

@@ -51,6 +51,10 @@ func (hc *Clock) Max() Time {
 
 // Now creates a new timestamp which is greater than any previously known timestamp.
 func (hc *Clock) Now() Time {
+	if hc.wallClock == nil {
+		hc.wallClock = time.Now
+	}
+
 	return hc.Time(hc.wallClock())
 }
 
@@ -71,14 +75,17 @@ func (hc *Clock) Time(at time.Time) Time {
 
 // Track a timestamp produced by some other clock, so next timestamp
 // produces by this clock is guaranteed to be greater than the tracked one.
-func (hc *Clock) Track(remoteTime Time) {
+func (hc *Clock) Track(remoteTime Time) (ok bool) {
 	if hc == nil {
-		return
+		return false
 	}
 
 	if hc.maxTime.Before(remoteTime) {
 		hc.maxTime = remoteTime
+		return true
 	}
+
+	return false
 }
 
 // Time is an instance of a hybrid logical timestamp.
@@ -125,7 +132,8 @@ func (ht Time) Add(ticks uint16) Time {
 		panic("BUG: overflow of logical counter component")
 	}
 
-	return newTime(ht.wall, incr)
+	ht.counter = incr
+	return ht
 }
 
 // Time converts hybrid logical timestamp into a proper human-friendly timestamp.

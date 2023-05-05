@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	sync "sync"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -29,7 +32,7 @@ type Wallet interface {
 
 // Server implements the Daemon gRPC API.
 type Server struct {
-	vcs       *vcsdb.DB
+	blobs     *hyper.Storage
 	repo      Repo
 	startTime time.Time
 	wallet    Wallet
@@ -42,7 +45,7 @@ type Server struct {
 // NewServer creates a new Server.
 func NewServer(r Repo, vcs *vcsdb.DB, w Wallet, syncFunc func() error) *Server {
 	return &Server{
-		vcs:           vcs,
+		blobs:         hyper.NewStorage(vcs.DB(), logging.New("mintter/hyper", "debug")),
 		repo:          r,
 		startTime:     time.Now(),
 		wallet:        w,
@@ -52,7 +55,7 @@ func NewServer(r Repo, vcs *vcsdb.DB, w Wallet, syncFunc func() error) *Server {
 
 // GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.
 func (srv *Server) GenMnemonic(_ context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
-	words, err := core.NewMnemonic(req.MnemonicsLength)
+	words, err := core.NewBIP39Mnemonic(req.MnemonicsLength)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +86,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 	}
 
 	return &daemon.RegisterResponse{
-		AccountId: acc.CID().String(),
+		AccountId: acc.String(),
 	}, nil
 }
 
@@ -93,16 +96,8 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 		return err
 	}
 
-	conn, release, err := srv.vcs.Conn(ctx)
+	_, err := Register(ctx, srv.blobs, acc, srv.repo.Device().PublicKey, time.Now().UTC())
 	if err != nil {
-		return err
-	}
-	defer release()
-
-	if err := conn.WithTx(true, func() error {
-		_, err := vcsdb.Register(ctx, acc, srv.repo.Device(), conn)
-		return err
-	}); err != nil {
 		return err
 	}
 
@@ -111,6 +106,22 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 	}
 
 	return nil
+}
+
+// Register creates key delegation from account to device.
+func Register(ctx context.Context, bs *hyper.Storage, account core.KeyPair, device core.PublicKey, at time.Time) (cid.Cid, error) {
+	kd, err := hyper.NewKeyDelegation(account, device, time.Now().UTC())
+	if err != nil {
+		return cid.Undef, err
+	}
+
+	blob := kd.Blob()
+
+	if err := bs.SaveBlob(ctx, blob); err != nil {
+		return cid.Undef, err
+	}
+
+	return blob.CID, nil
 }
 
 // GetInfo implements the corresponding gRPC method.

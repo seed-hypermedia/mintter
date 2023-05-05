@@ -18,6 +18,112 @@ var migrations = []string{
 	) WITHOUT ROWID;`,
 
 	// Stores the content of IPFS blobs.
+	`CREATE TABLE blobs (
+		-- Short numerical ID to be used internally.
+		-- The same ID is used for table 'changes'
+		-- to avoid unnecessary joins.
+		-- Using AUTOINCREMENT here to use monotonically increasing IDs as a cursor for syncing.
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		-- Original multihash of the IPFS blob.
+		-- We don't store CIDs, this is what most blockstore
+		-- implementations are doing.
+		-- We don't want to store the content more than once,
+		-- so UNIQUE constraint is needed here.
+		-- We don't use multihash as a primary key to reduce the database size,
+		-- as there're multiple other tables referencing records from this table.
+		multihash BLOB UNIQUE NOT NULL,
+		-- Multicodec describing the data stored in the blob.
+		codec INTEGER NOT NULL,
+		-- Actual content of the block. Compressed with zstd.
+		data BLOB,
+		-- Byte size of the original uncompressed data.
+		-- Size 0 indicates that data is stored inline in the multihash.
+		-- Size -1 indicates that we somehow know about this hash, but don't have the data yet.
+		size INTEGER DEFAULT (-1) NOT NULL,
+		-- Subjective (locally perceived) time when this block was inserted into the table for the first time.
+		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+	);`,
+
+	// Stores known public keys and maps them to local short integer IDs.
+	`CREATE TABLE public_keys (
+		id INTEGER PRIMARY KEY,
+		-- Principal is multicodec prefixed public key bytes.
+		-- See https://github.com/multiformats/multicodec/blob/master/table.csv for possible values.
+		principal BLOB UNIQUE NOT NULL
+	);`,
+
+	`CREATE TABLE key_delegations (
+		id INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		issuer INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+		delegate INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+		valid_from_time INTEGER NOT NULL,
+		UNIQUE (issuer, delegate),
+		UNIQUE (delegate, issuer)
+	);`,
+
+	`CREATE VIEW key_delegations_view AS
+		SELECT
+			kd.id AS id,
+			blobs.codec AS blob_codec,
+			blobs.multihash AS blobs_multihash,
+			iss.principal AS issuer,
+			del.principal AS delegate,
+			kd.valid_from_time AS valid_from_time
+		FROM key_delegations kd
+		JOIN blobs ON blobs.id = kd.id
+		JOIN public_keys iss ON iss.id = kd.issuer
+		JOIN public_keys del ON del.id = kd.delegate;`,
+
+	// Stores hypermedia entities.
+	`CREATE TABLE hyper_entities (
+		id INTEGER PRIMARY KEY,
+		eid TEXT UNIQUE
+	);`,
+
+	`CREATE TABLE hyper_changes (
+		blob INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		entity INTEGER REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		hlc_time INTEGER NOT NULL
+	);`,
+
+	`CREATE INDEX idx_hyper_changes_by_entity ON hyper_changes (entity, hlc_time);`,
+
+	`CREATE VIEW hyper_changes_by_entity_view AS
+		SELECT
+			hyper_changes.entity AS entity_id,
+			hyper_changes.blob AS blob_id,
+			blobs.codec AS codec,
+			blobs.multihash AS multihash,
+			blobs.data AS data,
+			blobs.size AS size,
+			hyper_changes.hlc_time AS hlc_time,
+			draft_blobs.blob AS draft
+		FROM hyper_changes
+		JOIN blobs ON blobs.id = hyper_changes.blob
+		LEFT JOIN draft_blobs ON hyper_changes.blob = draft_blobs.blob
+		ORDER BY hlc_time;`,
+
+	`CREATE TABLE draft_blobs (
+		blob INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
+	);`,
+
+	// Stores links between blobs.
+	`CREATE TABLE hyper_links (
+		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		-- TODO(burdiyan): normalize this to reduce disk usage.
+		rel TEXT NOT NULL,
+		target_entity INTEGER REFERENCES entities (id) ON DELETE CASCADE,
+		target INTEGER REFERENCES blobs (id),
+		data BLOB,
+		CHECK ((target_entity, target) IS NOT (null, null))
+	);`,
+
+	// These are probably not the most optimal indices.
+	`CREATE INDEX idx_hyper_links_by_blob ON hyper_links (blob);`,
+	`CREATE INDEX idx_hyper_links_by_target_entity ON hyper_links (target_entity) WHERE target_entity IS NOT NULL;`,
+	`CREATE INDEX idx_hyper_links_by_target ON hyper_links (target) WHERE target IS NOT NULL;`,
+
+	// Stores the content of IPFS blobs.
 	`CREATE TABLE ipfs_blocks (
 		-- Short numerical ID to be used internally.
 		-- The same ID is used for table 'changes'
@@ -96,11 +202,10 @@ var migrations = []string{
 
 	// Stores references to the IPFS blocks that are Mintter Permanodes.
 	`CREATE TABLE permanodes (
-		id INTEGER PRIMARY KEY,
+		id INTEGER PRIMARY KEY REFERENCES ipfs_blocks (id) ON DELETE CASCADE,
 		type TEXT NOT NULL CHECK (type != ''),
 		account_id INTEGER REFERENCES accounts (id) NOT NULL,
-		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-		FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 	);`,
 
 	// Index for querying permanodes by type.
@@ -132,9 +237,8 @@ var migrations = []string{
 	`CREATE INDEX idx_changes_by_account ON changes (account_id);`,
 
 	`CREATE TABLE draft_changes (
-		id INTEGER PRIMARY KEY,
-		permanode_id INTEGER REFERENCES permanodes (id) ON DELETE CASCADE UNIQUE,
-		FOREIGN KEY (id) REFERENCES changes (id) ON DELETE CASCADE
+		id INTEGER PRIMARY KEY REFERENCES changes (id) ON DELETE CASCADE,
+		permanode_id INTEGER REFERENCES permanodes (id) ON DELETE CASCADE UNIQUE
 	) WITHOUT ROWID;`,
 
 	// View of IPFS blobs which are public and safe to provide.
@@ -200,9 +304,9 @@ var migrations = []string{
 		target_block_id TEXT NOT NULL,
 		target_version TEXT NOT NULL,
 		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)
-	) WITHOUT ROWID;
-	
-	CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);`,
+	) WITHOUT ROWID;`,
+
+	`CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);`,
 
 	// Stores Lightning wallets both externals (imported wallets like bluewallet
 	// based on lndhub) and internals (based on the LND embedded node).
@@ -238,8 +342,7 @@ var migrations = []string{
 		addresses TEXT NOT NULL CHECK(addresses <> ''),
 		-- The account ID of the site. We need a previous connection to the site so the 
 		-- actual account is inserted in the accounts table when handshake.
-		account_id INTEGER NOT NULL,
-		FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
+		account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE
 	) WITHOUT ROWID;`,
 
 	// Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
@@ -257,21 +360,19 @@ var migrations = []string{
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER PRIMARY KEY,
+		account_id INTEGER PRIMARY KEY REFERENCES accounts (id) ON DELETE CASCADE,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
-		role INTEGER NOT NULL,
-		FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
+		role INTEGER NOT NULL
 	) WITHOUT ROWID;`,
 
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE web_publication_records (
 		-- Ipfs block where the base document is stored.
-		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
+		block_id INTEGER PRIMARY KEY REFERENCES ipfs_blocks (id) ON DELETE CASCADE CHECK (block_id != 0),
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL is not listed.
-		path TEXT UNIQUE,
-		FOREIGN KEY (block_id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
+		path TEXT UNIQUE
 	) WITHOUT ROWID;`,
 }

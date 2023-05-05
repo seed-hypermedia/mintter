@@ -13,14 +13,14 @@ var (
 // their causal children.
 type list struct {
 	id    string
-	items map[ID]*position
-	root  position
+	items map[ID]*Position
+	root  Position
 }
 
 func newList(lid string) *list {
 	l := &list{
 		id:    lid,
-		items: map[ID]*position{},
+		items: map[ID]*Position{},
 	}
 
 	l.root.left = &l.root
@@ -32,13 +32,13 @@ func newList(lid string) *list {
 	return l
 }
 
-func (l *list) integrate(id ID, parent *position, v interface{}) (*position, error) {
+func (l *list) integrate(id ID, parent *Position, v interface{}) (*Position, error) {
 	// TODO: probably should move this check to the top level document.
 	if l.items[id] != nil {
 		return nil, fmt.Errorf("position id %v is already integrated in list %s", id, l.id)
 	}
 
-	p := &position{
+	p := &Position{
 		id:   id,
 		ref:  parent.id,
 		list: l,
@@ -69,7 +69,7 @@ func (l *list) integrate(id ID, parent *position, v interface{}) (*position, err
 	return p, nil
 }
 
-func (l *list) findPos(id ID) (*position, error) {
+func (l *list) findPos(id ID) (*Position, error) {
 	p, ok := l.items[id]
 	if !ok {
 		return nil, fmt.Errorf("position %v not found in list %s", id, l.id)
@@ -78,11 +78,11 @@ func (l *list) findPos(id ID) (*position, error) {
 	return p, nil
 }
 
-func (l *list) append(id ID, v interface{}) (*position, error) {
+func (l *list) append(id ID, v interface{}) (*Position, error) {
 	return l.integrate(id, l.root.left, v)
 }
 
-func (l *list) insertAfter(id ID, el *position, left *position) *position {
+func (l *list) insertAfter(id ID, el *Position, left *Position) *Position {
 	// Relink positions.
 	el.left = left
 	el.right = left.right
@@ -92,22 +92,22 @@ func (l *list) insertAfter(id ID, el *position, left *position) *position {
 	return el
 }
 
-// position inside a list CRDT.
-type position struct {
+// Position inside a list CRDT.
+type Position struct {
 	id  ID
 	ref ID
 
 	list *list
 
-	left  *position
-	right *position
+	left  *Position
+	right *Position
 
 	value interface{}
 }
 
 // Prev returns previous position in the linked list. Nil is returned
 // when start of the list is reached.
-func (pos *position) Prev() *position {
+func (pos *Position) Prev() *Position {
 	prev := pos.left
 
 	if prev == &pos.list.root {
@@ -117,8 +117,8 @@ func (pos *position) Prev() *position {
 	return prev
 }
 
-// PrevFilled returns the first non-empty position to the left of the current one.
-func (pos *position) PrevFilled() *position {
+// PrevAlive returns the first non-empty position to the left of the current one.
+func (pos *Position) PrevAlive() *Position {
 	for left := pos.Prev(); left != nil; left = left.Prev() {
 		if left.value != nil {
 			return left
@@ -130,7 +130,7 @@ func (pos *position) PrevFilled() *position {
 
 // Next position in the linked list. Nil is returned
 // when end of the list is reached.
-func (pos *position) Next() *position {
+func (pos *Position) Next() *Position {
 	next := pos.right
 
 	if next == &pos.list.root {
@@ -140,8 +140,8 @@ func (pos *position) Next() *position {
 	return next
 }
 
-// NextFilled returns the first non-empty position to the right of the current one.
-func (pos *position) NextFilled() *position {
+// NextAlive returns the first non-empty position to the right of the current one.
+func (pos *Position) NextAlive() *Position {
 	for right := pos.Next(); right != nil; right = right.Next() {
 		if right.value != nil {
 			return right

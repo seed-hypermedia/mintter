@@ -29,13 +29,13 @@ Repo layout v1 file tree:
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2023-04-17.01"
+	compatibilityVersion = "2023-04-24.01"
 
 	keysDir = "keys"
 	dbDir   = "db"
 
-	privKeyFilePath    = keysDir + "/libp2p_id_ed25519"
-	accountKeyFilePath = keysDir + "/mintter_id_ed25519.pub"
+	devicePrivateKeyPath = keysDir + "/libp2p_id_ed25519"
+	accountKeyPath       = keysDir + "/mintter_id_ed25519.pub"
 
 	versionFilename = "VERSION"
 )
@@ -178,7 +178,7 @@ func (r *OnDisk) setAccount(k core.PublicKey) error {
 
 	r.acc = k
 
-	r.log.Debug("AccountInitialized", zap.String("accountID", r.acc.CID().String()))
+	r.log.Debug("AccountInitialized", zap.String("accountID", r.acc.String()))
 
 	close(r.ready)
 
@@ -191,7 +191,7 @@ func (r *OnDisk) SQLitePath() string {
 }
 
 func (r *OnDisk) deviceKeyFromFile() (crypto.PrivKey, error) {
-	privFile := filepath.Join(r.path, privKeyFilePath)
+	privFile := filepath.Join(r.path, devicePrivateKeyPath)
 
 	privBytes, err := os.ReadFile(privFile)
 	if err != nil && !os.IsNotExist(err) {
@@ -223,7 +223,7 @@ func (r *OnDisk) setupKeys(pk crypto.PrivKey) error {
 	}
 
 	// TODO: clean this up, coz we may end up writing the same file twice here between multiple runs.
-	if err := os.WriteFile(filepath.Join(r.path, privKeyFilePath), pkBytes, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(r.path, devicePrivateKeyPath), pkBytes, 0600); err != nil {
 		return err
 	}
 
@@ -249,7 +249,7 @@ func (r *OnDisk) writeAccountFile(k core.PublicKey) error {
 		return err
 	}
 
-	if err := os.WriteFile(filepath.Join(r.path, accountKeyFilePath), data, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(r.path, accountKeyPath), data, 0600); err != nil {
 		return err
 	}
 
@@ -257,7 +257,7 @@ func (r *OnDisk) writeAccountFile(k core.PublicKey) error {
 }
 
 func (r *OnDisk) readAccountFile() (core.PublicKey, error) {
-	data, err := os.ReadFile(filepath.Join(r.path, accountKeyFilePath))
+	data, err := os.ReadFile(filepath.Join(r.path, accountKeyPath))
 	if err != nil {
 		return core.PublicKey{}, err
 	}

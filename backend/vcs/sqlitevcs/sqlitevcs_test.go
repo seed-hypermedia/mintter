@@ -18,7 +18,7 @@ func TestNewObject_Idempotent(t *testing.T) {
 	ctx := context.Background()
 	alice := coretest.NewTester("alice")
 
-	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, hlc.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.Identity.AccountID(), hlc.Time{}))
 	require.NoError(t, err)
 
 	{

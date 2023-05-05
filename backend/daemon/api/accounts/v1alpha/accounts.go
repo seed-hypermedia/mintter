@@ -1,22 +1,26 @@
 package accounts
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/vcssql"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -26,14 +30,16 @@ type Profile = accounts.Profile
 // Server implement the accounts gRPC server.
 type Server struct {
 	me    *future.ReadOnly[core.Identity]
-	vcsdb *vcsdb.DB
+	blobs *hyper.Storage
+	db    *sqlitex.Pool
 }
 
 // NewServer creates a new Server.
 func NewServer(id *future.ReadOnly[core.Identity], vcs *vcsdb.DB) *Server {
 	return &Server{
 		me:    id,
-		vcsdb: vcs,
+		blobs: hyper.NewStorage(vcs.DB(), logging.New("mintter/hyper", "debug")),
+		db:    vcs.DB(),
 	}
 }
 
@@ -43,42 +49,75 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		return nil, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
 	}
 
-	var aid cid.Cid
-	if in.Id == "" {
+	var aid core.Principal
+	wantMe := in.Id == ""
+	if wantMe {
 		me, err := srv.getMe()
 		if err != nil {
 			return nil, err
 		}
-		aid = me.AccountID()
+		aid = me.Account().Principal()
 	} else {
-		acc, err := cid.Decode(in.Id)
+		p, err := core.DecodePrincipal(in.Id)
 		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "can't decode account id as CID: %v", err)
+			return nil, status.Errorf(codes.InvalidArgument, "can't decode Account ID: %v", err)
 		}
-		aid = acc
+		aid = p
 	}
 
-	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(aid))
+	aids := aid.String()
+
+	acc := &accounts.Account{
+		Id:      aids,
+		Profile: &accounts.Profile{},
+		Devices: make(map[string]*accounts.Device),
+	}
+
+	entity, err := srv.blobs.LoadEntity(ctx, hyper.NewEntityID("mintter:account", aids))
 	if err != nil {
 		return nil, err
 	}
-
-	oid := perma.ID
-
-	conn, release, err := srv.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
+	if entity == nil && !wantMe {
+		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
 	}
-	defer release()
 
-	var acc *accounts.Account
-	if err := conn.WithTx(false, func() error {
-		lid := conn.LookupPermanode(oid)
-		if lid == 0 {
-			return fmt.Errorf("failed to lookup account permanode for account %s", aid.String())
+	if entity != nil {
+		v, ok := entity.Get("alias")
+		if ok {
+			acc.Profile.Alias = v.(string)
 		}
-		acc, err = srv.getAccount(conn, oid, lid)
-		return err
+
+		v, ok = entity.Get("bio")
+		if ok {
+			acc.Profile.Bio = v.(string)
+		}
+
+		v, ok = entity.Get("avatar")
+		if ok {
+			acc.Profile.Avatar = v.(cid.Cid).String()
+		}
+	}
+
+	// Now load known key delegations from this account.
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		list, err := hypersql.KeyDelegationsList(conn, aid)
+		if err != nil {
+			return err
+		}
+
+		for _, res := range list {
+			del := core.Principal(res.KeyDelegationsViewDelegate)
+			pid, err := del.PeerID()
+			if err != nil {
+				return err
+			}
+			pids := pid.String()
+			acc.Devices[pids] = &accounts.Device{
+				DeviceId: pids,
+			}
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -86,33 +125,41 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	return acc, nil
 }
 
-func (srv *Server) getAccount(conn *vcsdb.Conn, obj cid.Cid, oid vcsdb.LocalID) (*accounts.Account, error) {
-	acc := &accounts.Account{
-		Id:      conn.GetObjectOwner(oid).String(),
-		Profile: &accounts.Profile{},
-		Devices: make(map[string]*accounts.Device),
+func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
+	me, err := srv.getMe()
+	if err != nil {
+		return cid.Undef, err
 	}
 
-	conn.IterateChanges(obj, false, nil, func(vc vcs.VerifiedChange) error {
-		// check if kind profile
-		switch vc.Decoded.Kind {
-		case vcsdb.KindProfile:
-			if err := (proto.UnmarshalOptions{Merge: true}).Unmarshal(vc.Decoded.Body, acc.Profile); err != nil {
-				return fmt.Errorf("failed to unmarshal profile update change: %w", err)
+	var out cid.Cid
+
+	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		acc := me.Account().Principal()
+		dev := me.DeviceKey().Principal()
+
+		list, err := hypersql.KeyDelegationsList(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		for _, res := range list {
+			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobsMultihash)
+				return nil
 			}
-		case vcsdb.KindRegistration:
-			_ = vcsdb.RegistrationProof(vc.Decoded.Body)
-			// TODO(burdiyan): verify proof.
-			devid := vc.Decoded.Signer.String()
-			acc.Devices[devid] = &accounts.Device{DeviceId: devid}
-		default:
-			return fmt.Errorf("unknown change kind for account object: %s", vc.Decoded.Kind)
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return cid.Undef, err
+	}
 
-	return acc, nil
+	if !out.Defined() {
+		return out, fmt.Errorf("BUG: failed to find our own key delegation")
+	}
+
+	return out, nil
 }
 
 // UpdateProfile implements the corresponding gRPC method.
@@ -122,118 +169,162 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		return nil, err
 	}
 
-	if err := UpdateProfile(ctx, me, srv.vcsdb, in); err != nil {
+	eid := hyper.NewEntityID("mintter:account", me.Account().Principal().String())
+
+	e, err := srv.blobs.LoadEntity(ctx, eid)
+	if err != nil {
+		return nil, err
+	}
+	if e == nil {
+		panic("BUG: can't load our own profile")
+	}
+
+	patch := map[string]any{}
+
+	v, ok := e.Get("alias")
+	if !ok || v.(string) != in.Alias {
+		patch["alias"] = in.Alias
+	}
+
+	v, ok = e.Get("bio")
+	if !ok || v.(string) != in.Bio {
+		patch["bio"] = in.Bio
+	}
+
+	if in.Avatar != "" {
+		avatar, err := cid.Decode(in.Avatar)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode avatar %s as CID: %w", in.Avatar, err)
+		}
+
+		v, ok := e.Get("avatar")
+		if !ok || !v.(cid.Cid).Equals(avatar) {
+			patch["avatar"] = avatar
+		}
+	}
+
+	del, err := srv.getDelegation(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return srv.GetAccount(ctx, &accounts.GetAccountRequest{
-		Id: me.AccountID().String(),
-	})
+	change, err := e.Patch(e.NextTimestamp(), me.DeviceKey(), del, patch)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := srv.blobs.SaveBlob(ctx, change); err != nil {
+		return nil, fmt.Errorf("failed to save account update change: %w", err)
+	}
+
+	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
 }
 
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	me, err := srv.getMe()
-	if err != nil {
-		return nil, err
-	}
+	panic("TODO list accounts")
 
-	conn, release, err := srv.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	// me, err := srv.getMe()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	resp := &accounts.ListAccountsResponse{}
+	// conn, release, err := srv.vcsdb.Conn(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer release()
 
-	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(me.AccountID()))
-	if err != nil {
-		return nil, err
-	}
+	// resp := &accounts.ListAccountsResponse{}
 
-	if err := conn.WithTx(false, func() error {
-		accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(vcsdb.AccountType))
-		if err != nil {
-			return err
-		}
-		myAcc := conn.LookupPermanode(perma.ID)
+	// perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(me.AccountID()))
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-		resp.Accounts = make([]*accounts.Account, 0, len(accs))
+	// if err := conn.WithTx(false, func() error {
+	// 	accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(vcsdb.AccountType))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	myAcc := conn.LookupPermanode(perma.ID)
 
-		for _, a := range accs {
-			if vcsdb.LocalID(a.PermanodesID) == myAcc {
-				continue
-			}
+	// 	resp.Accounts = make([]*accounts.Account, 0, len(accs))
 
-			obj := cid.NewCidV1(uint64(a.PermanodeCodec), a.PermanodeMultihash)
+	// 	for _, a := range accs {
+	// 		if vcsdb.LocalID(a.PermanodesID) == myAcc {
+	// 			continue
+	// 		}
 
-			acc, err := srv.getAccount(conn, obj, vcsdb.LocalID(a.PermanodesID))
-			if err != nil {
-				return err
-			}
-			resp.Accounts = append(resp.Accounts, acc)
-		}
+	// 		obj := cid.NewCidV1(uint64(a.PermanodeCodec), a.PermanodeMultihash)
 
-		return nil
-	}); err != nil {
-		return nil, err
-	}
+	// 		acc, err := srv.getAccount(conn, obj, vcsdb.LocalID(a.PermanodesID))
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		resp.Accounts = append(resp.Accounts, acc)
+	// 	}
 
-	// This is a hack to make tests pass. When we first connect to a peer,
-	// we won't immediately sync their account object, but we want them in the list
-	// of accounts here. So we do the additional scan using another database table
-	// to stick those pending accounts into the response.
-	//
-	// TODO(burdiyan): this is ugly as hell. Remove this in build11.
-	res, err := vcssql.AccountDevicesList(conn.InternalConn())
-	if err != nil {
-		return nil, err
-	}
+	// 	return nil
+	// }); err != nil {
+	// 	return nil, err
+	// }
 
-	meacc := me.Account().CID().String()
+	// // This is a hack to make tests pass. When we first connect to a peer,
+	// // we won't immediately sync their account object, but we want them in the list
+	// // of accounts here. So we do the additional scan using another database table
+	// // to stick those pending accounts into the response.
+	// //
+	// // TODO(burdiyan): this is ugly as hell. Remove this in build11.
+	// res, err := vcssql.AccountDevicesList(conn.InternalConn())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	for _, r := range res {
-		acc := cid.NewCidV1(core.CodecAccountKey, r.AccountsMultihash).String()
-		did := cid.NewCidV1(core.CodecDeviceKey, r.DevicesMultihash).String()
+	// meacc := me.Account().CID().String()
 
-		if acc == meacc {
-			continue
-		}
+	// for _, r := range res {
+	// 	acc := cid.NewCidV1(core.CodecAccountKey, r.AccountsMultihash).String()
+	// 	did := cid.NewCidV1(core.CodecDeviceKey, r.DevicesMultihash).String()
 
-		idx := -1
-		for i, ra := range resp.Accounts {
-			if ra.Id == acc {
-				idx = i
-				break
-			}
-		}
+	// 	if acc == meacc {
+	// 		continue
+	// 	}
 
-		if idx == -1 {
-			resp.Accounts = append(resp.Accounts, &accounts.Account{
-				Id:      acc,
-				Profile: &accounts.Profile{},
-				Devices: map[string]*accounts.Device{
-					did: {
-						DeviceId: did,
-					},
-				},
-			})
-		} else {
-			ra := resp.Accounts[idx]
-			if _, ok := ra.Devices[did]; ok {
-				continue
-			}
-			ra.Devices[did] = &accounts.Device{
-				DeviceId: did,
-			}
-		}
-	}
+	// 	idx := -1
+	// 	for i, ra := range resp.Accounts {
+	// 		if ra.Id == acc {
+	// 			idx = i
+	// 			break
+	// 		}
+	// 	}
 
-	sort.Slice(resp.Accounts, func(i, j int) bool {
-		return resp.Accounts[i].Id < resp.Accounts[j].Id
-	})
+	// 	if idx == -1 {
+	// 		resp.Accounts = append(resp.Accounts, &accounts.Account{
+	// 			Id:      acc,
+	// 			Profile: &accounts.Profile{},
+	// 			Devices: map[string]*accounts.Device{
+	// 				did: {
+	// 					DeviceId: did,
+	// 				},
+	// 			},
+	// 		})
+	// 	} else {
+	// 		ra := resp.Accounts[idx]
+	// 		if _, ok := ra.Devices[did]; ok {
+	// 			continue
+	// 		}
+	// 		ra.Devices[did] = &accounts.Device{
+	// 			DeviceId: did,
+	// 		}
+	// 	}
+	// }
 
-	return resp, nil
+	// sort.Slice(resp.Accounts, func(i, j int) bool {
+	// 	return resp.Accounts[i].Id < resp.Accounts[j].Id
+	// })
+
+	// return resp, nil
 }
 
 func (srv *Server) getMe() (core.Identity, error) {

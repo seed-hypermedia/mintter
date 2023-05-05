@@ -409,7 +409,7 @@ func TestGateway(t *testing.T) {
 	})
 
 	const mnemonicWords = 12
-	mnemonic, err := core.NewMnemonic(mnemonicWords)
+	mnemonic, err := core.NewBIP39Mnemonic(mnemonicWords)
 	require.NoError(t, err)
 
 	_, err = gw.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{
