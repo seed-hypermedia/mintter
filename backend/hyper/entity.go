@@ -42,12 +42,15 @@ func NewEntity(id EntityID) *Entity {
 	}
 }
 
+// ID returns the ID of the entity.
 func (e *Entity) ID() EntityID { return e.id }
 
+// Get a property under a given path.
 func (e *Entity) Get(path ...string) (value any, ok bool) {
 	return e.state.Get(path...)
 }
 
+// LastChangeTime is max time tracked in the HLC.
 func (e *Entity) LastChangeTime() hlc.Time {
 	return e.clock.Max()
 }
@@ -89,6 +92,7 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 	return nil
 }
 
+// NextTimestamp returns the next timestamp from the HLC.
 func (e *Entity) NextTimestamp() hlc.Time {
 	return e.clock.Now()
 }
