@@ -23,9 +23,11 @@ export default function PublicationPage({
   metadata = true,
   author,
   siteInfo = null,
+  editors = [],
 }: {
   publication?: Publication
   author?: Account | null
+  editors?: Array<Account> | null
   metadata?: boolean
   siteInfo: SiteInfo | null
 }) {
@@ -88,7 +90,9 @@ export default function PublicationPage({
                     publication={publication}
                     author={author}
                   />
-                  {publication && <WebTipping publication={publication} />}
+                  {publication && (
+                    <WebTipping publication={publication} editors={editors} />
+                  )}
                 </>
               ) : null}
             </SideContainer>

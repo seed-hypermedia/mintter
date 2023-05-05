@@ -58,4 +58,6 @@ export {
   Video as VideoIcon,
   X as Close,
   XSquare as CloseAll,
+  HelpCircle as Help,
+  Star,
 } from '@tamagui/lucide-icons'

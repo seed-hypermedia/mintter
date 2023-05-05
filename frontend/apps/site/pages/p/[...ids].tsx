@@ -8,17 +8,20 @@ import PublicationPage from '../../ssr-publication-page'
 export default function CIDPublicationPage({
   publication,
   author,
+  editors,
   siteInfo,
 }: {
   publication?: Publication | null
   author?: Account | null
   siteInfo: SiteInfo | null
+  editors: Array<Account>
 }) {
   return (
     <PublicationPage
       publication={publication || undefined}
       author={author}
       siteInfo={siteInfo}
+      editors={editors}
     />
   )
 }
@@ -33,6 +36,7 @@ export const getServerSideProps = async ({
   let siteInfo = await getSiteInfo()
   let publication: Publication | null = null
   let author: Account | null = null
+  let editors: Array<Account> = []
   // res.setHeader(
   //   'Cache-Control',
   //   `public, s-maxage=${
@@ -67,11 +71,20 @@ export const getServerSideProps = async ({
       ? await accountsClient.getAccount({id: publication.document?.author})
       : null
 
+    editors = publication.document?.editors.length
+      ? await Promise.all(
+          publication.document?.editors.map((e) =>
+            accountsClient.getAccount({id: e}),
+          ),
+        )
+      : []
+
     return {
       props: {
         publication: publication ? publication.toJson() : null,
         author: author ? author.toJson() : null,
         siteInfo: siteInfo ? siteInfo.toJson() : null,
+        editors: editors ? editors.map((e) => e.toJson()) : [],
       },
     }
   } catch (error) {
@@ -80,6 +93,7 @@ export const getServerSideProps = async ({
         publication: publication ? publication.toJson() : null,
         author: author ? author.toJson() : null,
         siteInfo: siteInfo ? siteInfo.toJson() : null,
+        editors: editors ? editors.map((e) => e.toJson()) : [],
       },
     }
   }
