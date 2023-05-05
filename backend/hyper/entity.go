@@ -11,6 +11,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/multiformats/go-multibase"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -84,12 +85,26 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 		delete(e.heads, dep)
 	}
 
-	e.state.ApplyPatch(ch.HLCTime.Pack(), ch.Signer.String(), ch.Patch)
+	e.state.ApplyPatch(ch.HLCTime.Pack(), OriginFromCID(c), ch.Patch)
 	e.clock.Track(ch.HLCTime)
 	e.applied[c] = ch
 	e.heads[c] = struct{}{}
 
 	return nil
+}
+
+// OriginFromCID creates a CRDT origin from the last 8 chars of the hash.
+// Most of the time it's not needed, because HLC is very unlikely to collide.
+func OriginFromCID(c cid.Cid) string {
+	if !c.Defined() {
+		return ""
+	}
+
+	str, err := c.StringOfBase(multibase.Base58BTC)
+	if err != nil {
+		panic(err)
+	}
+	return str[len(str)-9:]
 }
 
 // NextTimestamp returns the next timestamp from the HLC.

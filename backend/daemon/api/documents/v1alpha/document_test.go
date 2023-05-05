@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
 )
@@ -66,24 +65,44 @@ func TestMovesDedupe(t *testing.T) {
 	require.NoError(t, dm.tree.SetNodePosition("alice", "c", "", "b"))
 	require.NoError(t, dm.tree.SetNodePosition("alice", "z", "b", ""))
 
-	fmt.Println(dm.tree.FindChildPosition("b", "z"))
 	require.NoError(t, dm.MoveBlock("foo", "b", "z"))
 	require.NoError(t, dm.MoveBlock("b", "a", "x"))
+
+	// Test anchoring to existing positions.
+	require.Equal(t, []any{
+		map[string]any{
+			"@": "alice",
+			"b": "foo",
+			"l": "z",
+			"p": "b",
+		},
+		map[string]any{
+			"@": "alice",
+			"b": "b",
+			"l": "x",
+			"p": "a",
+		},
+	}, dm.compressMoves())
+
+	// Test reducing redundant moves.
 	require.NoError(t, dm.MoveBlock("b", "", "a"))
+	require.Equal(t, []any{
+		map[string]any{
+			"@": "alice",
+			"b": "foo",
+			"l": "z",
+			"p": "b",
+		},
+	}, dm.compressMoves())
 
-	cpos, err := dm.tree.FindNodePosition("c")
-	require.NoError(t, err)
-	var i int
-	pos := cpos
-	for pos != nil {
-		i++
-		pos = pos.PrevAlive()
-	}
-	fmt.Println("c is", i, "in the list")
-
-	litter.Dump(dm.compressMoves())
-
-	// Should result in no moves
+	// Test anchoring to our own positions.
+	require.NoError(t, dm.MoveBlock("foo", "", "b"))
+	require.Equal(t, []any{
+		map[string]any{
+			"b": "foo",
+			"l": "b",
+		},
+	}, dm.compressMoves())
 }
 
 func TestChars(t *testing.T) {

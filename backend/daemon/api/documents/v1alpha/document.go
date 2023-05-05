@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/mitchellh/mapstructure"
 )
 
 // This is very ugly and type-unsafe code.
@@ -121,9 +121,13 @@ func (dm *documentMutation) MoveBlock(block, parent, left string) error {
 		dm.oldBlockPos[block] = prevPos
 	}
 
-	ref, err := dm.tree.FindChildPosition(parent, left)
+	var ref crdt.ID
+	leftPos, err := dm.tree.FindChildPosition(parent, left)
 	if err != nil {
 		return err
+	}
+	if leftPos != nil {
+		ref = leftPos.ID()
 	}
 
 	if err := dm.tree.Integrate(crdt.ID{
@@ -146,16 +150,6 @@ func (dm *documentMutation) MoveBlock(block, parent, left string) error {
 	dm.moveLog = append(dm.moveLog, block)
 
 	return nil
-}
-
-type moveOp struct {
-	Block  string `refmt:"b,omitempty"`
-	Parent string `refmt:"p,omitempty"`
-	Left   string `refmt:"l,omitempty"`
-}
-
-func init() {
-	cbornode.RegisterCborType(moveOp{})
 }
 
 func (dm *documentMutation) compressMoves() []any {
@@ -183,27 +177,43 @@ func (dm *documentMutation) compressMoves() []any {
 		}
 
 		ref := pos.Ref()
-
 		parent := pos.ListID()
-		if parent == crdt.RootNodeID {
-			parent = ""
-		}
 
-		at := ref.Site
-
-		moveOp := map[string]any{"b": blk}
-		if parent != "" {
-			moveOp["p"] = parent
+		left, err := dm.tree.FindLeftSibling(parent, blk)
+		if err != nil {
+			panic(err)
 		}
-		if at != "" {
-			moveOp["@"] = at
-		}
-		fmt.Println("block", blk, "was really moved", pos.Ref())
 
 		j--
-		out[j] = []any{moveOp}
+		out[j] = newMove(blk, parent, left, ref.Origin)
 	}
 	return out[j:]
+}
+
+type moveOp struct {
+	Block  string `mapstructure:"b"`
+	Parent string `mapstructure:"p,omitempty"`
+	Left   string `mapstructure:"l,omitempty"`
+	At     string `mapstructure:"@,omitempty"`
+}
+
+func newMove(blk, parent, left string, origin string) map[string]any {
+	if parent == crdt.RootNodeID {
+		parent = ""
+	}
+
+	op := moveOp{
+		Block:  blk,
+		Parent: parent,
+		Left:   left,
+		At:     origin,
+	}
+
+	out := map[string]any{}
+	if err := mapstructure.Decode(op, &out); err != nil {
+		panic(err)
+	}
+	return out
 }
 
 func (dm *documentMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {

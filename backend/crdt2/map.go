@@ -20,17 +20,7 @@ func NewMap() *Map {
 }
 
 func (m *Map) Set(time int64, origin string, path []string, value any) {
-	mn := mapNode{
-		key: mapKey{
-			path:   path,
-			time:   time,
-			origin: origin,
-		},
-		valueType: mapValuePrimitive,
-		value:     value,
-	}
-
-	m.state.Set(mn)
+	m.setNode(time, origin, path, mapValuePrimitive, value)
 }
 
 func (m *Map) ApplyPatch(time int64, origin string, patch map[string]any) (ok bool) {
@@ -75,19 +65,25 @@ func (m *Map) ApplyPatch(time int64, origin string, patch map[string]any) (ok bo
 					queue = append(queue, item{m: vm, path: append(cur.path, k)})
 				}
 			}
-			m.state.Set(mapNode{
-				key: mapKey{
-					path:   append(cur.path, k),
-					time:   time,
-					origin: origin,
-				},
-				valueType: vt,
-				value:     v,
-			})
+			m.setNode(time, origin, append(cur.path, k), vt, v)
 		}
 	}
 
 	return true
+}
+
+func (m *Map) setNode(time int64, origin string, path []string, vt mapValueType, value any) {
+	mn := mapNode{
+		key: mapKey{
+			path:   path,
+			time:   time,
+			origin: origin,
+		},
+		valueType: mapValuePrimitive,
+		value:     value,
+	}
+
+	m.state.Set(mn)
 }
 
 func (m *Map) Get(path ...string) (value any, ok bool) {

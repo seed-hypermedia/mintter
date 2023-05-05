@@ -7,9 +7,9 @@ import "fmt"
 
 // ID of a CRDT operation.
 type ID struct {
-	// Site is globally-unique client identifier.
+	// Origin is globally-unique client identifier.
 	// Should be UUID, hash, public key, or something unique.
-	Site string
+	Origin string
 	// Clock is Lamport Timestamp.
 	Clock int
 	// Idx discriminant for events at the same time.
@@ -28,11 +28,11 @@ func (i ID) Less(ii ID) bool {
 		return false
 	}
 
-	if i.Site < ii.Site {
+	if i.Origin < ii.Origin {
 		return true
 	}
 
-	if i.Site > ii.Site {
+	if i.Origin > ii.Origin {
 		return false
 	}
 
@@ -55,16 +55,16 @@ func NewVectorClock() *VectorClock {
 
 // NewID produces a new ID for a given site, without tracking it.
 func (f *VectorClock) NewID(site string) ID {
-	return ID{Site: site, Clock: f.maxClock + 1}
+	return ID{Origin: site, Clock: f.maxClock + 1}
 }
 
 // Track the ID of a new operation. Will fail for outdated IDs.
 func (f *VectorClock) Track(id ID) error {
-	if l, ok := f.lastSeen[id.Site]; ok && id.Less(l) {
-		return fmt.Errorf("out of date operation for site %s: incoming clock=%v, last=%v", id.Site, id.Clock, l)
+	if l, ok := f.lastSeen[id.Origin]; ok && id.Less(l) {
+		return fmt.Errorf("out of date operation for site %s: incoming clock=%v, last=%v", id.Origin, id.Clock, l)
 	}
 
-	f.lastSeen[id.Site] = id
+	f.lastSeen[id.Origin] = id
 	if f.maxClock < id.Clock {
 		f.maxClock = id.Clock
 	}

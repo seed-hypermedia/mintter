@@ -79,12 +79,16 @@ func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
 		parentID = RootNodeID
 	}
 
-	id, err := d.FindChildPosition(parentID, leftID)
+	var ref ID
+	leftPos, err := d.FindChildPosition(parentID, leftID)
 	if err != nil {
 		return err
 	}
+	if leftPos != nil {
+		ref = leftPos.id
+	}
 
-	return d.Integrate(d.newID(site), nodeID, parentID, id)
+	return d.Integrate(d.newID(site), nodeID, parentID, ref)
 }
 
 // MoveNode from it's current position to the new one. ID of the node MUST exist in the tree.
@@ -126,7 +130,15 @@ func (d *Tree) FindNodePosition(node string) (pos *Position, err error) {
 	return n.pos, nil
 }
 
-func (d *Tree) FindChildPosition(parent, child string) (ID, error) {
+func (d *Tree) FindLeftSibling(parent, child string) (string, error) {
+	pos, err := d.FindChildPosition(parent, child)
+	if err != nil {
+		return "", err
+	}
+	return pos.PrevAlive().value.(*TreeNode).id, nil
+}
+
+func (d *Tree) FindChildPosition(parent, child string) (*Position, error) {
 	if parent == "" {
 		parent = RootNodeID
 	}
@@ -135,7 +147,7 @@ func (d *Tree) FindChildPosition(parent, child string) (ID, error) {
 	if child != "" {
 		c := d.nodes[child]
 		if c == nil {
-			return ID{}, fmt.Errorf("left sibling node %s is not in the tree", child)
+			return nil, fmt.Errorf("left sibling node %s is not in the tree", child)
 		}
 
 		ref = c.pos.id
@@ -143,18 +155,18 @@ func (d *Tree) FindChildPosition(parent, child string) (ID, error) {
 
 	l, err := d.findSubtree(parent)
 	if err != nil {
-		return ID{}, err
+		return nil, err
 	}
 
 	pos, err := l.findPos(ref)
 	if err != nil {
-		return ID{}, err
+		return nil, err
 	}
 
 	if pos == nil || pos.list.id != parent {
-		return ID{}, fmt.Errorf("subtree %s doesn't have child %s", parent, child)
+		return nil, fmt.Errorf("subtree %s doesn't have child %s", parent, child)
 	}
-	return ref, nil
+	return pos, nil
 }
 
 // Integrate move operation into the tree.
