@@ -64,8 +64,8 @@ func (e *Entity) Heads() map[cid.Cid]struct{} {
 	return e.heads
 }
 
-// ApplyRemotePatch to the internal state.
-func (e *Entity) ApplyRemotePatch(c cid.Cid, ch Change) error {
+// ApplyChange to the internal state.
+func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 	if _, ok := e.applied[c]; ok {
 		return fmt.Errorf("change is already applied")
 	}
@@ -93,14 +93,8 @@ func (e *Entity) NextTimestamp() hlc.Time {
 	return e.clock.Now()
 }
 
-// Patch entity creating a change blob.
-func (e *Entity) Patch(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
-	if ts.Before(e.clock.Max()) {
-		return hb, fmt.Errorf("timestamp must be newer than the last known")
-	}
-
-	e.clock.Track(ts)
-
+// CreateChange entity creating a change blob, and applying it to the internal state.
+func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
 	var heads []cid.Cid
 	if len(e.heads) > 0 {
 		heads := maps.Keys(e.heads)
@@ -132,14 +126,11 @@ func (e *Entity) Patch(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, pat
 		return hb, err
 	}
 
-	e.state.ApplyPatch(ch.HLCTime.Pack(), ch.Signer.String(), ch.Patch)
-	e.applied[hb.CID] = ch
-	e.heads[hb.CID] = struct{}{}
-	for _, h := range heads {
-		delete(e.heads, h)
+	if err := e.ApplyChange(hb.CID, ch); err != nil {
+		return hb, err
 	}
 
-	return
+	return hb, nil
 }
 
 type loadOpts struct {
@@ -199,7 +190,7 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID, opts ...LoadOpt
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
-		if err := entity.ApplyRemotePatch(chcid, ch); err != nil {
+		if err := entity.ApplyChange(chcid, ch); err != nil {
 			return nil, err
 		}
 		buf = buf[:0] // reset the slice reusing the backing array

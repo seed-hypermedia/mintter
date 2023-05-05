@@ -17,17 +17,16 @@ import (
 // Can do better, but no time.
 
 type documentMutation struct {
-	e            *hyper.Entity
-	ts           hlc.Time
-	signer       core.KeyPair
-	delegation   cid.Cid
-	draft        cid.Cid
-	tree         *crdt.Tree
-	patch        map[string]any
-	currentMoves []moveOp
-	movedBlocks  map[string]any
-
-	done bool
+	e           *hyper.Entity
+	ts          hlc.Time
+	signer      core.KeyPair
+	delegation  cid.Cid
+	draft       cid.Cid
+	tree        *crdt.Tree
+	patch       map[string]any
+	moveLog     []string // block being moved
+	oldBlockPos map[string]*crdt.Position
+	done        bool
 }
 
 func newDocumentMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid, draft cid.Cid) (*documentMutation, error) {
@@ -71,7 +70,7 @@ func newDocumentMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Ci
 		delegation:  delegation,
 		tree:        crdt.NewTree(crdt.NewVectorClock()),
 		patch:       map[string]any{},
-		movedBlocks: map[string]any{},
+		oldBlockPos: make(map[string]*crdt.Position),
 	}
 
 	return dm, nil
@@ -114,7 +113,13 @@ func (dm *documentMutation) MoveBlock(block, parent, left string) error {
 		panic("TODO set block position with existing changes")
 	}
 
-	prevParent, prevPos, _ := dm.tree.FindNodePositionOld(block)
+	// It's ok if we haven't found block in tree,
+	// we only need this to compare with the resulting position
+	// to detect if the block was actually moved or not.
+	prevPos, _ := dm.tree.FindNodePosition(block)
+	if _, ok := dm.oldBlockPos[block]; !ok {
+		dm.oldBlockPos[block] = prevPos
+	}
 
 	ref, err := dm.tree.FindChildPosition(parent, left)
 	if err != nil {
@@ -123,30 +128,22 @@ func (dm *documentMutation) MoveBlock(block, parent, left string) error {
 
 	if err := dm.tree.Integrate(crdt.ID{
 		Clock: int(dm.ts.Pack()),
-		Idx:   len(dm.currentMoves),
+		Idx:   len(dm.moveLog),
 	}, block, parent, ref); err != nil {
 		return err
 	}
 
-	nowParent, nowPos, err := dm.tree.FindNodePositionOld(block)
+	nowPos, err := dm.tree.FindNodePosition(block)
 	if err != nil {
 		return fmt.Errorf("can't find block position after move: %w", err)
 	}
 
-	moved := prevParent != nowParent || prevPos != nowPos
+	moved := prevPos != nowPos
 	if !moved {
 		return nil
 	}
 
-	if ref.Site != "" {
-		panic("TODO: anchor moves to other changes")
-	}
-
-	dm.currentMoves = append(dm.currentMoves, moveOp{
-		Block:  block,
-		Parent: parent,
-		Left:   left,
-	})
+	dm.moveLog = append(dm.moveLog, block)
 
 	return nil
 }
@@ -161,23 +158,52 @@ func init() {
 	cbornode.RegisterCborType(moveOp{})
 }
 
-func (dm *documentMutation) cleanupMoves() []moveOp {
-	cleanMoves := make([]moveOp, len(dm.currentMoves))
-	seen := make(map[string]struct{}, len(dm.currentMoves))
-	j := len(dm.currentMoves) - 1
+func (dm *documentMutation) compressMoves() []any {
+	out := make([]any, len(dm.moveLog))
+	j := len(out)
 
-	for i := len(dm.currentMoves) - 1; i >= 0; i-- {
-		move := dm.currentMoves[i]
-		if _, ok := seen[move.Block]; ok {
+	seen := make(map[string]struct{}, len(dm.moveLog))
+	for i := len(dm.moveLog) - 1; i >= 0; i-- {
+		blk := dm.moveLog[i]
+		if _, ok := seen[blk]; ok {
 			continue
 		}
-		cleanMoves[j] = move
-		seen[move.Block] = struct{}{}
-		j--
-	}
+		seen[blk] = struct{}{}
+		// check if really moved
+		pos, err := dm.tree.FindNodePosition(blk)
+		if err != nil {
+			panic("BUG: can't find node position in the tree")
+		}
 
-	dm.currentMoves = cleanMoves[j+1:]
-	return dm.currentMoves
+		// Check if really moved or not.
+		oldPos := dm.oldBlockPos[blk]
+		if oldPos != nil &&
+			(oldPos.List() == pos.List() && oldPos.Ref() == pos.Ref()) {
+			continue
+		}
+
+		ref := pos.Ref()
+
+		parent := pos.ListID()
+		if parent == crdt.RootNodeID {
+			parent = ""
+		}
+
+		at := ref.Site
+
+		moveOp := map[string]any{"b": blk}
+		if parent != "" {
+			moveOp["p"] = parent
+		}
+		if at != "" {
+			moveOp["@"] = at
+		}
+		fmt.Println("block", blk, "was really moved", pos.Ref())
+
+		j--
+		out[j] = []any{moveOp}
+	}
+	return out[j:]
 }
 
 func (dm *documentMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
@@ -188,11 +214,9 @@ func (dm *documentMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb h
 
 	dm.done = true
 
-	dm.patch["moves"] = map[string]any{
-		"#list": dm.currentMoves,
-	}
+	panic("TODO add moves")
 
-	hb, err = dm.e.Patch(dm.ts, dm.signer, dm.delegation, dm.patch)
+	hb, err = dm.e.CreateChange(dm.ts, dm.signer, dm.delegation, dm.patch)
 	if err != nil {
 		return hb, err
 	}

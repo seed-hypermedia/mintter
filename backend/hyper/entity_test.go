@@ -17,7 +17,7 @@ func TestEntity(t *testing.T) {
 	bio, _ := e.Get("bio")
 	require.Nil(t, bio)
 
-	ch, err := e.Patch(e.NextTimestamp(), alice.Device, cid.Undef, map[string]any{
+	ch, err := e.CreateChange(e.NextTimestamp(), alice.Device, cid.Undef, map[string]any{
 		"name": "Alice",
 		"bio":  "Test User",
 	})

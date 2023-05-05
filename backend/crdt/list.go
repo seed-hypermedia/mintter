@@ -105,6 +105,24 @@ type Position struct {
 	value interface{}
 }
 
+// ID of the current position.
+func (pos *Position) ID() ID {
+	return pos.id
+}
+
+func (pos *Position) ListID() string {
+	return pos.list.id
+}
+
+func (pos *Position) List() *list {
+	return pos.list
+}
+
+// Ref is the ID of this position's ref.
+func (pos *Position) Ref() ID {
+	return pos.ref
+}
+
 // Prev returns previous position in the linked list. Nil is returned
 // when start of the list is reached.
 func (pos *Position) Prev() *Position {

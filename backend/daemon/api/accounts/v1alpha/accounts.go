@@ -208,7 +208,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		return nil, err
 	}
 
-	change, err := e.Patch(e.NextTimestamp(), me.DeviceKey(), del, patch)
+	change, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch)
 	if err != nil {
 		return nil, err
 	}

@@ -113,18 +113,11 @@ func (d *Tree) Iterator() *TreeIterator {
 	}
 }
 
-func (d *Tree) FindNodePositionOld(node string) (parent string, posid ID, err error) {
-	n, ok := d.nodes[node]
-	if !ok {
-		return parent, posid, fmt.Errorf("node %s not found", node)
+func (d *Tree) FindNodePosition(node string) (pos *Position, err error) {
+	if node == "" {
+		return nil, fmt.Errorf("must specify node to find position")
 	}
 
-	parent = n.pos.list.id
-	posid = n.pos.id
-	return parent, posid, nil
-}
-
-func (d *Tree) FindNodePosition(node string) (pos *Position, err error) {
 	n, ok := d.nodes[node]
 	if !ok {
 		return nil, fmt.Errorf("node %s not found", node)
