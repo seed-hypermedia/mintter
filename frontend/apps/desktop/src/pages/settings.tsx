@@ -3,6 +3,7 @@ import {Box} from '@app/components/box'
 import {useAccount, useMyAccount, useSetProfile} from '@app/models/accounts'
 import {useDaemonInfo} from '@app/models/daemon'
 import {usePeerInfo} from '@app/models/networking'
+import {useInvoicesBywallet, useWallets} from '@app/models/payments'
 import {
   useAddSite,
   useInviteMember,
@@ -20,6 +21,7 @@ import {AvatarForm} from '@components/avatar-form'
 import {Tooltip} from '@components/tooltip'
 import {AccessURLRow} from '@components/url'
 import {
+  LightningWallet,
   Member,
   Member_Role,
   Profile,
@@ -30,19 +32,27 @@ import {
   Add,
   Back,
   Button,
+  Card,
+  CardProps,
+  Check,
+  ChevronDown,
+  ChevronUp,
   Close,
   Copy,
   Dialog,
   Fieldset,
   Form,
   Forward,
+  H3,
   Heading,
   Input,
   Label,
   ScrollView,
+  Select,
   Separator,
   SizableText,
   Spinner,
+  Star,
   Tabs,
   TabsContentProps,
   TextArea,
@@ -51,6 +61,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {styled} from '@stitches/react'
+import {ArrowDownRight} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -87,6 +98,25 @@ export default function Settings({}: {}) {
             Web Sites
           </SizableText>
         </Tabs.Tab>
+        <Tabs.Tab value="wallets" data-testid="tab-wallets">
+          <SizableText flex={1} textAlign="left">
+            Wallets
+          </SizableText>
+
+          <SizableText
+            size="$0.5"
+            fontSize={10}
+            paddingHorizontal="$2"
+            paddingVertical="$1"
+            borderRadius="$1"
+            overflow="hidden"
+            backgroundColor="$color8"
+            color="$color1"
+            theme="yellow"
+          >
+            NEW
+          </SizableText>
+        </Tabs.Tab>
       </Tabs.List>
       <Separator vertical />
       <TabsContent value="account">
@@ -98,6 +128,9 @@ export default function Settings({}: {}) {
       </TabsContent>
       <TabsContent value="sites" data-tauri-drag-region>
         <SitesSettings />
+      </TabsContent>
+      <TabsContent value="wallets" data-tauri-drag-region>
+        <WalletsSettings />
       </TabsContent>
     </Tabs>
   )
@@ -842,5 +875,159 @@ const TabsContent = (props: TabsContentProps) => {
         </YStack>
       </ScrollView>
     </Tabs.Content>
+  )
+}
+
+function WalletsSettings() {
+  const {data: wallets} = useWallets()
+  const [wallet, setWallet] = useState<string | undefined>(undefined)
+  const {data: invoices} = useInvoicesBywallet(wallet)
+
+  return (
+    <YStack gap="$5">
+      <Heading>Wallets</Heading>
+      <ScrollView horizontal>
+        <XStack gap="$6" overflow="visible">
+          {wallets?.map((cw) => (
+            <WalletCard
+              key={cw.id}
+              wallet={cw}
+              active={wallet && wallet == cw.id ? true : false}
+            />
+          ))}
+        </XStack>
+      </ScrollView>
+      <Separator />
+      <TableList>
+        <TableList.Header paddingRight="$2">
+          <SizableText fontWeight="700">Invoices</SizableText>
+          <XStack flex={1} alignItems="center" justifyContent="flex-end">
+            {wallets?.length && (
+              <Select
+                size="$3"
+                id="wallet-payments"
+                value={wallet}
+                onValueChange={setWallet}
+              >
+                <Select.Trigger width={280} iconAfter={ChevronDown}>
+                  <Select.Value placeholder="Wallet" />
+                </Select.Trigger>
+                <Select.Content zIndex={200000}>
+                  <Select.ScrollUpButton
+                    alignItems="center"
+                    justifyContent="center"
+                    position="relative"
+                    width="100%"
+                    height="$3"
+                  >
+                    <YStack zIndex={10}>
+                      <ChevronUp size={20} />
+                    </YStack>
+                    {/* <LinearGradient
+                        start={[0, 0]}
+                        end={[0, 1]}
+                        fullscreen
+                        colors={['$background', '$backgroundTransparent']}
+                        borderRadius="$4"
+                      /> */}
+                  </Select.ScrollUpButton>
+                  <Select.Viewport minWidth={280}>
+                    {wallets?.map((wallet, i) => (
+                      <Select.Item index={i} key={wallet.id} value={wallet.id}>
+                        <Select.ItemText>
+                          <SizableText size="$2">{wallet.name}</SizableText>{' '}
+                          <SizableText size="$2">
+                            ({wallet.balanceSats} sats)
+                          </SizableText>
+                        </Select.ItemText>
+                        <Select.ItemIndicator marginLeft="auto">
+                          <Check size={16} />
+                        </Select.ItemIndicator>
+                      </Select.Item>
+                    ))}
+                  </Select.Viewport>
+                </Select.Content>
+              </Select>
+            )}
+          </XStack>
+        </TableList.Header>
+        {invoices?.received?.map((invoice) => (
+          <>
+            <Separator />
+            <TableList.Item>
+              <XStack gap="$4" alignItems="center" flex={1}>
+                <ArrowDownRight color="$color10" size={24} />
+                <SizableText
+                  size="$3"
+                  flex={1}
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {invoice?.PaymentHash}
+                </SizableText>
+                <SizableText size="$1" flex={1} fontWeight="600">
+                  {invoice?.IsPaid ? 'PAID' : 'NOT PAID'}
+                </SizableText>
+                <SizableText
+                  size="$2"
+                  fontWeight="700"
+                  flex={0}
+                  flexShrink={0}
+                  color="$blue8"
+                >
+                  {invoice?.Amount ? `${invoice.Amount} sats` : 'No amount'}
+                </SizableText>
+              </XStack>
+            </TableList.Item>
+          </>
+        ))}
+      </TableList>
+    </YStack>
+  )
+}
+
+function WalletCard({
+  wallet,
+  active = false,
+  ...props
+}: CardProps & {wallet: LightningWallet; active?: boolean}) {
+  return (
+    <Card
+      animation="bouncy"
+      size="$4"
+      theme="green"
+      width={260}
+      height={120}
+      scale={0.975}
+      hoverStyle={{scale: 1}}
+      pressStyle={{scale: 0.95}}
+      backgroundColor="$color8"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="$borderColor"
+      elevation="$2"
+      {...props}
+    >
+      <Card.Header>
+        <XStack>
+          <YStack flex={1}>
+            <SizableText color="$color10">{wallet.name}</SizableText>
+            <H3 color="$color12">{wallet.balanceSats} sats</H3>
+          </YStack>
+          <Tooltip content="default wallet">
+            <Button
+              size="$3"
+              chromeless
+              icon={
+                <Star color={wallet.isDefault ? 'yellow' : 'transparent'} />
+              }
+              scaleIcon={2}
+              padding="$1"
+            />
+          </Tooltip>
+        </XStack>
+      </Card.Header>
+    </Card>
   )
 }
