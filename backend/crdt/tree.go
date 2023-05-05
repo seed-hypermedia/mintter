@@ -135,7 +135,11 @@ func (d *Tree) FindLeftSibling(parent, child string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return pos.PrevAlive().value.(*TreeNode).id, nil
+	left := pos.PrevAlive()
+	if left == nil {
+		return "", nil
+	}
+	return left.value.(*TreeNode).id, nil
 }
 
 func (d *Tree) FindChildPosition(parent, child string) (*Position, error) {

@@ -224,7 +224,7 @@ func (dm *documentMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb h
 
 	dm.done = true
 
-	panic("TODO add moves")
+	dm.patch["moves"] = dm.compressMoves()
 
 	hb, err = dm.e.CreateChange(dm.ts, dm.signer, dm.delegation, dm.patch)
 	if err != nil {

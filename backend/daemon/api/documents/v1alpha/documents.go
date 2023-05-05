@@ -151,7 +151,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		return nil, status.Errorf(codes.NotFound, "no draft for document %s", in.DocumentId)
 	}
 
-	entity, err := api.blobs.LoadEntity(ctx, eid, hyper.WithLoadDrafts())
+	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, status.Errorf(codes.NotFound, "no draft for document %s", in.DocumentId)
 	}
 
-	entity, err := api.blobs.LoadEntity(ctx, eid, hyper.WithLoadDrafts())
+	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
 	if err != nil {
 		return nil, err
 	}

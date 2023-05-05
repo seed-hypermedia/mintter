@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/slices"
 )
@@ -37,15 +38,14 @@ func TestDocumentMutation(t *testing.T) {
 	require.NoError(t, dm.MoveBlock("b2", "b1", "b3"))
 	require.Len(t, dm.moveLog, 4)
 
-	return
+	blob, err := dm.Commit(ctx, blobs)
+	require.NoError(t, err)
+	_ = blob
 
-	// blob, err := dm.Commit(ctx, blobs)
-	// require.NoError(t, err)
-
-	// _ = blob
+	litter.Dump(dm.patch)
 }
 
-func TestMovesDedupe(t *testing.T) {
+func TestCompressMoves(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := newTestSQLite(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
@@ -182,7 +182,7 @@ func TestDocumentMutationUpdate(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, entity)
 
-	entity, err = blobs.LoadEntity(ctx, "mintter:document:doc-1", hyper.WithLoadDrafts())
+	entity, err = blobs.LoadEntityWithDrafts(ctx, "mintter:document:doc-1")
 	require.NoError(t, err)
 	require.NotNil(t, entity)
 

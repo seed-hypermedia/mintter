@@ -152,25 +152,17 @@ func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.C
 	return hb, nil
 }
 
-type loadOpts struct {
-	includeDrafts int64
-}
-
-type LoadOption func(*loadOpts)
-
-func WithLoadDrafts() LoadOption {
-	return func(opts *loadOpts) {
-		opts.includeDrafts = 1
-	}
-}
-
 // LoadEntity from the database. If not found returns nil result and nil error.
-func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID, opts ...LoadOption) (e *Entity, err error) {
-	var lopts loadOpts
-	for _, o := range opts {
-		o(&lopts)
-	}
+func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (*Entity, error) {
+	return bs.loadEntity(ctx, eid, false)
+}
 
+// LoadEntityWithDrafts includes draft changes.
+func (bs *Storage) LoadEntityWithDrafts(ctx context.Context, eid EntityID) (*Entity, error) {
+	return bs.loadEntity(ctx, eid, true)
+}
+
+func (bs *Storage) loadEntity(ctx context.Context, eid EntityID, includeDrafts bool) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -187,7 +179,12 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID, opts ...LoadOpt
 		return nil, nil
 	}
 
-	changes, err := hypersql.ChangesListForEntity(conn, res.HyperEntitiesID, lopts.includeDrafts)
+	var wantDrafts int64
+	if includeDrafts {
+		wantDrafts = 1
+	}
+
+	changes, err := hypersql.ChangesListForEntity(conn, res.HyperEntitiesID, wantDrafts)
 	if err != nil {
 		return nil, err
 	}
