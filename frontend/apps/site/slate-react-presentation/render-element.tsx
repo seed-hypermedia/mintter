@@ -18,6 +18,7 @@ import {
   Paragraph as UIParagrah,
   TooltipGroup,
   config,
+  SizableText,
 } from '@mintter/ui'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
@@ -69,14 +70,28 @@ export function useRenderElement() {
       case 'link':
         return <ElementLink element={element as Link} />
       case 'image':
+        console.log('IMAGE', element)
         return (
           <Image
             width="100%"
             height={400}
-            source={{uri: (element as ImageType).url}}
-            src={(element as ImageType).url}
+            source={{
+              uri: `${process.env.NEXT_PUBLIC_GRPC_API}/ipfs/${
+                (element as ImageType).url
+              }`,
+            }}
             alt={(element as ImageType).alt}
           />
+          // <img
+          //   style={{
+          //     display: 'block',
+          //     width: '100%',
+          //   }}
+          //   src={`${process.env.NEXT_PUBLIC_GRPC_API}/ipfs/${
+          //     (element as ImageType).url
+          //   }`}
+          //   alt={(element as ImageType).alt}
+          // />
         )
       case 'video':
         return <Video element={element as VideoType} />
@@ -116,12 +131,12 @@ function Group({
 
 function CopyBlockLinkButton({id}: {id: string}) {
   return (
-    <TooltipGroup delay={{open: 3000, close: 100}}>
-      <Tooltip placement="top">
-        <Tooltip.Trigger position="absolute" right={'$1'} top={'$1'}>
+    <TooltipGroup delay={{open: 2000, close: 100}}>
+      <Tooltip placement="top-end">
+        <Tooltip.Trigger position="absolute" right="$1" top="$1" zIndex={1000}>
           <Button
-            size="$2"
-            backgroundColor={'$mint1'}
+            size="$3"
+            backgroundColor="$color1"
             onPress={() => {
               const {pathname, origin, search} = window.location
               navigator.clipboard.writeText(
@@ -129,9 +144,8 @@ function CopyBlockLinkButton({id}: {id: string}) {
               )
               toast.success('Copied link to clipboard')
             }}
-          >
-            <Copy size="$1" />
-          </Button>
+            icon={Copy}
+          />
         </Tooltip.Trigger>
         <Tooltip.Content
           enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -140,6 +154,8 @@ function CopyBlockLinkButton({id}: {id: string}) {
           x={0}
           y={0}
           opacity={1}
+          paddingVertical="$1"
+          paddingHorizontal="$3"
           animation={[
             'quick',
             {
@@ -150,9 +166,9 @@ function CopyBlockLinkButton({id}: {id: string}) {
           ]}
         >
           <Tooltip.Arrow />
-          <UIParagrah size="$2" lineHeight="$1">
+          <SizableText size="$2" lineHeight="$1">
             Copy Link to Block
-          </UIParagrah>
+          </SizableText>
         </Tooltip.Content>
       </Tooltip>
     </TooltipGroup>
