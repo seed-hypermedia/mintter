@@ -175,8 +175,9 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	if err != nil {
 		return nil, err
 	}
+	// The first profile update won't have any changes yet for the entity.
 	if e == nil {
-		panic("BUG: can't load our own profile")
+		e = hyper.NewEntity(eid)
 	}
 
 	patch := map[string]any{}
