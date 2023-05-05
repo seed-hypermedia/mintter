@@ -29,6 +29,9 @@ import toast from 'react-hot-toast'
 import {useHighlightContext} from './highlight'
 import {useHoverContext} from 'slate-react-presentation/hover'
 
+const MEDIA_HOSTNAME =
+  process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_GRPC_API : ''
+
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
     switch ((element as MttastNode).type) {
@@ -70,15 +73,12 @@ export function useRenderElement() {
       case 'link':
         return <ElementLink element={element as Link} />
       case 'image':
-        console.log('IMAGE', element)
         return (
           <Image
             width="100%"
             height={400}
             source={{
-              uri: `${process.env.NEXT_PUBLIC_GRPC_API}/ipfs/${
-                (element as ImageType).url
-              }`,
+              uri: `${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`,
             }}
             alt={(element as ImageType).alt}
           />
@@ -87,8 +87,7 @@ export function useRenderElement() {
           //     display: 'block',
           //     width: '100%',
           //   }}
-          //   src={`${process.env.NEXT_PUBLIC_GRPC_API}/ipfs/${
-          //     (element as ImageType).url
+          //     uri: `${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`,
           //   }`}
           //   alt={(element as ImageType).alt}
           // />
