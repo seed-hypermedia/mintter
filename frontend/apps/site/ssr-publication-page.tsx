@@ -90,9 +90,14 @@ export default function PublicationPage({
                     publication={publication}
                     author={author}
                   />
-                  {publication && (
-                    <WebTipping publication={publication} editors={editors} />
-                  )}
+                  {(publication && editors?.length) ||
+                  (publication && publication.document?.author) ? (
+                    <WebTipping
+                      publication={publication}
+                      editors={editors}
+                      author={author || null}
+                    />
+                  ) : null}
                 </>
               ) : null}
             </SideContainer>

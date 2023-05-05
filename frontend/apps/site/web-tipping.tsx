@@ -20,7 +20,7 @@ import {
   Card,
   ErrorIcon,
 } from '@mintter/ui'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 
@@ -32,16 +32,28 @@ const options = [
 
 export function WebTipping({
   publication,
+  author,
   editors = [],
 }: {
   publication: Publication
-  editors: Array<Account>
+  author: Account | null
+  editors: Array<Account> | null
 }) {
   const [option, setOption] = useState<string | null>(null)
   const [amount, setAmount] = useState(0)
   const [invoice, setInvoice] = useState<string | null>(null)
   const [open, onOpenChange] = useState<boolean>(false)
   const [error, setError] = useState('')
+  const [localEditors] = useState(() =>
+    editors?.length ? editors : author ? [author] : [],
+  )
+
+  /**
+   *
+   * tests:
+   * - editors ? url should be with the whole editors
+   * - no editors ? url should have author
+   */
 
   function handleOptionChange(optionValue) {
     let selectedOption = options.find((o) => o.value == optionValue)
@@ -52,11 +64,6 @@ export function WebTipping({
       )
     }
   }
-
-  console.log(
-    '🚀 ~ file: web-tipping.tsx:56 ~ handlePayment ~ editors:',
-    editors,
-  )
 
   async function handlePayment() {
     if (!publication.document) {
@@ -69,9 +76,13 @@ export function WebTipping({
     }
 
     let {id} = publication.document
-    let percentage = 1 / editors.length
+    let percentage = localEditors.length ? 1 / localEditors.length : 1
 
-    let editorsUri = editors.map((e) => `&user=${e.id},${percentage}`).join('')
+    let editorsUri = localEditors.length
+      ? localEditors
+          .map((e) => (e ? `&user=${e.id},${percentage}` : ''))
+          .join('')
+      : `&user=${publication.document.author},${percentage}`
 
     try {
       let res = await fetch(
@@ -83,10 +94,6 @@ export function WebTipping({
       if (!resp.pr) {
         setError(resp.reason)
       } else {
-        console.log(
-          '🚀 ~ file: web-tipping.tsx:54 ~ handlePayment ~ resp:',
-          resp,
-        )
         setInvoice(resp.pr)
         onOpenChange(true)
       }
@@ -95,8 +102,16 @@ export function WebTipping({
     }
   }
 
-  // todo
-  // - show the qr in the form
+  if (localEditors.length == 0) {
+    console.error(
+      `no editors nor author in this publication', ${JSON.stringify({
+        author,
+        editors,
+        publication,
+      })}`,
+    )
+    return null
+  }
 
   return (
     <>
@@ -206,7 +221,7 @@ export function WebTipping({
                   </Dialog.Portal>
                 </Dialog>
               </XStack>
-              {editors.length && (
+              {localEditors.length && (
                 <YGroup
                   borderRadius="$3"
                   hoverTheme
@@ -214,7 +229,7 @@ export function WebTipping({
                   borderColor="$borderColor"
                   separator={<Separator />}
                 >
-                  {editors.map((editor) => (
+                  {localEditors.map((editor) => (
                     <YGroup.Item>
                       <ListItem
                         size="$2"

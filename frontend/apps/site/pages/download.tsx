@@ -27,8 +27,8 @@ export default function DownloadPage({
       <MainContainer>
         <H1>Download Mintter</H1>
         <XStack space my="$7">
-          {manifest?.platforms.map((item) => (
-            <Button key={item.url} href={item.url} download size="$6">
+          {manifest?.platforms.map((item, i) => (
+            <Button key={`${item.url}-${i}`} href={item.url} download size="$6">
               {item.platform}
             </Button>
           ))}

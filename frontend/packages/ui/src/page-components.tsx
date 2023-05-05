@@ -6,6 +6,7 @@ export const MainContainer = styled(YStack, {
   paddingRight: '$5',
   width: '100%',
   maxWidth: 800,
+  paddingBottom: 300,
   $gtSm: {
     width: '75%',
   },
