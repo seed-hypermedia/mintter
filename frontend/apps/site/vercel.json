@@ -1,3 +1,3 @@
 {
-  "installCommand": "yarn set version stable && rm -rf frontend/apps/desktop frontend/apps/d2 && yarn install"
+  "installCommand": "yarn set version stable && yarn install"
 }
