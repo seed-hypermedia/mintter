@@ -43,8 +43,8 @@ const prodInter: Interceptor = (next) => async (req) => {
 }
 
 function getGRPCHost() {
-  if (process.env.GW_GRPC_ENDPOINT) {
-    return process.env.GW_GRPC_ENDPOINT
+  if (process.env.NEXT_PUBLIC_GRPC_API) {
+    return process.env.NEXT_PUBLIC_GRPC_API
   }
 
   if (process.env.NODE_ENV == 'development') {
@@ -63,7 +63,7 @@ let grpcBaseURL = getGRPCHost()
 
 console.log('⚙️ Client Config ', {
   grpcBaseURL,
-  GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
+  NEXT_PUBLIC_GRPC_API: process.env.NEXT_PUBLIC_GRPC_API,
   VERCEL_ENV: process.env.VERCEL_ENV,
   NODE_ENV: process.env.NODE_ENV,
   IS_DEV,

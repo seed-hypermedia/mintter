@@ -73,11 +73,13 @@ export const getServerSideProps = async ({
 
     editors = publication.document?.editors.length
       ? await Promise.all(
-          publication.document?.editors.map((e) =>
-            accountsClient.getAccount({id: e}),
+          publication.document?.editors.map((id) =>
+            accountsClient.getAccount({id}),
           ),
         )
       : []
+
+    console.log('🚀 ~ file: [...ids].tsx:75 ~ editors:', editors)
 
     return {
       props: {

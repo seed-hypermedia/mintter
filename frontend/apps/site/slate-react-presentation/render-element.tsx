@@ -82,15 +82,6 @@ export function useRenderElement() {
             }}
             alt={(element as ImageType).alt}
           />
-          // <img
-          //   style={{
-          //     display: 'block',
-          //     width: '100%',
-          //   }}
-          //     uri: `${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`,
-          //   }`}
-          //   alt={(element as ImageType).alt}
-          // />
         )
       case 'video':
         return <Video element={element as VideoType} />
