@@ -45,14 +45,20 @@ export function WebTipping({
   const [open, onOpenChange] = useState<boolean>(false)
   const [error, setError] = useState('')
   const [localEditors] = useState(() =>
-    editors?.length ? editors : author ? [author] : [],
+    editors?.length
+      ? editors
+      : publication.document?.editors.length
+      ? publication.document?.editors
+      : publication.document?.author
+      ? [publication.document?.author]
+      : [],
   )
+  console.log('🚀 ~ file: web-tipping.tsx:56 ~ localEditors:', localEditors)
 
   /**
    *
    * tests:
-   * - editors ? url should be with the whole editors
-   * - no editors ? url should have author
+   * editors can be empty
    */
 
   function handleOptionChange(optionValue) {
@@ -80,7 +86,10 @@ export function WebTipping({
 
     let editorsUri = localEditors.length
       ? localEditors
-          .map((e) => (e ? `&user=${e.id},${percentage}` : ''))
+          .map((e) => {
+            let eid = typeof e != 'string' ? e.id : e
+            return e ? `&user=${eid},${percentage}` : ''
+          })
           .join('')
       : `&user=${publication.document.author},${percentage}`
 
@@ -229,33 +238,41 @@ export function WebTipping({
                   borderColor="$borderColor"
                   separator={<Separator />}
                 >
-                  {localEditors.map((editor) => (
-                    <YGroup.Item>
-                      <ListItem
-                        size="$2"
-                        paddingHorizontal="$3"
-                        title={editor.profile?.alias}
-                        iconAfter={
-                          <SizableText
-                            size="$1"
-                            paddingVertical="$2"
-                            overflow="hidden"
-                            whiteSpace="nowrap"
-                            textOverflow="ellipsis"
-                            opacity={0.6}
-                          >
-                            ...{editor.id.substring(editor.id.length - 10)}
-                          </SizableText>
-                        }
-                        icon={User}
-                        hoverTheme
-                        backgroundColor="$backgroundStrong"
-                        hoverStyle={{
-                          backgroundColor: '$backgroundActive',
-                        }}
-                      />
-                    </YGroup.Item>
-                  ))}
+                  {localEditors.map((editor: Account | string) => {
+                    return (
+                      <YGroup.Item>
+                        <ListItem
+                          size="$2"
+                          paddingHorizontal="$3"
+                          title={
+                            typeof editor != 'string'
+                              ? editor.profile?.alias
+                              : editor.substring(editor.length - 10)
+                          }
+                          iconAfter={
+                            typeof editor != 'string' ? (
+                              <SizableText
+                                size="$1"
+                                paddingVertical="$2"
+                                overflow="hidden"
+                                whiteSpace="nowrap"
+                                textOverflow="ellipsis"
+                                opacity={0.6}
+                              >
+                                ...{editor.id.substring(editor.id.length - 10)}
+                              </SizableText>
+                            ) : undefined
+                          }
+                          icon={User}
+                          hoverTheme
+                          backgroundColor="$backgroundStrong"
+                          hoverStyle={{
+                            backgroundColor: '$backgroundStrong',
+                          }}
+                        />
+                      </YGroup.Item>
+                    )
+                  })}
                 </YGroup>
               )}
             </YStack>
@@ -284,7 +301,12 @@ export function WebTipping({
                 </XStack>
               </Card>
             )}
-            <Button theme="green" onPress={handlePayment}>
+            <Button
+              theme="green"
+              onPress={handlePayment}
+              borderTopRightRadius={0}
+              borderTopLeftRadius={0}
+            >
               Tip
             </Button>
           </YStack>
@@ -347,8 +369,8 @@ export function WebTipping({
 
 function RadioGroupItemWithLabel({
   value,
-  size = '$3',
   label,
+  size = '$3',
 }: {
   value: string
   label: string
@@ -362,78 +384,8 @@ function RadioGroupItemWithLabel({
       </RadioGroup.Item>
 
       <Label size={size} htmlFor={id}>
-        {label}
+        <SizableText>{label}</SizableText>
       </Label>
     </XStack>
-  )
-}
-
-interface SliderValue {
-  id: string
-  value: number
-}
-
-const MAX_TOTAL_VALUE = 100
-
-const SliderList = ({editors}: {editors: Array<string>}) => {
-  const [sliders, setSliders] = useState<Array<SliderValue>>(() =>
-    editors.map((e) => ({
-      id: e,
-      value: 1 / editors.length,
-    })),
-  )
-
-  const handleChange = (id: string, value: number) => {
-    // Calculate the sum of all slider values
-    const sum = sliders.reduce((acc, cur) => {
-      if (cur.id == id) {
-        return acc + value
-      }
-      return acc + cur.value
-    }, 0)
-    console.log('🚀 ~ file: web-tipping.tsx:211 ~ sum ~ sum:', sum)
-
-    // Calculate the new values for all sliders
-    const newSliders = sliders.map((slider) => {
-      if (slider.id === id) {
-        return {id, value}
-      }
-      const newValue =
-        Math.round(((100 - value) / (sliders.length - 1)) * 100) / 100
-      return {...slider, value: newValue}
-    })
-
-    setSliders(newSliders)
-  }
-
-  return (
-    <div>
-      {sliders.map((slider) => (
-        <div key={slider.id}>
-          <SimpleSlider
-            min={0}
-            max={100}
-            width={200}
-            value={slider.value}
-            onValueChange={(val) => {
-              handleChange(slider.id, val)
-            }}
-          />
-          <p>{slider.value}%</p>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function SimpleSlider({children, ...props}: SliderProps) {
-  return (
-    <Slider defaultValue={[50]} max={100} step={1} {...props}>
-      <Slider.Track>
-        <Slider.TrackActive />
-      </Slider.Track>
-      <Slider.Thumb index={0} circular elevate />
-      {children}
-    </Slider>
   )
 }
