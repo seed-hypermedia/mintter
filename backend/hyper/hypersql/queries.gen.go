@@ -312,9 +312,9 @@ type KeyDelegationsInsertOrIgnoreResult struct {
 	KeyDelegationsID int64
 }
 
-func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, keyDelegationsID int64, keyDelegationsIssuer int64, keyDelegationsDelegate int64, keyDelegationsValidFromTime int64) (KeyDelegationsInsertOrIgnoreResult, error) {
-	const query = `INSERT OR IGNORE INTO key_delegations (id, issuer, delegate, valid_from_time)
-VALUES (:keyDelegationsID, :keyDelegationsIssuer, :keyDelegationsDelegate, :keyDelegationsValidFromTime)
+func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, keyDelegationsID int64, keyDelegationsIssuer int64, keyDelegationsDelegate int64, keyDelegationsIssueTime int64) (KeyDelegationsInsertOrIgnoreResult, error) {
+	const query = `INSERT OR IGNORE INTO key_delegations (id, issuer, delegate, issue_time)
+VALUES (:keyDelegationsID, :keyDelegationsIssuer, :keyDelegationsDelegate, :keyDelegationsIssueTime)
 RETURNING key_delegations.id`
 
 	var out KeyDelegationsInsertOrIgnoreResult
@@ -323,7 +323,7 @@ RETURNING key_delegations.id`
 		stmt.SetInt64(":keyDelegationsID", keyDelegationsID)
 		stmt.SetInt64(":keyDelegationsIssuer", keyDelegationsIssuer)
 		stmt.SetInt64(":keyDelegationsDelegate", keyDelegationsDelegate)
-		stmt.SetInt64(":keyDelegationsValidFromTime", keyDelegationsValidFromTime)
+		stmt.SetInt64(":keyDelegationsIssueTime", keyDelegationsIssueTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -349,11 +349,11 @@ type KeyDelegationsListResult struct {
 	KeyDelegationsViewBlobsMultihash []byte
 	KeyDelegationsViewIssuer         []byte
 	KeyDelegationsViewDelegate       []byte
-	KeyDelegationsViewValidFromTime  int64
+	KeyDelegationsViewIssueTime      int64
 }
 
 func KeyDelegationsList(conn *sqlite.Conn, keyDelegationsViewIssuer []byte) ([]KeyDelegationsListResult, error) {
-	const query = `SELECT key_delegations_view.id, key_delegations_view.blob_codec, key_delegations_view.blobs_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.valid_from_time
+	const query = `SELECT key_delegations_view.id, key_delegations_view.blob_codec, key_delegations_view.blobs_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
 FROM key_delegations_view
 WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 
@@ -370,7 +370,7 @@ WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 			KeyDelegationsViewBlobsMultihash: stmt.ColumnBytes(2),
 			KeyDelegationsViewIssuer:         stmt.ColumnBytes(3),
 			KeyDelegationsViewDelegate:       stmt.ColumnBytes(4),
-			KeyDelegationsViewValidFromTime:  stmt.ColumnInt64(5),
+			KeyDelegationsViewIssueTime:      stmt.ColumnInt64(5),
 		})
 
 		return nil
@@ -516,14 +516,47 @@ AND is_draft <= :is_draft`
 	return out, err
 }
 
-func LinksInsert(conn *sqlite.Conn, hyperLinksBlob int64, hyperLinksRel string, hyperLinksTarget int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {
-	const query = `INSERT OR IGNORE INTO hyper_links (blob, rel, target, target_entity, data)
-VALUES (:hyperLinksBlob, :hyperLinksRel, NULLIF(:hyperLinksTarget, 0), NULLIF(:hyperLinksTargetEntity, 0), :hyperLinksData)`
+type ChangesResolveHeadsResult struct {
+	ResolvedJson []byte
+}
+
+func ChangesResolveHeads(conn *sqlite.Conn, heads []byte) (ChangesResolveHeadsResult, error) {
+	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hyper_links.target_blob FROM hyper_links JOIN changeset ON changeset.change = hyper_links.source_blob WHERE hyper_links.rel = change:depends)
+SELECT json_group_array(change) AS resolved_json
+FROM changeset
+LIMIT 1`
+
+	var out ChangesResolveHeadsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperLinksBlob", hyperLinksBlob)
+		stmt.SetBytes(":heads", heads)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesResolveHeads: more than one result return for a single-kind query")
+		}
+
+		out.ResolvedJson = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesResolveHeads: %w", err)
+	}
+
+	return out, err
+}
+
+func LinksInsert(conn *sqlite.Conn, hyperLinksSourceBlob int64, hyperLinksRel string, hyperLinksTargetBlob int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {
+	const query = `INSERT OR IGNORE INTO hyper_links (source_blob, rel, target_blob, target_entity, data)
+VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0), NULLIF(:hyperLinksTargetEntity, 0), :hyperLinksData)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hyperLinksSourceBlob", hyperLinksSourceBlob)
 		stmt.SetText(":hyperLinksRel", hyperLinksRel)
-		stmt.SetInt64(":hyperLinksTarget", hyperLinksTarget)
+		stmt.SetInt64(":hyperLinksTargetBlob", hyperLinksTargetBlob)
 		stmt.SetInt64(":hyperLinksTargetEntity", hyperLinksTargetEntity)
 		stmt.SetBytes(":hyperLinksData", hyperLinksData)
 	}
@@ -560,35 +593,33 @@ VALUES (:draftBlobsBlob)`
 	return err
 }
 
-type DraftsExistResult struct {
+type DraftsListResult struct {
 	HyperChangesBlob int64
 }
 
-func DraftsExist(conn *sqlite.Conn, hyperChangesEntity int64) (DraftsExistResult, error) {
+func DraftsList(conn *sqlite.Conn, hyperChangesEntity int64) ([]DraftsListResult, error) {
 	const query = `SELECT hyper_changes.blob
 FROM hyper_changes
 JOIN draft_blobs ON draft_blobs.blob = hyper_changes.blob
-WHERE hyper_changes.entity = :hyperChangesEntity
-LIMIT 1`
+WHERE hyper_changes.entity = :hyperChangesEntity`
 
-	var out DraftsExistResult
+	var out []DraftsListResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("DraftsExist: more than one result return for a single-kind query")
-		}
+		out = append(out, DraftsListResult{
+			HyperChangesBlob: stmt.ColumnInt64(0),
+		})
 
-		out.HyperChangesBlob = stmt.ColumnInt64(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DraftsExist: %w", err)
+		err = fmt.Errorf("failed query: DraftsList: %w", err)
 	}
 
 	return out, err

@@ -52,15 +52,21 @@ var migrations = []string{
 		principal BLOB UNIQUE NOT NULL
 	);`,
 
+	// Stores derived information from Key Delegation blobs.
 	`CREATE TABLE key_delegations (
+		-- Key delegation blob ID.
 		id INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		-- Issuer key.
 		issuer INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+		-- Delegate key.
 		delegate INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
-		valid_from_time INTEGER NOT NULL,
+		-- Issue time.
+		issue_time INTEGER NOT NULL,
 		UNIQUE (issuer, delegate),
 		UNIQUE (delegate, issuer)
 	);`,
 
+	// View of key delegations dereferencing foreign keys.
 	`CREATE VIEW key_delegations_view AS
 		SELECT
 			kd.id AS id,
@@ -68,21 +74,27 @@ var migrations = []string{
 			blobs.multihash AS blobs_multihash,
 			iss.principal AS issuer,
 			del.principal AS delegate,
-			kd.valid_from_time AS valid_from_time
+			kd.issue_time AS issue_time
 		FROM key_delegations kd
 		JOIN blobs ON blobs.id = kd.id
 		JOIN public_keys iss ON iss.id = kd.issuer
 		JOIN public_keys del ON del.id = kd.delegate;`,
 
-	// Stores hypermedia entities.
+	// Stores IDs of Hypermedia Entities.
 	`CREATE TABLE hyper_entities (
+		-- Local shorthand ID.
 		id INTEGER PRIMARY KEY,
+		-- Entity ID.
 		eid TEXT UNIQUE
 	);`,
 
+	// Changes to the Hypermedia Entities.
 	`CREATE TABLE hyper_changes (
+		-- Blob ID of the change.
 		blob INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		-- Entity being changes.
 		entity INTEGER REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		-- HLC timestamp of the change.
 		hlc_time INTEGER NOT NULL
 	);`,
 
@@ -109,19 +121,19 @@ var migrations = []string{
 
 	// Stores links between blobs.
 	`CREATE TABLE hyper_links (
-		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+		source_blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- TODO(burdiyan): normalize this to reduce disk usage.
 		rel TEXT NOT NULL,
 		target_entity INTEGER REFERENCES entities (id) ON DELETE CASCADE,
-		target INTEGER REFERENCES blobs (id),
+		target_blob INTEGER REFERENCES blobs (id),
 		data BLOB,
-		CHECK ((target_entity, target) IS NOT (null, null))
+		CHECK ((target_entity, target_blob) IS NOT (null, null))
 	);`,
 
 	// These are probably not the most optimal indices.
-	`CREATE INDEX idx_hyper_links_by_blob ON hyper_links (blob);`,
+	`CREATE INDEX idx_hyper_links_by_blob ON hyper_links (source_blob);`,
 	`CREATE INDEX idx_hyper_links_by_target_entity ON hyper_links (target_entity) WHERE target_entity IS NOT NULL;`,
-	`CREATE INDEX idx_hyper_links_by_target ON hyper_links (target) WHERE target IS NOT NULL;`,
+	`CREATE INDEX idx_hyper_links_by_target ON hyper_links (target_blob) WHERE target_blob IS NOT NULL;`,
 
 	// Stores the content of IPFS blobs.
 	`CREATE TABLE ipfs_blocks (

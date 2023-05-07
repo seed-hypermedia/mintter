@@ -57,12 +57,12 @@ const (
 // The delegation is signed by the issuer, and used by the delegate.
 // The field names `aud`, `iss`, `nbf` are borrowed from the JWT specification.
 type KeyDelegation struct {
-	Type          BlobType       `refmt:"@type"`
-	Issuer        core.Principal `refmt:"issuer"`
-	Delegate      core.Principal `refmt:"delegate"`
-	NotBeforeTime time.Time      `refmt:"notBeforeTime"`
-	Purpose       string         `refmt:"purpose"`
-	Signature     core.Signature `refmt:"sig,omitempty"` // omitempty for signing.
+	Type      BlobType       `refmt:"@type"`
+	Issuer    core.Principal `refmt:"issuer"`
+	Delegate  core.Principal `refmt:"delegate"`
+	IssueTime time.Time      `refmt:"issueTime"`
+	Purpose   string         `refmt:"purpose"`
+	Signature core.Signature `refmt:"sig,omitempty"` // omitempty for signing.
 }
 
 // NewKeyDelegation creates a new signed key delegation from one key to another.
@@ -72,11 +72,11 @@ func NewKeyDelegation(issuer core.KeyPair, delegate core.PublicKey, validFrom ti
 	}
 
 	d := KeyDelegation{
-		Type:          TypeKeyDelegation,
-		Issuer:        issuer.Principal(),
-		Delegate:      delegate.Principal(),
-		Purpose:       "DeviceRegistration",
-		NotBeforeTime: validFrom,
+		Type:      TypeKeyDelegation,
+		Issuer:    issuer.Principal(),
+		Delegate:  delegate.Principal(),
+		Purpose:   "DeviceRegistration",
+		IssueTime: validFrom,
 	}
 
 	data, err := cbornode.DumpObject(d)

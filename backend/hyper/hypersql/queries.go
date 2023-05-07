@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	sgen "mintter/backend/db/sqlitegen"
 	"mintter/backend/db/sqlitegen/qb"
+	"mintter/backend/db/sqliteschema"
 	s "mintter/backend/db/sqliteschema"
 )
 
@@ -98,13 +99,13 @@ func generateQueries() error {
 				s.KeyDelegationsID,
 				s.KeyDelegationsIssuer,
 				s.KeyDelegationsDelegate,
-				s.KeyDelegationsValidFromTime,
+				s.KeyDelegationsIssueTime,
 			), '\n',
 			"VALUES", qb.List(
 				qb.VarCol(s.KeyDelegationsID),
 				qb.VarCol(s.KeyDelegationsIssuer),
 				qb.VarCol(s.KeyDelegationsDelegate),
-				qb.VarCol(s.KeyDelegationsValidFromTime),
+				qb.VarCol(s.KeyDelegationsIssueTime),
 			), '\n',
 			"RETURNING", qb.Results(s.KeyDelegationsID),
 		),
@@ -115,7 +116,7 @@ func generateQueries() error {
 				s.KeyDelegationsViewBlobsMultihash,
 				s.KeyDelegationsViewIssuer,
 				s.KeyDelegationsViewDelegate,
-				s.KeyDelegationsViewValidFromTime,
+				s.KeyDelegationsViewIssueTime,
 			), '\n',
 			"FROM", s.KeyDelegationsView, '\n',
 			"WHERE", s.KeyDelegationsViewIssuer, "=", qb.VarCol(s.KeyDelegationsViewIssuer),
@@ -165,19 +166,35 @@ func generateQueries() error {
 			"WHERE", s.HyperChangesByEntityViewEntityID, "=", qb.VarCol(s.HyperChangesByEntityViewEntityID), '\n',
 			"AND is_draft <=", qb.Var("is_draft", sgen.TypeInt),
 		),
+		qb.MakeQuery(s.Schema, "ChangesResolveHeads", sgen.QueryKindSingle,
+			"WITH RECURSIVE changeset (change) AS", qb.SubQuery(
+				"SELECT value",
+				"FROM", qb.Concat("json_each(", qb.Var("heads", sgen.TypeBytes), ")"),
+				"UNION",
+				"SELECT", sqliteschema.HyperLinksTargetBlob,
+				"FROM", sqliteschema.HyperLinks,
+				"JOIN changeset ON changeset.change", "=", sqliteschema.HyperLinksSourceBlob,
+				"WHERE", sqliteschema.HyperLinksRel, "=", "change:depends",
+			), '\n',
+			"SELECT", qb.Results(
+				qb.ResultRaw("json_group_array(change) AS resolved_json", "resolved_json", sgen.TypeBytes),
+			), '\n',
+			"FROM changeset", '\n',
+			"LIMIT 1",
+		),
 
 		qb.MakeQuery(s.Schema, "LinksInsert", sgen.QueryKindExec,
 			"INSERT OR IGNORE INTO", s.HyperLinks, qb.ListColShort(
-				s.HyperLinksBlob,
+				s.HyperLinksSourceBlob,
 				s.HyperLinksRel,
-				s.HyperLinksTarget,
+				s.HyperLinksTargetBlob,
 				s.HyperLinksTargetEntity,
 				s.HyperLinksData,
 			), '\n',
 			"VALUES", qb.List(
-				qb.VarCol(s.HyperLinksBlob),
+				qb.VarCol(s.HyperLinksSourceBlob),
 				qb.VarCol(s.HyperLinksRel),
-				qb.Concat("NULLIF(", qb.VarCol(s.HyperLinksTarget), ", 0)"),
+				qb.Concat("NULLIF(", qb.VarCol(s.HyperLinksTargetBlob), ", 0)"),
 				qb.Concat("NULLIF(", qb.VarCol(s.HyperLinksTargetEntity), ", 0)"),
 				qb.VarCol(s.HyperLinksData),
 			),
@@ -191,14 +208,13 @@ func generateQueries() error {
 				qb.VarCol(s.DraftBlobsBlob),
 			),
 		),
-		qb.MakeQuery(s.Schema, "DraftsExist", sgen.QueryKindSingle,
+		qb.MakeQuery(s.Schema, "DraftsList", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.HyperChangesBlob,
 			), '\n',
 			"FROM", s.HyperChanges, '\n',
 			"JOIN", s.DraftBlobs, "ON", s.DraftBlobsBlob, "=", s.HyperChangesBlob, '\n',
-			"WHERE", s.HyperChangesEntity, "=", qb.VarCol(s.HyperChangesEntity), '\n',
-			"LIMIT 1",
+			"WHERE", s.HyperChangesEntity, "=", qb.VarCol(s.HyperChangesEntity),
 		),
 	)
 

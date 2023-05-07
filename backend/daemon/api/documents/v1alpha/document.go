@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/crdt"
+	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/vcs/hlc"
 	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/mitchellh/mapstructure"
+	"github.com/stretchr/objx"
 )
 
 // This is very ugly and type-unsafe code.
@@ -106,6 +108,24 @@ func (dm *documentMutation) SetTitle(title string) error {
 
 	dm.patch["title"] = title
 	return nil
+}
+
+func (dm *documentMutation) SetWebURL(url string) error {
+	v, ok := dm.e.Get("webURL")
+	if ok && v.(string) == url {
+		return nil
+	}
+
+	dm.patch["webURL"] = url
+	return nil
+}
+
+func (dm *documentMutation) DeleteBlock(block string) {
+	dm.patch = objx.Map(dm.patch).Set("blocks."+block+".deleted", true)
+}
+
+func (dm *documentMutation) ReplaceBlock(blk *documents.Block) error {
+	panic("TODO: replace block")
 }
 
 func (dm *documentMutation) MoveBlock(block, parent, left string) error {

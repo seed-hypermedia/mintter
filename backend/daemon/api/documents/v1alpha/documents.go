@@ -163,39 +163,40 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		panic("TODO: implement updating draft for published shit")
 	}
 
-	patch := map[string]any{}
-	_ = patch
-	_ = me
+	del, err := api.getDelegation(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	panic("TODO update draft")
+	mut, err := newDocumentMutation(entity, me.DeviceKey(), del, cid.Undef)
+	if err != nil {
+		return nil, err
+	}
 
-	// for _, op := range in.Changes {
-	// 	switch o := op.Op.(type) {
-	// 	case *documents.DocumentChange_SetTitle:
-	// 		v, ok := entity.Get("title")
-	// 		if !ok || v.(string) != o.SetTitle {
-	// 			patch["title"] = o.SetTitle
-	// 		}
-	// 	case *documents.DocumentChange_MoveBlock_:
-	// 		if err := ds.tree.SetNodePosition(site, op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
-	// 			return fmt.Errorf("failed to apply move operation: %w", err)
-	// 		}
-	// 	case *documents.DocumentChange_DeleteBlock:
-	// 		if err := ds.tree.DeleteNode(site, op.DeleteBlock); err != nil {
-	// 			return fmt.Errorf("failed to delete block %s: %w", op.DeleteBlock, err)
-	// 		}
-	// 	case *documents.DocumentChange_ReplaceBlock:
-	// 		if ds.blocks[op.ReplaceBlock.Id] == nil {
-	// 			ds.blocks[op.ReplaceBlock.Id] = make(map[cid.Cid]*documents.Block)
-	// 		}
-	// 		op.ReplaceBlock.Revision = vc.Cid().String()
-	// 		ds.blocks[op.ReplaceBlock.Id][vc.Cid()] = op.ReplaceBlock
-	// 	case *documents.DocumentChange_SetWebUrl:
-	// 		ds.webURL[vc.Cid()] = op.SetWebUrl
-	// 	default:
-	// 		panic("BUG: unhandled document change")
-	// 	}
-	// }
+	for _, op := range in.Changes {
+		switch o := op.Op.(type) {
+		case *documents.DocumentChange_SetTitle:
+			if err := mut.SetTitle(o.SetTitle); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_MoveBlock_:
+			if err := mut.MoveBlock(o.MoveBlock.BlockId, o.MoveBlock.Parent, o.MoveBlock.LeftSibling); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_DeleteBlock:
+			mut.DeleteBlock(o.DeleteBlock)
+		case *documents.DocumentChange_ReplaceBlock:
+			if err := mut.ReplaceBlock(o.ReplaceBlock); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_SetWebUrl:
+			if err := mut.SetWebURL(o.SetWebUrl); err != nil {
+				return nil, err
+			}
+		default:
+			panic("BUG: unhandled document change")
+		}
+	}
 
 	return &emptypb.Empty{}, nil
 }

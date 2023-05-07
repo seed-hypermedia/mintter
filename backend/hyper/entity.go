@@ -2,12 +2,14 @@ package hyper
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/crdt2"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/vcs/hlc"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -66,6 +68,28 @@ func (e *Entity) AppliedChanges() map[cid.Cid]Change {
 // This must be read only. Not safe for concurrency.
 func (e *Entity) Heads() map[cid.Cid]struct{} {
 	return e.heads
+}
+
+func (bs *Storage) HasDraft(ctx context.Context, eid EntityID) (bool, error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer release()
+
+	res, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return false, err
+	}
+	if res.HyperEntitiesID == 0 {
+		return false, nil
+	}
+
+	drafts, err := hypersql.DraftsList(conn, res.HyperEntitiesID)
+	if err != nil {
+		return false, err
+	}
+	return len(drafts) > 0, nil
 }
 
 // ApplyChange to the internal state.
@@ -159,7 +183,30 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (*Entity, error
 
 // LoadEntityWithDrafts includes draft changes.
 func (bs *Storage) LoadEntityWithDrafts(ctx context.Context, eid EntityID) (*Entity, error) {
+	// load drafts
+	// load from heads using drafts
+
 	return bs.loadEntity(ctx, eid, true)
+}
+
+func (bs *Storage) loadFromHeads(conn *sqlite.Conn, heads []int64) (e any, err error) {
+	if len(heads) == 0 {
+		return nil, fmt.Errorf("must specify heads")
+	}
+
+	defer sqlitex.Save(conn)(&err)
+
+	data, err := json.Marshal(heads)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = data
+
+	panic("TODO load with heads")
+
+	return nil, nil
+
 }
 
 func (bs *Storage) loadEntity(ctx context.Context, eid EntityID, includeDrafts bool) (e *Entity, err error) {

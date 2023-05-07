@@ -124,28 +124,6 @@ func (bs *Storage) LoadBlob(ctx context.Context, c cid.Cid, v any) error {
 	return nil
 }
 
-func (bs *Storage) HasDraft(ctx context.Context, eid EntityID) (bool, error) {
-	conn, release, err := bs.db.Conn(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer release()
-
-	res, err := hypersql.EntitiesLookupID(conn, string(eid))
-	if err != nil {
-		return false, err
-	}
-	if res.HyperEntitiesID == 0 {
-		return false, nil
-	}
-
-	draft, err := hypersql.DraftsExist(conn, res.HyperEntitiesID)
-	if err != nil {
-		return false, err
-	}
-	return draft.HyperChangesBlob > 0, nil
-}
-
 // Blob is a structural artifact.
 type Blob struct {
 	Type    BlobType

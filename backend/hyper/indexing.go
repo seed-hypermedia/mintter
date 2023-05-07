@@ -34,7 +34,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			}
 		}
 
-		if _, err := hypersql.KeyDelegationsInsertOrIgnore(conn, id, iss, del, v.NotBeforeTime.Unix()); err != nil {
+		if _, err := hypersql.KeyDelegationsInsertOrIgnore(conn, id, iss, del, v.IssueTime.Unix()); err != nil {
 			return err
 		}
 	case Change:

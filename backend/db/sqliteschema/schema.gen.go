@@ -303,20 +303,20 @@ const (
 // Table hyper_links.
 const (
 	HyperLinks             sqlitegen.Table  = "hyper_links"
-	HyperLinksBlob         sqlitegen.Column = "hyper_links.blob"
 	HyperLinksData         sqlitegen.Column = "hyper_links.data"
 	HyperLinksRel          sqlitegen.Column = "hyper_links.rel"
-	HyperLinksTarget       sqlitegen.Column = "hyper_links.target"
+	HyperLinksSourceBlob   sqlitegen.Column = "hyper_links.source_blob"
+	HyperLinksTargetBlob   sqlitegen.Column = "hyper_links.target_blob"
 	HyperLinksTargetEntity sqlitegen.Column = "hyper_links.target_entity"
 )
 
 // Table hyper_links. Plain strings.
 const (
 	T_HyperLinks             = "hyper_links"
-	C_HyperLinksBlob         = "hyper_links.blob"
 	C_HyperLinksData         = "hyper_links.data"
 	C_HyperLinksRel          = "hyper_links.rel"
-	C_HyperLinksTarget       = "hyper_links.target"
+	C_HyperLinksSourceBlob   = "hyper_links.source_blob"
+	C_HyperLinksTargetBlob   = "hyper_links.target_blob"
 	C_HyperLinksTargetEntity = "hyper_links.target_entity"
 )
 
@@ -376,20 +376,20 @@ const (
 
 // Table key_delegations.
 const (
-	KeyDelegations              sqlitegen.Table  = "key_delegations"
-	KeyDelegationsDelegate      sqlitegen.Column = "key_delegations.delegate"
-	KeyDelegationsID            sqlitegen.Column = "key_delegations.id"
-	KeyDelegationsIssuer        sqlitegen.Column = "key_delegations.issuer"
-	KeyDelegationsValidFromTime sqlitegen.Column = "key_delegations.valid_from_time"
+	KeyDelegations          sqlitegen.Table  = "key_delegations"
+	KeyDelegationsDelegate  sqlitegen.Column = "key_delegations.delegate"
+	KeyDelegationsID        sqlitegen.Column = "key_delegations.id"
+	KeyDelegationsIssueTime sqlitegen.Column = "key_delegations.issue_time"
+	KeyDelegationsIssuer    sqlitegen.Column = "key_delegations.issuer"
 )
 
 // Table key_delegations. Plain strings.
 const (
-	T_KeyDelegations              = "key_delegations"
-	C_KeyDelegationsDelegate      = "key_delegations.delegate"
-	C_KeyDelegationsID            = "key_delegations.id"
-	C_KeyDelegationsIssuer        = "key_delegations.issuer"
-	C_KeyDelegationsValidFromTime = "key_delegations.valid_from_time"
+	T_KeyDelegations          = "key_delegations"
+	C_KeyDelegationsDelegate  = "key_delegations.delegate"
+	C_KeyDelegationsID        = "key_delegations.id"
+	C_KeyDelegationsIssueTime = "key_delegations.issue_time"
+	C_KeyDelegationsIssuer    = "key_delegations.issuer"
 )
 
 // Table key_delegations_view.
@@ -399,8 +399,8 @@ const (
 	KeyDelegationsViewBlobsMultihash sqlitegen.Column = "key_delegations_view.blobs_multihash"
 	KeyDelegationsViewDelegate       sqlitegen.Column = "key_delegations_view.delegate"
 	KeyDelegationsViewID             sqlitegen.Column = "key_delegations_view.id"
+	KeyDelegationsViewIssueTime      sqlitegen.Column = "key_delegations_view.issue_time"
 	KeyDelegationsViewIssuer         sqlitegen.Column = "key_delegations_view.issuer"
-	KeyDelegationsViewValidFromTime  sqlitegen.Column = "key_delegations_view.valid_from_time"
 )
 
 // Table key_delegations_view. Plain strings.
@@ -410,8 +410,8 @@ const (
 	C_KeyDelegationsViewBlobsMultihash = "key_delegations_view.blobs_multihash"
 	C_KeyDelegationsViewDelegate       = "key_delegations_view.delegate"
 	C_KeyDelegationsViewID             = "key_delegations_view.id"
+	C_KeyDelegationsViewIssueTime      = "key_delegations_view.issue_time"
 	C_KeyDelegationsViewIssuer         = "key_delegations_view.issuer"
-	C_KeyDelegationsViewValidFromTime  = "key_delegations_view.valid_from_time"
 )
 
 // Table permanodes.
@@ -618,10 +618,10 @@ var Schema = sqlitegen.Schema{
 		HyperChangesByEntityViewSize:         {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
 		HyperEntitiesEid:                     {Table: HyperEntities, SQLType: "TEXT"},
 		HyperEntitiesID:                      {Table: HyperEntities, SQLType: "INTEGER"},
-		HyperLinksBlob:                       {Table: HyperLinks, SQLType: "INTEGER"},
 		HyperLinksData:                       {Table: HyperLinks, SQLType: "BLOB"},
 		HyperLinksRel:                        {Table: HyperLinks, SQLType: "TEXT"},
-		HyperLinksTarget:                     {Table: HyperLinks, SQLType: "INTEGER"},
+		HyperLinksSourceBlob:                 {Table: HyperLinks, SQLType: "INTEGER"},
+		HyperLinksTargetBlob:                 {Table: HyperLinks, SQLType: "INTEGER"},
 		HyperLinksTargetEntity:               {Table: HyperLinks, SQLType: "INTEGER"},
 		InviteTokensExpirationTime:           {Table: InviteTokens, SQLType: "INTEGER"},
 		InviteTokensRole:                     {Table: InviteTokens, SQLType: "INTEGER"},
@@ -637,14 +637,14 @@ var Schema = sqlitegen.Schema{
 		IPLDLinksPath:                        {Table: IPLDLinks, SQLType: "TEXT"},
 		KeyDelegationsDelegate:               {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsID:                     {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsIssueTime:              {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsIssuer:                 {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsValidFromTime:          {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsViewBlobCodec:          {Table: KeyDelegationsView, SQLType: "INTEGER"},
 		KeyDelegationsViewBlobsMultihash:     {Table: KeyDelegationsView, SQLType: "BLOB"},
 		KeyDelegationsViewDelegate:           {Table: KeyDelegationsView, SQLType: "BLOB"},
 		KeyDelegationsViewID:                 {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewIssueTime:          {Table: KeyDelegationsView, SQLType: "INTEGER"},
 		KeyDelegationsViewIssuer:             {Table: KeyDelegationsView, SQLType: "BLOB"},
-		KeyDelegationsViewValidFromTime:      {Table: KeyDelegationsView, SQLType: "INTEGER"},
 		PermanodesAccountID:                  {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesCreateTime:                 {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesID:                         {Table: Permanodes, SQLType: "INTEGER"},
