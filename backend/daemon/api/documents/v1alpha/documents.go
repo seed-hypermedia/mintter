@@ -82,11 +82,11 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	if in.ExistingDocumentId != "" {
 		eid := hyper.NewEntityID("mintter:document", in.ExistingDocumentId)
 
-		ok, err := api.blobs.HasDraft(ctx, eid)
+		draft, err := api.blobs.FindDraft(ctx, eid)
 		if err != nil {
 			return nil, err
 		}
-		if ok {
+		if draft.Defined() {
 			return nil, status.Errorf(codes.FailedPrecondition, "draft for %s already exists", in.ExistingDocumentId)
 		}
 
@@ -143,20 +143,12 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	ok, err := api.blobs.HasDraft(ctx, eid)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, status.Errorf(codes.NotFound, "no draft for document %s", in.DocumentId)
-	}
-
 	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
 	if entity == nil {
-		return nil, fmt.Errorf("BUG: failed to load entity but draft exists")
+		return nil, status.Errorf(codes.NotFound, "no draft for entity %s", eid)
 	}
 
 	if len(entity.AppliedChanges()) != 1 {
@@ -236,22 +228,18 @@ func cleanupPatch(newPatch, oldPatch, incoming *documents.UpdateDraftRequestV2) 
 
 // GetDraft implements the corresponding gRPC method.
 func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
+	}
 
-	ok, err := api.blobs.HasDraft(ctx, eid)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, status.Errorf(codes.NotFound, "no draft for document %s", in.DocumentId)
-	}
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
 	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
 	if entity == nil {
-		panic(fmt.Errorf("BUG: failed to load document entity %s after checking draft exists", in.DocumentId))
+		return nil, status.Errorf(codes.NotFound, "not found draft for entity %s", eid)
 	}
 
 	return hydrateDocument(ctx, api.blobs, entity)

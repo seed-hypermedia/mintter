@@ -204,18 +204,6 @@ const (
 	C_DevicesPublicKey  = "devices.public_key"
 )
 
-// Table draft_blobs.
-const (
-	DraftBlobs     sqlitegen.Table  = "draft_blobs"
-	DraftBlobsBlob sqlitegen.Column = "draft_blobs.blob"
-)
-
-// Table draft_blobs. Plain strings.
-const (
-	T_DraftBlobs     = "draft_blobs"
-	C_DraftBlobsBlob = "draft_blobs.blob"
-)
-
 // Table draft_changes.
 const (
 	DraftChanges            sqlitegen.Table  = "draft_changes"
@@ -244,6 +232,20 @@ const (
 	C_GlobalMetaValue = "global_meta.value"
 )
 
+// Table hyper_change_deps.
+const (
+	HyperChangeDeps       sqlitegen.Table  = "hyper_change_deps"
+	HyperChangeDepsChild  sqlitegen.Column = "hyper_change_deps.child"
+	HyperChangeDepsParent sqlitegen.Column = "hyper_change_deps.parent"
+)
+
+// Table hyper_change_deps. Plain strings.
+const (
+	T_HyperChangeDeps       = "hyper_change_deps"
+	C_HyperChangeDepsChild  = "hyper_change_deps.child"
+	C_HyperChangeDepsParent = "hyper_change_deps.parent"
+)
+
 // Table hyper_changes.
 const (
 	HyperChanges        sqlitegen.Table  = "hyper_changes"
@@ -260,43 +262,75 @@ const (
 	C_HyperChangesHlcTime = "hyper_changes.hlc_time"
 )
 
-// Table hyper_changes_by_entity_view.
+// Table hyper_changes_view.
 const (
-	HyperChangesByEntityView          sqlitegen.Table  = "hyper_changes_by_entity_view"
-	HyperChangesByEntityViewBlobID    sqlitegen.Column = "hyper_changes_by_entity_view.blob_id"
-	HyperChangesByEntityViewCodec     sqlitegen.Column = "hyper_changes_by_entity_view.codec"
-	HyperChangesByEntityViewData      sqlitegen.Column = "hyper_changes_by_entity_view.data"
-	HyperChangesByEntityViewDraft     sqlitegen.Column = "hyper_changes_by_entity_view.draft"
-	HyperChangesByEntityViewEntityID  sqlitegen.Column = "hyper_changes_by_entity_view.entity_id"
-	HyperChangesByEntityViewHlcTime   sqlitegen.Column = "hyper_changes_by_entity_view.hlc_time"
-	HyperChangesByEntityViewMultihash sqlitegen.Column = "hyper_changes_by_entity_view.multihash"
-	HyperChangesByEntityViewSize      sqlitegen.Column = "hyper_changes_by_entity_view.size"
+	HyperChangesView          sqlitegen.Table  = "hyper_changes_view"
+	HyperChangesViewBlobID    sqlitegen.Column = "hyper_changes_view.blob_id"
+	HyperChangesViewCodec     sqlitegen.Column = "hyper_changes_view.codec"
+	HyperChangesViewData      sqlitegen.Column = "hyper_changes_view.data"
+	HyperChangesViewEntityID  sqlitegen.Column = "hyper_changes_view.entity_id"
+	HyperChangesViewHlcTime   sqlitegen.Column = "hyper_changes_view.hlc_time"
+	HyperChangesViewMultihash sqlitegen.Column = "hyper_changes_view.multihash"
+	HyperChangesViewSize      sqlitegen.Column = "hyper_changes_view.size"
 )
 
-// Table hyper_changes_by_entity_view. Plain strings.
+// Table hyper_changes_view. Plain strings.
 const (
-	T_HyperChangesByEntityView          = "hyper_changes_by_entity_view"
-	C_HyperChangesByEntityViewBlobID    = "hyper_changes_by_entity_view.blob_id"
-	C_HyperChangesByEntityViewCodec     = "hyper_changes_by_entity_view.codec"
-	C_HyperChangesByEntityViewData      = "hyper_changes_by_entity_view.data"
-	C_HyperChangesByEntityViewDraft     = "hyper_changes_by_entity_view.draft"
-	C_HyperChangesByEntityViewEntityID  = "hyper_changes_by_entity_view.entity_id"
-	C_HyperChangesByEntityViewHlcTime   = "hyper_changes_by_entity_view.hlc_time"
-	C_HyperChangesByEntityViewMultihash = "hyper_changes_by_entity_view.multihash"
-	C_HyperChangesByEntityViewSize      = "hyper_changes_by_entity_view.size"
+	T_HyperChangesView          = "hyper_changes_view"
+	C_HyperChangesViewBlobID    = "hyper_changes_view.blob_id"
+	C_HyperChangesViewCodec     = "hyper_changes_view.codec"
+	C_HyperChangesViewData      = "hyper_changes_view.data"
+	C_HyperChangesViewEntityID  = "hyper_changes_view.entity_id"
+	C_HyperChangesViewHlcTime   = "hyper_changes_view.hlc_time"
+	C_HyperChangesViewMultihash = "hyper_changes_view.multihash"
+	C_HyperChangesViewSize      = "hyper_changes_view.size"
+)
+
+// Table hyper_drafts.
+const (
+	HyperDrafts       sqlitegen.Table  = "hyper_drafts"
+	HyperDraftsBlob   sqlitegen.Column = "hyper_drafts.blob"
+	HyperDraftsEntity sqlitegen.Column = "hyper_drafts.entity"
+)
+
+// Table hyper_drafts. Plain strings.
+const (
+	T_HyperDrafts       = "hyper_drafts"
+	C_HyperDraftsBlob   = "hyper_drafts.blob"
+	C_HyperDraftsEntity = "hyper_drafts.entity"
+)
+
+// Table hyper_drafts_view.
+const (
+	HyperDraftsView          sqlitegen.Table  = "hyper_drafts_view"
+	HyperDraftsViewBlobID    sqlitegen.Column = "hyper_drafts_view.blob_id"
+	HyperDraftsViewCodec     sqlitegen.Column = "hyper_drafts_view.codec"
+	HyperDraftsViewEntity    sqlitegen.Column = "hyper_drafts_view.entity"
+	HyperDraftsViewEntityID  sqlitegen.Column = "hyper_drafts_view.entity_id"
+	HyperDraftsViewMultihash sqlitegen.Column = "hyper_drafts_view.multihash"
+)
+
+// Table hyper_drafts_view. Plain strings.
+const (
+	T_HyperDraftsView          = "hyper_drafts_view"
+	C_HyperDraftsViewBlobID    = "hyper_drafts_view.blob_id"
+	C_HyperDraftsViewCodec     = "hyper_drafts_view.codec"
+	C_HyperDraftsViewEntity    = "hyper_drafts_view.entity"
+	C_HyperDraftsViewEntityID  = "hyper_drafts_view.entity_id"
+	C_HyperDraftsViewMultihash = "hyper_drafts_view.multihash"
 )
 
 // Table hyper_entities.
 const (
 	HyperEntities    sqlitegen.Table  = "hyper_entities"
-	HyperEntitiesEid sqlitegen.Column = "hyper_entities.eid"
+	HyperEntitiesEID sqlitegen.Column = "hyper_entities.eid"
 	HyperEntitiesID  sqlitegen.Column = "hyper_entities.id"
 )
 
 // Table hyper_entities. Plain strings.
 const (
 	T_HyperEntities    = "hyper_entities"
-	C_HyperEntitiesEid = "hyper_entities.eid"
+	C_HyperEntitiesEID = "hyper_entities.eid"
 	C_HyperEntitiesID  = "hyper_entities.id"
 )
 
@@ -600,23 +634,30 @@ var Schema = sqlitegen.Schema{
 		DevicesID:                            {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:                     {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:                     {Table: Devices, SQLType: "BLOB"},
-		DraftBlobsBlob:                       {Table: DraftBlobs, SQLType: "INTEGER"},
 		DraftChangesID:                       {Table: DraftChanges, SQLType: "INTEGER"},
 		DraftChangesPermanodeID:              {Table: DraftChanges, SQLType: "INTEGER"},
 		GlobalMetaKey:                        {Table: GlobalMeta, SQLType: "TEXT"},
 		GlobalMetaValue:                      {Table: GlobalMeta, SQLType: "TEXT"},
+		HyperChangeDepsChild:                 {Table: HyperChangeDeps, SQLType: "INTEGER"},
+		HyperChangeDepsParent:                {Table: HyperChangeDeps, SQLType: "INTEGER"},
 		HyperChangesBlob:                     {Table: HyperChanges, SQLType: "INTEGER"},
 		HyperChangesEntity:                   {Table: HyperChanges, SQLType: "INTEGER"},
 		HyperChangesHlcTime:                  {Table: HyperChanges, SQLType: "INTEGER"},
-		HyperChangesByEntityViewBlobID:       {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperChangesByEntityViewCodec:        {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperChangesByEntityViewData:         {Table: HyperChangesByEntityView, SQLType: "BLOB"},
-		HyperChangesByEntityViewDraft:        {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperChangesByEntityViewEntityID:     {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperChangesByEntityViewHlcTime:      {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperChangesByEntityViewMultihash:    {Table: HyperChangesByEntityView, SQLType: "BLOB"},
-		HyperChangesByEntityViewSize:         {Table: HyperChangesByEntityView, SQLType: "INTEGER"},
-		HyperEntitiesEid:                     {Table: HyperEntities, SQLType: "TEXT"},
+		HyperChangesViewBlobID:               {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewCodec:                {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewData:                 {Table: HyperChangesView, SQLType: "BLOB"},
+		HyperChangesViewEntityID:             {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewHlcTime:              {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewMultihash:            {Table: HyperChangesView, SQLType: "BLOB"},
+		HyperChangesViewSize:                 {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperDraftsBlob:                      {Table: HyperDrafts, SQLType: "INTEGER"},
+		HyperDraftsEntity:                    {Table: HyperDrafts, SQLType: "INTEGER"},
+		HyperDraftsViewBlobID:                {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewCodec:                 {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewEntity:                {Table: HyperDraftsView, SQLType: "TEXT"},
+		HyperDraftsViewEntityID:              {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewMultihash:             {Table: HyperDraftsView, SQLType: "BLOB"},
+		HyperEntitiesEID:                     {Table: HyperEntities, SQLType: "TEXT"},
 		HyperEntitiesID:                      {Table: HyperEntities, SQLType: "INTEGER"},
 		HyperLinksData:                       {Table: HyperLinks, SQLType: "BLOB"},
 		HyperLinksRel:                        {Table: HyperLinks, SQLType: "TEXT"},

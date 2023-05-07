@@ -388,15 +388,15 @@ type EntitiesInsertOrIgnoreResult struct {
 	HyperEntitiesID int64
 }
 
-func EntitiesInsertOrIgnore(conn *sqlite.Conn, hyperEntitiesEid string) (EntitiesInsertOrIgnoreResult, error) {
+func EntitiesInsertOrIgnore(conn *sqlite.Conn, hyperEntitiesEID string) (EntitiesInsertOrIgnoreResult, error) {
 	const query = `INSERT OR IGNORE INTO hyper_entities (eid)
-VALUES (:hyperEntitiesEid)
+VALUES (:hyperEntitiesEID)
 RETURNING hyper_entities.id`
 
 	var out EntitiesInsertOrIgnoreResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEid", hyperEntitiesEid)
+		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -420,16 +420,16 @@ type EntitiesLookupIDResult struct {
 	HyperEntitiesID int64
 }
 
-func EntitiesLookupID(conn *sqlite.Conn, hyperEntitiesEid string) (EntitiesLookupIDResult, error) {
+func EntitiesLookupID(conn *sqlite.Conn, hyperEntitiesEID string) (EntitiesLookupIDResult, error) {
 	const query = `SELECT hyper_entities.id
 FROM hyper_entities
-WHERE hyper_entities.eid = :hyperEntitiesEid
+WHERE hyper_entities.eid = :hyperEntitiesEID
 LIMIT 1`
 
 	var out EntitiesLookupIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEid", hyperEntitiesEid)
+		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -471,38 +471,36 @@ VALUES (:hyperChangesBlob, :hyperChangesEntity, :hyperChangesHlcTime)`
 	return err
 }
 
-type ChangesListForEntityResult struct {
-	HyperChangesByEntityViewBlobID    int64
-	HyperChangesByEntityViewCodec     int64
-	HyperChangesByEntityViewData      []byte
-	HyperChangesByEntityViewHlcTime   int64
-	HyperChangesByEntityViewMultihash []byte
-	HyperChangesByEntityViewSize      int64
-	IsDraft                           int64
+type ChangesListFromChangeSetResult struct {
+	HyperChangesViewBlobID    int64
+	HyperChangesViewCodec     int64
+	HyperChangesViewData      []byte
+	HyperChangesViewEntityID  int64
+	HyperChangesViewHlcTime   int64
+	HyperChangesViewMultihash []byte
+	HyperChangesViewSize      int64
 }
 
-func ChangesListForEntity(conn *sqlite.Conn, hyperChangesByEntityViewEntityID int64, is_draft int64) ([]ChangesListForEntityResult, error) {
-	const query = `SELECT hyper_changes_by_entity_view.blob_id, hyper_changes_by_entity_view.codec, hyper_changes_by_entity_view.data, hyper_changes_by_entity_view.hlc_time, hyper_changes_by_entity_view.multihash, hyper_changes_by_entity_view.size, IIF(hyper_changes_by_entity_view.draft IS NULL, 0, 1) AS is_draft
-FROM hyper_changes_by_entity_view
-WHERE hyper_changes_by_entity_view.entity_id = :hyperChangesByEntityViewEntityID
-AND is_draft <= :is_draft`
+func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte) ([]ChangesListFromChangeSetResult, error) {
+	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
+FROM hyper_changes_view, json_each(:cset) AS cset
+WHERE hyper_changes_view.blob_id = cset.value`
 
-	var out []ChangesListForEntityResult
+	var out []ChangesListFromChangeSetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangesByEntityViewEntityID", hyperChangesByEntityViewEntityID)
-		stmt.SetInt64(":is_draft", is_draft)
+		stmt.SetBytes(":cset", cset)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ChangesListForEntityResult{
-			HyperChangesByEntityViewBlobID:    stmt.ColumnInt64(0),
-			HyperChangesByEntityViewCodec:     stmt.ColumnInt64(1),
-			HyperChangesByEntityViewData:      stmt.ColumnBytes(2),
-			HyperChangesByEntityViewHlcTime:   stmt.ColumnInt64(3),
-			HyperChangesByEntityViewMultihash: stmt.ColumnBytes(4),
-			HyperChangesByEntityViewSize:      stmt.ColumnInt64(5),
-			IsDraft:                           stmt.ColumnInt64(6),
+		out = append(out, ChangesListFromChangeSetResult{
+			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
+			HyperChangesViewCodec:     stmt.ColumnInt64(1),
+			HyperChangesViewData:      stmt.ColumnBytes(2),
+			HyperChangesViewEntityID:  stmt.ColumnInt64(3),
+			HyperChangesViewHlcTime:   stmt.ColumnInt64(4),
+			HyperChangesViewMultihash: stmt.ColumnBytes(5),
+			HyperChangesViewSize:      stmt.ColumnInt64(6),
 		})
 
 		return nil
@@ -510,18 +508,18 @@ AND is_draft <= :is_draft`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: ChangesListForEntity: %w", err)
+		err = fmt.Errorf("failed query: ChangesListFromChangeSet: %w", err)
 	}
 
 	return out, err
 }
 
 type ChangesResolveHeadsResult struct {
-	ResolvedJson []byte
+	ResolvedJSON []byte
 }
 
 func ChangesResolveHeads(conn *sqlite.Conn, heads []byte) (ChangesResolveHeadsResult, error) {
-	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hyper_links.target_blob FROM hyper_links JOIN changeset ON changeset.change = hyper_links.source_blob WHERE hyper_links.rel = change:depends)
+	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hyper_change_deps.parent FROM hyper_change_deps JOIN changeset ON changeset.change = hyper_change_deps.child)
 SELECT json_group_array(change) AS resolved_json
 FROM changeset
 LIMIT 1`
@@ -537,13 +535,49 @@ LIMIT 1`
 			return errors.New("ChangesResolveHeads: more than one result return for a single-kind query")
 		}
 
-		out.ResolvedJson = stmt.ColumnBytes(0)
+		out.ResolvedJSON = stmt.ColumnBytes(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: ChangesResolveHeads: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesGetPublicHeadsJSONResult struct {
+	Heads []byte
+}
+
+func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, hyperChangesEntity int64) (ChangesGetPublicHeadsJSONResult, error) {
+	const query = `SELECT json_group_array(hyper_changes.blob) AS heads
+FROM hyper_changes
+LEFT JOIN hyper_drafts ON hyper_drafts.entity = hyper_changes.entity
+WHERE hyper_changes.entity = :hyperChangesEntity
+AND hyper_drafts.blob IS NULL
+AND hyper_changes.blob NOT IN (SELECT hyper_change_deps.parent FROM hyper_change_deps)
+LIMIT 1`
+
+	var out ChangesGetPublicHeadsJSONResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesGetPublicHeadsJSON: more than one result return for a single-kind query")
+		}
+
+		out.Heads = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetPublicHeadsJSON: %w", err)
 	}
 
 	return out, err
@@ -573,12 +607,13 @@ VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0),
 	return err
 }
 
-func DraftsInsert(conn *sqlite.Conn, draftBlobsBlob int64) error {
-	const query = `INSERT INTO draft_blobs (blob)
-VALUES (:draftBlobsBlob)`
+func DraftsInsert(conn *sqlite.Conn, hyperDraftsEntity int64, hyperDraftsBlob int64) error {
+	const query = `INSERT INTO hyper_drafts (entity, blob)
+VALUES (:hyperDraftsEntity, :hyperDraftsBlob)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":draftBlobsBlob", draftBlobsBlob)
+		stmt.SetInt64(":hyperDraftsEntity", hyperDraftsEntity)
+		stmt.SetInt64(":hyperDraftsBlob", hyperDraftsBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -593,33 +628,41 @@ VALUES (:draftBlobsBlob)`
 	return err
 }
 
-type DraftsListResult struct {
-	HyperChangesBlob int64
+type DraftsGetResult struct {
+	HyperDraftsViewBlobID    int64
+	HyperDraftsViewCodec     int64
+	HyperDraftsViewEntity    string
+	HyperDraftsViewEntityID  int64
+	HyperDraftsViewMultihash []byte
 }
 
-func DraftsList(conn *sqlite.Conn, hyperChangesEntity int64) ([]DraftsListResult, error) {
-	const query = `SELECT hyper_changes.blob
-FROM hyper_changes
-JOIN draft_blobs ON draft_blobs.blob = hyper_changes.blob
-WHERE hyper_changes.entity = :hyperChangesEntity`
+func DraftsGet(conn *sqlite.Conn, hyperDraftsViewEntity string) (DraftsGetResult, error) {
+	const query = `SELECT hyper_drafts_view.blob_id, hyper_drafts_view.codec, hyper_drafts_view.entity, hyper_drafts_view.entity_id, hyper_drafts_view.multihash
+FROM hyper_drafts_view
+WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
 
-	var out []DraftsListResult
+	var out DraftsGetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
+		stmt.SetText(":hyperDraftsViewEntity", hyperDraftsViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, DraftsListResult{
-			HyperChangesBlob: stmt.ColumnInt64(0),
-		})
+		if i > 1 {
+			return errors.New("DraftsGet: more than one result return for a single-kind query")
+		}
 
+		out.HyperDraftsViewBlobID = stmt.ColumnInt64(0)
+		out.HyperDraftsViewCodec = stmt.ColumnInt64(1)
+		out.HyperDraftsViewEntity = stmt.ColumnText(2)
+		out.HyperDraftsViewEntityID = stmt.ColumnInt64(3)
+		out.HyperDraftsViewMultihash = stmt.ColumnBytes(4)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DraftsList: %w", err)
+		err = fmt.Errorf("failed query: DraftsGet: %w", err)
 	}
 
 	return out, err

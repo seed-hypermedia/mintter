@@ -100,24 +100,39 @@ var migrations = []string{
 
 	`CREATE INDEX idx_hyper_changes_by_entity ON hyper_changes (entity, hlc_time);`,
 
-	`CREATE VIEW hyper_changes_by_entity_view AS
+	// View of changes with dereferences foreign keys.
+	`CREATE VIEW hyper_changes_view AS
 		SELECT
-			hyper_changes.entity AS entity_id,
 			hyper_changes.blob AS blob_id,
+			hyper_changes.entity AS entity_id,
+			hyper_changes.hlc_time AS hlc_time,
 			blobs.codec AS codec,
 			blobs.multihash AS multihash,
 			blobs.data AS data,
-			blobs.size AS size,
-			hyper_changes.hlc_time AS hlc_time,
-			draft_blobs.blob AS draft
+			blobs.size AS size
 		FROM hyper_changes
 		JOIN blobs ON blobs.id = hyper_changes.blob
-		LEFT JOIN draft_blobs ON hyper_changes.blob = draft_blobs.blob
-		ORDER BY hlc_time;`,
+		ORDER BY hlc_time
+	;`,
 
-	`CREATE TABLE draft_blobs (
-		blob INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
+	// Draft changes. Only one draft is allowed for now.
+	`CREATE TABLE hyper_drafts (
+		entity INTEGER PRIMARY KEY REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
 	);`,
+
+	// View of drafts with dereferences foreign keys.
+	`CREATE VIEW hyper_drafts_view AS
+		SELECT
+			hyper_drafts.entity AS entity_id,
+			hyper_drafts.blob AS blob_id,
+			hyper_entities.eid AS entity,
+			blobs.codec AS codec,
+			blobs.multihash AS multihash
+		FROM hyper_drafts
+		JOIN hyper_entities ON hyper_entities.id = hyper_drafts.entity
+		JOIN blobs ON blobs.id = hyper_drafts.blob
+	;`,
 
 	// Stores links between blobs.
 	`CREATE TABLE hyper_links (
@@ -134,6 +149,16 @@ var migrations = []string{
 	`CREATE INDEX idx_hyper_links_by_blob ON hyper_links (source_blob);`,
 	`CREATE INDEX idx_hyper_links_by_target_entity ON hyper_links (target_entity) WHERE target_entity IS NOT NULL;`,
 	`CREATE INDEX idx_hyper_links_by_target ON hyper_links (target_blob) WHERE target_blob IS NOT NULL;`,
+
+	// View for dependency links between changes.
+	`CREATE VIEW hyper_change_deps AS
+		SELECT
+			source_blob AS child,
+			target_blob AS parent
+		FROM hyper_links
+		WHERE rel = 'change:depends'
+		AND target_blob IS NOT NULL
+	;`,
 
 	// Stores the content of IPFS blobs.
 	`CREATE TABLE ipfs_blocks (

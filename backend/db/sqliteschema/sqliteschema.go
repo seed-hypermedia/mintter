@@ -20,6 +20,8 @@ func init() {
 		"CID",
 		"SQLite",
 		"IPLD",
+		"EID",
+		"JSON",
 	)
 }
 

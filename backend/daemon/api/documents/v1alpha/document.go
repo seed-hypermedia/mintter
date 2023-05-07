@@ -251,5 +251,5 @@ func (dm *documentMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb h
 		return hb, err
 	}
 
-	return hb, bs.SaveDraftBlob(ctx, hb)
+	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
 }

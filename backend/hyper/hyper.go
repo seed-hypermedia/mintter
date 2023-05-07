@@ -80,7 +80,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	})
 }
 
-func (bs *Storage) SaveDraftBlob(ctx context.Context, blob Blob) error {
+func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -102,7 +102,15 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, blob Blob) error {
 			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
 		}
 
-		return hypersql.DraftsInsert(conn, id)
+		resp, err := hypersql.EntitiesLookupID(conn, string(eid))
+		if err != nil {
+			return err
+		}
+		if resp.HyperEntitiesID == 0 {
+			panic("BUG: failed to lookup entity after inserting the blob")
+		}
+
+		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
 	})
 }
 
