@@ -5,6 +5,7 @@ import {
   isParent,
   GroupingContent,
   FlowContent,
+  isHeading,
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, PathRef, Transforms} from 'slate'
 import type {EditorPlugin} from './types'
@@ -43,6 +44,7 @@ function moveStatement(editor: Editor, up: boolean) {
   }
 
   const nodes = getSelectedNodes(editor, startPath, endPath)
+  console.log(nodes)
 
   if (!nodes) throw new Error('found no parent statement')
 
@@ -54,7 +56,7 @@ function moveStatement(editor: Editor, up: boolean) {
         ? node.pathRef.current
         : node.entry[1]
 
-    const [parentBlock] = Editor.parent(editor, blockPath)
+    const [parentBlock, parentPath] = Editor.parent(editor, blockPath)
     if (isGroupContent(parentBlock)) {
       Editor.withoutNormalizing(editor, () => {
         MintterEditor.addChange(editor, ['moveBlock', block.id])
@@ -92,6 +94,9 @@ function moveStatement(editor: Editor, up: boolean) {
         } else {
           // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
           if (blockPath.length < 4 || (!isFirst && node.isChild)) return
+
+          // don't lift if the parent is heading
+          if (isHeading(Editor.parent(editor, parentPath)[0])) return
 
           const siblings = Array.from(nextSiblings(editor, blockPath))
 
