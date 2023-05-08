@@ -114,6 +114,50 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	})
 }
 
+func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID, error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	resp, err := hypersql.EntitiesListByPrefix(conn, prefix+"*")
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]EntityID, len(resp))
+	for i, r := range resp {
+		out[i] = EntityID(r.HyperEntitiesEID)
+	}
+
+	return out, nil
+}
+
+func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		res, err := hypersql.DraftsGet(conn, string(eid))
+		if err != nil {
+			return err
+		}
+		if res.HyperDraftsViewBlobID == 0 {
+			return fmt.Errorf("no draft to publish for entity %s", eid)
+		}
+
+		if err := hypersql.DraftsPublish(conn, res.HyperDraftsViewBlobID); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.Cid, blob Blob) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {

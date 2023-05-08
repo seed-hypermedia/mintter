@@ -450,6 +450,39 @@ LIMIT 1`
 	return out, err
 }
 
+type EntitiesListByPrefixResult struct {
+	HyperEntitiesID  int64
+	HyperEntitiesEID string
+}
+
+func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
+	const query = `SELECT hyper_entities.id, hyper_entities.eid
+FROM hyper_entities
+WHERE hyper_entities.eid GLOB :prefix`
+
+	var out []EntitiesListByPrefixResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":prefix", prefix)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, EntitiesListByPrefixResult{
+			HyperEntitiesID:  stmt.ColumnInt64(0),
+			HyperEntitiesEID: stmt.ColumnText(1),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesListByPrefix: %w", err)
+	}
+
+	return out, err
+}
+
 func ChangesInsertOrIgnore(conn *sqlite.Conn, hyperChangesBlob int64, hyperChangesEntity int64, hyperChangesHlcTime int64) error {
 	const query = `INSERT OR IGNORE INTO hyper_changes (blob, entity, hlc_time)
 VALUES (:hyperChangesBlob, :hyperChangesEntity, :hyperChangesHlcTime)`
@@ -667,4 +700,24 @@ WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
 	}
 
 	return out, err
+}
+
+func DraftsPublish(conn *sqlite.Conn, hyperDraftsBlob int64) error {
+	const query = `DELETE FROM hyper_drafts
+WHERE hyper_drafts.blob = :hyperDraftsBlob`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hyperDraftsBlob", hyperDraftsBlob)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DraftsPublish: %w", err)
+	}
+
+	return err
 }

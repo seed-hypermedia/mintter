@@ -11,7 +11,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/hlc"
 	"path/filepath"
 	"testing"
 	"time"
@@ -452,6 +451,107 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 	}
 }
 
+func TestListDrafts(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	{
+		list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+		require.NoError(t, err)
+		testutil.ProtoEqual(t, draft, list.Documents[0], "must have draft in the list")
+	}
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.Equal(t, draft.CreateTime.AsTime().UnixMicro(), updated.CreateTime.AsTime().UnixMicro())
+	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, list.Documents[0], "must have draft in the list")
+}
+
+func TestAPIPublishDraft_E2E(t *testing.T) {
+	t.Parallel()
+
+	// We'll measure that dates on the published document are greater than start date.
+	// Since the test runs fast we reverse the start time a bit to notice the difference.
+	start := time.Now().Add(time.Minute * -1).UTC().Round(time.Second)
+
+	// Move clock back a bit so that timestamps generated in tests
+	// are clearly after the test start.
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	updated.PublishTime = published.Document.PublishTime // Drafts don't have publish time.
+
+	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter())
+	if diff != "" {
+		t.Fatal(diff, "published document doesn't match")
+	}
+
+	require.NotEqual(t, "", published.Document.Id, "publication must have id")
+	require.NotEqual(t, "", published.Version, "publication must have version")
+	require.Equal(t, draft.Id, published.Document.Id)
+
+	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
+	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
+	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
+
+	// Draft must be removed after publishing.
+	{
+		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
+			DocumentId: draft.Id,
+		})
+		require.Nil(t, draft, "draft must be removed after publishing")
+		require.Error(t, err, "must fail to get published draft")
+	}
+
+	// Must get publication after publishing.
+	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err, "must get document after publishing")
+	testutil.ProtoEqual(t, published, got, "published document doesn't match")
+
+	// Must show up in the list.
+	{
+		list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, 1, "must have 1 publication")
+		testutil.ProtoEqual(t, published, list.Publications[0], "publication in the list must match")
+	}
+}
+
 func TestAPIUpdateDraft_WithList(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
@@ -622,113 +722,6 @@ func TestGetPublicationWithDraftID(t *testing.T) {
 	published, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
 	require.Error(t, err, "draft must not be returned as publication")
 	require.Nil(t, published, "draft is not a publication")
-}
-
-func TestListDrafts(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	start := hlc.FromTime(time.Now().Add(-500 * time.Millisecond)).Pack()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	require.Greater(t, draft.CreateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
-
-	{
-		list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-		require.NoError(t, err)
-		testutil.ProtoEqual(t, draft, list.Documents[0], "must have draft in the list")
-	}
-
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-			Id:   "b1",
-			Type: "statement",
-			Text: "Hello world!",
-		}}},
-	})
-	require.Equal(t, draft.CreateTime.AsTime().UnixMicro(), updated.CreateTime.AsTime().UnixMicro())
-	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
-
-	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updated, list.Documents[0], "must have draft in the list")
-}
-
-func TestAPIPublishDraft(t *testing.T) {
-	t.Parallel()
-
-	// We'll measure that dates on the published document are greater than start date.
-	// Since the test runs fast we reverse the start time a bit to notice the difference.
-	start := time.Now().Add(time.Minute * -1).UTC().Round(time.Second)
-
-	// Move clock back a bit so that timestamps generated in tests
-	// are clearly after the test start.
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-			Id:   "b1",
-			Type: "statement",
-			Text: "Hello world!",
-		}}},
-	})
-
-	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	updated.PublishTime = published.Document.PublishTime // Drafts don't have publish time.
-
-	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter())
-	if diff != "" {
-		t.Fatal(diff, "published document doesn't match")
-	}
-
-	require.NotEqual(t, "", published.Document.Id, "publication must have id")
-	require.NotEqual(t, "", published.Version, "publication must have version")
-	require.Equal(t, draft.Id, published.Document.Id)
-
-	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
-	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
-	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
-
-	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
-
-	// Draft must be removed after publishing.
-	{
-		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
-			DocumentId: draft.Id,
-		})
-		require.Nil(t, draft, "draft must be removed after publishing")
-		require.Error(t, err, "must fail to get published draft")
-	}
-
-	// Must get publication after publishing.
-	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	require.NoError(t, err, "must get document after publishing")
-	testutil.ProtoEqual(t, published, got, "published document doesn't match")
-
-	// Must show up in the list.
-	{
-		list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
-		require.NoError(t, err)
-		require.Len(t, list.Publications, 1, "must have 1 publication")
-		testutil.ProtoEqual(t, published, list.Publications[0], "publication in the list must match")
-	}
 }
 
 func TestAPIDeletePublication(t *testing.T) {

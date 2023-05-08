@@ -121,7 +121,7 @@ var migrations = []string{
 		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
 	);`,
 
-	// View of drafts with dereferences foreign keys.
+	// View of drafts with dereferenced foreign keys.
 	`CREATE VIEW hyper_drafts_view AS
 		SELECT
 			hyper_drafts.entity AS entity_id,

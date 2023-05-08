@@ -14,7 +14,7 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/vcssql"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -232,58 +232,44 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 // ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	conn, release, err := api.db.Conn(ctx)
+	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
-	release()
-	if err != nil {
-		return nil, err
+	resp := &documents.ListDraftsResponse{
+		Documents: make([]*documents.Document, 0, len(entities)),
 	}
 
-	out := &documents.ListDraftsResponse{
-		Documents: make([]*documents.Document, 0, len(docs)),
-	}
-
-	// TODO(burdiyan): this is a workaround. Need to do better, and only select relevant metadata.
-	for _, d := range docs {
+	for _, e := range entities {
+		docid := strings.TrimPrefix(string(e), "mintter:document:")
 		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
-			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
+			DocumentId: docid,
 		})
 		if err != nil {
 			continue
 		}
-		out.Documents = append(out.Documents, draft)
+		resp.Documents = append(resp.Documents, draft)
 	}
 
-	return out, nil
+	return resp, nil
 }
 
 // PublishDraft implements the corresponding gRPC method.
 func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	conn.PublishDraft(oid)
-
-	if err := conn.Err(); err != nil {
+	if err := api.blobs.PublishDraft(ctx, hyper.NewEntityID("mintter:document", in.DocumentId)); err != nil {
 		return nil, err
 	}
 
 	if api.disc != nil {
-		if err := api.disc.ProvideCID(oid); err != nil {
-			return nil, err
-		}
+		panic("TODO: announce draft")
+		// if err := api.disc.ProvideCID(oid); err != nil {
+		// 	return nil, err
+		// }
 	}
 
 	return api.GetPublication(ctx, &documents.GetPublicationRequest{
@@ -335,6 +321,48 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 
 // GetPublication implements the corresponding gRPC method.
 func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
+	}
+
+	me, err := api.getMe()
+	if err != nil {
+		return nil, err
+	}
+
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	entity, err := api.blobs.LoadEntity(ctx, eid)
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", eid)
+	}
+
+	del, err := api.getDelegation(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	mut, err := newDraftMutation(entity, me.DeviceKey(), del)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := mut.hydrate(ctx, api.blobs)
+	if err != nil {
+		return nil, err
+	}
+	doc.PublishTime = doc.UpdateTime
+
+	return &documents.Publication{
+		Document: doc,
+		Version:  mut.prevDraft.String(),
+	}, nil
+
+	//=== TODO: fix remote get
+
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -447,34 +475,27 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	conn, release, err := api.db.Conn(ctx)
+	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
-	release()
-	if err != nil {
-		return nil, err
+	resp := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
 
-	out := &documents.ListPublicationsResponse{
-		Publications: make([]*documents.Publication, 0, len(docs)),
-	}
-
-	// TODO(burdiyan): this is a workaround. Need to do better, and only select relevant metadata.
-	for _, d := range docs {
-		draft, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
-			LocalOnly:  true,
+	for _, e := range entities {
+		docid := strings.TrimPrefix(string(e), "mintter:document:")
+		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
+			DocumentId: docid,
 		})
 		if err != nil {
 			continue
 		}
-		out.Publications = append(out.Publications, draft)
+		resp.Publications = append(resp.Publications, pub)
 	}
 
-	return out, nil
+	return resp, nil
 }
 
 func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, includeDrafts bool, oid cid.Cid, heads []cid.Cid) (*docState, error) {
