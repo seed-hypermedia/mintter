@@ -2,6 +2,7 @@ package crdt2
 
 import (
 	"math"
+	"reflect"
 
 	"github.com/tidwall/btree"
 )
@@ -42,6 +43,9 @@ func (m *Map) ApplyPatch(time int64, origin string, patch map[string]any) (ok bo
 		queue = queue[1:]
 
 		for k, v := range cur.m {
+			if reflect.TypeOf(v).Kind() == reflect.Struct {
+				panic("BUG: can't use structs in CRDT map patches")
+			}
 			vt := mapValuePrimitive
 			vm, isMap := v.(map[string]any)
 			if isMap {
@@ -79,7 +83,7 @@ func (m *Map) setNode(time int64, origin string, path []string, vt mapValueType,
 			time:   time,
 			origin: origin,
 		},
-		valueType: mapValuePrimitive,
+		valueType: vt,
 		value:     value,
 	}
 
@@ -110,20 +114,64 @@ func (m *Map) List(path ...string) (out []any, ok bool) {
 	pivot := newPivot(path, false)
 
 	m.state.Ascend(pivot, func(item mapNode) bool {
+		if item.valueType != mapValueListChunk {
+			return false
+		}
 		if !samePath(path, item.key.path) {
 			return false
 		}
 
-		if item.valueType != mapValueListChunk {
-			return true
+		chunk := item.value.(map[string]any)
+		if chunk["#ins"] == nil {
+			panic("TODO: handle non-inserting list chunks")
 		}
 
-		out = append(out, item.value.([]any)...)
+		out = append(out, chunk["#ins"].([]any)...)
 		ok = true
 		return true
 	})
 
 	return out, ok
+}
+
+func (m *Map) ForEachListChunk(path []string, fn func(time int64, origin string, items []any) (ok bool)) {
+	pivot := newPivot(path, false)
+
+	m.state.Ascend(pivot, func(item mapNode) bool {
+		if item.valueType != mapValueListChunk {
+			return false
+		}
+		if !samePath(path, item.key.path) {
+			return false
+		}
+
+		chunk := item.value.(map[string]any)
+		if chunk["#ins"] == nil {
+			panic("TODO: handle non-inserting list chunks")
+		}
+
+		items := chunk["#ins"].([]any)
+		if !fn(item.key.time, item.key.origin, items) {
+			return false
+		}
+		return true
+	})
+}
+
+func (m *Map) ForgetState(time int64, origin string) {
+	var toDelete []mapNode
+	m.state.Scan(func(item mapNode) bool {
+		if item.key.time == time && item.key.origin == origin {
+			toDelete = append(toDelete, item)
+		}
+		return true
+	})
+
+	for _, n := range toDelete {
+		if _, ok := m.state.Delete(n); !ok {
+			panic("BUG: failed to delete map node")
+		}
+	}
 }
 
 func newPivot(path []string, reverse bool) mapNode {
@@ -205,4 +253,14 @@ func samePath(a, b []string) bool {
 	}
 
 	return true
+}
+
+// MapValue is a map values that is replaced atomically.
+type MapValue[T any] struct {
+	Map T `mapstructure:"#map"`
+}
+
+// ListValue is a patch value for a list mutation.
+type ListValue[T any] struct {
+	Insert []T `mapstructure:"#ins"`
 }

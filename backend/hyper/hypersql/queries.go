@@ -48,12 +48,14 @@ func generateQueries() error {
 		),
 		qb.MakeQuery(s.Schema, "BlobsInsert", sgen.QueryKindSingle,
 			"INSERT INTO", s.Blobs, qb.ListColShort(
+				s.BlobsID,
 				s.BlobsMultihash,
 				s.BlobsCodec,
 				s.BlobsData,
 				s.BlobsSize,
 			), '\n',
 			"VALUES", qb.List(
+				qb.Concat("NULLIF(", qb.VarCol(s.BlobsID), ", 0)"),
 				qb.VarCol(s.BlobsMultihash),
 				qb.VarCol(s.BlobsCodec),
 				qb.VarCol(s.BlobsData),

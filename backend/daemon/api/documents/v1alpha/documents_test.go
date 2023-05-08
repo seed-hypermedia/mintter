@@ -26,6 +26,158 @@ import (
 
 var _ = litter.Dump
 
+func TestAPICreateDraft(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	start := time.Now().Add(-3 * time.Second).UnixMicro()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	require.NotEqual(t, "", doc.Id)
+	require.Equal(t, api.me.MustGet().Account().Principal().String(), doc.Author)
+	require.False(t, doc.UpdateTime.AsTime().IsZero())
+	require.False(t, doc.CreateTime.AsTime().IsZero())
+
+	require.Greater(t, doc.CreateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, doc.UpdateTime.AsTime().UnixMicro(), start)
+}
+
+func TestAPICreateDraft_OnlyOneDraftAllowed(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	_, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: doc.Id})
+	require.Error(t, err)
+}
+
+func TestAPIGetDraft_Simple(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	testutil.ProtoEqual(t, draft, got, "get draft must match created draft")
+}
+
+func TestAPIGetDraft_WithUpdate(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	start := time.Now().Add(-1 * time.Second).UTC().UnixMicro()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	require.Greater(t, draft.CreateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.Equal(t, draft.CreateTime, updated.CreateTime)
+	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
+
+	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
+
+	require.NotEqual(t, "", got.Children[0].Block.Revision, "block must have revision id")
+
+	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
+}
+
+func TestCreateDraftFromPublication(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+			Annotations: []*documents.Annotation{
+				{
+					Type: "link",
+					Attributes: map[string]string{
+						"url": "mtt://bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy/baeaxdiheaiqfsiervpfvbohhvjgnkcto3f5p4alwe4k46fr334vlw4n5jaknnqa/MIWneLC1",
+					},
+					Starts: []int32{0},
+					Ends:   []int32{5},
+				},
+			},
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+	draft.PublishTime = published.Document.PublishTime // drafts don't have publish time.
+
+	testutil.ProtoEqual(t, draft, published.Document, "published document must match")
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: published.Document.Id,
+	})
+	require.NoError(t, err)
+	draft2.PublishTime = published.Document.PublishTime
+	published.Document.UpdateTime = draft2.UpdateTime // New draft will have a newer update time.
+
+	testutil.ProtoEqual(t, published.Document, draft2, "draft from publication must be same as published")
+	draft2 = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b2",
+			Type: "statement",
+			Text: "Hello updated!",
+		}}},
+	})
+
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
+	require.NoError(t, err)
+	require.NotNil(t, pub2)
+
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 0)
+
+	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 1)
+	testutil.ProtoEqual(t, pub2, pubs.Publications[0], "publication in the list must be the same as published")
+}
+
 func TestBug_MoveBockWithoutReplacement(t *testing.T) {
 	t.Parallel()
 
@@ -110,74 +262,6 @@ func TestGetPublicationWithDraftID(t *testing.T) {
 	require.Nil(t, published, "draft is not a publication")
 }
 
-func TestCreateDraftFromPublication(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-			Id:   "b1",
-			Type: "statement",
-			Text: "Hello world!",
-			Annotations: []*documents.Annotation{
-				{
-					Type: "link",
-					Attributes: map[string]string{
-						"url": "mtt://bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy/baeaxdiheaiqfsiervpfvbohhvjgnkcto3f5p4alwe4k46fr334vlw4n5jaknnqa/MIWneLC1",
-					},
-					Starts: []int32{0},
-					Ends:   []int32{5},
-				},
-			},
-		}}},
-	})
-	require.NoError(t, err)
-	require.NotNil(t, draft)
-	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	require.NotNil(t, published)
-	draft.PublishTime = published.Document.PublishTime // drafts don't have publish time.
-
-	testutil.ProtoEqual(t, draft, published.Document, "published document must match")
-
-	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
-		ExistingDocumentId: published.Document.Id,
-	})
-	require.NoError(t, err)
-	draft2.PublishTime = published.Document.PublishTime
-	published.Document.UpdateTime = draft2.UpdateTime // New draft will have a newer update time.
-
-	testutil.ProtoEqual(t, published.Document, draft2, "draft from publication must be same as published")
-	draft2 = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-			Id:   "b2",
-			Type: "statement",
-			Text: "Hello updated!",
-		}}},
-	})
-
-	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
-	require.NoError(t, err)
-	require.NotNil(t, pub2)
-
-	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-	require.NoError(t, err)
-	require.Len(t, drafts.Documents, 0)
-
-	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, pubs.Publications, 1)
-	testutil.ProtoEqual(t, pub2, pubs.Publications[0], "publication in the list must be the same as published")
-}
-
 func TestBug_MissingLinkTarget(t *testing.T) {
 	t.Parallel()
 
@@ -214,91 +298,6 @@ func TestBug_MissingLinkTarget(t *testing.T) {
 	linked, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: "bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy"})
 	require.Error(t, err)
 	require.Nil(t, linked)
-}
-
-func TestAPICreateDraft(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	start := time.Now().Add(-3 * time.Second).UnixMicro()
-
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	require.NotEqual(t, "", doc.Id)
-	require.Equal(t, api.me.MustGet().Account().Principal().String(), doc.Author)
-	require.False(t, doc.UpdateTime.AsTime().IsZero())
-	require.False(t, doc.CreateTime.AsTime().IsZero())
-
-	require.Greater(t, doc.CreateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, doc.UpdateTime.AsTime().UnixMicro(), start)
-}
-
-func TestAPICreateDraft_OnlyOneDraftAllowed(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	_, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: doc.Id})
-	require.Error(t, err)
-}
-
-func TestAPIGetDraft_Simple(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-
-	testutil.ProtoEqual(t, draft, got, "get draft must match created draft")
-}
-
-func TestAPIGetDraft_WithUpdate(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	start := time.Now().Add(-1 * time.Second).UTC().UnixMicro()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	require.Greater(t, draft.CreateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), start)
-	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
-
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
-			Id:   "b1",
-			Type: "statement",
-			Text: "Hello world!",
-		}}},
-	})
-	require.Equal(t, draft.CreateTime, updated.CreateTime)
-	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
-
-	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
-
-	require.NotEqual(t, "", got.Children[0].Block.Revision, "block must have revision id")
-
-	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 }
 
 func TestListDrafts(t *testing.T) {

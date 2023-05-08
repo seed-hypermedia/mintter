@@ -64,6 +64,33 @@ func (e *Entity) AppliedChanges() map[cid.Cid]Change {
 	return e.applied
 }
 
+func (e *Entity) ForEachChange(fn func(c cid.Cid, ch Change) error) error {
+	type applied struct {
+		c  cid.Cid
+		ch Change
+	}
+
+	sorted := make([]applied, 0, len(e.applied))
+	for k, v := range e.applied {
+		sorted = append(sorted, applied{c: k, ch: v})
+	}
+	slices.SortFunc(sorted, func(a, b applied) bool {
+		return a.ch.HLCTime.Before(b.ch.HLCTime)
+	})
+
+	for _, s := range sorted {
+		if err := fn(s.c, s.ch); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *Entity) State() *crdt2.Map {
+	return e.state
+}
+
 // Heads returns the map of head changes.
 // This must be read only. Not safe for concurrency.
 func (e *Entity) Heads() map[cid.Cid]struct{} {
@@ -184,8 +211,8 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	return bs.loadFromHeads(conn, eid, heads.Heads)
 }
 
-// LoadEntityWithDrafts includes draft changes.
-func (bs *Storage) LoadEntityWithDrafts(ctx context.Context, eid EntityID) (*Entity, error) {
+// LoadDraftEntity includes draft changes.
+func (bs *Storage) LoadDraftEntity(ctx context.Context, eid EntityID) (*Entity, error) {
 	draft, err := bs.FindDraft(ctx, eid)
 	if err != nil {
 		return nil, err

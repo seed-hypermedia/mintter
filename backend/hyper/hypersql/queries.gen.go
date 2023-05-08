@@ -146,14 +146,15 @@ type BlobsInsertResult struct {
 	BlobsID int64
 }
 
-func BlobsInsert(conn *sqlite.Conn, blobsMultihash []byte, blobsCodec int64, blobsData []byte, blobsSize int64) (BlobsInsertResult, error) {
-	const query = `INSERT INTO blobs (multihash, codec, data, size)
-VALUES (:blobsMultihash, :blobsCodec, :blobsData, :blobsSize)
+func BlobsInsert(conn *sqlite.Conn, blobsID int64, blobsMultihash []byte, blobsCodec int64, blobsData []byte, blobsSize int64) (BlobsInsertResult, error) {
+	const query = `INSERT INTO blobs (id, multihash, codec, data, size)
+VALUES (NULLIF(:blobsID, 0), :blobsMultihash, :blobsCodec, :blobsData, :blobsSize)
 RETURNING blobs.id`
 
 	var out BlobsInsertResult
 
 	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":blobsID", blobsID)
 		stmt.SetBytes(":blobsMultihash", blobsMultihash)
 		stmt.SetInt64(":blobsCodec", blobsCodec)
 		stmt.SetBytes(":blobsData", blobsData)

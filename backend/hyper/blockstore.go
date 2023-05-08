@@ -139,7 +139,7 @@ func (b *blockStore) Put(ctx context.Context, block blocks.Block) error {
 	return b.withConn(ctx, func(conn *sqlite.Conn) error {
 		return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
 			codec, hash := ipfs.DecodeCID(block.Cid())
-			_, _, err := b.putBlock(conn, codec, hash, block.RawData())
+			_, _, err := b.putBlock(conn, 0, codec, hash, block.RawData())
 			return err
 		})
 	})
@@ -151,7 +151,7 @@ func (b *blockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 		return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
 			for _, blk := range blocks {
 				codec, hash := ipfs.DecodeCID(blk.Cid())
-				if _, _, err := b.putBlock(conn, codec, hash, blk.RawData()); err != nil {
+				if _, _, err := b.putBlock(conn, 0, codec, hash, blk.RawData()); err != nil {
 					return err
 				}
 			}
@@ -160,7 +160,7 @@ func (b *blockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 	})
 }
 
-func (b *blockStore) putBlock(conn *sqlite.Conn, codec uint64, hash multihash.Multihash, data []byte) (id int64, exists bool, err error) {
+func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash multihash.Multihash, data []byte) (id int64, exists bool, err error) {
 	size, err := hypersql.BlobsGetSize(conn, hash)
 	if err != nil {
 		return 0, false, err
@@ -197,7 +197,7 @@ func (b *blockStore) putBlock(conn *sqlite.Conn, codec uint64, hash multihash.Mu
 		return size.BlobsID, false, hypersql.BlobsUpdate(conn, compressed, int64(len(data)), size.BlobsID)
 	}
 
-	ins, err := hypersql.BlobsInsert(conn, hash, int64(codec), compressed, int64(len(data)))
+	ins, err := hypersql.BlobsInsert(conn, inID, hash, int64(codec), compressed, int64(len(data)))
 	return ins.BlobsID, false, err
 }
 

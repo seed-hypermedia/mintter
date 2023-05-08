@@ -139,7 +139,7 @@ var migrations = []string{
 		source_blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- TODO(burdiyan): normalize this to reduce disk usage.
 		rel TEXT NOT NULL,
-		target_entity INTEGER REFERENCES entities (id) ON DELETE CASCADE,
+		target_entity INTEGER REFERENCES hyper_entities (id) ON DELETE CASCADE,
 		target_blob INTEGER REFERENCES blobs (id),
 		data BLOB,
 		CHECK ((target_entity, target_blob) IS NOT (null, null))

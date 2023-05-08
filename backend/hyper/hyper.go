@@ -62,7 +62,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	defer release()
 
 	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
-		id, exists, err := bs.bs.putBlock(conn, uint64(blob.Codec), blob.Hash, blob.Data)
+		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,46 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	defer release()
 
 	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
-		id, exists, err := bs.bs.putBlock(conn, uint64(blob.Codec), blob.Hash, blob.Data)
+		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
+		if err != nil {
+			return err
+		}
+
+		// No need to index if exists.
+		if exists {
+			return nil
+		}
+
+		if err := bs.indexBlob(conn, id, blob); err != nil {
+			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
+		}
+
+		resp, err := hypersql.EntitiesLookupID(conn, string(eid))
+		if err != nil {
+			return err
+		}
+		if resp.HyperEntitiesID == 0 {
+			panic("BUG: failed to lookup entity after inserting the blob")
+		}
+
+		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
+	})
+}
+
+func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.Cid, blob Blob) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		oldid, err := bs.bs.deleteBlock(conn, old)
+		if err != nil {
+			return err
+		}
+
+		id, exists, err := bs.bs.putBlock(conn, oldid, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
 		}

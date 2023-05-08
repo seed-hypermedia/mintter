@@ -103,7 +103,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	dm, err := newDocumentMutation(entity, me.DeviceKey(), del, cid.Undef)
+	dm, err := newDraftMutation(entity, me.DeviceKey(), del)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
+	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		return nil, err
 	}
 
-	mut, err := newDocumentMutation(entity, me.DeviceKey(), del, cid.Undef)
+	mut, err := newDraftMutation(entity, me.DeviceKey(), del)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,9 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 				return nil, err
 			}
 		case *documents.DocumentChange_DeleteBlock:
-			mut.DeleteBlock(o.DeleteBlock)
+			if err := mut.DeleteBlock(o.DeleteBlock); err != nil {
+				return nil, err
+			}
 		case *documents.DocumentChange_ReplaceBlock:
 			if err := mut.ReplaceBlock(o.ReplaceBlock); err != nil {
 				return nil, err
@@ -190,40 +192,11 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		}
 	}
 
+	if _, err := mut.Commit(ctx, api.blobs); err != nil {
+		return nil, err
+	}
+
 	return &emptypb.Empty{}, nil
-}
-
-func cleanupPatch(newPatch, oldPatch, incoming *documents.UpdateDraftRequestV2) error {
-	newPatch.Changes = make([]*documents.DocumentChange, 0, len(oldPatch.Changes)+len(incoming.Changes))
-	for _, c := range oldPatch.Changes {
-		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
-		if ok {
-			op.ReplaceBlock.Revision = ""
-		}
-		newPatch.Changes = append(newPatch.Changes, c)
-	}
-
-	for _, c := range incoming.Changes {
-		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
-		if ok {
-			op.ReplaceBlock.Revision = ""
-		}
-		newPatch.Changes = append(newPatch.Changes, c)
-	}
-
-	return nil
-
-	// TODO(burdiyan): cleanup patch from redundant operations.
-	// newPatch.Changes = make([]*documents.DocumentChange, len(oldPatch.Changes)+len(incoming.Changes))
-
-	// var (
-	// 	changedTitle    bool
-	// 	changedSubtitle bool
-	// )
-
-	// for i := len(incoming.Changes) - 1; i >= 0; i-- {
-	// 	op :=
-	// }
 }
 
 // GetDraft implements the corresponding gRPC method.
@@ -234,7 +207,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	entity, err := api.blobs.LoadEntityWithDrafts(ctx, eid)
+	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
