@@ -3,6 +3,7 @@ package documents
 import (
 	"container/list"
 	"fmt"
+	"strings"
 )
 
 type OpID struct {
@@ -33,7 +34,7 @@ func (o OpID) Less(oo OpID) bool {
 	return o.Idx < oo.Idx
 }
 
-const TrashNodeID = "$TRASH$"
+const TrashNodeID = "◊"
 
 type Tree struct {
 	nodes        map[string]*TreeNode
@@ -245,36 +246,6 @@ func (t *Tree) MoveLocal(time int64, idx int, block, parent, leftID string) (mov
 	return true, nil
 }
 
-func (t *Tree) CompressLocalMoves() []string {
-	l := len(t.localMoves)
-	j := l
-	out := make([]string, l)
-	seen := make(map[string]struct{}, l)
-	for i := l - 1; i >= 0; i-- {
-		blk := t.localMoves[i]
-		if _, ok := seen[blk]; ok {
-			continue
-		}
-		seen[blk] = struct{}{}
-
-		curLeft := t.nodes[blk].pos.Prev().Value.(ShadowPosition)
-		oldPos := t.initialLefts[blk]
-		if oldPos != nil {
-			oldLeft := oldPos.Value.(ShadowPosition)
-			if curLeft.parent == oldLeft.parent && curLeft.shadowID == oldLeft.shadowID {
-				continue
-			}
-		}
-
-		j--
-		out[j] = blk
-	}
-	if j == l {
-		return nil
-	}
-	return out[j:]
-}
-
 func (t *Tree) findLeftCurrent(parent, left string) (*list.List, *list.Element, error) {
 	n, ok := t.nodes[parent]
 	if !ok {
@@ -338,4 +309,72 @@ type ShadowPosition struct {
 	opid     OpID
 	parent   string
 	list     *list.List
+}
+
+type TreeIterator struct {
+	t     *Tree
+	stack []*TreeNode
+}
+
+// Next returns the next Node or nil when reached end of the tree.
+func (it *TreeIterator) Next() *TreeNode {
+START:
+	if len(it.stack) == 0 {
+		return nil
+	}
+
+	idx := len(it.stack) - 1
+
+	node := it.stack[idx]
+
+	if node == nil {
+		it.stack = it.stack[:idx]
+		goto START
+	}
+	if node.children != nil {
+		it.stack = append(it.stack, it.nextAlive(node.children.Front()))
+	}
+
+	it.stack[idx] = it.nextAlive(node.pos)
+	// Block without ID are sentinel markers for list starts.
+	if node.id == "" {
+		goto START
+	}
+
+	return node
+}
+
+func (it *TreeIterator) nextAlive(el *list.Element) *TreeNode {
+	if el == nil {
+		return nil
+	}
+	for el := el.Next(); el != nil; el = el.Next() {
+		sp := el.Value.(ShadowPosition)
+
+		block, _, ok := strings.Cut(sp.shadowID, "@")
+		if !ok {
+			panic("BUG: bad shadow ID")
+		}
+		curNode, ok := it.t.nodes[block]
+		if !ok {
+			panic("BUG: no shadow block in the tree")
+		}
+		if el == curNode.pos {
+			return curNode
+		}
+	}
+
+	return nil
+}
+
+func (t *Tree) Iterator() *TreeIterator {
+	l := t.nodes[""]
+	if l == nil {
+		panic("BUG: must have root subtree")
+	}
+
+	return &TreeIterator{
+		t:     t,
+		stack: []*TreeNode{l},
+	}
 }

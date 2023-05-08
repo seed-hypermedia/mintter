@@ -50,21 +50,18 @@ func (m *Map) ApplyPatch(time int64, origin string, patch map[string]any) (ok bo
 			vm, isMap := v.(map[string]any)
 			if isMap {
 				// We need to "unwrap" special "tagged" map values.
-				if len(vm) == 1 {
-					if vv, ok := vm["#list"]; ok {
-						v = vv
-						vt = mapValueListChunk
-					}
-
-					if vv, ok := vm["#map"]; ok {
-						v = vv
-						vt = mapValueAtomicMap
-					}
-
-					if vv, ok := vm["#rga"]; ok {
-						_ = vv
-						panic("TODO: implement RGA")
-					}
+				// All special maps have 1 key, but not all one-key maps
+				// are special, hence this complicated mess.
+				// Should improve the readability of this.
+				if vv, ok := vm["#list"]; ok && len(vm) == 1 {
+					v = vv
+					vt = mapValueListChunk
+				} else if vv, ok := vm["#map"]; ok && len(vm) == 1 {
+					v = vv
+					vt = mapValueAtomicMap
+				} else if vv, ok := vm["#rga"]; ok && len(vm) == 1 {
+					_ = vv
+					panic("TODO: implement RGA")
 				} else {
 					queue = append(queue, item{m: vm, path: append(cur.path, k)})
 				}
@@ -103,7 +100,7 @@ func (m *Map) Get(path ...string) (value any, ok bool) {
 		return nil, false
 	}
 
-	if n.valueType != mapValuePrimitive {
+	if n.valueType != mapValuePrimitive && n.valueType != mapValueAtomicMap {
 		return nil, false
 	}
 

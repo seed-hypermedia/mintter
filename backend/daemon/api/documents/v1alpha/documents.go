@@ -15,8 +15,6 @@ import (
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
-	"sort"
-	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -28,7 +26,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Discoverer is a subset of the syncing service that
@@ -205,6 +202,11 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
+	me, err := api.getMe()
+	if err != nil {
+		return nil, err
+	}
+
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
 	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
@@ -215,7 +217,17 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, status.Errorf(codes.NotFound, "not found draft for entity %s", eid)
 	}
 
-	return hydrateDocument(ctx, api.blobs, entity)
+	del, err := api.getDelegation(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	mut, err := newDraftMutation(entity, me.DeviceKey(), del)
+	if err != nil {
+		return nil, err
+	}
+
+	return mut.hydrate(ctx, api.blobs)
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -548,67 +560,4 @@ var nanogen = must.Do2(nanoid.Standard(21))
 
 func newDocumentID() string {
 	return nanogen()
-}
-
-func hydrateDocument(ctx context.Context, blobs *hyper.Storage, e *hyper.Entity) (*documents.Document, error) {
-	docpb := &documents.Document{}
-
-	docpb.Id = strings.TrimPrefix(string(e.ID()), "mintter:document:")
-
-	{
-		v, ok := e.Get("createTime")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have create time")
-		}
-		switch vv := v.(type) {
-		case time.Time:
-			docpb.CreateTime = timestamppb.New(vv)
-		case int:
-			docpb.CreateTime = timestamppb.New(time.Unix(int64(vv), 0).UTC())
-		default:
-			return nil, fmt.Errorf("unknown type %T for createTime field", v)
-		}
-	}
-
-	docpb.UpdateTime = timestamppb.New(e.LastChangeTime().Time())
-
-	{
-		v, ok := e.Get("author")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have author")
-		}
-
-		switch vv := v.(type) {
-		case core.Principal:
-			docpb.Author = vv.String()
-		case []byte:
-			docpb.Author = core.Principal(vv).String()
-		default:
-			return nil, fmt.Errorf("unknown type %T for document author", v)
-		}
-	}
-
-	// Loading editors is a bit cumbersome because we need to go over key delegations.
-	{
-		seenEditors := map[cid.Cid]struct{}{}
-		for _, ch := range e.AppliedChanges() {
-			del := ch.Delegation
-			if !del.Defined() {
-				return nil, fmt.Errorf("all document changes must have delegations")
-			}
-			if _, ok := seenEditors[del]; ok {
-				continue
-			}
-
-			var kd hyper.KeyDelegation
-			if err := blobs.LoadBlob(ctx, del, &kd); err != nil {
-				return nil, fmt.Errorf("failed to load key delegation: %w", err)
-			}
-
-			docpb.Editors = append(docpb.Editors, kd.Issuer.String())
-		}
-		sort.Strings(docpb.Editors)
-	}
-
-	return docpb, nil
 }
