@@ -2,6 +2,7 @@ import {usePublication} from '@app/models/documents'
 import {useSitePublish} from '@app/models/sites'
 import {styled} from '@app/stitches.config'
 import {PublicationRoute, useNavRoute} from '@app/utils/navigation'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {Fieldset, Input, Label} from '@mintter/ui'
@@ -14,7 +15,7 @@ const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
 
 function writePathState(s: string) {
   if (s === '/') return '/'
-  const basicPath = s.replace(/[^a-z0-9-]/gi, '_')
+  const basicPath = s.replace(/[^a-z0-9-]/gi, '_').toLocaleLowerCase()
   if (basicPath === 'home') return '/'
   return basicPath
 }
@@ -62,18 +63,16 @@ function PublishDialogForm({
   }`
   return (
     <>
-      <Heading>Publish to {siteId}</Heading>
-      <Fieldset>
-        <Label htmlFor="pretty-path">Public URL (/Path)</Label>
-        <Input
-          placeholder={'Unlisted Document'}
-          id="pretty-path"
-          value={path}
-          onChangeText={(val: string) => {
-            setPath(writePathState(val))
-          }}
-        />
-      </Fieldset>
+      <Heading>Publish to {hostnameStripProtocol(siteId)}</Heading>
+      <Label htmlFor="pretty-path">Public URL (/Path)</Label>
+      <Input
+        placeholder={'Unlisted Document'}
+        id="pretty-path"
+        value={path}
+        onChangeText={(val: string) => {
+          setPath(writePathState(val))
+        }}
+      />
 
       <URLPreview>{pubUrl}</URLPreview>
       <Button
