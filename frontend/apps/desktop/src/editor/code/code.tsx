@@ -23,7 +23,7 @@ import {lowerPoint, resetFlowContent} from '../utils'
 export const HIGHLIGHTER = Symbol('shiki highlighter')
 
 export const ELEMENT_CODE = 'code'
-const LEAF_TOKEN = 'codeToken'
+export const LEAF_TOKEN = 'codeToken'
 
 // TODO make this user configurable in the future
 const THEMES = {
@@ -49,30 +49,6 @@ export const createCodePlugin = (): EditorPlugin => {
 
       return editor
     },
-    renderElement:
-      (editor) =>
-      ({children, element, attributes}) => {
-        if (isCode(element)) {
-          return (
-            <Code mode={editor.mode} element={element} attributes={attributes}>
-              {children}
-            </Code>
-          )
-        }
-      },
-    // This implementation is the same as the color plugin
-    // but we chose a different mark name, to prevent syntax highlighting results from being persistet
-    renderLeaf:
-      () =>
-      ({attributes, children, leaf}) => {
-        if (leaf[LEAF_TOKEN] && leaf.text) {
-          return (
-            <span style={{color: leaf[LEAF_TOKEN]}} {...attributes}>
-              {children}
-            </span>
-          )
-        }
-      },
     onKeyDown: (editor) => {
       return (ev) => {
         if (ev.key == 'Enter') {
@@ -187,31 +163,4 @@ export const createCodePlugin = (): EditorPlugin => {
         return ranges
       },
   }
-}
-
-function Code({
-  children,
-  element,
-  attributes,
-  mode,
-}: RenderElementProps & {
-  element: CodeType
-  mode: EditorMode
-}) {
-  let {blockProps} = useBlockProps(element)
-
-  if (mode == EditorMode.Embed) {
-    // return (
-    //   <SizableText size="$5" {...attributes} {...blockProps}>
-    //     {children}
-    //   </SizableText>
-    // )
-    return children
-  }
-
-  return (
-    <ElementDrag element={element} attributes={attributes}>
-      {children}
-    </ElementDrag>
-  )
 }

@@ -5,13 +5,6 @@ export const MARK_EMPHASIS = 'emphasis'
 
 export const createEmphasisPlugin = (): EditorPlugin => ({
   name: MARK_EMPHASIS,
-  renderLeaf:
-    () =>
-    ({attributes, children, leaf}) => {
-      if (leaf.emphasis) {
-        return <em {...attributes}>{children}</em>
-      }
-    },
   onDOMBeforeInput: (editor) => (ev) => {
     if (ev.inputType == 'formatItalic') {
       ev.preventDefault()

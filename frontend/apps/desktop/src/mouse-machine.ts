@@ -22,11 +22,12 @@ type MouseContext = {
   visibleBounds: Array<Bound>
   observer?: IntersectionObserver
   visibleBlocks: Array<VisibleBlock>
-  currentBound?: Bound
+  hoveredBlockId?: string
 }
 
 export var mouseMachine = createMachine(
   {
+    /** @xstate-layout N4IgpgJg5mDOIC5QFsD2BXWYC0yCGAxgBYCWAdmAMQCSActQCoB0A8gEIDKAogEoBqvANoAGALqJQAB1SwSAFxKoyEkAA9EAdgCsARiZbhWgEy6AHBo06AnKYA0IAJ6Idw00xc6tANgAsG06Y2plpaAL6h9miYOPjE5FRsADIsAMIA0kwAggAi2SLiSCDSsgpKKuoI2kZMVgYhPlqmXjoAzEY69k4IOkbhkRhYuISkFJRJqRk8XACyLAL5KsXyisqFFRo+1U1GXkYtGl6GVhudzrsa+sJeXrUG5j61fSBRg7EjCcnprJy882KLMmWZTWmgaTDaXia3i0GweXlO3Q0eyYh1MOmCLS8ByhTxeMWG8Uo2WoHEySS4TAA6nRsixKUwkgBVHgLQpLUqrUAVLEInQPHxMYTtYQ6SxIh7GXEDfFxUbE0nkqk0ulMKYcagALS4rKkgI55UQPMczhaVmqWhaFpaAUxRh8fKl0SGsrATEICgAbq7YHJUJJJJAiSSyYkKeN0gwWCxEhwmClktwdUU9SsDQhjBcbFYvC1PMdzEYNLzhA8mGirJ4YdphCKNI7XgSKG6CJ7vb7-YH5SGKdkeJkAOJMLi0PL-Nkp4Fcw1XQXeYQaK7NUwmFoI5dedx7bRimuBOsRZ7S53vZutpgAJzAeAgDkos0Z3CYsz+BV1JVTIO6PQRZr0Xi0Vg2Fi1j+L0B54se8SniQXoXleN53iwD4Us+2o6K+ybvpOahnNU85oqakI+C0Phoj4a6WO4C77IEfhWA0+79E6bxQe6MGupe163l2iopAAEpktD9tqY5vkCnI4QgxwtIKzS5migTNN4CJYlYZamMIFYaSK2ZGKY9YyiebGwZxCE8aGTAcCkPDRokSbsh+U5SRoMlXK06Lotmnjwsa6b+OCtR7Nm-4LuYBmQU2xkcfB3HBoq4ZpJG0axiwAAKw72ROEkVBmNSKbmAH+EiRa+fRbimKa9FCrmbT0eFLGRS27FwVxQYKhZvYDpZDCZDwDCZVh2WILlWY5nmRWFj+gHgkYtSkTWuYhfVjauuQUWIchT5zCJGEOdh6wlV0PRIkwGhWIYJG1MIbQtC04QHmQqAQHAKgQQ1YAAoNaY6D5XR6cIp3XT0tQWMcjGHsxK3QV6n3iWmvgIt4FzXHyLn7AtDzLS60Ntn6AYQLD+qfsuAoiuimlGEKViYlYU0CvNjRIiYNjWFjRlNSZMWE45kkmNUppXAYkJ2q4RhGMWLmnVWP2BAVhhs1Ba0cx945fZ+rS+LOmkuDWJg9L9zh7BuZ2+BmFW+BY92hEAA */
     predictableActionArguments: true,
     context: {visibleBounds: [], visibleBlocks: []},
     tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
@@ -51,7 +52,7 @@ export var mouseMachine = createMachine(
     initial: 'active',
     states: {
       active: {
-        entry: ['getBlockBounds', 'assignCurrentBound'],
+        entry: ['getBlockBounds'],
         description:
           'actions:\n- **getBlockBounds**: this will calculate the current position of all the visible blocks in the viewport\n- **assignBlockRef**: stores the current hovered block in context',
         initial: 'ready',
@@ -59,27 +60,24 @@ export var mouseMachine = createMachine(
           stopped: {
             on: {
               'DISABLE.BLOCKTOOLS.CLOSE': {
-                actions: ['getBlockBounds', 'assignCurrentBound'],
+                actions: ['getBlockBounds'],
                 target: 'ready',
               },
               'DISABLE.DRAG.END': {
-                actions: ['getBlockBounds', 'assignCurrentBound'],
+                actions: ['getBlockBounds'],
                 target: 'ready',
               },
             },
           },
           ready: {
             on: {
-              'MOUSE.MOVE': [
-                {
-                  internal: true,
-                  actions: ['assignCurrentBound'],
-                  description:
-                    'will capture the mouse movement on the pag emain component and store in in context',
-                  cond: 'hoverNewBlockId',
-                },
-                {},
-              ],
+              'MOUSE.MOVE': {
+                internal: true,
+                actions: ['assignCurrentBound'],
+                description:
+                  'will capture the mouse movement on the pag emain component and store in in context',
+              },
+
               'DISABLE.CHANGE': {
                 description:
                   "should be triggered everytime there's a change in the editor (editor's onChange event)",
@@ -165,12 +163,26 @@ export var mouseMachine = createMachine(
         },
       }),
       assignCurrentBound: assign({
-        currentBound: (context, event) =>
-          context.visibleBounds.find(([, rect]) =>
-            event.type == 'MOUSE.MOVE'
-              ? event.position >= rect.top && event.position <= rect.bottom
-              : false,
-          ),
+        hoveredBlockId: (context, event) => {
+          let res = undefined
+
+          for (let [id, rect] of context.visibleBounds) {
+            if (
+              event.type == 'MOUSE.MOVE' &&
+              event.position >= rect.top &&
+              event.position <= rect.bottom
+            ) {
+              res = id
+              break
+            }
+          }
+          return res
+        },
+        // context.visibleBounds.find(([, rect]) =>
+        //   event.type == 'MOUSE.MOVE'
+        //     ?
+        //     : false,
+        // ),
       }),
       blockObserve: (context, event) => {
         context.observer?.observe(event.entry)
@@ -189,14 +201,6 @@ export var mouseMachine = createMachine(
           return [...tMap]
         },
       }),
-    },
-    guards: {
-      hoverNewBlockId: () => {
-        // if (!c.currentBound?.[1]) return true
-        // let {top, height} = c.currentBound[1]
-        // return e.position < top && e.position > top + height
-        return true
-      },
     },
     services: {
       windowBlurService: () => (sendBack) => {

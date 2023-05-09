@@ -18,6 +18,8 @@ var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
 
+
+
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
     case 'home':

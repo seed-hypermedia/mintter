@@ -30,21 +30,6 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
 
     return editor
   },
-  renderElement:
-    (editor) =>
-    ({attributes, children, element}) => {
-      if (isBlockquote(element)) {
-        return (
-          <BlockQuote
-            mode={editor.mode}
-            element={element}
-            attributes={attributes}
-          >
-            {children}
-          </BlockQuote>
-        )
-      }
-    },
   onKeyDown: (editor) => {
     return (ev) => {
       if (ev.key == 'Enter') {
@@ -67,27 +52,3 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
     }
   },
 })
-
-function BlockQuote({
-  element,
-  attributes,
-  children,
-  mode,
-}: RenderElementProps & {mode: EditorMode}) {
-  let {blockProps} = useBlockProps(element as BlockquoteType)
-
-  if (mode == EditorMode.Embed) {
-    // return (
-    //   <SizableText size="$5" {...attributes} {...blockProps}>
-    //     {children}
-    //   </SizableText>
-    // )
-    return children
-  }
-
-  return (
-    <ElementDrag element={element} attributes={attributes}>
-      {children}
-    </ElementDrag>
-  )
-}

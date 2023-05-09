@@ -3,9 +3,10 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorPlugin} from '@app/editor/types'
 import {windowSend} from '@app/ipc'
 import {isParagraph} from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {MouseEventHandler, useEffect, useMemo, useRef} from 'react'
-import {Range, SetNodeOperation} from 'slate'
-import {ReactEditor} from 'slate-react'
+import {Range, SetNodeOperation, Text} from 'slate'
+import {DefaultLeaf, ReactEditor, RenderLeafProps} from 'slate-react'
 
 const MARK_CONVERSATIONS = 'conversations'
 
@@ -13,63 +14,6 @@ export function createCommentsPlugin(): EditorPlugin {
   return {
     name: MARK_CONVERSATIONS,
     apply: EditorMode.Publication,
-    renderLeaf:
-      () =>
-      ({attributes, children, leaf}) => {
-        let {highlights} = useConversations()
-        let ref = useRef<HTMLSpanElement>(null)
-        const emitSelectorClick: MouseEventHandler = (e) => {
-          e.preventDefault()
-          windowSend('selector_click', {
-            conversations: leaf.conversations,
-          })
-        }
-        let highlight = useMemo(
-          () => highlights.some((c) => leaf.conversations?.includes(c)),
-          [highlights],
-        )
-
-        useEffect(() => {
-          if (highlight && ref.current) {
-            ref.current.scrollIntoView({behavior: 'smooth'})
-          }
-        }, [highlights])
-
-        if (typeof leaf.conversations !== 'undefined' && leaf.text) {
-          let spanStyle = null
-          if (highlight) {
-            spanStyle = {
-              backgroundColor: 'var(--highlight-surface3)',
-              borderBottom: '2px solid var(--highlight-surface3)',
-            }
-          } else if (leaf.conversations.length >= 3) {
-            spanStyle = {
-              backgroundColor: 'var(--highlight-surface3)',
-              borderBottom: '2px solid var(--highlight-surface3)',
-            }
-          } else if (leaf.conversations.length >= 2) {
-            spanStyle = {
-              backgroundColor: 'var(--highlight-surface2)',
-              borderBottom: '2px solid var(--highlight-surface3)',
-            }
-          } else {
-            spanStyle = {
-              backgroundColor: 'var(--highlight-surface1)',
-              borderBottom: '2px solid var(--highlight-surface2)',
-            }
-          }
-          return (
-            <span
-              ref={ref}
-              onClick={emitSelectorClick}
-              style={spanStyle}
-              {...attributes}
-            >
-              {children}
-            </span>
-          )
-        }
-      },
     configureEditor(editor) {
       const {apply} = editor
 
@@ -164,5 +108,71 @@ function isObjectEmpty(obj: unknown) {
     obj &&
     Object.keys(obj).length === 0 &&
     Object.getPrototypeOf(obj) === Object.prototype
+  )
+}
+
+export function ConversationsLeaf({
+  leaf,
+  attributes,
+  children,
+}: RenderLeafProps) {
+  let {highlights} = useConversations()
+  let ref = useRef<HTMLSpanElement>(null)
+
+  let highlight = useMemo(
+    () => highlights.some((c) => leaf.conversations?.includes(c)),
+    [highlights],
+  )
+
+  useEffect(() => {
+    if (highlight && ref.current) {
+      ref.current.scrollIntoView({behavior: 'smooth'})
+    }
+  }, [highlights])
+
+  let spanStyle = useMemo(() => {
+    if (highlight) {
+      return {
+        backgroundColor: 'var(--highlight-surface3)',
+        // @ts-ignore
+        borderBottom: '2px solid var(--highlight-surface3)',
+      }
+    }
+
+    if (typeof leaf.conversations == 'undefined') {
+      return {}
+    }
+
+    if (leaf.conversations?.length >= 3) {
+      return {
+        backgroundColor: 'var(--highlight-surface3)',
+        borderBottom: '2px solid var(--highlight-surface3)',
+      }
+    } else if (leaf.conversations?.length >= 2) {
+      return {
+        backgroundColor: 'var(--highlight-surface2)',
+        borderBottom: '2px solid var(--highlight-surface3)',
+      }
+    } else {
+      return {
+        backgroundColor: 'var(--highlight-surface1)',
+        borderBottom: '2px solid var(--highlight-surface2)',
+      }
+    }
+  }, [leaf.conversations])
+
+  return (
+    <SizableText
+      ref={ref}
+      onPress={() => {
+        windowSend('selector_click', {
+          conversations: leaf.conversations,
+        })
+      }}
+      {...spanStyle}
+      {...attributes}
+    >
+      {children}
+    </SizableText>
   )
 }

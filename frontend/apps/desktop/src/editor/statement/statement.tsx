@@ -1,4 +1,3 @@
-import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 
 import {
@@ -16,11 +15,7 @@ import {
   Statement as StatementType,
   text,
 } from '@mintter/shared'
-import {SizableText} from '@mintter/ui'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
-import {ElementDrag} from '../drag-section'
-import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild} from '../utils'
 
@@ -28,21 +23,6 @@ export const ELEMENT_STATEMENT = 'statement'
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
-  renderElement:
-    (editor) =>
-    ({element, children, attributes}) => {
-      if (isStatement(element)) {
-        return (
-          <Statement
-            mode={editor.mode}
-            element={element}
-            attributes={attributes}
-          >
-            {children}
-          </Statement>
-        )
-      }
-    },
   configureEditor(editor) {
     const {normalizeNode, insertBreak, deleteBackward} = editor
 
@@ -228,31 +208,6 @@ function addParagraphToNestedGroup(
     Transforms.moveNodes(editor, {at: path.concat(1), to: path.concat(2, 0)})
     return true
   }
-}
-
-function Statement({
-  attributes,
-  children,
-  element,
-  mode,
-}: RenderElementProps & {mode: EditorMode}) {
-  //@ts-ignore
-  let {blockProps} = useBlockProps(element)
-
-  if (mode == EditorMode.Embed) {
-    // return (
-    //   <SizableText size="$5" {...attributes} {...blockProps}>
-    //     {children}
-    //   </SizableText>
-    // )
-    return children
-  }
-
-  return (
-    <ElementDrag element={element} attributes={attributes}>
-      {children}
-    </ElementDrag>
-  )
 }
 
 export function removeEmptyStatement(

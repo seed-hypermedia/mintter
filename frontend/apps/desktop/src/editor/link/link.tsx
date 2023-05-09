@@ -31,7 +31,14 @@ import {
 } from '@mintter/ui'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
-import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
+import {
+  ForwardedRef,
+  forwardRef,
+  MouseEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import {
   BaseRange,
   BaseSelection,
@@ -44,40 +51,22 @@ import {
 import {
   ReactEditor,
   RenderElementProps,
-  useSlate,
   useSlateSelection,
   useSlateStatic,
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
-import {findPath, getEditorBlock, getSelectedNodes, isCollapsed} from '../utils'
+import {
+  findPath,
+  getEditorBlock,
+  getSelectedNodes,
+  isCollapsed,
+  useMode,
+} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
-  renderElement:
-    ({mode}) =>
-    ({children, attributes, element}) => {
-      if (isLink(element)) {
-        if (element.data?.void) {
-          return (
-            <MintterDocumentLink
-              attributes={attributes}
-              element={element}
-              mode={mode}
-            >
-              {children}
-            </MintterDocumentLink>
-          )
-        }
-
-        return (
-          <Link attributes={attributes} element={element} mode={mode}>
-            {children}
-          </Link>
-        )
-      }
-    },
   onKeyDown(editor) {
     return (event) => {
       const {selection} = editor
@@ -167,7 +156,6 @@ function insertDocumentLink(editor: Editor, url: string) {
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
-  mode: EditorMode
   hintPureWebLink?: boolean
   mintterLink?: {
     documentId: string
@@ -177,18 +165,16 @@ type LinkProps = Omit<RenderElementProps, 'element'> & {
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  const {element, mode} = props
-  const linkQuery = useWebLink(
-    props.element.url,
-    props.mode == EditorMode.Draft,
-  )
+  const {element} = props
+  const mode = useMode()
+  const linkQuery = useWebLink(props.element.url, mode == EditorMode.Draft)
   const {url} = props.element
   const elChildren = props.element.children
   let editor = useSlateStatic()
   const isEmbedInsertion = !!element.data?.isEmbedInsertion
 
   useEffect(() => {
-    if (props.mode !== EditorMode.Draft) return
+    if (mode !== EditorMode.Draft) return
     if (!linkQuery.data) return
     if (isMintterScheme(url)) return
     let at = findPath(props.element)
@@ -201,7 +187,6 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     if (origBlockId) {
       outputMintterUrl += `#${origBlockId}`
     }
-    debugger
     if (isEmbedInsertion) {
       const newEmbed: Embed = embed({url: outputMintterUrl}, [text('')])
       Transforms.removeNodes(editor, {at: at.slice(0, -1)})
@@ -223,7 +208,7 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         Transforms.removeNodes(editor, {at: Path.next(at)})
       })
     }
-  }, [linkQuery.data, url, props.mode, isEmbedInsertion])
+  }, [linkQuery.data, url, isEmbedInsertion])
 
   const [docId, version, blockId] = getIdsfromUrl(url)
   if (isMintterScheme(url) && docId) {
@@ -353,12 +338,13 @@ function RenderMintterLink(
 }
 
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+  let mode = useMode()
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
     if (
-      props.mode == EditorMode.Embed ||
-      props.mode == EditorMode.Discussion ||
-      props.mode == EditorMode.Draft
+      mode == EditorMode.Embed ||
+      mode == EditorMode.Discussion ||
+      mode == EditorMode.Draft
     )
       return
     open(props.element.url)
@@ -586,7 +572,7 @@ function isUrl(value: string): boolean {
 
 export function InsertLinkButton() {
   const [link, setLink] = useState('')
-  const editor = useSlate()
+  const editor = useSlateStatic()
   const isLink = isLinkActive(editor)
   const selection = useSlateSelection()
   const {reference, refs} = useFloating()
@@ -812,4 +798,14 @@ export function InsertLinkButton() {
       </Popover.Content>
     </Popover>
   )
+}
+
+export function LinkElement({element, ...props}: RenderElementProps) {
+  let isVoid = useMemo(() => element.data?.void, [element])
+
+  if (isVoid) {
+    return <MintterDocumentLink {...props} element={element as LinkType} />
+  }
+
+  return <Link {...props} element={element as LinkType} />
 }

@@ -1,4 +1,3 @@
-import {useDrag} from '@app/drag-context'
 import {HIGHLIGHTER} from '@app/editor/code'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {findPath} from '@app/editor/utils'
@@ -6,29 +5,21 @@ import {
   useHoverVisibleConnection,
   useVisibleConnection,
 } from '@app/editor/visible-connection'
-import {send, useListen} from '@app/ipc'
 import {useBlockObserve} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {
   Code as CodeType,
-  FlowContent,
   isBlockquote,
   isCode,
-  isFlowContent,
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@mintter/shared'
 import {SizableText, XStack, YStack} from '@mintter/ui'
-import {useMemo, useRef, useState} from 'react'
+import {useMemo, useRef} from 'react'
 import {BUNDLED_LANGUAGES, Lang} from 'shiki'
-import {Editor, Node, Path, Transforms} from 'slate'
-import {
-  ReactEditor,
-  RenderElementProps,
-  useSlate,
-  useSlateStatic,
-} from 'slate-react'
+import {Node, Path, Transforms} from 'slate'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 
@@ -36,21 +27,6 @@ export const ELEMENT_PARAGRAPH = 'paragraph'
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
-  renderElement:
-    (editor) =>
-    ({element, children, attributes}) => {
-      if (isParagraph(element)) {
-        return (
-          <Paragraph
-            mode={editor.mode}
-            element={element}
-            attributes={attributes}
-          >
-            {children}
-          </Paragraph>
-        )
-      }
-    },
   configureEditor: (editor) => {
     const {normalizeNode} = editor
 
@@ -74,14 +50,17 @@ export const createParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function Paragraph({
+export function ParagraphElement({
   children,
   element,
   attributes,
-  mode,
-}: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
-  let editor = useSlate()
-  let {elementProps, parentNode} = usePhrasingProps(editor, element)
+  mode = EditorMode.Publication,
+}: RenderElementProps & {mode?: EditorMode}) {
+  let editor = useSlateStatic()
+  let {elementProps, parentNode} = usePhrasingProps(
+    editor,
+    element as ParagraphType,
+  )
   // dragProps
   let pRef = useRef<HTMLElement | undefined>()
   let {highlight} = useVisibleConnection(parentNode?.id)
@@ -171,7 +150,6 @@ function Code({
   attributes,
   elementProps,
   otherProps,
-  mode,
   paddingLeft,
 }: any) {
   let editor = useSlateStatic()
@@ -206,7 +184,7 @@ function Code({
       >
         {children}
       </SizableText>
-      {mode == EditorMode.Draft ? (
+      {editor.mode == EditorMode.Draft ? (
         <XStack
           //@ts-ignore
           contentEditable={false}

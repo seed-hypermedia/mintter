@@ -3,8 +3,8 @@ import {useDrag} from '@app/drag-context'
 import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {Dropdown} from '@app/editor/dropdown'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
-import {MouseInterpret, useCurrentBound, useMouse} from '@app/mouse-context'
+import {insertInline, setList, setType} from '@app/editor/utils'
+import {MouseInterpret, useHoveredBlockId, useMouse} from '@app/mouse-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
@@ -33,30 +33,56 @@ import {
   ImageIcon,
   Menu,
   OrderedList,
+  Popover,
   SizableText,
+  Star,
   Strong,
   UnorderedList,
   VideoIcon,
   XStack,
 } from '@mintter/ui'
-import {useSelector} from '@xstate/react'
 import {Fragment, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
 
-export function DraftBlocktools({current}: {current: NodeEntry<FlowContent>}) {
-  let btProps = useBlockToolsProps(current)
-  let {mouseService, element, editor, show} = btProps
+// export function DraftBlocktools() {
+//   return (
+//     <XStack>
+//       <Popover>
+//         <Popover.Trigger asChild>
+//           <Button icon={Star} />
+//         </Popover.Trigger>
+
+//         <Popover.Anchor></Popover.Anchor>
+//       </Popover>
+//     </XStack>
+//   )
+// }
+
+export function DraftBlocktools({
+  editor,
+  current,
+}: {
+  current: NodeEntry<FlowContent>
+  editor: Editor
+}) {
+  let mouseService = useMouse()
   let dragService = useDrag()
+  let hoveredBlockId = useHoveredBlockId()
   let [localOpen, setLocalOpen] = useState(false)
 
   let [block, path] = current
 
   return (
-    <XStack alignItems="center" opacity={show ? 1 : 0} gap="$1">
+    <XStack
+      alignItems="center"
+      gap="$1"
+      opacity={block.id == hoveredBlockId ? 1 : 0}
+    >
       <Dropdown.Root
+        modal
         open={localOpen}
         onOpenChange={(isOpen) => {
           mouseService.send(
@@ -78,14 +104,16 @@ export function DraftBlocktools({current}: {current: NodeEntry<FlowContent>}) {
                       data-testid={`item-${item.label}`}
                       key={item.label}
                       onSelect={() => {
-                        console.log('ON SELECT!!', element)
+                        console.log('ON SELECT', current)
+
                         // if (element) {
-                        mouseService.send('DISABLE.CHANGE')
+
                         item.onSelect(editor, {
                           element: block,
                           at: path,
                         })
                         // }
+                        mouseService.send('DISABLE.CHANGE')
                       }}
                       title={item.label}
                       icon={item.icon}
@@ -103,13 +131,13 @@ export function DraftBlocktools({current}: {current: NodeEntry<FlowContent>}) {
         icon={Drag}
         onPointerDown={() => {
           if (editor.dragging) return
-          const [node, fromPath] = element as NodeEntry<FlowContent>
-          const domNode = ReactEditor.toDOMNode(editor, node)
-          if (fromPath && dragService && domNode) {
+
+          const domNode = ReactEditor.toDOMNode(editor, block)
+          if (path && dragService && domNode) {
             mouseService.send('DISABLE.DRAG.START')
             dragService.send({
               type: 'DRAG.START',
-              fromPath,
+              fromPath: path,
               element: domNode as HTMLLIElement,
             })
           }
@@ -124,7 +152,8 @@ export function PublicationBlocktools({
 }: {
   current: NodeEntry<FlowContent>
 }) {
-  let {show} = useBlockToolsProps(current)
+  let hoveredBlockId = useHoveredBlockId()
+  let [block] = current
   let route = useNavRoute()
 
   const onCopy = () => {
@@ -140,7 +169,7 @@ export function PublicationBlocktools({
   return (
     <XStack alignItems="center">
       <Button
-        opacity={show ? 1 : 0}
+        opacity={block.id == hoveredBlockId ? 1 : 0}
         size="$2"
         theme="blue"
         icon={Copy}
@@ -164,25 +193,24 @@ type BlockData = {
   onComment?: () => void
 }
 
-function useBlocktoolsData(editor: Editor): BlockData {
-  let mouseService = useMouse()
-  let [id, rect] = useCurrentBound() || []
+// function useBlocktoolsData(editor: Editor): BlockData {
+//   let mouseService = useMouse()
 
-  let element = getEditorBlock(editor, {
-    id,
-  })
+//   let element = getEditorBlock(editor, {
+//     id,
+//   })
 
-  let show = useSelector(mouseService, (state) => state.matches('active'))
+//   let show = useSelector(mouseService, (state) => state.matches('active'))
 
-  return {
-    mouseService,
-    editor,
-    show: show && !!rect,
-    // show: true,
-    mode: editor.mode,
-    element,
-  }
-}
+//   return {
+//     mouseService,
+//     editor,
+//     show: show && !!rect,
+//     // show: true,
+//     mode: editor.mode,
+//     element,
+//   }
+// }
 
 var items: {
   [key: string]: Array<{
@@ -242,23 +270,6 @@ var items: {
       onSelect: setList(group),
     },
   ],
-}
-
-function useBlockToolsProps(current: NodeEntry<FlowContent>) {
-  const editor = useSlate()
-
-  let [block] = current
-
-  const blocktoolsProps = useBlocktoolsData(editor)
-  // const [isCommenting, setIsCommenting] = useState(false)
-
-  let {show, element, mode} = blocktoolsProps
-
-  return {
-    ...blocktoolsProps,
-    show: show && element && element[0].id == block.id ? true : false,
-    current,
-  }
 }
 
 function CitationNumber({block}: {block: FlowContent}) {

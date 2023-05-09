@@ -15,7 +15,7 @@ import {
 import {XStack, YStack} from '@mintter/ui'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -25,6 +25,7 @@ import {
   isFirstChild,
   resetGroupingContent,
   toggleList,
+  useMode,
 } from '../utils'
 
 export const ELEMENT_GROUP = 'group'
@@ -33,21 +34,10 @@ export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
-  renderElement:
-    (editor) =>
-    ({attributes, children, element}) => {
-      if (isGroupContent(element)) {
-        return (
-          <Group mode={editor.mode} element={element} attributes={attributes}>
-            {children}
-          </Group>
-        )
-      }
-    },
   onDOMBeforeInput: (editor) => (ev) => {
     if (
-      (ev.inputType === 'insertUnorderedList' ||
-        ev.inputType === 'insertOrderedList') &&
+      (ev.inputType == 'insertUnorderedList' ||
+        ev.inputType == 'insertOrderedList') &&
       editor.selection
     ) {
       ev.preventDefault()
@@ -179,12 +169,7 @@ export type GroupProps = Omit<RenderElementProps, 'element'> & {
   element: GroupingContent
 }
 
-export function Group({
-  element,
-  attributes,
-  children,
-  mode,
-}: RenderElementProps & {mode: EditorMode; element: GroupingContent}) {
+export function Group({element, attributes, children}: RenderElementProps) {
   let elementProps = useMemo(
     () => ({
       ...attributes,
@@ -195,6 +180,7 @@ export function Group({
     }),
     [element, attributes],
   )
+  const mode = useMode()
 
   let tag = useMemo(() => (isOrderedList(element) ? 'ol' : 'ul'), [element])
 

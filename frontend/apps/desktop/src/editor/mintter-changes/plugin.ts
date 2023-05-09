@@ -1,8 +1,9 @@
+import {error} from '@app/utils/logger'
 import {
-  DocumentChange,
   createDeleteChange,
   createMoveChange,
   createReplaceChange,
+  DocumentChange,
   FlowContent,
   GroupingContent,
   isContent,
@@ -12,7 +13,6 @@ import {
   isStaticContent,
   isStaticPhrasingContent,
 } from '@mintter/shared'
-import {error} from '@app/utils/logger'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'

@@ -21,17 +21,6 @@ export const ELEMENT_HEADING = 'heading'
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
-  renderElement:
-    (editor) =>
-    ({attributes, children, element}) => {
-      if (isHeading(element)) {
-        return (
-          <Heading mode={editor.mode} element={element} attributes={attributes}>
-            {children}
-          </Heading>
-        )
-      }
-    },
   configureEditor: (editor) => {
     const {normalizeNode, deleteBackward} = editor
 
@@ -106,30 +95,6 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     return editor
   },
 })
-
-function Heading({
-  attributes,
-  children,
-  element,
-  mode,
-}: RenderElementProps & {mode: EditorMode}) {
-  //@ts-ignore
-  let {blockProps} = useBlockProps(element)
-  if (mode == EditorMode.Embed) {
-    // return (
-    //   <SizableText size="$5" {...attributes} {...blockProps}>
-    //     {children}
-    //   </SizableText>
-    // )
-    return children
-  }
-
-  return (
-    <ElementDrag element={element} attributes={attributes}>
-      {children}
-    </ElementDrag>
-  )
-}
 
 function removeEmptyHeading(
   editor: Editor,

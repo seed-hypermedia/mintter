@@ -190,20 +190,6 @@ export interface EditorPlugin extends EditorEventHandlers {
    */
   configureEditor?: (editor: Editor) => Editor | undefined | void
   /**
-   * Render a mttast element. The hook receives the editor object and `RenderElementProps`.
-   * It can return a JSX element to be rendered on page.
-   */
-  renderElement?: (
-    editor: Editor,
-  ) => (props: RenderElementProps) => JSX.Element | undefined | void
-  /**
-   * Render a mttast leaf. The hook receives the editor object and `RenderLeafProps`.
-   * It can return a JSX element to be rendered on page.
-   */
-  renderLeaf?: (
-    editor: Editor,
-  ) => (props: RenderLeafProps) => JSX.Element | undefined | void
-  /**
    * Return decoration ranges. The hook receives the editor object and a `NodeEntry`.
    * It can return an array of ranges.
    */

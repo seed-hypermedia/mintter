@@ -204,7 +204,7 @@ export const createDragMachine = (editor: Editor) => {
         setDragRef: assign({
           dragRef: (context, event) => {
             context.dragRef?.ondragstart === null
-            const element = event.element
+            const element: HTMLElement = event.element
 
             const onDragStart = (e: any) => {
               e.dataTransfer?.setData('text', '')
@@ -251,7 +251,7 @@ export const createDragMachine = (editor: Editor) => {
           toPath: null,
           nestedGroup: null,
         }),
-        performMove: (context, event) => {
+        performMove: (context) => {
           const {fromPath, toPath, dragOverRef, editor, isTop, nestedGroup} =
             context
           if (fromPath && toPath && fromPath !== toPath) {
@@ -270,9 +270,9 @@ export const createDragMachine = (editor: Editor) => {
                 !isTop &&
                 ((parentFromGroup && isLastBlock(parentFromGroup, fromPath)) ||
                   fromPath.length !== toPath.length ||
-                  (context.nestedGroup &&
+                  (nestedGroup &&
                     dragOverRef &&
-                    context.nestedGroup.includes(dragOverRef)))
+                    nestedGroup.includes(dragOverRef)))
               )
                 to = Path.next(toPath)
               Transforms.moveNodes(editor, {

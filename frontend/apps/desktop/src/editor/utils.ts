@@ -26,7 +26,7 @@ import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, PathRef, Point, Span} from 'slate'
 import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
-import {ReactEditor} from 'slate-react'
+import {ReactEditor, useSlateSelector} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
@@ -423,6 +423,7 @@ export function setType(fn: any) {
       at: Path
     },
   ) {
+    console.log('setType!', opts)
     if (editor.readOnly) return
     Editor.withoutNormalizing(editor, function () {
       MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
@@ -631,3 +632,7 @@ export const headingMap: {
 }
 
 export const BLOCK_GAP: SizeTokens = '$3'
+
+export function useMode() {
+  return useSlateSelector((editor) => editor.mode)
+}

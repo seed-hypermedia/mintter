@@ -2,9 +2,9 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
-import {Editor, useTauriListeners} from '@app/editor/editor'
+import {Editor, plugins, useTauriListeners} from '@app/editor/editor'
+
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
-import {plugins} from '@app/editor/plugins'
 import {useEditorDraft, useSaveDraft} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -51,7 +51,9 @@ export default function DraftPage() {
   })
 
   let mouseService = useInterpret(() => mouseMachine)
+
   let dragService = useInterpret(() => createDragMachine(editor))
+
   let isDaemonReady = useDaemonReady()
 
   useInitialFocus(editor)
@@ -106,15 +108,21 @@ export default function DraftPage() {
                     value={draftState.children}
                     //@ts-ignore
                     onChange={(content: GroupingContent[]) => {
-                      mouseService.send('DISABLE.CHANGE')
-                      // TODO: need to check when content can be a string
-                      if (
-                        (!content && typeof content == 'string') ||
-                        !isDaemonReady
+                      // this is used to filter operations that are not changing the actual editor content.
+                      const isAstChange = editor.operations.some(
+                        (op) => 'set_selection' !== op.type,
                       )
-                        return
 
-                      saveDraft.mutate({editor, content})
+                      if (isAstChange) {
+                        // TODO: need to check when content can be a string
+                        if (
+                          (!content && typeof content == 'string') ||
+                          !isDaemonReady
+                        )
+                          return
+                        mouseService.send('DISABLE.CHANGE')
+                        saveDraft.mutate({editor, content})
+                      }
                     }}
                   />
                   {import.meta.env.DEV && (

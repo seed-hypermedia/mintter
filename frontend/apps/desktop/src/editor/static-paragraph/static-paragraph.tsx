@@ -13,39 +13,31 @@ import {
 import {SizableText, SizeTokens} from '@mintter/ui'
 import {MouseEvent, useMemo, useRef} from 'react'
 import {Path} from 'slate'
-import {RenderElementProps, useSlate} from 'slate-react'
+import {
+  RenderElementProps,
+  useSlate,
+  useSlateSelector,
+  useSlateStatic,
+} from 'slate-react'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
-  renderElement:
-    (editor) =>
-    ({element, children, attributes}) => {
-      if (isStaticParagraph(element)) {
-        return (
-          <StaticParagraph
-            mode={editor.mode}
-            element={element}
-            attributes={attributes}
-          >
-            {children}
-          </StaticParagraph>
-        )
-      }
-    },
 })
 
-function StaticParagraph({
+export function StaticParagraphElement({
   children,
   element,
   attributes,
-  mode,
-}: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
-  let editor = useSlate()
-  let dragService = useDrag()
-  let {elementProps, parentPath, parentNode} = usePhrasingProps(editor, element)
+}: RenderElementProps) {
+  // let dragService = useDrag()
+  let editor = useSlateStatic()
+  let {elementProps, parentPath, parentNode} = usePhrasingProps(
+    editor,
+    element as StaticParagraphType,
+  )
   let hoverProps = useHoverVisibleConnection(parentNode?.id)
 
   let paddingLeft = useMemo(
@@ -58,21 +50,21 @@ function StaticParagraph({
     ref: mergeRefs([attributes.ref, pRef]),
     ...hoverProps,
   }
-  useBlockObserve(mode, pRef)
+  useBlockObserve(editor.mode, pRef)
 
-  let dragProps = {
-    onMouseOver: (e: MouseEvent) => {
-      if (Path.isPath(parentPath)) {
-        dragService?.send({
-          type: 'DRAG.OVER',
-          toPath: parentPath,
-          element: null,
-          currentPosX: e.clientX,
-          currentPosY: e.clientY,
-        })
-      }
-    },
-  }
+  // let dragProps = {
+  //   onMouseOver: (e: MouseEvent) => {
+  //     if (Path.isPath(parentPath)) {
+  //       dragService?.send({
+  //         type: 'DRAG.OVER',
+  //         toPath: parentPath,
+  //         element: null,
+  //         currentPosX: e.clientX,
+  //         currentPosY: e.clientY,
+  //       })
+  //     }
+  //   },
+  // }
 
   let elementTags = useMemo(() => {
     let defaultValue = {tag: 'p', size: 16, height: 24}
@@ -83,35 +75,18 @@ function StaticParagraph({
     return defaultValue
   }, [parentPath])
 
-  if (mode == EditorMode.Embed) {
-    return (
-      <SizableText
-        size="$5"
-        selectionColor="$color10"
-        tag="span"
-        color="$color9"
-        fontWeight="600"
-        padding="$1"
-        {...attributes}
-        {...otherProps}
-      >
-        {children}
-      </SizableText>
-    )
-  }
-
   return (
     <SizableText
       tag={elementTags.tag}
       size={elementTags.size}
-      fontWeight="700"
+      fontWeight="800"
       // paddingLeft={paddingLeft}
       alignItems="center"
       // size="$5"
       {...attributes}
       {...elementProps}
       {...otherProps}
-      {...dragProps}
+      // {...dragProps}
     >
       {children}
     </SizableText>

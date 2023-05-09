@@ -30,13 +30,6 @@ export const ELEMENT_VIDEO = 'video'
 export function createVideoPlugin(): EditorPlugin {
   return {
     name: ELEMENT_VIDEO,
-    renderElement: () => {
-      return (props) => {
-        if (isVideo(props.element)) {
-          return <Video {...props} />
-        }
-      }
-    },
     configureEditor(editor) {
       const {insertData, isVoid, isInline} = editor
 
@@ -76,7 +69,11 @@ function insertVideo(editor: Editor, url: string) {
   }
 }
 
-function Video({element, attributes, children}: RenderElementProps) {
+export function VideoElement({
+  element,
+  attributes,
+  children,
+}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const videoService = useInterpret(() => videoMachine, {

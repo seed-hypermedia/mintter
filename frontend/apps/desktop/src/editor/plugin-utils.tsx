@@ -66,54 +66,6 @@ export function buildEditorHook(
   return editor
 }
 
-export function buildRenderElementHook(
-  plugins: EditorPlugin[],
-  editor: Editor,
-): EditableProps['renderElement'] {
-  const filteredPlugins = plugins
-    .filter(byApply(editor.mode))
-    .filter(hasHook('renderElement'))
-  if (!filteredPlugins.length) return undefined
-
-  return function SlateElement(props: RenderElementProps) {
-    for (const {name, renderElement} of filteredPlugins) {
-      try {
-        const element = renderElement(editor)(props)
-        if (element) return element
-      } catch (e) {
-        error(`[${name}] ${e} in renderElement hook`)
-        throw error
-      }
-    }
-    return <DefaultElement {...props} />
-  }
-}
-
-export function buildRenderLeafHook(
-  plugins: EditorPlugin[],
-  editor: Editor,
-): EditableProps['renderLeaf'] {
-  const filteredPlugins = plugins
-    .filter(byApply(editor.mode))
-    .filter(hasHook('renderLeaf'))
-  if (!filteredPlugins.length) return undefined
-
-  return function SlateLeaf(props: RenderLeafProps) {
-    const leafProps = {...props}
-
-    for (const {name, renderLeaf} of filteredPlugins) {
-      try {
-        const newChildren = renderLeaf(editor)(leafProps)
-        if (newChildren) leafProps.children = newChildren
-      } catch (e) {
-        error(`[${name}] ${e} in renderLeaf hook`)
-        throw error
-      }
-    }
-
-    return <DefaultLeaf {...leafProps} />
-  }
-}
 
 export function buildDecorateHook(
   plugins: EditorPlugin[],

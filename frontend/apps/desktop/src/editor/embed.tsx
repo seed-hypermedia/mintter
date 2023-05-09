@@ -1,7 +1,6 @@
 import {publicationsClient} from '@app/api-clients'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
-import {plugins} from '@app/editor/plugins'
 import {
   useHoverVisibleConnection,
   useVisibleConnection,
@@ -21,7 +20,12 @@ import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
 import {Editor as SlateEditor, Transforms} from 'slate'
-import {RenderElementProps, useFocused, useSelected} from 'slate-react'
+import {
+  RenderElementProps,
+  useFocused,
+  useSelected,
+  useSlateStatic,
+} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
@@ -49,42 +53,16 @@ export const createEmbedPlugin = (): EditorPlugin => ({
       }
     }
   },
-  renderElement:
-    (editor) =>
-    ({attributes, children, element}) => {
-      if (isEmbed(element)) {
-        if (!element.url) {
-          console.error(
-            `Embed: element does not have a url attribute: ${JSON.stringify(
-              element,
-            )}`,
-          )
-          return <span {...attributes}>error on embed{children}</span>
-        }
-        return (
-          <Embed
-            element={element as EmbedType}
-            attributes={attributes}
-            mode={editor.mode}
-          >
-            {children}
-          </Embed>
-        )
-      }
-    },
 })
 
-function Embed({
+export function EmbedElement({
   element,
   attributes,
   children,
-}: RenderElementProps & {
-  mode: EditorMode
-}) {
+}: RenderElementProps) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   // const navigateReplace = useNavigate('replace')
-  const route = useNavRoute()
 
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
   let {highlight} = useVisibleConnection(blockId)
@@ -94,14 +72,13 @@ function Embed({
     // @ts-ignore
     createEmbedMachine({url: (element as EmbedType).url, client}),
   )
-  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed), [])
+  let embedEditor = useMemo(() => buildEditorHook([], EditorMode.Embed), [])
   let selected = useSelected()
   let focused = useFocused()
 
   function onOpenInNewWindow(event: MouseEvent<HTMLElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
-    // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
     if (!docId) return
 
     const destRoute: PublicationRoute = {
@@ -164,7 +141,7 @@ function Embed({
     >
       <Editor
         as="span"
-        editor={editor}
+        editor={embedEditor}
         mode={EditorMode.Embed}
         value={[state.context.block]}
         onChange={() => {

@@ -105,10 +105,10 @@ function Label(props: SizableTextProps) {
 }
 
 function Item({children, title, icon, iconAfter, disabled, ...props}: any) {
-  const theme = useTheme()
-  console.log('🚀 ~ file: dropdown.tsx:108 ~ Item ~ theme:', theme)
+console.log('ITEM', props)
+
   return (
-    <DropdownMenuPrimitive.Item {...props} disabled={disabled}>
+    <DropdownMenuPrimitive.Item {...props} disabled={disabled} asChild>
       <ListItem
         hoverTheme
         pressTheme

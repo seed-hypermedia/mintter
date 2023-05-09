@@ -1,48 +1,51 @@
 import {useDrag} from '@app/drag-context'
-import { createDragMachine, DragEntry, LineType } from '@app/drag-machine'
+import {LineType} from '@app/drag-machine'
+import {DraftBlocktools, PublicationBlocktools} from '@app/editor/blocktools'
+import {useDragContext} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useVisibleConnection} from '@app/editor/visible-connection'
-import {send, useListen} from '@app/ipc'
 import {useMouse} from '@app/mouse-context'
 import {useNavRoute} from '@app/utils/navigation'
 import {
   FlowContent,
+  GroupingContent,
   isBlockquote,
   isCode,
+  isGroupContent,
   isHeading,
   isOrderedList,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
-import { useActor, useSelector } from '@xstate/react'
-import React, {useContext, useMemo, useState} from 'react'
-import { Path } from 'slate'
-import {RenderElementProps, useSlate} from 'slate-react'
-import {DraftBlocktools, PublicationBlocktools} from './blocktools'
-import DragContext from './drag-context'
+import {useSelector} from '@xstate/react'
+import {useCallback, useMemo} from 'react'
+import {Editor, Path} from 'slate'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {useBlockProps} from './editor-node-props'
-import {BLOCK_GAP, findPath, useBlockFlash} from './utils'
+import {BLOCK_GAP, findPath, useMode} from './utils'
 
 export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
 export const ElementDrag = (props: RenderElementProps) => {
-  let editor = useSlate()
-  
-  if (editor.mode === EditorMode.Draft) {
+  let mode = useMode()
+  if (mode == EditorMode.Draft) {
     return <DraftSection {...props} />
-  } else {
+  }
+  if (mode == EditorMode.Publication) {
     return <PublicationSection {...props} />
   }
+
+  return props.children
 }
 
 const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
-  let editor = useSlate()
-  let path = findPath(element)
+  let editor = useSlateStatic()
   let route = useNavRoute()
+  // let hoveredBlockId = useHoveredBlockId()
   let {highlight} = useVisibleConnection((element as FlowContent).id)
 
-  const onDrop = (e: React.DragEvent<HTMLLIElement>) => {
+  const onDrop = useCallback((e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault()
     mouseService.send('DISABLE.DRAG.END')
     dragService?.send({
@@ -50,29 +53,39 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
     })
 
     e.dataTransfer?.clearData()
-  }
+  }, [])
 
-  //@ts-ignore
-  let {blockProps, blockPath, parentNode} = useBlockProps(element)
+  // let {blockProps, blockPath, parentNode} = useBlockProps(editor, element)
+  let path = findPath(element)
+  let parentNode = useMemo(() => {
+    if (editor.dragging) return null
+    let parentEntry = Editor.above<GroupingContent>(editor, {
+      match: isGroupContent,
+      mode: 'lowest',
+      at: path,
+    })
+    if (!parentEntry) return null
+    return parentEntry[0]
+  }, [path])
 
   let marker = useMemo(() => {
     if (parentNode?.type == 'orderedList') {
       // add number
       return {
         type: 'number' as const,
-        index: blockPath[blockPath.length - 1] + 1,
+        index: path[path.length - 1] + 1,
       }
     } else if (parentNode?.type == 'unorderedList') {
       return {
         type: 'bullet' as const,
-        level: blockPath.length,
+        level: path.length,
       }
     }
-  }, [blockProps])
+  }, [element])
 
   // let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
 
-  const dragContext = useContext(DragContext)
+  const dragContext = useDragContext()
   const {drag, setDrag, clearDrag} = dragContext
   const dragOverRef = useSelector(dragService!, (state) => {
     return state.context.dragOverRef
@@ -82,12 +95,17 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   })
   const lineType: LineType | null = useMemo(() => {
     if (dragOverRef) {
-      let i = 0;
-      if (nestedGroup && nestedGroup.some((el, index) => {i = index; return Path.equals(el.entry[1], path)})) {
+      let i = 0
+      if (
+        nestedGroup &&
+        nestedGroup.some((el, index) => {
+          i = index
+          return Path.equals(el.entry[1], path)
+        })
+      ) {
         return nestedGroup[i].line
       }
-      if (Path.equals(dragOverRef.entry[1], path))
-        return dragOverRef.line
+      if (Path.equals(dragOverRef.entry[1], path)) return dragOverRef.line
     }
     return null
   }, [dragOverRef, nestedGroup])
@@ -110,7 +128,7 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   return (
     <XStack
       {...attributes}
-      {...blockProps}
+      // {...blockProps}
       //@ts-ignore
       onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
       onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
@@ -137,7 +155,10 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         justifyContent="flex-end"
       >
         {route.key == 'draft' ? (
-          <DraftBlocktools current={[element as FlowContent, path]} />
+          <DraftBlocktools
+            editor={editor}
+            current={[element as FlowContent, path]}
+          />
         ) : null}
       </XStack>
       {marker && (
@@ -158,7 +179,6 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         bottom={lineType !== LineType.TOP ? -3 : undefined}
         top={lineType === LineType.TOP ? -3 : undefined}
         left={0}
-        // backgroundColor="$background"
         opacity={lineType != null ? 1 : 0}
         zIndex={1000 + path.length}
         gap="$2"
@@ -166,13 +186,19 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         <XStack
           height={3}
           width={32}
-          left={lineType === LineType.GROUP || lineType === LineType.NESTED ? 36 : 0}
-          backgroundColor={lineType === LineType.NESTED ? "$green7" : "$blue8"}
-          opacity={lineType === LineType.GROUP || lineType === LineType.NESTED ? 1 : 0}
+          left={
+            lineType === LineType.GROUP || lineType === LineType.NESTED ? 36 : 0
+          }
+          backgroundColor={lineType === LineType.NESTED ? '$green7' : '$blue8'}
+          opacity={
+            lineType === LineType.GROUP || lineType === LineType.NESTED ? 1 : 0
+          }
         />
         <XStack
           flex={1}
-          left={lineType === LineType.GROUP || lineType === LineType.NESTED ? 75 : 0}
+          left={
+            lineType === LineType.GROUP || lineType === LineType.NESTED ? 75 : 0
+          }
           backgroundColor="$blue8"
         />
       </XStack>
@@ -180,29 +206,44 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   )
 }
 
-const PublicationSection = ({children, element, attributes}: RenderElementProps) => {
-  let path = findPath(element)
+const PublicationSection = ({
+  children,
+  element,
+  attributes,
+}: RenderElementProps) => {
+  const editor = useSlateStatic()
   let {highlight} = useVisibleConnection((element as FlowContent).id)
 
   //@ts-ignore
-  let {blockProps, blockPath, parentNode} = useBlockProps(element)
+  // let {blockProps, blockPath, parentNode} = useBlockProps(element)
+
+  let path = findPath(element)
+
+  let parentNode = useMemo(() => {
+    // if (editor.dragging) return null
+    let parentEntry = editor.above<GroupingContent>({
+      match: isGroupContent,
+      mode: 'lowest',
+      at: path,
+    })
+    if (!parentEntry) return null
+    return parentEntry[0]
+  }, [path])
 
   let marker = useMemo(() => {
     if (parentNode?.type == 'orderedList') {
       // add number
       return {
         type: 'number' as const,
-        index: blockPath[blockPath.length - 1] + 1,
+        index: path[path.length - 1] + 1,
       }
     } else if (parentNode?.type == 'unorderedList') {
       return {
         type: 'bullet' as const,
-        level: blockPath.length,
+        level: path.length,
       }
     }
-  }, [blockProps])
-
-  // let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
+  }, [element])
 
   let height = useMemo(() => {
     if (isHeading(element)) {
@@ -222,7 +263,6 @@ const PublicationSection = ({children, element, attributes}: RenderElementProps)
   return (
     <XStack
       {...attributes}
-      {...blockProps}
       gap="$2"
       backgroundColor={highlight ? '$yellow3' : 'transparent'}
     >
@@ -236,8 +276,7 @@ const PublicationSection = ({children, element, attributes}: RenderElementProps)
         height={height}
         alignItems="center"
         justifyContent="flex-end"
-      >
-      </XStack>
+      ></XStack>
       {marker && (
         <Marker
           {...marker}

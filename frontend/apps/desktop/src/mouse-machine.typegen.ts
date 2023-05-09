@@ -25,7 +25,7 @@
         };
         eventsCausingActions: {
           "addVisibleBlock": "BLOCK.ADD";
-"assignCurrentBound": "DISABLE.BLOCKTOOLS.CLOSE" | "DISABLE.DRAG.END" | "MOUSE.MOVE" | "xstate.init";
+"assignCurrentBound": "MOUSE.MOVE";
 "assignObserver": "INIT.OBSERVER";
 "blockObserve": "BLOCK.OBSERVE";
 "clearBlockBounds": "DISABLE.CHANGE" | "DISABLE.SCROLL" | "DISABLE.WINDOW.BLUR" | "DISABLE.WINDOW.RESIZE";
@@ -37,7 +37,7 @@
           
         };
         eventsCausingGuards: {
-          "hoverNewBlockId": "MOUSE.MOVE";
+          
         };
         eventsCausingServices: {
           "boundsListener": "xstate.init";

@@ -25,30 +25,6 @@ export function useBlockObserve(
   }, [service, entry, mode])
 }
 
-export const useCurrentBound = createMouseSelector(
-  (state) => state.context.currentBound,
+export const useHoveredBlockId = createMouseSelector(
+  (state) => state.context.hoveredBlockId,
 )
-
-export const useCurrentTarget = createMouseSelector((state) => {
-  let tMap = new Map(state.context.visibleBlocks)
-  if (state.context.currentBound) {
-    let target = tMap.get(state.context.currentBound[0])
-    return target
-  }
-
-  return null
-}, CurrentTargetCompare)
-
-
-function CurrentTargetCompare(
-  prevTarget?: HTMLElement | null,
-  newTarget?: HTMLElement | null,
-) {
-  if (prevTarget && newTarget) {
-    if (prevTarget.dataset && newTarget.dataset) {
-      return prevTarget.dataset?.highlight !== newTarget.dataset?.highlight
-    }
-  }
-
-  return false
-}

@@ -21,7 +21,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
-import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
+import {ChangeEvent, FormEvent, useCallback, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -38,17 +38,6 @@ export const ELEMENT_IMAGE = 'image'
 export function createImagePlugin(): EditorPlugin {
   return {
     name: ELEMENT_IMAGE,
-    renderElement:
-      () =>
-      ({element, children, attributes}) => {
-        if (isImage(element)) {
-          return (
-            <Image element={element} attributes={attributes}>
-              {children}
-            </Image>
-          )
-        }
-      },
     configureEditor(editor) {
       const {isVoid, isInline} = editor
 
@@ -65,7 +54,11 @@ export function createImagePlugin(): EditorPlugin {
   }
 }
 
-function Image({element, attributes, children}: RenderElementProps) {
+export function ImageElement({
+  element,
+  attributes,
+  children,
+}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const imgService = useInterpret(() => imageMachine, {
@@ -109,6 +102,32 @@ function ImageComponent({service, element}: InnerImageProps) {
   const selected = useSelected()
   const focused = useFocused()
   const path = useMemo(() => findPath(element), [element])
+
+  const onKeyPress = useCallback((event: any) => {
+    if (event.nativeEvent.key == 'Enter') {
+      // This will create a new block below the image and focus on it
+
+      event.preventDefault()
+
+      let parentBlock = Editor.above(editor, {
+        match: isFlowContent,
+        at: path,
+      })
+
+      if (parentBlock) {
+        let [, pPath] = parentBlock
+        let newBlock = statement([paragraph([text('')])])
+        let newPath = Path.next(pPath)
+        Editor.withoutNormalizing(editor, () => {
+          Transforms.insertNodes(editor, newBlock, {at: newPath})
+          ReactEditor.focus(editor)
+          setTimeout(() => {
+            Transforms.select(editor, newPath)
+          }, 10)
+        })
+      }
+    }
+  }, [])
 
   return (
     <YStack
@@ -158,31 +177,7 @@ function ImageComponent({service, element}: InnerImageProps) {
             onChangeText={(val: string) =>
               send({type: 'CAPTION.UPDATE', value: val})
             }
-            onKeyPress={(event: any) => {
-              if (event.nativeEvent.key == 'Enter') {
-                // This will create a new block below the image and focus on it
-
-                event.preventDefault()
-
-                let parentBlock = Editor.above(editor, {
-                  match: isFlowContent,
-                  at: path,
-                })
-
-                if (parentBlock) {
-                  let [, pPath] = parentBlock
-                  let newBlock = statement([paragraph([text('')])])
-                  let newPath = Path.next(pPath)
-                  Editor.withoutNormalizing(editor, () => {
-                    Transforms.insertNodes(editor, newBlock, {at: newPath})
-                    ReactEditor.focus(editor)
-                    setTimeout(() => {
-                      Transforms.select(editor, newPath)
-                    }, 10)
-                  })
-                }
-              }
-            }}
+            onKeyPress={onKeyPress}
           />
         </XStack>
       ) : null}
