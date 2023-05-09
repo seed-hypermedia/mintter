@@ -1,8 +1,8 @@
 import {useDraftList, usePublicationList} from '@app/models/documents'
 import {fetchWebLink} from '@app/models/web-links'
-import {isMintterScheme} from '@app/utils/is-mintter-link'
+import {isMintterScheme} from '@app/utils/mintter-link'
 import {useNavigate} from '@app/utils/navigation'
-import {getIdsfromUrl, getIdsfromUrlMaybe} from '@mintter/shared'
+import {getIdsfromUrl} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
 import {listen, useListen} from '@app/ipc'
 import {Command} from 'cmdk'
@@ -65,7 +65,7 @@ export default function QuickSwitcher() {
                     blockId: block,
                   })
                 } else {
-                  let [docId, version, block] = getIdsfromUrlMaybe(search)
+                  let [docId, version, block] = getIdsfromUrl(search)
                   if (docId) {
                     navigate({
                       key: 'publication',
@@ -78,8 +78,6 @@ export default function QuickSwitcher() {
                     setActionPromise(
                       fetchWebLink(search)
                         .then((result) => {
-                          console.log('wtf2')
-                          console.log(result)
                           if (result && result?.documentId) {
                             setOpen(false)
                             navigate({
@@ -94,7 +92,6 @@ export default function QuickSwitcher() {
                         })
                         .finally(() => {
                           setActionPromise(null)
-                          // setOpen(false)
                         }),
                     )
                   }

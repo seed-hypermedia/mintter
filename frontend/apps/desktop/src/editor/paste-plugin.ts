@@ -6,7 +6,7 @@ import {
   sanitizeSchema,
   toMttast,
 } from '@mintter/shared'
-import {isMintterScheme} from '@app/utils/is-mintter-link'
+import {isMintterScheme} from '@app/utils/mintter-link'
 import {error} from '@app/utils/logger'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'

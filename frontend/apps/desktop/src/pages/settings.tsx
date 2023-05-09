@@ -582,7 +582,7 @@ function SiteInfoForm({
   return (
     <YStack gap="$3">
       <YStack>
-        <Label htmlFor="site-title">title</Label>
+        <Label htmlFor="site-title">Title</Label>
         <Input
           id="site-title"
           value={title}

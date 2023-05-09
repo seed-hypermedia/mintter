@@ -2,10 +2,8 @@ import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {usePublication} from '@app/models/documents'
 import {useWebLink} from '@app/models/web-links'
-import {useMouse} from '@app/mouse-context'
-import {isMintterScheme} from '@app/utils/is-mintter-link'
+import {isMintterScheme, normalizeMintterLink} from '@app/utils/mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
-import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {useFloating} from '@floating-ui/react-dom'
 import {
@@ -31,7 +29,6 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import {Text} from '@tamagui/web'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
 import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
@@ -119,26 +116,32 @@ export const createLinkPlugin = (): EditorPlugin => ({
     editor.isVoid = (element) => element.data?.void || isVoid(element)
     editor.isInline = (element) => isLink(element) || isInline(element)
 
-    editor.insertText = (text: string) => {
-      if (text && isUrl(text)) {
+    function insertLinkableText(text: string) {
+      const mintterLink = normalizeMintterLink(text)
+      if (mintterLink) {
+        // user is probably pasting a link that is either a mintter scheme or https gateway URL
+        if (hasBlockId(mintterLink)) {
+          wrapMintterLink(editor, mintterLink)
+        } else {
+          insertDocumentLink(editor, mintterLink)
+        }
+      } else if (isUrl(text)) {
+        // user is pasting normal url, may be a mintter site which will be asynchronously resolved with useWebLink
         wrapLink(editor, text)
       } else {
         insertText(text)
       }
     }
 
+    editor.insertText = (text: string) => {
+      console.log('editor.insertText', text)
+      insertLinkableText(text)
+    }
+
     editor.insertData = (data: DataTransfer) => {
       const text = data.getData('text/plain')
       if (text) {
-        if (isMintterScheme(text)) {
-          if (hasBlockId(text)) {
-            wrapMintterLink(editor, text)
-          } else {
-            insertDocumentLink(editor, text)
-          }
-        } else if (isUrl(text)) {
-          wrapLink(editor, text)
-        }
+        insertLinkableText(text)
       } else {
         insertData(data)
       }
