@@ -144,7 +144,9 @@ function PublishButton({
   disabled?: boolean
   isDraft?: boolean
 }) {
-  const draftActionLabel = webUrl ? `Publish to ${webUrl}` : 'Publish'
+  const draftActionLabel = webUrl
+    ? `Publish to ${hostnameStripProtocol(webUrl)}`
+    : 'Publish'
   return (
     <PopoverPrimitive.Trigger asChild disabled={disabled}>
       <Button
@@ -240,6 +242,29 @@ export function PublishShareButton() {
     return pub?.document?.webUrl || draft?.webUrl
   }, [route, pub, draft])
 
+  let copyReferenceButton
+
+  if (isPublication) {
+    copyReferenceButton = (
+      <Tooltip content="Copy document reference">
+        <Button
+          chromeless
+          size="$2"
+          onPress={() => {
+            const {document, version} = pub || {}
+            const {id, webUrl} = document || {}
+            if (!id) throw new Error('No document id')
+            if (!publishedWebHost) throw new Error('Document not loaded')
+            let docUrl = `${publishedWebHost}/p/${id}?v=${version}`
+            copyTextToClipboard(docUrl)
+            toast.success('Copied document reference')
+          }}
+          icon={Copy}
+        />
+      </Tooltip>
+    )
+  }
+
   if (!isDraft && !isPublication) return null
   return (
     <>
@@ -307,23 +332,7 @@ export function PublishShareButton() {
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
-      <Tooltip content="Copy document reference">
-        <Button
-          chromeless
-          size="$2"
-          onPress={() => {
-            const {document, version} = pub || {}
-            const {id, webUrl} = document || {}
-            if (!id) throw new Error('No document id')
-            if (!publishedWebHost) throw new Error('Document not loaded')
-            let docUrl = `${publishedWebHost}/p/${id}?v=${version}`
-            copyTextToClipboard(docUrl)
-            toast.success('Copied document reference')
-          }}
-          icon={Copy}
-        />
-      </Tooltip>
-
+      {copyReferenceButton}
       {publicationDialog.content}
     </>
   )
