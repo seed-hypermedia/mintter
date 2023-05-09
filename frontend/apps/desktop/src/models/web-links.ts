@@ -30,7 +30,6 @@ function queryWebLink(url: string, enabled: boolean) {
         //   documentVersion: webResponse.headers.get(
         //     'x-mintter-document-version',
         //   ),
-        //   publisherId: webResponse.headers.get('x-mintter-publisher-id'),
         // }
 
         // parsing for the meta tags is heavier but works, no problem
@@ -43,7 +42,6 @@ function queryWebLink(url: string, enabled: boolean) {
             extractMetaTagValue(doc, 'mintter-document-title') ||
             doc.querySelector('title')?.innerText ||
             url,
-          publisherId: extractMetaTagValue(doc, 'mintter-publisher-id'),
         }
       } catch (e) {
         return null

@@ -53,10 +53,6 @@ export default function PublicationPage({
           )}
           <Head>
             <meta
-              name="mintter-publisher-id"
-              content={publication?.document?.publisher}
-            />
-            <meta
               name="mintter-document-id"
               content={publication?.document?.id}
             />
