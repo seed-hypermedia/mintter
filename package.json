@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "ui:dev": "yarn workspace @mintter/ui dev",
-    "site": "yarn workspaces foreach --exclude @mintter/desktop --exclude @mintter/electron -pi run dev",
+    "site": "yarn workspace @mintter/site dev",
     "site:extract": "EXTRACT=1 yarn workspace @mintter/site dev",
     "site:prod": "yarn build && yarn workspace @mintter/site build",
     "site:vercel": "yarn build && cd frontend/apps/site && yarn build",
