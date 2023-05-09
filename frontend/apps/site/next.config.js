@@ -1,44 +1,54 @@
 /** @type {import('next').NextConfig} */
 const {withTamagui} = require('@tamagui/next-plugin')
 const {join} = require('path')
+// const withBundleAnalyzer = require('@next/bundle-analyzer')
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
 process.env.TAMAGUI_TARGET = 'web'
-process.env.TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD = '1'
+// process.env.TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD = '1'
 
 const boolVals = {
   true: true,
   false: false,
 }
 
+const disableExtraction =
+  boolVals[process.env.DISABLE_EXTRACTION] ??
+  process.env.NODE_ENV == 'development'
+
 const plugins = [
+  // withBundleAnalyzer({
+  //   enabled: process.env.NODE_ENV === 'production',
+  //   openAnalyzer: process.env.ANALYZE === 'true',
+  // }),
   withTamagui({
     config: './tamagui.config.ts',
     components: ['@mintter/ui', 'tamagui'],
     importsWhitelist: ['constants.js', 'colors.js'],
     logTimings: true,
-    disableExtraction: process.env.NODE_ENV === 'development',
-    shouldExtract: (path) => {
-      if (path.includes('../packages/ui')) {
-        return true
-      }
-    },
+    disableExtraction,
+    // shouldExtract: (path) => {
+    //   if (path.includes('../../packages/ui')) {
+    //     console.log('=== EXTRACT CSS!')
+    //     return true
+    //   }
+    // },
     // Advanced:
 
     // adds mini-css-extract and css-minimizer-plugin, can fix issues with unique configurations
-    enableCSSOptimizations: false,
+    // enableCSSOptimizations: false,
     // disable tamagui config to make fonts easier to import
-    disableFontSupport: false,
+    // disableFontSupport: false,
 
     // experiment - reduced bundle size react-native-web
-    useReactNativeWebLite: true,
-    excludeReactNativeWebExports: [
-      'Switch',
-      'ProgressBar',
-      'Picker',
-      'CheckBox',
-      'Touchable',
-    ],
+    // useReactNativeWebLite: true,
+    // excludeReactNativeWebExports: [
+    //   'Switch',
+    //   'ProgressBar',
+    //   'Picker',
+    //   'CheckBox',
+    //   'Touchable',
+    // ],
   }),
 ]
 
@@ -62,6 +72,7 @@ module.exports = function () {
     ],
     experimental: {
       // optimizeCss: true,
+      esmExternals: true,
       scrollRestoration: true,
       legacyBrowsers: false,
       outputFileTracingRoot: join(__dirname, '../../../'),
@@ -76,7 +87,6 @@ module.exports = function () {
   }
 
   if (!process.env.MINTTER_IS_GATEWAY) {
-    console.log('===> NEXT STANDALONE BUILD <===')
     config.output = 'standalone'
   }
 

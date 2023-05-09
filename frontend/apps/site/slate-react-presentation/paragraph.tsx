@@ -1,4 +1,4 @@
-import {Text, styled, Paragraph as TParagraph} from '@mintter/ui'
+import {Paragraph as TParagraph} from '@mintter/ui'
 import {clsx} from 'clsx'
 import {getHighlighter} from 'shiki-es'
 import {ReactNode, useRef, useEffect, useState} from 'react'
@@ -12,7 +12,7 @@ export function Paragraph({element, ...props}: ParagraphProps) {
   let ref = useRef<HTMLParagraphElement>(null)
   let {type} = useSlatePresentation()
   let [state, send, service] = useMachine(() => paragraphMachine)
-  
+
   let parentType = useSelector(
     service,
     (state) => state.context.parentRef?.dataset.type,
