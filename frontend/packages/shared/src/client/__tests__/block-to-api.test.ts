@@ -96,7 +96,7 @@ describe('Transform: blockToApi', () => {
     expect(blockToApi(input)).toEqual(output)
   })
 
-  test.only('should return colors', () => {
+  test('should return colors', () => {
     let input: Statement = statement({id: 'blockId'}, [
       paragraph([
         text('red ', {color: 'red'}),
