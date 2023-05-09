@@ -242,18 +242,20 @@ export default function PublicationPage() {
                     replace({...route, accessory: {key: 'versions'}})
                   }}
                 />
-                <FooterButton
-                  active={accessoryKey === 'citations'}
-                  label={`${citations?.links?.length} Citation${pluralS(
-                    citations?.links?.length,
-                  )}`}
-                  icon={Link}
-                  onPress={() => {
-                    if (route.accessory)
-                      return replace({...route, accessory: null})
-                    replace({...route, accessory: {key: 'citations'}})
-                  }}
-                />
+                {citations?.links?.length ? (
+                  <FooterButton
+                    active={accessoryKey === 'citations'}
+                    label={`${citations?.links?.length} Citation${pluralS(
+                      citations?.links?.length,
+                    )}`}
+                    icon={Link}
+                    onPress={() => {
+                      if (route.accessory)
+                        return replace({...route, accessory: null})
+                      replace({...route, accessory: {key: 'citations'}})
+                    }}
+                  />
+                ) : null}
                 {features.comments ? (
                   <FooterButton
                     active={accessoryKey === 'comments'}
