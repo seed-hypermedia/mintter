@@ -822,7 +822,7 @@ func TestPublisherAndEditors(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "http://example.com", draft.WebUrl)
 	require.Equal(t, "Document title", draft.Title)
-	wantEditors := []string{api.me.MustGet().AccountID().String()}
+	wantEditors := []string{api.me.MustGet().Account().Principal().String()}
 	require.Equal(t, wantEditors, draft.Editors)
 }
 

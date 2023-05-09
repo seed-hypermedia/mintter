@@ -40,7 +40,6 @@ require (
 	github.com/polydawn/refmt v0.89.0
 	github.com/prometheus/client_golang v1.15.0
 	github.com/sanity-io/litter v1.5.5
-	github.com/stretchr/objx v0.5.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tidwall/btree v1.6.0
 	github.com/tyler-smith/go-bip39 v1.1.0

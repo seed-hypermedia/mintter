@@ -79,15 +79,31 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	if in.ExistingDocumentId != "" {
 		eid := hyper.NewEntityID("mintter:document", in.ExistingDocumentId)
 
-		draft, err := api.blobs.FindDraft(ctx, eid)
-		if err != nil {
-			return nil, err
-		}
-		if draft.Defined() {
+		_, err := api.blobs.FindDraft(ctx, eid)
+		if err == nil {
 			return nil, status.Errorf(codes.FailedPrecondition, "draft for %s already exists", in.ExistingDocumentId)
 		}
 
-		panic("TODO update publication")
+		entity, err := api.blobs.LoadEntity(ctx, eid)
+		if err != nil {
+			return nil, err
+		}
+
+		del, err := api.getDelegation(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{})
+		if err != nil {
+			return nil, err
+		}
+
+		if err := api.blobs.SaveDraftBlob(ctx, eid, hb); err != nil {
+			return nil, err
+		}
+
+		return api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.ExistingDocumentId})
 	}
 
 	docid := newDocumentID()
@@ -279,40 +295,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 // DeleteDraft implements the corresponding gRPC method.
 func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify draft ID to delete")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	ch, err := conn.GetDraftChange(oid)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := conn.WithTx(true, func() error {
-		if err := conn.DeleteBlock(ctx, ch); err != nil {
-			return fmt.Errorf("failed to delete draft %s: %w", in.DocumentId, err)
-		}
-
-		// TODO(burdiyan): make this more efficient. Counting is enough, don't need to list.
-		list, err := conn.ListChanges(oid)
-		if err != nil {
-			return err
-		}
-
-		if len(list) == 0 {
-			if err := conn.DeleteBlock(ctx, oid); err != nil {
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
+	if err := api.blobs.DeleteDraft(ctx, eid); err != nil {
 		return nil, err
 	}
 
@@ -323,6 +312,10 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
 	if in.DocumentId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
+	}
+
+	if in.Version != "" {
+		panic("TODO: get specific version")
 	}
 
 	me, err := api.getMe()
@@ -449,24 +442,13 @@ func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Versi
 
 // DeletePublication implements the corresponding gRPC method.
 func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
-	c, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	if err := conn.BeginTx(true); err != nil {
-		return nil, err
-	}
-
-	obj := conn.LookupPermanode(c)
-	conn.DeleteObject(obj)
-	if err := conn.Commit(); err != nil {
+	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
 		return nil, err
 	}
 

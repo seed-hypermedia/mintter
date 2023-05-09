@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -188,4 +189,46 @@ func TestDocument_Cleanup(t *testing.T) {
 
 	require.Equal(t, want["moves"], dm.patch["moves"])
 	require.Equal(t, want["blocks"], dm.patch["blocks"])
+}
+
+func TestDocumentUpdatePublished(t *testing.T) {
+	alice := coretest.NewTester("alice")
+	db := newTestSQLite(t)
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	ctx := context.Background()
+	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
+	require.NoError(t, err)
+	eid := hyper.NewEntityID("mintter:document", "doc-1")
+	entity := hyper.NewEntity(eid)
+	dm, err := newDraftMutation(entity, alice.Device, delegation)
+	require.NoError(t, err)
+
+	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
+	require.NoError(t, dm.SetCreateTime(time.Now()))
+	require.NoError(t, dm.SetTitle("My document"))
+
+	hb, err := dm.Commit(ctx, blobs)
+	require.NoError(t, err)
+
+	require.NoError(t, blobs.PublishDraft(ctx, eid))
+
+	entity, err = blobs.LoadEntity(ctx, eid)
+	require.NoError(t, err)
+
+	_, ok := entity.Heads()[hb.CID]
+	require.True(t, ok, "entity must have last published change as heads")
+
+	hb2, err := entity.CreateChange(entity.NextTimestamp(), alice.Device, delegation, map[string]any{})
+	require.NoError(t, err)
+	require.Equal(t, []cid.Cid{hb.CID}, hb2.Decoded.(hyper.Change).Deps, "new change must have old one in deps")
+
+	require.NoError(t, blobs.SaveBlob(ctx, hb2))
+
+	// dm, err = newDraftMutation(entity, alice.Device, delegation)
+	// require.NoError(t, err)
+
+	// require.NoError(t, dm.SetTitle("My changed title"))
+	// hb2, err := dm.Commit(ctx, blobs)
+	// require.NoError(t, err)
+	// require.Equal(t, []cid.Cid{hb.CID}, hb2.Decoded.(hyper.Change).Deps, "new change must have old one in deps")
 }

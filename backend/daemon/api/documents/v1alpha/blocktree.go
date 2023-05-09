@@ -74,8 +74,8 @@ func NewTree() *Tree {
 	}
 }
 
-func (t *Tree) MustMoveRemote(id OpID, block, parent, leftShadown string) (moved bool) {
-	moved, err := t.MoveRemote(id, block, parent, leftShadown)
+func (t *Tree) MustMoveRemote(id OpID, block, parent, leftShadow string) (moved bool) {
+	moved, err := t.MoveRemote(id, block, parent, leftShadow)
 	if err != nil {
 		panic(err)
 	}

@@ -150,7 +150,69 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) error {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsPublish(conn, res.HyperDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		res, err := hypersql.DraftsGet(conn, string(eid))
+		if err != nil {
+			return err
+		}
+		if res.HyperDraftsViewBlobID == 0 {
+			return fmt.Errorf("no draft to publish for entity %s", eid)
+		}
+
+		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+			return err
+		}
+
+		_, err = hypersql.BlobsDelete(conn, res.HyperDraftsViewMultihash)
+		if err != nil {
+			return err
+		}
+
+		// Trying to delete the entity. It will fail if there're more changes left for it.
+		err = hypersql.EntitiesDelete(conn, string(eid))
+		if sqlite.ErrCode(err) == sqlite.SQLITE_CONSTRAINT_FOREIGNKEY {
+			return nil
+		}
+		return err
+	})
+}
+
+func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+		if err != nil {
+			return err
+		}
+		if edb.HyperEntitiesID == 0 {
+			return fmt.Errorf("no such entity: %s", eid)
+		}
+
+		if err := hypersql.ChangesDeleteForEntity(conn, edb.HyperEntitiesID); err != nil {
+			return err
+		}
+
+		if err := hypersql.EntitiesDelete(conn, string(eid)); err != nil {
 			return err
 		}
 

@@ -149,6 +149,10 @@ func generateQueries() error {
 			"FROM", s.HyperEntities, '\n',
 			"WHERE", s.HyperEntitiesEID, "GLOB", qb.Var("prefix", sgen.TypeText),
 		),
+		qb.MakeQuery(s.Schema, "EntitiesDelete", sgen.QueryKindExec,
+			"DELETE FROM", s.HyperEntities, '\n',
+			"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
+		),
 
 		qb.MakeQuery(s.Schema, "ChangesInsertOrIgnore", sgen.QueryKindExec,
 			"INSERT OR IGNORE INTO", s.HyperChanges, qb.ListColShort(
@@ -204,6 +208,14 @@ func generateQueries() error {
 			), '\n',
 			"LIMIT 1",
 		),
+		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
+			"DELETE FROM", s.Blobs, '\n',
+			"WHERE", s.BlobsID, "IN", qb.SubQuery(
+				"SELECT", s.HyperChangesBlob,
+				"FROM", s.HyperChanges,
+				"WHERE", s.HyperChangesEntity, "=", qb.VarCol(s.HyperChangesEntity),
+			),
+		),
 
 		qb.MakeQuery(s.Schema, "LinksInsert", sgen.QueryKindExec,
 			"INSERT OR IGNORE INTO", s.HyperLinks, qb.ListColShort(
@@ -244,7 +256,7 @@ func generateQueries() error {
 			"WHERE", s.HyperDraftsViewEntity, "=", qb.VarCol(s.HyperDraftsViewEntity),
 			"LIMIT 1",
 		),
-		qb.MakeQuery(s.Schema, "DraftsPublish", sgen.QueryKindExec,
+		qb.MakeQuery(s.Schema, "DraftsDelete", sgen.QueryKindExec,
 			"DELETE FROM", s.HyperDrafts, '\n',
 			"WHERE", s.HyperDraftsBlob, "=", qb.VarCol(s.HyperDraftsBlob),
 		),

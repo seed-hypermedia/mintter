@@ -483,6 +483,26 @@ WHERE hyper_entities.eid GLOB :prefix`
 	return out, err
 }
 
+func EntitiesDelete(conn *sqlite.Conn, hyperEntitiesEID string) error {
+	const query = `DELETE FROM hyper_entities
+WHERE hyper_entities.eid = :hyperEntitiesEID`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: EntitiesDelete: %w", err)
+	}
+
+	return err
+}
+
 func ChangesInsertOrIgnore(conn *sqlite.Conn, hyperChangesBlob int64, hyperChangesEntity int64, hyperChangesHlcTime int64) error {
 	const query = `INSERT OR IGNORE INTO hyper_changes (blob, entity, hlc_time)
 VALUES (:hyperChangesBlob, :hyperChangesEntity, :hyperChangesHlcTime)`
@@ -617,6 +637,26 @@ LIMIT 1`
 	return out, err
 }
 
+func ChangesDeleteForEntity(conn *sqlite.Conn, hyperChangesEntity int64) error {
+	const query = `DELETE FROM blobs
+WHERE blobs.id IN (SELECT hyper_changes.blob FROM hyper_changes WHERE hyper_changes.entity = :hyperChangesEntity)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesDeleteForEntity: %w", err)
+	}
+
+	return err
+}
+
 func LinksInsert(conn *sqlite.Conn, hyperLinksSourceBlob int64, hyperLinksRel string, hyperLinksTargetBlob int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {
 	const query = `INSERT OR IGNORE INTO hyper_links (source_blob, rel, target_blob, target_entity, data)
 VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0), NULLIF(:hyperLinksTargetEntity, 0), :hyperLinksData)`
@@ -702,7 +742,7 @@ WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
 	return out, err
 }
 
-func DraftsPublish(conn *sqlite.Conn, hyperDraftsBlob int64) error {
+func DraftsDelete(conn *sqlite.Conn, hyperDraftsBlob int64) error {
 	const query = `DELETE FROM hyper_drafts
 WHERE hyper_drafts.blob = :hyperDraftsBlob`
 
@@ -716,7 +756,7 @@ WHERE hyper_drafts.blob = :hyperDraftsBlob`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DraftsPublish: %w", err)
+		err = fmt.Errorf("failed query: DraftsDelete: %w", err)
 	}
 
 	return err
