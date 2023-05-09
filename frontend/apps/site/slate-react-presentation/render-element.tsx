@@ -30,7 +30,7 @@ import {useHighlightContext} from './highlight'
 import {useHoverContext} from 'slate-react-presentation/hover'
 
 const MEDIA_HOSTNAME =
-  process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_GRPC_API : ''
+  process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_GRPC_HOST : ''
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {

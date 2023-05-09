@@ -117,7 +117,7 @@ export function DraftListItem({draft}: {draft: Document}) {
               />
               <Separator />
               <Dropdown.Item
-                title="new delete"
+                title="delete"
                 onSelect={() => {
                   popoverState.onOpenChange(false)
                   dialogState.onOpenChange(true)
