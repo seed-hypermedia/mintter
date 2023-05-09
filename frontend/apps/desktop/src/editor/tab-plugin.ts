@@ -62,7 +62,7 @@ function moveStatement(editor: Editor, up: boolean) {
         MintterEditor.addChange(editor, ['moveBlock', block.id])
         MintterEditor.addChange(editor, ['replaceBlock', block.id])
         if (!up) {
-          if (!isFirst && node.isChild) return
+          // if (!isFirst && node.isChild) return
           const [prev, prevPath] =
             Editor.previous(editor, {
               at: blockPath,

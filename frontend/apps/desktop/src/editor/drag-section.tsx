@@ -1,5 +1,5 @@
 import {useDrag} from '@app/drag-context'
-import {LineType} from '@app/drag-machine'
+import {DragEntry, LineType} from '@app/drag-machine'
 import {DraftBlocktools, PublicationBlocktools} from '@app/editor/blocktools'
 import {useDragContext} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -19,7 +19,7 @@ import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
 import {useSelector} from '@xstate/react'
 import {useCallback, useMemo} from 'react'
 import {Editor, Path} from 'slate'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import {useBlockProps} from './editor-node-props'
 import {BLOCK_GAP, findPath, useMode} from './utils'
 
@@ -196,8 +196,8 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         />
         <XStack
           flex={1}
-          left={
-            lineType === LineType.GROUP || lineType === LineType.NESTED ? 75 : 0
+          opacity={
+            lineType === LineType.GROUP || lineType === LineType.NESTED ? 0 : 1
           }
           backgroundColor="$blue8"
         />

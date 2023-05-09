@@ -171,7 +171,8 @@ export const createDragMachine = (editor: Editor) => {
                   ReactEditor.toDOMNode(
                     editor,
                     nestedGroup[i].entry[0],
-                  ).getBoundingClientRect()['x']
+                  ).getBoundingClientRect()['x'] +
+                    36
               ) {
                 nestedGroup[i - 1].line = LineType.NESTED
                 hoveredElement = nestedGroup[i - 1]
