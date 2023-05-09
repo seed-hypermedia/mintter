@@ -1,5 +1,5 @@
 import {accountsClient} from '@app/api-clients'
-import {Account, Profile} from '@mintter/shared'
+import {Account, ListAccountsResponse, Profile} from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/models/query-keys'
 import {useAllPeers} from './networking'
@@ -7,15 +7,19 @@ import {useDaemonReady} from '@app/node-status-context'
 import {fetchDaemonInfo, useDaemonInfo} from '@app/models/daemon'
 import {appInvalidateQueries} from '@app/query-client'
 import appError from '@app/errors'
+import {ConnectError} from '@bufbuild/connect-web'
 
 export function useAccount(accountId?: string) {
   let isDaemonReady = useDaemonReady()
-  return useQuery({
+  return useQuery<Account, ConnectError>({
     enabled: isDaemonReady && !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
     queryFn: () => accountsClient.getAccount({id: accountId}),
     onError: (err) => {
-      appError('Failed to load account. ' + err)
+      appError(
+        `useAccount Error code ${err.code}: ${err.message} (account ${accountId})`,
+        err.metadata,
+      )
     },
     useErrorBoundary: () => false,
   })
@@ -23,11 +27,14 @@ export function useAccount(accountId?: string) {
 
 export function useAllAccounts() {
   let isDaemonReady = useDaemonReady()
-  const contacts = useQuery({
+  const contacts = useQuery<ListAccountsResponse, ConnectError>({
     enabled: !!isDaemonReady,
     queryKey: [queryKeys.GET_ALL_ACCOUNTS],
     queryFn: async () => {
       return await accountsClient.listAccounts({})
+    },
+    onError: (err) => {
+      appError(`useAllAccounts Error ${err.code}: ${err.message}`, err.metadata)
     },
   })
   return contacts
@@ -61,7 +68,7 @@ export function useAccountWithDevices(accountId: string) {
 
 export function useAccountIsConnected(account: Account) {
   const peers = useAllPeers()
-  return !!peers.data?.peerList.find((peer) => peer.accountId === account.id)
+  return !!peers.data?.peerList.find((peer) => peer.accountId == account.id)
 }
 
 export function useMyAccount() {
