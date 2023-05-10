@@ -98,24 +98,14 @@ function ThemeProvider({children}: {children: React.ReactNode}) {
         })
       }}
     >
-      <StyleProvider defaultTheme={theme}>{children}</StyleProvider>
+      <TamaguiProvider
+        config={tamaguiConfig}
+        defaultTheme={theme}
+        disableRootThemeClass
+        disableInjectCSS
+      >
+        <Theme name="mint">{children}</Theme>
+      </TamaguiProvider>
     </NextThemeProvider>
-  )
-}
-
-function StyleProvider({
-  children,
-  defaultTheme = 'light',
-  ...rest
-}: Omit<TamaguiProviderProps, 'config'>) {
-  return (
-    <TamaguiProvider
-      config={tamaguiConfig}
-      defaultTheme={defaultTheme}
-      disableRootThemeClass
-      {...rest}
-    >
-      <Theme name="mint">{children}</Theme>
-    </TamaguiProvider>
   )
 }

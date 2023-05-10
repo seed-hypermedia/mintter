@@ -31,7 +31,7 @@ jobs:
           cache: "yarn"
       
       - name: Install Dependencies
-        run: YARN_CHECKSUM_BEHAVIOR=update yarn
+        run: yarn
       
       # - name: Lint packages
       #   run: yarn lint

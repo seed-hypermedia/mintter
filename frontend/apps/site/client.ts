@@ -44,8 +44,6 @@ const prodInter: Interceptor = (next) => async (req) => {
 
 function getGRPCHost() {
   if (process.env.NEXT_PUBLIC_GRPC_HOST) {
-    console.log('NEXT_PUBLIC_GRPC_HOST', process.env.NEXT_PUBLIC_GRPC_HOST)
-
     return process.env.NEXT_PUBLIC_GRPC_HOST
   }
 

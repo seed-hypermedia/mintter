@@ -33,7 +33,7 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: YARN_CHECKSUM_BEHAVIOR=update yarn
+        run: yarn
 
       # - name: Build Frontend Shared packages
       #   run: yarn shared:build

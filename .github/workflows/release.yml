@@ -63,7 +63,7 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: YARN_CHECKSUM_BEHAVIOR=update yarn
+        run: yarn
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -247,7 +247,7 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: YARN_CHECKSUM_BEHAVIOR=update yarn
+        run: yarn
 
       - name: Generate static updater manifest
         run:
