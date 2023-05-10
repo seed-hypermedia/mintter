@@ -4,10 +4,10 @@ import {useMemo} from 'react'
 
 export function PublicationMetadata({
   publication,
-  author,
+  editors,
 }: {
   publication?: Publication
-  author?: Account | null
+  editors?: (Account | string | null)[]
 }) {
   let media = useMedia()
   let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
@@ -17,7 +17,14 @@ export function PublicationMetadata({
         <Text fontFamily="$body" o={0.5}>
           author:&nbsp;
         </Text>
-        {author?.profile?.alias}
+        {editors
+          ?.map((editor) => {
+            if (typeof editor === 'string') return editor
+            if (editor?.profile?.alias) return editor.profile.alias
+            return '?'
+          })
+          .filter((e) => !!e)
+          .join(', ')}
       </Paragraph>
       <Paragraph size={size}>
         <Text fontFamily="$body" o={0.5}>

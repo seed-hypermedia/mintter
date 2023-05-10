@@ -1,4 +1,4 @@
-import {Account, blockNodeToSlate, Publication, SiteInfo} from '@mintter/shared'
+import {Account, blockNodeToSlate, SiteInfo} from '@mintter/shared'
 import {
   ArticleContainer,
   Container,
@@ -17,20 +17,42 @@ import {SiteHead} from './site-head'
 import {SlateReactPresentation} from './slate-react-presentation'
 import {useRenderElement} from './slate-react-presentation/render-element'
 import {useRenderLeaf} from './slate-react-presentation/render-leaf'
+import {JsonValue} from '@bufbuild/protobuf'
+import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 
-export default function PublicationPage({
-  publication,
-  metadata = true,
-  author,
-  siteInfo = null,
-  editors = [],
-}: {
+export type PublicationPageProps = {
+  metadata?: boolean
+  publication: JsonValue
+  editors: JsonValue[]
+  siteInfo: JsonValue | null
+}
+
+export type PublicationPageData = {
   publication?: Publication
   author?: Account | null
-  editors?: Array<Account> | null
-  metadata?: boolean
+  editors: Array<Account | string | null>
   siteInfo: SiteInfo | null
-}) {
+}
+
+function preparePublicationData(
+  props: PublicationPageProps,
+): PublicationPageData {
+  return {
+    publication: Publication.fromJson(props.publication),
+    editors: props.editors.map((editor) => {
+      if (typeof editor === 'object') return Account.fromJson(editor)
+      if (typeof editor === 'string') return editor
+      return null
+    }),
+    siteInfo: props.siteInfo ? SiteInfo.fromJson(props.siteInfo) : null,
+  }
+}
+
+export default function PublicationPage({
+  metadata = true,
+  ...props
+}: PublicationPageProps) {
+  const {publication, siteInfo, editors} = preparePublicationData(props)
   let media = useMedia()
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
@@ -84,14 +106,14 @@ export default function PublicationPage({
                 <>
                   <PublicationMetadata
                     publication={publication}
-                    author={author}
+                    editors={editors}
                   />
                   {(publication && editors?.length) ||
                   (publication && publication.document?.author) ? (
                     <WebTipping
                       publication={publication}
                       editors={editors}
-                      author={author || null}
+                      author={null}
                     />
                   ) : null}
                 </>
