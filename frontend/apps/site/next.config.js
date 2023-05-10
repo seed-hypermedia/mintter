@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const {withTamagui} = require('@tamagui/next-plugin')
 const {join} = require('path')
+const withTM = require('next-transpile-modules') // pass the modules you would like to see transpiled
 // const withBundleAnalyzer = require('@next/bundle-analyzer')
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
@@ -16,20 +17,35 @@ const disableExtraction =
   boolVals[process.env.DISABLE_EXTRACTION] ??
   process.env.NODE_ENV == 'development'
 
+if (disableExtraction) {
+  console.log(
+    'NEXT: Disabling static extraction in development mode for better HMR',
+  )
+}
+
+let transpilePackages = [
+  'react-native-web',
+  // 'expo-linking',
+  // 'expo-constants',
+  // 'expo-modules-core',
+  '@mintter/ui',
+]
+
 const plugins = [
   // withBundleAnalyzer({
   //   enabled: process.env.NODE_ENV === 'production',
   //   openAnalyzer: process.env.ANALYZE === 'true',
   // }),
+  withTM(transpilePackages),
   withTamagui({
     config: './tamagui.config.ts',
     components: ['@mintter/ui', 'tamagui'],
     importsWhitelist: ['constants.js', 'colors.js'],
     logTimings: true,
     disableExtraction,
+    // This is important if you have a shared package like in the create-tamagui template to ignore components for other distributions (like components for the app not be compiled here)
     // shouldExtract: (path) => {
-    //   if (path.includes('../../packages/ui')) {
-    //     console.log('=== EXTRACT CSS!')
+    //   if (path.includes(join('packages', 'app'))) {
     //     return true
     //   }
     // },
@@ -41,14 +57,14 @@ const plugins = [
     // disableFontSupport: false,
 
     // experiment - reduced bundle size react-native-web
-    // useReactNativeWebLite: true,
-    // excludeReactNativeWebExports: [
-    //   'Switch',
-    //   'ProgressBar',
-    //   'Picker',
-    //   'CheckBox',
-    //   'Touchable',
-    // ],
+    useReactNativeWebLite: false, // if enabled dont need excludeReactNativeWebExports
+    excludeReactNativeWebExports: [
+      'Switch',
+      'ProgressBar',
+      'Picker',
+      'CheckBox',
+      'Touchable',
+    ],
   }),
 ]
 
@@ -64,12 +80,6 @@ module.exports = function () {
         skipDefaultConversion: true,
       },
     },
-    transpilePackages: [
-      'react-native-web',
-      'expo-linking',
-      'expo-constants',
-      'expo-modules-core',
-    ],
     experimental: {
       // optimizeCss: true,
       esmExternals: true,

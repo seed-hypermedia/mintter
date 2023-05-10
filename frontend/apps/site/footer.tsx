@@ -5,7 +5,7 @@ import {MenuItem} from './menu-item'
 export default function Footer() {
   let router = useRouter()
   return (
-    <TFooter my="$8">
+    <TFooter>
       <Container tag="nav" aria-label="social" marginVertical="$7">
         <XStack space="$3" alignItems="center">
           <MenuItem

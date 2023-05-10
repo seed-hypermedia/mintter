@@ -113,7 +113,6 @@ function StyleProvider({
       config={tamaguiConfig}
       defaultTheme={defaultTheme}
       disableRootThemeClass
-      disableInjectCSS
       {...rest}
     >
       <Theme name="mint">{children}</Theme>

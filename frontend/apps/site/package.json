@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "build:vercel": "cd ../../.. && yarn install && yarn build && cd frontend/apps/site && yarn build",
+    "build": "TAMAGUI_TARGET=web next build",
+    "build:vercel": "TAMAGUI_TARGET=web cd ../../.. && yarn install && yarn build && cd frontend/apps/site && yarn build",
     "start": "next start",
     "serve": "NODE_ENV=production next start --port 8151",
     "lint": "next lint",
@@ -66,6 +66,7 @@
     "eslint-config-prettier": "8.8.0",
     "expo-modules-core": "0.6.5",
     "expo-screen-orientation": "4.3.0",
+    "next-transpile-modules": "^10.0.0",
     "prettier": "2.8.7",
     "webpack": "5.80.0"
   },
