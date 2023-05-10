@@ -11,6 +11,7 @@
 }
 
 .editor [data-slate-placeholder='true'] {
+  top: 0;
   white-space: nowrap;
   /* margin-top: -1.5em; */
 }
