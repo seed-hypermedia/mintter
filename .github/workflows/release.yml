@@ -65,7 +65,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn
+           yarn install --immutable
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -251,7 +251,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn
+           yarn install --immutable
 
       - name: Generate static updater manifest
         run:

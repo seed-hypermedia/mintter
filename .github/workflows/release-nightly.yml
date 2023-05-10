@@ -94,6 +94,7 @@ jobs:
           - os: windows-latest
             goarch: amd64
             rust_target: x86_64-pc-windows-msvc
+          
           #- os: windows-latest
           #  goarch: arm64
           #  rust_target: aarch64-pc-windows-msvc
@@ -127,7 +128,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn
+           yarn install --immutable
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -318,7 +319,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn
+           yarn install --immutable
 
       - name: Generate static updater manifest
         run:

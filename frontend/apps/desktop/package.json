@@ -88,7 +88,6 @@
     "slate-hyperscript": "0.77.0",
     "slate-react": "0.94.0",
     "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log.git#commit=b58475bbc410fa78eb69276c62d0b64c91c07914",
-    "tauri-plugin-sentry-api": "https://github.com/JonasKruckenberg/sentry-tauri.git#commit=df123beb03104b6068b3bdd6fc509e3158f7dd30",
     "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store.git#commit=df267506bf12de451762f3f4b7f929ebed1421c9",
     "tiny-secp256k1": "2.2.1",
     "trim-trailing-lines": "2.1.0",

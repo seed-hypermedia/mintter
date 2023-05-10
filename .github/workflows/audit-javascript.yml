@@ -38,7 +38,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn
+           yarn install --immutable
 
       - name: audit
         run: yarn audit

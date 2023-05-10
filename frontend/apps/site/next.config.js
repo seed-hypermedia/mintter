@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const {withTamagui} = require('@tamagui/next-plugin')
 const {join} = require('path')
-const withTM = require('next-transpile-modules') // pass the modules you would like to see transpiled
 // const withBundleAnalyzer = require('@next/bundle-analyzer')
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
@@ -36,7 +35,6 @@ const plugins = [
   //   enabled: process.env.NODE_ENV === 'production',
   //   openAnalyzer: process.env.ANALYZE === 'true',
   // }),
-  withTM(transpilePackages),
   withTamagui({
     config: './tamagui.config.ts',
     components: ['@mintter/ui', 'tamagui'],
@@ -74,6 +72,7 @@ module.exports = function () {
     typescript: {
       ignoreBuildErrors: true,
     },
+    transpilePackages,
     modularizeImports: {
       '@tamagui/lucide-icons': {
         transform: `@tamagui/lucide-icons/dist/esm/icons/{{kebabCase member}}`,
