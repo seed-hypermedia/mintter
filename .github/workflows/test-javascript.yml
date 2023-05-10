@@ -33,7 +33,9 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: yarn
+        run: |
+          yarn set version latest
+          yarn
 
       # - name: Build Frontend Shared packages
       #   run: yarn shared:build

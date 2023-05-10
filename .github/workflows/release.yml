@@ -63,7 +63,9 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: yarn
+        run: |
+          yarn set version latest
+          yarn
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -247,7 +249,9 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: yarn
+        run: |
+          yarn set version latest
+          yarn
 
       - name: Generate static updater manifest
         run:

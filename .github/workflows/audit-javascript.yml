@@ -36,7 +36,9 @@ jobs:
           cache: "yarn"
       
       - name: Install Dependencies
-        run: yarn
+        run: |
+          yarn set version latest
+          yarn
 
       - name: audit
         run: yarn audit
