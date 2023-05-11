@@ -194,11 +194,12 @@ export function PublishShareButton() {
       ? route.draftId
       : ''
   const versionId = route.key == 'publication' ? route.versionId : undefined
-  const {data: pub} = usePublication({
+  const {data: loadedPub} = usePublication({
     documentId,
     versionId,
     enabled: route.key == 'publication',
   })
+  const pub = route.key === 'publication' ? loadedPub : undefined
   const {data: draft} = useDraft({
     documentId,
     routeKey: route.key,
