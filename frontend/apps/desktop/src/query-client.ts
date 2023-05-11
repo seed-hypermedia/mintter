@@ -16,7 +16,7 @@ export const appQueryClient = new QueryClient({
     onError: (err, query) => {
       const queryKey = query.queryKey as string[]
       const errorMessage = ((err as any)?.message || null) as string | null // todo: repent for my sins
-      toast.error(`🚨 Failed to Load ${labelOfQueryKey(queryKey)}`, {
+      toast.error(`Failed to Load ${labelOfQueryKey(queryKey)}`, {
         onClick: () => {
           copyDetails({queryKey, errorMessage})
         },
