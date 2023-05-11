@@ -1,12 +1,29 @@
 import {createPromiseClient} from '@bufbuild/connect'
-import {Publications} from '@mintter/shared'
+import {Publications, WebPublishing} from '@mintter/shared'
 import {transport} from 'client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
 const publicationsClient = createPromiseClient(Publications, transport)
+const webClient = createPromiseClient(WebPublishing, transport)
 
 const publicationRouter = router({
+  getPathInfo: procedure
+    .input(
+      z.object({
+        documentId: z.string(),
+        versionId: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      const records = await webClient.listWebPublicationRecords({
+        documentId: input.documentId,
+        version: input.versionId,
+      })
+      return {
+        webPublications: records.publications,
+      }
+    }),
   get: procedure
     .input(
       z.object({
@@ -19,6 +36,7 @@ const publicationRouter = router({
         documentId: input.documentId,
         version: input.versionId,
       })
+
       return {
         publication: pub.toJson(),
       }

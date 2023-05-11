@@ -6,6 +6,7 @@ import {
 import Link from 'next/link'
 import {useMemo} from 'react'
 import {Leaf} from '.'
+import {trpc} from '../trpc'
 
 type ElementLinkProps = {
   // 'data-type': string
@@ -13,22 +14,36 @@ type ElementLinkProps = {
 }
 
 export function ElementLink({element, ...props}: ElementLinkProps) {
+  let [docId, version, block] = getIdsfromUrl(element.url)
+
+  const pathInfo = trpc.publication.getPathInfo.useQuery(
+    {
+      documentId: docId,
+      version,
+    },
+    {
+      enabled: !!docId,
+    },
+  )
+  const localPathName = pathInfo.data?.webPublications?.find((p) => !!p)?.path
   let url = useMemo(() => {
-    if (isMintterScheme(element.url)) {
-      let [docId, version, block] = getIdsfromUrl(element.url)
-      if (version) {
-        if (block) {
-          return `/p/${docId}?v=${version}#${block}`
-        } else {
-          return `/p/${docId}?v=${version}`
-        }
-      } else {
-        return `/p/${docId}`
+    if (docId) {
+      let url = `/p/${docId}`
+      if (localPathName) {
+        if (localPathName === '/' || localPathName === '') url = '/'
+        else url = `/${localPathName}`
       }
+      if (version) {
+        url += `?v=${version}`
+      }
+      if (block) {
+        url += `#${block}`
+      }
+      return url
     } else {
       return null
     }
-  }, [element.url])
+  }, [docId, version, block, localPathName])
 
   let children = (
     <>
