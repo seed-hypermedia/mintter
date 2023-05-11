@@ -1,7 +1,28 @@
 import {listen, send} from '@app/ipc'
-import {QueryClient, QueryKey} from '@tanstack/react-query'
+import {QueryCache, QueryClient, QueryKey} from '@tanstack/react-query'
+import {toast} from './toast'
+import {labelOfQueryKey, queryKeys} from './models/query-keys'
+import {JsonValue} from '@bufbuild/protobuf'
+import {copyTextToClipboard} from './utils/copy-to-clipboard'
+
+function copyDetails(randomDetails: JsonValue) {
+  const detailString = JSON.stringify(randomDetails, null, 2)
+  copyTextToClipboard(detailString)
+  toast.success(`📋 Copied details to clipboard`)
+}
 
 export const appQueryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (err, query) => {
+      const queryKey = query.queryKey as string[]
+      const errorMessage = ((err as any)?.message || null) as string | null // todo: repent for my sins
+      toast.error(`🚨 Failed to Load ${labelOfQueryKey(queryKey)}`, {
+        onClick: () => {
+          copyDetails({queryKey, errorMessage})
+        },
+      })
+    },
+  }),
   defaultOptions: {
     queries: {
       networkMode: 'offlineFirst',

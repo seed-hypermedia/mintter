@@ -1,10 +1,14 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-// organized by the model file that is responsible for querying + mutating the keys
-
-// note the arguments to query keys that are mentioned in comments
+import {abbreviateCid} from '@app/utils/abbreviate'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {QueryKey} from '@tanstack/react-query'
 
 export const queryKeys = {
+  // Organized by the model file that is responsible for querying + mutating the keys
+
+  // NOTE: Arguments to query keys documented in comments
+
   // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
 
@@ -42,3 +46,68 @@ export const queryKeys = {
   // web-links
   GET_URL: 'GET_URL',
 } as const
+
+export function labelOfQueryKey(key: QueryKey) {
+  const discriminator = key[0]
+  const arg1 = key[1] as string | undefined
+  switch (discriminator) {
+    // daemon
+    case queryKeys.GET_DAEMON_INFO:
+      return 'Daemon Info'
+
+    // networking
+    case queryKeys.GET_PEERS:
+      return 'Peers'
+    case queryKeys.GET_PEER_INFO:
+      return `Peer ${abbreviateCid(arg1)}`
+
+    // accounts
+    case queryKeys.GET_ALL_ACCOUNTS:
+      return 'All Accounts'
+    case queryKeys.GET_ACCOUNT:
+      return `Account ${abbreviateCid(arg1)}`
+
+    // sites
+    case queryKeys.GET_SITES:
+      return 'Sites'
+    case queryKeys.GET_SITE_INFO:
+      return `Site ${hostnameStripProtocol(arg1)}`
+    case queryKeys.GET_SITE_MEMBERS:
+      return `Site Members ${hostnameStripProtocol(arg1)}`
+    case queryKeys.GET_SITE_PUBLICATIONS:
+      return `Site Publications ${hostnameStripProtocol(arg1)}`
+    case queryKeys.GET_DOC_SITE_PUBLICATIONS:
+      return `Web Publication ${abbreviateCid(arg1)}`
+
+    // documents
+    case queryKeys.GET_DRAFT_LIST:
+      return 'Drafts'
+    case queryKeys.GET_PUBLICATION_LIST:
+      return 'Publications'
+    case queryKeys.GET_DRAFT:
+      return `Draft ${abbreviateCid(arg1)}`
+    case queryKeys.GET_EDITOR_DRAFT:
+      return `Editor Draft ${abbreviateCid(arg1)}`
+    case queryKeys.GET_PUBLICATION:
+      return `Publication ${abbreviateCid(arg1)}`
+
+    // comments
+    case queryKeys.GET_PUBLICATION_CONVERSATIONS:
+      return `Conversations in Doc ${abbreviateCid(arg1)}`
+
+    // changes
+    case queryKeys.PUBLICATION_CHANGES:
+      return `Changes of Doc ${abbreviateCid(arg1)}`
+
+    // content-graph
+    case queryKeys.PUBLICATION_CITATIONS:
+      return `Citations of Doc ${abbreviateCid(arg1)}`
+
+    // web-links
+    case queryKeys.GET_URL:
+      return `URL ${arg1}`
+
+    default:
+      return 'unknown'
+  }
+}

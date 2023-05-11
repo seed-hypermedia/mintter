@@ -10,17 +10,10 @@ import appError from '@app/errors'
 import {ConnectError} from '@bufbuild/connect-web'
 
 export function useAccount(accountId?: string) {
-  let isDaemonReady = useDaemonReady()
   return useQuery<Account, ConnectError>({
-    enabled: isDaemonReady && !!accountId,
+    enabled: !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
     queryFn: () => accountsClient.getAccount({id: accountId}),
-    onError: (err) => {
-      appError(
-        `useAccount Error code ${err.code}: ${err.message} (account ${accountId})`,
-        err.metadata,
-      )
-    },
     useErrorBoundary: () => false,
   })
 }
