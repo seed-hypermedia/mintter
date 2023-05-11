@@ -164,10 +164,6 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		return nil, status.Errorf(codes.NotFound, "no draft for entity %s", eid)
 	}
 
-	if len(entity.AppliedChanges()) != 1 {
-		panic("TODO: implement updating draft for published shit")
-	}
-
 	del, err := api.getDelegation(ctx)
 	if err != nil {
 		return nil, err

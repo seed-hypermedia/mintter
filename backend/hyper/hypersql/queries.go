@@ -177,7 +177,8 @@ func generateQueries() error {
 				s.HyperChangesViewSize,
 			), '\n',
 			"FROM", qb.Concat(s.HyperChangesView, ", ", "json_each(", qb.Var("cset", sgen.TypeBytes), ") AS cset"), '\n',
-			"WHERE", s.HyperChangesViewBlobID, "= cset.value",
+			"WHERE", s.HyperChangesViewBlobID, "= cset.value", '\n',
+			"ORDER BY", s.HyperChangesViewHlcTime,
 		),
 		qb.MakeQuery(s.Schema, "ChangesResolveHeads", sgen.QueryKindSingle,
 			"WITH RECURSIVE changeset (change) AS", qb.SubQuery(
@@ -215,6 +216,13 @@ func generateQueries() error {
 				"FROM", s.HyperChanges,
 				"WHERE", s.HyperChangesEntity, "=", qb.VarCol(s.HyperChangesEntity),
 			),
+		),
+		qb.MakeQuery(s.Schema, "ChangesCountChildren", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultExpr("COUNT()", "count", sgen.TypeInt),
+			), '\n',
+			"FROM", s.HyperChangeDeps, '\n',
+			"WHERE", s.HyperChangeDepsParent, "=", qb.VarCol(s.HyperChangeDepsParent),
 		),
 
 		qb.MakeQuery(s.Schema, "LinksInsert", sgen.QueryKindExec,

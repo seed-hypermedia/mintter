@@ -228,6 +228,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 	defer release()
 
 	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+
 		oldid, err := bs.bs.deleteBlock(conn, old)
 		if err != nil {
 			return err

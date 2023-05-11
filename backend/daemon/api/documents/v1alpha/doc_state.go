@@ -39,10 +39,6 @@ func newDraftMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) 
 		return nil, fmt.Errorf("must provide delegation to mutate a document")
 	}
 
-	if len(e.AppliedChanges()) > 1 {
-		panic("TODO: mutate with existing changes")
-	}
-
 	if len(e.Heads()) > 1 {
 		panic("BUG: more than one draft head")
 	}
@@ -216,13 +212,18 @@ func (dm *draftMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb hype
 
 	dm.cleanupPatch()
 
+	if dm.prevDraft.Defined() {
+		hb, err = dm.e.ReplaceChange(dm.prevDraft, dm.ts, dm.signer, dm.delegation, dm.patch)
+		if err != nil {
+			return hb, err
+		}
+
+		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.prevDraft, hb)
+	}
+
 	hb, err = dm.e.CreateChange(dm.ts, dm.signer, dm.delegation, dm.patch)
 	if err != nil {
 		return hb, err
-	}
-
-	if dm.prevDraft.Defined() {
-		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.prevDraft, hb)
 	}
 
 	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
@@ -373,6 +374,7 @@ func (dm *draftMutation) hydrate(ctx context.Context, blobs *hyper.Storage) (*do
 			}
 
 			docpb.Editors = append(docpb.Editors, kd.Issuer.String())
+			seenEditors[del] = struct{}{}
 		}
 		sort.Strings(docpb.Editors)
 	}

@@ -147,18 +147,63 @@ func (e *Entity) NextTimestamp() hlc.Time {
 
 // CreateChange entity creating a change blob, and applying it to the internal state.
 func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
-	var heads []cid.Cid
-	if len(e.heads) > 0 {
-		heads := maps.Keys(e.heads)
-		slices.SortFunc(heads, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+	hb, err = NewChange(e.id, maps.Keys(e.heads), ts, signer, delegation, patch)
+	if err != nil {
+		return hb, err
 	}
+
+	if err := e.ApplyChange(hb.CID, hb.Decoded.(Change)); err != nil {
+		return hb, err
+	}
+
+	return hb, nil
+}
+
+// ReplaceChange creates a new change instead of an existing one. The change to replace must be the current head.
+func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
+	if len(e.heads) != 1 {
+		return hb, fmt.Errorf("must only have one head change to replace")
+	}
+
+	if _, ok := e.heads[old]; !ok {
+		return hb, fmt.Errorf("change to replace must be the current head")
+	}
+
+	prev, ok := e.applied[old]
+	if !ok {
+		return hb, fmt.Errorf("change to be replaced must be applied")
+	}
+
+	e.state.ForgetState(prev.HLCTime.Pack(), OriginFromCID(old))
+	delete(e.applied, old)
+	delete(e.heads, old)
+
+	hb, err = NewChange(e.id, prev.Deps, ts, signer, delegation, patch)
+	if err != nil {
+		return hb, err
+	}
+
+	if err := e.ApplyChange(hb.CID, hb.Decoded.(Change)); err != nil {
+		return hb, err
+	}
+
+	return hb, nil
+}
+
+// NewChanges creates a new Change blob.
+func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
+	// Make sure deps field is not present in the patch if there're no deps.
+	if len(deps) == 0 {
+		deps = nil
+	}
+	slices.SortFunc(deps, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
 
 	ch := Change{
 		Type:       TypeChange,
-		Deps:       heads,
+		Entity:     eid,
+		Deps:       deps,
 		Delegation: delegation,
 		HLCTime:    ts,
-		Entity:     e.id,
 		Patch:      patch,
 		Signer:     signer.Principal(),
 	}
@@ -175,10 +220,6 @@ func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.C
 
 	hb, err = EncodeBlob(ch.Type, ch)
 	if err != nil {
-		return hb, err
-	}
-
-	if err := e.ApplyChange(hb.CID, ch); err != nil {
 		return hb, err
 	}
 

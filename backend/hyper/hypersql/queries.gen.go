@@ -538,7 +538,8 @@ type ChangesListFromChangeSetResult struct {
 func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte) ([]ChangesListFromChangeSetResult, error) {
 	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
 FROM hyper_changes_view, json_each(:cset) AS cset
-WHERE hyper_changes_view.blob_id = cset.value`
+WHERE hyper_changes_view.blob_id = cset.value
+ORDER BY hyper_changes_view.hlc_time`
 
 	var out []ChangesListFromChangeSetResult
 
@@ -655,6 +656,38 @@ WHERE blobs.id IN (SELECT hyper_changes.blob FROM hyper_changes WHERE hyper_chan
 	}
 
 	return err
+}
+
+type ChangesCountChildrenResult struct {
+	Count int64
+}
+
+func ChangesCountChildren(conn *sqlite.Conn, hyperChangeDepsParent int64) (ChangesCountChildrenResult, error) {
+	const query = `SELECT COUNT() AS count
+FROM hyper_change_deps
+WHERE hyper_change_deps.parent = :hyperChangeDepsParent`
+
+	var out ChangesCountChildrenResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hyperChangeDepsParent", hyperChangeDepsParent)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesCountChildren: more than one result return for a single-kind query")
+		}
+
+		out.Count = stmt.ColumnInt64(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesCountChildren: %w", err)
+	}
+
+	return out, err
 }
 
 func LinksInsert(conn *sqlite.Conn, hyperLinksSourceBlob int64, hyperLinksRel string, hyperLinksTargetBlob int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {

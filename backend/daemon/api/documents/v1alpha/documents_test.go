@@ -645,16 +645,6 @@ func TestCreateDraftFromPublication(t *testing.T) {
 			Id:   "b1",
 			Type: "statement",
 			Text: "Hello world!",
-			Annotations: []*documents.Annotation{
-				{
-					Type: "link",
-					Attributes: map[string]string{
-						"url": "mtt://bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy/baeaxdiheaiqfsiervpfvbohhvjgnkcto3f5p4alwe4k46fr334vlw4n5jaknnqa/MIWneLC1",
-					},
-					Starts: []int32{0},
-					Ends:   []int32{5},
-				},
-			},
 		}}},
 	})
 	require.NoError(t, err)

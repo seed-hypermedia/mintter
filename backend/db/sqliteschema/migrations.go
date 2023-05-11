@@ -112,7 +112,6 @@ var migrations = []string{
 			blobs.size AS size
 		FROM hyper_changes
 		JOIN blobs ON blobs.id = hyper_changes.blob
-		ORDER BY hlc_time
 	;`,
 
 	// Draft changes. Only one draft is allowed for now.
