@@ -5,6 +5,7 @@ import {
   SizableTextProps,
   ListItem,
   useTheme,
+  ListItemProps,
 } from '@mintter/ui'
 import {Button} from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
@@ -105,38 +106,16 @@ function Label(props: SizableTextProps) {
 }
 
 function Item({children, title, icon, iconAfter, disabled, ...props}: any) {
-console.log('ITEM', props)
-
   return (
     <DropdownMenuPrimitive.Item {...props} disabled={disabled} asChild>
-      <ListItem
-        hoverTheme
-        pressTheme
-        focusTheme
-        paddingVertical="$2"
-        paddingHorizontal="$4"
-        textAlign="left"
-        outlineColor="transparent"
-        space="$2"
-        opacity={disabled ? 0.5 : 1}
-        userSelect="none"
-        cursor={disabled ? 'not-allowed' : 'pointer'}
-        title={
-          title ? (
-            <SizableText
-              fontSize="600"
-              cursor={disabled ? 'not-allowed' : 'pointer'}
-              userSelect="none"
-            >
-              {title}
-            </SizableText>
-          ) : undefined
-        }
+      <MenuItem
+        title={title}
         icon={icon}
         iconAfter={iconAfter}
+        disabled={disabled}
       >
         {children}
-      </ListItem>
+      </MenuItem>
     </DropdownMenuPrimitive.Item>
   )
 }
@@ -170,3 +149,44 @@ export const Dropdown = {
 //     backgroundColor: '$base-component-bg-normal',
 //   },
 // })
+
+export function MenuItem({
+  disabled,
+  title,
+  icon,
+  iconAfter,
+  children,
+  ...props
+}: ListItemProps) {
+  return (
+    <ListItem
+      hoverTheme
+      pressTheme
+      focusTheme
+      paddingVertical="$2"
+      paddingHorizontal="$4"
+      textAlign="left"
+      outlineColor="transparent"
+      space="$2"
+      opacity={disabled ? 0.5 : 1}
+      userSelect="none"
+      cursor={disabled ? 'not-allowed' : 'pointer'}
+      title={
+        title ? (
+          <SizableText
+            fontSize="600"
+            cursor={disabled ? 'not-allowed' : 'pointer'}
+            userSelect="none"
+          >
+            {title}
+          </SizableText>
+        ) : undefined
+      }
+      icon={icon}
+      iconAfter={iconAfter}
+      {...props}
+    >
+      {children}
+    </ListItem>
+  )
+}

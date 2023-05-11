@@ -3,7 +3,7 @@ import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
 import {Button, Heading, YStack} from '@mintter/ui'
-import {lazy} from 'react'
+import {lazy, useMemo} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
@@ -17,8 +17,6 @@ var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
-
-
 
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
@@ -45,9 +43,9 @@ function getPageComponent(navRoute: NavRoute) {
 
 export default function Main() {
   const navR = useNavRoute()
-  const isSettings = navR.key === 'settings'
+  const isSettings = navR.key == 'settings'
   const navigate = useNavigate()
-  const PageComponent = getPageComponent(navR)
+  const PageComponent = useMemo(() => getPageComponent(navR), [navR.key])
 
   useListen<NavRoute>(
     'open_route',

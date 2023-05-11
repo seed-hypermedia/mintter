@@ -14,11 +14,16 @@ export function SiteHead({
 }) {
   return (
     <XStack>
-      <Container my="$7" mx="$0" px="$4">
-        <XStack>
+      <Container
+        marginVertical="$7"
+        marginHorizontal="$0"
+        paddingHorizontal="$4"
+        flex={1}
+      >
+        <XStack alignItems="center" justifyContent="space-between">
           <NextLink href="/" aria-label="home page">
             <SiteTitle color="$color" cursor="pointer">
-              {siteInfo?.title}
+              {title || siteInfo?.title || SITE_NAME}
             </SiteTitle>
           </NextLink>
         </XStack>

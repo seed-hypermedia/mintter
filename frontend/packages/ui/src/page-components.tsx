@@ -1,6 +1,8 @@
-import {styled, YStack} from 'tamagui'
+import {styled, YStack, XStack} from 'tamagui'
 
-export const ArticleContainer = styled(YStack, {})
+export const ArticleContainer = styled(XStack, {
+  
+})
 
 export const MainContainer = styled(YStack, {
   paddingRight: '$5',
@@ -13,10 +15,11 @@ export const MainContainer = styled(YStack, {
 })
 
 export const SideContainer = styled(YStack, {
-  maxWidth: 300,
+  // maxWidth: 300,
   width: '100%',
+  gap: '$4',
   $gtSm: {
     width: '25%',
-    maxWidth: 300,
+    // maxWidth: 300,
   },
 })

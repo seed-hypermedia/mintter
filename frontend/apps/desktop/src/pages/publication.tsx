@@ -95,7 +95,7 @@ export default function PublicationPage() {
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
-  let [focusBlock, setFocusBlock] = useState(() => blockId)
+  let [focusBlock] = useState(() => blockId)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   const {data: changes} = useDocChanges(status == 'success' ? docId : undefined)

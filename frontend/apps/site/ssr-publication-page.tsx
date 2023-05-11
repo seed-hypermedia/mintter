@@ -88,9 +88,10 @@ export default function PublicationPage({
             />
           </Head>
           <ArticleContainer
-            flexDirection={media.gtSm ? 'row' : 'column-reverse'}
+            flexDirection={media.gtSm ? 'row' : 'column'}
+            paddingRight={media.gtSm ? '$4' : 0}
           >
-            <MainContainer>
+            <MainContainer flex={3}>
               {slateChildren ? (
                 <SlateReactPresentation
                   value={[slateChildren]}
@@ -101,7 +102,7 @@ export default function PublicationPage({
                 <p>Empty document.</p>
               )}
             </MainContainer>
-            <SideContainer>
+            <SideContainer flex={1}>
               {metadata ? (
                 <>
                   <PublicationMetadata

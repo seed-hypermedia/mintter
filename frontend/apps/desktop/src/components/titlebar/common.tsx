@@ -1,11 +1,12 @@
 import {draftsClient} from '@app/api-clients'
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown, MenuItem} from '@app/editor/dropdown'
 import appError from '@app/errors'
 import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
 import {useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
+import {usePopoverState} from '@app/use-popover-state'
 import {
   PublicationRoute,
   useNavigate,
@@ -26,7 +27,10 @@ import {
   File,
   Forward,
   Globe,
+  ListItem,
+  ListItemProps,
   Menu,
+  Popover,
   Separator,
   Settings,
   SizableText,
@@ -34,6 +38,7 @@ import {
   User,
   XGroup,
   XStack,
+  YGroup,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useState} from 'react'
@@ -131,15 +136,15 @@ export function SitesNavDropdownItems() {
   if (sites.data.length == 0) return null
   return (
     <>
-      <Separator />
       {sites.data.map((site) => (
-        <Dropdown.Item
-          key={site.hostname}
-          onSelect={() => navigate({key: 'site', hostname: site.hostname})}
-          asChild
-          icon={Globe}
-          title={hostnameStripProtocol(site.hostname)}
-        />
+        <YGroup.Item>
+          <MenuItem
+            key={site.hostname}
+            onPress={() => navigate({key: 'site', hostname: site.hostname})}
+            icon={Globe}
+            title={hostnameStripProtocol(site.hostname)}
+          />
+        </YGroup.Item>
       ))}
     </>
   )
@@ -150,9 +155,9 @@ export function AccountDropdownItem() {
   const route = useNavRoute()
   const {data: account} = useMyAccount()
   return (
-    <Dropdown.Item
+    <MenuItem
       disabled={route.key == 'account' && route.accountId == account?.id}
-      onSelect={() => {
+      onPress={() => {
         if (!account?.id) {
           appError('Account has not loaded.')
           return
@@ -175,75 +180,114 @@ export function NavMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
+  const popoverState = usePopoverState()
   return (
     <XStack paddingRight="$2">
-      <Dropdown.Root>
-        <Dropdown.Trigger icon={Menu} />
-
-        <Dropdown.Portal>
-          <Dropdown.Content side="bottom" align="start">
-            <AccountDropdownItem />
-            <Separator />
-            <Dropdown.Item
-              disabled={route.key == 'home'}
-              data-testid="menu-item-inbox"
-              onSelect={() => navigate({key: 'home'})}
-              title="All Publications"
-              icon={File}
-              iconAfter={
-                <SizableText size="$1" color="$mint5">
-                  &#8984; 1
-                </SizableText>
-              }
-            />
-            <Dropdown.Item
-              disabled={route.key == 'drafts'}
-              data-testid="menu-item-drafts"
-              onSelect={() => navigate({key: 'drafts'})}
-              icon={Draft}
-              title="Drafts"
-              iconAfter={
-                <SizableText size="$1" color="$mint5">
-                  &#8984; 8
-                </SizableText>
-              }
-            />
-            <Dropdown.Item
-              disabled={route.key == 'connections'}
-              onSelect={() => navigate({key: 'connections'})}
-              icon={User}
-              title="Connections"
-              iconAfter={
-                <SizableText size="$1" color="$mint5">
-                  &#8984; 9
-                </SizableText>
-              }
-            />
+      <Popover {...popoverState} placement="bottom-start">
+        <Popover.Trigger asChild>
+          <Button size="$2" icon={Menu} />
+        </Popover.Trigger>
+        <Popover.Content
+          padding={0}
+          size="$5"
+          enterStyle={{x: 0, y: -1, opacity: 0}}
+          exitStyle={{x: 0, y: -1, opacity: 0}}
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+        >
+          <YGroup separator={<Separator />} elevation="$4">
+            <YGroup.Item>
+              <AccountDropdownItem />
+            </YGroup.Item>
+            <YGroup.Item>
+              <MenuItem
+                disabled={route.key == 'home'}
+                data-testid="menu-item-inbox"
+                onPress={() => {
+                  navigate({key: 'home'})
+                  popoverState.onOpenChange(false)
+                }}
+                title="All Publications"
+                icon={File}
+                iconAfter={
+                  <SizableText size="$1" color="$mint5">
+                    &#8984; 1
+                  </SizableText>
+                }
+              />
+            </YGroup.Item>
+            <YGroup.Item>
+              <MenuItem
+                disabled={route.key == 'drafts'}
+                data-testid="menu-item-drafts"
+                onPress={() => {
+                  navigate({key: 'drafts'})
+                  popoverState.onOpenChange(false)
+                }}
+                icon={Draft}
+                title="Drafts"
+                iconAfter={
+                  <SizableText size="$1" color="$mint5">
+                    &#8984; 8
+                  </SizableText>
+                }
+              />
+            </YGroup.Item>
+            <YGroup.Item>
+              <MenuItem
+                disabled={route.key == 'connections'}
+                onPress={() => {
+                  navigate({key: 'connections'})
+                  popoverState.onOpenChange(false)
+                }}
+                icon={User}
+                title="Connections"
+                iconAfter={
+                  <SizableText size="$1" color="$mint5">
+                    &#8984; 9
+                  </SizableText>
+                }
+              />
+            </YGroup.Item>
             <SitesNavDropdownItems />
-            <Separator />
-            <Dropdown.Item
-              onSelect={() => send('open_quick_switcher')}
-              title="Quick Switcher"
-              iconAfter={
-                <SizableText size="$1" color="$mint5">
-                  &#8984; K
-                </SizableText>
-              }
-            />
-
-            <Dropdown.Item
-              onSelect={() => spawn({key: 'settings'})}
-              icon={Settings}
-              title="Settings"
-              iconAfter={
-                <SizableText size="$1" color="$mint5">
-                  &#8984; ,
-                </SizableText>
-              }
-            />
-          </Dropdown.Content>
-        </Dropdown.Portal>
-      </Dropdown.Root>
+            <YGroup.Item>
+              <MenuItem
+                onPress={() => {
+                  send('open_quick_switcher')
+                  popoverState.onOpenChange(false)
+                }}
+                title="Quick Switcher"
+                iconAfter={
+                  <SizableText size="$1" color="$mint5">
+                    &#8984; K
+                  </SizableText>
+                }
+              />
+            </YGroup.Item>
+            <YGroup.Item>
+              <MenuItem
+                onPress={() => {
+                  spawn({key: 'settings'})
+                  popoverState.onOpenChange(false)
+                }}
+                icon={Settings}
+                title="Settings"
+                iconAfter={
+                  <SizableText size="$1" color="$mint5">
+                    &#8984; ,
+                  </SizableText>
+                }
+              />
+            </YGroup.Item>
+          </YGroup>
+        </Popover.Content>
+      </Popover>
     </XStack>
   )
 }

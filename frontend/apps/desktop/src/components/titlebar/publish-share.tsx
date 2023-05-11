@@ -74,12 +74,12 @@ function PublishedURLs({
       {publications.data?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
         const displayURL = pub.path
-          ? pub.path === '/'
+          ? pub.path == '/'
             ? shortHost
             : `${shortHost}/${pub.path}`
           : `${shortHost}/p/${pub.documentId}`
         const fullURL = pub.path
-          ? pub.path === '/'
+          ? pub.path == '/'
             ? pub.hostname
             : `${pub.hostname}/${pub.path}?v=${pub.version}`
           : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`

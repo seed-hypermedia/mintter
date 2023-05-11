@@ -33,7 +33,7 @@ const MEDIA_HOSTNAME =
   process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_GRPC_HOST : ''
 
 export function useRenderElement() {
-  return useCallback(({children, element, attributes}: RenderElementProps) => {
+  return useCallback(({children, element}: RenderElementProps) => {
     switch ((element as MttastNode).type) {
       case 'group':
       case 'unorderedList':
@@ -49,18 +49,15 @@ export function useRenderElement() {
           </Group>
         )
       case 'statement':
-        return <Block id={element.id}>{children}</Block>
       case 'heading':
-        return <Block id={element.id}>{children}</Block>
       case 'blockquote':
-        return (
-          <Block type={element.type} id={element.id}>
-            {children}
-          </Block>
-        )
       case 'code':
         return (
-          <Block id={element.id} lang={(element as Code).lang}>
+          <Block
+            type={element.type}
+            id={element.id}
+            lang={element.type == 'code' ? element.lang : undefined}
+          >
             {children}
           </Block>
         )

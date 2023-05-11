@@ -1,4 +1,11 @@
-import {Paragraph, Text, useMedia, FontSizeTokens, SiteAside} from '@mintter/ui'
+import {
+  Paragraph,
+  Text,
+  useMedia,
+  FontSizeTokens,
+  SiteAside,
+  SizableText,
+} from '@mintter/ui'
 import {Publication, formattedDate, Account} from '@mintter/shared'
 import {useMemo} from 'react'
 
@@ -14,9 +21,7 @@ export function PublicationMetadata({
   return publication ? (
     <SiteAside>
       <Paragraph size={size}>
-        <Text fontFamily="$body" o={0.5}>
-          author:&nbsp;
-        </Text>
+        <SizableText opacity={0.5}>author:&nbsp;</SizableText>
         {editors
           ?.map((editor) => {
             if (typeof editor === 'string') return editor
@@ -27,17 +32,13 @@ export function PublicationMetadata({
           .join(', ')}
       </Paragraph>
       <Paragraph size={size}>
-        <Text fontFamily="$body" o={0.5}>
-          Published at:&nbsp;
-        </Text>
+        <SizableText o={0.5}>Published at:&nbsp;</SizableText>
         {publication?.document?.publishTime
           ? formattedDate(publication.document.publishTime)
           : null}
       </Paragraph>
       <Paragraph size={size}>
-        <Text fontFamily="$body" o={0.5}>
-          Last update:&nbsp;
-        </Text>
+        <SizableText o={0.5}>Last update:&nbsp;</SizableText>
         {publication?.document?.updateTime
           ? formattedDate(publication.document.updateTime)
           : null}

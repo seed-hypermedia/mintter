@@ -30,6 +30,11 @@ const options = [
   {value: 'other', label: 'Other'},
 ]
 
+const LN_HOSTNAME =
+  process.env.NODE_ENV == 'development'
+    ? 'https://ln.testnet.mintter.com'
+    : process.env.NEXT_PUBLIC_LN_HOST
+
 export function WebTipping({
   publication,
   author,
@@ -95,7 +100,7 @@ export function WebTipping({
 
     try {
       let res = await fetch(
-        `https://ln.testnet.mintter.com/v2/invoice?source=${id}${editorsUri}&amount=${
+        `${LN_HOSTNAME}/v2/invoice?source=${id}${editorsUri}&amount=${
           amount * 1000
         }`,
       )

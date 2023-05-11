@@ -1,4 +1,4 @@
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown, MenuItem} from '@app/editor/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -16,9 +16,11 @@ import {
   Delete,
   ExternalLink,
   MoreHorizontal,
+  Popover,
   Separator,
   Text,
   XStack,
+  YGroup,
 } from '@mintter/ui'
 import {MouseEvent} from 'react'
 import {toast} from 'react-hot-toast'
@@ -120,44 +122,63 @@ export function PublicationListItem({
           : '...'}
       </Text>
       <XStack>
-        <Dropdown.Root {...popoverState}>
-          <Dropdown.Trigger icon={MoreHorizontal} circular data-trigger />
-          <Dropdown.Portal>
-            <Dropdown.Content
-              align="end"
-              data-testid="library-item-dropdown-root"
-            >
-              <Dropdown.Item
-                data-testid="copy-item"
-                onSelect={onCopy}
-                asChild
-                title="Copy Document ID"
-                icon={Copy}
-              />
-              <Dropdown.Item
-                data-testid="new-window-item"
-                onSelect={() =>
-                  spawn({
-                    key: 'publication',
-                    documentId: docId,
-                    versionId: publication.version,
-                  })
-                }
-                title="Open in new Window"
-                icon={ExternalLink}
-              />
+        <Popover placement="bottom-end" {...popoverState}>
+          <Popover.Trigger asChild>
+            <Button size="$2" icon={MoreHorizontal} circular data-trigger />
+          </Popover.Trigger>
+
+          <Popover.Content
+            data-testid="library-item-dropdown-root"
+            padding={0}
+            size="$5"
+            enterStyle={{x: 0, y: -1, opacity: 0}}
+            exitStyle={{x: 0, y: -1, opacity: 0}}
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+          >
+            <YGroup elevation="$4" borderColor="transparent">
+              <YGroup.Item>
+                <MenuItem
+                  data-testid="copy-item"
+                  onPress={onCopy}
+                  title="Copy Document ID"
+                  icon={Copy}
+                />
+              </YGroup.Item>
+              <YGroup.Item>
+                <MenuItem
+                  data-testid="new-window-item"
+                  onPress={() =>
+                    spawn({
+                      key: 'publication',
+                      documentId: docId,
+                      versionId: publication.version,
+                    })
+                  }
+                  title="Open in new Window"
+                  icon={ExternalLink}
+                />
+              </YGroup.Item>
               <Separator />
-              <Dropdown.Item
-                title="Delete Publication"
-                onSelect={() => {
-                  popoverState.onOpenChange(false)
-                  dialogState.onOpenChange(true)
-                }}
-                icon={Delete}
-              />
-            </Dropdown.Content>
-          </Dropdown.Portal>
-        </Dropdown.Root>
+              <YGroup.Item>
+                <MenuItem
+                  title="Delete Publication"
+                  onPress={() => {
+                    popoverState.onOpenChange(false)
+                    dialogState.onOpenChange(true)
+                  }}
+                  icon={Delete}
+                />
+              </YGroup.Item>
+            </YGroup>
+          </Popover.Content>
+        </Popover>
         <DeleteDialog
           {...dialogState}
           title="Delete document"

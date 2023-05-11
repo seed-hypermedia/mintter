@@ -40,7 +40,12 @@ export function GatewayHead({title}: {title?: string}) {
       <Head>
         <title>{title ? `${title} | ${SITE_NAME}` : SITE_NAME}</title>
       </Head>
-      <Container my="$7" mx="$0" px="$4">
+      <Container
+        marginVertical="$7"
+        marginHorizontal="$0"
+        paddingHorizontal="$4"
+        flex={1}
+      >
         <XStack ai="center" jc="space-between">
           <Link href="/" aria-label="home page">
             <YStack cur="pointer">
