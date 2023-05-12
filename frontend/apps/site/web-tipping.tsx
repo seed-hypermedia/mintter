@@ -58,7 +58,6 @@ export function WebTipping({
       ? [publication.document?.author]
       : [],
   )
-  console.log('🚀 ~ file: web-tipping.tsx:56 ~ localEditors:', localEditors)
 
   /**
    *
@@ -245,7 +244,9 @@ export function WebTipping({
                 >
                   {localEditors.map((editor: Account | string) => {
                     return (
-                      <YGroup.Item>
+                      <YGroup.Item
+                        key={typeof editor === 'string' ? editor : editor.id}
+                      >
                         <ListItem
                           size="$2"
                           paddingHorizontal="$3"
@@ -291,7 +292,7 @@ export function WebTipping({
                 view invoice
               </Button>
             )}
-            {error && (
+            {error ? (
               <Card theme="red" margin="$2" borderRadius="$1">
                 <XStack
                   space
@@ -305,7 +306,7 @@ export function WebTipping({
                   </SizableText>
                 </XStack>
               </Card>
-            )}
+            ) : null}
             <Button
               theme="green"
               onPress={handlePayment}
@@ -342,7 +343,7 @@ export function WebTipping({
             exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
             space
           >
-            <Dialog.Title>Here's your invoice!</Dialog.Title>
+            <Dialog.Title>Here&apos;s your invoice!</Dialog.Title>
             <Dialog.Description>
               Now scan this with your wallet and pay to the creators!
             </Dialog.Description>
