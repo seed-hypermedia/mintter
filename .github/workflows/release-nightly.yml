@@ -128,7 +128,8 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          YARN_CHECKSUM_BEHAVIOR=ignore yarn install --immutable
+          yarn cache clean
+          yarn install --immutable
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -319,7 +320,8 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-           yarn install --immutable
+          yarn cache clean
+          yarn install --immutable
 
       - name: Generate static updater manifest
         run:

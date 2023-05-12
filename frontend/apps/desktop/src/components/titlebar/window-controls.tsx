@@ -1,26 +1,25 @@
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useState} from 'react'
-import {Button} from '@mintter/ui'
+import {Button, Close, useTheme} from '@mintter/ui'
+import {tokens} from '@mintter/ui/types/tamagui.config'
 
 export function CloseButton() {
   const win = getCurrent()
   return (
-    <ButtonWrapper aria-label="close" tabIndex={-1} onPress={() => win.close()}>
-      <svg
-        aria-hidden="true"
-        version="1.1"
-        viewBox="0 0 10 10"
-        width={10}
-        height={10}
-      >
-        <path d="M 0,0 0,0.7 4.3,5 0,9.3 0,10 0.7,10 5,5.7 9.3,10 10,10 10,9.3 5.7,5 10,0.7 10,0 9.3,0 5,4.3 0.7,0 Z" />
-      </svg>
-    </ButtonWrapper>
+    <ButtonWrapper
+      aria-label="close"
+      tabIndex={-1}
+      onPress={() => win.close()}
+      color="$color"
+      icon={Close}
+    />
   )
 }
 
 export function MaximizeOrRestoreButton() {
   const win = getCurrent()
+  const theme = useTheme()
+  console.log('THEME', theme)
 
   const [isMaximized, setIsMaximized] = useState<boolean | undefined>()
   useEffect(() => {
@@ -53,7 +52,13 @@ export function MaximizeOrRestoreButton() {
   const title = name[0].toUpperCase() + name.substring(1)
 
   return (
-    <ButtonWrapper aria-label={name} title={title} tabIndex={-1} onPress={cb}>
+    <ButtonWrapper
+      aria-label={name}
+      title={title}
+      tabIndex={-1}
+      onPress={cb}
+      color="red"
+    >
       <svg
         aria-hidden="true"
         version="1.1"
@@ -61,7 +66,7 @@ export function MaximizeOrRestoreButton() {
         width={10}
         height={10}
       >
-        <path d={path} />
+        <path fill={theme.color.variable} d={path} />
       </svg>
     </ButtonWrapper>
   )
@@ -69,17 +74,19 @@ export function MaximizeOrRestoreButton() {
 
 export function MinimizeButton() {
   const win = getCurrent()
+  const theme = useTheme()
 
   return (
     <ButtonWrapper
       aria-label="minize"
       tabIndex={-1}
       onPress={() => win.minimize()}
-    >
-      <svg aria-hidden="true" viewBox="0 0 10 10" width={10} height={10}>
-        <path d="M 0,5 10,5 10,6 0,6 Z" />
-      </svg>
-    </ButtonWrapper>
+      icon={
+        <svg aria-hidden="true" viewBox="0 0 10 10" width={10} height={10}>
+          <path fill={theme.color.variable} d="M 0,5 10,5 10,6 0,6 Z" />
+        </svg>
+      }
+    />
   )
 }
 

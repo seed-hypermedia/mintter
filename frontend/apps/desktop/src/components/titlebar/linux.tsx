@@ -71,7 +71,6 @@ export default function TitleBarLinux(props: TitleBarProps) {
       platform="linux"
       data-tauri-drag-region
       data-has-focus={focus}
-      paddingLeft={100}
     >
       <TitlebarRow>
         <TitlebarSection data-tauri-drag-region>
@@ -116,7 +115,7 @@ function NavMenu() {
           <Dropdown.Item
             disabled={route.key == 'home'}
             data-testid="menu-item-inbox"
-            onSelect={() => navigate({key: 'home'})}
+            onPress={() => navigate({key: 'home'})}
             icon={File}
             title="All Publications"
             iconAfter={
@@ -128,7 +127,10 @@ function NavMenu() {
           <Dropdown.Item
             disabled={route.key == 'drafts'}
             data-testid="menu-item-drafts"
-            onSelect={() => navigate({key: 'drafts'})}
+            onPress={() => {
+              console.log('CLICK!!!')
+              navigate({key: 'drafts'})
+            }}
             icon={Draft}
             title="Drafts"
             iconAfter={
@@ -139,7 +141,7 @@ function NavMenu() {
           />
           <Dropdown.Item
             disabled={route.key == 'connections'}
-            onSelect={() => navigate({key: 'connections'})}
+            onPress={() => navigate({key: 'connections'})}
             icon={User}
             title="Connections"
             iconAfter={
@@ -151,7 +153,7 @@ function NavMenu() {
           <SitesNavDropdownItems />
           <Separator />
           <Dropdown.Item
-            onSelect={() => send('open_quick_switcher')}
+            onPress={() => send('open_quick_switcher')}
             title="Quick Switcher"
             iconAfter={
               <SizableText size="$1" color="$mint5">
@@ -167,13 +169,13 @@ function NavMenu() {
                 Ctrl+N
               </SizableText>
             }
-            onSelect={() => spawn({key: 'home'})}
+            onPress={() => spawn({key: 'home'})}
           />
 
           <MenuItem
             title="Reload"
             accelerator="Ctrl+R"
-            onSelect={() => window.location.reload()}
+            onPress={() => window.location.reload()}
           />
 
           <Separator />
@@ -185,7 +187,7 @@ function NavMenu() {
                 Ctrl+F
               </SizableText>
             }
-            onSelect={() => send('open_find')}
+            onPress={() => send('open_find')}
           /> */}
 
           <Dropdown.Sub>
@@ -196,40 +198,40 @@ function NavMenu() {
               <MenuItem
                 title="Strong"
                 accelerator="Ctrl+B"
-                onSelect={() => send('format_mark', 'strong')}
+                onPress={() => send('format_mark', 'strong')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Emphasis"
                 accelerator="Ctrl+I"
-                onSelect={() => send('format_mark', 'emphasis')}
+                onPress={() => send('format_mark', 'emphasis')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Code"
                 accelerator="Ctrl+E"
-                onSelect={() => send('format_mark', 'code')}
+                onPress={() => send('format_mark', 'code')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Underline"
                 accelerator="Ctrl+U"
-                onSelect={() => send('format_mark', 'underline')}
+                onPress={() => send('format_mark', 'underline')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Strikethrough"
-                onSelect={() => send('format_mark', 'strikethrough')}
+                onPress={() => send('format_mark', 'strikethrough')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Subscript"
-                onSelect={() => send('format_mark', 'subscript')}
+                onPress={() => send('format_mark', 'subscript')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Superscript"
-                onSelect={() => send('format_mark', 'superscript')}
+                onPress={() => send('format_mark', 'superscript')}
                 disabled={!editingEnabled}
               />
 
@@ -238,25 +240,25 @@ function NavMenu() {
               <MenuItem
                 title="Heading"
                 accelerator="Ctrl+Shift+H"
-                onSelect={() => send('format_block', 'heading')}
+                onPress={() => send('format_block', 'heading')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Statement"
                 accelerator="Ctrl+Shif+S"
-                onSelect={() => send('format_block', 'statement')}
+                onPress={() => send('format_block', 'statement')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Blockquote"
                 accelerator="Ctrl+Shift+Q"
-                onSelect={() => send('format_block', 'blockquote')}
+                onPress={() => send('format_block', 'blockquote')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Code Block"
                 accelerator="Ctrl+Shift+E"
-                onSelect={() => send('format_block', 'codeblock')}
+                onPress={() => send('format_block', 'codeblock')}
                 disabled={!editingEnabled}
               />
 
@@ -265,19 +267,19 @@ function NavMenu() {
               <MenuItem
                 title="Bullet List"
                 accelerator="Ctrl+Shift+7"
-                onSelect={() => send('format_list', 'unordered_list')}
+                onPress={() => send('format_list', 'unordered_list')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Numbered List"
                 accelerator="Ctrl+Shift+8"
-                onSelect={() => send('format_list', 'ordered_list')}
+                onPress={() => send('format_list', 'ordered_list')}
                 disabled={!editingEnabled}
               />
               <MenuItem
                 title="Plain List"
                 accelerator="Ctrl+Shift+9"
-                onSelect={() => send('format_list', 'group')}
+                onPress={() => send('format_list', 'group')}
                 disabled={!editingEnabled}
               />
             </Dropdown.SubContent>
@@ -288,24 +290,24 @@ function NavMenu() {
           <MenuItem
             title="Preferences"
             accelerator="Ctrl+,"
-            onSelect={() => invoke('open_preferences')}
+            onPress={() => invoke('open_preferences')}
           />
 
           <MenuItem
             title="Documentation"
-            onSelect={() => invoke('open_documentation')}
+            onPress={() => invoke('open_documentation')}
           />
           <MenuItem
             title="Release Notes"
-            onSelect={() => invoke('open_release_notes')}
+            onPress={() => invoke('open_release_notes')}
           />
           <MenuItem
             title="Acknowledgements"
-            onSelect={() => invoke('open_acknowledgements')}
+            onPress={() => invoke('open_acknowledgements')}
           />
           <MenuItem
             title="About Mintter"
-            onSelect={() => invoke('open_about')}
+            onPress={() => invoke('open_about')}
           />
         </Dropdown.Content>
       </Dropdown.Portal>
@@ -317,7 +319,7 @@ export interface MenuItemProps {
   title: string
   accelerator?: string
   disabled?: boolean
-  onSelect: () => void
+  onPress: () => void
   icon?: any
 }
 

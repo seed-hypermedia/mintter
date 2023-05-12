@@ -21,7 +21,7 @@ export function MintterIcon({
       <svg
         viewBox="0 0 832 960"
         xmlns="http://www.w3.org/2000/svg"
-        fill={color}
+        fill={'currentColor'}
       >
         <path
           fillRule="evenodd"

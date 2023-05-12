@@ -42,13 +42,14 @@ const Content = ({
   )
 }
 
-const SubContent = ({
-  children,
-  ...props
-}: DropdownMenuPrimitive.DropdownMenuSubContentProps) => {
+const SubContent = forwardRef<
+  any,
+  DropdownMenuPrimitive.DropdownMenuSubContentProps
+>(({children, ...props}, ref) => {
   return (
     <DropdownMenuPrimitive.SubContent asChild {...props}>
       <YStack
+        ref={ref}
         //@ts-ignore
         contentEditable={false}
         minWidth={300}
@@ -62,11 +63,11 @@ const SubContent = ({
       </YStack>
     </DropdownMenuPrimitive.SubContent>
   )
-}
+})
 
 var RightSlot = SizableText
 
-export const ElementDropdown = forwardRef((props: ButtonProps, ref: any) => {
+export const ElementDropdown = forwardRef<any, ButtonProps>((props, ref) => {
   return (
     <DropdownMenuPrimitive.Trigger asChild ref={ref}>
       <Button size="$2" {...props} />
@@ -74,7 +75,7 @@ export const ElementDropdown = forwardRef((props: ButtonProps, ref: any) => {
   )
 })
 
-export const SubTrigger = forwardRef((props: SizableTextProps, ref: any) => {
+export const SubTrigger = forwardRef<any, SizableTextProps>((props, ref) => {
   return (
     <DropdownMenuPrimitive.SubTrigger asChild ref={ref}>
       <SizableText
@@ -105,9 +106,21 @@ function Label(props: SizableTextProps) {
   )
 }
 
-function Item({children, title, icon, iconAfter, disabled, ...props}: any) {
+const Item = forwardRef<
+  any,
+  Omit<DropdownMenuPrimitive.DropdownMenuItemProps, 'onSelect'> & {
+    iconAfter?: ListItemProps['iconAfter']
+    icon?: ListItemProps['icon']
+    onPress: ListItemProps['onPress']
+  }
+>(({children, title, icon, iconAfter, disabled, ...props}, ref) => {
   return (
-    <DropdownMenuPrimitive.Item {...props} disabled={disabled} asChild>
+    <DropdownMenuPrimitive.Item
+      ref={ref}
+      {...props}
+      disabled={disabled}
+      asChild
+    >
       <MenuItem
         title={title}
         icon={icon}
@@ -118,7 +131,7 @@ function Item({children, title, icon, iconAfter, disabled, ...props}: any) {
       </MenuItem>
     </DropdownMenuPrimitive.Item>
   )
-}
+})
 
 export const Dropdown = {
   ...DropdownMenuPrimitive,
