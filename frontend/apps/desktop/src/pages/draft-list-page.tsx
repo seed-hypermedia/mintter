@@ -108,7 +108,7 @@ export function DraftListItem({draft}: {draft: Document}) {
             >
               <Dropdown.Item
                 data-testid="new-window-item"
-                onSelect={() => {
+                onPress={() => {
                   spawn({key: 'draft', draftId: draft.id})
                 }}
                 asChild
@@ -118,7 +118,7 @@ export function DraftListItem({draft}: {draft: Document}) {
               <Separator />
               <Dropdown.Item
                 title="delete"
-                onSelect={() => {
+                onPress={() => {
                   popoverState.onOpenChange(false)
                   dialogState.onOpenChange(true)
                 }}

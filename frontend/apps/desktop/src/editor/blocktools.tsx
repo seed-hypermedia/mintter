@@ -103,7 +103,7 @@ export function DraftBlocktools({
                       contentEditable={false}
                       data-testid={`item-${item.label}`}
                       key={item.label}
-                      onSelect={() => {
+                      onPress={() => {
                         console.log('ON SELECT', current)
 
                         // if (element) {

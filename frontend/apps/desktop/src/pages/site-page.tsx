@@ -170,7 +170,7 @@ function WebPublicationListItem({
             >
               <Dropdown.Item
                 data-testid="copy-item"
-                onSelect={() => {
+                onPress={() => {
                   copyTextToClipboard(
                     `${MINTTER_LINK_PREFIX}${webPub.documentId}?v=${webPub.version}`,
                   )
@@ -183,7 +183,7 @@ function WebPublicationListItem({
               <Separator />
               <Dropdown.Item
                 data-testid="delete-item"
-                onSelect={() => {
+                onPress={() => {
                   popoverState.onOpenChange(false)
                   dialogState.onOpenChange(true)
                 }}
