@@ -7,6 +7,7 @@ import Link from 'next/link'
 import {useMemo} from 'react'
 import {Leaf} from '.'
 import {trpc} from '../trpc'
+import {Text} from '@mintter/ui'
 
 type ElementLinkProps = {
   // 'data-type': string
@@ -54,8 +55,10 @@ export function ElementLink({element, ...props}: ElementLinkProps) {
   )
 
   return url ? (
-    <Link href={url} {...props}>
-      {children}
+    <Link href={url} {...props} passHref>
+      <Text tag="a" fontFamily="$body">
+        {children}
+      </Text>
     </Link>
   ) : (
     <a href={(element as LinkType).url} {...props}>
