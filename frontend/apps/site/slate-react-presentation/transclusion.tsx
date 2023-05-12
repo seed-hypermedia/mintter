@@ -64,7 +64,7 @@ export function Transclusion({element}: {element: Embed}) {
       <q>
         <SlateReactPresentation
           type="transclusion"
-          value={block.children}
+          value={[block]}
           renderElement={renderElement}
           renderLeaf={renderLeaf}
         />
