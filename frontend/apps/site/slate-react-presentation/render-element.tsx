@@ -34,17 +34,23 @@ const MEDIA_HOSTNAME =
 
 export function useRenderElement() {
   return useCallback(({children, element}: RenderElementProps) => {
+    const id: string = element.id
     switch ((element as MttastNode).type) {
       case 'group':
       case 'unorderedList':
         return (
-          <Group tag="ul" type={element.type}>
+          <Group key={id} tag="ul" type={element.type}>
             {children}
           </Group>
         )
       case 'orderedList':
         return (
-          <Group tag="ol" type={element.type} start={element.start || '1'}>
+          <Group
+            key={id}
+            tag="ol"
+            type={element.type}
+            start={element.start || '1'}
+          >
             {children}
           </Group>
         )
@@ -54,24 +60,34 @@ export function useRenderElement() {
       case 'code':
         return (
           <Block
+            key={id}
             type={element.type}
-            id={element.id}
+            id={id}
             lang={element.type == 'code' ? element.lang : undefined}
           >
             {children}
           </Block>
         )
       case 'paragraph':
-        return <Paragraph element={element}>{children}</Paragraph>
+        return (
+          <Paragraph key={id} element={element}>
+            {children}
+          </Paragraph>
+        )
       case 'staticParagraph':
-        return <StaticParagraph element={element}>{children}</StaticParagraph>
+        return (
+          <StaticParagraph key={id} element={element}>
+            {children}
+          </StaticParagraph>
+        )
       case 'embed':
-        return <Transclusion element={element as Embed} />
+        return <Transclusion key={id} element={element as Embed} />
       case 'link':
-        return <ElementLink element={element as Link} />
+        return <ElementLink key={id} element={element as Link} />
       case 'image':
         return (
           <Image
+            key={id}
             width="100%"
             height={400}
             source={{
@@ -81,10 +97,14 @@ export function useRenderElement() {
           />
         )
       case 'video':
-        return <Video element={element as VideoType} />
+        return <Video key={id} element={element as VideoType} />
       // ...
       default:
-        return <Paragraph element={element}>{children}</Paragraph>
+        return (
+          <Paragraph key={id} element={element}>
+            {children}
+          </Paragraph>
+        )
     }
   }, [])
 }
