@@ -205,6 +205,7 @@ export function PublishShareButton() {
     routeKey: route.key,
     enabled: route.key == 'draft' && !!documentId,
   })
+  const draftId = route.key == 'draft' ? route.draftId : undefined
   const [isOpen, setIsOpen] = useState(false)
   const publicationDialog = usePublicationDialog()
   const isDaemonReady = useDaemonReady()
@@ -290,8 +291,8 @@ export function PublishShareButton() {
               return
             }
 
-            if (draft?.id) {
-              publish.mutate(draft.id)
+            if (draftId) {
+              publish.mutate(draftId)
             }
 
             setIsOpen(true)
