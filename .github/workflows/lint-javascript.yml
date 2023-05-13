@@ -33,7 +33,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-           yarn install --immutable
+           yarn
       
       # - name: Lint packages
       #   run: yarn lint

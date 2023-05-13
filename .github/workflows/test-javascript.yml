@@ -35,7 +35,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-           yarn install --immutable
+           yarn
 
       # - name: Build Frontend Shared packages
       #   run: yarn shared:build
