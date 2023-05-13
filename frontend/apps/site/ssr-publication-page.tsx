@@ -2,9 +2,12 @@ import {Account, blockNodeToSlate, SiteInfo} from '@mintter/shared'
 import {
   ArticleContainer,
   Container,
+  Header,
   MainContainer,
   SideContainer,
+  Spinner,
   useMedia,
+  YStack,
 } from '@mintter/ui'
 import Head from 'next/head'
 import {HighlightProvider} from 'slate-react-presentation/highlight'
@@ -19,18 +22,24 @@ import {useRenderElement} from './slate-react-presentation/render-element'
 import {useRenderLeaf} from './slate-react-presentation/render-leaf'
 import {JsonValue} from '@bufbuild/protobuf'
 import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
+import {trpc} from 'trpc'
+import {useMemo} from 'react'
 
 export type PublicationPageProps = {
+  documentId: string
+  version: string | null
   metadata?: boolean
-  publication: JsonValue
-  editors: JsonValue[]
+  publication: JsonValue | null
+  editors: JsonValue[] | null
   siteInfo: JsonValue | null
 }
 
 export type PublicationPageData = {
-  publication?: Publication
+  documentId: string
+  version?: string
+  publication?: Publication | null
   author?: Account | null
-  editors: Array<Account | string | null>
+  editors: Array<Account | string | null> | null
   siteInfo: SiteInfo | null
 }
 
@@ -38,12 +47,19 @@ function preparePublicationData(
   props: PublicationPageProps,
 ): PublicationPageData {
   return {
-    publication: Publication.fromJson(props.publication),
-    editors: props.editors.map((editor) => {
-      if (typeof editor === 'object') return Account.fromJson(editor)
-      if (typeof editor === 'string') return editor
-      return null
-    }),
+    documentId: props.documentId,
+    version: props.version || undefined,
+    publication:
+      props.publication == null
+        ? null
+        : Publication.fromJson(props.publication),
+    editors: props.editors
+      ? props.editors.map((editor) => {
+          if (typeof editor === 'object') return Account.fromJson(editor)
+          if (typeof editor === 'string') return editor
+          return null
+        })
+      : null,
     siteInfo: props.siteInfo ? SiteInfo.fromJson(props.siteInfo) : null,
   }
 }
@@ -56,10 +72,23 @@ export default function PublicationPage({
   let media = useMedia()
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
-  const blockChildren = publication?.document?.children
-  const slateChildren = blockChildren
-    ? blockNodeToSlate(blockChildren, 'group')
-    : undefined
+
+  const loadedPublication = trpc.publication.get.useQuery({
+    documentId: props.documentId,
+    versionId: props.version || undefined,
+  })
+
+  const {slateChildren, displayPub} = useMemo(() => {
+    const loadedPub = loadedPublication.data?.publication
+      ? Publication.fromJson(loadedPublication.data.publication)
+      : null
+    const displayPub = loadedPub || publication
+    const blockChildren = displayPub?.document?.children
+    const slateChildren = blockChildren
+      ? blockNodeToSlate(blockChildren, 'group')
+      : undefined
+    return {slateChildren, displayPub}
+  }, [loadedPublication.data, publication])
 
   return (
     <HighlightProvider>
@@ -99,21 +128,24 @@ export default function PublicationPage({
                   renderLeaf={renderLeaf}
                 />
               ) : (
-                <p>Empty document.</p>
+                <YStack>
+                  <Header>Querying for document on the network.</Header>
+                  <Spinner />
+                </YStack>
               )}
             </MainContainer>
             <SideContainer flex={1}>
               {metadata ? (
                 <>
                   <PublicationMetadata
-                    publication={publication}
-                    editors={editors}
+                    publication={displayPub}
+                    editors={editors || []}
                   />
-                  {(publication && editors?.length) ||
-                  (publication && publication.document?.author) ? (
+                  {(displayPub && editors?.length) ||
+                  (displayPub && displayPub.document?.author) ? (
                     <WebTipping
-                      publication={publication}
-                      editors={editors}
+                      publication={displayPub}
+                      editors={editors || []}
                       author={null}
                     />
                   ) : null}

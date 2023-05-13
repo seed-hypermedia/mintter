@@ -4,6 +4,7 @@ import {publicationsClient} from '../../client'
 import PublicationPage, {PublicationPageProps} from '../../ssr-publication-page'
 import {
   getPublicationPageProps,
+  impatientGetPublication,
   setResponsePublication,
 } from 'server/server-publications'
 
@@ -20,27 +21,20 @@ export const getServerSideProps = async (
   let publication: Publication | null = null
   if (!cid) return {notFound: true}
   try {
-    publication = await publicationsClient.getPublication({
+    publication = await impatientGetPublication({
       documentId: cid,
       version,
     })
-    if (!publication) {
+    setResponsePublication(context, publication)
+    return {
+      props: await getPublicationPageProps(publication, cid, version || null),
+    }
+  } catch (error) {
+    const isNotFound = !!error.rawMessage?.match('[not_found]')
+    if (isNotFound)
       return {
         notFound: true,
       }
-    }
-    setResponsePublication(context, publication)
-    return {
-      props: await getPublicationPageProps(publication),
-    }
-  } catch (error) {
-    // const isNotFound = !!error.rawMessage?.match(
-    //   'Could not get record for path',
-    // )
-    // if (isNotFound)
-    //   return {
-    //     notFound: true,
-    //   }
     throw error
   }
 }

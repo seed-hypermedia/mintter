@@ -11,6 +11,7 @@ import PublicationPage, {PublicationPageProps} from '../ssr-publication-page'
 import {JsonValue} from '@bufbuild/protobuf'
 import {
   getPublicationPageProps,
+  impatientGetPublication,
   setResponsePublication,
 } from 'server/server-publications'
 
@@ -32,8 +33,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     if (!process.env.GW_NEXT_HOST) {
       // Temp Mintter home screen document:
-      console.log('=== RETURN THE HOMEPAGE')
-      publication = await publicationsClient.getPublication({
+      publication = await impatientGetPublication({
         documentId: pubId,
         version,
       })
@@ -58,10 +58,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         notFound: true,
       }
     }
+    const documentId = publication.document?.id
+    if (!documentId) throw new Error('Publication has no document ID?!')
+    const pubVersion = publication.version
     setResponsePublication(context, publication)
     return {
       props: {
-        ...(await getPublicationPageProps(publication)),
+        ...(await getPublicationPageProps(publication, documentId, pubVersion)),
         metadata: false,
       },
     }
