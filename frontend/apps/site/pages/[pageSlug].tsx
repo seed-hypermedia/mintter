@@ -1,4 +1,4 @@
-import {Publication} from '@mintter/shared'
+import {GetPathResponse, Publication} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
 import {localWebsiteClient} from '../client'
 import PublicationPage, {PublicationPageProps} from '../ssr-publication-page'
@@ -14,18 +14,24 @@ export default function PathPublicationPage(props: PublicationPageProps) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const path = (context.params?.pageSlug as string) || ''
   let publication: Publication | null = null
-  let pathRecord
+  let pathRecord: GetPathResponse
   try {
     pathRecord = await localWebsiteClient.getPath({path})
-    publication = pathRecord.publication
+    publication = pathRecord.publication || null
     if (!publication) {
       return {
         notFound: true,
       }
     }
+    const docId = pathRecord.publication?.document?.id
+    if (!docId) throw new Error('No document on this pathRecord?!')
     setResponsePublication(context, publication)
     return {
-      props: await getPublicationPageProps(publication),
+      props: await getPublicationPageProps(
+        publication,
+        docId,
+        pathRecord.publication?.version || null,
+      ),
     }
   } catch (error) {
     const isNotFound = !!error.rawMessage?.match(
