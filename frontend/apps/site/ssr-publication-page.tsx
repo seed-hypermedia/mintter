@@ -127,11 +127,13 @@ export default function PublicationPage({
                   renderElement={renderElement}
                   renderLeaf={renderLeaf}
                 />
-              ) : (
+              ) : loadedPublication.isLoading ? (
                 <YStack>
                   <Header>Querying for document on the network.</Header>
                   <Spinner />
                 </YStack>
+              ) : (
+                <Header>Document not found.</Header>
               )}
             </MainContainer>
             <SideContainer flex={1}>
