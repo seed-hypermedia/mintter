@@ -248,7 +248,11 @@ export function PublishShareButton() {
 
   if (isPublication) {
     copyReferenceButton = (
-      <Tooltip content="Copy document reference">
+      <Tooltip
+        content={`Copy Document URL on ${hostnameStripProtocol(
+          publishedWebHost,
+        )}`}
+      >
         <Button
           chromeless
           size="$2"
@@ -259,7 +263,9 @@ export function PublishShareButton() {
             if (!publishedWebHost) throw new Error('Document not loaded')
             let docUrl = `${publishedWebHost}/p/${id}?v=${version}`
             copyTextToClipboard(docUrl)
-            toast.success('Copied document reference')
+            toast.success(
+              `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
+            )
           }}
           icon={Copy}
         />

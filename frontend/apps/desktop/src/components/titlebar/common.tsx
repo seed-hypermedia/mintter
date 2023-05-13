@@ -34,6 +34,7 @@ import {
   Separator,
   Settings,
   SizableText,
+  Text,
   TitlebarSection,
   User,
   XGroup,
@@ -45,6 +46,8 @@ import {useState} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
+import {FilePlus2, Pencil, PlusSquare} from '@tamagui/lucide-icons'
+import {Tooltip} from '@components/tooltip'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
@@ -64,12 +67,6 @@ export function ActionButtons(props: TitleBarProps) {
 
   return (
     <TitlebarSection>
-      {/* {onCopy && (
-        <Tooltip content="Copy document reference">
-          <Button chromeless size="$2" onPress={onCopy} icon={Copy} />
-        </Tooltip>
-      )} */}
-
       {route.key == 'publication' ? <WriteActions route={route} /> : null}
 
       <PublishShareButton />
@@ -79,19 +76,19 @@ export function ActionButtons(props: TitleBarProps) {
           {route.key == 'connections' ? (
             <ContactsPrompt />
           ) : (
-            <Button
-              size="$2"
-              chromeless
-              disabled={!isDaemonReady}
-              iconAfter={Add}
-              onPress={(e) => {
-                e.preventDefault()
-                // @ts-ignore
-                openDraft(!e.shiftKey)
-              }}
-            >
-              Write
-            </Button>
+            <Tooltip content="New Document">
+              <Button
+                size="$2"
+                chromeless
+                disabled={!isDaemonReady}
+                iconAfter={FilePlus2}
+                onPress={(e) => {
+                  e.preventDefault()
+                  // @ts-ignore
+                  openDraft(!e.shiftKey)
+                }}
+              />
+            </Tooltip>
           )}
         </div>
       )}
@@ -295,7 +292,6 @@ export function NavMenu() {
 function WriteActions({route}: {route: PublicationRoute}) {
   const draftList = useDraftList()
   const navigateReplace = useNavigate('replace')
-  let [errorMessage, setError] = useState('')
 
   const hasExistingDraft = draftList.data?.documents.some(
     (draft) => draft.id == route.documentId,
@@ -303,6 +299,15 @@ function WriteActions({route}: {route: PublicationRoute}) {
 
   async function handleEdit() {
     try {
+      if (hasExistingDraft) {
+        // todo, careful! this only works because draftId is docId right now
+        navigateReplace({
+          key: 'draft',
+          draftId: route.documentId,
+          contextDocumentId: route.documentId,
+        })
+        return
+      }
       let draft = await draftsClient.createDraft({
         existingDocumentId: route.documentId,
       })
@@ -312,22 +317,24 @@ function WriteActions({route}: {route: PublicationRoute}) {
         contextDocumentId: route.documentId,
       })
     } catch (error) {
-      setError(JSON.stringify(error))
+      toast.error(`Draft Error: ${error?.message}`)
     }
   }
 
   return (
     <>
       {route.key == 'publication' && (
-        <Button
-          chromeless
-          size="$2"
-          theme={hasExistingDraft ? 'yellow' : undefined}
-          onPress={() => handleEdit()}
+        <Tooltip
+          content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}
         >
-          {hasExistingDraft ? 'Resume Editing' : 'Edit'}
-          {errorMessage ? ' (failed)' : null}
-        </Button>
+          <Button
+            // chromeless
+            size="$2"
+            theme={hasExistingDraft ? 'yellow' : undefined}
+            onPress={() => handleEdit()}
+            iconAfter={Pencil}
+          />
+        </Tooltip>
       )}
     </>
   )
