@@ -9,6 +9,7 @@ export const AppMain = styled(YStack, {
 
 export const MainStyled = styled(YStack, {
   flex: 1,
+  overflow: 'hidden',
 })
 
 export const MainWrapper = ({

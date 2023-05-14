@@ -12,4 +12,5 @@ export const FooterWrapper = styled(XStack, {
   flex: 0,
   flexGrow: 0,
   flexShrink: 0,
+  minHeight: 24,
 })
