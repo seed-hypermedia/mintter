@@ -1,20 +1,21 @@
 import {Dropdown} from '@app/editor/dropdown'
+import {invoke, send} from '@app/ipc'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {TitleBarProps} from '@components/titlebar'
 import {
-  TitlebarWrapper,
-  TitlebarRow,
-  TitlebarSection,
-  Menu,
-  XStack,
-  Separator,
-  SizableText,
-  User,
   Draft,
   File,
+  Menu,
+  Separator,
+  SizableText,
+  TitlebarRow,
+  TitlebarSection,
+  TitlebarWrapper,
+  User,
+  XStack,
 } from '@mintter/ui'
-import {invoke, send} from '@app/ipc'
 import {useEffect, useState} from 'react'
+import {MintterIcon} from '../mintter-icon'
 import {
   AccountDropdownItem,
   ActionButtons,
@@ -22,7 +23,6 @@ import {
   SitesNavDropdownItems,
 } from './common'
 import DiscardDraftButton from './discard-draft-button'
-import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
   CloseButton,
@@ -49,16 +49,14 @@ export default function TitleBarLinux(props: TitleBarProps) {
   // in the clean window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper platform="linux" data-tauri-drag-region>
+      <TitlebarWrapper data-tauri-drag-region>
         <TitlebarRow data-tauri-drag-region>
           <TitlebarSection data-tauri-drag-region>
-            <MintterIcon />
+            <span data-tauri-drag-region>
+              <MintterIcon />
+            </span>
           </TitlebarSection>
-          <TitlebarSection
-            flex={1}
-            alignItems="flex-end"
-            data-tauri-drag-region
-          >
+          <TitlebarSection flex={1} alignItems="flex-end">
             <CloseButton />
           </TitlebarSection>
         </TitlebarRow>
@@ -67,19 +65,15 @@ export default function TitleBarLinux(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper
-      platform="linux"
-      data-tauri-drag-region
-      data-has-focus={focus}
-    >
-      <TitlebarRow>
+    <TitlebarWrapper data-has-focus={focus} data-tauri-drag-region>
+      <TitlebarRow data-tauri-drag-region>
         <TitlebarSection data-tauri-drag-region>
           <MintterIcon />
           <NavMenu />
           <NavigationButtons />
           <DiscardDraftButton />
         </TitlebarSection>
-        <TitlebarSection flex={1}>
+        <TitlebarSection flex={1} data-tauri-drag-region>
           <Title />
         </TitlebarSection>
         <TitlebarSection data-tauri-drag-region>

@@ -51,7 +51,11 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
     )
   }
   if (route.key === 'account') {
-    return <TitleText size={size}>Account Profile</TitleText>
+    return (
+      <TitleText data-tauri-drag-region size={size}>
+        Account Profile
+      </TitleText>
+    )
   }
   if (route.key === 'site') {
     return (
@@ -96,8 +100,10 @@ function PublicationTitle({
   })
   return (
     <>
-      <TitleText size={size}>{pub?.document?.title || '...'}</TitleText>
-      <XStack gap={0}>
+      <TitleText data-tauri-drag-region size={size}>
+        {pub?.document?.title || '...'}
+      </TitleText>
+      <XStack gap={0} data-tauri-drag-region>
         {pub?.document?.editors.length === 0 ? (
           <AccountLinkAvatar accountId={pub?.document?.author} />
         ) : (
@@ -124,7 +130,9 @@ function DraftTitle({
   return (
     <>
       <Pencil size={12} />
-      <TitleText size={size}>{displayTitle}</TitleText>
+      <TitleText data-tauri-drag-region size={size}>
+        {displayTitle}
+      </TitleText>
     </>
   )
 }

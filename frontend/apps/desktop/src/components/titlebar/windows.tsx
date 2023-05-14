@@ -64,7 +64,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper platform="windows" data-tauri-drag-region>
+      <TitlebarWrapper data-tauri-drag-region>
         <TitlebarRow data-tauri-drag-region>
           <TitlebarSection data-tauri-drag-region>
             <MintterIcon />
@@ -85,7 +85,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper platform="windows" data-tauri-drag-region>
+    <TitlebarWrapper data-tauri-drag-region>
       <TitlebarRow
         minHeight={28}
         backgroundColor="$color3"
@@ -144,7 +144,6 @@ export default function TitleBarWindows(props: TitleBarProps) {
 
 function SystemMenu() {
   const route = useNavRoute()
-  const navigate = useNavigate()
   const editingDisabled = route.key != 'draft'
   const spawn = useNavigate('spawn')
 

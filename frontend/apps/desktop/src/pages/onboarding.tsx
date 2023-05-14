@@ -32,6 +32,7 @@ import {open} from '@tauri-apps/api/shell'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {
   createContext,
+  PropsWithChildren,
   ReactNode,
   useCallback,
   useContext,
@@ -447,7 +448,7 @@ function Analytics(props: OnboardingStepProps) {
 
 function Complete() {
   return (
-    <StepWrapper>
+    <StepWrapper data-tauri-drag-region>
       <XStack flex={1} gap="$10">
         <StepTitleSection>
           <H1>You are Ready!</H1>
@@ -500,15 +501,13 @@ function Complete() {
   )
 }
 
-function StepWrapper({children}: {children: ReactNode}) {
+function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
   const theme = useTheme()
   return (
     <StyledStepWrapper
       fullscreen
       x={0}
       opacity={1}
-      alignItems="center"
-      justifyContent="center"
       animation={[
         'lazy',
         {
@@ -519,22 +518,29 @@ function StepWrapper({children}: {children: ReactNode}) {
       ]}
     >
       <YStack
-        borderRadius="$7"
-        elevation="$12"
-        backgroundColor="$background1"
-        minWidth={678}
-        minHeight={500}
-        maxWidth={1024}
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        data-tauri-drag-region
       >
-        <YStack alignItems="flex-start" padding="$6">
-          <MintterIcon
-            size="$2"
-            color={theme.color8?.val || 'hsl(0, 0%, 81.0%)'}
-          />
-        </YStack>
+        <YStack
+          borderRadius="$7"
+          elevation="$12"
+          backgroundColor="$background1"
+          minWidth={678}
+          minHeight={500}
+          maxWidth={1024}
+        >
+          <YStack alignItems="flex-start" padding="$6">
+            <MintterIcon
+              size="$2"
+              color={theme.color8?.val || 'hsl(0, 0%, 81.0%)'}
+            />
+          </YStack>
 
-        <YStack flex={1} padding="$6" gap="$5">
-          {children}
+          <YStack flex={1} padding="$6" gap="$5">
+            {children}
+          </YStack>
         </YStack>
       </YStack>
     </StyledStepWrapper>

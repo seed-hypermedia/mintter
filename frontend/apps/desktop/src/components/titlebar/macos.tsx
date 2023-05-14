@@ -6,11 +6,11 @@ import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper platform="macos" data-tauri-drag-region />
+    return <TitlebarWrapper data-tauri-drag-region />
   }
 
   return (
-    <TitlebarWrapper platform="macos" data-tauri-drag-region>
+    <TitlebarWrapper data-tauri-drag-region>
       <XStack
         paddingHorizontal="$2"
         justifyContent="space-between"
