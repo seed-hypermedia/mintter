@@ -78,17 +78,19 @@ export default function PublicationPage() {
     versionId,
   })
 
-  let editorValue = useMemo(() => {
-    if (status == 'success' && data.document?.children.length) {
-      return [blockNodeToSlate(data.document?.children, 'group')]
-    }
+  const editorKey = `${docId}.${versionId}`
 
+  let editorValue = useMemo(() => {
+    const children = data?.document?.children
+    if (children?.length) {
+      return [blockNodeToSlate(children, 'group')]
+    }
     return [emptyEditor]
-  }, [docId, data, status])
+  }, [editorKey, data])
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
-    [],
+    [editorKey],
   )
 
   let mouseService = useInterpret(() => mouseMachine)
@@ -174,7 +176,7 @@ export default function PublicationPage() {
                         {editorValue && (
                           <>
                             <Editor
-                              key={versionId}
+                              key={editorKey}
                               editor={editor}
                               mode={EditorMode.Publication}
                               value={editorValue}
