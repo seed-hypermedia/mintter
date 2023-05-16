@@ -6,12 +6,15 @@ import {
   XStackProps,
   ListItemProps,
 } from '@mintter/ui'
-import {PropsWithChildren, ReactNode} from 'react'
+import {ComponentProps, PropsWithChildren, ReactNode} from 'react'
 
 TableList.Header = TableHeader
 TableList.Item = TableItem
 
-export function TableList({children}: {children: ReactNode}) {
+export function TableList({
+  children,
+  ...props
+}: {children: ReactNode} & ComponentProps<typeof YStack>) {
   return (
     <YStack
       userSelect="none"
@@ -30,6 +33,7 @@ export function TableList({children}: {children: ReactNode}) {
         //@ts-ignore
         mx: 0,
       }}
+      {...props}
     >
       {children}
     </YStack>

@@ -60,10 +60,17 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {styled} from '@stitches/react'
-import {ArrowDownRight} from '@tamagui/lucide-icons'
+
+import {ArrowDownRight, X} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {
+  ComponentProps,
+  ComponentType,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import toast from 'react-hot-toast'
 
 export default function Settings({}: {}) {
@@ -395,9 +402,17 @@ function AppSettings() {
   )
 }
 
-function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
+function SettingsNavBack({
+  onDone,
+  title,
+  icon,
+}: {
+  onDone: () => void
+  title: string
+  icon?: ComponentProps<typeof Button>['icon']
+}) {
   return (
-    <Button size="$1" chromeless onPress={onDone} icon={Back}>
+    <Button size="$2" onPress={onDone} icon={icon || Back}>
       {title}
     </Button>
   )
@@ -692,17 +707,6 @@ function SiteInfoSection({
   )
 }
 
-const SettingsHeader = styled('div', {
-  display: 'flex',
-  gap: '1rem',
-  position: 'relative',
-  '>h2': {
-    flexGrow: 1,
-    margin: 0,
-    fontSize: '1.5em',
-  },
-})
-
 function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   const addSite = useAddSite({
     onSuccess: (result, input) => onDone(input.hostname),
@@ -718,11 +722,10 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   }, [])
   return (
     <>
-      <SettingsHeader>
-        <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
+      <YStack gap="$1" alignItems="flex-start">
+        <SettingsNavBack icon={X} title="Cancel" onDone={() => onDone(null)} />
         <h2>Add Mintter Web Site</h2>
-      </SettingsHeader>
-
+      </YStack>
       {addSite.error ? (
         //@ts-ignore
         <SizableText theme="red">{addSite.error?.message}</SizableText>
@@ -844,7 +847,7 @@ function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
 function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
   const {data: sites, isLoading} = useSiteList()
   return (
-    <TableList>
+    <TableList margin="$1">
       {isLoading && <Spinner />}
       {sites && sites.length === 0 && <EmptySiteList />}
       {sites?.map((site) => (
