@@ -109,7 +109,7 @@ export default function DraftPage() {
                       )
                         return
                       mouseService.send('DISABLE.CHANGE')
-                      saveDraft.mutate({editor, content})
+                      saveDraft.mutate({content})
                     }
                   }}
                 />

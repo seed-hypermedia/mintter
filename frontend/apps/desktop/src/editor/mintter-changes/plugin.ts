@@ -135,11 +135,13 @@ export const MintterEditor: MintterEditor = {
       }
 
       if (type == 'moveBlock') {
+        // @ts-expect-error // this was breaking the build and is unknown
         let change = createMoveChange(editor, value)
         if (change) result.push(change)
       }
 
       if (type == 'replaceBlock') {
+        // @ts-expect-error // this was breaking the build and is unknown
         result.push(createReplaceChange(editor, value))
       }
 

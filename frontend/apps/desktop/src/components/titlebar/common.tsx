@@ -314,7 +314,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
         draftId: draft.id,
         contextDocumentId: route.documentId,
       })
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Draft Error: ${error?.message}`)
     }
   }
