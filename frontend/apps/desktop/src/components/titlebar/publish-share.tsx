@@ -335,6 +335,7 @@ export function PublishShareButton() {
   })
   const draftId = route.key == 'draft' ? route.draftId : undefined
   const publicationDialog = usePublicationDialog()
+
   const isDaemonReady = useDaemonReady()
   // const publications = useDocPublications(documentId)
   const publishedWebHost = pub?.document
@@ -372,6 +373,11 @@ export function PublishShareButton() {
   }, [route, pub, draft])
 
   let copyReferenceButton
+  const webPubs = useDocPublications(documentId)
+  const webPub = webPubs.data?.find(
+    (pub) =>
+      documentId && pub.hostname === webUrl && pub.documentId === documentId,
+  )
 
   if (isPublication) {
     copyReferenceButton = (
@@ -388,7 +394,13 @@ export function PublishShareButton() {
             const {id, webUrl} = document || {}
             if (!id) throw new Error('No document id')
             if (!publishedWebHost) throw new Error('Document not loaded')
-            let docUrl = `${publishedWebHost}/p/${id}?v=${version}`
+            let path = `/p/${id}`
+            if (webPub?.path === '/') {
+              path = '/'
+            } else if (webPub?.path) {
+              path = `/${webPub.path}`
+            }
+            let docUrl = `${publishedWebHost}${path}?v=${version}`
             copyTextToClipboard(docUrl)
             toast.success(
               `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
