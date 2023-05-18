@@ -1,5 +1,4 @@
 import {features} from '@app/constants'
-import {useDrag} from '@app/drag-context'
 import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {Dropdown} from '@app/editor/dropdown'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -28,14 +27,11 @@ import {
   Button,
   Code,
   Copy,
-  Drag,
   HeadingIcon,
   ImageIcon,
   Menu,
   OrderedList,
-  Popover,
   SizableText,
-  Star,
   Strong,
   UnorderedList,
   VideoIcon,
@@ -44,7 +40,6 @@ import {
 import {Fragment, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
-import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
 
 // export function DraftBlocktools() {
@@ -69,7 +64,6 @@ export function DraftBlocktools({
   editor: Editor
 }) {
   let mouseService = useMouse()
-  let dragService = useDrag()
   let hoveredBlockId = useHoveredBlockId()
   let [localOpen, setLocalOpen] = useState(false)
 
@@ -126,23 +120,6 @@ export function DraftBlocktools({
           </Dropdown.Content>
         </Dropdown.Portal>
       </Dropdown.Root>
-      <Button
-        size="$2"
-        icon={Drag}
-        onPointerDown={() => {
-          if (editor.dragging) return
-
-          const domNode = ReactEditor.toDOMNode(editor, block)
-          if (path && dragService && domNode) {
-            mouseService.send('DISABLE.DRAG.START')
-            dragService.send({
-              type: 'DRAG.START',
-              fromPath: path,
-              element: domNode as HTMLLIElement,
-            })
-          }
-        }}
-      />
     </XStack>
   )
 }

@@ -1,7 +1,5 @@
 // import 'show-keys'
 import {AppBanner, BannerText} from '@app/app-banner'
-import {DragProvider} from '@app/drag-context'
-import {createDragMachine} from '@app/drag-machine'
 import {Editor, plugins, useTauriListeners} from '@app/editor/editor'
 
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -51,9 +49,6 @@ export default function DraftPage() {
   })
 
   let mouseService = useInterpret(() => mouseMachine)
-
-  let dragService = useInterpret(() => createDragMachine(editor))
-
   let isDaemonReady = useDaemonReady()
 
   useInitialFocus(editor)
@@ -76,85 +71,76 @@ export default function DraftPage() {
       onReset={() => window.location.reload()}
     >
       <MouseProvider value={mouseService}>
-        <DragProvider value={dragService}>
-          <MainWrapper
-            onScroll={() => {
-              mouseService.send('DISABLE.SCROLL')
+        <MainWrapper
+          onScroll={() => {
+            mouseService.send('DISABLE.SCROLL')
+          }}
+        >
+          <YStack
+            onPointerMove={(event) => {
+              mouseService.send({
+                type: 'MOUSE.MOVE',
+                position: event.nativeEvent.clientY,
+              })
+            }}
+            onPointerLeave={() => {
+              mouseService.send('DISABLE.CHANGE')
             }}
           >
-            <YStack
-              onPointerMove={(event) => {
-                mouseService.send({
-                  type: 'MOUSE.MOVE',
-                  position: event.nativeEvent.clientY,
-                })
-              }}
-              onPointerLeave={() => {
-                mouseService.send('DISABLE.CHANGE')
-              }}
-              onPointerUp={() => {
-                dragService.send('DROPPED')
-                mouseService.send('DISABLE.DRAG.END')
-              }}
-              // if (!canEdit) {
-              //   mainService.send('NOT.EDITING')
-              // }
-            >
-              {!isDaemonReady ? <NotSavingBanner /> : null}
-              {draftState.children.length ? (
-                <>
-                  <Editor
-                    editor={editor}
-                    value={draftState.children}
-                    //@ts-ignore
-                    onChange={(content: GroupingContent[]) => {
-                      // this is used to filter operations that are not changing the actual editor content.
-                      const isAstChange = editor.operations.some(
-                        (op) => 'set_selection' !== op.type,
-                      )
+            {!isDaemonReady ? <NotSavingBanner /> : null}
+            {draftState.children.length ? (
+              <>
+                <Editor
+                  editor={editor}
+                  value={draftState.children}
+                  //@ts-ignore
+                  onChange={(content: GroupingContent[]) => {
+                    // this is used to filter operations that are not changing the actual editor content.
+                    const isAstChange = editor.operations.some(
+                      (op) => 'set_selection' !== op.type,
+                    )
 
-                      if (isAstChange) {
-                        // TODO: need to check when content can be a string
-                        if (
-                          (!content && typeof content == 'string') ||
-                          !isDaemonReady
-                        )
-                          return
-                        mouseService.send('DISABLE.CHANGE')
-                        saveDraft.mutate({editor, content})
-                      }
-                    }}
-                  />
-                  {import.meta.env.DEV && (
-                    <YStack maxWidth="500px" marginHorizontal="auto">
-                      <Button
-                        size="$1"
-                        theme="gray"
-                        width="100%"
-                        onPress={() => setDebugValue((v) => !v)}
+                    if (isAstChange) {
+                      // TODO: need to check when content can be a string
+                      if (
+                        (!content && typeof content == 'string') ||
+                        !isDaemonReady
+                      )
+                        return
+                      mouseService.send('DISABLE.CHANGE')
+                      saveDraft.mutate({editor, content})
+                    }
+                  }}
+                />
+                {import.meta.env.DEV && (
+                  <YStack maxWidth="500px" marginHorizontal="auto">
+                    <Button
+                      size="$1"
+                      theme="gray"
+                      width="100%"
+                      onPress={() => setDebugValue((v) => !v)}
+                    >
+                      toggle value
+                    </Button>
+                    {debugValue && (
+                      <XStack
+                        tag="pre"
+                        {...{
+                          whiteSpace: 'wrap',
+                        }}
                       >
-                        toggle value
-                      </Button>
-                      {debugValue && (
-                        <XStack
-                          tag="pre"
-                          {...{
-                            whiteSpace: 'wrap',
-                          }}
-                        >
-                          <SizableText tag="code" size="$1">
-                            {JSON.stringify(draftState?.children, null, 3)}
-                          </SizableText>
-                        </XStack>
-                      )}
-                    </YStack>
-                  )}
-                </>
-              ) : null}
-            </YStack>
-          </MainWrapper>
-          <Footer />
-        </DragProvider>
+                        <SizableText tag="code" size="$1">
+                          {JSON.stringify(draftState?.children, null, 3)}
+                        </SizableText>
+                      </XStack>
+                    )}
+                  </YStack>
+                )}
+              </>
+            ) : null}
+          </YStack>
+        </MainWrapper>
+        <Footer />
       </MouseProvider>
     </ErrorBoundary>
   )

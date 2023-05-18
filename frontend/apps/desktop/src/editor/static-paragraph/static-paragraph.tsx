@@ -1,4 +1,3 @@
-import {useDrag} from '@app/drag-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {headingMap} from '@app/editor/utils'
@@ -32,7 +31,6 @@ export function StaticParagraphElement({
   element,
   attributes,
 }: RenderElementProps) {
-  // let dragService = useDrag()
   let editor = useSlateStatic()
   let {elementProps, parentPath, parentNode} = usePhrasingProps(
     editor,
@@ -51,20 +49,6 @@ export function StaticParagraphElement({
     ...hoverProps,
   }
   useBlockObserve(editor.mode, pRef)
-
-  // let dragProps = {
-  //   onMouseOver: (e: MouseEvent) => {
-  //     if (Path.isPath(parentPath)) {
-  //       dragService?.send({
-  //         type: 'DRAG.OVER',
-  //         toPath: parentPath,
-  //         element: null,
-  //         currentPosX: e.clientX,
-  //         currentPosY: e.clientY,
-  //       })
-  //     }
-  //   },
-  // }
 
   let elementTags = useMemo(() => {
     let defaultValue = {tag: 'p', size: 16, height: 24}
@@ -86,7 +70,6 @@ export function StaticParagraphElement({
       {...attributes}
       {...elementProps}
       {...otherProps}
-      // {...dragProps}
     >
       {children}
     </SizableText>

@@ -15,8 +15,6 @@ type MouseEvent =
   | {type: 'DISABLE.BLOCKTOOLS.CLOSE'}
   | {type: 'DISABLE.SCROLL'}
   | {type: 'INIT.OBSERVER'; observer: IntersectionObserver}
-  | {type: 'DISABLE.DRAG.START'}
-  | {type: 'DISABLE.DRAG.END'}
 
 type MouseContext = {
   visibleBounds: Array<Bound>
@@ -63,10 +61,6 @@ export var mouseMachine = createMachine(
                 actions: ['getBlockBounds'],
                 target: 'ready',
               },
-              'DISABLE.DRAG.END': {
-                actions: ['getBlockBounds'],
-                target: 'ready',
-              },
             },
           },
           ready: {
@@ -89,9 +83,6 @@ export var mouseMachine = createMachine(
                 target: '#mouse-machine.inactive',
               },
               'DISABLE.BLOCKTOOLS.OPEN': {
-                target: 'stopped',
-              },
-              'DISABLE.DRAG.START': {
                 target: 'stopped',
               },
             },

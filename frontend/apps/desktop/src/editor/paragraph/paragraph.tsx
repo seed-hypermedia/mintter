@@ -61,7 +61,7 @@ export function ParagraphElement({
     editor,
     element as ParagraphType,
   )
-  // dragProps
+
   let pRef = useRef<HTMLElement | undefined>()
   let {highlight} = useVisibleConnection(parentNode?.id)
   let hoverProps = useHoverVisibleConnection(parentNode?.id)
@@ -137,7 +137,6 @@ export function ParagraphElement({
       {...attributes}
       {...elementProps}
       {...otherProps}
-      // onDragOver={onDragOver}
     >
       {children}
     </SizableText>

@@ -1,7 +1,4 @@
-import {useDrag} from '@app/drag-context'
-import {LineType} from '@app/drag-machine'
 import {DraftBlocktools, PublicationBlocktools} from '@app/editor/blocktools'
-import {useDragContext} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useVisibleConnection} from '@app/editor/visible-connection'
 import {useMouse} from '@app/mouse-context'
@@ -16,9 +13,8 @@ import {
   isOrderedList,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
-import {useSelector} from '@xstate/react'
 import {useCallback, useMemo} from 'react'
-import {Editor, Path} from 'slate'
+import {Editor} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {BLOCK_GAP, findPath, useMode} from './utils'
 
@@ -50,27 +46,15 @@ export const Block = (props: RenderElementProps) => {
 }
 
 const DraftSection = ({children, element, attributes}: RenderElementProps) => {
-  let dragService = useDrag()
   let mouseService = useMouse()
   let editor = useSlateStatic()
   let route = useNavRoute()
   // let hoveredBlockId = useHoveredBlockId()
   let {highlight} = useVisibleConnection((element as FlowContent).id)
 
-  const onDrop = useCallback((e: React.DragEvent<HTMLLIElement>) => {
-    e.preventDefault()
-    mouseService.send('DISABLE.DRAG.END')
-    dragService?.send({
-      type: 'DROPPED',
-    })
-
-    e.dataTransfer?.clearData()
-  }, [])
-
   // let {blockProps, blockPath, parentNode} = useBlockProps(editor, element)
   let path = findPath(element)
   let parentNode = useMemo(() => {
-    if (editor.dragging) return null
     let parentEntry = Editor.above<GroupingContent>(editor, {
       match: isGroupContent,
       mode: 'lowest',
@@ -95,33 +79,6 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
     }
   }, [element])
 
-  // let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
-
-  const dragContext = useDragContext()
-  const {drag, setDrag, clearDrag} = dragContext
-  const dragOverRef = useSelector(dragService!, (state) => {
-    return state.context.dragOverRef
-  })
-  const nestedGroup = useSelector(dragService!, (state) => {
-    return state.context.nestedGroup
-  })
-  const lineType: LineType | null = useMemo(() => {
-    if (dragOverRef) {
-      let i = 0
-      if (
-        nestedGroup &&
-        nestedGroup.some((el, index) => {
-          i = index
-          return Path.equals(el.entry[1], path)
-        })
-      ) {
-        return nestedGroup[i].line
-      }
-      if (Path.equals(dragOverRef.entry[1], path)) return dragOverRef.line
-    }
-    return null
-  }, [dragOverRef, nestedGroup])
-
   let height = useMemo(() => {
     if (isHeading(element)) {
       return 40
@@ -140,20 +97,10 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   return (
     <XStack
       {...attributes}
-      // {...blockProps}
-      //@ts-ignore
-      onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
-      onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
-      onDragOver={(e: any) => {
-        if (drag) return
-        setDrag(e, element as FlowContent)
-      }}
-      onDragLeave={(e: any) => {
-        if (!drag) return
-        clearDrag()
-      }}
       gap="$2"
-      backgroundColor={highlight ? '$yellow3' : 'transparent'}
+      backgroundColor={
+        route.key != 'draft' && highlight ? '$yellow3' : 'transparent'
+      }
     >
       <XStack
         //@ts-ignore
@@ -184,36 +131,6 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
       <YStack flex={1} gap={BLOCK_GAP}>
         {children}
       </YStack>
-      <XStack
-        height={3}
-        width="100%"
-        position="absolute"
-        bottom={lineType !== LineType.TOP ? -3 : undefined}
-        top={lineType === LineType.TOP ? -3 : undefined}
-        left={0}
-        opacity={lineType != null ? 1 : 0}
-        zIndex={1000 + path.length}
-        gap="$2"
-      >
-        <XStack
-          height={3}
-          width={32}
-          left={
-            lineType === LineType.GROUP || lineType === LineType.NESTED ? 36 : 0
-          }
-          backgroundColor={lineType === LineType.NESTED ? '$green7' : '$blue8'}
-          opacity={
-            lineType === LineType.GROUP || lineType === LineType.NESTED ? 1 : 0
-          }
-        />
-        <XStack
-          flex={1}
-          opacity={
-            lineType === LineType.GROUP || lineType === LineType.NESTED ? 0 : 1
-          }
-          backgroundColor="$blue8"
-        />
-      </XStack>
     </XStack>
   )
 }
@@ -232,7 +149,6 @@ const PublicationSection = ({
   let path = findPath(element)
 
   let parentNode = useMemo(() => {
-    // if (editor.dragging) return null
     let parentEntry = editor.above<GroupingContent>({
       match: isGroupContent,
       mode: 'lowest',

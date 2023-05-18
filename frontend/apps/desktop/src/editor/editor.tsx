@@ -1,4 +1,3 @@
-import {useDrag} from '@app/drag-context'
 import {
   createBlockquotePlugin,
   ELEMENT_BLOCKQUOTE,
@@ -84,7 +83,6 @@ import {
   Slate,
 } from 'slate-react'
 import {BlockElement} from './block'
-import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {buildEventHandlerHooks, EditorMode} from './plugin-utils'
 import './styles/editor.css'
 import type {EditorPlugin} from './types'
@@ -146,26 +144,6 @@ const _plugins: EditorPlugin[] = [
       e.stopPropagation()
     },
   },
-
-  {
-    name: 'prevent selection after drag and drop',
-    configureEditor: (editor) => {
-      const {apply} = editor
-      editor.apply = (operation) => {
-        if (operation.type == 'set_selection') {
-          //@ts-ignore
-          if (editor.dragging) {
-            ReactEditor.deselect(editor)
-          } else {
-            apply(operation)
-          }
-        } else {
-          apply(operation)
-        }
-      }
-      return editor
-    },
-  },
 ]
 
 export const plugins = _plugins
@@ -200,25 +178,23 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <LocalDragProvider>
-          <Slate
-            editor={editor}
-            value={value as Array<Descendant>}
-            onChange={onChange}
-          >
-            <EditorHoveringToolbar />
-            <Editable
-              id="editor"
-              data-testid="editor"
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              // decorate={decorate}
-              placeholder="Start typing here..."
-              {...eventHandlers}
-            />
-            {children}
-          </Slate>
-        </LocalDragProvider>
+        <Slate
+          editor={editor}
+          value={value as Array<Descendant>}
+          onChange={onChange}
+        >
+          <EditorHoveringToolbar />
+          <Editable
+            id="editor"
+            data-testid="editor"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            // decorate={decorate}
+            placeholder="Start typing here..."
+            {...eventHandlers}
+          />
+          {children}
+        </Slate>
       </div>
     )
   }
@@ -400,49 +376,4 @@ function RenderLeaf(props: RenderLeafProps) {
       {children}
     </SizableText>
   )
-}
-
-function LocalDragProvider({children}: {children: ReactNode}) {
-  const dragService = useDrag()
-  const [draggedNode, setDraggedNode] = useState<HoveredNode>(null)
-
-  let contextValues: DragContextValues = useMemo(
-    () => ({
-      drag: draggedNode,
-      setDrag: debounce(
-        (e: DragEvent, node: FlowContent) => {
-          if (draggedNode) return
-          setDraggedNode(node)
-          e.preventDefault()
-          const path = findPath(node)
-
-          dragService?.send({
-            type: 'DRAG.OVER',
-            toPath: path,
-            element: [node, path] as NodeEntry<FlowContent>,
-            currentPosX: e.clientX,
-            currentPosY: e.clientY,
-          })
-        },
-        100,
-        {leading: true, trailing: false},
-      ),
-      clearDrag: () => {
-        setDraggedNode(null)
-      },
-    }),
-    [draggedNode],
-  )
-
-  return (
-    <DragContext.Provider value={contextValues}>
-      {children}
-    </DragContext.Provider>
-  )
-}
-
-export function useDragContext() {
-  let context = useContext(DragContext)
-  // TODO: make sure is available
-  return context
 }
