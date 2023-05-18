@@ -51,7 +51,6 @@ import {invoke, send} from '@app/ipc'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useMemo} from 'react'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
-import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
@@ -119,7 +118,6 @@ export default function TitleBarWindows(props: TitleBarProps) {
           >
             <XStack data-tauri-drag-region>
               <NavigationButtons />
-              <DiscardDraftButton />
             </XStack>
           </Container>
         </XStack>

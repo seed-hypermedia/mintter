@@ -1,6 +1,5 @@
 import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
-import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
 import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
 
@@ -31,7 +30,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
             <XStack data-tauri-drag-region>
               <NavMenu />
               <NavigationButtons />
-              <DiscardDraftButton />
             </XStack>
           </Container>
         </XStack>

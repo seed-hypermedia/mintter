@@ -34,6 +34,8 @@ import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
 import {Tooltip} from '@components/tooltip'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {CheckCheck, FileCheck, FileUp, Upload} from '@tamagui/lucide-icons'
+import DiscardDraftButton from './discard-draft-button'
 
 const forceProductionURL = true
 
@@ -419,7 +421,8 @@ export function PublishShareButton() {
     )
   }
 
-  const draftActionLabel = webUrl
+  const isWebPublish = !!webUrl
+  const draftActionLabel = isWebPublish
     ? `Publish to ${hostnameStripProtocol(webUrl)}`
     : 'Publish'
   if (isDraft) {
@@ -427,7 +430,7 @@ export function PublishShareButton() {
       <>
         <Button
           size="$2"
-          chromeless
+          chromeless={!isDraft}
           disabled={!isDaemonReady || isSaving.current}
           onPress={(e) => {
             if (webUrl && !webPub) {
@@ -437,10 +440,11 @@ export function PublishShareButton() {
             }
           }}
           theme="green"
+          icon={isDraft ? (isWebPublish ? Upload : Check) : Globe}
         >
-          {isDraft ? null : <Globe size={16} />}
           {isDraft ? draftActionLabel : hostnameStripProtocol(webUrl) || null}
         </Button>
+        <DiscardDraftButton />
         {copyReferenceButton}
         {publicationDialog.content}
       </>

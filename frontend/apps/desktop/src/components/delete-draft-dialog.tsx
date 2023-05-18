@@ -29,6 +29,7 @@ export function useDeleteDraftDialog({
         trigger={trigger}
         title="Discard Draft"
         description="Permanently delete this draft document?"
+        onOpenChange={dialogState.onOpenChange}
         cancelButton={
           <Button
             onPress={() => {

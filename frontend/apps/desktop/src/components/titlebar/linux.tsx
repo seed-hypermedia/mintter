@@ -22,7 +22,6 @@ import {
   NavigationButtons,
   SitesNavDropdownItems,
 } from './common'
-import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
 import {
   CloseButton,
@@ -71,7 +70,6 @@ export default function TitleBarLinux(props: TitleBarProps) {
           <MintterIcon />
           <NavMenu />
           <NavigationButtons />
-          <DiscardDraftButton />
         </TitlebarSection>
         <TitlebarSection flex={1} data-tauri-drag-region>
           <Title />
