@@ -334,6 +334,72 @@ export function useSitePublish() {
   )
 }
 
+export function useSitePublishDraft(draftId: string | undefined) {
+  const navigate = useNavigate('replace')
+  return useMutation(
+    async ({path}: {path: string}) => {
+      // welcome to draft Web Publish flow!
+
+      // right now the doc is a draft and we want to put it on a site
+
+      // 1. re-implement usePublishDraft
+      // 1. publish the document to the site
+
+      const docId = draftId
+      if (!docId) throw new Error('No draftId provided to useSitePublishDraft')
+      const publication = await draftsClient.publishDraft({documentId: docId})
+      const document = publication.document
+      if (!document) throw new Error('No document in new publication?!')
+
+      // 1. get the account ID of the publisher
+      const webUrl = publication.document?.webUrl
+
+      if (!webUrl) {
+        // Bailing because no webUrl on this draft. this should not happen because useSitePublishDraft should only be called on drafts that have a webUrl set
+        return {
+          publication,
+          docId,
+        }
+      }
+      // const wellKnownResponse = await fetch(`${webUrl}/api/mintter-well-known`)
+      // if (!wellKnownResponse.ok)
+      //   throw new Error(
+      //     `Failed to query well-known of site when determining publisher id. Status: ${wellKnownResponse.status}`,
+      //   )
+      // const siteWellKnown = await wellKnownResponse.json()
+      // const publisherId: string | undefined =
+      //   siteWellKnown?.account_id ?? String(siteWellKnown?.account_id)
+
+      // if (!publisherId) {
+      //   throw new Error(
+      //     'Publisher id could not be found from site well-known response',
+      //   )
+      // }
+
+      await performWebPublish(document, webUrl, path, publication.version)
+
+      return {
+        publication,
+        docId,
+      }
+    },
+    {
+      onSuccess: ({publication, docId}, input) => {
+        appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, input])
+        appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
+        appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+        navigate({
+          key: 'publication',
+          documentId: docId,
+          versionId: publication.version,
+        })
+        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, docId])
+        appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, docId])
+      },
+    },
+  )
+}
+
 export function useDocRepublish(
   opts: UseMutationOptions<
     WebPublicationRecord[],

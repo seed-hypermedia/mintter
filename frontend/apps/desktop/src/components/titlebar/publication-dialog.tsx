@@ -1,7 +1,12 @@
-import {usePublication} from '@app/models/documents'
-import {useSitePublish} from '@app/models/sites'
+import {useDraft, usePublication, useSaveDraft} from '@app/models/documents'
+import {useSitePublish, useSitePublishDraft} from '@app/models/sites'
 import {styled} from '@app/stitches.config'
-import {PublicationRoute, useNavRoute} from '@app/utils/navigation'
+import {
+  DraftRoute,
+  NavRoute,
+  PublicationRoute,
+  useNavRoute,
+} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
@@ -30,40 +35,42 @@ const Heading = styled('h2', {
 })
 
 function PublishDialogForm({
-  siteId,
   onDone,
-  publicationRoute,
+  route,
 }: {
-  siteId: string
   onDone?: () => void
-  publicationRoute: PublicationRoute
+  route: NavRoute
 }) {
   console.log('=== PublishDialogForm')
-  const publish = useSitePublish()
+  const draftId = route.key === 'draft' ? route.draftId : undefined
+  // const saveDraft = useSaveDraft(draftId)
+  const publish = useSitePublishDraft(draftId)
 
-  const {data: pub} = usePublication({
-    documentId: publicationRoute.documentId,
-    versionId: publicationRoute.versionId,
+  const {data: draft} = useDraft({
+    documentId: draftId,
+    routeKey: route.key, //??? what is this
   })
-
   const init = useMemo(() => {
-    const title = pub?.document?.title
+    const title = draft?.title
+    const webUrl = draft?.webUrl
     const path = title ? writePathState(title) : 'untitled'
-
     return {
       path,
-      docId: publicationRoute.documentId,
-      version: publicationRoute.versionId || '',
+      webUrl,
+      docId: draftId,
     }
-  }, [pub])
+  }, [draft])
 
   const [path, setPath] = useState<string>(init.path)
-  const pubUrl = `${siteId}/${
+  const pubUrl = `${init.webUrl}/${
     path === '/' ? '' : path === '' ? `p/${init.docId}` : readPathState(path)
   }`
+  if (route.key !== 'draft') {
+    return null
+  }
   return (
     <>
-      <Heading>Publish to {hostnameStripProtocol(siteId)}</Heading>
+      <Heading>Publish to {hostnameStripProtocol(init.webUrl)}</Heading>
       <Label htmlFor="pretty-path">Public URL (/Path)</Label>
       <Input
         placeholder={'Unlisted Document'}
@@ -80,9 +87,6 @@ function PublishDialogForm({
         onClick={() => {
           publish
             .mutateAsync({
-              hostname: siteId,
-              documentId: init.docId,
-              version: init.version,
               path: readPathState(path),
             })
             .then(() => {
@@ -104,7 +108,6 @@ export function usePublicationDialog() {
   const route = useNavRoute()
   const [openSiteHostname, setOpenSiteHostname] = useState<null | string>(null)
   function open(hostname: string) {
-    console.log('OPEN OPEN', hostname)
     setOpenSiteHostname(hostname)
   }
 
@@ -119,10 +122,9 @@ export function usePublicationDialog() {
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <StyledContent>
-            {openSiteHostname && route.key == 'publication' && (
+            {openSiteHostname && (
               <PublishDialogForm
-                siteId={openSiteHostname}
-                publicationRoute={route}
+                route={route}
                 onDone={() => {
                   setOpenSiteHostname(null)
                 }}

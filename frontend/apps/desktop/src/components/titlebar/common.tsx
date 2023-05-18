@@ -26,15 +26,11 @@ import {
   Draft,
   File,
   Forward,
-  Globe,
-  ListItem,
-  ListItemProps,
   Menu,
   Popover,
   Separator,
   Settings,
   SizableText,
-  Text,
   TitlebarSection,
   User,
   XGroup,
@@ -42,11 +38,10 @@ import {
   YGroup,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useState} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
-import {PublishShareButton} from './publish-share'
-import {FilePlus2, Pencil, PlusSquare} from '@tamagui/lucide-icons'
+import {PublicationDropdown, PublishShareButton} from './publish-share'
+import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
 import {Tooltip} from '@components/tooltip'
 
 export function ActionButtons(props: TitleBarProps) {
@@ -100,28 +95,31 @@ export function NavigationButtons() {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XGroup backgroundColor="transparent">
-      <XGroup.Item>
-        <Button
-          size="$2"
-          onPress={() => dispatch({type: 'pop'})}
-          chromeless
-          disabled={state.routeIndex <= 0}
-          opacity={state.routeIndex <= 0 ? 0.5 : 1}
-          icon={Back}
-        />
-      </XGroup.Item>
-      <XGroup.Item>
-        <Button
-          size="$2"
-          onPress={() => dispatch({type: 'forward'})}
-          chromeless
-          disabled={state.routeIndex >= state.routes.length - 1}
-          opacity={state.routeIndex >= state.routes.length - 1 ? 0.5 : 1}
-          icon={Forward}
-        />
-      </XGroup.Item>
-    </XGroup>
+    <XStack>
+      <XGroup backgroundColor="transparent">
+        <XGroup.Item>
+          <Button
+            size="$2"
+            onPress={() => dispatch({type: 'pop'})}
+            chromeless
+            disabled={state.routeIndex <= 0}
+            opacity={state.routeIndex <= 0 ? 0.5 : 1}
+            icon={Back}
+          />
+        </XGroup.Item>
+        <XGroup.Item>
+          <Button
+            size="$2"
+            onPress={() => dispatch({type: 'forward'})}
+            chromeless
+            disabled={state.routeIndex >= state.routes.length - 1}
+            opacity={state.routeIndex >= state.routes.length - 1 ? 0.5 : 1}
+            icon={Forward}
+          />
+        </XGroup.Item>
+      </XGroup>
+      <PublicationDropdown />
+    </XStack>
   )
 }
 

@@ -26,6 +26,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
 import {NavRoute} from '@app/utils/navigation'
+import {toast} from 'react-hot-toast'
 
 export function usePublicationList() {
   return useQuery({
@@ -101,7 +102,7 @@ export function useDraft({
   routeKey,
   ...options
 }: UseQueryOptions<Document> & {
-  documentId: string
+  documentId?: string
   routeKey: NavRoute['key']
 }) {
   return useQuery({
@@ -204,16 +205,24 @@ let emptyEditorValue = group({data: {parent: ''}}, [
 
 type EditorDraft = {
   children: GroupingContent[]
+  editor: any
+  webUrl: string
   id: string
+  changes: DocumentChange[]
 }
 
 export function useEditorDraft({
   editor,
   documentId,
+  initWebUrl,
   ...options
-}: UseQueryOptions<EditorDraft> & {documentId: string; editor?: Editor}) {
+}: UseQueryOptions<EditorDraft> & {
+  documentId: string
+  editor: Editor
+  initWebUrl?: string
+}) {
   return useQuery({
-    queryKey: [queryKeys.GET_EDITOR_DRAFT, documentId],
+    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     enabled: !!documentId,
     queryFn: async () => {
       const backendDraft = await draftsClient.getDraft({documentId: documentId})
@@ -226,13 +235,16 @@ export function useEditorDraft({
         if (editor) {
           let block = emptyEditorValue.children[0]
 
+          MintterEditor.addChange(editor, ['setWebUrl', initWebUrl || ''])
           MintterEditor.addChange(editor, ['moveBlock', block.id])
           MintterEditor.addChange(editor, ['replaceBlock', block.id])
         }
       }
 
       return {
-        // backendDraft,
+        editor,
+        changes: MintterEditor.transformChanges(editor).filter(Boolean),
+        webUrl: backendDraft.webUrl,
         id: backendDraft.id,
         children,
       }
@@ -245,7 +257,7 @@ export function useDraftTitle(
   input: UseQueryOptions<EditorDraft> & {documentId: string},
 ) {
   let data = useCacheListener<EditorDraft>([
-    queryKeys.GET_EDITOR_DRAFT,
+    queryKeys.EDITOR_DRAFT,
     input.documentId,
   ])
   // let {data} = useEditorDraft({documentId: input.documentId})
@@ -269,45 +281,64 @@ export function getDocumentTitle(doc?: EditorDraft) {
 
 export type SaveDraftInput = {
   content: GroupingContent[]
-  editor: Editor
 }
 
-export function useSaveDraft(documentId: string) {
+export function useSaveDraft(documentId?: string) {
   const saveDraftMutation = useMutation({
-    onMutate: ({content, editor}: SaveDraftInput) => {
+    onMutate: ({content}: SaveDraftInput) => {
+      let title: string
       appQueryClient.setQueryData(
-        [queryKeys.GET_EDITOR_DRAFT, documentId],
-        (editorDraft: any) => {
-          if (!editorDraft) return null
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (editorDraft: EditorDraft | undefined) => {
+          if (!editorDraft) return undefined
+          let contentChanges = MintterEditor.transformChanges(
+            editorDraft.editor,
+          ).filter(Boolean)
+
+          title = getTitleFromContent(content)
+          let changes: Array<DocumentChange> = title
+            ? [
+                ...contentChanges,
+                new DocumentChange({
+                  op: {
+                    case: 'setTitle',
+                    value: title,
+                  },
+                }),
+              ]
+            : contentChanges
           return {
             ...editorDraft,
             children: content,
+            changes,
           }
         },
       )
+      appQueryClient.setQueryData(
+        [queryKeys.GET_DRAFT, documentId],
+        (draft: Document | undefined) => {
+          if (!draft) return undefined
+          return new Document({
+            ...draft,
+            title: title || draft.title,
+          })
+        },
+      )
     },
-    mutationFn: async ({content, editor}: SaveDraftInput) => {
-      let contentChanges =
-        MintterEditor.transformChanges(editor).filter(Boolean)
+    mutationFn: async ({}: SaveDraftInput) => {
+      const draftData: EditorDraft | undefined = appQueryClient.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        documentId,
+      ])
+      if (!draftData) {
+        throw new Error('failed to access editor from saveDraft mutation')
+      }
 
-      const newTitle = getTitleFromContent(content)
-      let changes: Array<DocumentChange> = newTitle
-        ? [
-            ...contentChanges,
-            new DocumentChange({
-              op: {
-                case: 'setTitle',
-                value: newTitle,
-              },
-            }),
-          ]
-        : contentChanges
-
-      if (changes.length == 0) return null
+      if (draftData.changes.length == 0) return null
 
       await draftsClient.updateDraftV2({
         documentId,
-        changes,
+        changes: draftData.changes,
       })
 
       appInvalidateQueries([documentId])
@@ -322,7 +353,7 @@ export function useSaveDraft(documentId: string) {
     ...saveDraftMutation,
     mutate: (input: SaveDraftInput) => {
       appQueryClient.setQueryData(
-        [queryKeys.GET_EDITOR_DRAFT, documentId],
+        [queryKeys.EDITOR_DRAFT, documentId],
         (editorDraft: any) => {
           if (!editorDraft) return null
           return {
@@ -338,6 +369,63 @@ export function useSaveDraft(documentId: string) {
       }, 500)
     },
   }
+}
+
+export function useWriteDraftWebUrl(draftId?: string) {
+  return useMutation({
+    onMutate: (webUrl: string) => {
+      let title: string
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (editorDraft: EditorDraft | undefined) => {
+          if (!editorDraft) return undefined
+          let changes: DocumentChange[] = [
+            ...editorDraft.changes,
+            new DocumentChange({
+              op: {
+                case: 'setWebUrl',
+                value: webUrl,
+              },
+            }),
+          ]
+          return {
+            ...editorDraft,
+            webUrl,
+            changes,
+          }
+        },
+      )
+      appQueryClient.setQueryData(
+        [queryKeys.GET_DRAFT, draftId],
+        (draft: Document | undefined) => {
+          if (!draft) return undefined
+          return new Document({
+            ...draft,
+            webUrl,
+          })
+        },
+      )
+    },
+    mutationFn: async (webUrl: string) => {
+      const draftData: EditorDraft | undefined = appQueryClient.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        draftId,
+      ])
+      if (!draftData) {
+        throw new Error(
+          'failed to access editor from useWriteDraftWebUrl mutation',
+        )
+      }
+      await draftsClient.updateDraftV2({
+        documentId: draftId,
+        changes: draftData.changes,
+      })
+
+      appInvalidateQueries([draftId])
+      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+      return null
+    },
+  })
 }
 
 function useCacheListener<T = unknown>(queryKey: string[]) {

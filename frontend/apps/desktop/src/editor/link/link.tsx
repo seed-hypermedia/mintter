@@ -123,7 +123,6 @@ export const createLinkPlugin = (): EditorPlugin => ({
     }
 
     editor.insertText = (text: string) => {
-      console.log('editor.insertText', text)
       insertLinkableText(text)
     }
 

@@ -79,7 +79,7 @@ export * from './block-to-api'
 export * from './block-to-slate'
 export * from './change-creators'
 export * from './client-utils'
-export type {Document}
+export {Document}
 export {
   Accounts,
   ContentGraph,

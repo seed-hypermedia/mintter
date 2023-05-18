@@ -46,6 +46,7 @@ export default function DraftPage() {
   } = useEditorDraft({
     editor,
     documentId: docId,
+    initWebUrl: route.contextSiteHost,
   })
 
   let mouseService = useInterpret(() => mouseMachine)

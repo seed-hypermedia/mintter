@@ -1,5 +1,10 @@
 import {MINTTER_GATEWAY_URL} from '@app/constants'
-import {useDraft, usePublication, usePublishDraft} from '@app/models/documents'
+import {
+  useDraft,
+  usePublication,
+  usePublishDraft,
+  useWriteDraftWebUrl,
+} from '@app/models/documents'
 import {
   useDocPublications,
   useDocRepublish,
@@ -10,9 +15,11 @@ import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
 import {AccessURLRow} from '@components/url'
-import {Publication, WebPublicationRecord} from '@mintter/shared'
+import {Publication, Document, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
+  Check,
+  ChevronDown,
   Copy,
   ExternalLink,
   Globe,
@@ -20,7 +27,6 @@ import {
   Spinner,
 } from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {GestureReponderEvent} from '@tamagui/web'
 import {UseQueryResult} from '@tanstack/react-query'
 import {useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -133,36 +139,6 @@ function PublishButtons({
   )
 }
 
-function PublishButton({
-  webUrl,
-  onPress,
-  disabled,
-  isDraft,
-}: {
-  webUrl?: null | string
-  onPress: (e: GestureReponderEvent) => void
-  disabled?: boolean
-  isDraft?: boolean
-}) {
-  const draftActionLabel = webUrl
-    ? `Publish to ${hostnameStripProtocol(webUrl)}`
-    : 'Publish'
-  return (
-    <PopoverPrimitive.Trigger asChild disabled={disabled}>
-      <Button
-        size="$2"
-        chromeless
-        disabled={disabled}
-        onPress={onPress}
-        theme="green"
-      >
-        {isDraft ? null : <Globe size={16} />}
-        {isDraft ? draftActionLabel : hostnameStripProtocol(webUrl) || null}
-      </Button>
-    </PopoverPrimitive.Trigger>
-  )
-}
-
 function PublishShareContent({
   docId,
   publications,
@@ -182,17 +158,169 @@ function PublishShareContent({
   )
 }
 
-export function PublishShareButton() {
+function DraftPublicationDialog({draft}: {draft?: Document | undefined}) {
+  const sites = useSiteList()
+  const sitesList = sites.data || []
+  const foundSiteHostname = sitesList.find(
+    (site) => site.hostname === draft?.webUrl,
+  )
+  const writeSiteUrl = useWriteDraftWebUrl(draft?.id)
+
+  return (
+    <>
+      <SizableText size="$3" fontWeight="700" theme="mint">
+        Publish to:
+      </SizableText>
+      <Button
+        size="$4"
+        onPress={() => {
+          writeSiteUrl.mutate('')
+        }}
+        textProps={{flex: 1}}
+        icon={Globe}
+        iconAfter={foundSiteHostname == null ? Check : undefined}
+      >
+        Public Network
+      </Button>
+      {sitesList?.map((site) => {
+        return (
+          <Button
+            size="$4"
+            key={site.hostname}
+            onPress={() => {
+              writeSiteUrl.mutate(site.hostname)
+            }}
+            textProps={{flex: 1}}
+            icon={Globe}
+            iconAfter={
+              foundSiteHostname?.hostname === site.hostname ? Check : undefined
+            }
+          >
+            {hostnameStripProtocol(site.hostname)}
+          </Button>
+        )
+      })}
+    </>
+  )
+}
+
+function PubDropdown() {
   const route = useNavRoute()
-  const isDraft = route.key == 'draft'
-  const isPublication = route.key == 'publication'
-  // I changed the otherwise return to an empty string because that way the useDraft hook will not complain
   const documentId =
     route.key == 'publication'
       ? route.documentId
       : route.key == 'draft'
       ? route.draftId
-      : ''
+      : undefined
+  const {data: publication} = usePublication({
+    documentId,
+  })
+  const label = publication?.document?.webUrl
+    ? hostnameStripProtocol(publication.document.webUrl)
+    : 'Public'
+  return (
+    <Button
+      size="$2"
+      theme="green"
+      icon={Globe}
+      disabled // todo implement this dropdown
+    >
+      {label}
+    </Button>
+  )
+}
+
+function DraftPubDropdown() {
+  const [isOpen, setIsOpen] = useState(false)
+  const route = useNavRoute()
+  const documentId =
+    route.key == 'publication'
+      ? route.documentId
+      : route.key == 'draft'
+      ? route.draftId
+      : undefined
+  const {data: draft} = useDraft({
+    documentId,
+    routeKey: route.key,
+    enabled: route.key == 'draft' && !!documentId,
+  })
+
+  const label = draft?.webUrl ? hostnameStripProtocol(draft.webUrl) : 'Public'
+
+  return (
+    <>
+      <PopoverPrimitive.Root
+        open={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open)
+        }}
+      >
+        <PopoverPrimitive.Trigger asChild>
+          <Button
+            size="$2"
+            theme="green"
+            icon={Globe}
+            iconAfter={ChevronDown}
+            onPress={() => {
+              // setIsOpen(true)
+            }}
+          >
+            {label}
+          </Button>
+        </PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            align="start"
+            style={{
+              zIndex: 200000,
+            }}
+          >
+            <Box
+              css={{
+                width: '300px',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '$4',
+                margin: '$2',
+                boxShadow: '$3',
+                borderRadius: '$2',
+                backgroundColor: '$primary-background-subtle',
+                border: '1px solid blue',
+                borderColor: '$primary-border-subtle',
+                gap: '$4',
+              }}
+            >
+              <DraftPublicationDialog draft={draft} />
+            </Box>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </>
+  )
+}
+function PublishedPubDropdown() {
+  return <PubDropdown />
+}
+
+export function PublicationDropdown() {
+  const route = useNavRoute()
+  const isDraft = route.key == 'draft'
+  const isPublication = route.key == 'publication'
+  if (isDraft) return <DraftPubDropdown />
+  if (isPublication) return <PublishedPubDropdown />
+  return null
+}
+
+export function PublishShareButton() {
+  const route = useNavRoute()
+  const isDraft = route.key == 'draft'
+  const isPublication = route.key == 'publication'
+  const documentId =
+    route.key == 'publication'
+      ? route.documentId
+      : route.key == 'draft'
+      ? route.draftId
+      : undefined
   const versionId = route.key == 'publication' ? route.versionId : undefined
   const {data: loadedPub} = usePublication({
     documentId,
@@ -206,10 +334,9 @@ export function PublishShareButton() {
     enabled: route.key == 'draft' && !!documentId,
   })
   const draftId = route.key == 'draft' ? route.draftId : undefined
-  const [isOpen, setIsOpen] = useState(false)
   const publicationDialog = usePublicationDialog()
   const isDaemonReady = useDaemonReady()
-  const publications = useDocPublications(documentId)
+  // const publications = useDocPublications(documentId)
   const publishedWebHost = pub?.document
     ? pub.document.webUrl || 'https://mintter.com'
     : null
@@ -273,75 +400,35 @@ export function PublishShareButton() {
     )
   }
 
-  if (!isDraft && !isPublication) return null
-  return (
-    <>
-      <PopoverPrimitive.Root
-        open={isOpen}
-        onOpenChange={(open) => {
-          if (open) {
-            setIsOpen(true)
-          } else {
-            setIsOpen(false)
-          }
-        }}
-      >
-        <PublishButton
-          webUrl={webUrl}
+  const draftActionLabel = webUrl
+    ? `Publish to ${hostnameStripProtocol(webUrl)}`
+    : 'Publish'
+  if (isDraft) {
+    return (
+      <>
+        <Button
+          size="$2"
+          chromeless
           disabled={!isDaemonReady || isSaving.current}
-          isDraft={route.key === 'draft'}
           onPress={(e) => {
-            e.preventDefault()
-            if (isOpen) {
-              setIsOpen(false)
-              return
-            }
-
-            if (draftId) {
+            if (webUrl) {
+              publicationDialog.open(webUrl)
+            } else if (draftId) {
               publish.mutate(draftId)
             }
-
-            setIsOpen(true)
           }}
-        />
-
-        <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content
-            align="end"
-            style={{
-              zIndex: 200000,
-            }}
-          >
-            <Box
-              css={{
-                width: '300px',
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '$4',
-                margin: '$2',
-                boxShadow: '$3',
-                borderRadius: '$2',
-                backgroundColor: '$primary-background-subtle',
-                border: '1px solid blue',
-                borderColor: '$primary-border-subtle',
-                gap: '$4',
-              }}
-            >
-              <PublishShareContent
-                docId={pub?.document?.id}
-                publications={publications}
-                publication={pub}
-                onPublish={(hostname) => {
-                  setIsOpen(false)
-                  publicationDialog.open(hostname)
-                }}
-              />
-            </Box>
-          </PopoverPrimitive.Content>
-        </PopoverPrimitive.Portal>
-      </PopoverPrimitive.Root>
-      {copyReferenceButton}
-      {publicationDialog.content}
-    </>
-  )
+          theme="green"
+        >
+          {isDraft ? null : <Globe size={16} />}
+          {isDraft ? draftActionLabel : hostnameStripProtocol(webUrl) || null}
+        </Button>
+        {copyReferenceButton}
+        {publicationDialog.content}
+      </>
+    )
+  }
+  if (isPublication) {
+    return copyReferenceButton || null
+  }
+  return null
 }

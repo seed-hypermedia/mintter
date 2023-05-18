@@ -31,7 +31,7 @@ export const queryKeys = {
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
   GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST', //
   GET_DRAFT: 'GET_DRAFT', // , docId: string
-  GET_EDITOR_DRAFT: 'GET_EDITOR_DRAFT', // , docId: string
+  EDITOR_DRAFT: 'EDITOR_DRAFT', // , docId: string
   GET_PUBLICATION: 'GET_PUBLICATION', //, docId: string, versionId?: string
 
   // comments
@@ -86,7 +86,7 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'Publications'
     case queryKeys.GET_DRAFT:
       return `Draft ${abbreviateCid(arg1)}`
-    case queryKeys.GET_EDITOR_DRAFT:
+    case queryKeys.EDITOR_DRAFT:
       return `Editor Draft ${abbreviateCid(arg1)}`
     case queryKeys.GET_PUBLICATION:
       return `Publication ${abbreviateCid(arg1)}`

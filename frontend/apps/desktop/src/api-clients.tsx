@@ -27,6 +27,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
     return result
   } catch (e) {
     console.error('📣 🚨', e)
+    console.log(req)
     throw e
   }
 }
