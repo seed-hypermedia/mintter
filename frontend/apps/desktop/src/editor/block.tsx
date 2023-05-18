@@ -1,5 +1,5 @@
 import {useDrag} from '@app/drag-context'
-import {DragEntry, LineType} from '@app/drag-machine'
+import {LineType} from '@app/drag-machine'
 import {DraftBlocktools, PublicationBlocktools} from '@app/editor/blocktools'
 import {useDragContext} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -19,13 +19,25 @@ import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
 import {useSelector} from '@xstate/react'
 import {useCallback, useMemo} from 'react'
 import {Editor, Path} from 'slate'
-import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
-import {useBlockProps} from './editor-node-props'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {BLOCK_GAP, findPath, useMode} from './utils'
 
 export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
-export const ElementDrag = (props: RenderElementProps) => {
+export function BlockElement({
+  attributes,
+  children,
+  element,
+}: RenderElementProps) {
+  return (
+    <Block element={element} attributes={attributes}>
+      {children}
+    </Block>
+  )
+  // return children
+}
+
+export const Block = (props: RenderElementProps) => {
   let mode = useMode()
   if (mode == EditorMode.Draft) {
     return <DraftSection {...props} />

@@ -4098,7 +4098,7 @@ __metadata:
     sass: 1.56.1
     shiki: 0.14.1
     show-keys: 1.1.2
-    slate: ^0.94.1
+    slate: 0.94.1
     slate-history: 0.93.0
     slate-hyperscript: 0.77.0
     slate-react: 0.94.0
@@ -21740,7 +21740,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate@npm:^0.94.1":
+"slate@npm:0.94.1":
   version: 0.94.1
   resolution: "slate@npm:0.94.1"
   dependencies:

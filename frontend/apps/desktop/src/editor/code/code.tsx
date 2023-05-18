@@ -1,20 +1,15 @@
-import {useBlockProps} from '@app/editor/editor-node-props'
 import {
-  Code as CodeType,
   createId,
   isCode,
   isParagraph,
+  paragraph,
   statement,
   text,
-  paragraph,
 } from '@mintter/shared'
 
 import {getHighlighter, Highlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
-import {ElementDrag} from '../drag-section'
 import {MARK_EMPHASIS} from '../emphasis'
-import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'

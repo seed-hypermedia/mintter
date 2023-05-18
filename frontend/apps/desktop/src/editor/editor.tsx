@@ -33,7 +33,6 @@ import {createMintterChangesPlugin} from '@app/editor/mintter-changes/plugin'
 import {createParagraphPlugin, ParagraphElement} from '@app/editor/paragraph'
 import {createPlainTextPastePlugin} from '@app/editor/paste-plugin'
 import {createStatementPlugin, ELEMENT_STATEMENT} from '@app/editor/statement'
-import {BlockElement} from '@app/editor/statement/block'
 import {
   createStaticParagraphPlugin,
   ELEMENT_STATIC_PARAGRAPH,
@@ -84,6 +83,7 @@ import {
   RenderLeafProps,
   Slate,
 } from 'slate-react'
+import {BlockElement} from './block'
 import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {buildEventHandlerHooks, EditorMode} from './plugin-utils'
 import './styles/editor.css'

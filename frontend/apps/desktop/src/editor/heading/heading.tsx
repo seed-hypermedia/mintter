@@ -1,6 +1,3 @@
-import {useBlockProps} from '@app/editor/editor-node-props'
-import {EditorMode} from '@app/editor/plugin-utils'
-
 import {
   createId,
   Heading as HeadingType,
@@ -9,10 +6,7 @@ import {
   isStaticParagraph,
   statement,
 } from '@mintter/shared'
-import {SizableText} from '@mintter/ui'
 import {Editor, NodeEntry, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
-import {ElementDrag} from '../drag-section'
 import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
