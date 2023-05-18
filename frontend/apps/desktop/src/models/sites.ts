@@ -42,7 +42,7 @@ function blockExtractReferencedDocs(
   return docIds
 }
 
-function extractReferencedDocs(doc: Document) {
+export function extractReferencedDocs(doc: Document) {
   return doc.children
     .map((child) =>
       child.block ? blockExtractReferencedDocs(child.block) : [],
@@ -416,6 +416,7 @@ export function useDocRepublish(
       const webPubs = await getDocWebPublications(document.id)
       await Promise.all(
         webPubs.map(async (webPub) => {
+          if (document.webUrl !== webPub.hostname) return
           const site = getWebSiteClient(webPub.hostname)
           await site.publishDocument({
             documentId: document.id,

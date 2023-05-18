@@ -1,4 +1,8 @@
-import {draftsClient, publicationsClient} from '@app/api-clients'
+import {
+  draftsClient,
+  getWebSiteClient,
+  publicationsClient,
+} from '@app/api-clients'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
@@ -11,6 +15,7 @@ import {
   blockNodeToSlate,
   GroupingContent,
   DocumentChange,
+  WebPublicationRecord,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -26,7 +31,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
 import {NavRoute} from '@app/utils/navigation'
-import {toast} from 'react-hot-toast'
+import {extractReferencedDocs} from './sites'
 
 export function usePublicationList() {
   return useQuery({
@@ -176,19 +181,46 @@ function sortDocuments(a?: Timestamp, b?: Timestamp) {
 }
 
 export function usePublishDraft(
-  opts?: UseMutationOptions<Publication, unknown, string>,
+  opts?: UseMutationOptions<
+    Publication,
+    unknown,
+    {
+      draftId: string
+      webPub: WebPublicationRecord | undefined
+    }
+  >,
 ) {
   return useMutation({
     ...opts,
-    mutationFn: (documentId) => draftsClient.publishDraft({documentId}),
-    onSuccess: (pub, variables, ...rest) => {
+    mutationFn: async ({
+      webPub,
+      draftId,
+    }: {
+      draftId: string
+      webPub: WebPublicationRecord | undefined
+    }) => {
+      const pub = await draftsClient.publishDraft({documentId: draftId})
+      const doc = pub.document
+      if (webPub && doc && webPub.hostname === pub.document?.webUrl) {
+        const site = getWebSiteClient(webPub.hostname)
+        const referencedDocuments = extractReferencedDocs(doc)
+        await site.publishDocument({
+          documentId: doc.id,
+          path: webPub.path,
+          version: pub.version,
+          referencedDocuments,
+        })
+      }
+      return pub
+    },
+    onSuccess: (pub: Publication, variables, context) => {
       appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       appInvalidateQueries([queryKeys.GET_PUBLICATION, pub.document?.id])
       appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, pub.document?.id])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
-      opts?.onSuccess?.(pub, variables, ...rest)
+      opts?.onSuccess?.(pub, variables, context)
 
       setTimeout(() => {
         // do this later to wait for the draft component to unmount
@@ -235,9 +267,9 @@ export function useEditorDraft({
         if (editor) {
           let block = emptyEditorValue.children[0]
 
-          MintterEditor.addChange(editor, ['setWebUrl', initWebUrl || ''])
           MintterEditor.addChange(editor, ['moveBlock', block.id])
           MintterEditor.addChange(editor, ['replaceBlock', block.id])
+          MintterEditor.addChange(editor, ['setWebUrl', initWebUrl || ''])
         }
       }
 

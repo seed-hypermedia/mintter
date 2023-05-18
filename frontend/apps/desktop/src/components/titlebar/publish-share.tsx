@@ -9,6 +9,7 @@ import {
   useDocPublications,
   useDocRepublish,
   useSiteList,
+  useSitePublishDraft,
 } from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
@@ -230,6 +231,19 @@ function PubDropdown() {
   )
 }
 
+function SitePubDropdown({hostname}: {hostname: string}) {
+  return (
+    <Button
+      size="$2"
+      theme="green"
+      icon={Globe}
+      disabled // todo implement this dropdown
+    >
+      {hostnameStripProtocol(hostname)}
+    </Button>
+  )
+}
+
 function DraftPubDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const route = useNavRoute()
@@ -306,8 +320,10 @@ export function PublicationDropdown() {
   const route = useNavRoute()
   const isDraft = route.key == 'draft'
   const isPublication = route.key == 'publication'
+  const isSiteHome = route.key == 'site'
   if (isDraft) return <DraftPubDropdown />
   if (isPublication) return <PublishedPubDropdown />
+  if (isSiteHome) return <SitePubDropdown hostname={route.hostname} />
   return null
 }
 
@@ -342,29 +358,20 @@ export function PublishShareButton() {
     ? pub.document.webUrl || 'https://mintter.com'
     : null
   let isSaving = useRef(false)
-  const republishDoc = useDocRepublish({
-    onSuccess: (webPubs) => {
-      if (!webPubs.length) return
-      toast.success(
-        `Document updated on ${webPubs
-          .map((pub) => hostnameStripProtocol(pub.hostname))
-          .join(', ')}`,
-      )
-    },
-  })
   let navReplace = useNavigate('replace')
   const publish = usePublishDraft({
     onSuccess: (publishedDoc, doc) => {
-      if (!publishedDoc) return
-
+      if (!publishedDoc || !documentId) return
       navReplace({
         key: 'publication',
-        documentId: doc,
+        documentId,
         versionId: publishedDoc.version,
       })
-
-      republishDoc.mutateAsync(publishedDoc)
-      toast.success('Draft published Successfully!')
+      if (publishedDoc.document?.webUrl) {
+        toast.success(`Published to ${hostnameStripProtocol(webUrl)}`)
+      } else {
+        toast.success('Document saved and set to public')
+      }
     },
   })
 
@@ -391,7 +398,7 @@ export function PublishShareButton() {
           size="$2"
           onPress={() => {
             const {document, version} = pub || {}
-            const {id, webUrl} = document || {}
+            const {id} = document || {}
             if (!id) throw new Error('No document id')
             if (!publishedWebHost) throw new Error('Document not loaded')
             let path = `/p/${id}`
@@ -423,10 +430,10 @@ export function PublishShareButton() {
           chromeless
           disabled={!isDaemonReady || isSaving.current}
           onPress={(e) => {
-            if (webUrl) {
+            if (webUrl && !webPub) {
               publicationDialog.open(webUrl)
             } else if (draftId) {
-              publish.mutate(draftId)
+              publish.mutate({draftId, webPub})
             }
           }}
           theme="green"

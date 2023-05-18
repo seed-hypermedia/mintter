@@ -10,6 +10,7 @@ export function useOpenDraft() {
   const route = useNavRoute()
   const contextDocumentId =
     route.key === 'publication' ? route.documentId : undefined
+  const contextSiteHost = route.key === 'site' ? route.hostname : undefined
   const spawn = useNavigate('spawn')
   function openNewDraft(newWindow = true) {
     draftsClient
@@ -19,6 +20,7 @@ export function useOpenDraft() {
           key: 'draft',
           draftId: doc.id,
           contextDocumentId,
+          contextSiteHost,
         }
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         if (newWindow) {
