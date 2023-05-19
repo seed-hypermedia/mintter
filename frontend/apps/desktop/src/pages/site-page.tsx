@@ -3,8 +3,10 @@ import {useAccount} from '@app/models/accounts'
 import {prefetchPublication, usePublication} from '@app/models/documents'
 import {useSitePublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
+import {getDocUrl} from '@app/utils/doc-url'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
@@ -107,6 +109,9 @@ function WebPublicationListItem({
     documentId: webPub.documentId,
     versionId: webPub.version,
   })
+  const publishedWebHost = publication?.document
+    ? publication.document.webUrl || 'https://mintter.com'
+    : null
   const {data: author} = useAccount(publication?.document?.author)
   return (
     <Button
@@ -171,14 +176,18 @@ function WebPublicationListItem({
               <Dropdown.Item
                 data-testid="copy-item"
                 onPress={() => {
-                  copyTextToClipboard(
-                    `${MINTTER_LINK_PREFIX}${webPub.documentId}?v=${webPub.version}`,
+                  const docUrl = getDocUrl(publication, webPub)
+                  if (!docUrl) return
+                  copyTextToClipboard(docUrl)
+                  toast.success(
+                    `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
                   )
-                  toast.success('Document ID copied successfully')
                 }}
                 asChild
                 icon={Copy}
-                title="Copy Document ID"
+                title={`Copy Document URL on ${hostnameStripProtocol(
+                  publishedWebHost,
+                )}`}
               />
               <Separator />
               <Dropdown.Item

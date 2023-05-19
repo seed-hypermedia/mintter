@@ -1,8 +1,11 @@
 import {Dropdown, MenuItem} from '@app/editor/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
+import {useDocPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {getDocUrl, useDocUrl} from '@app/utils/doc-url'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {
   Document,
   formattedDate,
@@ -42,6 +45,14 @@ export function PublicationListItem({
   const docId = publication.document?.id
   const popoverState = usePopoverState()
   const dialogState = usePopoverState()
+  const webPubs = useDocPublications(docId)
+  const webPub = webPubs.data?.find(
+    (pub) =>
+      docId &&
+      pub.hostname === publication.document?.webUrl &&
+      pub.documentId === docId,
+  )
+  const publishedWebHost = publication.document?.webUrl || 'https://mintter.com'
   const deletePub = useDeletePublication({
     onSuccess: () => {
       dialogState.onOpenChange(false)
@@ -63,12 +74,6 @@ export function PublicationListItem({
     }
   }
 
-  function onCopy() {
-    copy(
-      `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
-    )
-    toast.success('Document ID copied successfully')
-  }
   return (
     <Button
       chromeless
@@ -146,8 +151,17 @@ export function PublicationListItem({
               <YGroup.Item>
                 <MenuItem
                   data-testid="copy-item"
-                  onPress={onCopy}
-                  title="Copy Document ID"
+                  onPress={() => {
+                    const docUrl = getDocUrl(publication, webPub)
+                    if (!docUrl) return
+                    copyTextToClipboard(docUrl)
+                    toast.success(
+                      `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
+                    )
+                  }}
+                  title={`Copy Document URL on ${hostnameStripProtocol(
+                    publishedWebHost,
+                  )}`}
                   icon={Copy}
                 />
               </YGroup.Item>

@@ -36,6 +36,7 @@ import {Tooltip} from '@components/tooltip'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {CheckCheck, FileCheck, FileUp, Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
+import {getDocUrl} from '@app/utils/doc-url'
 
 const forceProductionURL = true
 
@@ -399,17 +400,9 @@ export function PublishShareButton() {
           chromeless
           size="$2"
           onPress={() => {
-            const {document, version} = pub || {}
-            const {id} = document || {}
-            if (!id) throw new Error('No document id')
             if (!publishedWebHost) throw new Error('Document not loaded')
-            let path = `/p/${id}`
-            if (webPub?.path === '/') {
-              path = '/'
-            } else if (webPub?.path) {
-              path = `/${webPub.path}`
-            }
-            let docUrl = `${publishedWebHost}${path}?v=${version}`
+            const docUrl = getDocUrl(pub, webPub)
+            if (!docUrl) return
             copyTextToClipboard(docUrl)
             toast.success(
               `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
