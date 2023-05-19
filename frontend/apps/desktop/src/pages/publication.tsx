@@ -22,6 +22,7 @@ import {
   group,
   MttLink,
   paragraph,
+  pluralS,
   statement,
   text,
 } from '@mintter/shared'
@@ -47,10 +48,6 @@ import {ReactEditor} from 'slate-react'
 
 import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
-
-function pluralS(length = 0) {
-  return length === 1 ? '' : 's'
-}
 
 let emptyEditor = group({data: {parent: ''}}, [
   statement({id: ''}, [paragraph([text('')])]),
@@ -234,8 +231,9 @@ export default function PublicationPage() {
               <Footer>
                 <FooterButton
                   active={accessoryKey === 'versions'}
-                  label={`${changes?.changes?.length} Version${pluralS(
+                  label={`${changes?.changes?.length} ${pluralS(
                     changes?.changes?.length,
+                    'Version',
                   )}`}
                   icon={Pencil}
                   onPress={() => {
@@ -247,8 +245,9 @@ export default function PublicationPage() {
                 {citations?.links?.length ? (
                   <FooterButton
                     active={accessoryKey === 'citations'}
-                    label={`${citations?.links?.length} Citation${pluralS(
+                    label={`${citations?.links?.length} ${pluralS(
                       citations?.links?.length,
+                      'Citation',
                     )}`}
                     icon={Link}
                     onPress={() => {

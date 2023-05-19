@@ -6,7 +6,7 @@ import {
 } from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
-import {ChangeInfo, formattedDate} from '@mintter/shared'
+import {ChangeInfo, formattedDate, pluralS} from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
 import {MouseEvent} from 'react'
 import {Box} from './box'
@@ -117,10 +117,6 @@ function ChangeItem({
   )
 }
 
-function pluralS(length: number) {
-  return length === 1 ? '' : 's'
-}
-
 export function ChangesList() {
   const route = useNavRoute()
   const version = route.key === 'publication' ? route.versionId : undefined
@@ -131,7 +127,7 @@ export function ChangesList() {
   return (
     <>
       <SizableText size="$5" fontWeight="700">
-        {count} Doc Version{pluralS(count)}
+        {count} Doc {pluralS(count, 'Version')}
       </SizableText>
       {data?.changes?.map((change) => (
         <ChangeItem

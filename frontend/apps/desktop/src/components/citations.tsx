@@ -2,6 +2,7 @@ import {publicationsClient} from '@app/api-clients'
 import {CitationLink, useDocCitations} from '@app/models/content-graph'
 import {queryKeys} from '@app/models/query-keys'
 import {useNavigate} from '@app/utils/navigation'
+import {pluralS} from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {Button} from './button'
@@ -55,10 +56,6 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   )
 }
 
-function pluralS(length: number) {
-  return length === 1 ? '' : 's'
-}
-
 export function Citations({
   docId,
   version,
@@ -72,7 +69,7 @@ export function Citations({
   return (
     <>
       <SizableText size="$5" fontWeight="700">
-        {count} Citation{pluralS(count)}
+        {count} {pluralS(count, 'Citation')}
       </SizableText>
       {citations?.links.map((link) => (
         <CitationItem
