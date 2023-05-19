@@ -95,10 +95,7 @@ export default function PublicationPage({
       <HoverProvider>
         <Container tag="main" id="main-content" tabIndex={-1}>
           {siteInfo ? (
-            <SiteHead
-              siteInfo={siteInfo}
-              title={publication?.document?.title}
-            />
+            <SiteHead siteInfo={siteInfo} />
           ) : (
             <GatewayHead title={publication?.document?.title} />
           )}
