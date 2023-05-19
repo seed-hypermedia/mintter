@@ -1,7 +1,7 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-import {abbreviateCid} from '@app/utils/abbreviate'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {abbreviateCid} from '@mintter/shared'
 import {QueryKey} from '@tanstack/react-query'
 
 export const queryKeys = {

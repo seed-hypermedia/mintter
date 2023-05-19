@@ -1,5 +1,4 @@
 export * from './client'
 export * from './hast-mtt'
 export * from './mttast'
-export {formattedDate} from './utils/date'
-export * from './utils/get-ids-from-url'
+export * from './utils'
