@@ -3,7 +3,7 @@ import {prefetchPublication, useDeletePublication} from '@app/models/documents'
 import {useDocPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getDocUrl, useDocUrl} from '@app/utils/doc-url'
+import {getDocUrl} from '@app/utils/doc-url'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {
