@@ -62,19 +62,17 @@ export default function Main() {
   )
 
   return (
-    <YStack fullscreen>
-      <ErrorBoundary
-        FallbackComponent={MainBoundary}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
-        <TitleBar clean={isSettings} />
-        {/* @ts-ignore */}
-        <PageComponent key={getRouteKey(navR)} />
-        {!isSettings ? <QuickSwitcher /> : null}
-      </ErrorBoundary>
-    </YStack>
+    <ErrorBoundary
+      FallbackComponent={MainBoundary}
+      onReset={() => {
+        window.location.reload()
+      }}
+    >
+      <TitleBar clean={isSettings} />
+      {/* @ts-ignore */}
+      <PageComponent key={getRouteKey(navR)} />
+      {!isSettings ? <QuickSwitcher /> : null}
+    </ErrorBoundary>
   )
 }
 

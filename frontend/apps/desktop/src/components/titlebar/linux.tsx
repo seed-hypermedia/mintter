@@ -1,6 +1,8 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {invoke, send} from '@app/ipc'
-import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {useMyAccount} from '@app/models/accounts'
+import {useSiteList} from '@app/models/sites'
+import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {TitleBarProps} from '@components/titlebar'
 import {
   Draft,
@@ -90,8 +92,15 @@ export default function TitleBarLinux(props: TitleBarProps) {
 function NavMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
+  const sites = useSiteList()
+  const myAccount = useMyAccount()
   const editingEnabled = route.key == 'draft'
   const spawn = useNavigate('spawn')
+  const onRoute = (route: NavRoute) => {
+    if (route.key === 'settings') spawn(route)
+    else navigate(route)
+  }
+
   return (
     <Dropdown.Root>
       <Dropdown.Trigger
@@ -102,7 +111,7 @@ function NavMenu() {
       />
       <Dropdown.Portal>
         <Dropdown.Content side="bottom" align="start">
-          <AccountDropdownItem />
+          <AccountDropdownItem account={myAccount.data} onRoute={onRoute} />
           <Separator />
           <Dropdown.Item
             disabled={route.key == 'home'}
@@ -142,7 +151,7 @@ function NavMenu() {
               </SizableText>
             }
           />
-          <SitesNavDropdownItems />
+          <SitesNavDropdownItems sites={sites.data} onRoute={onRoute} />
           <Separator />
           <Dropdown.Item
             onPress={() => send('open_quick_switcher')}

@@ -1,24 +1,24 @@
 import {draftsClient} from '@app/api-clients'
-import {Dropdown, MenuItem} from '@app/editor/dropdown'
+import {MenuItem} from '@app/editor/dropdown'
 import appError from '@app/errors'
 import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
 import {useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
-import {usePopoverState} from '@app/use-popover-state'
 import {
   PublicationRoute,
   useNavigate,
   useNavigationDispatch,
   useNavigationState,
   useNavRoute,
+  NavRoute,
 } from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Avatar} from '@components/avatar'
 import {ContactsPrompt} from '@components/contacts-prompt'
-import {MINTTER_LINK_PREFIX} from '@mintter/shared'
+import {Account, MINTTER_LINK_PREFIX, SiteConfig} from '@mintter/shared'
 import {
   Add,
   Back,
@@ -43,6 +43,7 @@ import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
 import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
 import {Tooltip} from '@components/tooltip'
+import {memo, useState} from 'react'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
@@ -123,23 +124,22 @@ export function NavigationButtons() {
   )
 }
 
-export function SitesNavDropdownItems() {
-  const sites = useSiteList()
-  const navigate = useNavigate()
-
-  if (!sites.data) return null
-  if (sites.data.length == 0) return null
+export function SitesNavDropdownItems({
+  sites,
+  onRoute,
+}: {
+  sites?: SiteConfig[]
+  onRoute: (route: NavRoute) => void
+}) {
+  if (!sites) return null
+  if (sites.length == 0) return null
   return (
-    <YGroup
-      unstyled
-      borderRadius={0}
-      borderWidth={0}
-    >
-      {sites.data.map((site) => (
+    <YGroup unstyled borderRadius={0} borderWidth={0}>
+      {sites.map((site) => (
         <YGroup.Item>
           <MenuItem
             key={site.hostname}
-            onPress={() => navigate({key: 'site', hostname: site.hostname})}
+            onPress={() => onRoute({key: 'site', hostname: site.hostname})}
             icon={Globe}
             title={hostnameStripProtocol(site.hostname)}
           />
@@ -149,10 +149,14 @@ export function SitesNavDropdownItems() {
   )
 }
 
-export function AccountDropdownItem() {
-  const navigate = useNavigate()
+export function AccountDropdownItem({
+  account,
+  onRoute,
+}: {
+  account?: Account
+  onRoute: (route: NavRoute) => void
+}) {
   const route = useNavRoute()
-  const {data: account} = useMyAccount()
   return (
     <MenuItem
       disabled={route.key == 'account' && route.accountId == account?.id}
@@ -161,7 +165,7 @@ export function AccountDropdownItem() {
           appError('Account has not loaded.')
           return
         }
-        navigate({key: 'account', accountId: account?.id})
+        onRoute({key: 'account', accountId: account?.id})
       }}
       icon={
         <Avatar
@@ -175,118 +179,142 @@ export function AccountDropdownItem() {
   )
 }
 
-export function NavMenu() {
+function NaveMenuContentUnpure({
+  onClose,
+  sites,
+  onRoute,
+}: {
+  onClose: () => void
+  sites?: SiteConfig[]
+  onRoute: (route: NavRoute) => void
+}) {
   const route = useNavRoute()
+  const {data: account} = useMyAccount()
+
+  return (
+    <Popover.Content padding={0} size="$5">
+      <YGroup separator={<Separator />} elevation="$4">
+        <YGroup.Item>
+          <AccountDropdownItem account={account} onRoute={onRoute} />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            disabled={route.key == 'home'}
+            data-testid="menu-item-inbox"
+            onPress={() => {
+              onRoute({key: 'home'})
+            }}
+            title="All Publications"
+            icon={File}
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 1
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            disabled={route.key == 'drafts'}
+            data-testid="menu-item-drafts"
+            onPress={() => {
+              onRoute({key: 'drafts'})
+            }}
+            icon={Draft}
+            title="Drafts"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 8
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            disabled={route.key == 'connections'}
+            onPress={() => {
+              onRoute({key: 'connections'})
+            }}
+            icon={User}
+            title="Connections"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 9
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <SitesNavDropdownItems sites={sites} onRoute={onRoute} />
+        <YGroup.Item>
+          <MenuItem
+            onPress={() => {
+              send('open_quick_switcher')
+              onClose()
+            }}
+            title="Quick Switcher"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; K
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            onPress={() => {
+              onRoute({key: 'settings'})
+            }}
+            icon={Settings}
+            title="Settings"
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; ,
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+      </YGroup>
+    </Popover.Content>
+  )
+}
+const NavMenuContent = memo(NaveMenuContentUnpure)
+
+export function NavMenu() {
+  const sites = useSiteList()
+  const [open, setOnOpen] = useState(false)
+
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
-  const popoverState = usePopoverState()
   return (
     <XStack paddingRight="$2">
-      <Popover {...popoverState} placement="bottom-start">
+      <Popover open={open} onOpenChange={setOnOpen} placement="bottom-start">
         <Popover.Trigger asChild>
-          <Button size="$2" icon={Menu} />
+          <Button
+            size="$2"
+            icon={Menu}
+            onPress={(e) => {
+              e.preventDefault()
+              setOnOpen((isOpen) => !isOpen)
+            }}
+          />
         </Popover.Trigger>
-        <Popover.Content
-          padding={0}
-          size="$5"
-          enterStyle={{x: 0, y: -1, opacity: 0}}
-          exitStyle={{x: 0, y: -1, opacity: 0}}
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-        >
-          <YGroup separator={<Separator />} elevation="$4">
-            <YGroup.Item>
-              <AccountDropdownItem />
-            </YGroup.Item>
-            <YGroup.Item>
-              <MenuItem
-                disabled={route.key == 'home'}
-                data-testid="menu-item-inbox"
-                onPress={() => {
-                  navigate({key: 'home'})
-                  popoverState.onOpenChange(false)
-                }}
-                title="All Publications"
-                icon={File}
-                iconAfter={
-                  <SizableText size="$1" color="$mint5">
-                    &#8984; 1
-                  </SizableText>
-                }
-              />
-            </YGroup.Item>
-            <YGroup.Item>
-              <MenuItem
-                disabled={route.key == 'drafts'}
-                data-testid="menu-item-drafts"
-                onPress={() => {
-                  console.log('here')
-                  navigate({key: 'drafts'})
-                  popoverState.onOpenChange(false)
-                }}
-                icon={Draft}
-                title="Drafts"
-                iconAfter={
-                  <SizableText size="$1" color="$mint5">
-                    &#8984; 8
-                  </SizableText>
-                }
-              />
-            </YGroup.Item>
-            <YGroup.Item>
-              <MenuItem
-                disabled={route.key == 'connections'}
-                onPress={() => {
-                  navigate({key: 'connections'})
-                  popoverState.onOpenChange(false)
-                }}
-                icon={User}
-                title="Connections"
-                iconAfter={
-                  <SizableText size="$1" color="$mint5">
-                    &#8984; 9
-                  </SizableText>
-                }
-              />
-            </YGroup.Item>
-            <SitesNavDropdownItems />
-            <YGroup.Item>
-              <MenuItem
-                onPress={() => {
-                  send('open_quick_switcher')
-                  popoverState.onOpenChange(false)
-                }}
-                title="Quick Switcher"
-                iconAfter={
-                  <SizableText size="$1" color="$mint5">
-                    &#8984; K
-                  </SizableText>
-                }
-              />
-            </YGroup.Item>
-            <YGroup.Item>
-              <MenuItem
-                onPress={() => {
-                  spawn({key: 'settings'})
-                  popoverState.onOpenChange(false)
-                }}
-                icon={Settings}
-                title="Settings"
-                iconAfter={
-                  <SizableText size="$1" color="$mint5">
-                    &#8984; ,
-                  </SizableText>
-                }
-              />
-            </YGroup.Item>
-          </YGroup>
-        </Popover.Content>
+        <NavMenuContent
+          sites={sites.data}
+          onRoute={(route) => {
+            setOnOpen(false)
+            setTimeout(() => {
+              // this timeout is gross. we want the menu to close and not hang open during the transition. I tried React.useTransition but it seems to act too slowly
+              if (route.key === 'settings') {
+                spawn(route)
+              } else {
+                navigate(route)
+              }
+            }, 10)
+          }}
+          onClose={() => {
+            setOnOpen(false)
+          }}
+        />
       </Popover>
     </XStack>
   )
