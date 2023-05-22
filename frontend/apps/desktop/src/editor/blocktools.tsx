@@ -10,6 +10,7 @@ import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {
   blockquote,
   code,
+  file,
   FlowContent,
   group,
   heading,
@@ -29,6 +30,7 @@ import {
   Copy,
   HeadingIcon,
   ImageIcon,
+  File as FileIcon,
   Menu,
   OrderedList,
   SizableText,
@@ -207,6 +209,11 @@ var items: {
       icon: VideoIcon,
       onSelect: insertInline(video),
     },
+    {
+      label: 'File',
+      icon: FileIcon,
+      onSelect: insertInline(file),
+    }
   ],
   'Turn Block into': [
     {

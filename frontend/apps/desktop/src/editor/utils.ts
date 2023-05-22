@@ -21,6 +21,7 @@ import {
   text,
   ul,
   video,
+  file,
 } from '@mintter/shared'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
@@ -519,7 +520,7 @@ export function toggleList(fn: typeof ol | typeof ul) {
   }
 }
 
-export function insertInline(fn: typeof image | typeof video) {
+export function insertInline(fn: typeof image | typeof video | typeof file) {
   return function insertInlineElement(
     editor: Editor,
     opts: {

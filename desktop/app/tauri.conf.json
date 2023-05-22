@@ -63,7 +63,8 @@
         "unmaximize": true,
         "minimize": true,
         "close": true,
-        "hide": true
+        "hide": true,
+        "create": true
       },
       "dialog": {
         "all": false,

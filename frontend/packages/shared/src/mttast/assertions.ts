@@ -10,6 +10,7 @@ import type {
   GroupingContent,
   Heading,
   Image,
+  File,
   Link,
   Mark,
   MttastContent,
@@ -59,7 +60,7 @@ export const isStaticPhrasingContent = <T extends MttastContent>(
 ): value is T => {
   return (
     (isPlainObject(value) &&
-      ['text', 'video', 'image'].includes((value as Node).type)) ||
+      ['text', 'video', 'image', 'file'].includes((value as Node).type)) ||
     (isPlainObject(value) && isPlainText(value))
   )
 }
@@ -68,7 +69,7 @@ export const isPhrasingContent = <T extends MttastContent>(
 ): value is T => {
   return (
     (isPlainObject(value) &&
-      ['text', 'link', 'embed', 'video', 'image'].includes(
+      ['text', 'link', 'embed', 'video', 'image', 'file'].includes(
         (value as Node).type,
       )) ||
     (isPlainObject(value) && isPlainText(value))
@@ -94,6 +95,7 @@ export const isBlockquote = isType<Blockquote>('blockquote')
 export const isCode = isType<Code>('code')
 export const isVideo = isType<Video>('video')
 export const isImage = isType<Image>('image')
+export const isFile = isType<File>('file')
 export const isEmbed = isType<Embed>('embed')
 export const isLink = isType<Link>('link')
 export const isText = (value: any) =>

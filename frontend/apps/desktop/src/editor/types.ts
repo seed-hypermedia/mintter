@@ -1,6 +1,7 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import type {
   Embed,
+  File,
   FlowContent,
   GroupingContent,
   Image,
@@ -35,6 +36,7 @@ declare module 'slate' {
       | Embed
       | Video
       | Image
+      | File
     Text: Text
   }
 }

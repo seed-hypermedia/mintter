@@ -25,6 +25,7 @@ import {
   ELEMENT_IMAGE,
   ImageElement,
 } from '@app/editor/image/image'
+import { createFilePlugin, ELEMENT_FILE, FileElement } from '@app/editor/file/file'
 import {createInlineCodePlugin} from '@app/editor/inline-code'
 import {createLinkPlugin, ELEMENT_LINK, LinkElement} from '@app/editor/link'
 import {createMarkdownShortcutsPlugin} from '@app/editor/markdown-plugin'
@@ -112,6 +113,7 @@ const _plugins: EditorPlugin[] = [
   createEmbedPlugin(),
   createVideoPlugin(),
   createImagePlugin(),
+  createFilePlugin(),
   createStaticParagraphPlugin(),
   createParagraphPlugin(),
   createHeadingPlugin(),
@@ -333,6 +335,9 @@ function RenderElement(props: RenderElementProps) {
 
     case ELEMENT_VIDEO:
       return <VideoElement {...props} />
+
+    case ELEMENT_FILE:
+      return <FileElement {...props} />
 
     default:
       return <ParagraphElement {...props} />

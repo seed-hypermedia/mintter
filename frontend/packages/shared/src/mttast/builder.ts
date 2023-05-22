@@ -1,6 +1,6 @@
 import {nanoid} from 'nanoid/non-secure'
 import type {Node, Parent} from 'unist'
-import type {
+import {
   Blockquote,
   Code,
   MttDocument,
@@ -16,6 +16,7 @@ import type {
   Text,
   UnorderedList,
   Video,
+  File,
 } from './types'
 
 export type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
@@ -92,6 +93,8 @@ export const embed = createParent<Embed>('embed')
 export const image = createParent<Image>('image')
 
 export const video = createParent<Video>('video')
+
+export const file = createParent<File>('file')
 
 export const text = (
   text: string,

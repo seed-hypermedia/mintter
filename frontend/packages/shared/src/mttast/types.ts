@@ -96,6 +96,10 @@ export interface Image extends Alternative, Resource, Parent {
   type: 'image'
 }
 
+export interface File extends Alternative, Resource, Parent {
+  type: 'file'
+}
+
 export interface Embed extends Alternative, Resource, Parent {
   type: 'embed'
 }
@@ -154,7 +158,7 @@ export type GroupingContent = Group | OrderedList | UnorderedList
 export type FlowContent = Statement | Heading | Blockquote | Code
 
 // the text and markup of a document that's not intended for
-export type StaticPhrasingContent = Text | Video | Image
+export type StaticPhrasingContent = Text | Video | Image | File
 
 // the text and markup of a document
 export type PhrasingContent = Link | Embed | StaticPhrasingContent
