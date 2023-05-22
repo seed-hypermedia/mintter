@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
-	"github.com/sanity-io/litter"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -22,19 +21,19 @@ import (
 // WARNING! There's some very ugly type-unsafe code in here.
 // Can do better, but no time for that now.
 
-type draftMutation struct {
+type docModel struct {
 	e          *hyper.Entity
-	ts         hlc.Time
 	signer     core.KeyPair
 	delegation cid.Cid
-	prevDraft  cid.Cid
 	tree       *Tree
 	patch      map[string]any
+	oldCID     cid.Cid
 	done       bool
+	nextHLC    hlc.Time
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
 }
 
-func newDraftMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*draftMutation, error) {
+func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*docModel, error) {
 	if !delegation.Defined() {
 		return nil, fmt.Errorf("must provide delegation to mutate a document")
 	}
@@ -43,15 +42,8 @@ func newDraftMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) 
 		panic("BUG: more than one draft head")
 	}
 
-	var prevDraft cid.Cid
-	for k := range e.Heads() {
-		prevDraft = k
-	}
-
-	dm := &draftMutation{
+	dm := &docModel{
 		e:          e,
-		ts:         e.NextTimestamp(),
-		prevDraft:  prevDraft,
 		signer:     signer,
 		delegation: delegation,
 		tree:       NewTree(),
@@ -64,27 +56,53 @@ func newDraftMutation(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) 
 		dm.origins[o] = c
 	}
 
-	if err := dm.restorePrevDraft(); err != nil {
+	if err := dm.replayMoves(); err != nil {
 		return nil, fmt.Errorf("failed to replay moves: %w", err)
 	}
 
 	return dm, nil
 }
 
-func (dm *draftMutation) restorePrevDraft() (err error) {
-	// We need to "unapply" the previous draft from the CRDT state.
-	// There should be a better way to do it.
-	if dm.prevDraft.Defined() {
-		ch := dm.e.AppliedChanges()[dm.prevDraft]
-		dm.e.State().ForgetState(ch.HLCTime.Pack(), hyper.OriginFromCID(dm.prevDraft))
+func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
+	if len(dm.patch) != 0 {
+		panic("BUG: restoring draft when patch is not empty")
+	}
+	dm.oldCID = c
 
-		// Reapply patch without moves for the rest of the fields to be there.
-		defer func() {
-			delete(dm.patch, "moves")
-			dm.e.State().ApplyPatch(dm.ts.Pack(), "", dm.patch)
-		}()
+	if ch.Patch != nil {
+		dm.patch = ch.Patch
 	}
 
+	dm.nextHLC = dm.e.NextTimestamp()
+	moves := dm.patch["moves"]
+	delete(dm.patch, "moves")
+
+	dm.e.State().ApplyPatch(dm.nextHLC.Pack(), "", dm.patch)
+
+	if moves != nil {
+		ops := moves.(map[string]any)["#list"].(map[string]any)["#ins"].([]any)
+		for _, move := range ops {
+			mm := move.(map[string]any)
+			block := mm["b"].(string)
+			parent := mm["p"].(string)
+			left := mm["l"].(string)
+			parts := strings.Split(left, "@")
+			if len(parts) > 0 {
+				left = parts[0]
+			}
+
+			if err := dm.MoveBlock(block, parent, left); err != nil {
+				return fmt.Errorf("failed to replay local moves: %w", err)
+			}
+		}
+	}
+
+	delete(dm.e.Heads(), dm.oldCID)
+
+	return nil
+}
+
+func (dm *docModel) replayMoves() (err error) {
 	dm.e.State().ForEachListChunk([]string{"moves"}, func(time int64, origin string, items []any) bool {
 		for idx, move := range items {
 			mm := move.(map[string]any)
@@ -105,35 +123,10 @@ func (dm *draftMutation) restorePrevDraft() (err error) {
 		return fmt.Errorf("failed to replay previous moves: %w", err)
 	}
 
-	if !dm.prevDraft.Defined() {
-		return nil
-	}
-
-	oldDraft := dm.e.AppliedChanges()[dm.prevDraft]
-	dm.patch = oldDraft.Patch
-	if dm.patch["moves"] != nil {
-		moves := dm.patch["moves"].(map[string]any)["#list"].(map[string]any)["#ins"].([]any)
-		for _, move := range moves {
-			mm := move.(map[string]any)
-			block := mm["b"].(string)
-			parent := mm["p"].(string)
-			left := mm["l"].(string)
-			parts := strings.Split(left, "@")
-			if len(parts) > 0 {
-				left = parts[0]
-			}
-
-			if err := dm.MoveBlock(block, parent, left); err != nil {
-				litter.Dump(dm.patch)
-				return fmt.Errorf("failed to replay local moves: %w", err)
-			}
-		}
-	}
-
-	return err
+	return nil
 }
 
-func (dm *draftMutation) SetCreateTime(ct time.Time) error {
+func (dm *docModel) SetCreateTime(ct time.Time) error {
 	_, ok := dm.e.Get("createTime")
 	if ok {
 		return fmt.Errorf("create time is already set")
@@ -144,7 +137,7 @@ func (dm *draftMutation) SetCreateTime(ct time.Time) error {
 	return nil
 }
 
-func (dm *draftMutation) SetAuthor(author core.Principal) error {
+func (dm *docModel) SetAuthor(author core.Principal) error {
 	_, ok := dm.e.Get("author")
 	if ok {
 		return fmt.Errorf("author is already set")
@@ -155,7 +148,7 @@ func (dm *draftMutation) SetAuthor(author core.Principal) error {
 	return nil
 }
 
-func (dm *draftMutation) SetTitle(title string) error {
+func (dm *docModel) SetTitle(title string) error {
 	v, ok := dm.e.Get("title")
 	if ok && v.(string) == title {
 		return nil
@@ -165,7 +158,7 @@ func (dm *draftMutation) SetTitle(title string) error {
 	return nil
 }
 
-func (dm *draftMutation) SetWebURL(url string) error {
+func (dm *docModel) SetWebURL(url string) error {
 	v, ok := dm.e.Get("webURL")
 	if ok && v.(string) == url {
 		return nil
@@ -175,12 +168,12 @@ func (dm *draftMutation) SetWebURL(url string) error {
 	return nil
 }
 
-func (dm *draftMutation) DeleteBlock(block string) error {
-	_, err := dm.tree.MoveLocal(dm.ts.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
+func (dm *docModel) DeleteBlock(block string) error {
+	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
 	return err
 }
 
-func (dm *draftMutation) ReplaceBlock(blk *documents.Block) error {
+func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 	if blk.Id == "" {
 		return fmt.Errorf("blocks must have ID")
 	}
@@ -194,42 +187,41 @@ func (dm *draftMutation) ReplaceBlock(blk *documents.Block) error {
 	return nil
 }
 
-func (dm *draftMutation) MoveBlock(block, parent, left string) error {
-	_, err := dm.tree.MoveLocal(dm.ts.Pack(), len(dm.tree.localMoves), block, parent, left)
+func (dm *docModel) MoveBlock(block, parent, left string) error {
+	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, parent, left)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (dm *draftMutation) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
+func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
 	// TODO(burdiyan): we should make them reusable.
 	if dm.done {
 		return hb, fmt.Errorf("using already committed mutation")
+	}
+
+	if dm.nextHLC.IsZero() {
+		panic("BUG: next HLC time is zero")
 	}
 
 	dm.done = true
 
 	dm.cleanupPatch()
 
-	if dm.prevDraft.Defined() {
-		hb, err = dm.e.ReplaceChange(dm.prevDraft, dm.ts, dm.signer, dm.delegation, dm.patch)
-		if err != nil {
-			return hb, err
-		}
-
-		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.prevDraft, hb)
-	}
-
-	hb, err = dm.e.CreateChange(dm.ts, dm.signer, dm.delegation, dm.patch)
+	hb, err = dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch)
 	if err != nil {
 		return hb, err
+	}
+
+	if dm.oldCID.Defined() {
+		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.oldCID, hb)
 	}
 
 	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
 }
 
-func (dm *draftMutation) cleanupPatch() {
+func (dm *docModel) cleanupPatch() {
 	// We want to only keep last move per each block touched in this change.
 	// If blocks were moved but end up where they initially were - we don't want any moves.
 	// If blocks were created and then deleted within the same change - we don't want to leave any traces.
@@ -303,7 +295,7 @@ func (dm *draftMutation) cleanupPatch() {
 	}
 }
 
-func (dm *draftMutation) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
+func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
 	e := dm.e
 	docpb := &documents.Document{
 		Id: strings.TrimPrefix(string(e.ID()), "mintter:document:"),
@@ -406,7 +398,7 @@ func (dm *draftMutation) hydrate(ctx context.Context, blobs *hyper.Storage) (*do
 
 		oo := dm.origins[sp.opid.Origin]
 		if !oo.Defined() {
-			oo = dm.prevDraft
+			oo = dm.oldCID
 		}
 
 		blk, err := blockFromMap(id, oo.String(), mm.(map[string]any))
@@ -417,34 +409,6 @@ func (dm *draftMutation) hydrate(ctx context.Context, blobs *hyper.Storage) (*do
 		appendChild(parent, child)
 		blockMap[id] = child
 	}
-
-	// it := ds.tree.Iterator()
-
-	// blockMap := map[string]*documents.BlockNode{}
-
-	// appendChild := func(parent string, child *documents.BlockNode) {
-	// 	if parent == crdt.RootNodeID {
-	// 		docpb.Children = append(docpb.Children, child)
-	// 		return
-	// 	}
-
-	// 	blk, ok := blockMap[parent]
-	// 	if !ok {
-	// 		panic("BUG: no parent " + parent + " was found yet while iterating")
-	// 	}
-
-	// 	blk.Children = append(blk.Children, child)
-	// }
-
-	// for n := it.NextItem(); !n.IsZero(); n = it.NextItem() {
-	// 	blk := ds.getBlock(n.NodeID)
-	// 	if blk == nil {
-	// 		continue
-	// 	}
-	// 	child := &documents.BlockNode{Block: blk}
-	// 	appendChild(n.Parent, child)
-	// 	blockMap[n.NodeID] = child
-	// }
 
 	return docpb, nil
 }

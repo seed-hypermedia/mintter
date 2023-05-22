@@ -221,6 +221,10 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 }
 
 func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.Cid, blob Blob) error {
+	if !old.Defined() {
+		return fmt.Errorf("BUG: can't replace: old CID is not defined")
+	}
+
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -228,7 +232,6 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 	defer release()
 
 	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
-
 		oldid, err := bs.bs.deleteBlock(conn, old)
 		if err != nil {
 			return err
@@ -236,7 +239,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 
 		id, exists, err := bs.bs.putBlock(conn, oldid, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
-			return err
+			return fmt.Errorf("replace draft blob error when insert: %w", err)
 		}
 
 		// No need to index if exists.

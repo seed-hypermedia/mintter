@@ -8,6 +8,8 @@ import (
 	"mintter/backend/crdt2"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/vcs/hlc"
+	"sort"
+	"strings"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -95,6 +97,39 @@ func (e *Entity) State() *crdt2.Map {
 // This must be read only. Not safe for concurrency.
 func (e *Entity) Heads() map[cid.Cid]struct{} {
 	return e.heads
+}
+
+func ParseVersion(v string) ([]cid.Cid, error) {
+	if v == "" {
+		return nil, nil
+	}
+
+	parts := strings.Split(v, ".")
+	out := make([]cid.Cid, len(parts))
+
+	for i, p := range parts {
+		c, err := cid.Decode(p)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse version: %w", err)
+		}
+		out[i] = c
+	}
+
+	return out, nil
+}
+
+func (e *Entity) Version() string {
+	if len(e.heads) == 0 {
+		return ""
+	}
+
+	out := make([]string, 0, len(e.heads))
+	for k := range e.heads {
+		out = append(out, k.String())
+	}
+	sort.Strings(out)
+
+	return strings.Join(out, ".")
 }
 
 // ApplyChange to the internal state.
@@ -190,7 +225,7 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 	return hb, nil
 }
 
-// NewChanges creates a new Change blob.
+// NewChange creates a new Change blob.
 func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
 	// Make sure deps field is not present in the patch if there're no deps.
 	if len(deps) == 0 {
@@ -250,6 +285,48 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	}
 
 	return bs.loadFromHeads(conn, eid, heads.Heads)
+}
+
+type Draft struct {
+	*Entity
+	CID    cid.Cid
+	Change Change
+}
+
+func (bs *Storage) LoadDraft(ctx context.Context, eid EntityID) (*Draft, error) {
+	// load draft change
+	c, err := bs.FindDraft(ctx, eid)
+	if err != nil {
+		return nil, err
+	}
+
+	var ch Change
+	if err := bs.LoadBlob(ctx, c, &ch); err != nil {
+		return nil, err
+	}
+
+	var entity *Entity
+	if len(ch.Deps) == 0 {
+		entity = NewEntity(eid)
+	} else {
+		e, err := bs.LoadEntityFromHeads(ctx, eid, ch.Deps...)
+		if err != nil {
+			return nil, err
+		}
+		entity = e
+	}
+
+	if entity == nil {
+		return nil, nil
+	}
+
+	entity.clock.Track(ch.HLCTime)
+
+	return &Draft{
+		Entity: entity,
+		CID:    c,
+		Change: ch,
+	}, nil
 }
 
 // LoadDraftEntity includes draft changes.

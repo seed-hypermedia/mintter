@@ -22,7 +22,7 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
-	dm, err := newDraftMutation(entity, alice.Device, delegation)
+	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
@@ -48,7 +48,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
-	dm, err := newDraftMutation(entity, alice.Device, delegation)
+	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
@@ -104,7 +104,7 @@ func TestDocument_Cleanup(t *testing.T) {
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
-	dm, err := newDraftMutation(entity, alice.Device, delegation)
+	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
@@ -200,7 +200,7 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	require.NoError(t, err)
 	eid := hyper.NewEntityID("mintter:document", "doc-1")
 	entity := hyper.NewEntity(eid)
-	dm, err := newDraftMutation(entity, alice.Device, delegation)
+	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))

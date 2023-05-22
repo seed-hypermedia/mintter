@@ -94,6 +94,7 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 		{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "https://example.com"}},
 	})
 	require.Equal(t, draft.CreateTime, updated.CreateTime)
+
 	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
 
 	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
@@ -750,6 +751,32 @@ func TestAPIDeletePublication(t *testing.T) {
 	// require.Equal(t, codes.NotFound, s.Code())
 }
 
+func TestPublisherAndEditors(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
+			{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "http://example.com"}},
+		},
+	})
+	require.NoError(t, err)
+
+	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.Equal(t, "http://example.com", draft.WebUrl)
+	require.Equal(t, "Document title", draft.Title)
+	wantEditors := []string{api.me.MustGet().Account().Principal().String()}
+	require.Equal(t, wantEditors, draft.Editors)
+}
+
 func TestGetPreviousVersions(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
@@ -790,41 +817,15 @@ func TestGetPreviousVersions(t *testing.T) {
 	testutil.ProtoEqual(t, p, pub1, "latest publication must match getting by version string")
 }
 
-func TestPublisherAndEditors(t *testing.T) {
-	t.Parallel()
-
-	api := newTestDocsAPI(t, "alice")
-	ctx := context.Background()
-
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
-		DocumentId: draft.Id,
-		Changes: []*documents.DocumentChange{
-			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
-			{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "http://example.com"}},
-		},
-	})
-	require.NoError(t, err)
-
-	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	require.Equal(t, "http://example.com", draft.WebUrl)
-	require.Equal(t, "Document title", draft.Title)
-	wantEditors := []string{api.me.MustGet().Account().Principal().String()}
-	require.Equal(t, wantEditors, draft.Editors)
-}
-
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {
 	_, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
 		DocumentId: id,
 		Changes:    updates,
 	})
-	require.NoError(t, err)
+	require.NoError(t, err, "failed to update draft")
 
 	draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: id})
-	require.NoError(t, err)
+	require.NoError(t, err, "failed to get draft after update")
 
 	return draft
 }
