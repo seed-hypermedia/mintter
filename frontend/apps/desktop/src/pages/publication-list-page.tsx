@@ -3,40 +3,82 @@ import {useOpenDraft} from '@app/utils/open-draft'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {PublicationListItem} from '@components/publication-list-item'
-import {YStack, MainWrapper, Container} from '@mintter/ui'
+import {MainWrapper, Container, Spinner, YStack} from '@mintter/ui'
+import {FixedSizeList as List} from 'react-window'
+import {useState} from 'react'
 
 export default function PublicationList() {
-  let {data, isInitialLoading} = usePublicationList()
+  let {data} = usePublicationList()
   let drafts = useDraftList()
   let openDraft = useOpenDraft()
+  const pubs = data?.publications
+  const [scrollHeight, setScrollHeight] = useState(800)
 
+  const RenderPublicationRow = ({
+    index,
+    style,
+  }: {
+    index: number
+    style: React.CSSProperties
+  }) => {
+    const publication = pubs?.[index]
+    if (!publication) return null
+    return (
+      <div style={style}>
+        <PublicationListItem
+          hasDraft={drafts.data?.documents.find(
+            (d) => d.id == publication.document?.id,
+          )}
+          publication={publication}
+        />
+      </div>
+    )
+  }
+  let content = (
+    <YStack justifyContent="center" height={scrollHeight}>
+      <Spinner />
+    </YStack>
+  )
+  if (pubs) {
+    if (pubs.length) {
+      content = (
+        <div
+          style={{
+            display: 'flex',
+            flexGrow: 1,
+            alignSelf: 'stretch',
+          }}
+        >
+          <List
+            height={scrollHeight}
+            width={'100%'}
+            itemSize={44}
+            overscanCount={20}
+            itemCount={pubs?.length || 0}
+          >
+            {RenderPublicationRow}
+          </List>
+        </div>
+      )
+    } else {
+      content = (
+        <EmptyList
+          description="You have no Publications yet."
+          action={() => {
+            openDraft(false)
+          }}
+        />
+      )
+    }
+  }
   return (
     <>
-      <MainWrapper>
-        <Container>
-          <YStack tag="ul" padding={0}>
-            {isInitialLoading ? (
-              <p>loading...</p>
-            ) : data && data.publications.length ? (
-              data.publications.map((publication) => (
-                <PublicationListItem
-                  hasDraft={drafts.data?.documents.find(
-                    (d) => d.id == publication.document?.id,
-                  )}
-                  key={`${publication.document?.id}/${publication.version}`}
-                  publication={publication}
-                />
-              ))
-            ) : (
-              <EmptyList
-                description="You have no Publications yet."
-                action={() => {
-                  openDraft(false)
-                }}
-              />
-            )}
-          </YStack>
-        </Container>
+      <MainWrapper
+        onLayout={(e) => {
+          setScrollHeight(e.nativeEvent.layout.height)
+        }}
+      >
+        <Container>{content}</Container>
       </MainWrapper>
       <Footer />
     </>

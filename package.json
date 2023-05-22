@@ -35,6 +35,7 @@
     "@bufbuild/protoc-gen-es": "1.2.0",
     "@manypkg/cli": "0.19.2",
     "@playwright/test": "^1.32.3",
+    "@types/react-window": "^1.8.5",
     "cross-env": "7.0.3",
     "eslint": "8.38.0",
     "graphql-codegen": "0.4.0",
@@ -48,5 +49,8 @@
     "frontend/packages/*",
     "frontend/e2e",
     "docs"
-  ]
+  ],
+  "dependencies": {
+    "react-window": "^1.8.9"
+  }
 }
