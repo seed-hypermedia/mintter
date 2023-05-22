@@ -1,5 +1,10 @@
 import {useListen} from '@app/ipc'
-import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
+import {
+  NavRoute,
+  useNavigate,
+  useNavRoute,
+  getRouteKey,
+} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
 import {Button, Heading, YStack} from '@mintter/ui'
@@ -66,7 +71,7 @@ export default function Main() {
       >
         <TitleBar clean={isSettings} />
         {/* @ts-ignore */}
-        <PageComponent />
+        <PageComponent key={getRouteKey(navR)} />
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </YStack>

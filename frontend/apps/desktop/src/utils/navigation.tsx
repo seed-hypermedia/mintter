@@ -74,6 +74,14 @@ export type NavigationContext = {
   dispatch: (action: NavAction) => void
 }
 
+export function getRouteKey(route: NavRoute): string {
+  if (route.key === 'account') return `account:${route.accountId}`
+  if (route.key === 'draft') return `draft:${route.draftId}`
+  if (route.key === 'publication') return `pub:${route.documentId}` // version changes and publication page remains mounted
+  if (route.key === 'site') return `site:${route.hostname}`
+  return route.key
+}
+
 const NavContext = createContext<null | NavigationContext>(null)
 
 function navStateReducer(state: NavState, action: NavAction): NavState {
