@@ -130,7 +130,11 @@ export function SitesNavDropdownItems() {
   if (!sites.data) return null
   if (sites.data.length == 0) return null
   return (
-    <>
+    <YGroup
+      unstyled
+      borderRadius={0}
+      borderWidth={0}
+    >
       {sites.data.map((site) => (
         <YGroup.Item>
           <MenuItem
@@ -141,7 +145,7 @@ export function SitesNavDropdownItems() {
           />
         </YGroup.Item>
       ))}
-    </>
+    </YGroup>
   )
 }
 
@@ -222,6 +226,7 @@ export function NavMenu() {
                 disabled={route.key == 'drafts'}
                 data-testid="menu-item-drafts"
                 onPress={() => {
+                  console.log('here')
                   navigate({key: 'drafts'})
                   popoverState.onOpenChange(false)
                 }}
