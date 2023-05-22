@@ -9,6 +9,7 @@ import (
 	"fmt"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/ipfs"
 	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
@@ -622,7 +623,7 @@ func randStr(length int) string {
 }
 
 // Client dials a remote peer if necessary and returns the RPC client handle.
-func (srv *Server) Client(ctx context.Context, device cid.Cid) (site.WebSiteClient, error) {
+func (srv *Server) Client(ctx context.Context, device cid.Cid, forceAddrs ...string) (site.WebSiteClient, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
 		return nil, fmt.Errorf("Node not ready yet")
@@ -631,10 +632,24 @@ func (srv *Server) Client(ctx context.Context, device cid.Cid) (site.WebSiteClie
 	if err != nil {
 		return nil, err
 	}
-
-	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
-		return nil, err
+	if len(forceAddrs) != 0 {
+		ma, err := ipfs.ParseMultiaddrs(forceAddrs)
+		if err != nil {
+			return nil, err
+		}
+		addi := peer.AddrInfo{
+			ID:    pid,
+			Addrs: ma,
+		}
+		if err := n.Connect(ctx, addi); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+			return nil, err
+		}
 	}
+
 	return n.client.DialSite(ctx, pid)
 }
 
@@ -782,9 +797,9 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	site, err := sitesql.GetSite(conn, hostname)
+	siteInfo, err := sitesql.GetSite(conn, hostname)
 	if err == nil {
-		siteAccount = site.AccID.String()
+		siteAccount = siteInfo.AccID.String()
 	}
 
 	if err != nil { // Could be an add site call to proxy in which case the site does not exist yet
@@ -816,14 +831,24 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	ctx = metadata.AppendToOutgoingContext(ctx, string(MttHeader), remoteHostname)
 	failedPIDs := []string{}
 	for _, deviceID := range devices {
-		sitec, err := srv.Client(ctx, deviceID)
+		var sitec site.WebSiteClient
+		if strings.Contains(remoteHostname, "gabo.es") {
+			n.log.Debug("Calling Gabo.es")
+			sitec, err = srv.Client(ctx, deviceID, "/ip4/164.90.209.30/tcp/56000")
+		} else {
+			sitec, err = srv.Client(ctx, deviceID)
+		}
+
 		if err != nil {
 			pid, _ := peer.FromCid(deviceID)
 			failedPIDs = append(failedPIDs, pid.String())
+
+			n.log.Debug("Cannot contact device", zap.String("DeviceID", deviceID.String()), zap.Any("Address", n.p2p.Peerstore().Addrs(pid)), zap.String("Info", n.p2p.Peerstore().PeerInfo(pid).String()), zap.Error(err))
+
 			continue
 		}
-
-		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
+		pid, _ := peer.FromCid(deviceID)
+		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn), zap.Any("Address", n.p2p.Peerstore().Addrs(pid)), zap.String("Remote Info", n.p2p.Peerstore().PeerInfo(pid).String()))
 
 		in := []reflect.Value{reflect.ValueOf(ctx)}
 		for _, param := range params {
@@ -845,5 +870,5 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
 		return res[0].Interface(), res[1].Interface()
 	}
-	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccountID.String())
+	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable: [%w]", failedPIDs, siteAccountID.String(), err)
 }
