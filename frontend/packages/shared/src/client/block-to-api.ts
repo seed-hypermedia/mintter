@@ -113,6 +113,10 @@ export function blockToApi(
       annotations.addSpan('link', {url: leaf.url}, start, end)
     }
 
+    if (leaf.type == 'file') {
+      annotations.addSpan('file', {url: leaf.url}, start, end)
+    }
+
     // Apparently there's no buffer or a string builder option in javascript, and there's nothing better than straight +=.
     // Slate does the same for every key stroke, so I guess it's fine.
     out.text += leaf.text
@@ -183,6 +187,15 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
           alt: leaves[i].alt ?? '',
           text: '\uFFFC',
           type: 'video',
+        })
+      }
+
+      if (leaves[i].type == 'file') {
+        result.push({
+          url: leaves[i].url ?? '',
+          name: leaves[i].name ?? '',
+          text: '\uFFFC',
+          type: 'file',
         })
       }
 

@@ -23,7 +23,6 @@ import { EditorPlugin } from "../types"
 import { findPath } from "../utils"
 
 interface InnerFileType extends FileType {
-  name: string
   size: number
 }
 
@@ -62,15 +61,25 @@ export function FileElement({
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const [file, setFile] = useState<InnerFileType>({name: '', size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)
+  
+  console.log(element)
+
+  if ((element as FileType).url && !file.url) {
+    (element as FileType).name ?
+      setFile({...file, url: (element as FileType).url, name: (element as FileType).name}) :
+      setFile({...file, url: (element as FileType).url});
+  }
 
   useEffect(() => {
-
   }, [file])
 
   const assignFile = (newFile: InnerFileType) => {
     setFile({...file, ...newFile})
+    console.log(newFile)
     if (newFile.url)
       Transforms.setNodes<FileType>(editor, {url: newFile.url}, {at: path})
+    if (newFile.name) 
+      Transforms.setNodes<FileType>(editor, {name: newFile.name}, {at: path})
   }
 
   return (

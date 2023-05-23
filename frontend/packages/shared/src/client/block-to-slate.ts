@@ -189,7 +189,7 @@ export function blockToSlate(blk: Block): FlowContent {
       // to determine how different annotations affect the leaf node.
       // We'd need to check the annotation "identity", but I'm
       // checking only type here for brevity.
-      if (['link', 'embed', 'image', 'video'].includes(l.type)) {
+      if (['link', 'embed', 'image', 'video', 'file'].includes(l.type)) {
         // TODO: modify leaf if is link or embed
         linkAnnotation = l
       }

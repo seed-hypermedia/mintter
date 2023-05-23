@@ -98,6 +98,7 @@ export interface Image extends Alternative, Resource, Parent {
 
 export interface File extends Alternative, Resource, Parent {
   type: 'file'
+  name?: string
 }
 
 export interface Embed extends Alternative, Resource, Parent {
