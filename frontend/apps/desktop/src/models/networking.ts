@@ -18,7 +18,10 @@ export function useAllPeers(
   let isDaemonReady = useDaemonReady()
   return useQuery<ListPeersResponse, ConnectError>({
     queryKey: [queryKeys.GET_PEERS],
-    queryFn: () => networkingClient.listPeers({}),
+    queryFn: () =>
+      networkingClient.listPeers({
+        status: -1,
+      }),
     enabled: isDaemonReady,
     onError: (err) => {
       appError(
