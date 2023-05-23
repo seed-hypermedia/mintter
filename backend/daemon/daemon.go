@@ -140,9 +140,9 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	if err != nil {
 		return nil, err
 	}
-	reachability := libp2p.ForceReachabilityPrivate()
-	if cfg.Site.Hostname != "" {
-		reachability = libp2p.ForceReachabilityPublic()
+	var reachability libp2p.Option
+	if cfg.Site.Hostname == "" {
+		reachability = libp2p.ForceReachabilityPrivate()
 	}
 	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB, reachability)
 	if err != nil {
