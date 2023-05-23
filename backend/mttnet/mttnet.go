@@ -226,10 +226,10 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger, userOptions ...libp2p.Option) (*Node, error) {
 	var clean cleanup.Stack
 
-	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB())
+	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB(), userOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start libp2p host: %w", err)
 	}
@@ -490,7 +490,7 @@ func AddrInfoFromStrings(addrs ...string) (out peer.AddrInfo, err error) {
 	return out, nil
 }
 
-func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs.Libp2p, io.Closer, error) {
+func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool, userOptions ...libp2p.Option) (*ipfs.Libp2p, io.Closer, error) {
 	var clean cleanup.Stack
 
 	ds := dssync.MutexWrap(datastore.NewMapDatastore())
@@ -503,7 +503,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	// Not adding peerstore to the cleanup stack because weirdly enough, libp2p host closes it,
 	// even if it doesn't own it. See BasicHost#Close() inside libp2p.
 
-	opts := []libp2p.Option{
+	opts := append(userOptions,
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
 		libp2p.EnableNATService(),
@@ -518,12 +518,11 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			out = append(out, cfg.ExtraAddrs...)
 			return out
 		}),
-	}
+	)
 
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
-			libp2p.ForceReachabilityPrivate(),
 			libp2p.EnableHolePunching(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithBootDelay(time.Second*10),
