@@ -36,7 +36,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/multierr"
@@ -140,11 +139,8 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	if err != nil {
 		return nil, err
 	}
-	var reachability libp2p.Option
-	if cfg.Site.Hostname == "" {
-		reachability = libp2p.ForceReachabilityPrivate()
-	}
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB, reachability)
+
+	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +306,6 @@ func initNetwork(
 	me *future.ReadOnly[core.Identity],
 	cfg config.P2P,
 	vcsh *vcsdb.DB,
-	userOptions ...libp2p.Option,
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -338,7 +333,7 @@ func initNetwork(
 			return err
 		}
 
-		n, err := mttnet.New(cfg, vcsh, perma.ID, id, logging.New("mintter/network", "debug"), userOptions...)
+		n, err := mttnet.New(cfg, vcsh, perma.ID, id, logging.New("mintter/network", "debug"))
 		if err != nil {
 			return err
 		}
