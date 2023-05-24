@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
@@ -226,109 +227,27 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	panic("TODO list accounts")
+	entities, err := srv.blobs.ListEntities(ctx, "mintter:account:")
+	if err != nil {
+		return nil, err
+	}
 
-	// me, err := srv.getMe()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	resp := &accounts.ListAccountsResponse{
+		Accounts: make([]*accounts.Account, 0, len(entities)),
+	}
 
-	// conn, release, err := srv.vcsdb.Conn(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer release()
+	for _, e := range entities {
+		aid := strings.TrimPrefix(string(e), "mintter:account:")
+		draft, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
+			Id: aid,
+		})
+		if err != nil {
+			continue
+		}
+		resp.Accounts = append(resp.Accounts, draft)
+	}
 
-	// resp := &accounts.ListAccountsResponse{}
-
-	// perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(me.AccountID()))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if err := conn.WithTx(false, func() error {
-	// 	accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(vcsdb.AccountType))
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	myAcc := conn.LookupPermanode(perma.ID)
-
-	// 	resp.Accounts = make([]*accounts.Account, 0, len(accs))
-
-	// 	for _, a := range accs {
-	// 		if vcsdb.LocalID(a.PermanodesID) == myAcc {
-	// 			continue
-	// 		}
-
-	// 		obj := cid.NewCidV1(uint64(a.PermanodeCodec), a.PermanodeMultihash)
-
-	// 		acc, err := srv.getAccount(conn, obj, vcsdb.LocalID(a.PermanodesID))
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		resp.Accounts = append(resp.Accounts, acc)
-	// 	}
-
-	// 	return nil
-	// }); err != nil {
-	// 	return nil, err
-	// }
-
-	// // This is a hack to make tests pass. When we first connect to a peer,
-	// // we won't immediately sync their account object, but we want them in the list
-	// // of accounts here. So we do the additional scan using another database table
-	// // to stick those pending accounts into the response.
-	// //
-	// // TODO(burdiyan): this is ugly as hell. Remove this in build11.
-	// res, err := vcssql.AccountDevicesList(conn.InternalConn())
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// meacc := me.Account().CID().String()
-
-	// for _, r := range res {
-	// 	acc := cid.NewCidV1(core.CodecAccountKey, r.AccountsMultihash).String()
-	// 	did := cid.NewCidV1(core.CodecDeviceKey, r.DevicesMultihash).String()
-
-	// 	if acc == meacc {
-	// 		continue
-	// 	}
-
-	// 	idx := -1
-	// 	for i, ra := range resp.Accounts {
-	// 		if ra.Id == acc {
-	// 			idx = i
-	// 			break
-	// 		}
-	// 	}
-
-	// 	if idx == -1 {
-	// 		resp.Accounts = append(resp.Accounts, &accounts.Account{
-	// 			Id:      acc,
-	// 			Profile: &accounts.Profile{},
-	// 			Devices: map[string]*accounts.Device{
-	// 				did: {
-	// 					DeviceId: did,
-	// 				},
-	// 			},
-	// 		})
-	// 	} else {
-	// 		ra := resp.Accounts[idx]
-	// 		if _, ok := ra.Devices[did]; ok {
-	// 			continue
-	// 		}
-	// 		ra.Devices[did] = &accounts.Device{
-	// 			DeviceId: did,
-	// 		}
-	// 	}
-	// }
-
-	// sort.Slice(resp.Accounts, func(i, j int) bool {
-	// 	return resp.Accounts[i].Id < resp.Accounts[j].Id
-	// })
-
-	// return resp, nil
+	return resp, nil
 }
 
 func (srv *Server) getMe() (core.Identity, error) {
