@@ -255,6 +255,13 @@ function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
                 'group',
               )
 
+              const firstChild = pubContent.children[0]
+              // if we are embedding the whole document, for now we just display the first block
+              if (!blockId && firstChild) {
+                resolve(firstChild)
+                return
+              }
+
               let temp: FlowContent | undefined
 
               visit(
