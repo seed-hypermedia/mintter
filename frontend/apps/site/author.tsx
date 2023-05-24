@@ -5,9 +5,46 @@ import {
   FontSizeTokens,
   SiteAside,
   SizableText,
+  Button,
+  XStack,
+  SimpleTooltip,
 } from '@mintter/ui'
-import {Publication, formattedDate, Account} from '@mintter/shared'
+import {
+  Publication,
+  formattedDate,
+  Account,
+  abbreviateCid,
+} from '@mintter/shared'
 import {useMemo} from 'react'
+import {toast} from 'react-hot-toast'
+import {Clipboard} from '@tamagui/lucide-icons'
+
+function IDLabelRow({id, label}: {id?: string; label: string}) {
+  if (!id) return null
+  return (
+    <XStack>
+      <SizableText o={0.5}>{label}:&nbsp;</SizableText>
+      <SimpleTooltip
+        content={
+          <>
+            <Clipboard size={12} /> Copy: {id}
+          </>
+        }
+      >
+        <Button
+          size="$2"
+          chromeless
+          onPress={() => {
+            window.navigator.clipboard.writeText(id)
+            toast.success(`Copied ${label}`)
+          }}
+        >
+          {abbreviateCid(id)}
+        </Button>
+      </SimpleTooltip>
+    </XStack>
+  )
+}
 
 export function PublicationMetadata({
   publication,
@@ -43,6 +80,8 @@ export function PublicationMetadata({
           ? formattedDate(publication.document.updateTime)
           : null}
       </Paragraph>
+      <IDLabelRow label="Document ID" id={publication?.document?.id} />
+      <IDLabelRow label="Version ID" id={publication?.version} />
     </SiteAside>
   ) : null
 }
