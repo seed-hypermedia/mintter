@@ -114,7 +114,7 @@ export function blockToApi(
     }
 
     if (leaf.type == 'file') {
-      annotations.addSpan('file', {url: leaf.url}, start, end)
+      annotations.addSpan('file', {url: leaf.url, name: leaf.name}, start, end)
     }
 
     // Apparently there's no buffer or a string builder option in javascript, and there's nothing better than straight +=.

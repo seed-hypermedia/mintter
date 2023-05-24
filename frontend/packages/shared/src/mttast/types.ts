@@ -90,15 +90,18 @@ export interface Code extends Parent {
 
 export interface Video extends Alternative, Resource, Parent {
   type: 'video'
+  defaultOpen?: boolean
 }
 
 export interface Image extends Alternative, Resource, Parent {
   type: 'image'
+  defaultOpen?: boolean
 }
 
 export interface File extends Alternative, Resource, Parent {
   type: 'file'
   name?: string
+  defaultOpen?: boolean
 }
 
 export interface Embed extends Alternative, Resource, Parent {

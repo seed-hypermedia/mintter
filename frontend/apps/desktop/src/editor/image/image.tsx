@@ -77,6 +77,8 @@ export function ImageElement({
   })
 
   const [state] = useActor(imgService)
+  if ((element as ImageType).defaultOpen)
+    Transforms.setNodes<ImageType>(editor, {defaultOpen: false}, {at: path})
 
   return (
     <YStack {...attributes}>
@@ -185,8 +187,9 @@ function ImageComponent({service, element}: InnerImageProps) {
   )
 }
 
-function ImageForm({service}: InnerImageProps) {
+function ImageForm({service, element}: InnerImageProps) {
   const [state, send] = useActor(service)
+  const [open, setOpen] = useState(true)
   const [tabState, setTabState] = useState('upload')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileName, setFileName] = useState<{name: string; color: string}>({
@@ -196,13 +199,13 @@ function ImageForm({service}: InnerImageProps) {
   const selected = useSelected()
   const focused = useFocused()
 
-  function submitImage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  // function submitImage(event: FormEvent<HTMLFormElement>) {
+  //   event.preventDefault()
 
-    let formData = new FormData(event.currentTarget)
-    let value: string = formData.get('url')?.toString() || ''
-    send({type: 'IMAGE.SUBMIT', value})
-  }
+  //   let formData = new FormData(event.currentTarget)
+  //   let value: string = formData.get('url')?.toString() || ''
+  //   send({type: 'IMAGE.SUBMIT', value})
+  // }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files
@@ -238,7 +241,10 @@ function ImageForm({service}: InnerImageProps) {
   return (
     //@ts-ignore
     <YStack contentEditable={false}>
-      <Popover size="$5">
+      <Popover
+        size="$5"
+        defaultOpen={element.defaultOpen}
+      >
         <Popover.Trigger asChild>
           <Button
             icon={ImageIcon}

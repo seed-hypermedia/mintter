@@ -61,8 +61,6 @@ export function FileElement({
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const [file, setFile] = useState<InnerFileType>({name: '', size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)
-  
-  console.log(element)
 
   if ((element as FileType).url && !file.url) {
     (element as FileType).name ?
@@ -75,12 +73,14 @@ export function FileElement({
 
   const assignFile = (newFile: InnerFileType) => {
     setFile({...file, ...newFile})
-    console.log(newFile)
     if (newFile.url)
       Transforms.setNodes<FileType>(editor, {url: newFile.url}, {at: path})
     if (newFile.name) 
       Transforms.setNodes<FileType>(editor, {name: newFile.name}, {at: path})
   }
+
+  if ((element as FileType).defaultOpen)
+    Transforms.setNodes<FileType>(editor, {defaultOpen: false}, {at: path})
 
   return (
     <YStack {...attributes}>
@@ -190,7 +190,10 @@ function FileForm({assign, element}: InnerFileProps) {
   return (
     //@ts-ignore
     <YStack contentEditable={false}>
-      <Popover size="$5">
+      <Popover
+        size="$5"
+        defaultOpen={element.defaultOpen}
+      >
         <Popover.Trigger asChild>
           <Button
             icon={FileIcon}

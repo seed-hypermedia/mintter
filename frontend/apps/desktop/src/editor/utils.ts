@@ -530,10 +530,14 @@ export function insertInline(fn: typeof image | typeof video | typeof file) {
   ) {
     let {element, at} = opts
     MintterEditor.addChange(editor, ['replaceBlock', element.id])
-    Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
-      // TODO: maybe this needs to insert at selection position? now I guess is creating a new image on top of the current block
-      at,
-    })
+    Transforms.insertNodes(
+      editor,
+      fn({url: '', defaultOpen: true}, [text('')]),
+      {
+        // TODO: maybe this needs to insert at selection position? now I guess is creating a new image on top of the current block
+        at,
+      },
+    )
   }
 }
 
