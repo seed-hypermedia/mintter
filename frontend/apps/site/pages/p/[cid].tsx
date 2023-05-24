@@ -1,6 +1,6 @@
 import {Publication} from '@mintter/shared'
 import {GetServerSidePropsContext} from 'next'
-import {publicationsClient} from '../../client'
+import {localWebsiteClient, publicationsClient} from '../../client'
 import PublicationPage, {PublicationPageProps} from '../../ssr-publication-page'
 import {
   getPublicationPageProps,
@@ -25,6 +25,18 @@ export const getServerSideProps = async (
       documentId: cid,
       version,
     })
+    const allWebPubs = await localWebsiteClient.listWebPublications({})
+    const webPub = allWebPubs.publications.find((pub) => pub.documentId === cid)
+    if (webPub) {
+      const destPath = webPub.path === '/' ? '/' : `/${webPub.path}`
+      return {
+        redirect: {
+          destination: `${destPath}?v=${version || webPub.version}`,
+          permanent: false,
+        },
+      }
+    }
+
     setResponsePublication(context, publication)
     return {
       props: await getPublicationPageProps(publication, cid, version || null),
