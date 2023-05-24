@@ -93,9 +93,7 @@ function HyperLinkingPanel({
     versionId: version,
   })
   const webPubs = useDocPublications(docId)
-  const webPub = webPubs.data?.find(
-    (pub) => docId && pub.hostname === webUrl && pub.documentId === docId,
-  )
+  const webPub = webPubs.data?.find((pub) => docId && pub?.documentId === docId)
   const webUrl = getDocUrl(pub, webPub)
   const navigate = useNavigate()
   return (
