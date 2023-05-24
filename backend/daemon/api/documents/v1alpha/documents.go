@@ -274,15 +274,21 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	if err := api.blobs.PublishDraft(ctx, hyper.NewEntityID("mintter:document", in.DocumentId)); err != nil {
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	oid, err := eid.CID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to conver document to CID: %w", err)
+	}
+
+	if err := api.blobs.PublishDraft(ctx, eid); err != nil {
 		return nil, err
 	}
 
 	if api.disc != nil {
-		panic("TODO: announce draft")
-		// if err := api.disc.ProvideCID(oid); err != nil {
-		// 	return nil, err
-		// }
+		if err := api.disc.ProvideCID(oid); err != nil {
+			return nil, err
+		}
 	}
 
 	return api.GetPublication(ctx, &documents.GetPublicationRequest{
@@ -312,26 +318,55 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	}
 
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	version := hyper.Version(in.Version)
 
+	pub, err := api.loadPublication(ctx, eid, version)
+	if err == nil {
+		return pub, nil
+	}
+
+	// We can only attempt to handle not found errors.
+	if status.Code(err) != codes.NotFound {
+		return nil, err
+	}
+
+	// If no discoverer is set we can't do anything else.
+	if api.disc == nil {
+		return nil, err
+	}
+
+	// We should only attempt to discover publication if didn't specify local only.
+	if in.LocalOnly {
+		return nil, err
+	}
+
+	if err := api.disc.DiscoverObject(ctx, eid, version); err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
+	}
+
+	return api.loadPublication(ctx, eid, version)
+}
+
+func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, version hyper.Version) (docpb *documents.Publication, err error) {
 	var entity *hyper.Entity
-	if in.Version != "" {
-		heads, err := hyper.Version(in.Version).Parse()
+	if version != "" {
+		heads, err := hyper.Version(version).Parse()
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "bad version: %v", err)
 		}
 
-		entity, err = api.blobs.LoadEntityFromHeads(ctx, eid, heads...)
+		entity, err = api.blobs.LoadEntityFromHeads(ctx, docid, heads...)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		entity, err = api.blobs.LoadEntity(ctx, eid)
+		entity, err = api.blobs.LoadEntity(ctx, docid)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if entity == nil {
-		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", eid)
+		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", docid)
 	}
 
 	me, err := api.getMe()
@@ -355,53 +390,10 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	}
 	doc.PublishTime = doc.UpdateTime
 
-	mut.e.Heads()
-
 	return &documents.Publication{
 		Document: doc,
 		Version:  mut.e.Version().String(),
 	}, nil
-
-	//=== TODO: fix remote get
-
-	// oid, err := cid.Decode(in.DocumentId)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// var inVersion vcs.Version
-	// if in.Version != "" {
-	// 	inVersion, err = vcs.ParseVersion(in.Version)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	// pub, err := api.loadPublication(ctx, oid, inVersion)
-	// if err == nil {
-	// 	return pub, nil
-	// }
-
-	// // We can only attempt to handle not found errors.
-	// if status.Code(err) != codes.NotFound {
-	// 	return nil, err
-	// }
-
-	// // If no discoverer is set we can't do anything else.
-	// if api.disc == nil {
-	// 	return nil, err
-	// }
-
-	// // We should only attempt to discover publication if didn't specify local only.
-	// if in.LocalOnly {
-	// 	return nil, err
-	// }
-
-	// if err := api.disc.DiscoverObject(ctx, oid, inVersion.CIDs()); err != nil {
-	// 	return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", oid.String(), inVersion.String())
-	// }
-
-	// return api.loadPublication(ctx, oid, inVersion)
 }
 
 // DeletePublication implements the corresponding gRPC method.
