@@ -237,7 +237,6 @@ let emptyEditorValue = group({data: {parent: ''}}, [
 
 type EditorDraft = {
   children: GroupingContent[]
-  editor: any
   webUrl: string
   id: string
   changes: DocumentChange[]
@@ -274,7 +273,6 @@ export function useEditorDraft({
       }
 
       return {
-        editor,
         changes: MintterEditor.transformChanges(editor).filter(Boolean),
         webUrl: backendDraft.webUrl,
         id: backendDraft.id,
@@ -315,7 +313,7 @@ export type SaveDraftInput = {
   content: GroupingContent[]
 }
 
-export function useSaveDraft(documentId?: string) {
+export function useSaveDraft(editor: Editor, documentId?: string) {
   const saveDraftMutation = useMutation({
     onMutate: ({content}: SaveDraftInput) => {
       let title: string
@@ -323,9 +321,8 @@ export function useSaveDraft(documentId?: string) {
         [queryKeys.EDITOR_DRAFT, documentId],
         (editorDraft: EditorDraft | undefined) => {
           if (!editorDraft) return undefined
-          let contentChanges = MintterEditor.transformChanges(
-            editorDraft.editor,
-          ).filter(Boolean)
+          let contentChanges =
+            MintterEditor.transformChanges(editor).filter(Boolean)
 
           title = getTitleFromContent(content)
           let changes: Array<DocumentChange> = title

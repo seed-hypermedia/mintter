@@ -77,7 +77,7 @@ export function DraftListItem({draft}: {draft: Document}) {
       chromeless
       theme="gray"
       tag="li"
-      onMouseEnter={() => prefetchDraft(client, draft)}
+      onPointerEnter={() => prefetchDraft(client, draft)}
     >
       <ButtonText
         fontWeight="700"

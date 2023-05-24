@@ -44,6 +44,7 @@ export default function PublicationList() {
       content = (
         <div
           style={{
+            paddingTop: 20,
             display: 'flex',
             flexGrow: 1,
             alignSelf: 'stretch',

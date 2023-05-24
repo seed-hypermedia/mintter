@@ -56,7 +56,7 @@ export default function DraftPage() {
   useTauriListeners(editor)
 
   // TODO: safe when loading the first time a new draft: this is to load the epty block generated when start inside the `editorValue` useMemo
-  const saveDraft = useSaveDraft(docId)
+  const saveDraft = useSaveDraft(editor, docId)
 
   if (status == 'loading') {
     return <DraftShell />

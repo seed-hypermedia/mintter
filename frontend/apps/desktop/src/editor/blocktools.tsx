@@ -38,6 +38,9 @@ import {
   UnorderedList,
   VideoIcon,
   XStack,
+  Popover,
+  YGroup,
+  Separator,
 } from '@mintter/ui'
 import {Fragment, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -61,33 +64,27 @@ import './styles/blocktools.scss'
 export function DraftBlocktools({
   editor,
   current,
+  onOpenChange,
+  open,
 }: {
   current: NodeEntry<FlowContent>
   editor: Editor
+  onOpenChange: (open: boolean) => void
+  open: boolean
 }) {
   let mouseService = useMouse()
-  let hoveredBlockId = useHoveredBlockId()
-  let [localOpen, setLocalOpen] = useState(false)
-
   let [block, path] = current
 
   return (
-    <XStack
-      alignItems="center"
-      gap="$1"
-      opacity={block.id == hoveredBlockId ? 1 : 0}
-    >
+    <XStack alignItems="center" gap="$1">
       <Dropdown.Root
         modal
-        open={localOpen}
+        open={open}
         onOpenChange={(isOpen) => {
-          mouseService.send(
-            isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
-          )
-          setLocalOpen(isOpen)
+          onOpenChange(isOpen)
         }}
       >
-        <Dropdown.Trigger icon={Add} data-testid="blocktools-trigger" />
+        <Dropdown.Trigger icon={Add} />
         <Dropdown.Portal>
           <Dropdown.Content side="right" align="start">
             {Object.entries(items).map(([key, value], index, arr) => {
@@ -109,7 +106,7 @@ export function DraftBlocktools({
                           at: path,
                         })
                         // }
-                        mouseService.send('DISABLE.CHANGE')
+                        onOpenChange(false)
                       }}
                       title={item.label}
                       icon={item.icon}
@@ -131,8 +128,6 @@ export function PublicationBlocktools({
 }: {
   current: NodeEntry<FlowContent>
 }) {
-  let hoveredBlockId = useHoveredBlockId()
-  let [block] = current
   let route = useNavRoute()
 
   const onCopy = () => {
@@ -147,13 +142,7 @@ export function PublicationBlocktools({
 
   return (
     <XStack alignItems="center">
-      <Button
-        opacity={block.id == hoveredBlockId ? 1 : 0}
-        size="$2"
-        theme="blue"
-        icon={Copy}
-        onPress={onCopy}
-      />
+      <Button size="$2" theme="blue" icon={Copy} onPress={onCopy} />
       {features.comments && current[0] ? (
         <ConversationBlockBubble block={current[0]} />
       ) : null}
@@ -213,7 +202,7 @@ var items: {
       label: 'File',
       icon: FileIcon,
       onSelect: insertInline(file),
-    }
+    },
   ],
   'Turn Block into': [
     {

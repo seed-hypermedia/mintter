@@ -1,7 +1,6 @@
 import {DraftBlocktools, PublicationBlocktools} from '@app/editor/blocktools'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useVisibleConnection} from '@app/editor/visible-connection'
-import {useMouse} from '@app/mouse-context'
 import {useNavRoute} from '@app/utils/navigation'
 import {
   FlowContent,
@@ -13,7 +12,7 @@ import {
   isOrderedList,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
-import {useCallback, useMemo} from 'react'
+import {useMemo, useState} from 'react'
 import {Editor} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {BLOCK_GAP, findPath, useMode} from './utils'
@@ -46,10 +45,10 @@ export const Block = (props: RenderElementProps) => {
 }
 
 const DraftSection = ({children, element, attributes}: RenderElementProps) => {
-  let mouseService = useMouse()
   let editor = useSlateStatic()
   let route = useNavRoute()
-  // let hoveredBlockId = useHoveredBlockId()
+  let [hover, setHover] = useState(false)
+  let [dropdownOpen, setDropDownOpen] = useState(false)
   let {highlight} = useVisibleConnection((element as FlowContent).id)
 
   // let {blockProps, blockPath, parentNode} = useBlockProps(editor, element)
@@ -101,10 +100,22 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
       backgroundColor={
         route.key != 'draft' && highlight ? '$yellow3' : 'transparent'
       }
+      position={!dropdownOpen ? 'relative' : undefined}
     >
+      <XStack
+        position="absolute"
+        top={0}
+        left="-50%"
+        width="200%"
+        height="100%"
+        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
+        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
+      />
       <XStack
         //@ts-ignore
         contentEditable={false}
+        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
+        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
         flex={0}
         flexShrink={0}
         flexGrow={0}
@@ -113,10 +124,15 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         alignItems="center"
         justifyContent="flex-end"
       >
-        {route.key == 'draft' ? (
+        {hover ? (
           <DraftBlocktools
             editor={editor}
             current={[element as FlowContent, path]}
+            onOpenChange={(isOpen) => {
+              setDropDownOpen(isOpen)
+              if (!isOpen) setHover(false)
+            }}
+            open={dropdownOpen}
           />
         ) : null}
       </XStack>
@@ -142,7 +158,7 @@ const PublicationSection = ({
 }: RenderElementProps) => {
   const editor = useSlateStatic()
   let {highlight} = useVisibleConnection((element as FlowContent).id)
-
+  let [hover, setHover] = useState(false)
   //@ts-ignore
   // let {blockProps, blockPath, parentNode} = useBlockProps(element)
 
@@ -193,7 +209,17 @@ const PublicationSection = ({
       {...attributes}
       gap="$2"
       backgroundColor={highlight ? '$yellow3' : 'transparent'}
+      position="relative"
     >
+      <XStack
+        position="absolute"
+        top={0}
+        left="-50%"
+        width="200%"
+        height="100%"
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
+      />
       <XStack
         //@ts-ignore
         contentEditable={false}
@@ -203,6 +229,8 @@ const PublicationSection = ({
         width={32}
         height={height}
         alignItems="center"
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
         justifyContent="flex-end"
       ></XStack>
       {marker && (
@@ -212,7 +240,12 @@ const PublicationSection = ({
           height={height}
         />
       )}
-      <YStack flex={1} gap={BLOCK_GAP}>
+      <YStack
+        flex={1}
+        gap={BLOCK_GAP}
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
+      >
         {children}
       </YStack>
       <XStack
@@ -228,10 +261,14 @@ const PublicationSection = ({
         height={height}
         justifyContent="flex-start"
         gap="$2"
+        onPointerEnter={() => setHover(true)}
+        onPointerLeave={() => setHover(false)}
         // borderColor="red"
         // borderWidth={1}
       >
-        <PublicationBlocktools current={[element as FlowContent, path]} />
+        {hover ? (
+          <PublicationBlocktools current={[element as FlowContent, path]} />
+        ) : null}
       </XStack>
     </XStack>
   )

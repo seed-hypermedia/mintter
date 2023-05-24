@@ -51,6 +51,7 @@ export default function Main() {
   const isSettings = navR.key == 'settings'
   const navigate = useNavigate()
   const PageComponent = useMemo(() => getPageComponent(navR), [navR.key])
+  const routeKey = useMemo(() => getRouteKey(navR), [navR])
 
   useListen<NavRoute>(
     'open_route',
@@ -70,7 +71,7 @@ export default function Main() {
           window.location.reload()
         }}
       >
-        <PageComponent key={getRouteKey(navR)} />
+        <PageComponent key={routeKey} />
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </>
