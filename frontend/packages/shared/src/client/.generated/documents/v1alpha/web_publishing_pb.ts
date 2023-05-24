@@ -1081,6 +1081,14 @@ export class ListWebPublicationsRequest extends Message<ListWebPublicationsReque
    */
   pageToken = "";
 
+  /**
+   * Optional. DocumentID of the publication to retrieve. 
+   * If not provided, all publications will be returned
+   *
+   * @generated from field: string document_id = 3;
+   */
+  documentId = "";
+
   constructor(data?: PartialMessage<ListWebPublicationsRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1091,6 +1099,7 @@ export class ListWebPublicationsRequest extends Message<ListWebPublicationsReque
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListWebPublicationsRequest {

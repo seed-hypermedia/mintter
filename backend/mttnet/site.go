@@ -535,6 +535,9 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Cannot List publications: %w", err)
 	}
 	for document, path := range records {
+		if in.DocumentId != "" && in.DocumentId != document.ID.String() {
+			continue
+		}
 		publications = append(publications, &site.WebPublicationRecord{
 			DocumentId: document.ID.String(),
 			Version:    document.Version,

@@ -280,6 +280,10 @@ message ListWebPublicationsRequest {
 
   // Token for a specific page.
   string page_token = 2;
+
+  // Optional. DocumentID of the publication to retrieve. 
+  // If not provided, all publications will be returned
+  string document_id = 3;
 }
 
 // Response of all documents published on a web site.
