@@ -20,7 +20,7 @@ import {
   Adapt,
   Button,
   ExternalLink,
-  Fieldset,
+  Form,
   Input,
   Label,
   Link as LinkIcon,
@@ -51,9 +51,12 @@ import {
 import {
   ReactEditor,
   RenderElementProps,
+  useFocused,
+  useSelected,
   useSlateSelection,
   useSlateStatic,
 } from 'slate-react'
+import {useLinkingPanel} from '../linking-panel'
 import type {EditorPlugin} from '../types'
 import {
   findPath,
@@ -259,10 +262,28 @@ function RenderMintterLink(
 ) {
   const navigate = useNavigate()
   const spawn = useNavigate()
+  const editor = useSlateStatic()
   const navigateReplace = useNavigate('replace')
   const route = useNavRoute()
+  const isDraftMode = route.key === 'draft'
 
   const {mintterLink, attributes, ...linkProps} = props
+
+  const isSelected = useSelected()
+
+  const {onLinkState} = useLinkingPanel()
+  function onUpdate(url: string | null) {
+    if (url === null) {
+      if (isLinkActive(editor, editor.selection)) {
+        unwrapLink(editor, editor.selection)
+      }
+    } else {
+      Transforms.setNodes(editor, {url}, {at: findPath(props.element)})
+    }
+  }
+  useEffect(() => {
+    onLinkState?.({isSelected, element: props.element, onUpdate})
+  }, [isSelected, props.element])
 
   if (!mintterLink) return null
 
@@ -271,6 +292,10 @@ function RenderMintterLink(
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
+    if (isDraftMode) {
+      onLinkState?.({isSelected: true, element: props.element, onUpdate})
+      return
+    }
     const destRoute: PublicationRoute = {
       key: 'publication',
       documentId,
@@ -305,7 +330,6 @@ function RenderMintterLink(
 
   return (
     <>
-      <InlineChromiumBugfix />
       <SizableText
         {...attributes}
         tag="a"
@@ -321,34 +345,82 @@ function RenderMintterLink(
         onClick={onClick}
         display="inline"
         fontWeight="500"
-        color="$color9"
+        color="$link"
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
         hoverTheme
         hoverStyle={{
-          cursor: 'pointer',
-          backgroundColor: '$color4',
+          cursor: isDraftMode ? 'text' : 'pointer',
+          backgroundColor: isDraftMode ? undefined : '$color4',
         }}
         {...linkProps}
       />
-      <InlineChromiumBugfix />
     </>
   )
 }
 
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   let mode = useMode()
+  const editor = useSlateStatic()
+  const isSelected = useSelected()
+  const route = useNavRoute()
+  const isDraftMode = route.key === 'draft'
+  const {onLinkState} = useLinkingPanel()
+
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-    if (
-      mode == EditorMode.Embed ||
-      mode == EditorMode.Discussion ||
-      mode == EditorMode.Draft
-    )
+    if (isDraftMode) {
+      onLinkState?.({
+        isSelected: true,
+        element: props.element,
+        onUpdate,
+      })
       return
+    }
+    if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
     open(props.element.url)
   }
-
+  function onUpdate(url: string | null) {
+    if (url === null) {
+      if (isLinkActive(editor, editor.selection)) {
+        unwrapLink(editor, editor.selection)
+      }
+    } else {
+      Transforms.setNodes(editor, {url}, {at: findPath(props.element)})
+    }
+  }
+  useEffect(() => {
+    onLinkState?.({isSelected, element: props.element, onUpdate})
+  }, [isSelected, props.element])
+  if (isDraftMode) {
+    return (
+      <>
+        <SizableText
+          tag="a"
+          color="$webLink"
+          fontFamily="inherit"
+          letterSpacing="inherit"
+          // @ts-ignore add the href prop to this element
+          href={props.element.url}
+          display="inline"
+          // @ts-ignore not sure what the Text ref is..
+          ref={ref}
+          fontWeight="500"
+          size="$5"
+          cursor="text"
+          hoverStyle={{
+            cursor: isDraftMode ? 'text' : 'pointer',
+            // backgroundColor: isDraftMode ? undefined : '$blue4',
+          }}
+          backgroundColor={isSelected ? '#f0f0ff' : 'transparent'}
+          onClick={onClick}
+          {...props.attributes}
+        >
+          {props.children}
+        </SizableText>
+      </>
+    )
+  }
   return (
     <Tooltip
       inline
@@ -361,10 +433,9 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     >
       <>
         <InlineChromiumBugfix />
-
         <SizableText
           tag="a"
-          // color="$color8"
+          color="$webLink"
           fontFamily="inherit"
           letterSpacing="inherit"
           // @ts-ignore add the href prop to this element
@@ -372,13 +443,12 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
           display="inline"
           // @ts-ignore not sure what the Text ref is..
           ref={ref}
-          color={props.hintPureWebLink ? '$blue10' : '$color'}
           fontWeight="500"
           hoverTheme
           size="$5"
           hoverStyle={{
             cursor: 'pointer',
-            backgroundColor: '$blue4',
+            backgroundColor: isDraftMode ? undefined : '$blue4',
           }}
           onClick={onClick}
           {...props.attributes}
@@ -572,7 +642,6 @@ function isUrl(value: string): boolean {
 export function InsertLinkButton() {
   const [link, setLink] = useState('')
   const editor = useSlateStatic()
-  const isLink = isLinkActive(editor)
   const selection = useSlateSelection()
   const {reference, refs} = useFloating()
 
@@ -599,6 +668,7 @@ export function InsertLinkButton() {
       })
 
       setLink('')
+      handleChange(false)
     }
   }
 
@@ -733,65 +803,31 @@ export function InsertLinkButton() {
         padding={0}
         borderWidth={1}
         borderColor="$borderColor"
-        enterStyle={{x: 0, y: -10, opacity: 0}}
-        exitStyle={{x: 0, y: -10, opacity: 0}}
+        backgroundColor="$backgroundTransparent"
         elevation={5}
-        x={0}
-        y={0}
+        x={-30}
+        y={-50}
         opacity={1}
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
         elevate
       >
-        {/* <Popover.Arrow borderWidth={1} borderColor="$borderColor" /> */}
-        <YGroup space="$3" padding="$3">
+        <YGroup space="$3" padding="$2">
           <YGroup.Item>
-            <Fieldset
-              paddingHorizontal="$2"
-              margin={0}
-              borderColor="transparent"
-              borderWidth={0}
-            >
-              <Label size="$2" htmlFor="address">
-                Link Address
-              </Label>
+            <Label size="$1" htmlFor="insert-link-address">
+              Insert Link:
+            </Label>
+            <Form onSubmit={handleSubmit}>
               <Input
                 size="$2"
                 keyboardType="url"
-                id="address"
+                id="insert-link-address"
                 data-testid="modal-link-input"
                 value={link}
                 onChangeText={setLink}
-                placeholder="https://.. or mintter://..."
+                onSubmitEditing={handleSubmit}
+                placeholder="https://"
+                autoFocus
               />
-            </Fieldset>
-          </YGroup.Item>
-          <YGroup.Item>
-            <XStack space justifyContent="space-between" alignItems="center">
-              <Popover.Close asChild>
-                <Button size="$2" onPress={handleSubmit}>
-                  save
-                </Button>
-              </Popover.Close>
-              <Popover.Close asChild>
-                <Button
-                  onPress={handleRemove}
-                  data-testid="modal-link-remove-button"
-                  disabled={!isLink}
-                  theme="red"
-                  size="$1"
-                  paddingHorizontal="$2"
-                >
-                  remove link
-                </Button>
-              </Popover.Close>
-            </XStack>
+            </Form>
           </YGroup.Item>
         </YGroup>
       </Popover.Content>
@@ -801,7 +837,6 @@ export function InsertLinkButton() {
 
 export function LinkElement({element, ...props}: RenderElementProps) {
   let isVoid = useMemo(() => element.data?.void, [element])
-
   if (isVoid) {
     return <MintterDocumentLink {...props} element={element as LinkType} />
   }

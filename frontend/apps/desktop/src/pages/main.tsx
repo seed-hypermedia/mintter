@@ -7,7 +7,7 @@ import {
 } from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
-import {Button, Heading, YStack} from '@mintter/ui'
+import {Button, Heading} from '@mintter/ui'
 import {lazy, useMemo} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
@@ -62,17 +62,18 @@ export default function Main() {
   )
 
   return (
-    <ErrorBoundary
-      FallbackComponent={MainBoundary}
-      onReset={() => {
-        window.location.reload()
-      }}
-    >
+    <>
       <TitleBar clean={isSettings} />
-      {/* @ts-ignore */}
-      <PageComponent key={getRouteKey(navR)} />
-      {!isSettings ? <QuickSwitcher /> : null}
-    </ErrorBoundary>
+      <ErrorBoundary
+        FallbackComponent={MainBoundary}
+        onReset={() => {
+          window.location.reload()
+        }}
+      >
+        <PageComponent key={getRouteKey(navR)} />
+        {!isSettings ? <QuickSwitcher /> : null}
+      </ErrorBoundary>
+    </>
   )
 }
 

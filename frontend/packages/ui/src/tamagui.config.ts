@@ -169,7 +169,19 @@ export var config = createTamagui({
     body: bodyFont,
     mono: monoFont,
   },
-  themes: tamaguiDefaults.themes,
+  themes: {
+    ...tamaguiDefaults.themes,
+    dark: {
+      ...tamaguiDefaults.themes.dark,
+      link: '#6ebcf5',
+      webLink: '#678af5',
+    },
+    light: {
+      ...tamaguiDefaults.themes.light,
+      link: '#0d70b8',
+      webLink: '#0d38b8',
+    },
+  },
   tokens,
   media: createMedia({
     xs: {maxWidth: 660},

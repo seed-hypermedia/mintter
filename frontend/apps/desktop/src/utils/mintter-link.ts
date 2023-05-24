@@ -1,7 +1,7 @@
 import {MINTTER_LINK_PREFIX, getIdsfromUrl} from '@mintter/shared'
 
-export function isMintterScheme(text: string) {
-  return text.startsWith(MINTTER_LINK_PREFIX)
+export function isMintterScheme(text?: string) {
+  return !!text?.startsWith(MINTTER_LINK_PREFIX)
 }
 
 export function isMintterGatewayLink(text: string) {

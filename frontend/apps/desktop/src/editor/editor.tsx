@@ -25,7 +25,11 @@ import {
   ELEMENT_IMAGE,
   ImageElement,
 } from '@app/editor/image/image'
-import { createFilePlugin, ELEMENT_FILE, FileElement } from '@app/editor/file/file'
+import {
+  createFilePlugin,
+  ELEMENT_FILE,
+  FileElement,
+} from '@app/editor/file/file'
 import {createInlineCodePlugin} from '@app/editor/inline-code'
 import {createLinkPlugin, ELEMENT_LINK, LinkElement} from '@app/editor/link'
 import {createMarkdownShortcutsPlugin} from '@app/editor/markdown-plugin'
@@ -88,6 +92,8 @@ import {buildEventHandlerHooks, EditorMode} from './plugin-utils'
 import './styles/editor.css'
 import type {EditorPlugin} from './types'
 import {findPath, setList, setType, toggleFormat} from './utils'
+import {createContext} from 'react'
+import {LinkingPanelProvider} from './linking-panel'
 
 interface EditorProps {
   children?: ReactNode
@@ -186,15 +192,17 @@ export function Editor({
           onChange={onChange}
         >
           <EditorHoveringToolbar />
-          <Editable
-            id="editor"
-            data-testid="editor"
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            // decorate={decorate}
-            placeholder="Start typing here..."
-            {...eventHandlers}
-          />
+          <LinkingPanelProvider>
+            <Editable
+              id="editor"
+              data-testid="editor"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              // decorate={decorate}
+              placeholder="Start typing here..."
+              {...eventHandlers}
+            />
+          </LinkingPanelProvider>
           {children}
         </Slate>
       </div>
