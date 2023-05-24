@@ -107,6 +107,26 @@ func (m *Map) Get(path ...string) (value any, ok bool) {
 	return n.value, true
 }
 
+func (m *Map) GetWithOrigin(path ...string) (value any, origin string, ok bool) {
+	pivot := newPivot(path, true)
+
+	var n mapNode
+	m.state.Descend(pivot, func(item mapNode) bool {
+		n = item
+		return false
+	})
+
+	if !samePath(path, n.key.path) {
+		return nil, "", false
+	}
+
+	if n.valueType != mapValuePrimitive && n.valueType != mapValueAtomicMap {
+		return nil, "", false
+	}
+
+	return n.value, n.key.origin, true
+}
+
 func (m *Map) List(path ...string) (out []any, ok bool) {
 	pivot := newPivot(path, false)
 

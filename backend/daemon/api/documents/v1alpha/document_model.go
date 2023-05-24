@@ -389,14 +389,16 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 		sp := n.pos.Value.(ShadowPosition)
 		parent := sp.parent
 		id := n.id
-		mm, ok := dm.e.State().Get("blocks", id)
+		// TODO(burdiyan): block revision would change only if block itself was change.
+		// If block is only moved it's revision won't change. Need to check if that's what we want.
+		mm, origin, ok := dm.e.State().GetWithOrigin("blocks", id)
 		if !ok {
 			// If we got some moves but no block state
 			// we just skip them, we don't want to blow up here.
 			continue
 		}
 
-		oo := dm.origins[sp.opid.Origin]
+		oo := dm.origins[origin]
 		if !oo.Defined() {
 			oo = dm.oldCID
 		}

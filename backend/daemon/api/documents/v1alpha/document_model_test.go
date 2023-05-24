@@ -25,6 +25,8 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
+	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
+
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
 	require.NoError(t, dm.SetCreateTime(time.Now()))
 
@@ -49,6 +51,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 	require.NoError(t, err)
 	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
 	dm, err := newDocModel(entity, alice.Device, delegation)
+	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
@@ -105,6 +108,7 @@ func TestDocument_Cleanup(t *testing.T) {
 	require.NoError(t, err)
 	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
 	dm, err := newDocModel(entity, alice.Device, delegation)
+	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
@@ -201,6 +205,7 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	eid := hyper.NewEntityID("mintter:document", "doc-1")
 	entity := hyper.NewEntity(eid)
 	dm, err := newDocModel(entity, alice.Device, delegation)
+	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
 	require.NoError(t, err)
 
 	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
