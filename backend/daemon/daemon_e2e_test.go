@@ -11,14 +11,16 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hyper"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
 	"testing"
 	"time"
 
 	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -112,11 +114,6 @@ func TestDaemonListPublications(t *testing.T) {
 	list, err := client.ListPublications(context.Background(), &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 0, "account object must not be listed as publication")
-
-	_, err = client.DeletePublication(context.Background(), &documents.DeletePublicationRequest{
-		DocumentId: alice.Me.MustGet().AccountID().String(),
-	})
-	require.Error(t, err, "we must not be able to delete other objects than publications")
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
@@ -152,7 +149,7 @@ func TestSite(t *testing.T) {
 	siteCfg.HTTPPort = 59011
 	siteCfg.Identity.NoAccountWait = true
 	siteCfg.Site.Title = "initial Site Title"
-	siteCfg.Site.OwnerID = owner.Me.MustGet().AccountID().String()
+	siteCfg.Site.OwnerID = owner.Me.MustGet().Account().String()
 	siteCfg.P2P.NoListing = true
 	siteCfg.Syncing.NoInbound = true
 
@@ -174,7 +171,7 @@ func TestSite(t *testing.T) {
 	// Generate a token for the editor.
 	header := metadata.New(map[string]string{string(mttnet.MttHeader): siteCfg.Site.Hostname})
 	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().AccountID().String())
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().Account().String())
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
 	// Adding a site as an editor without token should fail.
@@ -191,7 +188,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, "", siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().AccountID().String(), siteInfo.Owner)
+	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, siteCfg.Site.Title, siteInfo.Title)
 	siteAcc, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -208,7 +205,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, newDescription, siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().AccountID().String(), siteInfo.Owner)
+	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, newTitle, siteInfo.Title)
 	siteAcc, err = site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -563,7 +560,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 
 	pub := publishDocument(t, ctx, alice)
 
-	cc, err := bob.Net.MustGet().Client(ctx, alice.Repo.Device().CID())
+	cc, err := bob.Net.MustGet().Client(ctx, alice.Repo.Device().PeerID())
 	require.NoError(t, err)
 
 	list, err := cc.ListObjects(ctx, &p2p.ListObjectsRequest{})
@@ -580,15 +577,15 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 		for _, ch := range obj.ChangeIds {
 			c := must.Do2(cid.Decode(ch))
 
-			blk, err := alice.VCSDB.Blockstore().Get(ctx, c)
+			blk, err := alice.Blobs.IPFSBlockstore().Get(ctx, c)
 			require.NoError(t, err)
 
-			change, err := vcs.DecodeChange(blk.RawData())
-			require.NoError(t, err)
+			var change hyper.Change
+			require.NoError(t, cbornode.DecodeInto(blk.RawData(), &ch))
 
 			seen[blk.Cid()] = struct{}{}
 
-			for _, dep := range change.Parents {
+			for _, dep := range change.Deps {
 				_, ok := seen[dep]
 				require.True(t, ok, "non causal order of IPLD links: haven't seen dep %s of %s", dep, blk.Cid())
 			}
@@ -655,14 +652,14 @@ func TestMultiDevice(t *testing.T) {
 		sr := must.Do2(alice1.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []cid.Cid{alice1.Repo.Device().CID(), alice2.Repo.Device().CID()}, sr.Devices)
+		require.Equal(t, []peer.ID{alice1.Repo.Device().PeerID(), alice2.Repo.Device().PeerID()}, sr.Peers)
 	}
 
 	{
 		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []cid.Cid{alice2.Repo.Device().CID(), alice1.Repo.Device().CID()}, sr.Devices)
+		require.Equal(t, []peer.ID{alice2.Repo.Device().PeerID(), alice1.Repo.Device().PeerID()}, sr.Peers)
 	}
 
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))

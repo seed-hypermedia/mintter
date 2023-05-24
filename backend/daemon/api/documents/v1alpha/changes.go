@@ -2,79 +2,83 @@ package documents
 
 import (
 	"context"
+	"fmt"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hyper"
 	"mintter/backend/pkg/errutil"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/sqlitevcs"
 
 	"github.com/ipfs/go-cid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // GetChangeInfo implements the Changes server.
 func (api *Server) GetChangeInfo(ctx context.Context, in *documents.GetChangeInfoRequest) (*documents.ChangeInfo, error) {
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
 	c, err := cid.Decode(in.Id)
 	if err != nil {
 		return nil, errutil.ParseError("id", in.Id, c, err)
 	}
 
-	info, err := conn.GetPublicChangeInfo(c)
-	if err != nil {
+	var ch hyper.Change
+	if err := api.blobs.LoadBlob(ctx, c, &ch); err != nil {
 		return nil, err
 	}
 
-	return changeToProto(info), nil
+	var kd hyper.KeyDelegation
+	if err := api.blobs.LoadBlob(ctx, ch.Delegation, &kd); err != nil {
+		return nil, fmt.Errorf("failed to find key delegation for change %s: %w", in.Id, err)
+	}
+
+	return changeToProto(c, ch, kd), nil
 }
 
 // ListChanges implements the Changes server.
 func (api *Server) ListChanges(ctx context.Context, in *documents.ListChangesRequest) (*documents.ListChangesResponse, error) {
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must provide document id")
+	}
+
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	out := &documents.ListChangesResponse{}
+
+	dels := map[cid.Cid]hyper.KeyDelegation{}
+
+	if err := api.blobs.ForEachChange(ctx, eid, func(c cid.Cid, ch hyper.Change) error {
+		kd, ok := dels[ch.Delegation]
+		if !ok {
+			if err := api.blobs.LoadBlob(ctx, ch.Delegation, &kd); err != nil {
+				return fmt.Errorf("failed to load key delegation for change info listing: %w", err)
+			}
+			dels[ch.Delegation] = kd
+		}
+
+		out.Changes = append(out.Changes, changeToProto(c, ch, kd))
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
-	defer release()
 
-	obj, err := cid.Decode(in.ObjectId)
-	if err != nil {
-		return nil, errutil.ParseError("objectID", in.ObjectId, obj, err)
-	}
-
-	infos, err := conn.ListChanges(obj)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &documents.ListChangesResponse{
-		Changes: make([]*documents.ChangeInfo, len(infos)),
-	}
-
-	for i, info := range infos {
-		resp.Changes[i] = changeToProto(info)
-	}
-
-	return resp, nil
+	return out, nil
 }
 
-func changeToProto(info sqlitevcs.PublicChangeInfo) *documents.ChangeInfo {
-	pb := &documents.ChangeInfo{
-		Id:         info.ID.String(),
-		Author:     info.Author.String(),
-		CreateTime: timestamppb.New(info.CreateTime),
-		Version:    vcs.NewVersion(info.ID).String(),
+func changeToProto(c cid.Cid, ch hyper.Change, kd hyper.KeyDelegation) *documents.ChangeInfo {
+	outpb := &documents.ChangeInfo{
+		Id:         c.String(),
+		Author:     kd.Issuer.String(),
+		Version:    c.String(),
+		CreateTime: timestamppb.New(ch.HLCTime.Time()),
+	}
+	if len(ch.Deps) == 0 {
+		return outpb
 	}
 
-	if info.Deps != nil {
-		pb.Deps = make([]string, len(info.Deps))
-		for i, d := range info.Deps {
-			pb.Deps[i] = d.String()
-		}
+	outpb.Deps = make([]string, len(ch.Deps))
+	for i, dep := range ch.Deps {
+		outpb.Deps[i] = dep.String()
 	}
 
-	return pb
+	return outpb
 }

@@ -3,7 +3,7 @@ package hyper
 import (
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/vcs/hlc"
+	"mintter/backend/hlc"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -156,4 +156,21 @@ type Change struct {
 
 	// Sig is the signature over the rest of the fields.
 	Sig core.Signature `refmt:"sig,omitempty"`
+}
+
+// Verify change signature.
+func (ch Change) Verify() error {
+	sig := ch.Sig
+	ch.Sig = nil
+
+	data, err := cbornode.DumpObject(ch)
+	if err != nil {
+		return fmt.Errorf("failed to encoding signing bytes to verify key delegation: %w", err)
+	}
+
+	if err := ch.Signer.Verify(data, sig); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,7 +6,6 @@ import (
 	"mintter/backend/pkg/slip10"
 	"strings"
 
-	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/tyler-smith/go-bip39"
 )
@@ -33,10 +32,6 @@ func NewIdentity(account PublicKey, device KeyPair) Identity {
 
 func (i Identity) Account() PublicKey {
 	return i.account
-}
-
-func (i Identity) AccountID() cid.Cid {
-	return i.account.CID()
 }
 
 func (i Identity) DeviceKey() KeyPair { return i.device }

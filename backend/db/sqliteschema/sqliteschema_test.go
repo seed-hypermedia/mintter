@@ -2,11 +2,17 @@ package sqliteschema
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
 )
+
+func TestFoo(t *testing.T) {
+	fmt.Println(strings.Split("", ".") == nil)
+}
 
 func TestMigrate(t *testing.T) {
 	pool := makeDB(t)

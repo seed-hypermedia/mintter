@@ -143,6 +143,10 @@ func (pk PublicKey) Abbrev() uint64 {
 // ID of the public key.
 func (pk PublicKey) ID() KeyID { return pk.id }
 
+func (pk PublicKey) PeerID() peer.ID {
+	return pk.id
+}
+
 // CID returns CID representation of the public key.
 func (pk PublicKey) CID() cid.Cid {
 	mh, err := multihash.Cast([]byte(pk.id))
@@ -155,7 +159,7 @@ func (pk PublicKey) CID() cid.Cid {
 
 // String creates string representation of the public key.
 func (pk PublicKey) String() string {
-	return pk.CID().String()
+	return pk.Principal().String()
 }
 
 // Principal returns the principal representation of the public key.

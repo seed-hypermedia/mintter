@@ -1,57 +1,31 @@
 package syncing
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"mintter/backend/config"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
+	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
-	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
-
-func TestPermanodeFromMap(t *testing.T) {
-	alice := coretest.NewTester("alice")
-
-	tests := []struct {
-		In vcs.Permanode
-	}{
-		{In: sqlitevcs.NewDocumentPermanode(alice.Identity.AccountID(), hlc.NewClock().Now())},
-		{In: sqlitevcs.NewAccountPermanode(alice.Identity.AccountID())},
-	}
-
-	for _, tt := range tests {
-		data, err := cbornode.DumpObject(tt.In)
-		require.NoError(t, err)
-
-		var v interface{}
-		require.NoError(t, cbornode.DecodeInto(data, &v))
-
-		p, err := permanodeFromMap(v)
-		require.NoError(t, err)
-
-		require.Equal(t, tt.In.PermanodeType(), p.PermanodeType())
-		require.Equal(t, tt.In.PermanodeOwner(), p.PermanodeOwner())
-		require.Equal(t, tt.In.PermanodeCreateTime(), p.PermanodeCreateTime())
-	}
-
-	_, err := permanodeFromMap(map[string]interface{}{})
-	require.Error(t, err)
-
-	_, err = permanodeFromMap(nil)
-	require.Error(t, err)
-}
 
 func TestSync(t *testing.T) {
 	t.Parallel()
@@ -65,11 +39,12 @@ func TestSync(t *testing.T) {
 	newNode := func(name string) Node {
 		var n Node
 
-		peer, stop := makeTestPeer(t, name)
+		db := makeTestSQLite(t)
+		peer, stop := makeTestPeer(t, db, name)
 		t.Cleanup(stop)
 		n.Node = peer
 
-		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client, false)
+		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client, false)
 
 		return n
 	}
@@ -80,34 +55,12 @@ func TestSync(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
-	var alicePerma vcs.EncodedPermanode
-	var aliceChange vcs.VerifiedChange
-	{
-		conn, release, err := alice.VCS().Conn(ctx)
-		require.NoError(t, err)
-
-		err = conn.WithTx(true, func() error {
-			clock := hlc.NewClock()
-			perma, err := vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
-			alicePerma = perma
-			require.NoError(t, err)
-
-			conn.NewObject(perma)
-
-			vc, err := vcs.NewChange(alice.ID(), alicePerma.ID, nil, sqlitevcs.KindOpaque, clock.Now(), []byte("opaque content")).Block()
-			if err != nil {
-				return err
-			}
-
-			aliceChange = vc
-
-			conn.StoreChange(vc)
-
-			return nil
-		})
-		release()
-		require.NoError(t, err)
-	}
+	entity := hyper.NewEntity("foo")
+	blob, err := entity.CreateChange(entity.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+		"name": "alice",
+	})
+	require.NoError(t, err)
+	require.NoError(t, alice.Blobs().SaveBlob(ctx, blob))
 
 	res, err := bob.Syncer.Sync(ctx)
 	require.NoError(t, err)
@@ -115,25 +68,10 @@ func TestSync(t *testing.T) {
 	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
 
 	{
-		conn, release, err := bob.VCS().Conn(ctx)
+		blk, err := bob.Blobs().IPFSBlockstore().Get(ctx, blob.CID)
 		require.NoError(t, err)
 
-		err = conn.WithTx(false, func() error {
-			blk, err := conn.GetBlock(ctx, alicePerma.ID)
-			if err != nil {
-				return err
-			}
-			require.Equal(t, alicePerma.Data, blk.RawData(), "bob must sync alice's permanode intact")
-
-			blk, err = conn.GetBlock(ctx, aliceChange.Cid())
-			if err != nil {
-				return err
-			}
-			require.Equal(t, aliceChange.RawData(), blk.RawData(), "bob must sync alice's change intact")
-			return nil
-		})
-		release()
-		require.NoError(t, err)
+		require.Equal(t, blob.Data, blk.RawData(), "bob must sync alice's change intact")
 	}
 }
 
@@ -221,17 +159,11 @@ func TestSync(t *testing.T) {
 // 	}
 // }
 
-func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) {
+func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
-	db := makeTestSQLite(t)
-
-	hvcs := sqlitevcs.New(db)
-
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := sqlitevcs.Register(context.Background(), u.Account, u.Device, conn)
-	release()
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P
@@ -239,7 +171,7 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 	cfg.NoRelay = true
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
-	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	n, err := mttnet.New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
@@ -279,4 +211,36 @@ func makeTestSQLite(t *testing.T) *sqlitex.Pool {
 	require.NoError(t, sqliteschema.Migrate(conn))
 
 	return pool
+}
+
+func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) cid.Cid {
+	var out cid.Cid
+
+	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	if err := blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		acc := me.Account().Principal()
+		dev := me.DeviceKey().Principal()
+
+		list, err := hypersql.KeyDelegationsList(conn, acc)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, res := range list {
+			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
+				return nil
+			}
+		}
+
+		return nil
+	}); err != nil {
+		panic(err)
+	}
+
+	if !out.Defined() {
+		panic(fmt.Errorf("BUG: failed to find our own key delegation"))
+	}
+
+	return out
 }

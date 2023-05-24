@@ -54,6 +54,10 @@ func (p Principal) Explode() (multicodec.Code, []byte) {
 
 // String encodes Principal as a string, using base58btc encoding as defined in DID Key spec.
 func (p Principal) String() string {
+	if len(p) == 0 {
+		return ""
+	}
+
 	s, err := multibase.Encode(multibase.Base58BTC, p)
 	if err != nil {
 		panic(err)
@@ -137,7 +141,7 @@ func DecodePrincipal(s string) (Principal, error) {
 	}
 
 	if enc != multibase.Base58BTC {
-		return nil, fmt.Errorf("unsupported principal multibase")
+		return nil, fmt.Errorf("unsupported principal multibase: %s", multicodec.Code(enc).String())
 	}
 
 	return Principal(data), nil

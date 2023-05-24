@@ -4,15 +4,17 @@ import (
 	"context"
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/sqlitevcs"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
@@ -43,12 +45,8 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 
 	db := makeTestSQLite(t)
 
-	hvcs := vcsdb.New(db)
-
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := sqlitevcs.Register(context.Background(), u.Account, u.Device, conn)
-	release()
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P
@@ -57,7 +55,7 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	n, err := New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

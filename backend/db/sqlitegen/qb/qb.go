@@ -285,6 +285,17 @@ func ResultCol(col sqlitegen.Column) ResultOpt {
 	}
 }
 
+// ResultColShort annotates a Column's short name to be a result of a query.
+func ResultColShort(col sqlitegen.Column) ResultOpt {
+	return func(s sqlitegen.Schema) Result {
+		return Result{
+			SQL:        col.ShortName(),
+			ColumnName: col.ShortName(),
+			Type:       s.GetColumnType(col),
+		}
+	}
+}
+
 // ResultColAlias renames a column with an alias.
 func ResultColAlias(col sqlitegen.Column, as string) ResultOpt {
 	return func(s sqlitegen.Schema) Result {

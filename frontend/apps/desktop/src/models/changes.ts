@@ -15,7 +15,7 @@ function createDocChangesQuery(docId: string | undefined) {
   return {
     queryFn: () =>
       changesClient.listChanges({
-        objectId: docId,
+        documentId: docId,
       }),
     queryKey: [queryKeys.PUBLICATION_CHANGES, docId],
     enabled: !!docId,

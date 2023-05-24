@@ -7,10 +7,12 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
+	"mintter/backend/core"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet/sitesql"
-	"mintter/backend/vcs/vcssql"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -19,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ipfs/go-cid"
+	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -33,7 +35,7 @@ type headerKey string
 
 const (
 	// MttHeader is the headers bearing the remote site hostname to proxy calls to.
-	MttHeader headerKey = "x-mintter-site-hostname"
+	MttHeader = "x-mintter-site-hostname"
 	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	SiteAccountIDCtxKey headerKey = "x-mintter-site-account-id"
@@ -45,23 +47,23 @@ const (
 func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
-		return &site.InviteToken{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.InviteToken)
 		if !ok {
-			return &site.InviteToken{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	if in.Role == site.Member_OWNER {
-		return &site.InviteToken{}, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
+		return nil, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
 	}
 	// generate random number string for the token. Substitute for proper signed jwt
 	newToken := randStr(12)
 
 	if in.ExpireTime != nil && in.ExpireTime.AsTime().Before(time.Now()) {
-		return &site.InviteToken{}, fmt.Errorf("expiration time must be in the future")
+		return nil, fmt.Errorf("expiration time must be in the future")
 	}
 	expirationTime := time.Now().Add(srv.InviteTokenExpirationDelay)
 	if in.ExpireTime != nil {
@@ -70,15 +72,15 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.InviteToken{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.InviteToken{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	if err = sitesql.AddToken(conn, newToken, expirationTime, in.Role); err != nil {
-		return &site.InviteToken{}, fmt.Errorf("Cannot add token to db: %w", err)
+	if err = sitesql.AddToken(conn, newToken, expirationTime.Unix(), int64(in.Role)); err != nil {
+		return nil, fmt.Errorf("Cannot add token to db: %w", err)
 	}
 
 	return &site.InviteToken{
@@ -91,28 +93,28 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
 	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
-		return &site.RedeemInviteTokenResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.RedeemInviteTokenResponse)
 		if !ok {
-			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	if acc.String() == srv.ownerID {
-		n.log.Debug("TOKEN REDEEMED", zap.String("Site Owner", srv.ownerID), zap.String("Role", "OWNER"))
-		if err = sitesql.AddMember(conn, acc, int64(site.Member_OWNER)); err != nil {
-			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add owner member to the db %w", err)
+	if acc.String() == srv.owner.String() {
+		n.log.Debug("TokenRedeemed", zap.String("owner", srv.owner.String()), zap.String("role", "OWNER"))
+		if _, err = sitesql.AddMember(conn, acc, int64(site.Member_OWNER)); err != nil {
+			return nil, fmt.Errorf("Cannot add owner member to the db %w", err)
 		}
 		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
 	}
@@ -123,71 +125,73 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		if err == nil {
 			return &site.RedeemInviteTokenResponse{Role: role}, nil
 		}
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
+		return nil, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
 	}
 
 	tokenInfo, err := sitesql.GetToken(conn, in.Token)
 	if err != nil {
 		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token), zap.Error(err))
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
+		return nil, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
 	}
 
-	if tokenInfo.ExpirationTime.Before(time.Now()) {
+	expireTime := time.Unix(tokenInfo.InviteTokensExpirationTime, 0)
+
+	if expireTime.Before(time.Now()) {
 		_ = sitesql.RemoveToken(conn, in.Token)
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("expired token")
+		return nil, fmt.Errorf("expired token")
 	}
 
 	// redeem the token
 	if err = sitesql.RemoveToken(conn, in.Token); err != nil {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Could not redeem the token %w", err)
+		return nil, fmt.Errorf("Could not redeem the token %w", err)
 	}
 
 	// We upsert the new role
-	if err = sitesql.AddMember(conn, acc, int64(tokenInfo.Role)); err != nil {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add owner member to the db %w", err)
+	if _, err = sitesql.AddMember(conn, acc, int64(tokenInfo.InviteTokensRole)); err != nil {
+		return nil, fmt.Errorf("Cannot add owner member to the db %w", err)
 	}
 
-	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.ownerID), zap.String("Role", "EDITOR"))
-	return &site.RedeemInviteTokenResponse{Role: tokenInfo.Role}, nil
+	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.owner.String()), zap.String("Role", "EDITOR"))
+	return &site.RedeemInviteTokenResponse{Role: site.Member_Role(tokenInfo.InviteTokensRole)}, nil
 }
 
 // GetSiteInfo Gets public-facing site information.
 func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
-		return &site.SiteInfo{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.SiteInfo)
 		if !ok {
-			return &site.SiteInfo{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.SiteInfo{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	//make GetSiteTitle that returns "" when does not find the title tag
 	title, err := sitesql.GetSiteTitle(conn)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Could not get title")
+		return nil, fmt.Errorf("Could not get title")
 	}
 	//make GetSiteDescription that returns "" when does not find the description tag
 	description, err := sitesql.GetSiteDescription(conn)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Could not get title")
+		return nil, fmt.Errorf("Could not get title")
 	}
 	return &site.SiteInfo{
 		Hostname:    srv.hostname,
-		Title:       title,
-		Description: description,
-		Owner:       srv.ownerID,
+		Title:       title.GlobalMetaValue,
+		Description: description.GlobalMetaValue,
+		Owner:       srv.owner.String(),
 	}, nil
 }
 
@@ -195,42 +199,43 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
-		return &site.SiteInfo{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.SiteInfo)
 		if !ok {
-			return &site.SiteInfo{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.SiteInfo{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 
 	ret := site.SiteInfo{Hostname: srv.hostname,
-		Owner: srv.ownerID}
+		Owner: srv.owner.String(),
+	}
 	if in.Title != "" {
 		if err = sitesql.SetSiteTitle(conn, in.Title); err != nil {
-			return &site.SiteInfo{}, fmt.Errorf("Could not set new title: %w", err)
+			return nil, fmt.Errorf("Could not set new title: %w", err)
 		}
 		ret.Title = in.Title
 	}
 	if in.Description != "" {
 		if err = sitesql.SetSiteDescription(conn, in.Description); err != nil {
-			return &site.SiteInfo{}, fmt.Errorf("Could not set new description: %w", err)
+			return nil, fmt.Errorf("Could not set new description: %w", err)
 		}
 		ret.Description = in.Description
 	}
 	// Now update the profile accordingly
 	if err = srv.updateSiteBio(ctx, in.Title, in.Description); err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Update Site Info: Could not update Site Bio accordingly: %w", err)
+		return nil, fmt.Errorf("Update Site Info: Could not update Site Bio accordingly: %w", err)
 	}
 	return &ret, nil
 }
@@ -239,33 +244,33 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
-		return &site.ListMembersResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.ListMembersResponse)
 		if !ok {
-			return &site.ListMembersResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	var members []*site.Member
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.ListMembersResponse{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.ListMembersResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	memberList, err := sitesql.ListMembers(conn)
 	if err != nil {
-		return &site.ListMembersResponse{}, fmt.Errorf("Cannot get site members: %w", err)
+		return nil, fmt.Errorf("Cannot get site members: %w", err)
 	}
-	for accID, role := range memberList {
+	for _, member := range memberList {
 		members = append(members, &site.Member{
-			AccountId: accID.String(),
-			Role:      role,
+			AccountId: core.Principal(member.PublicKeysPrincipal).String(),
+			Role:      site.Member_Role(member.SiteMembersRole),
 		})
 	}
 	return &site.ListMembersResponse{Members: members}, nil
@@ -275,31 +280,32 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
-		return &site.Member{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.Member)
 		if !ok {
-			return &site.Member{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.Member{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	account, err := core.DecodePrincipal(in.AccountId)
 	if err != nil {
-		return &site.Member{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("failed to decode account id principal %s: %w", in.AccountId, err)
+	}
+
+	conn, cancel, err := n.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	accCID, err := cid.Decode(in.AccountId)
+	role, err := sitesql.GetMemberRole(conn, account)
 	if err != nil {
-		return &site.Member{}, fmt.Errorf("Provided account id [%s] not a valid cid: %w", in.AccountId, err)
-	}
-	role, err := sitesql.GetMemberRole(conn, accCID)
-	if err != nil {
-		return &site.Member{}, fmt.Errorf("Member not found")
+		return nil, fmt.Errorf("member not found")
 	}
 	return &site.Member{AccountId: in.AccountId, Role: role}, nil
 }
@@ -308,39 +314,41 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*emptypb.Empty)
 		if !ok {
-			return &emptypb.Empty{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &emptypb.Empty{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+
+	account, err := core.DecodePrincipal(in.AccountId)
 	if err != nil {
-		return &emptypb.Empty{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Provided account id [%s] not a valid cid: %w", in.AccountId, err)
+	}
+
+	conn, cancel, err := n.db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	accCID, err := cid.Decode(in.AccountId)
+	roleToDelete, err := sitesql.GetMemberRole(conn, account)
 	if err != nil {
-		return &emptypb.Empty{}, fmt.Errorf("Provided account id [%s] not a valid cid: %w", in.AccountId, err)
-	}
-	roleToDelete, err := sitesql.GetMemberRole(conn, accCID)
-	if err != nil {
-		return &emptypb.Empty{}, fmt.Errorf("Member not found")
+		return nil, fmt.Errorf("Member not found")
 	}
 
 	if roleToDelete == site.Member_OWNER {
-		return &emptypb.Empty{}, fmt.Errorf("Site owner cannot be deleted, please, change it manually in site config")
+		return nil, fmt.Errorf("Site owner cannot be deleted, please, change it manually in site config")
 	}
-	if err = sitesql.RemoveMember(conn, accCID); err != nil {
-		return &emptypb.Empty{}, fmt.Errorf("Could not remove provided member [%s]: %w", in.AccountId, err)
+	if err = sitesql.RemoveMember(conn, account); err != nil {
+		return nil, fmt.Errorf("Could not remove provided member [%s]: %w", in.AccountId, err)
 	}
 
 	return &emptypb.Empty{}, nil
@@ -355,99 +363,97 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	if proxied {
 		retValue, ok := res.(*site.PublishDocumentResponse)
 		if !ok {
-			return nil, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	_, err = url.Parse(in.Path)
 	if err != nil {
-		return nil, fmt.Errorf("Path [%s] is not a valid path", in.Path)
+		return nil, fmt.Errorf("path %s is not a valid path", in.Path)
 	}
 
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
-	n, ok := srv.Node.Get()
-	if !ok {
-		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
-	}
-	conn, release, err := n.VCS().DB().Conn(ctx)
+	n, err := srv.Node.Await(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
-	}
-	defer release()
-
-	all, err := vcssql.ListAccountDevices(conn)
-	if err != nil {
-		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
-		return nil, fmt.Errorf("couldn't list devices")
+		return nil, fmt.Errorf("can't proxy: local p2p node is not ready yet: %w", err)
 	}
 
-	devices, found := all[acc]
-	if !found {
-		return nil, fmt.Errorf("couldn't find devices information of the account %s", acc.String())
+	var dels []hypersql.KeyDelegationsListResult
+	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		dels, err = hypersql.KeyDelegationsList(conn, acc)
+		return err
+	}); err != nil {
+		return nil, err
 	}
 
-	var toSync []cid.Cid
-	c, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse document id %s to publish on the web: %w", in.DocumentId, err)
-	}
+	toSync := []hyper.EntityID{hyper.EntityID(in.DocumentId)}
 
-	toSync = append(toSync, c)
 	for _, ref := range in.ReferencedDocuments {
-		c, err = cid.Decode(ref.DocumentId)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse referenced document id %s when publishing: %w", ref.DocumentId, err)
-		}
-		toSync = append(toSync, c)
+		toSync = append(toSync, hyper.EntityID(ref.DocumentId))
 	}
 
 	var wg sync.WaitGroup
-	for _, deviceID := range devices {
+	for _, del := range dels {
 		wg.Add(1)
-		go func(device cid.Cid) {
+		device := core.Principal(del.KeyDelegationsViewDelegate)
+		pid, err := device.PeerID()
+		if err != nil {
+			n.log.Warn("BadPeer", zap.String("principal", device.String()))
+			continue
+		}
+
+		go func(pid peer.ID) {
 			defer wg.Done()
-			ctx5Secs, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
+			ctx, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
 			defer cancel()
 			n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(toSync)))
-			if err = srv.synchronizer.SyncWithPeer(ctx5Secs, device, toSync...); err != nil {
+
+			if err = srv.synchronizer.SyncWithPeer(ctx, pid, toSync...); err != nil {
 				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", device.String()), zap.Error(err))
 				return
 			}
 			n.log.Debug("Successfully synced", zap.String("Peer", device.String()))
-		}(deviceID)
+		}(pid)
 	}
 	wg.Wait()
-
-	docID, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, fmt.Errorf("Provided Document id [%s] is not valid: %w", in.DocumentId, err)
-	}
 
 	_, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 		DocumentId: in.DocumentId,
 		Version:    in.Version,
 		LocalOnly:  true,
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't find the actual document + version to publish in the database: %w", err)
+		return nil, fmt.Errorf("couldn't find the actual document + version to publish in the database: %w", err)
 	}
+
+	conn, release, err := n.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
 
 	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
-	if err == nil {
-		if record.Document.ID.String() == in.DocumentId && record.Document.Version == in.Version {
-			return nil, fmt.Errorf("Provided document+version already exists in path [%s]", in.Path)
-		}
-		if record.Document.ID.String() != in.DocumentId {
-			return nil, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
-		}
-		if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
-			return nil, fmt.Errorf("Could not remove previous version [%s] in the same path: %w", record.Document.Version, err)
-		}
+	if err != nil {
+		return nil, err
 	}
 
-	if err = sitesql.AddWebPublicationRecord(conn, docID, in.Version, in.Path); err != nil {
-		return nil, fmt.Errorf("Could not insert document in path [%s]: %w", in.Path, err)
+	docid := strings.TrimPrefix(record.HyperEntitiesEID, "mintter:document:")
+	if docid == record.HyperEntitiesEID {
+		return nil, fmt.Errorf("invalid entity ID for mintter document: %s", record.HyperEntitiesEID)
+	}
+
+	if docid == in.DocumentId && record.WebPublicationRecordsDocumentVersion == in.Version {
+		return nil, fmt.Errorf("provided document+version already exists in path [%s]", in.Path)
+	}
+	if docid != in.DocumentId {
+		return nil, fmt.Errorf("path [%s] already taken by a different Document ID", in.Path)
+	}
+	if err = sitesql.RemoveWebPublicationRecord(conn, record.HyperEntitiesEID, record.WebPublicationRecordsDocumentVersion); err != nil {
+		return nil, fmt.Errorf("could not remove previous version [%s] in the same path: %w", record.WebPublicationRecordsDocumentVersion, err)
+	}
+
+	if err := sitesql.AddWebPublicationRecord(conn, record.HyperEntitiesEID, in.Version, in.Path); err != nil {
+		return nil, fmt.Errorf("could not insert document in path [%s]: %w", in.Path, err)
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
@@ -456,51 +462,46 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
 	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
-		return &site.UnpublishDocumentResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.UnpublishDocumentResponse)
 		if !ok {
-			return &site.UnpublishDocumentResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	docID, err := cid.Decode(in.DocumentId)
+
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	records, err := sitesql.GetWebPublicationRecordsByID(conn, string(eid))
 	if err != nil {
-		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Provided document ID [%s] is in valid: %w", in.DocumentId, err)
-	}
-	records, err := sitesql.GetWebPublicationRecordsByID(conn, docID)
-	if err != nil {
-		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Cannot unpublish: %w", err)
+		return nil, fmt.Errorf("Cannot unpublish: %w", err)
 	}
 	for _, record := range records {
-		if record.Document.ID.String() == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
+		if in.Version == "" || in.Version == record.WebPublicationRecordsDocumentVersion {
 			doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-				DocumentId: record.Document.ID.String(),
-				Version:    record.Document.Version,
+				DocumentId: in.DocumentId,
+				Version:    record.WebPublicationRecordsDocumentVersion,
 				LocalOnly:  true,
 			})
 			if err != nil {
-				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't find the actual document to unpublish although it was found in the database: %w", err)
+				return nil, fmt.Errorf("couldn't find the actual document to unpublish although it was found in the database: %w", err)
 			}
-			docAcc, err := cid.Decode(doc.Document.Author)
-			if err != nil {
-				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't parse doc cid: %w", err)
+			if acc.String() != doc.Document.Author && srv.owner.String() != acc.String() {
+				return nil, fmt.Errorf("you are not the author of the document, nor site owner")
 			}
-			if acc.String() != docAcc.String() && srv.ownerID != acc.String() {
-				return &site.UnpublishDocumentResponse{}, fmt.Errorf("You are not the author of the document, nor site owner")
-			}
-			if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
-				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't remove document [%s]: %w", record.Document.ID.String(), err)
+			if err = sitesql.RemoveWebPublicationRecord(conn, string(eid), record.WebPublicationRecordsDocumentVersion); err != nil {
+				return nil, fmt.Errorf("couldn't remove document [%s]: %w", in.DocumentId, err)
 			}
 		}
 	}
@@ -511,38 +512,42 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
-		return &site.ListWebPublicationsResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.ListWebPublicationsResponse)
 		if !ok {
-			return &site.ListWebPublicationsResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	var publications []*site.WebPublicationRecord
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	records, err := sitesql.ListWebPublicationRecords(conn)
 	if err != nil {
-		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Cannot List publications: %w", err)
+		return nil, fmt.Errorf("Cannot List publications: %w", err)
 	}
-	for document, path := range records {
-		if in.DocumentId != "" && in.DocumentId != document.ID.String() {
+
+	for _, record := range records {
+		docid := strings.TrimPrefix("mintter:document:", record.HyperEntitiesEID)
+
+		if in.DocumentId != "" && in.DocumentId != docid {
 			continue
 		}
+
 		publications = append(publications, &site.WebPublicationRecord{
-			DocumentId: document.ID.String(),
-			Version:    document.Version,
+			DocumentId: docid,
+			Version:    record.WebPublicationRecordsDocumentVersion,
 			Hostname:   srv.hostname,
-			Path:       path,
+			Path:       record.WebPublicationRecordsPath,
 		})
 	}
 	return &site.ListWebPublicationsResponse{Publications: publications}, nil
@@ -552,38 +557,38 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.GetPathResponse, error) {
 	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
-		return &site.GetPathResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.GetPathResponse)
 		if !ok {
-			return &site.GetPathResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	if in.Path == "" {
-		return &site.GetPathResponse{}, fmt.Errorf("Invalid path")
+		return nil, fmt.Errorf("Invalid path")
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.GetPathResponse{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return &site.GetPathResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
 	if err != nil {
-		return &site.GetPathResponse{}, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
+		return nil, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-		DocumentId: record.Document.ID.String(),
-		Version:    record.Document.Version,
+		DocumentId: strings.TrimPrefix(record.HyperEntitiesEID, "mintter:document:"),
+		Version:    record.WebPublicationRecordsDocumentVersion,
 		LocalOnly:  true,
 	})
 	if err != nil {
-		return &site.GetPathResponse{}, fmt.Errorf("Could not get local document although was found in the list of published documents: %w", err)
+		return nil, fmt.Errorf("Could not get local document although was found in the list of published documents: %w", err)
 	}
 	return &site.GetPathResponse{Publication: ret}, err
 }
@@ -601,18 +606,18 @@ func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
 }
 
 // getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.
-func getRemoteID(ctx context.Context) (cid.Cid, error) {
+func getRemoteID(ctx context.Context) (peer.ID, error) {
 	info, ok := rpcpeer.FromContext(ctx)
 	if !ok {
-		return cid.Cid{}, fmt.Errorf("BUG: no peer info in context for grpc")
+		return "", fmt.Errorf("BUG: no peer info in context for grpc")
 	}
 
 	pid, err := peer.Decode(info.Addr.String())
 	if err != nil {
-		return cid.Cid{}, err
+		return "", err
 	}
 
-	return peer.ToCid(pid), nil
+	return pid, nil
 }
 
 func randStr(length int) string {
@@ -625,14 +630,10 @@ func randStr(length int) string {
 }
 
 // Client dials a remote peer if necessary and returns the RPC client handle.
-func (srv *Server) Client(ctx context.Context, device cid.Cid) (site.WebSiteClient, error) {
+func (srv *Server) Client(ctx context.Context, pid peer.ID) (site.WebSiteClient, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
 		return nil, fmt.Errorf("Node not ready yet")
-	}
-	pid, err := peer.FromCid(device)
-	if err != nil {
-		return nil, err
 	}
 
 	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
@@ -641,18 +642,18 @@ func (srv *Server) Client(ctx context.Context, device cid.Cid) (site.WebSiteClie
 	return n.client.DialSite(ctx, pid)
 }
 
-func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role, params ...interface{}) (cid.Cid, bool, interface{}, error) {
+func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role, params ...interface{}) (core.Principal, bool, interface{}, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
-		return cid.Cid{}, false, nil, fmt.Errorf("Node not ready yet")
+		return nil, false, nil, fmt.Errorf("Node not ready yet")
 	}
 
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
 	if err != nil && srv.hostname == "" { // no headers and not a site
-		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site: %w", err)
+		return nil, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site: %w", err)
 	}
 
-	acc := n.me.AccountID()
+	acc := n.me.Account().Principal()
 	n.log.Debug("Check permissions", zap.String("Site hostname", srv.hostname), zap.String("remoteHostname", remoteHostname), zap.Error(err))
 	if err == nil && srv.hostname != remoteHostname && srv.hostname != "" {
 		return acc, false, nil, fmt.Errorf("Hostnames don't match. This site's hostname is [%s] but called with headers [%s]", srv.hostname, remoteHostname)
@@ -691,7 +692,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			// this would mean this is a proxied call so we take the account from the remote caller ID
 			remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
 			if err != nil {
-				return cid.Cid{}, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+				return nil, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
 			}
 
 			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
@@ -702,18 +703,18 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		}
 	}
 
-	if requiredRole == site.Member_OWNER && acc.String() != srv.ownerID {
-		return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
-	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.ownerID {
-		conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if requiredRole == site.Member_OWNER && acc.String() != srv.owner.String() {
+		return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.owner.String() {
+		conn, cancel, err := n.db.Conn(ctx)
 		if err != nil {
-			return cid.Cid{}, false, nil, fmt.Errorf("Cannot connect to internal db: %w", err)
+			return nil, false, nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 		}
 		defer cancel()
 
 		role, err := sitesql.GetMemberRole(conn, acc)
 		if err != nil || role != requiredRole {
-			return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+			return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 		}
 	}
 	return acc, false, nil, nil
@@ -726,7 +727,7 @@ func (srv *Server) updateSiteBio(ctx context.Context, title, description string)
 		return fmt.Errorf("Node not ready yet")
 	}
 
-	return accounts.UpdateProfile(ctx, n.me, n.vcs, &accounts.Profile{
+	return accounts.UpdateProfile(ctx, n.me, n.blobs, &accounts.Profile{
 		Alias: title,
 		Bio:   description,
 	})
@@ -753,7 +754,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	siteInfo.AccountID = n.me.AccountID().String()
+	siteInfo.AccountID = n.me.Account().String()
 
 	pid := n.me.DeviceKey().ID()
 	addrinfo := n.Libp2p().Peerstore().PeerInfo(pid)
@@ -777,51 +778,54 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, interface{}) {
 	n, ok := srv.Node.Get()
 	if !ok {
-		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
+		return nil, fmt.Errorf("can't proxy. Local p2p node not ready yet")
 	}
-	var siteAccount string
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	var siteAccount core.Principal
+	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, err
 	}
 	defer cancel()
 	site, err := sitesql.GetSite(conn, hostname)
-	if err == nil {
-		siteAccount = site.AccID.String()
+	if err != nil {
+		return nil, err
 	}
-
-	if err != nil { // Could be an add site call to proxy in which case the site does not exist yet
-		siteAccountCtx := ctx.Value(SiteAccountIDCtxKey)
-		if siteAccountCtx == nil {
-			return nil, fmt.Errorf("Cannot get site accountID: %w", err)
-		}
-		siteAccount, ok = siteAccountCtx.(string)
+	siteAccount = core.Principal(site.PublicKeysPrincipal)
+	if siteAccount == nil {
+		v := ctx.Value(SiteAccountIDCtxKey)
+		acc, ok := v.(string)
 		if !ok {
-			return nil, fmt.Errorf("Cannot get site accountID")
+			return nil, fmt.Errorf("cannot get site accountID: %w", err)
+		}
+
+		siteAccount, err = core.DecodePrincipal(acc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode account id %v: %w", v, err)
 		}
 	}
 
-	all, err := vcssql.ListAccountDevices(conn)
-	if err != nil {
-		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
-		return nil, fmt.Errorf("couldn't list devices from account ID %s", siteAccount)
+	if siteAccount == nil {
+		return nil, fmt.Errorf("couldn't find account for site %s", hostname)
 	}
 
-	siteAccountID, err := cid.Decode(siteAccount)
+	devices, err := hypersql.KeyDelegationsList(conn, siteAccount)
 	if err != nil {
-		return nil, fmt.Errorf("Could not decode site account ID: %w", err)
+		return nil, err
 	}
-	devices, found := all[siteAccountID]
-	if !found {
-		return nil, fmt.Errorf("couldn't find devices information of the account %s. Please connect to the remote peer first ", siteAccount)
+	if len(devices) == 0 {
+		return nil, fmt.Errorf("found no devices for account: %s", siteAccount.String())
 	}
+
 	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
 	ctx = metadata.AppendToOutgoingContext(ctx, string(MttHeader), remoteHostname)
-	failedPIDs := []string{}
-	for _, deviceID := range devices {
-		sitec, err := srv.Client(ctx, deviceID)
+	var failedPIDs []string
+	for _, device := range devices {
+		pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()
 		if err != nil {
-			pid, _ := peer.FromCid(deviceID)
+			return nil, fmt.Errorf("failed to conver principal to peer ID: %w", err)
+		}
+		sitec, err := srv.Client(ctx, pid)
+		if err != nil {
 			failedPIDs = append(failedPIDs, pid.String())
 			continue
 		}
@@ -848,5 +852,5 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
 		return res[0].Interface(), res[1].Interface()
 	}
-	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccountID.String())
+	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccount.String())
 }

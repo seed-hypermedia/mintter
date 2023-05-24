@@ -9,18 +9,18 @@ import (
 	"mintter/backend/core"
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/vcssql"
 	"strconv"
 	"time"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
-	blockstore "github.com/ipfs/boxo/blockstore"
 	provider "github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
@@ -95,7 +95,7 @@ type PublicationRecord struct {
 type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
-	ownerID                    string
+	owner                      core.Principal
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -108,13 +108,13 @@ type Server struct {
 
 // Node is a Mintter P2P node.
 type Node struct {
-	log             *zap.Logger
-	vcs             *vcsdb.DB
-	me              core.Identity
-	cfg             config.P2P
-	accountObjectID cid.Cid
-	invoicer        Invoicer
-	client          *Client
+	log      *zap.Logger
+	blobs    *hyper.Storage
+	db       *sqlitex.Pool
+	me       core.Identity
+	cfg      config.P2P
+	invoicer Invoicer
+	client   *Client
 
 	p2p        *ipfs.Libp2p
 	bitswap    *ipfs.Bitswap
@@ -136,7 +136,7 @@ type LocalFunctions interface {
 // Synchronizer is a subset of the syncing service that
 // is able to sync content with remote peers on demand.
 type Synchronizer interface {
-	SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...cid.Cid) error
+	SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error
 }
 
 // NewServer returns a new mttnet API server.
@@ -146,8 +146,16 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
-		ownerID:                    siteCfg.OwnerID,
 	}, Node: node, localFunctions: localFunctions, synchronizer: sync}
+
+	if siteCfg.OwnerID != "" {
+		owner, err := core.DecodePrincipal(siteCfg.OwnerID)
+		if err != nil {
+			panic(fmt.Errorf("BUG: failed to parse owner ID: %w", err))
+		}
+
+		srv.owner = owner
+	}
 
 	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
 	go func() {
@@ -155,7 +163,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		if err != nil {
 			return
 		}
-		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		conn, cancel, err := n.db.Conn(ctx)
 		if err != nil {
 			return
 		}
@@ -166,7 +174,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			case <-ctx.Done():
 				return
 			case <-cleaningTokensTicker.C:
-				if err := sitesql.CleanExpiredTokens(conn); err != nil {
+				if err := sitesql.RemoveExpiredTokens(conn); err != nil {
 					return
 				}
 			}
@@ -178,15 +186,15 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			// this is how we respond to remote RPCs over libp2p.
 			p2p.RegisterP2PServer(n.grpc, srv)
 			site.RegisterWebSiteServer(n.grpc, srv)
-			if srv.ownerID == "" {
-				srv.ownerID = n.me.AccountID().String()
+			if srv.owner == nil {
+				srv.owner = n.me.Account().Principal()
 			}
-			if siteCfg.Title != "" && n.vcs.DB() != nil {
-				conn, cancel, err := n.vcs.DB().Conn(ctx)
+			if siteCfg.Title != "" && n.db != nil {
+				conn, cancel, err := n.db.Conn(ctx)
 				if err == nil {
 					defer cancel()
 					title, err := sitesql.GetSiteTitle(conn)
-					if err == nil && title == "" {
+					if err == nil && title.GlobalMetaValue == "" {
 						err = sitesql.SetSiteTitle(conn, siteCfg.Title)
 						if err != nil {
 							n.log.Warn("Could not set initial site title", zap.String("Title", siteCfg.Title), zap.Error(err))
@@ -205,17 +213,14 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				close(n.registered)
 			}
 		}()
-		if n != nil && n.vcs.DB() != nil {
-			conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if n != nil && n.db != nil {
+			conn, cancel, err := n.db.Conn(ctx)
 			if err != nil {
 				return
 			}
 			defer cancel()
-			ownerCID, err := cid.Decode(srv.ownerID)
-			if err != nil {
-				return
-			}
-			_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
+
+			_, _ = sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER))
 		}
 	}()
 	return srv
@@ -223,23 +228,23 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
-	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB())
+	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start libp2p host: %w", err)
 	}
 	clean.Add(closeHost)
 
-	bitswap, err := ipfs.NewBitswap(host, host.Routing, vcs.Blockstore())
+	bitswap, err := ipfs.NewBitswap(host, host.Routing, blobs.IPFSBlockstore())
 	if err != nil {
 		return nil, fmt.Errorf("failed to start bitswap: %w", err)
 	}
 	clean.Add(bitswap)
 
 	// TODO(burdiyan): find a better reproviding strategy than naive provide-everything.
-	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(vcs.DB()))
+	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(db))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize providing: %w", err)
 	}
@@ -249,19 +254,19 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 	clean.Add(client)
 
 	n := &Node{
-		log:             log,
-		vcs:             vcs,
-		me:              me,
-		cfg:             cfg,
-		accountObjectID: accountObj,
-		client:          client,
-		p2p:             host,
-		bitswap:         bitswap,
-		providing:       providing,
-		grpc:            grpc.NewServer(),
-		quit:            &clean,
-		ready:           make(chan struct{}),
-		registered:      make(chan struct{}),
+		log:        log,
+		blobs:      blobs,
+		db:         db,
+		me:         me,
+		cfg:        cfg,
+		client:     client,
+		p2p:        host,
+		bitswap:    bitswap,
+		providing:  providing,
+		grpc:       grpc.NewServer(),
+		quit:       &clean,
+		ready:      make(chan struct{}),
+		registered: make(chan struct{}),
 	}
 
 	return n, nil
@@ -272,21 +277,9 @@ func (n *Node) SetInvoicer(inv Invoicer) {
 	n.invoicer = inv
 }
 
-// VCS returns the underlying VCS. Should not be here at all, but used in tests of other packages.
-//
-// TODO(burdiyan): get rid of this.
-func (n *Node) VCS() *vcsdb.DB {
-	return n.vcs
-}
-
 // ID returns the node's identity.
 func (n *Node) ID() core.Identity {
 	return n.me
-}
-
-// Blockstore returns the underlying IPFS blockstore for convenience.
-func (n *Node) Blockstore() blockstore.Blockstore {
-	return n.vcs.Blockstore()
 }
 
 // Provider returns the underlying providing system for convenience.
@@ -305,12 +298,7 @@ func (n *Node) Bitswap() *ipfs.Bitswap {
 }
 
 // Client dials a remote peer if necessary and returns the RPC client handle.
-func (n *Node) Client(ctx context.Context, device cid.Cid) (p2p.P2PClient, error) {
-	pid, err := peer.FromCid(device)
-	if err != nil {
-		return nil, err
-	}
-
+func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
 		return nil, err
 	}
@@ -319,23 +307,42 @@ func (n *Node) Client(ctx context.Context, device cid.Cid) (p2p.P2PClient, error
 }
 
 // AccountForDevice returns the linked AccountID of a given device.
-func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, error) {
-	conn, release, err := n.vcs.DB().Conn(ctx)
-	if err != nil {
-		return cid.Undef, err
-	}
-	defer release()
+func (n *Node) AccountForDevice(ctx context.Context, pid peer.ID) (core.Principal, error) {
+	var out core.Principal
+	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		pk, err := pid.ExtractPublicKey()
+		if err != nil {
+			return err
+		}
 
-	res, err := vcssql.AccountsGetForDevice(conn, device.Hash())
-	if err != nil {
-		return cid.Undef, err
+		delegate := core.PrincipalFromPubKey(pk)
+
+		list, err := hypersql.KeyDelegationsListByDelegate(conn, delegate)
+		if err != nil {
+			return err
+		}
+		if len(list) == 0 {
+			return fmt.Errorf("not found key delegation for peer: %s", pid)
+		}
+
+		if len(list) > 1 {
+			n.log.Warn("MoreThanOneKeyDelegation", zap.String("peer", pid.String()))
+		}
+
+		del := list[0]
+
+		out = core.Principal(del.KeyDelegationsViewIssuer)
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	if res.AccountsMultihash == nil {
-		return cid.Undef, fmt.Errorf("failed to find account for device %s", device)
-	}
+	return out, nil
+}
 
-	return cid.NewCidV1(uint64(core.CodecAccountKey), res.AccountsMultihash), nil
+func (n *Node) Blobs() *hyper.Storage {
+	return n.blobs
 }
 
 // Libp2p returns the underlying libp2p host.

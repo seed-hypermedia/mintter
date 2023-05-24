@@ -30,7 +30,7 @@ func TestChangeInfoAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	{
-		list, err := api.ListChanges(ctx, &documents.ListChangesRequest{ObjectId: pub.Document.Id})
+		list, err := api.ListChanges(ctx, &documents.ListChangesRequest{DocumentId: pub.Document.Id})
 		require.NoError(t, err)
 		require.Len(t, list.Changes, 1, "publication must have one change")
 		require.Equal(t, pub.Document.Children[0].Block.Revision, list.Changes[0].Id, "change ID must match block revision")
@@ -122,7 +122,7 @@ func TestChangesFields(t *testing.T) {
 	pub, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 
-	changes, err := api.ListChanges(ctx, &documents.ListChangesRequest{ObjectId: pub.Document.Id})
+	changes, err := api.ListChanges(ctx, &documents.ListChangesRequest{DocumentId: pub.Document.Id})
 	require.NoError(t, err)
 
 	require.Len(t, changes.Changes, 2, "list changes must return all changes")

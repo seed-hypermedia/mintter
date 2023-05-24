@@ -310,18 +310,18 @@ RETURNING public_keys.id`
 }
 
 type KeyDelegationsInsertOrIgnoreResult struct {
-	KeyDelegationsID int64
+	KeyDelegationsBlob int64
 }
 
-func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, keyDelegationsID int64, keyDelegationsIssuer int64, keyDelegationsDelegate int64, keyDelegationsIssueTime int64) (KeyDelegationsInsertOrIgnoreResult, error) {
-	const query = `INSERT OR IGNORE INTO key_delegations (id, issuer, delegate, issue_time)
-VALUES (:keyDelegationsID, :keyDelegationsIssuer, :keyDelegationsDelegate, :keyDelegationsIssueTime)
-RETURNING key_delegations.id`
+func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, keyDelegationsBlob int64, keyDelegationsIssuer int64, keyDelegationsDelegate int64, keyDelegationsIssueTime int64) (KeyDelegationsInsertOrIgnoreResult, error) {
+	const query = `INSERT OR IGNORE INTO key_delegations (blob, issuer, delegate, issue_time)
+VALUES (:keyDelegationsBlob, :keyDelegationsIssuer, :keyDelegationsDelegate, :keyDelegationsIssueTime)
+RETURNING key_delegations.blob`
 
 	var out KeyDelegationsInsertOrIgnoreResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":keyDelegationsID", keyDelegationsID)
+		stmt.SetInt64(":keyDelegationsBlob", keyDelegationsBlob)
 		stmt.SetInt64(":keyDelegationsIssuer", keyDelegationsIssuer)
 		stmt.SetInt64(":keyDelegationsDelegate", keyDelegationsDelegate)
 		stmt.SetInt64(":keyDelegationsIssueTime", keyDelegationsIssueTime)
@@ -332,7 +332,7 @@ RETURNING key_delegations.id`
 			return errors.New("KeyDelegationsInsertOrIgnore: more than one result return for a single-kind query")
 		}
 
-		out.KeyDelegationsID = stmt.ColumnInt64(0)
+		out.KeyDelegationsBlob = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -345,16 +345,16 @@ RETURNING key_delegations.id`
 }
 
 type KeyDelegationsListResult struct {
-	KeyDelegationsViewID             int64
-	KeyDelegationsViewBlobCodec      int64
-	KeyDelegationsViewBlobsMultihash []byte
-	KeyDelegationsViewIssuer         []byte
-	KeyDelegationsViewDelegate       []byte
-	KeyDelegationsViewIssueTime      int64
+	KeyDelegationsViewBlob          int64
+	KeyDelegationsViewBlobCodec     int64
+	KeyDelegationsViewBlobMultihash []byte
+	KeyDelegationsViewIssuer        []byte
+	KeyDelegationsViewDelegate      []byte
+	KeyDelegationsViewIssueTime     int64
 }
 
 func KeyDelegationsList(conn *sqlite.Conn, keyDelegationsViewIssuer []byte) ([]KeyDelegationsListResult, error) {
-	const query = `SELECT key_delegations_view.id, key_delegations_view.blob_codec, key_delegations_view.blobs_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
 FROM key_delegations_view
 WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 
@@ -366,12 +366,12 @@ WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, KeyDelegationsListResult{
-			KeyDelegationsViewID:             stmt.ColumnInt64(0),
-			KeyDelegationsViewBlobCodec:      stmt.ColumnInt64(1),
-			KeyDelegationsViewBlobsMultihash: stmt.ColumnBytes(2),
-			KeyDelegationsViewIssuer:         stmt.ColumnBytes(3),
-			KeyDelegationsViewDelegate:       stmt.ColumnBytes(4),
-			KeyDelegationsViewIssueTime:      stmt.ColumnInt64(5),
+			KeyDelegationsViewBlob:          stmt.ColumnInt64(0),
+			KeyDelegationsViewBlobCodec:     stmt.ColumnInt64(1),
+			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
+			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
+			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
+			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
 		})
 
 		return nil
@@ -380,6 +380,86 @@ WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: KeyDelegationsList: %w", err)
+	}
+
+	return out, err
+}
+
+type KeyDelegationsListAllResult struct {
+	KeyDelegationsViewBlob          int64
+	KeyDelegationsViewBlobCodec     int64
+	KeyDelegationsViewBlobMultihash []byte
+	KeyDelegationsViewIssuer        []byte
+	KeyDelegationsViewDelegate      []byte
+	KeyDelegationsViewIssueTime     int64
+}
+
+func KeyDelegationsListAll(conn *sqlite.Conn) ([]KeyDelegationsListAllResult, error) {
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+FROM key_delegations_view`
+
+	var out []KeyDelegationsListAllResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, KeyDelegationsListAllResult{
+			KeyDelegationsViewBlob:          stmt.ColumnInt64(0),
+			KeyDelegationsViewBlobCodec:     stmt.ColumnInt64(1),
+			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
+			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
+			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
+			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: KeyDelegationsListAll: %w", err)
+	}
+
+	return out, err
+}
+
+type KeyDelegationsListByDelegateResult struct {
+	KeyDelegationsViewBlob          int64
+	KeyDelegationsViewBlobCodec     int64
+	KeyDelegationsViewBlobMultihash []byte
+	KeyDelegationsViewIssuer        []byte
+	KeyDelegationsViewDelegate      []byte
+	KeyDelegationsViewIssueTime     int64
+}
+
+func KeyDelegationsListByDelegate(conn *sqlite.Conn, keyDelegationsViewDelegate []byte) ([]KeyDelegationsListByDelegateResult, error) {
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+FROM key_delegations_view
+WHERE key_delegations_view.delegate = :keyDelegationsViewDelegate`
+
+	var out []KeyDelegationsListByDelegateResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":keyDelegationsViewDelegate", keyDelegationsViewDelegate)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, KeyDelegationsListByDelegateResult{
+			KeyDelegationsViewBlob:          stmt.ColumnInt64(0),
+			KeyDelegationsViewBlobCodec:     stmt.ColumnInt64(1),
+			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
+			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
+			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
+			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: KeyDelegationsListByDelegate: %w", err)
 	}
 
 	return out, err
@@ -535,16 +615,18 @@ type ChangesListFromChangeSetResult struct {
 	HyperChangesViewSize      int64
 }
 
-func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte) ([]ChangesListFromChangeSetResult, error) {
+func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, hyperChangesViewEntity string) ([]ChangesListFromChangeSetResult, error) {
 	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
 FROM hyper_changes_view, json_each(:cset) AS cset
-WHERE hyper_changes_view.blob_id = cset.value
+WHERE hyper_changes_view.entity = :hyperChangesViewEntity
+AND hyper_changes_view.blob_id = cset.value
 ORDER BY hyper_changes_view.hlc_time`
 
 	var out []ChangesListFromChangeSetResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":cset", cset)
+		stmt.SetText(":hyperChangesViewEntity", hyperChangesViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -564,6 +646,92 @@ ORDER BY hyper_changes_view.hlc_time`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: ChangesListFromChangeSet: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesListForEntityResult struct {
+	HyperChangesViewBlobID    int64
+	HyperChangesViewCodec     int64
+	HyperChangesViewData      []byte
+	HyperChangesViewEntityID  int64
+	HyperChangesViewHlcTime   int64
+	HyperChangesViewMultihash []byte
+	HyperChangesViewSize      int64
+}
+
+func ChangesListForEntity(conn *sqlite.Conn, hyperChangesViewEntity string) ([]ChangesListForEntityResult, error) {
+	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
+FROM hyper_changes_view
+WHERE hyper_changes_view.entity = :hyperChangesViewEntity
+ORDER BY hyper_changes_view.hlc_time`
+
+	var out []ChangesListForEntityResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":hyperChangesViewEntity", hyperChangesViewEntity)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesListForEntityResult{
+			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
+			HyperChangesViewCodec:     stmt.ColumnInt64(1),
+			HyperChangesViewData:      stmt.ColumnBytes(2),
+			HyperChangesViewEntityID:  stmt.ColumnInt64(3),
+			HyperChangesViewHlcTime:   stmt.ColumnInt64(4),
+			HyperChangesViewMultihash: stmt.ColumnBytes(5),
+			HyperChangesViewSize:      stmt.ColumnInt64(6),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesListForEntity: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesListAllNoDataResult struct {
+	HyperChangesViewBlobID    int64
+	HyperChangesViewCodec     int64
+	HyperChangesViewEntityID  int64
+	HyperChangesViewHlcTime   int64
+	HyperChangesViewMultihash []byte
+	HyperChangesViewSize      int64
+	HyperChangesViewEntity    string
+}
+
+func ChangesListAllNoData(conn *sqlite.Conn) ([]ChangesListAllNoDataResult, error) {
+	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size, hyper_changes_view.entity
+FROM hyper_changes_view
+ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
+
+	var out []ChangesListAllNoDataResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesListAllNoDataResult{
+			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
+			HyperChangesViewCodec:     stmt.ColumnInt64(1),
+			HyperChangesViewEntityID:  stmt.ColumnInt64(2),
+			HyperChangesViewHlcTime:   stmt.ColumnInt64(3),
+			HyperChangesViewMultihash: stmt.ColumnBytes(4),
+			HyperChangesViewSize:      stmt.ColumnInt64(5),
+			HyperChangesViewEntity:    stmt.ColumnText(6),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesListAllNoData: %w", err)
 	}
 
 	return out, err
@@ -658,38 +826,6 @@ WHERE blobs.id IN (SELECT hyper_changes.blob FROM hyper_changes WHERE hyper_chan
 	return err
 }
 
-type ChangesCountChildrenResult struct {
-	Count int64
-}
-
-func ChangesCountChildren(conn *sqlite.Conn, hyperChangeDepsParent int64) (ChangesCountChildrenResult, error) {
-	const query = `SELECT COUNT() AS count
-FROM hyper_change_deps
-WHERE hyper_change_deps.parent = :hyperChangeDepsParent`
-
-	var out ChangesCountChildrenResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangeDepsParent", hyperChangeDepsParent)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("ChangesCountChildren: more than one result return for a single-kind query")
-		}
-
-		out.Count = stmt.ColumnInt64(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangesCountChildren: %w", err)
-	}
-
-	return out, err
-}
-
 func LinksInsert(conn *sqlite.Conn, hyperLinksSourceBlob int64, hyperLinksRel string, hyperLinksTargetBlob int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {
 	const query = `INSERT OR IGNORE INTO hyper_links (source_blob, rel, target_blob, target_entity, data)
 VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0), NULLIF(:hyperLinksTargetEntity, 0), :hyperLinksData)`
@@ -712,6 +848,53 @@ VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0),
 	}
 
 	return err
+}
+
+type BacklinksForEntityResult struct {
+	ContentLinksViewData                []byte
+	ContentLinksViewRel                 string
+	ContentLinksViewSourceBlob          int64
+	ContentLinksViewSourceBlobCodec     int64
+	ContentLinksViewSourceBlobMultihash []byte
+	ContentLinksViewSourceEID           string
+	ContentLinksViewSourceEntity        int64
+	ContentLinksViewTargetEID           string
+	ContentLinksViewTargetEntity        int64
+}
+
+func BacklinksForEntity(conn *sqlite.Conn, contentLinksViewTargetEID string) ([]BacklinksForEntityResult, error) {
+	const query = `SELECT content_links_view.data, content_links_view.rel, content_links_view.source_blob, content_links_view.source_blob_codec, content_links_view.source_blob_multihash, content_links_view.source_eid, content_links_view.source_entity, content_links_view.target_eid, content_links_view.target_entity
+FROM content_links_view
+WHERE content_links_view.target_eid = :contentLinksViewTargetEID`
+
+	var out []BacklinksForEntityResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":contentLinksViewTargetEID", contentLinksViewTargetEID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, BacklinksForEntityResult{
+			ContentLinksViewData:                stmt.ColumnBytes(0),
+			ContentLinksViewRel:                 stmt.ColumnText(1),
+			ContentLinksViewSourceBlob:          stmt.ColumnInt64(2),
+			ContentLinksViewSourceBlobCodec:     stmt.ColumnInt64(3),
+			ContentLinksViewSourceBlobMultihash: stmt.ColumnBytes(4),
+			ContentLinksViewSourceEID:           stmt.ColumnText(5),
+			ContentLinksViewSourceEntity:        stmt.ColumnInt64(6),
+			ContentLinksViewTargetEID:           stmt.ColumnText(7),
+			ContentLinksViewTargetEntity:        stmt.ColumnInt64(8),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BacklinksForEntity: %w", err)
+	}
+
+	return out, err
 }
 
 func DraftsInsert(conn *sqlite.Conn, hyperDraftsEntity int64, hyperDraftsBlob int64) error {

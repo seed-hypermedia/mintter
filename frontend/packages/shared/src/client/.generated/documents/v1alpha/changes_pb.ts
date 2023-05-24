@@ -56,9 +56,9 @@ export class ListChangesRequest extends Message<ListChangesRequest> {
   /**
    * Required. ID of the Mintter object to list changes for.
    *
-   * @generated from field: string object_id = 1;
+   * @generated from field: string document_id = 1;
    */
-  objectId = "";
+  documentId = "";
 
   /**
    * Optional. Number of results per page.
@@ -82,7 +82,7 @@ export class ListChangesRequest extends Message<ListChangesRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.mintter.documents.v1alpha.ListChangesRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "object_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
     { no: 3, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);

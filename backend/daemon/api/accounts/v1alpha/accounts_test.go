@@ -11,7 +11,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
 
@@ -105,15 +104,14 @@ func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 
 	pool := sqliteschema.MakeTestDB(t)
-	db := vcsdb.New(pool)
 	ctx := context.Background()
-	bs := hyper.NewStorage(pool, logging.New("mintter/hyper", "debug"))
+	blobs := hyper.NewStorage(pool, logging.New("mintter/hyper", "debug"))
 
-	_, err := daemon.Register(ctx, bs, u.Account, u.Device.PublicKey, time.Now().UTC().Add(-1*time.Hour))
+	_, err := daemon.Register(ctx, blobs, u.Account, u.Device.PublicKey, time.Now().UTC().Add(-1*time.Hour))
 	require.NoError(t, err)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	return NewServer(fut.ReadOnly, db)
+	return NewServer(fut.ReadOnly, blobs)
 }

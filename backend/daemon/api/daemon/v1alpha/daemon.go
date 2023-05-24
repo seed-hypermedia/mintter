@@ -6,8 +6,6 @@ import (
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/hyper"
-	"mintter/backend/logging"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	sync "sync"
 	"time"
 
@@ -43,9 +41,9 @@ type Server struct {
 }
 
 // NewServer creates a new Server.
-func NewServer(r Repo, vcs *vcsdb.DB, w Wallet, syncFunc func() error) *Server {
+func NewServer(r Repo, blobs *hyper.Storage, w Wallet, syncFunc func() error) *Server {
 	return &Server{
-		blobs:         hyper.NewStorage(vcs.DB(), logging.New("mintter/hyper", "debug")),
+		blobs:         blobs,
 		repo:          r,
 		startTime:     time.Now(),
 		wallet:        w,

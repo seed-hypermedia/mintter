@@ -8,8 +8,9 @@ import (
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -94,8 +95,9 @@ func newTestServer(t *testing.T, name string) *Server {
 	repo := daemontest.MakeTestRepo(t, u)
 	db := newTestSQLite(t, repo)
 	wallet := new(mockedWallet)
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 
-	return NewServer(repo, vcsdb.New(db), wallet, nil)
+	return NewServer(repo, blobs, wallet, nil)
 }
 
 func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {

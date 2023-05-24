@@ -10,10 +10,10 @@ import (
 	documents "mintter/backend/daemon/api/documents/v1alpha"
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
+	"mintter/backend/hyper"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/syncing"
+	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -36,7 +36,7 @@ func New(
 	id *future.ReadOnly[core.Identity],
 	repo *ondisk.OnDisk,
 	db *sqlitex.Pool,
-	v *vcsdb.DB,
+	blobs *hyper.Storage,
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
@@ -61,8 +61,8 @@ func New(
 	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv, &lazyDiscoverer{sync: sync})
 	documentsSrv.RemoteCaller = siteSrv
 	return Server{
-		Accounts:   accounts.NewServer(id, v),
-		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
+		Accounts:   accounts.NewServer(id, blobs),
+		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
 		Site:       siteSrv,
@@ -76,13 +76,13 @@ type lazyDiscoverer struct {
 
 // DiscoverObject attempts to discover a given Mintter Object with an optional version specified.
 // If no version is specified it tries to find whatever is possible.
-func (ld *lazyDiscoverer) DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error {
+func (ld *lazyDiscoverer) DiscoverObject(ctx context.Context, obj hyper.EntityID, v hyper.Version) error {
 	svc, err := ld.sync.Await(ctx)
 	if err != nil {
 		return err
 	}
 
-	return svc.DiscoverObject(ctx, obj, version)
+	return svc.DiscoverObject(ctx, obj, v)
 }
 
 // ProvideCID notifies the providing system to provide the given CID on the DHT.
@@ -107,7 +107,7 @@ func (ld *lazyDiscoverer) Connect(ctx context.Context, peerInfo peer.AddrInfo) e
 
 // Connect connects to a remote peer. Necessary here for the grpc server to add a site
 // that needs to connect to the site under the hood.
-func (ld *lazyDiscoverer) SyncWithPeer(ctx context.Context, deviceID cid.Cid, initialObjects ...cid.Cid) error {
+func (ld *lazyDiscoverer) SyncWithPeer(ctx context.Context, deviceID peer.ID, initialObjects ...hyper.EntityID) error {
 	svc, ok := ld.sync.Get()
 	if !ok {
 		return fmt.Errorf("sync not ready yet")

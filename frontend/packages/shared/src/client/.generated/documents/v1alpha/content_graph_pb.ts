@@ -17,16 +17,6 @@ export class ListCitationsRequest extends Message<ListCitationsRequest> {
    */
   documentId = "";
 
-  /**
-   * Optional. Depth can be used to request transitive closure of citations.
-   * For example depth=1 will return not only citations of the requested document_id
-   * but also citations of those direct citations. The default is depth=0 and will only
-   * return direct citations.
-   *
-   * @generated from field: int32 depth = 2;
-   */
-  depth = 0;
-
   constructor(data?: PartialMessage<ListCitationsRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -36,7 +26,6 @@ export class ListCitationsRequest extends Message<ListCitationsRequest> {
   static readonly typeName = "com.mintter.documents.v1alpha.ListCitationsRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "depth", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListCitationsRequest {

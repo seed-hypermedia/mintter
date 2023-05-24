@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/crdt2"
+	"mintter/backend/hlc"
 	"mintter/backend/hyper/hypersql"
-	"mintter/backend/vcs/hlc"
+	"mintter/backend/ipfs"
 	"sort"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multibase"
+	"github.com/multiformats/go-multicodec"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -26,6 +28,15 @@ type EntityID string
 // NewEntityID creates a new ID for an entity.
 func NewEntityID(namespace string, id string) EntityID {
 	return EntityID(namespace + ":" + id)
+}
+
+// CID representation of the entity ID. Used for announcing on the DHT.
+func (eid EntityID) CID() (cid.Cid, error) {
+	c, err := ipfs.NewCID(uint64(multicodec.Raw), uint64(multicodec.Identity), []byte("/mintter/entity/"+string(eid)))
+	if err != nil {
+		return c, fmt.Errorf("failed to convert entity ID %s into CID: %w", eid, err)
+	}
+	return c, nil
 }
 
 // Entity is our CRDT mutable object.
@@ -66,29 +77,6 @@ func (e *Entity) AppliedChanges() map[cid.Cid]Change {
 	return e.applied
 }
 
-func (e *Entity) ForEachChange(fn func(c cid.Cid, ch Change) error) error {
-	type applied struct {
-		c  cid.Cid
-		ch Change
-	}
-
-	sorted := make([]applied, 0, len(e.applied))
-	for k, v := range e.applied {
-		sorted = append(sorted, applied{c: k, ch: v})
-	}
-	slices.SortFunc(sorted, func(a, b applied) bool {
-		return a.ch.HLCTime.Before(b.ch.HLCTime)
-	})
-
-	for _, s := range sorted {
-		if err := fn(s.c, s.ch); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (e *Entity) State() *crdt2.Map {
 	return e.state
 }
@@ -99,12 +87,30 @@ func (e *Entity) Heads() map[cid.Cid]struct{} {
 	return e.heads
 }
 
-func ParseVersion(v string) ([]cid.Cid, error) {
+type Version string
+
+func NewVersion(cids ...cid.Cid) Version {
+	if len(cids) == 0 {
+		return ""
+	}
+
+	out := make([]string, 0, len(cids))
+	for _, k := range cids {
+		out = append(out, k.String())
+	}
+	sort.Strings(out)
+
+	return Version(strings.Join(out, "."))
+}
+
+func (v Version) String() string { return string(v) }
+
+func (v Version) Parse() ([]cid.Cid, error) {
 	if v == "" {
 		return nil, nil
 	}
 
-	parts := strings.Split(v, ".")
+	parts := strings.Split(string(v), ".")
 	out := make([]cid.Cid, len(parts))
 
 	for i, p := range parts {
@@ -118,18 +124,12 @@ func ParseVersion(v string) ([]cid.Cid, error) {
 	return out, nil
 }
 
-func (e *Entity) Version() string {
+func (e *Entity) Version() Version {
 	if len(e.heads) == 0 {
 		return ""
 	}
 
-	out := make([]string, 0, len(e.heads))
-	for k := range e.heads {
-		out = append(out, k.String())
-	}
-	sort.Strings(out)
-
-	return strings.Join(out, ".")
+	return NewVersion(maps.Keys(e.heads)...)
 }
 
 // ApplyChange to the internal state.
@@ -259,6 +259,51 @@ func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, d
 	}
 
 	return hb, nil
+}
+
+func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c cid.Cid, ch Change) error) (err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return err
+	}
+	if edb.HyperEntitiesID == 0 {
+		return fmt.Errorf("entity %q not found", eid)
+	}
+
+	changes, err := hypersql.ChangesListForEntity(conn, string(eid))
+	if err != nil {
+		return err
+	}
+
+	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
+	for _, change := range changes {
+		buf, err = bs.bs.decoder.DecodeAll(change.HyperChangesViewData, buf)
+		if err != nil {
+			return err
+		}
+
+		chcid := cid.NewCidV1(uint64(change.HyperChangesViewCodec), change.HyperChangesViewMultihash)
+		var ch Change
+		if err := cbornode.DecodeInto(buf, &ch); err != nil {
+			return fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
+		}
+
+		if err := fn(chcid, ch); err != nil {
+			return err
+		}
+
+		buf = buf[:0] // reset the slice reusing the backing array
+	}
+
+	return nil
 }
 
 // LoadEntity from the database. If not found returns nil result and nil error.
@@ -405,7 +450,7 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 		return nil, err
 	}
 
-	changes, err := hypersql.ChangesListFromChangeSet(conn, cset.ResolvedJSON)
+	changes, err := hypersql.ChangesListFromChangeSet(conn, cset.ResolvedJSON, string(eid))
 	if err != nil {
 		return nil, err
 	}

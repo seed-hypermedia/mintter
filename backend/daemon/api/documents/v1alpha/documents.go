@@ -12,7 +12,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"mintter/backend/vcs/sqlitevcs"
 	"strings"
 	"time"
 
@@ -29,7 +28,7 @@ import (
 // Discoverer is a subset of the syncing service that
 // is able to discover given Mintter objects, optionally specifying versions.
 type Discoverer interface {
-	DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error
+	DiscoverObject(context.Context, hyper.EntityID, hyper.Version) error
 	// TODO: this is here temporarily. Eventually we need to provide from the vcs
 	// so every time we save a main version, we need to provide the leaf changes.
 	ProvideCID(cid.Cid) error
@@ -46,7 +45,6 @@ type RemoteCaller interface {
 // Server implements DocumentsServer gRPC API.
 type Server struct {
 	db           *sqlitex.Pool
-	vcsdb        *sqlitevcs.DB
 	me           *future.ReadOnly[core.Identity]
 	disc         Discoverer
 	RemoteCaller RemoteCaller
@@ -57,7 +55,6 @@ type Server struct {
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
 	srv := &Server{
 		db:           db,
-		vcsdb:        sqlitevcs.New(db),
 		me:           me,
 		disc:         disc,
 		RemoteCaller: remoteCaller,
@@ -318,7 +315,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 
 	var entity *hyper.Entity
 	if in.Version != "" {
-		heads, err := hyper.ParseVersion(in.Version)
+		heads, err := hyper.Version(in.Version).Parse()
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "bad version: %v", err)
 		}
@@ -362,7 +359,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 
 	return &documents.Publication{
 		Document: doc,
-		Version:  mut.e.Version(),
+		Version:  mut.e.Version().String(),
 	}, nil
 
 	//=== TODO: fix remote get
@@ -475,7 +472,7 @@ func (api *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 
 		for _, res := range list {
 			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
-				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobsMultihash)
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
 				return nil
 			}
 		}

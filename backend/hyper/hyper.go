@@ -9,6 +9,8 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/boxo/blockstore"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multicodec"
@@ -279,6 +281,20 @@ func (bs *Storage) LoadBlob(ctx context.Context, c cid.Cid, v any) error {
 	}
 
 	return nil
+}
+
+type IPFSBlockstoreReader interface {
+	Has(context.Context, cid.Cid) (bool, error)
+	Get(context.Context, cid.Cid) (blocks.Block, error)
+	GetSize(context.Context, cid.Cid) (int, error)
+}
+
+func (bs *Storage) IPFSBlockstoreReader() IPFSBlockstoreReader {
+	return bs.bs
+}
+
+func (bs *Storage) IPFSBlockstore() blockstore.Blockstore {
+	return bs.bs
 }
 
 // Blob is a structural artifact.

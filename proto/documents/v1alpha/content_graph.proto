@@ -12,12 +12,6 @@ service ContentGraph {
 message ListCitationsRequest {
   // Required. Document ID for which citations need to be retrieved.
   string document_id = 1;
-
-  // Optional. Depth can be used to request transitive closure of citations.
-  // For example depth=1 will return not only citations of the requested document_id
-  // but also citations of those direct citations. The default is depth=0 and will only
-  // return direct citations.
-  int32 depth = 2;
 }
 
 // Response with citations.

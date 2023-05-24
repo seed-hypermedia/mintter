@@ -4,14 +4,17 @@ import (
 	"context"
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
 	networking "mintter/backend/genproto/networking/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
@@ -68,23 +71,17 @@ func makeTestServer(t *testing.T, u coretest.Tester) *Server {
 
 func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.CancelFunc) {
 	db := makeTestSQLite(t)
-
-	hvcs := vcsdb.New(db)
-
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := vcsdb.Register(context.Background(), u.Account, u.Device, conn)
-	release()
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P
-
 	cfg.Port = 0
 	cfg.NoRelay = true
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, zap.NewNop())
+	n, err := mttnet.New(cfg, db, blobs, u.Identity, zap.NewNop())
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

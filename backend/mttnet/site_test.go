@@ -4,12 +4,14 @@ import (
 	"context"
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	siteproto "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
 
@@ -48,19 +50,19 @@ func TestMembers(t *testing.T) {
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 
-	cfg.Site.OwnerID = owner.me.AccountID().String()
+	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
 	defer stopSite()
 
-	docSrv.SetSiteAccount(site.me.AccountID().String())
+	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
@@ -78,18 +80,18 @@ func TestMembers(t *testing.T) {
 	res, err = editorSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{Token: token.Token})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_EDITOR, res.Role)
-	_, err = editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: site.me.AccountID().String()})
+	_, err = editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: site.me.Account().String()})
 	require.Error(t, err)
-	member, err := editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: editor.me.AccountID().String()})
+	member, err := editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: editor.me.Account().String()})
 	require.NoError(t, err)
-	require.Equal(t, editor.me.AccountID().String(), member.AccountId)
+	require.Equal(t, editor.me.Account().String(), member.AccountId)
 	require.Equal(t, documents.Member_EDITOR, member.Role)
 	memberList, err := editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
 	require.NoError(t, err)
 	require.Len(t, memberList.Members, 2)
-	_, err = editorSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.AccountID().String()})
+	_, err = editorSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.Account().String()})
 	require.Error(t, err)
-	_, err = ownerSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.AccountID().String()})
+	_, err = ownerSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.Account().String()})
 	require.NoError(t, err)
 	_, err = editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
 	require.Error(t, err)
@@ -97,7 +99,7 @@ func TestMembers(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, memberList.Members, 1)
 	require.Equal(t, documents.Member_OWNER, memberList.Members[0].Role)
-	require.Equal(t, owner.me.AccountID().String(), memberList.Members[0].AccountId)
+	require.Equal(t, owner.me.Account().String(), memberList.Members[0].AccountId)
 }
 
 func TestCreateTokens(t *testing.T) {
@@ -119,13 +121,13 @@ func TestCreateTokens(t *testing.T) {
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 
-	cfg.Site.OwnerID = owner.me.AccountID().String()
+	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
 	defer stopSite()
 
-	docSrv.SetSiteAccount(site.me.AccountID().String())
+	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
 	tsFuture := time.Now().Add(48 * time.Hour).Unix()
@@ -143,7 +145,7 @@ func TestCreateTokens(t *testing.T) {
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
@@ -195,19 +197,19 @@ func TestSiteInfo(t *testing.T) {
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 	cfg.Site.Title = "My title"
-	cfg.Site.OwnerID = owner.me.AccountID().String()
+	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "bob", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
 	defer stopSite()
 
-	docSrv.SetSiteAccount(site.me.AccountID().String())
+	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
@@ -229,13 +231,13 @@ func TestSiteInfo(t *testing.T) {
 	require.Equal(t, newDescription, siteInfo.Description)
 	require.Equal(t, newTitle, siteInfo.Title)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
-	require.Equal(t, owner.me.AccountID().String(), siteInfo.Owner)
+	require.Equal(t, owner.me.Account().String(), siteInfo.Owner)
 	siteInfo, err = ownerSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, newDescription, siteInfo.Description)
 	require.Equal(t, newTitle, siteInfo.Title)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
-	require.Equal(t, owner.me.AccountID().String(), siteInfo.Owner)
+	require.Equal(t, owner.me.Account().String(), siteInfo.Owner)
 }
 
 func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *simulatedDocs, context.CancelFunc) {
@@ -243,13 +245,10 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 
 	db := makeTestSQLite(t)
 
-	hvcs := vcsdb.New(db)
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
+	require.NoError(t, err)
 
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := vcsdb.Register(context.Background(), u.Account, u.Device, conn)
-	release()
-	require.NoError(t, err)
 	cfg := config.Default()
 
 	require.LessOrEqual(t, len(siteCfg), 1)
@@ -265,7 +264,7 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
 
-	n, err := New(cfg.P2P, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	n, err := New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

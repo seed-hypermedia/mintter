@@ -4,7 +4,7 @@ package sitesql
 import (
 	"mintter/backend/db/sqlitegen"
 	"mintter/backend/db/sqlitegen/qb"
-	"mintter/backend/db/sqliteschema"
+	s "mintter/backend/db/sqliteschema"
 	"os"
 )
 
@@ -20,263 +20,224 @@ const (
 //go:generate gorun -tags codegen generateQueries
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("sitesql",
-
-		qb.MakeQuery(sqliteschema.Schema, "addSite", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", sqliteschema.Sites, qb.ListColShort(
-				sqliteschema.SitesAccountID,
-				sqliteschema.SitesAddresses,
-				sqliteschema.SitesHostname,
-				sqliteschema.SitesRole,
-			), qb.Line,
+		qb.MakeQuery(s.Schema, "AddSite", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.Sites, qb.ListColShort(
+				s.SitesAccountID,
+				s.SitesAddresses,
+				s.SitesHostname,
+				s.SitesRole,
+			), '\n',
 			"VALUES", qb.List(
 				qb.SubQuery(
-					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes),
+					"SELECT", s.PublicKeysID,
+					"FROM", s.PublicKeys,
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
 				),
-				qb.VarCol(sqliteschema.SitesAddresses),
-				qb.VarCol(sqliteschema.SitesHostname),
-				qb.VarCol(sqliteschema.SitesRole),
+				qb.VarCol(s.SitesAddresses),
+				qb.VarCol(s.SitesHostname),
+				qb.VarCol(s.SitesRole),
 			),
 		),
-		qb.MakeQuery(sqliteschema.Schema, "removeSite", sqlitegen.QueryKindExec,
-			"DELETE FROM", sqliteschema.Sites,
-			"WHERE", sqliteschema.SitesHostname, "=", qb.VarCol(sqliteschema.SitesHostname),
+		qb.MakeQuery(s.Schema, "RemoveSite", sqlitegen.QueryKindExec,
+			"DELETE FROM", s.Sites,
+			"WHERE", s.SitesHostname, "=", qb.VarCol(s.SitesHostname),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getSite", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(s.Schema, "GetSite", sqlitegen.QueryKindSingle,
 			"SELECT",
 			qb.Results(
-				qb.ResultCol(sqliteschema.SitesAddresses),
-				qb.ResultCol(sqliteschema.SitesHostname),
-				qb.ResultCol(sqliteschema.SitesRole),
-				qb.ResultCol(sqliteschema.AccountsMultihash),
-			), qb.Line,
-			"FROM", sqliteschema.Sites, qb.Line,
-			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SitesAccountID, qb.Line,
-			"WHERE", sqliteschema.SitesHostname, "=", qb.VarCol(sqliteschema.SitesHostname),
+				qb.ResultCol(s.SitesAddresses),
+				qb.ResultCol(s.SitesHostname),
+				qb.ResultCol(s.SitesRole),
+				qb.ResultCol(s.PublicKeysPrincipal),
+			), '\n',
+			"FROM", s.Sites, '\n',
+			"JOIN", s.PublicKeys, "ON", s.PublicKeysID, "=", s.SitesAccountID, '\n',
+			"WHERE", s.SitesHostname, "=", qb.VarCol(s.SitesHostname),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "listSites", sqlitegen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "ListSites", sqlitegen.QueryKindMany,
 			"SELECT",
 			qb.Results(
-				qb.ResultCol(sqliteschema.SitesAddresses),
-				qb.ResultCol(sqliteschema.SitesHostname),
-				qb.ResultCol(sqliteschema.SitesRole),
-				qb.ResultCol(sqliteschema.AccountsMultihash),
-			), qb.Line,
-			"FROM", sqliteschema.Sites, qb.Line,
-			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SitesAccountID,
+				qb.ResultCol(s.SitesAddresses),
+				qb.ResultCol(s.SitesHostname),
+				qb.ResultCol(s.SitesRole),
+				qb.ResultCol(s.PublicKeysPrincipal),
+			), '\n',
+			"FROM", s.Sites, '\n',
+			"JOIN", s.PublicKeys, "ON", s.PublicKeysID, "=", s.SitesAccountID,
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "setSiteTitle", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", sqliteschema.GlobalMeta, qb.ListColShort(
-				sqliteschema.GlobalMetaKey,
-				sqliteschema.GlobalMetaValue,
-			), qb.Line,
+		qb.MakeQuery(s.Schema, "SetSiteTitle", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.GlobalMeta, qb.ListColShort(
+				s.GlobalMetaKey,
+				s.GlobalMetaValue,
+			), '\n',
 			"VALUES", qb.List(
 				"'"+SiteTitleKey+"'",
 				qb.Var("title", sqlitegen.TypeText),
 			),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getSiteTitle", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(s.Schema, "GetSiteTitle", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.GlobalMetaValue),
+				qb.ResultCol(s.GlobalMetaValue),
 			),
-			"FROM", sqliteschema.GlobalMeta,
-			"WHERE", sqliteschema.GlobalMetaKey, "='"+SiteTitleKey+"'",
+			"FROM", s.GlobalMeta,
+			"WHERE", s.GlobalMetaKey, "='"+SiteTitleKey+"'",
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "setSiteDescription", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", sqliteschema.GlobalMeta, qb.ListColShort(
-				sqliteschema.GlobalMetaKey,
-				sqliteschema.GlobalMetaValue,
-			), qb.Line,
+		qb.MakeQuery(s.Schema, "SetSiteDescription", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.GlobalMeta, qb.ListColShort(
+				s.GlobalMetaKey,
+				s.GlobalMetaValue,
+			), '\n',
 			"VALUES", qb.List(
 				"'"+SiteDescriptionKey+"'",
 				qb.Var("description", sqlitegen.TypeText),
 			),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getSiteDescription", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(s.Schema, "GetSiteDescription", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.GlobalMetaValue),
+				qb.ResultCol(s.GlobalMetaValue),
 			),
-			"FROM", sqliteschema.GlobalMeta,
-			"WHERE", sqliteschema.GlobalMetaKey, "='"+SiteDescriptionKey+"'",
+			"FROM", s.GlobalMeta,
+			"WHERE", s.GlobalMetaKey, "='"+SiteDescriptionKey+"'",
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "addToken", sqlitegen.QueryKindExec,
-			qb.Insert(sqliteschema.InviteTokensToken, sqliteschema.InviteTokensExpirationTime,
-				sqliteschema.InviteTokensRole),
+		qb.MakeQuery(s.Schema, "AddToken", sqlitegen.QueryKindExec,
+			qb.Insert(s.InviteTokensToken, s.InviteTokensExpirationTime,
+				s.InviteTokensRole),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getToken", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(s.Schema, "GetToken", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.InviteTokensRole),
-				qb.ResultCol(sqliteschema.InviteTokensExpirationTime),
-			), qb.Line,
-			"FROM", sqliteschema.InviteTokens,
-			"WHERE", sqliteschema.InviteTokensToken, "=", qb.VarCol(sqliteschema.InviteTokensToken),
+				qb.ResultCol(s.InviteTokensRole),
+				qb.ResultCol(s.InviteTokensExpirationTime),
+			), '\n',
+			"FROM", s.InviteTokens,
+			"WHERE", s.InviteTokensToken, "=", qb.VarCol(s.InviteTokensToken),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "listTokens", sqlitegen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.InviteTokensRole),
-				qb.ResultCol(sqliteschema.InviteTokensExpirationTime),
-				qb.ResultCol(sqliteschema.InviteTokensToken),
-			), qb.Line,
-			"FROM", sqliteschema.InviteTokens,
+		qb.MakeQuery(s.Schema, "RemoveToken", sqlitegen.QueryKindExec,
+			"DELETE FROM", s.InviteTokens,
+			"WHERE", s.InviteTokensToken, "=", qb.VarCol(s.InviteTokensToken),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "removeToken", sqlitegen.QueryKindExec,
-			"DELETE FROM", sqliteschema.InviteTokens,
-			"WHERE", sqliteschema.InviteTokensToken, "=", qb.VarCol(sqliteschema.InviteTokensToken),
+		qb.MakeQuery(s.Schema, "RemoveExpiredTokens", sqlitegen.QueryKindExec,
+			"DELETE FROM", s.InviteTokens,
+			"WHERE", s.InviteTokensExpirationTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "removeExpiredTokens", sqlitegen.QueryKindExec,
-			"DELETE FROM", sqliteschema.InviteTokens,
-			"WHERE", sqliteschema.InviteTokensExpirationTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "addMember", sqlitegen.QueryKindSingle,
-			"INSERT OR REPLACE INTO", sqliteschema.SiteMembers, qb.ListColShort(
-				sqliteschema.SiteMembersAccountID,
-				sqliteschema.SiteMembersRole,
-			), qb.Line,
+		qb.MakeQuery(s.Schema, "AddMember", sqlitegen.QueryKindSingle,
+			"INSERT OR REPLACE INTO", s.SiteMembers, qb.ListColShort(
+				s.SiteMembersAccountID,
+				s.SiteMembersRole,
+			), '\n',
 			"VALUES", qb.List(
 				qb.SubQuery(
-					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes),
+					"SELECT", s.PublicKeysID,
+					"FROM", s.PublicKeys,
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
 				),
-				qb.VarCol(sqliteschema.SiteMembersRole),
-			), qb.Line,
-			"RETURNING", qb.Results(sqliteschema.SiteMembersRole),
+				qb.VarCol(s.SiteMembersRole),
+			), '\n',
+			"RETURNING", qb.Results(s.SiteMembersRole),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "removeMember", sqlitegen.QueryKindExec,
-			"DELETE FROM", sqliteschema.SiteMembers,
-			"WHERE", sqliteschema.SiteMembersAccountID, "="+
-				"(SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes), ")",
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "getMember", sqlitegen.QueryKindSingle,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.SiteMembersRole),
-			), qb.Line,
-			"FROM", sqliteschema.SiteMembers,
-			"WHERE", sqliteschema.SiteMembersAccountID, "="+
-				"(SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes), ")",
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "listMembers", sqlitegen.QueryKindMany,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.SiteMembersRole),
-				qb.ResultCol(sqliteschema.AccountsMultihash),
-			), qb.Line,
-			"FROM", sqliteschema.SiteMembers, qb.Line,
-			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SiteMembersAccountID,
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "addWebPublicationRecord", sqlitegen.QueryKindExec,
-			"INSERT INTO", sqliteschema.WebPublicationRecords, qb.ListColShort(
-				sqliteschema.WebPublicationRecordsBlockID,
-				sqliteschema.WebPublicationRecordsDocumentVersion,
-				sqliteschema.WebPublicationRecordsPath,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.SubQuery(
-					"SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes),
-				),
-				qb.VarCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-				qb.VarCol(sqliteschema.WebPublicationRecordsPath),
+		qb.MakeQuery(s.Schema, "RemoveMember", sqlitegen.QueryKindExec,
+			"DELETE FROM", s.SiteMembers,
+			"WHERE", s.SiteMembersAccountID, "=", qb.SubQuery(
+				"SELECT", s.PublicKeysID,
+				"FROM", s.PublicKeys,
+				"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
 			),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "removeWebPublicationRecord", sqlitegen.QueryKindExec,
-			"DELETE FROM", sqliteschema.WebPublicationRecords,
-			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
-				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
-			"AND", sqliteschema.WebPublicationRecordsDocumentVersion, "=", qb.VarCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationRecords", sqlitegen.QueryKindMany,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
-			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordByIDOnly", sqlitegen.QueryKindMany,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
-			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
-			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
-				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordWithVersion", sqlitegen.QueryKindSingle,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
-			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
-			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
-				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
-			"AND", sqliteschema.WebPublicationRecordsDocumentVersion, "=", qb.Var("doc_version", sqlitegen.TypeText),
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordByPath", sqlitegen.QueryKindSingle,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
-			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
-			"WHERE", sqliteschema.WebPublicationRecordsPath, "=", qb.VarCol(sqliteschema.WebPublicationRecordsPath),
-		),
-
-		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationReferencesByIDOnly", sqlitegen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "GetMember", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.ContentLinksTargetVersion),
-			), qb.Line,
-			"FROM", sqliteschema.ContentLinks, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.ContentLinksTargetDocumentID, "=", sqliteschema.IPFSBlocksID,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "="+
-				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
+				qb.ResultCol(s.SiteMembersRole),
+			), '\n',
+			"FROM", s.SiteMembers, '\n',
+			"WHERE", s.SiteMembersAccountID, "=", qb.SubQuery(
+				"SELECT", s.PublicKeysID,
+				"FROM", s.PublicKeys,
+				"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+			),
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationReferencesWithVersion", sqlitegen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "ListMembers", sqlitegen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
-				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.ContentLinksTargetVersion),
-			), qb.Line,
-			"FROM", sqliteschema.ContentLinks, qb.Line,
-			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.ContentLinksTargetDocumentID, "=", sqliteschema.IPFSBlocksID,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "="+
-				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
-			"AND", sqliteschema.ContentLinksSourceVersion, "=", qb.Var("doc_version", sqlitegen.TypeText),
+				qb.ResultCol(s.SiteMembersRole),
+				qb.ResultCol(s.PublicKeysPrincipal),
+			), '\n',
+			"FROM", s.SiteMembers, '\n',
+			"JOIN", s.PublicKeys, "ON", s.PublicKeysID, "=", s.SiteMembersAccountID,
+		),
+
+		qb.MakeQuery(s.Schema, "AddWebPublicationRecord", sqlitegen.QueryKindExec,
+			"INSERT INTO", s.WebPublicationRecords, qb.ListColShort(
+				s.WebPublicationRecordsEntity,
+				s.WebPublicationRecordsDocumentVersion,
+				s.WebPublicationRecordsPath,
+			), '\n',
+			"VALUES", qb.List(
+				qb.SubQuery(
+					"SELECT", s.HyperEntitiesID,
+					"FROM", s.HyperEntities,
+					"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
+				),
+				qb.VarCol(s.WebPublicationRecordsDocumentVersion),
+				qb.VarCol(s.WebPublicationRecordsPath),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "RemoveWebPublicationRecord", sqlitegen.QueryKindExec,
+			"DELETE FROM", s.WebPublicationRecords,
+			"WHERE", s.WebPublicationRecordsEntity, "=", qb.SubQuery(
+				"SELECT", s.HyperEntitiesID,
+				"FROM", s.HyperEntities,
+				"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
+			),
+			"AND", s.WebPublicationRecordsDocumentVersion, "=", qb.VarCol(s.WebPublicationRecordsDocumentVersion),
+		),
+
+		qb.MakeQuery(s.Schema, "ListWebPublicationRecords", sqlitegen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.HyperEntitiesID),
+				qb.ResultCol(s.HyperEntitiesEID),
+				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
+				qb.ResultCol(s.WebPublicationRecordsPath),
+			), '\n',
+			"FROM", s.WebPublicationRecords, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
+		),
+
+		qb.MakeQuery(s.Schema, "GetWebPublicationRecordByPath", sqlitegen.QueryKindSingle,
+			"SELECT",
+			qb.Results(
+				qb.ResultCol(s.HyperEntitiesID),
+				qb.ResultCol(s.HyperEntitiesEID),
+				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
+				qb.ResultCol(s.WebPublicationRecordsPath),
+			), '\n',
+			"FROM", s.WebPublicationRecords, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
+			"WHERE", s.WebPublicationRecordsPath, "=", qb.VarCol(s.WebPublicationRecordsPath),
+		),
+
+		qb.MakeQuery(s.Schema, "GetWebPublicationRecordsByID", sqlitegen.QueryKindMany,
+			"SELECT",
+			qb.Results(
+				qb.ResultCol(s.HyperEntitiesID),
+				qb.ResultCol(s.HyperEntitiesEID),
+				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
+				qb.ResultCol(s.WebPublicationRecordsPath),
+			), '\n',
+			"FROM", s.WebPublicationRecords, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
+			"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
 		),
 	)
 	if err != nil {

@@ -23,11 +23,11 @@ service P2P {
 }
 
 message HandshakeInfo {
-  // Public key of the Account the peer claims to represent.
-  bytes account_public_key = 4;
+  // The CID of the key delegation blob.
+  bytes key_delegation_cid = 1;
 
-  // Cryptographic proof certifying that Device belongs to an Account.
-  bytes account_device_proof = 5;
+  // The bytes of the key delegation blob.
+  bytes key_delegation_data = 2;
 }
 
 message ListObjectsRequest {

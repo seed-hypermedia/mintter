@@ -1,18 +1,17 @@
 package mttnet
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/core"
-	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/sqlitevcs"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 
 	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
@@ -97,24 +96,41 @@ func (n *Node) checkMintterProtocolVersion(pid peer.ID) (ok bool, err error) {
 }
 
 func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.HandshakeInfo) error {
-	pubKey, err := core.ParsePublicKey(core.CodecAccountKey, pb.AccountPublicKey)
+	c, err := cid.Cast(pb.KeyDelegationCid)
 	if err != nil {
-		return fmt.Errorf("failed to parse remote account public key: %w", err)
+		return fmt.Errorf("failed to cast key delegation CID: %w", err)
 	}
 
-	if err := sqlitevcs.RegistrationProof(pb.AccountDeviceProof).Verify(pubKey, device); err != nil {
-		return fmt.Errorf("failed to verify account device registration proof: %w", err)
+	// TODO(burdiyan): avoid verifying if already seen this peer.
+
+	var kd hyper.KeyDelegation
+	if err := cbornode.DecodeInto(pb.KeyDelegationData, &kd); err != nil {
+		return fmt.Errorf("failed to decode key delegation to verify: %w", err)
 	}
 
-	conn, release, err := n.vcs.Conn(ctx)
-	if err != nil {
-		return err
+	if err := kd.Verify(); err != nil {
+		return fmt.Errorf("failed to verify handshake: %w", err)
 	}
-	defer release()
 
-	conn.EnsureAccountDevice(pubKey.CID(), device)
+	if kd.Purpose != hyper.DelegationPurposeRegistration {
+		return fmt.Errorf("invalid key delegation purpose: %s", kd.Purpose)
+	}
 
-	return conn.Err()
+	if kd.Type != hyper.TypeKeyDelegation {
+		return fmt.Errorf("invalid blob type: %s", kd.Type)
+	}
+
+	blob := kd.Blob()
+
+	if !blob.CID.Equals(c) {
+		return fmt.Errorf("handshake key delegation CID doesn't match")
+	}
+
+	if err := n.blobs.SaveBlob(ctx, blob); err != nil {
+		return fmt.Errorf("failed to save handshake key delegation blob: %w", err)
+	}
+
+	return nil
 }
 
 var errDialSelf = errors.New("can't dial self")
@@ -166,58 +182,54 @@ func (n *Node) handshakeInfo(ctx context.Context) (*p2p.HandshakeInfo, error) {
 	// TODO(burdiyan): this is only needed once. Cache it.
 	// Not doing it because we used to have weird proof not found issues.
 
-	const q = `
-SELECT
-	` + sqliteschema.C_DeviceProofsDelegationCodec + `,
-	` + sqliteschema.C_DeviceProofsDelegationHash + `
-FROM ` + sqliteschema.T_DeviceProofs + `
-WHERE ` + sqliteschema.C_DeviceProofsAccountHash + `= ?
-AND ` + sqliteschema.C_DeviceProofsDeviceHash + ` = ?
-LIMIT 1`
-
-	conn, release, err := n.vcs.Conn(ctx)
-	if err != nil && !errors.Is(err, context.Canceled) {
-		panic(err)
-	}
-	defer release()
-
-	var (
-		proofCodec int
-		proofHash  []byte
-	)
-	if err := sqlitex.Exec(conn.InternalConn(), q, func(stmt *sqlite.Stmt) error {
-		stmt.Scan(&proofCodec, &proofHash)
-		return nil
-	}, n.me.AccountID().Hash(), n.me.DeviceKey().CID().Hash()); err != nil {
-		return nil, fmt.Errorf("failed to get delegation from database: %w", err)
-	}
-	if proofHash == nil {
-		return nil, fmt.Errorf("BUG: can't find proof for our own device")
-	}
-
-	cc := cid.NewCidV1(uint64(proofCodec), proofHash)
-
-	blk, err := conn.GetBlock(ctx, cc)
+	c, err := n.getDelegation(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("BUG: failed to get block %s with our own key delegation: %w", cc, err)
+		return nil, fmt.Errorf("failed to get our own key delegation for handshake: %w", err)
 	}
 
-	ch, err := vcs.DecodeChange(blk.RawData())
+	blk, err := n.blobs.IPFSBlockstoreReader().Get(ctx, c)
 	if err != nil {
-		return nil, fmt.Errorf("BUG: failed to decode our own delegation change %s: %w", cc, err)
-	}
-
-	pubKeyRaw, err := n.me.Account().MarshalBinary()
-	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to load block for our own handshake: %w", err)
 	}
 
 	hinfo := &p2p.HandshakeInfo{
-		AccountPublicKey:   pubKeyRaw,
-		AccountDeviceProof: ch.Body,
+		KeyDelegationCid:  c.Bytes(),
+		KeyDelegationData: blk.RawData(),
 	}
 
 	return hinfo, nil
+}
+
+func (n *Node) getDelegation(ctx context.Context) (cid.Cid, error) {
+	var out cid.Cid
+
+	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		acc := n.me.Account().Principal()
+		dev := n.me.DeviceKey().Principal()
+
+		list, err := hypersql.KeyDelegationsList(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		for _, res := range list {
+			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
+				return nil
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return out, fmt.Errorf("BUG: failed to find our own key delegation")
+	}
+
+	return out, nil
 }
 
 func supportsMintterProtocol(protos []protocol.ID) bool {

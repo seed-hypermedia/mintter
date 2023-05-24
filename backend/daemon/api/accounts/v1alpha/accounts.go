@@ -3,25 +3,18 @@ package accounts
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
-	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 
 	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 )
 
 // Profile is exposed for convenience.
@@ -31,15 +24,13 @@ type Profile = accounts.Profile
 type Server struct {
 	me    *future.ReadOnly[core.Identity]
 	blobs *hyper.Storage
-	db    *sqlitex.Pool
 }
 
 // NewServer creates a new Server.
-func NewServer(id *future.ReadOnly[core.Identity], vcs *vcsdb.DB) *Server {
+func NewServer(id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
 	return &Server{
 		me:    id,
-		blobs: hyper.NewStorage(vcs.DB(), logging.New("mintter/hyper", "debug")),
-		db:    vcs.DB(),
+		blobs: blobs,
 	}
 }
 
@@ -125,16 +116,11 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	return acc, nil
 }
 
-func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
-	me, err := srv.getMe()
-	if err != nil {
-		return cid.Undef, err
-	}
-
+func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) (cid.Cid, error) {
 	var out cid.Cid
 
 	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
-	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+	if err := blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		acc := me.Account().Principal()
 		dev := me.DeviceKey().Principal()
 
@@ -145,7 +131,7 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 
 		for _, res := range list {
 			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
-				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobsMultihash)
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
 				return nil
 			}
 		}
@@ -162,6 +148,15 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	return out, nil
 }
 
+func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
+	me, err := srv.getMe()
+	if err != nil {
+		return cid.Undef, err
+	}
+
+	return getDelegation(ctx, me, srv.blobs)
+}
+
 // UpdateProfile implements the corresponding gRPC method.
 func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
 	me, err := srv.getMe()
@@ -169,11 +164,19 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		return nil, err
 	}
 
+	if err := UpdateProfile(ctx, me, srv.blobs, in); err != nil {
+		return nil, err
+	}
+
+	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
+}
+
+func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
 	eid := hyper.NewEntityID("mintter:account", me.Account().Principal().String())
 
-	e, err := srv.blobs.LoadEntity(ctx, eid)
+	e, err := blobs.LoadEntity(ctx, eid)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// The first profile update won't have any changes yet for the entity.
 	if e == nil {
@@ -195,7 +198,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	if in.Avatar != "" {
 		avatar, err := cid.Decode(in.Avatar)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode avatar %s as CID: %w", in.Avatar, err)
+			return fmt.Errorf("failed to decode avatar %s as CID: %w", in.Avatar, err)
 		}
 
 		v, ok := e.Get("avatar")
@@ -204,21 +207,21 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		}
 	}
 
-	del, err := srv.getDelegation(ctx)
+	del, err := getDelegation(ctx, me, blobs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	change, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := srv.blobs.SaveBlob(ctx, change); err != nil {
-		return nil, fmt.Errorf("failed to save account update change: %w", err)
+	if err := blobs.SaveBlob(ctx, change); err != nil {
+		return fmt.Errorf("failed to save account update change: %w", err)
 	}
 
-	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
+	return nil
 }
 
 // ListAccounts implements the corresponding gRPC method.
@@ -334,79 +337,4 @@ func (srv *Server) getMe() (core.Identity, error) {
 		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
 	}
 	return me, nil
-}
-
-// UpdateProfile is exposed because it's needed to update the site info. This is very bad
-// and should not be this way. TODO(burdiyan): get rid of this!
-func UpdateProfile(ctx context.Context, me core.Identity, db *vcsdb.DB, in *accounts.Profile) error {
-	aid := me.AccountID()
-
-	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(aid))
-	if err != nil {
-		return err
-	}
-
-	obj := perma.ID
-
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	errNoUpdate := errors.New("nothing to update")
-
-	old := &accounts.Profile{}
-
-	clock := hlc.NewClock()
-	var heads []cid.Cid
-	if err := conn.WithTx(false, func() error {
-		heads, err = conn.GetHeads(obj, true)
-		if err != nil {
-			return err
-		}
-
-		for _, h := range heads {
-			ts, err := conn.GetChangeTimestamp(h)
-			if err != nil {
-				return err
-			}
-			clock.Track(hlc.Unpack(ts))
-		}
-
-		conn.IterateChanges(obj, false, nil, func(vc vcs.VerifiedChange) error {
-			if vc.Decoded.Kind != vcsdb.KindProfile {
-				return nil
-			}
-			if err := (proto.UnmarshalOptions{Merge: true}).Unmarshal(vc.Decoded.Body, old); err != nil {
-				return fmt.Errorf("unable to unmarshal profile change %s: %w", vc.Cid(), err)
-			}
-			return nil
-		})
-		return nil
-	}); err != nil && !errors.Is(err, errNoUpdate) {
-		return err
-	}
-
-	// Nothing to update.
-	if proto.Equal(old, in) {
-		return nil
-	}
-
-	data, err := proto.Marshal(in)
-	if err != nil {
-		return fmt.Errorf("failed to marshal profile update: %w", err)
-	}
-
-	ch := vcs.NewChange(me, obj, heads, vcsdb.KindProfile, clock.Now(), data)
-	newvc, err := ch.Block()
-	if err != nil {
-		return err
-	}
-	conn.StoreChange(newvc)
-	if err := conn.Err(); err != nil {
-		return fmt.Errorf("failed to store profile update change: %w", err)
-	}
-
-	return conn.Err()
 }
