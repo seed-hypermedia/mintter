@@ -4,6 +4,7 @@ import {localWebsiteClient} from '../client'
 import PublicationPage, {PublicationPageProps} from '../ssr-publication-page'
 import {
   getPublicationPageProps,
+  impatientGetPublication,
   setResponsePublication,
 } from 'server/server-publications'
 
@@ -13,6 +14,7 @@ export default function PathPublicationPage(props: PublicationPageProps) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const path = (context.params?.pageSlug as string) || ''
+  const version = context.query.v ? String(context.query.v) : undefined
   let publication: Publication | null = null
   let pathRecord: GetPathResponse
   try {
@@ -25,12 +27,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     const docId = pathRecord.publication?.document?.id
     if (!docId) throw new Error('No document on this pathRecord?!')
+    if (version && version !== pathRecord.publication?.version) {
+      const requestedVersionPub = await impatientGetPublication({
+        documentId: docId,
+        version,
+      })
+
+      if (!requestedVersionPub)
+        return {
+          notFound: true,
+        }
+      publication = requestedVersionPub
+    }
+
     setResponsePublication(context, publication)
     return {
       props: await getPublicationPageProps(
         publication,
         docId,
-        pathRecord.publication?.version || null,
+        publication?.version || null,
       ),
     }
   } catch (error) {
