@@ -20,6 +20,8 @@ import (
 	"github.com/multiformats/go-multicodec"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // EntityID is a type for IDs of mutable entities.
@@ -275,7 +277,7 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 		return err
 	}
 	if edb.HyperEntitiesID == 0 {
-		return fmt.Errorf("entity %q not found", eid)
+		return status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
 	changes, err := hypersql.ChangesListForEntity(conn, string(eid))
@@ -321,7 +323,7 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 		return nil, err
 	}
 	if edb.HyperEntitiesID == 0 {
-		return nil, fmt.Errorf("entity %q not found", eid)
+		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
 	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HyperEntitiesID)

@@ -26,6 +26,6 @@ func TestFrontier(t *testing.T) {
 	require.NoError(t, f.Track(id))
 
 	require.Equal(t, 3, f.maxClock)
-	require.Equal(t, 2, f.lastSeen["alice"])
-	require.Equal(t, 3, f.lastSeen["bob"])
+	require.Equal(t, 2, f.lastSeen["alice"].Clock)
+	require.Equal(t, 3, f.lastSeen["bob"].Clock)
 }

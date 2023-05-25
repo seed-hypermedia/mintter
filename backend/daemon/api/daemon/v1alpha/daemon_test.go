@@ -40,7 +40,7 @@ func TestRegister(t *testing.T) {
 		Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
-	require.Equal(t, "bahezrj4iaqacicabciqk67kw6ulutlggvvnxtqxz3zmwxmiyexrxenuuron3uekqu5cvp7q", resp.AccountId)
+	require.Equal(t, "z6MkrGJF5qWkmaD1XsXpxwnX7uhjfR5bAWURvrSPsF12eCAH", resp.AccountId)
 
 	_, err = srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,

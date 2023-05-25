@@ -570,7 +570,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 	var found *p2p.Object
 	seen := map[cid.Cid]struct{}{}
 	for _, obj := range list.Objects {
-		if obj.Id == pub.Document.Id {
+		if obj.Id == "mintter:document:"+pub.Document.Id {
 			found = obj
 		}
 		for _, ch := range obj.ChangeIds {
@@ -695,9 +695,8 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		require.NoError(t, err)
 
 		prof := &accounts.Profile{
-			Alias:  name,
-			Bio:    name + " bio",
-			Avatar: name + "@example.com",
+			Alias: name,
+			Bio:   name + " bio",
 		}
 		acc, err := app.RPC.Accounts.UpdateProfile(ctx, prof)
 		require.NoError(t, err)

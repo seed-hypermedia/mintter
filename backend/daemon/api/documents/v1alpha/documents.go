@@ -325,6 +325,8 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return pub, nil
 	}
 
+	fmt.Println("GOT HERE", err)
+
 	// We can only attempt to handle not found errors.
 	if status.Code(err) != codes.NotFound {
 		return nil, err

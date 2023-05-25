@@ -240,7 +240,6 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	for i, del := range delegations {
 		go func(i int, del hypersql.KeyDelegationsListAllResult) {
 			var err error
-			var pid peer.ID
 			defer func() {
 				res.Errs[i] = err
 				if err == nil {
@@ -252,12 +251,14 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 				wg.Done()
 			}()
 
+			var pid peer.ID
 			device := core.Principal(del.KeyDelegationsViewDelegate)
 			pid, err = core.Principal(del.KeyDelegationsViewDelegate).PeerID()
 			if err != nil {
 				s.log.Warn("FailedToParsePeerID", zap.String("principal", device.String()))
 				return
 			}
+			res.Peers[i] = pid
 
 			err = s.SyncWithPeer(ctx, pid)
 		}(i, del)

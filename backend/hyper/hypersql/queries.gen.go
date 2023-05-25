@@ -538,7 +538,8 @@ type EntitiesListByPrefixResult struct {
 func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
 	const query = `SELECT hyper_entities.id, hyper_entities.eid
 FROM hyper_entities
-WHERE hyper_entities.eid GLOB :prefix`
+WHERE hyper_entities.eid GLOB :prefix
+ORDER BY hyper_entities.id`
 
 	var out []EntitiesListByPrefixResult
 

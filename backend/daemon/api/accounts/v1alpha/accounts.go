@@ -227,17 +227,28 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
+	me, err := srv.me.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	entities, err := srv.blobs.ListEntities(ctx, "mintter:account:")
 	if err != nil {
 		return nil, err
 	}
 
+	mine := me.Account().String()
+
 	resp := &accounts.ListAccountsResponse{
-		Accounts: make([]*accounts.Account, 0, len(entities)),
+		Accounts: make([]*accounts.Account, 0, len(entities)-1), // all except our own account.
 	}
 
 	for _, e := range entities {
 		aid := strings.TrimPrefix(string(e), "mintter:account:")
+		if aid == mine {
+			continue
+		}
+
 		draft, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
 			Id: aid,
 		})
