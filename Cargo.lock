@@ -78,6 +78,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "attohttpc"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fcf00bc6d5abb29b5f97e3c61a90b6d3caa12f3faf897d4a3e3607c050a35a7"
+dependencies = [
+ "flate2",
+ "http",
+ "log",
+ "native-tls",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "url",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3338,6 +3354,7 @@ version = "1.2.0"
 source = "git+https://github.com/tauri-apps/tauri#67f14b4ce8e3429401d8f8b02ee1ea54865b1624"
 dependencies = [
  "anyhow",
+ "attohttpc",
  "bytes",
  "cocoa",
  "dirs-next",

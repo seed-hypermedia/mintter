@@ -16,11 +16,16 @@ import {
 } from '@mintter/ui'
 import { XStack, YStack } from "@mintter/ui"
 import { WebviewWindow } from "@tauri-apps/api/window"
+import { save } from "@tauri-apps/api/dialog";
+import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { getClient, ResponseType } from "@tauri-apps/api/http";
+import { appDataDir, appDir, downloadDir } from '@tauri-apps/api/path';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react"
 import { Editor, Path, Transforms } from "slate"
 import { ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic } from "slate-react"
 import { EditorPlugin } from "../types"
 import { findPath } from "../utils"
+import { toast } from "@app/toast";
 
 interface InnerFileType extends FileType {
   size: number
@@ -125,6 +130,36 @@ function FileComponent({assign, element, file}: InnerFileProps) {
       }
     }
   }, [])
+
+  const saveFile = async () => {
+    const client = await getClient();
+    const data = (
+      await client.get(`http://localhost:55001/ipfs/${(element as FileType).url}`, {
+        responseType: ResponseType.Binary,
+      })
+    ).data as any;
+
+    const filePath = await save({
+      defaultPath: (await appDataDir()) + "/" + file.name,
+    });
+
+    try {
+      await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {dir: BaseDirectory.AppData});
+      toast.success(`Successfully downloaded file ${file.name}`)
+    } catch(e) {
+      toast.error(`Failed to download file ${file.name}`)
+      console.log(e)
+    }
+  }
+  
+  // const openFile = () => {
+  //   const webview = new WebviewWindow(`File`, {
+  //     url: `http://localhost:55001/ipfs/${(element as FileType).url}`,
+  //   })
+  //   webview.once('tauri://error', function (e) {
+  //     console.log(e)
+  //   })
+  // }
   
   return (
     <Button
@@ -133,14 +168,7 @@ function FileComponent({assign, element, file}: InnerFileProps) {
       size="$5"
       justifyContent="flex-start"
       icon={FileIcon}
-      onPress={() => {
-        const webview = new WebviewWindow(`File`, {
-          url: `http://localhost:55001/ipfs/${(element as FileType).url}`,
-        })
-        webview.once('tauri://error', function (e) {
-          console.log(e)
-        })
-      }}
+      onPress={saveFile}
     >
       {file.name}
     </Button>

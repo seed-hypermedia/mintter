@@ -63,17 +63,30 @@
         "unmaximize": true,
         "minimize": true,
         "close": true,
-        "hide": true,
-        "create": true
+        "hide": true
       },
       "dialog": {
         "all": false,
-        "message": true
+        "message": true,
+        "save": true
       },
       "process": {
         "all": false,
         "relaunch": true,
         "exit": true
+      },
+      "http": {
+        "all": false,
+        "request": true,
+        "scope": ["https://**/*", "http://**/*"] 
+      },
+      "fs": {
+        "all": false,
+        "writeFile": true,
+        "scope": ["$APPDATA/*", "$APPDATA"]
+      },
+      "path": {
+        "all": true
       }
     },
     "windows": [
