@@ -63,6 +63,7 @@ let grpcBaseURL = getGRPCHost()
 
 console.log('⚙️ Client Config ', {
   grpcBaseURL,
+  NEXT_PUBLIC_LN_HOST: process.env.NEXT_PUBLIC_LN_HOST,
   NEXT_PUBLIC_GRPC_HOST: process.env.NEXT_PUBLIC_GRPC_HOST,
   VERCEL_ENV: process.env.VERCEL_ENV,
   NODE_ENV: process.env.NODE_ENV,
