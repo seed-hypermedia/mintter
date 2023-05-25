@@ -1,15 +1,13 @@
 module mintter
 
-go 1.18
+go 1.20
 
 require (
 	crawshaw.io/sqlite v0.3.2
 	github.com/99designs/gqlgen v0.17.22
-	github.com/armon/go-radix v1.0.0
 	github.com/btcsuite/btcd v0.23.3
 	github.com/btcsuite/btcd/btcutil v1.1.2
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
-	github.com/davecgh/go-spew v1.1.1
 	github.com/getsentry/sentry-go v0.16.0
 	github.com/google/go-cmp v0.5.9
 	github.com/gorilla/mux v1.8.0
@@ -90,6 +88,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/cskr/pubsub v1.0.2 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
@@ -197,11 +196,11 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/dig v1.16.1 // indirect
 	go.uber.org/fx v1.19.2 // indirect
-	golang.org/x/crypto v0.8.0 // indirect
+	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/term v0.7.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
