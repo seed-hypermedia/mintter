@@ -9,6 +9,11 @@ import {createDirtyPathPlugin} from '@app/editor/dirty-paths'
 import {createEmbedPlugin, ELEMENT_EMBED, EmbedElement} from '@app/editor/embed'
 import {createEmphasisPlugin} from '@app/editor/emphasis'
 import {
+  createFilePlugin,
+  ELEMENT_FILE,
+  FileElement,
+} from '@app/editor/file/file'
+import {
   createGroupPlugin,
   ELEMENT_GROUP,
   ELEMENT_ORDERED_LIST,
@@ -25,11 +30,6 @@ import {
   ELEMENT_IMAGE,
   ImageElement,
 } from '@app/editor/image/image'
-import {
-  createFilePlugin,
-  ELEMENT_FILE,
-  FileElement,
-} from '@app/editor/file/file'
 import {createInlineCodePlugin} from '@app/editor/inline-code'
 import {createLinkPlugin, ELEMENT_LINK, LinkElement} from '@app/editor/link'
 import {createMarkdownShortcutsPlugin} from '@app/editor/markdown-plugin'
@@ -69,31 +69,21 @@ import {
   ul,
 } from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
-import debounce from 'lodash.debounce'
 import {
   ElementType,
   PropsWithChildren,
   ReactNode,
   useCallback,
-  useContext,
   useMemo,
-  useState,
 } from 'react'
-import {Descendant, Editor as SlateEditor, NodeEntry, Transforms} from 'slate'
-import {
-  Editable,
-  ReactEditor,
-  RenderElementProps,
-  RenderLeafProps,
-  Slate,
-} from 'slate-react'
+import {Descendant, Editor as SlateEditor, Transforms} from 'slate'
+import {Editable, RenderElementProps, RenderLeafProps, Slate} from 'slate-react'
 import {BlockElement} from './block'
+import {LinkingPanelProvider} from './linking-panel'
 import {buildEventHandlerHooks, EditorMode} from './plugin-utils'
 import './styles/editor.css'
 import type {EditorPlugin} from './types'
-import {findPath, setList, setType, toggleFormat} from './utils'
-import {createContext} from 'react'
-import {LinkingPanelProvider} from './linking-panel'
+import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   children?: ReactNode

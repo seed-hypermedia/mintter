@@ -8,22 +8,11 @@ import {
 } from '@mintter/shared'
 import {Editor, Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
-import {resetFlowContent} from '../utils'
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote'
 
 export const createBlockquotePlugin = (): EditorPlugin => ({
   name: ELEMENT_BLOCKQUOTE,
-  configureEditor(editor) {
-    const {deleteBackward} = editor
-
-    editor.deleteBackward = (unit) => {
-      if (resetFlowContent(editor)) return
-      deleteBackward(unit)
-    }
-
-    return editor
-  },
   onKeyDown: (editor) => {
     return (ev) => {
       if (ev.key == 'Enter') {

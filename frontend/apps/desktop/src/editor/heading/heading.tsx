@@ -16,12 +16,7 @@ export const ELEMENT_HEADING = 'heading'
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
   configureEditor: (editor) => {
-    const {normalizeNode, deleteBackward} = editor
-
-    editor.deleteBackward = (unit) => {
-      if (resetFlowContent(editor)) return
-      deleteBackward(unit)
-    }
+    const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry

@@ -72,7 +72,6 @@ export function DraftBlocktools({
   onOpenChange: (open: boolean) => void
   open: boolean
 }) {
-  let mouseService = useMouse()
   let [block, path] = current
 
   return (

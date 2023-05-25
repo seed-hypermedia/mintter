@@ -5,7 +5,6 @@ import {
   useHoverVisibleConnection,
   useVisibleConnection,
 } from '@app/editor/visible-connection'
-import {useBlockObserve} from '@app/mouse-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {
   Code as CodeType,
@@ -74,7 +73,6 @@ export function ParagraphElement({
     () => (elementProps['data-parent-group'] == 'group' ? '$2' : 0),
     [elementProps],
   )
-  useBlockObserve(mode, pRef)
 
   if (mode == EditorMode.Embed) {
     return (

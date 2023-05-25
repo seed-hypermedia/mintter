@@ -4,8 +4,6 @@ import {Editor, plugins, useTauriListeners} from '@app/editor/editor'
 
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {useEditorDraft, useSaveDraft} from '@app/models/documents'
-import {MouseProvider} from '@app/mouse-context'
-import {mouseMachine} from '@app/mouse-machine'
 import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
@@ -49,7 +47,6 @@ export default function DraftPage() {
     initWebUrl: route.contextSiteHost,
   })
 
-  let mouseService = useInterpret(() => mouseMachine)
   let isDaemonReady = useDaemonReady()
 
   useInitialFocus(editor)
@@ -71,78 +68,61 @@ export default function DraftPage() {
       FallbackComponent={AppError}
       onReset={() => window.location.reload()}
     >
-      <MouseProvider value={mouseService}>
-        <MainWrapper
-          onScroll={() => {
-            mouseService.send('DISABLE.SCROLL')
-          }}
-        >
-          <YStack
-            onPointerMove={(event) => {
-              mouseService.send({
-                type: 'MOUSE.MOVE',
-                position: event.nativeEvent.clientY,
-              })
-            }}
-            onPointerLeave={() => {
-              mouseService.send('DISABLE.CHANGE')
-            }}
-          >
-            {!isDaemonReady ? <NotSavingBanner /> : null}
-            {draftState.children.length ? (
-              <>
-                <Editor
-                  editor={editor}
-                  value={draftState.children}
-                  //@ts-ignore
-                  onChange={(content: GroupingContent[]) => {
-                    // this is used to filter operations that are not changing the actual editor content.
-                    const isAstChange = editor.operations.some(
-                      (op) => 'set_selection' !== op.type,
-                    )
+      <MainWrapper>
+        <YStack>
+          {!isDaemonReady ? <NotSavingBanner /> : null}
+          {draftState.children.length ? (
+            <>
+              <Editor
+                editor={editor}
+                value={draftState.children}
+                //@ts-ignore
+                onChange={(content: GroupingContent[]) => {
+                  // this is used to filter operations that are not changing the actual editor content.
+                  const isAstChange = editor.operations.some(
+                    (op) => 'set_selection' !== op.type,
+                  )
 
-                    if (isAstChange) {
-                      // TODO: need to check when content can be a string
-                      if (
-                        (!content && typeof content == 'string') ||
-                        !isDaemonReady
-                      )
-                        return
-                      mouseService.send('DISABLE.CHANGE')
-                      saveDraft.mutate({content})
-                    }
-                  }}
-                />
-                {import.meta.env.DEV && (
-                  <YStack maxWidth="500px" marginHorizontal="auto">
-                    <Button
-                      size="$1"
-                      theme="gray"
-                      width="100%"
-                      onPress={() => setDebugValue((v) => !v)}
+                  if (isAstChange) {
+                    // TODO: need to check when content can be a string
+                    if (
+                      (!content && typeof content == 'string') ||
+                      !isDaemonReady
+                    )
+                      return
+                    saveDraft.mutate({content})
+                  }
+                }}
+              />
+              {import.meta.env.DEV && (
+                <YStack maxWidth="500px" marginHorizontal="auto">
+                  <Button
+                    size="$1"
+                    theme="gray"
+                    width="100%"
+                    onPress={() => setDebugValue((v) => !v)}
+                  >
+                    toggle value
+                  </Button>
+                  {debugValue && (
+                    <XStack
+                      tag="pre"
+                      {...{
+                        whiteSpace: 'wrap',
+                      }}
                     >
-                      toggle value
-                    </Button>
-                    {debugValue && (
-                      <XStack
-                        tag="pre"
-                        {...{
-                          whiteSpace: 'wrap',
-                        }}
-                      >
-                        <SizableText tag="code" size="$1">
-                          {JSON.stringify(draftState?.children, null, 3)}
-                        </SizableText>
-                      </XStack>
-                    )}
-                  </YStack>
-                )}
-              </>
-            ) : null}
-          </YStack>
-        </MainWrapper>
-        <Footer />
-      </MouseProvider>
+                      <SizableText tag="code" size="$1">
+                        {JSON.stringify(draftState?.children, null, 3)}
+                      </SizableText>
+                    </XStack>
+                  )}
+                </YStack>
+              )}
+            </>
+          ) : null}
+        </YStack>
+      </MainWrapper>
+      <Footer />
     </ErrorBoundary>
   )
 }

@@ -17,7 +17,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
-import {isFirstChild} from '../utils'
+import {hasEmbedOnly, isFirstChild, resetFlowContent} from '../utils'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -148,9 +148,11 @@ export const createStatementPlugin = (): EditorPlugin => ({
     }
 
     editor.deleteBackward = function blockDeleteBackwards(unit) {
-      let {selection} = editor
+      if (!editor.selection) return
 
-      if (selection?.anchor.offset == 0) {
+      if (resetFlowContent(editor)) return
+
+      if (editor.selection.anchor.offset == 0) {
         let [node, path] =
           Editor.above(editor, {
             match: isFlowContent,
@@ -158,16 +160,18 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
         if (node && path) {
           if (!isFirstChild(path)) {
-            let prevBlockPath = Path.previous(path)
-            let prevBlockNode = Node.get(editor, prevBlockPath)
+            let prevEntry = editor.node(Path.previous(path))
 
-            if (
-              !Node.string(prevBlockNode) &&
-              isFlowContent(prevBlockNode) &&
-              !hasEmbedOnly([prevBlockNode, prevBlockPath])
-            ) {
-              Transforms.removeNodes(editor, {at: prevBlockPath})
-              return
+            if (prevEntry) {
+              let [prevNode, prevPath] = prevEntry
+              if (
+                !Node.string(prevNode) &&
+                isFlowContent(prevNode) &&
+                !hasEmbedOnly(prevNode.children[0])
+              ) {
+                Transforms.removeNodes(editor, {at: prevPath})
+                return
+              }
             }
           } else {
             /**
@@ -222,21 +226,4 @@ export function removeEmptyStatement(
     })
     return true
   }
-}
-
-function hasEmbedOnly(entry: NodeEntry<FlowContent>) {
-  let [node] = entry
-  let hasContent = !!Node.string(node)
-  let result = false
-
-  if (!hasContent) {
-    for (let childEntry of Node.descendants(node)) {
-      let [child] = childEntry
-
-      if (isEmbed(child)) {
-        result = true
-      }
-    }
-  }
-  return result
 }

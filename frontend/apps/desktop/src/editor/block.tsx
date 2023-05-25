@@ -49,7 +49,7 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
   let route = useNavRoute()
   let [hover, setHover] = useState(false)
   let [dropdownOpen, setDropDownOpen] = useState(false)
-  let {highlight} = useVisibleConnection((element as FlowContent).id)
+  // let {highlight} = useVisibleConnection((element as FlowContent).id)
 
   // let {blockProps, blockPath, parentNode} = useBlockProps(editor, element)
   let path = findPath(element)
@@ -97,25 +97,24 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
     <XStack
       {...attributes}
       gap="$2"
-      backgroundColor={
-        route.key != 'draft' && highlight ? '$yellow3' : 'transparent'
-      }
+      // backgroundColor={
+      //   route.key != 'draft' && highlight ? '$yellow3' : 'transparent'
+      // }
       position={!dropdownOpen ? 'relative' : undefined}
+      onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
+      onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
     >
       <XStack
+        contentEditable={false}
         position="absolute"
         top={0}
         left="-50%"
         width="200%"
         height="100%"
-        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
-        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
       />
       <XStack
         //@ts-ignore
         contentEditable={false}
-        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
-        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
         flex={0}
         flexShrink={0}
         flexGrow={0}

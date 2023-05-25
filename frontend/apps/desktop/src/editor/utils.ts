@@ -22,6 +22,9 @@ import {
   ul,
   video,
   file,
+  isEmbed,
+  Paragraph,
+  StaticParagraph,
 } from '@mintter/shared'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
@@ -30,6 +33,7 @@ import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateSelector} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
+import {ELEMENT_STATEMENT} from './statement'
 
 export const isCollapsed = (range: Range | null): boolean =>
   !!range && Range.isCollapsed(range)
@@ -179,25 +183,23 @@ export function getCurrentConversations(editor: Editor) {
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {
-  const {selection} = editor
-  if (selection && isCollapsed(selection)) {
-    const block = Editor.above<Statement>(editor, {
+  if (!editor.selection) return
+
+  if (isCollapsed(editor.selection)) {
+    const block = editor.above<FlowContent>({
       match: (n) => isFlowContent(n) && !isStatement(n),
     })
 
     if (block) {
       const [node, path] = block
 
-      if (!Node.string(node.children[0])) {
+      let contentNode = node.children[0]
+
+      if (Node.string(contentNode) == '' && !hasEmbedOnly(contentNode)) {
         Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(
-            editor,
-            statement({id: node.id}, node.children),
-            {
-              at: Path.next(path),
-            },
-          )
-          Transforms.removeNodes(editor, {at: path})
+          console.log('RESET NODE', contentNode)
+          Transforms.setNodes(editor, {type: ELEMENT_STATEMENT}, {at: path})
+          // Transforms.removeNodes(editor, {at: path})
           Transforms.select(editor, path.concat(0))
         })
         return true
@@ -205,6 +207,22 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
     }
     return false
   }
+}
+
+export function hasEmbedOnly(node: Paragraph | StaticParagraph) {
+  let hasContent = !!Node.string(node)
+  let result = false
+
+  if (!hasContent) {
+    for (let childEntry of Node.descendants(node)) {
+      let [child] = childEntry
+
+      if (isEmbed(child)) {
+        result = true
+      }
+    }
+  }
+  return result
 }
 
 export function resetGroupingContent(editor: Editor): boolean {

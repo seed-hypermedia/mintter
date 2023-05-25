@@ -31,19 +31,10 @@ export const createCodePlugin = (): EditorPlugin => {
 
   return {
     name: ELEMENT_CODE,
-    configureEditor(editor) {
-      /*
-       * @todo modify paste so it will add empty lines
-       * @body we need to paste code content inside the same paragraph
-       */
-      const {deleteBackward} = editor
-      editor.deleteBackward = (unit) => {
-        if (resetFlowContent(editor)) return
-        deleteBackward(unit)
-      }
-
-      return editor
-    },
+    /*
+     * @todo modify paste so it will add empty lines
+     * @body we need to paste code content inside the same paragraph
+     */
     onKeyDown: (editor) => {
       return (ev) => {
         if (ev.key == 'Enter') {
