@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -577,17 +576,14 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 		for _, ch := range obj.ChangeIds {
 			c := must.Do2(cid.Decode(ch))
 
-			blk, err := alice.Blobs.IPFSBlockstore().Get(ctx, c)
-			require.NoError(t, err)
-
 			var change hyper.Change
-			require.NoError(t, cbornode.DecodeInto(blk.RawData(), &ch))
+			require.NoError(t, alice.Blobs.LoadBlob(ctx, c, &change))
 
-			seen[blk.Cid()] = struct{}{}
+			seen[c] = struct{}{}
 
 			for _, dep := range change.Deps {
 				_, ok := seen[dep]
-				require.True(t, ok, "non causal order of IPLD links: haven't seen dep %s of %s", dep, blk.Cid())
+				require.True(t, ok, "non causal order of IPLD links: haven't seen dep %s of %s", dep, c)
 			}
 		}
 	}

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// indexBlob is a uber-function that knows about all types of blobs we want to index.
+// indexBlob is an uber-function that knows about all types of blobs we want to index.
 // This is probably a bad idea to put here, but for now it's easier to work with that way.
 // TODO(burdiyan): eventually we might want to make this package agnostic to blob types.
 func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {

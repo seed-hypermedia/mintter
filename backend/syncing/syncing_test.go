@@ -68,7 +68,7 @@ func TestSync(t *testing.T) {
 	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
 
 	{
-		blk, err := bob.Blobs().IPFSBlockstore().Get(ctx, blob.CID)
+		blk, err := bob.Blobs().IPFSBlockstoreReader().Get(ctx, blob.CID)
 		require.NoError(t, err)
 
 		require.Equal(t, blob.Data, blk.RawData(), "bob must sync alice's change intact")

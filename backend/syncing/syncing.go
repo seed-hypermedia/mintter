@@ -265,6 +265,9 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 
 	wg.Wait()
 
+	// Subtracting one to account for our own device.
+	res.NumSyncOK--
+
 	if s.onSync != nil {
 		if err := s.onSync(res); err != nil {
 			return res, err
@@ -278,17 +281,17 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
-	bs := s.blobs.IPFSBlockstore()
+	bs := s.blobs.IPFSBlockstoreReader()
 
-	oid, err := hyper.EntityID(obj.Id).CID()
-	if err != nil {
-		return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
-	}
+	// oid, err := hyper.EntityID(obj.Id).CID()
+	// if err != nil {
+	// 	return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
+	// }
 
-	// Hint to bitswap to only talk to peers who have the object.
-	if _, err := sess.GetBlock(ctx, oid); err != nil {
-		return fmt.Errorf("failed to start bitswap session: %w", err)
-	}
+	// // Hint to bitswap to only talk to peers who have the object.
+	// if _, err := sess.GetBlock(ctx, oid); err != nil {
+	// 	return fmt.Errorf("failed to start bitswap session: %w", err)
+	// }
 
 	// We have to check which of the remote changes we're actually missing to avoid
 	// doing bitswap unnecessarily.

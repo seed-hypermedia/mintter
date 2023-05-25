@@ -80,7 +80,7 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 
 func (s *Service) hasBlocks(ctx context.Context, cids ...cid.Cid) (ok bool, err error) {
 	for _, c := range cids {
-		ok, err := s.blobs.IPFSBlockstore().Has(ctx, c)
+		ok, err := s.blobs.IPFSBlockstoreReader().Has(ctx, c)
 		if err != nil {
 			return false, err
 		}
