@@ -11,7 +11,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"mintter/backend/testutil"
 	"testing"
 	"time"
 
@@ -256,9 +255,6 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 		cfg.Site = siteCfg[0]
 	}
 
-	cfg.HTTPPort = 0
-	cfg.GRPCPort = 0
-	cfg.RepoPath = testutil.MakeRepoPath(t)
 	cfg.P2P.Port = 0
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true
