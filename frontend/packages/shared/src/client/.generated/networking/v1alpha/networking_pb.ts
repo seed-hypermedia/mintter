@@ -97,13 +97,6 @@ export class GetPeerInfoRequest extends Message<GetPeerInfoRequest> {
  * @generated from message com.mintter.networking.v1alpha.ListPeersRequest
  */
 export class ListPeersRequest extends Message<ListPeersRequest> {
-  /**
-   * Required. Status of the peers to list. If negative, all peers are returned, regardless of their status.
-   *
-   * @generated from field: com.mintter.networking.v1alpha.ConnectionStatus status = 1;
-   */
-  status = ConnectionStatus.NOT_CONNECTED;
-
   constructor(data?: PartialMessage<ListPeersRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -112,7 +105,6 @@ export class ListPeersRequest extends Message<ListPeersRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.mintter.networking.v1alpha.ListPeersRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "status", kind: "enum", T: proto3.getEnumType(ConnectionStatus) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPeersRequest {

@@ -2,7 +2,6 @@ package crdt2
 
 import (
 	"math"
-	"reflect"
 
 	"github.com/tidwall/btree"
 )
@@ -43,9 +42,6 @@ func (m *Map) ApplyPatch(time int64, origin string, patch map[string]any) (ok bo
 		queue = queue[1:]
 
 		for k, v := range cur.m {
-			if reflect.TypeOf(v).Kind() == reflect.Struct {
-				panic("BUG: can't use structs in CRDT map patches")
-			}
 			vt := mapValuePrimitive
 			vm, isMap := v.(map[string]any)
 			if isMap {

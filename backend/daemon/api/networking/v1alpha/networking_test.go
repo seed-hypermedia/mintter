@@ -26,11 +26,11 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	api := makeTestServer(t, alice)
 	ctx := context.Background()
 
-	did := alice.Device.CID()
-	acc := alice.Account.CID()
+	pid := alice.Device.PeerID()
+	acc := alice.Account.Principal()
 
 	pinfo, err := api.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		DeviceId: did.String(),
+		DeviceId: pid.String(),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, pinfo)
@@ -42,21 +42,17 @@ func TestNetworkingListPeers(t *testing.T) {
 	api := makeTestServer(t, alice)
 	ctx := context.Background()
 
-	did := alice.Device.CID()
-	acc := alice.Account.CID()
-	pid := alice.Device.ID()
-	pList, err := api.ListPeers(ctx, &networking.ListPeersRequest{Status: 0})
+	pid := alice.Device.PeerID()
+	acc := alice.Account.Principal()
+	pList, err := api.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.PeerList, 1)
 	require.Equal(t, acc.String(), pList.PeerList[0].AccountId, "account ids must match")
-	require.Equal(t, did.String(), pList.PeerList[0].DeviceId, "device ids must match")
+	require.Equal(t, pid.String(), pList.PeerList[0].DeviceId, "device ids must match")
 	require.Equal(t, pid.String(), pList.PeerList[0].PeerId, "peer ids must match")
-	pList, err = api.ListPeers(ctx, &networking.ListPeersRequest{Status: -1})
+	pList, err = api.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.PeerList, 1)
-	pList, err = api.ListPeers(ctx, &networking.ListPeersRequest{Status: 1})
-	require.NoError(t, err)
-	require.Len(t, pList.PeerList, 0)
 }
 
 func makeTestServer(t *testing.T, u coretest.Tester) *Server {
