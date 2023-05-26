@@ -101,8 +101,6 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
       //   route.key != 'draft' && highlight ? '$yellow3' : 'transparent'
       // }
       position={!dropdownOpen ? 'relative' : undefined}
-      onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
-      onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
     >
       <XStack
         contentEditable={false}
@@ -111,6 +109,8 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         left="-50%"
         width="200%"
         height="100%"
+        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
+        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
       />
       <XStack
         //@ts-ignore
@@ -122,6 +122,8 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
         height={height}
         alignItems="center"
         justifyContent="flex-end"
+        onPointerEnter={!dropdownOpen ? () => setHover(true) : undefined}
+        onPointerLeave={() => (!dropdownOpen ? setHover(false) : undefined)}
       >
         {hover ? (
           <DraftBlocktools
