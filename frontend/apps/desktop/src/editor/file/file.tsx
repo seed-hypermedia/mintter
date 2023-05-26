@@ -26,6 +26,7 @@ import { ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStati
 import { EditorPlugin } from "../types"
 import { findPath } from "../utils"
 import { toast } from "@app/toast";
+import { EditorMode } from "../plugin-utils";
 
 interface InnerFileType extends FileType {
   size: number
@@ -65,23 +66,19 @@ export function FileElement({
 }: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const [file, setFile] = useState<InnerFileType>({name: '', size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)
-
-  if ((element as FileType).url && !file.url) {
-    (element as FileType).name ?
-      setFile({...file, url: (element as FileType).url, name: (element as FileType).name}) :
-      setFile({...file, url: (element as FileType).url});
-  }
+  const [file, setFile] = useState<InnerFileType>({name: undefined, size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)
 
   useEffect(() => {
-  }, [file])
+    if ((element as FileType).url && !file.url) {
+      (element as FileType).name ?
+        setFile({...file, url: (element as FileType).url, name: (element as FileType).name}) :
+        setFile({...file, url: (element as FileType).url});
+    }
+  }, [])
 
   const assignFile = (newFile: InnerFileType) => {
     setFile({...file, ...newFile})
-    if (newFile.url)
-      Transforms.setNodes<FileType>(editor, {url: newFile.url}, {at: path})
-    if (newFile.name) 
-      Transforms.setNodes<FileType>(editor, {name: newFile.name}, {at: path})
+    Transforms.setNodes<FileType>(editor, {url: newFile.url, name: newFile.name}, {at: path})
   }
 
   if ((element as FileType).defaultOpen)
@@ -103,33 +100,8 @@ function FileComponent({assign, element, file}: InnerFileProps) {
   const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
+  const [replace, setReplace] = useState(false)
   const path = useMemo(() => findPath(element), [element])
-
-  const onKeyPress = useCallback((event: any) => {
-    if (event.nativeEvent.key == 'Enter') {
-      // This will create a new block below the file and focus on it
-
-      event.preventDefault()
-
-      let parentBlock = Editor.above(editor, {
-        match: isFlowContent,
-        at: path,
-      })
-
-      if (parentBlock) {
-        let [, pPath] = parentBlock
-        let newBlock = statement([paragraph([text('')])])
-        let newPath = Path.next(pPath)
-        Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(editor, newBlock, {at: newPath})
-          ReactEditor.focus(editor)
-          setTimeout(() => {
-            Transforms.select(editor, newPath)
-          }, 10)
-        })
-      }
-    }
-  }, [])
 
   const saveFile = async () => {
     const client = await getClient();
@@ -143,12 +115,14 @@ function FileComponent({assign, element, file}: InnerFileProps) {
       defaultPath: (await appDataDir()) + "/" + file.name,
     });
 
-    try {
-      await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {dir: BaseDirectory.AppData});
-      toast.success(`Successfully downloaded file ${file.name}`)
-    } catch(e) {
-      toast.error(`Failed to download file ${file.name}`)
-      console.log(e)
+    if (filePath) {
+      try {
+        await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {dir: BaseDirectory.AppData});
+        toast.success(`Successfully downloaded file ${file.name}`)
+      } catch(e) {
+        toast.error(`Failed to download file ${file.name}`)
+        console.log(e)
+      }
     }
   }
   
@@ -162,16 +136,54 @@ function FileComponent({assign, element, file}: InnerFileProps) {
   // }
   
   return (
-    <Button
-      theme="gray"
-      borderRadius={1}
-      size="$5"
-      justifyContent="flex-start"
-      icon={FileIcon}
-      onPress={saveFile}
+    <YStack
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true)
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false)
+    }}
     >
-      {file.name}
-    </Button>
+       {editor.mode == EditorMode.Draft && replace ? (
+        <Button
+          theme="white"
+          position="absolute"
+          top="$1.5"
+          right="$2"
+          zIndex="$4"
+          size="$1"
+          width={60}
+          color="muted"
+          onPress={() => assign({name: undefined, size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)}
+        >
+          replace
+        </Button>
+      ) : editor.mode == EditorMode.Publication ? (
+        <Button
+          theme="white"
+          position="absolute"
+          top="$1.5"
+          right="$2"
+          zIndex="$4"
+          size="$1"
+          width={50}
+          color="muted"
+          onPress={saveFile}
+        >
+          save
+        </Button>
+      ): null}
+      <Button
+        theme="gray"
+        borderRadius={1}
+        size="$5"
+        justifyContent="flex-start"
+        icon={FileIcon}
+        disabled
+      >
+        {file.name}
+      </Button>
+    </YStack>
   )
 }
 
