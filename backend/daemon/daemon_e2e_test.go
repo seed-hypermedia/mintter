@@ -168,7 +168,7 @@ func TestSite(t *testing.T) {
 	_, err = owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
 	require.Error(t, err)
 	// Generate a token for the editor.
-	header := metadata.New(map[string]string{string(mttnet.MttHeader): siteCfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(mttnet.TargetSiteHeader): siteCfg.Site.Hostname})
 	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().Account().String())
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})

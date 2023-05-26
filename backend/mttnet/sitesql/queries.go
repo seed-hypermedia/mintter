@@ -107,14 +107,14 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(s.Schema, "AddToken", sqlitegen.QueryKindExec,
-			qb.Insert(s.InviteTokensToken, s.InviteTokensExpirationTime,
+			qb.Insert(s.InviteTokensToken, s.InviteTokensExpireTime,
 				s.InviteTokensRole),
 		),
 
 		qb.MakeQuery(s.Schema, "GetToken", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.InviteTokensRole),
-				qb.ResultCol(s.InviteTokensExpirationTime),
+				qb.ResultCol(s.InviteTokensExpireTime),
 			), '\n',
 			"FROM", s.InviteTokens,
 			"WHERE", s.InviteTokensToken, "=", qb.VarCol(s.InviteTokensToken),
@@ -127,7 +127,7 @@ func generateQueries() error {
 
 		qb.MakeQuery(s.Schema, "RemoveExpiredTokens", sqlitegen.QueryKindExec,
 			"DELETE FROM", s.InviteTokens,
-			"WHERE", s.InviteTokensExpirationTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
+			"WHERE", s.InviteTokensExpireTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
 		),
 
 		qb.MakeQuery(s.Schema, "AddMember", sqlitegen.QueryKindSingle,

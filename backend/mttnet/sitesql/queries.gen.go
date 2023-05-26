@@ -227,13 +227,13 @@ func GetSiteDescription(conn *sqlite.Conn) (GetSiteDescriptionResult, error) {
 	return out, err
 }
 
-func AddToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpirationTime int64, inviteTokensRole int64) error {
-	const query = `INSERT INTO invite_tokens (token, expiration_time, role)
-VALUES (:inviteTokensToken, :inviteTokensExpirationTime, :inviteTokensRole)`
+func AddToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpireTime int64, inviteTokensRole int64) error {
+	const query = `INSERT INTO invite_tokens (token, expire_time, role)
+VALUES (:inviteTokensToken, :inviteTokensExpireTime, :inviteTokensRole)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":inviteTokensToken", inviteTokensToken)
-		stmt.SetInt64(":inviteTokensExpirationTime", inviteTokensExpirationTime)
+		stmt.SetInt64(":inviteTokensExpireTime", inviteTokensExpireTime)
 		stmt.SetInt64(":inviteTokensRole", inviteTokensRole)
 	}
 
@@ -250,12 +250,12 @@ VALUES (:inviteTokensToken, :inviteTokensExpirationTime, :inviteTokensRole)`
 }
 
 type GetTokenResult struct {
-	InviteTokensRole           int64
-	InviteTokensExpirationTime int64
+	InviteTokensRole       int64
+	InviteTokensExpireTime int64
 }
 
 func GetToken(conn *sqlite.Conn, inviteTokensToken string) (GetTokenResult, error) {
-	const query = `SELECT invite_tokens.role, invite_tokens.expiration_time
+	const query = `SELECT invite_tokens.role, invite_tokens.expire_time
 FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
 
 	var out GetTokenResult
@@ -270,7 +270,7 @@ FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
 		}
 
 		out.InviteTokensRole = stmt.ColumnInt64(0)
-		out.InviteTokensExpirationTime = stmt.ColumnInt64(1)
+		out.InviteTokensExpireTime = stmt.ColumnInt64(1)
 		return nil
 	}
 
@@ -302,7 +302,7 @@ func RemoveToken(conn *sqlite.Conn, inviteTokensToken string) error {
 }
 
 func RemoveExpiredTokens(conn *sqlite.Conn) error {
-	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expiration_time < strftime('%s', 'now')`
+	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expire_time < strftime('%s', 'now')`
 
 	before := func(stmt *sqlite.Stmt) {
 	}

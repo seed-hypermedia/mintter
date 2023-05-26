@@ -143,10 +143,15 @@ type Synchronizer interface {
 func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions, sync Synchronizer) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 
-	srv := &Server{Site: &Site{
-		hostname:                   siteCfg.Hostname,
-		InviteTokenExpirationDelay: expirationDelay,
-	}, Node: node, localFunctions: localFunctions, synchronizer: sync}
+	srv := &Server{
+		Site: &Site{
+			hostname:                   siteCfg.Hostname,
+			InviteTokenExpirationDelay: expirationDelay,
+		},
+		Node:           node,
+		localFunctions: localFunctions,
+		synchronizer:   sync,
+	}
 
 	if siteCfg.OwnerID != "" {
 		owner, err := core.DecodePrincipal(siteCfg.OwnerID)
@@ -157,71 +162,44 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		srv.owner = owner
 	}
 
-	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
 	go func() {
 		n, err := node.Await(ctx)
 		if err != nil {
 			return
 		}
-		conn, cancel, err := n.db.Conn(ctx)
-		if err != nil {
-			return
-		}
-		defer cancel()
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-cleaningTokensTicker.C:
-				if err := sitesql.RemoveExpiredTokens(conn); err != nil {
-					return
-				}
-			}
+		// this is how we respond to remote RPCs over libp2p.
+		p2p.RegisterP2PServer(n.grpc, srv)
+		site.RegisterWebSiteServer(n.grpc, srv)
+		if srv.owner == nil {
+			srv.owner = n.me.Account().Principal()
 		}
-	}()
-	go func() {
-		n, err := node.Await(ctx)
-		if err == nil {
-			// this is how we respond to remote RPCs over libp2p.
-			p2p.RegisterP2PServer(n.grpc, srv)
-			site.RegisterWebSiteServer(n.grpc, srv)
-			if srv.owner == nil {
-				srv.owner = n.me.Account().Principal()
-			}
-			if siteCfg.Title != "" && n.db != nil {
-				conn, cancel, err := n.db.Conn(ctx)
-				if err == nil {
-					defer cancel()
-					title, err := sitesql.GetSiteTitle(conn)
-					if err == nil && title.GlobalMetaValue == "" {
-						err = sitesql.SetSiteTitle(conn, siteCfg.Title)
-						if err != nil {
-							n.log.Warn("Could not set initial site title", zap.String("Title", siteCfg.Title), zap.Error(err))
-						}
-						err = srv.updateSiteBio(ctx, siteCfg.Title, "")
-						if err != nil {
-							n.log.Warn("Could not update site Bio according to title", zap.String("Title", siteCfg.Title), zap.Error(err))
-						}
-					}
-				}
-			}
+
+		conn, release, err := n.db.Conn(ctx)
+		if err != nil {
+			return
 		}
-		defer func() {
-			// Indicate we can now serve the already registered endpoints.
-			if n != nil {
-				close(n.registered)
-			}
-		}()
-		if n != nil && n.db != nil {
-			conn, cancel, err := n.db.Conn(ctx)
+		defer release()
+
+		if siteCfg.Title != "" {
+			title, err := sitesql.GetSiteTitle(conn)
 			if err != nil {
-				return
+				panic(err)
 			}
-			defer cancel()
 
-			_, _ = sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER))
+			if title.GlobalMetaValue != siteCfg.Title {
+				if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
+					panic(err)
+				}
+			}
 		}
+
+		if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
+			panic(err)
+		}
+
+		// Indicate we can now serve the already registered endpoints.
+		close(n.registered)
 	}()
 	return srv
 }

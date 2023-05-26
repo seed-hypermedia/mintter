@@ -196,18 +196,18 @@ const (
 
 // Table invite_tokens.
 const (
-	InviteTokens               sqlitegen.Table  = "invite_tokens"
-	InviteTokensExpirationTime sqlitegen.Column = "invite_tokens.expiration_time"
-	InviteTokensRole           sqlitegen.Column = "invite_tokens.role"
-	InviteTokensToken          sqlitegen.Column = "invite_tokens.token"
+	InviteTokens           sqlitegen.Table  = "invite_tokens"
+	InviteTokensExpireTime sqlitegen.Column = "invite_tokens.expire_time"
+	InviteTokensRole       sqlitegen.Column = "invite_tokens.role"
+	InviteTokensToken      sqlitegen.Column = "invite_tokens.token"
 )
 
 // Table invite_tokens. Plain strings.
 const (
-	T_InviteTokens               = "invite_tokens"
-	C_InviteTokensExpirationTime = "invite_tokens.expiration_time"
-	C_InviteTokensRole           = "invite_tokens.role"
-	C_InviteTokensToken          = "invite_tokens.token"
+	T_InviteTokens           = "invite_tokens"
+	C_InviteTokensExpireTime = "invite_tokens.expire_time"
+	C_InviteTokensRole       = "invite_tokens.role"
+	C_InviteTokensToken      = "invite_tokens.token"
 )
 
 // Table key_delegations.
@@ -415,7 +415,7 @@ var Schema = sqlitegen.Schema{
 		HyperLinksSourceBlob:                 {Table: HyperLinks, SQLType: "INTEGER"},
 		HyperLinksTargetBlob:                 {Table: HyperLinks, SQLType: "INTEGER"},
 		HyperLinksTargetEntity:               {Table: HyperLinks, SQLType: "INTEGER"},
-		InviteTokensExpirationTime:           {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensExpireTime:               {Table: InviteTokens, SQLType: "INTEGER"},
 		InviteTokensRole:                     {Table: InviteTokens, SQLType: "INTEGER"},
 		InviteTokensToken:                    {Table: InviteTokens, SQLType: "TEXT"},
 		KeyDelegationsBlob:                   {Table: KeyDelegations, SQLType: "INTEGER"},

@@ -4,7 +4,7 @@ package mttnet
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base32"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
@@ -22,11 +22,14 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	rpcpeer "google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -34,8 +37,8 @@ import (
 type headerKey string
 
 const (
-	// MttHeader is the headers bearing the remote site hostname to proxy calls to.
-	MttHeader = "x-mintter-site-hostname"
+	// TargetSiteHeader is the headers bearing the remote site hostname to proxy calls to.
+	TargetSiteHeader = "x-mintter-site-hostname"
 	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	SiteAccountIDCtxKey headerKey = "x-mintter-site-account-id"
@@ -52,40 +55,56 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 	if proxied {
 		retValue, ok := res.(*site.InviteToken)
 		if !ok {
-			return nil, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
+
 	if in.Role == site.Member_OWNER {
-		return nil, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
+		return nil, fmt.Errorf("cannot create owner token, please update the owner manually in site config")
 	}
-	// generate random number string for the token. Substitute for proper signed jwt
-	newToken := randStr(12)
 
-	if in.ExpireTime != nil && in.ExpireTime.AsTime().Before(time.Now()) {
-		return nil, fmt.Errorf("expiration time must be in the future")
+	if in.Role == site.Member_ROLE_UNSPECIFIED {
+		return nil, status.Errorf(codes.InvalidArgument, "token role must be specified")
 	}
-	expirationTime := time.Now().Add(srv.InviteTokenExpirationDelay)
+
+	newToken := newInviteToken()
+
+	now := time.Now()
+
+	var expireTime time.Time
 	if in.ExpireTime != nil {
-		expirationTime = in.ExpireTime.AsTime()
+		inTime := in.ExpireTime.AsTime()
+		if inTime.Before(now) {
+			return nil, fmt.Errorf("expiration time must be in the future")
+		}
+		expireTime = inTime
+	} else {
+		expireTime = now.Add(srv.InviteTokenExpirationDelay)
 	}
 
-	n, ok := srv.Node.Get()
-	if !ok {
-		return nil, fmt.Errorf("Node not ready yet")
-	}
-	conn, cancel, err := n.db.Conn(ctx)
+	n, err := srv.Node.Await(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("node is not ready yet: %w", err)
 	}
-	defer cancel()
-	if err = sitesql.AddToken(conn, newToken, expirationTime.Unix(), int64(in.Role)); err != nil {
-		return nil, fmt.Errorf("Cannot add token to db: %w", err)
+
+	conn, release, err := n.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	if err = sitesql.AddToken(conn, newToken, expireTime.Unix(), int64(in.Role)); err != nil {
+		return nil, err
+	}
+
+	if err := sitesql.RemoveExpiredTokens(conn); err != nil {
+		return nil, err
 	}
 
 	return &site.InviteToken{
 		Token:      newToken,
-		ExpireTime: &timestamppb.Timestamp{Seconds: expirationTime.Unix(), Nanos: int32(expirationTime.Nanosecond())},
+		ExpireTime: timestamppb.New(expireTime),
 	}, nil
 }
 
@@ -98,61 +117,73 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	if proxied {
 		retValue, ok := res.(*site.RedeemInviteTokenResponse)
 		if !ok {
-			return nil, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
+
 	n, ok := srv.Node.Get()
 	if !ok {
-		return nil, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("node not ready yet")
 	}
-	conn, cancel, err := n.db.Conn(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
-	}
-	defer cancel()
+
 	if acc.String() == srv.owner.String() {
-		n.log.Debug("TokenRedeemed", zap.String("owner", srv.owner.String()), zap.String("role", "OWNER"))
-		if _, err = sitesql.AddMember(conn, acc, int64(site.Member_OWNER)); err != nil {
-			return nil, fmt.Errorf("Cannot add owner member to the db %w", err)
-		}
 		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
 	}
 
-	// check if that account already a member
-	if in.Token == "" {
-		role, err := sitesql.GetMemberRole(conn, acc)
-		if err == nil {
-			return &site.RedeemInviteTokenResponse{Role: role}, nil
-		}
-		return nil, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
-	}
-
-	tokenInfo, err := sitesql.GetToken(conn, in.Token)
+	conn, release, err := n.db.Conn(ctx)
 	if err != nil {
-		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token), zap.Error(err))
-		return nil, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
+		return nil, err
+	}
+	defer release()
+
+	var resp *site.RedeemInviteTokenResponse
+	if err := sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		// check if that account already a member
+		if in.Token == "" {
+			role, err := sitesql.GetMemberRole(conn, acc)
+			if err != nil {
+				return err
+			}
+			if role == 0 {
+				return fmt.Errorf("only site owner can add a site without a token")
+			}
+
+			resp = &site.RedeemInviteTokenResponse{Role: role}
+			return nil
+		}
+
+		tokenInfo, err := sitesql.GetToken(conn, in.Token)
+		if err != nil {
+			return err
+		}
+
+		if tokenInfo.InviteTokensRole == 0 {
+			return status.Errorf(codes.NotFound, "unknown invite token")
+		}
+
+		expireTime := time.Unix(tokenInfo.InviteTokensExpireTime, 0)
+
+		if err = sitesql.RemoveToken(conn, in.Token); err != nil {
+			return fmt.Errorf("could not redeem the token %w", err)
+		}
+
+		if expireTime.Before(time.Now()) {
+			return fmt.Errorf("expired token")
+		}
+
+		if _, err = sitesql.AddMember(conn, acc, tokenInfo.InviteTokensRole); err != nil {
+			return fmt.Errorf("failed to add member: %w", err)
+		}
+
+		resp = &site.RedeemInviteTokenResponse{Role: site.Member_Role(tokenInfo.InviteTokensRole)}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	expireTime := time.Unix(tokenInfo.InviteTokensExpirationTime, 0)
-
-	if expireTime.Before(time.Now()) {
-		_ = sitesql.RemoveToken(conn, in.Token)
-		return nil, fmt.Errorf("expired token")
-	}
-
-	// redeem the token
-	if err = sitesql.RemoveToken(conn, in.Token); err != nil {
-		return nil, fmt.Errorf("Could not redeem the token %w", err)
-	}
-
-	// We upsert the new role
-	if _, err = sitesql.AddMember(conn, acc, int64(tokenInfo.InviteTokensRole)); err != nil {
-		return nil, fmt.Errorf("Cannot add owner member to the db %w", err)
-	}
-
-	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.owner.String()), zap.String("Role", "EDITOR"))
-	return &site.RedeemInviteTokenResponse{Role: site.Member_Role(tokenInfo.InviteTokensRole)}, nil
+	return resp, err
 }
 
 // GetSiteInfo Gets public-facing site information.
@@ -598,9 +629,9 @@ func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("There is no metadata provided in context")
 	}
-	token := md.Get(string(MttHeader))
+	token := md.Get(string(TargetSiteHeader))
 	if len(token) != 1 {
-		return "", fmt.Errorf("Header [%s] not found in metadata", MttHeader)
+		return "", fmt.Errorf("Header [%s] not found in metadata", TargetSiteHeader)
 	}
 	return token[0], nil
 }
@@ -620,13 +651,13 @@ func getRemoteID(ctx context.Context) (peer.ID, error) {
 	return pid, nil
 }
 
-func randStr(length int) string {
-	randomBytes := make([]byte, 32)
+func newInviteToken() string {
+	randomBytes := make([]byte, 16)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		panic(err)
 	}
-	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
+	return base64.RawURLEncoding.EncodeToString(randomBytes)
 }
 
 // Client dials a remote peer if necessary and returns the RPC client handle.
@@ -665,7 +696,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
 			return acc, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
 		}
-		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(string(MttHeader), remoteHostname))
+		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(string(TargetSiteHeader), remoteHostname))
 
 		// We will extract the caller's function name so we know which function to call in the remote site
 		// We opted to to make it generic so the proxying code is in one place only (proxyToSite).
@@ -817,7 +848,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	}
 
 	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
-	ctx = metadata.AppendToOutgoingContext(ctx, string(MttHeader), remoteHostname)
+	ctx = metadata.AppendToOutgoingContext(ctx, string(TargetSiteHeader), remoteHostname)
 	var failedPIDs []string
 	for _, device := range devices {
 		pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()

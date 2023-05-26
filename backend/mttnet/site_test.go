@@ -59,7 +59,7 @@ func TestMembers(t *testing.T) {
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
@@ -142,7 +142,7 @@ func TestCreateTokens(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
@@ -169,7 +169,7 @@ func TestCreateTokens(t *testing.T) {
 		Role:       documents.Member_ROLE_UNSPECIFIED,
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
 	})
-	require.NoError(t, err)
+	require.Error(t, err)
 
 	_, err = editorSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
@@ -206,7 +206,7 @@ func TestSiteInfo(t *testing.T) {
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})

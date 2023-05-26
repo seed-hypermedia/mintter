@@ -233,12 +233,13 @@ var migrations = []string{
 	// Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE invite_tokens (
-		-- Unique token identification. Random 8 char words
+		-- Unique token identification. Random string.
 		token TEXT PRIMARY KEY CHECK(token <> ''),
-		-- The role the token will allow ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
-		role INTEGER NOT NULL DEFAULT 2,
+		-- The member role for the user that will redeem the token.
+		-- OWNER = 1 | EDITOR = 2.
+		role INTEGER NOT NULL CHECK (role != 0),
 		-- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
-		expiration_time INTEGER NOT NULL CHECK (expiration_time > 0)
+		expire_time INTEGER NOT NULL CHECK (expire_time > 0)
 	) WITHOUT ROWID;`,
 
 	// Table that stores the role each account has inside a site. Although this table is relevant only
@@ -246,9 +247,13 @@ var migrations = []string{
 	`CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
 		account_id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
-		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
-		role INTEGER NOT NULL
+		-- The role of the site member.
+		-- OWNER = 1 | EDITOR = 2.
+		role INTEGER NOT NULL CHECK (role != 0)
 	);`,
+
+	// We currently only allow one owner per site.
+	`CREATE UNIQUE INDEX idx_site_owner ON site_members (role) WHERE role = 1;`,
 
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
