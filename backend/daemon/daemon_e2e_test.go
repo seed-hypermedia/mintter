@@ -154,6 +154,7 @@ func TestSite(t *testing.T) {
 
 	site := makeTestApp(t, "carol", siteCfg, false)
 	time.Sleep(500 * time.Millisecond)
+
 	newSite, err := owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
 	require.NoError(t, err)
 	require.Equal(t, siteCfg.Site.Hostname, newSite.Hostname)
@@ -191,7 +192,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, siteCfg.Site.Title, siteInfo.Title)
 	siteAcc, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
-	require.Equal(t, "", siteAcc.Profile.Bio)
+	require.Equal(t, "Mintter Site", siteAcc.Profile.Bio)
 	require.Equal(t, siteCfg.Site.Title, siteAcc.Profile.Alias)
 	// Change site info by the editor should fail
 	const newTitle = "new title"

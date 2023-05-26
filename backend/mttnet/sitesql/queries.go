@@ -130,8 +130,18 @@ func generateQueries() error {
 			"WHERE", s.InviteTokensExpireTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
 		),
 
-		qb.MakeQuery(s.Schema, "AddMember", sqlitegen.QueryKindSingle,
-			"INSERT OR REPLACE INTO", s.SiteMembers, qb.ListColShort(
+		qb.MakeQuery(s.Schema, "publicKeysInsertOrIgnore", sqlitegen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.PublicKeys, qb.ListColShort(
+				s.PublicKeysPrincipal,
+			), '\n',
+			"VALUES", qb.List(
+				qb.VarCol(s.PublicKeysPrincipal),
+			), '\n',
+			"RETURNING", qb.Results(s.PublicKeysID),
+		),
+
+		qb.MakeQuery(s.Schema, "InsertMember", sqlitegen.QueryKindSingle,
+			"INSERT INTO", s.SiteMembers, qb.ListColShort(
 				s.SiteMembersAccountID,
 				s.SiteMembersRole,
 			), '\n',

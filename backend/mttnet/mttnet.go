@@ -171,31 +171,38 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		// this is how we respond to remote RPCs over libp2p.
 		p2p.RegisterP2PServer(n.grpc, srv)
 		site.RegisterWebSiteServer(n.grpc, srv)
-		if srv.owner == nil {
-			srv.owner = n.me.Account().Principal()
-		}
 
-		conn, release, err := n.db.Conn(ctx)
-		if err != nil {
-			return
-		}
-		defer release()
+		if siteCfg.Hostname != "" {
+			if srv.owner == nil {
+				srv.owner = n.me.Account().Principal()
+			}
 
-		if siteCfg.Title != "" {
-			title, err := sitesql.GetSiteTitle(conn)
+			conn, release, err := n.db.Conn(ctx)
 			if err != nil {
+				return
+			}
+			defer release()
+
+			if siteCfg.Title != "" {
+				title, err := sitesql.GetSiteTitle(conn)
+				if err != nil {
+					panic(err)
+				}
+
+				if title.GlobalMetaValue != siteCfg.Title {
+					if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
+						panic(err)
+					}
+				}
+			}
+
+			if err := srv.updateSiteBio(ctx, siteCfg.Title, "Mintter Site"); err != nil {
 				panic(err)
 			}
 
-			if title.GlobalMetaValue != siteCfg.Title {
-				if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
-					panic(err)
-				}
+			if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
+				panic(err)
 			}
-		}
-
-		if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
-			panic(err)
 		}
 
 		// Indicate we can now serve the already registered endpoints.

@@ -324,6 +324,7 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 	if !ok {
 		return nil, fmt.Errorf("node not ready yet")
 	}
+
 	account, err := core.DecodePrincipal(in.AccountId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode account id principal %s: %w", in.AccountId, err)
@@ -334,6 +335,7 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 		return nil, fmt.Errorf("cannot connect to internal db: %w", err)
 	}
 	defer cancel()
+
 	role, err := sitesql.GetMemberRole(conn, account)
 	if err != nil {
 		return nil, fmt.Errorf("member not found")
@@ -847,7 +849,10 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		return nil, fmt.Errorf("found no devices for account: %s", siteAccount.String())
 	}
 
-	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
+	remoteHostname, err := getRemoteSiteFromHeader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remote site from header: %w", err)
+	}
 	ctx = metadata.AppendToOutgoingContext(ctx, string(TargetSiteHeader), remoteHostname)
 	var failedPIDs []string
 	for _, device := range devices {

@@ -21,3 +21,12 @@ func GetMemberRole(conn *sqlite.Conn, account core.Principal) (documents.Member_
 
 	return documents.Member_Role(member.SiteMembersRole), nil
 }
+
+// AddMember to the site.
+func AddMember(conn *sqlite.Conn, publicKeysPrincipal []byte, siteMembersRole int64) (InsertMemberResult, error) {
+	if err := publicKeysInsertOrIgnore(conn, publicKeysPrincipal); err != nil {
+		return InsertMemberResult{}, err
+	}
+
+	return InsertMember(conn, publicKeysPrincipal, siteMembersRole)
+}

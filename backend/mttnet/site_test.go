@@ -48,8 +48,8 @@ func TestMembers(t *testing.T) {
 
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
-
 	cfg.Site.OwnerID = owner.me.Account().String()
+
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
@@ -79,21 +79,28 @@ func TestMembers(t *testing.T) {
 	res, err = editorSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{Token: token.Token})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_EDITOR, res.Role)
+
 	_, err = editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: site.me.Account().String()})
 	require.Error(t, err)
+
 	member, err := editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: editor.me.Account().String()})
 	require.NoError(t, err)
 	require.Equal(t, editor.me.Account().String(), member.AccountId)
 	require.Equal(t, documents.Member_EDITOR, member.Role)
+
 	memberList, err := editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
 	require.NoError(t, err)
 	require.Len(t, memberList.Members, 2)
+
 	_, err = editorSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.Account().String()})
 	require.Error(t, err)
+
 	_, err = ownerSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.Account().String()})
 	require.NoError(t, err)
+
 	_, err = editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
 	require.Error(t, err)
+
 	memberList, err = ownerSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
 	require.NoError(t, err)
 	require.Len(t, memberList.Members, 1)

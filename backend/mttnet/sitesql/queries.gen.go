@@ -319,16 +319,37 @@ func RemoveExpiredTokens(conn *sqlite.Conn) error {
 	return err
 }
 
-type AddMemberResult struct {
+func publicKeysInsertOrIgnore(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+	const query = `INSERT OR IGNORE INTO public_keys (principal)
+VALUES (:publicKeysPrincipal)
+RETURNING public_keys.id`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: publicKeysInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+type InsertMemberResult struct {
 	SiteMembersRole int64
 }
 
-func AddMember(conn *sqlite.Conn, publicKeysPrincipal []byte, siteMembersRole int64) (AddMemberResult, error) {
-	const query = `INSERT OR REPLACE INTO site_members (account_id, role)
+func InsertMember(conn *sqlite.Conn, publicKeysPrincipal []byte, siteMembersRole int64) (InsertMemberResult, error) {
+	const query = `INSERT INTO site_members (account_id, role)
 VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal), :siteMembersRole)
 RETURNING site_members.role`
 
-	var out AddMemberResult
+	var out InsertMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
@@ -337,7 +358,7 @@ RETURNING site_members.role`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("AddMember: more than one result return for a single-kind query")
+			return errors.New("InsertMember: more than one result return for a single-kind query")
 		}
 
 		out.SiteMembersRole = stmt.ColumnInt64(0)
@@ -346,7 +367,7 @@ RETURNING site_members.role`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: AddMember: %w", err)
+		err = fmt.Errorf("failed query: InsertMember: %w", err)
 	}
 
 	return out, err
