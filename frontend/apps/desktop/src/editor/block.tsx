@@ -103,6 +103,7 @@ const DraftSection = ({children, element, attributes}: RenderElementProps) => {
       position={!dropdownOpen ? 'relative' : undefined}
     >
       <XStack
+        //@ts-ignore
         contentEditable={false}
         position="absolute"
         top={0}
