@@ -4,7 +4,7 @@ import {useDaemonReady} from '@app/node-status-context'
 import {appQueryClient} from '@app/query-client'
 import {ConnectError} from '@bufbuild/connect-web'
 import {PeerInfo} from '@mintter/shared'
-import {ListPeersResponse} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
+import {ConnectionStatus} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
 import {
   FetchQueryOptions,
   useQuery,
@@ -12,16 +12,39 @@ import {
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 
+type PeerListResponse = {
+  peers: {
+    accountId: string
+    deviceId: string
+    peerId: string
+    isConnected: boolean
+  }[]
+}
 export function useAllPeers(
-  options: UseQueryOptions<ListPeersResponse, ConnectError> = {},
+  options: UseQueryOptions<PeerListResponse, ConnectError> = {},
 ) {
   let isDaemonReady = useDaemonReady()
-  return useQuery<ListPeersResponse, ConnectError>({
+  return useQuery<PeerListResponse, ConnectError>({
     queryKey: [queryKeys.GET_PEERS],
-    queryFn: () =>
-      networkingClient.listPeers({
-        status: -1,
-      }),
+    queryFn: async () => {
+      const allPeers = await networkingClient.listPeers({status: -1})
+      const connected = await networkingClient.listPeers({
+        status: ConnectionStatus.CONNECTED,
+      })
+      const connectedPeerIds = new Set(
+        connected.peerList.map((peer) => peer.peerId),
+      )
+      return {
+        peers: allPeers.peerList.map((peer) => {
+          return {
+            accountId: peer.accountId,
+            deviceId: peer.deviceId,
+            peerId: peer.peerId,
+            isConnected: connectedPeerIds.has(peer.peerId),
+          }
+        }),
+      }
+    },
     enabled: isDaemonReady,
     onError: (err) => {
       appError(

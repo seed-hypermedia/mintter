@@ -35,7 +35,7 @@ export function useAllAccounts() {
 
 export function useConnectionSummary() {
   const peerInfo = useAllPeers()
-  const connectedPeers = peerInfo.data?.peerList || []
+  const connectedPeers = peerInfo.data?.peers || []
   return {
     online: connectedPeers.length > 0,
     connectedCount: connectedPeers.length,
@@ -51,7 +51,7 @@ export function useAccountWithDevices(accountId: string) {
       const deviceId = device.deviceId
       return {
         deviceId,
-        isConnected: !!peers.data?.peerList.find(
+        isConnected: !!peers.data?.peers.find(
           (peer) => peer.deviceId === deviceId,
         ),
       }
@@ -61,7 +61,9 @@ export function useAccountWithDevices(accountId: string) {
 
 export function useAccountIsConnected(account: Account) {
   const peers = useAllPeers()
-  return !!peers.data?.peerList.find((peer) => peer.accountId == account.id)
+  return !!peers.data?.peers.find(
+    (peer) => peer.accountId == account.id && peer.isConnected,
+  )
 }
 
 export function useMyAccount() {
