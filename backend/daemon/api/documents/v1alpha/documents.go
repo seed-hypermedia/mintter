@@ -481,7 +481,10 @@ func (api *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	return out, nil
 }
 
-var nanogen = must.Do2(nanoid.Standard(21))
+// Almost same as standard nanoid, but removing non-alphanumeric chars, to get a bit nicer selectable string.
+// Using a bit larger length to compensate.
+// See https://zelark.github.io/nano-id-cc for playing around with collision resistance.
+var nanogen = must.Do2(nanoid.CustomASCII("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 22))
 
 func newDocumentID() string {
 	return nanogen()
