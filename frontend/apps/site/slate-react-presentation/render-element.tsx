@@ -149,6 +149,7 @@ function CopyBlockLinkButton({id}: {id: string}) {
               navigator.clipboard.writeText(
                 `${origin}${pathname}${search}#${id}`,
               )
+              window.location.hash = id
               toast.success('Copied link to clipboard')
             }}
             icon={Copy}
