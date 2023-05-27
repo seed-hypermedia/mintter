@@ -35,14 +35,8 @@ const (
 	getPaidInvoicesRoute     = "/v2/invoices/outgoing"
 	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
-	networkType = lnTestnet
-
 	// SigninMessage is the fixed message to sign. The server must have the same message.
 	SigninMessage = "sign in into mintter lndhub"
-
-	// Types.
-	lnTestnet = iota
-	lnMainnet
 )
 
 type httpRequest struct {
@@ -431,18 +425,12 @@ func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, am
 func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 	var err error
 	var decodedInvoice *zpay32.Invoice
-	if networkType == lnMainnet {
-		decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.MainNetParams)
-	} else if networkType == lnTestnet {
+	decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.MainNetParams)
+	if err != nil {
 		decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.TestNet3Params)
-	} else {
-		return nil, fmt.Errorf("Could not decode invoice. Only testnet and mainnet are allowed")
 	}
 
-	if err != nil {
-		return nil, err
-	}
-	return decodedInvoice, nil
+	return decodedInvoice, err
 }
 
 // PayInvoice tries to pay the invoice provided. With the amount provided in satoshis. The

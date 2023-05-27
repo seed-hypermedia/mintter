@@ -123,7 +123,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let repo_path = app_handle.path_resolver().app_data_dir().unwrap();
       flags.push(format!("--repo-path={}", repo_path.as_path().display()));
-
+      flags.push(format!("--lndhub.mainnet"));
       app_handle.manage(Flags(flags));
 
       Ok(())
