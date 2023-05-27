@@ -21,47 +21,36 @@ import {SizableText, Text, TextArea} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
+import {AccessoryContainer} from './accessory-sidebar'
 
-export const Conversations = features.comments ? RealConversations : () => null
+export const ConversationsAccessory = features.comments
+  ? EnabledConversationsAccessory
+  : () => null
 
-export function RealConversations() {
+export function EnabledConversationsAccessory() {
   const context = useConversations()
 
   const {documentId, conversations, highlights} = context
   const {data} = conversations || {}
 
   return (
-    <Box
-      css={{
-        paddingBottom: 100,
-        paddingTop: '$4',
-      }}
-    >
-      <Box
-        css={{
-          padding: 0,
-          margin: 0,
-        }}
-        as="ul"
-        data-testid="conversations-list"
-      >
-        {documentId ? (
-          data?.length ? (
-            data?.map((conversation) => (
-              <ConversationItem
-                isHighlighted={highlights.includes(conversation.id)}
-                key={conversation.id}
-                conversation={conversation}
-              />
-            ))
-          ) : (
-            <SizableText size="$5" fontWeight="700">
-              No conversations yet
-            </SizableText>
-          )
-        ) : null}
-      </Box>
-    </Box>
+    <AccessoryContainer title="Conversations">
+      {documentId ? (
+        data?.length ? (
+          data?.map((conversation) => (
+            <ConversationItem
+              isHighlighted={highlights.includes(conversation.id)}
+              key={conversation.id}
+              conversation={conversation}
+            />
+          ))
+        ) : (
+          <SizableText size="$5" fontWeight="700">
+            No conversations yet
+          </SizableText>
+        )
+      ) : null}
+    </AccessoryContainer>
   )
 }
 

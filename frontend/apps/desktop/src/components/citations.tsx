@@ -5,6 +5,7 @@ import {useNavigate} from '@app/utils/navigation'
 import {pluralS} from '@mintter/shared'
 import {SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
+import {AccessoryContainer} from './accessory-sidebar'
 import {Button} from './button'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
@@ -56,7 +57,7 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   )
 }
 
-export function Citations({
+export function CitationsAccessory({
   docId,
   version,
 }: {
@@ -67,10 +68,7 @@ export function Citations({
   if (!docId) return null
   const count = citations?.links?.length || 0
   return (
-    <>
-      <SizableText size="$5" fontWeight="700">
-        {count} {pluralS(count, 'Citation')}
-      </SizableText>
+    <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
       {citations?.links.map((link) => (
         <CitationItem
           docId={docId}
@@ -78,6 +76,6 @@ export function Citations({
           link={link}
         />
       ))}
-    </>
+    </AccessoryContainer>
   )
 }

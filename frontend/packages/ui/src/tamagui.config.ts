@@ -175,9 +175,11 @@ export var config = createTamagui({
       ...tamaguiDefaults.themes.dark,
       link: '#6ebcf5',
       webLink: '#678af5',
+      mint: '#6ebcf5',
     },
     light: {
       ...tamaguiDefaults.themes.light,
+      mint: '#0d70b8',
       link: '#0d70b8',
       webLink: '#0d38b8',
     },

@@ -12,9 +12,9 @@ import {usePublication} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {ChangesList} from '@components/changes-list'
-import {Citations} from '@components/citations'
-import {Conversations} from '@components/conversations'
+import {VersionsAccessory} from '@components/changes-list'
+import {CitationsAccessory} from '@components/citations'
+import {ConversationsAccessory} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {
@@ -211,21 +211,14 @@ export default function PublicationPage() {
                       </ScrollView>
                     </YStack>
                   </Allotment.Pane>
-                  {accessoryKey && (
-                    <Allotment.Pane preferredSize="35%">
-                      <YStack height="100%">
-                        <ScrollView>
-                          {accessoryKey == 'comments' ? (
-                            <Conversations />
-                          ) : accessoryKey == 'versions' ? (
-                            <ChangesList />
-                          ) : (
-                            <Citations docId={docId} version={versionId} />
-                          )}
-                        </ScrollView>
-                      </YStack>
-                    </Allotment.Pane>
-                  )}
+                  {accessoryKey &&
+                    (accessoryKey == 'comments' ? (
+                      <ConversationsAccessory />
+                    ) : accessoryKey == 'versions' ? (
+                      <VersionsAccessory />
+                    ) : (
+                      <CitationsAccessory docId={docId} version={versionId} />
+                    ))}
                 </Allotment>
               </MainWrapper>
               <Footer>

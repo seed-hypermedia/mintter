@@ -1,16 +1,14 @@
 import {useAccount} from '@app/models/accounts'
-import {
-  SmartChangeInfo,
-  useDocChanges,
-  useSmartChanges,
-} from '@app/models/changes'
+import {SmartChangeInfo, useSmartChanges} from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
-import {ChangeInfo, formattedDate, pluralS} from '@mintter/shared'
-import {SizableText} from '@mintter/ui'
+import {formattedDate, pluralS} from '@mintter/shared'
+import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import copyTextToClipboard from 'copy-text-to-clipboard'
 import {MouseEvent} from 'react'
+import {toast} from 'react-hot-toast'
+import {AccessoryContainer} from './accessory-sidebar'
 import {Box} from './box'
-import {Button} from './button'
 
 function ChangeItem({
   change,
@@ -59,6 +57,23 @@ function ChangeItem({
         },
       }}
     >
+      <XStack
+        backgroundColor="$backgroundStrong"
+        borderRadius="$2"
+        elevation="$3"
+        position="absolute"
+        right="0"
+        top="0"
+      >
+        <Button
+          size="$2"
+          icon={Copy}
+          onPress={() => {
+            // copyTextToClipboard('')
+            toast.error('Coming soon after breaking change')
+          }}
+        />
+      </XStack>
       <Box
         css={{
           display: 'flex',
@@ -104,20 +119,11 @@ function ChangeItem({
           {summaryText}
         </Text>
       ))} */}
-
-      <SizableText
-        // the intention is to indicate which is the active version, but we are comparing a version id with a change id so this doesn't work YET but supposedly will work after *the breaking change*
-        size="$1"
-        theme={change.id === activeVersion ? 'blue' : 'gray'}
-        overflow="hidden"
-      >
-        {change.id}
-      </SizableText>
     </Button>
   )
 }
 
-export function ChangesList() {
+export function VersionsAccessory() {
   const route = useNavRoute()
   const version = route.key === 'publication' ? route.versionId : undefined
   const docId = route.key === 'publication' ? route.documentId : undefined
@@ -125,10 +131,7 @@ export function ChangesList() {
   if (!docId) return null
   const count = data?.changes?.length || 0
   return (
-    <>
-      <SizableText size="$5" fontWeight="700">
-        {count} Doc {pluralS(count, 'Version')}
-      </SizableText>
+    <AccessoryContainer title={`${count} Doc ${pluralS(count, 'Version')}`}>
       {data?.changes?.map((change) => (
         <ChangeItem
           docId={docId}
@@ -138,6 +141,6 @@ export function ChangesList() {
           active={change.version === version}
         />
       ))}
-    </>
+    </AccessoryContainer>
   )
 }
