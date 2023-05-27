@@ -21,6 +21,7 @@ import {
   Button,
   Check,
   ChevronDown,
+  Container,
   Copy,
   ExternalLink,
   Globe,
@@ -37,6 +38,7 @@ import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {CheckCheck, FileCheck, FileUp, Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
 import {getDocUrl} from '@app/utils/doc-url'
+import {MintterIcon} from '@components/mintter-icon'
 
 const forceProductionURL = true
 
@@ -219,14 +221,17 @@ function PubDropdown() {
   const {data: publication} = usePublication({
     documentId,
   })
+  const isWebPub = publication?.document?.webUrl != null
   const label = publication?.document?.webUrl
     ? hostnameStripProtocol(publication.document.webUrl)
     : 'Public'
   return (
     <Button
       size="$2"
-      theme="green"
-      icon={Globe}
+      theme={isWebPub ? 'green' : 'mint'}
+      icon={
+        isWebPub ? Globe : (props) => <MintterIcon {...props} size={'$1'} />
+      }
       disabled // todo implement this dropdown
     >
       {label}

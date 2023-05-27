@@ -533,7 +533,7 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
         >
           <YStack alignItems="flex-start" padding="$6">
             <MintterIcon
-              size="$2"
+              size="$3"
               color={theme.color8?.val || 'hsl(0, 0%, 81.0%)'}
             />
           </YStack>

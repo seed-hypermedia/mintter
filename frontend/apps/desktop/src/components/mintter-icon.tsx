@@ -1,15 +1,16 @@
 import {XStack} from '@mintter/ui'
 
-type IconSize = '$1' | '$2' | '$3'
+type IconSize = '$1' | '$2' | '$3' | '$4'
 
 let sizes = {
-  $1: 20,
-  $2: 40,
-  $3: 60,
+  $1: 12,
+  $2: 20,
+  $3: 40,
+  $4: 60,
 } as const
 
 export function MintterIcon({
-  size: propSize = '$1',
+  size: propSize = '$2',
   color,
 }: {
   size?: IconSize
