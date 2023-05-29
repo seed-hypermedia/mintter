@@ -22,9 +22,11 @@ export function useConnectedPeers(
   return useQuery<ListPeersResponse, ConnectError>({
     queryKey: [queryKeys.GET_PEERS],
     queryFn: async () => {
-      return await networkingClient.listPeers({
-        status: ConnectionStatus.CONNECTED,
+      let list = await networkingClient.listPeers({})
+      list.peers = list.peers.filter((info) => {
+        return info.connectionStatus === ConnectionStatus.CONNECTED
       })
+      return list
     },
     enabled: isDaemonReady,
     ...options,

@@ -25,6 +25,12 @@ message GetPeerInfoRequest {
 // Request to get peer's addresses.
 message ListPeersRequest {}
 
+// Various details about a list of peers.
+message ListPeersResponse {
+  // List of known Mintter peers.
+  repeated PeerInfo peers = 1;
+}
+
 // Request for connecting to a peer explicitly.
 message ConnectRequest {
   // A list of multiaddrs for the same peer ID to attempt p2p connection.
@@ -35,34 +41,19 @@ message ConnectRequest {
 // Response for conneting to a peer.
 message ConnectResponse {}
 
-// Various details about a list of peers.
-message ListPeersResponse {
-  // List of knwown peers matching status in the request.
-  repeated PeerIDs peerList = 1;
-}
-
-// All the IDs associated with a peer.
-message PeerIDs {
-  // Device cid to this peer.
-  string device_id = 1;
-
-  // Peer ID as shown in p2p addresses.
-  string peer_id = 2;
-
-  // Account ID that this peer is bound to.
-  string account_id = 3;
-}
-
 // Various details about a known peer.
 message PeerInfo {
-  // List of known multiaddrs of the request peer.
-  repeated string addrs = 1;
-
-  // Connection status of our node with a remote peer.
-  ConnectionStatus connection_status = 2;
+  // Libp2p peer ID.
+  string id = 1;
 
   // Account ID that this peer is bound to.
-  string account_id = 3;
+  string account_id = 2;
+
+  // List of known multiaddrs of the request peer.
+  repeated string addrs = 3;
+
+  // Connection status of our node with a remote peer.
+  ConnectionStatus connection_status = 4;
 }
 
 // Indicates connection status of our node with a remote peer.

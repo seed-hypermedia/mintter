@@ -692,6 +692,30 @@ func TestMultiDevice(t *testing.T) {
 	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
 }
 
+func TestNetworkingListPeers(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	pid := bob.Me.MustGet().DeviceKey().PeerID()
+	acc := bob.Me.MustGet().Account().Principal()
+	pList, err := alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
+	require.NoError(t, err)
+	require.Len(t, pList.Peers, 1)
+	require.Equal(t, acc.String(), pList.Peers[0].AccountId, "account ids must match")
+	require.Equal(t, pid.String(), pList.Peers[0].Id, "peer ids must match")
+	pList, err = alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
+	require.NoError(t, err)
+	require.Len(t, pList.Peers, 1)
+}
+
 func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }

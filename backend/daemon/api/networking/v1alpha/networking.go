@@ -56,30 +56,43 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 
 	out := &networking.ListPeersResponse{}
 
+	var dels []hypersql.KeyDelegationsListAllResult
 	if err := net.Blobs().Query(ctx, func(conn *sqlite.Conn) error {
-		list, err := hypersql.KeyDelegationsListAll(conn)
-		if err != nil {
-			return err
-		}
-
-		for _, del := range list {
-			pid, err := core.Principal(del.KeyDelegationsViewDelegate).PeerID()
-			if err != nil {
-				return err
-			}
-
-			pids := pid.String()
-
-			out.PeerList = append(out.PeerList, &networking.PeerIDs{
-				DeviceId:  pids,
-				PeerId:    pids,
-				AccountId: core.Principal(del.KeyDelegationsViewIssuer).String(),
-			})
-		}
-
-		return nil
+		dels, err = hypersql.KeyDelegationsListAll(conn)
+		return err
 	}); err != nil {
 		return nil, err
+	}
+
+	out.Peers = make([]*networking.PeerInfo, 0, len(dels))
+
+	for _, del := range dels {
+		pid, err := core.Principal(del.KeyDelegationsViewDelegate).PeerID()
+		if err != nil {
+			return nil, err
+		}
+
+		// Skip our own peer.
+		if pid == net.Libp2p().ID() {
+			continue
+		}
+
+		pids := pid.String()
+
+		addrinfo := net.Libp2p().Peerstore().PeerInfo(pid)
+		mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get device addrs: %w", err)
+		}
+
+		connectedness := net.Libp2p().Network().Connectedness(pid)
+
+		out.Peers = append(out.Peers, &networking.PeerInfo{
+			Id:               pids,
+			AccountId:        core.Principal(del.KeyDelegationsViewIssuer).String(),
+			Addrs:            ipfs.StringAddrs(mas),
+			ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
+		})
 	}
 
 	return out, nil
@@ -115,9 +128,10 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 	}
 
 	resp := &networking.PeerInfo{
+		Id:               in.DeviceId,
+		AccountId:        aid.String(),
 		Addrs:            ipfs.StringAddrs(mas),
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
-		AccountId:        aid.String(),
 	}
 
 	return resp, nil

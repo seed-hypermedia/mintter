@@ -125,6 +125,47 @@ export class ListPeersRequest extends Message<ListPeersRequest> {
 }
 
 /**
+ * Various details about a list of peers.
+ *
+ * @generated from message com.mintter.networking.v1alpha.ListPeersResponse
+ */
+export class ListPeersResponse extends Message<ListPeersResponse> {
+  /**
+   * List of known Mintter peers.
+   *
+   * @generated from field: repeated com.mintter.networking.v1alpha.PeerInfo peers = 1;
+   */
+  peers: PeerInfo[] = [];
+
+  constructor(data?: PartialMessage<ListPeersResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.networking.v1alpha.ListPeersResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "peers", kind: "message", T: PeerInfo, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPeersResponse {
+    return new ListPeersResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPeersResponse {
+    return new ListPeersResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPeersResponse {
+    return new ListPeersResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListPeersResponse | PlainMessage<ListPeersResponse> | undefined, b: ListPeersResponse | PlainMessage<ListPeersResponse> | undefined): boolean {
+    return proto3.util.equals(ListPeersResponse, a, b);
+  }
+}
+
+/**
  * Request for connecting to a peer explicitly.
  *
  * @generated from message com.mintter.networking.v1alpha.ConnectRequest
@@ -200,129 +241,38 @@ export class ConnectResponse extends Message<ConnectResponse> {
 }
 
 /**
- * Various details about a list of peers.
- *
- * @generated from message com.mintter.networking.v1alpha.ListPeersResponse
- */
-export class ListPeersResponse extends Message<ListPeersResponse> {
-  /**
-   * List of knwown peers matching status in the request.
-   *
-   * @generated from field: repeated com.mintter.networking.v1alpha.PeerIDs peerList = 1;
-   */
-  peerList: PeerIDs[] = [];
-
-  constructor(data?: PartialMessage<ListPeersResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.networking.v1alpha.ListPeersResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "peerList", kind: "message", T: PeerIDs, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListPeersResponse {
-    return new ListPeersResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListPeersResponse {
-    return new ListPeersResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListPeersResponse {
-    return new ListPeersResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: ListPeersResponse | PlainMessage<ListPeersResponse> | undefined, b: ListPeersResponse | PlainMessage<ListPeersResponse> | undefined): boolean {
-    return proto3.util.equals(ListPeersResponse, a, b);
-  }
-}
-
-/**
- * All the IDs associated with a peer.
- *
- * @generated from message com.mintter.networking.v1alpha.PeerIDs
- */
-export class PeerIDs extends Message<PeerIDs> {
-  /**
-   * Device cid to this peer.
-   *
-   * @generated from field: string device_id = 1;
-   */
-  deviceId = "";
-
-  /**
-   * Peer ID as shown in p2p addresses.
-   *
-   * @generated from field: string peer_id = 2;
-   */
-  peerId = "";
-
-  /**
-   * Account ID that this peer is bound to.
-   *
-   * @generated from field: string account_id = 3;
-   */
-  accountId = "";
-
-  constructor(data?: PartialMessage<PeerIDs>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.networking.v1alpha.PeerIDs";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "device_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "peer_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PeerIDs {
-    return new PeerIDs().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PeerIDs {
-    return new PeerIDs().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PeerIDs {
-    return new PeerIDs().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: PeerIDs | PlainMessage<PeerIDs> | undefined, b: PeerIDs | PlainMessage<PeerIDs> | undefined): boolean {
-    return proto3.util.equals(PeerIDs, a, b);
-  }
-}
-
-/**
  * Various details about a known peer.
  *
  * @generated from message com.mintter.networking.v1alpha.PeerInfo
  */
 export class PeerInfo extends Message<PeerInfo> {
   /**
+   * Libp2p peer ID.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Account ID that this peer is bound to.
+   *
+   * @generated from field: string account_id = 2;
+   */
+  accountId = "";
+
+  /**
    * List of known multiaddrs of the request peer.
    *
-   * @generated from field: repeated string addrs = 1;
+   * @generated from field: repeated string addrs = 3;
    */
   addrs: string[] = [];
 
   /**
    * Connection status of our node with a remote peer.
    *
-   * @generated from field: com.mintter.networking.v1alpha.ConnectionStatus connection_status = 2;
+   * @generated from field: com.mintter.networking.v1alpha.ConnectionStatus connection_status = 4;
    */
   connectionStatus = ConnectionStatus.NOT_CONNECTED;
-
-  /**
-   * Account ID that this peer is bound to.
-   *
-   * @generated from field: string account_id = 3;
-   */
-  accountId = "";
 
   constructor(data?: PartialMessage<PeerInfo>) {
     super();
@@ -332,9 +282,10 @@ export class PeerInfo extends Message<PeerInfo> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.mintter.networking.v1alpha.PeerInfo";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "addrs", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-    { no: 2, name: "connection_status", kind: "enum", T: proto3.getEnumType(ConnectionStatus) },
-    { no: 3, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "addrs", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "connection_status", kind: "enum", T: proto3.getEnumType(ConnectionStatus) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PeerInfo {
