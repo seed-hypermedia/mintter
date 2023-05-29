@@ -571,12 +571,14 @@ export function wrapLink(
     addLinkChange(editor, selection)
   }
 
+  console.log('huurrmm', selection)
   const newLink: LinkType = link(
     {
       url,
       data: {
         // if the selection is empty while pasting this link, we want to paste as an embed, but we haven't looked up this URL yet so we defer to the link component by passing isEmbedInsertion:true
-        isEmbedInsertion: isCollapsed(selection),
+        isEmbedInsertion:
+          isCollapsed(selection) && selection?.anchor.offset === 0,
       },
     },
     isCollapsed(selection) ? [text(url)] : [],
