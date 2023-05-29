@@ -405,10 +405,6 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID")
 	}
 
-	if in.Path == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "must specify path for web publication")
-	}
-
 	u, err := url.Parse(in.Path)
 	if err != nil || u.Path != in.Path {
 		return nil, fmt.Errorf("path %s is not a valid path", in.Path)

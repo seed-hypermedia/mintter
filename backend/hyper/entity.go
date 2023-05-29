@@ -438,7 +438,7 @@ func (bs *Storage) LoadEntityFromHeads(ctx context.Context, eid EntityID, heads 
 			return nil, err
 		}
 		if res.BlobsID == 0 || res.BlobsSize < 0 {
-			return nil, fmt.Errorf("no such head %s for entity %s", c, eid)
+			return nil, status.Errorf(codes.NotFound, "no such head %s for entity %s", c, eid)
 		}
 		localHeads = append(localHeads, res.BlobsID)
 	}
