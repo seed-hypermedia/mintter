@@ -4,14 +4,17 @@ import (
 	"context"
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
 	networking "mintter/backend/genproto/networking/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
@@ -23,37 +26,15 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	api := makeTestServer(t, alice)
 	ctx := context.Background()
 
-	did := alice.Device.CID()
-	acc := alice.AccountID
+	pid := alice.Device.PeerID()
+	acc := alice.Account.Principal()
 
 	pinfo, err := api.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		DeviceId: did.String(),
+		DeviceId: pid.String(),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, pinfo)
 	require.Equal(t, acc.String(), pinfo.AccountId, "account ids must match")
-}
-
-func TestNetworkingListPeers(t *testing.T) {
-	alice := coretest.NewTester("alice")
-	api := makeTestServer(t, alice)
-	ctx := context.Background()
-
-	did := alice.Device.CID()
-	acc := alice.AccountID
-	pid := alice.Device.ID()
-	pList, err := api.ListPeers(ctx, &networking.ListPeersRequest{Status: 0})
-	require.NoError(t, err)
-	require.Len(t, pList.PeerList, 1)
-	require.Equal(t, acc.String(), pList.PeerList[0].AccountId, "account ids must match")
-	require.Equal(t, did.String(), pList.PeerList[0].DeviceId, "device ids must match")
-	require.Equal(t, pid.String(), pList.PeerList[0].PeerId, "peer ids must match")
-	pList, err = api.ListPeers(ctx, &networking.ListPeersRequest{Status: -1})
-	require.NoError(t, err)
-	require.Len(t, pList.PeerList, 1)
-	pList, err = api.ListPeers(ctx, &networking.ListPeersRequest{Status: 1})
-	require.NoError(t, err)
-	require.Len(t, pList.PeerList, 0)
 }
 
 func makeTestServer(t *testing.T, u coretest.Tester) *Server {
@@ -68,30 +49,22 @@ func makeTestServer(t *testing.T, u coretest.Tester) *Server {
 
 func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.CancelFunc) {
 	db := makeTestSQLite(t)
-
-	hvcs := vcsdb.New(db)
-
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := vcsdb.Register(context.Background(), u.Account, u.Device, conn)
-	release()
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P
-
 	cfg.Port = 0
 	cfg.NoRelay = true
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, zap.NewNop())
+	n, err := mttnet.New(cfg, db, blobs, u.Identity, zap.NewNop())
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
-	f := future.New[*mttnet.Node]()
-	_ = mttnet.NewServer(ctx, config.Default().Site, f.ReadOnly, nil, nil)
-	require.NoError(t, f.Resolve(n))
+
 	go func() {
 		errc <- n.Start(ctx)
 	}()

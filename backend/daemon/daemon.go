@@ -22,14 +22,13 @@ import (
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
+	"mintter/backend/hyper"
 	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/syncing"
+	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -65,7 +64,7 @@ type App struct {
 	Net          *future.ReadOnly[*mttnet.Node]
 	Me           *future.ReadOnly[core.Identity]
 	Syncing      *future.ReadOnly[*syncing.Service]
-	VCSDB        *vcsdb.DB
+	Blobs        *hyper.Storage
 	Wallet       *wallet.Service
 }
 
@@ -133,26 +132,26 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		return nil, err
 	}
 
-	a.VCSDB = vcsdb.New(a.DB)
+	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", "debug"))
 
 	a.Me, err = initRegistration(ctx, a.g, a.Repo)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
+	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.DB, a.Blobs)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, a.Me, a.Net)
 	if err != nil {
 		return nil, err
 	}
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +181,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 			return err
 		}
 
-		return fileManager.Start(n.VCS().Blockstore(), n.Bitswap(), n.Provider())
+		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {
@@ -305,7 +304,8 @@ func initNetwork(
 	g *errgroup.Group,
 	me *future.ReadOnly[core.Identity],
 	cfg config.P2P,
-	vcsh *vcsdb.DB,
+	db *sqlitex.Pool,
+	blobs *hyper.Storage,
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -327,13 +327,7 @@ func initNetwork(
 			return err
 		}
 
-		// We assume registration already happened.
-		perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(id.AccountID()))
-		if err != nil {
-			return err
-		}
-
-		n, err := mttnet.New(cfg, vcsh, perma.ID, id, logging.New("mintter/network", "debug"))
+		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"))
 		if err != nil {
 			return err
 		}
@@ -365,7 +359,7 @@ func initSyncing(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	db *sqlitex.Pool,
-	vcs *vcsdb.DB,
+	blobs *hyper.Storage,
 	me *future.ReadOnly[core.Identity],
 	net *future.ReadOnly[*mttnet.Node],
 ) (*future.ReadOnly[*syncing.Service], error) {
@@ -393,7 +387,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.NoInbound)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client, cfg.NoInbound)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -422,7 +416,7 @@ func initGRPC(
 	id *future.ReadOnly[core.Identity],
 	repo *ondisk.OnDisk,
 	pool *sqlitex.Pool,
-	v *vcsdb.DB,
+	blobs *hyper.Storage,
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
@@ -436,7 +430,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opt...)
 
-	rpc = api.New(ctx, id, repo, pool, v, node, sync, wallet, cfg)
+	rpc = api.New(ctx, id, repo, pool, blobs, node, sync, wallet, cfg)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

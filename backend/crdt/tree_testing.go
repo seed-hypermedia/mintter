@@ -23,12 +23,12 @@ func NodePositionsTest(t *testing.T, want []TestPosition, it *TreeIterator) {
 			require.Equal(t, w.Node, n.id, "node id must match")
 			require.Equal(t, w.Parent, n.pos.list.id, "parent must match")
 
-			left := n.pos.PrevFilled()
+			left := n.pos.PrevAlive()
 			if left == nil && w.Left == "" {
 				return
 			}
 
-			require.Equal(t, w.Left, n.pos.PrevFilled().value.(*node).id, "left id must match")
+			require.Equal(t, w.Left, n.pos.PrevAlive().value.(*TreeNode).id, "left id must match")
 		})
 	}
 

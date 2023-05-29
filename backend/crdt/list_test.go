@@ -14,10 +14,10 @@ func TestList(t *testing.T) {
 		value string
 		posid ID
 	}{
-		{value: "b1", posid: ID{"a", 1}},
-		{value: "b2", posid: ID{"a", 2}},
-		{value: "b3", posid: ID{"a", 3}},
-		{value: "b4", posid: ID{"a", 4}},
+		{value: "b1", posid: ID{"a", 1, 0}},
+		{value: "b2", posid: ID{"a", 2, 0}},
+		{value: "b3", posid: ID{"a", 3, 0}},
+		{value: "b4", posid: ID{"a", 4, 0}},
 	}
 
 	for _, tt := range in {
@@ -42,21 +42,21 @@ func TestRGA(t *testing.T) {
 	}
 
 	abc := []atom{
-		{id: ID{Site: "a", Clock: 1}, ref: listStart, value: "A"},
-		{id: ID{Site: "a", Clock: 2}, ref: ID{Site: "a", Clock: 1}, value: "B"},
-		{id: ID{Site: "a", Clock: 3}, ref: ID{Site: "a", Clock: 2}, value: "C"},
+		{id: ID{Origin: "a", Clock: 1}, ref: listStart, value: "A"},
+		{id: ID{Origin: "a", Clock: 2}, ref: ID{Origin: "a", Clock: 1}, value: "B"},
+		{id: ID{Origin: "a", Clock: 3}, ref: ID{Origin: "a", Clock: 2}, value: "C"},
 	}
 
 	dog := []atom{
-		{id: ID{Site: "b", Clock: 3}, ref: ID{Site: "a", Clock: 1}, value: "D"},
-		{id: ID{Site: "b", Clock: 4}, ref: ID{Site: "b", Clock: 3}, value: "O"},
-		{id: ID{Site: "b", Clock: 5}, ref: ID{Site: "b", Clock: 4}, value: "G"},
+		{id: ID{Origin: "b", Clock: 3}, ref: ID{Origin: "a", Clock: 1}, value: "D"},
+		{id: ID{Origin: "b", Clock: 4}, ref: ID{Origin: "b", Clock: 3}, value: "O"},
+		{id: ID{Origin: "b", Clock: 5}, ref: ID{Origin: "b", Clock: 4}, value: "G"},
 	}
 
 	cat := []atom{
-		{id: ID{Site: "c", Clock: 4}, ref: ID{Site: "a", Clock: 1}, value: "C"},
-		{id: ID{Site: "c", Clock: 5}, ref: ID{Site: "c", Clock: 4}, value: "A"},
-		{id: ID{Site: "c", Clock: 6}, ref: ID{Site: "c", Clock: 5}, value: "T"},
+		{id: ID{Origin: "c", Clock: 4}, ref: ID{Origin: "a", Clock: 1}, value: "C"},
+		{id: ID{Origin: "c", Clock: 5}, ref: ID{Origin: "c", Clock: 4}, value: "A"},
+		{id: ID{Origin: "c", Clock: 6}, ref: ID{Origin: "c", Clock: 5}, value: "T"},
 	}
 
 	tests := [...][]atom{

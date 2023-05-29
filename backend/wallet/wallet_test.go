@@ -6,14 +6,15 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/hyper"
 	"mintter/backend/lndhub"
 	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/wallet/walletsql"
 	"path/filepath"
 	"testing"
@@ -60,7 +61,7 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	ctx := context.Background()
 
 	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 5*time.Second, 1*time.Second)
-	cid := bob.net.MustGet().ID().AccountID()
+	cid := bob.net.MustGet().ID().Account().CID()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
@@ -99,7 +100,7 @@ func TestRequestP2PInvoice(t *testing.T) {
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 3*time.Second, 1*time.Second)
-	cid := bob.net.MustGet().ID().AccountID()
+	cid := bob.net.MustGet().ID().Account().CID()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
@@ -152,19 +153,15 @@ func makeTestService(t *testing.T, name string) *Service {
 }
 
 func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
-	hvcs := vcsdb.New(db)
-
-	conn, release, err := hvcs.Conn(context.Background())
-	require.NoError(t, err)
-	reg, err := vcsdb.Register(context.Background(), u.Account, u.Device, conn)
-	release()
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
 
 	n, err := mttnet.New(config.P2P{
 		NoRelay:        true,
 		BootstrapPeers: nil,
 		NoMetrics:      true,
-	}, hvcs, reg, u.Identity, zap.NewNop())
+	}, db, blobs, u.Identity, zap.NewNop())
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

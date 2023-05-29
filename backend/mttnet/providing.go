@@ -3,6 +3,8 @@ package mttnet
 import (
 	"context"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 
@@ -20,9 +22,9 @@ func makeProvidingStrategy(db *sqlitex.Pool) ipfs.ReprovidingStrategy {
 	log := logging.New("mintter/reprovider", "debug")
 	const q = `
 SELECT
-	` + sqliteschema.C_PublicBlobsCodec + `,
-	` + sqliteschema.C_PublicBlobsMultihash + `
-FROM ` + sqliteschema.T_PublicBlobs + `;`
+	` + sqliteschema.C_PublicBlobsViewCodec + `,
+	` + sqliteschema.C_PublicBlobsViewMultihash + `
+FROM ` + sqliteschema.T_PublicBlobsView + `;`
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer
@@ -51,6 +53,23 @@ FROM ` + sqliteschema.T_PublicBlobs + `;`
 				return
 			}
 
+			// We want to provide all the entity IDs, so we convert them into raw CIDs,
+			// similar to how libp2p discovery service is doing.
+
+			entities, err := hypersql.EntitiesListByPrefix(conn, "*")
+			if err != nil {
+				log.Error("Failed to list entities", zap.Error(err))
+				return
+			}
+
+			for _, e := range entities {
+				c, err := hyper.EntityID(e.HyperEntitiesEID).CID()
+				if err != nil {
+					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HyperEntitiesEID))
+					return
+				}
+				ch <- c
+			}
 		}()
 
 		return ch, nil

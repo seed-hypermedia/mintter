@@ -47,14 +47,14 @@ func initAndTest() error {
 
 	//realaysInfo, err := provideBootstrapRelays()
 	//if err != nil {
-	//	fmt.Errorf("Couldn't hardcode relays: %v", err)
+	//	fmt.Errorf("couldn't hardcode relays: %v", err)
 	//}
 	h1, err := libp2p.New(libp2p.EnableNATService(), libp2p.EnableHolePunching(),
 		libp2p.EnableRelay(), libp2p.ForceReachabilityPrivate(),
 		libp2p.EnableAutoRelay(autorelay.WithStaticRelays([]peer.AddrInfo{h2info})),
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to create h1: %w", err)
+		return fmt.Errorf("failed to create h1: %w", err)
 	}
 	defer h1.Close()
 
@@ -66,7 +66,7 @@ func initAndTest() error {
 	)
 	//h3.Peerstore().AddAddr()
 	if err != nil {
-		return fmt.Errorf("Failed to create h3: %w", err)
+		return fmt.Errorf("failed to create h3: %w", err)
 	}
 	defer h3.Close()
 
@@ -78,10 +78,10 @@ func initAndTest() error {
 	}
 	// Connect both h1 and h3 to the relay, but not to each other
 	if err := h1.Connect(context.Background(), h2info); err != nil {
-		return fmt.Errorf("Failed to connect h1 and h2: %w", err)
+		return fmt.Errorf("failed to connect h1 and h2: %w", err)
 	}
 	if err := h3.Connect(context.Background(), h2info); err != nil {
-		return fmt.Errorf("Failed to connect h3 and h2: %w", err)
+		return fmt.Errorf("failed to connect h3 and h2: %w", err)
 	}
 
 	h3.SetStreamHandler("/cats", func(s network.Stream) {
@@ -95,7 +95,7 @@ func initAndTest() error {
 	// Now, to test things, let's set up a protocol handler on h3
 	_, err = h1.NewStream(context.Background(), h3.ID(), "/cats")
 	if err == nil {
-		return fmt.Errorf("Didn't actually expect to get a stream here. What happened?")
+		return fmt.Errorf("didn't actually expect to get a stream here. What happened?")
 	}
 
 	// Since we just tried and failed to dial, the dialer system will, by default

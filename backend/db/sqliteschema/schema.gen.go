@@ -6,194 +6,54 @@ import (
 	"mintter/backend/db/sqlitegen"
 )
 
-// Table account_devices.
+// Table blobs.
 const (
-	AccountDevices             sqlitegen.Table  = "account_devices"
-	AccountDevicesAccountID    sqlitegen.Column = "account_devices.account_id"
-	AccountDevicesDelegationID sqlitegen.Column = "account_devices.delegation_id"
-	AccountDevicesDeviceID     sqlitegen.Column = "account_devices.device_id"
+	Blobs           sqlitegen.Table  = "blobs"
+	BlobsCodec      sqlitegen.Column = "blobs.codec"
+	BlobsData       sqlitegen.Column = "blobs.data"
+	BlobsID         sqlitegen.Column = "blobs.id"
+	BlobsInsertTime sqlitegen.Column = "blobs.insert_time"
+	BlobsMultihash  sqlitegen.Column = "blobs.multihash"
+	BlobsSize       sqlitegen.Column = "blobs.size"
 )
 
-// Table account_devices. Plain strings.
+// Table blobs. Plain strings.
 const (
-	T_AccountDevices             = "account_devices"
-	C_AccountDevicesAccountID    = "account_devices.account_id"
-	C_AccountDevicesDelegationID = "account_devices.delegation_id"
-	C_AccountDevicesDeviceID     = "account_devices.device_id"
+	T_Blobs           = "blobs"
+	C_BlobsCodec      = "blobs.codec"
+	C_BlobsData       = "blobs.data"
+	C_BlobsID         = "blobs.id"
+	C_BlobsInsertTime = "blobs.insert_time"
+	C_BlobsMultihash  = "blobs.multihash"
+	C_BlobsSize       = "blobs.size"
 )
 
-// Table accounts.
+// Table content_links_view.
 const (
-	Accounts           sqlitegen.Table  = "accounts"
-	AccountsCreateTime sqlitegen.Column = "accounts.create_time"
-	AccountsID         sqlitegen.Column = "accounts.id"
-	AccountsMultihash  sqlitegen.Column = "accounts.multihash"
-	AccountsPublicKey  sqlitegen.Column = "accounts.public_key"
+	ContentLinksView                    sqlitegen.Table  = "content_links_view"
+	ContentLinksViewData                sqlitegen.Column = "content_links_view.data"
+	ContentLinksViewRel                 sqlitegen.Column = "content_links_view.rel"
+	ContentLinksViewSourceBlob          sqlitegen.Column = "content_links_view.source_blob"
+	ContentLinksViewSourceBlobCodec     sqlitegen.Column = "content_links_view.source_blob_codec"
+	ContentLinksViewSourceBlobMultihash sqlitegen.Column = "content_links_view.source_blob_multihash"
+	ContentLinksViewSourceEID           sqlitegen.Column = "content_links_view.source_eid"
+	ContentLinksViewSourceEntity        sqlitegen.Column = "content_links_view.source_entity"
+	ContentLinksViewTargetEID           sqlitegen.Column = "content_links_view.target_eid"
+	ContentLinksViewTargetEntity        sqlitegen.Column = "content_links_view.target_entity"
 )
 
-// Table accounts. Plain strings.
+// Table content_links_view. Plain strings.
 const (
-	T_Accounts           = "accounts"
-	C_AccountsCreateTime = "accounts.create_time"
-	C_AccountsID         = "accounts.id"
-	C_AccountsMultihash  = "accounts.multihash"
-	C_AccountsPublicKey  = "accounts.public_key"
-)
-
-// Table change_deps.
-const (
-	ChangeDeps       sqlitegen.Table  = "change_deps"
-	ChangeDepsChild  sqlitegen.Column = "change_deps.child"
-	ChangeDepsParent sqlitegen.Column = "change_deps.parent"
-)
-
-// Table change_deps. Plain strings.
-const (
-	T_ChangeDeps       = "change_deps"
-	C_ChangeDepsChild  = "change_deps.child"
-	C_ChangeDepsParent = "change_deps.parent"
-)
-
-// Table change_heads.
-const (
-	ChangeHeads            sqlitegen.Table  = "change_heads"
-	ChangeHeadsAccountID   sqlitegen.Column = "change_heads.account_id"
-	ChangeHeadsDeviceID    sqlitegen.Column = "change_heads.device_id"
-	ChangeHeadsID          sqlitegen.Column = "change_heads.id"
-	ChangeHeadsKind        sqlitegen.Column = "change_heads.kind"
-	ChangeHeadsPermanodeID sqlitegen.Column = "change_heads.permanode_id"
-	ChangeHeadsStartTime   sqlitegen.Column = "change_heads.start_time"
-)
-
-// Table change_heads. Plain strings.
-const (
-	T_ChangeHeads            = "change_heads"
-	C_ChangeHeadsAccountID   = "change_heads.account_id"
-	C_ChangeHeadsDeviceID    = "change_heads.device_id"
-	C_ChangeHeadsID          = "change_heads.id"
-	C_ChangeHeadsKind        = "change_heads.kind"
-	C_ChangeHeadsPermanodeID = "change_heads.permanode_id"
-	C_ChangeHeadsStartTime   = "change_heads.start_time"
-)
-
-// Table changes.
-const (
-	Changes            sqlitegen.Table  = "changes"
-	ChangesAccountID   sqlitegen.Column = "changes.account_id"
-	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
-	ChangesID          sqlitegen.Column = "changes.id"
-	ChangesKind        sqlitegen.Column = "changes.kind"
-	ChangesPermanodeID sqlitegen.Column = "changes.permanode_id"
-	ChangesStartTime   sqlitegen.Column = "changes.start_time"
-)
-
-// Table changes. Plain strings.
-const (
-	T_Changes            = "changes"
-	C_ChangesAccountID   = "changes.account_id"
-	C_ChangesDeviceID    = "changes.device_id"
-	C_ChangesID          = "changes.id"
-	C_ChangesKind        = "changes.kind"
-	C_ChangesPermanodeID = "changes.permanode_id"
-	C_ChangesStartTime   = "changes.start_time"
-)
-
-// Table changes_deref.
-const (
-	ChangesDeref            sqlitegen.Table  = "changes_deref"
-	ChangesDerefChangeCodec sqlitegen.Column = "changes_deref.change_codec"
-	ChangesDerefChangeHash  sqlitegen.Column = "changes_deref.change_hash"
-	ChangesDerefChangeID    sqlitegen.Column = "changes_deref.change_id"
-	ChangesDerefIsDraft     sqlitegen.Column = "changes_deref.is_draft"
-	ChangesDerefObjectCodec sqlitegen.Column = "changes_deref.object_codec"
-	ChangesDerefObjectHash  sqlitegen.Column = "changes_deref.object_hash"
-	ChangesDerefPermanodeID sqlitegen.Column = "changes_deref.permanode_id"
-)
-
-// Table changes_deref. Plain strings.
-const (
-	T_ChangesDeref            = "changes_deref"
-	C_ChangesDerefChangeCodec = "changes_deref.change_codec"
-	C_ChangesDerefChangeHash  = "changes_deref.change_hash"
-	C_ChangesDerefChangeID    = "changes_deref.change_id"
-	C_ChangesDerefIsDraft     = "changes_deref.is_draft"
-	C_ChangesDerefObjectCodec = "changes_deref.object_codec"
-	C_ChangesDerefObjectHash  = "changes_deref.object_hash"
-	C_ChangesDerefPermanodeID = "changes_deref.permanode_id"
-)
-
-// Table content_links.
-const (
-	ContentLinks                 sqlitegen.Table  = "content_links"
-	ContentLinksSourceBlockID    sqlitegen.Column = "content_links.source_block_id"
-	ContentLinksSourceChangeID   sqlitegen.Column = "content_links.source_change_id"
-	ContentLinksSourceDocumentID sqlitegen.Column = "content_links.source_document_id"
-	ContentLinksSourceVersion    sqlitegen.Column = "content_links.source_version"
-	ContentLinksTargetBlockID    sqlitegen.Column = "content_links.target_block_id"
-	ContentLinksTargetDocumentID sqlitegen.Column = "content_links.target_document_id"
-	ContentLinksTargetVersion    sqlitegen.Column = "content_links.target_version"
-)
-
-// Table content_links. Plain strings.
-const (
-	T_ContentLinks                 = "content_links"
-	C_ContentLinksSourceBlockID    = "content_links.source_block_id"
-	C_ContentLinksSourceChangeID   = "content_links.source_change_id"
-	C_ContentLinksSourceDocumentID = "content_links.source_document_id"
-	C_ContentLinksSourceVersion    = "content_links.source_version"
-	C_ContentLinksTargetBlockID    = "content_links.target_block_id"
-	C_ContentLinksTargetDocumentID = "content_links.target_document_id"
-	C_ContentLinksTargetVersion    = "content_links.target_version"
-)
-
-// Table device_proofs.
-const (
-	DeviceProofs                sqlitegen.Table  = "device_proofs"
-	DeviceProofsAccountHash     sqlitegen.Column = "device_proofs.account_hash"
-	DeviceProofsDelegationCodec sqlitegen.Column = "device_proofs.delegation_codec"
-	DeviceProofsDelegationHash  sqlitegen.Column = "device_proofs.delegation_hash"
-	DeviceProofsDeviceHash      sqlitegen.Column = "device_proofs.device_hash"
-)
-
-// Table device_proofs. Plain strings.
-const (
-	T_DeviceProofs                = "device_proofs"
-	C_DeviceProofsAccountHash     = "device_proofs.account_hash"
-	C_DeviceProofsDelegationCodec = "device_proofs.delegation_codec"
-	C_DeviceProofsDelegationHash  = "device_proofs.delegation_hash"
-	C_DeviceProofsDeviceHash      = "device_proofs.device_hash"
-)
-
-// Table devices.
-const (
-	Devices           sqlitegen.Table  = "devices"
-	DevicesCreateTime sqlitegen.Column = "devices.create_time"
-	DevicesID         sqlitegen.Column = "devices.id"
-	DevicesMultihash  sqlitegen.Column = "devices.multihash"
-	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
-)
-
-// Table devices. Plain strings.
-const (
-	T_Devices           = "devices"
-	C_DevicesCreateTime = "devices.create_time"
-	C_DevicesID         = "devices.id"
-	C_DevicesMultihash  = "devices.multihash"
-	C_DevicesPublicKey  = "devices.public_key"
-)
-
-// Table draft_changes.
-const (
-	DraftChanges            sqlitegen.Table  = "draft_changes"
-	DraftChangesID          sqlitegen.Column = "draft_changes.id"
-	DraftChangesPermanodeID sqlitegen.Column = "draft_changes.permanode_id"
-)
-
-// Table draft_changes. Plain strings.
-const (
-	T_DraftChanges            = "draft_changes"
-	C_DraftChangesID          = "draft_changes.id"
-	C_DraftChangesPermanodeID = "draft_changes.permanode_id"
+	T_ContentLinksView                    = "content_links_view"
+	C_ContentLinksViewData                = "content_links_view.data"
+	C_ContentLinksViewRel                 = "content_links_view.rel"
+	C_ContentLinksViewSourceBlob          = "content_links_view.source_blob"
+	C_ContentLinksViewSourceBlobCodec     = "content_links_view.source_blob_codec"
+	C_ContentLinksViewSourceBlobMultihash = "content_links_view.source_blob_multihash"
+	C_ContentLinksViewSourceEID           = "content_links_view.source_eid"
+	C_ContentLinksViewSourceEntity        = "content_links_view.source_entity"
+	C_ContentLinksViewTargetEID           = "content_links_view.target_eid"
+	C_ContentLinksViewTargetEntity        = "content_links_view.target_entity"
 )
 
 // Table global_meta.
@@ -210,90 +70,214 @@ const (
 	C_GlobalMetaValue = "global_meta.value"
 )
 
+// Table hyper_change_deps.
+const (
+	HyperChangeDeps       sqlitegen.Table  = "hyper_change_deps"
+	HyperChangeDepsChild  sqlitegen.Column = "hyper_change_deps.child"
+	HyperChangeDepsParent sqlitegen.Column = "hyper_change_deps.parent"
+)
+
+// Table hyper_change_deps. Plain strings.
+const (
+	T_HyperChangeDeps       = "hyper_change_deps"
+	C_HyperChangeDepsChild  = "hyper_change_deps.child"
+	C_HyperChangeDepsParent = "hyper_change_deps.parent"
+)
+
+// Table hyper_changes.
+const (
+	HyperChanges        sqlitegen.Table  = "hyper_changes"
+	HyperChangesBlob    sqlitegen.Column = "hyper_changes.blob"
+	HyperChangesEntity  sqlitegen.Column = "hyper_changes.entity"
+	HyperChangesHlcTime sqlitegen.Column = "hyper_changes.hlc_time"
+)
+
+// Table hyper_changes. Plain strings.
+const (
+	T_HyperChanges        = "hyper_changes"
+	C_HyperChangesBlob    = "hyper_changes.blob"
+	C_HyperChangesEntity  = "hyper_changes.entity"
+	C_HyperChangesHlcTime = "hyper_changes.hlc_time"
+)
+
+// Table hyper_changes_view.
+const (
+	HyperChangesView          sqlitegen.Table  = "hyper_changes_view"
+	HyperChangesViewBlobID    sqlitegen.Column = "hyper_changes_view.blob_id"
+	HyperChangesViewCodec     sqlitegen.Column = "hyper_changes_view.codec"
+	HyperChangesViewData      sqlitegen.Column = "hyper_changes_view.data"
+	HyperChangesViewEntity    sqlitegen.Column = "hyper_changes_view.entity"
+	HyperChangesViewEntityID  sqlitegen.Column = "hyper_changes_view.entity_id"
+	HyperChangesViewHlcTime   sqlitegen.Column = "hyper_changes_view.hlc_time"
+	HyperChangesViewMultihash sqlitegen.Column = "hyper_changes_view.multihash"
+	HyperChangesViewSize      sqlitegen.Column = "hyper_changes_view.size"
+)
+
+// Table hyper_changes_view. Plain strings.
+const (
+	T_HyperChangesView          = "hyper_changes_view"
+	C_HyperChangesViewBlobID    = "hyper_changes_view.blob_id"
+	C_HyperChangesViewCodec     = "hyper_changes_view.codec"
+	C_HyperChangesViewData      = "hyper_changes_view.data"
+	C_HyperChangesViewEntity    = "hyper_changes_view.entity"
+	C_HyperChangesViewEntityID  = "hyper_changes_view.entity_id"
+	C_HyperChangesViewHlcTime   = "hyper_changes_view.hlc_time"
+	C_HyperChangesViewMultihash = "hyper_changes_view.multihash"
+	C_HyperChangesViewSize      = "hyper_changes_view.size"
+)
+
+// Table hyper_drafts.
+const (
+	HyperDrafts       sqlitegen.Table  = "hyper_drafts"
+	HyperDraftsBlob   sqlitegen.Column = "hyper_drafts.blob"
+	HyperDraftsEntity sqlitegen.Column = "hyper_drafts.entity"
+)
+
+// Table hyper_drafts. Plain strings.
+const (
+	T_HyperDrafts       = "hyper_drafts"
+	C_HyperDraftsBlob   = "hyper_drafts.blob"
+	C_HyperDraftsEntity = "hyper_drafts.entity"
+)
+
+// Table hyper_drafts_view.
+const (
+	HyperDraftsView          sqlitegen.Table  = "hyper_drafts_view"
+	HyperDraftsViewBlobID    sqlitegen.Column = "hyper_drafts_view.blob_id"
+	HyperDraftsViewCodec     sqlitegen.Column = "hyper_drafts_view.codec"
+	HyperDraftsViewEntity    sqlitegen.Column = "hyper_drafts_view.entity"
+	HyperDraftsViewEntityID  sqlitegen.Column = "hyper_drafts_view.entity_id"
+	HyperDraftsViewMultihash sqlitegen.Column = "hyper_drafts_view.multihash"
+)
+
+// Table hyper_drafts_view. Plain strings.
+const (
+	T_HyperDraftsView          = "hyper_drafts_view"
+	C_HyperDraftsViewBlobID    = "hyper_drafts_view.blob_id"
+	C_HyperDraftsViewCodec     = "hyper_drafts_view.codec"
+	C_HyperDraftsViewEntity    = "hyper_drafts_view.entity"
+	C_HyperDraftsViewEntityID  = "hyper_drafts_view.entity_id"
+	C_HyperDraftsViewMultihash = "hyper_drafts_view.multihash"
+)
+
+// Table hyper_entities.
+const (
+	HyperEntities    sqlitegen.Table  = "hyper_entities"
+	HyperEntitiesEID sqlitegen.Column = "hyper_entities.eid"
+	HyperEntitiesID  sqlitegen.Column = "hyper_entities.id"
+)
+
+// Table hyper_entities. Plain strings.
+const (
+	T_HyperEntities    = "hyper_entities"
+	C_HyperEntitiesEID = "hyper_entities.eid"
+	C_HyperEntitiesID  = "hyper_entities.id"
+)
+
+// Table hyper_links.
+const (
+	HyperLinks             sqlitegen.Table  = "hyper_links"
+	HyperLinksData         sqlitegen.Column = "hyper_links.data"
+	HyperLinksRel          sqlitegen.Column = "hyper_links.rel"
+	HyperLinksSourceBlob   sqlitegen.Column = "hyper_links.source_blob"
+	HyperLinksTargetBlob   sqlitegen.Column = "hyper_links.target_blob"
+	HyperLinksTargetEntity sqlitegen.Column = "hyper_links.target_entity"
+)
+
+// Table hyper_links. Plain strings.
+const (
+	T_HyperLinks             = "hyper_links"
+	C_HyperLinksData         = "hyper_links.data"
+	C_HyperLinksRel          = "hyper_links.rel"
+	C_HyperLinksSourceBlob   = "hyper_links.source_blob"
+	C_HyperLinksTargetBlob   = "hyper_links.target_blob"
+	C_HyperLinksTargetEntity = "hyper_links.target_entity"
+)
+
 // Table invite_tokens.
 const (
-	InviteTokens               sqlitegen.Table  = "invite_tokens"
-	InviteTokensExpirationTime sqlitegen.Column = "invite_tokens.expiration_time"
-	InviteTokensRole           sqlitegen.Column = "invite_tokens.role"
-	InviteTokensToken          sqlitegen.Column = "invite_tokens.token"
+	InviteTokens           sqlitegen.Table  = "invite_tokens"
+	InviteTokensExpireTime sqlitegen.Column = "invite_tokens.expire_time"
+	InviteTokensRole       sqlitegen.Column = "invite_tokens.role"
+	InviteTokensToken      sqlitegen.Column = "invite_tokens.token"
 )
 
 // Table invite_tokens. Plain strings.
 const (
-	T_InviteTokens               = "invite_tokens"
-	C_InviteTokensExpirationTime = "invite_tokens.expiration_time"
-	C_InviteTokensRole           = "invite_tokens.role"
-	C_InviteTokensToken          = "invite_tokens.token"
+	T_InviteTokens           = "invite_tokens"
+	C_InviteTokensExpireTime = "invite_tokens.expire_time"
+	C_InviteTokensRole       = "invite_tokens.role"
+	C_InviteTokensToken      = "invite_tokens.token"
 )
 
-// Table ipfs_blocks.
+// Table key_delegations.
 const (
-	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
-	IPFSBlocksCodec      sqlitegen.Column = "ipfs_blocks.codec"
-	IPFSBlocksData       sqlitegen.Column = "ipfs_blocks.data"
-	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
-	IPFSBlocksInsertTime sqlitegen.Column = "ipfs_blocks.insert_time"
-	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
-	IPFSBlocksSize       sqlitegen.Column = "ipfs_blocks.size"
+	KeyDelegations          sqlitegen.Table  = "key_delegations"
+	KeyDelegationsBlob      sqlitegen.Column = "key_delegations.blob"
+	KeyDelegationsDelegate  sqlitegen.Column = "key_delegations.delegate"
+	KeyDelegationsIssueTime sqlitegen.Column = "key_delegations.issue_time"
+	KeyDelegationsIssuer    sqlitegen.Column = "key_delegations.issuer"
 )
 
-// Table ipfs_blocks. Plain strings.
+// Table key_delegations. Plain strings.
 const (
-	T_IPFSBlocks           = "ipfs_blocks"
-	C_IPFSBlocksCodec      = "ipfs_blocks.codec"
-	C_IPFSBlocksData       = "ipfs_blocks.data"
-	C_IPFSBlocksID         = "ipfs_blocks.id"
-	C_IPFSBlocksInsertTime = "ipfs_blocks.insert_time"
-	C_IPFSBlocksMultihash  = "ipfs_blocks.multihash"
-	C_IPFSBlocksSize       = "ipfs_blocks.size"
+	T_KeyDelegations          = "key_delegations"
+	C_KeyDelegationsBlob      = "key_delegations.blob"
+	C_KeyDelegationsDelegate  = "key_delegations.delegate"
+	C_KeyDelegationsIssueTime = "key_delegations.issue_time"
+	C_KeyDelegationsIssuer    = "key_delegations.issuer"
 )
 
-// Table ipld_links.
+// Table key_delegations_view.
 const (
-	IPLDLinks       sqlitegen.Table  = "ipld_links"
-	IPLDLinksChild  sqlitegen.Column = "ipld_links.child"
-	IPLDLinksParent sqlitegen.Column = "ipld_links.parent"
-	IPLDLinksPath   sqlitegen.Column = "ipld_links.path"
+	KeyDelegationsView              sqlitegen.Table  = "key_delegations_view"
+	KeyDelegationsViewBlob          sqlitegen.Column = "key_delegations_view.blob"
+	KeyDelegationsViewBlobCodec     sqlitegen.Column = "key_delegations_view.blob_codec"
+	KeyDelegationsViewBlobMultihash sqlitegen.Column = "key_delegations_view.blob_multihash"
+	KeyDelegationsViewDelegate      sqlitegen.Column = "key_delegations_view.delegate"
+	KeyDelegationsViewIssueTime     sqlitegen.Column = "key_delegations_view.issue_time"
+	KeyDelegationsViewIssuer        sqlitegen.Column = "key_delegations_view.issuer"
 )
 
-// Table ipld_links. Plain strings.
+// Table key_delegations_view. Plain strings.
 const (
-	T_IPLDLinks       = "ipld_links"
-	C_IPLDLinksChild  = "ipld_links.child"
-	C_IPLDLinksParent = "ipld_links.parent"
-	C_IPLDLinksPath   = "ipld_links.path"
+	T_KeyDelegationsView              = "key_delegations_view"
+	C_KeyDelegationsViewBlob          = "key_delegations_view.blob"
+	C_KeyDelegationsViewBlobCodec     = "key_delegations_view.blob_codec"
+	C_KeyDelegationsViewBlobMultihash = "key_delegations_view.blob_multihash"
+	C_KeyDelegationsViewDelegate      = "key_delegations_view.delegate"
+	C_KeyDelegationsViewIssueTime     = "key_delegations_view.issue_time"
+	C_KeyDelegationsViewIssuer        = "key_delegations_view.issuer"
 )
 
-// Table permanodes.
+// Table public_blobs_view.
 const (
-	Permanodes           sqlitegen.Table  = "permanodes"
-	PermanodesAccountID  sqlitegen.Column = "permanodes.account_id"
-	PermanodesCreateTime sqlitegen.Column = "permanodes.create_time"
-	PermanodesID         sqlitegen.Column = "permanodes.id"
-	PermanodesType       sqlitegen.Column = "permanodes.type"
+	PublicBlobsView          sqlitegen.Table  = "public_blobs_view"
+	PublicBlobsViewCodec     sqlitegen.Column = "public_blobs_view.codec"
+	PublicBlobsViewID        sqlitegen.Column = "public_blobs_view.id"
+	PublicBlobsViewMultihash sqlitegen.Column = "public_blobs_view.multihash"
 )
 
-// Table permanodes. Plain strings.
+// Table public_blobs_view. Plain strings.
 const (
-	T_Permanodes           = "permanodes"
-	C_PermanodesAccountID  = "permanodes.account_id"
-	C_PermanodesCreateTime = "permanodes.create_time"
-	C_PermanodesID         = "permanodes.id"
-	C_PermanodesType       = "permanodes.type"
+	T_PublicBlobsView          = "public_blobs_view"
+	C_PublicBlobsViewCodec     = "public_blobs_view.codec"
+	C_PublicBlobsViewID        = "public_blobs_view.id"
+	C_PublicBlobsViewMultihash = "public_blobs_view.multihash"
 )
 
-// Table public_blobs.
+// Table public_keys.
 const (
-	PublicBlobs          sqlitegen.Table  = "public_blobs"
-	PublicBlobsCodec     sqlitegen.Column = "public_blobs.codec"
-	PublicBlobsMultihash sqlitegen.Column = "public_blobs.multihash"
+	PublicKeys          sqlitegen.Table  = "public_keys"
+	PublicKeysID        sqlitegen.Column = "public_keys.id"
+	PublicKeysPrincipal sqlitegen.Column = "public_keys.principal"
 )
 
-// Table public_blobs. Plain strings.
+// Table public_keys. Plain strings.
 const (
-	T_PublicBlobs          = "public_blobs"
-	C_PublicBlobsCodec     = "public_blobs.codec"
-	C_PublicBlobsMultihash = "public_blobs.multihash"
+	T_PublicKeys          = "public_keys"
+	C_PublicKeysID        = "public_keys.id"
+	C_PublicKeysPrincipal = "public_keys.principal"
 )
 
 // Table site_members.
@@ -368,108 +352,105 @@ const (
 	C_WalletsType     = "wallets.type"
 )
 
-// Table web_publication_records.
+// Table web_publications.
 const (
-	WebPublicationRecords                sqlitegen.Table  = "web_publication_records"
-	WebPublicationRecordsBlockID         sqlitegen.Column = "web_publication_records.block_id"
-	WebPublicationRecordsDocumentVersion sqlitegen.Column = "web_publication_records.document_version"
-	WebPublicationRecordsPath            sqlitegen.Column = "web_publication_records.path"
+	WebPublications         sqlitegen.Table  = "web_publications"
+	WebPublicationsDocument sqlitegen.Column = "web_publications.document"
+	WebPublicationsPath     sqlitegen.Column = "web_publications.path"
+	WebPublicationsVersion  sqlitegen.Column = "web_publications.version"
 )
 
-// Table web_publication_records. Plain strings.
+// Table web_publications. Plain strings.
 const (
-	T_WebPublicationRecords                = "web_publication_records"
-	C_WebPublicationRecordsBlockID         = "web_publication_records.block_id"
-	C_WebPublicationRecordsDocumentVersion = "web_publication_records.document_version"
-	C_WebPublicationRecordsPath            = "web_publication_records.path"
+	T_WebPublications         = "web_publications"
+	C_WebPublicationsDocument = "web_publications.document"
+	C_WebPublicationsPath     = "web_publications.path"
+	C_WebPublicationsVersion  = "web_publications.version"
 )
 
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
-		AccountDevicesAccountID:              {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesDelegationID:           {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesDeviceID:               {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountsCreateTime:                   {Table: Accounts, SQLType: "INTEGER"},
-		AccountsID:                           {Table: Accounts, SQLType: "INTEGER"},
-		AccountsMultihash:                    {Table: Accounts, SQLType: "BLOB"},
-		AccountsPublicKey:                    {Table: Accounts, SQLType: "BLOB"},
-		ChangeDepsChild:                      {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangeDepsParent:                     {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangeHeadsAccountID:                 {Table: ChangeHeads, SQLType: "INTEGER"},
-		ChangeHeadsDeviceID:                  {Table: ChangeHeads, SQLType: "INTEGER"},
-		ChangeHeadsID:                        {Table: ChangeHeads, SQLType: "INTEGER"},
-		ChangeHeadsKind:                      {Table: ChangeHeads, SQLType: "TEXT"},
-		ChangeHeadsPermanodeID:               {Table: ChangeHeads, SQLType: "INTEGER"},
-		ChangeHeadsStartTime:                 {Table: ChangeHeads, SQLType: "INTEGER"},
-		ChangesAccountID:                     {Table: Changes, SQLType: "INTEGER"},
-		ChangesDeviceID:                      {Table: Changes, SQLType: "INTEGER"},
-		ChangesID:                            {Table: Changes, SQLType: "INTEGER"},
-		ChangesKind:                          {Table: Changes, SQLType: "TEXT"},
-		ChangesPermanodeID:                   {Table: Changes, SQLType: "INTEGER"},
-		ChangesStartTime:                     {Table: Changes, SQLType: "INTEGER"},
-		ChangesDerefChangeCodec:              {Table: ChangesDeref, SQLType: "INTEGER"},
-		ChangesDerefChangeHash:               {Table: ChangesDeref, SQLType: "BLOB"},
-		ChangesDerefChangeID:                 {Table: ChangesDeref, SQLType: "INTEGER"},
-		ChangesDerefIsDraft:                  {Table: ChangesDeref, SQLType: ""},
-		ChangesDerefObjectCodec:              {Table: ChangesDeref, SQLType: "INTEGER"},
-		ChangesDerefObjectHash:               {Table: ChangesDeref, SQLType: "BLOB"},
-		ChangesDerefPermanodeID:              {Table: ChangesDeref, SQLType: "INTEGER"},
-		ContentLinksSourceBlockID:            {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksSourceChangeID:           {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksSourceDocumentID:         {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksSourceVersion:            {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksTargetBlockID:            {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksTargetDocumentID:         {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksTargetVersion:            {Table: ContentLinks, SQLType: "TEXT"},
-		DeviceProofsAccountHash:              {Table: DeviceProofs, SQLType: "BLOB"},
-		DeviceProofsDelegationCodec:          {Table: DeviceProofs, SQLType: "INTEGER"},
-		DeviceProofsDelegationHash:           {Table: DeviceProofs, SQLType: "BLOB"},
-		DeviceProofsDeviceHash:               {Table: DeviceProofs, SQLType: "BLOB"},
-		DevicesCreateTime:                    {Table: Devices, SQLType: "INTEGER"},
-		DevicesID:                            {Table: Devices, SQLType: "INTEGER"},
-		DevicesMultihash:                     {Table: Devices, SQLType: "BLOB"},
-		DevicesPublicKey:                     {Table: Devices, SQLType: "BLOB"},
-		DraftChangesID:                       {Table: DraftChanges, SQLType: "INTEGER"},
-		DraftChangesPermanodeID:              {Table: DraftChanges, SQLType: "INTEGER"},
-		GlobalMetaKey:                        {Table: GlobalMeta, SQLType: "TEXT"},
-		GlobalMetaValue:                      {Table: GlobalMeta, SQLType: "TEXT"},
-		InviteTokensExpirationTime:           {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensRole:                     {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensToken:                    {Table: InviteTokens, SQLType: "TEXT"},
-		IPFSBlocksCodec:                      {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksData:                       {Table: IPFSBlocks, SQLType: "BLOB"},
-		IPFSBlocksID:                         {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksInsertTime:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksMultihash:                  {Table: IPFSBlocks, SQLType: "BLOB"},
-		IPFSBlocksSize:                       {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPLDLinksChild:                       {Table: IPLDLinks, SQLType: "INTEGER"},
-		IPLDLinksParent:                      {Table: IPLDLinks, SQLType: "INTEGER"},
-		IPLDLinksPath:                        {Table: IPLDLinks, SQLType: "TEXT"},
-		PermanodesAccountID:                  {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesCreateTime:                 {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesID:                         {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesType:                       {Table: Permanodes, SQLType: "TEXT"},
-		PublicBlobsCodec:                     {Table: PublicBlobs, SQLType: "INTEGER"},
-		PublicBlobsMultihash:                 {Table: PublicBlobs, SQLType: "BLOB"},
-		SiteMembersAccountID:                 {Table: SiteMembers, SQLType: "INTEGER"},
-		SiteMembersRole:                      {Table: SiteMembers, SQLType: "INTEGER"},
-		SitesAccountID:                       {Table: Sites, SQLType: "INTEGER"},
-		SitesAddresses:                       {Table: Sites, SQLType: "TEXT"},
-		SitesHostname:                        {Table: Sites, SQLType: "TEXT"},
-		SitesRole:                            {Table: Sites, SQLType: "INTEGER"},
-		SQLITESequenceName:                   {Table: SQLITESequence, SQLType: ""},
-		SQLITESequenceSeq:                    {Table: SQLITESequence, SQLType: ""},
-		WalletsAddress:                       {Table: Wallets, SQLType: "TEXT"},
-		WalletsBalance:                       {Table: Wallets, SQLType: "INTEGER"},
-		WalletsID:                            {Table: Wallets, SQLType: "TEXT"},
-		WalletsLogin:                         {Table: Wallets, SQLType: "BLOB"},
-		WalletsName:                          {Table: Wallets, SQLType: "TEXT"},
-		WalletsPassword:                      {Table: Wallets, SQLType: "BLOB"},
-		WalletsToken:                         {Table: Wallets, SQLType: "BLOB"},
-		WalletsType:                          {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationRecordsBlockID:         {Table: WebPublicationRecords, SQLType: "INTEGER"},
-		WebPublicationRecordsDocumentVersion: {Table: WebPublicationRecords, SQLType: "TEXT"},
-		WebPublicationRecordsPath:            {Table: WebPublicationRecords, SQLType: "TEXT"},
+		BlobsCodec:                          {Table: Blobs, SQLType: "INTEGER"},
+		BlobsData:                           {Table: Blobs, SQLType: "BLOB"},
+		BlobsID:                             {Table: Blobs, SQLType: "INTEGER"},
+		BlobsInsertTime:                     {Table: Blobs, SQLType: "INTEGER"},
+		BlobsMultihash:                      {Table: Blobs, SQLType: "BLOB"},
+		BlobsSize:                           {Table: Blobs, SQLType: "INTEGER"},
+		ContentLinksViewData:                {Table: ContentLinksView, SQLType: "BLOB"},
+		ContentLinksViewRel:                 {Table: ContentLinksView, SQLType: "TEXT"},
+		ContentLinksViewSourceBlob:          {Table: ContentLinksView, SQLType: "INTEGER"},
+		ContentLinksViewSourceBlobCodec:     {Table: ContentLinksView, SQLType: "INTEGER"},
+		ContentLinksViewSourceBlobMultihash: {Table: ContentLinksView, SQLType: "BLOB"},
+		ContentLinksViewSourceEID:           {Table: ContentLinksView, SQLType: "TEXT"},
+		ContentLinksViewSourceEntity:        {Table: ContentLinksView, SQLType: "INTEGER"},
+		ContentLinksViewTargetEID:           {Table: ContentLinksView, SQLType: "TEXT"},
+		ContentLinksViewTargetEntity:        {Table: ContentLinksView, SQLType: "INTEGER"},
+		GlobalMetaKey:                       {Table: GlobalMeta, SQLType: "TEXT"},
+		GlobalMetaValue:                     {Table: GlobalMeta, SQLType: "TEXT"},
+		HyperChangeDepsChild:                {Table: HyperChangeDeps, SQLType: "INTEGER"},
+		HyperChangeDepsParent:               {Table: HyperChangeDeps, SQLType: "INTEGER"},
+		HyperChangesBlob:                    {Table: HyperChanges, SQLType: "INTEGER"},
+		HyperChangesEntity:                  {Table: HyperChanges, SQLType: "INTEGER"},
+		HyperChangesHlcTime:                 {Table: HyperChanges, SQLType: "INTEGER"},
+		HyperChangesViewBlobID:              {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewCodec:               {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewData:                {Table: HyperChangesView, SQLType: "BLOB"},
+		HyperChangesViewEntity:              {Table: HyperChangesView, SQLType: "TEXT"},
+		HyperChangesViewEntityID:            {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewHlcTime:             {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperChangesViewMultihash:           {Table: HyperChangesView, SQLType: "BLOB"},
+		HyperChangesViewSize:                {Table: HyperChangesView, SQLType: "INTEGER"},
+		HyperDraftsBlob:                     {Table: HyperDrafts, SQLType: "INTEGER"},
+		HyperDraftsEntity:                   {Table: HyperDrafts, SQLType: "INTEGER"},
+		HyperDraftsViewBlobID:               {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewCodec:                {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewEntity:               {Table: HyperDraftsView, SQLType: "TEXT"},
+		HyperDraftsViewEntityID:             {Table: HyperDraftsView, SQLType: "INTEGER"},
+		HyperDraftsViewMultihash:            {Table: HyperDraftsView, SQLType: "BLOB"},
+		HyperEntitiesEID:                    {Table: HyperEntities, SQLType: "TEXT"},
+		HyperEntitiesID:                     {Table: HyperEntities, SQLType: "INTEGER"},
+		HyperLinksData:                      {Table: HyperLinks, SQLType: "BLOB"},
+		HyperLinksRel:                       {Table: HyperLinks, SQLType: "TEXT"},
+		HyperLinksSourceBlob:                {Table: HyperLinks, SQLType: "INTEGER"},
+		HyperLinksTargetBlob:                {Table: HyperLinks, SQLType: "INTEGER"},
+		HyperLinksTargetEntity:              {Table: HyperLinks, SQLType: "INTEGER"},
+		InviteTokensExpireTime:              {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensRole:                    {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensToken:                   {Table: InviteTokens, SQLType: "TEXT"},
+		KeyDelegationsBlob:                  {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsDelegate:              {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsIssueTime:             {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsIssuer:                {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsViewBlob:              {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewBlobCodec:         {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewBlobMultihash:     {Table: KeyDelegationsView, SQLType: "BLOB"},
+		KeyDelegationsViewDelegate:          {Table: KeyDelegationsView, SQLType: "BLOB"},
+		KeyDelegationsViewIssueTime:         {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewIssuer:            {Table: KeyDelegationsView, SQLType: "BLOB"},
+		PublicBlobsViewCodec:                {Table: PublicBlobsView, SQLType: "INTEGER"},
+		PublicBlobsViewID:                   {Table: PublicBlobsView, SQLType: "INTEGER"},
+		PublicBlobsViewMultihash:            {Table: PublicBlobsView, SQLType: "BLOB"},
+		PublicKeysID:                        {Table: PublicKeys, SQLType: "INTEGER"},
+		PublicKeysPrincipal:                 {Table: PublicKeys, SQLType: "BLOB"},
+		SiteMembersAccountID:                {Table: SiteMembers, SQLType: "INTEGER"},
+		SiteMembersRole:                     {Table: SiteMembers, SQLType: "INTEGER"},
+		SitesAccountID:                      {Table: Sites, SQLType: "INTEGER"},
+		SitesAddresses:                      {Table: Sites, SQLType: "TEXT"},
+		SitesHostname:                       {Table: Sites, SQLType: "TEXT"},
+		SitesRole:                           {Table: Sites, SQLType: "INTEGER"},
+		SQLITESequenceName:                  {Table: SQLITESequence, SQLType: ""},
+		SQLITESequenceSeq:                   {Table: SQLITESequence, SQLType: ""},
+		WalletsAddress:                      {Table: Wallets, SQLType: "TEXT"},
+		WalletsBalance:                      {Table: Wallets, SQLType: "INTEGER"},
+		WalletsID:                           {Table: Wallets, SQLType: "TEXT"},
+		WalletsLogin:                        {Table: Wallets, SQLType: "BLOB"},
+		WalletsName:                         {Table: Wallets, SQLType: "TEXT"},
+		WalletsPassword:                     {Table: Wallets, SQLType: "BLOB"},
+		WalletsToken:                        {Table: Wallets, SQLType: "BLOB"},
+		WalletsType:                         {Table: Wallets, SQLType: "TEXT"},
+		WebPublicationsDocument:             {Table: WebPublications, SQLType: "INTEGER"},
+		WebPublicationsPath:                 {Table: WebPublications, SQLType: "TEXT"},
+		WebPublicationsVersion:              {Table: WebPublications, SQLType: "TEXT"},
 	},
 }

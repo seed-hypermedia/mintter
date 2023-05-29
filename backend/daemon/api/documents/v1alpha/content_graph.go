@@ -2,9 +2,13 @@ package documents
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/vcs/vcssql"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 
+	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -12,42 +16,43 @@ import (
 
 // ListCitations implements the corresponding gRPC method.
 func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitationsRequest) (*documents.ListCitationsResponse, error) {
-	c, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "bad document id: %v", err)
+	if in.DocumentId == "" {
+		return nil, status.Error(codes.InvalidArgument, "must specify document ID")
 	}
 
-	conn, release, err := srv.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	docdb, err := vcssql.IPFSBlocksLookupPK(conn, c.Hash())
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := vcssql.BacklinksListByTargetDocument(conn, docdb.IPFSBlocksID, int64(in.Depth))
-	if err != nil {
+	var backlinks []hypersql.BacklinksForEntityResult
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		list, err := hypersql.BacklinksForEntity(conn, string(eid))
+		backlinks = list
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
 	resp := &documents.ListCitationsResponse{
-		Links: make([]*documents.Link, len(list)),
+		Links: make([]*documents.Link, len(backlinks)),
 	}
 
-	for i, l := range list {
+	for i, link := range backlinks {
+		var ld hyper.LinkData
+		if err := json.Unmarshal(link.ContentLinksViewData, &ld); err != nil {
+			return nil, fmt.Errorf("failed to decode link data: %w", err)
+		}
+
+		src := cid.NewCidV1(uint64(link.ContentLinksViewSourceBlobCodec), link.ContentLinksViewSourceBlobMultihash)
+
 		resp.Links[i] = &documents.Link{
 			Source: &documents.LinkNode{
-				DocumentId: cid.NewCidV1(cid.DagCBOR, l.SourceDocumentMultihash).String(),
-				BlockId:    l.ContentLinksSourceBlockID,
-				Version:    l.ContentLinksSourceVersion,
+				DocumentId: hyper.EntityID(link.ContentLinksViewSourceEID).TrimPrefix("mintter:document:"),
+				BlockId:    ld.SourceBlock,
+				Version:    src.String(),
 			},
 			Target: &documents.LinkNode{
-				DocumentId: cid.NewCidV1(cid.DagCBOR, l.TargetDocumentMultihash).String(),
-				BlockId:    l.ContentLinksTargetBlockID,
-				Version:    l.ContentLinksTargetVersion,
+				DocumentId: hyper.EntityID(link.ContentLinksViewTargetEID).TrimPrefix("mintter:document:"),
+				BlockId:    ld.TargetFragment,
+				Version:    ld.TargetVersion,
 			},
 		}
 	}

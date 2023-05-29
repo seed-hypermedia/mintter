@@ -1,4 +1,4 @@
-package sqlitevcs
+package hyper
 
 import (
 	"context"

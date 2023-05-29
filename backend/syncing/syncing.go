@@ -6,25 +6,24 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/vcssql"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
 // NetDialFunc is a function of the Mintter P2P node that creates an instance
 // of a P2P RPC client for a given remote Device ID.
-type NetDialFunc func(context.Context, cid.Cid) (p2p.P2PClient, error)
+type NetDialFunc func(context.Context, peer.ID) (p2p.P2PClient, error)
 
 // Bitswap is a subset of the Bitswap that is used by syncing service.
 type Bitswap interface {
@@ -49,7 +48,8 @@ type Service struct {
 	onSync func(SyncResult) error
 
 	log     *zap.Logger
-	vcs     *vcsdb.DB
+	db      *sqlitex.Pool
+	blobs   *hyper.Storage
 	me      core.Identity
 	bitswap Bitswap
 	client  NetDialFunc
@@ -67,14 +67,15 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc, inDisable bool) *Service {
+func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, bitswap Bitswap, client NetDialFunc, inDisable bool) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
 		peerSyncTimeout: defaultPeerSyncTimeout,
 
 		log:       log,
-		vcs:       vcs,
+		db:        db,
+		blobs:     blobs,
 		me:        me,
 		bitswap:   bitswap,
 		client:    client,
@@ -191,7 +192,7 @@ func (s *Service) SyncAndLog(ctx context.Context) error {
 	for i, err := range res.Errs {
 		if err != nil {
 			log.Debug("SyncLoopError",
-				zap.String("device", res.Devices[i].String()),
+				zap.String("peer", res.Peers[i].String()),
 				zap.Error(err),
 			)
 		}
@@ -212,7 +213,7 @@ var ErrSyncAlreadyRunning = errors.New("sync is already running")
 type SyncResult struct {
 	NumSyncOK     int64
 	NumSyncFailed int64
-	Devices       []cid.Cid
+	Peers         []peer.ID
 	Errs          []error
 }
 
@@ -223,50 +224,50 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	}
 	defer s.mu.Unlock()
 
-	conn, release, err := s.vcs.DB().Conn(ctx)
-	if err != nil {
-		return res, err
-	}
-	devices, err := vcssql.DevicesList(conn)
-	release()
-	if err != nil {
+	var delegations []hypersql.KeyDelegationsListAllResult
+	if err := s.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		delegations, err = hypersql.KeyDelegationsListAll(conn)
+		return err
+	}); err != nil {
 		return res, err
 	}
 
-	res.Devices = make([]cid.Cid, len(devices))
-	res.Errs = make([]error, len(devices))
-
+	res.Peers = make([]peer.ID, len(delegations))
+	res.Errs = make([]error, len(delegations))
 	var wg sync.WaitGroup
+	wg.Add(len(delegations))
 
-	wg.Add(len(devices))
+	for i, del := range delegations {
+		go func(i int, del hypersql.KeyDelegationsListAllResult) {
+			var err error
+			defer func() {
+				res.Errs[i] = err
+				if err == nil {
+					atomic.AddInt64(&res.NumSyncOK, 1)
+				} else {
+					atomic.AddInt64(&res.NumSyncFailed, 1)
+				}
 
-	for i, dev := range devices {
-		go func(i int, dev vcssql.DevicesListResult) {
-			defer wg.Done()
+				wg.Done()
+			}()
 
-			ctx, cancel := context.WithTimeout(ctx, s.peerSyncTimeout)
-			defer cancel()
-
-			did := cid.NewCidV1(core.CodecDeviceKey, dev.DevicesMultihash)
-			res.Devices[i] = did
-
-			// Can't sync with self.
-			if s.me.DeviceKey().CID().Equals(did) {
+			var pid peer.ID
+			device := core.Principal(del.KeyDelegationsViewDelegate)
+			pid, err = core.Principal(del.KeyDelegationsViewDelegate).PeerID()
+			if err != nil {
+				s.log.Warn("FailedToParsePeerID", zap.String("principal", device.String()))
 				return
 			}
+			res.Peers[i] = pid
 
-			err := s.SyncWithPeer(ctx, did)
-			res.Errs[i] = err
-
-			if err == nil {
-				atomic.AddInt64(&res.NumSyncOK, 1)
-			} else {
-				atomic.AddInt64(&res.NumSyncFailed, 1)
-			}
-		}(i, dev)
+			err = s.SyncWithPeer(ctx, pid)
+		}(i, del)
 	}
 
 	wg.Wait()
+
+	// Subtracting one to account for our own device.
+	res.NumSyncOK--
 
 	if s.onSync != nil {
 		if err := s.onSync(res); err != nil {
@@ -281,54 +282,17 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 
-	bs := s.vcs.Blockstore()
+	bs := s.blobs.IPFSBlockstoreReader()
 
-	oid, err := cid.Decode(obj.Id)
-	if err != nil {
-		return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
-	}
+	// oid, err := hyper.EntityID(obj.Id).CID()
+	// if err != nil {
+	// 	return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
+	// }
 
-	var permanode vcs.Permanode
-	var shouldStorePermanode bool
-	var ep vcs.EncodedPermanode
-	{
-		// Important to check before using bitswap, because it would add the fetched block into our blockstore,
-		// without any mintter-specific indexing.
-		has, err := bs.Has(ctx, oid)
-		if err != nil {
-			return err
-		}
-
-		// Indicate to the bitswap session to prefer peers who have the permanode block.
-		perma, err := sess.GetBlock(ctx, oid)
-		if err != nil {
-			return err
-		}
-
-		// CBOR decoder will complain if struct has missing fields, so we can't use BasePermanode here,
-		// and instead have to use a map. It's pain in the butt.
-		// TODO: fix this!
-		var v interface{}
-		if err := cbornode.DecodeInto(perma.RawData(), &v); err != nil {
-			return err
-		}
-
-		p, err := permanodeFromMap(v)
-		if err != nil {
-			return err
-		}
-
-		permanode = p
-
-		if !has {
-			shouldStorePermanode = true
-			ep = vcs.EncodedPermanode{
-				ID:        perma.Cid(),
-				Data:      perma.RawData(),
-				Permanode: permanode,
-			}
-		}
-	}
+	// // Hint to bitswap to only talk to peers who have the object.
+	// if _, err := sess.GetBlock(ctx, oid); err != nil {
+	// 	return fmt.Errorf("failed to start bitswap session: %w", err)
+	// }
 
 	// We have to check which of the remote changes we're actually missing to avoid
 	// doing bitswap unnecessarily.
@@ -337,7 +301,7 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 		for _, c := range obj.ChangeIds {
 			cc, err := cid.Decode(c)
 			if err != nil {
-				return fmt.Errorf("failed to cast CID: %w", err)
+				return fmt.Errorf("failed to decode change CID: %w", err)
 			}
 
 			has, err := bs.Has(ctx, cc)
@@ -350,22 +314,64 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 		}
 	}
 
+	type verifiedChange struct {
+		cid    cid.Cid
+		change hyper.Change
+	}
+
 	// Fetch missing changes and make sure we have their parents.
 	// We assume causally sorted list, but verifying just in case.
-	fetched := make([]vcs.VerifiedChange, len(missingSorted))
-	visited := make(map[cid.Cid]struct{})
+	visited := make(map[cid.Cid]struct{}, len(missingSorted))
 	{
-		for i, c := range missingSorted {
+		for _, c := range missingSorted {
 			blk, err := sess.GetBlock(ctx, c)
 			if err != nil {
 				return fmt.Errorf("failed to sync blob %s: %w", c, err)
 			}
-			vc, err := vcs.VerifyChangeBlock(blk)
-			if err != nil {
-				return fmt.Errorf("failed to verify change %s: %w", c, err)
+
+			var ch hyper.Change
+			if err := cbornode.DecodeInto(blk.RawData(), &ch); err != nil {
+				return fmt.Errorf("failed to decode change after sync: %w", err)
 			}
-			visited[vc.Cid()] = struct{}{}
-			for _, dep := range vc.Decoded.Parents {
+
+			if err := ch.Verify(); err != nil {
+				return fmt.Errorf("failed to verify signature for change %s: %w", c.String(), err)
+			}
+
+			// get delegation
+			ok, err := bs.Has(ctx, ch.Delegation)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				kdblk, err := sess.GetBlock(ctx, ch.Delegation)
+				if err != nil {
+					return err
+				}
+				var kd hyper.KeyDelegation
+				if err := cbornode.DecodeInto(kdblk.RawData(), &kd); err != nil {
+					return err
+				}
+				if err := kd.Verify(); err != nil {
+					return fmt.Errorf("failed to verify key delegation: %w", err)
+				}
+				kdblob, err := hyper.EncodeBlob(hyper.TypeKeyDelegation, kd)
+				if err != nil {
+					return err
+				}
+
+				if !kdblob.CID.Equals(kdblk.Cid()) {
+					return fmt.Errorf("reencoded key delegation cid doesn't match")
+				}
+
+				if err := s.blobs.SaveBlob(ctx, kdblob); err != nil {
+					return fmt.Errorf("failed to save key delegation blob: %w", err)
+				}
+			}
+
+			vc := verifiedChange{cid: c, change: ch}
+			visited[vc.cid] = struct{}{}
+			for _, dep := range vc.change.Deps {
 				has, err := bs.Has(ctx, dep)
 				if err != nil {
 					return fmt.Errorf("failed to check parent %s of %s: %w", dep, c, err)
@@ -375,28 +381,20 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 					return fmt.Errorf("won't sync object %s: missing parent %s of change %s", obj, dep, c)
 				}
 			}
-			fetched[i] = vc
+
+			changeBlob, err := hyper.EncodeBlob(hyper.TypeChange, vc.change)
+			if err != nil {
+				return err
+			}
+
+			if !changeBlob.CID.Equals(vc.cid) {
+				return fmt.Errorf("reencoded change CID must match")
+			}
+
+			if err := s.blobs.SaveBlob(ctx, changeBlob); err != nil {
+				return fmt.Errorf("failed to save synced change: %w", err)
+			}
 		}
-	}
-
-	conn, release, err := s.vcs.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	if err := conn.WithTx(true, func() error {
-		if shouldStorePermanode {
-			conn.NewObject(ep)
-		}
-
-		for _, vc := range fetched {
-			conn.StoreChange(vc)
-		}
-
-		return nil
-	}); err != nil {
-		return err
 	}
 
 	return nil
@@ -404,9 +402,9 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 
 // SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
 // if a list a list of initialObjects is provided, then only syncs objects from that list.
-func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...cid.Cid) error {
+func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error {
 	// Can't sync with self.
-	if s.me.DeviceKey().CID().Equals(device) {
+	if s.me.DeviceKey().PeerID() == device {
 		return nil
 	}
 
@@ -416,9 +414,9 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 		return nil
 	}
 
-	var filter map[cid.Cid]struct{}
+	var filter map[hyper.EntityID]struct{}
 	if initialObjects != nil {
-		filter = make(map[cid.Cid]struct{}, len(initialObjects))
+		filter = make(map[hyper.EntityID]struct{}, len(initialObjects))
 		for _, o := range initialObjects {
 			filter[o] = struct{}{}
 		}
@@ -440,12 +438,7 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 		finalObjs = remoteObjs.Objects
 	} else {
 		for _, obj := range remoteObjs.Objects {
-			c, err := cid.Decode(obj.Id)
-			if err != nil {
-				s.log.Debug("WillNotSyncInvalidCID", zap.Error(err))
-				continue
-			}
-			_, ok := filter[c]
+			_, ok := filter[hyper.EntityID(obj.Id)]
 			if !ok {
 				continue
 			}
@@ -462,22 +455,4 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 		}
 	}
 	return nil
-}
-
-func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
-	defer func() {
-		if stack := recover(); stack != nil {
-			err = multierr.Append(err, fmt.Errorf("failed to convert map into permanode: %v", stack))
-		}
-	}()
-
-	var base vcs.BasePermanode
-
-	base.Type = vcs.ObjectType(v.(map[string]interface{})["@type"].(string))
-	base.Owner = v.(map[string]interface{})["owner"].(cid.Cid)
-	t := v.(map[string]interface{})["createTime"].(int)
-
-	base.CreateTime = hlc.Unpack(int64(t))
-
-	return base, nil
 }

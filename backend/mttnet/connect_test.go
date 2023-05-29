@@ -2,6 +2,7 @@ package mttnet
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -23,9 +24,13 @@ func TestConnect(t *testing.T) {
 	ctx := context.Background()
 
 	checkExchange := func(t *testing.T, a, b *Node) {
-		acc, err := a.AccountForDevice(ctx, b.me.DeviceKey().CID())
+		pid, err := b.me.DeviceKey().Principal().PeerID()
+		if err != nil {
+			panic(fmt.Errorf("BUG: failed to convert principal to peer ID: %w", err))
+		}
+		acc, err := a.AccountForDevice(ctx, pid)
 		require.NoError(t, err)
-		require.Equal(t, b.me.AccountID().String(), acc.String())
+		require.Equal(t, b.me.Account().String(), acc.String())
 	}
 
 	g, ctx := errgroup.WithContext(ctx)

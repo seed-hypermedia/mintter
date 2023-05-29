@@ -1,14 +1,17 @@
 package mttnet
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"testing"
-	"time"
 
+	"crawshaw.io/sqlite"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,25 +22,16 @@ func TestListObjects(t *testing.T) {
 	defer stopalice()
 	ctx := context.Background()
 
-	clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
-	perma, err := vcs.EncodePermanode(vcsdb.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
-	require.NoError(t, err)
-	ch := vcs.NewChange(alice.me, perma.ID, nil, vcsdb.KindOpaque, clock.Now(), []byte("opaque content"))
-	vc, err := ch.Block()
+	del, err := getDelegation(ctx, alice.me, alice.blobs)
 	require.NoError(t, err)
 
-	{
-		conn, release, err := alice.vcs.Conn(ctx)
-		require.NoError(t, err)
+	entity := hyper.NewEntity("alice-test-id")
+	blob, err := entity.CreateChange(entity.NextTimestamp(), alice.me.DeviceKey(), del, map[string]any{
+		"name": "alice",
+	})
+	require.NoError(t, err)
 
-		err = conn.WithTx(true, func() error {
-			conn.NewObject(perma)
-			conn.StoreChange(vc)
-			return nil
-		})
-		release()
-		require.NoError(t, err)
-	}
+	require.NoError(t, alice.blobs.SaveBlob(ctx, blob))
 
 	bob, stopbob := makeTestPeer(t, "bob")
 	defer stopbob()
@@ -51,4 +45,36 @@ func TestListObjects(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, list.Objects, 2)
+}
+
+func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) (cid.Cid, error) {
+	var out cid.Cid
+
+	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	if err := blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		acc := me.Account().Principal()
+		dev := me.DeviceKey().Principal()
+
+		list, err := hypersql.KeyDelegationsList(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		for _, res := range list {
+			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
+				return nil
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return out, fmt.Errorf("BUG: failed to find our own key delegation")
+	}
+
+	return out, nil
 }

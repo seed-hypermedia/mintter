@@ -68,7 +68,7 @@ func main() {
 		}
 
 		const mnemonicWords = 12
-		mnemonic, err := core.NewMnemonic(mnemonicWords)
+		mnemonic, err := core.NewBIP39Mnemonic(mnemonicWords)
 		if err != nil {
 			return err
 		}

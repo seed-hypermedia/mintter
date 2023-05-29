@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	networking "mintter/backend/genproto/networking/v1alpha"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs/vcssql"
 
-	"github.com/ipfs/go-cid"
+	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -53,43 +53,49 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 	if err != nil {
 		return nil, err
 	}
-	//allPeers := net.Libp2p().Peerstore().Peers()
 
-	conn, release, err := net.VCS().DB().Conn(ctx)
-	if err != nil {
+	out := &networking.ListPeersResponse{}
+
+	var dels []hypersql.KeyDelegationsListAllResult
+	if err := net.Blobs().Query(ctx, func(conn *sqlite.Conn) error {
+		dels, err = hypersql.KeyDelegationsListAll(conn)
+		return err
+	}); err != nil {
 		return nil, err
 	}
-	devices, err := vcssql.DevicesList(conn)
-	release()
-	if err != nil {
-		return nil, err
-	}
-	ret := networking.ListPeersResponse{
-		PeerList: []*networking.PeerIDs{},
-	}
-	for _, device := range devices {
-		did := cid.NewCidV1(core.CodecDeviceKey, device.DevicesMultihash)
-		pid, err := peer.FromCid(did)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse device ID[%s] as PID: %w", did.String(), err)
-		}
-		connectedness := net.Libp2p().Network().Connectedness(pid)
-		if in.Status >= 0 && in.Status != networking.ConnectionStatus(connectedness) {
-			continue
-		}
-		aid, err := net.AccountForDevice(ctx, did)
+
+	out.Peers = make([]*networking.PeerInfo, 0, len(dels))
+
+	for _, del := range dels {
+		pid, err := core.Principal(del.KeyDelegationsViewDelegate).PeerID()
 		if err != nil {
 			return nil, err
 		}
 
-		ret.PeerList = append(ret.PeerList, &networking.PeerIDs{
-			DeviceId:  did.String(),
-			PeerId:    pid.String(),
-			AccountId: aid.String(),
+		// Skip our own peer.
+		if pid == net.Libp2p().ID() {
+			continue
+		}
+
+		pids := pid.String()
+
+		addrinfo := net.Libp2p().Peerstore().PeerInfo(pid)
+		mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get device addrs: %w", err)
+		}
+
+		connectedness := net.Libp2p().Network().Connectedness(pid)
+
+		out.Peers = append(out.Peers, &networking.PeerInfo{
+			Id:               pids,
+			AccountId:        core.Principal(del.KeyDelegationsViewIssuer).String(),
+			Addrs:            ipfs.StringAddrs(mas),
+			ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 		})
 	}
 
-	return &ret, nil
+	return out, nil
 }
 
 // GetPeerInfo gets info about
@@ -103,14 +109,9 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 		return nil, err
 	}
 
-	device, err := cid.Decode(in.DeviceId)
+	pid, err := peer.Decode(in.DeviceId)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to parse device ID as CID: %v", err)
-	}
-
-	pid, err := peer.FromCid(device)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse peer ID %s: %w", in.DeviceId, err)
 	}
 
 	addrinfo := net.Libp2p().Peerstore().PeerInfo(pid)
@@ -121,15 +122,16 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 
 	connectedness := net.Libp2p().Network().Connectedness(pid)
 
-	aid, err := net.AccountForDevice(ctx, device)
+	aid, err := net.AccountForDevice(ctx, pid)
 	if err != nil {
 		return nil, err
 	}
 
 	resp := &networking.PeerInfo{
+		Id:               in.DeviceId,
+		AccountId:        aid.String(),
 		Addrs:            ipfs.StringAddrs(mas),
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
-		AccountId:        aid.String(),
 	}
 
 	return resp, nil

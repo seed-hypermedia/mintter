@@ -8,8 +8,9 @@ import (
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/testutil"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -39,7 +40,7 @@ func TestRegister(t *testing.T) {
 		Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
-	require.Equal(t, "bahezrj4iaqacicabciqk67kw6ulutlggvvnxtqxz3zmwxmiyexrxenuuron3uekqu5cvp7q", resp.AccountId)
+	require.Equal(t, "z6MkrGJF5qWkmaD1XsXpxwnX7uhjfR5bAWURvrSPsF12eCAH", resp.AccountId)
 
 	_, err = srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
@@ -81,11 +82,11 @@ func TestGetInfo_Ready(t *testing.T) {
 
 	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
-	require.Equal(t, srv.repo.Device().CID().String(), info.DeviceId)
+	require.Equal(t, srv.repo.Device().PeerID().String(), info.DeviceId)
 
 	acc, err := srv.repo.Account()
 	require.NoError(t, err)
-	require.Equal(t, acc.CID().String(), info.AccountId)
+	require.Equal(t, acc.Principal().String(), info.AccountId)
 	testutil.ProtoEqual(t, timestamppb.New(srv.startTime), info.StartTime, "start time doesn't match")
 }
 
@@ -94,8 +95,9 @@ func newTestServer(t *testing.T, name string) *Server {
 	repo := daemontest.MakeTestRepo(t, u)
 	db := newTestSQLite(t, repo)
 	wallet := new(mockedWallet)
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 
-	return NewServer(repo, vcsdb.New(db), wallet, nil)
+	return NewServer(repo, blobs, wallet, nil)
 }
 
 func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {

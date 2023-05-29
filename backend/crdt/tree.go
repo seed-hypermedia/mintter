@@ -8,10 +8,10 @@ const (
 	TrashNodeID = "$TRASH$"
 )
 
-// node of a CRDT tree.
-type node struct {
+// TreeNode of a tree CRDT.
+type TreeNode struct {
 	id       string
-	pos      *position
+	pos      *Position
 	children *list
 }
 
@@ -38,7 +38,7 @@ type node struct {
 // and follows the rules of the list CRDT. List positions are never moved nor
 // deleted, but could be "unlinked" and left dangling.
 type Tree struct {
-	nodes    map[string]*node
+	nodes    map[string]*TreeNode
 	vclock   *VectorClock
 	movesLog []moveRecord
 }
@@ -48,13 +48,13 @@ type moveRecord struct {
 	NodeID        string
 	ParentID      string
 	LeftSiblingID ID
-	OldPosition   *position
+	OldPosition   *Position
 }
 
 // NewTree creates a new Tree with a given Frontier.
 func NewTree(vclock *VectorClock) *Tree {
 	d := &Tree{
-		nodes: map[string]*node{
+		nodes: map[string]*TreeNode{
 			RootNodeID: {
 				id:       RootNodeID,
 				children: newList(RootNodeID),
@@ -79,38 +79,21 @@ func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
 		parentID = RootNodeID
 	}
 
-	var leftPos *position
-	if leftID == "" {
-		l, err := d.findSubtree(parentID)
-		if err != nil {
-			return err
-		}
-
-		leftPos = &l.root
-	} else {
-		c := d.nodes[leftID]
-		if c == nil {
-			return fmt.Errorf("left sibling node %s is not in the tree", leftID)
-		}
-
-		leftPos = c.pos
+	var ref ID
+	leftPos, err := d.FindChildPosition(parentID, leftID)
+	if err != nil {
+		return err
+	}
+	if leftPos != nil {
+		ref = leftPos.id
 	}
 
-	if leftPos == nil || leftPos.list.id != parentID {
-		return fmt.Errorf("left node %s is not child of %s", leftID, parentID)
-	}
-
-	// We don't want to do anything if the node is already where it should be.
-	if next := leftPos.NextFilled(); next != nil && next.value.(*node).id == nodeID {
-		return nil
-	}
-
-	return d.MoveNode(site, nodeID, parentID, leftPos.id)
+	return d.Integrate(d.newID(site), nodeID, parentID, ref)
 }
 
 // MoveNode from it's current position to the new one. ID of the node MUST exist in the tree.
 func (d *Tree) MoveNode(site, nodeID, parentID string, leftPos ID) error {
-	return d.integrateMove(d.newID(site), nodeID, parentID, leftPos)
+	return d.Integrate(d.newID(site), nodeID, parentID, leftPos)
 }
 
 // DeleteNode from the tree. In reality the node is moved under a designated "trash" node.
@@ -130,11 +113,72 @@ func (d *Tree) Iterator() *TreeIterator {
 
 	return &TreeIterator{
 		doc:   d,
-		stack: []*position{l.root.NextFilled()},
+		stack: []*Position{l.root.NextAlive()},
 	}
 }
 
-func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
+func (d *Tree) FindNodePosition(node string) (pos *Position, err error) {
+	if node == "" {
+		return nil, fmt.Errorf("must specify node to find position")
+	}
+
+	n, ok := d.nodes[node]
+	if !ok {
+		return nil, fmt.Errorf("node %s not found", node)
+	}
+
+	return n.pos, nil
+}
+
+func (d *Tree) FindLeftSibling(parent, child string) (string, error) {
+	pos, err := d.FindChildPosition(parent, child)
+	if err != nil {
+		return "", err
+	}
+	left := pos.PrevAlive()
+	if left == nil {
+		return "", nil
+	}
+	return left.value.(*TreeNode).id, nil
+}
+
+func (d *Tree) FindChildPosition(parent, child string) (*Position, error) {
+	if parent == "" {
+		parent = RootNodeID
+	}
+
+	var ref ID
+	if child != "" {
+		c := d.nodes[child]
+		if c == nil {
+			return nil, fmt.Errorf("left sibling node %s is not in the tree", child)
+		}
+
+		ref = c.pos.id
+	}
+
+	l, err := d.findSubtree(parent)
+	if err != nil {
+		return nil, err
+	}
+
+	pos, err := l.findPos(ref)
+	if err != nil {
+		return nil, err
+	}
+
+	if pos == nil || pos.list.id != parent {
+		return nil, fmt.Errorf("subtree %s doesn't have child %s", parent, child)
+	}
+	return pos, nil
+}
+
+// Integrate move operation into the tree.
+func (d *Tree) Integrate(id ID, nodeID, parentID string, ref ID) error {
+	if parentID == "" {
+		parentID = RootNodeID
+	}
+
 	if nodeID == "" {
 		return fmt.Errorf("must specify nodeID")
 	}
@@ -148,21 +192,26 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 		return err
 	}
 
-	refPos, err := l.findPos(ref)
+	leftPos, err := l.findPos(ref)
 	if err != nil {
 		return err
 	}
 
+	if leftPos == nil || leftPos.list.id != parentID {
+		return fmt.Errorf("ref position %v is not child of %s", ref, parentID)
+	}
+
+	// We don't want to do anything if the node is already where it should be.
+	if next := leftPos.NextAlive(); next != nil && next.value.(*TreeNode).id == nodeID {
+		return nil
+	}
+
 	blk := d.nodes[nodeID]
 	if blk == nil {
-		blk = &node{
+		blk = &TreeNode{
 			id: nodeID,
 		}
 		d.nodes[nodeID] = blk
-	}
-
-	if right := refPos.Next(); right != nil && right.value != nil && right.value.(*node).id == nodeID {
-		return nil
 	}
 
 	// We can safely update clock here, because we've checked all the invariants up to this point.
@@ -180,7 +229,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 		OldPosition:   blk.pos,
 	}
 
-	pos, err := l.integrate(id, refPos, blk)
+	pos, err := l.integrate(id, leftPos, blk)
 	if err != nil {
 		return err
 	}
@@ -226,7 +275,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 	return nil
 }
 
-func (d *Tree) doMove(blk *node, pos *position) {
+func (d *Tree) doMove(blk *TreeNode, pos *Position) {
 	if d.isAncestor(blk.id, pos.list.id) {
 		pos.value = nil
 		return
@@ -319,11 +368,11 @@ func (d *Tree) findSubtree(id string) (*list, error) {
 // Create by the Tree's Iterator() method.
 type TreeIterator struct {
 	doc   *Tree
-	stack []*position
+	stack []*Position
 }
 
 // Next returns the next Node or nil when reached end of the tree.
-func (it *TreeIterator) Next() *node {
+func (it *TreeIterator) Next() *TreeNode {
 START:
 	if len(it.stack) == 0 {
 		return nil
@@ -338,12 +387,12 @@ START:
 		goto START
 	}
 
-	blk := pos.value.(*node)
+	blk := pos.value.(*TreeNode)
 	if blk.children != nil {
-		it.stack = append(it.stack, blk.children.root.NextFilled())
+		it.stack = append(it.stack, blk.children.root.NextAlive())
 	}
 
-	it.stack[idx] = pos.NextFilled()
+	it.stack[idx] = pos.NextAlive()
 
 	return blk
 }

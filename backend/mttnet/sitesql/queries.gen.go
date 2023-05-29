@@ -12,12 +12,12 @@ import (
 
 var _ = errors.New
 
-func addSite(conn *sqlite.Conn, accID []byte, sitesAddresses string, sitesHostname string, sitesRole int64) error {
+func AddSite(conn *sqlite.Conn, publicKeysPrincipal []byte, sitesAddresses string, sitesHostname string, sitesRole int64) error {
 	const query = `INSERT OR REPLACE INTO sites (account_id, addresses, hostname, role)
-VALUES ((SELECT id FROM accounts WHERE multihash = :accID), :sitesAddresses, :sitesHostname, :sitesRole)`
+VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal), :sitesAddresses, :sitesHostname, :sitesRole)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accID", accID)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 		stmt.SetText(":sitesAddresses", sitesAddresses)
 		stmt.SetText(":sitesHostname", sitesHostname)
 		stmt.SetInt64(":sitesRole", sitesRole)
@@ -29,13 +29,13 @@ VALUES ((SELECT id FROM accounts WHERE multihash = :accID), :sitesAddresses, :si
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: addSite: %w", err)
+		err = fmt.Errorf("failed query: AddSite: %w", err)
 	}
 
 	return err
 }
 
-func removeSite(conn *sqlite.Conn, sitesHostname string) error {
+func RemoveSite(conn *sqlite.Conn, sitesHostname string) error {
 	const query = `DELETE FROM sites WHERE sites.hostname = :sitesHostname`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -48,26 +48,26 @@ func removeSite(conn *sqlite.Conn, sitesHostname string) error {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: removeSite: %w", err)
+		err = fmt.Errorf("failed query: RemoveSite: %w", err)
 	}
 
 	return err
 }
 
-type getSiteResult struct {
-	SitesAddresses    string
-	SitesHostname     string
-	SitesRole         int64
-	AccountsMultihash []byte
+type GetSiteResult struct {
+	SitesAddresses      string
+	SitesHostname       string
+	SitesRole           int64
+	PublicKeysPrincipal []byte
 }
 
-func getSite(conn *sqlite.Conn, sitesHostname string) (getSiteResult, error) {
-	const query = `SELECT sites.addresses, sites.hostname, sites.role, accounts.multihash
+func GetSite(conn *sqlite.Conn, sitesHostname string) (GetSiteResult, error) {
+	const query = `SELECT sites.addresses, sites.hostname, sites.role, public_keys.principal
 FROM sites
-JOIN accounts ON accounts.id = sites.account_id
+JOIN public_keys ON public_keys.id = sites.account_id
 WHERE sites.hostname = :sitesHostname`
 
-	var out getSiteResult
+	var out GetSiteResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":sitesHostname", sitesHostname)
@@ -75,47 +75,47 @@ WHERE sites.hostname = :sitesHostname`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getSite: more than one result return for a single-kind query")
+			return errors.New("GetSite: more than one result return for a single-kind query")
 		}
 
 		out.SitesAddresses = stmt.ColumnText(0)
 		out.SitesHostname = stmt.ColumnText(1)
 		out.SitesRole = stmt.ColumnInt64(2)
-		out.AccountsMultihash = stmt.ColumnBytes(3)
+		out.PublicKeysPrincipal = stmt.ColumnBytes(3)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getSite: %w", err)
+		err = fmt.Errorf("failed query: GetSite: %w", err)
 	}
 
 	return out, err
 }
 
-type listSitesResult struct {
-	SitesAddresses    string
-	SitesHostname     string
-	SitesRole         int64
-	AccountsMultihash []byte
+type ListSitesResult struct {
+	SitesAddresses      string
+	SitesHostname       string
+	SitesRole           int64
+	PublicKeysPrincipal []byte
 }
 
-func listSites(conn *sqlite.Conn) ([]listSitesResult, error) {
-	const query = `SELECT sites.addresses, sites.hostname, sites.role, accounts.multihash
+func ListSites(conn *sqlite.Conn) ([]ListSitesResult, error) {
+	const query = `SELECT sites.addresses, sites.hostname, sites.role, public_keys.principal
 FROM sites
-JOIN accounts ON accounts.id = sites.account_id`
+JOIN public_keys ON public_keys.id = sites.account_id`
 
-	var out []listSitesResult
+	var out []ListSitesResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listSitesResult{
-			SitesAddresses:    stmt.ColumnText(0),
-			SitesHostname:     stmt.ColumnText(1),
-			SitesRole:         stmt.ColumnInt64(2),
-			AccountsMultihash: stmt.ColumnBytes(3),
+		out = append(out, ListSitesResult{
+			SitesAddresses:      stmt.ColumnText(0),
+			SitesHostname:       stmt.ColumnText(1),
+			SitesRole:           stmt.ColumnInt64(2),
+			PublicKeysPrincipal: stmt.ColumnBytes(3),
 		})
 
 		return nil
@@ -123,13 +123,13 @@ JOIN accounts ON accounts.id = sites.account_id`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: listSites: %w", err)
+		err = fmt.Errorf("failed query: ListSites: %w", err)
 	}
 
 	return out, err
 }
 
-func setSiteTitle(conn *sqlite.Conn, title string) error {
+func SetSiteTitle(conn *sqlite.Conn, title string) error {
 	const query = `INSERT OR REPLACE INTO global_meta (key, value)
 VALUES ('site_title', :title)`
 
@@ -143,27 +143,27 @@ VALUES ('site_title', :title)`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: setSiteTitle: %w", err)
+		err = fmt.Errorf("failed query: SetSiteTitle: %w", err)
 	}
 
 	return err
 }
 
-type getSiteTitleResult struct {
+type GetSiteTitleResult struct {
 	GlobalMetaValue string
 }
 
-func getSiteTitle(conn *sqlite.Conn) (getSiteTitleResult, error) {
+func GetSiteTitle(conn *sqlite.Conn) (GetSiteTitleResult, error) {
 	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_title'`
 
-	var out getSiteTitleResult
+	var out GetSiteTitleResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getSiteTitle: more than one result return for a single-kind query")
+			return errors.New("GetSiteTitle: more than one result return for a single-kind query")
 		}
 
 		out.GlobalMetaValue = stmt.ColumnText(0)
@@ -172,13 +172,13 @@ func getSiteTitle(conn *sqlite.Conn) (getSiteTitleResult, error) {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getSiteTitle: %w", err)
+		err = fmt.Errorf("failed query: GetSiteTitle: %w", err)
 	}
 
 	return out, err
 }
 
-func setSiteDescription(conn *sqlite.Conn, description string) error {
+func SetSiteDescription(conn *sqlite.Conn, description string) error {
 	const query = `INSERT OR REPLACE INTO global_meta (key, value)
 VALUES ('site_description', :description)`
 
@@ -192,27 +192,27 @@ VALUES ('site_description', :description)`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: setSiteDescription: %w", err)
+		err = fmt.Errorf("failed query: SetSiteDescription: %w", err)
 	}
 
 	return err
 }
 
-type getSiteDescriptionResult struct {
+type GetSiteDescriptionResult struct {
 	GlobalMetaValue string
 }
 
-func getSiteDescription(conn *sqlite.Conn) (getSiteDescriptionResult, error) {
+func GetSiteDescription(conn *sqlite.Conn) (GetSiteDescriptionResult, error) {
 	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_description'`
 
-	var out getSiteDescriptionResult
+	var out GetSiteDescriptionResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getSiteDescription: more than one result return for a single-kind query")
+			return errors.New("GetSiteDescription: more than one result return for a single-kind query")
 		}
 
 		out.GlobalMetaValue = stmt.ColumnText(0)
@@ -221,19 +221,19 @@ func getSiteDescription(conn *sqlite.Conn) (getSiteDescriptionResult, error) {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getSiteDescription: %w", err)
+		err = fmt.Errorf("failed query: GetSiteDescription: %w", err)
 	}
 
 	return out, err
 }
 
-func addToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpirationTime int64, inviteTokensRole int64) error {
-	const query = `INSERT INTO invite_tokens (token, expiration_time, role)
-VALUES (:inviteTokensToken, :inviteTokensExpirationTime, :inviteTokensRole)`
+func AddToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpireTime int64, inviteTokensRole int64) error {
+	const query = `INSERT INTO invite_tokens (token, expire_time, role)
+VALUES (:inviteTokensToken, :inviteTokensExpireTime, :inviteTokensRole)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":inviteTokensToken", inviteTokensToken)
-		stmt.SetInt64(":inviteTokensExpirationTime", inviteTokensExpirationTime)
+		stmt.SetInt64(":inviteTokensExpireTime", inviteTokensExpireTime)
 		stmt.SetInt64(":inviteTokensRole", inviteTokensRole)
 	}
 
@@ -243,22 +243,22 @@ VALUES (:inviteTokensToken, :inviteTokensExpirationTime, :inviteTokensRole)`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: addToken: %w", err)
+		err = fmt.Errorf("failed query: AddToken: %w", err)
 	}
 
 	return err
 }
 
-type getTokenResult struct {
-	InviteTokensRole           int64
-	InviteTokensExpirationTime int64
+type GetTokenResult struct {
+	InviteTokensRole       int64
+	InviteTokensExpireTime int64
 }
 
-func getToken(conn *sqlite.Conn, inviteTokensToken string) (getTokenResult, error) {
-	const query = `SELECT invite_tokens.role, invite_tokens.expiration_time
+func GetToken(conn *sqlite.Conn, inviteTokensToken string) (GetTokenResult, error) {
+	const query = `SELECT invite_tokens.role, invite_tokens.expire_time
 FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
 
-	var out getTokenResult
+	var out GetTokenResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":inviteTokensToken", inviteTokensToken)
@@ -266,56 +266,23 @@ FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getToken: more than one result return for a single-kind query")
+			return errors.New("GetToken: more than one result return for a single-kind query")
 		}
 
 		out.InviteTokensRole = stmt.ColumnInt64(0)
-		out.InviteTokensExpirationTime = stmt.ColumnInt64(1)
+		out.InviteTokensExpireTime = stmt.ColumnInt64(1)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getToken: %w", err)
+		err = fmt.Errorf("failed query: GetToken: %w", err)
 	}
 
 	return out, err
 }
 
-type listTokensResult struct {
-	InviteTokensRole           int64
-	InviteTokensExpirationTime int64
-	InviteTokensToken          string
-}
-
-func listTokens(conn *sqlite.Conn) ([]listTokensResult, error) {
-	const query = `SELECT invite_tokens.role, invite_tokens.expiration_time, invite_tokens.token
-FROM invite_tokens`
-
-	var out []listTokensResult
-
-	before := func(stmt *sqlite.Stmt) {
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listTokensResult{
-			InviteTokensRole:           stmt.ColumnInt64(0),
-			InviteTokensExpirationTime: stmt.ColumnInt64(1),
-			InviteTokensToken:          stmt.ColumnText(2),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: listTokens: %w", err)
-	}
-
-	return out, err
-}
-
-func removeToken(conn *sqlite.Conn, inviteTokensToken string) error {
+func RemoveToken(conn *sqlite.Conn, inviteTokensToken string) error {
 	const query = `DELETE FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -328,14 +295,14 @@ func removeToken(conn *sqlite.Conn, inviteTokensToken string) error {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: removeToken: %w", err)
+		err = fmt.Errorf("failed query: RemoveToken: %w", err)
 	}
 
 	return err
 }
 
-func removeExpiredTokens(conn *sqlite.Conn) error {
-	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expiration_time < strftime('%s', 'now')`
+func RemoveExpiredTokens(conn *sqlite.Conn) error {
+	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expire_time < strftime('%s', 'now')`
 
 	before := func(stmt *sqlite.Stmt) {
 	}
@@ -346,31 +313,31 @@ func removeExpiredTokens(conn *sqlite.Conn) error {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: removeExpiredTokens: %w", err)
+		err = fmt.Errorf("failed query: RemoveExpiredTokens: %w", err)
 	}
 
 	return err
 }
 
-type addMemberResult struct {
+type InsertMemberResult struct {
 	SiteMembersRole int64
 }
 
-func addMember(conn *sqlite.Conn, accID []byte, siteMembersRole int64) (addMemberResult, error) {
-	const query = `INSERT OR REPLACE INTO site_members (account_id, role)
-VALUES ((SELECT id FROM accounts WHERE multihash = :accID), :siteMembersRole)
+func InsertMember(conn *sqlite.Conn, siteMembersAccountID int64, siteMembersRole int64) (InsertMemberResult, error) {
+	const query = `INSERT INTO site_members (account_id, role)
+VALUES (:siteMembersAccountID, :siteMembersRole)
 RETURNING site_members.role`
 
-	var out addMemberResult
+	var out InsertMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accID", accID)
+		stmt.SetInt64(":siteMembersAccountID", siteMembersAccountID)
 		stmt.SetInt64(":siteMembersRole", siteMembersRole)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("addMember: more than one result return for a single-kind query")
+			return errors.New("InsertMember: more than one result return for a single-kind query")
 		}
 
 		out.SiteMembersRole = stmt.ColumnInt64(0)
@@ -379,17 +346,17 @@ RETURNING site_members.role`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: addMember: %w", err)
+		err = fmt.Errorf("failed query: InsertMember: %w", err)
 	}
 
 	return out, err
 }
 
-func removeMember(conn *sqlite.Conn, accID []byte) error {
-	const query = `DELETE FROM site_members WHERE site_members.account_id =(SELECT id FROM accounts WHERE multihash = :accID )`
+func RemoveMember(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+	const query = `DELETE FROM site_members WHERE site_members.account_id = (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accID", accID)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -398,29 +365,30 @@ func removeMember(conn *sqlite.Conn, accID []byte) error {
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: removeMember: %w", err)
+		err = fmt.Errorf("failed query: RemoveMember: %w", err)
 	}
 
 	return err
 }
 
-type getMemberResult struct {
+type GetMemberResult struct {
 	SiteMembersRole int64
 }
 
-func getMember(conn *sqlite.Conn, accID []byte) (getMemberResult, error) {
+func GetMember(conn *sqlite.Conn, publicKeysPrincipal []byte) (GetMemberResult, error) {
 	const query = `SELECT site_members.role
-FROM site_members WHERE site_members.account_id =(SELECT id FROM accounts WHERE multihash = :accID )`
+FROM site_members
+WHERE site_members.account_id = (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal)`
 
-	var out getMemberResult
+	var out GetMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accID", accID)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getMember: more than one result return for a single-kind query")
+			return errors.New("GetMember: more than one result return for a single-kind query")
 		}
 
 		out.SiteMembersRole = stmt.ColumnInt64(0)
@@ -429,31 +397,31 @@ FROM site_members WHERE site_members.account_id =(SELECT id FROM accounts WHERE 
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getMember: %w", err)
+		err = fmt.Errorf("failed query: GetMember: %w", err)
 	}
 
 	return out, err
 }
 
-type listMembersResult struct {
-	SiteMembersRole   int64
-	AccountsMultihash []byte
+type ListMembersResult struct {
+	SiteMembersRole     int64
+	PublicKeysPrincipal []byte
 }
 
-func listMembers(conn *sqlite.Conn) ([]listMembersResult, error) {
-	const query = `SELECT site_members.role, accounts.multihash
+func ListMembers(conn *sqlite.Conn) ([]ListMembersResult, error) {
+	const query = `SELECT site_members.role, public_keys.principal
 FROM site_members
-JOIN accounts ON accounts.id = site_members.account_id`
+JOIN public_keys ON public_keys.id = site_members.account_id`
 
-	var out []listMembersResult
+	var out []ListMembersResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listMembersResult{
-			SiteMembersRole:   stmt.ColumnInt64(0),
-			AccountsMultihash: stmt.ColumnBytes(1),
+		out = append(out, ListMembersResult{
+			SiteMembersRole:     stmt.ColumnInt64(0),
+			PublicKeysPrincipal: stmt.ColumnBytes(1),
 		})
 
 		return nil
@@ -461,20 +429,20 @@ JOIN accounts ON accounts.id = site_members.account_id`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: listMembers: %w", err)
+		err = fmt.Errorf("failed query: ListMembers: %w", err)
 	}
 
 	return out, err
 }
 
-func addWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPublicationRecordsDocumentVersion string, webPublicationRecordsPath string) error {
-	const query = `INSERT INTO web_publication_records (block_id, document_version, path)
-VALUES ((SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash), :webPublicationRecordsDocumentVersion, :webPublicationRecordsPath)`
+func InsertWebPublicationRecord(conn *sqlite.Conn, webPublicationsDocument int64, webPublicationsVersion string, webPublicationsPath string) error {
+	const query = `INSERT INTO web_publications (document, version, path)
+VALUES (:webPublicationsDocument, :webPublicationsVersion, :webPublicationsPath)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
-		stmt.SetText(":webPublicationRecordsPath", webPublicationRecordsPath)
+		stmt.SetInt64(":webPublicationsDocument", webPublicationsDocument)
+		stmt.SetText(":webPublicationsVersion", webPublicationsVersion)
+		stmt.SetText(":webPublicationsPath", webPublicationsPath)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -483,18 +451,18 @@ VALUES ((SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash), :webPubli
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: addWebPublicationRecord: %w", err)
+		err = fmt.Errorf("failed query: InsertWebPublicationRecord: %w", err)
 	}
 
 	return err
 }
 
-func removeWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPublicationRecordsDocumentVersion string) error {
-	const query = `DELETE FROM web_publication_records WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND web_publication_records.document_version = :webPublicationRecordsDocumentVersion`
+func RemoveWebPublicationRecord(conn *sqlite.Conn, hyperEntitiesEID string, webPublicationsVersion string) error {
+	const query = `DELETE FROM web_publications WHERE web_publications.document = (SELECT hyper_entities.id FROM hyper_entities WHERE hyper_entities.eid = :hyperEntitiesEID) AND web_publications.version = :webPublicationsVersion`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
+		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":webPublicationsVersion", webPublicationsVersion)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -503,35 +471,35 @@ func removeWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPubl
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: removeWebPublicationRecord: %w", err)
+		err = fmt.Errorf("failed query: RemoveWebPublicationRecord: %w", err)
 	}
 
 	return err
 }
 
-type listWebPublicationRecordsResult struct {
-	IPFSBlocksCodec                      int64
-	IPFSBlocksMultihash                  []byte
-	WebPublicationRecordsDocumentVersion string
-	WebPublicationRecordsPath            string
+type ListWebPublicationsResult struct {
+	HyperEntitiesID        int64
+	HyperEntitiesEID       string
+	WebPublicationsVersion string
+	WebPublicationsPath    string
 }
 
-func listWebPublicationRecords(conn *sqlite.Conn) ([]listWebPublicationRecordsResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records
-JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id`
+func ListWebPublications(conn *sqlite.Conn) ([]ListWebPublicationsResult, error) {
+	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+FROM web_publications
+JOIN hyper_entities ON web_publications.document = hyper_entities.id`
 
-	var out []listWebPublicationRecordsResult
+	var out []ListWebPublicationsResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listWebPublicationRecordsResult{
-			IPFSBlocksCodec:                      stmt.ColumnInt64(0),
-			IPFSBlocksMultihash:                  stmt.ColumnBytes(1),
-			WebPublicationRecordsDocumentVersion: stmt.ColumnText(2),
-			WebPublicationRecordsPath:            stmt.ColumnText(3),
+		out = append(out, ListWebPublicationsResult{
+			HyperEntitiesID:        stmt.ColumnInt64(0),
+			HyperEntitiesEID:       stmt.ColumnText(1),
+			WebPublicationsVersion: stmt.ColumnText(2),
+			WebPublicationsPath:    stmt.ColumnText(3),
 		})
 
 		return nil
@@ -539,148 +507,74 @@ JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: listWebPublicationRecords: %w", err)
+		err = fmt.Errorf("failed query: ListWebPublications: %w", err)
 	}
 
 	return out, err
 }
 
-type getWebPublicationRecordByIDOnlyResult struct {
-	IPFSBlocksCodec                      int64
-	IPFSBlocksMultihash                  []byte
-	WebPublicationRecordsDocumentVersion string
-	WebPublicationRecordsPath            string
+type GetWebPublicationRecordByPathResult struct {
+	HyperEntitiesID        int64
+	HyperEntitiesEID       string
+	WebPublicationsVersion string
+	WebPublicationsPath    string
 }
 
-func getWebPublicationRecordByIDOnly(conn *sqlite.Conn, doc_multihash []byte) ([]getWebPublicationRecordByIDOnlyResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records
-JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
+func GetWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationsPath string) (GetWebPublicationRecordByPathResult, error) {
+	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+FROM web_publications
+JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE web_publications.path = :webPublicationsPath`
 
-	var out []getWebPublicationRecordByIDOnlyResult
+	var out GetWebPublicationRecordByPathResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, getWebPublicationRecordByIDOnlyResult{
-			IPFSBlocksCodec:                      stmt.ColumnInt64(0),
-			IPFSBlocksMultihash:                  stmt.ColumnBytes(1),
-			WebPublicationRecordsDocumentVersion: stmt.ColumnText(2),
-			WebPublicationRecordsPath:            stmt.ColumnText(3),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationRecordByIDOnly: %w", err)
-	}
-
-	return out, err
-}
-
-type getWebPublicationRecordWithVersionResult struct {
-	IPFSBlocksCodec                      int64
-	IPFSBlocksMultihash                  []byte
-	WebPublicationRecordsDocumentVersion string
-	WebPublicationRecordsPath            string
-}
-
-func getWebPublicationRecordWithVersion(conn *sqlite.Conn, doc_multihash []byte, doc_version string) (getWebPublicationRecordWithVersionResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records
-JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND web_publication_records.document_version = :doc_version`
-
-	var out getWebPublicationRecordWithVersionResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-		stmt.SetText(":doc_version", doc_version)
+		stmt.SetText(":webPublicationsPath", webPublicationsPath)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getWebPublicationRecordWithVersion: more than one result return for a single-kind query")
+			return errors.New("GetWebPublicationRecordByPath: more than one result return for a single-kind query")
 		}
 
-		out.IPFSBlocksCodec = stmt.ColumnInt64(0)
-		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
-		out.WebPublicationRecordsDocumentVersion = stmt.ColumnText(2)
-		out.WebPublicationRecordsPath = stmt.ColumnText(3)
+		out.HyperEntitiesID = stmt.ColumnInt64(0)
+		out.HyperEntitiesEID = stmt.ColumnText(1)
+		out.WebPublicationsVersion = stmt.ColumnText(2)
+		out.WebPublicationsPath = stmt.ColumnText(3)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationRecordWithVersion: %w", err)
+		err = fmt.Errorf("failed query: GetWebPublicationRecordByPath: %w", err)
 	}
 
 	return out, err
 }
 
-type getWebPublicationRecordByPathResult struct {
-	IPFSBlocksCodec                      int64
-	IPFSBlocksMultihash                  []byte
-	WebPublicationRecordsDocumentVersion string
-	WebPublicationRecordsPath            string
+type GetWebPublicationsByIDResult struct {
+	HyperEntitiesID        int64
+	HyperEntitiesEID       string
+	WebPublicationsVersion string
+	WebPublicationsPath    string
 }
 
-func getWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationRecordsPath string) (getWebPublicationRecordByPathResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records
-JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.path = :webPublicationRecordsPath`
+func GetWebPublicationsByID(conn *sqlite.Conn, hyperEntitiesEID string) ([]GetWebPublicationsByIDResult, error) {
+	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+FROM web_publications
+JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE hyper_entities.eid = :hyperEntitiesEID`
 
-	var out getWebPublicationRecordByPathResult
+	var out []GetWebPublicationsByIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":webPublicationRecordsPath", webPublicationRecordsPath)
+		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("getWebPublicationRecordByPath: more than one result return for a single-kind query")
-		}
-
-		out.IPFSBlocksCodec = stmt.ColumnInt64(0)
-		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
-		out.WebPublicationRecordsDocumentVersion = stmt.ColumnText(2)
-		out.WebPublicationRecordsPath = stmt.ColumnText(3)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationRecordByPath: %w", err)
-	}
-
-	return out, err
-}
-
-type listWebPublicationReferencesByIDOnlyResult struct {
-	IPFSBlocksCodec           int64
-	IPFSBlocksMultihash       []byte
-	ContentLinksTargetVersion string
-}
-
-func listWebPublicationReferencesByIDOnly(conn *sqlite.Conn, doc_multihash []byte) ([]listWebPublicationReferencesByIDOnlyResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.target_version
-FROM content_links
-JOIN ipfs_blocks ON content_links.target_document_id = ipfs_blocks.id WHERE content_links.source_document_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
-
-	var out []listWebPublicationReferencesByIDOnlyResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listWebPublicationReferencesByIDOnlyResult{
-			IPFSBlocksCodec:           stmt.ColumnInt64(0),
-			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
-			ContentLinksTargetVersion: stmt.ColumnText(2),
+		out = append(out, GetWebPublicationsByIDResult{
+			HyperEntitiesID:        stmt.ColumnInt64(0),
+			HyperEntitiesEID:       stmt.ColumnText(1),
+			WebPublicationsVersion: stmt.ColumnText(2),
+			WebPublicationsPath:    stmt.ColumnText(3),
 		})
 
 		return nil
@@ -688,43 +582,7 @@ JOIN ipfs_blocks ON content_links.target_document_id = ipfs_blocks.id WHERE cont
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: listWebPublicationReferencesByIDOnly: %w", err)
-	}
-
-	return out, err
-}
-
-type listWebPublicationReferencesWithVersionResult struct {
-	IPFSBlocksCodec           int64
-	IPFSBlocksMultihash       []byte
-	ContentLinksTargetVersion string
-}
-
-func listWebPublicationReferencesWithVersion(conn *sqlite.Conn, doc_multihash []byte, doc_version string) ([]listWebPublicationReferencesWithVersionResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.target_version
-FROM content_links
-JOIN ipfs_blocks ON content_links.target_document_id = ipfs_blocks.id WHERE content_links.source_document_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND content_links.source_version = :doc_version`
-
-	var out []listWebPublicationReferencesWithVersionResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":doc_multihash", doc_multihash)
-		stmt.SetText(":doc_version", doc_version)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listWebPublicationReferencesWithVersionResult{
-			IPFSBlocksCodec:           stmt.ColumnInt64(0),
-			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
-			ContentLinksTargetVersion: stmt.ColumnText(2),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: listWebPublicationReferencesWithVersion: %w", err)
+		err = fmt.Errorf("failed query: GetWebPublicationsByID: %w", err)
 	}
 
 	return out, err

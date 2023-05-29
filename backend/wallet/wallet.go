@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/lndhub"
 	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs/vcssql"
 	"mintter/backend/wallet/walletsql"
 	wallet "mintter/backend/wallet/walletsql"
 	"net/http"
@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
@@ -107,7 +108,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		credURI, err := EncodeCredentialsURL(Credentials{
 			Domain:     mintterDomain,
 			WalletType: lndhubsql.LndhubGoWalletType,
-			Login:      id.AccountID().String(),
+			Login:      id.Account().CID().String(),
 			Password:   loginSignature,
 		})
 		if err != nil {
@@ -154,63 +155,66 @@ type InvoiceRequest struct {
 // If for some reason, that device cannot create the invoice (insufficient
 // inbound liquidity) we ask the next device. We return in the first device that
 // can issue the invoice. If none of them can, then an error is raised.
-func (srv *Service) P2PInvoiceRequest(ctx context.Context, account AccountID, request InvoiceRequest) (string, error) {
+func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principal, request InvoiceRequest) (string, error) {
 	net, ok := srv.net.Get()
 	if !ok {
 		srv.log.Debug("Trying to get remote invoicebut networking not ready yet")
 		return "", fmt.Errorf("network is not ready yet")
 	}
 
-	if net.ID().AccountID().Equals(account) {
+	if net.ID().Account().Principal().String() == account.String() {
 		err := fmt.Errorf("cannot remotely issue an invoice to myself")
 		srv.log.Debug(err.Error())
 		return "", err
 	}
 
-	conn, release, err := srv.pool.Conn(ctx)
-	if err != nil {
-		return "", err
-	}
-	defer release()
-
-	all, err := vcssql.ListAccountDevices(conn)
-	if err != nil {
-		srv.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
-		return "", fmt.Errorf("couldn't list devices from account ID %s", account.String())
-	}
-
-	if devices, found := all[account]; found {
-		for _, deviceID := range devices {
-			p2pc, err := net.Client(ctx, deviceID)
-			if err != nil {
-				continue
-			}
-
-			remoteInvoice, err := p2pc.RequestInvoice(ctx, &p2p.RequestInvoiceRequest{
-				AmountSats:   request.AmountSats,
-				Memo:         request.Memo,
-				HoldInvoice:  request.HoldInvoice,
-				PreimageHash: request.PreimageHash,
-			})
-
-			if err != nil {
-				srv.log.Debug("p2p invoice request failed", zap.String("msg", err.Error()))
-				return "", fmt.Errorf("p2p invoice request failed")
-			}
-
-			if remoteInvoice.PayReq == "" {
-				return "", fmt.Errorf("received an empty invoice from remote peer")
-			}
-
-			return remoteInvoice.PayReq, nil
+	var dels []hypersql.KeyDelegationsListResult
+	if err := net.Blobs().Query(ctx, func(conn *sqlite.Conn) error {
+		list, err := hypersql.KeyDelegationsList(conn, account)
+		if err != nil {
+			return err
 		}
-		err = fmt.Errorf("none of the devices associated with the provided account were reachable")
-		srv.log.Debug(err.Error())
+		if len(list) == 0 {
+			return fmt.Errorf("request invoice: can't find devices for account %s", account)
+		}
+
+		dels = list
+
+		return nil
+	}); err != nil {
 		return "", err
 	}
-	err = fmt.Errorf("couln't find account %s", account.String())
-	srv.log.Debug(err.Error())
-	return "", err
+
+	for _, del := range dels {
+		pid, err := core.Principal(del.KeyDelegationsViewDelegate).PeerID()
+		if err != nil {
+			return "", fmt.Errorf("failed to extract peer ID: %w", err)
+		}
+		p2pc, err := net.Client(ctx, pid)
+		if err != nil {
+			continue
+		}
+
+		remoteInvoice, err := p2pc.RequestInvoice(ctx, &p2p.RequestInvoiceRequest{
+			AmountSats:   request.AmountSats,
+			Memo:         request.Memo,
+			HoldInvoice:  request.HoldInvoice,
+			PreimageHash: request.PreimageHash,
+		})
+
+		if err != nil {
+			srv.log.Debug("p2p invoice request failed", zap.String("msg", err.Error()))
+			return "", fmt.Errorf("p2p invoice request failed")
+		}
+
+		if remoteInvoice.PayReq == "" {
+			return "", fmt.Errorf("received an empty invoice from remote peer")
+		}
+
+		return remoteInvoice.PayReq, nil
+	}
+
+	return "", fmt.Errorf("couldn't get remote invoice from any peer")
 }
 
 // InsertWallet first tries to connect to the wallet with the provided credentials. On
@@ -529,13 +533,13 @@ func (srv *Service) RequestRemoteInvoice(ctx context.Context, remoteUser string,
 	//err = fmt.Errorf("force p2p transmission")
 	if err != nil {
 		srv.log.Debug("couldn't get invoice via lndhub, trying p2p...", zap.String("error", err.Error()))
-		c, err := cid.Decode(remoteUser)
+		account, err := core.DecodePrincipal(remoteUser)
 		if err != nil {
 			publicErr := fmt.Errorf("couldn't parse accountID string [%s], If using p2p transmission, remoteUser must be a valid accountID", remoteUser)
 			srv.log.Debug("error decoding cid "+publicErr.Error(), zap.String("error", err.Error()))
 			return "", publicErr
 		}
-		payReq, err = srv.P2PInvoiceRequest(ctx, c,
+		payReq, err = srv.P2PInvoiceRequest(ctx, account,
 			InvoiceRequest{
 				AmountSats:   amountSats,
 				Memo:         invoiceMemo,

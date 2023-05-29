@@ -146,6 +146,19 @@ func List(vv ...interface{}) Opt {
 	}
 }
 
+// Concat writes out multiple concatenating them.
+func Concat(vv ...interface{}) Opt {
+	return func(qb *queryBuilder) {
+		for _, v := range vv {
+			seg, isNewLine := newSegment(qb.schema, v)
+			if isNewLine {
+				panic("BUG: new lines within Concat are not allowed")
+			}
+			seg(qb)
+		}
+	}
+}
+
 // Enumeration is like List but without parens.
 func Enumeration(vv ...interface{}) Opt {
 	return func(qb *queryBuilder) {
@@ -267,6 +280,17 @@ func ResultCol(col sqlitegen.Column) ResultOpt {
 		return Result{
 			SQL:        string(col),
 			ColumnName: string(col),
+			Type:       s.GetColumnType(col),
+		}
+	}
+}
+
+// ResultColShort annotates a Column's short name to be a result of a query.
+func ResultColShort(col sqlitegen.Column) ResultOpt {
+	return func(s sqlitegen.Schema) Result {
+		return Result{
+			SQL:        col.ShortName(),
+			ColumnName: col.ShortName(),
 			Type:       s.GetColumnType(col),
 		}
 	}

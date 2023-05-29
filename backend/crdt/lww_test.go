@@ -13,6 +13,6 @@ func TestLWW(t *testing.T) {
 	lww.Set("a", 3, "C")
 	lww.Set("b", 1, "D")
 
-	want := LWW[string]{ID: ID{"a", 3}, Value: "C"}
+	want := LWW[string]{ID: ID{"a", 3, 0}, Value: "C"}
 	require.Equal(t, want, lww)
 }

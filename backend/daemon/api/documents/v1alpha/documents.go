@@ -2,32 +2,32 @@
 package documents
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/pkg/errutil"
+	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/sqlitevcs"
-	"mintter/backend/vcs/vcssql"
+	"mintter/backend/pkg/must"
 	"time"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/jaevor/go-nanoid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Discoverer is a subset of the syncing service that
 // is able to discover given Mintter objects, optionally specifying versions.
 type Discoverer interface {
-	DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error
+	DiscoverObject(context.Context, hyper.EntityID, hyper.Version) error
 	// TODO: this is here temporarily. Eventually we need to provide from the vcs
 	// so every time we save a main version, we need to provide the leaf changes.
 	ProvideCID(cid.Cid) error
@@ -44,20 +44,20 @@ type RemoteCaller interface {
 // Server implements DocumentsServer gRPC API.
 type Server struct {
 	db           *sqlitex.Pool
-	vcsdb        *sqlitevcs.DB
 	me           *future.ReadOnly[core.Identity]
 	disc         Discoverer
 	RemoteCaller RemoteCaller
+	blobs        *hyper.Storage
 }
 
 // NewServer creates a new RPC handler.
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
 	srv := &Server{
 		db:           db,
-		vcsdb:        sqlitevcs.New(db),
 		me:           me,
 		disc:         disc,
 		RemoteCaller: remoteCaller,
+		blobs:        hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
 	}
 
 	return srv
@@ -65,106 +65,80 @@ func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discov
 
 // CreateDraft implements the corresponding gRPC method.
 func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (out *documents.Document, err error) {
-	me, err := api.me.Await(ctx)
+	me, err := api.getMe()
 	if err != nil {
 		return nil, err
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	var (
-		heads       []cid.Cid
-		obj         cid.Cid
-		clock       = hlc.NewClock()
-		perma       vcs.EncodedPermanode
-		newDocument = in.ExistingDocumentId == ""
-	)
 	if in.ExistingDocumentId != "" {
-		obj, err = cid.Decode(in.ExistingDocumentId)
-		if err != nil {
-			return nil, errutil.ParseError("existing_document_id", in.ExistingDocumentId, obj, err)
-		}
+		eid := hyper.NewEntityID("mintter:document", in.ExistingDocumentId)
 
-		_, err := conn.GetDraftChange(obj)
+		_, err := api.blobs.FindDraft(ctx, eid)
 		if err == nil {
-			return nil, fmt.Errorf("already have draft for document %s", in.ExistingDocumentId)
+			return nil, status.Errorf(codes.FailedPrecondition, "draft for %s already exists", in.ExistingDocumentId)
 		}
 
-		heads, err = conn.GetHeads(obj, false)
+		entity, err := api.blobs.LoadEntity(ctx, eid)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, h := range heads {
-			ts, err := conn.GetChangeTimestamp(h)
-			if err != nil {
-				return nil, err
-			}
-			clock.Track(hlc.Unpack(ts))
-		}
-
-		blk, err := conn.GetBlock(ctx, obj)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get permanode for existing document %s: %w", in.ExistingDocumentId, err)
-		}
-
-		perma.ID = blk.Cid()
-		perma.Data = blk.RawData()
-		var docperma sqlitevcs.DocumentPermanode
-		if err := cbornode.DecodeInto(perma.Data, &docperma); err != nil {
-			return nil, fmt.Errorf("failed to decode permanode for document %s: %w", obj, err)
-		}
-		perma.Permanode = docperma
-	} else {
-		perma, err = vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(me.AccountID(), clock.Now()))
+		del, err := api.getDelegation(ctx)
 		if err != nil {
 			return nil, err
 		}
-		obj = perma.ID
-	}
 
-	data, err := proto.Marshal(&documents.UpdateDraftRequestV2{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode empty patch: %w", err)
-	}
-
-	ch := vcs.NewChange(me, obj, heads, sqlitevcs.KindDocument, clock.Now(), data)
-	vc, err := ch.Block()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := conn.WithTx(true, func() error {
-		if newDocument {
-			conn.NewObject(perma)
+		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{})
+		if err != nil {
+			return nil, err
 		}
-		conn.StoreChange(vc)
-		conn.MarkChangeAsDraft(obj, vc.Cid())
-		return nil
-	}); err != nil {
+
+		if err := api.blobs.SaveDraftBlob(ctx, eid, hb); err != nil {
+			return nil, err
+		}
+
+		return api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.ExistingDocumentId})
+	}
+
+	docid := newDocumentID()
+	eid := hyper.NewEntityID("mintter:document", docid)
+
+	entity := hyper.NewEntity(eid)
+
+	del, err := api.getDelegation(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	var doc *docState
-	if err := conn.WithTx(false, func() error {
-		doc, err = api.loadDocument(ctx, conn, true, obj, []cid.Cid{vc.Cid()})
-		return err
-	}); err != nil {
+	dm, err := newDocModel(entity, me.DeviceKey(), del)
+	if err != nil {
 		return nil, err
 	}
 
-	return doc.hydrate(), nil
+	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
+
+	now := time.Now()
+	if err := dm.SetCreateTime(now); err != nil {
+		return nil, err
+	}
+	if err := dm.SetAuthor(me.Account().Principal()); err != nil {
+		return nil, err
+	}
+
+	_, err = dm.Commit(ctx, api.blobs)
+	if err != nil {
+		return nil, err
+	}
+
+	return api.GetDraft(ctx, &documents.GetDraftRequest{
+		DocumentId: docid,
+	})
 }
 
 // UpdateDraftV2 implements the corresponding gRPC method.
 func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode document id: %w", err)
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID")
 	}
 
 	if in.Changes == nil {
@@ -176,180 +150,137 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		return nil, err
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	draft, err := api.blobs.LoadDraft(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
+	if draft == nil {
+		return nil, status.Errorf(codes.NotFound, "no draft for entity %s", eid)
+	}
 
-	chid, err := conn.GetDraftChange(oid)
+	del, err := api.getDelegation(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("no draft change for document %s: %w", in.DocumentId, err)
+		return nil, err
 	}
 
-	var oldChange vcs.Change
-	oldPatch := &documents.UpdateDraftRequestV2{}
-	{
-		blk, err := conn.GetBlock(ctx, chid)
-		if err != nil {
-			return nil, err
-		}
-
-		oldChange, err = vcs.DecodeChange(blk.RawData())
-		if err != nil {
-			return nil, err
-		}
-
-		if err := proto.Unmarshal(oldChange.Body, oldPatch); err != nil {
-			return nil, err
-		}
-	}
-
-	// Combine new patch with the old one and cleanup redundant operations.
-	// This is a bit nasty at the moment. Will need to be improved.
-	// We want to store only latest relevant operation, so we iterate backwards
-	// combining old an new patch.
-	newPatch := &documents.UpdateDraftRequestV2{}
-	if err := cleanupPatch(newPatch, oldPatch, in); err != nil {
-		return nil, fmt.Errorf("failed to cleanup draft patch: %w", err)
-	}
-
-	newBody, err := proto.Marshal(newPatch)
+	mut, err := newDocModel(draft.Entity, me.DeviceKey(), del)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal updated change body: %w", err)
+		return nil, err
 	}
 
-	newChange, err := vcs.NewChange(me, oid, oldChange.Parents, oldChange.Kind,
-		hlc.NewClockAt(oldChange.Time).Now(), newBody).Block()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rewritten change: %w", err)
+	if err := mut.restoreDraft(draft.CID, draft.Change); err != nil {
+		return nil, fmt.Errorf("failed to restore draft: %w", err)
 	}
 
-	if err := conn.WithTx(true, func() error {
-		conn.RewriteChange(chid, newChange)
-		return nil
-	}); err != nil {
+	for _, op := range in.Changes {
+		switch o := op.Op.(type) {
+		case *documents.DocumentChange_SetTitle:
+			if err := mut.SetTitle(o.SetTitle); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_MoveBlock_:
+			if err := mut.MoveBlock(o.MoveBlock.BlockId, o.MoveBlock.Parent, o.MoveBlock.LeftSibling); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_DeleteBlock:
+			if err := mut.DeleteBlock(o.DeleteBlock); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_ReplaceBlock:
+			if err := mut.ReplaceBlock(o.ReplaceBlock); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_SetWebUrl:
+			if err := mut.SetWebURL(o.SetWebUrl); err != nil {
+				return nil, err
+			}
+		default:
+			panic("BUG: unhandled document change")
+		}
+	}
+
+	if _, err := mut.Commit(ctx, api.blobs); err != nil {
 		return nil, err
 	}
 
 	return &emptypb.Empty{}, nil
 }
 
-func cleanupPatch(newPatch, oldPatch, incoming *documents.UpdateDraftRequestV2) error {
-	newPatch.Changes = make([]*documents.DocumentChange, 0, len(oldPatch.Changes)+len(incoming.Changes))
-	for _, c := range oldPatch.Changes {
-		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
-		if ok {
-			op.ReplaceBlock.Revision = ""
-		}
-		newPatch.Changes = append(newPatch.Changes, c)
-	}
-
-	for _, c := range incoming.Changes {
-		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
-		if ok {
-			op.ReplaceBlock.Revision = ""
-		}
-		newPatch.Changes = append(newPatch.Changes, c)
-	}
-
-	return nil
-
-	// TODO(burdiyan): cleanup patch from redundant operations.
-	// newPatch.Changes = make([]*documents.DocumentChange, len(oldPatch.Changes)+len(incoming.Changes))
-
-	// var (
-	// 	changedTitle    bool
-	// 	changedSubtitle bool
-	// )
-
-	// for i := len(incoming.Changes) - 1; i >= 0; i-- {
-	// 	op :=
-	// }
-}
-
 // GetDraft implements the corresponding gRPC method.
 func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
-	// TODO: Check if draft change exists.
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
+	}
 
-	oid, err := cid.Decode(in.DocumentId)
+	me, err := api.getMe()
 	if err != nil {
 		return nil, err
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
+	if entity == nil {
+		return nil, status.Errorf(codes.NotFound, "not found draft for entity %s", eid)
+	}
 
-	var doc *docState
-	if err := conn.WithTx(false, func() error {
-		// We don't want to get changes that we might have created concurrently with this draft.
-		draft, err := conn.GetDraftChange(oid)
-		if err != nil {
-			return err
-		}
-
-		doc, err = api.loadDocument(ctx, conn, true, oid, []cid.Cid{draft})
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	del, err := api.getDelegation(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return doc.hydrate(), nil
+	mut, err := newDocModel(entity, me.DeviceKey(), del)
+	if err != nil {
+		return nil, err
+	}
+
+	return mut.hydrate(ctx, api.blobs)
 }
 
 // ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	conn, release, err := api.db.Conn(ctx)
+	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
-	release()
-	if err != nil {
-		return nil, err
+	resp := &documents.ListDraftsResponse{
+		Documents: make([]*documents.Document, 0, len(entities)),
 	}
 
-	out := &documents.ListDraftsResponse{
-		Documents: make([]*documents.Document, 0, len(docs)),
-	}
-
-	// TODO(burdiyan): this is a workaround. Need to do better, and only select relevant metadata.
-	for _, d := range docs {
+	for _, e := range entities {
+		docid := e.TrimPrefix("mintter:document:")
 		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
-			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
+			DocumentId: docid,
 		})
 		if err != nil {
 			continue
 		}
-		out.Documents = append(out.Documents, draft)
+		resp.Documents = append(resp.Documents, draft)
 	}
 
-	return out, nil
+	return resp, nil
 }
 
 // PublishDraft implements the corresponding gRPC method.
 func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	oid, err := eid.CID()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to conver document to CID: %w", err)
 	}
-	defer release()
 
-	conn.PublishDraft(oid)
-
-	if err := conn.Err(); err != nil {
+	if err := api.blobs.PublishDraft(ctx, eid); err != nil {
 		return nil, err
 	}
 
@@ -366,40 +297,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 // DeleteDraft implements the corresponding gRPC method.
 func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify draft ID to delete")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	ch, err := conn.GetDraftChange(oid)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := conn.WithTx(true, func() error {
-		if err := conn.DeleteBlock(ctx, ch); err != nil {
-			return fmt.Errorf("failed to delete draft %s: %w", in.DocumentId, err)
-		}
-
-		// TODO(burdiyan): make this more efficient. Counting is enough, don't need to list.
-		list, err := conn.ListChanges(oid)
-		if err != nil {
-			return err
-		}
-
-		if len(list) == 0 {
-			if err := conn.DeleteBlock(ctx, oid); err != nil {
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
+	if err := api.blobs.DeleteDraft(ctx, eid); err != nil {
 		return nil, err
 	}
 
@@ -407,21 +311,15 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 }
 
 // GetPublication implements the corresponding gRPC method.
-func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (docpb *documents.Publication, err error) {
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	var inVersion vcs.Version
-	if in.Version != "" {
-		inVersion, err = vcs.ParseVersion(in.Version)
-		if err != nil {
-			return nil, err
-		}
-	}
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	version := hyper.Version(in.Version)
 
-	pub, err := api.loadPublication(ctx, oid, inVersion)
+	pub, err := api.loadPublication(ctx, eid, version)
 	if err == nil {
 		return pub, nil
 	}
@@ -441,77 +339,71 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
-	if err := api.disc.DiscoverObject(ctx, oid, inVersion.CIDs()); err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", oid.String(), inVersion.String())
+	if err := api.disc.DiscoverObject(ctx, eid, version); err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
 	}
 
-	return api.loadPublication(ctx, oid, inVersion)
+	return api.loadPublication(ctx, eid, version)
 }
 
-func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Version) (*documents.Publication, error) {
-	conn, release, err := api.vcsdb.Conn(ctx)
+func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, version hyper.Version) (docpb *documents.Publication, err error) {
+	var entity *hyper.Entity
+	if version != "" {
+		heads, err := hyper.Version(version).Parse()
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "bad version: %v", err)
+		}
+
+		entity, err = api.blobs.LoadEntityFromHeads(ctx, docid, heads...)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		entity, err = api.blobs.LoadEntity(ctx, docid)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if entity == nil {
+		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", docid)
+	}
+
+	me, err := api.getMe()
 	if err != nil {
 		return nil, err
 	}
-	defer release()
 
-	var found bool
-	var doc *docState
-	if err := conn.WithTx(false, func() error {
-		heads := v.CIDs()
-		if heads == nil {
-			heads, err = conn.GetHeads(oid, false)
-			if err != nil {
-				return err
-			}
-		}
-		if heads == nil {
-			return fmt.Errorf("not found any changes for publication %s", oid)
-		}
-
-		doc, err = api.loadDocument(ctx, conn, false, oid, heads)
-		if err != nil {
-			return err
-		}
-		found = true
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to find object %q at version %q: %v", oid.String(), v.String(), err)
+	del, err := api.getDelegation(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if !found {
-		return nil, status.Errorf(codes.NotFound, "not found object %q at version %q", oid.String(), v.String())
+	mut, err := newDocModel(entity, me.DeviceKey(), del)
+	if err != nil {
+		return nil, err
 	}
 
-	docpb := doc.hydrate()
-	docpb.PublishTime = docpb.UpdateTime
+	doc, err := mut.hydrate(ctx, api.blobs)
+	if err != nil {
+		return nil, err
+	}
+	doc.PublishTime = doc.UpdateTime
 
 	return &documents.Publication{
-		Document: docpb,
-		Version:  doc.version(),
+		Document: doc,
+		Version:  mut.e.Version().String(),
 	}, nil
 }
 
 // DeletePublication implements the corresponding gRPC method.
 func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
-	c, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
 	}
 
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
+	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	if err := conn.BeginTx(true); err != nil {
-		return nil, err
-	}
-
-	obj := conn.LookupPermanode(c)
-	conn.DeleteObject(obj)
-	if err := conn.Commit(); err != nil {
+	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
 		return nil, err
 	}
 
@@ -520,66 +412,79 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	conn, release, err := api.db.Conn(ctx)
+	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
-	release()
-	if err != nil {
-		return nil, err
+	resp := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, 0, len(entities)),
 	}
 
-	out := &documents.ListPublicationsResponse{
-		Publications: make([]*documents.Publication, 0, len(docs)),
-	}
-
-	// TODO(burdiyan): this is a workaround. Need to do better, and only select relevant metadata.
-	for _, d := range docs {
-		draft, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
-			LocalOnly:  true,
+	for _, e := range entities {
+		docid := e.TrimPrefix("mintter:document:")
+		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
+			DocumentId: docid,
 		})
 		if err != nil {
 			continue
 		}
-		out.Publications = append(out.Publications, draft)
+		resp.Publications = append(resp.Publications, pub)
+	}
+
+	return resp, nil
+}
+
+func (api *Server) getMe() (core.Identity, error) {
+	me, ok := api.me.Get()
+	if !ok {
+		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
+	}
+	return me, nil
+}
+
+func (api *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
+	me, err := api.getMe()
+	if err != nil {
+		return cid.Undef, err
+	}
+
+	var out cid.Cid
+
+	// TODO(burdiyan): need to cache this. Makes no sense to always do this.
+	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		acc := me.Account().Principal()
+		dev := me.DeviceKey().Principal()
+
+		list, err := hypersql.KeyDelegationsList(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		for _, res := range list {
+			if bytes.Equal(dev, res.KeyDelegationsViewDelegate) {
+				out = cid.NewCidV1(uint64(res.KeyDelegationsViewBlobCodec), res.KeyDelegationsViewBlobMultihash)
+				return nil
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return out, fmt.Errorf("BUG: failed to find our own key delegation")
 	}
 
 	return out, nil
 }
 
-func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, includeDrafts bool, oid cid.Cid, heads []cid.Cid) (*docState, error) {
-	obj := conn.LookupPermanode(oid)
-	var cs sqlitevcs.ChangeSet
-	v := vcs.NewVersion(heads...)
-	if !v.IsZero() {
-		ver := conn.PublicVersionToLocal(v)
-		cs = conn.ResolveChangeSet(obj, ver)
-	}
+// Almost same as standard nanoid, but removing non-alphanumeric chars, to get a bit nicer selectable string.
+// Using a bit larger length to compensate.
+// See https://zelark.github.io/nano-id-cc for playing around with collision resistance.
+var nanogen = must.Do2(nanoid.CustomASCII("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 22))
 
-	var createTime time.Time
-	var author cid.Cid
-	{
-		blk, err := conn.GetBlock(ctx, oid)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get permanode for draft %s: %w", oid, err)
-		}
-
-		var docperma sqlitevcs.DocumentPermanode
-		if err := cbornode.DecodeInto(blk.RawData(), &docperma); err != nil {
-			return nil, fmt.Errorf("failed to decode permanode for draft %s: %w", oid, err)
-		}
-
-		createTime = docperma.CreateTime.Time()
-		author = docperma.Owner
-	}
-	doc := newDocState(oid, author, createTime)
-
-	conn.IterateChanges(oid, includeDrafts, cs, func(vc vcs.VerifiedChange) error {
-		return doc.applyChange(vc)
-	})
-
-	return doc, nil
+func newDocumentID() string {
+	return nanogen()
 }

@@ -7,9 +7,10 @@ import (
 )
 
 func TestIDSorting(t *testing.T) {
-	require.True(t, ID{"alice", 1}.Less(ID{"bob", 1}))
-	require.False(t, ID{"zalice", 1}.Less(ID{"bob", 1}))
-	require.True(t, ID{"zalice", 1}.Less(ID{"bob", 2}))
+	require.True(t, ID{"alice", 1, 0}.Less(ID{"bob", 1, 0}))
+	require.False(t, ID{"zalice", 1, 0}.Less(ID{"bob", 1, 0}))
+	require.True(t, ID{"zalice", 1, 0}.Less(ID{"bob", 2, 0}))
+	require.True(t, ID{"zalice", 1, 0}.Less(ID{"zalice", 1, 1}))
 }
 
 func TestFrontier(t *testing.T) {
@@ -25,6 +26,6 @@ func TestFrontier(t *testing.T) {
 	require.NoError(t, f.Track(id))
 
 	require.Equal(t, 3, f.maxClock)
-	require.Equal(t, 2, f.lastSeen["alice"])
-	require.Equal(t, 3, f.lastSeen["bob"])
+	require.Equal(t, 2, f.lastSeen["alice"].Clock)
+	require.Equal(t, 3, f.lastSeen["bob"].Clock)
 }

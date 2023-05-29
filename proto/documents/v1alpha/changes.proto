@@ -24,7 +24,7 @@ message GetChangeInfoRequest {
 // Request to list changes.
 message ListChangesRequest {
   // Required. ID of the Mintter object to list changes for.
-  string object_id = 1;
+  string document_id = 1;
 
   // Optional. Number of results per page.
   int32 page_size = 2;
