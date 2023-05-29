@@ -1,32 +1,26 @@
-import { 
+import { toast } from "@app/toast";
+import {
   File as FileType,
-  isFile,
-  isFlowContent,
-  paragraph,
-  statement,
-  text,
-} from "@mintter/shared"
+  isFile
+} from "@mintter/shared";
 import {
   Button,
   File as FileIcon,
   Label,
   Popover,
   SizableText,
-  Tabs
-} from '@mintter/ui'
-import { XStack, YStack } from "@mintter/ui"
-import { WebviewWindow } from "@tauri-apps/api/window"
+  Tabs, XStack, YStack
+} from '@mintter/ui';
 import { save } from "@tauri-apps/api/dialog";
-import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
 import { getClient, ResponseType } from "@tauri-apps/api/http";
-import { appDataDir, appDir, downloadDir } from '@tauri-apps/api/path';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react"
-import { Editor, Path, Transforms } from "slate"
-import { ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic } from "slate-react"
-import { EditorPlugin } from "../types"
-import { findPath } from "../utils"
-import { toast } from "@app/toast";
+import { appDataDir } from '@tauri-apps/api/path';
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { Transforms } from "slate";
+import { ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic } from "slate-react";
 import { EditorMode } from "../plugin-utils";
+import { EditorPlugin } from "../types";
+import { findPath } from "../utils";
 
 interface InnerFileType extends FileType {
   size: number
@@ -189,41 +183,34 @@ function FileComponent({assign, element, file}: InnerFileProps) {
 
 function FileForm({assign, element}: InnerFileProps) {
   const [tabState, setTabState] = useState('upload')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileName, setFileName] = useState<{name: string; color: string}>({
     name: 'Upload File',
     color: 'black',
   })
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const fileList = event.target.files
-    if (fileList) {
-      if (fileList[0].size <= 62914560) {
-        setSelectedFile(fileList[0])
-        setFileName({name: fileList[0].name, color: 'black'})
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
-  }
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const uploadedFile = event.target.files[0]
+      if (uploadedFile && uploadedFile.size <= 62914560) {
+        const {size, name} = uploadedFile
+        const formData = new FormData()
+        formData.append('file', uploadedFile)
 
-  const handleUpload = async () => {
-    if (selectedFile) {
-      const {size, name} = selectedFile
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-
-      try {
-        const response = await fetch(
-          'http://localhost:55001/ipfs/file-upload',
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-        const data = await response.text()
-        assign({url: data, size: size, name: name} as InnerFileType)
-      } catch (error) {
-        console.error(error)
+        try {
+          const response = await fetch(
+            'http://localhost:55001/ipfs/file-upload',
+            {
+              method: 'POST',
+              body: formData,
+            },
+          )
+          const data = await response.text()
+          assign({url: data, size: size, name: name} as InnerFileType)
+        } catch (error) {
+          console.error(error)
+        }
       }
+      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
@@ -325,7 +312,7 @@ function FileForm({assign, element}: InnerFileProps) {
                     borderColor="lightgrey"
                     borderWidth="$0.5"
                     size="$3"
-                    width={400}
+                    width={500}
                     justifyContent="center"
                     hoverStyle={{
                       backgroundColor: 'lightgrey',
@@ -350,21 +337,9 @@ function FileForm({assign, element}: InnerFileProps) {
                       padding: '0 2px',
                       display: 'none',
                     }}
-                    onChange={handleFileChange}
+                    onChange={handleUpload}
                   />
                 </XStack>
-                <Popover.Close asChild>
-                  <Button
-                    size="$2"
-                    flex={0}
-                    flexShrink={0}
-                    theme={fileName.color === 'red' ? 'gray' : 'green'}
-                    disabled={fileName.color === 'red' ? true : false}
-                    onPress={handleUpload}
-                  >
-                    Save
-                  </Button>
-                </Popover.Close>
               </XStack>
             </Tabs.Content>
             {/* <Tabs.Content value="embed">

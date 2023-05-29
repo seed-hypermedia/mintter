@@ -1,37 +1,36 @@
-import {imageMachine} from '@app/editor/image/image-machine'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath} from '@app/editor/utils'
+import { imageMachine } from '@app/editor/image/image-machine'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { findPath } from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
   isImage,
   paragraph,
   statement,
-  text,
+  text
 } from '@mintter/shared'
 import {
   Button,
-  ImageIcon,
-  Label,
+  ImageIcon, Label,
   Popover,
   SizableText,
   Tabs,
   TextArea,
   XStack,
-  YStack,
+  YStack
 } from '@mintter/ui'
-import {useActor, useInterpret} from '@xstate/react'
-import {ChangeEvent, FormEvent, useCallback, useMemo, useState} from 'react'
-import {Editor, Path, Transforms} from 'slate'
+import { useActor, useInterpret } from '@xstate/react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { Editor, Path, Transforms } from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
   useFocused,
   useSelected,
-  useSlateStatic,
+  useSlateStatic
 } from 'slate-react'
-import {ActorRefFrom} from 'xstate'
-import type {EditorPlugin} from '../types'
+import { ActorRefFrom } from 'xstate'
+import type { EditorPlugin } from '../types'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -189,15 +188,11 @@ function ImageComponent({service, element}: InnerImageProps) {
 
 function ImageForm({service, element}: InnerImageProps) {
   const [state, send] = useActor(service)
-  const [open, setOpen] = useState(true)
   const [tabState, setTabState] = useState('upload')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileName, setFileName] = useState<{name: string; color: string}>({
-    name: 'Upload File',
+    name: 'Upload Image',
     color: 'black',
   })
-  const selected = useSelected()
-  const focused = useFocused()
 
   // function submitImage(event: FormEvent<HTMLFormElement>) {
   //   event.preventDefault()
@@ -207,34 +202,28 @@ function ImageForm({service, element}: InnerImageProps) {
   //   send({type: 'IMAGE.SUBMIT', value})
   // }
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const fileList = event.target.files
-    if (fileList) {
-      if (fileList[0].size <= 62914560) {
-        setSelectedFile(fileList[0])
-        setFileName({name: fileList[0].name, color: 'black'})
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
-  }
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const uploadedFile = event.target.files[0]
+      if (uploadedFile && uploadedFile.size <= 62914560) {
+        const formData = new FormData()
+        formData.append('file', uploadedFile)
 
-  const handleUpload = async () => {
-    if (selectedFile) {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-
-      try {
-        const response = await fetch(
-          'http://localhost:55001/ipfs/file-upload',
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-        const data = await response.text()
-        send({type: 'IMAGE.SUBMIT', value: data})
-      } catch (error) {
-        console.error(error)
+        try {
+          const response = await fetch(
+            'http://localhost:55001/ipfs/file-upload',
+            {
+              method: 'POST',
+              body: formData,
+            },
+          )
+          const data = await response.text()
+          send({type: 'IMAGE.SUBMIT', value: data})
+        } catch (error) {
+          console.error(error)
+        }
       }
+      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
@@ -327,7 +316,6 @@ function ImageForm({service, element}: InnerImageProps) {
                 <SizableText size="$2" color='black'>Embed Link</SizableText>
               </Tabs.Tab> */}
             </Tabs.List>
-
             <Tabs.Content value="upload">
               <XStack padding="$4" alignItems="center" backgroundColor="white">
                 <XStack flex={1} backgroundColor="white">
@@ -336,7 +324,7 @@ function ImageForm({service, element}: InnerImageProps) {
                     borderColor="lightgrey"
                     borderWidth="$0.5"
                     size="$3"
-                    width={400}
+                    width={500}
                     justifyContent="center"
                     hoverStyle={{
                       backgroundColor: 'lightgrey',
@@ -361,50 +349,40 @@ function ImageForm({service, element}: InnerImageProps) {
                       padding: '0 2px',
                       display: 'none',
                     }}
-                    onChange={handleFileChange}
+                    onChange={handleUpload}
                     accept="image/png, image/jpg, image/gif, image/jpeg"
                   />
                 </XStack>
-                <Popover.Close asChild>
-                  <Button
-                    size="$2"
-                    flex={0}
-                    flexShrink={0}
-                    theme={fileName.color === 'red' ? 'gray' : 'green'}
-                    disabled={fileName.color === 'red' ? true : false}
-                    onPress={handleUpload}
-                  >
-                    Save
-                  </Button>
-                </Popover.Close>
               </XStack>
             </Tabs.Content>
             {/* <Tabs.Content value="embed">
-              <SizableText padding="$4" alignItems="center" backgroundColor='white'>Just test</SizableText>
-            </Tabs.Content> */}
-            {/* <Tabs.Content value="embed">
-              <Box
-                as="form"
-                css={{
-                  width: '$full',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '$4',
-                }}
-                onSubmit={submitImage}
-              >
-                <Input placeholder="Add an Image URL" name="url" />
-                <Button type="submit">Save</Button>
+              <XStack padding="$4" alignItems="center" backgroundColor="white">
+                <Input
+                  width={380}
+                  size="$3"
+                  marginRight="$3"
+                  borderColor="lightgrey"
+                  borderWidth="$0.5"
+                  borderRadius="$0"
+                  color="black"
+                  placeholder="Add an Image URL"
+                  focusStyle={{
+                    borderColor: "lightgrey",
+                    outlineWidth: 0,
+                    cursor: 'pointer',
+                  }}
+                />
                 <Button
-                  type="button"
-                  size="0"
-                  variant="ghost"
-                  color="muted"
-                  onClick={() => send('IMAGE.CANCEL')}
+                  size="$3"
+                  flex={0}
+                  flexShrink={0}
+                  theme={fileName.color === 'red' ? 'gray' : 'green'}
+                  disabled={fileName.color === 'red' ? true : false}
+                  // onPress={handleUpload}
                 >
-                  Cancel
+                  Save
                 </Button>
-              </Box>
+              </XStack>
             </Tabs.Content> */}
           </Tabs>
         </Popover.Content>
