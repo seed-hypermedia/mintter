@@ -1,6 +1,6 @@
 import {accountsClient} from '@app/api-clients'
 import {queryKeys} from '@app/models/query-keys'
-import {Account, Device} from '@mintter/shared'
+import {Device} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
@@ -17,7 +17,7 @@ export function useContactsList() {
 
 export function useConnectionSummary() {
   const peerInfo = useConnectedPeers()
-  const connectedPeers = peerInfo.data?.peerList || []
+  const connectedPeers = peerInfo.data || []
   return {
     online: connectedPeers.length > 0,
     connectedCount: connectedPeers.length,
@@ -34,9 +34,7 @@ export function useAccountWithDevices(accountId: string) {
         const deviceId = device.deviceId
         return {
           deviceId,
-          isConnected: !!peers.data?.peerList.find(
-            (peer) => peer.deviceId === deviceId,
-          ),
+          isConnected: !!peers.data?.find((peer) => peer.id === deviceId),
         }
       },
     ),

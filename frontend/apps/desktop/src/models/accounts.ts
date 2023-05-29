@@ -35,7 +35,7 @@ export function useAllAccounts() {
 
 export function useAccountIsConnected(account: Account) {
   const peers = useConnectedPeers()
-  return !!peers.data?.peerList.find((peer) => peer.accountId == account.id)
+  return !!peers.data?.find((peer) => peer.accountId == account.id)
 }
 
 export function useMyAccount() {

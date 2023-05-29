@@ -4,10 +4,7 @@ import {useDaemonReady} from '@app/node-status-context'
 import {appQueryClient} from '@app/query-client'
 import {ConnectError} from '@bufbuild/connect-web'
 import {PeerInfo} from '@mintter/shared'
-import {
-  ConnectionStatus,
-  ListPeersResponse,
-} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
+import {ConnectionStatus} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
 import {
   FetchQueryOptions,
   useQuery,
@@ -16,17 +13,16 @@ import {
 import {queryKeys} from './query-keys'
 
 export function useConnectedPeers(
-  options: UseQueryOptions<ListPeersResponse, ConnectError> = {},
+  options: UseQueryOptions<PeerInfo[], ConnectError> = {},
 ) {
   let isDaemonReady = useDaemonReady()
-  return useQuery<ListPeersResponse, ConnectError>({
+  return useQuery<PeerInfo[], ConnectError>({
     queryKey: [queryKeys.GET_PEERS],
     queryFn: async () => {
-      let list = await networkingClient.listPeers({})
-      list.peers = list.peers.filter((info) => {
+      const listed = await networkingClient.listPeers({})
+      return listed.peers.filter((info) => {
         return info.connectionStatus === ConnectionStatus.CONNECTED
       })
-      return list
     },
     enabled: isDaemonReady,
     ...options,
