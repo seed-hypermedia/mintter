@@ -388,6 +388,7 @@ export function useSitePublishDraft(draftId: string | undefined) {
         appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, input])
         appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
         appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+        appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         navigate({
           key: 'publication',
           documentId: docId,
