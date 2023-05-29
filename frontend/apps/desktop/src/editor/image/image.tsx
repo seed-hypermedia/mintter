@@ -11,7 +11,8 @@ import {
 } from '@mintter/shared'
 import {
   Button,
-  ImageIcon, Label,
+  Form,
+  ImageIcon, Input, Label,
   Popover,
   SizableText,
   Tabs,
@@ -189,18 +190,37 @@ function ImageComponent({service, element}: InnerImageProps) {
 function ImageForm({service, element}: InnerImageProps) {
   const [state, send] = useActor(service)
   const [tabState, setTabState] = useState('upload')
+  const [url, setUrl] = useState('')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
     name: 'Upload Image',
     color: 'black',
   })
 
-  // function submitImage(event: FormEvent<HTMLFormElement>) {
-  //   event.preventDefault()
+  const submitImage = async (url: string) => {
+    if (isValidUrl(url)) {
+      const blob = await fetch(url).then(res => res.blob())
+      const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
+      if (webFile && webFile.size <= 62914560) {
+        const formData = new FormData()
+        formData.append('file', webFile)
 
-  //   let formData = new FormData(event.currentTarget)
-  //   let value: string = formData.get('url')?.toString() || ''
-  //   send({type: 'IMAGE.SUBMIT', value})
-  // }
+        try {
+          const response = await fetch(
+            'http://localhost:55001/ipfs/file-upload',
+            {
+              method: 'POST',
+              body: formData,
+            },
+          )
+          const data = await response.text()
+          send({type: 'IMAGE.SUBMIT', value: data})
+        } catch (error) {
+          console.error(error)
+        }
+      }
+      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+    }
+  }
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -224,6 +244,16 @@ function ImageForm({service, element}: InnerImageProps) {
         }
       }
       else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+    }
+  }
+
+  const isValidUrl = (urlString: string) => {
+    try { 
+      return Boolean(new URL(urlString)); 
+    }
+    catch(e) {
+      console.log(e)
+      return false; 
     }
   }
 
@@ -295,10 +325,10 @@ function ImageForm({service, element}: InnerImageProps) {
                 }}
               >
                 <SizableText size="$2" color="black">
-                  Upload
+                  Upload Image
                 </SizableText>
               </Tabs.Tab>
-              {/* <Tabs.Tab
+              <Tabs.Tab
                 unstyled
                 value="embed"
                 paddingHorizontal="$4"
@@ -314,7 +344,7 @@ function ImageForm({service, element}: InnerImageProps) {
                 }}
               >
                 <SizableText size="$2" color='black'>Embed Link</SizableText>
-              </Tabs.Tab> */}
+              </Tabs.Tab>
             </Tabs.List>
             <Tabs.Content value="upload">
               <XStack padding="$4" alignItems="center" backgroundColor="white">
@@ -355,35 +385,48 @@ function ImageForm({service, element}: InnerImageProps) {
                 </XStack>
               </XStack>
             </Tabs.Content>
-            {/* <Tabs.Content value="embed">
+            <Tabs.Content value="embed">
               <XStack padding="$4" alignItems="center" backgroundColor="white">
-                <Input
-                  width={380}
-                  size="$3"
-                  marginRight="$3"
-                  borderColor="lightgrey"
-                  borderWidth="$0.5"
-                  borderRadius="$0"
-                  color="black"
-                  placeholder="Add an Image URL"
-                  focusStyle={{
-                    borderColor: "lightgrey",
-                    outlineWidth: 0,
-                    cursor: 'pointer',
-                  }}
-                />
-                <Button
-                  size="$3"
-                  flex={0}
-                  flexShrink={0}
-                  theme={fileName.color === 'red' ? 'gray' : 'green'}
-                  disabled={fileName.color === 'red' ? true : false}
-                  // onPress={handleUpload}
+                <Form
+                  alignItems="center"
+                  onSubmit={() => submitImage(url)}
+                  borderWidth={0}
                 >
-                  Save
-                </Button>
+                  <XStack>
+                    <Input
+                      width={380}
+                      size="$3"
+                      marginRight="$3"
+                      borderColor="lightgrey"
+                      borderWidth="$0.5"
+                      borderRadius="$0"
+                      color="black"
+                      placeholder="Add an Image URL"
+                      focusStyle={{
+                        borderColor: "lightgrey",
+                        outlineWidth: 0,
+                        cursor: 'pointer',
+                      }}
+                      onChange={(e) => setUrl(e.nativeEvent.text)}
+                    />
+                    <Form.Trigger asChild>
+                      <Button
+                        size="$3"
+                        flex={0}
+                        flexShrink={0}
+                        theme={fileName.color === 'red' ? 'gray' : 'green'}
+                        disabled={fileName.color === 'red' ? true : false}
+                        focusStyle={{
+                          outlineWidth: 0,
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </Form.Trigger>
+                  </XStack>
+                </Form>
               </XStack>
-            </Tabs.Content> */}
+            </Tabs.Content>
           </Tabs>
         </Popover.Content>
       </Popover>
