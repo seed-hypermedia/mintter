@@ -58,16 +58,23 @@ func TestDaemonSmoke(t *testing.T) {
 	require.NotNil(t, reg)
 	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
 
+	_, err = core.DecodePrincipal(reg.AccountId)
+	require.NoError(t, err, "account must have principal encoding")
+
 	_, err = dmn.Me.Await(ctx)
 	require.NoError(t, err)
 
 	_, err = dmn.Net.Await(ctx)
 	require.NoError(t, err)
 
+	me := dmn.Me.MustGet()
+	require.Equal(t, me.Account().String(), reg.AccountId)
+
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
 	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
+	require.Equal(t, acc.Id, me.Account().String())
 
 	profileUpdate := &accounts.Profile{
 		Alias:  "fulanito",
@@ -88,15 +95,15 @@ func TestDaemonSmoke(t *testing.T) {
 	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
 	require.NotNil(t, infoResp)
-	require.NotEqual(t, "", infoResp.AccountId)
-	require.NotEqual(t, "", infoResp.DeviceId)
+	require.Equal(t, me.Account().String(), infoResp.AccountId)
+	require.Equal(t, me.DeviceKey().PeerID().String(), infoResp.DeviceId)
 
 	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
 		DeviceId: infoResp.DeviceId,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, peerInfo)
-	require.NotEqual(t, "", peerInfo.AccountId)
+	require.Equal(t, me.Account().String(), peerInfo.AccountId)
 }
 
 func TestDaemonListPublications(t *testing.T) {

@@ -82,11 +82,11 @@ func TestGetInfo_Ready(t *testing.T) {
 
 	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
-	require.Equal(t, srv.repo.Device().CID().String(), info.DeviceId)
+	require.Equal(t, srv.repo.Device().PeerID().String(), info.DeviceId)
 
 	acc, err := srv.repo.Account()
 	require.NoError(t, err)
-	require.Equal(t, acc.CID().String(), info.AccountId)
+	require.Equal(t, acc.Principal().String(), info.AccountId)
 	testutil.ProtoEqual(t, timestamppb.New(srv.startTime), info.StartTime, "start time doesn't match")
 }
 

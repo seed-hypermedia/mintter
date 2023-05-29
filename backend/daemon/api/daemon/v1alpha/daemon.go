@@ -130,8 +130,8 @@ func (srv *Server) GetInfo(context.Context, *daemon.GetInfoRequest) (*daemon.Inf
 	}
 
 	resp := &daemon.Info{
-		AccountId: pk.CID().String(),
-		DeviceId:  srv.repo.Device().CID().String(),
+		AccountId: pk.Principal().String(),
+		DeviceId:  srv.repo.Device().PeerID().String(),
 		StartTime: timestamppb.New(srv.startTime),
 	}
 
