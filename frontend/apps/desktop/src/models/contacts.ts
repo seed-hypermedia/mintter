@@ -3,7 +3,7 @@ import {queryKeys} from '@app/models/query-keys'
 import {Account, Device} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {useAccount} from './accounts'
-import {useAllPeers} from './networking'
+import {useConnectedPeers} from './networking'
 
 export function useContactsList() {
   const contacts = useQuery({
@@ -16,10 +16,8 @@ export function useContactsList() {
 }
 
 export function useConnectionSummary() {
-  const peerInfo = useAllPeers()
-  const connectedPeers = (peerInfo.data?.peers || []).filter(
-    (peer) => peer.isConnected,
-  )
+  const peerInfo = useConnectedPeers()
+  const connectedPeers = peerInfo.data?.peerList || []
   return {
     online: connectedPeers.length > 0,
     connectedCount: connectedPeers.length,
@@ -28,7 +26,7 @@ export function useConnectionSummary() {
 
 export function useAccountWithDevices(accountId: string) {
   const account = useAccount(accountId)
-  const peers = useAllPeers()
+  const peers = useConnectedPeers()
   return {
     profile: account.data?.profile,
     devices: Object.values(account?.data?.devices || {}).map(
@@ -36,18 +34,11 @@ export function useAccountWithDevices(accountId: string) {
         const deviceId = device.deviceId
         return {
           deviceId,
-          isConnected: !!peers.data?.peers.find(
-            (peer) => peer.deviceId === deviceId && peer.isConnected,
+          isConnected: !!peers.data?.peerList.find(
+            (peer) => peer.deviceId === deviceId,
           ),
         }
       },
     ),
   }
-}
-
-export function useAccountIsConnected(account: Account) {
-  const peers = useAllPeers()
-  return !!peers.data?.peers.find(
-    (peer) => peer.accountId === account.id && peer.isConnected,
-  )
 }
