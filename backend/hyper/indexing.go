@@ -7,7 +7,6 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper/hypersql"
 	"net/url"
-	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -119,7 +118,7 @@ func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64
 }
 
 func (bs *Storage) indexBacklinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Change) error {
-	if !strings.HasPrefix(string(ch.Entity), "mintter:document:") {
+	if !ch.Entity.HasPrefix("mintter:document:") {
 		return nil
 	}
 

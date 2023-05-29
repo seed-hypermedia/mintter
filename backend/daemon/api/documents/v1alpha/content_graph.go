@@ -7,7 +7,6 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
-	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -46,12 +45,12 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 
 		resp.Links[i] = &documents.Link{
 			Source: &documents.LinkNode{
-				DocumentId: strings.TrimPrefix(link.ContentLinksViewSourceEID, "mintter:document:"),
+				DocumentId: hyper.EntityID(link.ContentLinksViewSourceEID).TrimPrefix("mintter:document:"),
 				BlockId:    ld.SourceBlock,
 				Version:    src.String(),
 			},
 			Target: &documents.LinkNode{
-				DocumentId: strings.TrimPrefix(link.ContentLinksViewTargetEID, "mintter:document:"),
+				DocumentId: hyper.EntityID(link.ContentLinksViewTargetEID).TrimPrefix("mintter:document:"),
 				BlockId:    ld.TargetFragment,
 				Version:    ld.TargetVersion,
 			},

@@ -86,7 +86,7 @@ var migrations = []string{
 		-- Local shorthand ID.
 		id INTEGER PRIMARY KEY,
 		-- Entity ID.
-		eid TEXT UNIQUE
+		eid TEXT UNIQUE NOT NULL CHECK (eid != '')
 	);`,
 
 	// Changes to the Hypermedia Entities.
@@ -257,11 +257,11 @@ var migrations = []string{
 
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-	`CREATE TABLE web_publication_records (
+	`CREATE TABLE web_publications (
 		-- Entity of the published document.
-		entity INTEGER PRIMARY KEY REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		document INTEGER PRIMARY KEY REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
 		-- doc version of the base document published. Not its references.
-		document_version TEXT NOT NULL,
+		version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL is not listed.
 		path TEXT UNIQUE
 	);`,

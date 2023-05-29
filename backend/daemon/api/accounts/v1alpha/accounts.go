@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
@@ -244,7 +243,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}
 
 	for _, e := range entities {
-		aid := strings.TrimPrefix(string(e), "mintter:account:")
+		aid := e.TrimPrefix("mintter:account:")
 		if aid == mine {
 			continue
 		}

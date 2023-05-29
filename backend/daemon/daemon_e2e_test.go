@@ -159,29 +159,35 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, siteCfg.Site.Hostname, newSite.Hostname)
 	require.Equal(t, documents.Member_OWNER, newSite.Role)
+
+	_, err = owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
+	require.Error(t, err, "adding the same site twice must fail")
+
 	// The reader connects to the site via p2p only
 	_, err = reader.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, site)})
 	require.NoError(t, err)
+
 	// The editor and his friend connect to each other
 	_, err = editorFriend.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, editor)})
 	require.NoError(t, err)
-	// Adding twice a site must fail.
-	_, err = owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
+
+	// Adding a site as an editor without token should fail.
+	_, err = editor.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
 	require.Error(t, err)
+
 	// Generate a token for the editor.
 	header := metadata.New(map[string]string{string(mttnet.TargetSiteHeader): siteCfg.Site.Hostname})
 	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().Account().String())
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
-	// Adding a site as an editor without token should fail.
-	_, err = editor.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
-	require.Error(t, err)
-	// Adding a site as an editor with the previous token should succeed.
+
+	// Adding a site as an editor with invite token should succeed.
 	editorSite, err := editor.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname, InviteToken: token.Token})
 	require.NoError(t, err)
 	require.Equal(t, siteCfg.Site.Hostname, editorSite.Hostname)
 	require.Equal(t, documents.Member_EDITOR, editorSite.Role)
+
 	// Get initial site info.
 	siteInfo, err := owner.RPC.Site.GetSiteInfo(ctxWithHeaders, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
@@ -194,11 +200,13 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "Mintter Site", siteAcc.Profile.Bio)
 	require.Equal(t, siteCfg.Site.Title, siteAcc.Profile.Alias)
+
 	// Change site info by the editor should fail
 	const newTitle = "new title"
 	const newDescription = " new brief description"
 	_, err = editor.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
 	require.Error(t, err)
+
 	// Change site info by the owner shouldn't fail
 	siteInfo, err = owner.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
 	require.NoError(t, err)
@@ -211,32 +219,36 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, newDescription, siteAcc.Profile.Bio)
 	require.Equal(t, newTitle, siteAcc.Profile.Alias)
+
 	// Share a document.
 	sharedDocument := publishDocument(t, ctx, editor)
 	_, err = editor.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
 	_, err = editorFriend.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
+
 	time.Sleep(500 * time.Millisecond) // Sleeping just to make sure it has time to propagate
+
 	publicationList, err := site.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
-	require.Len(t, publicationList.Publications, 0) // since site only works with pull request the document should not reach the site until published
+	require.Len(t, publicationList.Publications, 0, "site must not sync documents with regular periodic sync")
 
 	publicationList, err = editorFriend.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
-	require.Len(t, publicationList.Publications, 1) // since the friend is a peer, it should have received the document
+	require.Len(t, publicationList.Publications, 1, "editor friend must have synced the document with the editor")
 	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
 	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 
-	require.NoError(t, err)
 	const indexPath = "/"
+
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
 		DocumentId: sharedDocument.Document.Id,
 		Version:    sharedDocument.Version,
 		Path:       indexPath,
 	})
 	require.NoError(t, err)
+
 	// Site should have the document
 	publicationList, err = site.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
@@ -244,6 +256,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
 	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
 	// And owner should see it as well
 	_, err = site.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
@@ -262,6 +275,7 @@ func TestSite(t *testing.T) {
 	publicationList, err = reader.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 0)
+
 	// Even if he syncs, since NoListing = true site wont sync anything with non members
 	_, err = reader.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
 	require.NoError(t, err)
@@ -269,6 +283,7 @@ func TestSite(t *testing.T) {
 	publicationList, err = reader.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 0)
+
 	// Owner should view it in the site as published
 	sitePublications, err := owner.RPC.Site.ListWebPublications(ctxWithHeaders, &documents.ListWebPublicationsRequest{})
 	require.NoError(t, err)
@@ -277,6 +292,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, siteCfg.Site.Hostname, sitePublications.Publications[0].Hostname)
 	require.Equal(t, indexPath, sitePublications.Publications[0].Path)
 	require.Equal(t, sharedDocument.Document.Id, sitePublications.Publications[0].DocumentId)
+
 	// publish same doc to another path
 	const anotherPath = "another"
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
@@ -284,30 +300,37 @@ func TestSite(t *testing.T) {
 		Version:    sharedDocument.Version,
 		Path:       anotherPath,
 	})
-	require.Error(t, err)
+	require.Error(t, err, "must fail to publish same web publication with a different path")
+
 	// publish a different version to another path
 	const anotherTitle = "New Document title leading to a new version"
 	newVersion := updateDocumenTitle(t, ctx, owner, sharedDocument.Document.Id, anotherTitle)
 	require.Equal(t, sharedDocument.Document.Id, newVersion.Document.Id)
+
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
 		DocumentId: newVersion.Document.Id,
 		Version:    newVersion.Version,
 		Path:       anotherPath,
 	})
-	require.Error(t, err)
+	require.Error(t, err, "must fail to publish web publication with a different version to a different path")
+
 	// publish different version in same path should update the old one
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
 		DocumentId: newVersion.Document.Id,
 		Version:    newVersion.Version,
 		Path:       indexPath,
 	})
-	require.Error(t, err) // the editor does not have it, the owner does
+	require.Error(t, err, "must fail because editor doesn't have the document") // the editor does not have it, the owner does
+
+	// Get the document from the network, and then try to republish.
 	wantedDoc, err := editor.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: newVersion.Document.Id,
-		Version:    newVersion.Version})
+		Version:    newVersion.Version,
+	})
 	require.NoError(t, err)
 	require.Equal(t, newVersion.Version, wantedDoc.Version)
 	require.Equal(t, newVersion.Document.Id, wantedDoc.Document.Id)
+
 	// Now republish
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
 		DocumentId: newVersion.Document.Id,
@@ -319,6 +342,7 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, newVersion.Version, doc.Publication.Version)
 	require.Equal(t, anotherTitle, doc.Publication.Document.Title)
+
 	// Different author changes the version and republishes to the same path
 	const anotherAuthorTitle = "Is this a change in authorship? Nope"
 	noNewAuthor := updateDocumenTitle(t, ctx, editor, newVersion.Document.Id, anotherAuthorTitle)
@@ -330,6 +354,7 @@ func TestSite(t *testing.T) {
 		Path:       indexPath,
 	})
 	require.NoError(t, err)
+
 	// Publish another document (owner) and give no time to sync and get it via getpublication in the editor.
 	newDocument := publishDocument(t, ctx, owner)
 	require.NoError(t, err)
@@ -348,6 +373,7 @@ func TestSite(t *testing.T) {
 		DocumentId: newDocument.Document.Id,
 	})
 	require.Error(t, err)
+
 	// But the owner can unpublish
 	_, err = owner.RPC.Site.UnpublishDocument(ctxWithHeaders, &documents.UnpublishDocumentRequest{
 		DocumentId: newDocument.Document.Id,

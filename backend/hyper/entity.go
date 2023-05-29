@@ -41,6 +41,18 @@ func (eid EntityID) CID() (cid.Cid, error) {
 	return c, nil
 }
 
+// HasPrefix is a convenience function to avoid misplacing arguments
+// for the corresponding function in package strings.
+func (eid EntityID) HasPrefix(prefix string) bool {
+	return strings.HasPrefix(string(eid), prefix)
+}
+
+// TrimPrefix is a convenience function to avoid misplacing arguments
+// for the corresponding function in package strings.
+func (eid EntityID) TrimPrefix(prefix string) string {
+	return strings.TrimPrefix(string(eid), prefix)
+}
+
 // Entity is our CRDT mutable object.
 type Entity struct {
 	id      EntityID

@@ -56,7 +56,7 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 	objs := map[hyper.EntityID]*p2p.Object{}
 
 	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		list, err := hypersql.ChangesListAllNoData(conn)
+		list, err := hypersql.ChangesListPublicNoData(conn)
 		if err != nil {
 			return err
 		}

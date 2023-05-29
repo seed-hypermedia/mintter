@@ -400,15 +400,31 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		}
 		return retValue, nil
 	}
-	_, err = url.Parse(in.Path)
-	if err != nil {
+
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID")
+	}
+
+	if in.Path == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify path for web publication")
+	}
+
+	u, err := url.Parse(in.Path)
+	if err != nil || u.Path != in.Path {
 		return nil, fmt.Errorf("path %s is not a valid path", in.Path)
 	}
 
-	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	n, err := srv.Node.Await(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can't proxy: local p2p node is not ready yet: %w", err)
+	}
+
+	docEntity := hyper.NewEntityID("mintter:document", in.DocumentId)
+
+	toSync := []hyper.EntityID{docEntity}
+
+	for _, ref := range in.ReferencedDocuments {
+		toSync = append(toSync, hyper.NewEntityID("mintter:document", ref.DocumentId))
 	}
 
 	var dels []hypersql.KeyDelegationsListResult
@@ -417,12 +433,6 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return err
 	}); err != nil {
 		return nil, err
-	}
-
-	toSync := []hyper.EntityID{hyper.EntityID(in.DocumentId)}
-
-	for _, ref := range in.ReferencedDocuments {
-		toSync = append(toSync, hyper.EntityID(ref.DocumentId))
 	}
 
 	var wg sync.WaitGroup
@@ -459,35 +469,39 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, fmt.Errorf("couldn't find the actual document + version to publish in the database: %w", err)
 	}
 
-	conn, release, err := n.db.Conn(ctx)
-	if err != nil {
+	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
+	if err := n.db.WithTx(ctx, func(conn *sqlite.Conn) error {
+		record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
+		if err != nil {
+			return err
+		}
+
+		if record.HyperEntitiesID != 0 {
+			recordEntity := hyper.EntityID(record.HyperEntitiesEID)
+			if !recordEntity.HasPrefix("mintter:document:") {
+				return fmt.Errorf("invalid entity ID for mintter document: %s", record.HyperEntitiesEID)
+			}
+
+			if recordEntity == docEntity && record.WebPublicationsVersion == in.Version {
+				return fmt.Errorf("provided document+version already exists in path [%s]", in.Path)
+			}
+			if recordEntity != docEntity {
+				return fmt.Errorf("path %q is already taken by a different entity %q, can't use it for document %q", in.Path, recordEntity, in.DocumentId)
+			}
+			if err = sitesql.RemoveWebPublicationRecord(conn, record.HyperEntitiesEID, record.WebPublicationsVersion); err != nil {
+				return fmt.Errorf("could not remove previous version [%s] in the same path: %w", record.WebPublicationsVersion, err)
+			}
+		}
+
+		if err := sitesql.AddWebPublicationRecord(conn, string(docEntity), in.Version, in.Path); err != nil {
+			return fmt.Errorf("could not insert document in path [%s]: %w", in.Path, err)
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
-	defer release()
 
-	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	docid := strings.TrimPrefix(record.HyperEntitiesEID, "mintter:document:")
-	if docid == record.HyperEntitiesEID {
-		return nil, fmt.Errorf("invalid entity ID for mintter document: %s", record.HyperEntitiesEID)
-	}
-
-	if docid == in.DocumentId && record.WebPublicationRecordsDocumentVersion == in.Version {
-		return nil, fmt.Errorf("provided document+version already exists in path [%s]", in.Path)
-	}
-	if docid != in.DocumentId {
-		return nil, fmt.Errorf("path [%s] already taken by a different Document ID", in.Path)
-	}
-	if err = sitesql.RemoveWebPublicationRecord(conn, record.HyperEntitiesEID, record.WebPublicationRecordsDocumentVersion); err != nil {
-		return nil, fmt.Errorf("could not remove previous version [%s] in the same path: %w", record.WebPublicationRecordsDocumentVersion, err)
-	}
-
-	if err := sitesql.AddWebPublicationRecord(conn, record.HyperEntitiesEID, in.Version, in.Path); err != nil {
-		return nil, fmt.Errorf("could not insert document in path [%s]: %w", in.Path, err)
-	}
 	return &site.PublishDocumentResponse{}, nil
 }
 
@@ -516,15 +530,15 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 
 	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
 
-	records, err := sitesql.GetWebPublicationRecordsByID(conn, string(eid))
+	records, err := sitesql.GetWebPublicationsByID(conn, string(eid))
 	if err != nil {
 		return nil, fmt.Errorf("Cannot unpublish: %w", err)
 	}
 	for _, record := range records {
-		if in.Version == "" || in.Version == record.WebPublicationRecordsDocumentVersion {
+		if in.Version == "" || in.Version == record.WebPublicationsVersion {
 			doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 				DocumentId: in.DocumentId,
-				Version:    record.WebPublicationRecordsDocumentVersion,
+				Version:    record.WebPublicationsVersion,
 				LocalOnly:  true,
 			})
 			if err != nil {
@@ -533,7 +547,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 			if acc.String() != doc.Document.Author && srv.owner.String() != acc.String() {
 				return nil, fmt.Errorf("you are not the author of the document, nor site owner")
 			}
-			if err = sitesql.RemoveWebPublicationRecord(conn, string(eid), record.WebPublicationRecordsDocumentVersion); err != nil {
+			if err = sitesql.RemoveWebPublicationRecord(conn, string(eid), record.WebPublicationsVersion); err != nil {
 				return nil, fmt.Errorf("couldn't remove document [%s]: %w", in.DocumentId, err)
 			}
 		}
@@ -564,13 +578,16 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
-	records, err := sitesql.ListWebPublicationRecords(conn)
+	records, err := sitesql.ListWebPublications(conn)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot List publications: %w", err)
 	}
 
 	for _, record := range records {
-		docid := strings.TrimPrefix("mintter:document:", record.HyperEntitiesEID)
+		docid := hyper.EntityID(record.HyperEntitiesEID).TrimPrefix("mintter:document:")
+		if docid == record.HyperEntitiesEID {
+			return nil, fmt.Errorf("BUG: invalid entity ID %q for a document in web publications", record.HyperEntitiesEID)
+		}
 
 		if in.DocumentId != "" && in.DocumentId != docid {
 			continue
@@ -578,9 +595,9 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 
 		publications = append(publications, &site.WebPublicationRecord{
 			DocumentId: docid,
-			Version:    record.WebPublicationRecordsDocumentVersion,
+			Version:    record.WebPublicationsVersion,
 			Hostname:   srv.hostname,
-			Path:       record.WebPublicationRecordsPath,
+			Path:       record.WebPublicationsPath,
 		})
 	}
 	return &site.ListWebPublicationsResponse{Publications: publications}, nil
@@ -616,8 +633,8 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		return nil, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-		DocumentId: strings.TrimPrefix(record.HyperEntitiesEID, "mintter:document:"),
-		Version:    record.WebPublicationRecordsDocumentVersion,
+		DocumentId: hyper.EntityID(record.HyperEntitiesEID).TrimPrefix("mintter:document:"),
+		Version:    record.WebPublicationsVersion,
 		LocalOnly:  true,
 	})
 	if err != nil {
@@ -885,7 +902,8 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 			return nil, fmt.Errorf("function %s needs %d params, %d provided", proxyFcn, f.Type().NumIn(), len(params)+2)
 		}
 		res := f.CallSlice(in)
-		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
+
+		n.log.Debug("Remote call finished", zap.String("method", proxyFcn), zap.Any("returnValues", [2]string{res[0].Type().String(), res[1].Type().String()}), zap.Any("error", res[1].Interface()))
 		return res[0].Interface(), res[1].Interface()
 	}
 	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccount.String())

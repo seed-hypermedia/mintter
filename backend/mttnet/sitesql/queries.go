@@ -130,27 +130,13 @@ func generateQueries() error {
 			"WHERE", s.InviteTokensExpireTime, "<", qb.SQLFunc("strftime", "'%s'", "'now'"),
 		),
 
-		qb.MakeQuery(s.Schema, "publicKeysInsertOrIgnore", sqlitegen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.PublicKeys, qb.ListColShort(
-				s.PublicKeysPrincipal,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.PublicKeysPrincipal),
-			), '\n',
-			"RETURNING", qb.Results(s.PublicKeysID),
-		),
-
 		qb.MakeQuery(s.Schema, "InsertMember", sqlitegen.QueryKindSingle,
 			"INSERT INTO", s.SiteMembers, qb.ListColShort(
 				s.SiteMembersAccountID,
 				s.SiteMembersRole,
 			), '\n',
 			"VALUES", qb.List(
-				qb.SubQuery(
-					"SELECT", s.PublicKeysID,
-					"FROM", s.PublicKeys,
-					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
-				),
+				qb.VarCol(s.SiteMembersAccountID),
 				qb.VarCol(s.SiteMembersRole),
 			), '\n',
 			"RETURNING", qb.Results(s.SiteMembersRole),
@@ -186,42 +172,38 @@ func generateQueries() error {
 			"JOIN", s.PublicKeys, "ON", s.PublicKeysID, "=", s.SiteMembersAccountID,
 		),
 
-		qb.MakeQuery(s.Schema, "AddWebPublicationRecord", sqlitegen.QueryKindExec,
-			"INSERT INTO", s.WebPublicationRecords, qb.ListColShort(
-				s.WebPublicationRecordsEntity,
-				s.WebPublicationRecordsDocumentVersion,
-				s.WebPublicationRecordsPath,
+		qb.MakeQuery(s.Schema, "InsertWebPublicationRecord", sqlitegen.QueryKindExec,
+			"INSERT INTO", s.WebPublications, qb.ListColShort(
+				s.WebPublicationsDocument,
+				s.WebPublicationsVersion,
+				s.WebPublicationsPath,
 			), '\n',
 			"VALUES", qb.List(
-				qb.SubQuery(
-					"SELECT", s.HyperEntitiesID,
-					"FROM", s.HyperEntities,
-					"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
-				),
-				qb.VarCol(s.WebPublicationRecordsDocumentVersion),
-				qb.VarCol(s.WebPublicationRecordsPath),
+				qb.VarCol(s.WebPublicationsDocument),
+				qb.VarCol(s.WebPublicationsVersion),
+				qb.VarCol(s.WebPublicationsPath),
 			),
 		),
 
 		qb.MakeQuery(s.Schema, "RemoveWebPublicationRecord", sqlitegen.QueryKindExec,
-			"DELETE FROM", s.WebPublicationRecords,
-			"WHERE", s.WebPublicationRecordsEntity, "=", qb.SubQuery(
+			"DELETE FROM", s.WebPublications,
+			"WHERE", s.WebPublicationsDocument, "=", qb.SubQuery(
 				"SELECT", s.HyperEntitiesID,
 				"FROM", s.HyperEntities,
 				"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
 			),
-			"AND", s.WebPublicationRecordsDocumentVersion, "=", qb.VarCol(s.WebPublicationRecordsDocumentVersion),
+			"AND", s.WebPublicationsVersion, "=", qb.VarCol(s.WebPublicationsVersion),
 		),
 
-		qb.MakeQuery(s.Schema, "ListWebPublicationRecords", sqlitegen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "ListWebPublications", sqlitegen.QueryKindMany,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.HyperEntitiesID),
 				qb.ResultCol(s.HyperEntitiesEID),
-				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(s.WebPublicationRecordsPath),
+				qb.ResultCol(s.WebPublicationsVersion),
+				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
-			"FROM", s.WebPublicationRecords, '\n',
-			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
+			"FROM", s.WebPublications, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationsDocument, "=", s.HyperEntitiesID,
 		),
 
 		qb.MakeQuery(s.Schema, "GetWebPublicationRecordByPath", sqlitegen.QueryKindSingle,
@@ -229,24 +211,24 @@ func generateQueries() error {
 			qb.Results(
 				qb.ResultCol(s.HyperEntitiesID),
 				qb.ResultCol(s.HyperEntitiesEID),
-				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(s.WebPublicationRecordsPath),
+				qb.ResultCol(s.WebPublicationsVersion),
+				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
-			"FROM", s.WebPublicationRecords, '\n',
-			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
-			"WHERE", s.WebPublicationRecordsPath, "=", qb.VarCol(s.WebPublicationRecordsPath),
+			"FROM", s.WebPublications, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationsDocument, "=", s.HyperEntitiesID,
+			"WHERE", s.WebPublicationsPath, "=", qb.VarCol(s.WebPublicationsPath),
 		),
 
-		qb.MakeQuery(s.Schema, "GetWebPublicationRecordsByID", sqlitegen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "GetWebPublicationsByID", sqlitegen.QueryKindMany,
 			"SELECT",
 			qb.Results(
 				qb.ResultCol(s.HyperEntitiesID),
 				qb.ResultCol(s.HyperEntitiesEID),
-				qb.ResultCol(s.WebPublicationRecordsDocumentVersion),
-				qb.ResultCol(s.WebPublicationRecordsPath),
+				qb.ResultCol(s.WebPublicationsVersion),
+				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
-			"FROM", s.WebPublicationRecords, '\n',
-			"JOIN", s.HyperEntities, "ON", s.WebPublicationRecordsEntity, "=", s.HyperEntitiesID,
+			"FROM", s.WebPublications, '\n',
+			"JOIN", s.HyperEntities, "ON", s.WebPublicationsDocument, "=", s.HyperEntitiesID,
 			"WHERE", s.HyperEntitiesEID, "=", qb.VarCol(s.HyperEntitiesEID),
 		),
 	)

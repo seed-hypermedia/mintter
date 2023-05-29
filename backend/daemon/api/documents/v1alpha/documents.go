@@ -12,7 +12,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -255,7 +254,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 	}
 
 	for _, e := range entities {
-		docid := strings.TrimPrefix(string(e), "mintter:document:")
+		docid := e.TrimPrefix("mintter:document:")
 		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
 			DocumentId: docid,
 		})
@@ -423,7 +422,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 
 	for _, e := range entities {
-		docid := strings.TrimPrefix(string(e), "mintter:document:")
+		docid := e.TrimPrefix("mintter:document:")
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: docid,
 		})

@@ -696,7 +696,7 @@ ORDER BY hyper_changes_view.hlc_time`
 	return out, err
 }
 
-type ChangesListAllNoDataResult struct {
+type ChangesListPublicNoDataResult struct {
 	HyperChangesViewBlobID    int64
 	HyperChangesViewCodec     int64
 	HyperChangesViewEntityID  int64
@@ -704,20 +704,23 @@ type ChangesListAllNoDataResult struct {
 	HyperChangesViewMultihash []byte
 	HyperChangesViewSize      int64
 	HyperChangesViewEntity    string
+	HyperDraftsBlob           int64
 }
 
-func ChangesListAllNoData(conn *sqlite.Conn) ([]ChangesListAllNoDataResult, error) {
-	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size, hyper_changes_view.entity
+func ChangesListPublicNoData(conn *sqlite.Conn) ([]ChangesListPublicNoDataResult, error) {
+	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size, hyper_changes_view.entity, hyper_drafts.blob
 FROM hyper_changes_view
+LEFT JOIN hyper_drafts ON hyper_drafts.entity = hyper_changes_view.entity_id
+WHERE hyper_drafts.blob IS NULL
 ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
 
-	var out []ChangesListAllNoDataResult
+	var out []ChangesListPublicNoDataResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ChangesListAllNoDataResult{
+		out = append(out, ChangesListPublicNoDataResult{
 			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
 			HyperChangesViewCodec:     stmt.ColumnInt64(1),
 			HyperChangesViewEntityID:  stmt.ColumnInt64(2),
@@ -725,6 +728,7 @@ ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
 			HyperChangesViewMultihash: stmt.ColumnBytes(4),
 			HyperChangesViewSize:      stmt.ColumnInt64(5),
 			HyperChangesViewEntity:    stmt.ColumnText(6),
+			HyperDraftsBlob:           stmt.ColumnInt64(7),
 		})
 
 		return nil
@@ -732,7 +736,7 @@ ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: ChangesListAllNoData: %w", err)
+		err = fmt.Errorf("failed query: ChangesListPublicNoData: %w", err)
 	}
 
 	return out, err
