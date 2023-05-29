@@ -54,7 +54,7 @@ services:
     command:
       - 'mintterd'
       - '-repo-path=/.mttsite'
-      - '-mainnet'
+      - '-lndhub.mainnet'
       - '-p2p.port=56000'
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
