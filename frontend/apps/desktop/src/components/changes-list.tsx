@@ -3,12 +3,13 @@ import {SmartChangeInfo, useSmartChanges} from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {formattedDate, pluralS} from '@mintter/shared'
-import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {Copy, SizableText, XStack} from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {MouseEvent} from 'react'
 import {toast} from 'react-hot-toast'
 import {AccessoryContainer} from './accessory-sidebar'
 import {Box} from './box'
+import {Button} from './button'
 
 function ChangeItem({
   change,
@@ -65,14 +66,14 @@ function ChangeItem({
         right="0"
         top="0"
       >
-        <Button
+        {/* <Button
           size="$2"
           icon={Copy}
           onPress={() => {
             // copyTextToClipboard('')
             toast.error('Coming soon after breaking change')
           }}
-        />
+        /> */}
       </XStack>
       <Box
         css={{
