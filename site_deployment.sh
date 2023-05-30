@@ -156,7 +156,7 @@ BLOCK
       numWords=$#
       if [ $numWords -eq 1 ]; then
         owner=$1
-        if [ ${#owner} -ne 72 ]; then
+        if [ ${#owner} -ne 48 ]; then
           echo "Invalid Mintter Account ID"
           continue
         else
@@ -172,8 +172,8 @@ BLOCK
     else
       echo "4) Site Owner account CID?."
       read -p "" owner
-      if [ ${#owner} -ne 72 ]; then
-        echo "Please provide a 72 hex valid mintter account CID"
+      if [ ${#owner} -ne 48 ]; then
+        echo "Please provide a 48 hex valid mintter account CID"
       else
         break
       fi
