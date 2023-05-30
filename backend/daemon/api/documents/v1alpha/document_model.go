@@ -272,7 +272,8 @@ func (dm *docModel) cleanupPatch() {
 		}
 
 		left := dm.tree.nodes[blk].pos.Prev().Value.(ShadowPosition)
-		if left.parent == TrashNodeID && dm.tree.initialLefts[blk].Value.(ShadowPosition).opid.Origin == "" {
+		initialLeft := dm.tree.initialLefts[blk]
+		if left.parent == TrashNodeID && initialLeft != nil && initialLeft.Value.(ShadowPosition).opid.Origin == "" {
 			maputil.Delete(dm.patch, []string{"blocks", blk})
 			continue
 		}
