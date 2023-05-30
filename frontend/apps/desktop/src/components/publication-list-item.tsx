@@ -127,72 +127,63 @@ export function PublicationListItem({
           : '...'}
       </Text>
       <XStack>
-        <Popover placement="bottom-end" {...popoverState}>
-          <Popover.Trigger asChild>
-            <Button size="$2" icon={MoreHorizontal} circular data-trigger />
-          </Popover.Trigger>
+        <Dropdown.Root {...popoverState}>
+          <Dropdown.Trigger circular data-trigger icon={MoreHorizontal} />
 
-          <Popover.Content
+          <Dropdown.Content
+            align="end"
             data-testid="library-item-dropdown-root"
-            padding={0}
-            size="$5"
-            enterStyle={{x: 0, y: -1, opacity: 0}}
-            exitStyle={{x: 0, y: -1, opacity: 0}}
-            animation={[
-              'quick',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
+            // padding={0}
+            // size="$5"
+            // enterStyle={{x: 0, y: -1, opacity: 0}}
+            // exitStyle={{x: 0, y: -1, opacity: 0}}
+            // animation={[
+            //   'quick',
+            //   {
+            //     opacity: {
+            //       overshootClamping: true,
+            //     },
+            //   },
+            // ]}
           >
-            <YGroup elevation="$4" borderColor="transparent">
-              <YGroup.Item>
-                <MenuItem
-                  data-testid="copy-item"
-                  onPress={() => {
-                    const docUrl = getDocUrl(publication, webPub)
-                    if (!docUrl) return
-                    copyTextToClipboard(docUrl)
-                    toast.success(
-                      `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
-                    )
-                  }}
-                  title={`Copy Document URL on ${hostnameStripProtocol(
-                    publishedWebHost,
-                  )}`}
-                  icon={Copy}
-                />
-              </YGroup.Item>
-              <YGroup.Item>
-                <MenuItem
-                  data-testid="new-window-item"
-                  onPress={() =>
-                    spawn({
-                      key: 'publication',
-                      documentId: docId,
-                      versionId: publication.version,
-                    })
-                  }
-                  title="Open in new Window"
-                  icon={ExternalLink}
-                />
-              </YGroup.Item>
-              <Separator />
-              <YGroup.Item>
-                <MenuItem
-                  title="Delete Publication"
-                  onPress={() => {
-                    popoverState.onOpenChange(false)
-                    dialogState.onOpenChange(true)
-                  }}
-                  icon={Delete}
-                />
-              </YGroup.Item>
-            </YGroup>
-          </Popover.Content>
-        </Popover>
+            <Dropdown.Item
+              data-testid="copy-item"
+              onPress={() => {
+                const docUrl = getDocUrl(publication, webPub)
+                if (!docUrl) return
+                copyTextToClipboard(docUrl)
+                toast.success(
+                  `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
+                )
+              }}
+              title={`Copy Document URL on ${hostnameStripProtocol(
+                publishedWebHost,
+              )}`}
+              icon={Copy}
+            />
+            <Dropdown.Item
+              data-testid="new-window-item"
+              onPress={() =>
+                spawn({
+                  key: 'publication',
+                  documentId: docId,
+                  versionId: publication.version,
+                })
+              }
+              title="Open in new Window"
+              icon={ExternalLink}
+            />
+
+            <Dropdown.Item
+              title="Delete Publication"
+              onPress={() => {
+                popoverState.onOpenChange(false)
+                dialogState.onOpenChange(true)
+              }}
+              icon={Delete}
+            />
+          </Dropdown.Content>
+        </Dropdown.Root>
         <DeleteDialog
           {...dialogState}
           title="Delete document"

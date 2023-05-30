@@ -1,26 +1,31 @@
-import { toast } from "@app/toast";
-import {
-  File as FileType,
-  isFile
-} from "@mintter/shared";
+import {toast} from '@app/toast'
+import {File as FileType, isFile} from '@mintter/shared'
 import {
   Button,
   File as FileIcon,
   Label,
   Popover,
   SizableText,
-  Tabs, XStack, YStack
-} from '@mintter/ui';
-import { save } from "@tauri-apps/api/dialog";
-import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
-import { getClient, ResponseType } from "@tauri-apps/api/http";
-import { appDataDir } from '@tauri-apps/api/path';
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { Transforms } from "slate";
-import { ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic } from "slate-react";
-import { EditorMode } from "../plugin-utils";
-import { EditorPlugin } from "../types";
-import { findPath } from "../utils";
+  Tabs,
+  XStack,
+  YStack,
+} from '@mintter/ui'
+import {save} from '@tauri-apps/api/dialog'
+import {BaseDirectory, writeBinaryFile} from '@tauri-apps/api/fs'
+import {getClient, ResponseType} from '@tauri-apps/api/http'
+import {appDataDir} from '@tauri-apps/api/path'
+import {ChangeEvent, useEffect, useMemo, useState} from 'react'
+import {Transforms} from 'slate'
+import {
+  ReactEditor,
+  RenderElementProps,
+  useFocused,
+  useSelected,
+  useSlateStatic,
+} from 'slate-react'
+import {EditorMode} from '../plugin-utils'
+import {EditorPlugin} from '../types'
+import {findPath} from '../utils'
 
 interface InnerFileType extends FileType {
   size: number
@@ -60,19 +65,34 @@ export function FileElement({
 }: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const [file, setFile] = useState<InnerFileType>({name: undefined, size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)
+  const [file, setFile] = useState<InnerFileType>({
+    name: undefined,
+    size: 0,
+    url: '',
+    alt: '',
+    children: [],
+    type: 'file',
+  } as InnerFileType)
 
   useEffect(() => {
     if ((element as FileType).url && !file.url) {
-      (element as FileType).name ?
-        setFile({...file, url: (element as FileType).url, name: (element as FileType).name}) :
-        setFile({...file, url: (element as FileType).url});
+      ;(element as FileType).name
+        ? setFile({
+            ...file,
+            url: (element as FileType).url,
+            name: (element as FileType).name,
+          })
+        : setFile({...file, url: (element as FileType).url})
     }
   }, [])
 
   const assignFile = (newFile: InnerFileType) => {
     setFile({...file, ...newFile})
-    Transforms.setNodes<FileType>(editor, {url: newFile.url, name: newFile.name}, {at: path})
+    Transforms.setNodes<FileType>(
+      editor,
+      {url: newFile.url, name: newFile.name},
+      {at: path},
+    )
   }
 
   if ((element as FileType).defaultOpen)
@@ -82,9 +102,17 @@ export function FileElement({
     <YStack {...attributes}>
       {children}
       {file.url.length ? (
-        <FileComponent file={file} assign={assignFile} element={element as FileType} />
+        <FileComponent
+          file={file}
+          assign={assignFile}
+          element={element as FileType}
+        />
       ) : (
-        <FileForm file={file} assign={assignFile} element={element as FileType} />
+        <FileForm
+          file={file}
+          assign={assignFile}
+          element={element as FileType}
+        />
       )}
     </YStack>
   )
@@ -98,28 +126,33 @@ function FileComponent({assign, element, file}: InnerFileProps) {
   const path = useMemo(() => findPath(element), [element])
 
   const saveFile = async () => {
-    const client = await getClient();
+    const client = await getClient()
     const data = (
-      await client.get(`http://localhost:55001/ipfs/${(element as FileType).url}`, {
-        responseType: ResponseType.Binary,
-      })
-    ).data as any;
+      await client.get(
+        `http://localhost:55001/ipfs/${(element as FileType).url}`,
+        {
+          responseType: ResponseType.Binary,
+        },
+      )
+    ).data as any
 
     const filePath = await save({
-      defaultPath: (await appDataDir()) + "/" + file.name,
-    });
+      defaultPath: (await appDataDir()) + '/' + file.name,
+    })
 
     if (filePath) {
       try {
-        await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {dir: BaseDirectory.AppData});
+        await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {
+          dir: BaseDirectory.AppData,
+        })
         toast.success(`Successfully downloaded file ${file.name}`)
-      } catch(e) {
+      } catch (e) {
         toast.error(`Failed to download file ${file.name}`)
         console.log(e)
       }
     }
   }
-  
+
   // const openFile = () => {
   //   const webview = new WebviewWindow(`File`, {
   //     url: `http://localhost:55001/ipfs/${(element as FileType).url}`,
@@ -128,7 +161,7 @@ function FileComponent({assign, element, file}: InnerFileProps) {
   //     console.log(e)
   //   })
   // }
-  
+
   return (
     <YStack
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -136,9 +169,9 @@ function FileComponent({assign, element, file}: InnerFileProps) {
       }}
       onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setReplace(false)
-    }}
+      }}
     >
-       {editor.mode == EditorMode.Draft && replace ? (
+      {editor.mode == EditorMode.Draft && replace ? (
         <Button
           theme="white"
           position="absolute"
@@ -148,7 +181,16 @@ function FileComponent({assign, element, file}: InnerFileProps) {
           size="$1"
           width={60}
           color="muted"
-          onPress={() => assign({name: undefined, size: 0, url: '', alt: '', children: [], type: 'file'} as InnerFileType)}
+          onPress={() =>
+            assign({
+              name: undefined,
+              size: 0,
+              url: '',
+              alt: '',
+              children: [],
+              type: 'file',
+            } as InnerFileType)
+          }
         >
           replace
         </Button>
@@ -166,7 +208,7 @@ function FileComponent({assign, element, file}: InnerFileProps) {
         >
           save
         </Button>
-      ): null}
+      ) : null}
       <Button
         theme="gray"
         borderRadius={1}
@@ -209,17 +251,18 @@ function FileForm({assign, element}: InnerFileProps) {
         } catch (error) {
           console.error(error)
         }
-      }
-      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
   return (
     //@ts-ignore
-    <YStack contentEditable={false}>
+    <YStack contentEditable={false} position="relative">
       <Popover
+        placement="bottom"
         size="$5"
         defaultOpen={element.defaultOpen}
+        stayInFrame
       >
         <Popover.Trigger asChild>
           <Button
@@ -236,6 +279,9 @@ function FileForm({assign, element}: InnerFileProps) {
           padding={0}
           elevation="$4"
           size="$5"
+          x={0}
+          y={0}
+          opacity={1}
           enterStyle={{x: 0, y: -1, opacity: 0}}
           exitStyle={{x: 0, y: -1, opacity: 0}}
           animation={[

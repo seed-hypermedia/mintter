@@ -1,3 +1,4 @@
+import {Dropdown} from '@app/editor/dropdown'
 import {useAccountPublicationList} from '@app/models/changes'
 import {useAccountWithDevices} from '@app/models/contacts'
 import {toast} from '@app/toast'
@@ -30,8 +31,7 @@ function DeviceRow({
   deviceId: string
 }) {
   return (
-    <Button
-      chromeless
+    <Dropdown.Item
       onPress={() => {
         copyTextToClipboard(deviceId)
         toast.success('Copied Device ID to clipboard')
@@ -39,7 +39,7 @@ function DeviceRow({
     >
       <OnlineIndicator online={isOnline} />
       {abbreviateCid(deviceId)}
-    </Button>
+    </Dropdown.Item>
   )
 }
 
@@ -112,51 +112,37 @@ export default function AccountPage() {
               <Heading>{account.profile?.alias || accountId}</Heading>
             </XStack>
 
-            <Tooltip
+            {/* <Tooltip
               content={`${deviceCount} ${pluralS(
                 deviceCount,
                 'device',
               )}, ${connectedCount} connected`}
-            >
-              <Popover placement="bottom-end">
-                <Popover.Trigger asChild>
-                  <Button iconAfter={ChevronDown}>
-                    <OnlineIndicator online={isConnected} />
-                    {isConnected ? 'Connected' : 'Offline'}
-                  </Button>
-                </Popover.Trigger>
-                <Popover.Content
-                  elevation="$4"
-                  size="$5"
-                  enterStyle={{x: 0, y: -1, opacity: 0}}
-                  exitStyle={{x: 0, y: -1, opacity: 0}}
-                  padding="$3"
-                  alignItems="flex-start"
-                  animation={[
-                    'quick',
-                    {
-                      opacity: {
-                        overshootClamping: true,
-                      },
-                    },
-                  ]}
-                >
+            > */}
+            <Dropdown.Root>
+              <Dropdown.Trigger iconAfter={ChevronDown} size="$4">
+                <OnlineIndicator online={isConnected} />
+                {isConnected ? 'Connected' : 'Offline'}
+              </Dropdown.Trigger>
+              <Dropdown.Content align="end">
+                <Dropdown.Label>
                   <SizableText size="$3" fontWeight="700" theme="mint">
                     {pluralizer(account.devices.length, 'Device')}
                   </SizableText>
-                  {account.devices.map((device) => {
-                    if (!device) return null
-                    return (
-                      <DeviceRow
-                        key={device.deviceId}
-                        isOnline={device.isConnected}
-                        deviceId={device.deviceId}
-                      />
-                    )
-                  })}
-                </Popover.Content>
-              </Popover>
-            </Tooltip>
+                </Dropdown.Label>
+
+                {account.devices.map((device) => {
+                  if (!device) return null
+                  return (
+                    <DeviceRow
+                      key={device.deviceId}
+                      isOnline={device.isConnected}
+                      deviceId={device.deviceId}
+                    />
+                  )
+                })}
+              </Dropdown.Content>
+            </Dropdown.Root>
+            {/* </Tooltip> */}
           </Section>
           {account.profile?.bio && (
             <Section>

@@ -1,5 +1,5 @@
 import {draftsClient} from '@app/api-clients'
-import {MenuItem} from '@app/editor/dropdown'
+import {Dropdown, MenuItem} from '@app/editor/dropdown'
 import appError from '@app/errors'
 import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
@@ -44,6 +44,7 @@ import {PublicationDropdown, PublishShareButton} from './publish-share'
 import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
 import {Tooltip} from '@components/tooltip'
 import {memo, useState} from 'react'
+import {usePopoverState} from '@app/use-popover-state'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
@@ -134,18 +135,16 @@ export function SitesNavDropdownItems({
   if (!sites) return null
   if (sites.length == 0) return null
   return (
-    <YGroup unstyled borderRadius={0} borderWidth={0}>
+    <>
       {sites.map((site) => (
-        <YGroup.Item>
-          <MenuItem
-            key={site.hostname}
-            onPress={() => onRoute({key: 'site', hostname: site.hostname})}
-            icon={Globe}
-            title={hostnameStripProtocol(site.hostname)}
-          />
-        </YGroup.Item>
+        <Dropdown.Item
+          key={site.hostname}
+          onPress={() => onRoute({key: 'site', hostname: site.hostname})}
+          icon={Globe}
+          title={hostnameStripProtocol(site.hostname)}
+        />
       ))}
-    </YGroup>
+    </>
   )
 }
 
@@ -192,7 +191,7 @@ function NaveMenuContentUnpure({
   const {data: account} = useMyAccount()
 
   return (
-    <Popover.Content padding={0} size="$5">
+    <Dropdown.Content align="start">
       <YGroup separator={<Separator />} elevation="$4">
         <YGroup.Item>
           <AccountDropdownItem account={account} onRoute={onRoute} />
@@ -274,34 +273,26 @@ function NaveMenuContentUnpure({
           />
         </YGroup.Item>
       </YGroup>
-    </Popover.Content>
+    </Dropdown.Content>
   )
 }
 const NavMenuContent = memo(NaveMenuContentUnpure)
 
 export function NavMenu() {
   const sites = useSiteList()
-  const [open, setOnOpen] = useState(false)
+  const popoverState = usePopoverState()
 
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
-    <XStack paddingRight="$2">
-      <Popover open={open} onOpenChange={setOnOpen} placement="bottom-start">
-        <Popover.Trigger asChild>
-          <Button
-            size="$2"
-            icon={Menu}
-            onPress={(e) => {
-              e.preventDefault()
-              setOnOpen((isOpen) => !isOpen)
-            }}
-          />
-        </Popover.Trigger>
+    <XStack paddingRight="$2" position="relative">
+      <Dropdown.Root {...popoverState}>
+        <Dropdown.Trigger size="$2" icon={Menu} />
+
         <NavMenuContent
           sites={sites.data}
           onRoute={(route) => {
-            setOnOpen(false)
+            popoverState.onOpenChange(false)
             setTimeout(() => {
               // this timeout is gross. we want the menu to close and not hang open during the transition. I tried React.useTransition but it seems to act too slowly
               if (route.key === 'settings') {
@@ -312,10 +303,10 @@ export function NavMenu() {
             }, 10)
           }}
           onClose={() => {
-            setOnOpen(false)
+            popoverState.onOpenChange(false)
           }}
         />
-      </Popover>
+      </Dropdown.Root>
     </XStack>
   )
 }
