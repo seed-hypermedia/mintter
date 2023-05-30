@@ -92,10 +92,12 @@ func (t *Tree) MoveRemote(id OpID, block, parent, leftShadow string) (moved bool
 	}
 
 	if !t.maxOp.Less(id) {
-		return false, fmt.Errorf("out of order move operation")
+		return false, fmt.Errorf("out of order remote move operation")
 	}
 	defer func() {
-		t.maxOp = id
+		if moved {
+			t.maxOp = id
+		}
 	}()
 
 	subtree, left, err := t.findLeftShadow(parent, leftShadow)
@@ -197,10 +199,12 @@ func (t *Tree) MoveLocal(time int64, idx int, block, parent, leftID string) (mov
 	id := NewOpID(time, "", idx)
 
 	if !t.maxOp.Less(id) {
-		return false, fmt.Errorf("out of order move operation")
+		return false, fmt.Errorf("out of order local move operation")
 	}
 	defer func() {
-		t.maxOp = id
+		if moved {
+			t.maxOp = id
+		}
 	}()
 
 	subtree, left, err := t.findLeftCurrent(parent, leftID)

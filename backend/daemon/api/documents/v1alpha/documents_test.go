@@ -195,7 +195,7 @@ func TestUpdateDraftSmoke(t *testing.T) {
 				Type: "statement",
 				Text: "Hello world!",
 			}}},
-			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
+			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2", LeftSibling: "b1"}}},
 			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 				Id:   "b2",
 				Type: "statement",

@@ -147,3 +147,141 @@ func TestBug_BlockRevisionMustUpdate(t *testing.T) {
 	require.NotEqual(t, "", blkNew.Block.Revision)
 	require.NotEqual(t, blk.Block.Revision, blkNew.Block.Revision, "block revision must update")
 }
+
+func TestBug_HandleRedundantMoveOperations(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	docid := draft.Id
+
+	calls := []*documents.UpdateDraftRequestV2{
+		{
+			DocumentId: docid,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "SZR8C9Pi",
+						Parent:      "",
+						LeftSibling: "",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "SZR8C9Pi",
+						Type: "statement",
+						Text: "Helllo",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "SZR8C9Pi",
+						Type: "statement",
+						Text: "Helllo",
+					},
+				}},
+				{Op: &documents.DocumentChange_SetTitle{
+					SetTitle: "Helllo",
+				}},
+			},
+		},
+		{
+			DocumentId: docid,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "SZR8C9Pi",
+						Parent:      "",
+						LeftSibling: "",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "SZR8C9Pi",
+						Type: "statement",
+						Text: "Hello",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "SZR8C9Pi",
+						Type: "statement",
+						Text: "Hello",
+					},
+				}},
+				{Op: &documents.DocumentChange_SetTitle{
+					SetTitle: "Hello",
+				}},
+			},
+		},
+		{
+			DocumentId: docid,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:       "SZR8C9Pi",
+						Type:     "statement",
+						Text:     "Hello",
+						Revision: "bafy2bzacecb56hyyaz7h2w44wbzaciudpsgayltqluc2xbhx2553m56pe3jai",
+					},
+				}},
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "SZR8C9Pi",
+						Parent:      "",
+						LeftSibling: "",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:       "SZR8C9Pi",
+						Type:     "statement",
+						Text:     "Hello",
+						Revision: "bafy2bzacecb56hyyaz7h2w44wbzaciudpsgayltqluc2xbhx2553m56pe3jai",
+					},
+				}},
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "yymUWK5V",
+						Parent:      "",
+						LeftSibling: "SZR8C9Pi",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:          "yymUWK5V",
+						Type:        "statement",
+						Text:        "",
+						Annotations: nil,
+					},
+				}},
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "yymUWK5V",
+						Parent:      "",
+						LeftSibling: "SZR8C9Pi",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:          "yymUWK5V",
+						Type:        "statement",
+						Text:        "",
+						Annotations: nil,
+						Revision:    "",
+					},
+				}},
+				{Op: &documents.DocumentChange_SetTitle{
+					SetTitle: "Hello",
+				}},
+			},
+		},
+	}
+
+	for i, call := range calls {
+		_, err = api.UpdateDraftV2(ctx, call)
+		require.NoError(t, err, "failed call %d", i)
+	}
+}
