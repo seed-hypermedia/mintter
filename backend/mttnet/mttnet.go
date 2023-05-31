@@ -177,7 +177,13 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				srv.owner = n.me.Account().Principal()
 			}
 
-			if err := n.db.WithTx(ctx, func(conn *sqlite.Conn) error {
+			conn, release, err := n.db.Conn(ctx)
+			if err != nil {
+				panic(err)
+			}
+			defer release()
+
+			if err := func() error {
 				if siteCfg.Title != "" {
 					title, err := sitesql.GetSiteTitle(conn)
 					if err != nil {
@@ -204,7 +210,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				}
 
 				return nil
-			}); err != nil {
+			}(); err != nil {
 				panic(err)
 			}
 		}

@@ -34,3 +34,16 @@ func (p *Pool) WithTx(ctx context.Context, fn func(*sqlite.Conn) error) error {
 
 	return WithTx(conn, fn)
 }
+
+// WithSave executes fn within a Savepoint.
+func (p *Pool) WithSave(ctx context.Context, fn func(*sqlite.Conn) error) (err error) {
+	conn, release, err := p.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	defer Save(conn)(&err)
+
+	return fn(conn)
+}
