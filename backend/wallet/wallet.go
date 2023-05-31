@@ -29,7 +29,7 @@ import (
 var (
 	errAlreadyLndhubgoWallet = errors.New("Only one lndhub.go wallet is allowed and we already had one")
 	supportedWallets         = []string{lndhubsql.LndhubWalletType, lndhubsql.LndhubGoWalletType}
-	validCredentials         = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@https:\/\/([A-Za-z0-9_\-\.]+)\/?$`)
+	validCredentials         = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9A-Za-z]+):([0-9a-f]+)@https:\/\/([A-Za-z0-9_\-\.]+)\/?$`)
 )
 
 // AccountID is a handy alias of Cid.
@@ -108,7 +108,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		credURI, err := EncodeCredentialsURL(Credentials{
 			Domain:     mintterDomain,
 			WalletType: lndhubsql.LndhubGoWalletType,
-			Login:      id.Account().CID().String(),
+			Login:      id.Account().String(),
 			Password:   loginSignature,
 		})
 		if err != nil {
@@ -379,7 +379,7 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wall
 	defer srv.pool.Put(conn)
 	wallet, err := wallet.UpdateDefaultWallet(conn, walletID)
 	if err != nil {
-		srv.log.Debug("coulnd't set default wallet: " + err.Error())
+		srv.log.Debug("couldn't set default wallet: " + err.Error())
 	}
 	return wallet, err
 }
@@ -425,7 +425,7 @@ func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, 
 		ID:         walletID,
 	})
 	if err != nil {
-		srv.log.Debug("coulnd't encode uri: " + err.Error())
+		srv.log.Debug("couldn't encode uri: " + err.Error())
 		return "", err
 	}
 	return uri, nil
@@ -438,7 +438,7 @@ func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, 
 func (srv *Service) UpdateLnaddressNickname(ctx context.Context, nickname string) error {
 	err := srv.lightningClient.Lndhub.UpdateNickname(ctx, nickname)
 	if err != nil {
-		srv.log.Debug("coulnd't update nickname: " + err.Error())
+		srv.log.Debug("couldn't update nickname: " + err.Error())
 		return err
 	}
 	return nil
@@ -457,7 +457,7 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 	defer srv.pool.Put(conn)
 	w, err := wallet.GetDefaultWallet(conn)
 	if err != nil {
-		srv.log.Debug("coulnd't getDefaultWallet: " + err.Error())
+		srv.log.Debug("couldn't getDefaultWallet: " + err.Error())
 		return wallet.Wallet{}, err
 	}
 	return w, nil
@@ -683,10 +683,10 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 	res := validCredentials.FindStringSubmatch(url)
 	if res == nil || len(res) != 5 {
 		if res != nil {
-			return credentials, fmt.Errorf("credentials contained more than necessary fields. it shoud be " +
+			return credentials, fmt.Errorf("credentials contained more than necessary fields. it should be " +
 				"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
 		}
-		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
+		return credentials, fmt.Errorf("couldn't parse credentials, probably wrong format. it should be " +
 			"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
 	}
 	credentials.WalletType = strings.ToLower(res[1])
