@@ -103,6 +103,23 @@ export function WebTipping({
         setError(resp.reason)
       } else {
         setInvoice(resp.pr)
+        try {
+          if (typeof window.webln !== 'undefined') {
+            window.webln
+              .enable()
+              .then(() => {
+                return window.webln.sendPayment(resp.pr).then((output) => {
+                  console.log('done paying with webln', output)
+                  onOpenChange(false)
+                })
+              })
+              .catch((e) => {
+                console.error('wallet pay fail', e)
+              })
+          }
+        } catch (e) {
+          console.error(e)
+        }
         onOpenChange(true)
       }
     } catch (error) {
@@ -359,6 +376,9 @@ export function WebTipping({
               >
                 or <SizableText fontWeight="700">Copy</SizableText> the invoice
                 and pay it however you want
+              </Button>
+              <Button tag="a" href={`lightning:${invoice}`}>
+                Lightning
               </Button>
             </YStack>
           </Dialog.Content>
