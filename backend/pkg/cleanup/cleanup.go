@@ -43,6 +43,10 @@ func (s *Stack) AddErrFunc(fn ...func() error) {
 // Close the stack in the LIFO order. It will only execute once and will remember the error.
 func (s *Stack) Close() error {
 	s.once.Do(func() {
+		if len(s.funcs) == 0 {
+			return
+		}
+
 		// We have to close in reverse order because some later dependencies
 		// can use previous ones. This is similar to defer statement.
 		for i := len(s.funcs) - 1; i >= 0; i-- {

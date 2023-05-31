@@ -82,7 +82,7 @@ TMPDIR=/tmp
 HOME=$(eval echo ~$(whoami))
 cd $workdir
 export CC="$TOOLS_GCC"
-$TOOLS_GO build -o $OUT {package}
+$TOOLS_GO build -trimpath -o $OUT {package}
 """.format(package = package),
         binary = True,
         building_description = "Building Go binary...",

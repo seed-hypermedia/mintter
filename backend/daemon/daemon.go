@@ -116,16 +116,20 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	// we managed to initialize so far, and wait for all the goroutines
 	// to finish. If everything booted correctly, we need to close the cleanup stack
 	// when the context is canceled, so the app is shut down gracefully.
-	defer func() {
+	defer func(a *App) {
 		if err != nil {
-			err = multierr.Combine(err, a.clean.Close(), a.g.Wait())
+			err = multierr.Combine(
+				err,
+				a.clean.Close(),
+				a.g.Wait(),
+			)
 		} else {
 			a.g.Go(func() error {
 				<-ctx.Done()
 				return a.clean.Close()
 			})
 		}
-	}()
+	}(a)
 
 	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
 	if err != nil {

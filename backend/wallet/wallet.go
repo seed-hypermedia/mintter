@@ -86,7 +86,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 
 		conn := db.Get(context.Background())
 		loginSignature, err := lndhubsql.GetLoginSignature(conn)
-		if err != nil && !errors.Is(err, lndhubsql.ErrEmptyResult) {
+		if err != nil && !errors.Is(err, lndhubsql.ErrEmptyResult) && !errors.Is(err, context.Canceled) {
 			panic(err)
 		}
 		// we don't know when user will enter mnemonics
