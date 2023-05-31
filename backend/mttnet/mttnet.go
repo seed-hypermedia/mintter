@@ -177,30 +177,34 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				srv.owner = n.me.Account().Principal()
 			}
 
-			conn, release, err := n.db.Conn(ctx)
-			if err != nil {
-				return
-			}
-			defer release()
-
-			if siteCfg.Title != "" {
-				title, err := sitesql.GetSiteTitle(conn)
-				if err != nil {
-					panic(err)
-				}
-
-				if title.GlobalMetaValue != siteCfg.Title {
-					if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
+			if err := n.db.WithTx(ctx, func(conn *sqlite.Conn) error {
+				if siteCfg.Title != "" {
+					title, err := sitesql.GetSiteTitle(conn)
+					if err != nil {
 						panic(err)
 					}
+
+					if title.GlobalMetaValue != siteCfg.Title {
+						if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
+							return err
+						}
+					}
 				}
-			}
 
-			if err := srv.updateSiteBio(ctx, siteCfg.Title, "Mintter Site"); err != nil {
-				panic(err)
-			}
+				if err := srv.updateSiteBio(ctx, siteCfg.Title, "Mintter Site"); err != nil {
+					return err
+				}
 
-			if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
+				if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
+					// This is equivalent of INSERT OR IGNORE, but we don't use it because in other places where
+					// we call this function we do care about the errors.
+					if sqlite.ErrCode(err) != sqlite.SQLITE_CONSTRAINT_PRIMARYKEY {
+						return err
+					}
+				}
+
+				return nil
+			}); err != nil {
 				panic(err)
 			}
 		}

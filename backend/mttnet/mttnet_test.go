@@ -41,6 +41,8 @@ func TestAddrs(t *testing.T) {
 	require.Equal(t, addrs, AddrInfoToStrings(info))
 }
 
+
+
 func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 

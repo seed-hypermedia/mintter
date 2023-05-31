@@ -207,6 +207,10 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		}
 	}
 
+	if len(patch) == 0 {
+		return nil
+	}
+
 	del, err := getDelegation(ctx, me, blobs)
 	if err != nil {
 		return err
