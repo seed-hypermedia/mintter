@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -170,6 +171,11 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
 func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
+	for _, c := range nickname {
+		if unicode.IsUpper(c) && unicode.IsLetter(c) {
+			return fmt.Errorf("Nickname cannot contain uppercase letters %s", nickname)
+		}
+	}
 	var resp createResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
