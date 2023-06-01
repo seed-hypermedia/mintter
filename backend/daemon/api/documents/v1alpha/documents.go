@@ -425,6 +425,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		docid := e.TrimPrefix("mintter:document:")
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: docid,
+			LocalOnly:  true,
 		})
 		if err != nil {
 			continue
