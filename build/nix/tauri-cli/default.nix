@@ -16,8 +16,11 @@ let
   src = fetchFromGitHub {
     owner = "tauri-apps";
     repo = "tauri";
-    rev = "67f14b4ce8e3429401d8f8b02ee1ea54865b1624";
-    sha256 = "sha256-+zD97xzRIEof5giIur+O3JIl6c9b7CKGDrSfKaEsjFc=";
+    # rev = "67f14b4ce8e3429401d8f8b02ee1ea54865b1624";
+    # sha256 = "sha256-+zD97xzRIEof5giIur+O3JIl6c9b7CKGDrSfKaEsjFc=";
+    rev = "61d72b1ee828ae799493e60dda397a29bd54755c";
+    sha256 = "sha256-3JX+bB2iXdZcVKCcN0rYCFZFZDf4Zq4oXsFYrNiDTUk=";
+
   };
 in
   rustPlatform.buildRustPackage {
