@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,7 +75,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, login, user.Login)
 	require.EqualValues(t, password, user.Password)
-	require.EqualValues(t, nickname, user.Nickname)
+	require.EqualValues(t, strings.ToLower(nickname), user.Nickname)
 	require.NoError(t, err)
 	_, err = lndHubClient.Auth(ctx)
 	require.NoError(t, err)

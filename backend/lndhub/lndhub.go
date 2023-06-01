@@ -154,7 +154,7 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 		Payload: createRequest{
 			Login:    login, // CID
 			Password: pass,  // signed message
-			Nickname: nickname,
+			Nickname: strings.ToLower(nickname),
 		},
 		Token: pubKey,
 	}, 2, &resp)
