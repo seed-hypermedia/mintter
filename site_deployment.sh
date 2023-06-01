@@ -33,9 +33,9 @@ echo "We will ask questions to configure the site. Press enter after each respon
 while :
 do 
   # First ask the path and check if there is already an istallation 
-  echo "1) Do you want to start a new site (ON) or turn off an existing one (OFF)?:"
+  echo "1) Do you want to start/update a new site (ON) or turn off an existing one (OFF)?:"
   read turn
-  if [ "$turn" = "ON" ]; then
+  if [ "$turn" = "ON" ] || [ "$turn" = "ADVANCED" ]; then
     if ! command_exists docker; then
       if [ $userid -ne 0 ]; then
         echo "please run the script as root to install docker"
@@ -106,8 +106,8 @@ do
     do
         echo "  - $line"
     done < "${workspace}/.env"
-    read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
-    if [ "$response" = "c" ]; then
+    read -p "Do you want to use(u) those those params or edit(e) them before update(u/e)?" response
+    if [ "$response" = "u" ]; then
         mkdir -p ${workspace}/proxy
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         docker compose -f mttsite.yml down || true
@@ -145,7 +145,7 @@ BLOCK
   done
   while true; do
     owner=""
-    if [ ! -d "$workspace" ];then
+    if [ ! -d "$workspace" ] && [ "$turn" = "ADVANCED" ];then
       echo "4) Site Owner. If you want to link this site to an existing account then enter"
       echo "   12 space separated BIP-39 mnemonic words and site owner will be that account."
       echo "   But if you want independent site AccountID, just enter the owner accountID."
@@ -170,17 +170,21 @@ BLOCK
         break
       fi
     else
-      echo "4) Site Owner account CID?."
+      echo "4) Site Owner account ID?."
       read -p "" owner
       if [ ${#owner} -ne 48 ]; then
-        echo "Please provide a 48 hex valid mintter account CID"
+        echo "Please provide a 48 hex valid mintter account ID"
       else
         break
       fi
     fi
     
   done
-  read -p "5) Do you want the site to share content with non members? n if not sure (y/n)" listing
+  if [ "$turn" = "ADVANCED" ];then
+    read -p "5) Do you want the site to share content with non members? n if not sure (y/n)" listing
+  else
+    listing="n"
+  fi
   echo "Nice, we will create a site with the following characteristics:"
   echo "  - Hostname: ${hostname}"
   if [ ! -z "$owner" ]; then
@@ -188,7 +192,7 @@ BLOCK
   else
     echo "  - Owner ID: [not known yet]"
   fi
-  if [ "$listing" != "y" ]; then
+  if [ "$listing" != "y" ] && [ "$turn" = "ADVANCED" ]; then
     echo "  - Additional flags: -p2p.disable-listing"
   fi
   echo "  - Workspace: ${workspace}"
