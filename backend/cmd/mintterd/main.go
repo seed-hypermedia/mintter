@@ -65,7 +65,7 @@ func main() {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		app, err := daemon.Load(ctx, cfg)
+		app, err := daemon.Load(ctx, cfg, daemon.WithGRPCDebugLogging())
 		if err != nil {
 			return err
 		}

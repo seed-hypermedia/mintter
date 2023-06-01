@@ -57,7 +57,7 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 	}
 
 	if err := dm.replayMoves(); err != nil {
-		return nil, fmt.Errorf("failed to replay moves: %w", err)
+		return nil, err
 	}
 
 	return dm, nil
@@ -114,6 +114,7 @@ func (dm *docModel) replayMoves() (err error) {
 			}
 			_, err = dm.tree.MoveRemote(NewOpID(time, origin, idx), block, parent, leftShadow)
 			if err != nil {
+				err = fmt.Errorf("failed move %v: %w", move, err)
 				return false
 			}
 		}
@@ -189,13 +190,10 @@ func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 
 func (dm *docModel) MoveBlock(block, parent, left string) error {
 	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, parent, left)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
+func (dm *docModel) Change() (hb hyper.Blob, err error) {
 	// TODO(burdiyan): we should make them reusable.
 	if dm.done {
 		return hb, fmt.Errorf("using already committed mutation")
@@ -209,7 +207,11 @@ func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blo
 
 	dm.cleanupPatch()
 
-	hb, err = dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch)
+	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch)
+}
+
+func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
+	hb, err = dm.Change()
 	if err != nil {
 		return hb, err
 	}

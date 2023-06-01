@@ -292,6 +292,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 	return api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: in.DocumentId,
+		LocalOnly:  true,
 	})
 }
 

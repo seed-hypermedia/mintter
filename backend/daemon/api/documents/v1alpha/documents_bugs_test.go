@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestBug_BrokenPublicationList(t *testing.T) {
@@ -283,5 +284,61 @@ func TestBug_HandleRedundantMoveOperations(t *testing.T) {
 	for i, call := range calls {
 		_, err = api.UpdateDraftV2(ctx, call)
 		require.NoError(t, err, "failed call %d", i)
+	}
+}
+
+func TestBug_FailToUpdatePublication(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	log := [][2]string{
+		{"CreateDraft", `{}`},
+		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"setTitle":"This is hello world!"}]}`},
+		{"PublishDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
+		{"CreateDraft", `{"existingDocumentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
+		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"setTitle":"This is hello world!"}]}`},
+		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"setTitle":"This is hello world!"}]}`},
+		{"GetDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
+		{"PublishDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
+	}
+
+	var docid string
+	for _, call := range log {
+		method := call[0]
+
+		switch method {
+		case "CreateDraft":
+			req := &documents.CreateDraftRequest{}
+			require.NoError(t, protojson.Unmarshal([]byte(call[1]), req))
+			if req.ExistingDocumentId != "" {
+				if docid == "" {
+					t.Fatal("must create draft before mutating publication")
+				}
+				req.ExistingDocumentId = docid
+			}
+			resp, err := api.CreateDraft(ctx, req)
+			require.NoError(t, err)
+			docid = resp.Id
+		case "UpdateDraftV2":
+			req := &documents.UpdateDraftRequestV2{}
+			require.NoError(t, protojson.Unmarshal([]byte(call[1]), req))
+			req.DocumentId = docid
+			_, err := api.UpdateDraftV2(ctx, req)
+			require.NoError(t, err)
+		case "PublishDraft":
+			req := &documents.PublishDraftRequest{}
+			require.NoError(t, protojson.Unmarshal([]byte(call[1]), req))
+			req.DocumentId = docid
+			_, err := api.PublishDraft(ctx, req)
+			require.NoError(t, err)
+		case "GetDraft":
+			req := &documents.GetDraftRequest{}
+			require.NoError(t, protojson.Unmarshal([]byte(call[1]), req))
+			req.DocumentId = docid
+			_, err := api.GetDraft(ctx, req)
+			require.NoError(t, err)
+		default:
+			panic("BUG: unhandled method " + method)
+		}
 	}
 }

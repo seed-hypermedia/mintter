@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -36,6 +35,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -45,6 +46,10 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
+
+func init() {
+	prometheus.MustRegister(collectors.NewBuildInfoCollector())
+}
 
 // App is the main Mintter Daemon application, holding all of its dependencies
 // which can be used for embedding the daemon in other apps or for testing.
@@ -425,14 +430,14 @@ func initGRPC(
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
 	cfg config.Site,
-	opt ...grpc.ServerOption,
+	opts ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
-	srv = grpc.NewServer(opt...)
+	srv = grpc.NewServer(opts...)
 
 	rpc = api.New(ctx, id, repo, pool, blobs, node, sync, wallet, cfg)
 	rpc.Register(srv)
@@ -448,6 +453,81 @@ func initGRPC(
 	})
 
 	return
+}
+
+var (
+	mInFlightGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "http_in_flight_requests",
+		Help: "A gauge of HTTP requests currently being served.",
+	})
+
+	mCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "A counter for HTTP requests.",
+		},
+		[]string{"code", "method"},
+	)
+
+	mDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "A histogram of HTTP latencies for requests.",
+			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
+		},
+		[]string{"handler", "method"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(mInFlightGauge, mCounter, mDuration)
+}
+
+func instrumentHTTPHandler(h http.Handler, name string) http.Handler {
+	return promhttp.InstrumentHandlerInFlight(mInFlightGauge,
+		promhttp.InstrumentHandlerDuration(mDuration.MustCurryWith(prometheus.Labels{"handler": name}),
+			promhttp.InstrumentHandlerCounter(mCounter, h),
+		),
+	)
+}
+
+func setRoute(m *mux.Router, path string, isPrefix bool, h http.Handler) {
+	h = instrumentHTTPHandler(h, path)
+	if isPrefix {
+		m.PathPrefix(path).Handler(h)
+	} else {
+		m.Handle(path, h)
+	}
+}
+
+const (
+	routePrefix = 1 << 1
+	routeNav    = 1 << 2
+)
+
+type router struct {
+	r   *mux.Router
+	nav []string
+}
+
+func (r *router) Handle(path string, h http.Handler, mode int) {
+	h = instrumentHTTPHandler(h, path)
+
+	if mode&routePrefix != 0 {
+		r.r.PathPrefix(path).Handler(h)
+	} else {
+		r.r.Handle(path, h)
+	}
+
+	if mode&routeNav != 0 {
+		r.nav = append(r.nav, path)
+	}
+}
+
+func (r *router) Index(w http.ResponseWriter, req *http.Request) {
+	for _, route := range r.nav {
+		fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, route, route)
+	}
 }
 
 func initHTTP(
@@ -468,31 +548,32 @@ func initHTTP(
 			return true
 		}))
 
-		router := mux.NewRouter()
-		router.Handle("/debug/metrics", promhttp.Handler())
-		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
-		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
-		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
-		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler)
-		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.UploadRoute, ipfsHandler.UploadFile)
-		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.GetRoute, ipfsHandler.GetFile)
-		nav := newNavigationHandler(router)
+		router := router{r: mux.NewRouter()}
+		router.Handle("/debug/metrics", promhttp.Handler(), routeNav)
+		router.Handle("/debug/pprof", http.DefaultServeMux, routePrefix|routeNav)
+		router.Handle("/debug/vars", http.DefaultServeMux, routePrefix|routeNav)
+		router.Handle("/debug/grpc", grpcLogsHandler(), routeNav)
+		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
+		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
+		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler, routeNav)
+		router.Handle(ipfs.IPFSRootRoute+ipfs.UploadRoute, http.HandlerFunc(ipfsHandler.UploadFile), 0)
+		router.Handle(ipfs.IPFSRootRoute+ipfs.GetRoute, http.HandlerFunc(ipfsHandler.GetFile), 0)
 
-		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
+		router.r.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
 			return grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r)
 		})).Handler(grpcWebHandler)
 
-		router.Handle("/", nav)
+		router.Handle("/", http.HandlerFunc(router.Index), 0)
 
-		h = router
+		h = router.r
 	}
 
 	srv = &http.Server{
-		Addr:         ":" + strconv.Itoa(port),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		Handler:      h,
+		Addr:              ":" + strconv.Itoa(port),
+		ReadHeaderTimeout: 5 * time.Second,
+		// WriteTimeout:      10 * time.Second,
+		IdleTimeout: 20 * time.Second,
+		Handler:     h,
 	}
 
 	lis, err = net.Listen("tcp", srv.Addr)
@@ -522,32 +603,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 		next.ServeHTTP(w, r)
-	})
-}
-
-func newNavigationHandler(router *mux.Router) http.Handler {
-	var routes []string
-
-	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		// ipfs get handler takes a param variable (/ipfs/{cid}) This is why
-		// the navbar needs some actual cid to resolve it. Panics otherwise.
-		// only affects to the ipfs GET route
-		u, err := route.URL("cid", "bafkreih7mye6mc5nux7oclgmopmo264plkc3paafivulbeyrzashzc2npy")
-		if err != nil {
-			return err
-		}
-		routes = append(routes, u.String())
-		return nil
-	})
-	if err != nil {
-		panic(err)
-	}
-	sort.Strings(routes)
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for _, r := range routes {
-			fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, r, r)
-		}
 	})
 }
 

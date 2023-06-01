@@ -7,6 +7,7 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
+	"mintter/backend/pkg/must"
 	"testing"
 	"time"
 
@@ -236,4 +237,65 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	// hb2, err := dm.Commit(ctx, blobs)
 	// require.NoError(t, err)
 	// require.Equal(t, []cid.Cid{hb.CID}, hb2.Decoded.(hyper.Change).Deps, "new change must have old one in deps")
+}
+
+func TestBug_RedundantMoves(t *testing.T) {
+	alice := coretest.NewTester("alice")
+	kd := must.Do2(hyper.NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now())).Blob()
+
+	// Create draft.
+	var c1 hyper.Blob
+	{
+		entity := hyper.NewEntity("mintter:document:foo")
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		must.Do(model.SetCreateTime(time.Now()))
+		must.Do(model.SetTitle("Hello World!"))
+		must.Do(model.SetAuthor(alice.Account.Principal()))
+		model.nextHLC = entity.NextTimestamp()
+		c1 = must.Do2(model.Change())
+	}
+
+	// Update draft in place.
+	{
+		entity := hyper.NewEntity("mintter:document:foo")
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		must.Do(model.restoreDraft(c1.CID, c1.Decoded.(hyper.Change)))
+		must.Do(model.MoveBlock("b1", "", ""))
+		must.Do(model.ReplaceBlock(&documents.Block{
+			Id:   "b1",
+			Text: "Hello",
+		}))
+		must.Do(model.MoveBlock("b2", "", "b1"))
+		must.Do(model.ReplaceBlock(&documents.Block{
+			Id:   "b2",
+			Text: "World",
+		}))
+		c1 = must.Do2(model.Change())
+	}
+
+	// Create a new change on top of the previous.
+	var c2 hyper.Blob
+	{
+		entity := hyper.NewEntity("mintter:document:foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.MoveBlock("b1", "", ""))
+		must.Do(model.MoveBlock("b2", "", "b1"))
+		must.Do(model.MoveBlock("b3", "", "b2"))
+		must.Do(model.MoveBlock("b3", "", "b2"))
+		must.Do(model.ReplaceBlock(&documents.Block{
+			Id:   "b2",
+			Text: "Another block",
+		}))
+
+		c2 = must.Do2(model.Change())
+	}
+
+	// Try to apply changes one by one.
+	entity := hyper.NewEntity("mintter:document:foo")
+	must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+	must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
+	model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+	_ = model
 }

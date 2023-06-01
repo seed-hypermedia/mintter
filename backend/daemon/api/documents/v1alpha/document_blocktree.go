@@ -3,6 +3,7 @@ package documents
 import (
 	"container/list"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -14,6 +15,10 @@ type OpID struct {
 
 func NewOpID(time int64, origin string, idx int) OpID {
 	return OpID{Time: time, Origin: origin, Idx: idx}
+}
+
+func (o OpID) String() string {
+	return strconv.Itoa(int(o.Time)) + "@" + o.Origin + "+" + strconv.Itoa(o.Idx)
 }
 
 func (o OpID) Less(oo OpID) bool {
@@ -212,15 +217,19 @@ func (t *Tree) MoveLocal(time int64, idx int, block, parent, leftID string) (mov
 		return false, err
 	}
 
-	shadowPos := ShadowPosition{
-		shadowID: block + "@" + id.Origin,
-		parent:   parent,
-		opid:     id,
-		list:     subtree,
+	// Ignore operation if block is already where we want it to be.
+	if old, ok := t.nodes[block]; ok {
+		oldPos := old.pos.Value.(ShadowPosition)
+		leftShadow := old.pos.Prev().Value.(ShadowPosition).shadowID
+		if oldPos.parent == parent && leftShadow == left.Value.(ShadowPosition).shadowID {
+			return false, nil
+		}
 	}
 
+	newShadowID := block + "@" + id.Origin
+
 	// Remove previous shadow position.
-	if old, ok := t.shadows[shadowPos.shadowID]; ok {
+	if old, ok := t.shadows[newShadowID]; ok {
 		oldPos := old.Value.(ShadowPosition)
 		leftShadow := old.Prev().Value.(ShadowPosition).shadowID
 		if oldPos.parent == parent && leftShadow == left.Value.(ShadowPosition).shadowID {
@@ -230,6 +239,13 @@ func (t *Tree) MoveLocal(time int64, idx int, block, parent, leftID string) (mov
 			t.initialLefts[block] = old.Prev()
 		}
 		oldPos.list.Remove(old)
+	}
+
+	shadowPos := ShadowPosition{
+		shadowID: newShadowID,
+		parent:   parent,
+		opid:     id,
+		list:     subtree,
 	}
 
 	pos := subtree.InsertAfter(shadowPos, left)
