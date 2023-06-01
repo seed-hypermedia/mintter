@@ -72,7 +72,7 @@ export default function PublicationPage({
   let media = useMedia()
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
-
+  const {documentId} = props
   const loadedPublication = trpc.publication.get.useQuery({
     documentId: props.documentId,
     versionId: props.version || undefined,
@@ -140,13 +140,8 @@ export default function PublicationPage({
                     publication={displayPub}
                     editors={editors || []}
                   />
-                  {(displayPub && editors?.length) ||
-                  (displayPub && displayPub.document?.author) ? (
-                    <WebTipping
-                      publication={displayPub}
-                      editors={editors || []}
-                      author={null}
-                    />
+                  {editors?.length && documentId ? (
+                    <WebTipping docId={documentId} editors={editors || []} />
                   ) : null}
                 </>
               ) : null}
