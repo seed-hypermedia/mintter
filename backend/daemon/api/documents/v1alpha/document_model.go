@@ -38,10 +38,6 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 		return nil, fmt.Errorf("must provide delegation to mutate a document")
 	}
 
-	if len(e.Heads()) > 1 {
-		panic("BUG: more than one draft head")
-	}
-
 	dm := &docModel{
 		e:          e,
 		signer:     signer,
@@ -98,6 +94,10 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	}
 
 	delete(dm.e.Heads(), dm.oldCID)
+
+	if len(dm.e.Heads()) > 1 {
+		panic("BUG: more than one draft head")
+	}
 
 	return nil
 }
