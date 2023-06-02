@@ -34,6 +34,10 @@ func TestGetAccount_Own(t *testing.T) {
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
+
+	acc, err = alice.GetAccount(ctx, &accounts.GetAccountRequest{Id: "z6MkvFrq593SZ3QNsAgXdsHC2CJGrrwUdwxY2EdRGaT4UbYj"})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, want, acc, "accounts don't match")
 }
 
 func TestGetAccount_Failures(t *testing.T) {

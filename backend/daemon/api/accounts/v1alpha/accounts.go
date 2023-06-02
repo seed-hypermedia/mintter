@@ -41,8 +41,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	}
 
 	var aid core.Principal
-	wantMe := in.Id == ""
-	if wantMe {
+	if in.Id == "" {
 		me, err := srv.getMe()
 		if err != nil {
 			return nil, err
@@ -64,32 +63,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		Devices: make(map[string]*accounts.Device),
 	}
 
-	entity, err := srv.blobs.LoadEntity(ctx, hyper.NewEntityID("mintter:account", aids))
-	if err != nil {
-		return nil, err
-	}
-	if entity == nil && !wantMe {
-		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
-	}
-
-	if entity != nil {
-		v, ok := entity.Get("alias")
-		if ok {
-			acc.Profile.Alias = v.(string)
-		}
-
-		v, ok = entity.Get("bio")
-		if ok {
-			acc.Profile.Bio = v.(string)
-		}
-
-		v, ok = entity.Get("avatar")
-		if ok {
-			acc.Profile.Avatar = v.(cid.Cid).String()
-		}
-	}
-
-	// Now load known key delegations from this account.
+	// Load devices for this account.
 	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		list, err := hypersql.KeyDelegationsList(conn, aid)
 		if err != nil {
@@ -111,6 +85,33 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	if len(acc.Devices) == 0 {
+		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
+	}
+
+	entity, err := srv.blobs.LoadEntity(ctx, hyper.NewEntityID("mintter:account", aids))
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		return acc, nil
+	}
+
+	v, ok := entity.Get("alias")
+	if ok {
+		acc.Profile.Alias = v.(string)
+	}
+
+	v, ok = entity.Get("bio")
+	if ok {
+		acc.Profile.Bio = v.(string)
+	}
+
+	v, ok = entity.Get("avatar")
+	if ok {
+		acc.Profile.Avatar = v.(cid.Cid).String()
 	}
 
 	return acc, nil
