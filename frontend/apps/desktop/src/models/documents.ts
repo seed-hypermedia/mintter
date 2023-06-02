@@ -32,6 +32,8 @@ import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {toast} from '@app/toast'
 
 export function usePublicationList() {
   return useQuery({
@@ -204,12 +206,22 @@ export function usePublishDraft(
       if (webPub && doc && webPub.hostname === pub.document?.webUrl) {
         const site = getWebSiteClient(webPub.hostname)
         const referencedDocuments = extractReferencedDocs(doc)
-        await site.publishDocument({
-          documentId: doc.id,
-          path: webPub.path,
-          version: pub.version,
-          referencedDocuments,
-        })
+        await site
+          .publishDocument({
+            documentId: doc.id,
+            path: webPub.path,
+            version: pub.version,
+            referencedDocuments,
+          })
+          .catch((e) => {
+            toast.error(
+              `Failed to publish document to ${hostnameStripProtocol(
+                webPub.hostname,
+              )}`,
+            )
+            console.error('Failed to publish document', {webPub, pub})
+            console.error(e)
+          })
       }
       return pub
     },
