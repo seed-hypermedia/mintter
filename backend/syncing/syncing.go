@@ -42,11 +42,6 @@ type Service struct {
 	// peerSyncTimeout defines the timeout for syncing with one peer.
 	peerSyncTimeout time.Duration
 
-	// onStart is a callback function which is called when the service is started.
-	onStart func(context.Context) error
-	// onSync is a callback function which is called after a single sync loop.
-	onSync func(SyncResult) error
-
 	log     *zap.Logger
 	db      *sqlitex.Pool
 	blobs   *hyper.Storage
@@ -109,40 +104,6 @@ func (s *Service) SetPeerSyncTimeout(d time.Duration) {
 	}
 }
 
-// OnStart sets a callback which is called when the service is started by calling Start().
-// Must be called before calling Start(), and multiple callbacks will be called in FIFO order.
-func (s *Service) OnStart(fn func(context.Context) error) {
-	old := s.onStart
-	s.onStart = func(ctx context.Context) error {
-		if old != nil {
-			if err := old(ctx); err != nil {
-				return err
-			}
-		}
-		if err := fn(ctx); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
-// OnSync sets a callback which is called after each sync iteration.
-// Must be called before calling Start(), and multiple callbacks will be called in FIFO order.
-func (s *Service) OnSync(fn func(SyncResult) error) {
-	old := s.onSync
-	s.onSync = func(res SyncResult) error {
-		if old != nil {
-			if err := old(res); err != nil {
-				return err
-			}
-		}
-		if err := fn(res); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
 // Start the syncing service which will periodically perform global sync loop.
 func (s *Service) Start(ctx context.Context) (err error) {
 	s.log.Debug("SyncingServiceStarted")
@@ -151,12 +112,6 @@ func (s *Service) Start(ctx context.Context) (err error) {
 	}()
 
 	t := time.NewTimer(s.warmupDuration)
-
-	if s.onStart != nil {
-		if err := s.onStart(ctx); err != nil {
-			return err
-		}
-	}
 
 	for {
 		select {
@@ -268,12 +223,6 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 
 	// Subtracting one to account for our own device.
 	res.NumSyncOK--
-
-	if s.onSync != nil {
-		if err := s.onSync(res); err != nil {
-			return res, err
-		}
-	}
 
 	return res, nil
 }

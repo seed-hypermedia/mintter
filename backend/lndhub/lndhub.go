@@ -143,8 +143,13 @@ func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *
 // fail otherwise).
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return resp, err
+	}
+	defer release()
+
 	pubKey, err := c.pubKey.Await(ctx)
 	if err != nil {
 		return resp, err
@@ -177,8 +182,12 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 		}
 	}
 	var resp createResponse
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
 	login, err := lndhub.GetLogin(conn, c.WalletID)
 	if err != nil {
@@ -220,8 +229,12 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
 func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer release()
+
 	login, err := lndhub.GetLogin(conn, c.WalletID)
 	if err != nil {
 		return "", err
@@ -246,8 +259,12 @@ func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
 // There must be a credentials stored in the database.
 func (c *Client) Auth(ctx context.Context) (string, error) {
 	var resp authResponse
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer release()
 
 	login, err := lndhub.GetLogin(conn, c.WalletID)
 	if err != nil {
@@ -284,8 +301,11 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 		Btc btcBalance `mapstructure:"BTC"`
 	}
 
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer release()
 
 	var resp balanceResponse
 	token, err := lndhub.GetToken(conn, c.WalletID)
@@ -307,8 +327,11 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 
 // ListPaidInvoices returns a list of outgoing invoices.
 func (c *Client) ListPaidInvoices(ctx context.Context) ([]Invoice, error) {
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
 
 	type ListInvoicesResponse struct {
 		Invoices []Invoice `mapstructure:"invoices"`
@@ -334,8 +357,11 @@ func (c *Client) ListPaidInvoices(ctx context.Context) ([]Invoice, error) {
 
 // ListReceivedInvoices returns a list of incoming invoices.
 func (c *Client) ListReceivedInvoices(ctx context.Context) ([]Invoice, error) {
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
 
 	type ListInvoicesResponse struct {
 		Invoices []Invoice `mapstructure:"invoices"`
@@ -375,8 +401,12 @@ func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string
 	}
 
 	var resp createLocalInvoiceResponse
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer release()
 
 	token, err := lndhub.GetToken(conn, c.WalletID)
 	if err != nil {
@@ -411,8 +441,12 @@ func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, am
 	}
 
 	var resp requestRemoteInvoiceResponse
-	conn := c.db.Get(ctx)
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer release()
 
 	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
 	if err != nil {
@@ -453,8 +487,12 @@ func (c *Client) PayInvoice(ctx context.Context, payReq string, sats uint64) err
 		Invoice string `json:"invoice"`
 		Amount  uint64 `json:"amount"`
 	}
-	conn := c.db.Get(context.Background())
-	defer c.db.Put(conn)
+
+	conn, release, err := c.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
 	token, err := lndhub.GetToken(conn, c.WalletID)
 	if err != nil {

@@ -65,7 +65,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		mintterDomain = "ln.mintter.com"
 		lnaddressDomain = "ln.mintter.com"
 	}
-	srv := Service{
+	srv := &Service{
 		pool: db,
 		lightningClient: lnclient{
 			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me, mintterDomain, lnaddressDomain),
@@ -81,59 +81,78 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		if err != nil {
 			panic(err)
 		}
-		// We assume registration already happened.
-		tickerAccount := time.NewTicker(10 * time.Second)
 
-		conn := db.Get(context.Background())
-		loginSignature, err := lndhubsql.GetLoginSignature(conn)
-		if err != nil && !errors.Is(err, lndhubsql.ErrEmptyResult) && !errors.Is(err, context.Canceled) {
-			panic(err)
-		}
-		// we don't know when user will enter mnemonics
-		for err != nil {
-			select {
-			case <-ctx.Done():
-				tickerAccount.Stop()
-				db.Put(conn)
-				return
-			case <-tickerAccount.C:
-				loginSignature, err = lndhubsql.GetLoginSignature(conn)
-				if err != nil && !errors.Is(err, lndhubsql.ErrEmptyResult) {
-					panic(err)
+		login, err := func() (login string, err error) {
+			timer := time.NewTimer(time.Microsecond)
+			defer timer.Stop()
+
+			conn, release, err := db.Conn(ctx)
+			if err != nil {
+				return "", err
+			}
+			defer release()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return "", ctx.Err()
+				case <-timer.C:
+					loginSignature, err := lndhubsql.GetLoginSignature(conn)
+					if err == nil {
+						return loginSignature, nil
+					}
+					if errors.Is(err, lndhubsql.ErrEmptyResult) {
+						timer.Reset(10 * time.Second)
+						continue
+					}
+
+					return "", err
 				}
 			}
+		}()
+		if err != nil {
+			if errors.Is(err, lndhubsql.ErrEmptyResult) || errors.Is(err, context.Canceled) {
+				return
+			}
+			panic(err)
 		}
-		db.Put(conn)
-		tickerAccount.Stop()
+
 		credURI, err := EncodeCredentialsURL(Credentials{
 			Domain:     mintterDomain,
 			WalletType: lndhubsql.LndhubGoWalletType,
 			Login:      id.Account().String(),
-			Password:   loginSignature,
+			Password:   login,
 		})
 		if err != nil {
 			panic(err)
 		}
-		_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
 
-		// Insertwallet goes in a loop until success (until online)
-		tickerInsert := time.NewTicker(5 * time.Minute)
-		defer tickerInsert.Stop()
-		for err != nil && !errors.Is(err, errAlreadyLndhubgoWallet) {
+		timer := time.NewTimer(time.Microsecond)
+		defer timer.Stop()
+
+	loop:
+		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-tickerInsert.C:
-				_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
+			case <-timer.C:
+				if _, err := srv.InsertWallet(ctx, credURI, "Mintter Wallet"); err == nil || errors.Is(err, errAlreadyLndhubgoWallet) {
+					break loop
+				} else {
+					timer.Reset(5 * time.Minute)
+					continue
+				}
 			}
 		}
+
 		n, err := net.Await(ctx)
 		if err != nil {
 			return
 		}
-		n.SetInvoicer(&srv)
+		n.SetInvoicer(srv)
 	}()
-	return &srv
+
+	return srv
 }
 
 type lnclient struct {
@@ -240,13 +259,12 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		srv.lightningClient.Lndhub.WalletID = URL2Id(credentialsURL)
 	}
 
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err = fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return ret, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	ret.Type = creds.WalletType
 	ret.Address = "https://" + creds.Domain
 	ret.ID = creds.ID
@@ -299,13 +317,12 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 // ListWallets will also include the balance one every lndhub-like wallet. If false,then the call
 // is quicker but no balance information will appear.
 func (srv *Service) ListWallets(ctx context.Context, includeBalance bool) ([]wallet.Wallet, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return nil, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	wallets, err := wallet.ListWallets(conn, -1)
 	if err != nil {
 		srv.log.Debug("couldn't list wallets", zap.String("msg", err.Error()))
@@ -330,13 +347,12 @@ func (srv *Service) ListWallets(ctx context.Context, includeBalance bool) ([]wal
 // chosen as new default. Although it is advised that the user manually
 // changes the default wallet after removing the previous default.
 func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
 		return fmt.Errorf("couldn't remove wallet %s", walletID)
 	}
@@ -347,16 +363,13 @@ func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
 // UpdateWalletName updates an existing wallet's name with the one provided.
 // If the wallet represented by the id id does not exist, this function
 // returns error. nil otherwise, along with the updated wallet.
-func (srv *Service) UpdateWalletName(ctx context.Context, walletID string, newName string) (wallet.Wallet, error) {
-	var ret wallet.Wallet
-	var err error
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+func (srv *Service) UpdateWalletName(ctx context.Context, walletID string, newName string) (ret wallet.Wallet, err error) {
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return ret, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
 		srv.log.Debug("couldn't update wallet", zap.String("msg", err.Error()))
 		return ret, fmt.Errorf("couldn't update wallet %s", walletID)
@@ -369,14 +382,13 @@ func (srv *Service) UpdateWalletName(ctx context.Context, walletID string, newNa
 // Previous default wallet is replaced by the new one so only one can be
 // the default at any given time. The default wallet is the first wallet ever
 // created until manually changed.
-func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wallet.Wallet, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
-		return wallet.Wallet{}, err
+func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (ret wallet.Wallet, err error) {
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return ret, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	wallet, err := wallet.UpdateDefaultWallet(conn, walletID)
 	if err != nil {
 		srv.log.Debug("couldn't set default wallet: " + err.Error())
@@ -389,13 +401,12 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wall
 // <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 // lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
 func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return "", err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	login, err := lndhubsql.GetLogin(conn, walletID)
 	if err != nil {
 		srv.log.Debug(err.Error())
@@ -447,14 +458,13 @@ func (srv *Service) UpdateLnaddressNickname(ctx context.Context, nickname string
 // GetDefaultWallet gets the user's default wallet. If the user didn't manually
 // update the default wallet, then the first wallet ever created is the default
 // wallet. It will remain default until manually changed.
-func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
-		return wallet.Wallet{}, err
+func (srv *Service) GetDefaultWallet(ctx context.Context) (ret wallet.Wallet, err error) {
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return ret, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
+
 	w, err := wallet.GetDefaultWallet(conn)
 	if err != nil {
 		srv.log.Debug("couldn't getDefaultWallet: " + err.Error())
@@ -465,13 +475,11 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 
 // ListPaidInvoices returns the invoices that the wallet represented by walletID has paid.
 func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return nil, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
 
 	w, err := wallet.GetWallet(conn, walletID)
 	if err != nil {
@@ -493,13 +501,11 @@ func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]ln
 
 // ListReceivednvoices returns the incoming invoices that the wallet represented by walletID has received.
 func (srv *Service) ListReceivednvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return nil, err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
 
 	w, err := wallet.GetWallet(conn, walletID)
 	if err != nil {
@@ -587,14 +593,12 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	var walletToPay wallet.Wallet
 	var err error
 	var amountToPay uint64
-	conn := srv.pool.Get(ctx)
 
-	if conn == nil {
-		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
-		srv.log.Debug(err.Error())
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
 		return "", err
 	}
-	defer srv.pool.Put(conn)
+	defer release()
 
 	if walletID != nil {
 		walletToPay, err = wallet.GetWallet(conn, *walletID)

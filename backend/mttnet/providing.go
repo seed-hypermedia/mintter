@@ -46,7 +46,14 @@ FROM ` + sqliteschema.T_PublicBlobsView + `;`
 
 			if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
 				stmt.Scan(&codec, &multihash)
-				ch <- cid.NewCidV1(uint64(codec), multihash)
+
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ch <- cid.NewCidV1(uint64(codec), multihash):
+					// Send OK.
+				}
+
 				return nil
 			}); err != nil {
 				log.Error("Failed to read db record", zap.Error(err))
@@ -68,7 +75,13 @@ FROM ` + sqliteschema.T_PublicBlobsView + `;`
 					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HyperEntitiesEID))
 					return
 				}
-				ch <- c
+
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- c:
+					// Send OK.
+				}
 			}
 		}()
 

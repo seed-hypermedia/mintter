@@ -146,8 +146,8 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Wrong provided cid[%s]: %s", cidStr, err.Error())
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), SearchTimeout)
-	defer cancel()
+
+	ctx := r.Context()
 
 	n, err := fm.DAGService.Get(ctx, cid)
 	if err != nil {

@@ -107,10 +107,7 @@ func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
 		require.NoError(t, pool.Close())
 	})
 
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	require.NoError(t, sqliteschema.Migrate(conn))
+	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
 
 	return pool
 }

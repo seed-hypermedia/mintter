@@ -39,8 +39,10 @@ func TestCreate(t *testing.T) {
 
 	pool, err := makeConn(t)
 	require.NoError(t, err)
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
+
+	conn, release, err := pool.Conn(context.Background())
+	require.NoError(t, err)
+	defer release()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
@@ -150,9 +152,7 @@ func makeConn(t *testing.T) (*sqlitex.Pool, error) {
 		require.NoError(t, pool.Close())
 	})
 
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-	require.NoError(t, sqliteschema.Migrate(conn))
+	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
 
 	return pool, nil
 }

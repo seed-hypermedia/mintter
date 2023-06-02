@@ -49,7 +49,7 @@ func New(
 		}
 
 		go func() {
-			if err := s.SyncAndLog(context.Background()); err != nil {
+			if err := s.SyncAndLog(ctx); err != nil {
 				panic("bug or fatal error during sync " + err.Error())
 			}
 		}()

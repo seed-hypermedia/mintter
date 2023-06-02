@@ -35,9 +35,10 @@ func TestModifyWallets(t *testing.T) {
 	var defaultWallet walletsql.Wallet
 	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)
 	require.Eventually(t, func() bool {
-		conn := alice.pool.Get(ctx)
-		defer alice.pool.Put(conn)
-		lndhubsql.GetToken(conn, defaultWallet.ID)
+		conn, release, err := alice.pool.Conn(ctx)
+		require.NoError(t, err)
+		defer release()
+		_, err = lndhubsql.GetToken(conn, defaultWallet.ID)
 		return err == nil
 	}, 3*time.Second, 1*time.Second)
 	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
@@ -70,9 +71,10 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	var defaultWallet walletsql.Wallet
 	require.Eventually(t, func() bool { defaultWallet, err = bob.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)
 	require.Eventually(t, func() bool {
-		conn := bob.pool.Get(ctx)
-		defer bob.pool.Put(conn)
-		lndhubsql.GetToken(conn, defaultWallet.ID)
+		conn, release, err := bob.pool.Conn(ctx)
+		require.NoError(t, err)
+		defer release()
+		_, err = lndhubsql.GetToken(conn, defaultWallet.ID)
 		return err == nil
 	}, 3*time.Second, 1*time.Second)
 	require.Eventually(t, func() bool {
@@ -135,8 +137,9 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	require.NoError(t, identity.Resolve(u.Identity))
 
-	conn := db.Get(context.Background())
-	defer db.Put(conn)
+	conn, release, err := db.Conn(context.Background())
+	require.NoError(t, err)
+	defer release()
 
 	signature, err := u.Account.Sign([]byte(lndhub.SigninMessage))
 	require.NoError(t, err)
@@ -195,10 +198,7 @@ func makeTestSQLite(t *testing.T) *sqlitex.Pool {
 		require.NoError(t, pool.Close())
 	})
 
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	require.NoError(t, sqliteschema.Migrate(conn))
+	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
 
 	return pool
 }

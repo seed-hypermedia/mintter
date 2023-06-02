@@ -21,11 +21,6 @@ func MakeTestDB(t testing.TB) *sqlitex.Pool {
 	t.Cleanup(func() {
 		require.NoError(t, pool.Close())
 	})
-
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	require.NoError(t, Migrate(conn))
-
+	require.NoError(t, MigratePool(context.Background(), pool))
 	return pool
 }

@@ -10,8 +10,9 @@ import (
 
 func TestMigrate(t *testing.T) {
 	pool := makeDB(t)
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
+	conn, release, err := pool.Conn(context.Background())
+	require.NoError(t, err)
+	defer release()
 	require.NoError(t, Migrate(conn))
 	require.Error(t, migrate(conn, nil), "must refuse to rollback migrations")
 }

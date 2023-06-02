@@ -44,15 +44,6 @@ func NewBlock(codec uint64, data []byte) blocks.Block {
 	return blk
 }
 
-// NewBlockstore creates a new Block Store from a given datastore.
-// It adds caching and bloom-filters, in addition to support for ID hashed blocks.
-func NewBlockstore(store datastore.Batching) (blockstore.Blockstore, error) {
-	var bs blockstore.Blockstore
-	bs = blockstore.NewBlockstore(store)
-	bs = blockstore.NewIdStore(bs)
-	return blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
-}
-
 // StringAddrs converts a slice of multiaddrs into their string representation.
 func StringAddrs(mas []multiaddr.Multiaddr) []string {
 	out := make([]string, len(mas))
