@@ -23,9 +23,17 @@ import {
   Text,
   XGroup,
 } from '@mintter/ui'
-import {Check, Zap} from '@tamagui/lucide-icons'
+import {Check, MinusCircle, Plus, PlusCircle, Zap} from '@tamagui/lucide-icons'
+import {LoadedAccountId} from 'author'
 import Link from 'next/link'
-import React, {ReactNode, useEffect, useMemo, useRef, useState} from 'react'
+import React, {
+  ReactNode,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 
@@ -88,6 +96,9 @@ function AmountForm({
   let isOther = option === 'other' || isOtherInputing
   return (
     <YStack backgroundColor={'$green5'} borderRadius="$3" padding="$3" gap="$3">
+      <Text fontSize="$6" fontWeight="bold" theme="green">
+        Payment Amount
+      </Text>
       <RadioGroup
         name="form"
         onValueChange={(val) => {
@@ -137,6 +148,55 @@ function AmountForm({
   )
 }
 
+function SplitRow({
+  sats,
+  id,
+  percentage,
+  dispatchSplit,
+}: {
+  sats: number
+  id: string
+  percentage: number
+  dispatchSplit: React.Dispatch<SplitAction>
+}) {
+  const [isHovering, setIsHovering] = useState<boolean>(false)
+  return (
+    <XStack
+      overflow="hidden"
+      onHoverIn={() => setIsHovering(true)}
+      onHoverOut={() => setIsHovering(false)}
+    >
+      <LoadedAccountId account={id} />
+      <Text width={100} color="$gray10">
+        {Math.round(percentage * 1000) / 10}%
+      </Text>
+      <XGroup opacity={isHovering ? 1 : 0} size="$2">
+        <XGroup.Item>
+          <Button
+            size="$2"
+            icon={PlusCircle}
+            onPress={() => {
+              dispatchSplit({type: 'incrementPercentage', id, increment: 0.1})
+            }}
+          />
+        </XGroup.Item>
+        <XGroup.Item>
+          <Button
+            size="$2"
+            icon={MinusCircle}
+            onPress={() => {
+              dispatchSplit({type: 'incrementPercentage', id, increment: -0.1})
+            }}
+          />
+        </XGroup.Item>
+      </XGroup>
+      <Container>
+        <Text>{sats} Sats</Text>
+      </Container>
+    </XStack>
+  )
+}
+
 function RadioGroupItemWithLabel({
   value,
   label,
@@ -160,6 +220,39 @@ function RadioGroupItemWithLabel({
   )
 }
 
+type InvoiceSplit = {id: string; percentage: number}[]
+
+type SplitAction = {type: 'incrementPercentage'; increment: number; id: string}
+let editorsOverallPercentage = 0.99
+
+function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
+  if (action.type === 'incrementPercentage') {
+    const prevTarget = state.find((s) => s.id === action.id)
+    if (!prevTarget) return state
+
+    const prevTargetPercentage = prevTarget.percentage
+    const nextPercentage = Math.min(
+      editorsOverallPercentage,
+      Math.max(0, prevTargetPercentage + action.increment),
+    )
+    const prevRemainderPercentage =
+      editorsOverallPercentage - prevTargetPercentage
+    const nextRemainderPercentage = editorsOverallPercentage - nextPercentage
+
+    return state.map((s) => {
+      if (s.id === action.id) {
+        return {id: s.id, percentage: nextPercentage}
+      }
+      // these split the remainder based on their ratio from the previous remainder
+      const prevRatioExcludingTarget = s.percentage / prevRemainderPercentage
+      const percentage = prevRatioExcludingTarget * nextRemainderPercentage
+
+      return {id: s.id, percentage}
+    })
+  }
+  return state
+}
+
 function CreateInvoiceStep({
   onInvoice,
   onComplete,
@@ -172,7 +265,6 @@ function CreateInvoiceStep({
   docId: string
 }) {
   let [amount, setAmount] = useState(100)
-  let editorsOverallPercentage = 0.99
   let initialSplit = useMemo(() => {
     let editorIds = editors
       .map((editor) => {
@@ -185,8 +277,8 @@ function CreateInvoiceStep({
       ? editorsOverallPercentage / editorIds.length
       : editorsOverallPercentage
     return editorIds.map((id) => ({id, percentage: equalPercentage}))
-  }, [editors, editorsOverallPercentage])
-  let [split, setSplit] = useState(initialSplit)
+  }, [editors])
+  let [split, dispatchSplit] = useReducer(splitReducer, initialSplit)
   let computed = useMemo(() => {
     let remainderSats = amount
     let remainderPercent = 1
@@ -199,6 +291,7 @@ function CreateInvoiceStep({
     // TO DO: handle edge case where remainderSats is 0 but the actual service fee should be at least 1 sat
     return {
       computedSplit,
+      total: amount,
       serviceFeePercent: remainderPercent,
       serviceFeeSats: remainderSats,
     }
@@ -248,7 +341,7 @@ function CreateInvoiceStep({
         helping to fund their work and ensure the ongoing success of the
         publication.
       </Dialog.Description>
-      <YStack gap="$4" padding="$4">
+      <YStack gap="$4">
         <Dialog.Description>
           Payments are made using the instant and global Bitcoin Lightning
           network. All amounts are in{' '}
@@ -260,44 +353,58 @@ function CreateInvoiceStep({
           </Link>
         </Dialog.Description>
         <AmountForm amount={amount} onAmount={setAmount} />
-        <Text fontSize="$6" fontWeight="bold">
-          Payment Overview
-        </Text>
 
-        <YStack padding="$2" gap="$2">
+        <YStack
+          borderRadius="$3"
+          padding="$3"
+          gap="$3"
+          borderWidth={1}
+          borderColor={'$gray8'}
+        >
+          <Text fontSize="$6" fontWeight="bold">
+            Distribution Overview
+          </Text>
           {computed.computedSplit.map((splitRow) => {
             return (
-              <XStack overflow="hidden" key={splitRow.id}>
-                <Text fontWeight="bold" minWidth={500}>
-                  {splitRow.id}
-                </Text>
-                <Text width={100} color="$gray10">
-                  {splitRow.percentage * 100}%
-                </Text>
-                <Container>
-                  <Text>{splitRow.sats} Sats</Text>
-                </Container>
-              </XStack>
+              <SplitRow
+                key={splitRow.id}
+                {...splitRow}
+                dispatchSplit={dispatchSplit}
+              />
             )
           })}
 
           <XStack overflow="hidden">
             <Container width={600}>
-              <Text flex={1}>Mintter Service Fee</Text>
+              <Text flex={1}>Transaction Fee</Text>
             </Container>
             <Container>
               <Text>{computed.serviceFeeSats} Sats</Text>
             </Container>
           </XStack>
+          <Separator />
+          <XStack overflow="hidden">
+            <Container width={600}>
+              <Text color="$green11" flex={1}>
+                Payment Total
+              </Text>
+            </Container>
+            <Container>
+              <Text color="$green11">{computed.total} Sats</Text>
+            </Container>
+          </XStack>
         </YStack>
-        <Button
-          onPress={() => {
-            createInvoice()
-          }}
-          icon={Zap}
-        >
-          Start Bitcoin Donation
-        </Button>
+        <XStack jc="center">
+          <Button
+            theme="green"
+            onPress={() => {
+              createInvoice()
+            }}
+            icon={Zap}
+          >
+            Start Bitcoin Donation
+          </Button>
+        </XStack>
       </YStack>
     </>
   )

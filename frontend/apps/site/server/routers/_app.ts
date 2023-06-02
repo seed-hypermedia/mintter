@@ -1,11 +1,12 @@
 import {createPromiseClient} from '@bufbuild/connect'
-import {Publications, WebPublishing} from '@mintter/shared'
+import {Accounts, Publications, WebPublishing} from '@mintter/shared'
 import {transport} from 'client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
 const publicationsClient = createPromiseClient(Publications, transport)
 const webClient = createPromiseClient(WebPublishing, transport)
+const accountsClient = createPromiseClient(Accounts, transport)
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -43,20 +44,27 @@ const publicationRouter = router({
     }),
 })
 
-export const appRouter = router({
-  publication: publicationRouter,
-
-  hello: procedure
+const accountRouter = router({
+  get: procedure
     .input(
       z.object({
-        text: z.string(),
+        accountId: z.string().optional(),
       }),
     )
-    .query(({input}) => {
+    .query(async ({input}) => {
+      const account = await accountsClient.getAccount({
+        id: input.accountId,
+      })
+
       return {
-        greeting: `hello ${input.text}`,
+        account: account.toJson(),
       }
     }),
+})
+
+export const appRouter = router({
+  publication: publicationRouter,
+  account: accountRouter,
 })
 
 // export type definition of API

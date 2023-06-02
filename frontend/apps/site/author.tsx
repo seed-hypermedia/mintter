@@ -8,16 +8,19 @@ import {
   Button,
   XStack,
   SimpleTooltip,
+  Avatar,
 } from '@mintter/ui'
 import {
   Publication,
   formattedDate,
   Account,
   abbreviateCid,
+  pluralS,
 } from '@mintter/shared'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {Clipboard} from '@tamagui/lucide-icons'
+import {trpc} from './trpc'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -46,6 +49,29 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
   )
 }
 
+export function LoadedAccountId({
+  account,
+}: {
+  account?: Account | string | null
+}) {
+  const id = typeof account === 'string' ? account : account?.id
+  const acct = trpc.account.get.useQuery({
+    accountId: id,
+  })
+  let profile = acct.data?.account?.profile || account?.profile
+  if (profile) {
+    // todo avatar!
+    return (
+      <>
+        <Text>{profile.alias}</Text>
+      </>
+    )
+  }
+  if (!account) return <Text>?</Text>
+  if (typeof account === 'string') return <Text>{abbreviateCid(account)}</Text>
+  return <Text>{abbreviateCid(account.id)}</Text>
+}
+
 export function PublicationMetadata({
   publication,
   editors,
@@ -57,17 +83,20 @@ export function PublicationMetadata({
   let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
   return publication ? (
     <SiteAside>
-      <Paragraph size={size}>
-        <SizableText opacity={0.5}>author:&nbsp;</SizableText>
-        {editors
-          ?.map((editor) => {
-            if (typeof editor === 'string') return editor
-            if (editor?.profile?.alias) return editor.profile.alias
-            return '?'
-          })
-          .filter((e) => !!e)
-          .join(', ')}
-      </Paragraph>
+      <SizableText opacity={0.5}>
+        {pluralS(editors?.length || 0, 'Author')}:&nbsp;
+      </SizableText>
+      {editors
+        ?.map((editor) => {
+          if (!editor) return null
+          return (
+            <LoadedAccountId
+              account={editor}
+              key={typeof editor === 'string' ? editor : editor.id}
+            />
+          )
+        })
+        .filter((e) => !!e)}
       <Paragraph size={size}>
         <SizableText o={0.5}>Published at:&nbsp;</SizableText>
         {publication?.document?.publishTime
