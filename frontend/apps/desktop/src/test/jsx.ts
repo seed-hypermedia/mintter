@@ -71,7 +71,7 @@ declare global {
 
 export const jsx = createHyperscript({
   elements: {
-    editor: {...createEditor(), __mtt_changes: []},
+    editor: {...createEditor(), __hd_changes: []},
     group: group([]),
     unorderedList: ul([]),
     orderedList: ol([]),

@@ -1,58 +1,41 @@
-import { imageMachine } from '@app/editor/image/image-machine'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { findPath } from '@app/editor/utils'
+import {imageMachine} from '@app/editor/image/image-machine'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {findPath} from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
   isImage,
   paragraph,
   statement,
-  text
+  text,
 } from '@mintter/shared'
 import {
   Button,
   Form,
-  ImageIcon, Input, Label,
+  ImageIcon,
+  Input,
+  Label,
   Popover,
   SizableText,
   Tabs,
   TextArea,
   XStack,
-  YStack
+  YStack,
 } from '@mintter/ui'
-import { useActor, useInterpret } from '@xstate/react'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import { Editor, Path, Transforms } from 'slate'
+import {useActor, useInterpret} from '@xstate/react'
+import {ChangeEvent, useCallback, useMemo, useState} from 'react'
+import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
   useFocused,
   useSelected,
-  useSlateStatic
+  useSlateStatic,
 } from 'slate-react'
-import { ActorRefFrom } from 'xstate'
-import type { EditorPlugin } from '../types'
+import {ActorRefFrom} from 'xstate'
+import type {EditorPlugin} from '../types'
 
 export const ELEMENT_IMAGE = 'image'
-
-export function createImagePlugin(): EditorPlugin {
-  return {
-    name: ELEMENT_IMAGE,
-    configureEditor(editor) {
-      const {isVoid, isInline} = editor
-
-      editor.isVoid = function imageVoid(element) {
-        return isImage(element) || isVoid(element)
-      }
-
-      editor.isInline = function imageInline(element) {
-        return isImage(element) || isInline(element)
-      }
-
-      return editor
-    },
-  }
-}
 
 export function ImageElement({
   element,
@@ -133,6 +116,7 @@ function ImageComponent({service, element}: InnerImageProps) {
 
   return (
     <YStack
+      className={element.type}
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setReplace(true)
       }}
@@ -198,8 +182,11 @@ function ImageForm({service, element}: InnerImageProps) {
 
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
-      const blob = await fetch(url).then(res => res.blob())
-      const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
+      const blob = await fetch(url).then((res) => res.blob())
+      const webFile = new File(
+        [blob],
+        `mintterImage.${blob.type.split('/').pop()}`,
+      )
       if (webFile && webFile.size <= 62914560) {
         const formData = new FormData()
         formData.append('file', webFile)
@@ -217,8 +204,7 @@ function ImageForm({service, element}: InnerImageProps) {
         } catch (error) {
           console.error(error)
         }
-      }
-      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
@@ -242,28 +228,23 @@ function ImageForm({service, element}: InnerImageProps) {
         } catch (error) {
           console.error(error)
         }
-      }
-      else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
   const isValidUrl = (urlString: string) => {
-    try { 
-      return Boolean(new URL(urlString)); 
-    }
-    catch(e) {
+    try {
+      return Boolean(new URL(urlString))
+    } catch (e) {
       console.log(e)
-      return false; 
+      return false
     }
   }
 
   return (
     //@ts-ignore
     <YStack contentEditable={false}>
-      <Popover
-        size="$5"
-        defaultOpen={element.defaultOpen}
-      >
+      <Popover size="$5" defaultOpen={element.defaultOpen}>
         <Popover.Trigger asChild>
           <Button
             icon={ImageIcon}
@@ -343,7 +324,9 @@ function ImageForm({service, element}: InnerImageProps) {
                   cursor: 'pointer',
                 }}
               >
-                <SizableText size="$2" color='black'>Embed Link</SizableText>
+                <SizableText size="$2" color="black">
+                  Embed Link
+                </SizableText>
               </Tabs.Tab>
             </Tabs.List>
             <Tabs.Content value="upload">
@@ -403,7 +386,7 @@ function ImageForm({service, element}: InnerImageProps) {
                       color="black"
                       placeholder="Add an Image URL"
                       focusStyle={{
-                        borderColor: "lightgrey",
+                        borderColor: 'lightgrey',
                         outlineWidth: 0,
                         cursor: 'pointer',
                       }}
@@ -432,4 +415,18 @@ function ImageForm({service, element}: InnerImageProps) {
       </Popover>
     </YStack>
   )
+}
+
+export function withImages(editor: Editor): Editor {
+  const {isVoid, isInline} = editor
+
+  editor.isVoid = function imageIsVoid(element) {
+    return isImage(element) || isVoid(element)
+  }
+
+  editor.isInline = function imageIsInline(element) {
+    return isImage(element) || isInline(element)
+  }
+
+  return editor
 }

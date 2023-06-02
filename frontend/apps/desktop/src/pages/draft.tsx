@@ -1,6 +1,7 @@
 // import 'show-keys'
 import {AppBanner, BannerText} from '@app/app-banner'
-import {Editor, plugins, useTauriListeners} from '@app/editor/editor'
+import {Editor, plugins, useDraftEditor} from '@app/editor/editor'
+import {EditorHoveringToolbar} from '@app/editor/hovering-toolbar'
 
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {useEditorDraft, useSaveDraft} from '@app/models/documents'
@@ -33,27 +34,18 @@ export default function DraftPage() {
     throw new Error('Draft actor must be passed to DraftPage')
 
   const [debugValue, setDebugValue] = useState(false)
-  const docId = route.draftId // TODO, clean this up when draftId != docId
-  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
-
-  const {
-    data: draftState,
-    status,
-    error,
-    refetch,
-  } = useEditorDraft({
-    editor,
-    documentId: docId,
+  const documentId = route.draftId // TODO, clean this up when draftId != docId
+  const {editor, saveDraft, state} = useDraftEditor({
+    documentId,
     initWebUrl: route.contextSiteHost,
   })
+
+  const {status, error, data: draftState, refetch} = state
 
   let isDaemonReady = useDaemonReady()
 
   useInitialFocus(editor)
-  useTauriListeners(editor)
-
-  // TODO: safe when loading the first time a new draft: this is to load the epty block generated when start inside the `editorValue` useMemo
-  const saveDraft = useSaveDraft(editor, docId)
+  // useTauriListeners(editor)
 
   if (status == 'loading') {
     return <DraftShell />
@@ -74,6 +66,7 @@ export default function DraftPage() {
           {draftState.children.length ? (
             <>
               <Editor
+                mode={EditorMode.Draft}
                 editor={editor}
                 value={draftState.children}
                 //@ts-ignore
@@ -93,6 +86,7 @@ export default function DraftPage() {
                     saveDraft.mutate({content})
                   }
                 }}
+                toolbar={<EditorHoveringToolbar />}
               />
               {import.meta.env.DEV && (
                 <YStack maxWidth="500px" marginHorizontal="auto">

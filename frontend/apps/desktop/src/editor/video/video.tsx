@@ -98,7 +98,7 @@ export function VideoElement({
   const [state] = useActor(videoService)
 
   return (
-    <Box {...attributes}>
+    <Box {...attributes} className={element.type}>
       {children}
       {state.matches('video') ? (
         <VideoComponent

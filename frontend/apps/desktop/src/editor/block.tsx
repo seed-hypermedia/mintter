@@ -3,41 +3,39 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {useVisibleConnection} from '@app/editor/visible-connection'
 import {useNavRoute} from '@app/utils/navigation'
 import {
+  createId,
   FlowContent,
   GroupingContent,
   isBlockquote,
   isCode,
+  isContent,
+  isFlowContent,
   isGroupContent,
   isHeading,
   isOrderedList,
+  isPhrasingContent,
+  isStaticParagraph,
+  paragraph,
+  statement,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
 import {useMemo, useState} from 'react'
-import {Editor} from 'slate'
+import {Editor, Element, Node, Path, Range, TextUnit} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
-import {BLOCK_GAP, findPath, useMode} from './utils'
+import {text} from 'stream/consumers'
+import {removeEmptyGroup} from './group'
+import {MintterEditor} from './mintter-changes/plugin'
+import {ELEMENT_PARAGRAPH} from './paragraph'
+import {EditorPlugin} from './types'
+import {blockHasNestedGroup, BLOCK_GAP, findPath, isFirstChild} from './utils'
 
 export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
-export function BlockElement({
-  attributes,
-  children,
-  element,
-}: RenderElementProps) {
-  return (
-    <Block element={element} attributes={attributes}>
-      {children}
-    </Block>
-  )
-  // return children
-}
-
-export const Block = (props: RenderElementProps) => {
-  let mode = useMode()
-  if (mode == EditorMode.Draft) {
+export const Block = (props: RenderElementProps & {mode: EditorMode}) => {
+  if (props.mode == EditorMode.Draft) {
     return <DraftSection {...props} />
   }
-  if (mode == EditorMode.Publication) {
+  if (props.mode == EditorMode.Publication) {
     return <PublicationSection {...props} />
   }
 
@@ -313,4 +311,184 @@ function Marker(props: MarkerProps) {
       ) : null}
     </XStack>
   )
+}
+
+export function withBlocks(editor: Editor) {
+  /**
+   * cases to handle
+   * - when enter, create a new block
+   * - when backspace in the beginning of a block, remove block and merge paragraph with the previous
+   */
+
+  const {normalizeNode, insertBreak, deleteBackward} = editor
+
+  editor.deleteBackward = function blockDeleteBackward(unit: TextUnit) {
+    console.log('blockDeleteBackward', editor.selection)
+    deleteBackward(unit)
+  }
+
+  editor.insertBreak = function blockInsertBreak() {
+    if (collapsedInsertBreak(editor)) return
+    if (nonCollapsedInsertBreak(editor)) return
+
+    insertBreak()
+  }
+
+  editor.normalizeNode = function blockNormalizeNode(entry) {
+    const [node, path] = entry
+
+    if (Element.isElement(node) && isGroupContent(node)) {
+      if (removeEmptyGroup(editor, entry)) return
+
+      for (const [child, childPath] of Node.children(editor, path)) {
+        // addParentData(editor, entry)
+
+        // This rule is concerned with groups that are children of other groups
+        // this happens when pasting nested lists from html and we want to explicitly handle it
+        // this rule moves a group into the previous statement or unwraps it
+        if (isGroupContent(child)) {
+          if (isFirstChild(childPath)) {
+            editor.unwrapNodes({at: childPath})
+          } else {
+            const [prev, prevPath] =
+              editor.previous({
+                at: childPath,
+              }) || []
+
+            if (prev && prevPath && isFlowContent(prev)) {
+              if (isGroupContent(prev.children[1])) {
+                // we already have a group
+                editor.unwrapNodes({at: childPath})
+              } else {
+                // we don't have a group
+
+                editor.moveNodes({
+                  at: childPath,
+                  to: prevPath.concat(1),
+                })
+              }
+            } else {
+              editor.unwrapNodes({at: childPath})
+            }
+          }
+
+          return
+        }
+
+        if (!isFlowContent(child)) {
+          // inside group and not a flowcontent
+          let blockId = createId()
+
+          editor.wrapNodes(statement({id: blockId}), {
+            at: childPath,
+          })
+          MintterEditor.addChange(editor, ['moveBlock', blockId])
+          MintterEditor.addChange(editor, ['replaceBlock', blockId])
+          return
+        }
+      }
+    }
+
+    normalizeNode(entry)
+  }
+
+  return editor
+}
+
+function collapsedInsertBreak(editor: Editor) {
+  if (!editor.selection) {
+    console.warn('collapsedInsertBreak: no editor selection')
+    return false
+  }
+
+  // need to get the current paragraph content entry
+  const content = editor.above({
+    match: isContent,
+  })
+
+  if (!content) {
+    console.warn('blockInsertBreak: no paragraph above')
+    return false
+  }
+
+  let [cNode, cPath] = content
+
+  try {
+    // using a try/catch because getting paths that does not exists breaks the editor
+    // get the current block path
+    let blockPath = Path.parent(cPath)
+    let currentBlock = Node.get(editor, blockPath)
+
+    if (!isFlowContent(currentBlock)) return false
+
+    if (isCode(currentBlock)) {
+      editor.insertText('\n')
+      return true
+    }
+
+    // get the next position of the current block. if the currentBlock has children, then the next position is the first child of the nested group. otherwise is the next currentBlock's position
+    // we add `2, 0` to the path because we splitted the first chidld of the block, which means that everything was shifted 1 path to the right
+    let targetPath = blockHasNestedGroup(currentBlock)
+      ? [...blockPath, 2, 0]
+      : Path.next(blockPath)
+
+    // get the next position of the splitted content
+    let splittedP = Path.next(cPath)
+
+    editor.withoutNormalizing(() => {
+      // split the content (this is what slate does normally when `insertBreak` - https://github.com/ianstormtaylor/slate/blob/main/packages/slate/src/editor/insert-break.ts#L5)
+      editor.splitNodes({always: true})
+      if (isStaticParagraph(cNode)) {
+        editor.setNodes({type: ELEMENT_PARAGRAPH}, {at: splittedP})
+      }
+
+      // wrap the new content into a new block
+      let newBlock = statement({id: createId()})
+      editor.wrapNodes(newBlock, {at: splittedP})
+
+      // move the new block to the targetPath (the next position of the current block)
+      editor.moveNodes({at: splittedP, to: targetPath})
+    })
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+function nonCollapsedInsertBreak(editor: Editor) {
+  if (!editor.selection) {
+    console.warn('nonCollapsedInsertBreak: no editor selection')
+    return false
+  }
+
+  if (!Range.isCollapsed(editor.selection)) {
+    // if the user has some text selected and press enter:
+    // - we remove the fragment selected
+    // - perform a normal insertBreak
+
+    editor.withoutNormalizing(() => {
+      editor.deleteFragment()
+    })
+
+    return true
+  }
+  return false
+}
+
+export function deleteBackwardKeydown(
+  editor: Editor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  if (event.defaultPrevented) return false
+  if (event.key == 'Backspace') {
+    event.preventDefault()
+    // need to get the current paragraph content entry
+    // TODO: handle backspace when selection is in the beginning
+    console.warn(
+      'deleteBackwardKeydown: TODO: handle backspace when selection is in the beginning',
+    )
+
+    return true
+  }
+  return false
 }

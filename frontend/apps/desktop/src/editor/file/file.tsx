@@ -45,11 +45,11 @@ export function createFilePlugin(): EditorPlugin {
     configureEditor(editor) {
       const {isVoid, isInline} = editor
 
-      editor.isVoid = function fileVoid(element) {
+      editor.isVoid = function fileIsVoid(element) {
         return isFile(element) || isVoid(element)
       }
 
-      editor.isInline = function fileInline(element) {
+      editor.isInline = function fileIsInline(element) {
         return isFile(element) || isInline(element)
       }
 
@@ -99,7 +99,7 @@ export function FileElement({
     Transforms.setNodes<FileType>(editor, {defaultOpen: false}, {at: path})
 
   return (
-    <YStack {...attributes}>
+    <YStack {...attributes} className={element.type}>
       {children}
       {file.url.length ? (
         <FileComponent

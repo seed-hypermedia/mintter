@@ -254,7 +254,7 @@ export function useEditorDraft({
 }) {
   return useQuery({
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
-    enabled: !!documentId,
+    enabled: !!documentId && !!editor,
     queryFn: async () => {
       const backendDraft = await draftsClient.getDraft({documentId: documentId})
       let children

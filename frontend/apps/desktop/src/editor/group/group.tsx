@@ -1,135 +1,23 @@
-import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {
-  createId,
   GroupingContent,
   isFlowContent,
   isGroup,
   isGroupContent,
   isOrderedList,
   isUnorderedList,
-  ol,
   OrderedList,
-  statement,
-  ul,
 } from '@mintter/shared'
-import {XStack, YStack} from '@mintter/ui'
+import {YStack} from '@mintter/ui'
 import {useMemo} from 'react'
-import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
+import {Editor, Node, NodeEntry, Transforms} from 'slate'
+import {RenderElementProps} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
-import type {EditorPlugin} from '../types'
-import {
-  BLOCK_GAP,
-  findPath,
-  isFirstChild,
-  resetGroupingContent,
-  toggleList,
-  useMode,
-} from '../utils'
+import {BLOCK_GAP} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 export const ELEMENT_ORDERED_LIST = 'orderedList'
 export const ELEMENT_UNORDERED_LIST = 'unorderedList'
-
-export const createGroupPlugin = (): EditorPlugin => ({
-  name: ELEMENT_GROUP,
-  onDOMBeforeInput: (editor) => (ev) => {
-    if (
-      (ev.inputType == 'insertUnorderedList' ||
-        ev.inputType == 'insertOrderedList') &&
-      editor.selection
-    ) {
-      ev.preventDefault()
-
-      const [, path] =
-        Editor.above(editor, {
-          at: editor.selection,
-          match: isFlowContent,
-        }) || []
-
-      if (!path) throw new Error('whut')
-
-      const set = toggleList(
-        {
-          insertUnorderedList: ul,
-          insertOrderedList: ol,
-        }[ev.inputType],
-      )
-
-      set(editor, path)
-    }
-  },
-  configureEditor(editor) {
-    const {normalizeNode, deleteBackward} = editor
-
-    editor.deleteBackward = (unit) => {
-      if (resetGroupingContent(editor)) return
-
-      deleteBackward(unit)
-    }
-
-    editor.normalizeNode = (entry) => {
-      const [node, path] = entry
-
-      if (Element.isElement(node) && isGroupContent(node)) {
-        if (removeEmptyGroup(editor, entry)) return
-
-        for (const [child, childPath] of Node.children(editor, path)) {
-          // addParentData(editor, entry)
-
-          // This rule is concerned with groups that are children of other groups
-          // this happens when pasting nested lists from html and we want to explicitly handle it
-          // this rule movesa group into the previous statement or unwraps it
-          if (isGroupContent(child)) {
-            if (isFirstChild(childPath)) {
-              Transforms.unwrapNodes(editor, {at: childPath})
-            } else {
-              const [prev, prevPath] =
-                Editor.previous(editor, {
-                  at: childPath,
-                }) || []
-
-              if (prev && prevPath && isFlowContent(prev)) {
-                if (isGroupContent(prev.children[1])) {
-                  // we already have a group
-                  Transforms.unwrapNodes(editor, {at: childPath})
-                } else {
-                  // we don't have a group
-
-                  Transforms.moveNodes(editor, {
-                    at: childPath,
-                    to: prevPath.concat(1),
-                  })
-                }
-              } else {
-                Transforms.unwrapNodes(editor, {at: childPath})
-              }
-            }
-
-            return
-          }
-
-          if (!isFlowContent(child)) {
-            // inside group and not a flowcontent
-            let blockId = createId()
-
-            Transforms.wrapNodes(editor, statement({id: blockId}), {
-              at: childPath,
-            })
-            MintterEditor.addChange(editor, ['moveBlock', blockId])
-            MintterEditor.addChange(editor, ['replaceBlock', blockId])
-            return
-          }
-        }
-      }
-
-      normalizeNode(entry)
-    }
-
-    return editor
-  },
-})
 
 /**
  *
@@ -169,7 +57,12 @@ export type GroupProps = Omit<RenderElementProps, 'element'> & {
   element: GroupingContent
 }
 
-export function Group({element, attributes, children}: RenderElementProps) {
+export function Group({
+  element,
+  attributes,
+  children,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   let elementProps = useMemo(
     () => ({
       ...attributes,
@@ -180,7 +73,6 @@ export function Group({element, attributes, children}: RenderElementProps) {
     }),
     [element, attributes],
   )
-  const mode = useMode()
 
   let tag = useMemo(() => (isOrderedList(element) ? 'ol' : 'ul'), [element])
 

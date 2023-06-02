@@ -1,382 +1,283 @@
+import {useEditorDraft, useSaveDraft} from '@app/models/documents'
+import {useCallback, useMemo} from 'react'
+import {createEditor, Editor as SlateEditor} from 'slate'
+import {ImageElement, withImages} from './image/image'
+import './styles/editor.css'
+
 import {
-  createBlockquotePlugin,
-  ELEMENT_BLOCKQUOTE,
-} from '@app/editor/blockquote'
-import {createCodePlugin, ELEMENT_CODE, LEAF_TOKEN} from '@app/editor/code'
-import {createColorPlugin} from '@app/editor/color'
-import {ConversationsLeaf} from '@app/editor/comments/comments'
-import {createDirtyPathPlugin} from '@app/editor/dirty-paths'
-import {createEmbedPlugin, ELEMENT_EMBED, EmbedElement} from '@app/editor/embed'
-import {createEmphasisPlugin} from '@app/editor/emphasis'
+  Editable,
+  RenderElementProps,
+  RenderLeafProps,
+  Slate,
+  withReact,
+} from 'slate-react'
+import {Block, deleteBackwardKeydown, withBlocks} from './block'
+import {ELEMENT_BLOCKQUOTE} from './blockquote'
+import {ELEMENT_CODE, LEAF_TOKEN} from './code'
+import {ELEMENT_EMBED, EmbedElement} from './embed'
+import {ELEMENT_FILE, FileElement} from './file/file'
 import {
-  createFilePlugin,
-  ELEMENT_FILE,
-  FileElement,
-} from '@app/editor/file/file'
-import {
-  createGroupPlugin,
   ELEMENT_GROUP,
   ELEMENT_ORDERED_LIST,
   ELEMENT_UNORDERED_LIST,
   Group,
-} from '@app/editor/group'
-import {createHeadingPlugin, ELEMENT_HEADING} from '@app/editor/heading'
+} from './group'
+import {ELEMENT_HEADING} from './heading'
+import {ELEMENT_IMAGE} from './image/image'
+import {ELEMENT_LINK, LinkElement, withLinks} from './link'
+import {withHyperdocs} from './mintter-changes/plugin'
+import {EditorMode, withMode} from './plugin-utils'
+import {ELEMENT_STATEMENT} from './statement'
 import {
-  EditorHoveringToolbar,
-  PublicationToolbar,
-} from '@app/editor/hovering-toolbar'
-import {
-  createImagePlugin,
-  ELEMENT_IMAGE,
-  ImageElement,
-} from '@app/editor/image/image'
-import {createInlineCodePlugin} from '@app/editor/inline-code'
-import {createLinkPlugin, ELEMENT_LINK, LinkElement} from '@app/editor/link'
-import {createMarkdownShortcutsPlugin} from '@app/editor/markdown-plugin'
-import {createMintterChangesPlugin} from '@app/editor/mintter-changes/plugin'
-import {createParagraphPlugin, ParagraphElement} from '@app/editor/paragraph'
-import {createPlainTextPastePlugin} from '@app/editor/paste-plugin'
-import {createStatementPlugin, ELEMENT_STATEMENT} from '@app/editor/statement'
-import {
-  createStaticParagraphPlugin,
   ELEMENT_STATIC_PARAGRAPH,
   StaticParagraphElement,
-} from '@app/editor/static-paragraph'
-import {createStrongPlugin} from '@app/editor/strong'
-import {createTabPlugin} from '@app/editor/tab-plugin'
-import {createUnderlinePlugin} from '@app/editor/underline'
-import {
-  createVideoPlugin,
-  ELEMENT_VIDEO,
-  VideoElement,
-} from '@app/editor/video/video'
-import {useWindowListen} from '@app/ipc'
-import {flow} from '@app/stitches.config'
-import {classnames} from '@app/utils/classnames'
-import {error} from '@app/utils/logger'
-import {
-  blockquote,
-  ChildrenOf,
-  code,
-  FlowContent,
-  group,
-  heading,
-  isFlowContent,
-  isMark,
-  ol,
-  Paragraph,
-  statement,
-  ul,
-} from '@mintter/shared'
+} from './static-paragraph'
+import {ELEMENT_VIDEO, VideoElement} from './video/video'
+import {withPasteHtml} from './paste-plugin'
+import {ELEMENT_PARAGRAPH, ParagraphElement} from './paragraph'
+import {withHistory} from 'slate-history'
+import {withDirtyPaths} from './dirty-paths'
 import {SizableText} from '@mintter/ui'
-import {
-  ElementType,
-  PropsWithChildren,
-  ReactNode,
-  useCallback,
-  useMemo,
-} from 'react'
-import {Descendant, Editor as SlateEditor, Transforms} from 'slate'
-import {Editable, RenderElementProps, RenderLeafProps, Slate} from 'slate-react'
-import {BlockElement} from './block'
-import {LinkingPanelProvider} from './linking-panel'
-import {buildEventHandlerHooks, EditorMode} from './plugin-utils'
-import './styles/editor.css'
-import type {EditorPlugin} from './types'
-import {setList, setType, toggleFormat} from './utils'
+import {ConversationsLeaf} from './comments/comments'
+import {withMarkdownShortcuts} from './markdown-plugin'
+import isHotkey from 'is-hotkey'
 
-interface EditorProps {
-  children?: ReactNode
-  mode?: EditorMode
-  value: ChildrenOf<any> | Array<FlowContent>
-  onChange?: (value: Descendant[]) => void
-  editor?: SlateEditor
-  plugins?: Array<EditorPlugin>
-  as?: ElementType
-  className?: string
-  readOnly?: boolean
+export const plugins = []
+
+export type EditorProps = {
+  editor: SlateEditor
+  onChange: any
+  value: any
+  mode: EditorMode
+  toolbar?: React.ReactNode
 }
 
-const _plugins: EditorPlugin[] = [
-  createMintterChangesPlugin(),
-  createDirtyPathPlugin(),
-  createStrongPlugin(),
-  createEmphasisPlugin(),
-  createUnderlinePlugin(),
-  createColorPlugin(),
-  createInlineCodePlugin(),
-  createLinkPlugin(),
-  createEmbedPlugin(),
-  createVideoPlugin(),
-  createImagePlugin(),
-  createFilePlugin(),
-  createStaticParagraphPlugin(),
-  createParagraphPlugin(),
-  createHeadingPlugin(),
-  createStatementPlugin(),
-  createBlockquotePlugin(),
-  createCodePlugin(),
-  createGroupPlugin(),
-  createTabPlugin(),
-  createMarkdownShortcutsPlugin(),
-  createPlainTextPastePlugin(),
-  // createCommentsPlugin(),
-  // createFindPlugin(),
-  // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
-  {
-    name: 'selectAllPlugin',
-    onKeyDown: (editor) => (event) => {
-      if (event.metaKey && event.key == 'a') {
-        event.preventDefault()
-        Transforms.select(editor, [])
-        return
-      }
-    },
-  },
-  {
-    name: 'prevent double accent letters',
-    onCompositionEnd: () => (e) => {
-      // this plugin prevents to add extra characters when "composing"
-      // when we add accents we are composing
-      e.preventDefault()
-      e.stopPropagation()
-    },
-  },
-]
-
-export const plugins = _plugins
-
-export function Editor({
-  value,
-  onChange,
-  children,
-  mode = EditorMode.Draft,
-  editor,
-  plugins = _plugins,
-  as = 'div',
-  readOnly = false,
-}: PropsWithChildren<EditorProps>) {
-  if (!editor) {
-    throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
-  }
-
-  // let decorate = useDecorate(plugins, editor)
-
-  const renderElement = useCallback(
-    mode == EditorMode.Embed ? RenderEmbed : RenderElement,
-    [],
-  )
-  const renderLeaf = useCallback(RenderLeaf, [])
-
-  const eventHandlers = useMemo(
-    () => buildEventHandlerHooks(plugins, editor),
-    [],
-  )
-
-  if (mode == EditorMode.Draft) {
-    return (
-      <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <Slate
-          editor={editor}
-          value={value as Array<Descendant>}
-          onChange={onChange}
-        >
-          <EditorHoveringToolbar />
-          <LinkingPanelProvider>
-            <Editable
-              id="editor"
-              data-testid="editor"
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              // decorate={decorate}
-              placeholder="Start typing here..."
-              {...eventHandlers}
-            />
-          </LinkingPanelProvider>
-          {children}
-        </Slate>
-      </div>
-    )
-  }
+export function Editor({editor, value, onChange, mode, toolbar}: EditorProps) {
+  const renderElement = useCallback(RenderElement(mode), [])
+  const renderLeaf = useCallback(RenderLeaf(mode), [])
 
   return (
-    <span className={`${classnames('editor', mode)} ${flow()}`}>
-      <Slate
-        editor={editor}
-        value={value as Array<Descendant>}
-        onChange={onChange}
-      >
-        {mode == EditorMode.Publication ? <PublicationToolbar /> : null}
+    <div
+      className={`editor ${mode}`}
+      onKeyDown={function rootOnKeyDown(event) {
+        formatKeydown(editor, event)
+        if (selectAllKeyDown(editor, event)) return
+        if (tabKeyDown(editor, event)) return
+        // if (deleteBackwardKeydown(editor, event)) return
+      }}
+      onCompositionEnd={(e) => {
+        // this plugin prevents to add extra characters when "composing"
+        // when we add accents we are composing
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
+      <Slate editor={editor} value={value} onChange={onChange}>
+        {toolbar}
         <Editable
-          id="editor"
-          //@ts-ignore
-          as={as}
-          autoCorrect="false"
-          autoCapitalize="false"
-          spellCheck="false"
-          data-testid="editor"
           renderElement={renderElement}
           renderLeaf={renderLeaf}
-          // decorate={decorate}
-          readOnly={readOnly}
-          {...eventHandlers}
+          placeholder="Start writing..."
+          readOnly={mode != EditorMode.Draft}
+          onChange={(...val) => {
+            console.log('val', val)
+          }}
         />
       </Slate>
-    </span>
+    </div>
   )
 }
 
-// function useDecorate(plugins: EditorPlugin[], editor: EditorType) {
-//   let decoration = useMemo(() => buildDecorateHook(plugins, editor), [])
-//   return useCallback(
-//     (props: NodeEntry) => (decoration ? decoration(props) : null),
-//     [editor.nodeToDecorations],
-//   )
-// }
+function RenderElement(mode: EditorMode) {
+  return function ReturnedRenderElement(props: RenderElementProps) {
+    switch (props.element.type) {
+      case ELEMENT_GROUP:
+      case ELEMENT_UNORDERED_LIST:
+      case ELEMENT_ORDERED_LIST:
+        return <Group {...props} mode={mode} />
 
-export function useTauriListeners(editor: SlateEditor) {
-  useWindowListen<string>(
-    'format_mark',
-    (event) => {
-      if (!isMark(event.payload)) return
-      toggleFormat(editor, event.payload)
-    },
-    [],
-  )
-  useWindowListen<string>(
-    'format_block',
-    (event) => {
-      if (!editor.selection) return
-      const set = setType(
-        {
-          heading,
-          statement,
-          blockquote,
-          codeblock: code,
-        }[event.payload],
-      )
-      const [element, path] =
-        editor.above({
-          match: isFlowContent,
-        }) || []
-      if (!element || !path) throw new Error('whut')
-      set(editor, {at: path, element})
-    },
-    [],
-  )
-  useWindowListen<string>(
-    'format_list',
-    (event) => {
-      if (
-        !editor.selection ||
-        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
-      )
-        return
-      const set = setList(
-        {
-          ordered_list: ol,
-          unordered_list: ul,
-          group,
-        }[event.payload]!,
-      )
-      const [element, path] =
-        editor.above({
-          match: isFlowContent,
-        }) || []
-      if (!element || !path) throw new Error('whut')
-      if (path) {
-        set(editor, {element, at: path})
-      } else {
-        error('whut')
-      }
-    },
-    [],
-  )
-}
+      case ELEMENT_STATEMENT:
+      case ELEMENT_BLOCKQUOTE:
+      case ELEMENT_CODE:
+      case ELEMENT_HEADING:
+        return <Block {...props} mode={mode} />
 
-function RenderEmbed(props: RenderElementProps) {
-  return (
-    <ParagraphElement
-      mode={EditorMode.Embed}
-      attributes={props.attributes}
-      element={props.element as Paragraph}
-    >
-      {props.children}
-    </ParagraphElement>
-  )
-}
+      case ELEMENT_PARAGRAPH:
+        return <ParagraphElement {...props} mode={mode} />
 
-function RenderElement(props: RenderElementProps) {
-  switch (props.element.type) {
-    case ELEMENT_GROUP:
-    case ELEMENT_UNORDERED_LIST:
-    case ELEMENT_ORDERED_LIST:
-      return <Group {...props} />
+      case ELEMENT_STATIC_PARAGRAPH:
+        return <StaticParagraphElement {...props} />
 
-    case ELEMENT_STATEMENT:
-    case ELEMENT_BLOCKQUOTE:
-    case ELEMENT_CODE:
-    case ELEMENT_HEADING:
-      return <BlockElement {...props} />
+      case ELEMENT_EMBED:
+        return <EmbedElement {...props} mode={mode} />
 
-    case ELEMENT_STATIC_PARAGRAPH:
-      return <StaticParagraphElement {...props} />
+      case ELEMENT_LINK:
+        return <LinkElement {...props} mode={mode} />
+      // return props.children
 
-    case ELEMENT_EMBED:
-      return <EmbedElement {...props} />
+      case ELEMENT_IMAGE:
+        return <ImageElement {...props} />
 
-    case ELEMENT_LINK:
-      return <LinkElement {...props} />
+      case ELEMENT_VIDEO:
+        return <VideoElement {...props} />
 
-    case ELEMENT_IMAGE:
-      return <ImageElement {...props} />
+      case ELEMENT_FILE:
+        return <FileElement {...props} />
 
-    case ELEMENT_VIDEO:
-      return <VideoElement {...props} />
-
-    case ELEMENT_FILE:
-      return <FileElement {...props} />
-
-    default:
-      return <ParagraphElement {...props} />
+      default:
+        return <p {...props.attributes}>{props.children}</p>
+    }
   }
 }
 
-function RenderLeaf(props: RenderLeafProps) {
-  if (
-    typeof props.leaf.conversations !== 'undefined' &&
-    props.leaf.conversations?.length
-  ) {
-    return <ConversationsLeaf {...props} />
+function RenderLeaf(mode: EditorMode) {
+  return function ReturnedRenderLeaf(props: RenderLeafProps) {
+    if (
+      typeof props.leaf.conversations !== 'undefined' &&
+      props.leaf.conversations?.length
+    ) {
+      return <ConversationsLeaf {...props} />
+    }
+
+    const {leaf, children, attributes} = props
+
+    return (
+      <SizableText
+        {...attributes}
+        tag={leaf.code ? 'code' : undefined}
+        fontWeight={leaf.strong ? '800' : 'inherit'}
+        fontStyle={leaf.emphasis ? 'italic' : 'normal'}
+        textDecorationLine={
+          leaf.underline
+            ? 'underline'
+            : leaf.strikethrough
+            ? 'line-through'
+            : 'none'
+        }
+        color={
+          leaf[LEAF_TOKEN]
+            ? leaf[LEAF_TOKEN]
+            : leaf.color
+            ? leaf.color
+            : '$color'
+        }
+        verticalAlign={
+          leaf.subscript ? 'bottom' : leaf.superscript ? 'top' : undefined
+        }
+        paddingHorizontal={leaf.code ? '$2' : undefined}
+        paddingVertical={leaf.code ? '$1' : undefined}
+        backgroundColor={leaf.code ? '$backgroundHover' : undefined}
+        fontSize={leaf.code ? '$3' : 'inherit'}
+      >
+        {children}
+      </SizableText>
+    )
   }
+}
 
-  const {leaf, children, attributes} = props
-
-  return (
-    <SizableText
-      tag={leaf.code ? 'code' : undefined}
-      fontWeight={leaf.strong ? '800' : 'inherit'}
-      fontStyle={leaf.emphasis ? 'italic' : 'normal'}
-      textDecorationLine={
-        leaf.underline
-          ? 'underline'
-          : leaf.strikethrough
-          ? 'line-through'
-          : 'none'
-      }
-      color={
-        leaf[LEAF_TOKEN] ? leaf[LEAF_TOKEN] : leaf.color ? leaf.color : '$color'
-      }
-      verticalAlign={
-        leaf.subscript ? 'bottom' : leaf.superscript ? 'top' : undefined
-      }
-      paddingHorizontal={leaf.code ? '$2' : undefined}
-      paddingVertical={leaf.code ? '$1' : undefined}
-      backgroundColor={leaf.code ? '$backgroundHover' : undefined}
-      fontSize={leaf.code ? '$3' : 'inherit'}
-      {...attributes}
-    >
-      {children}
-    </SizableText>
+export function useDraftEditor({
+  documentId,
+  initWebUrl,
+}: {
+  documentId: string
+  initWebUrl?: string
+}) {
+  let editor = useMemo(
+    () =>
+      withMode(EditorMode.Draft)(
+        withMarkdownShortcuts(
+          // withDirtyPaths(
+          withImages(
+            withPasteHtml(
+              withLinks(
+                withBlocks(
+                  withHyperdocs(withHistory(withReact(createEditor()))),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // ),
+      ),
+    [],
   )
+  let saveDraft = useSaveDraft(editor, documentId)
+
+  const state = useEditorDraft({
+    editor,
+    documentId,
+    initWebUrl,
+  })
+
+  return {
+    state,
+    editor,
+    saveDraft,
+  }
+}
+
+function selectAllKeyDown(
+  editor: SlateEditor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  if (event.defaultPrevented) return false
+  if (event.metaKey && event.key == 'a') {
+    event.preventDefault()
+    editor.select([])
+    return true
+  }
+  return false
+}
+
+function tabKeyDown(
+  editor: SlateEditor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  if (event.defaultPrevented) return false
+  if (event.key == 'Tab') {
+    event.preventDefault()
+    return true
+  }
+  return false
+}
+
+const HOTKEYS = {
+  'mod+b': 'strong',
+  'mod+i': 'emphasis',
+  'mod+u': 'underline',
+  'mod+`': 'code',
+}
+
+function formatKeydown(
+  editor: SlateEditor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  console.log('formatKeydown')
+  if (event.defaultPrevented) return false
+  for (const hotkey in HOTKEYS) {
+    if (isHotkey(hotkey, event as any)) {
+      event.preventDefault()
+      // @ts-ignore HOTKEYS[hotkey]
+      const mark = HOTKEYS[hotkey]
+      toggleMark(editor, mark)
+      return true
+    }
+  }
+  return false
+}
+
+function toggleMark(editor: SlateEditor, format: any) {
+  const isActive = isMarkActive(editor, format)
+
+  if (isActive) {
+    editor.removeMark(format)
+  } else {
+    editor.addMark(format, true)
+  }
+}
+
+const isMarkActive = (editor: SlateEditor, format: any) => {
+  const marks = SlateEditor.marks(editor)
+  // @ts-ignore marks[format]
+  return marks ? marks[format] === true : false
 }

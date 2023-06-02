@@ -80,7 +80,7 @@ function isPlainText(value: any) {
   return typeof value.text == 'string' && typeof value.type == 'undefined'
 }
 
-export const isContent = isOneOfTypes<Content>(['paragraph'])
+export const isContent = isOneOfTypes<Content>(['paragraph', 'staticParagraph'])
 export const isStaticContent = isOneOfTypes<StaticContent>(['staticParagraph'])
 
 export const isDocument = isType<MttDocument>('document')

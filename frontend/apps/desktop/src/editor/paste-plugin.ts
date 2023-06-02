@@ -20,62 +20,62 @@ const processor = unified()
   .use(sanitize, sanitizeSchema)
   .freeze()
 
-export function createPlainTextPastePlugin(): EditorPlugin {
-  return {
-    name: 'PastePlainTextPlugin',
-    configureEditor(editor) {
-      if (editor.readOnly) return
-      const {insertData} = editor
+export function withPasteHtml(editor: Editor) {
+  if (editor.readOnly) return editor
+  const {insertData} = editor
 
-      editor.insertData = (transfer: DataTransfer) => {
-        /**
-         * TODO:
-         * would be nice to catch the slate-fragment content here
-         */
+  editor.insertData = (transfer: DataTransfer) => {
+    /**
+     * TODO:
+     * would be nice to catch the slate-fragment content here
+     */
 
-        const html = transfer.getData('text/html')
+    const html = transfer.getData('text/html')
 
-        if (html) {
-          const hast = processor.runSync(processor.parse(html))
-          //@ts-ignore
-          window.hast = hast
-          const mttast = toMttast(hast)
-          const fragment = removeEmptyText(mttast)
+    if (html) {
+      const hast = processor.runSync(processor.parse(html))
+      //@ts-ignore
+      window.hast = hast
+      const mttast = toMttast(hast)
+      const fragment = removeEmptyText(mttast)
 
-          // insert inline content directly instead
-          if (fragment.children.every(isPhrasingContent)) {
-            return Transforms.insertNodes(editor, fragment.children)
-          }
+      console.log(
+        '🚀 ~ file: paste-plugin.ts:45 ~ withPasteHtml ~ fragment.children:',
+        fragment,
+      )
 
-          const [parentBlock, parentPath] =
-            Editor.above(editor, {match: isFlowContent}) || []
-          if (parentBlock && parentPath) {
-            Transforms.insertNodes(editor, fragment.children, {
-              at: parentPath,
-            })
-            return
-          } else {
-            error('Paste Plugin: No block found above', editor.selection)
-          }
-        }
-
-        const text = transfer.getData('text/plain')
-
-        if (text) {
-          if (!isMintterScheme(text)) {
-            const normalized = text.split(/\r\n|\r|\n/).join('\n')
-
-            editor.insertText(normalized)
-            return
-          }
-        }
-
-        insertData(transfer)
+      // insert inline content directly instead
+      if (fragment.children.every(isPhrasingContent)) {
+        return Transforms.insertNodes(editor, fragment.children)
       }
 
-      return editor
-    },
+      const [parentBlock, parentPath] =
+        Editor.above(editor, {match: isFlowContent}) || []
+      if (parentBlock && parentPath) {
+        Transforms.insertNodes(editor, fragment.children, {
+          at: parentPath,
+        })
+        return
+      } else {
+        error('Paste Plugin: No block found above', editor.selection)
+      }
+    }
+
+    const text = transfer.getData('text/plain')
+
+    if (text) {
+      if (!isMintterScheme(text)) {
+        const normalized = text.split(/\r\n|\r|\n/).join('\n')
+
+        editor.insertText(normalized)
+        return
+      }
+    }
+
+    insertData(transfer)
   }
+
+  return editor
 }
 
 function removeEmptyText(tree: MttRoot) {

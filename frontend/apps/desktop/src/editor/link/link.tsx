@@ -58,13 +58,7 @@ import {
 } from 'slate-react'
 import {useLinkingPanel} from '../linking-panel'
 import type {EditorPlugin} from '../types'
-import {
-  findPath,
-  getEditorBlock,
-  getSelectedNodes,
-  isCollapsed,
-  useMode,
-} from '../utils'
+import {findPath, getEditorBlock, getSelectedNodes, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -95,51 +89,6 @@ export const createLinkPlugin = (): EditorPlugin => ({
       }
     }
   },
-  configureEditor(editor) {
-    /**
-     * - when should I create a link:
-     *   - paste a link text format
-     *   - write a link text
-     *   - by selecting and interacting with the toolbar (not in here)
-     */
-    const {isInline, insertText, insertData, isVoid} = editor
-
-    //@ts-ignore
-    editor.isVoid = (element) => element.data?.void || isVoid(element)
-    editor.isInline = (element) => isLink(element) || isInline(element)
-
-    function insertLinkableText(text: string) {
-      const mintterLink = normalizeMintterLink(text)
-      if (mintterLink) {
-        // user is probably pasting a link that is either a mintter scheme or https gateway URL
-        if (hasBlockId(mintterLink)) {
-          wrapMintterLink(editor, mintterLink)
-        } else {
-          insertDocumentLink(editor, mintterLink)
-        }
-      } else if (isUrl(text)) {
-        // user is pasting normal url, may be a mintter site which will be asynchronously resolved with useWebLink
-        wrapLink(editor, text)
-      } else {
-        insertText(text)
-      }
-    }
-
-    editor.insertText = (text: string) => {
-      insertLinkableText(text)
-    }
-
-    editor.insertData = (data: DataTransfer) => {
-      const text = data.getData('text/plain')
-      if (text) {
-        insertLinkableText(text)
-      } else {
-        insertData(data)
-      }
-    }
-
-    return editor
-  },
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
@@ -159,6 +108,7 @@ function insertDocumentLink(editor: Editor, url: string) {
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
   hintPureWebLink?: boolean
+  mode: EditorMode
   mintterLink?: {
     documentId: string
     version?: string
@@ -168,15 +118,18 @@ type LinkProps = Omit<RenderElementProps, 'element'> & {
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   const {element} = props
-  const mode = useMode()
-  const linkQuery = useWebLink(props.element.url, mode == EditorMode.Draft)
+
+  const linkQuery = useWebLink(element.url, props.mode == EditorMode.Draft)
   const {url} = props.element
-  const elChildren = props.element.children
+
+  const elChildren = element.children
+
   let editor = useSlateStatic()
+
   const isEmbedInsertion = !!element.data?.isEmbedInsertion
 
   useEffect(() => {
-    if (mode !== EditorMode.Draft) return
+    if (props.mode !== EditorMode.Draft) return
     if (!linkQuery.data) return
     if (isMintterScheme(url)) return
     let at = findPath(props.element)
@@ -213,6 +166,7 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   }, [linkQuery.data, url, isEmbedInsertion])
 
   const [docId, version, blockId] = getIdsfromUrl(url)
+
   if (isMintterScheme(url) && docId) {
     return (
       <MintterLink
@@ -226,21 +180,28 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       />
     )
   }
-  if (linkQuery.isLoading) {
+
+  if (linkQuery?.isLoading) {
     return <WebLink ref={ref} {...props} />
   }
-  if (linkQuery.data?.documentId) {
+
+  if (
+    linkQuery.status == 'success' &&
+    linkQuery.data &&
+    linkQuery.data.documentId
+  ) {
     return (
       <MintterLink
         ref={ref}
         {...props}
         mintterLink={{
-          documentId: linkQuery.data?.documentId,
-          version: linkQuery.data?.documentVersion || undefined,
+          documentId: linkQuery.data.documentId,
+          version: linkQuery.data.documentVersion || undefined,
         }}
       />
     )
   }
+
   return <WebLink hintPureWebLink ref={ref} {...props} />
 }
 
@@ -332,8 +293,6 @@ function RenderMintterLink(
     <>
       <SizableText
         {...attributes}
-        tag="a"
-        fontFamily="inherit"
         letterSpacing="inherit"
         // @ts-ignore
         href={props.element.url}
@@ -360,11 +319,10 @@ function RenderMintterLink(
 }
 
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  let mode = useMode()
   const editor = useSlateStatic()
+
   const isSelected = useSelected()
-  const route = useNavRoute()
-  const isDraftMode = route.key === 'draft'
+  const isDraftMode = props.mode == EditorMode.Draft
   const {onLinkState} = useLinkingPanel()
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -377,7 +335,8 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       })
       return
     }
-    if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
+    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
+      return
     open(props.element.url)
   }
   function onUpdate(url: string | null) {
@@ -389,38 +348,38 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       Transforms.setNodes(editor, {url}, {at: findPath(props.element)})
     }
   }
+
   useEffect(() => {
     onLinkState?.({isSelected, element: props.element, onUpdate})
   }, [isSelected, props.element])
+
   if (isDraftMode) {
     return (
-      <>
-        <SizableText
-          tag="a"
-          color="$webLink"
-          fontFamily="inherit"
-          letterSpacing="inherit"
-          // @ts-ignore add the href prop to this element
-          href={props.element.url}
-          display="inline"
-          // @ts-ignore not sure what the Text ref is..
-          ref={ref}
-          fontWeight="500"
-          size="$5"
-          cursor="text"
-          hoverStyle={{
-            cursor: isDraftMode ? 'text' : 'pointer',
-            // backgroundColor: isDraftMode ? undefined : '$blue4',
-          }}
-          backgroundColor={isSelected ? '#f0f0ff' : 'transparent'}
-          onClick={onClick}
-          {...props.attributes}
-        >
-          {props.children}
-        </SizableText>
-      </>
+      <SizableText
+        {...props.attributes}
+        // fontFamily="inherit"
+        color="$webLink"
+        letterSpacing="inherit"
+        tag="a"
+        display="inline"
+        // @ts-ignore not sure what the Text ref is..
+        ref={ref}
+        fontWeight="500"
+        size="$5"
+        cursor="text"
+        hoverStyle={{
+          cursor: isDraftMode ? 'text' : 'pointer',
+          // backgroundColor: isDraftMode ? undefined : '$blue4',
+        }}
+        backgroundColor={isSelected ? '#f0f0ff' : 'transparent'}
+        // @ts-ignore we need the onClick here, maybe we need a separate text component?
+        onClick={onClick}
+      >
+        {props.children}
+      </SizableText>
     )
   }
+
   return (
     <Tooltip
       inline
@@ -571,7 +530,6 @@ export function wrapLink(
     addLinkChange(editor, selection)
   }
 
-  console.log('huurrmm', selection)
   const newLink: LinkType = link(
     {
       url,
@@ -837,11 +795,64 @@ export function InsertLinkButton() {
   )
 }
 
-export function LinkElement({element, ...props}: RenderElementProps) {
-  let isVoid = useMemo(() => element.data?.void, [element])
+export function LinkElement({
+  element,
+  ...props
+}: RenderElementProps & {mode: EditorMode}) {
+  let isVoid = useMemo(
+    () => (element.data ? element.data.void : false),
+    [element],
+  )
+
   if (isVoid) {
     return <MintterDocumentLink {...props} element={element as LinkType} />
   }
 
   return <Link {...props} element={element as LinkType} />
+}
+
+export function withLinks(editor: Editor): Editor {
+  /**
+   * - when should I create a link:
+   *   - paste a link text format
+   *   - write a link text
+   *   - by selecting and interacting with the toolbar (not in here)
+   */
+  const {isInline, insertText, insertData, isVoid} = editor
+
+  //@ts-ignore
+  editor.isVoid = (element) => element.data?.void || isVoid(element)
+  editor.isInline = (element) => isLink(element) || isInline(element)
+
+  function insertLinkableText(text: string) {
+    const mintterLink = normalizeMintterLink(text)
+    if (mintterLink) {
+      // user is probably pasting a link that is either a mintter scheme or https gateway URL
+      if (hasBlockId(mintterLink)) {
+        wrapMintterLink(editor, mintterLink)
+      } else {
+        insertDocumentLink(editor, mintterLink)
+      }
+    } else if (isUrl(text)) {
+      // user is pasting normal url, may be a mintter site which will be asynchronously resolved with useWebLink
+      wrapLink(editor, text)
+    } else {
+      insertText(text)
+    }
+  }
+
+  editor.insertText = (text: string) => {
+    insertLinkableText(text)
+  }
+
+  editor.insertData = (data: DataTransfer) => {
+    const text = data.getData('text/plain')
+    if (text) {
+      insertLinkableText(text)
+    } else {
+      insertData(data)
+    }
+  }
+
+  return editor
 }

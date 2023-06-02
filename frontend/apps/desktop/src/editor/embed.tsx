@@ -37,8 +37,13 @@ export const createEmbedPlugin = (): EditorPlugin => ({
   configureEditor(editor) {
     const {isVoid, isInline} = editor
 
-    editor.isVoid = (node) => isEmbed(node) || isVoid(node)
-    editor.isInline = (node) => isEmbed(node) || isInline(node)
+    editor.isVoid = function embedIsVoid(element) {
+      return isEmbed(element) || isVoid(element)
+    }
+
+    editor.isInline = function embedIsInline(element) {
+      return isEmbed(element) || isInline(element)
+    }
 
     return editor
   },
@@ -59,7 +64,8 @@ export function EmbedElement({
   element,
   attributes,
   children,
-}: RenderElementProps) {
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   // const navigateReplace = useNavigate('replace')
@@ -140,14 +146,12 @@ export function EmbedElement({
       }}
     >
       <Editor
-        as="span"
         editor={embedEditor}
         mode={EditorMode.Embed}
         value={[state.context.block]}
         onChange={() => {
           // noop
         }}
-        readOnly
       />
       {children}
     </XStack>

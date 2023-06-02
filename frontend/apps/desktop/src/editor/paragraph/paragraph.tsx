@@ -24,31 +24,6 @@ import type {EditorPlugin} from '../types'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
-export const createParagraphPlugin = (): EditorPlugin => ({
-  name: ELEMENT_PARAGRAPH,
-  configureEditor: (editor) => {
-    const {normalizeNode} = editor
-
-    editor.normalizeNode = (entry) => {
-      const [node, path] = entry
-
-      if (isParagraph(node)) {
-        for (const [child, childPath] of Node.children(editor, path)) {
-          if (!isPhrasingContent(child)) {
-            console.log('moving phrasing content', child, childPath)
-            Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
-            return
-          }
-        }
-      }
-
-      normalizeNode(entry)
-    }
-
-    return editor
-  },
-})
-
 export function ParagraphElement({
   children,
   element,

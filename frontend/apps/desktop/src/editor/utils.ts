@@ -34,6 +34,8 @@ import {ReactEditor, useSlateSelector} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {ELEMENT_STATEMENT} from './statement'
+import {P} from '@tauri-apps/api/event-2a9960e7'
+import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 
 export const isCollapsed = (range: Range | null): boolean =>
   !!range && Range.isCollapsed(range)
@@ -442,7 +444,6 @@ export function setType(fn: any) {
       at: Path
     },
   ) {
-    console.log('setType!', opts)
     if (editor.readOnly) return
     Editor.withoutNormalizing(editor, function () {
       MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
@@ -465,6 +466,10 @@ export function setType(fn: any) {
       // IDs are meant to be stable, so we shouldn't obverride it
       // eslint-disable-next-line
       const {id, ...props} = fn()
+
+      if (isHeading(props)) {
+        editor.setNodes({type: ELEMENT_STATIC_PARAGRAPH}, {at: [...opts.at, 0]})
+      }
 
       Transforms.setNodes(editor, props, {at: opts.at})
     })
@@ -647,15 +652,15 @@ export function getSelectedNodes(
 export const headingMap: {
   [key: number]: {tag: string; size: number}
 } = {
-  2: {tag: 'h2', size: 56},
-  4: {tag: 'h3', size: 40},
-  6: {tag: 'h4', size: 32},
-  8: {tag: 'h5', size: 24},
+  2: {tag: 'h2', size: 40},
+  4: {tag: 'h3', size: 32},
+  6: {tag: 'h4', size: 28},
+  8: {tag: 'h5', size: 20},
   10: {tag: 'h6', size: 16},
 }
 
 export const BLOCK_GAP: SizeTokens = '$3'
 
-export function useMode() {
-  return useSlateSelector((editor) => editor.mode)
+export function blockHasNestedGroup(block: FlowContent): boolean {
+  return block.children.length == 2 && isGroupContent(block.children[1])
 }

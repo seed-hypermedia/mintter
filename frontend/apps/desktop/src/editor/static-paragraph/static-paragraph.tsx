@@ -10,10 +10,6 @@ import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
-export const createStaticParagraphPlugin = (): EditorPlugin => ({
-  name: ELEMENT_STATIC_PARAGRAPH,
-})
-
 export function StaticParagraphElement({
   children,
   element,
@@ -49,11 +45,12 @@ export function StaticParagraphElement({
   return (
     <SizableText
       tag={elementTags.tag}
-      size={elementTags.size}
+      // size={elementTags.size}
       fontWeight="800"
+      lineHeight={elementTags.size + 8}
       // paddingLeft={paddingLeft}
       alignItems="center"
-      // size="$5"
+      fontSize={elementTags.size}
       {...attributes}
       {...elementProps}
       {...otherProps}

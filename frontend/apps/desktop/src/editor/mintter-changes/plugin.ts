@@ -20,108 +20,15 @@ import {getEditorBlock} from '../utils'
 type ChangeType = NonNullable<DocumentChange['op']>['case'] | undefined
 export type ChangeOperation = [ChangeType, string] | ['setRoot', string]
 
-export function createMintterChangesPlugin(): EditorPlugin {
-  return {
-    name: 'mintter_changes',
-    configureEditor(editor) {
-      editor.__mtt_changes = []
-
-      const {apply} = editor
-
-      editor.apply = (op) => {
-        // console.log('== operation ==')
-        // console.log(JSON.stringify(op))
-
-        switch (op.type) {
-          case 'insert_node':
-            if (isFlowContent(op.node)) {
-              addOperation(editor, 'moveBlock', op.node)
-              addOperation(editor, 'replaceBlock', op.node)
-            } else {
-              /**
-               * TODO:
-               * this code above breaks the editor because it does not find the node at the correct path
-               * when indenting (tab)
-               */
-              // const [node] =
-              //   Editor.above(editor, {at: op.path, match: isFlowContent}) || []
-              // if (node) {
-              //   addOperation(editor, 'replaceBlock', node)
-              // }
-            }
-            break
-          case 'set_node':
-          case 'merge_node': {
-            let node = Node.get(editor, op.path)
-
-            if (!isFlowContent(node)) {
-              const [_node] =
-                Editor.above(editor, {
-                  // at or above the current node
-                  at: op.path,
-                  match: isFlowContent,
-                }) || []
-              if (_node) {
-                node = _node
-              } else {
-                addOperation(editor, 'setRoot', node)
-              }
-            }
-
-            if (node) {
-              addOperation(editor, 'replaceBlock', node)
-            }
-            break
-          }
-          case 'insert_text':
-          case 'split_node':
-          case 'remove_text':
-            replaceText(editor, op.path)
-            break
-          case 'remove_node':
-            if (isGroupContent(op.node)) {
-              /**
-               * Sometimes when we remove the whole list, we are removing blocks without even consider them. this iterates over the children (and the nested children of the groupContent)
-               */
-              addRemoveBlockOperation(editor, op.node)
-            }
-            if (isFlowContent(op.node)) {
-              addOperation(editor, 'deleteBlock', op.node)
-            } else {
-              /**
-               * we get into here if we are removing a node that is phrasing content
-               */
-              replaceText(editor, op.path)
-            }
-            break
-          case 'move_node':
-            moveNode(editor, op)
-            break
-          case 'set_selection':
-            // there is no equivalent change to this operation so we ignore it
-            break
-          default:
-            error('Unhandled operation', op)
-            break
-        }
-
-        apply(op)
-      }
-
-      return editor
-    },
-  }
-}
-
 export interface MintterEditor {
-  __mtt_changes: ChangeOperation[]
+  __hd_changes: ChangeOperation[]
   resetChanges(editor: Editor): void
   addChange(editor: Editor, entry: ChangeOperation): void
   transformChanges(editor: Editor): Array<DocumentChange>
 }
 
 export const MintterEditor: MintterEditor = {
-  __mtt_changes: [],
+  __hd_changes: [],
   transformChanges: function (editor: Editor): DocumentChange[] {
     const result: Array<DocumentChange> = []
     let orderedChanges = orderChanges(editor)
@@ -160,18 +67,15 @@ export const MintterEditor: MintterEditor = {
     return result
   },
   resetChanges: function (editor: Editor) {
-    editor.__mtt_changes = []
+    editor.__hd_changes = []
   },
   addChange: function (editor: Editor, entry: ChangeOperation): void {
     if (
-      shouldOverride(
-        entry,
-        editor.__mtt_changes[editor.__mtt_changes.length - 1],
-      )
+      shouldOverride(entry, editor.__hd_changes[editor.__hd_changes.length - 1])
     ) {
-      editor.__mtt_changes.pop()
+      editor.__hd_changes.pop()
     }
-    editor.__mtt_changes.push(entry)
+    editor.__hd_changes.push(entry)
   },
 }
 
@@ -193,17 +97,17 @@ function addOperation(
 ) {
   if (opType == 'setRoot') {
     //@ts-ignore
-    editor.__mtt_changes.push(['setRoot', node.type])
+    editor.__hd_changes.push(['setRoot', node.type])
   }
   if (isFlowContent(node)) {
     let newChange: ChangeOperation = [opType, node.id]
     if (
       !shouldOverride(
         newChange,
-        editor.__mtt_changes[editor.__mtt_changes.length - 1],
+        editor.__hd_changes[editor.__hd_changes.length - 1],
       )
     ) {
-      editor.__mtt_changes.push(newChange)
+      editor.__hd_changes.push(newChange)
     }
   }
 }
@@ -263,7 +167,7 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
 
 function orderChanges(editor: Editor) {
   let newList: Array<ChangeOperation> = []
-  let changes = editor.__mtt_changes
+  let changes = editor.__hd_changes
   for (const [node] of Node.elements(editor)) {
     if (isFlowContent(node)) {
       let filteredChanges = changes.filter(([, blockId]) => blockId == node.id)
@@ -287,4 +191,91 @@ function addRemoveBlockOperation(editor: Editor, node: GroupingContent) {
       addRemoveBlockOperation(editor, block.children[1])
     }
   })
+}
+
+export function withHyperdocs(editor: Editor) {
+  editor.__hd_changes = []
+
+  const {apply} = editor
+
+  editor.apply = (op) => {
+    // console.log('== operation ==')
+    // console.log(JSON.stringify(op))
+
+    switch (op.type) {
+      case 'insert_node':
+        if (isFlowContent(op.node)) {
+          addOperation(editor, 'moveBlock', op.node)
+          addOperation(editor, 'replaceBlock', op.node)
+        } else {
+          /**
+           * TODO:
+           * this code above breaks the editor because it does not find the node at the correct path
+           * when indenting (tab)
+           */
+          // const [node] =
+          //   Editor.above(editor, {at: op.path, match: isFlowContent}) || []
+          // if (node) {
+          //   addOperation(editor, 'replaceBlock', node)
+          // }
+        }
+        break
+      case 'set_node':
+      case 'merge_node': {
+        let node = Node.get(editor, op.path)
+
+        if (!isFlowContent(node)) {
+          const [_node] =
+            Editor.above(editor, {
+              // at or above the current node
+              at: op.path,
+              match: isFlowContent,
+            }) || []
+          if (_node) {
+            node = _node
+          } else {
+            addOperation(editor, 'setRoot', node)
+          }
+        }
+
+        if (node) {
+          addOperation(editor, 'replaceBlock', node)
+        }
+        break
+      }
+      case 'insert_text':
+      case 'split_node':
+      case 'remove_text':
+        replaceText(editor, op.path)
+        break
+      case 'remove_node':
+        if (isGroupContent(op.node)) {
+          /**
+           * Sometimes when we remove the whole list, we are removing blocks without even consider them. this iterates over the children (and the nested children of the groupContent)
+           */
+          addRemoveBlockOperation(editor, op.node)
+        }
+        if (isFlowContent(op.node)) {
+          addOperation(editor, 'deleteBlock', op.node)
+        } else {
+          /**
+           * we get into here if we are removing a node that is phrasing content
+           */
+          replaceText(editor, op.path)
+        }
+        break
+      case 'move_node':
+        moveNode(editor, op)
+        break
+      case 'set_selection':
+        // there is no equivalent change to this operation so we ignore it
+        break
+      default:
+        error('Unhandled operation', op)
+        break
+    }
+
+    apply(op)
+  }
+  return editor
 }
