@@ -519,12 +519,15 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		}),
 	}
 
+	if !cfg.PublicReachability && !cfg.NoRelay {
+		opts = append(opts, libp2p.ForceReachabilityPrivate())
+	}
+
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
-			libp2p.ForceReachabilityPrivate(),
 			libp2p.EnableHolePunching(),
-			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+			libp2p.EnableAutoRelayWithStaticRelays(DefaultRelays(),
 				autorelay.WithBootDelay(time.Second*10),
 				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),
