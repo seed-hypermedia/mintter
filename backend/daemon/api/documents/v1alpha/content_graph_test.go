@@ -6,7 +6,9 @@ import (
 	"mintter/backend/testutil"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestBacklinks(t *testing.T) {
@@ -77,6 +79,21 @@ func TestBacklinks(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	// There's no defined order of how links are indexed, so between different test runs
+	// this test was failing from time to time. We can't enforce the order here in an easy way,
+	// so instead we check the returned links in an order-agnostic way to avoid flaky failures.
+
+	makeSet := func(links []*documents.Link) map[string]*documents.Link {
+		out := make(map[string]*documents.Link, len(links))
+		for _, l := range links {
+			data, err := protojson.Marshal(l)
+			require.NoError(t, err)
+			out[string(data)] = l
+		}
+		require.Len(t, out, len(links))
+		return out
+	}
+
 	want := &documents.ListCitationsResponse{
 		Links: []*documents.Link{
 			{
@@ -105,5 +122,8 @@ func TestBacklinks(t *testing.T) {
 		},
 	}
 
-	testutil.ProtoEqual(t, want, cits, "citations response doesn't match")
+	diff := cmp.Diff(makeSet(want.Links), makeSet(cits.Links), testutil.ExportedFieldsFilter())
+	if diff != "" {
+		t.Fatal(diff)
+	}
 }
