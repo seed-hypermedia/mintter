@@ -301,6 +301,11 @@ func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	return n.client.Dial(ctx, pid)
 }
 
+// ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
+func (n *Node) ArePrivateIPsAllowed() bool {
+	return !n.cfg.NoPrivateIps
+}
+
 // AccountForDevice returns the linked AccountID of a given device.
 func (n *Node) AccountForDevice(ctx context.Context, pid peer.ID) (core.Principal, error) {
 	var out core.Principal

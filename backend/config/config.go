@@ -130,6 +130,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
 	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
 
+	fs.BoolVar(&cfg.P2P.NoPrivateIps, "p2p.no-private-ips", cfg.P2P.NoPrivateIps, "Not allowing to connect via private (local IPs).")
 	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.BoolVar(&cfg.P2P.PublicReachability, "p2p.public-reachability", cfg.P2P.PublicReachability, "Force Reachability to public. No relaid connection, direct only.")
@@ -189,6 +190,7 @@ type P2P struct {
 	NoRelay            bool
 	BootstrapPeers     []multiaddr.Multiaddr
 	PublicReachability bool
+	NoPrivateIps       bool
 	NoListing          bool
 	NoMetrics          bool
 	RelayBackoff       time.Duration
