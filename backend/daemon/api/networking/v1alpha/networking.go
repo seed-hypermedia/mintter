@@ -9,8 +9,6 @@ import (
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"net/netip"
-	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -121,24 +119,7 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device addrs: %w", err)
 	}
-	addrs := []string{}
-	for _, addr := range ipfs.StringAddrs(mas) {
-		if !net.ArePrivateIPsAllowed() {
-			ipStr := strings.Split(addr, "/")
-			if len(ipStr) < 3 {
-				continue
-			}
-			ip, err := netip.ParseAddr(ipStr[2])
-			if err != nil {
-				continue
-			}
-			if ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
-				continue
-			}
-		}
 
-		addrs = append(addrs, addr)
-	}
 	connectedness := net.Libp2p().Network().Connectedness(pid)
 
 	aid, err := net.AccountForDevice(ctx, pid)
@@ -149,7 +130,7 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 	resp := &networking.PeerInfo{
 		Id:               in.DeviceId,
 		AccountId:        aid.String(),
-		Addrs:            addrs,
+		Addrs:            ipfs.StringAddrs(mas),
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 	}
 

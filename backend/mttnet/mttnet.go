@@ -301,11 +301,6 @@ func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	return n.client.Dial(ctx, pid)
 }
 
-// ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
-func (n *Node) ArePrivateIPsAllowed() bool {
-	return !n.cfg.NoPrivateIps
-}
-
 // AccountForDevice returns the linked AccountID of a given device.
 func (n *Node) AccountForDevice(ctx context.Context, pid peer.ID) (core.Principal, error) {
 	var out core.Principal
@@ -524,15 +519,12 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		}),
 	}
 
-	if !cfg.PublicReachability && !cfg.NoRelay {
-		opts = append(opts, libp2p.ForceReachabilityPrivate())
-	}
-
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
+			libp2p.ForceReachabilityPrivate(),
 			libp2p.EnableHolePunching(),
-			libp2p.EnableAutoRelayWithStaticRelays(DefaultRelays(),
+			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithBootDelay(time.Second*10),
 				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),

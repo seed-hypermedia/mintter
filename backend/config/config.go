@@ -130,10 +130,8 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
 	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
 
-	fs.BoolVar(&cfg.P2P.NoPrivateIps, "p2p.no-private-ips", cfg.P2P.NoPrivateIps, "Not allowing to connect via private (local IPs).")
 	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
-	fs.BoolVar(&cfg.P2P.PublicReachability, "p2p.public-reachability", cfg.P2P.PublicReachability, "Force Reachability to public. No relaid connection, direct only.")
 	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
@@ -186,15 +184,13 @@ type Site struct {
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port               int
-	NoRelay            bool
-	BootstrapPeers     []multiaddr.Multiaddr
-	PublicReachability bool
-	NoPrivateIps       bool
-	NoListing          bool
-	NoMetrics          bool
-	RelayBackoff       time.Duration
-	ExtraAddrs         []multiaddr.Multiaddr
+	Port           int
+	NoRelay        bool
+	BootstrapPeers []multiaddr.Multiaddr
+	NoListing      bool
+	NoMetrics      bool
+	RelayBackoff   time.Duration
+	ExtraAddrs     []multiaddr.Multiaddr
 }
 
 // NoBootstrap indicates whether bootstrap nodes are configured.
