@@ -38,7 +38,7 @@ func TestListObjects(t *testing.T) {
 
 	require.NoError(t, bob.Connect(ctx, alice.AddrInfo()))
 
-	c, err := bob.client.DialDevice(ctx, alice.me.DeviceKey().CID())
+	c, err := bob.client.Dial(ctx, alice.me.DeviceKey().PeerID())
 	require.NoError(t, err)
 
 	list, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})

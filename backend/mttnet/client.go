@@ -8,8 +8,8 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"net"
 	"sync"
+	"time"
 
-	"github.com/ipfs/go-cid"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -52,16 +52,6 @@ func NewClient(me core.Identity, h host.Host) *Client {
 	}
 }
 
-// DialDevice is like Dial() but uses device ID instead of a peer ID.
-func (c *Client) DialDevice(ctx context.Context, device cid.Cid) (p2p.P2PClient, error) {
-	pid, err := peer.FromCid(device)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.Dial(ctx, pid)
-}
-
 // Dial a remote peer and provide and RPC client instance.
 func (c *Client) Dial(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	conn, err := c.dialPeer(ctx, pid)
@@ -99,6 +89,9 @@ func (c *Client) Close() (err error) {
 }
 
 func (c *Client) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, error) {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
 	if c.me.DeviceKey().ID() == pid {
 		return nil, errDialSelf
 	}
