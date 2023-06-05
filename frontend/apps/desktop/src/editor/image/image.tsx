@@ -5,6 +5,8 @@ import {
   Image as ImageType,
   isFlowContent,
   isImage,
+  isParagraph,
+  isPhrasingContent,
   paragraph,
   statement,
   text,
@@ -22,9 +24,9 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useActor, useInterpret} from '@xstate/react'
-import {ChangeEvent, useCallback, useMemo, useState} from 'react'
-import {Editor, Path, Transforms} from 'slate'
+import { useActor, useInterpret } from '@xstate/react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { Editor, Path, Transforms, Node, Element } from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -58,6 +60,36 @@ export function ImageElement({
       hasImageUrl: () => !!(element as ImageType).url,
     },
   })
+
+  const uploadImage = async (url: string) => {
+    if (isValidUrl(url)) {
+      const blob = await fetch(url).then(res => res.blob())
+      const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
+      if (webFile && webFile.size <= 62914560) {
+        const formData = new FormData()
+        formData.append('file', webFile)
+
+        try {
+          const response = await fetch(
+            'http://localhost:55001/ipfs/file-upload',
+            {
+              method: 'POST',
+              body: formData,
+            },
+          )
+          const data = await response.text()
+          Transforms.setNodes<ImageType>(editor, {url: `http://localhost:55001/ipfs/${data}`}, {at: path})
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+  }
+
+  if ((element as ImageType).url && !(element as ImageType).url.includes('ipfs')) {
+    const url = (element as ImageType).url
+    uploadImage(url).catch(e => console.log(e))
+  }
 
   const [state] = useActor(imgService)
   if ((element as ImageType).defaultOpen)
@@ -143,30 +175,29 @@ function ImageComponent({service, element}: InnerImageProps) {
         style={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
         }}
-        src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
+        src={(element as ImageType).url}
       />
-      {state.context.captionVisibility ? (
-        <XStack>
-          <TextArea
-            size="$3"
-            multiline={true}
-            width="100%"
-            placeholder="Media Caption"
-            wordWrap="break-word"
-            placeholderTextColor="grey"
-            borderWidth="$0"
-            focusStyle={{
-              outlineWidth: '$0',
-            }}
-            backgroundColor="var(--base-background-normal)"
-            value={element.alt}
-            onChangeText={(val: string) =>
-              send({type: 'CAPTION.UPDATE', value: val})
-            }
-            onKeyPress={onKeyPress}
-          />
-        </XStack>
-      ) : null}
+      <XStack>
+        <TextArea
+          size="$3"
+          multiline={true}
+          width="100%"
+          placeholder="Media Caption"
+          wordWrap="break-word"
+          placeholderTextColor="grey"
+          borderWidth="$0"
+          focusStyle={{
+            outlineWidth: '$0',
+          }}
+          backgroundColor="var(--base-background-normal)"
+          value={element.alt}
+          onChangeText={(val: string) =>
+            send({type: 'CAPTION.UPDATE', value: val})
+          }
+          onKeyPress={onKeyPress}
+          disabled={editor.mode != EditorMode.Draft}
+        />
+      </XStack>
     </YStack>
   )
 }
@@ -200,7 +231,7 @@ function ImageForm({service, element}: InnerImageProps) {
             },
           )
           const data = await response.text()
-          send({type: 'IMAGE.SUBMIT', value: data})
+          send({type: 'IMAGE.SUBMIT', value: `http://localhost:55001/ipfs/${data}`})
         } catch (error) {
           console.error(error)
         }
@@ -224,20 +255,11 @@ function ImageForm({service, element}: InnerImageProps) {
             },
           )
           const data = await response.text()
-          send({type: 'IMAGE.SUBMIT', value: data})
+          send({type: 'IMAGE.SUBMIT', value: `http://localhost:55001/ipfs/${data}`})
         } catch (error) {
           console.error(error)
         }
       } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
-  }
-
-  const isValidUrl = (urlString: string) => {
-    try {
-      return Boolean(new URL(urlString))
-    } catch (e) {
-      console.log(e)
-      return false
     }
   }
 
@@ -252,6 +274,9 @@ function ImageForm({service, element}: InnerImageProps) {
             borderRadius={0}
             size="$5"
             justifyContent="flex-start"
+            focusStyle={{
+              outlineWidth: 0,
+            }}
           >
             Add an image
           </Button>
@@ -429,4 +454,14 @@ export function withImages(editor: Editor): Editor {
   }
 
   return editor
+}
+
+const isValidUrl = (urlString: string) => {
+  try { 
+    return Boolean(new URL(urlString)); 
+  }
+  catch(e) {
+    console.log(e)
+    return false; 
+  }
 }
