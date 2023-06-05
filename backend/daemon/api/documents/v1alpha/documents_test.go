@@ -631,6 +631,38 @@ func TestAPIDeleteDraft(t *testing.T) {
 	testutil.ProtoEqual(t, d2, list.Documents[0], "second document must be the only thing in the list")
 }
 
+func TestAPIDeleteDraft_WithPublishedChanges(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: updated.Id})
+	require.NoError(t, err)
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	require.NoError(t, err)
+
+	_, err = api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: draft2.Id})
+	require.NoError(t, err)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+
+	require.Len(t, list.Publications, 1, "must have previous publication")
+}
+
 func TestCreateDraftFromPublication(t *testing.T) {
 	t.Parallel()
 

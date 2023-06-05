@@ -94,7 +94,7 @@ var migrations = []string{
 		-- Blob ID of the change.
 		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- Entity being changed.
-		entity INTEGER REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		entity INTEGER REFERENCES hyper_entities (id) NOT NULL,
 		-- HLC timestamp of the change.
 		hlc_time INTEGER NOT NULL,
 		PRIMARY KEY (entity, blob)
@@ -152,7 +152,7 @@ var migrations = []string{
 		source_blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- TODO(burdiyan): normalize this to reduce disk usage.
 		rel TEXT NOT NULL,
-		target_entity INTEGER REFERENCES hyper_entities (id) ON DELETE CASCADE,
+		target_entity INTEGER REFERENCES hyper_entities (id),
 		target_blob INTEGER REFERENCES blobs (id),
 		data BLOB,
 		CHECK ((target_entity, target_blob) IS NOT (null, null))
