@@ -1,15 +1,12 @@
-import {imageMachine} from '@app/editor/image/image-machine'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath} from '@app/editor/utils'
+import { imageMachine } from '@app/editor/image/image-machine'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { findPath } from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
-  isImage,
-  isParagraph,
-  isPhrasingContent,
-  paragraph,
+  isImage, paragraph,
   statement,
-  text,
+  text
 } from '@mintter/shared'
 import {
   Button,
@@ -22,20 +19,19 @@ import {
   Tabs,
   TextArea,
   XStack,
-  YStack,
+  YStack
 } from '@mintter/ui'
 import { useActor, useInterpret } from '@xstate/react'
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import { Editor, Path, Transforms, Node, Element } from 'slate'
+import { Editor, Path, Transforms } from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
   useFocused,
   useSelected,
-  useSlateStatic,
+  useSlateStatic
 } from 'slate-react'
-import {ActorRefFrom} from 'xstate'
-import type {EditorPlugin} from '../types'
+import { ActorRefFrom } from 'xstate'
 
 export const ELEMENT_IMAGE = 'image'
 

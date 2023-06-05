@@ -11,7 +11,7 @@ export function blockToApi(
   start?: number,
 ): Block {
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
-  let leaves = flattenLeaves(slateBlock.children[0].children)
+  let leaves = flattenLeaves(slateBlock.children)
 
   // eslint-disable-next-line
   const {type, id, children, revision, ...attributes} = slateBlock
@@ -172,6 +172,13 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
   for (let i = 0; i < leaves.length; i++) {
     let leaf = leaves[i].children
     if (typeof leaf != 'undefined') {
+      if (
+        leaves[i].type == 'paragraph' ||
+        leaves[i].type == 'staticParagraph'
+      ) {
+        result.push(leaves[i].children[0])
+      }
+
       if (leaves[i].type == 'image') {
         result.push({
           url: leaves[i].url ?? '',
