@@ -107,7 +107,6 @@ type Server struct {
 	*Site
 	localFunctions LocalFunctions
 	synchronizer   Synchronizer
-	NoAuth         bool
 }
 
 // Node is a Mintter P2P node.
@@ -155,7 +154,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		Node:           node,
 		localFunctions: localFunctions,
 		synchronizer:   sync,
-		NoAuth:         siteCfg.NoAuth,
 	}
 
 	if siteCfg.OwnerID != "" {

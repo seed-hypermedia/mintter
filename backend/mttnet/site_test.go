@@ -30,7 +30,6 @@ func TestLocalPublish(t *testing.T) {
 }
 
 func TestMembers(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -50,7 +49,7 @@ func TestMembers(t *testing.T) {
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 	cfg.Site.OwnerID = owner.me.Account().String()
-	cfg.Site.NoAuth = true
+
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
@@ -110,7 +109,6 @@ func TestMembers(t *testing.T) {
 }
 
 func TestCreateTokens(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -196,7 +194,6 @@ func TestCreateTokens(t *testing.T) {
 }
 
 func TestSiteInfo(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -269,7 +266,7 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
-	cfg.GRPCPort = GRPCPort
+
 	n, err := New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
