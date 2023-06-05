@@ -58,6 +58,7 @@ services:
       - '-p2p.port=56000'
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
+      - '-site.no-auth'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
       - '-site.title=${MTT_SITE_TITLE:-NewSite}'
       - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'

@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +28,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	rpcpeer "google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
@@ -37,11 +39,16 @@ import (
 type headerKey string
 
 const (
+	// GRPCPort is the port where sites will externally expose the grpc interface.
+	GRPCPort = 56002
 	// TargetSiteHeader is the headers bearing the remote site hostname to proxy calls to.
 	TargetSiteHeader = "x-mintter-site-hostname"
 	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	SiteAccountIDCtxKey headerKey = "x-mintter-site-account-id"
+	// GRPCOriginAcc is the key to pass the account id via context down to a proxied call
+	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
+	GRPCOriginAcc headerKey = "x-mintter-site-grpc-origin-acc"
 	// WellKnownPath is the path (to be completed with http(s)+domain) to call to get data from site.
 	WellKnownPath = "api/mintter-well-known"
 )
@@ -651,6 +658,18 @@ func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
 	return token[0], nil
 }
 
+func getGrpcOriginAcc(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", fmt.Errorf("There is no metadata provided in context")
+	}
+	token := md.Get(string(GRPCOriginAcc))
+	if len(token) != 1 {
+		return "", fmt.Errorf("Header [%s] not found in metadata", GRPCOriginAcc)
+	}
+	return token[0], nil
+}
+
 // getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.
 func getRemoteID(ctx context.Context) (peer.ID, error) {
 	info, ok := rpcpeer.FromContext(ctx)
@@ -733,23 +752,33 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 
 	if err != nil || srv.hostname == remoteHostname { //either a proxied call or a direct call without headers (nodejs)
 		// this would mean this is a proxied call so we take the account from the remote caller ID
-		remoteDeviceID, err := getRemoteID(ctx)
-		if err == nil {
-			// this would mean this is a proxied call so we take the account from the remote caller ID
-			remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
+		remoteAcc, err := getGrpcOriginAcc(ctx)
+		if err != nil {
+			remoteDeviceID, err := getRemoteID(ctx)
+			if err == nil {
+				// this would mean this is a proxied call so we take the account from the remote caller ID
+				remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
+				if err != nil {
+					return nil, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+				}
+
+				n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
+				acc = remotAcc
+			} else {
+				// this would mean we cannot get remote ID it must be a local call
+				n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()), zap.String("remoteHostname", remoteHostname), zap.Error(err))
+			}
+		} else {
+			acc, err = core.DecodePrincipal(remoteAcc)
 			if err != nil {
-				return nil, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+				return nil, false, nil, fmt.Errorf("Invcalid Account [%s]: %w", remoteAcc, err)
 			}
 
-			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
-			acc = remotAcc
-		} else {
-			// this would mean we cannot get remote ID it must be a local call
-			n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()), zap.String("remoteHostname", remoteHostname), zap.Error(err))
 		}
+
 	}
 
-	if requiredRole == site.Member_OWNER && acc.String() != srv.owner.String() {
+	if !srv.NoAuth && requiredRole == site.Member_OWNER && acc.String() != srv.owner.String() {
 		return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.owner.String() {
 		conn, cancel, err := n.db.Conn(ctx)
@@ -759,7 +788,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		defer cancel()
 
 		role, err := sitesql.GetMemberRole(conn, acc)
-		if err != nil || role != requiredRole {
+		if !srv.NoAuth && (err != nil || role != requiredRole) {
 			return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 		}
 	}
@@ -822,44 +851,10 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // function's name to call is taken from this codebase, there should not be any
 // inconsistency and no panic is expected at runtime (due to unknown function name).
 func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, interface{}) {
+
 	n, ok := srv.Node.Get()
 	if !ok {
 		return nil, fmt.Errorf("can't proxy. Local p2p node not ready yet")
-	}
-	var siteAccount core.Principal
-	conn, cancel, err := n.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer cancel()
-	site, err := sitesql.GetSite(conn, hostname)
-	if err != nil {
-		return nil, err
-	}
-	siteAccount = core.Principal(site.PublicKeysPrincipal)
-	if siteAccount == nil {
-		v := ctx.Value(SiteAccountIDCtxKey)
-		acc, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("cannot get site accountID: %w", err)
-		}
-
-		siteAccount, err = core.DecodePrincipal(acc)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode account id %v: %w", v, err)
-		}
-	}
-
-	if siteAccount == nil {
-		return nil, fmt.Errorf("couldn't find account for site %s", hostname)
-	}
-
-	devices, err := hypersql.KeyDelegationsList(conn, siteAccount)
-	if err != nil {
-		return nil, err
-	}
-	if len(devices) == 0 {
-		return nil, fmt.Errorf("found no devices for account: %s", siteAccount.String())
 	}
 
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
@@ -867,40 +862,127 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		return nil, fmt.Errorf("failed to get remote site from header: %w", err)
 	}
 	ctx = metadata.AppendToOutgoingContext(ctx, string(TargetSiteHeader), remoteHostname)
-	var failedPIDs []string
-	for _, device := range devices {
-		pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()
-		if err != nil {
-			return nil, fmt.Errorf("failed to conver principal to peer ID: %w", err)
-		}
-		sitec, err := srv.Client(ctx, pid)
-		if err != nil {
-			failedPIDs = append(failedPIDs, pid.String())
-			continue
-		}
-
-		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
-
-		in := []reflect.Value{reflect.ValueOf(ctx)}
-		for _, param := range params {
-			in = append(in, reflect.ValueOf(param))
-		}
-		in = append(in, reflect.ValueOf([]grpc.CallOption{}))
-
-		f := reflect.ValueOf(sitec).MethodByName(proxyFcn)
-		if !f.IsValid() {
-			return nil, fmt.Errorf("Won't call %s since it does not exist", proxyFcn)
-		}
-		if f.Type().NumOut() != 2 {
-			return nil, fmt.Errorf("Proxied call %s expected to return 2 (return value + error) param but returns %d", proxyFcn, f.Type().NumOut())
-		}
-		if len(params) != f.Type().NumIn()-2 {
-			return nil, fmt.Errorf("function %s needs %d params, %d provided", proxyFcn, f.Type().NumIn(), len(params)+2)
-		}
-		res := f.CallSlice(in)
-
-		n.log.Debug("Remote call finished", zap.String("method", proxyFcn), zap.Any("returnValues", [2]string{res[0].Type().String(), res[1].Type().String()}), zap.Any("error", res[1].Interface()))
-		return res[0].Interface(), res[1].Interface()
+	ctx = metadata.AppendToOutgoingContext(ctx, string(GRPCOriginAcc), n.me.Account().String())
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
-	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccount.String())
+	addr := hostname
+	split := strings.Split(strings.Replace(hostname, "//", "", -1), ":")
+	if len(split) == 3 { //https:example.com:45934
+		addr = split[1] + ":" + strconv.Itoa(GRPCPort)
+	} else if len(split) == 2 && len(split[1]) > 5 { //https:example.com
+		addr = split[1] + ":" + strconv.Itoa(GRPCPort)
+	} else if len(split) == 2 && len(split[1]) <= 5 { //example.com:34567
+		addr = split[0] + ":" + strconv.Itoa(GRPCPort)
+	} else { //example.com
+		addr = hostname + ":" + strconv.Itoa(GRPCPort)
+	}
+	conn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := site.NewWebSiteClient(conn)
+
+	in := []reflect.Value{reflect.ValueOf(ctx)}
+	for _, param := range params {
+		in = append(in, reflect.ValueOf(param))
+	}
+	in = append(in, reflect.ValueOf([]grpc.CallOption{}))
+
+	f := reflect.ValueOf(client).MethodByName(proxyFcn)
+	if !f.IsValid() {
+		return nil, fmt.Errorf("Won't call %s since it does not exist", proxyFcn)
+	}
+	if f.Type().NumOut() != 2 {
+		return nil, fmt.Errorf("Proxied call %s expected to return 2 (return value + error) param but returns %d", proxyFcn, f.Type().NumOut())
+	}
+	if len(params) != f.Type().NumIn()-2 {
+		return nil, fmt.Errorf("function %s needs %d params, %d provided", proxyFcn, f.Type().NumIn(), len(params)+2)
+	}
+	res := f.CallSlice(in)
+
+	n.log.Debug("Remote call finished", zap.String("method", proxyFcn), zap.Any("returnValues", [2]string{res[0].Type().String(), res[1].Type().String()}), zap.Any("error", res[1].Interface()))
+	return res[0].Interface(), res[1].Interface()
+
+	/*
+		var siteAccount core.Principal
+		conn, cancel, err := n.db.Conn(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer cancel()
+		site, err := sitesql.GetSite(conn, hostname)
+		if err != nil {
+			return nil, err
+		}
+		siteAccount = core.Principal(site.PublicKeysPrincipal)
+		if siteAccount == nil {
+			v := ctx.Value(SiteAccountIDCtxKey)
+			acc, ok := v.(string)
+			if !ok {
+				return nil, fmt.Errorf("cannot get site accountID: %w", err)
+			}
+
+			siteAccount, err = core.DecodePrincipal(acc)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode account id %v: %w", v, err)
+			}
+		}
+
+		if siteAccount == nil {
+			return nil, fmt.Errorf("couldn't find account for site %s", hostname)
+		}
+
+		devices, err := hypersql.KeyDelegationsList(conn, siteAccount)
+		if err != nil {
+			return nil, err
+		}
+		if len(devices) == 0 {
+			return nil, fmt.Errorf("found no devices for account: %s", siteAccount.String())
+		}
+
+		remoteHostname, err := getRemoteSiteFromHeader(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get remote site from header: %w", err)
+		}
+		ctx = metadata.AppendToOutgoingContext(ctx, string(TargetSiteHeader), remoteHostname)
+		var failedPIDs []string
+		for _, device := range devices {
+			pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()
+			if err != nil {
+				return nil, fmt.Errorf("failed to conver principal to peer ID: %w", err)
+			}
+			sitec, err := srv.Client(ctx, pid)
+			if err != nil {
+				failedPIDs = append(failedPIDs, pid.String())
+				continue
+			}
+
+			n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
+
+			in := []reflect.Value{reflect.ValueOf(ctx)}
+			for _, param := range params {
+				in = append(in, reflect.ValueOf(param))
+			}
+			in = append(in, reflect.ValueOf([]grpc.CallOption{}))
+
+			f := reflect.ValueOf(sitec).MethodByName(proxyFcn)
+			if !f.IsValid() {
+				return nil, fmt.Errorf("Won't call %s since it does not exist", proxyFcn)
+			}
+			if f.Type().NumOut() != 2 {
+				return nil, fmt.Errorf("Proxied call %s expected to return 2 (return value + error) param but returns %d", proxyFcn, f.Type().NumOut())
+			}
+			if len(params) != f.Type().NumIn()-2 {
+				return nil, fmt.Errorf("function %s needs %d params, %d provided", proxyFcn, f.Type().NumIn(), len(params)+2)
+			}
+			res := f.CallSlice(in)
+
+			n.log.Debug("Remote call finished", zap.String("method", proxyFcn), zap.Any("returnValues", [2]string{res[0].Type().String(), res[1].Type().String()}), zap.Any("error", res[1].Interface()))
+			return res[0].Interface(), res[1].Interface()
+		}
+		return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccount.String())
+	*/
 }
