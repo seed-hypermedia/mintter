@@ -1,14 +1,14 @@
-import {Account, Publication, SiteInfo} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
-import {GetServerSideProps} from 'next'
-import {setAllowAnyHostGetCORS} from 'server/cors'
-import {accountsClient, localWebsiteClient, publicationsClient} from '../client'
-import {GatewayHead} from '../gateway-head'
-import {getSiteInfo} from '../get-site-info'
-import {PublicationPlaceholder} from '../publication-placeholder'
-import {SiteHead} from '../site-head'
-import PublicationPage, {PublicationPageProps} from '../ssr-publication-page'
-import {JsonValue} from '@bufbuild/protobuf'
+import { Account, Publication, SiteInfo } from '@mintter/shared'
+import { useQuery } from '@tanstack/react-query'
+import { GetServerSideProps } from 'next'
+import { setAllowAnyHostGetCORS } from 'server/cors'
+import { accountsClient, localWebsiteClient, publicationsClient } from '../client'
+import { GatewayHead } from '../gateway-head'
+import { getSiteInfo } from '../get-site-info'
+import { PublicationPlaceholder } from '../publication-placeholder'
+import { SiteHead } from '../site-head'
+import PublicationPage, { PublicationPageProps } from '../ssr-publication-page'
+import { JsonValue } from '@bufbuild/protobuf'
 import {
   getPublicationPageProps,
   impatientGetPublication,
@@ -17,12 +17,12 @@ import {
 
 let pubId =
   process.env.MINTTER_HOME_PUBID ||
-  'bafy2bzaceajij5bzr4yakyaxmjgffu7jq4y3sdie2tozl65igufxgrcu464gi'
+  'mnoboS11GwRlRAh2dhYlTw'
 let version =
   process.env.MINTTER_HOME_VERSION ||
-  'baeaxdiheaiqizbsrt7joblgzp2nj6r7kptdzyv2nvsuzstxlhs5ujrhk7a4n6pi'
+  'bafy2bzacednwllikmc7rittnmz4s7cfpo3p2ldsap3bcmgxp7cdpzhoiu5w'
 
-//https://mintter.com/p/bafy2bzaceajij5bzr4yakyaxmjgffu7jq4y3sdie2tozl65igufxgrcu464gi?v=baeaxdiheaiqizbsrt7joblgzp2nj6r7kptdzyv2nvsuzstxlhs5ujrhk7a4n6pi
+//https://mintter.com/p/mnoboS11GwRlRAh2dhYlTw?v=bafy2bzacednwllikmc7rittnmz4s7cfpo3p2ldsap3bcmgxp7cdpzhoiu5w
 
 export default function HomePage(props: PublicationPageProps) {
   return <PublicationPage {...props} />
@@ -40,7 +40,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     if (!publication) {
       try {
-        const pathRecord = await localWebsiteClient.getPath({path: '/'})
+        const pathRecord = await localWebsiteClient.getPath({ path: '/' })
         publication = pathRecord.publication || null
       } catch (error) {
         const isNotFound = !!error.rawMessage?.match(
