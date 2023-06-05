@@ -44,7 +44,10 @@ import (
 
 // Protocol values.
 const (
-	ProtocolID protocol.ID = "/mintter/0.0.4"
+	protocolPrefix  = "/mintter/"
+	protocolVersion = "0.0.4"
+
+	ProtocolID protocol.ID = protocolPrefix + protocolVersion
 
 	protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 )

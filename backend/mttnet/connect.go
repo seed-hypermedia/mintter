@@ -8,13 +8,13 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
+	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
@@ -33,15 +33,11 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return nil
 	}
 
-	device := peer.ToCid(info.ID)
-
-	log := n.log.With(zap.String("device", device.String()))
-
-	var isMintterPeer bool
+	log := n.log.With(zap.String("peer", info.ID.String()))
 
 	log.Debug("ConnectStarted")
 	defer func() {
-		log.Debug("ConnectFinished", zap.Error(err), zap.Bool("isMintterPeer", isMintterPeer), zap.String("Info", info.String()))
+		log.Debug("ConnectFinished", zap.Error(err), zap.String("Info", info.String()))
 	}()
 
 	// Since we're explicitly connecting to a peer, we want to clear any backoffs
@@ -57,8 +53,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return fmt.Errorf("failed to connect to peer %s: %w", info.ID, err)
 	}
 
-	isMintterPeer, err = n.checkMintterProtocolVersion(info.ID)
-	if err != nil {
+	if err := n.checkMintterProtocolVersion(info.ID, protocolVersion); err != nil {
 		return err
 	}
 
@@ -74,28 +69,46 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 
 	theirInfo, err := c.Handshake(ctx, myInfo)
 	if err != nil {
-		return fmt.Errorf("failed to handshake with device %s: %w", device, err)
+		return fmt.Errorf("failed to handshake with peer %s: %w", info.ID, err)
 	}
 
-	if err := n.verifyHandshake(ctx, device, theirInfo); err != nil {
+	if err := n.verifyHandshake(ctx, info.ID, theirInfo); err != nil {
 		return err
 	}
-
-	n.p2p.ConnManager().Protect(info.ID, protocolSupportKey)
 
 	return nil
 }
 
-func (n *Node) checkMintterProtocolVersion(pid peer.ID) (ok bool, err error) {
+func (n *Node) checkMintterProtocolVersion(pid peer.ID, desiredVersion string) (err error) {
 	protos, err := n.p2p.Peerstore().GetProtocols(pid)
 	if err != nil {
-		return false, fmt.Errorf("failed to check mintter protocol version: %w", err)
+		return fmt.Errorf("failed to check mintter protocol version: %w", err)
 	}
 
-	return supportsMintterProtocol(protos), nil
+	var isMintter bool
+
+	// Eventually we'd need to implement some compatibility checks between different protocol versions.
+	for _, p := range protos {
+		version := strings.TrimPrefix(string(p), protocolPrefix)
+		if version == string(p) {
+			continue
+		} else {
+			isMintter = true
+		}
+
+		if version == desiredVersion {
+			return nil
+		}
+	}
+
+	if isMintter {
+		return fmt.Errorf("peer with incompatible Mintter protocol version")
+	}
+
+	return fmt.Errorf("not a Mintter peer")
 }
 
-func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.HandshakeInfo) error {
+func (n *Node) verifyHandshake(ctx context.Context, pid peer.ID, pb *p2p.HandshakeInfo) error {
 	c, err := cid.Cast(pb.KeyDelegationCid)
 	if err != nil {
 		return fmt.Errorf("failed to cast key delegation CID: %w", err)
@@ -130,6 +143,8 @@ func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.Hand
 		return fmt.Errorf("failed to save handshake key delegation blob: %w", err)
 	}
 
+	n.p2p.ConnManager().Protect(pid, protocolSupportKey)
+
 	return nil
 }
 
@@ -151,29 +166,17 @@ func (srv *Server) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 		return nil, err
 	}
 
-	device := peer.ToCid(pid)
+	log := n.log.With(zap.String("peer", pid.String()))
 
-	log := n.log.With(
-		zap.String("peer", pid.String()),
-		zap.String("device", device.String()),
-	)
-
-	ok, err = n.checkMintterProtocolVersion(pid)
-	if err != nil {
+	if err := n.checkMintterProtocolVersion(pid, protocolVersion); err != nil {
 		return nil, err
 	}
-	if !ok {
-		log.Debug("SkippedHandshakeWithIncompatibleMintterPeer")
-		return nil, fmt.Errorf("you have an incompatible protocol version")
-	}
 
-	if err := n.verifyHandshake(ctx, device, in); err != nil {
+	if err := n.verifyHandshake(ctx, pid, in); err != nil {
 		// TODO(burdiyan): implement blocking and disconnecting from bad peers.
 		log.Warn("FailedToVerifyIncomingMintterHandshake", zap.Error(err))
 		return nil, fmt.Errorf("you gave me a bad handshake")
 	}
-
-	n.p2p.ConnManager().Protect(pid, protocolSupportKey)
 
 	return n.handshakeInfo(ctx)
 }
@@ -230,15 +233,4 @@ func (n *Node) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
-}
-
-func supportsMintterProtocol(protos []protocol.ID) bool {
-	// Eventually we'd need to implement some compatibility checks between different protocol versions.
-	for _, p := range protos {
-		if string(p) == string(ProtocolID) {
-			return true
-		}
-	}
-
-	return false
 }
