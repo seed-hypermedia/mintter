@@ -20,7 +20,7 @@ func MakeTestRepo(t *testing.T, tt coretest.Tester) *ondisk.OnDisk {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	require.NoError(t, err)
 
-	repo, err := ondisk.NewOnDiskWithDeviceKey(dir, log, tt.Device.Wrapped())
+	repo, err := ondisk.NewOnDiskWithDeviceKey(dir, log, tt.Device.Wrapped(), nil)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(dir))

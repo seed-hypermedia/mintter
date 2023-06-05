@@ -2,34 +2,23 @@
 package ondisk
 
 import (
-	"bytes"
 	"crypto/rand"
 	"errors"
 	"fmt"
 	"mintter/backend/core"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"go.uber.org/zap"
 )
 
-/*
-Repo layout v1 file tree:
-
-- /VERSION => compatibility version
-- /keys/
--- libp2p_id_ed25519 => device private key
--- mintter_id_ed25519.pub => account public key
-- /db/
-- /autocert-cache/ => directory with autocert cache
-*/
-
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2023-04-24.01"
+	compatibilityVersion = "2023-06-05.01"
 
 	keysDir = "keys"
 	dbDir   = "db"
@@ -39,6 +28,12 @@ const (
 
 	versionFilename = "VERSION"
 )
+
+// Migration of the on-disk repository layout.
+type Migration struct {
+	Version string
+	Run     func() error
+}
 
 // ErrRepoMigrate is a custom error type.
 var ErrRepoMigrate = errors.New("repo migration failed")
@@ -55,8 +50,10 @@ type OnDisk struct {
 }
 
 // NewOnDisk creates a new OnDisk configuration repo.
-func NewOnDisk(path string, log *zap.Logger) (r *OnDisk, err error) {
-	r, err = prepareRepo(path, log)
+// Migrations must be sorted, otherwise the behavior is undefined,
+// and may lead to corrupted data.
+func NewOnDisk(path string, log *zap.Logger, migrations []Migration) (r *OnDisk, err error) {
+	r, err = prepareRepo(path, log, migrations)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +78,8 @@ func NewOnDisk(path string, log *zap.Logger) (r *OnDisk, err error) {
 }
 
 // NewOnDiskWithDeviceKey creates a new repo with device key.
-func NewOnDiskWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r *OnDisk, err error) {
-	r, err = prepareRepo(path, log)
+func NewOnDiskWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey, migrations []Migration) (r *OnDisk, err error) {
+	r, err = prepareRepo(path, log, migrations)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +91,7 @@ func NewOnDiskWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r
 	return r, nil
 }
 
-func prepareRepo(path string, log *zap.Logger) (r *OnDisk, err error) {
+func prepareRepo(path string, log *zap.Logger, migrations []Migration) (r *OnDisk, err error) {
 	if !filepath.IsAbs(path) {
 		return nil, fmt.Errorf("must provide absolute repo path, got = %s", path)
 	}
@@ -111,7 +108,7 @@ func prepareRepo(path string, log *zap.Logger) (r *OnDisk, err error) {
 		}
 	}
 
-	if err := migrateRepo(path); err != nil {
+	if err := migrateRepo(path, migrations); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrRepoMigrate, err)
 	}
 
@@ -270,7 +267,7 @@ func (r *OnDisk) readAccountFile() (core.PublicKey, error) {
 	return core.NewPublicKey(core.CodecAccountKey, pub.(*crypto.Ed25519PublicKey))
 }
 
-func migrateRepo(path string) error {
+func migrateRepo(path string, migrations []Migration) error {
 	// File profile.json can only be there if it's previously existing directory from the pre-whitepaper architecture.
 	if _, err := os.ReadFile(filepath.Join(path, "profile.json")); err == nil {
 		return fmt.Errorf("incompatible repo layout in %s: remove this directory or use a different one", path)
@@ -278,19 +275,45 @@ func migrateRepo(path string) error {
 
 	versionFile := filepath.Join(path, versionFilename)
 
-	ver, err := os.ReadFile(versionFile)
-	if err != nil {
-		v := []byte(compatibilityVersion)
-		if err := os.WriteFile(versionFile, v, 0600); err != nil {
-			return fmt.Errorf("failed to create repo version file: %w", err)
+	var gotVersion string
+	{
+		ver, err := os.ReadFile(versionFile)
+		if err != nil {
+			v := []byte(compatibilityVersion)
+			if err := os.WriteFile(versionFile, v, 0600); err != nil {
+				return fmt.Errorf("failed to create repo version file: %w", err)
+			}
+
+			ver = v
 		}
 
-		ver = v
+		gotVersion = string(ver)
 	}
 
-	if !bytes.Equal(ver, []byte(compatibilityVersion)) {
-		return fmt.Errorf("incompatible repo version: got = %s, want = %s; try a different directory for repo path", ver, compatibilityVersion)
+	if gotVersion == compatibilityVersion {
+		return nil
 	}
 
-	return nil
+	if gotVersion > compatibilityVersion {
+		return fmt.Errorf("software is too old: data directory was created with version %s, but we only understand up to %s", gotVersion, compatibilityVersion)
+	}
+
+	i := sort.Search(len(migrations), func(idx int) bool {
+		return migrations[idx].Version == gotVersion
+	})
+	if i == len(migrations) {
+		return fmt.Errorf("incompatible software: no migration from version %s to %s", gotVersion, compatibilityVersion)
+	}
+
+	for _, mig := range migrations[i+1:] {
+		if err := mig.Run(); err != nil {
+			return fmt.Errorf("repo migration %s failed: %w", mig.Version, err)
+		}
+		if err := os.WriteFile(versionFile, []byte(mig.Version), 0600); err != nil {
+			return fmt.Errorf("failed to write version file with %s: %w", mig.Version, err)
+		}
+	}
+
+	// Retry the same migration process to make sure we actually got to the version we want.
+	return migrateRepo(path, migrations)
 }

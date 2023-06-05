@@ -249,9 +249,9 @@ func (a *App) Wait() error {
 func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
 	log := logging.New("mintter/repo", "debug")
 	if device == nil {
-		r, err = ondisk.NewOnDisk(cfg.RepoPath, log)
+		r, err = ondisk.NewOnDisk(cfg.RepoPath, log, makeMigrations(cfg.RepoPath))
 	} else {
-		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device)
+		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device, makeMigrations(cfg.RepoPath))
 	}
 
 	if err == nil {

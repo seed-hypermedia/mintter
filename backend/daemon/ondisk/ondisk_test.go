@@ -17,7 +17,7 @@ func TestMigrateRepo_OldLayout(t *testing.T) {
 
 	require.NoError(t, ioutil.WriteFile(filepath.Join(dir, "profile.json"), []byte("{}"), 0600))
 
-	_, err := NewOnDisk(dir, zap.NewNop())
+	_, err := NewOnDisk(dir, zap.NewNop(), nil)
 
 	require.Error(t, err)
 	require.Equal(t, ErrRepoMigrate, errors.Unwrap(err))
@@ -28,7 +28,7 @@ func TestMigrateRepo_WrongVersion(t *testing.T) {
 
 	require.NoError(t, ioutil.WriteFile(filepath.Join(dir, "VERSION"), []byte("fake-version"), 0600))
 
-	_, err := NewOnDisk(dir, zap.NewNop())
+	_, err := NewOnDisk(dir, zap.NewNop(), nil)
 
 	require.Error(t, err)
 	require.Equal(t, ErrRepoMigrate, errors.Unwrap(err))
