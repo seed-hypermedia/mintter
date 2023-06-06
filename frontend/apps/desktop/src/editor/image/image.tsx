@@ -80,7 +80,7 @@ export function ImageElement({
           const data = await response.text()
           Transforms.setNodes<ImageType>(
             editor,
-            {url: `http://localhost:55001/ipfs/${data}`},
+            {url: data},
             {at: path},
           )
         } catch (error) {
@@ -92,7 +92,10 @@ export function ImageElement({
 
   if (
     (element as ImageType).url &&
-    !(element as ImageType).url.includes('ipfs')
+    (
+      (element as ImageType).url.includes('/') ||
+      (element as ImageType).url.includes(':')
+    )
   ) {
     const url = (element as ImageType).url
     uploadImage(url).catch((e) => console.log(e))
@@ -182,7 +185,7 @@ function ImageComponent({service, element}: InnerImageProps) {
         style={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
         }}
-        src={(element as ImageType).url}
+        src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
       />
       <XStack>
         <TextArea
@@ -240,7 +243,7 @@ function ImageForm({service, element}: InnerImageProps) {
           const data = await response.text()
           send({
             type: 'IMAGE.SUBMIT',
-            value: `http://localhost:55001/ipfs/${data}`,
+            value: data,
           })
         } catch (error) {
           console.error(error)
@@ -267,7 +270,7 @@ function ImageForm({service, element}: InnerImageProps) {
           const data = await response.text()
           send({
             type: 'IMAGE.SUBMIT',
-            value: `http://localhost:55001/ipfs/${data}`,
+            value: data,
           })
         } catch (error) {
           console.error(error)
