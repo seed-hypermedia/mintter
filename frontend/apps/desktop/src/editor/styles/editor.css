@@ -25,11 +25,6 @@
   padding: 40px 0 200px 0;
 }
 
-.editor.mode-embed {
-  display: inline !important;
-  padding-inline-end: 0 !important;
-}
-
 .editor p,
 .editor q {
   padding: 0 !important;

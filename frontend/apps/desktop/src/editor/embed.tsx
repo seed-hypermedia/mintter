@@ -5,18 +5,21 @@ import {
   useHoverVisibleConnection,
   useVisibleConnection,
 } from '@app/editor/visible-connection'
+import {usePublication} from '@app/models/documents'
 import {queryKeys} from '@app/models/query-keys'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {
+  BlockNode,
   blockNodeToSlate,
+  Document,
   Embed as EmbedType,
   FlowContent,
   getIdsfromUrl,
   isEmbed,
   Publication,
 } from '@mintter/shared'
-import {XStack} from '@mintter/ui'
-import {QueryClient, useQueryClient} from '@tanstack/react-query'
+import {Popover, SizableText, XStack} from '@mintter/ui'
+import {QueryClient, useQuery, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
 import {Editor as SlateEditor, Transforms} from 'slate'
@@ -77,11 +80,14 @@ export function EmbedElement({
   let {highlight} = useVisibleConnection(blockId)
   let hoverProps = useHoverVisibleConnection(blockId)
   let client = useQueryClient()
-  let [state] = useMachine(() =>
-    // @ts-ignore
-    createEmbedMachine({url: (element as EmbedType).url, client}),
-  )
-  let embedEditor = useMemo(() => buildEditorHook([], EditorMode.Embed), [])
+  let {data, isSuccess, isError, error} = useEmbed(element as EmbedType)
+  console.log('🚀 ~ file: embed.tsx:82 ~ data:', data)
+  // let [state] = useMachine(() =>
+  //   // @ts-ignore
+  //   createEmbedMachine({url: (element as EmbedType).url, client}),
+  // )
+  // let embedEditor = useMemo(() => buildEditorHook([], EditorMode.Embed), [])
+
   let selected = useSelected()
   let focused = useFocused()
 
@@ -103,220 +109,150 @@ export function EmbedElement({
     }
   }
 
-  if (state.matches('errored')) {
-    return (
-      <span contentEditable={false} {...attributes}>
-        EMBED ERROR
-        {children}
-      </span>
-    )
-  }
+  let content = isError
+    ? 'EMBED ERROR'
+    : isSuccess && typeof data == 'string'
+    ? data
+    : '...'
 
-  if (state.matches('fetchingPublication') || state.matches('findBlock')) {
-    return (
-      <span contentEditable={false} {...attributes}>
-        ...
-        {children}
-      </span>
-    )
+  if (isError) {
+    console.warn('EMBED ERROR', error)
   }
 
   return (
-    <XStack
-      tag="q"
-      cite={(element as EmbedType).url}
-      {...attributes}
-      flex={0}
-      display="inline"
-      backgroundColor={
-        highlight ? '$yellow3' : focused && selected ? '$color4' : 'transparent'
-      }
-      // @ts-ignore
-      contentEditable={false}
-      hoverStyle={{
-        cursor: 'pointer',
-        backgroundColor: highlight ? '$yellow3' : '$color4',
-      }}
-      borderRadius="$1"
-      onClick={onOpenInNewWindow}
-      {...hoverProps}
-      onMouseEnter={(event) => {
-        console.log('MOUSE ENTER', blockId)
-
-        event.preventDefault()
-        event.stopPropagation()
-        hoverProps.onHoverIn()
-      }}
-    >
-      <Editor
-        editor={embedEditor}
-        mode={EditorMode.Embed}
-        value={[state.context.block]}
-        onChange={() => {
-          // noop
+    <Popover>
+      <SizableText
+        tag="q"
+        cite={(element as EmbedType).url}
+        {...attributes}
+        flex={0}
+        fontWeight="600"
+        color="$mint"
+        fontStyle="italic"
+        display="inline"
+        fontSize="inherit"
+        backgroundColor={
+          highlight
+            ? '$yellow3'
+            : focused && selected
+            ? '$color4'
+            : 'transparent'
+        }
+        // @ts-ignore
+        contentEditable={false}
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: highlight ? '$yellow3' : '$color4',
         }}
-      />
-      {children}
-    </XStack>
+        borderRadius="$1"
+        onClick={onOpenInNewWindow}
+        {...hoverProps}
+        onMouseEnter={(event) => {
+          console.log('MOUSE ENTER', blockId)
+
+          event.preventDefault()
+          event.stopPropagation()
+          hoverProps.onHoverIn()
+        }}
+        style={{userSelect: 'none'}}
+        {...attributes}
+      >
+        {content}
+        {children}
+      </SizableText>
+    </Popover>
   )
+
+  //   if (state.matches('errored')) {
+  //     return (
+  //       <span contentEditable={false} {...attributes}>
+  //         EMBED ERROR
+  //         {children}
+  //       </span>
+  //     )
+  //   }
+
+  //   if (state.matches('fetchingPublication') || state.matches('findBlock')) {
+  //     return (
+  //       <span contentEditable={false} {...attributes}>
+  //         ...
+  //         {children}
+  //       </span>
+  //     )
+  //   }
+
+  //   return (
+  //     <XStack
+  //       tag="q"
+  //       cite={(element as EmbedType).url}
+  //       {...attributes}
+  //       flex={0}
+  //       display="inline"
+  //       backgroundColor={
+  //         highlight ? '$yellow3' : focused && selected ? '$color4' : 'transparent'
+  //       }
+  //       // @ts-ignore
+  //       contentEditable={false}
+  //       hoverStyle={{
+  //         cursor: 'pointer',
+  //         backgroundColor: highlight ? '$yellow3' : '$color4',
+  //       }}
+  //       borderRadius="$1"
+  //       onClick={onOpenInNewWindow}
+  //       {...hoverProps}
+  //       onMouseEnter={(event) => {
+  //         console.log('MOUSE ENTER', blockId)
+
+  //         event.preventDefault()
+  //         event.stopPropagation()
+  //         hoverProps.onHoverIn()
+  //       }}
+  //     >
+  //       <Editor
+  //         editor={embedEditor}
+  //         mode={EditorMode.Embed}
+  //         value={[state.context.block]}
+  //         onChange={() => {
+  //           // noop
+  //         }}
+  //       />
+  //       {children}
+  //     </XStack>
+  //   )
 }
 
-type EmbedMachineContext = {
-  url: string
-  publication?: Publication
-  block?: FlowContent
-  errorMessage: string
-}
+function useEmbed(element: EmbedType) {
+  // get the linked publication
+  // filter the block
+  // return the string
+  let [documentId, versionId, blockId] = getIdsfromUrl(element.url)
+  let pubQuery = usePublication({
+    documentId,
+    versionId,
+    enabled: !!documentId && !!versionId,
+  })
 
-type EmbedMachineServices = {
-  getEmbedPublication: {
-    data: Publication
-  }
-  getEmbedBlock: {
-    data: FlowContent
-  }
-}
+  return useMemo(() => {
+    console.log('embed query data', pubQuery.data)
+    if (pubQuery.status != 'success') return pubQuery
 
-function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
-  /** @xstate-layout N4IgpgJg5mDOIC5RgLYCNIFoUEMDGAFgJYB2YAdAGZgAuhpUACgK5oA2ReONRA9iQGII-CqQBuvANYUYNAKLpILdp258SiUAAdesIj36aQAD0SYArAGZyANgCMAFgDsAJgAcATks2fHgAzmADQgAJ5mdnZO5Ob2Ng4eHnaWfn6ebgC+6cGoGBDY+MRkVLT0JEysHFwGgmAATrW8teRabNyUjSjksgq5ypVqhkggOnrVRqYImHZ+duRudi52MX4JDi42lkGhiBGzLs5+my6Wlm4O8y6Z2Yp5uKUUlKQQAEJsvHiSQiLk4lIytD1IK93pIjCN9OpxohLB5zOQHJs3G44pYHGtzPtgmEEFE3N4bE41sknJZCV5zFdwDd8vcqE9gR8BHUGk0Wm0Ol0ATcGaChuCxkMJnZ-OQXDFEjMxYs4ljELj8YTjn4SU5zDNMlkQCReBA4EYclg7oUHiVCuUVFVIXzdBDBqAJpgHFZbI5FWcnPNzG5ZZMFrM-LEnV61R4fE5KQbbgVSA96W8PmCbQL7YgXH4HORCQ44o51u5Fj6pi4PNFA363OY1usI9SjTGfhA2GBE6MrSmEPY-OREmiSZWvG5UoWIjY5jYXE5YV4bMGzjXcjTjeRmY1IC3bRpBamTuQ7BWSe5nASvT6Fhn9k5Dql3DO7AT54bo2R18mTGZnFF7M41u7Pd7tpMUqlneuwrE6CyWBq6RAA */
-  return createMachine(
-    {
-      id: 'transclusion-machine',
-      predictableActionArguments: true,
-      tsTypes: {} as import('./embed.typegen').Typegen0,
-      schema: {
-        context: {} as EmbedMachineContext,
-        services: {} as EmbedMachineServices,
-      },
-      context: {
-        url,
-        publication: undefined,
-        block: undefined,
-        errorMessage: '',
-      },
-      initial: 'fetchingPublication',
-      states: {
-        fetchingPublication: {
-          invoke: {
-            src: 'getEmbedPublication',
-            id: 'getEmbedPublication',
-            onDone: [
-              {
-                actions: 'assignPublication',
-                target: 'findBlock',
-              },
-            ],
-            onError: [
-              {
-                actions: 'assignError',
-                target: 'errored',
-              },
-            ],
-          },
-        },
-        findBlock: {
-          invoke: {
-            src: 'getEmbedBlock',
-            id: 'getEmbedBlock',
-            onDone: [
-              {
-                actions: 'assignBlock',
-                target: 'idle',
-              },
-            ],
-            onError: [
-              {
-                actions: 'assignError',
-                target: 'errored',
-              },
-            ],
-          },
-        },
-        idle: {},
-        errored: {
-          on: {
-            REFETCH: {
-              target: 'fetchingPublication',
-              actions: ['clearError', 'clearPublication', 'clearBlock'],
-            },
-          },
-        },
-      },
-    },
-    {
-      services: {
-        getEmbedPublication: (context) => {
-          let [docId, version] = getIdsfromUrl(context.url)
-          return client.fetchQuery<Publication>(
-            [queryKeys.GET_PUBLICATION, docId, version],
-            () =>
-              publicationsClient.getPublication({documentId: docId, version}),
-          )
-        },
-        getEmbedBlock: (context) => {
-          return new Promise((resolve, reject) => {
-            let [, , blockId] = getIdsfromUrl(context.url)
-            if (context.publication?.document?.children) {
-              let pubContent = blockNodeToSlate(
-                context.publication?.document?.children,
-                'group',
-              )
+    if (pubQuery.data && pubQuery.data.document && blockId) {
+      let blockNode = getBlockNodeById(pubQuery.data.document.children, blockId)
 
-              const firstChild = pubContent.children[0]
-              // if we are embedding the whole document, for now we just display the first block
-              if (!blockId && firstChild) {
-                resolve(firstChild)
-                return
-              }
+      // right now we are just returning the text from the current block, but we should return all the content of it properly
+      let data = blockNode && blockNode.block ? blockNode.block.text : undefined
 
-              let temp: FlowContent | undefined
-
-              visit(
-                {
-                  type: 'root',
-                  children: pubContent.children,
-                },
-                {id: blockId},
-                (node) => {
-                  temp = node
-                },
-              )
-
-              if (temp) {
-                resolve(temp as FlowContent)
-              }
-            } else {
-              reject(`getEmbedBlock Error: no block was found`)
-            }
-          })
-        },
-      },
-      actions: {
-        assignBlock: assign({
-          block: (c, event) => event.data,
-        }),
-        assignError: assign({
-          errorMessage: (_, event) =>
-            `${event.type} Error: ${JSON.stringify(event.data)}`,
-        }),
-        assignPublication: assign({
-          publication: (_, event) => event.data,
-        }),
-        // @ts-ignore
-        clearError: assign({
-          errorMessage: '',
-        }),
-        // @ts-ignore
-        clearBlock: assign({
-          block: undefined,
-        }),
-        // @ts-ignore
-        clearPublication: assign({
-          publication: undefined,
-        }),
-      },
-    },
-  )
+      return {
+        ...pubQuery,
+        data,
+      }
+    }
+    return {
+      ...pubQuery,
+      // right now we are just returning the text from the current block, but we should return all the content of it properly
+      data: undefined,
+    }
+  }, [pubQuery.data])
 }
 
 function isEmbedActive(editor: SlateEditor) {
@@ -325,4 +261,24 @@ function isEmbedActive(editor: SlateEditor) {
     mode: 'all',
   })
   return match
+}
+
+function getBlockNodeById(
+  blocks: Array<BlockNode>,
+  blockId: string,
+): BlockNode | null {
+  let res: BlockNode | undefined
+  for (const bn of blocks) {
+    if (bn.block?.id == blockId) {
+      res = bn
+    } else if (bn.children.length) {
+      return getBlockNodeById(bn.children, blockId)
+    }
+  }
+
+  if (!res) {
+    return null
+  }
+
+  return res
 }

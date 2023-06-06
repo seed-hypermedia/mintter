@@ -335,6 +335,11 @@ export function useSaveDraft(editor: Editor, documentId?: string) {
           if (!editorDraft) return undefined
           let contentChanges =
             MintterEditor.transformChanges(editor).filter(Boolean)
+          console.log(
+            '🚀 ~ file: documents.ts:337 ~ useSaveDraft ~ contentChanges:',
+            contentChanges,
+            editor,
+          )
 
           title = getTitleFromContent(content)
           let changes: Array<DocumentChange> = title
