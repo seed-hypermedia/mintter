@@ -16,15 +16,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const path = (context.params?.pageSlug as string) || ''
   const version = context.query.v ? String(context.query.v) : undefined
   let publication: Publication | null = null
-  let pathRecord: GetPathResponse
+  let pathRecord: GetPathResponse | null
   try {
-    pathRecord = await localWebsiteClient.getPath({path})
-    publication = pathRecord.publication || null
-    if (!publication) {
+    pathRecord = await localWebsiteClient.getPath({path}).catch((e) => {
+      if (e.message.match('Could not get local document although was found'))
+        return null
+      else throw e
+    })
+    if (!pathRecord) {
       return {
         notFound: true,
       }
     }
+    publication = pathRecord.publication || null
     const docId = pathRecord.publication?.document?.id
     if (!docId) throw new Error('No document on this pathRecord?!')
     if (version && version !== pathRecord.publication?.version) {

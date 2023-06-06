@@ -68,10 +68,17 @@ export async function impatientGetPublication(
     // test only: wait 5 sec
     // await new Promise((r) => setTimeout(r, 5000))
 
-    publicationsClient.getPublication(...args).then((pub) => {
-      clearTimeout(timeout)
-      resolve(pub)
-    })
+    publicationsClient
+      .getPublication(...args)
+      .then((pub) => {
+        clearTimeout(timeout)
+        resolve(pub)
+      })
+      .catch((e) => {
+        const {message} = e
+
+        console.log('== ', message)
+      })
   })
 }
 
