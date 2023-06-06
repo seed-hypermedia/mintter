@@ -51,45 +51,43 @@ import {
 import {
   ReactEditor,
   RenderElementProps,
-  useFocused,
   useSelected,
   useSlateSelection,
   useSlateStatic,
 } from 'slate-react'
 import {useLinkingPanel} from '../linking-panel'
-import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, getSelectedNodes, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
-export const createLinkPlugin = (): EditorPlugin => ({
-  name: ELEMENT_LINK,
-  onKeyDown(editor) {
-    return (event) => {
-      const {selection} = editor
+export function linkKeyDown(
+  editor: Editor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  if (event.defaultPrevented) return false
+  const {selection} = editor
 
-      // Default left/right behavior is unit:'character'.
-      // This fails to distinguish between two cursor positions, such as
-      // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
-      // Here we modify the behavior to unit:'offset'.
-      // This lets the user step into and out of the inline without stepping over characters.
-      // You may wish to customize this further to only use unit:'offset' in specific cases.
-      if (selection && Range.isCollapsed(selection)) {
-        const {nativeEvent} = event
-        if (isKeyHotkey('left', nativeEvent)) {
-          event.preventDefault()
-          Transforms.move(editor, {unit: 'offset', reverse: true})
-          return
-        }
-        if (isKeyHotkey('right', nativeEvent)) {
-          event.preventDefault()
-          Transforms.move(editor, {unit: 'offset'})
-          return
-        }
-      }
+  // Default left/right behavior is unit:'character'.
+  // This fails to distinguish between two cursor positions, such as
+  // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+  // Here we modify the behavior to unit:'offset'.
+  // This lets the user step into and out of the inline without stepping over characters.
+  // You may wish to customize this further to only use unit:'offset' in specific cases.
+  if (selection && Range.isCollapsed(selection)) {
+    const {nativeEvent} = event
+    if (isKeyHotkey('left', nativeEvent)) {
+      event.preventDefault()
+      Transforms.move(editor, {unit: 'offset', reverse: true})
+      return true
     }
-  },
-})
+    if (isKeyHotkey('right', nativeEvent)) {
+      event.preventDefault()
+      Transforms.move(editor, {unit: 'offset'})
+      return true
+    }
+  }
+  return false
+}
 
 function insertDocumentLink(editor: Editor, url: string) {
   let {selection} = editor
@@ -117,6 +115,8 @@ type LinkProps = Omit<RenderElementProps, 'element'> & {
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+  console.log('🚀 ~ file: link.tsx:120 ~ renderLink ~ ELEMENTTT:', props)
+
   const {element} = props
 
   const linkQuery = useWebLink(element.url, props.mode == EditorMode.Draft)
@@ -184,7 +184,6 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   if (linkQuery?.isLoading) {
     return <WebLink ref={ref} {...props} />
   }
-
   if (
     linkQuery.status == 'success' &&
     linkQuery.data &&
@@ -320,7 +319,6 @@ function RenderMintterLink(
 
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   const editor = useSlateStatic()
-
   const isSelected = useSelected()
   const isDraftMode = props.mode == EditorMode.Draft
   const {onLinkState} = useLinkingPanel()
@@ -339,6 +337,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       return
     open(props.element.url)
   }
+
   function onUpdate(url: string | null) {
     if (url === null) {
       if (isLinkActive(editor, editor.selection)) {
@@ -360,7 +359,8 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         // fontFamily="inherit"
         color="$webLink"
         letterSpacing="inherit"
-        tag="a"
+        borderBottomColor="$blue10"
+        borderBottomWidth={1}
         display="inline"
         // @ts-ignore not sure what the Text ref is..
         ref={ref}
@@ -371,7 +371,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
           cursor: isDraftMode ? 'text' : 'pointer',
           // backgroundColor: isDraftMode ? undefined : '$blue4',
         }}
-        backgroundColor={isSelected ? '#f0f0ff' : 'transparent'}
+        backgroundColor={isSelected ? '$backgroundFocus' : 'transparent'}
         // @ts-ignore we need the onClick here, maybe we need a separate text component?
         onClick={onClick}
       >
@@ -395,8 +395,11 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         <SizableText
           tag="a"
           color="$webLink"
-          fontFamily="inherit"
+          fontSize="inherit"
           letterSpacing="inherit"
+          borderBottomColor="$blue10"
+          borderBottomWidth={1}
+          textDecorationLine="none"
           // @ts-ignore add the href prop to this element
           href={props.element.url}
           display="inline"
@@ -407,7 +410,8 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
           size="$5"
           hoverStyle={{
             cursor: 'pointer',
-            backgroundColor: isDraftMode ? undefined : '$blue4',
+            backgroundColor: '$backgroundFocus',
+            textDecorationLine: 'none',
           }}
           onClick={onClick}
           {...props.attributes}
@@ -821,7 +825,9 @@ export function withLinks(editor: Editor): Editor {
   const {isInline, insertText, insertData, isVoid} = editor
 
   //@ts-ignore
-  editor.isVoid = (element) => element.data?.void || isVoid(element)
+  // editor.isVoid = (element) => {
+  //   return element.data?.void || isVoid(element)
+  // }
   editor.isInline = (element) => isLink(element) || isInline(element)
 
   function insertLinkableText(text: string) {
