@@ -7,11 +7,11 @@ Because the Mintter Data structure is not production-ready yet, we are creating 
 - [Developer Project Setup](./dev-setup.md)
 
 
-## [MintterNet Documentation](/docs/mintternet)
+## [HyperDocs Documentation](/docs/hyperdocs)
 
-### [Terra](/docs/mintternet-terra)
-### [Aqua](/docs/mintternet-aqua)
-### [Aer](/docs/mintternet-aer)
+### [Terra](/docs/hyperdocs-terra)
+### [Aqua](/docs/hyperdocs-aqua)
+### [Aer](/docs/hyperdocs-aer)
 
 
 ## Frontend Technical Documentation

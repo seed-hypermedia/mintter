@@ -1,7 +1,46 @@
 # Terra Data
 
-Explain relationship between Mintter + IPFS, (IPNS?), CIDs, codec, IPLD.
+HyperDocs builds upon the IPFS network to save and share data between peers. Each chunk/file/object is called a "Blob"
 
-How we treat arbitrary IPFS data? How will we handle upgrades to the terra blobs in the future?
+IPFS supports "permanent" content because Blobs are "immutable" – they cannot be changed. A blob in IPFS is never modified, and it can only be deleted if everbody decides to delete it.
 
-How do IDs work?
+We use use "Content IDs" or "CIDs" to uniquely identify each piece of content. A Content ID is a cryptographc digest of the content, so it cannot be guessed by your peers.
+
+
+
+# Terra Blobs
+
+Logical content Blobs are encoded as IPLD/CBOR-JSON, and they include a "type" string. The following is an example "type" value of a Terra KeyDelegation blob:
+
+```
+HyperDocs:KeyDelegation
+```
+
+The "type" field can be split on `:`, into the following namespace:
+
+- `HyperDocs` - Hardcoded Protocol Name
+- `TERRA_BLOB_TYPE` - The purpose of this blob. One of:
+    - `Change`
+    - `KeyDelegation`
+
+
+
+## Example
+
+An example Terra data Blob has this CID: TODO, insert CID
+
+This Blob includes the following data, (with the JSON_CBOR encoding):
+
+```
+{
+    "type": "mintter:KeyDelegation",
+    ...
+```
+
+See the data on the IPFS gateway: https://ipfs.io/ipfs/TODO_CID
+
+# IPFS Blobs
+
+We may store raw data in IPFS, such as images, videos, or other files.
+
+These are normal IPFS blobs, and we will refer to them by their CID.

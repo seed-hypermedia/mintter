@@ -1,0 +1,82 @@
+# Document Entity
+
+A Document is a [Entity](./terra-entities) that enables a *conflict-free merge of a heirarchal document* formed from many "blocks" of content.
+
+### Semantic Structure
+
+The Semantic Structure is the Doc content from the user's perspective. The Entity Data Type is more complicated, to enable conflict-free changes behind the scenes.
+
+A Document has a few metadata fields:
+
+- title
+- webURL
+- author
+- createTime
+
+The body of the document is an ordered list of Blocks. Some Block types allow children blocks, allowing you to form a heirachy of content. For example:
+
+```
+- 1
+    - 1.1
+- 2
+    - 2.1
+    - 2.2
+        - 2.2.1
+- 3
+```
+
+### Block "Content"
+
+Each block has a stable "Block ID" which can identify a chunk of content as it moves across the document over time.
+
+The content of each block is stored seperately from the children blocks, and the content is always replaced entirely when it is changed. As such, the content of all blocks are saved in a map of "blocks".
+
+```
+blocks: {
+    BLOCK_ID: BlockState
+}
+```
+
+Continue to [Document Blocks](./document-blocks) to see Block types and specific the `BlockState` definitions.
+
+To change the content of a block, issue a new entity change, specifying `{blocks: {BLOCK_ID: ` with the new entire `BlockState`. (This will not affect children blocks)
+
+### Block "Moves"
+
+The location of each block is determined by a list of block "moves" which places or moves the block within the document heirarchy.
+
+To understand the current Semantic Structure of a document, you must replay the entire list of Moves within the Document Entity.
+
+Each move has the following format:
+
+```
+??
+```
+
+### Entity Data Type
+
+The data saved in the raw Entity includes:
+
+- Metadata Fields
+- The state of each block, in `blocks`
+- The history of each block move/placement, in `moves`
+
+```
+{
+    title: string
+    webURL: string
+    author: string
+    createTime: ??
+    blocks: {
+        BLOCK_ID: BlockState
+        ...
+    }
+    moves: {
+        ??: {
+            id: string
+        }
+    }
+}
+```
+
+

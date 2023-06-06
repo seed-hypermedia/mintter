@@ -24,42 +24,18 @@ const sidebars = {
 
         {
           type: 'doc',
-          id: 'mintternet',
+          id: 'hyperdocs',
         }  
       ]
     },
-    {
-      type: 'category',
-      label: 'Terra Concepts',
-      items: [
+    // {
+    //   type: 'category',
+    //   label: 'Terra Concepts',
+    //   items: [
 
-        {
-          type: 'doc',
-          id: 'mintternet-terra',
-        },
-        {
-          type: 'doc',
-          id: 'terra-data',
-        },
-        {
-          type: 'doc',
-          id: 'terra-signing',
-        },
-        {
-          type: 'doc',
-          id: 'terra-documents',
-        },
-        {
-          type: 'doc',
-          id: 'terra-versions',
-        },
-        {
-          type: 'doc',
-          id: 'terra-blocks',
-        },
         
-      ]
-    },
+    //   ]
+    // },
     {
       type: 'category',
       label: 'Terra Reference',
@@ -89,11 +65,11 @@ const sidebars = {
     },
     {
       type: 'doc',
-      id: 'mintternet-aqua',
+      id: 'hyperdocs-aqua',
     },
     {
       type: 'doc',
-      id: 'mintternet-aer',
+      id: 'hyperdocs-aer',
     },
   ]
 };

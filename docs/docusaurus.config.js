@@ -66,8 +66,8 @@ const config = {
             label: 'Docs',
           },
           {
-            href: '/docs/mintternet',
-            label: 'MintterNet',
+            href: '/docs/hyperdocs',
+            label: 'HyperDocs',
           },
           {
             href: 'https://github.com/mintterteam/mintter/tree/master/docs/docs',

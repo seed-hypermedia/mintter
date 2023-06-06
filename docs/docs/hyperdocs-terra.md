@@ -1,11 +1,11 @@
 
-# MintterNet Terra
+# HyperDocs Terra
 
 Permanent Content "baked" into IPFS
 
 ## Upgrade Workflow
 
-This is a WIP document on MintterNet Terra v1
+This is a WIP document on HyperDocs Terra v1
 
 We may release minor versions that specify additional Blob types, so if your "v1" peer software sees "v1.1" content, it should be prepared to see new blob concepts, new block types, or new document change types.
 
