@@ -24,7 +24,7 @@ import {
 } from './group'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_IMAGE} from './image/image'
-import {ELEMENT_LINK, LinkElement, withLinks} from './link'
+import {ELEMENT_LINK, LinkElement, linkKeyDown, withLinks} from './link'
 import {withHyperdocs} from './mintter-changes/plugin'
 import {EditorMode, withMode} from './plugin-utils'
 import {ELEMENT_STATEMENT} from './statement'
@@ -64,6 +64,7 @@ export function Editor({editor, value, onChange, mode, toolbar}: EditorProps) {
         if (selectAllKeyDown(editor, event)) return
         if (tabKeyDown(editor, event)) return
         if (embedKeyDown(editor, event)) return
+        if (linkKeyDown(editor, event)) return
         // if (deleteBackwardKeydown(editor, event)) return
       }}
       onCompositionEnd={(e) => {

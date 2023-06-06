@@ -31,6 +31,7 @@ import {
 } from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
+import {EmbedCard} from './embed-card'
 import type {EditorPlugin} from './types'
 
 export const ELEMENT_EMBED = 'embed'
@@ -79,9 +80,7 @@ export function EmbedElement({
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
   let {highlight} = useVisibleConnection(blockId)
   let hoverProps = useHoverVisibleConnection(blockId)
-  let client = useQueryClient()
   let {data, isSuccess, isError, error} = useEmbed(element as EmbedType)
-  console.log('🚀 ~ file: embed.tsx:82 ~ data:', data)
   // let [state] = useMachine(() =>
   //   // @ts-ignore
   //   createEmbedMachine({url: (element as EmbedType).url, client}),
@@ -111,8 +110,8 @@ export function EmbedElement({
 
   let content = isError
     ? 'EMBED ERROR'
-    : isSuccess && typeof data == 'string'
-    ? data
+    : isSuccess && data && typeof data.content == 'string'
+    ? data.content
     : '...'
 
   if (isError) {
@@ -120,12 +119,11 @@ export function EmbedElement({
   }
 
   return (
-    <Popover>
+    <EmbedCard blockId={blockId ?? ''} document={data.publication?.document}>
       <SizableText
         tag="q"
         cite={(element as EmbedType).url}
         {...attributes}
-        flex={0}
         fontWeight="600"
         color="$mint"
         fontStyle="italic"
@@ -160,65 +158,8 @@ export function EmbedElement({
         {content}
         {children}
       </SizableText>
-    </Popover>
+    </EmbedCard>
   )
-
-  //   if (state.matches('errored')) {
-  //     return (
-  //       <span contentEditable={false} {...attributes}>
-  //         EMBED ERROR
-  //         {children}
-  //       </span>
-  //     )
-  //   }
-
-  //   if (state.matches('fetchingPublication') || state.matches('findBlock')) {
-  //     return (
-  //       <span contentEditable={false} {...attributes}>
-  //         ...
-  //         {children}
-  //       </span>
-  //     )
-  //   }
-
-  //   return (
-  //     <XStack
-  //       tag="q"
-  //       cite={(element as EmbedType).url}
-  //       {...attributes}
-  //       flex={0}
-  //       display="inline"
-  //       backgroundColor={
-  //         highlight ? '$yellow3' : focused && selected ? '$color4' : 'transparent'
-  //       }
-  //       // @ts-ignore
-  //       contentEditable={false}
-  //       hoverStyle={{
-  //         cursor: 'pointer',
-  //         backgroundColor: highlight ? '$yellow3' : '$color4',
-  //       }}
-  //       borderRadius="$1"
-  //       onClick={onOpenInNewWindow}
-  //       {...hoverProps}
-  //       onMouseEnter={(event) => {
-  //         console.log('MOUSE ENTER', blockId)
-
-  //         event.preventDefault()
-  //         event.stopPropagation()
-  //         hoverProps.onHoverIn()
-  //       }}
-  //     >
-  //       <Editor
-  //         editor={embedEditor}
-  //         mode={EditorMode.Embed}
-  //         value={[state.context.block]}
-  //         onChange={() => {
-  //           // noop
-  //         }}
-  //       />
-  //       {children}
-  //     </XStack>
-  //   )
 }
 
 function useEmbed(element: EmbedType) {
@@ -234,13 +175,20 @@ function useEmbed(element: EmbedType) {
 
   return useMemo(() => {
     console.log('embed query data', pubQuery.data)
-    if (pubQuery.status != 'success') return pubQuery
+    if (pubQuery.status != 'success')
+      return {
+        ...pubQuery,
+        data: {content: undefined, publication: pubQuery.data},
+      }
 
     if (pubQuery.data && pubQuery.data.document && blockId) {
       let blockNode = getBlockNodeById(pubQuery.data.document.children, blockId)
 
       // right now we are just returning the text from the current block, but we should return all the content of it properly
-      let data = blockNode && blockNode.block ? blockNode.block.text : undefined
+      let data =
+        blockNode && blockNode.block
+          ? {content: blockNode.block.text, publication: pubQuery.data}
+          : {content: undefined, publication: pubQuery.data}
 
       return {
         ...pubQuery,
@@ -250,7 +198,7 @@ function useEmbed(element: EmbedType) {
     return {
       ...pubQuery,
       // right now we are just returning the text from the current block, but we should return all the content of it properly
-      data: undefined,
+      data: {content: undefined, publication: pubQuery.data},
     }
   }, [pubQuery.data])
 }
