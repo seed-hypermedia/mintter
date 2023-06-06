@@ -359,6 +359,7 @@ export function useSitePublishDraft(draftId: string | undefined) {
         return {
           publication,
           docId,
+          hostname: undefined,
         }
       }
       // const wellKnownResponse = await fetch(`${webUrl}/api/mintter-well-known`)
@@ -381,11 +382,12 @@ export function useSitePublishDraft(draftId: string | undefined) {
       return {
         publication,
         docId,
+        hostname: webUrl,
       }
     },
     {
-      onSuccess: ({publication, docId}, input) => {
-        appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, input])
+      onSuccess: ({publication, docId, hostname}, input) => {
+        appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, docId])
         appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
         appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
@@ -394,7 +396,8 @@ export function useSitePublishDraft(draftId: string | undefined) {
           documentId: docId,
           versionId: publication.version,
         })
-        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, docId])
+        if (hostname)
+          appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, hostname])
         appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, docId])
       },
     },
@@ -460,7 +463,7 @@ export function useSiteUnpublish() {
       version: string
     }) => {
       const site = getWebSiteClient(hostname)
-      site.unpublishDocument({
+      await site.unpublishDocument({
         documentId,
         version,
       })
@@ -468,6 +471,7 @@ export function useSiteUnpublish() {
     {
       onSuccess: (a, input) => {
         appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
+        appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS])
       },
     },
   )

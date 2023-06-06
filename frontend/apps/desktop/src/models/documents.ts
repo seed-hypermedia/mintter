@@ -232,6 +232,7 @@ export function usePublishDraft(
       appInvalidateQueries([queryKeys.GET_PUBLICATION, pub.document?.id])
       appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, pub.document?.id])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
+      appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS])
       opts?.onSuccess?.(pub, variables, context)
 
       setTimeout(() => {
@@ -387,7 +388,6 @@ export function useSaveDraft(editor: Editor, documentId?: string) {
         changes: draftData.changes,
       })
 
-      appInvalidateQueries([documentId])
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       return null
     },

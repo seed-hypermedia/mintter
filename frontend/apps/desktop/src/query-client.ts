@@ -49,6 +49,5 @@ listen('invalidate_queries', (event) => {
 })
 
 export function appInvalidateQueries(queryKeys: QueryKey) {
-  appQueryClient.invalidateQueries(queryKeys)
   send('invalidate_queries', queryKeys)
 }
