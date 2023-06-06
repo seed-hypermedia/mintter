@@ -182,7 +182,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     placeholder="food barrel buzz ..."
                     minHeight={130}
                     onChangeText={setOwnSeed}
-                    fontFamily="monospace"
+                    fontFamily="$mono"
                     fontWeight="500"
                     borderColor="$backgroundHover"
                     borderWidth="$0.5"
@@ -215,7 +215,7 @@ function Mnemonics(props: OnboardingStepProps) {
                 borderWidth="$0.5"
               >
                 <SizableText
-                  fontFamily="monospace"
+                  fontFamily="$mono"
                   fontSize={14}
                   fontWeight="700"
                   display="block"
@@ -238,7 +238,7 @@ function Mnemonics(props: OnboardingStepProps) {
               >
                 <SizableText
                   padding="$2"
-                  fontFamily="monospace"
+                  fontFamily="$mono"
                   fontSize={18}
                   fontWeight="700"
                   display="block"
@@ -456,34 +456,10 @@ function Complete() {
 
         <YStack flex={2}>
           <YStack gap="$5" width={440}>
-            <H3 width={360}>
+            <StepParagraph width={360}>
               You just created your Mintter account. Please share it with others
               and help us spread the word.
-            </H3>
-            <XStack gap="$2">
-              <Button
-                theme="blue"
-                size="$2"
-                onPress={() => {
-                  open(
-                    `https://twitter.com/intent/tweet?url=https%3A%2F%2Fmintter.com%3Fsource%3Donboarding&via=mintterteam&text=Just%20created%20my%20Mintter%20account%21%20join%20the%20P2P%20revolution%21&hashtags=mintter`,
-                  )
-                }}
-                icon={Twitter}
-              >
-                Tweet about it
-              </Button>
-              <Button
-                theme="blue"
-                size="$2"
-                onPress={() => {
-                  open(`https://twitter.com/mintterteam`)
-                }}
-                icon={Twitter}
-              >
-                @mintterteam
-              </Button>
-            </XStack>
+            </StepParagraph>
           </YStack>
         </YStack>
       </XStack>
