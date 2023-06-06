@@ -14,7 +14,7 @@ import {
 import {Block, deleteBackwardKeydown, withBlocks} from './block'
 import {ELEMENT_BLOCKQUOTE} from './blockquote'
 import {ELEMENT_CODE, LEAF_TOKEN} from './code'
-import {ELEMENT_EMBED, EmbedElement} from './embed'
+import {ELEMENT_EMBED, EmbedElement, embedKeyDown, withEmbed} from './embed'
 import {ELEMENT_FILE, FileElement} from './file/file'
 import {
   ELEMENT_GROUP,
@@ -63,6 +63,7 @@ export function Editor({editor, value, onChange, mode, toolbar}: EditorProps) {
         formatKeydown(editor, event)
         if (selectAllKeyDown(editor, event)) return
         if (tabKeyDown(editor, event)) return
+        if (embedKeyDown(editor, event)) return
         // if (deleteBackwardKeydown(editor, event)) return
       }}
       onCompositionEnd={(e) => {
@@ -185,19 +186,21 @@ export function useDraftEditor({
   let editor = useMemo(
     () =>
       withMode(EditorMode.Draft)(
-        withMarkdownShortcuts(
-          // withDirtyPaths(
-          withImages(
-            withPasteHtml(
-              withLinks(
-                withBlocks(
-                  withHyperdocs(withHistory(withReact(createEditor()))),
+        withEmbed(
+          withMarkdownShortcuts(
+            withDirtyPaths(
+              withImages(
+                withPasteHtml(
+                  withLinks(
+                    withBlocks(
+                      withHyperdocs(withHistory(withReact(createEditor()))),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        // ),
       ),
     [],
   )
@@ -252,7 +255,6 @@ function formatKeydown(
   editor: SlateEditor,
   event: React.KeyboardEvent<HTMLElement>,
 ) {
-  console.log('formatKeydown')
   if (event.defaultPrevented) return false
   for (const hotkey in HOTKEYS) {
     if (isHotkey(hotkey, event as any)) {

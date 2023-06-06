@@ -20,6 +20,6 @@ export const SideContainer = styled(YStack, {
   gap: '$4',
   $gtSm: {
     width: '25%',
-    // maxWidth: 300,
+    maxWidth: 300,
   },
 })

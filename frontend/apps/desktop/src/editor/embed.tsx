@@ -32,33 +32,36 @@ import type {EditorPlugin} from './types'
 
 export const ELEMENT_EMBED = 'embed'
 
-export const createEmbedPlugin = (): EditorPlugin => ({
-  name: ELEMENT_EMBED,
-  configureEditor(editor) {
-    const {isVoid, isInline} = editor
+export function withEmbed(editor: SlateEditor) {
+  const {isVoid, isInline} = editor
 
-    editor.isVoid = function embedIsVoid(element) {
-      return isEmbed(element) || isVoid(element)
+  editor.isVoid = function embedIsVoid(element) {
+    return isEmbed(element) || isVoid(element)
+  }
+
+  editor.isInline = function embedIsInline(element) {
+    return isEmbed(element) || isInline(element)
+  }
+  return editor
+}
+
+export function embedKeyDown(
+  editor: SlateEditor,
+  event: React.KeyboardEvent<HTMLElement>,
+) {
+  if (event.defaultPrevented) return false
+  if (editor.selection && event.key == 'Backspace') {
+    let match = isEmbedActive(editor)
+    if (match) {
+      event.preventDefault()
+      let [, path] = match
+
+      Transforms.removeNodes(editor, {at: path})
+      return true
     }
-
-    editor.isInline = function embedIsInline(element) {
-      return isEmbed(element) || isInline(element)
-    }
-
-    return editor
-  },
-  onKeyDown: (editor) => (event) => {
-    if (editor.selection && event.key == 'Backspace') {
-      let match = isEmbedActive(editor)
-      if (match) {
-        event.preventDefault()
-        let [, path] = match
-
-        Transforms.removeNodes(editor, {at: path})
-      }
-    }
-  },
-})
+  }
+  return false
+}
 
 export function EmbedElement({
   element,

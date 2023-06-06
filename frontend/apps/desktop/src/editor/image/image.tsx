@@ -1,12 +1,13 @@
-import { imageMachine } from '@app/editor/image/image-machine'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { findPath } from '@app/editor/utils'
+import {imageMachine} from '@app/editor/image/image-machine'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {findPath} from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
-  isImage, paragraph,
+  isImage,
+  paragraph,
   statement,
-  text
+  text,
 } from '@mintter/shared'
 import {
   Button,
@@ -19,19 +20,19 @@ import {
   Tabs,
   TextArea,
   XStack,
-  YStack
+  YStack,
 } from '@mintter/ui'
-import { useActor, useInterpret } from '@xstate/react'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
-import { Editor, Path, Transforms } from 'slate'
+import {useActor, useInterpret} from '@xstate/react'
+import {ChangeEvent, useCallback, useMemo, useState} from 'react'
+import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
   useFocused,
   useSelected,
-  useSlateStatic
+  useSlateStatic,
 } from 'slate-react'
-import { ActorRefFrom } from 'xstate'
+import {ActorRefFrom} from 'xstate'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -59,8 +60,11 @@ export function ImageElement({
 
   const uploadImage = async (url: string) => {
     if (isValidUrl(url)) {
-      const blob = await fetch(url).then(res => res.blob())
-      const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
+      const blob = await fetch(url).then((res) => res.blob())
+      const webFile = new File(
+        [blob],
+        `mintterImage.${blob.type.split('/').pop()}`,
+      )
       if (webFile && webFile.size <= 62914560) {
         const formData = new FormData()
         formData.append('file', webFile)
@@ -74,7 +78,11 @@ export function ImageElement({
             },
           )
           const data = await response.text()
-          Transforms.setNodes<ImageType>(editor, {url: `http://localhost:55001/ipfs/${data}`}, {at: path})
+          Transforms.setNodes<ImageType>(
+            editor,
+            {url: `http://localhost:55001/ipfs/${data}`},
+            {at: path},
+          )
         } catch (error) {
           console.error(error)
         }
@@ -82,9 +90,12 @@ export function ImageElement({
     }
   }
 
-  if ((element as ImageType).url && !(element as ImageType).url.includes('ipfs')) {
+  if (
+    (element as ImageType).url &&
+    !(element as ImageType).url.includes('ipfs')
+  ) {
     const url = (element as ImageType).url
-    uploadImage(url).catch(e => console.log(e))
+    uploadImage(url).catch((e) => console.log(e))
   }
 
   const [state] = useActor(imgService)
@@ -227,7 +238,10 @@ function ImageForm({service, element}: InnerImageProps) {
             },
           )
           const data = await response.text()
-          send({type: 'IMAGE.SUBMIT', value: `http://localhost:55001/ipfs/${data}`})
+          send({
+            type: 'IMAGE.SUBMIT',
+            value: `http://localhost:55001/ipfs/${data}`,
+          })
         } catch (error) {
           console.error(error)
         }
@@ -251,7 +265,10 @@ function ImageForm({service, element}: InnerImageProps) {
             },
           )
           const data = await response.text()
-          send({type: 'IMAGE.SUBMIT', value: `http://localhost:55001/ipfs/${data}`})
+          send({
+            type: 'IMAGE.SUBMIT',
+            value: `http://localhost:55001/ipfs/${data}`,
+          })
         } catch (error) {
           console.error(error)
         }
@@ -453,11 +470,10 @@ export function withImages(editor: Editor): Editor {
 }
 
 const isValidUrl = (urlString: string) => {
-  try { 
-    return Boolean(new URL(urlString)); 
-  }
-  catch(e) {
+  try {
+    return Boolean(new URL(urlString))
+  } catch (e) {
     console.log(e)
-    return false; 
+    return false
   }
 }

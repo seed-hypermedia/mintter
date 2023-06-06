@@ -9,21 +9,25 @@ import {
   isBlockquote,
   isCode,
   isContent,
+  isEmbed,
   isFlowContent,
   isGroupContent,
   isHeading,
   isOrderedList,
   isPhrasingContent,
   isStaticParagraph,
+  Paragraph,
   paragraph,
   statement,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
+import {Content} from 'hast'
 import {useMemo, useState} from 'react'
-import {Editor, Element, Node, Path, Range, TextUnit} from 'slate'
+import {Editor, Element, Node, NodeEntry, Path, Range, TextUnit} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {text} from 'stream/consumers'
 import {removeEmptyGroup} from './group'
+import {EditorHoveringActions} from './hovering-toolbar'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {EditorPlugin} from './types'
@@ -328,6 +332,7 @@ export function withBlocks(editor: Editor) {
   }
 
   editor.insertBreak = function blockInsertBreak() {
+    if (collapsedNestedInsertBreak(editor)) return
     if (collapsedInsertBreak(editor)) return
     if (nonCollapsedInsertBreak(editor)) return
 
@@ -393,6 +398,77 @@ export function withBlocks(editor: Editor) {
   }
 
   return editor
+}
+
+function collapsedNestedInsertBreak(editor: Editor) {
+  if (!editor.selection) {
+    console.warn('collapsedNestedInsertBreak: no editor selection')
+    return false
+  }
+
+  // need to get the current paragraph content entry
+  const content = editor.above({
+    match: isContent,
+  })
+
+  if (!content) {
+    console.warn('collapsedNestedInsertBreak: no paragraph above')
+    return false
+  }
+
+  let [cNode, cPath] = content
+
+  if (cPath.length > 3) {
+    // this means that the current block is not at the root level, so we should check hte content to see if we need to lift or not
+    if (isContentEmpty(content)) {
+      // the content block (paragraph or staticparagraph) is empty and does not have any embed
+      let blockPath = Path.parent(cPath)
+      // let currentBlock = Node.get(editor, blockPath)
+      let parentEntry = editor.above({
+        match: isFlowContent,
+        mode: 'lowest',
+        at: blockPath,
+      })
+      if (!parentEntry) {
+        console.warn('collapsedNestedInsertBreak: no parent Block above')
+        return false
+      }
+      let [pBlock, pPath] = parentEntry
+
+      // now the list reset is restricted to just the last child of the nested list.
+      // we should be able to do this with internal elements, but we need to make sure we reparent all the above elements to the current lifted block
+      if (!childBlockIsLast(blockPath, pBlock)) return false
+
+      // move the current nested block next to its parent
+      editor.moveNodes({
+        at: blockPath,
+        to: Path.next(pPath),
+      })
+      return true
+    }
+  }
+  return false
+}
+
+function isContentEmpty(entry: NodeEntry<Paragraph>): boolean {
+  let [cNode] = entry
+  if (Node.string(cNode) == '') {
+    if (!cNode.children.some(isEmbed)) {
+      return true
+    } else {
+      return false
+    }
+  }
+  return false
+}
+
+function childBlockIsLast(blockPath: Path, parent: FlowContent): boolean {
+  let childList = parent.children[1]
+
+  if (childList) {
+    return blockPath[blockPath.length - 1] == childList?.children.length - 1
+  }
+  return false
 }
 
 function collapsedInsertBreak(editor: Editor) {
