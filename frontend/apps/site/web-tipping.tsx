@@ -22,8 +22,16 @@ import {
   Container,
   Text,
   XGroup,
+  DialogClose,
 } from '@mintter/ui'
-import {Check, MinusCircle, Plus, PlusCircle, Zap} from '@tamagui/lucide-icons'
+import {
+  Check,
+  MinusCircle,
+  Plus,
+  PlusCircle,
+  X,
+  Zap,
+} from '@tamagui/lucide-icons'
 import {LoadedAccountId} from 'author'
 import Link from 'next/link'
 import React, {
@@ -53,6 +61,12 @@ async function sendWeblnPayment(invoice: string) {
     return await window.webln.sendPayment(invoice)
   }
 }
+
+const isTouchDevice =
+  'ontouchstart' in (global.window || {}) ||
+  global.navigator?.maxTouchPoints > 0 ||
+  // @ts-expect-error
+  global.navigator?.msMaxTouchPoints > 0
 
 export function WebTipping({
   docId,
@@ -157,9 +171,10 @@ function SplitRow({
   sats: number
   id: string
   percentage: number
-  dispatchSplit: React.Dispatch<SplitAction>
+  dispatchSplit?: React.Dispatch<SplitAction>
 }) {
   const [isHovering, setIsHovering] = useState<boolean>(false)
+  const displayIncrementButton = isHovering || isTouchDevice
   return (
     <XStack
       overflow="hidden"
@@ -170,26 +185,32 @@ function SplitRow({
       <Text width={100} color="$gray10">
         {Math.round(percentage * 1000) / 10}%
       </Text>
-      <XGroup opacity={isHovering ? 1 : 0} size="$2">
-        <XGroup.Item>
-          <Button
-            size="$2"
-            icon={PlusCircle}
-            onPress={() => {
-              dispatchSplit({type: 'incrementPercentage', id, increment: 0.1})
-            }}
-          />
-        </XGroup.Item>
-        <XGroup.Item>
-          <Button
-            size="$2"
-            icon={MinusCircle}
-            onPress={() => {
-              dispatchSplit({type: 'incrementPercentage', id, increment: -0.1})
-            }}
-          />
-        </XGroup.Item>
-      </XGroup>
+      {dispatchSplit ? (
+        <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
+          <XGroup.Item>
+            <Button
+              size="$2"
+              icon={PlusCircle}
+              onPress={() => {
+                dispatchSplit({type: 'incrementPercentage', id, increment: 0.1})
+              }}
+            />
+          </XGroup.Item>
+          <XGroup.Item>
+            <Button
+              size="$2"
+              icon={MinusCircle}
+              onPress={() => {
+                dispatchSplit({
+                  type: 'incrementPercentage',
+                  id,
+                  increment: -0.1,
+                })
+              }}
+            />
+          </XGroup.Item>
+        </XGroup>
+      ) : null}
       <Container>
         <Text>{sats} Sats</Text>
       </Container>
@@ -336,6 +357,16 @@ function CreateInvoiceStep({
   return (
     <>
       <Dialog.Title>Donate to Authors</Dialog.Title>
+      <Dialog.Close asChild>
+        <Button
+          position="absolute"
+          top="$3"
+          right="$3"
+          size="$2"
+          circular
+          icon={X}
+        />
+      </Dialog.Close>
       <Dialog.Description>
         By making a payment, you are supporting the publisher and its editors,
         helping to fund their work and ensure the ongoing success of the
@@ -369,7 +400,9 @@ function CreateInvoiceStep({
               <SplitRow
                 key={splitRow.id}
                 {...splitRow}
-                dispatchSplit={dispatchSplit}
+                dispatchSplit={
+                  computed.computedSplit.length > 1 ? dispatchSplit : undefined
+                }
               />
             )
           })}
@@ -394,7 +427,7 @@ function CreateInvoiceStep({
             </Container>
           </XStack>
         </YStack>
-        <XStack jc="center">
+        <XStack justifyContent="center">
           <Button
             theme="green"
             onPress={() => {
@@ -441,10 +474,10 @@ async function checkInvoice(invoice: InternalInvoice) {
   //   }
   // }
 
-  // isPaid is false but I just check status.settled
   if (res.status !== 200) return {status: 'incomplete'}
   const invoiceResponse = await res.json()
   console.log('Invoice Response', invoiceResponse)
+  // isPaid is false for some reason even though the payment is complete, so we just check status.settled here
   if (invoiceResponse?.status === 'settled') return {status: 'complete'}
   return {status: 'incomplete'}
 }
@@ -475,7 +508,7 @@ function PayInvoiceStep({
     return () => {
       interval.current && clearInterval(interval.current)
     }
-  }, [invoice])
+  }, [invoice, onComplete])
 
   return (
     <>
@@ -568,9 +601,6 @@ function DontationDialog({
           exitStyle={{opacity: 0}}
         />
         <Dialog.Content
-          bordered
-          elevate
-          key="content"
           animation={[
             'quick',
             {
@@ -579,9 +609,14 @@ function DontationDialog({
               },
             },
           ]}
+          maxWidth="100vw"
+          maxHeight="100vh"
+          margin={20}
+          overflow="scroll"
+          x={0}
+          y={0}
           enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
           exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
-          space
         >
           {content}
         </Dialog.Content>
