@@ -24,6 +24,7 @@ import {
   MainWrapper,
   MoreHorizontal,
   Separator,
+  Spinner,
   Text,
   XStack,
   YStack,
@@ -37,7 +38,7 @@ export default function SitePage() {
 
   const host = route.key === 'site' ? route.hostname : undefined
 
-  let {data, isInitialLoading} = useSitePublications(host)
+  let {data, isLoading} = useSitePublications(host)
 
   const sortedPubs = useMemo(() => {
     // sort path === '/' to the top
@@ -57,9 +58,8 @@ export default function SitePage() {
     <>
       <MainWrapper>
         <Container>
-          {isInitialLoading ? (
-            <p>loading...</p>
-          ) : sortedPubs?.length ? (
+          {isLoading && <Spinner />}
+          {sortedPubs ? (
             <YStack tag="ul" padding={0}>
               {sortedPubs.map((publication) => (
                 <WebPublicationListItem
@@ -69,14 +69,15 @@ export default function SitePage() {
                 />
               ))}
             </YStack>
-          ) : (
+          ) : null}
+          {!sortedPubs && !isLoading ? (
             <EmptyList
               description={`Nothing published on ${host} yet.`}
               action={() => {
                 openDraft(false)
               }}
             />
-          )}
+          ) : null}
         </Container>
       </MainWrapper>
       <Footer />
