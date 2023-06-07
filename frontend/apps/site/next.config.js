@@ -69,6 +69,22 @@ const plugins = [
 module.exports = function () {
   /** @type {import('next').NextConfig} */
   let config = {
+    images: {
+      remotePatterns: [
+        {
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '56001',
+          pathname: '/ipfs/**',
+        },
+        {
+          protocol: 'https',
+          hostname: process.env.NEXT_PUBLIC_GRPC_HOST,
+          port: '',
+          pathname: '/ipfs/**',
+        },
+      ],
+    },
     typescript: {
       ignoreBuildErrors: true,
     },

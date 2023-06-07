@@ -1,4 +1,19 @@
-html, body {
-	width: 100vw;
-	overflow-x: hidden;
+html,
+body {
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+.image {
+  object-fit: contain;
+  width: 100% !important;
+  position: relative !important;
+  height: unset !important;
+}
+
+.unset-img {
+  width: 100%;
+}
+.unset-img > * {
+  position: unset !important;
 }

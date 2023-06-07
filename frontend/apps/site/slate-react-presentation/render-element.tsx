@@ -12,7 +12,6 @@ import {RenderElementProps} from 'slate-react'
 import {
   Button,
   Copy,
-  Image,
   Tooltip,
   YStack,
   Paragraph as UIParagrah,
@@ -20,6 +19,7 @@ import {
   config,
   SizableText,
 } from '@mintter/ui'
+import Image from 'next/image'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
 import {StaticParagraph} from './static-paragraph'
@@ -86,15 +86,14 @@ export function useRenderElement() {
         return <ElementLink key={id} element={element as Link} />
       case 'image':
         return (
-          <Image
-            key={id}
-            width="100%"
-            height={400}
-            source={{
-              uri: `${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`,
-            }}
-            alt={(element as ImageType).alt}
-          />
+          <div className="unset-img">
+            <Image
+              alt={(element as ImageType).alt}
+              src={`${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`}
+              layout="fill"
+              className="image"
+            />
+          </div>
         )
       case 'video':
         return <Video key={id} element={element as VideoType} />
