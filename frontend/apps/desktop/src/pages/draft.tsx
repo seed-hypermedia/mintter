@@ -37,7 +37,6 @@ export default function DraftPage() {
   const documentId = route.draftId // TODO, clean this up when draftId != docId
   const {editor, saveDraft, state} = useDraftEditor({
     documentId,
-    initWebUrl: route.contextSiteHost,
   })
 
   const {status, error, data: draftState, refetch} = state

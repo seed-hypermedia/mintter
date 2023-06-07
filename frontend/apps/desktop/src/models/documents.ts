@@ -258,12 +258,10 @@ type EditorDraft = {
 export function useEditorDraft({
   editor,
   documentId,
-  initWebUrl,
   ...options
 }: UseQueryOptions<EditorDraft> & {
   documentId: string
   editor: Editor
-  initWebUrl?: string
 }) {
   return useQuery({
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
@@ -281,7 +279,6 @@ export function useEditorDraft({
 
           MintterEditor.addChange(editor, ['moveBlock', block.id])
           MintterEditor.addChange(editor, ['replaceBlock', block.id])
-          MintterEditor.addChange(editor, ['setWebUrl', initWebUrl || ''])
         }
       }
 

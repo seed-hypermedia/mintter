@@ -188,13 +188,7 @@ function RenderLeaf(mode: EditorMode) {
   }
 }
 
-export function useDraftEditor({
-  documentId,
-  initWebUrl,
-}: {
-  documentId: string
-  initWebUrl?: string
-}) {
+export function useDraftEditor({documentId}: {documentId: string}) {
   let editor = useMemo(
     () =>
       withMode(EditorMode.Draft)(
@@ -221,7 +215,6 @@ export function useDraftEditor({
   const state = useEditorDraft({
     editor,
     documentId,
-    initWebUrl,
   })
 
   return {
