@@ -12,11 +12,11 @@ todo human eplanation
 
 ### Changes
 
-A change is [Terra Data](./terra-data) which descibes the creation or modification of an Entity.
+A change is [Terra Data](./terra-data) blob which describes the creation or modification of an Entity.
 
 ### Change Dependencies
 
-A change may refer to other change(s), which describe the previous version of the Entity
+A change may refer to other change(s), which describe the previous version of the Entity. Change Dependencies are merged together before the Patch is applied.
 
 To create an Entity, a new Entity ID is generated, and a Change Blob is created with the initial data. The "deps" array is empty for new Entities.
 
@@ -26,63 +26,64 @@ When a Change has one or more dependencies, but has a new Entity ID
 
 ### Change Authentication
 
+The author of each change is securely identified with the [Terra Identity system](./terra-identity). 
+
 Every Change Blob has three fields which can securely track psuedonomomous identies who create content.
 
-- Account ID - ID for the account, a long-term key that the user keeps safe
-- Signing ID - ID for the device key that is used to sign this Change
-- Signature
+- `Signer` - the Account ID of the author
+- `Delegation` - the CID of the KeyDelegation blob
+- `Sig` - The signature over the rest of the fields
 
-Changes are ignored by peers if the signature is invalid, or if the Signing ID is not valid for this account ID. This may happen if a valid KeyDelegation blob cannot be found for this ID combination.
+
+Changes are ignored by peers if the signature or delegation is invalid for the Signer.
 
 
 ### Entity Version
 
-A version is a set of one or more changes. The order is not important.
+A Version of an Entity is a set of one or more Changes that can be merged into a single representation.
+
+The order of these changes is not important. One set of changes, in any order, is equivalent to the same version.
 
 
-### Conflict Resolution
+### Entity Value Patches
 
-for fucks's sake
+A [Terra Entity Patch](./terra-patches) is be provided to describe how the entity value changes.
 
 
 ### Changes Format
 
 ```
-{
-    "type": "HyperDocs:Change",
-    "entity type": '''
-    "id": ENTITY_ID,
-    account id
-    device id
-    signature
-    changes Patch[]
-}
-```
+type Change = {
 
-### EntPatch Format
+	Type: 'HyperDocs:Change'
 
-Each Entity patch bla bla bla.. replaces the whole thing...
+    // ID of the Entity to change
+	// Entity: "HyperDocs:Document:123"
+	Entity: string
 
-- `#map` - MapPatch
-- `#list` - ListPatch
-- `#rga` - what is this idk
+	// Deps is a list of dependency patches.
+	Deps: CID[]
 
-#### MapPatch
+	// Message is an optional human readable message.
+	Message?: string
 
-`#ins`
+	// HLCTime is the Hybrid-Logical timestamp.
+	// Must be greater than the one of any of the deps.
+	// Can be used as a Unix timestamp in *microseconds*.
+	HLCTime: number
 
-#### ListPatch
+	// Patch is the body of our Merge Patch CRDT.
+	Patch: Patch
+    
+	// Signer is the public key of the signer.
+	Signer: string
 
-`#ins`
+	// Delegation points to the blob where we can get the Account ID
+	// on which behalf this blob is signed.
+	Delegation: CID
 
-## Entity Change Example
+	// Sig is the signature over the rest of the fields.
+	Sig: Buffer
 
-Here is an example Change object, which sets the title of a document:
-
-```
-{
-    "type": "HyperDocs:Change",
-    "entity type": 'mintter:document',
-    "id": ENTITY_ID,
 }
 ```

@@ -12,12 +12,13 @@ Terra is the format of permanent data stored in IPFS.
 - [I - Terra Data](./terra-data)
 - [II - Terra Identity and Auth](./terra-identity)
 - [III - Terra Entities](./terra-entities)
+- [IV - Terra Change Patches](./terra-patches)
 
 ## Terra Documents
 
-- [IV - The Document Entity](./document-entity)
-- [V - Document Blocks](./document-blocks)
-- [VI - Linking](./document-linking)
+- [V - The Document Entity](./document-entity)
+- [VI - Document Blocks](./document-blocks)
+- [VII - Linking](./document-linking)
 
 
 ## [Aqua](./hyperdocs-aqua) - Search and Link Sharing
