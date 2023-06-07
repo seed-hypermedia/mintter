@@ -327,7 +327,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
         navigateReplace({
           key: 'draft',
           draftId: route.documentId,
-          contextDocumentId: route.documentId,
+          contextRoute: route,
         })
         return
       }
@@ -337,7 +337,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
       navigateReplace({
         key: 'draft',
         draftId: draft.id,
-        contextDocumentId: route.documentId,
+        contextRoute: route,
       })
     } catch (error: any) {
       toast.error(`Draft Error: ${error?.message}`)

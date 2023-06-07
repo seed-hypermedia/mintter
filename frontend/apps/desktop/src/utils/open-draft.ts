@@ -23,9 +23,6 @@ async function createDraft(siteHostname: string | undefined): Promise<string> {
 export function useOpenDraft() {
   const navigate = useNavigate()
   const route = useNavRoute()
-  const contextDocumentId =
-    route.key === 'publication' ? route.documentId : undefined
-  const contextSiteHost = route.key === 'site' ? route.hostname : undefined
   const spawn = useNavigate('spawn')
   function openNewDraft(newWindow = true, hostname?: string | undefined) {
     createDraft(hostname)
@@ -33,8 +30,7 @@ export function useOpenDraft() {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
-          contextDocumentId,
-          contextSiteHost,
+          contextRoute: route,
         }
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         if (newWindow) {

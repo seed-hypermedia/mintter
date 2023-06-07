@@ -4,7 +4,7 @@ import {useDocPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDocUrl} from '@app/utils/doc-url'
-import {PublicationRoute, useNavigate} from '@app/utils/navigation'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {
   Document,
@@ -46,6 +46,7 @@ export function PublicationListItem({
   const popoverState = usePopoverState()
   const dialogState = usePopoverState()
   const webPubs = useDocPublications(docId)
+  const route = useNavRoute()
   const webPub = webPubs.data?.find(
     (pub) =>
       docId &&
@@ -98,7 +99,7 @@ export function PublicationListItem({
             navigate({
               key: 'draft',
               draftId: hasDraft.id,
-              contextDocumentId: publication.document?.id,
+              contextRoute: route,
             })
           }}
           size="$1"

@@ -9,16 +9,15 @@ export default function DiscardDraftButton() {
   const backplace = useNavigate('backplace')
   const draftId = route.key == 'draft' ? route.draftId : null
 
-  const contextDocumentId =
-    route.key == 'draft' ? route.contextDocumentId : null
+  const contextRoute = route.key == 'draft' ? route.contextRoute : null
   const deleteModal = useDeleteDraftDialog({
     id: draftId,
     trigger: ({onPress}) => (
       <Button size="$2" theme="orange" onPress={onPress} icon={Trash} />
     ),
     onSuccess: () => {
-      if (contextDocumentId) {
-        backplace({key: 'publication', documentId: contextDocumentId})
+      if (contextRoute) {
+        backplace(contextRoute)
       } else {
         backplace({key: 'drafts'})
       }

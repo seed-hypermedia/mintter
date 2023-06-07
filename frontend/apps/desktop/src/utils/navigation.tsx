@@ -36,8 +36,7 @@ export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
   draftId: string
-  contextDocumentId?: string
-  contextSiteHost?: string
+  contextRoute?: NavRoute
 }
 export type SettingsRoute = {key: 'settings'}
 
