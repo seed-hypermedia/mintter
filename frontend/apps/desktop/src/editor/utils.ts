@@ -471,7 +471,7 @@ export function setType(fn: any) {
         editor.setNodes({type: ELEMENT_STATIC_PARAGRAPH}, {at: [...opts.at, 0]})
       }
 
-      Transforms.setNodes(editor, props, {at: opts.at})
+      Transforms.setNodes(editor, {type: props.type}, {at: opts.at})
     })
   }
 }
@@ -551,16 +551,8 @@ export function insertInline(fn: typeof image | typeof video | typeof file) {
       at: Path
     },
   ) {
-    let {element, at} = opts
-    MintterEditor.addChange(editor, ['replaceBlock', element.id])
-    Transforms.insertNodes(
-      editor,
-      fn({url: '', defaultOpen: true}, [text('')]),
-      {
-        // TODO: maybe this needs to insert at selection position? now I guess is creating a new image on top of the current block
-        at,
-      },
-    )
+    Transforms.insertNodes(editor, fn({url: '', defaultOpen: true}, [text('')]))
+    MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
   }
 }
 

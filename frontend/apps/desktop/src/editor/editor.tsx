@@ -1,4 +1,8 @@
-import {useEditorDraft, useSaveDraft} from '@app/models/documents'
+import {
+  useEditorDraft,
+  usePublication,
+  useSaveDraft,
+} from '@app/models/documents'
 import {useCallback, useMemo} from 'react'
 import {createEditor, Editor as SlateEditor} from 'slate'
 import {ImageElement, withImages} from './image/image'
@@ -41,6 +45,13 @@ import {SizableText} from '@mintter/ui'
 import {ConversationsLeaf} from './comments/comments'
 import {withMarkdownShortcuts} from './markdown-plugin'
 import isHotkey from 'is-hotkey'
+import {
+  blockNodeToSlate,
+  group,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/shared'
 
 export const plugins = []
 
@@ -217,6 +228,56 @@ export function useDraftEditor({
     state,
     editor,
     saveDraft,
+  }
+}
+
+let emptyEditor = group({data: {parent: ''}}, [
+  statement({id: ''}, [paragraph([text('')])]),
+])
+
+export function usePublicationEditor(documentId: string, versionId?: string) {
+  let editor = useMemo(
+    () =>
+      withMode(EditorMode.Publication)(
+        withEmbed(
+          withMarkdownShortcuts(
+            withDirtyPaths(
+              withImages(
+                withPasteHtml(
+                  withLinks(
+                    withBlocks(
+                      withHyperdocs(withHistory(withReact(createEditor()))),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    [],
+  )
+
+  const editorKey = `${documentId}.${versionId}`
+
+  const state = usePublication({
+    documentId,
+    versionId,
+  })
+
+  let value = useMemo(() => {
+    const children = state.data?.document?.children
+    if (children?.length) {
+      return [blockNodeToSlate(children, 'group')]
+    }
+    return [emptyEditor]
+  }, [editorKey, state.data])
+
+  return {
+    editor,
+    state,
+    value,
+    editorKey,
   }
 }
 

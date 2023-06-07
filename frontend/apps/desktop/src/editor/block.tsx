@@ -15,17 +15,27 @@ import {
   isHeading,
   isOrderedList,
   isPhrasingContent,
+  isStatement,
   isStaticParagraph,
   Paragraph,
   paragraph,
   statement,
+  text,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
 import {Content} from 'hast'
 import {useMemo, useState} from 'react'
-import {Editor, Element, Node, NodeEntry, Path, Range, TextUnit} from 'slate'
+import {
+  Editor,
+  Element,
+  Node,
+  NodeEntry,
+  Path,
+  Range,
+  TextUnit,
+  Transforms,
+} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
-import {text} from 'stream/consumers'
 import {removeEmptyGroup} from './group'
 import {EditorHoveringActions} from './hovering-toolbar'
 import {MintterEditor} from './mintter-changes/plugin'
@@ -328,6 +338,7 @@ export function withBlocks(editor: Editor) {
 
   editor.deleteBackward = function blockDeleteBackward(unit: TextUnit) {
     console.log('blockDeleteBackward', editor.selection)
+    if (resetEmptyBlock(editor)) return
     deleteBackward(unit)
   }
 
@@ -450,7 +461,8 @@ function collapsedNestedInsertBreak(editor: Editor) {
   return false
 }
 
-function isContentEmpty(entry: NodeEntry<Paragraph>): boolean {
+function isContentEmpty(entry?: NodeEntry<Paragraph>): boolean {
+  if (!entry) return false
   let [cNode] = entry
   if (Node.string(cNode) == '') {
     if (!cNode.children.some(isEmbed)) {
@@ -567,4 +579,45 @@ export function deleteBackwardKeydown(
     return true
   }
   return false
+}
+
+function resetEmptyBlock(editor: Editor): boolean {
+  if (!editor.selection) {
+    console.warn('resetEmptyBlock: no editor selection')
+    return false
+  }
+
+  let blockEntry = editor.above({
+    match: isFlowContent,
+    mode: 'lowest',
+  })
+
+  if (!blockEntry) {
+    console.warn('resetEmptyBlock: no flowContent above')
+    return false
+  }
+  console.log(
+    '🚀 ~ file: block.tsx:576 ~ resetEmptyBlock ~ resetEmptyBlock:',
+    blockEntry[0],
+  )
+  // check if the current block is not type statement (default)
+  if (isStatement(blockEntry[0])) return false
+
+  let [bNode, bPath] = blockEntry
+
+  let content = editor.node([...bPath, 0])
+  // @ts-ignore check if block is empty
+  if (!isContentEmpty(content)) return false
+
+  // block should not be statement and it is empty at this point.
+  let newBlock = statement({id: bNode.id}, [paragraph([text('')])])
+
+  editor.withoutNormalizing(() => {
+    editor.removeNodes({
+      at: bPath,
+    })
+    editor.insertNode(newBlock, {at: bPath})
+    Transforms.select(editor, bPath)
+  })
+  return true
 }

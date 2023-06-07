@@ -2,9 +2,8 @@ import {AppBanner, BannerText} from '@app/app-banner'
 import {features} from '@app/constants'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
-import {Editor} from '@app/editor/editor'
-import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
-import {plugins} from '@app/editor/editor'
+import {Editor, usePublicationEditor} from '@app/editor/editor'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
 import {useDocChanges} from '@app/models/changes'
 import {useDocCitations} from '@app/models/content-graph'
@@ -17,15 +16,7 @@ import {CitationsAccessory} from '@components/citations'
 import {ConversationsAccessory} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-import {
-  blockNodeToSlate,
-  group,
-  MttLink,
-  paragraph,
-  pluralS,
-  statement,
-  text,
-} from '@mintter/shared'
+import {MttLink, pluralS} from '@mintter/shared'
 import {
   Button,
   Comment,
@@ -41,17 +32,13 @@ import {
 import {useInterpret} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
-
-let emptyEditor = group({data: {parent: ''}}, [
-  statement({id: ''}, [paragraph([text('')])]),
-])
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -70,25 +57,11 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const {data, status, error, refetch} = usePublication({
-    documentId: docId,
+  const {editor, state, value, editorKey} = usePublicationEditor(
+    docId,
     versionId,
-  })
-
-  const editorKey = `${docId}.${versionId}`
-
-  let editorValue = useMemo(() => {
-    const children = data?.document?.children
-    if (children?.length) {
-      return [blockNodeToSlate(children, 'group')]
-    }
-    return [emptyEditor]
-  }, [editorKey, data])
-
-  let editor = useMemo(
-    () => buildEditorHook(plugins, EditorMode.Publication),
-    [editorKey],
   )
+  const {data, status, error, refetch} = state
 
   let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
@@ -170,13 +143,13 @@ export default function PublicationPage() {
                         {versionId && (
                           <OutOfDateBanner docId={docId} version={versionId} />
                         )}
-                        {editorValue && (
+                        {value && (
                           <>
                             <Editor
                               key={editorKey}
                               editor={editor}
                               mode={EditorMode.Publication}
-                              value={editorValue}
+                              value={value}
                               onChange={() => {
                                 mouseService.send('DISABLE.CHANGE')
                                 // noop
@@ -200,7 +173,7 @@ export default function PublicationPage() {
                                     }}
                                   >
                                     <SizableText tag="code" size="$1">
-                                      {JSON.stringify(editorValue, null, 3)}
+                                      {JSON.stringify(value, null, 3)}
                                     </SizableText>
                                   </XStack>
                                 )}

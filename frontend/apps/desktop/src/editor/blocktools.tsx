@@ -96,8 +96,6 @@ export function DraftBlocktools({
                       data-testid={`item-${item.label}`}
                       key={item.label}
                       onPress={() => {
-                        console.log('ON SELECT', current)
-
                         // if (element) {
 
                         item.onSelect(editor, {

@@ -143,7 +143,7 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
     addOperation(editor, 'replaceBlock', parent)
   } else if (isPhrasingContent(node) || isStaticPhrasingContent(node)) {
     let [block] =
-      Editor.above<FlowContent>(editor, {
+      editor.above<FlowContent>({
         at: operation.path,
         match: isFlowContent,
       }) || []
