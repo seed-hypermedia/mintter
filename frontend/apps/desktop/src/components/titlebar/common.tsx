@@ -81,8 +81,9 @@ export function ActionButtons(props: TitleBarProps) {
                 iconAfter={FilePlus2}
                 onPress={(e) => {
                   e.preventDefault()
+                  const host = route.key === 'site' ? route.hostname : undefined
                   // @ts-ignore
-                  openDraft(!e.shiftKey)
+                  openDraft(!e.shiftKey, host)
                 }}
               />
             </Tooltip>
