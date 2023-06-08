@@ -14,7 +14,7 @@ import {
   isGroupContent,
   isHeading,
   isOrderedList,
-  isPhrasingContent,
+  isParagraph,
   isStatement,
   isStaticParagraph,
   Paragraph,
@@ -23,7 +23,6 @@ import {
   text,
 } from '@mintter/shared'
 import {Circle, SizableText, XStack, YStack} from '@mintter/ui'
-import {Content} from 'hast'
 import {useMemo, useState} from 'react'
 import {
   Editor,
@@ -37,13 +36,9 @@ import {
 } from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {removeEmptyGroup} from './group'
-import {EditorHoveringActions} from './hovering-toolbar'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-import {EditorPlugin} from './types'
 import {blockHasNestedGroup, BLOCK_GAP, findPath, isFirstChild} from './utils'
-
-export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
 export const Block = (props: RenderElementProps & {mode: EditorMode}) => {
   if (props.mode == EditorMode.Draft) {
@@ -337,7 +332,6 @@ export function withBlocks(editor: Editor) {
   const {normalizeNode, insertBreak, deleteBackward} = editor
 
   editor.deleteBackward = function blockDeleteBackward(unit: TextUnit) {
-    console.log('blockDeleteBackward', editor.selection)
     if (resetEmptyBlock(editor)) return
     deleteBackward(unit)
   }
@@ -464,6 +458,7 @@ function collapsedNestedInsertBreak(editor: Editor) {
 function isContentEmpty(entry?: NodeEntry<Paragraph>): boolean {
   if (!entry) return false
   let [cNode] = entry
+  if (!isContent(cNode)) return false
   if (Node.string(cNode) == '') {
     if (!cNode.children.some(isEmbed)) {
       return true
@@ -507,7 +502,10 @@ function collapsedInsertBreak(editor: Editor) {
     let blockPath = Path.parent(cPath)
     let currentBlock = Node.get(editor, blockPath)
 
-    if (!isFlowContent(currentBlock)) return false
+    if (!isFlowContent(currentBlock)) {
+      console.warn('blockInsertBreak: block above is not flowContent')
+      return false
+    }
 
     if (isCode(currentBlock)) {
       editor.insertText('\n')
@@ -580,7 +578,13 @@ export function deleteBackwardKeydown(
   }
   return false
 }
-
+/**
+ *
+ * @param editor Editor
+ * @returns boolean
+ *
+ * Resets the current block type to the default block type (statement)
+ */
 function resetEmptyBlock(editor: Editor): boolean {
   if (!editor.selection) {
     console.warn('resetEmptyBlock: no editor selection')
@@ -596,10 +600,7 @@ function resetEmptyBlock(editor: Editor): boolean {
     console.warn('resetEmptyBlock: no flowContent above')
     return false
   }
-  console.log(
-    '🚀 ~ file: block.tsx:576 ~ resetEmptyBlock ~ resetEmptyBlock:',
-    blockEntry[0],
-  )
+
   // check if the current block is not type statement (default)
   if (isStatement(blockEntry[0])) return false
 

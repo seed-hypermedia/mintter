@@ -55,7 +55,7 @@ export interface Paragraph extends Parent {
 
 export interface StaticParagraph extends Parent {
   type: 'staticParagraph'
-  children: StaticPhrasingContent[]
+  children: Text[]
 }
 
 export interface Statement extends Parent {
@@ -110,7 +110,7 @@ export interface Embed extends Alternative, Resource, Parent {
 
 export interface Link extends Resource, Parent {
   type: 'link'
-  children: StaticPhrasingContent[]
+  children: Text[]
 }
 
 export interface Text extends Literal {
@@ -152,7 +152,7 @@ export type MttastContent =
   | PhrasingContent
 
 export type MttastNode = Parent | Literal
-export type Content = Paragraph
+export type Content = Paragraph | Image | Video | File
 
 export type StaticContent = StaticParagraph
 
@@ -161,8 +161,5 @@ export type GroupingContent = Group | OrderedList | UnorderedList
 // The statements of a document
 export type FlowContent = Statement | Heading | Blockquote | Code
 
-// the text and markup of a document that's not intended for
-export type StaticPhrasingContent = Text | Video | Image | File
-
 // the text and markup of a document
-export type PhrasingContent = Link | Embed | StaticPhrasingContent
+export type PhrasingContent = Link | Embed | Text

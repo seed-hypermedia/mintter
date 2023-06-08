@@ -11,7 +11,6 @@ import {
   isGroupContent,
   isPhrasingContent,
   isStaticContent,
-  isStaticPhrasingContent,
 } from '@mintter/shared'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
@@ -141,7 +140,7 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
     let parent = Node.parent(editor, operation.path)
     addOperation(editor, 'moveBlock', parent)
     addOperation(editor, 'replaceBlock', parent)
-  } else if (isPhrasingContent(node) || isStaticPhrasingContent(node)) {
+  } else if (isPhrasingContent(node)) {
     let [block] =
       editor.above<FlowContent>({
         at: operation.path,

@@ -36,6 +36,25 @@ export function blockToSlate(blk: Block): FlowContent {
     ],
   }
 
+  // NOTICE: we are assuming images, videos and files will be THE ONLY one annotation for blocks now.
+  // This means that images, videos and files will be treated as block elements, at the same level as paragraphs.
+  let mediaAnnotation = isMediaBlock(blk)
+  if (mediaAnnotation) {
+    return {
+      id: blk.id,
+      type: 'statement',
+      revision: blk.revision,
+      ...attributes,
+      children: [
+        {
+          type: mediaAnnotation.type,
+          ...mediaAnnotation.attributes,
+          children: [{type: 'text', text: ''}],
+        },
+      ],
+    }
+  }
+
   // NOTICE: It's a bit messy here, but it works.
   // Some of those helper function are not "pure", and use some of the variables
   // defined bellow. It can get a bit confusing, and definitely could be improved.
@@ -189,7 +208,7 @@ export function blockToSlate(blk: Block): FlowContent {
       // to determine how different annotations affect the leaf node.
       // We'd need to check the annotation "identity", but I'm
       // checking only type here for brevity.
-      if (['link', 'embed', 'image', 'video', 'file'].includes(l.type)) {
+      if (['link', 'embed'].includes(l.type)) {
         // TODO: modify leaf if is link or embed
         linkAnnotation = l
       }
@@ -357,4 +376,14 @@ export function blockNodeToSlate(
     res.start = start
   }
   return res
+}
+
+function isMediaBlock(entry: Block): Annotation | undefined {
+  let firstAnnotation = entry.annotations[0]
+  if (
+    entry.annotations.length == 1 &&
+    ['image', 'video', 'file'].includes(firstAnnotation.type)
+  ) {
+    return firstAnnotation
+  }
 }

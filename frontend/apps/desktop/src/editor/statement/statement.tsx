@@ -148,6 +148,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     }
 
     editor.deleteBackward = function blockDeleteBackwards(unit) {
+      debugger
       if (!editor.selection) return
 
       if (resetFlowContent(editor)) return

@@ -15,7 +15,7 @@ import {BaseDirectory, writeBinaryFile} from '@tauri-apps/api/fs'
 import {getClient, ResponseType} from '@tauri-apps/api/http'
 import {appDataDir} from '@tauri-apps/api/path'
 import {ChangeEvent, useEffect, useMemo, useState} from 'react'
-import {Transforms} from 'slate'
+import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -38,25 +38,6 @@ type InnerFileProps = {
 }
 
 export const ELEMENT_FILE = 'file'
-
-export function createFilePlugin(): EditorPlugin {
-  return {
-    name: ELEMENT_FILE,
-    configureEditor(editor) {
-      const {isVoid, isInline} = editor
-
-      editor.isVoid = function fileIsVoid(element) {
-        return isFile(element) || isVoid(element)
-      }
-
-      editor.isInline = function fileIsInline(element) {
-        return isFile(element) || isInline(element)
-      }
-
-      return editor
-    },
-  }
-}
 
 export function FileElement({
   element,
@@ -100,7 +81,6 @@ export function FileElement({
 
   return (
     <YStack {...attributes} className={element.type}>
-      {children}
       {file.url.length ? (
         <FileComponent
           file={file}
@@ -114,6 +94,7 @@ export function FileElement({
           element={element as FileType}
         />
       )}
+      {children}
     </YStack>
   )
 }
@@ -164,12 +145,16 @@ function FileComponent({assign, element, file}: InnerFileProps) {
 
   return (
     <YStack
+      // @ts-ignore wtf I need to ignore this prop if its normal HTML?
+      contentEditable={false}
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setReplace(true)
       }}
       onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setReplace(false)
       }}
+      borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
+      borderWidth={3}
     >
       {editor.mode == EditorMode.Draft && replace ? (
         <Button
@@ -224,6 +209,8 @@ function FileComponent({assign, element, file}: InnerFileProps) {
 }
 
 function FileForm({assign, element}: InnerFileProps) {
+  const selected = useSelected()
+  const focused = useFocused()
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
     name: 'Upload File',
@@ -256,8 +243,13 @@ function FileForm({assign, element}: InnerFileProps) {
   }
 
   return (
-    //@ts-ignore
-    <YStack contentEditable={false} position="relative">
+    <YStack
+      //@ts-ignore
+      contentEditable={false}
+      position="relative"
+      borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
+      borderWidth={3}
+    >
       <Popover
         placement="bottom"
         size="$5"

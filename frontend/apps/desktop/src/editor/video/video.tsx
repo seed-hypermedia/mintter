@@ -1,20 +1,13 @@
-import {wrapLink} from '@app/editor/link'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {
-  EmbedUrlData,
-  isCollapsed,
-  isValidUrl,
-  parseVideoUrl,
-} from '@app/editor/utils'
+import {EmbedUrlData, isValidUrl, parseVideoUrl} from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
 import {Box} from '@components/box'
 import {Icon} from '@components/icon'
-import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
-import {Button, Input, SizableText} from '@mintter/ui'
+import {Video as VideoType} from '@mintter/shared'
+import {Button, Input, SizableText, YStack} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import isUrl from 'is-url'
 import {useState} from 'react'
-import {Editor, Transforms} from 'slate'
+import {Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -23,51 +16,8 @@ import {
   useSlateStatic,
 } from 'slate-react'
 import {ActorRefFrom} from 'xstate'
-import type {EditorPlugin} from '../types'
 
 export const ELEMENT_VIDEO = 'video'
-
-export function createVideoPlugin(): EditorPlugin {
-  return {
-    name: ELEMENT_VIDEO,
-    configureEditor(editor) {
-      const {insertData, isVoid, isInline} = editor
-
-      editor.isVoid = function videoVoid(element) {
-        return isVideo(element) || isVoid(element)
-      }
-
-      editor.isInline = function videoInline(element) {
-        return isVideo(element) || isInline(element)
-      }
-
-      editor.insertData = function videoInsertdata(data) {
-        const text = data.getData('text/plain')
-        if (text) {
-          let videoData = parseVideoUrl(text)
-          if (isUrl(text) && videoData) {
-            insertVideo(editor, text)
-          }
-        }
-        insertData(data)
-      }
-
-      return editor
-    },
-  }
-}
-
-function insertVideo(editor: Editor, url: string) {
-  const {selection} = editor
-
-  if (isCollapsed(selection)) {
-    const newVideo = video({url}, [text('')])
-    Transforms.insertNodes(editor, newVideo)
-    Transforms.move(editor, {distance: 1, unit: 'offset'})
-  } else {
-    wrapLink(editor, url)
-  }
-}
 
 export function VideoElement({
   element,
@@ -76,6 +26,8 @@ export function VideoElement({
 }: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
+  const selected = useSelected()
+  const focused = useFocused()
   const videoService = useInterpret(() => videoMachine, {
     actions: {
       assignValidUrl: (_, event) => {
@@ -98,7 +50,12 @@ export function VideoElement({
   const [state] = useActor(videoService)
 
   return (
-    <Box {...attributes} className={element.type}>
+    <YStack
+      {...attributes}
+      className={element.type}
+      borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
+      borderWidth={3}
+    >
       {children}
       {state.matches('video') ? (
         <VideoComponent
@@ -113,7 +70,7 @@ export function VideoElement({
           element={element as VideoType}
         />
       )}
-    </Box>
+    </YStack>
   )
 }
 

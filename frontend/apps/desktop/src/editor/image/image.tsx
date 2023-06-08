@@ -43,6 +43,8 @@ export function ImageElement({
 }: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
+  const selected = useSelected()
+  const focused = useFocused()
   const imgService = useInterpret(() => imageMachine, {
     //@ts-ignore
     actions: {
@@ -78,11 +80,7 @@ export function ImageElement({
             },
           )
           const data = await response.text()
-          Transforms.setNodes<ImageType>(
-            editor,
-            {url: data},
-            {at: path},
-          )
+          Transforms.setNodes<ImageType>(editor, {url: data}, {at: path})
         } catch (error) {
           console.error(error)
         }
@@ -92,10 +90,8 @@ export function ImageElement({
 
   if (
     (element as ImageType).url &&
-    (
-      (element as ImageType).url.includes('/') ||
-      (element as ImageType).url.includes(':')
-    )
+    ((element as ImageType).url.includes('/') ||
+      (element as ImageType).url.includes(':'))
   ) {
     const url = (element as ImageType).url
     uploadImage(url).catch((e) => console.log(e))
@@ -106,7 +102,11 @@ export function ImageElement({
     Transforms.setNodes<ImageType>(editor, {defaultOpen: false}, {at: path})
 
   return (
-    <YStack {...attributes}>
+    <YStack
+      {...attributes}
+      borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
+      borderWidth={3}
+    >
       {children}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />
@@ -126,8 +126,6 @@ function ImageComponent({service, element}: InnerImageProps) {
   let [state, send] = useActor(service)
   const [replace, setReplace] = useState(false)
   const editor = useSlateStatic()
-  const selected = useSelected()
-  const focused = useFocused()
   const path = useMemo(() => findPath(element), [element])
 
   const onKeyPress = useCallback((event: any) => {
@@ -158,6 +156,8 @@ function ImageComponent({service, element}: InnerImageProps) {
 
   return (
     <YStack
+      // @ts-ignore
+      contentEditable={false}
       className={element.type}
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setReplace(true)
@@ -181,12 +181,7 @@ function ImageComponent({service, element}: InnerImageProps) {
           replace
         </Button>
       ) : null}
-      <img
-        style={{
-          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
-        }}
-        src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
-      />
+      <img src={`http://localhost:55001/ipfs/${(element as ImageType).url}`} />
       <XStack>
         <TextArea
           size="$3"
@@ -201,9 +196,11 @@ function ImageComponent({service, element}: InnerImageProps) {
           }}
           backgroundColor="var(--base-background-normal)"
           value={element.alt}
-          onChangeText={(val: string) =>
+          onChange={() => [console.log('CHANGE CAPTION', element)]}
+          onChangeText={(val: string) => {
+            console.log('CHANGE CAPTION', val)
             send({type: 'CAPTION.UPDATE', value: val})
-          }
+          }}
           onKeyPress={onKeyPress}
           disabled={editor.mode != EditorMode.Draft}
         />
@@ -281,7 +278,10 @@ function ImageForm({service, element}: InnerImageProps) {
 
   return (
     //@ts-ignore
-    <YStack contentEditable={false}>
+    <YStack //@ts-ignore
+      contentEditable={false}
+      position="relative"
+    >
       <Popover size="$5" defaultOpen={element.defaultOpen}>
         <Popover.Trigger asChild>
           <Button
@@ -456,20 +456,6 @@ function ImageForm({service, element}: InnerImageProps) {
       </Popover>
     </YStack>
   )
-}
-
-export function withImages(editor: Editor): Editor {
-  const {isVoid, isInline} = editor
-
-  editor.isVoid = function imageIsVoid(element) {
-    return isImage(element) || isVoid(element)
-  }
-
-  editor.isInline = function imageIsInline(element) {
-    return isImage(element) || isInline(element)
-  }
-
-  return editor
 }
 
 const isValidUrl = (urlString: string) => {

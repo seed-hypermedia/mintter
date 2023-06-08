@@ -268,6 +268,10 @@ export function useEditorDraft({
     enabled: !!documentId && !!editor,
     queryFn: async () => {
       const backendDraft = await draftsClient.getDraft({documentId: documentId})
+      console.log(
+        '🚀 ~ file: documents.ts:271 ~ queryFn: ~ backendDraft:',
+        backendDraft,
+      )
       let children
 
       if (backendDraft.children.length) {

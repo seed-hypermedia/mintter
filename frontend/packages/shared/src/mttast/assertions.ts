@@ -21,7 +21,6 @@ import type {
   Statement,
   StaticContent,
   StaticParagraph,
-  // StaticPhrasingContent,
   // Text,
   UnorderedList,
   Video,
@@ -55,23 +54,13 @@ export const isGroupContent = isOneOfTypes<GroupingContent>([
   'orderedList',
   'unorderedList',
 ])
-export const isStaticPhrasingContent = <T extends MttastContent>(
-  value: unknown,
-): value is T => {
-  return (
-    (isPlainObject(value) &&
-      ['text', 'video', 'image', 'file'].includes((value as Node).type)) ||
-    (isPlainObject(value) && isPlainText(value))
-  )
-}
+
 export const isPhrasingContent = <T extends MttastContent>(
   value: unknown,
 ): value is T => {
   return (
     (isPlainObject(value) &&
-      ['text', 'link', 'embed', 'video', 'image', 'file'].includes(
-        (value as Node).type,
-      )) ||
+      ['text', 'link', 'embed'].includes((value as Node).type)) ||
     (isPlainObject(value) && isPlainText(value))
   )
 }
@@ -81,6 +70,7 @@ function isPlainText(value: any) {
 }
 
 export const isContent = isOneOfTypes<Content>(['paragraph', 'staticParagraph'])
+export const isMedia = isOneOfTypes<Content>(['image', 'video', 'file'])
 export const isStaticContent = isOneOfTypes<StaticContent>(['staticParagraph'])
 
 export const isDocument = isType<MttDocument>('document')

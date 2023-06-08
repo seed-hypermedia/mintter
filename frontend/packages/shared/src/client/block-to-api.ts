@@ -11,7 +11,13 @@ export function blockToApi(
   start?: number,
 ): Block {
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
-  let leaves = flattenLeaves(slateBlock.children[0].children)
+  // the first child of a block can be either typeof `paragraph`, `image`, `video` or `file`.
+
+  let leaves = flattenLeaves(
+    isMediaBlock(slateBlock)
+      ? slateBlock.children
+      : slateBlock.children[0].children,
+  )
 
   // eslint-disable-next-line
   const {type, id, children, revision, ...attributes} = slateBlock
@@ -230,4 +236,9 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
     }
   }
   return result
+}
+
+function isMediaBlock(entry: FlowContent): boolean {
+  let firstChild = entry.children[0]
+  return ['image', 'video', 'file'].includes(firstChild.type)
 }

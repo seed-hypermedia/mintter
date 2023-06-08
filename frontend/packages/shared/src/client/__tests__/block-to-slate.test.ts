@@ -324,11 +324,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text(''),
-        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
-        text(''),
-      ]),
+      image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
     ])
 
     expect(blockToSlate(input)).toEqual(output)
@@ -354,42 +350,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text(''),
-        image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
-        text(''),
-      ]),
-    ])
-
-    expect(blockToSlate(input)).toEqual(output)
-  })
-
-  test('Images: with more content', () => {
-    let input = new Block({
-      id: 'blockId',
-      type: 'statement',
-      text: 'hello block with \uFFFC this image in between content',
-      attributes: {
-        childrenType: 'group',
-      },
-      annotations: [
-        {
-          type: 'image',
-          attributes: {url: 'https://mintter.com/image', alt: ''},
-          starts: [17],
-          ends: [18],
-        },
-      ],
-      revision: '',
-    })
-
-    let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text('hello block with '),
-        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
-        text(''),
-        text(' this image in between content'),
-      ]),
+      image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
     ])
 
     expect(blockToSlate(input)).toEqual(output)
@@ -415,11 +376,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text(''),
-        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
-        text(''),
-      ]),
+      video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
     ])
 
     expect(blockToSlate(input)).toEqual(output)
@@ -445,42 +402,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text(''),
-        video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
-        text(''),
-      ]),
-    ])
-
-    expect(blockToSlate(input)).toEqual(output)
-  })
-
-  test('Videos: with more content', () => {
-    let input = new Block({
-      id: 'blockId',
-      type: 'statement',
-      text: 'hello block with \uFFFC this video in between content',
-      attributes: {
-        childrenType: 'group',
-      },
-      annotations: [
-        {
-          type: 'video',
-          attributes: {url: 'https://mintter.com/video', alt: ''},
-          starts: [17],
-          ends: [18],
-        },
-      ],
-      revision: '',
-    })
-
-    let output: Statement = statement({id: 'blockId', revision: ''}, [
-      paragraph([
-        text('hello block with '),
-        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
-        text(''),
-        text(' this video in between content'),
-      ]),
+      video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
     ])
 
     expect(blockToSlate(input)).toEqual(output)

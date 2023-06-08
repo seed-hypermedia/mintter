@@ -5,7 +5,7 @@ import {
 } from '@app/models/documents'
 import {useCallback, useMemo} from 'react'
 import {createEditor, Editor as SlateEditor} from 'slate'
-import {ImageElement, withImages} from './image/image'
+import {ImageElement} from './image/image'
 import './styles/editor.css'
 
 import {
@@ -52,6 +52,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {withMedia} from './media'
 
 export const plugins = []
 
@@ -195,7 +196,7 @@ export function useDraftEditor({documentId}: {documentId: string}) {
         withEmbed(
           withMarkdownShortcuts(
             withDirtyPaths(
-              withImages(
+              withMedia(
                 withPasteHtml(
                   withLinks(
                     withBlocks(
@@ -216,6 +217,7 @@ export function useDraftEditor({documentId}: {documentId: string}) {
     editor,
     documentId,
   })
+  console.log('🚀 ~ file: editor.tsx:223 ~ useDraftEditor ~ state:', state)
 
   return {
     state,
@@ -235,7 +237,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
         withEmbed(
           withMarkdownShortcuts(
             withDirtyPaths(
-              withImages(
+              withMedia(
                 withPasteHtml(
                   withLinks(
                     withBlocks(

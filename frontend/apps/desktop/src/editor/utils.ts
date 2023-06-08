@@ -543,15 +543,26 @@ export function toggleList(fn: typeof ol | typeof ul) {
   }
 }
 
-export function insertInline(fn: typeof image | typeof video | typeof file) {
-  return function insertInlineElement(
+export function insertMedia(fn: typeof image | typeof video | typeof file) {
+  return function insertMediaElement(
     editor: Editor,
     opts: {
       element: FlowContent
       at: Path
     },
   ) {
-    Transforms.insertNodes(editor, fn({url: '', defaultOpen: true}, [text('')]))
+    editor.withoutNormalizing(() => {
+      Transforms.insertNodes(
+        editor,
+        fn({url: '', defaultOpen: true}, [text('')]),
+        {
+          at: [...opts.at, 0],
+        },
+      )
+      Transforms.removeNodes(editor, {
+        at: [...opts.at, 1],
+      })
+    })
     MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
   }
 }

@@ -1,5 +1,6 @@
 import {
   embed,
+  file,
   heading,
   Heading,
   image,
@@ -223,9 +224,7 @@ describe('Transform: blockToApi', () => {
 
   test('Images: simple', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
-      ]),
+      image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
     ])
 
     let output = {
@@ -248,9 +247,7 @@ describe('Transform: blockToApi', () => {
 
   test('Images: simple + alt', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
-      ]),
+      image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
     ])
 
     let output = {
@@ -271,38 +268,9 @@ describe('Transform: blockToApi', () => {
     expect(blockToApi(input)).toEqual(output)
   })
 
-  test('Images: with more content', () => {
-    let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        text('hello block with '),
-        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
-        text(' this image in between content'),
-      ]),
-    ])
-
-    let output = {
-      id: 'blockId',
-      type: 'statement',
-      text: 'hello block with \uFFFC this image in between content',
-
-      annotations: [
-        {
-          type: 'image',
-          attributes: {url: 'https://mintter.com/image', alt: ''},
-          starts: [17],
-          ends: [18],
-        },
-      ],
-    }
-
-    expect(blockToApi(input)).toEqual(output)
-  })
-
   test('Videos: simple', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
-      ]),
+      video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
     ])
 
     let output = {
@@ -325,9 +293,7 @@ describe('Transform: blockToApi', () => {
 
   test('Videos: simple + alt', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
-      ]),
+      video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
     ])
 
     let output = {
@@ -348,26 +314,46 @@ describe('Transform: blockToApi', () => {
     expect(blockToApi(input)).toEqual(output)
   })
 
-  test('Videos: with more content', () => {
+  test('File: simple', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([
-        text('hello block with '),
-        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
-        text(' this video in between content'),
+      file({url: 'https://mintter.com/file', alt: ''}, [text('')]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: '\uFFFC',
+
+      annotations: [
+        {
+          type: 'file',
+          attributes: {url: 'https://mintter.com/file', name: ''},
+          starts: [0],
+          ends: [1],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('File: with name', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      file({url: 'https://mintter.com/file', name: 'Test file name'}, [
+        text(''),
       ]),
     ])
 
     let output = {
       id: 'blockId',
       type: 'statement',
-      text: 'hello block with \uFFFC this video in between content',
-
+      text: '\uFFFC',
       annotations: [
         {
-          type: 'video',
-          attributes: {url: 'https://mintter.com/video', alt: ''},
-          starts: [17],
-          ends: [18],
+          type: 'file',
+          attributes: {url: 'https://mintter.com/file', name: 'Test file name'},
+          starts: [0],
+          ends: [1],
         },
       ],
     }

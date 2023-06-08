@@ -2,7 +2,7 @@ import {features} from '@app/constants'
 import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {Dropdown} from '@app/editor/dropdown'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {insertInline, setList, setType} from '@app/editor/utils'
+import {insertMedia, setList, setType} from '@app/editor/utils'
 import {MouseInterpret, useHoveredBlockId, useMouse} from '@app/mouse-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
@@ -181,24 +181,24 @@ var items: {
   [key: string]: Array<{
     label: string
     icon: any
-    onSelect: ReturnType<typeof insertInline | typeof setList>
+    onSelect: ReturnType<typeof insertMedia | typeof setList>
   }>
 } = {
   'Insert inline': [
     {
       label: 'Image',
       icon: ImageIcon,
-      onSelect: insertInline(image),
+      onSelect: insertMedia(image),
     },
     {
       label: 'Video',
       icon: VideoIcon,
-      onSelect: insertInline(video),
+      onSelect: insertMedia(video),
     },
     {
       label: 'File',
       icon: FileIcon,
-      onSelect: insertInline(file),
+      onSelect: insertMedia(file),
     },
   ],
   'Turn Block into': [
