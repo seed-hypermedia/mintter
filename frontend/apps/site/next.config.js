@@ -77,12 +77,6 @@ module.exports = function () {
           port: '56001',
           pathname: '/ipfs/**',
         },
-        {
-          protocol: 'https',
-          hostname: process.env.NEXT_PUBLIC_GRPC_HOST,
-          port: '',
-          pathname: '/ipfs/**',
-        },
       ],
     },
     typescript: {
