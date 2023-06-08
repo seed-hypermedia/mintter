@@ -1,12 +1,15 @@
-import {FontSizeTokens, SizeTokens} from '@mintter/ui'
 import {useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {
   createId,
+  file,
+  File,
   FlowContent,
   group,
   GroupingContent,
   image,
+  Image,
+  isEmbed,
   isFlowContent,
   isGroup,
   isGroupContent,
@@ -16,25 +19,23 @@ import {
   Mark,
   ol,
   paragraph,
-  Statement,
+  Paragraph,
   statement,
+  StaticParagraph,
   text,
   ul,
   video,
-  file,
-  isEmbed,
-  Paragraph,
-  StaticParagraph,
+  Video,
 } from '@mintter/shared'
+import {SizeTokens} from '@mintter/ui'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, PathRef, Point, Span} from 'slate'
 import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
-import {ReactEditor, useSlateSelector} from 'slate-react'
+import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {ELEMENT_STATEMENT} from './statement'
-import {P} from '@tauri-apps/api/event-2a9960e7'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 
 export const isCollapsed = (range: Range | null): boolean =>
@@ -211,7 +212,9 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
   }
 }
 
-export function hasEmbedOnly(node: Paragraph | StaticParagraph) {
+export function hasEmbedOnly(
+  node: Paragraph | StaticParagraph | Video | Image | File,
+) {
   let hasContent = !!Node.string(node)
   let result = false
 

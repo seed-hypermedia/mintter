@@ -356,6 +356,7 @@ function ConversationSelectors({
           //@ts-ignore
           leaf.conversations.includes(conversationId)
         ) {
+          //@ts-ignore
           leafs.push(leaf)
         }
       })

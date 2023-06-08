@@ -47,6 +47,7 @@ export function blockToSlate(blk: Block): FlowContent {
       ...attributes,
       children: [
         {
+          // @ts-ignore
           type: mediaAnnotation.type,
           ...mediaAnnotation.attributes,
           children: [{type: 'text', text: ''}],

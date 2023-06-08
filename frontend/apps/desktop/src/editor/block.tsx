@@ -455,7 +455,7 @@ function collapsedNestedInsertBreak(editor: Editor) {
   return false
 }
 
-function isContentEmpty(entry?: NodeEntry<Paragraph>): boolean {
+function isContentEmpty(entry?: NodeEntry<any>): boolean {
   if (!entry) return false
   let [cNode] = entry
   if (!isContent(cNode)) return false
