@@ -4,86 +4,55 @@ Entities are mutable HyperDocs objects, with an authenticated and verifiable ver
 
 ### Entity ID
 
-An Entity ID is a random and unique identifier, created with the following function:
+On the most abstract level, an Entity ID is defined as an arbitrary string. Depending on the type of an Entity and its purpose, the Entity ID could have some conventions or a more specific format, e.g. Entity ID could include the type/kind of an Entity.
 
-`nanoid.CustomASCII("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 22)`
-
-todo human eplanation
+Entity ID is assumed to be globally unique.
 
 ### Changes
 
-A change is [Terra Data](./terra-data) blob which describes the creation or modification of an Entity.
+A Change is a [Terra Data](./terra-data) blob that describes the creation or modification of an Entity.
 
 ### Change Dependencies
 
-A change may refer to other change(s), which describe the previous version of the Entity. Change Dependencies are merged together before the Patch is applied.
+The state of an Entity is represented as a set of Changes.
 
-To create an Entity, a new Entity ID is generated, and a Change Blob is created with the initial data. The "deps" array is empty for new Entities.
+Each Change is immutable and content-addressable.
 
-### Entity Forking
+A Change can depend on other Change(s) with [hash-linking](https://ipld.io/docs/data-model/kinds/#link-kind), which expresses the causal relationship between Changes. The Changes form a DAG, similar to how Git Commits form a DAG. Given a DAG of Changes, each user can "replay" those Changes and apply them locally to get the state of an Entity.
 
-When a Change has one or more dependencies, but has a new Entity ID
+This approach is similar to what is often called [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html), or [State Machine Replication](https://en.wikipedia.org/wiki/State_machine_replication).
+
+To create an Entity, a new Entity ID is generated, and a Change blob is created with the initial data. This initial Change has no dependencies.
 
 ### Change Authentication
 
-The author of each change is securely identified with the [Terra Identity system](./terra-identity). 
-
-Every Change Blob has three fields which can securely track psuedonomomous identies who create content.
-
-- `Signer` - the Account ID of the author
-- `Delegation` - the CID of the KeyDelegation blob
-- `Sig` - The signature over the rest of the fields
-
-
-Changes are ignored by peers if the signature or delegation is invalid for the Signer.
-
+Each Change is cryptographically signed by the device key of a [Terra Identity](./terra-identity).
 
 ### Entity Version
 
-A Version of an Entity is a set of one or more Changes that can be merged into a single representation.
+Because the state of an Entity is a set of Changes, and because those Changes form a DAG, we can express any given Version of an Entity by specifying a leaf (HEAD in Git terms) Change ID and walking back the dependency link to resolve the full DAG.
 
-The order of these changes is not important. One set of changes, in any order, is equivalent to the same version.
+A Version could be a single Change ID or multiple Change IDs concatenated with a `.`. 
 
+### Terra Patch
 
-### Entity Value Patches
+In theory, one could put any kind of information inside of a Change, but because Changes can be created independently by each user without any coordination, we define the state of an Entity to be a [CRDT](https://crdt.tech), so that Changes can be applied without generating pesky conflicts that users would have to solve manually.
 
-A [Terra Entity Patch](./terra-patches) is be provided to describe how the entity value changes.
-
+Hence the body of a Terra Change is defined as a special [Patch](./terra-patches) format described in a separate document.
 
 ### Changes Format
 
-```
-type Change = {
+As with any other Terra Blobs, a Change is encoded as a DAG-CBOR structure, and it contains the following fields:
 
-	Type: 'HyperDocs:Change'
+ | **field**  | **type** | **description**                                                                                            |
+|------------|----------|------------------------------------------------------------------------------------------------------------|
+| @type      | string   | Constant string "hyperdocs:Change".                                                                        |
+| entity     | string   | Entity ID the Change is applied to.                                                                        |
+| deps       | []CID    | The list of CIDs of dependencies to this Change.                                                           |
+| message    | string   | An optional human-readable description of a Change.                                                        |
+| hlcTime    | int64    | A [Hybrid-Logical-Clock](https://martinfowler.com/articles/patterns-of-distributed-systems/hybrid-clock.html) timestamp of a Change.                                                              |
+| patch      | map      | Terra Merge Patch.                                                                                         |
+| signer     | bytes    | The public key which signs the Change.                                                                     |
+| delegation | CID      | The CID of the KeyDelegation blob that identifies the Account ID on behalf of which the Change is created. |
+| sig        | bytes    | The bytes for a cryptographic signature of the canonical encoding of the rest of the fields.               |
 
-    // ID of the Entity to change
-	// Entity: "HyperDocs:Document:123"
-	Entity: string
-
-	// Deps is a list of dependency patches.
-	Deps: CID[]
-
-	// Message is an optional human readable message.
-	Message?: string
-
-	// HLCTime is the Hybrid-Logical timestamp.
-	// Must be greater than the one of any of the deps.
-	// Can be used as a Unix timestamp in *microseconds*.
-	HLCTime: number
-
-	// Patch is the body of our Merge Patch CRDT.
-	Patch: Patch
-    
-	// Signer is the public key of the signer.
-	Signer: string
-
-	// Delegation points to the blob where we can get the Account ID
-	// on which behalf this blob is signed.
-	Delegation: CID
-
-	// Sig is the signature over the rest of the fields.
-	Sig: Buffer
-
-}
-```
