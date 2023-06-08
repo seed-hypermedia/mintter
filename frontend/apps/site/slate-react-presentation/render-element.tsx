@@ -89,7 +89,9 @@ export function useRenderElement() {
           <div className="unset-img">
             <Image
               alt={(element as ImageType).alt}
-              src={`${MEDIA_HOSTNAME}/ipfs/${(element as ImageType).url}`}
+              src={`${process.env.NEXT_PUBLIC_GRPC_HOST}ipfs/${
+                (element as ImageType).url
+              }`}
               layout="fill"
               className="image"
             />
