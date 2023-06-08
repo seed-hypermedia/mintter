@@ -108,35 +108,37 @@ function RenderElement(mode: EditorMode) {
       case ELEMENT_GROUP:
       case ELEMENT_UNORDERED_LIST:
       case ELEMENT_ORDERED_LIST:
-        return <Group {...props} mode={mode} />
+        return <Group key={props.element.type} {...props} mode={mode} />
 
       case ELEMENT_STATEMENT:
       case ELEMENT_BLOCKQUOTE:
       case ELEMENT_CODE:
       case ELEMENT_HEADING:
-        return <Block {...props} mode={mode} />
+        return <Block key={props.element.type} {...props} mode={mode} />
 
       case ELEMENT_PARAGRAPH:
-        return <ParagraphElement {...props} mode={mode} />
+        return (
+          <ParagraphElement key={props.element.type} {...props} mode={mode} />
+        )
 
       case ELEMENT_STATIC_PARAGRAPH:
-        return <StaticParagraphElement {...props} />
+        return <StaticParagraphElement key={props.element.type} {...props} />
 
       case ELEMENT_EMBED:
-        return <EmbedElement {...props} mode={mode} />
+        return <EmbedElement key={props.element.type} {...props} mode={mode} />
 
       case ELEMENT_LINK:
-        return <LinkElement {...props} mode={mode} />
+        return <LinkElement key={props.element.type} {...props} mode={mode} />
       // return props.children
 
       case ELEMENT_IMAGE:
-        return <ImageElement {...props} />
+        return <ImageElement key={props.element.type} {...props} />
 
       case ELEMENT_VIDEO:
-        return <VideoElement {...props} />
+        return <VideoElement key={props.element.type} {...props} />
 
       case ELEMENT_FILE:
-        return <FileElement {...props} />
+        return <FileElement key={props.element.type} {...props} />
 
       default:
         return <p {...props.attributes}>{props.children}</p>

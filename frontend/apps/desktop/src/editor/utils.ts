@@ -14,6 +14,7 @@ import {
   isGroup,
   isGroupContent,
   isHeading,
+  isMedia,
   isStatement,
   isText,
   Mark,
@@ -448,34 +449,27 @@ export function setType(fn: any) {
     },
   ) {
     if (editor.readOnly) return
-    Editor.withoutNormalizing(editor, function () {
-      MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
-      const keys = ObjectKeys(opts.element).filter(
-        (key) => !['type', 'id', 'children', 'data'].includes(key as string),
-      )
-
-      if (isHeading(opts.element)) {
-        Transforms.setNodes(
-          editor,
-          {type: ELEMENT_PARAGRAPH},
-          {at: [...opts.at, 0]},
-        )
-      }
-
-      if (keys.length) {
-        Transforms.unsetNodes(editor, keys, {at: opts.at})
-      }
-
-      // IDs are meant to be stable, so we shouldn't obverride it
-      // eslint-disable-next-line
-      const {id, ...props} = fn()
-
-      if (isHeading(props)) {
+    let newBlock = fn({id: opts.element.id}, opts.element.children)
+    let content = Node.get(editor, [...opts.at, 0])
+    editor.withoutNormalizing(() => {
+      editor.setNodes({type: newBlock.type}, {at: opts.at})
+      if (isHeading(newBlock)) {
         editor.setNodes({type: ELEMENT_STATIC_PARAGRAPH}, {at: [...opts.at, 0]})
+      } else if (isHeading(opts.element)) {
+        editor.setNodes({type: ELEMENT_PARAGRAPH}, {at: [...opts.at, 0]})
       }
 
-      Transforms.setNodes(editor, {type: props.type}, {at: opts.at})
+      if (!isStatement(newBlock) && isMedia(content)) {
+        editor.unsetNodes('url', {at: [...opts.at, 0]})
+        editor.unsetNodes('defaultOpen', {at: [...opts.at, 0]})
+      }
     })
+    ReactEditor.focus(editor)
+    setTimeout(() => {
+      editor.select(opts.at)
+    }, 10)
+
+    MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
   }
 }
 
@@ -485,26 +479,30 @@ export function setList(fn: typeof ol | typeof ul | typeof group) {
     opts: {element: FlowContent; at: Path},
   ) {
     if (editor.readOnly) return
-    Editor.withoutNormalizing(editor, () => {
-      const list = Node.parent(editor, opts.at)
+    const listEntry = editor.above({
+      match: isGroupContent,
+      mode: 'lowest',
+    })
 
-      if (list && isGroupContent(list)) {
-        let newList = fn([])
-        Transforms.setNodes(
-          editor,
-          {type: newList.type},
-          {at: Path.parent(opts.at)},
-        )
+    if (!listEntry) {
+      console.warn('setList: no list above')
+      return
+    }
 
-        if (opts.at.length > 2) {
-          let parentBlockEntry = Editor.above(editor, {
-            match: isFlowContent,
-            at: opts.at,
-          })
-          if (parentBlockEntry) {
-            let [block] = parentBlockEntry
-            MintterEditor.addChange(editor, ['replaceBlock', block.id])
-          }
+    let [pListNode, pListPath] = listEntry
+    editor.withoutNormalizing(() => {
+      let newList = fn([])
+      Transforms.setNodes(editor, {type: newList.type}, {at: pListPath})
+
+      if (opts.at.length > 2) {
+        let parentBlockEntry = editor.above({
+          match: isFlowContent,
+          at: opts.at,
+          mode: 'lowest',
+        })
+        if (parentBlockEntry) {
+          let [pBlockNode] = parentBlockEntry
+          MintterEditor.addChange(editor, ['replaceBlock', pBlockNode.id])
         }
       }
     })
