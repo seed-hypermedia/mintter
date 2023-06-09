@@ -34,6 +34,7 @@ import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, PathRef, Point, Span} from 'slate'
 import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {ELEMENT_GROUP} from './group'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {ELEMENT_STATEMENT} from './statement'
@@ -234,46 +235,34 @@ export function hasEmbedOnly(
 export function resetGroupingContent(editor: Editor): boolean {
   // const {selection} = editor
   // if (selection && isCollapsed(selection)) {
-  const list = Editor.above<GroupingContent>(editor, {
+  if (!editor.selection) {
+    console.warn('resetGroupingContent: no selection')
+    return false
+  }
+
+  if (!isCollapsed(editor.selection)) {
+    console.warn('resetGroupingContent: selection is not collapsed')
+    return false
+  }
+
+  const currentList = Editor.above<GroupingContent>(editor, {
     match: (n) => isGroupContent(n) && !isGroup(n),
+    mode: 'lowest',
   })
 
-  if (list) {
-    const [listNode, listPath] = list
-    if (listNode.children.length == 1 && !Node.string(listNode)) {
-      if (isGroup(listNode)) {
-        // remove the list if the type os the default one (group)
-        Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(
-            editor,
-            statement({id: createId()}, [paragraph([text('')])]),
-            {
-              at: listPath,
-            },
-          )
-          Transforms.removeNodes(editor, {at: Path.next(listPath)})
-
-          Transforms.select(editor, listPath.concat(0))
-        })
-      } else {
-        // reset the group type for the empty list
-        Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(
-            editor,
-            group([statement([paragraph([text('')])])]),
-            {
-              at: listPath,
-            },
-          )
-          Transforms.removeNodes(editor, {at: Path.next(listPath)})
-          Transforms.select(editor, [...listPath, 0, 0])
-        })
-      }
-
-      return true
-    }
+  if (!currentList) {
+    console.warn('resetGroupingContent: no list above')
+    return false
   }
-  // }
+
+  const [listNode, listPath] = currentList
+
+  if (listNode.children.length == 1 && !Node.string(listNode)) {
+    // reset the group type for the empty list
+    editor.setNodes({type: ELEMENT_GROUP}, {at: listPath})
+    return true
+  }
+
   return false
 }
 

@@ -11,6 +11,7 @@ import {
   isContent,
   isEmbed,
   isFlowContent,
+  isGroup,
   isGroupContent,
   isHeading,
   isOrderedList,
@@ -38,7 +39,14 @@ import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {removeEmptyGroup} from './group'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-import {blockHasNestedGroup, BLOCK_GAP, findPath, isFirstChild} from './utils'
+import {
+  blockHasNestedGroup,
+  BLOCK_GAP,
+  findPath,
+  isCollapsed,
+  isFirstChild,
+  resetGroupingContent,
+} from './utils'
 
 export const Block = (props: RenderElementProps & {mode: EditorMode}) => {
   if (props.mode == EditorMode.Draft) {
@@ -333,6 +341,8 @@ export function withBlocks(editor: Editor) {
 
   editor.deleteBackward = function blockDeleteBackward(unit: TextUnit) {
     if (resetEmptyBlock(editor)) return
+    if (resetGroupingContent(editor)) return
+    if (upwrapLastChild(editor)) return
     deleteBackward(unit)
   }
 
@@ -621,4 +631,42 @@ function resetEmptyBlock(editor: Editor): boolean {
     Transforms.select(editor, bPath)
   })
   return true
+}
+
+function upwrapLastChild(editor: Editor): boolean {
+  if (!editor.selection) {
+    console.warn('upwrapLastChild: no selection')
+    return false
+  }
+
+  if (!isCollapsed(editor.selection)) {
+    console.warn('upwrapLastChild: selection is not collapsed')
+    return false
+  }
+
+  const currentList = Editor.above<GroupingContent>(editor, {
+    match: isGroup,
+    mode: 'lowest',
+  })
+
+  if (!currentList) {
+    console.warn('resetGroupingContent: no list above')
+    return false
+  }
+
+  const [listNode, listPath] = currentList
+
+  if (listNode.children.length == 1 && !Node.string(listNode)) {
+    // reset the group type for the empty list
+    const parentBlockPath = Path.parent(listPath)
+    const targetPath = Path.next(parentBlockPath)
+    editor.withoutNormalizing(() => {
+      editor.unwrapNodes({at: listPath})
+      editor.moveNodes({at: listPath, to: targetPath})
+    })
+
+    return true
+  }
+
+  return false
 }
