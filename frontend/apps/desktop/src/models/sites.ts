@@ -216,7 +216,6 @@ async function performWebPublish(
   path: string,
   version: string,
 ) {
-  throw new Error('lol it failed')
   // 3. get referenced dependencies of the document
   const referencedDocs = extractReferencedDocs(document)
 
