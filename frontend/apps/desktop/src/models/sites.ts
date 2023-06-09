@@ -21,6 +21,7 @@ import {
 } from '@app/api-clients'
 import {queryKeys} from './query-keys'
 import {useNavigate} from '@app/utils/navigation'
+import {toast} from '@app/toast'
 
 function blockExtractReferencedDocs(
   block: Block,
@@ -215,6 +216,7 @@ async function performWebPublish(
   path: string,
   version: string,
 ) {
+  throw new Error('lol it failed')
   // 3. get referenced dependencies of the document
   const referencedDocs = extractReferencedDocs(document)
 
@@ -377,7 +379,15 @@ export function useSitePublishDraft(draftId: string | undefined) {
       //   )
       // }
 
-      await performWebPublish(document, webUrl, path, publication.version)
+      await performWebPublish(
+        document,
+        webUrl,
+        path,
+        publication.version,
+      ).catch((e) => {
+        console.error('Caught webPub failure', e)
+        toast.error('Failed to publish on web.')
+      })
 
       return {
         publication,
