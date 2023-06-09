@@ -219,7 +219,6 @@ export function useDraftEditor({documentId}: {documentId: string}) {
     editor,
     documentId,
   })
-  console.log('🚀 ~ file: editor.tsx:223 ~ useDraftEditor ~ state:', state)
 
   return {
     state,
