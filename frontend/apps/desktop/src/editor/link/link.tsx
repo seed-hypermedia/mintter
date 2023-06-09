@@ -673,8 +673,7 @@ export function InsertLinkButton() {
         if (nodes.length === 1) {
           const domRange = ReactEditor.toDOMRange(editor, selection)
           const linkSpan = document.createElement('span')
-          linkSpan.style.backgroundColor = 'var(--primary-active)'
-          linkSpan.style.color = 'white'
+          linkSpan.style.backgroundColor = 'var(--blue6)'
           try {
             domRange.surroundContents(linkSpan)
           } catch (e) {
@@ -712,8 +711,7 @@ export function InsertLinkButton() {
                 },
               })
             const linkSpan = document.createElement('span')
-            linkSpan.style.backgroundColor = 'var(--primary-active)'
-            linkSpan.style.color = 'white'
+            linkSpan.style.backgroundColor = 'var(--blue6)'
             try {
               domRange.surroundContents(linkSpan)
             } catch (e) {
