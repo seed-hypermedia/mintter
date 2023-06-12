@@ -832,11 +832,11 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		return nil, err
 	}
 	defer cancel()
-	site, err := sitesql.GetSite(conn, hostname)
+	siteInfo, err := sitesql.GetSite(conn, hostname)
 	if err != nil {
 		return nil, err
 	}
-	siteAccount = core.Principal(site.PublicKeysPrincipal)
+	siteAccount = core.Principal(siteInfo.PublicKeysPrincipal)
 	if siteAccount == nil {
 		v := ctx.Value(SiteAccountIDCtxKey)
 		acc, ok := v.(string)
@@ -868,15 +868,42 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	}
 	ctx = metadata.AppendToOutgoingContext(ctx, string(TargetSiteHeader), remoteHostname)
 	var failedPIDs []string
+
+	addrs := []interface{}{strings.Split(siteInfo.SitesAddresses, " ")}
 	for _, device := range devices {
-		pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()
-		if err != nil {
-			return nil, fmt.Errorf("failed to conver principal to peer ID: %w", err)
-		}
-		sitec, err := srv.Client(ctx, pid)
-		if err != nil {
-			failedPIDs = append(failedPIDs, pid.String())
-			continue
+		addrs = append(addrs, device)
+	}
+
+	for _, v := range addrs {
+		device, ok := v.(hypersql.KeyDelegationsListResult)
+		var sitec site.WebSiteClient
+		if ok {
+			pid, err := core.Principal(device.KeyDelegationsViewDelegate).PeerID()
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert principal to peer ID: %w", err)
+			}
+			sitec, err = srv.Client(ctx, pid)
+			if err != nil {
+				failedPIDs = append(failedPIDs, pid.String())
+				continue
+			}
+		} else {
+			addr, ok := v.([]string)
+			if !ok {
+				continue
+			}
+			info, err := AddrInfoFromStrings(addr...)
+			if err != nil {
+				continue
+			}
+			if err := n.Connect(ctx, info); err != nil {
+				continue
+			}
+			sitec, err = n.client.DialSite(ctx, info.ID)
+			if err != nil {
+				failedPIDs = append(failedPIDs, info.ID.String())
+				continue
+			}
 		}
 
 		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
