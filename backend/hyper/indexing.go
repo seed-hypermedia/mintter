@@ -67,7 +67,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			return err
 		}
 
-		if err := bs.indexBacklinks(conn, id, blob.CID, v); err != nil {
+		if err := bs.indexLinks(conn, id, blob.CID, v); err != nil {
 			return err
 		}
 	}
@@ -117,13 +117,55 @@ func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64
 	return ins.PublicKeysID, nil
 }
 
-func (bs *Storage) indexBacklinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Change) error {
+func (bs *Storage) indexLinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Change) error {
 	if !ch.Entity.HasPrefix("mintter:document:") {
 		return nil
 	}
 
 	blocks, ok := ch.Patch["blocks"].(map[string]any)
 	if !ok {
+		return nil
+	}
+
+	handleURL := func(sourceBlockID, linkType, rawURL string) error {
+		if rawURL == "" {
+			return nil
+		}
+
+		u, err := url.Parse(rawURL)
+		if err != nil {
+			bs.log.Warn("FailedToParseURL", zap.String("url", rawURL), zap.Error(err))
+			return nil
+		}
+
+		switch u.Scheme {
+		case "mintter":
+			ld := LinkData{
+				SourceBlock:    sourceBlockID,
+				TargetFragment: u.Fragment,
+				TargetVersion:  u.Query().Get("v"),
+			}
+
+			target := NewEntityID("mintter:document", u.Host)
+			rel := "href:" + linkType
+
+			targetID, err := bs.ensureEntity(conn, target)
+			if err != nil {
+				return err
+			}
+
+			ldjson, err := json.Marshal(ld)
+			if err != nil {
+				return fmt.Errorf("failed to encode link data: %w", err)
+			}
+
+			if err := hypersql.LinksInsert(conn, blobID, rel, 0, targetID, ldjson); err != nil {
+				return err
+			}
+		case "ipfs":
+			// TODO: parse ipfs links
+		}
+
 		return nil
 	}
 
@@ -145,50 +187,20 @@ func (bs *Storage) indexBacklinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch
 		blk.Id = id
 		blk.Revision = c.String()
 
-		for _, ann := range blk.Annotations {
-			// We only care about annotations with URL attribute.
-			rawURL, ok := ann.Attributes["url"]
-			if !ok {
-				continue
-			}
-
-			u, err := url.Parse(rawURL)
-			if err != nil {
-				bs.log.Warn("FailedToParseURL", zap.String("url", rawURL), zap.Error(err))
-				continue
-			}
-
-			switch u.Scheme {
-			case "mintter":
-				ld := LinkData{
-					SourceBlock:    blk.Id,
-					TargetFragment: u.Fragment,
-					TargetVersion:  u.Query().Get("v"),
-				}
-
-				target := NewEntityID("mintter:document", u.Host)
-				rel := "href:" + ann.Type
-
-				targetID, err := bs.ensureEntity(conn, target)
-				if err != nil {
-					return err
-				}
-
-				ldjson, err := json.Marshal(ld)
-				if err != nil {
-					return fmt.Errorf("failed to encode link data: %w", err)
-				}
-
-				if err := hypersql.LinksInsert(conn, blobID, rel, 0, targetID, ldjson); err != nil {
-					return err
-				}
-			case "ipfs":
-				// TODO: parse ipfs links
-			default:
-				continue
-			}
+		if err := handleURL(blk.Id, blk.Type, blk.Ref); err != nil {
+			return err
 		}
 
+		for _, ann := range blk.Annotations {
+			if err := handleURL(blk.Id, ann.Type, ann.Ref); err != nil {
+				return err
+			}
+
+			// Legacy behavior. We only care about annotations with URL attribute.
+			if err := handleURL(blk.Id, ann.Type, ann.Attributes["url"]); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

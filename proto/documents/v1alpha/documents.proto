@@ -252,6 +252,10 @@ message Block {
   // Text of the content block.
   string text = 3;
 
+  // Optional. The hyperlink to an external resource.
+  // Must be a valid URL.
+  string ref = 7;
+
   // Arbitrary attributes of the block.
   map<string, string> attributes = 4;
 
@@ -274,6 +278,10 @@ message Block {
 message Annotation {
   // Type of the annotation.
   string type = 1;
+
+  // Optional. A hyperlink to an external resource.
+  // Must be a valid URL.
+  string ref = 5;
 
   // Arbitrary key-value attributes of the annotation.
   map<string, string> attributes = 2;

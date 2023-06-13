@@ -952,6 +952,14 @@ export class Block extends Message<Block> {
   text = "";
 
   /**
+   * Optional. The hyperlink to an external resource.
+   * Must be a valid URL.
+   *
+   * @generated from field: string ref = 7;
+   */
+  ref = "";
+
+  /**
    * Arbitrary attributes of the block.
    *
    * @generated from field: map<string, string> attributes = 4;
@@ -984,6 +992,7 @@ export class Block extends Message<Block> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "text", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "ref", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "attributes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 5, name: "annotations", kind: "message", T: Annotation, repeated: true },
     { no: 6, name: "revision", kind: "scalar", T: 9 /* ScalarType.STRING */ },
@@ -1027,6 +1036,14 @@ export class Annotation extends Message<Annotation> {
   type = "";
 
   /**
+   * Optional. A hyperlink to an external resource.
+   * Must be a valid URL.
+   *
+   * @generated from field: string ref = 5;
+   */
+  ref = "";
+
+  /**
    * Arbitrary key-value attributes of the annotation.
    *
    * @generated from field: map<string, string> attributes = 2;
@@ -1058,6 +1075,7 @@ export class Annotation extends Message<Annotation> {
   static readonly typeName = "com.mintter.documents.v1alpha.Annotation";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "ref", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "attributes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 3, name: "starts", kind: "scalar", T: 5 /* ScalarType.INT32 */, repeated: true },
     { no: 4, name: "ends", kind: "scalar", T: 5 /* ScalarType.INT32 */, repeated: true },
