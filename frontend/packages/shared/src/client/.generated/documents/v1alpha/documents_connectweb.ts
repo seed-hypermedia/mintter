@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequestV2 } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -50,12 +50,12 @@ export const Drafts = {
     /**
      * Updates a draft using granular update operations.
      *
-     * @generated from rpc com.mintter.documents.v1alpha.Drafts.UpdateDraftV2
+     * @generated from rpc com.mintter.documents.v1alpha.Drafts.UpdateDraft
      */
-    updateDraftV2: {
-      name: "UpdateDraftV2",
-      I: UpdateDraftRequestV2,
-      O: Empty,
+    updateDraft: {
+      name: "UpdateDraft",
+      I: UpdateDraftRequest,
+      O: UpdateDraftResponse,
       kind: MethodKind.Unary,
     },
     /**

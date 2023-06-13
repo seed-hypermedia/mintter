@@ -185,7 +185,7 @@ func TestUpdateDraftSmoke(t *testing.T) {
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	resp, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	resp, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -283,7 +283,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Add some content to the draft ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_SetTitle{SetTitle: "Hello Drafts V2"}},
@@ -355,7 +355,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now reparent b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_MoveBlock_{
@@ -409,7 +409,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now delete b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_DeleteBlock{
@@ -792,7 +792,7 @@ func TestPublisherAndEditors(t *testing.T) {
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
@@ -850,7 +850,7 @@ func TestGetPreviousVersions(t *testing.T) {
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {
-	_, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	_, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: id,
 		Changes:    updates,
 	})

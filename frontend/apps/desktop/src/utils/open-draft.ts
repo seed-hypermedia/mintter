@@ -8,7 +8,7 @@ import {DraftRoute, useNavigate, useNavRoute} from './navigation'
 async function createDraft(siteHostname: string | undefined): Promise<string> {
   const doc = await draftsClient.createDraft({})
   if (siteHostname) {
-    await draftsClient.updateDraftV2({
+    await draftsClient.updateDraft({
       documentId: doc.id,
       changes: [
         new DocumentChange({

@@ -21,6 +21,14 @@ export class CreateDraftRequest extends Message<CreateDraftRequest> {
    */
   existingDocumentId = "";
 
+  /**
+   * Optional. Version of the existing document to create draft from.
+   * If version is specified existing_document_id must also be specified.
+   *
+   * @generated from field: string version = 2;
+   */
+  version = "";
+
   constructor(data?: PartialMessage<CreateDraftRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -30,6 +38,7 @@ export class CreateDraftRequest extends Message<CreateDraftRequest> {
   static readonly typeName = "com.mintter.documents.v1alpha.CreateDraftRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "existing_document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateDraftRequest {
@@ -134,9 +143,9 @@ export class GetDraftRequest extends Message<GetDraftRequest> {
 /**
  * Request to update an existing draft using granular operations.
  *
- * @generated from message com.mintter.documents.v1alpha.UpdateDraftRequestV2
+ * @generated from message com.mintter.documents.v1alpha.UpdateDraftRequest
  */
-export class UpdateDraftRequestV2 extends Message<UpdateDraftRequestV2> {
+export class UpdateDraftRequest extends Message<UpdateDraftRequest> {
   /**
    * ID of the document to be updated.
    *
@@ -151,32 +160,73 @@ export class UpdateDraftRequestV2 extends Message<UpdateDraftRequestV2> {
    */
   changes: DocumentChange[] = [];
 
-  constructor(data?: PartialMessage<UpdateDraftRequestV2>) {
+  constructor(data?: PartialMessage<UpdateDraftRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.documents.v1alpha.UpdateDraftRequestV2";
+  static readonly typeName = "com.mintter.documents.v1alpha.UpdateDraftRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 3, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "changes", kind: "message", T: DocumentChange, repeated: true },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateDraftRequestV2 {
-    return new UpdateDraftRequestV2().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateDraftRequest {
+    return new UpdateDraftRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateDraftRequestV2 {
-    return new UpdateDraftRequestV2().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateDraftRequest {
+    return new UpdateDraftRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateDraftRequestV2 {
-    return new UpdateDraftRequestV2().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateDraftRequest {
+    return new UpdateDraftRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: UpdateDraftRequestV2 | PlainMessage<UpdateDraftRequestV2> | undefined, b: UpdateDraftRequestV2 | PlainMessage<UpdateDraftRequestV2> | undefined): boolean {
-    return proto3.util.equals(UpdateDraftRequestV2, a, b);
+  static equals(a: UpdateDraftRequest | PlainMessage<UpdateDraftRequest> | undefined, b: UpdateDraftRequest | PlainMessage<UpdateDraftRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateDraftRequest, a, b);
+  }
+}
+
+/**
+ * Response after draft is updated.
+ *
+ * @generated from message com.mintter.documents.v1alpha.UpdateDraftResponse
+ */
+export class UpdateDraftResponse extends Message<UpdateDraftResponse> {
+  /**
+   * The ID of the change representing the draft version after the update is processed.
+   *
+   * @generated from field: string change_id = 1;
+   */
+  changeId = "";
+
+  constructor(data?: PartialMessage<UpdateDraftResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.UpdateDraftResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "change_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateDraftResponse {
+    return new UpdateDraftResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateDraftResponse {
+    return new UpdateDraftResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateDraftResponse {
+    return new UpdateDraftResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateDraftResponse | PlainMessage<UpdateDraftResponse> | undefined, b: UpdateDraftResponse | PlainMessage<UpdateDraftResponse> | undefined): boolean {
+    return proto3.util.equals(UpdateDraftResponse, a, b);
   }
 }
 

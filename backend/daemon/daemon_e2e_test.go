@@ -523,7 +523,7 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 		draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 		require.NoError(t, err)
 
-		_, err = alice.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = alice.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{
@@ -794,7 +794,7 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documen
 	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -819,7 +819,7 @@ func updateDocumenTitle(t *testing.T, ctx context.Context, publisher *App, docID
 	})
 	require.NoError(t, err)
 
-	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: newTitle}},

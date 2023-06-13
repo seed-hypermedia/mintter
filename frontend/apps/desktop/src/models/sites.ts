@@ -292,7 +292,7 @@ export function useSitePublish() {
       const draft = await draftsClient.createDraft({
         existingDocumentId: documentId,
       })
-      await draftsClient.updateDraftV2({
+      await draftsClient.updateDraft({
         documentId: draft.id,
         changes: [
           new DocumentChange({

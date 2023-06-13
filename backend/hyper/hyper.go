@@ -136,14 +136,15 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 	return out, nil
 }
 
-func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) error {
+func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
-		return err
+		return cid.Undef, err
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	var out cid.Cid
+	if err := sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
 		res, err := hypersql.DraftsGet(conn, string(eid))
 		if err != nil {
 			return err
@@ -156,8 +157,18 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) error {
 			return err
 		}
 
+		out = cid.NewCidV1(uint64(res.HyperDraftsViewCodec), res.HyperDraftsViewMultihash)
+
 		return nil
-	})
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return cid.Undef, fmt.Errorf("BUG: got draft without CID")
+	}
+
+	return out, nil
 }
 
 func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {

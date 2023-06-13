@@ -78,9 +78,22 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return nil, status.Errorf(codes.FailedPrecondition, "draft for %s already exists", in.ExistingDocumentId)
 		}
 
-		entity, err := api.blobs.LoadEntity(ctx, eid)
-		if err != nil {
-			return nil, err
+		var entity *hyper.Entity
+		if in.Version == "" {
+			entity, err = api.blobs.LoadEntity(ctx, eid)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			heads, err := hyper.Version(in.Version).Parse()
+			if err != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "unable to parse version %s: %v", in.Version, err)
+			}
+
+			entity, err = api.blobs.LoadEntityFromHeads(ctx, eid, heads...)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		del, err := api.getDelegation(ctx)
@@ -135,8 +148,8 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	})
 }
 
-// UpdateDraftV2 implements the corresponding gRPC method.
-func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
+// UpdateDraft implements the corresponding gRPC method.
+func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.UpdateDraftResponse, error) {
 	if in.DocumentId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID")
 	}
@@ -201,11 +214,14 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		}
 	}
 
-	if _, err := mut.Commit(ctx, api.blobs); err != nil {
+	blob, err := mut.Commit(ctx, api.blobs)
+	if err != nil {
 		return nil, err
 	}
 
-	return &emptypb.Empty{}, nil
+	return &documents.UpdateDraftResponse{
+		ChangeId: blob.CID.String(),
+	}, nil
 }
 
 // GetDraft implements the corresponding gRPC method.
@@ -280,7 +296,8 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, fmt.Errorf("failed to conver document to CID: %w", err)
 	}
 
-	if err := api.blobs.PublishDraft(ctx, eid); err != nil {
+	c, err := api.blobs.PublishDraft(ctx, eid)
+	if err != nil {
 		return nil, err
 	}
 
@@ -292,6 +309,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 	return api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: in.DocumentId,
+		Version:    c.String(),
 		LocalOnly:  true,
 	})
 }

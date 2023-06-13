@@ -384,7 +384,7 @@ export function useSaveDraft(editor: Editor, documentId?: string) {
 
       if (draftData.changes.length == 0) return null
 
-      await draftsClient.updateDraftV2({
+      await draftsClient.updateDraft({
         documentId,
         changes: draftData.changes,
       })
@@ -463,7 +463,7 @@ export function useWriteDraftWebUrl(draftId?: string) {
           'failed to access editor from useWriteDraftWebUrl mutation',
         )
       }
-      await draftsClient.updateDraftV2({
+      await draftsClient.updateDraft({
         documentId: draftId,
         changes: draftData.changes,
       })

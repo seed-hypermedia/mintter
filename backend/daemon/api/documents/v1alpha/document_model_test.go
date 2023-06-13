@@ -216,7 +216,8 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	hb, err := dm.Commit(ctx, blobs)
 	require.NoError(t, err)
 
-	require.NoError(t, blobs.PublishDraft(ctx, eid))
+	_, err = blobs.PublishDraft(ctx, eid)
+	require.NoError(t, err)
 
 	entity, err = blobs.LoadEntity(ctx, eid)
 	require.NoError(t, err)
