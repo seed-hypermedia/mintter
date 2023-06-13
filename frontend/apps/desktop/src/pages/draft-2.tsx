@@ -29,7 +29,14 @@ import {
   text,
 } from '@mintter/shared'
 import '@blocknote/core/style.css'
-import {Button, MainWrapper, SizableText, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  Container,
+  MainWrapper,
+  SizableText,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {useInterpret} from '@xstate/react'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -60,10 +67,12 @@ export default function DraftPage() {
       onReset={() => window.location.reload()}
     >
       <MainWrapper>
-        <YStack>
-          {!isDaemonReady ? <NotSavingBanner /> : null}
-          <BlockNoteView editor={editor.editor} />
-        </YStack>
+        <Container>
+          <YStack>
+            {!isDaemonReady ? <NotSavingBanner /> : null}
+            <BlockNoteView editor={editor.editor} />
+          </YStack>
+        </Container>
       </MainWrapper>
       <Footer />
     </ErrorBoundary>

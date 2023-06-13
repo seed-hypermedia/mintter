@@ -1,3 +1,4 @@
+import {findParentNode} from '@tiptap/core'
 import {
   draftsClient,
   getWebSiteClient,
@@ -29,11 +30,13 @@ import {
 import {queryKeys} from './query-keys'
 import {useEffect, useMemo, useRef, useState, useReducer} from 'react'
 import {useBlockNote} from '@blocknote/react'
+
 import {
   ChangeOperation,
   MintterEditor,
 } from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
+import {Extension} from '@tiptap/core'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
@@ -447,69 +450,36 @@ export function useDraftEditor2(documentId?: string) {
 
   const changesKey = new PluginKey('hyperdocs-changes')
 
-  const StateMonitorExtension = TiptapNode.create<any>({
+  const StateMonitorExtension = Extension.create({
     name: 'DraftStateMonitor',
+    onUpdate() {
+      let block = findBlock(this.editor.state.selection)
+      console.log('🚀 ~ == block:', block)
 
-    addOptions() {},
+      // appQueryClient.setQueryData(
+      //   [queryKeys.EDITOR_DRAFT, documentId],
+      //   (draftState: DraftState | undefined) => {
+      //     if (!draftState) return undefined
 
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          key: changesKey,
-          view: (editorView) => {
-            return {
-              update: (view) => {
-                // const {state} = view
-                // const {selection} = state
+      //     const actions: DraftChangeAction[] = []
+      //     // @horacioh please .push() into actions!
 
-                // if (
-                //   selection &&
-                //   selection.node &&
-                //   selection.node.attrs.blockId
-                // ) {
-                //   const {node} = selection
-
-                //   // Check if the selected node has a blockId attribute
-                //   const blockId = node.attrs.blockId
-                //   if (blockId) {
-                //     console.log('Block ID:', blockId)
-                //   }
-                // }
-
-                appQueryClient.setQueryData(
-                  [queryKeys.EDITOR_DRAFT, documentId],
-                  (draftState: DraftState | undefined) => {
-                    if (!draftState) return undefined
-
-                    const actions: DraftChangeAction[] = []
-                    // @horacioh please .push() into actions!
-
-                    return {
-                      ...draftState,
-                      // @horacioh please update children content?
-                      // children:
-                      changes: actions.reduce(
-                        draftChangesReducer,
-                        draftState.changes,
-                      ),
-                    }
-                  },
-                )
-                clearTimeout(debounceTimeout.current as any)
-                //@ts-ignore
-                debounceTimeout.current = setTimeout(() => {
-                  saveDraftMutation.mutate()
-                }, 500)
-
-                console.log(
-                  '🚀 ~ file: documents.ts:518 ~ addProseMirrorPlugins ~ view:',
-                  view,
-                )
-              },
-            }
-          },
-        }),
-      ]
+      //     return {
+      //       ...draftState,
+      //       // @horacioh please update children content?
+      //       // children:
+      //       changes: actions.reduce(
+      //         draftChangesReducer,
+      //         draftState.changes,
+      //       ),
+      //     }
+      //   },
+      // )
+      // clearTimeout(debounceTimeout.current as any)
+      // //@ts-ignore
+      // debounceTimeout.current = setTimeout(() => {
+      //   saveDraftMutation.mutate()
+      // }, 500)
     },
   })
 
@@ -764,3 +734,7 @@ function compareArrays(arr1: any[], arr2: any[]): boolean {
 //   }
 //   return content
 // }
+
+export const findBlock = findParentNode(
+  (node) => node.type.name === 'blockContainer',
+)
