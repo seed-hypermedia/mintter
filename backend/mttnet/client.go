@@ -89,7 +89,7 @@ func (c *Client) Close() (err error) {
 }
 
 func (c *Client) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, error) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
 	defer cancel()
 
 	if c.me.DeviceKey().ID() == pid {

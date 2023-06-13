@@ -887,6 +887,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 				failedPIDs = append(failedPIDs, pid.String())
 				continue
 			}
+			n.log.Debug("Remote site dialed via peerstore addresses, now try to call a remote function", zap.String("Function name", proxyFcn))
 		} else {
 			addr, ok := v.([]string)
 			if !ok {
@@ -904,9 +905,8 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 				failedPIDs = append(failedPIDs, info.ID.String())
 				continue
 			}
+			n.log.Debug("Remote site dialed via well-known addresses, now try to call a remote function", zap.String("Function name", proxyFcn))
 		}
-
-		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
 
 		in := []reflect.Value{reflect.ValueOf(ctx)}
 		for _, param := range params {
