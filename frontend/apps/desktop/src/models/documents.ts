@@ -27,13 +27,25 @@ import {
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
-import {useEffect, useMemo, useRef, useState} from 'react'
-import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {useEffect, useMemo, useRef, useState, useReducer} from 'react'
+import {useBlockNote} from '@blocknote/react'
+import {
+  ChangeOperation,
+  MintterEditor,
+} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
+import {Plugin, PluginKey} from 'prosemirror-state'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {
+  BlockNoteEditor,
+  PropSchema,
+  BlockSpec,
+  PartialBlock,
+} from '@blocknote/core'
 import {toast} from '@app/toast'
+import {Node as TiptapNode} from '@tiptap/core'
 
 export function usePublicationList() {
   return useQuery({
@@ -248,18 +260,17 @@ let emptyEditorValue = group({data: {parent: ''}}, [
   statement([paragraph([text('')])]),
 ])
 
-type EditorDraft = {
-  children: GroupingContent[]
+type DraftState = {
+  children: PartialBlock<any>[]
+  changes: DraftChangesState
   webUrl: string
-  id: string
-  changes: DocumentChange[]
 }
 
-export function useEditorDraft({
+export function useDraftState({
   editor,
   documentId,
   ...options
-}: UseQueryOptions<EditorDraft> & {
+}: UseQueryOptions<DraftState> & {
   documentId: string
   editor: Editor
 }) {
@@ -272,35 +283,25 @@ export function useEditorDraft({
         '🚀 ~ file: documents.ts:271 ~ queryFn: ~ backendDraft:',
         backendDraft,
       )
-      let children
-
-      if (backendDraft.children.length) {
-        children = [blockNodeToSlate(backendDraft.children)]
-      } else {
-        children = [emptyEditorValue]
-        if (editor) {
-          let block = emptyEditorValue.children[0]
-
-          MintterEditor.addChange(editor, ['moveBlock', block.id])
-          MintterEditor.addChange(editor, ['replaceBlock', block.id])
-        }
-      }
-
-      return {
-        changes: MintterEditor.transformChanges(editor).filter(Boolean),
+      const editorFormattedChildren: DraftState = {
         webUrl: backendDraft.webUrl,
-        id: backendDraft.id,
-        children,
+        children: [],
+        changes: {
+          moves: [],
+          changed: [],
+          deleted: [],
+        },
       }
+      return editorFormattedChildren
     },
     ...options,
   })
 }
 
 export function useDraftTitle(
-  input: UseQueryOptions<EditorDraft> & {documentId: string},
+  input: UseQueryOptions<DraftState> & {documentId: string},
 ) {
-  let data = useCacheListener<EditorDraft>([
+  let data = useCacheListener<DraftState>([
     queryKeys.EDITOR_DRAFT,
     input.documentId,
   ])
@@ -313,8 +314,9 @@ export function getTitleFromContent(children: Array<GroupingContent>): string {
   return Node.string(Node.get({children}, [0, 0, 0])) || ''
 }
 
-export function getDocumentTitle(doc?: EditorDraft) {
-  let titleText = doc?.children.length ? getTitleFromContent(doc?.children) : ''
+export function getDocumentTitle(doc?: DraftState) {
+  // let titleText = doc?.children.length ? getTitleFromContent(doc?.children) : ''
+  let titleText = 'todo'
 
   return titleText
     ? titleText.length < 50
@@ -327,94 +329,321 @@ export type SaveDraftInput = {
   content: GroupingContent[]
 }
 
-export function useSaveDraft(editor: Editor, documentId?: string) {
-  const saveDraftMutation = useMutation({
-    onMutate: ({content}: SaveDraftInput) => {
-      let title: string
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (editorDraft: EditorDraft | undefined) => {
-          if (!editorDraft) return undefined
-          let contentChanges =
-            MintterEditor.transformChanges(editor).filter(Boolean)
-          console.log(
-            '🚀 ~ file: documents.ts:337 ~ useSaveDraft ~ contentChanges:',
-            contentChanges,
-            editor,
-          )
+type DraftChangesState = {
+  moves: MoveBlockAction[]
+  changed: string[]
+  deleted: string[]
+}
 
-          title = getTitleFromContent(content)
-          let changes: Array<DocumentChange> = title
-            ? [
-                ...contentChanges,
-                new DocumentChange({
-                  op: {
-                    case: 'setTitle',
-                    value: title,
-                  },
-                }),
-              ]
-            : contentChanges
-          return {
-            ...editorDraft,
-            children: content,
-            changes,
-          }
-        },
-      )
-      appQueryClient.setQueryData(
-        [queryKeys.GET_DRAFT, documentId],
-        (draft: Document | undefined) => {
-          if (!draft) return undefined
-          return new Document({
-            ...draft,
-            title: title || draft.title,
-          })
-        },
-      )
-    },
-    mutationFn: async ({}: SaveDraftInput) => {
-      const draftData: EditorDraft | undefined = appQueryClient.getQueryData([
+type MoveBlockAction = {
+  type: 'moveBlock'
+  blockId: string
+  leftSibling: string
+  parent: string
+}
+
+type ChangeBlockAction = {
+  type: 'changeBlock'
+  blockId: string
+}
+
+type DeleteBlockAction = {
+  type: 'deleteBlock'
+  blockId: string
+}
+
+type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
+
+function draftChangesReducer(
+  state: DraftChangesState,
+  action: DraftChangeAction,
+): DraftChangesState {
+  if (action.type === 'moveBlock') {
+    return {
+      ...state,
+      moves: [...state.moves, action],
+    }
+  } else if (action.type === 'deleteBlock') {
+    return {
+      ...state,
+      deleted: [...state.deleted, action.blockId],
+      changed: state.changed.filter((blockId) => blockId !== action.blockId),
+      moves: state.moves.filter((move) => move.blockId !== action.blockId),
+    }
+  } else if (action.type === 'changeBlock') {
+    if (state.changed.indexOf(action.blockId) === -1) {
+      return {
+        ...state,
+        changed: [...state.changed, action.blockId],
+      }
+    }
+  }
+  return state
+}
+
+export function useDraftEditor2(documentId?: string) {
+  const saveDraftMutation = useMutation({
+    mutationFn: async () => {
+      const draftState: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
       ])
-      if (!draftData) {
-        throw new Error('failed to access editor from saveDraft mutation')
-      }
-
-      if (draftData.changes.length == 0) return null
-
-      await draftsClient.updateDraft({
-        documentId,
-        changes: draftData.changes,
-      })
-
-      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      return null
+      if (!draftState) return
+      const {changed, moves, deleted} = draftState.changes
+      const changes: Array<DocumentChange> = [
+        new DocumentChange({
+          op: {
+            case: 'setTitle',
+            value: 'LOL is this your title?',
+          },
+        }),
+        ...deleted.map((blockId) => {
+          return new DocumentChange({
+            op: {
+              case: 'deleteBlock',
+              value: blockId,
+            },
+          })
+        }),
+        ...moves.map(
+          (move) =>
+            new DocumentChange({
+              op: {
+                case: 'moveBlock',
+                value: {
+                  blockId: move.blockId,
+                },
+              },
+            }),
+        ),
+        ...changed.map((blockId) => {
+          // todo, get the block from the editor, somehow
+          return new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: {
+                id: blockId,
+                annotations: [],
+                attributes: {},
+                text: '',
+                type: '',
+              },
+            },
+          })
+        }),
+      ]
     },
   })
 
+  // await draftsClient.updateDraft({
+  //   documentId,
+  //   changes: draftData.changes,
+  // })
+
+  // appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+  // return null
+
   let debounceTimeout = useRef<number | null | undefined>(null)
 
-  return {
-    ...saveDraftMutation,
-    mutate: (input: SaveDraftInput) => {
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (editorDraft: any) => {
-          if (!editorDraft) return null
-          return {
-            ...editorDraft,
-            children: input.content,
-          }
-        },
-      )
-      clearTimeout(debounceTimeout.current as any)
-      //@ts-ignore
-      debounceTimeout.current = setTimeout(() => {
-        saveDraftMutation.mutate(input)
-      }, 500)
+  const changesKey = new PluginKey('hyperdocs-changes')
+
+  const StateMonitorExtension = TiptapNode.create<any>({
+    name: 'DraftStateMonitor',
+
+    addOptions() {},
+
+    addProseMirrorPlugins() {
+      return [
+        new Plugin({
+          key: changesKey,
+          view: (editorView) => {
+            return {
+              update: (view) => {
+                // const {state} = view
+                // const {selection} = state
+
+                // if (
+                //   selection &&
+                //   selection.node &&
+                //   selection.node.attrs.blockId
+                // ) {
+                //   const {node} = selection
+
+                //   // Check if the selected node has a blockId attribute
+                //   const blockId = node.attrs.blockId
+                //   if (blockId) {
+                //     console.log('Block ID:', blockId)
+                //   }
+                // }
+
+                appQueryClient.setQueryData(
+                  [queryKeys.EDITOR_DRAFT, documentId],
+                  (draftState: DraftState | undefined) => {
+                    if (!draftState) return undefined
+
+                    const actions: DraftChangeAction[] = []
+                    // @horacioh please .push() into actions!
+
+                    return {
+                      ...draftState,
+                      // @horacioh please update children content?
+                      // children:
+                      changes: actions.reduce(
+                        draftChangesReducer,
+                        draftState.changes,
+                      ),
+                    }
+                  },
+                )
+                clearTimeout(debounceTimeout.current as any)
+                //@ts-ignore
+                debounceTimeout.current = setTimeout(() => {
+                  saveDraftMutation.mutate()
+                }, 500)
+
+                console.log(
+                  '🚀 ~ file: documents.ts:518 ~ addProseMirrorPlugins ~ view:',
+                  view,
+                )
+              },
+            }
+          },
+        }),
+      ]
     },
+  })
+
+  const editor = useBlockNote({
+    onEditorContentChange(editor) {
+      // mutate editor here
+      console.log('UPDATE', editor, editor.topLevelBlocks)
+    },
+    initialContent: [],
+    // initialContent: [
+    // {
+    //   id: '064c535e',
+    //   type: 'paragraph',
+    //   props: {
+    //     textColor: 'default',
+    //     backgroundColor: 'default',
+    //     textAlignment: 'left',
+    //   },
+    //   content: [{type: 'text', text: 'test 1', styles: {}}],
+    //   children: [],
+    // },
+    // {
+    //   id: '98cfb0d3',
+    //   type: 'paragraph',
+    //   props: {
+    //     textColor: 'default',
+    //     backgroundColor: 'default',
+    //     textAlignment: 'left',
+    //   },
+    //   content: [{type: 'text', text: 'test 2', styles: {}}],
+    //   children: [
+    //     {
+    //       id: '39bba21f',
+    //       type: 'paragraph',
+    //       props: {
+    //         textColor: 'default',
+    //         backgroundColor: 'default',
+    //         textAlignment: 'left',
+    //       },
+    //       content: [{type: 'text', text: 'test 3', styles: {}}],
+    //       children: [],
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: '68de18f5-041a-4a93-b886-8f94b1cc3499',
+    //   type: 'paragraph',
+    //   props: {
+    //     textColor: 'default',
+    //     backgroundColor: 'default',
+    //     textAlignment: 'left',
+    //   },
+    //   content: [],
+    //   children: [],
+    // },
+    // ],
+    _tiptapOptions: {
+      extensions: [StateMonitorExtension.configure({})],
+    },
+  })
+  const draftState = useQuery({
+    enabled: !!editor,
+    queryFn: async () => {
+      const serverDraft = await draftsClient.getDraft({
+        documentId,
+      })
+      console.log('wtf server draft', serverDraft)
+      const draftState: DraftState = {
+        children: [
+          {
+            id: '064c535e-b7ab-4c69-8432-a50b5c1c3b44',
+            type: 'paragraph',
+            props: {
+              textColor: 'default',
+              backgroundColor: 'default',
+              textAlignment: 'left',
+            },
+            content: [{type: 'text', text: 'test 1', styles: {}}],
+            children: [],
+          },
+          {
+            id: '98cfb0d3-594a-4da4-b10b-0a7489c42368',
+            type: 'paragraph',
+            props: {
+              textColor: 'default',
+              backgroundColor: 'default',
+              textAlignment: 'left',
+            },
+            content: [{type: 'text', text: 'test 2', styles: {}}],
+            children: [
+              {
+                id: '39bba21f-8c11-4dbe-b33c-046aacd4ed63',
+                type: 'paragraph',
+                props: {
+                  textColor: 'default',
+                  backgroundColor: 'default',
+                  textAlignment: 'left',
+                },
+                content: [{type: 'text', text: 'test 3', styles: {}}],
+                children: [],
+              },
+            ],
+          },
+          {
+            id: '68de18f5-041a-4a93-b886-8f94b1cc3499',
+            type: 'paragraph',
+            props: {
+              textColor: 'default',
+              backgroundColor: 'default',
+              textAlignment: 'left',
+            },
+            content: [],
+            children: [],
+          },
+        ],
+        changes: {
+          changed: [],
+          deleted: [],
+          moves: [],
+        },
+        webUrl: serverDraft.webUrl,
+      }
+      // convert data to editor blocks
+      // return {} as DraftState
+      return draftState
+    },
+    onSuccess: (draft: DraftState) => {
+      console.log('wtf please insert', draft, editor)
+      editor?._tiptapEditor.commands.insertContent(draft.children)
+    },
+  })
+
+  return {
+    editor,
   }
 }
 
@@ -422,26 +651,26 @@ export function useWriteDraftWebUrl(draftId?: string) {
   return useMutation({
     onMutate: (webUrl: string) => {
       let title: string
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, draftId],
-        (editorDraft: EditorDraft | undefined) => {
-          if (!editorDraft) return undefined
-          let changes: DocumentChange[] = [
-            ...editorDraft.changes,
-            new DocumentChange({
-              op: {
-                case: 'setWebUrl',
-                value: webUrl,
-              },
-            }),
-          ]
-          return {
-            ...editorDraft,
-            webUrl,
-            changes,
-          }
-        },
-      )
+      // appQueryClient.setQueryData(
+      //   [queryKeys.EDITOR_DRAFT, draftId],
+      //   (editorDraft: EditorDraft | undefined) => {
+      //     if (!editorDraft) return undefined
+      //     let changes: DocumentChange[] = [
+      //       ...editorDraft.changes,
+      //       new DocumentChange({
+      //         op: {
+      //           case: 'setWebUrl',
+      //           value: webUrl,
+      //         },
+      //       }),
+      //     ]
+      //     return {
+      //       ...editorDraft,
+      //       webUrl,
+      //       changes,
+      //     }
+      //   },
+      // )
       appQueryClient.setQueryData(
         [queryKeys.GET_DRAFT, draftId],
         (draft: Document | undefined) => {
@@ -454,7 +683,7 @@ export function useWriteDraftWebUrl(draftId?: string) {
       )
     },
     mutationFn: async (webUrl: string) => {
-      const draftData: EditorDraft | undefined = appQueryClient.getQueryData([
+      const draftData: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         draftId,
       ])
@@ -465,7 +694,8 @@ export function useWriteDraftWebUrl(draftId?: string) {
       }
       await draftsClient.updateDraft({
         documentId: draftId,
-        changes: draftData.changes,
+        // changes: draftData.changes,
+        changes: [],
       })
 
       appInvalidateQueries([draftId])
@@ -504,3 +734,33 @@ function compareArrays(arr1: any[], arr2: any[]): boolean {
 
   return arr1.every((value, index) => value === arr2[index])
 }
+
+// function BlockToBlockNote(document: any) {
+//   const children = document.children
+//   if (children) {
+//     const result = AppendChildren(children)
+//     return result
+//   }
+//   return []
+// }
+
+// function AppendChildren(children: any) {
+//   if (!children || children.length === 0) return []
+//   const content = []
+//   for (const child of children) {
+//     const block = {
+//       id: child.id,
+//       type: child.type,
+//       // props: defaultProps,
+//       props: {},
+//       content: {
+//         type: 'text',
+//         text: child.content,
+//         styles: {},
+//       } as StyledText,
+//       children: AppendChildren(child.children),
+//     }
+//     content.push(block)
+//   }
+//   return content
+// }

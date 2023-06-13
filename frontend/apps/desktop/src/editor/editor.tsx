@@ -1,7 +1,7 @@
 import {
   useEditorDraft,
   usePublication,
-  useSaveDraft,
+  useEditorDraft,
 } from '@app/models/documents'
 import {useCallback, useMemo} from 'react'
 import {createEditor, Editor as SlateEditor} from 'slate'
@@ -213,7 +213,7 @@ export function useDraftEditor({documentId}: {documentId: string}) {
       ),
     [],
   )
-  let saveDraft = useSaveDraft(editor, documentId)
+  let saveDraft = useEditorDraft(editor, documentId)
 
   const state = useEditorDraft({
     editor,

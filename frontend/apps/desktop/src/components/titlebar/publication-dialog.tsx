@@ -1,4 +1,4 @@
-import {useDraft, usePublication, useSaveDraft} from '@app/models/documents'
+import {useDraft, usePublication, useEditorDraft} from '@app/models/documents'
 import {useSitePublish, useSitePublishDraft} from '@app/models/sites'
 import {styled} from '@app/stitches.config'
 import {

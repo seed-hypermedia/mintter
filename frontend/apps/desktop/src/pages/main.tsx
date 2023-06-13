@@ -22,7 +22,7 @@ var Account = lazy(() => import('@app/pages/account-page'))
 var Connections = lazy(() => import('@app/pages/connections-page'))
 var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
-var Draft = lazy(() => import('@app/pages/draft'))
+var Draft = lazy(() => import('@app/pages/draft-2'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var BlockNote = lazy(() => import('@app/pages/blocknote'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
@@ -77,17 +77,6 @@ export default function Main() {
           window.location.reload()
         }}
       >
-        <XStack alignItems="center" gap="$3" p="$2">
-          <SizableText>editor demos:</SizableText>
-          <Button
-            onPress={() => {
-              navigate({key: 'blocknote'})
-            }}
-          >
-            BlockNote
-          </Button>
-        </XStack>
-
         <PageComponent key={routeKey} />
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>

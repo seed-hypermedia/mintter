@@ -2,12 +2,23 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {Editor, plugins, useDraftEditor} from '@app/editor/editor'
 import {EditorHoveringToolbar} from '@app/editor/hovering-toolbar'
-
+import {Node} from '@tiptap/core'
+import {Plugin} from 'prosemirror-state'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
-import {useEditorDraft, useEditorDraft} from '@app/models/documents'
+import {useDraftEditor2, useEditorDraft} from '@app/models/documents'
 import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
+import {
+  BlockNoteEditor,
+  Block,
+  StyledText,
+  DefaultBlockSchema,
+  Props,
+  defaultProps,
+  DefaultProps,
+} from '@blocknote/core'
+import {useBlockNote, BlockNoteView} from '@blocknote/react'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {
@@ -17,6 +28,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import '@blocknote/core/style.css'
 import {Button, MainWrapper, SizableText, XStack, YStack} from '@mintter/ui'
 import {useInterpret} from '@xstate/react'
 import {useEffect, useMemo, useState} from 'react'
@@ -35,24 +47,12 @@ export default function DraftPage() {
 
   const [debugValue, setDebugValue] = useState(false)
   const documentId = route.draftId // TODO, clean this up when draftId != docId
-  const {editor, saveDraft, state} = useDraftEditor({
-    documentId,
-  })
 
-  const {status, error, data: draftState, refetch} = state
+  const editor = useDraftEditor2(documentId)
 
   let isDaemonReady = useDaemonReady()
 
-  useInitialFocus(editor)
   // useTauriListeners(editor)
-
-  if (status == 'loading') {
-    return <DraftShell />
-  }
-
-  if (status == 'error') {
-    return <AppError error={error} resetErrorBoundary={() => refetch()} />
-  }
 
   return (
     <ErrorBoundary
@@ -62,57 +62,7 @@ export default function DraftPage() {
       <MainWrapper>
         <YStack>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-          {draftState.children.length ? (
-            <>
-              <Editor
-                mode={EditorMode.Draft}
-                editor={editor}
-                value={draftState.children}
-                //@ts-ignore
-                onChange={(content: GroupingContent[]) => {
-                  // this is used to filter operations that are not changing the actual editor content.
-                  const isAstChange = editor.operations.some(
-                    (op) => 'set_selection' !== op.type,
-                  )
-
-                  if (isAstChange) {
-                    // TODO: need to check when content can be a string
-                    if (
-                      (!content && typeof content == 'string') ||
-                      !isDaemonReady
-                    )
-                      return
-                    saveDraft.mutate({content})
-                  }
-                }}
-                toolbar={<EditorHoveringToolbar />}
-              />
-              {import.meta.env.DEV && (
-                <YStack width="500px" marginHorizontal="auto">
-                  <Button
-                    size="$1"
-                    theme="gray"
-                    width="100%"
-                    onPress={() => setDebugValue((v) => !v)}
-                  >
-                    toggle value
-                  </Button>
-                  {debugValue && (
-                    <XStack
-                      tag="pre"
-                      {...{
-                        whiteSpace: 'wrap',
-                      }}
-                    >
-                      <SizableText tag="code" size="$1">
-                        {JSON.stringify(draftState?.children, null, 3)}
-                      </SizableText>
-                    </XStack>
-                  )}
-                </YStack>
-              )}
-            </>
-          ) : null}
+          <BlockNoteView editor={editor.editor} />
         </YStack>
       </MainWrapper>
       <Footer />
@@ -172,3 +122,17 @@ function NotSavingBanner() {
     </AppBanner>
   )
 }
+
+// let document = {
+// 	// ...
+// 	children: [
+// 		{
+// 			id: 'wertyuiop',
+// 			type: 'paragraph',
+// 			content: 'Hello world',
+// 			annotations: [],
+// 			attributes: {},
+//      children: [],
+// 		}
+// 	]
+// }
