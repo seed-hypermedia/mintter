@@ -1,4 +1,4 @@
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown} from '@components/dropdown'
 import {invoke, send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
 import {useSiteList} from '@app/models/sites'

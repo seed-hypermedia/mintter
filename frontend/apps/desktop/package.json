@@ -84,10 +84,6 @@
     "rehype-stringify": "9.0.3",
     "shiki": "0.14.1",
     "show-keys": "1.1.2",
-    "slate": "0.94.1",
-    "slate-history": "0.93.0",
-    "slate-hyperscript": "0.77.0",
-    "slate-react": "0.94.0",
     "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log.git#commit=b58475bbc410fa78eb69276c62d0b64c91c07914",
     "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store.git#commit=df267506bf12de451762f3f4b7f929ebed1421c9",
     "tiny-secp256k1": "2.2.1",
@@ -98,8 +94,7 @@
     "unist-util-visit": "4.1.2",
     "unist-util-visit-parents": "5.1.3",
     "vite": "4.3.1",
-    "xstate": "4.37.1",
-    "zod": "^3.21.4"
+    "xstate": "4.37.1"
   },
   "devDependencies": {
     "@babel/core": "7.20.7",

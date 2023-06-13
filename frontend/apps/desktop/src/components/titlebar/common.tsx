@@ -1,5 +1,5 @@
 import {draftsClient} from '@app/api-clients'
-import {Dropdown, MenuItem} from '@app/editor/dropdown'
+import {Dropdown, MenuItem} from '@components/dropdown'
 import appError from '@app/errors'
 import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'

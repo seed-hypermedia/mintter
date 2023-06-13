@@ -13,12 +13,9 @@ import {
   statement,
   text,
   paragraph,
-  blockNodeToSlate,
   GroupingContent,
   DocumentChange,
   WebPublicationRecord,
-  BlockNode,
-  Block,
   serverChildrenToEditorChildren,
 } from '@mintter/shared'
 import {
@@ -31,27 +28,16 @@ import {
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
-import {useEffect, useMemo, useRef, useState, useReducer} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {useBlockNote} from '@blocknote/react'
-
-import {
-  ChangeOperation,
-  MintterEditor,
-} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
 import {Extension} from '@tiptap/core'
-import {Plugin, PluginKey} from 'prosemirror-state'
+import {PluginKey} from 'prosemirror-state'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {
-  BlockNoteEditor,
-  PropSchema,
-  BlockSpec,
-  PartialBlock,
-} from '@blocknote/core'
+import {PartialBlock} from '@blocknote/core'
 import {toast} from '@app/toast'
-import {Node as TiptapNode} from '@tiptap/core'
 
 export function usePublicationList() {
   return useQuery({
@@ -733,7 +719,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
 
   const editor = useBlockNote({
     // _tiptapOptions: {
-    //   editable: false,
+    //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
     onEditorContentChange(editor) {
       // opts?.onEditorState?.(editor.topLevelBlocks)

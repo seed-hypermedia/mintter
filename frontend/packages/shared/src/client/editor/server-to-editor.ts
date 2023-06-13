@@ -1,10 +1,11 @@
-import {PartialBlock} from '@blocknote/core'
+import {BlockSpec, PartialBlock} from '@blocknote/core'
 import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
 
 export function leafServerBlockToEditorBlock(block: Block): PartialBlock<any> {
   return {
     id: block.id,
     type: 'text',
+    // @ts-expect-error
     text: block.text,
     style: {},
   }
@@ -33,7 +34,8 @@ function areStylesEqual(
 }
 
 export function serverBlockToEditorInline(block: Block): Inline[] {
-  const {text, annotations} = block
+  let {text, annotations} = block
+  if (!text) text = ''
   const stylesForIndex: (Record<string, string> | null)[] = Array(
     text.length,
   ).fill(null)
@@ -60,6 +62,7 @@ export function serverBlockToEditorInline(block: Block): Inline[] {
     } else {
       inlines.push({
         text: currentText,
+        // @ts-expect-error
         type: 'text',
         styles: currentStyles || {},
       })
@@ -70,6 +73,7 @@ export function serverBlockToEditorInline(block: Block): Inline[] {
 
   inlines.push({
     text: currentText,
+    // @ts-expect-error
     type: 'text',
     styles: currentStyles || {},
   })
@@ -98,6 +102,7 @@ export function serverBlockToEditorParagraph(
   return {
     id: block.id,
     type: 'paragraph',
+    // @ts-expect-error
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       childrenType: extractChildrenType(block.attributes.childrenType),
@@ -117,6 +122,7 @@ export function serverBlockToEditorOLI(
   return {
     id: block.id,
     type: 'ordered-list-item',
+    // @ts-expect-error
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       childrenType: extractChildrenType(block.attributes.childrenType),

@@ -1,4 +1,4 @@
-import {Dropdown, MenuItem} from '@app/editor/dropdown'
+import {Dropdown, MenuItem} from '@components/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
 import {useDocPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'

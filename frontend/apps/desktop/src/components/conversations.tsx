@@ -1,6 +1,6 @@
 import {changesClient, commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
-import {useConversations} from '@app/editor/comments/conversations-context'
+
 import {useAccount} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
@@ -22,6 +22,7 @@ import {useQuery} from '@tanstack/react-query'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {AccessoryContainer} from './accessory-sidebar'
+import {useConversations} from './conversations-context'
 
 export const ConversationsAccessory = features.comments
   ? EnabledConversationsAccessory

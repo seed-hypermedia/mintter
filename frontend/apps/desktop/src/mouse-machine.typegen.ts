@@ -30,7 +30,7 @@
 "blockObserve": "BLOCK.OBSERVE";
 "clearBlockBounds": "DISABLE.CHANGE" | "DISABLE.SCROLL" | "DISABLE.WINDOW.BLUR" | "DISABLE.WINDOW.RESIZE";
 "clearCurrentBound": "DISABLE.CHANGE" | "DISABLE.SCROLL" | "DISABLE.WINDOW.BLUR" | "DISABLE.WINDOW.RESIZE";
-"getBlockBounds": "DISABLE.BLOCKTOOLS.CLOSE" | "DISABLE.DRAG.END" | "MOUSE.MOVE" | "xstate.init";
+"getBlockBounds": "DISABLE.BLOCKTOOLS.CLOSE" | "MOUSE.MOVE" | "xstate.init";
 "removeVisibleBlock": "BLOCK.REMOVE";
         };
         eventsCausingDelays: {

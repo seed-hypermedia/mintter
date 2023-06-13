@@ -4739,10 +4739,6 @@ __metadata:
     sass: 1.56.1
     shiki: 0.14.1
     show-keys: 1.1.2
-    slate: 0.94.1
-    slate-history: 0.93.0
-    slate-hyperscript: 0.77.0
-    slate-react: 0.94.0
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log.git#commit=b58475bbc410fa78eb69276c62d0b64c91c07914"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store.git#commit=df267506bf12de451762f3f4b7f929ebed1421c9"
     tiny-glob: 0.2.9
@@ -4759,7 +4755,6 @@ __metadata:
     vite-tsconfig-paths: 4.2.0
     ws: 8.13.0
     xstate: 4.37.1
-    zod: ^3.21.4
   peerDependencies:
     typescript: 4.9.4
   languageName: unknown
@@ -23769,28 +23764,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-history@npm:0.93.0":
-  version: 0.93.0
-  resolution: "slate-history@npm:0.93.0"
-  dependencies:
-    is-plain-object: ^5.0.0
-  peerDependencies:
-    slate: ">=0.65.3"
-  checksum: 4ce44a9ecbccbfd3b9c023e5bc20c6e151f1064fb2a6dd42cfec72bd6f8fd29e60f533e74130bb69f4706e86802929eb6fd89eb271dda34924ab46965c36a3e2
-  languageName: node
-  linkType: hard
-
-"slate-hyperscript@npm:0.77.0":
-  version: 0.77.0
-  resolution: "slate-hyperscript@npm:0.77.0"
-  dependencies:
-    is-plain-object: ^5.0.0
-  peerDependencies:
-    slate: ">=0.65.3"
-  checksum: b701dd1975c7d3510c1eb05c631c4c58072b22a94729033af915a43b20a703447ef8abcdc03d23146defd519cc668dcfa455220ff174a3d0be5126b248b7db72
-  languageName: node
-  linkType: hard
-
 "slate-react@npm:0.94.0":
   version: 0.94.0
   resolution: "slate-react@npm:0.94.0"
@@ -23820,17 +23793,6 @@ __metadata:
     is-plain-object: ^5.0.0
     tiny-warning: ^1.0.3
   checksum: a86a09f3e0db5d5d405cc7baa4256fe94a10b761a7f9fa941f68256c1198769b382fddb7fb6186c5e98197c1e123c84802ddbb6b2898bc8b67853a1c40bf927d
-  languageName: node
-  linkType: hard
-
-"slate@npm:0.94.1":
-  version: 0.94.1
-  resolution: "slate@npm:0.94.1"
-  dependencies:
-    immer: ^9.0.6
-    is-plain-object: ^5.0.0
-    tiny-warning: ^1.0.3
-  checksum: 07666fe3373e59aaa19261366fd3cf1df546edfc0162fb88d675d71f158ebd1bf0630fd00ecc9152ab6547080f3e90c9f6d1504e09c25b3bf980cceb9b15c3c1
   languageName: node
   linkType: hard
 
@@ -27335,7 +27297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.21.4, zod@npm:^3.21.4":
+"zod@npm:3.21.4":
   version: 3.21.4
   resolution: "zod@npm:3.21.4"
   checksum: f185ba87342ff16f7a06686767c2b2a7af41110c7edf7c1974095d8db7a73792696bcb4a00853de0d2edeb34a5b2ea6a55871bc864227dace682a0a28de33e1f

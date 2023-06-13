@@ -3,7 +3,7 @@ import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
 import {
   serverBlockToEditorInline,
   serverChildrenToEditorChildren,
-} from '../editor2/server-to-editor'
+} from '../editor/server-to-editor'
 
 describe('Editor2: ', () => {
   describe('Server to Editor: ', () => {

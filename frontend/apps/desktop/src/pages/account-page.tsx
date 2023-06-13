@@ -1,4 +1,4 @@
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown} from '@components/dropdown'
 import {useAccountPublicationList} from '@app/models/changes'
 import {useAccountWithDevices} from '@app/models/contacts'
 import {toast} from '@app/toast'

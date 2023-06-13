@@ -1,4 +1,4 @@
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown} from '@components/dropdown'
 import {prefetchDraft, useDraftList} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
 import {DraftRoute, useNavigate} from '@app/utils/navigation'

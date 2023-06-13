@@ -1,12 +1,8 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {features} from '@app/constants'
-import {CitationsProvider} from '@app/editor/comments/citations-context'
-import {ConversationsProvider} from '@app/editor/comments/conversations-context'
-import {getEditorBlock} from '@app/editor/utils'
 import {useDocChanges} from '@app/models/changes'
 import {useDocCitations} from '@app/models/content-graph'
 import {usePublication, usePublicationEditor} from '@app/models/documents'
-import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {VersionsAccessory} from '@components/changes-list'
@@ -39,6 +35,8 @@ import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
 import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
 import {DebugData} from '@components/debug-data'
+import {ConversationsProvider} from '@components/conversations-context'
+import {CitationsProvider} from '@components/citations-context'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -120,103 +118,102 @@ export default function PublicationPage() {
               replace({...route, accessory: {key: 'citations'}})
             }}
           >
-            <MouseProvider value={mouseService}>
-              <MainWrapper noScroll>
-                <Allotment defaultSizes={[100]} onChange={(values) => {}}>
-                  <Allotment.Pane>
-                    <YStack
-                      height="100%"
-                      // @ts-ignore
-                      onMouseMove={(event) =>
-                        mouseService.send({
-                          type: 'MOUSE.MOVE',
-                          position: event.clientY,
-                        })
-                      }
-                      onMouseLeave={() => {
-                        mouseService.send('DISABLE.CHANGE')
-                      }}
+            {/* <MouseProvider value={mouseService}> */}
+            <MainWrapper noScroll>
+              <Allotment defaultSizes={[100]} onChange={(values) => {}}>
+                <Allotment.Pane>
+                  <YStack
+                    height="100%"
+                    // @ts-ignore
+                    onMouseMove={(event) =>
+                      mouseService.send({
+                        type: 'MOUSE.MOVE',
+                        position: event.clientY,
+                      })
+                    }
+                    onMouseLeave={() => {
+                      mouseService.send('DISABLE.CHANGE')
+                    }}
+                  >
+                    <ScrollView
+                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
                     >
-                      <ScrollView
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        {versionId && (
-                          <OutOfDateBanner docId={docId} version={versionId} />
-                        )}
-                        {editor && (
-                          <HDEditorContainer>
-                            <HyperDocsEditorView editor={editor} />
-                            {import.meta.env.DEV && (
-                              <YStack maxWidth="500px" marginHorizontal="auto">
-                                <Button
-                                  size="$1"
-                                  theme="gray"
-                                  width="100%"
-                                  onPress={() => setDebugValue((v) => !v)}
-                                >
-                                  toggle value
-                                </Button>
-                                {debugValue && <DebugData data={data} />}
-                              </YStack>
-                            )}
-                          </HDEditorContainer>
-                        )}
-                      </ScrollView>
-                    </YStack>
-                  </Allotment.Pane>
-                  {accessoryKey &&
-                    (accessoryKey == 'comments' ? (
-                      <ConversationsAccessory />
-                    ) : accessoryKey == 'versions' ? (
-                      <VersionsAccessory />
-                    ) : (
-                      <CitationsAccessory docId={docId} version={versionId} />
-                    ))}
-                </Allotment>
-              </MainWrapper>
-              <Footer>
+                      {versionId && (
+                        <OutOfDateBanner docId={docId} version={versionId} />
+                      )}
+                      {editor && (
+                        <HDEditorContainer>
+                          <HyperDocsEditorView editor={editor} />
+                          {import.meta.env.DEV && (
+                            <YStack maxWidth="500px" marginHorizontal="auto">
+                              <Button
+                                size="$1"
+                                theme="gray"
+                                width="100%"
+                                onPress={() => setDebugValue((v) => !v)}
+                              >
+                                toggle value
+                              </Button>
+                              {debugValue && <DebugData data={data} />}
+                            </YStack>
+                          )}
+                        </HDEditorContainer>
+                      )}
+                    </ScrollView>
+                  </YStack>
+                </Allotment.Pane>
+                {accessoryKey &&
+                  (accessoryKey == 'comments' ? (
+                    <ConversationsAccessory />
+                  ) : accessoryKey == 'versions' ? (
+                    <VersionsAccessory />
+                  ) : (
+                    <CitationsAccessory docId={docId} version={versionId} />
+                  ))}
+              </Allotment>
+            </MainWrapper>
+            <Footer>
+              <FooterButton
+                active={accessoryKey === 'versions'}
+                label={`${changes?.changes?.length} ${pluralS(
+                  changes?.changes?.length,
+                  'Version',
+                )}`}
+                icon={Pencil}
+                onPress={() => {
+                  if (route.accessory)
+                    return replace({...route, accessory: null})
+                  replace({...route, accessory: {key: 'versions'}})
+                }}
+              />
+              {citations?.links?.length ? (
                 <FooterButton
-                  active={accessoryKey === 'versions'}
-                  label={`${changes?.changes?.length} ${pluralS(
-                    changes?.changes?.length,
-                    'Version',
+                  active={accessoryKey === 'citations'}
+                  label={`${citations?.links?.length} ${pluralS(
+                    citations?.links?.length,
+                    'Citation',
                   )}`}
-                  icon={Pencil}
+                  icon={Link}
                   onPress={() => {
                     if (route.accessory)
                       return replace({...route, accessory: null})
-                    replace({...route, accessory: {key: 'versions'}})
+                    replace({...route, accessory: {key: 'citations'}})
                   }}
                 />
-                {citations?.links?.length ? (
-                  <FooterButton
-                    active={accessoryKey === 'citations'}
-                    label={`${citations?.links?.length} ${pluralS(
-                      citations?.links?.length,
-                      'Citation',
-                    )}`}
-                    icon={Link}
-                    onPress={() => {
-                      if (route.accessory)
-                        return replace({...route, accessory: null})
-                      replace({...route, accessory: {key: 'citations'}})
-                    }}
-                  />
-                ) : null}
-                {features.comments ? (
-                  <FooterButton
-                    active={accessoryKey === 'comments'}
-                    label={`Conversations`}
-                    icon={Comment}
-                    onPress={() => {
-                      if (route.accessory?.key === 'versions')
-                        return replace({...route, accessory: null})
-                      replace({...route, accessory: {key: 'comments'}})
-                    }}
-                  />
-                ) : null}
-              </Footer>
-            </MouseProvider>
+              ) : null}
+              {features.comments ? (
+                <FooterButton
+                  active={accessoryKey === 'comments'}
+                  label={`Conversations`}
+                  icon={Comment}
+                  onPress={() => {
+                    if (route.accessory?.key === 'versions')
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'comments'}})
+                  }}
+                />
+              ) : null}
+            </Footer>
           </CitationsProvider>
         </ConversationsProvider>
       </ErrorBoundary>
@@ -289,27 +286,27 @@ type ResizablePanelMachineServices = {
 }
 
 // eslint-disable-next-line
-function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
-  // TODO: find a way to scroll to the block when clicking on a mintter link
-  useEffect(() => {
-    setTimeout(() => {
-      if (blockId) {
-        if (ref?.current) {
-          let entry = getEditorBlock(editor, {id: blockId})
+// function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
+//   // TODO: find a way to scroll to the block when clicking on a mintter link
+//   useEffect(() => {
+//     setTimeout(() => {
+//       if (blockId) {
+//         if (ref?.current) {
+//           let entry = getEditorBlock(editor, {id: blockId})
 
-          if (entry) {
-            let [block] = entry
-            let elm = ReactEditor.toDOMNode(editor, block)
+//           if (entry) {
+//             let [block] = entry
+//             let elm = ReactEditor.toDOMNode(editor, block)
 
-            let rect = elm.getBoundingClientRect()
-            let wrapper = ref.current.getBoundingClientRect()
-            ref.current.scrollTo({top: rect.top - wrapper.top - 24})
-          }
-        }
-      }
-    }, 1000)
-  }, [ref, blockId, editor])
-}
+//             let rect = elm.getBoundingClientRect()
+//             let wrapper = ref.current.getBoundingClientRect()
+//             ref.current.scrollTo({top: rect.top - wrapper.top - 24})
+//           }
+//         }
+//       }
+//     }, 1000)
+//   }, [ref, blockId, editor])
+// }
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication({

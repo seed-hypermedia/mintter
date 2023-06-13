@@ -92,7 +92,7 @@ export {
   WebPublishing,
   WebSite,
 }
-export * from './editor2'
+export * from './editor'
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
 }

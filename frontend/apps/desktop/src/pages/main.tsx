@@ -12,9 +12,6 @@ import {lazy, useMemo} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
-import {XStack} from '@mintter/ui'
-import {SizableStack} from '@mintter/ui'
-import {SizableText} from '@mintter/ui'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
@@ -22,7 +19,7 @@ var Account = lazy(() => import('@app/pages/account-page'))
 var Connections = lazy(() => import('@app/pages/connections-page'))
 var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
-var Draft = lazy(() => import('@app/pages/draft-2'))
+var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var BlockNote = lazy(() => import('@app/pages/blocknote'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))

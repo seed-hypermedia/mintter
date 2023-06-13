@@ -1,17 +1,12 @@
-import {useDraft, usePublication, useEditorDraft} from '@app/models/documents'
-import {useSitePublish, useSitePublishDraft} from '@app/models/sites'
+import {useDraft} from '@app/models/documents'
+import {useSitePublishDraft} from '@app/models/sites'
 import {styled} from '@app/stitches.config'
-import {
-  DraftRoute,
-  NavRoute,
-  PublicationRoute,
-  useNavRoute,
-} from '@app/utils/navigation'
+import {NavRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
-import {Fieldset, Input, Label} from '@mintter/ui'
+import {Publication} from '@mintter/shared'
+import {Input, Label} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
