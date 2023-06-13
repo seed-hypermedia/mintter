@@ -17,6 +17,9 @@ import {
   GroupingContent,
   DocumentChange,
   WebPublicationRecord,
+  BlockNode,
+  Block,
+  serverChildrenToEditorChildren,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -384,7 +387,10 @@ function draftChangesReducer(
   return state
 }
 
-export function useDraftEditor2(documentId?: string) {
+export function useDraftEditor2(
+  documentId?: string,
+  opts?: {onEditorState?: (v: any) => void},
+) {
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       const draftState: DraftState | undefined = appQueryClient.getQueryData([
@@ -464,29 +470,49 @@ export function useDraftEditor2(documentId?: string) {
       //     const actions: DraftChangeAction[] = []
       //     // @horacioh please .push() into actions!
 
-      //     return {
-      //       ...draftState,
-      //       // @horacioh please update children content?
-      //       // children:
-      //       changes: actions.reduce(
-      //         draftChangesReducer,
-      //         draftState.changes,
-      //       ),
-      //     }
-      //   },
-      // )
-      // clearTimeout(debounceTimeout.current as any)
-      // //@ts-ignore
-      // debounceTimeout.current = setTimeout(() => {
-      //   saveDraftMutation.mutate()
-      // }, 500)
+      // if (
+      //   selection &&
+      //   selection.node &&
+      //   selection.node.attrs.blockId
+      // ) {
+      //   const {node} = selection
+
+      //   // Check if the selected node has a blockId attribute
+      //   const blockId = node.attrs.blockId
+      //   if (blockId) {
+      //     console.log('Block ID:', blockId)
+      //   }
+      // }
+
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (draftState: DraftState | undefined) => {
+          if (!draftState) return undefined
+
+          const actions: DraftChangeAction[] = []
+          // @horacioh please .push() into actions!
+
+          return {
+            ...draftState,
+            // @horacioh please update children content?
+            // children:
+            changes: actions.reduce(draftChangesReducer, draftState.changes),
+          }
+        },
+      )
+      clearTimeout(debounceTimeout.current as any)
+      //@ts-ignore
+      debounceTimeout.current = setTimeout(() => {
+        saveDraftMutation.mutate()
+      }, 500)
     },
   })
 
   const editor = useBlockNote({
     onEditorContentChange(editor) {
+      opts?.onEditorState?.(editor.topLevelBlocks)
       // mutate editor here
-      console.log('UPDATE', editor, editor.topLevelBlocks)
+      // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
     },
     initialContent: [],
     // initialContent: [
@@ -546,55 +572,9 @@ export function useDraftEditor2(documentId?: string) {
       const serverDraft = await draftsClient.getDraft({
         documentId,
       })
-      console.log('wtf server draft', serverDraft)
+      const topChildren = serverChildrenToEditorChildren(serverDraft.children)
       const draftState: DraftState = {
-        children: [
-          {
-            id: '064c535e-b7ab-4c69-8432-a50b5c1c3b44',
-            type: 'paragraph',
-            props: {
-              textColor: 'default',
-              backgroundColor: 'default',
-              textAlignment: 'left',
-            },
-            content: [{type: 'text', text: 'test 1', styles: {}}],
-            children: [],
-          },
-          {
-            id: '98cfb0d3-594a-4da4-b10b-0a7489c42368',
-            type: 'paragraph',
-            props: {
-              textColor: 'default',
-              backgroundColor: 'default',
-              textAlignment: 'left',
-            },
-            content: [{type: 'text', text: 'test 2', styles: {}}],
-            children: [
-              {
-                id: '39bba21f-8c11-4dbe-b33c-046aacd4ed63',
-                type: 'paragraph',
-                props: {
-                  textColor: 'default',
-                  backgroundColor: 'default',
-                  textAlignment: 'left',
-                },
-                content: [{type: 'text', text: 'test 3', styles: {}}],
-                children: [],
-              },
-            ],
-          },
-          {
-            id: '68de18f5-041a-4a93-b886-8f94b1cc3499',
-            type: 'paragraph',
-            props: {
-              textColor: 'default',
-              backgroundColor: 'default',
-              textAlignment: 'left',
-            },
-            content: [],
-            children: [],
-          },
-        ],
+        children: topChildren,
         changes: {
           changed: [],
           deleted: [],
@@ -607,8 +587,9 @@ export function useDraftEditor2(documentId?: string) {
       return draftState
     },
     onSuccess: (draft: DraftState) => {
-      console.log('wtf please insert', draft, editor)
-      editor?._tiptapEditor.commands.insertContent(draft.children)
+      if (draft.children.length) {
+        editor?._tiptapEditor.commands.insertContent(draft.children)
+      }
     },
   })
 
@@ -616,6 +597,8 @@ export function useDraftEditor2(documentId?: string) {
     editor,
   }
 }
+
+export type HyperDocsEditor = ReturnType<typeof useDraftEditor2>['editor']
 
 export function useWriteDraftWebUrl(draftId?: string) {
   return useMutation({
@@ -738,3 +721,35 @@ function compareArrays(arr1: any[], arr2: any[]): boolean {
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
+
+export function usePublicationEditor(documentId: string, versionId?: string) {
+  const pub = usePublication({
+    documentId,
+    versionId,
+  })
+  // const editor = React.memo(() => {
+  //   return
+  // }, [pub.data])
+
+  const editor = useBlockNote({
+    // _tiptapOptions: {
+    //   editable: false,
+    // },
+    onEditorContentChange(editor) {
+      // opts?.onEditorState?.(editor.topLevelBlocks)
+      // mutate editor here
+      // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
+    },
+    initialContent: [],
+  })
+  useEffect(() => {
+    if (pub.data?.document && editor) {
+      editor.isEditable = false
+      editor._tiptapEditor.commands.insertContent(
+        serverChildrenToEditorChildren(pub.data.document?.children || []),
+      )
+    }
+  }, [pub.data, editor])
+
+  return {...pub, editor}
+}

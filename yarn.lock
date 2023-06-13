@@ -4812,6 +4812,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/shared@workspace:frontend/packages/shared"
   dependencies:
+    "@blocknote/core": ^0.8.0
     "@bufbuild/connect-web": 0.7.0
     "@bufbuild/protobuf": 1.2.0
     "@types/extend": 3.0.1

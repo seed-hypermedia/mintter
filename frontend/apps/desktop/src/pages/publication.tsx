@@ -2,12 +2,10 @@ import {AppBanner, BannerText} from '@app/app-banner'
 import {features} from '@app/constants'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
-import {Editor, usePublicationEditor} from '@app/editor/editor'
-import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
 import {useDocChanges} from '@app/models/changes'
 import {useDocCitations} from '@app/models/content-graph'
-import {usePublication} from '@app/models/documents'
+import {usePublication, usePublicationEditor} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
@@ -39,6 +37,8 @@ import {ReactEditor} from 'slate-react'
 
 import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
+import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
+import {DebugData} from '@components/debug-data'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -57,18 +57,18 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const {editor, state, value, editorKey} = usePublicationEditor(
+  const {editor, data, status, error, refetch} = usePublicationEditor(
     docId,
     versionId,
   )
-  const {data, status, error, refetch} = state
 
   let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)
-  useScrollToBlock(editor, scrollWrapperRef, focusBlock)
+
+  // useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   const {data: changes} = useDocChanges(status == 'success' ? docId : undefined)
   const {data: citations} = useDocCitations(
@@ -143,18 +143,9 @@ export default function PublicationPage() {
                         {versionId && (
                           <OutOfDateBanner docId={docId} version={versionId} />
                         )}
-                        {value && (
-                          <>
-                            <Editor
-                              key={editorKey}
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={value}
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
-                            />
+                        {editor && (
+                          <HDEditorContainer>
+                            <HyperDocsEditorView editor={editor} />
                             {import.meta.env.DEV && (
                               <YStack maxWidth="500px" marginHorizontal="auto">
                                 <Button
@@ -165,21 +156,10 @@ export default function PublicationPage() {
                                 >
                                   toggle value
                                 </Button>
-                                {debugValue && (
-                                  <XStack
-                                    tag="pre"
-                                    {...{
-                                      whiteSpace: 'wrap',
-                                    }}
-                                  >
-                                    <SizableText tag="code" size="$1">
-                                      {JSON.stringify(value, null, 3)}
-                                    </SizableText>
-                                  </XStack>
-                                )}
+                                {debugValue && <DebugData data={data} />}
                               </YStack>
                             )}
-                          </>
+                          </HDEditorContainer>
                         )}
                       </ScrollView>
                     </YStack>
