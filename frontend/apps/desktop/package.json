@@ -12,6 +12,8 @@
     "test": "echo 'DESKTOP: NO TESTS'"
   },
   "dependencies": {
+    "@blocknote/core": "^0.8.0",
+    "@blocknote/react": "^0.8.0",
     "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.2.0",
     "@floating-ui/react-dom": "1.2.2",

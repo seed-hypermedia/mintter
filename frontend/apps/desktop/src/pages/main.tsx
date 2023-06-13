@@ -12,6 +12,9 @@ import {lazy, useMemo} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
+import {XStack} from '@mintter/ui'
+import {SizableStack} from '@mintter/ui'
+import {SizableText} from '@mintter/ui'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
@@ -21,6 +24,7 @@ var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
+var BlockNote = lazy(() => import('@app/pages/blocknote'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
 
 function getPageComponent(navRoute: NavRoute) {
@@ -41,6 +45,8 @@ function getPageComponent(navRoute: NavRoute) {
       return Draft
     case 'settings':
       return Settings
+    case 'blocknote':
+      return BlockNote
     default:
       return NotFoundPage
   }
@@ -71,6 +77,17 @@ export default function Main() {
           window.location.reload()
         }}
       >
+        <XStack alignItems="center" gap="$3" p="$2">
+          <SizableText>editor demos:</SizableText>
+          <Button
+            onPress={() => {
+              navigate({key: 'blocknote'})
+            }}
+          >
+            BlockNote
+          </Button>
+        </XStack>
+
         <PageComponent key={routeKey} />
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>

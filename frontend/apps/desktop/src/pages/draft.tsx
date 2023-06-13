@@ -88,7 +88,7 @@ export default function DraftPage() {
                 toolbar={<EditorHoveringToolbar />}
               />
               {import.meta.env.DEV && (
-                <YStack maxWidth="500px" marginHorizontal="auto">
+                <YStack width="500px" marginHorizontal="auto">
                   <Button
                     size="$1"
                     theme="gray"

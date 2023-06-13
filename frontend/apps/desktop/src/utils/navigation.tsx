@@ -16,6 +16,7 @@ export type ConnectionsRoute = {key: 'connections'}
 export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
 export type SiteRoute = {key: 'site'; hostname: string}
+export type BlockNoteRoute = {key: 'blocknote'}
 
 type PublicationVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
@@ -50,6 +51,7 @@ export type NavRoute =
   | PublicationRoute
   | DraftsRoute
   | DraftRoute
+  | BlockNoteRoute
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
