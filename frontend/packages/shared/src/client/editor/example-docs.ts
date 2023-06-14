@@ -60,7 +60,21 @@ export const examples = {
       createBlockNode({
         text: 'hello world!',
         id: '1',
-        annotations: [createAnnotation('bold', 6, 11)],
+        annotations: [createAnnotation('strong', 6, 11)],
+      }),
+    ],
+    'withBoldText',
+  ),
+
+  withOverlappingAnnotations: createDoc(
+    [
+      createBlockNode({
+        text: 'ABCDE',
+        id: '1',
+        annotations: [
+          createAnnotation('strong', 1, 3),
+          createAnnotation('emphasis', 2, 4),
+        ],
       }),
     ],
     'withBoldText',

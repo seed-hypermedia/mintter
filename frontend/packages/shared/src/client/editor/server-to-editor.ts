@@ -4,7 +4,12 @@ import {
   InlineContent,
   PartialBlock,
 } from '@blocknote/core'
-import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
+import {
+  Annotation,
+  Block,
+  BlockNode,
+} from '../.generated/documents/v1alpha/documents_pb'
+import {TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
 
 export function leafServerBlockToEditorBlock(block: Block): PartialBlock<any> {
@@ -39,6 +44,23 @@ function areStylesEqual(
   return true
 }
 
+function annotationStyle(a: Annotation): Record<string, string> {
+  const annotation: TextAnnotation = a as any //umm, hacks! I guess we should handle unknown annotations too
+  if (a.type === 'emphasis') {
+    return {italic: 'true'}
+  }
+  if (a.type === 'strong') {
+    return {bold: 'true'}
+  }
+  if (a.type === 'underline') {
+    return {underline: 'true'}
+  }
+  if (a.type === 'code') {
+    return {code: 'true'}
+  }
+  return {}
+}
+
 export function serverBlockToEditorInline(block: Block): InlineContent[] {
   let {text, annotations} = block
   if (!text) text = ''
@@ -49,12 +71,16 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
   const allStyleKeys = new Set<string>()
 
   annotations.forEach((annotation) => {
-    const {starts, ends, attributes} = annotation
-    Object.keys(attributes).forEach((key) => allStyleKeys.add(key))
+    const {starts, ends} = annotation
+    const annotationStyles = annotationStyle(annotation)
+    Object.keys(annotationStyles).forEach((key) => allStyleKeys.add(key))
     starts.forEach((start, index) => {
       const end = ends[index]
       for (let i = start; i < end; i++) {
-        stylesForIndex[i] = {...(stylesForIndex[i] || {}), ...attributes}
+        stylesForIndex[i] = {
+          ...(stylesForIndex[i] || {}),
+          ...annotationStyles,
+        }
       }
     })
   })
@@ -84,7 +110,6 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
 
   return inlines
 }
-
 type ChildrenType = null | 'ordered' | 'unordered' | 'blockquote'
 
 function extractChildrenType(childrenType: string | undefined): ChildrenType {
@@ -95,7 +120,7 @@ function extractChildrenType(childrenType: string | undefined): ChildrenType {
   throw new Error('Unknown childrenType block attr: ' + childrenType)
 }
 
-export function serverBlockToEditorParagraph(
+export function serverBlockNodeToEditorParagraph(
   serverBlock: BlockNode,
 ): PartialBlock<typeof hdBlockSchema> {
   if (!serverBlock.block) {
@@ -142,6 +167,6 @@ export function serverChildrenToEditorChildren(
   return children.map((serverBlock) => {
     if (opts?.childrenType === 'ordered') {
     }
-    return serverBlockToEditorParagraph(serverBlock)
+    return serverBlockNodeToEditorParagraph(serverBlock)
   })
 }

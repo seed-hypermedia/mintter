@@ -553,7 +553,7 @@ export function useDraftEditor2(
         documentId,
       })
       let debugExampleDoc = null
-      // debugExampleDoc = examples.withBoldText // comment me out before committing, thankyouu
+      debugExampleDoc = examples.withOverlappingAnnotations // comment me out before committing, thankyouu
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )

@@ -4,8 +4,9 @@ import {
   serverBlockToEditorInline,
   serverChildrenToEditorChildren,
 } from '../editor/server-to-editor'
+import {examples} from '../editor/example-docs'
 
-describe('Editor2: ', () => {
+describe('Editor: ', () => {
   describe('Server to Editor: ', () => {
     test('empty/basic', () => {
       expect(serverChildrenToEditorChildren([])).toEqual([])
@@ -52,6 +53,46 @@ describe('Editor2: ', () => {
         },
       ])
     })
+
+    test('bolding', () => {
+      const eChildren = serverChildrenToEditorChildren(
+        examples.withBoldText.children,
+      )
+      expect(eChildren).toEqual([
+        {
+          id: '1',
+          type: 'paragraph',
+          props: {},
+          content: [
+            {text: 'hello ', type: 'text', styles: {}},
+            {text: 'world', type: 'text', styles: {bold: 'true'}},
+            {text: '!', type: 'text', styles: {}},
+          ],
+          children: [],
+        },
+      ])
+    })
+
+    test('overlap annotations', () => {
+      const eChildren = serverChildrenToEditorChildren(
+        examples.withOverlappingAnnotations.children,
+      )
+      expect(eChildren).toEqual([
+        {
+          id: '1',
+          type: 'paragraph',
+          props: {},
+          content: [
+            {text: 'A', type: 'text', styles: {}},
+            {text: 'B', type: 'text', styles: {bold: 'true'}},
+            {text: 'C', type: 'text', styles: {bold: 'true', italic: 'true'}},
+            {text: 'D', type: 'text', styles: {italic: 'true'}},
+            {text: 'E', type: 'text', styles: {}},
+          ],
+          children: [],
+        },
+      ])
+    })
   })
 
   describe('Server Block to Editor Inline: ', () => {
@@ -60,20 +101,19 @@ describe('Editor2: ', () => {
         new Block({text: 'ABC', annotations: []}),
       )
       expect(result.length).toEqual(1)
-      expect(result[0]?.text).toEqual('ABC')
-      expect(result[0]?.type).toEqual('text')
-      expect(result[0]?.styles).toEqual({})
+      const i0 = result[0]
+      expect(i0).toEqual({
+        type: 'text',
+        text: 'ABC',
+        styles: {},
+      })
     })
     test('basic annotation', () => {
       const result = serverBlockToEditorInline(
         new Block({
           text: 'ABC',
           annotations: [
-            {
-              starts: [1],
-              ends: [2],
-              attributes: {bold: 'true'},
-            },
+            {type: 'strong', starts: [1], ends: [2], attributes: {}},
           ],
         }),
       )
@@ -95,29 +135,25 @@ describe('Editor2: ', () => {
           text: 'ABCDE',
           annotations: [
             {
+              type: 'strong',
               starts: [1],
               ends: [3],
-              attributes: {bold: 'true'},
             },
             {
+              type: 'emphasis',
               starts: [2],
               ends: [4],
-              attributes: {italic: 'true'},
             },
           ],
         }),
       )
-      expect(result.length).toEqual(5)
-      expect(result[0]?.text).toEqual('A')
-      expect(result[1]?.text).toEqual('B')
-      expect(result[2]?.text).toEqual('C')
-      expect(result[3]?.text).toEqual('D')
-      expect(result[4]?.text).toEqual('E')
-      expect(result[0]?.styles).toEqual({})
-      expect(result[1]?.styles).toEqual({bold: 'true'})
-      expect(result[2]?.styles).toEqual({bold: 'true', italic: 'true'})
-      expect(result[3]?.styles).toEqual({italic: 'true'})
-      expect(result[4]?.styles).toEqual({})
+      expect(result).toEqual([
+        {text: 'A', type: 'text', styles: {}},
+        {text: 'B', type: 'text', styles: {bold: 'true'}},
+        {text: 'C', type: 'text', styles: {bold: 'true', italic: 'true'}},
+        {text: 'D', type: 'text', styles: {italic: 'true'}},
+        {text: 'E', type: 'text', styles: {}},
+      ])
     })
   })
 })
