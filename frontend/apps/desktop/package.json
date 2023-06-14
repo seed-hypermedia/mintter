@@ -12,8 +12,6 @@
     "test": "echo 'DESKTOP: NO TESTS'"
   },
   "dependencies": {
-    "@blocknote/core": "^0.8.0",
-    "@blocknote/react": "^0.8.0",
     "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.2.0",
     "@floating-ui/react-dom": "1.2.2",
@@ -21,6 +19,8 @@
     "@mantine/core": "^6.0.13",
     "@mintter/shared": "workspace:*",
     "@mintter/ui": "workspace:*",
+    "@mtt-blocknote/core": "workspace:*",
+    "@mtt-blocknote/react": "workspace:*",
     "@radix-ui/colors": "0.1.8",
     "@radix-ui/react-accessible-icon": "1.0.2",
     "@radix-ui/react-alert-dialog": "1.0.3",

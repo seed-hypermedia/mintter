@@ -1,4 +1,4 @@
-import {defaultBlockSchema} from '@blocknote/core'
+import {defaultBlockSchema} from '@mtt-blocknote/core'
 
 export const hdBlockSchema = {
   paragraph: defaultBlockSchema.paragraph,

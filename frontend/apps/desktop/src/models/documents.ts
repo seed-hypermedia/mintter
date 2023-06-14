@@ -30,7 +30,7 @@ import {
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {useBlockNote} from '@blocknote/react'
+import {useBlockNote} from '@mtt-blocknote/react'
 import {Editor, Node} from 'slate'
 import {Extension} from '@tiptap/core'
 import {PluginKey} from 'prosemirror-state'
@@ -47,7 +47,7 @@ import {
   PropSchema,
   BlockSchema,
   Props,
-} from '@blocknote/core'
+} from '@mtt-blocknote/core'
 import {toast} from '@app/toast'
 import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
@@ -453,60 +453,6 @@ export function useDraftEditor2(
 
   let debounceTimeout = useRef<number | null | undefined>(null)
 
-  const changesKey = new PluginKey('hyperdocs-changes')
-
-  const StateMonitorExtension = Extension.create({
-    name: 'DraftStateMonitor',
-    onUpdate() {
-      let block = findBlock(this.editor.state.selection)
-      console.log('🚀 ~ == block:', block)
-
-      // appQueryClient.setQueryData(
-      //   [queryKeys.EDITOR_DRAFT, documentId],
-      //   (draftState: DraftState | undefined) => {
-      //     if (!draftState) return undefined
-
-      //     const actions: DraftChangeAction[] = []
-      //     // @horacioh please .push() into actions!
-
-      // if (
-      //   selection &&
-      //   selection.node &&
-      //   selection.node.attrs.blockId
-      // ) {
-      //   const {node} = selection
-
-      //   // Check if the selected node has a blockId attribute
-      //   const blockId = node.attrs.blockId
-      //   if (blockId) {
-      //     console.log('Block ID:', blockId)
-      //   }
-      // }
-
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (draftState: DraftState | undefined) => {
-          if (!draftState) return undefined
-
-          const actions: DraftChangeAction[] = []
-          // @horacioh please .push() into actions!
-
-          return {
-            ...draftState,
-            // @horacioh please update children content?
-            // children:
-            changes: actions.reduce(draftChangesReducer, draftState.changes),
-          }
-        },
-      )
-      clearTimeout(debounceTimeout.current as any)
-      //@ts-ignore
-      debounceTimeout.current = setTimeout(() => {
-        saveDraftMutation.mutate()
-      }, 500)
-    },
-  })
-
   // let document = {
   //   // ...
   //   children: [
@@ -547,9 +493,7 @@ export function useDraftEditor2(
     uiFactories: {
       formattingToolbarFactory,
     },
-    _tiptapOptions: {
-      extensions: [StateMonitorExtension.configure({})],
-    },
+    _tiptapOptions: {},
   })
   const draftState = useQuery({
     enabled: !!editor,

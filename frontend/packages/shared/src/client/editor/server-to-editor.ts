@@ -1,4 +1,4 @@
-import {InlineContent, PartialBlock} from '@blocknote/core'
+import {InlineContent, PartialBlock} from '@mtt-blocknote/core'
 import {
   Annotation,
   Block,
