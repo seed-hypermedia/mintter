@@ -36,7 +36,7 @@ import {PluginKey} from 'prosemirror-state'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {PartialBlock} from '@blocknote/core'
+import {Block, DefaultBlockSchema, defaultProps, PartialBlock, StyledText, BlockSpec, PropSchema, BlockSchema, Props} from '@blocknote/core'
 import {toast} from '@app/toast'
 
 export function usePublicationList() {
@@ -494,60 +494,46 @@ export function useDraftEditor2(
     },
   })
 
+  // let document = {
+  //   // ...
+  //   children: [
+  //     {
+  //       id: '1ertyuiop',
+  //       type: 'paragraph',
+  //       content: 'Hello world 1',
+  //       annotations: [],
+  //       attributes: {},
+  //       children: [],
+  //     },
+  //     {
+  //       id: '2ertyuiwz',
+  //       type: 'paragraph',
+  //       content: 'Hello world 2',
+  //       annotations: [],
+  //       attributes: {},
+  //       children: [
+  //         {
+  //           id: '3ertyuiop',
+  //           type: 'paragraph',
+  //           content: 'Hello world 3',
+  //           annotations: [],
+  //           attributes: {},
+  //           children: []
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // }
+
+  // const initialContent = BlockToBlockNote(document);
+
   const editor = useBlockNote({
     onEditorContentChange(editor) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       // mutate editor here
       // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
     },
-    initialContent: [],
-    // initialContent: [
-    // {
-    //   id: '064c535e',
-    //   type: 'paragraph',
-    //   props: {
-    //     textColor: 'default',
-    //     backgroundColor: 'default',
-    //     textAlignment: 'left',
-    //   },
-    //   content: [{type: 'text', text: 'test 1', styles: {}}],
-    //   children: [],
-    // },
-    // {
-    //   id: '98cfb0d3',
-    //   type: 'paragraph',
-    //   props: {
-    //     textColor: 'default',
-    //     backgroundColor: 'default',
-    //     textAlignment: 'left',
-    //   },
-    //   content: [{type: 'text', text: 'test 2', styles: {}}],
-    //   children: [
-    //     {
-    //       id: '39bba21f',
-    //       type: 'paragraph',
-    //       props: {
-    //         textColor: 'default',
-    //         backgroundColor: 'default',
-    //         textAlignment: 'left',
-    //       },
-    //       content: [{type: 'text', text: 'test 3', styles: {}}],
-    //       children: [],
-    //     },
-    //   ],
-    // },
-    // {
-    //   id: '68de18f5-041a-4a93-b886-8f94b1cc3499',
-    //   type: 'paragraph',
-    //   props: {
-    //     textColor: 'default',
-    //     backgroundColor: 'default',
-    //     textAlignment: 'left',
-    //   },
-    //   content: [],
-    //   children: [],
-    // },
-    // ],
+    // initialContent: initialContent,
     _tiptapOptions: {
       extensions: [StateMonitorExtension.configure({})],
     },
@@ -674,35 +660,39 @@ function compareArrays(arr1: any[], arr2: any[]): boolean {
   return arr1.every((value, index) => value === arr2[index])
 }
 
-// function BlockToBlockNote(document: any) {
-//   const children = document.children
-//   if (children) {
-//     const result = AppendChildren(children)
-//     return result
-//   }
-//   return []
-// }
+function BlockToBlockNote(document: any) {
+  const children = document.children
+  if (children) {
+    const result = AppendChildren(children)
+    return result
+  }
+  return []
+}
 
-// function AppendChildren(children: any) {
-//   if (!children || children.length === 0) return []
-//   const content = []
-//   for (const child of children) {
-//     const block = {
-//       id: child.id,
-//       type: child.type,
-//       // props: defaultProps,
-//       props: {},
-//       content: {
-//         type: 'text',
-//         text: child.content,
-//         styles: {},
-//       } as StyledText,
-//       children: AppendChildren(child.children),
-//     }
-//     content.push(block)
-//   }
-//   return content
-// }
+function AppendChildren(children: any) {
+  if (!children || children.length === 0) return []
+  const content = []
+  for (const child of children) {
+    const block = {
+      id: child.id,
+      type: child.type,
+      props: {
+        backgroundColor: "transparent",
+        textColor: "black",
+        textAlignment: "left"
+      } as Props<PropSchema>,
+      // props: {},
+      content: [{
+        type: 'text',
+        text: child.content,
+        styles: {},
+      } as StyledText],
+      children: AppendChildren(child.children),
+    } as Block<BlockSchema>
+    content.push(block)
+  }
+  return content
+}
 
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
