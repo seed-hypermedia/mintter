@@ -333,6 +333,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
       }
       let draft = await draftsClient.createDraft({
         existingDocumentId: route.documentId,
+        version: route.versionId,
       })
       navigateReplace({
         key: 'draft',

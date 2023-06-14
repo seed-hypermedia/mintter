@@ -10,6 +10,7 @@ import {
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {Fieldset, Input, Label} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
@@ -38,12 +39,10 @@ function PublishDialogForm({
   onDone,
   route,
 }: {
-  onDone?: () => void
+  onDone?: (pub: Publication) => void
   route: NavRoute
 }) {
-  console.log('=== PublishDialogForm')
   const draftId = route.key === 'draft' ? route.draftId : undefined
-  // const saveDraft = useSaveDraft(draftId)
   const publish = useSitePublishDraft(draftId)
 
   const {data: draft} = useDraft({
@@ -89,8 +88,8 @@ function PublishDialogForm({
             .mutateAsync({
               path: readPathState(path),
             })
-            .then(() => {
-              onDone?.()
+            .then(({publication}) => {
+              onDone?.(publication)
               toast.success(`Document published to ${pubUrl}`, {})
             })
             .catch((e) => {
