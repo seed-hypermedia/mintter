@@ -1,9 +1,4 @@
-import {
-  BlockSchema,
-  BlockSpec,
-  InlineContent,
-  PartialBlock,
-} from '@blocknote/core'
+import {InlineContent, PartialBlock} from '@blocknote/core'
 import {
   Annotation,
   Block,
@@ -11,21 +6,6 @@ import {
 } from '../.generated/documents/v1alpha/documents_pb'
 import {TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
-
-export function leafServerBlockToEditorBlock(block: Block): PartialBlock<any> {
-  return {
-    id: block.id,
-    type: 'text',
-    // @ts-expect-error
-    text: block.text,
-    style: {},
-  }
-}
-
-type Inline = {
-  text: string
-  styles: Record<string, string>
-}
 
 function areStylesEqual(
   styles1: Record<string, string> | null,
@@ -46,16 +26,16 @@ function areStylesEqual(
 
 function annotationStyle(a: Annotation): Record<string, string> {
   const annotation: TextAnnotation = a as any //umm, hacks! I guess we should handle unknown annotations too
-  if (a.type === 'emphasis') {
+  if (annotation.type === 'emphasis') {
     return {italic: 'true'}
   }
-  if (a.type === 'strong') {
+  if (annotation.type === 'strong') {
     return {bold: 'true'}
   }
-  if (a.type === 'underline') {
+  if (annotation.type === 'underline') {
     return {underline: 'true'}
   }
-  if (a.type === 'code') {
+  if (annotation.type === 'code') {
     return {code: 'true'}
   }
   return {}
@@ -110,18 +90,24 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
 
   return inlines
 }
-type ChildrenType = null | 'ordered' | 'unordered' | 'blockquote'
+
+type ChildrenType = 'group' | 'numbers' | 'bullet' | 'blockquote'
+
+type RecursiveOpts = {
+  headingLevel: number
+}
 
 function extractChildrenType(childrenType: string | undefined): ChildrenType {
-  if (!childrenType) return null
-  if (childrenType === 'ordered') return 'ordered'
-  if (childrenType === 'unordered') return 'unordered'
+  if (!childrenType) return 'group'
+  if (childrenType === 'numbers') return 'numbers'
+  if (childrenType === 'bullet') return 'bullet'
   if (childrenType === 'blockquote') return 'blockquote'
   throw new Error('Unknown childrenType block attr: ' + childrenType)
 }
 
 export function serverBlockNodeToEditorParagraph(
   serverBlock: BlockNode,
+  opts: RecursiveOpts,
 ): PartialBlock<typeof hdBlockSchema> {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
@@ -133,6 +119,7 @@ export function serverBlockNodeToEditorParagraph(
     type: 'paragraph',
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
+      ...opts,
       childrenType: extractChildrenType(block.attributes.childrenType),
     }),
     props: {},
@@ -141,6 +128,7 @@ export function serverBlockNodeToEditorParagraph(
 
 export function serverBlockToEditorOLI(
   serverBlock: BlockNode,
+  opts: RecursiveOpts,
 ): PartialBlock<typeof hdBlockSchema> {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
@@ -152,21 +140,80 @@ export function serverBlockToEditorOLI(
     type: 'numberedListItem',
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
+      ...opts,
       childrenType: extractChildrenType(block.attributes.childrenType),
     }),
     props: {},
   }
 }
 
+export function serverBlockToEditorULI(
+  serverBlock: BlockNode,
+  opts: RecursiveOpts,
+): PartialBlock<typeof hdBlockSchema> {
+  if (!serverBlock.block) {
+    throw new Error('Server BlockNode is missing Block data')
+  }
+  const {block, children} = serverBlock
+  return {
+    id: block.id,
+    type: 'bulletListItem',
+    content: serverBlockToEditorInline(block),
+    children: serverChildrenToEditorChildren(children, {
+      ...opts,
+      childrenType: extractChildrenType(block.attributes.childrenType),
+    }),
+    props: {},
+  }
+}
+
+export function serverBlockToHeading(
+  serverBlock: BlockNode,
+  opts?: RecursiveOpts,
+): PartialBlock<typeof hdBlockSchema> {
+  if (!serverBlock.block) {
+    throw new Error('Server BlockNode is missing Block data')
+  }
+  const {block, children} = serverBlock
+  let level: '3' | '2' | '1' = '3'
+  if (opts?.headingLevel === 0) level = '1'
+  if (opts?.headingLevel === 1) level = '2'
+  return {
+    type: 'heading',
+    id: block.id,
+    content: serverBlockToEditorInline(block),
+    children: serverChildrenToEditorChildren(children, {
+      headingLevel: (opts?.headingLevel || 0) + 1,
+      childrenType: extractChildrenType(block.attributes.childrenType),
+    }),
+    props: {
+      level,
+    },
+  }
+}
+
 export function serverChildrenToEditorChildren(
   children: BlockNode[],
-  opts?: {
+  opts?: RecursiveOpts & {
     childrenType?: ChildrenType
   },
 ): PartialBlock<typeof hdBlockSchema>[] {
+  const childRecursiveOpts: RecursiveOpts = {
+    headingLevel: opts?.headingLevel || 0,
+  }
   return children.map((serverBlock) => {
-    if (opts?.childrenType === 'ordered') {
+    // how to handle when serverBlock.type is 'heading' but we are inside of a list?
+    // for now, we prioritize the node type
+    if (serverBlock.block?.type === 'heading') {
+      return serverBlockToHeading(serverBlock, childRecursiveOpts)
     }
-    return serverBlockNodeToEditorParagraph(serverBlock)
+    if (opts?.childrenType === 'numbers') {
+      return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
+    }
+    if (opts?.childrenType === 'bullet') {
+      return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
+    }
+
+    return serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
   })
 }

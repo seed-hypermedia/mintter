@@ -9,16 +9,18 @@ export type ImageBlock = {
   }
 }
 
+export type SectionBlockAttributes = {
+  childrenType?: 'group' | 'numbers' | 'bullet' | 'blockquote' // default is "group"
+  showContent?: string // interpret as a bool
+  isContentHeading?: string // interpret as a bool
+  start?: string // interpret as a number
+}
+
 export type SectionBlock = {
   type: 'heading' | 'paragraph' | 'section'
   content: string
   children: Block[]
-  attributes: {
-    childrenType?: null | 'ordered' | 'unordered' | 'blockquote'
-    showContent?: boolean
-    isContentHeading?: boolean
-    start: number
-  }
+  attributes: SectionBlockAttributes
   annotations: TextAnnotation[]
 }
 
@@ -71,6 +73,10 @@ export type UnderlineAnnoation = BaseAnnotation & {
   type: 'underline'
 }
 
+export type CodeAnnotation = BaseAnnotation & {
+  type: 'code'
+}
+
 export type ColorAnnotation = BaseAnnotation & {
   type: 'color'
   attributes: {
@@ -81,6 +87,7 @@ export type ColorAnnotation = BaseAnnotation & {
 export type TextAnnotation =
   | StrongAnnotation
   | EmphasisAnnotation
+  | CodeAnnotation
   | UnderlineAnnoation
   | ColorAnnotation
   | InlineEmbedAnnotation
