@@ -12,18 +12,18 @@ import (
 	"github.com/ipfs/boxo/ipns"
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	"github.com/libp2p/go-libp2p-kad-dht/providers"
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/multiformats/go-multiaddr"
-	"go.uber.org/multierr"
-
-	dht "github.com/libp2p/go-libp2p-kad-dht"
-	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
-	"github.com/libp2p/go-libp2p-kad-dht/providers"
 	routing "github.com/libp2p/go-libp2p/core/routing"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
+	"github.com/libp2p/go-libp2p/p2p/net/swarm"
+	"github.com/multiformats/go-multiaddr"
+	"go.uber.org/multierr"
 )
 
 // DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
@@ -72,6 +72,14 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 	for i, pinfo := range peers {
 		go func(i int, pinfo peer.AddrInfo) {
 			defer wg.Done()
+			// Since we're explicitly connecting to a peer, we want to clear any backoffs
+			// that the network might have at the moment.
+			{
+				sw, ok := h.Network().(*swarm.Swarm)
+				if ok {
+					sw.Backoff().Clear(pinfo.ID)
+				}
+			}
 			err := h.Connect(ctx, pinfo)
 			res.ConnectErrs[i] = err
 			if err != nil {
