@@ -144,19 +144,7 @@ export default function PublicationPage() {
                       {editor && (
                         <HDEditorContainer>
                           <HyperDocsEditorView editor={editor} />
-                          {import.meta.env.DEV && (
-                            <YStack maxWidth="500px" marginHorizontal="auto">
-                              <Button
-                                size="$1"
-                                theme="gray"
-                                width="100%"
-                                onPress={() => setDebugValue((v) => !v)}
-                              >
-                                toggle value
-                              </Button>
-                              {debugValue && <DebugData data={data} />}
-                            </YStack>
-                          )}
+                          <DebugData data={data} />
                         </HDEditorContainer>
                       )}
                     </ScrollView>

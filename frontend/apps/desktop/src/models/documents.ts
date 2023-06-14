@@ -17,6 +17,7 @@ import {
   DocumentChange,
   WebPublicationRecord,
   serverChildrenToEditorChildren,
+  hdBlockSchema,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -36,9 +37,19 @@ import {PluginKey} from 'prosemirror-state'
 import {NavRoute} from '@app/utils/navigation'
 import {extractReferencedDocs} from './sites'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Block, DefaultBlockSchema, defaultProps, PartialBlock, StyledText, BlockSpec, PropSchema, BlockSchema, Props} from '@blocknote/core'
+import {
+  Block,
+  DefaultBlockSchema,
+  defaultProps,
+  PartialBlock,
+  StyledText,
+  BlockSpec,
+  PropSchema,
+  BlockSchema,
+  Props,
+} from '@blocknote/core'
 import {toast} from '@app/toast'
-
+import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 export function usePublicationList() {
   return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
@@ -253,7 +264,7 @@ let emptyEditorValue = group({data: {parent: ''}}, [
 ])
 
 type DraftState = {
-  children: PartialBlock<any>[]
+  children: PartialBlock<typeof hdBlockSchema>[]
   changes: DraftChangesState
   webUrl: string
 }
@@ -525,15 +536,12 @@ export function useDraftEditor2(
   //   ]
   // }
 
-  // const initialContent = BlockToBlockNote(document);
-
   const editor = useBlockNote({
     onEditorContentChange(editor) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       // mutate editor here
       // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
     },
-    // initialContent: initialContent,
     _tiptapOptions: {
       extensions: [StateMonitorExtension.configure({})],
     },
@@ -544,7 +552,11 @@ export function useDraftEditor2(
       const serverDraft = await draftsClient.getDraft({
         documentId,
       })
-      const topChildren = serverChildrenToEditorChildren(serverDraft.children)
+      let debugExampleDoc = null
+      // debugExampleDoc = examples.withBoldText // comment me out before committing, thankyouu
+      const topChildren = serverChildrenToEditorChildren(
+        (debugExampleDoc || serverDraft).children,
+      )
       const draftState: DraftState = {
         children: topChildren,
         changes: {
@@ -559,8 +571,8 @@ export function useDraftEditor2(
       return draftState
     },
     onSuccess: (draft: DraftState) => {
-      if (draft.children.length) {
-        editor?._tiptapEditor.commands.insertContent(draft.children)
+      if (draft.children.length && editor?._tiptapEditor) {
+        editor.replaceBlocks(editor.topLevelBlocks, draft.children)
       }
     },
   })
@@ -576,26 +588,7 @@ export function useWriteDraftWebUrl(draftId?: string) {
   return useMutation({
     onMutate: (webUrl: string) => {
       let title: string
-      // appQueryClient.setQueryData(
-      //   [queryKeys.EDITOR_DRAFT, draftId],
-      //   (editorDraft: EditorDraft | undefined) => {
-      //     if (!editorDraft) return undefined
-      //     let changes: DocumentChange[] = [
-      //       ...editorDraft.changes,
-      //       new DocumentChange({
-      //         op: {
-      //           case: 'setWebUrl',
-      //           value: webUrl,
-      //         },
-      //       }),
-      //     ]
-      //     return {
-      //       ...editorDraft,
-      //       webUrl,
-      //       changes,
-      //     }
-      //   },
-      // )
+
       appQueryClient.setQueryData(
         [queryKeys.GET_DRAFT, draftId],
         (draft: Document | undefined) => {
@@ -660,40 +653,6 @@ function compareArrays(arr1: any[], arr2: any[]): boolean {
   return arr1.every((value, index) => value === arr2[index])
 }
 
-function BlockToBlockNote(document: any) {
-  const children = document.children
-  if (children) {
-    const result = AppendChildren(children)
-    return result
-  }
-  return []
-}
-
-function AppendChildren(children: any) {
-  if (!children || children.length === 0) return []
-  const content = []
-  for (const child of children) {
-    const block = {
-      id: child.id,
-      type: child.type,
-      props: {
-        backgroundColor: "transparent",
-        textColor: "black",
-        textAlignment: "left"
-      } as Props<PropSchema>,
-      // props: {},
-      content: [{
-        type: 'text',
-        text: child.content,
-        styles: {},
-      } as StyledText],
-      children: AppendChildren(child.children),
-    } as Block<BlockSchema>
-    content.push(block)
-  }
-  return content
-}
-
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
@@ -703,25 +662,17 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     documentId,
     versionId,
   })
-  // const editor = React.memo(() => {
-  //   return
-  // }, [pub.data])
-
   const editor = useBlockNote({
     // _tiptapOptions: {
     //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
-    onEditorContentChange(editor) {
-      // opts?.onEditorState?.(editor.topLevelBlocks)
-      // mutate editor here
-      // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
-    },
-    initialContent: [],
+    blockSchema: hdBlockSchema,
   })
   useEffect(() => {
     if (pub.data?.document && editor) {
-      editor.isEditable = false
-      editor._tiptapEditor.commands.insertContent(
+      editor.isEditable = false // this is the way
+      editor.replaceBlocks(
+        editor.topLevelBlocks,
         serverChildrenToEditorChildren(pub.data.document?.children || []),
       )
     }

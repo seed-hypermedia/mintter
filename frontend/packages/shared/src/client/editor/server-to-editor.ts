@@ -1,5 +1,11 @@
-import {BlockSpec, PartialBlock} from '@blocknote/core'
+import {
+  BlockSchema,
+  BlockSpec,
+  InlineContent,
+  PartialBlock,
+} from '@blocknote/core'
 import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
+import {hdBlockSchema} from './schema'
 
 export function leafServerBlockToEditorBlock(block: Block): PartialBlock<any> {
   return {
@@ -33,13 +39,13 @@ function areStylesEqual(
   return true
 }
 
-export function serverBlockToEditorInline(block: Block): Inline[] {
+export function serverBlockToEditorInline(block: Block): InlineContent[] {
   let {text, annotations} = block
   if (!text) text = ''
   const stylesForIndex: (Record<string, string> | null)[] = Array(
     text.length,
   ).fill(null)
-  const inlines: Inline[] = []
+  const inlines: InlineContent[] = []
   const allStyleKeys = new Set<string>()
 
   annotations.forEach((annotation) => {
@@ -62,7 +68,6 @@ export function serverBlockToEditorInline(block: Block): Inline[] {
     } else {
       inlines.push({
         text: currentText,
-        // @ts-expect-error
         type: 'text',
         styles: currentStyles || {},
       })
@@ -73,7 +78,6 @@ export function serverBlockToEditorInline(block: Block): Inline[] {
 
   inlines.push({
     text: currentText,
-    // @ts-expect-error
     type: 'text',
     styles: currentStyles || {},
   })
@@ -93,7 +97,7 @@ function extractChildrenType(childrenType: string | undefined): ChildrenType {
 
 export function serverBlockToEditorParagraph(
   serverBlock: BlockNode,
-): PartialBlock<any> {
+): PartialBlock<typeof hdBlockSchema> {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
@@ -102,7 +106,6 @@ export function serverBlockToEditorParagraph(
   return {
     id: block.id,
     type: 'paragraph',
-    // @ts-expect-error
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       childrenType: extractChildrenType(block.attributes.childrenType),
@@ -113,7 +116,7 @@ export function serverBlockToEditorParagraph(
 
 export function serverBlockToEditorOLI(
   serverBlock: BlockNode,
-): PartialBlock<any> {
+): PartialBlock<typeof hdBlockSchema> {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
@@ -121,8 +124,7 @@ export function serverBlockToEditorOLI(
   const {block, children} = serverBlock
   return {
     id: block.id,
-    type: 'ordered-list-item',
-    // @ts-expect-error
+    type: 'numberedListItem',
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       childrenType: extractChildrenType(block.attributes.childrenType),
@@ -136,7 +138,7 @@ export function serverChildrenToEditorChildren(
   opts?: {
     childrenType?: ChildrenType
   },
-): PartialBlock<any>[] {
+): PartialBlock<typeof hdBlockSchema>[] {
   return children.map((serverBlock) => {
     if (opts?.childrenType === 'ordered') {
     }
