@@ -50,6 +50,8 @@ import {
 } from '@blocknote/core'
 import {toast} from '@app/toast'
 import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
+import {formattingToolbarFactory} from '../editor/formatting-toolbar'
+
 export function usePublicationList() {
   return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
@@ -541,6 +543,9 @@ export function useDraftEditor2(
       opts?.onEditorState?.(editor.topLevelBlocks)
       // mutate editor here
       // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
+    },
+    uiFactories: {
+      formattingToolbarFactory,
     },
     _tiptapOptions: {
       extensions: [StateMonitorExtension.configure({})],

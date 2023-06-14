@@ -4498,6 +4498,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mantine/core@npm:^6.0.13":
+  version: 6.0.13
+  resolution: "@mantine/core@npm:6.0.13"
+  dependencies:
+    "@floating-ui/react": ^0.19.1
+    "@mantine/styles": 6.0.13
+    "@mantine/utils": 6.0.13
+    "@radix-ui/react-scroll-area": 1.0.2
+    react-remove-scroll: ^2.5.5
+    react-textarea-autosize: 8.3.4
+  peerDependencies:
+    "@mantine/hooks": 6.0.13
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 49e13573578f44fea695780a95b30593a647b304d070643d184ef2e2ba7a4f6eb1d9ece545e4b4d318546a174e8c7b4a30ae574f2d1e583bb43fd07ab9e98624
+  languageName: node
+  linkType: hard
+
 "@mantine/hooks@npm:^5.6.1":
   version: 5.10.5
   resolution: "@mantine/hooks@npm:5.10.5"
@@ -4521,6 +4539,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mantine/styles@npm:6.0.13":
+  version: 6.0.13
+  resolution: "@mantine/styles@npm:6.0.13"
+  dependencies:
+    clsx: 1.1.1
+    csstype: 3.0.9
+  peerDependencies:
+    "@emotion/react": ">=11.9.0"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 459f4ce0eb2ee75885980061ba248533b7164b2231deb6a93ad6da6bf0b720651640492b02216419422c6b0a28908d6ec488fbf7de2ac57ad1ff3fd13f7f9a02
+  languageName: node
+  linkType: hard
+
 "@mantine/utils@npm:5.10.5":
   version: 5.10.5
   resolution: "@mantine/utils@npm:5.10.5"
@@ -4530,7 +4562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/utils@npm:^6.0.5":
+"@mantine/utils@npm:6.0.13, @mantine/utils@npm:^6.0.5":
   version: 6.0.13
   resolution: "@mantine/utils@npm:6.0.13"
   peerDependencies:
@@ -4646,6 +4678,7 @@ __metadata:
     "@graphql-codegen/typescript": 2.8.5
     "@happy-dom/global-registrator": 7.8.1
     "@juggle/resize-observer": 3.4.0
+    "@mantine/core": ^6.0.13
     "@mintter/shared": "workspace:*"
     "@mintter/ui": "workspace:*"
     "@radix-ui/colors": 0.1.8

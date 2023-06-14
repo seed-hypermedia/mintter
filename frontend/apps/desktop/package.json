@@ -18,6 +18,7 @@
     "@bufbuild/protobuf": "1.2.0",
     "@floating-ui/react-dom": "1.2.2",
     "@juggle/resize-observer": "3.4.0",
+    "@mantine/core": "^6.0.13",
     "@mintter/shared": "workspace:*",
     "@mintter/ui": "workspace:*",
     "@radix-ui/colors": "0.1.8",
