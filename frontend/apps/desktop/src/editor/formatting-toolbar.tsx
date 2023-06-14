@@ -2,7 +2,7 @@ import {
   BlockNoteEditor,
   BlockSchema,
   RequiredStaticParams,
-} from '@blocknote/core'
+} from '@mtt-blocknote/core'
 import {Toolbar} from './blocknote/Toolbar'
 import {ColorStyleButton} from './blocknote/ColorStyleButton'
 import {CreateLinkButton} from './blocknote/CreateLinkButton'

@@ -1,7 +1,7 @@
 import {FC} from 'react'
 import {TippyProps} from '@tippyjs/react'
 import {createRoot} from 'react-dom/client'
-import {EditorElement, RequiredDynamicParams} from '@blocknote/core'
+import {EditorElement, RequiredDynamicParams} from '@mtt-blocknote/core'
 import {EditorElementComponentWrapper} from './EditorElementComponentWrapper'
 import {MantineThemeOverride} from '@mantine/core'
 

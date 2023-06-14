@@ -1,6 +1,6 @@
 import {useCallback} from 'react'
 import {Menu} from '@mantine/core'
-import {BlockNoteEditor, BlockSchema} from '@blocknote/core'
+import {BlockNoteEditor, BlockSchema} from '@mtt-blocknote/core'
 import {ToolbarButton} from './ToolbarButton'
 import {ColorIcon} from './ColorIcon'
 import {ColorPicker} from './ColorPicker'

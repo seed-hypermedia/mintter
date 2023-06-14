@@ -7,7 +7,7 @@ import {
   RiStrikethrough,
   RiUnderline,
 } from 'react-icons/ri'
-import {BlockNoteEditor, BlockSchema, ToggledStyle} from '@blocknote/core'
+import {BlockNoteEditor, BlockSchema, ToggledStyle} from '@mtt-blocknote/core'
 import {IconType} from 'react-icons'
 
 const shortcuts: Record<ToggledStyle, string> = {

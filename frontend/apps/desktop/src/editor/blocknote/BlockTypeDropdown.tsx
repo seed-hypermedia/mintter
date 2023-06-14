@@ -1,4 +1,8 @@
-import {BlockNoteEditor, BlockSchema, DefaultBlockSchema} from '@blocknote/core'
+import {
+  BlockNoteEditor,
+  BlockSchema,
+  DefaultBlockSchema,
+} from '@mtt-blocknote/core'
 import {useEffect, useState} from 'react'
 import {IconType} from 'react-icons'
 import {

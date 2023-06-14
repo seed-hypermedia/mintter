@@ -1,6 +1,6 @@
 import {MantineProvider, MantineThemeOverride} from '@mantine/core'
 import Tippy, {TippyProps} from '@tippyjs/react'
-import {RequiredDynamicParams} from '@blocknote/core'
+import {RequiredDynamicParams} from '@mtt-blocknote/core'
 import {FC, useCallback, useState} from 'react'
 
 /**

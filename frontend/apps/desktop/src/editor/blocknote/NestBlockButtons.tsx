@@ -1,7 +1,7 @@
 import {formatKeyboardShortcut} from './utils'
 import {RiIndentDecrease, RiIndentIncrease} from 'react-icons/ri'
 import {ToolbarButton} from './ToolbarButton'
-import {BlockNoteEditor, BlockSchema} from '@blocknote/core'
+import {BlockNoteEditor, BlockSchema} from '@mtt-blocknote/core'
 import {useCallback} from 'react'
 
 export const NestBlockButton = <BSchema extends BlockSchema>(props: {
