@@ -5,6 +5,7 @@ import {
 } from '@app/api-clients'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
+import { ImageBlock, insertImage } from '@app/types/image'
 import {NavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -23,7 +24,7 @@ import {
   text,
 } from '@mintter/shared'
 import {BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
-import {useBlockNote} from '@mtt-blocknote/react'
+import {defaultReactSlashMenuItems, useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
   QueryClient,
@@ -436,7 +437,11 @@ export function useDraftEditor(
     uiFactories: {
       formattingToolbarFactory,
     },
-    blockSchema: hdBlockSchema,
+    blockSchema: {
+      ...hdBlockSchema,
+      image: ImageBlock,
+    },
+    slashCommands: [...defaultReactSlashMenuItems, insertImage],
     _tiptapOptions: {
       // onf
     },
