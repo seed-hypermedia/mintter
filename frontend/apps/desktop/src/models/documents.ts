@@ -350,6 +350,7 @@ export function useDraftEditor(
 
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
+      if (!editor) return
       const draftState: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
@@ -392,7 +393,8 @@ export function useDraftEditor(
       })
 
       changed.forEach((blockId) => {
-        // todo, get the block from the editor, somehow
+        const currentBlock = editor.getBlock(blockId)
+        console.log('do convert block', currentBlock)
         changes.push(
           new DocumentChange({
             op: {
@@ -442,7 +444,10 @@ export function useDraftEditor(
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: DraftState | undefined) => {
-          if (!state) throw Error('no state. fuck')
+          if (!state) {
+            console.warn('no draft state found for tracking block id changes')
+            return undefined
+          }
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
           )
