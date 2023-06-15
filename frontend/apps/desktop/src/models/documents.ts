@@ -15,12 +15,9 @@ import {
   GroupingContent,
   Publication,
   WebPublicationRecord,
-  group,
   hdBlockSchema,
-  paragraph,
   serverChildrenToEditorChildren,
-  statement,
-  text,
+  editorBlockToServerBlock,
 } from '@mintter/shared'
 import {Block, BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
 import {useBlockNote} from '@mtt-blocknote/react'
@@ -42,6 +39,14 @@ import {extractReferencedDocs} from './sites'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
+
+function createEmptyChanges(): DraftChangesState {
+  return {
+    changed: new Set<string>(),
+    deleted: new Set<string>(),
+    moves: [],
+  }
+}
 
 export function usePublicationList() {
   return useQuery({
@@ -252,10 +257,6 @@ export function usePublishDraft(
   })
 }
 
-let emptyEditorValue = group({data: {parent: ''}}, [
-  statement([paragraph([text('')])]),
-])
-
 type DraftState = {
   children: PartialBlock<typeof hdBlockSchema>[]
   changes: DraftChangesState
@@ -352,6 +353,7 @@ export function useDraftEditor(
 
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
+      if (!editor) return
       const draftState: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
@@ -396,23 +398,34 @@ export function useDraftEditor(
       })
 
       changed.forEach((blockId) => {
-        // todo, get the block from the editor, somehow
+        const currentBlock = editor.getBlock(blockId)
+        if (!currentBlock) return
+        const serverBlock = editorBlockToServerBlock(currentBlock)
+        console.log({serverBlock})
         changes.push(
           new DocumentChange({
             op: {
               case: 'replaceBlock',
-              value: {
-                id: blockId,
-                annotations: [],
-                attributes: {},
-                text: '',
-                type: '',
-              },
+              value: serverBlock,
             },
           }),
         )
       })
-      console.log('= SAVING changes ', changed)
+      await draftsClient.updateDraft({
+        documentId,
+        changes,
+      })
+
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (state: DraftState | undefined) => {
+          if (!state) return undefined
+          return {
+            ...state,
+            changes: createEmptyChanges(),
+          }
+        },
+      )
     },
   })
 
@@ -420,9 +433,12 @@ export function useDraftEditor(
   let lastBlockParent = useRef<Record<string, string>>({})
   let lastBlockLeftSibling = useRef<Record<string, string>>({})
 
+  let isReadyForChanges = useRef(false)
+
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
+      if (!isReadyForChanges.current) return
 
       console.log('== editor changed', {
         lastBlocks: Object.keys(lastBlocks.current),
@@ -465,7 +481,6 @@ export function useDraftEditor(
       }
       observeBlocks(editor.topLevelBlocks, '')
       const removedBlockIds = possiblyRemovedBlockIds
-      removedBlockIds.forEach((blockId) => removedBlockIds.add(blockId))
       lastBlocks.current = nextBlocks
 
       clearTimeout(savingDebounceTimout.current)
@@ -476,9 +491,16 @@ export function useDraftEditor(
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: DraftState | undefined) => {
-          if (!state) throw Error('no state. fuck')
+          if (!state) {
+            console.warn('no editor state yet!')
+            return
+          }
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
+          )
+          moves.forEach((move) => state.changes.moves.push(move))
+          removedBlockIds.forEach((blockId) =>
+            state.changes.deleted.add(blockId),
           )
           return {
             ...state,
@@ -501,10 +523,11 @@ export function useDraftEditor(
         documentId,
       })
       let debugExampleDoc = null
-      debugExampleDoc = examples.nestedHeadings // comment me out before committing, thankyouu
+      // debugExampleDoc = examples.twoParagraphs // comment me out before committing, thankyouu
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )
+      console.log('loaded from serever', {topChildren, serverDraft})
       const draftState: DraftState = {
         children: topChildren,
         changes: {
@@ -516,19 +539,27 @@ export function useDraftEditor(
       }
       // convert data to editor blocks
       // return {} as DraftState
+      console.log('=== whathyyyy', draftState)
       return draftState
     },
     onSuccess: (draft: DraftState) => {
-      if (draft.children.length && editor?._tiptapEditor) {
-        // we load the data from the backend here
-        editor.replaceBlocks(editor.topLevelBlocks, draft.children)
+      console.log('=== ??')
 
-        // this is to populate the blocks we use to compare changes
-        editor.forEachBlock((block) => {
-          lastBlocks.current[block.id] = block
-          return true
-        })
-      }
+      if (!editor)
+        throw new Error('editor unavailable from draftQuery success fn')
+      // we load the data from the backend here
+      editor.replaceBlocks(editor.topLevelBlocks, [
+        ...draft.children,
+        // editor._tiptapEditor.schema.nodes.paragraph.create(),
+      ])
+
+      // this is to populate the blocks we use to compare changes
+      editor.forEachBlock((block) => {
+        lastBlocks.current[block.id] = block
+        return true
+      })
+      isReadyForChanges.current = true
+      console.log('StART LISTNING TO CHANGES')
     },
   })
 

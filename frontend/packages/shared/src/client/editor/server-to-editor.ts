@@ -65,7 +65,7 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
     })
   })
 
-  let currentText = text[0]
+  let currentText = text[0] || '!'
   let currentStyles = stylesForIndex[0]
 
   for (let i = 1; i < text.length; i++) {
