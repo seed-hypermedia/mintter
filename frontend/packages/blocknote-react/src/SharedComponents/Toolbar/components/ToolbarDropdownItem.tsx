@@ -1,18 +1,18 @@
-import { Menu } from "@mantine/core";
-import { IconType } from "react-icons";
-import { TiTick } from "react-icons/ti";
-import { MouseEvent } from "react";
+import {Menu} from '@mantine/core'
+import {IconType} from 'react-icons'
+import {TiTick} from 'react-icons/ti'
+import {MouseEvent} from 'react'
 
 export type ToolbarDropdownItemProps = {
-  text: string;
-  icon?: IconType;
-  onClick?: (e: MouseEvent) => void;
-  isSelected?: boolean;
-  isDisabled?: boolean;
-};
+  text: string
+  icon?: IconType
+  onClick?: (e: MouseEvent) => void
+  isSelected?: boolean
+  isDisabled?: boolean
+}
 
 export function ToolbarDropdownItem(props: ToolbarDropdownItemProps) {
-  const ItemIcon = props.icon;
+  const ItemIcon = props.icon
 
   return (
     <Menu.Item
@@ -24,11 +24,12 @@ export function ToolbarDropdownItem(props: ToolbarDropdownItemProps) {
           <TiTick size={16} />
         ) : (
           // Ensures space for tick even if item isn't currently selected.
-          <div style={{ width: "16px", padding: "0" }} />
+          <div style={{width: '16px', padding: '0'}} />
         )
       }
-      disabled={props.isDisabled}>
+      disabled={props.isDisabled}
+    >
       {props.text}
     </Menu.Item>
-  );
+  )
 }

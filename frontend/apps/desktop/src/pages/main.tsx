@@ -21,7 +21,6 @@ var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
-var BlockNote = lazy(() => import('@app/pages/blocknote'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
 
 function getPageComponent(navRoute: NavRoute) {
@@ -42,8 +41,6 @@ function getPageComponent(navRoute: NavRoute) {
       return Draft
     case 'settings':
       return Settings
-    case 'blocknote':
-      return BlockNote
     default:
       return NotFoundPage
   }

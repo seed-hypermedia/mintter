@@ -1,9 +1,8 @@
 import {useCallback} from 'react'
-import {Menu} from '@mantine/core'
+import {ColorPicker, Menu} from '@mantine/core'
 import {BlockNoteEditor, BlockSchema} from '@mtt-blocknote/core'
 import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
 import {ColorIcon} from '../../../SharedComponents/ColorPicker/components/ColorIcon'
-import {ColorPicker} from '../../../SharedComponents/ColorPicker/components/ColorPicker'
 
 export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>
@@ -46,6 +45,7 @@ export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
       </Menu.Target>
       <Menu.Dropdown>
         <ColorPicker
+          // @ts-expect-error
           textColor={props.editor.getActiveStyles().textColor || 'default'}
           setTextColor={setTextColor}
           backgroundColor={

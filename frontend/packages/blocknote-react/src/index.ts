@@ -3,6 +3,8 @@ export * from './BlockNoteView'
 
 export * from './ReactBlockSpec'
 
+export * from './BlockNoteTheme'
+
 export * from './BlockSideMenu/BlockSideMenuFactory'
 export * from './BlockSideMenu/components/DragHandleMenu'
 export * from './BlockSideMenu/components/DragHandleMenuItem'
@@ -17,6 +19,7 @@ export * from './FormattingToolbar/components/DefaultButtons/TextAlignButton'
 export * from './FormattingToolbar/components/DefaultButtons/ColorStyleButton'
 export * from './FormattingToolbar/components/DefaultButtons/NestBlockButtons'
 export * from './FormattingToolbar/components/DefaultButtons/CreateLinkButton'
+export * from './ElementFactory/components/ReactElementFactory'
 
 export * from './hooks/useBlockNote'
 export * from './hooks/useEditorForceUpdate'

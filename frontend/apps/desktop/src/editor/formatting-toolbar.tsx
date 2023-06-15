@@ -3,14 +3,16 @@ import {
   BlockSchema,
   RequiredStaticParams,
 } from '@mtt-blocknote/core'
-import {Toolbar} from './blocknote/Toolbar'
-import {ColorStyleButton} from './blocknote/ColorStyleButton'
-import {CreateLinkButton} from './blocknote/CreateLinkButton'
-import {NestBlockButton, UnnestBlockButton} from './blocknote/NestBlockButtons'
-import {ToggledStyleButton} from './blocknote/ToggledStyleButton'
-import {BlockTypeDropdown} from './blocknote/BlockTypeDropdown'
-import {ReactElementFactory} from './blocknote/ReactElementFactory'
-import {getBlockNoteTheme} from './blocknote/BlockNoteTheme'
+import {Toolbar, getBlockNoteTheme} from '@mtt-blocknote/react'
+import {ColorStyleButton} from '@mtt-blocknote/react'
+import {CreateLinkButton} from '@mtt-blocknote/react'
+import {NestBlockButton, UnnestBlockButton} from '@mtt-blocknote/react'
+import {ToggledStyleButton} from '@mtt-blocknote/react'
+import {BlockTypeDropdown} from '@mtt-blocknote/react'
+import {ReactElementFactory} from '@mtt-blocknote/react'
+import {blockNoteColorScheme} from '@mtt-blocknote/react'
+
+console.log('blockNoteColorScheme', blockNoteColorScheme)
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>

@@ -1,5 +1,3 @@
-import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
-import {formatKeyboardShortcut} from '../../../utils'
 import {
   RiBold,
   RiCodeFill,
@@ -9,6 +7,8 @@ import {
 } from 'react-icons/ri'
 import {BlockNoteEditor, BlockSchema, ToggledStyle} from '@mtt-blocknote/core'
 import {IconType} from 'react-icons'
+import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
+import {formatKeyboardShortcut} from '../../../utils'
 
 const shortcuts: Record<ToggledStyle, string> = {
   bold: 'Mod+B',

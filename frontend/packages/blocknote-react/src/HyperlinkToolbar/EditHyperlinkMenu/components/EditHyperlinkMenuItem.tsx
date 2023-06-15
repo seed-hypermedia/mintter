@@ -1,18 +1,18 @@
-import { IconType } from "react-icons";
-import { EditHyperlinkMenuItemIcon } from "./EditHyperlinkMenuItemIcon";
-import { EditHyperlinkMenuItemInput } from "./EditHyperlinkMenuItemInput";
-import { Group } from "@mantine/core";
+import {IconType} from 'react-icons'
+import {EditHyperlinkMenuItemIcon} from './EditHyperlinkMenuItemIcon'
+import {EditHyperlinkMenuItemInput} from './EditHyperlinkMenuItemInput'
+import {Group} from '@mantine/core'
 
 export type EditHyperlinkMenuItemProps = {
-  icon: IconType;
-  mainIconTooltip: string;
-  secondaryIconTooltip?: string;
-  autofocus?: boolean;
-  placeholder?: string;
-  value?: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
-};
+  icon: IconType
+  mainIconTooltip: string
+  secondaryIconTooltip?: string
+  autofocus?: boolean
+  placeholder?: string
+  value?: string
+  onChange: (value: string) => void
+  onSubmit: () => void
+}
 
 export function EditHyperlinkMenuItem(props: EditHyperlinkMenuItemProps) {
   return (
@@ -30,5 +30,5 @@ export function EditHyperlinkMenuItem(props: EditHyperlinkMenuItemProps) {
         onSubmit={props.onSubmit}
       />
     </Group>
-  );
+  )
 }

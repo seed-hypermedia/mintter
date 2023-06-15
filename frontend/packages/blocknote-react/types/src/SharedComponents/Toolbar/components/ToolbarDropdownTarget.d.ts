@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { IconType } from "react-icons";
+import { IconType } from 'react-icons';
 export type ToolbarDropdownTargetProps = {
     text: string;
     icon?: IconType;

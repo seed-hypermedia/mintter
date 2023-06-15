@@ -1,18 +1,18 @@
-import { IconType } from "react-icons";
-import Tippy from "@tippyjs/react";
-import { TooltipContent } from "../../../SharedComponents/Tooltip/components/TooltipContent";
-import { Container } from "@mantine/core";
+import {IconType} from 'react-icons'
+import Tippy from '@tippyjs/react'
+import {Container} from '@mantine/core'
+import {TooltipContent} from '../../../SharedComponents/Tooltip/components/TooltipContent'
 
 export type EditHyperlinkMenuItemIconProps = {
-  icon: IconType;
-  mainTooltip: string;
-  secondaryTooltip?: string;
-};
+  icon: IconType
+  mainTooltip: string
+  secondaryTooltip?: string
+}
 
 export function EditHyperlinkMenuItemIcon(
-  props: EditHyperlinkMenuItemIconProps
+  props: EditHyperlinkMenuItemIconProps,
 ) {
-  const Icon = props.icon;
+  const Icon = props.icon
 
   return (
     <Tippy
@@ -22,10 +22,11 @@ export function EditHyperlinkMenuItemIcon(
           secondaryTooltip={props.secondaryTooltip}
         />
       }
-      placement="left">
+      placement="left"
+    >
       <Container>
         <Icon size={16}></Icon>
       </Container>
     </Tippy>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { ToolbarButtonProps } from "../../SharedComponents/Toolbar/components/ToolbarButton";
+import { ToolbarButtonProps } from '../../SharedComponents/Toolbar/components/ToolbarButton';
 type HyperlinkButtonProps = ToolbarButtonProps & {
     hyperlinkIsActive: boolean;
     activeHyperlinkUrl: string;

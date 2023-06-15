@@ -1,25 +1,25 @@
-import { ActionIcon, Button } from "@mantine/core";
-import Tippy from "@tippyjs/react";
-import { ForwardedRef, forwardRef, MouseEvent } from "react";
-import { TooltipContent } from "../../Tooltip/components/TooltipContent";
-import { IconType } from "react-icons";
+import {ActionIcon, Button} from '@mantine/core'
+import Tippy from '@tippyjs/react'
+import {ForwardedRef, forwardRef, MouseEvent} from 'react'
+import {IconType} from 'react-icons'
+import {TooltipContent} from '../../Tooltip/components/TooltipContent'
 
 export type ToolbarButtonProps = {
-  onClick?: (e: MouseEvent) => void;
-  icon?: IconType;
-  mainTooltip: string;
-  secondaryTooltip?: string;
-  isSelected?: boolean;
-  children?: any;
-  isDisabled?: boolean;
-};
+  onClick?: (e: MouseEvent) => void
+  icon?: IconType
+  mainTooltip: string
+  secondaryTooltip?: string
+  isSelected?: boolean
+  children?: any
+  isDisabled?: boolean
+}
 
 /**
  * Helper for basic buttons that show in the formatting toolbar.
  */
 export const ToolbarButton = forwardRef(
   (props: ToolbarButtonProps, ref: ForwardedRef<HTMLButtonElement>) => {
-    const ButtonIcon = props.icon;
+    const ButtonIcon = props.icon
     return (
       <Tippy
         content={
@@ -28,37 +28,40 @@ export const ToolbarButton = forwardRef(
             secondaryTooltip={props.secondaryTooltip}
           />
         }
-        trigger={"mouseenter"}>
+        trigger={'mouseenter'}
+      >
         {/*Creates an ActionIcon instead of a Button if only an icon is provided as content.*/}
         {props.children ? (
           <Button
             onClick={props.onClick}
-            data-selected={props.isSelected ? "true" : undefined}
+            data-selected={props.isSelected ? 'true' : undefined}
             data-test={
               props.mainTooltip.slice(0, 1).toLowerCase() +
-              props.mainTooltip.replace(/\s+/g, "").slice(1)
+              props.mainTooltip.replace(/\s+/g, '').slice(1)
             }
-            size={"xs"}
+            size={'xs'}
             disabled={props.isDisabled || false}
-            ref={ref}>
+            ref={ref}
+          >
             {ButtonIcon && <ButtonIcon />}
             {props.children}
           </Button>
         ) : (
           <ActionIcon
             onClick={props.onClick}
-            data-selected={props.isSelected ? "true" : undefined}
+            data-selected={props.isSelected ? 'true' : undefined}
             data-test={
               props.mainTooltip.slice(0, 1).toLowerCase() +
-              props.mainTooltip.replace(/\s+/g, "").slice(1)
+              props.mainTooltip.replace(/\s+/g, '').slice(1)
             }
             size={30}
             disabled={props.isDisabled || false}
-            ref={ref}>
+            ref={ref}
+          >
             {ButtonIcon && <ButtonIcon />}
           </ActionIcon>
         )}
       </Tippy>
-    );
-  }
-);
+    )
+  },
+)

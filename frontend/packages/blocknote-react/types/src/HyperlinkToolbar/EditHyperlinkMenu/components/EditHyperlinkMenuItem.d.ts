@@ -1,4 +1,4 @@
-import { IconType } from "react-icons";
+import { IconType } from 'react-icons';
 export type EditHyperlinkMenuItemProps = {
     icon: IconType;
     mainIconTooltip: string;

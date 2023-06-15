@@ -24,6 +24,7 @@ export function EditorElementComponentWrapper<
   theme: MantineThemeOverride
   tippyProps?: TippyProps
 }) {
+  console.log('heLLO1', props)
   const EditorElementComponent = props.editorElementComponent
 
   const [contentCleared, setContentCleared] = useState(false)

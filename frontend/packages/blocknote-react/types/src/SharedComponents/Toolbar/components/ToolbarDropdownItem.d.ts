@@ -1,5 +1,5 @@
-import { IconType } from "react-icons";
-import { MouseEvent } from "react";
+import { IconType } from 'react-icons';
+import { MouseEvent } from 'react';
 export type ToolbarDropdownItemProps = {
     text: string;
     icon?: IconType;

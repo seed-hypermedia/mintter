@@ -1,4 +1,4 @@
-import { MantineThemeOverride } from "@mantine/core";
+import { MantineThemeOverride } from '@mantine/core';
 type ColorScheme = [
     string,
     string,

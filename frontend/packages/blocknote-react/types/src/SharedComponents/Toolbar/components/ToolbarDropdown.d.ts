@@ -1,5 +1,5 @@
-import { MouseEvent } from "react";
-import { IconType } from "react-icons";
+import { MouseEvent } from 'react';
+import { IconType } from 'react-icons';
 export type ToolbarDropdownProps = {
     items: Array<{
         onClick?: (e: MouseEvent) => void;
