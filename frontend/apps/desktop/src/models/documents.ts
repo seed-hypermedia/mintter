@@ -363,18 +363,17 @@ export function useDraftEditor(
       changed.forEach((blockId) => {
         const currentBlock = editor.getBlock(blockId)
         if (!currentBlock) return
-        console.log('do convert block', currentBlock)
+        const serverBlock = editorBlockToServerBlock(currentBlock)
         changes.push(
           new DocumentChange({
             op: {
               case: 'replaceBlock',
-              value: editorBlockToServerBlock(currentBlock),
+              value: serverBlock,
             },
           }),
         )
       })
 
-      console.log('= SAVING changes ', changes)
       await draftsClient.updateDraft({
         documentId,
         changes,
@@ -448,7 +447,7 @@ export function useDraftEditor(
         documentId,
       })
       let debugExampleDoc = null
-      debugExampleDoc = examples.withOverlappingAnnotations // comment me out before committing, thankyouu
+      // debugExampleDoc = examples.withOverlappingAnnotations // comment me out before committing, thankyouu
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )
