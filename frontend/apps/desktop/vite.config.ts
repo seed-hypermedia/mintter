@@ -34,7 +34,7 @@ const tamaguiConfig = {
   useReactNativeWebLite: true,
 }
 
-export default defineConfig({
+export default defineConfig((conf) => ({
   cacheDir: '.vite',
   // prevent vite from obscuring rust errors
   clearScreen: false,
@@ -72,10 +72,27 @@ export default defineConfig({
     tamaguiPlugin(tamaguiConfig),
     shouldExtract ? tamaguiExtractPlugin(tamaguiConfig) : null,
   ].filter(Boolean),
+  resolve: {
+    alias:
+      conf.command === 'build'
+        ? {}
+        : {
+            // Comment out the lines below to load a built version of blocknote
+            // or, keep as is to load live from sources with live reload working
+            '@mtt-blocknote/core': path.resolve(
+              __dirname,
+              '../../packages/blocknote-core/src/',
+            ),
+            '@mtt-blocknote/react': path.resolve(
+              __dirname,
+              '../../packages/blocknote-react/src/',
+            ),
+          },
+  },
   // @ts-ignore
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
     global: true,
   },
-})
+}))
