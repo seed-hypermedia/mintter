@@ -1,6 +1,16 @@
-import {Block as EditorBlock} from '@mtt-blocknote/core'
-import {Block as ServerBlock} from './hyperdocs-presentation'
+import {Block as EditorBlock, InlineContent} from '@mtt-blocknote/core'
+import {Block as ServerBlock, TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
+
+export function extractContent(content: InlineContent[]): {
+  text: string
+  annotations: TextAnnotation[]
+} {
+  let text = ''
+  const annotations: TextAnnotation[] = []
+  console.log(JSON.stringify(content))
+  return {text, annotations}
+}
 
 export function editorBlockToServerBlock(
   editorBlock: EditorBlock<typeof hdBlockSchema>,
@@ -10,11 +20,19 @@ export function editorBlockToServerBlock(
   if (editorBlock.type === 'paragraph') {
     return {
       id: editorBlock.id,
-      type: 'section',
-      text: '',
-      annotations: [],
+      type: 'paragraph',
       attributes: {},
+      ...extractContent(editorBlock.content),
     }
   }
+  if (editorBlock.type === 'heading') {
+    return {
+      id: editorBlock.id,
+      type: 'heading',
+      attributes: {},
+      ...extractContent(editorBlock.content),
+    }
+  }
+
   throw new Error('not implemented')
 }

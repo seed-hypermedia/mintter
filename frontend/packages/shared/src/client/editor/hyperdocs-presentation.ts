@@ -19,7 +19,7 @@ export type SectionBlockAttributes = {
 
 export type SectionBlock = {
   id: string
-  type: 'heading' | 'paragraph' | 'section'
+  type: 'heading' | 'paragraph'
   text: string
   attributes: SectionBlockAttributes
   annotations: TextAnnotation[]

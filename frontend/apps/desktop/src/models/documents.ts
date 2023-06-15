@@ -259,6 +259,14 @@ type DraftState = {
   webUrl: string
 }
 
+function createEmptyChanges(): DraftChangesState {
+  return {
+    changed: new Set<string>(),
+    deleted: new Set<string>(),
+    moves: [],
+  }
+}
+
 export function useDraftTitle(
   input: UseQueryOptions<DraftState> & {documentId: string},
 ) {
@@ -365,7 +373,23 @@ export function useDraftEditor(
           }),
         )
       })
-      console.log('= SAVING changes ', changed)
+
+      console.log('= SAVING changes ', changes)
+      await draftsClient.updateDraft({
+        documentId,
+        changes,
+      })
+
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (state: DraftState | undefined) => {
+          if (!state) return undefined
+          return {
+            ...state,
+            changes: createEmptyChanges(),
+          }
+        },
+      )
     },
   })
 
@@ -424,17 +448,13 @@ export function useDraftEditor(
         documentId,
       })
       let debugExampleDoc = null
-      debugExampleDoc = examples.nestedHeadings // comment me out before committing, thankyouu
+      debugExampleDoc = examples.withOverlappingAnnotations // comment me out before committing, thankyouu
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )
       const draftState: DraftState = {
         children: topChildren,
-        changes: {
-          changed: new Set<string>(),
-          deleted: new Set<string>(),
-          moves: [],
-        },
+        changes: createEmptyChanges(),
         webUrl: serverDraft.webUrl,
       }
       // convert data to editor blocks
