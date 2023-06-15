@@ -21,7 +21,8 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {PartialBlock} from '@mtt-blocknote/core'
+
+import {BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
 import {useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
@@ -34,12 +35,6 @@ import {
 } from '@tanstack/react-query'
 import {findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {useBlockNote} from '@mtt-blocknote/react'
-import {NavRoute} from '@app/utils/navigation'
-import {extractReferencedDocs} from './sites'
-import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {PartialBlock, BlockNoteEditor} from '@mtt-blocknote/core'
-import {toast} from '@app/toast'
 import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
@@ -447,8 +442,10 @@ export function useDraftEditor(
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: DraftState | undefined) => {
-          if (!state) const changes = state.changes
-          changedBlockIds.forEach(changes.changed.add, changes)
+          if (!state) throw Error('no state. fuck')
+          changedBlockIds.forEach((blockId) =>
+            state.changes.changed.add(blockId),
+          )
           return {
             ...state,
             changes: state.changes,
