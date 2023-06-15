@@ -1,5 +1,6 @@
 export type ImageBlock = {
   // and any media object really
+  id: string
   type: 'image'
   content: ''
   annotations: []
@@ -17,28 +18,28 @@ export type SectionBlockAttributes = {
 }
 
 export type SectionBlock = {
+  id: string
   type: 'heading' | 'paragraph' | 'section'
-  content: string
-  children: Block[]
+  text: string
   attributes: SectionBlockAttributes
   annotations: TextAnnotation[]
 }
 
 export type CodeBlock = {
+  id: string
   type: 'code'
   content: string
-  children: Block[]
   attributes: {
     lang: string
   }
 }
 
 export type EmbedBlock = {
+  id: string
   type: 'embed'
   content: ''
   ref: string // ipfs://..., https://...
   attributes: {}
-  children: Block[]
 }
 
 export type Block =

@@ -18,10 +18,10 @@ import {
   hdBlockSchema,
   paragraph,
   serverChildrenToEditorChildren,
+  editorBlockToServerBlock,
   statement,
   text,
 } from '@mintter/shared'
-
 import {BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
 import {useBlockNote} from '@mtt-blocknote/react'
 import {
@@ -297,50 +297,10 @@ type DraftChangesState = {
 }
 
 type MoveBlockAction = {
-  type: 'moveBlock'
   blockId: string
   leftSibling: string
   parent: string
 }
-
-type ChangeBlockAction = {
-  type: 'changeBlock'
-  blockId: string
-}
-
-type DeleteBlockAction = {
-  type: 'deleteBlock'
-  blockId: string
-}
-
-type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
-
-// function draftChangesReducer(
-//   state: DraftChangesState,
-//   action: DraftChangeAction,
-// ): DraftChangesState {
-//   if (action.type === 'moveBlock') {
-//     return {
-//       ...state,
-//       moves: [...state.moves, action],
-//     }
-//   } else if (action.type === 'deleteBlock') {
-//     return {
-//       ...state,
-//       deleted: [...state.deleted, action.blockId],
-//       changed: state.changed.filter((blockId) => blockId !== action.blockId),
-//       moves: state.moves.filter((move) => move.blockId !== action.blockId),
-//     }
-//   } else if (action.type === 'changeBlock') {
-//     if (state.changed.indexOf(action.blockId) === -1) {
-//       return {
-//         ...state,
-//         changed: [...state.changed, action.blockId],
-//       }
-//     }
-//   }
-//   return state
-// }
 
 export function useDraftEditor(
   documentId?: string,
@@ -394,18 +354,13 @@ export function useDraftEditor(
 
       changed.forEach((blockId) => {
         const currentBlock = editor.getBlock(blockId)
+        if (!currentBlock) return
         console.log('do convert block', currentBlock)
         changes.push(
           new DocumentChange({
             op: {
               case: 'replaceBlock',
-              value: {
-                id: blockId,
-                annotations: [],
-                attributes: {},
-                text: '',
-                type: '',
-              },
+              value: editorBlockToServerBlock(currentBlock),
             },
           }),
         )
@@ -414,9 +369,6 @@ export function useDraftEditor(
     },
   })
 
-  let debounceTimeout = useRef<number | null | undefined>(null)
-
-  // let currentEditor = useRef<hdBlockSchema | null>(null)
   let lastBlocks = useRef<Record<string, any>>({})
 
   const editor = useBlockNote<typeof hdBlockSchema>({

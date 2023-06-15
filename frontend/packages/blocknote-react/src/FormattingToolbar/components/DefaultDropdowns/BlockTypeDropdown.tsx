@@ -47,21 +47,6 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
   // the default block schema is being used
   let editor = props.editor as any as BlockNoteEditor<DefaultBlockSchema>
 
-  const headingItems = editor.schema.heading.propSchema.level.values.map(
-    (level) => ({
-      onClick: () => {
-        editor.focus()
-        editor.updateBlock(block, {
-          type: 'heading',
-          props: {level: '1'},
-        })
-      },
-      text: 'Heading',
-      icon: headingIcons['1'],
-      isSelected: block.type === 'heading',
-    }),
-  )
-
   return (
     <ToolbarDropdown
       items={[
