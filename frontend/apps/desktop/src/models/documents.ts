@@ -34,7 +34,12 @@ import {
 } from '@tanstack/react-query'
 import {findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {Editor, Node as SlateNode} from 'slate'
+import {useBlockNote} from '@mtt-blocknote/react'
+import {NavRoute} from '@app/utils/navigation'
+import {extractReferencedDocs} from './sites'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {PartialBlock, BlockNoteEditor} from '@mtt-blocknote/core'
+import {toast} from '@app/toast'
 import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
@@ -259,38 +264,6 @@ type DraftState = {
   webUrl: string
 }
 
-export function useDraftState({
-  editor,
-  documentId,
-  ...options
-}: UseQueryOptions<DraftState> & {
-  documentId: string
-  editor: Editor
-}) {
-  return useQuery({
-    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
-    enabled: !!documentId && !!editor,
-    queryFn: async () => {
-      const backendDraft = await draftsClient.getDraft({documentId: documentId})
-      console.log(
-        '🚀 ~ file: documents.ts:271 ~ queryFn: ~ backendDraft:',
-        backendDraft,
-      )
-      const editorFormattedChildren: DraftState = {
-        webUrl: backendDraft.webUrl,
-        children: [],
-        changes: {
-          moves: [],
-          changed: [],
-          deleted: [],
-        },
-      }
-      return editorFormattedChildren
-    },
-    ...options,
-  })
-}
-
 export function useDraftTitle(
   input: UseQueryOptions<DraftState> & {documentId: string},
 ) {
@@ -450,13 +423,13 @@ export function useDraftEditor(
   let lastBlocks = useRef<Record<string, any>>({})
 
   const editor = useBlockNote<typeof hdBlockSchema>({
-    onEditorContentChange(newEditor) {
-      opts?.onEditorState?.(newEditor.topLevelBlocks)
+    onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
+      opts?.onEditorState?.(editor.topLevelBlocks)
       // mutate editor here
       // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
 
       let changedBlockIds = new Set<string>()
-      newEditor.forEachBlock((newBlock) => {
+      editor.forEachBlock((newBlock) => {
         if (lastBlocks.current[newBlock.id] !== newBlock) {
           console.log('= detected change of block id ' + newBlock.id)
           changedBlockIds.add(newBlock.id)

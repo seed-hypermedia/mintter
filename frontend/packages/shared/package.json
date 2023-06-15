@@ -57,7 +57,6 @@
     "rehype-parse": "8.0.4",
     "rehype-sanitize": "5.0.1",
     "shiki": "0.14.1",
-    "slate": "0.94.0",
     "trim-trailing-lines": "2.1.0",
     "unified": "10.1.2",
     "unist-builder": "3.0.1",

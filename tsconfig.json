@@ -4,7 +4,10 @@
     "noUncheckedIndexedAccess": true,
     "paths": {
       "@mintter/ui/*": ["./frontend/packages/ui/*"],
-      "@mintter/shared/*": ["./frontend/packages/shared/*"]
+      "@mintter/shared/*": ["./frontend/packages/shared/*"],
+      "@mtt-blocknote/react": ["./frontend/packages/blocknote-react"],
+      "@mtt-blocknote/react/*": ["./frontend/packages/blocknote-react/*"],
+      "@mtt-blocknote/core/*": ["./frontend/packages/blocknote-core/*"]
     }
   },
   "extends": "./tsconfig.base.json"
