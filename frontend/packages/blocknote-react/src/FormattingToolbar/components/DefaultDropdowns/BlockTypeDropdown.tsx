@@ -53,12 +53,12 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
         editor.focus()
         editor.updateBlock(block, {
           type: 'heading',
-          props: {level: level},
+          props: {level: '1'},
         })
       },
-      text: 'Heading ' + level,
-      icon: headingIcons[level],
-      isSelected: block.type === 'heading' && block.props.level === level,
+      text: 'Heading',
+      icon: headingIcons['1'],
+      isSelected: block.type === 'heading',
     }),
   )
 
@@ -77,7 +77,18 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
           icon: RiText,
           isSelected: block.type === 'paragraph',
         },
-        ...headingItems,
+        {
+          onClick: () => {
+            editor.focus()
+            editor.updateBlock(block, {
+              type: 'heading',
+              props: {level: '1'},
+            })
+          },
+          text: 'Heading',
+          icon: headingIcons['1'],
+          isSelected: block.type === 'heading',
+        },
         {
           onClick: () => {
             props.editor.focus()
