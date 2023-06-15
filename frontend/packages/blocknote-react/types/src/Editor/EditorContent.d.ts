@@ -1,1 +1,0 @@
-export { EditorContent } from "@tiptap/react";
