@@ -497,6 +497,7 @@ export function useDraftEditor2(
   })
   const draftState = useQuery({
     enabled: !!editor,
+    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
       const serverDraft = await draftsClient.getDraft({
         documentId,
