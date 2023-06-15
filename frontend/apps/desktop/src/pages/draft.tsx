@@ -1,15 +1,15 @@
 import {AppBanner, BannerText} from '@app/app-banner'
-import {useDraftEditor2} from '@app/models/documents'
+import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
+import {useDraftEditor} from '@app/models/documents'
 import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
+import {DebugData} from '@components/debug-data'
 import Footer from '@components/footer'
-import '@mtt-blocknote/core/style.css'
 import {MainWrapper} from '@mintter/ui'
+import '@mtt-blocknote/core/style.css'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
-import {DebugData} from '@components/debug-data'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -19,7 +19,7 @@ export default function DraftPage() {
   const [debugValue, setDebugValue] = useState(false)
   const documentId = route.draftId // TODO, clean this up when draftId != docId
 
-  const {editor} = useDraftEditor2(documentId, {
+  const {editor} = useDraftEditor(documentId, {
     onEditorState: setDebugValue,
   })
 

@@ -4484,6 +4484,7 @@ __metadata:
     "@mintter/ui": "workspace:*"
     "@mtt-blocknote/core": "workspace:*"
     "@mtt-blocknote/react": "workspace:*"
+    "@nytimes/react-prosemirror": ^0.2.3
     "@radix-ui/colors": 0.1.8
     "@radix-ui/react-accessible-icon": 1.0.2
     "@radix-ui/react-alert-dialog": 1.0.3
@@ -4992,6 +4993,18 @@ __metadata:
   dependencies:
     semver: ^7.3.5
   checksum: a50a6818de5fc557d0b0e6f50ec780a7a02ab8ad07e5ac8b16bf519e0ad60a144ac64f97d05c443c3367235d337182e1d012bbac0eb8dbae8dc7b40b193efd0e
+  languageName: node
+  linkType: hard
+
+"@nytimes/react-prosemirror@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@nytimes/react-prosemirror@npm:0.2.3"
+  peerDependencies:
+    prosemirror-state: ^1.0.0
+    prosemirror-view: ^1.0.0
+    react: ">=17"
+    react-dom: ">=17"
+  checksum: 451c05caff4cd7df3b993d4388b35178162b689967d2da2c8afb88d928b572359d8aa30bc816e28c0628206ae1899ba25d1a81b1badcf30764677cdc98bf4427
   languageName: node
   linkType: hard
 

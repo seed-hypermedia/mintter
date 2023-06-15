@@ -1,56 +1,44 @@
-import {findParentNode} from '@tiptap/core'
 import {
   draftsClient,
   getWebSiteClient,
   publicationsClient,
 } from '@app/api-clients'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import {toast} from '@app/toast'
+import {NavRoute} from '@app/utils/navigation'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
   Document,
-  group,
+  DocumentChange,
+  GroupingContent,
   Publication,
+  WebPublicationRecord,
+  group,
+  hdBlockSchema,
+  paragraph,
+  serverChildrenToEditorChildren,
   statement,
   text,
-  paragraph,
-  GroupingContent,
-  DocumentChange,
-  WebPublicationRecord,
-  serverChildrenToEditorChildren,
-  hdBlockSchema,
 } from '@mintter/shared'
+import {PartialBlock} from '@mtt-blocknote/core'
+import {useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
-  UseMutationOptions,
   QueryClient,
+  UseMutationOptions,
+  UseQueryOptions,
   useMutation,
   useQueries,
   useQuery,
-  UseQueryOptions,
 } from '@tanstack/react-query'
-import {queryKeys} from './query-keys'
+import {findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {useBlockNote} from '@mtt-blocknote/react'
-import {Editor, Node} from 'slate'
-import {Extension} from '@tiptap/core'
-import {PluginKey} from 'prosemirror-state'
-import {NavRoute} from '@app/utils/navigation'
-import {extractReferencedDocs} from './sites'
-import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {
-  Block,
-  DefaultBlockSchema,
-  defaultProps,
-  PartialBlock,
-  StyledText,
-  BlockSpec,
-  PropSchema,
-  BlockSchema,
-  Props,
-} from '@mtt-blocknote/core'
-import {toast} from '@app/toast'
+import {Editor, Node as SlateNode} from 'slate'
 import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
+import {queryKeys} from './query-keys'
+import {extractReferencedDocs} from './sites'
 
 export function usePublicationList() {
   return useQuery({
@@ -316,7 +304,7 @@ export function useDraftTitle(
 
 export function getTitleFromContent(children: Array<GroupingContent>): string {
   // @ts-ignore
-  return Node.string(Node.get({children}, [0, 0, 0])) || ''
+  return SlateNode.string(SlateNode.get({children}, [0, 0, 0])) || ''
 }
 
 export function getDocumentTitle(doc?: DraftState) {
@@ -336,8 +324,8 @@ export type SaveDraftInput = {
 
 type DraftChangesState = {
   moves: MoveBlockAction[]
-  changed: string[]
-  deleted: string[]
+  changed: Set<string>
+  deleted: Set<string>
 }
 
 type MoveBlockAction = {
@@ -359,45 +347,49 @@ type DeleteBlockAction = {
 
 type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
 
-function draftChangesReducer(
-  state: DraftChangesState,
-  action: DraftChangeAction,
-): DraftChangesState {
-  if (action.type === 'moveBlock') {
-    return {
-      ...state,
-      moves: [...state.moves, action],
-    }
-  } else if (action.type === 'deleteBlock') {
-    return {
-      ...state,
-      deleted: [...state.deleted, action.blockId],
-      changed: state.changed.filter((blockId) => blockId !== action.blockId),
-      moves: state.moves.filter((move) => move.blockId !== action.blockId),
-    }
-  } else if (action.type === 'changeBlock') {
-    if (state.changed.indexOf(action.blockId) === -1) {
-      return {
-        ...state,
-        changed: [...state.changed, action.blockId],
-      }
-    }
-  }
-  return state
-}
+// function draftChangesReducer(
+//   state: DraftChangesState,
+//   action: DraftChangeAction,
+// ): DraftChangesState {
+//   if (action.type === 'moveBlock') {
+//     return {
+//       ...state,
+//       moves: [...state.moves, action],
+//     }
+//   } else if (action.type === 'deleteBlock') {
+//     return {
+//       ...state,
+//       deleted: [...state.deleted, action.blockId],
+//       changed: state.changed.filter((blockId) => blockId !== action.blockId),
+//       moves: state.moves.filter((move) => move.blockId !== action.blockId),
+//     }
+//   } else if (action.type === 'changeBlock') {
+//     if (state.changed.indexOf(action.blockId) === -1) {
+//       return {
+//         ...state,
+//         changed: [...state.changed, action.blockId],
+//       }
+//     }
+//   }
+//   return state
+// }
 
-export function useDraftEditor2(
+export function useDraftEditor(
   documentId?: string,
   opts?: {onEditorState?: (v: any) => void},
 ) {
+  let savingDebounceTimout = useRef<any>(null)
+
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       const draftState: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
       ])
+      console.log('= mutationFn', draftState)
       if (!draftState) return
       const {changed, moves, deleted} = draftState.changes
+      console.log('= saveDraftMutation', draftState.changes)
       const changes: Array<DocumentChange> = [
         new DocumentChange({
           op: {
@@ -405,28 +397,36 @@ export function useDraftEditor2(
             value: 'LOL is this your title?',
           },
         }),
-        ...deleted.map((blockId) => {
-          return new DocumentChange({
+      ]
+
+      deleted.forEach((blockId) => {
+        changes.push(
+          new DocumentChange({
             op: {
               case: 'deleteBlock',
               value: blockId,
             },
-          })
-        }),
-        ...moves.map(
-          (move) =>
-            new DocumentChange({
-              op: {
-                case: 'moveBlock',
-                value: {
-                  blockId: move.blockId,
-                },
+          }),
+        )
+      })
+
+      moves.forEach((move) => {
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: move.blockId,
               },
-            }),
-        ),
-        ...changed.map((blockId) => {
-          // todo, get the block from the editor, somehow
-          return new DocumentChange({
+            },
+          }),
+        )
+      })
+
+      changed.forEach((blockId) => {
+        // todo, get the block from the editor, somehow
+        changes.push(
+          new DocumentChange({
             op: {
               case: 'replaceBlock',
               value: {
@@ -437,64 +437,58 @@ export function useDraftEditor2(
                 type: '',
               },
             },
-          })
-        }),
-      ]
+          }),
+        )
+      })
+      console.log('= SAVING changes ', changed)
     },
   })
 
-  // await draftsClient.updateDraft({
-  //   documentId,
-  //   changes: draftData.changes,
-  // })
-
-  // appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-  // return null
-
   let debounceTimeout = useRef<number | null | undefined>(null)
 
-  // let document = {
-  //   // ...
-  //   children: [
-  //     {
-  //       id: '1ertyuiop',
-  //       type: 'paragraph',
-  //       content: 'Hello world 1',
-  //       annotations: [],
-  //       attributes: {},
-  //       children: [],
-  //     },
-  //     {
-  //       id: '2ertyuiwz',
-  //       type: 'paragraph',
-  //       content: 'Hello world 2',
-  //       annotations: [],
-  //       attributes: {},
-  //       children: [
-  //         {
-  //           id: '3ertyuiop',
-  //           type: 'paragraph',
-  //           content: 'Hello world 3',
-  //           annotations: [],
-  //           attributes: {},
-  //           children: []
-  //         }
-  //       ]
-  //     }
-  //   ]
-  // }
+  // let currentEditor = useRef<hdBlockSchema | null>(null)
+  let lastBlocks = useRef<Record<string, any>>({})
 
   const editor = useBlockNote<typeof hdBlockSchema>({
-    onEditorContentChange(editor) {
-      opts?.onEditorState?.(editor.topLevelBlocks)
+    onEditorContentChange(newEditor) {
+      opts?.onEditorState?.(newEditor.topLevelBlocks)
       // mutate editor here
       // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
+
+      let changedBlockIds = new Set<string>()
+      newEditor.forEachBlock((newBlock) => {
+        if (lastBlocks.current[newBlock.id] !== newBlock) {
+          console.log('= detected change of block id ' + newBlock.id)
+          changedBlockIds.add(newBlock.id)
+          console.log('🚀 ~ == changedBlockIds:', changedBlockIds)
+        }
+        lastBlocks.current[newBlock.id] = newBlock
+        return true
+      })
+
+      clearTimeout(savingDebounceTimout.current)
+      savingDebounceTimout.current = setTimeout(() => {
+        saveDraftMutation.mutate()
+      }, 500)
+
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (state: DraftState | undefined) => {
+          if (!state) const changes = state.changes
+          changedBlockIds.forEach(changes.changed.add, changes)
+          return {
+            ...state,
+            changes: state.changes,
+          }
+        },
+      )
     },
     uiFactories: {
       formattingToolbarFactory,
     },
     _tiptapOptions: {},
   })
+
   const draftState = useQuery({
     enabled: !!editor,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
@@ -510,8 +504,8 @@ export function useDraftEditor2(
       const draftState: DraftState = {
         children: topChildren,
         changes: {
-          changed: [],
-          deleted: [],
+          changed: new Set<string>(),
+          deleted: new Set<string>(),
           moves: [],
         },
         webUrl: serverDraft.webUrl,
@@ -522,7 +516,14 @@ export function useDraftEditor2(
     },
     onSuccess: (draft: DraftState) => {
       if (draft.children.length && editor?._tiptapEditor) {
+        // we load the data from the backend here
         editor.replaceBlocks(editor.topLevelBlocks, draft.children)
+
+        // this is to populate the blocks we use to compare changes
+        editor.forEachBlock((block) => {
+          lastBlocks.current[block.id] = block
+          return true
+        })
       }
     },
   })
@@ -532,7 +533,7 @@ export function useDraftEditor2(
   }
 }
 
-export type HyperDocsEditor = ReturnType<typeof useDraftEditor2>['editor']
+export type HyperDocsEditor = ReturnType<typeof useDraftEditor>['editor']
 
 export function useWriteDraftWebUrl(draftId?: string) {
   return useMutation({
