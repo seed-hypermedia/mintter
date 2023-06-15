@@ -9,17 +9,20 @@ export function extractContent(content: InlineContent[]): {
   let text = ''
   const annotations: TextAnnotation[] = []
   const styleStarts: Record<string, number> = {}
+  let charIndex = 0
 
-  content.forEach((inline, index) => {
-    if (inline.type === 'link') throw new Error('Unprepared for links')
-    text += inline.text
+  content.forEach((inline) => {
+    if (inline.type === 'link') {
+      throw new Error('links unsupported')
+    }
     const {styles} = inline
+    const inlineLength = inline.text.length
 
     // Check for style starts
     for (const style in styles) {
       // @ts-expect-error
       if (styles[style] && styleStarts[style] === undefined) {
-        styleStarts[style] = index
+        styleStarts[style] = charIndex
       }
     }
 
@@ -30,11 +33,14 @@ export function extractContent(content: InlineContent[]): {
         annotations.push({
           type: style === 'bold' ? 'strong' : 'emphasis',
           starts: [styleStarts[style]],
-          ends: [index],
+          ends: [charIndex],
         })
         delete styleStarts[style]
       }
     }
+
+    text += inline.text
+    charIndex += inlineLength
   })
 
   // Check for any styles that didn't end
@@ -43,10 +49,11 @@ export function extractContent(content: InlineContent[]): {
       annotations.push({
         type: style === 'bold' ? 'strong' : 'emphasis',
         starts: [styleStarts[style]],
-        ends: [text.length],
+        ends: [charIndex],
       })
     }
   }
+
   return {text, annotations}
 }
 

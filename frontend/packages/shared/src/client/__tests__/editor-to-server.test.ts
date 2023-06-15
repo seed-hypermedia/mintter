@@ -6,7 +6,7 @@ import {
 
 describe('Editor to Server: ', () => {
   describe('Extract Content: ', () => {
-    test('single annotation', () => {
+    test('overlapping annotation', () => {
       const extracted = extractContent([
         {type: 'text', text: 'A', styles: {}},
         {type: 'text', text: 'B', styles: {bold: true}},
@@ -26,6 +26,23 @@ describe('Editor to Server: ', () => {
             type: 'emphasis',
             starts: [2],
             ends: [4],
+          },
+        ],
+      })
+    })
+    test('single annotation', () => {
+      const extracted = extractContent([
+        {type: 'text', text: 'Hello ', styles: {}},
+        {type: 'text', text: 'world', styles: {bold: true}},
+        {type: 'text', text: '!', styles: {}},
+      ])
+      expect(extracted).toEqual({
+        text: 'Hello world!',
+        annotations: [
+          {
+            type: 'strong',
+            starts: [6],
+            ends: [11],
           },
         ],
       })
