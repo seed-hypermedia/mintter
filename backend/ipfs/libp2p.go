@@ -80,10 +80,19 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 					sw.Backoff().Clear(pinfo.ID)
 				}
 			}
-			err := h.Connect(ctx, pinfo)
-			res.ConnectErrs[i] = err
-			if err != nil {
+			toCtx, cancelFcn := context.WithTimeout(ctx, 8*time.Second)
+			defer cancelFcn()
+			err := h.Connect(toCtx, pinfo)
+			ctxErr := toCtx.Err()
+
+			if err != nil || ctxErr != nil {
 				atomic.AddUint32(&res.NumFailedConnections, 1)
+				if err != nil {
+					res.ConnectErrs[i] = err
+				} else {
+					res.ConnectErrs[i] = ctxErr
+				}
+
 			}
 		}(i, pinfo)
 	}

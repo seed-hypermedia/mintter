@@ -440,6 +440,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),
 			zap.Int("failedConnectionsTotal", int(res.NumFailedConnections)),
+			zap.Any("ConnectErrs", res.ConnectErrs),
 		)
 
 		if res.NumFailedConnections > 0 {
