@@ -5,6 +5,7 @@ import {
 } from '@app/api-clients'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
+import {ImageBlock, insertImage} from '@app/types/image'
 import {NavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -21,8 +22,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-
-import {BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
+import {Block, BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
 import {useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
@@ -39,6 +39,9 @@ import {examples} from '../../../../packages/shared/src/client/editor/example-do
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
+
+export type HDBlock = Block<typeof hdBlockSchema>
+export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
 
 export function usePublicationList() {
   return useQuery({
@@ -297,7 +300,6 @@ type DraftChangesState = {
 }
 
 type MoveBlockAction = {
-  type: 'moveBlock'
   blockId: string
   leftSibling: string
   parent: string
@@ -385,6 +387,8 @@ export function useDraftEditor(
               case: 'moveBlock',
               value: {
                 blockId: move.blockId,
+                leftSibling: move.leftSibling,
+                parent: move.parent,
               },
             },
           }),
@@ -412,27 +416,57 @@ export function useDraftEditor(
     },
   })
 
-  let debounceTimeout = useRef<number | null | undefined>(null)
-
-  // let currentEditor = useRef<hdBlockSchema | null>(null)
-  let lastBlocks = useRef<Record<string, any>>({})
+  let lastBlocks = useRef<Record<string, HDBlock>>({})
+  let lastBlockParent = useRef<Record<string, string>>({})
+  let lastBlockLeftSibling = useRef<Record<string, string>>({})
 
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
-      // mutate editor here
-      // console.log('UPDATED', JSON.stringify(editor.topLevelBlocks))
+
+      console.log('== editor changed', {
+        lastBlocks: Object.keys(lastBlocks.current),
+        lastBlockParent: JSON.stringify(lastBlockParent.current),
+      })
 
       let changedBlockIds = new Set<string>()
-      editor.forEachBlock((newBlock) => {
-        if (lastBlocks.current[newBlock.id] !== newBlock) {
-          console.log('= detected change of block id ' + newBlock.id)
-          changedBlockIds.add(newBlock.id)
-          console.log('🚀 ~ == changedBlockIds:', changedBlockIds)
-        }
-        lastBlocks.current[newBlock.id] = newBlock
-        return true
-      })
+      let possiblyRemovedBlockIds = new Set<string>(
+        Object.keys(lastBlocks.current),
+      )
+      const nextBlocks: Record<string, HDBlock> = {}
+      const moves: MoveBlockAction[] = []
+      function observeBlocks(
+        blocks: Block<typeof hdBlockSchema>[],
+        parentId: string,
+      ) {
+        blocks.forEach((block, index) => {
+          possiblyRemovedBlockIds.delete(block.id)
+          const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
+          if (
+            lastBlockParent.current[block.id] !== parentId ||
+            lastBlockLeftSibling.current[block.id] !== leftSibling
+          ) {
+            moves.push({
+              blockId: block.id,
+              leftSibling,
+              parent: parentId,
+            })
+          }
+          if (lastBlocks.current[block.id] !== block) {
+            changedBlockIds.add(block.id)
+          }
+          nextBlocks[block.id] = block
+          lastBlockParent.current[block.id] = parentId
+          lastBlockLeftSibling.current[block.id] = leftSibling
+          if (block.children) {
+            observeBlocks(block.children, block.id)
+          }
+        })
+      }
+      observeBlocks(editor.topLevelBlocks, '')
+      const removedBlockIds = possiblyRemovedBlockIds
+      removedBlockIds.forEach((blockId) => removedBlockIds.add(blockId))
+      lastBlocks.current = nextBlocks
 
       clearTimeout(savingDebounceTimout.current)
       savingDebounceTimout.current = setTimeout(() => {
