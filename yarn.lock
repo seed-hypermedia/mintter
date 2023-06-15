@@ -2060,6 +2060,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@blocknote/core@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@blocknote/core@npm:0.8.0"
+  dependencies:
+    "@emotion/cache": ^11.10.5
+    "@emotion/serialize": ^1.1.1
+    "@emotion/utils": ^1.2.0
+    "@tiptap/core": ^2.0.3
+    "@tiptap/extension-bold": ^2.0.3
+    "@tiptap/extension-code": ^2.0.3
+    "@tiptap/extension-collaboration": ^2.0.3
+    "@tiptap/extension-collaboration-cursor": ^2.0.3
+    "@tiptap/extension-dropcursor": ^2.0.3
+    "@tiptap/extension-gapcursor": ^2.0.3
+    "@tiptap/extension-hard-break": ^2.0.3
+    "@tiptap/extension-history": ^2.0.3
+    "@tiptap/extension-horizontal-rule": ^2.0.3
+    "@tiptap/extension-italic": ^2.0.3
+    "@tiptap/extension-link": ^2.0.3
+    "@tiptap/extension-paragraph": ^2.0.3
+    "@tiptap/extension-strike": ^2.0.3
+    "@tiptap/extension-text": ^2.0.3
+    "@tiptap/extension-underline": ^2.0.3
+    "@tiptap/pm": ^2.0.3
+    hast-util-from-dom: ^4.2.0
+    lodash: ^4.17.21
+    rehype-parse: ^8.0.4
+    rehype-remark: ^9.1.2
+    rehype-stringify: ^9.0.3
+    remark-gfm: ^3.0.1
+    remark-parse: ^10.0.1
+    remark-rehype: ^10.1.0
+    remark-stringify: ^10.0.2
+    unified: ^10.1.2
+    uuid: ^8.3.2
+    y-prosemirror: 1.0.20
+    y-protocols: ^1.0.5
+    yjs: ^13.6.1
+  checksum: 47a90410c402f76c592c713e81a384ebf813a2e423c1ceabd09110e238d04b03f05871623326ee33b9121b3f79f5bfb2f20882710e855373697962fa832926c6
+  languageName: node
+  linkType: hard
+
 "@bufbuild/connect-node@npm:0.8.6":
   version: 0.8.6
   resolution: "@bufbuild/connect-node@npm:0.8.6"
@@ -4819,11 +4861,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mtt-blocknote/react@workspace:frontend/packages/blocknote-react"
   dependencies:
+    "@blocknote/core": ^0.8.0
     "@emotion/react": ^11.10.5
     "@mantine/core": ^5.6.1
     "@mantine/hooks": ^5.6.1
     "@mantine/utils": ^6.0.5
-    "@mtt-blocknote/core": "workspace:*"
     "@tippyjs/react": ^4.2.6
     "@tiptap/react": ^2.0.3
     "@types/react": ^18.0.25

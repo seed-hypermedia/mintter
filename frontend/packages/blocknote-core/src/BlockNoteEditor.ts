@@ -1,56 +1,53 @@
-import { Editor, EditorOptions } from "@tiptap/core";
-import { Node } from "prosemirror-model";
+import {Editor, EditorOptions} from '@tiptap/core'
+import {Node} from 'prosemirror-model'
 // import "./blocknote.css";
-import { Editor as TiptapEditor } from "@tiptap/core/dist/packages/core/src/Editor";
-import * as Y from "yjs";
+import {Editor as TiptapEditor} from '@tiptap/core/dist/packages/core/src/Editor'
+import * as Y from 'yjs'
 import {
   insertBlocks,
   removeBlocks,
   replaceBlocks,
   updateBlock,
-} from "./api/blockManipulation/blockManipulation";
+} from './api/blockManipulation/blockManipulation'
 import {
   blocksToHTML,
   blocksToMarkdown,
   HTMLToBlocks,
   markdownToBlocks,
-} from "./api/formatConversions/formatConversions";
-import { nodeToBlock } from "./api/nodeConversions/nodeConversions";
-import { getNodeById } from "./api/util/nodeUtil";
-import { getBlockNoteExtensions, UiFactories } from "./BlockNoteExtensions";
-import styles from "./editor.module.css";
+} from './api/formatConversions/formatConversions'
+import {nodeToBlock} from './api/nodeConversions/nodeConversions'
+import {getNodeById} from './api/util/nodeUtil'
+import {getBlockNoteExtensions, UiFactories} from './BlockNoteExtensions'
+import styles from './editor.module.css'
 import {
   Block,
   BlockIdentifier,
   BlockSchema,
   PartialBlock,
-} from "./extensions/Blocks/api/blockTypes";
-import { TextCursorPosition } from "./extensions/Blocks/api/cursorPositionTypes";
+} from './extensions/Blocks/api/blockTypes'
+import {TextCursorPosition} from './extensions/Blocks/api/cursorPositionTypes'
 import {
   DefaultBlockSchema,
   defaultBlockSchema,
-} from "./extensions/Blocks/api/defaultBlocks";
+} from './extensions/Blocks/api/defaultBlocks'
 import {
   ColorStyle,
   Styles,
   ToggledStyle,
-} from "./extensions/Blocks/api/inlineContentTypes";
-import { Selection } from "./extensions/Blocks/api/selectionTypes";
-import { getBlockInfoFromPos } from "./extensions/Blocks/helpers/getBlockInfoFromPos";
-import {
-  BaseSlashMenuItem,
-  defaultSlashMenuItems,
-} from "./extensions/SlashMenu";
+} from './extensions/Blocks/api/inlineContentTypes'
+import {Selection} from './extensions/Blocks/api/selectionTypes'
+import {getBlockInfoFromPos} from './extensions/Blocks/helpers/getBlockInfoFromPos'
+import {BaseSlashMenuItem, defaultSlashMenuItems} from './extensions/SlashMenu'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
-  enableBlockNoteExtensions: boolean;
+  enableBlockNoteExtensions: boolean
 
   /**
    * UI element factories for creating a custom UI, including custom positioning
    * & rendering.
    */
-  uiFactories: UiFactories<BSchema>;
+  uiFactories: UiFactories<BSchema>
   /**
    * TODO: why is this called slashCommands and not slashMenuItems?
    *
@@ -58,57 +55,57 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
    *
    * @default defaultSlashMenuItems from `./extensions/SlashMenu`
    */
-  slashCommands: BaseSlashMenuItem<any>[];
+  slashCommands: BaseSlashMenuItem<any>[]
 
   /**
    * The HTML element that should be used as the parent element for the editor.
    *
    * @default: undefined, the editor is not attached to the DOM
    */
-  parentElement: HTMLElement;
+  parentElement: HTMLElement
   /**
    * An object containing attributes that should be added to the editor's HTML element.
    *
    * @example { class: "my-editor-class" }
    */
-  editorDOMAttributes: Record<string, string>;
+  editorDOMAttributes: Record<string, string>
   /**
    *  A callback function that runs when the editor is ready to be used.
    */
-  onEditorReady: (editor: BlockNoteEditor<BSchema>) => void;
+  onEditorReady: (editor: BlockNoteEditor<BSchema>) => void
   /**
    * A callback function that runs whenever the editor's contents change.
    */
-  onEditorContentChange: (editor: BlockNoteEditor<BSchema>) => void;
+  onEditorContentChange: (editor: BlockNoteEditor<BSchema>) => void
   /**
    * A callback function that runs whenever the text cursor position changes.
    */
-  onTextCursorPositionChange: (editor: BlockNoteEditor<BSchema>) => void;
+  onTextCursorPositionChange: (editor: BlockNoteEditor<BSchema>) => void
   /**
    * Locks the editor from being editable by the user if set to `false`.
    */
-  editable: boolean;
+  editable: boolean
   /**
    * The content that should be in the editor when it's created, represented as an array of partial block objects.
    */
-  initialContent: PartialBlock<BSchema>[];
+  initialContent: PartialBlock<BSchema>[]
   /**
    * Use default BlockNote font and reset the styles of <p> <li> <h1> elements etc., that are used in BlockNote.
    *
    * @default true
    */
-  defaultStyles: boolean;
+  defaultStyles: boolean
   /**
    * Whether to use the light or dark theme.
    *
    * @default "light"
    */
-  theme: "light" | "dark";
+  theme: 'light' | 'dark'
 
   /**
    * A list of block types that should be available in the editor.
    */
-  blockSchema: BSchema;
+  blockSchema: BSchema
 
   /**
    * When enabled, allows for collaboration between multiple users.
@@ -117,54 +114,54 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
     /**
      * The Yjs XML fragment that's used for collaboration.
      */
-    fragment: Y.XmlFragment;
+    fragment: Y.XmlFragment
     /**
      * The user info for the current user that's shown to other collaborators.
      */
     user: {
-      name: string;
-      color: string;
-    };
+      name: string
+      color: string
+    }
     /**
      * A Yjs provider (used for awareness / cursor information)
      */
-    provider: any;
+    provider: any
     /**
      * Optional function to customize how cursors of users are rendered
      */
-    renderCursor?: (user: any) => HTMLElement;
-  };
+    renderCursor?: (user: any) => HTMLElement
+  }
 
   // tiptap options, undocumented
-  _tiptapOptions: any;
-};
+  _tiptapOptions: any
+}
 
 const blockNoteTipTapOptions = {
   enableInputRules: true,
   enablePasteRules: true,
   enableCoreExtensions: false,
-};
+}
 
 export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
-  public readonly _tiptapEditor: TiptapEditor & { contentComponent: any };
-  public blockCache = new WeakMap<Node, Block<BSchema>>();
-  public readonly schema: BSchema;
+  public readonly _tiptapEditor: TiptapEditor & {contentComponent: any}
+  public blockCache = new WeakMap<Node, Block<BSchema>>()
+  public readonly schema: BSchema
 
   public get domElement() {
-    return this._tiptapEditor.view.dom as HTMLDivElement;
+    return this._tiptapEditor.view.dom as HTMLDivElement
   }
 
   public focus() {
-    this._tiptapEditor.view.focus();
+    this._tiptapEditor.view.focus()
   }
 
   constructor(
-    private readonly options: Partial<BlockNoteEditorOptions<BSchema>> = {}
+    private readonly options: Partial<BlockNoteEditorOptions<BSchema>> = {},
   ) {
     // apply defaults
-    const newOptions: Omit<typeof options, "defaultStyles" | "blockSchema"> & {
-      defaultStyles: boolean;
-      blockSchema: BSchema;
+    const newOptions: Omit<typeof options, 'defaultStyles' | 'blockSchema'> & {
+      defaultStyles: boolean
+      blockSchema: BSchema
     } = {
       defaultStyles: true,
       // TODO: There's a lot of annoying typing stuff to deal with here. If
@@ -174,7 +171,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       //  to be a huge pain, hence the `as any` casts.
       blockSchema: options.blockSchema || (defaultBlockSchema as any),
       ...options,
-    };
+    }
 
     const extensions = getBlockNoteExtensions<BSchema>({
       editor: this,
@@ -182,9 +179,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       slashCommands: newOptions.slashCommands || defaultSlashMenuItems,
       blockSchema: newOptions.blockSchema,
       collaboration: newOptions.collaboration,
-    });
+    })
 
-    this.schema = newOptions.blockSchema;
+    this.schema = newOptions.blockSchema
 
     const tiptapOptions: EditorOptions = {
       // TODO: This approach to setting initial content is "cleaner" but requires the PM editor schema, which is only
@@ -197,15 +194,15 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       ...blockNoteTipTapOptions,
       ...newOptions._tiptapOptions,
       onCreate: () => {
-        newOptions.onEditorReady?.(this);
+        newOptions.onEditorReady?.(this)
         newOptions.initialContent &&
-          this.replaceBlocks(this.topLevelBlocks, newOptions.initialContent);
+          this.replaceBlocks(this.topLevelBlocks, newOptions.initialContent)
       },
       onUpdate: () => {
-        newOptions.onEditorContentChange?.(this);
+        newOptions.onEditorContentChange?.(this)
       },
       onSelectionUpdate: () => {
-        newOptions.onTextCursorPositionChange?.(this);
+        newOptions.onTextCursorPositionChange?.(this)
       },
       editable: options.editable === undefined ? true : options.editable,
       extensions:
@@ -214,25 +211,25 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
           : [...(newOptions._tiptapOptions?.extensions || []), ...extensions],
       editorProps: {
         attributes: {
-          "data-theme": options.theme || "light",
+          'data-theme': options.theme || 'light',
           ...(newOptions.editorDOMAttributes || {}),
           class: [
             styles.bnEditor,
             styles.bnRoot,
-            newOptions.defaultStyles ? styles.defaultStyles : "",
-            newOptions.editorDOMAttributes?.class || "",
-          ].join(" "),
+            newOptions.defaultStyles ? styles.defaultStyles : '',
+            newOptions.editorDOMAttributes?.class || '',
+          ].join(' '),
         },
       },
-    };
+    }
 
     if (newOptions.parentElement) {
-      tiptapOptions.element = newOptions.parentElement;
+      tiptapOptions.element = newOptions.parentElement
     }
 
     this._tiptapEditor = new Editor(tiptapOptions) as Editor & {
-      contentComponent: any;
-    };
+      contentComponent: any
+    }
   }
 
   /**
@@ -240,15 +237,15 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns A snapshot of all top-level (non-nested) blocks in the editor.
    */
   public get topLevelBlocks(): Block<BSchema>[] {
-    const blocks: Block<BSchema>[] = [];
+    const blocks: Block<BSchema>[] = []
 
     this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
-      blocks.push(nodeToBlock(node, this.schema, this.blockCache));
+      blocks.push(nodeToBlock(node, this.schema, this.blockCache))
 
-      return false;
-    });
+      return false
+    })
 
-    return blocks;
+    return blocks
   }
 
   /**
@@ -257,29 +254,27 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns The block that matches the identifier, or `undefined` if no matching block was found.
    */
   public getBlock(
-    blockIdentifier: BlockIdentifier
+    blockIdentifier: BlockIdentifier,
   ): Block<BSchema> | undefined {
     const id =
-      typeof blockIdentifier === "string"
-        ? blockIdentifier
-        : blockIdentifier.id;
-    let newBlock: Block<BSchema> | undefined = undefined;
+      typeof blockIdentifier === 'string' ? blockIdentifier : blockIdentifier.id
+    let newBlock: Block<BSchema> | undefined = undefined
 
     this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
-      if (typeof newBlock !== "undefined") {
-        return false;
+      if (typeof newBlock !== 'undefined') {
+        return false
       }
 
-      if (node.type.name !== "blockContainer" || node.attrs.id !== id) {
-        return true;
+      if (node.type.name !== 'blockContainer' || node.attrs.id !== id) {
+        return true
       }
 
-      newBlock = nodeToBlock(node, this.schema, this.blockCache);
+      newBlock = nodeToBlock(node, this.schema, this.blockCache)
 
-      return false;
-    });
+      return false
+    })
 
-    return newBlock;
+    return newBlock
   }
 
   /**
@@ -289,33 +284,33 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public forEachBlock(
     callback: (block: Block<BSchema>) => boolean,
-    reverse: boolean = false
+    reverse: boolean = false,
   ): void {
-    const blocks = this.topLevelBlocks.slice();
+    const blocks = this.topLevelBlocks.slice()
 
     if (reverse) {
-      blocks.reverse();
+      blocks.reverse()
     }
 
     function traverseBlockArray(blockArray: Block<BSchema>[]): boolean {
       for (const block of blockArray) {
         if (!callback(block)) {
-          return false;
+          return false
         }
 
         const children = reverse
           ? block.children.slice().reverse()
-          : block.children;
+          : block.children
 
         if (!traverseBlockArray(children)) {
-          return false;
+          return false
         }
       }
 
-      return true;
+      return true
     }
 
-    traverseBlockArray(blocks);
+    traverseBlockArray(blocks)
   }
 
   /**
@@ -323,7 +318,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @param callback The callback to execute.
    */
   public onEditorContentChange(callback: () => void) {
-    this._tiptapEditor.on("update", callback);
+    this._tiptapEditor.on('update', callback)
   }
 
   /**
@@ -331,30 +326,30 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns A snapshot of the current text cursor position.
    */
   public getTextCursorPosition(): TextCursorPosition<BSchema> {
-    const { node, depth, startPos, endPos } = getBlockInfoFromPos(
+    const {node, depth, startPos, endPos} = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
-      this._tiptapEditor.state.selection.from
-    )!;
+      this._tiptapEditor.state.selection.from,
+    )!
 
     // Index of the current blockContainer node relative to its parent blockGroup.
     const nodeIndex = this._tiptapEditor.state.doc
       .resolve(endPos)
-      .index(depth - 1);
+      .index(depth - 1)
     // Number of the parent blockGroup's child blockContainer nodes.
     const numNodes = this._tiptapEditor.state.doc
       .resolve(endPos + 1)
-      .node().childCount;
+      .node().childCount
 
     // Gets previous blockContainer node at the same nesting level, if the current node isn't the first child.
-    let prevNode: Node | undefined = undefined;
+    let prevNode: Node | undefined = undefined
     if (nodeIndex > 0) {
-      prevNode = this._tiptapEditor.state.doc.resolve(startPos - 2).node();
+      prevNode = this._tiptapEditor.state.doc.resolve(startPos - 2).node()
     }
 
     // Gets next blockContainer node at the same nesting level, if the current node isn't the last child.
-    let nextNode: Node | undefined = undefined;
+    let nextNode: Node | undefined = undefined
     if (nodeIndex < numNodes - 1) {
-      nextNode = this._tiptapEditor.state.doc.resolve(endPos + 2).node();
+      nextNode = this._tiptapEditor.state.doc.resolve(endPos + 2).node()
     }
 
     return {
@@ -367,7 +362,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
         nextNode === undefined
           ? undefined
           : nodeToBlock(nextNode, this.schema, this.blockCache),
-    };
+    }
   }
 
   /**
@@ -378,22 +373,22 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public setTextCursorPosition(
     targetBlock: BlockIdentifier,
-    placement: "start" | "end" = "start"
+    placement: 'start' | 'end' = 'start',
   ) {
-    const id = typeof targetBlock === "string" ? targetBlock : targetBlock.id;
+    const id = typeof targetBlock === 'string' ? targetBlock : targetBlock.id
 
-    const { posBeforeNode } = getNodeById(id, this._tiptapEditor.state.doc);
-    const { startPos, contentNode } = getBlockInfoFromPos(
+    const {posBeforeNode} = getNodeById(id, this._tiptapEditor.state.doc)
+    const {startPos, contentNode} = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
-      posBeforeNode + 2
-    )!;
+      posBeforeNode + 2,
+    )!
 
-    if (placement === "start") {
-      this._tiptapEditor.commands.setTextSelection(startPos + 1);
+    if (placement === 'start') {
+      this._tiptapEditor.commands.setTextSelection(startPos + 1)
     } else {
       this._tiptapEditor.commands.setTextSelection(
-        startPos + contentNode.nodeSize - 1
-      );
+        startPos + contentNode.nodeSize - 1,
+      )
     }
   }
 
@@ -405,35 +400,35 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       this._tiptapEditor.state.selection.from ===
       this._tiptapEditor.state.selection.to
     ) {
-      return undefined;
+      return undefined
     }
 
-    const blocks: Block<BSchema>[] = [];
+    const blocks: Block<BSchema>[] = []
 
     this._tiptapEditor.state.doc.descendants((node, pos) => {
-      if (node.type.spec.group !== "blockContent") {
-        return true;
+      if (node.type.spec.group !== 'blockContent') {
+        return true
       }
 
       if (
         pos + node.nodeSize < this._tiptapEditor.state.selection.from ||
         pos > this._tiptapEditor.state.selection.to
       ) {
-        return true;
+        return true
       }
 
       blocks.push(
         nodeToBlock(
           this._tiptapEditor.state.doc.resolve(pos).node(),
           this.schema,
-          this.blockCache
-        )
-      );
+          this.blockCache,
+        ),
+      )
 
-      return false;
-    });
+      return false
+    })
 
-    return { blocks: blocks };
+    return {blocks: blocks}
   }
 
   /**
@@ -441,7 +436,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns True if the editor is editable, false otherwise.
    */
   public get isEditable(): boolean {
-    return this._tiptapEditor.isEditable;
+    return this._tiptapEditor.isEditable
   }
 
   /**
@@ -449,7 +444,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @param editable True to make the editor editable, or false to lock it.
    */
   public set isEditable(editable: boolean) {
-    this._tiptapEditor.setEditable(editable);
+    this._tiptapEditor.setEditable(editable)
   }
 
   /**
@@ -463,9 +458,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public insertBlocks(
     blocksToInsert: PartialBlock<BSchema>[],
     referenceBlock: BlockIdentifier,
-    placement: "before" | "after" | "nested" = "before"
+    placement: 'before' | 'after' | 'nested' = 'before',
   ): void {
-    insertBlocks(blocksToInsert, referenceBlock, placement, this._tiptapEditor);
+    insertBlocks(blocksToInsert, referenceBlock, placement, this._tiptapEditor)
   }
 
   /**
@@ -477,9 +472,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public updateBlock(
     blockToUpdate: BlockIdentifier,
-    update: PartialBlock<BSchema>
+    update: PartialBlock<BSchema>,
   ) {
-    updateBlock(blockToUpdate, update, this._tiptapEditor);
+    updateBlock(blockToUpdate, update, this._tiptapEditor)
   }
 
   /**
@@ -487,7 +482,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @param blocksToRemove An array of identifiers for existing blocks that should be removed.
    */
   public removeBlocks(blocksToRemove: BlockIdentifier[]) {
-    removeBlocks(blocksToRemove, this._tiptapEditor);
+    removeBlocks(blocksToRemove, this._tiptapEditor)
   }
 
   /**
@@ -499,36 +494,36 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public replaceBlocks(
     blocksToRemove: BlockIdentifier[],
-    blocksToInsert: PartialBlock<BSchema>[]
+    blocksToInsert: PartialBlock<BSchema>[],
   ) {
-    replaceBlocks(blocksToRemove, blocksToInsert, this._tiptapEditor);
+    replaceBlocks(blocksToRemove, blocksToInsert, this._tiptapEditor)
   }
 
   /**
    * Gets the active text styles at the text cursor position or at the end of the current selection if it's active.
    */
   public getActiveStyles() {
-    const styles: Styles = {};
-    const marks = this._tiptapEditor.state.selection.$to.marks();
+    const styles: Styles = {}
+    const marks = this._tiptapEditor.state.selection.$to.marks()
 
     const toggleStyles = new Set<ToggledStyle>([
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "code",
-    ]);
-    const colorStyles = new Set<ColorStyle>(["textColor", "backgroundColor"]);
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'code',
+    ])
+    const colorStyles = new Set<ColorStyle>(['textColor', 'backgroundColor'])
 
     for (const mark of marks) {
       if (toggleStyles.has(mark.type.name as ToggledStyle)) {
-        styles[mark.type.name as ToggledStyle] = true;
+        styles[mark.type.name as ToggledStyle] = true
       } else if (colorStyles.has(mark.type.name as ColorStyle)) {
-        styles[mark.type.name as ColorStyle] = mark.attrs.color;
+        styles[mark.type.name as ColorStyle] = mark.attrs.color
       }
     }
 
-    return styles;
+    return styles
   }
 
   /**
@@ -537,21 +532,21 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public addStyles(styles: Styles) {
     const toggleStyles = new Set<ToggledStyle>([
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "code",
-    ]);
-    const colorStyles = new Set<ColorStyle>(["textColor", "backgroundColor"]);
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'code',
+    ])
+    const colorStyles = new Set<ColorStyle>(['textColor', 'backgroundColor'])
 
-    this._tiptapEditor.view.focus();
+    this._tiptapEditor.view.focus()
 
     for (const [style, value] of Object.entries(styles)) {
       if (toggleStyles.has(style as ToggledStyle)) {
-        this._tiptapEditor.commands.setMark(style);
+        this._tiptapEditor.commands.setMark(style)
       } else if (colorStyles.has(style as ColorStyle)) {
-        this._tiptapEditor.commands.setMark(style, { color: value });
+        this._tiptapEditor.commands.setMark(style, {color: value})
       }
     }
   }
@@ -561,10 +556,10 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @param styles The styles to remove.
    */
   public removeStyles(styles: Styles) {
-    this._tiptapEditor.view.focus();
+    this._tiptapEditor.view.focus()
 
     for (const style of Object.keys(styles)) {
-      this._tiptapEditor.commands.unsetMark(style);
+      this._tiptapEditor.commands.unsetMark(style)
     }
   }
 
@@ -574,21 +569,21 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    */
   public toggleStyles(styles: Styles) {
     const toggleStyles = new Set<ToggledStyle>([
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "code",
-    ]);
-    const colorStyles = new Set<ColorStyle>(["textColor", "backgroundColor"]);
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'code',
+    ])
+    const colorStyles = new Set<ColorStyle>(['textColor', 'backgroundColor'])
 
-    this._tiptapEditor.view.focus();
+    this._tiptapEditor.view.focus()
 
     for (const [style, value] of Object.entries(styles)) {
       if (toggleStyles.has(style as ToggledStyle)) {
-        this._tiptapEditor.commands.toggleMark(style);
+        this._tiptapEditor.commands.toggleMark(style)
       } else if (colorStyles.has(style as ColorStyle)) {
-        this._tiptapEditor.commands.toggleMark(style, { color: value });
+        this._tiptapEditor.commands.toggleMark(style, {color: value})
       }
     }
   }
@@ -599,15 +594,15 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public getSelectedText() {
     return this._tiptapEditor.state.doc.textBetween(
       this._tiptapEditor.state.selection.from,
-      this._tiptapEditor.state.selection.to
-    );
+      this._tiptapEditor.state.selection.to,
+    )
   }
 
   /**
    * Gets the URL of the last link in the current selection, or `undefined` if there are no links in the selection.
    */
   public getSelectedLinkUrl() {
-    return this._tiptapEditor.getAttributes("link").href as string | undefined;
+    return this._tiptapEditor.getAttributes('link').href as string | undefined
   }
 
   /**
@@ -616,61 +611,61 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @param text The text to display the link with.
    */
   public createLink(url: string, text?: string) {
-    if (url === "") {
-      return;
+    if (url === '') {
+      return
     }
 
-    let { from, to } = this._tiptapEditor.state.selection;
+    let {from, to} = this._tiptapEditor.state.selection
 
     if (!text) {
-      text = this._tiptapEditor.state.doc.textBetween(from, to);
+      text = this._tiptapEditor.state.doc.textBetween(from, to)
     }
 
-    const mark = this._tiptapEditor.schema.mark("link", { href: url });
+    const mark = this._tiptapEditor.schema.mark('link', {href: url})
 
     this._tiptapEditor.view.dispatch(
       this._tiptapEditor.view.state.tr
         .insertText(text, from, to)
-        .addMark(from, from + text.length, mark)
-    );
+        .addMark(from, from + text.length, mark),
+    )
   }
 
   /**
    * Checks if the block containing the text cursor can be nested.
    */
   public canNestBlock() {
-    const { startPos, depth } = getBlockInfoFromPos(
+    const {startPos, depth} = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
-      this._tiptapEditor.state.selection.from
-    )!;
+      this._tiptapEditor.state.selection.from,
+    )!
 
-    return this._tiptapEditor.state.doc.resolve(startPos).index(depth - 1) > 0;
+    return this._tiptapEditor.state.doc.resolve(startPos).index(depth - 1) > 0
   }
 
   /**
    * Nests the block containing the text cursor into the block above it.
    */
   public nestBlock() {
-    this._tiptapEditor.commands.sinkListItem("blockContainer");
+    this._tiptapEditor.commands.sinkListItem('blockContainer')
   }
 
   /**
    * Checks if the block containing the text cursor is nested.
    */
   public canUnnestBlock() {
-    const { depth } = getBlockInfoFromPos(
+    const {depth} = getBlockInfoFromPos(
       this._tiptapEditor.state.doc,
-      this._tiptapEditor.state.selection.from
-    )!;
+      this._tiptapEditor.state.selection.from,
+    )!
 
-    return depth > 2;
+    return depth > 2
   }
 
   /**
    * Lifts the block containing the text cursor out of its parent.
    */
   public unnestBlock() {
-    this._tiptapEditor.commands.liftListItem("blockContainer");
+    this._tiptapEditor.commands.liftListItem('blockContainer')
   }
 
   /**
@@ -680,7 +675,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns The blocks, serialized as an HTML string.
    */
   public async blocksToHTML(blocks: Block<BSchema>[]): Promise<string> {
-    return blocksToHTML(blocks, this._tiptapEditor.schema);
+    return blocksToHTML(blocks, this._tiptapEditor.schema)
   }
 
   /**
@@ -691,7 +686,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns The blocks parsed from the HTML string.
    */
   public async HTMLToBlocks(html: string): Promise<Block<BSchema>[]> {
-    return HTMLToBlocks(html, this.schema, this._tiptapEditor.schema);
+    return HTMLToBlocks(html, this.schema, this._tiptapEditor.schema)
   }
 
   /**
@@ -701,7 +696,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns The blocks, serialized as a Markdown string.
    */
   public async blocksToMarkdown(blocks: Block<BSchema>[]): Promise<string> {
-    return blocksToMarkdown(blocks, this._tiptapEditor.schema);
+    return blocksToMarkdown(blocks, this._tiptapEditor.schema)
   }
 
   /**
@@ -712,18 +707,18 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
    * @returns The blocks parsed from the Markdown string.
    */
   public async markdownToBlocks(markdown: string): Promise<Block<BSchema>[]> {
-    return markdownToBlocks(markdown, this.schema, this._tiptapEditor.schema);
+    return markdownToBlocks(markdown, this.schema, this._tiptapEditor.schema)
   }
 
   /**
    * Updates the user info for the current user that's shown to other collaborators.
    */
-  public updateCollaborationUserInfo(user: { name: string; color: string }) {
+  public updateCollaborationUserInfo(user: {name: string; color: string}) {
     if (!this.options.collaboration) {
       throw new Error(
-        "Cannot update collaboration user info when collaboration is disabled."
-      );
+        'Cannot update collaboration user info when collaboration is disabled.',
+      )
     }
-    this._tiptapEditor.commands.updateUser(user);
+    this._tiptapEditor.commands.updateUser(user)
   }
 }

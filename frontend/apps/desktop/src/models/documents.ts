@@ -5,7 +5,6 @@ import {
 } from '@app/api-clients'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
-import { ImageBlock, insertImage } from '@app/types/image'
 import {NavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -19,12 +18,12 @@ import {
   hdBlockSchema,
   paragraph,
   serverChildrenToEditorChildren,
-  editorBlockToServerBlock,
   statement,
   text,
 } from '@mintter/shared'
+
 import {BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
-import {defaultReactSlashMenuItems, useBlockNote} from '@mtt-blocknote/react'
+import {useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
   QueryClient,
@@ -260,14 +259,6 @@ type DraftState = {
   webUrl: string
 }
 
-function createEmptyChanges(): DraftChangesState {
-  return {
-    changed: new Set<string>(),
-    deleted: new Set<string>(),
-    moves: [],
-  }
-}
-
 export function useDraftTitle(
   input: UseQueryOptions<DraftState> & {documentId: string},
 ) {
@@ -306,10 +297,50 @@ type DraftChangesState = {
 }
 
 type MoveBlockAction = {
+  type: 'moveBlock'
   blockId: string
   leftSibling: string
   parent: string
 }
+
+type ChangeBlockAction = {
+  type: 'changeBlock'
+  blockId: string
+}
+
+type DeleteBlockAction = {
+  type: 'deleteBlock'
+  blockId: string
+}
+
+type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
+
+// function draftChangesReducer(
+//   state: DraftChangesState,
+//   action: DraftChangeAction,
+// ): DraftChangesState {
+//   if (action.type === 'moveBlock') {
+//     return {
+//       ...state,
+//       moves: [...state.moves, action],
+//     }
+//   } else if (action.type === 'deleteBlock') {
+//     return {
+//       ...state,
+//       deleted: [...state.deleted, action.blockId],
+//       changed: state.changed.filter((blockId) => blockId !== action.blockId),
+//       moves: state.moves.filter((move) => move.blockId !== action.blockId),
+//     }
+//   } else if (action.type === 'changeBlock') {
+//     if (state.changed.indexOf(action.blockId) === -1) {
+//       return {
+//         ...state,
+//         changed: [...state.changed, action.blockId],
+//       }
+//     }
+//   }
+//   return state
+// }
 
 export function useDraftEditor(
   documentId?: string,
@@ -319,7 +350,6 @@ export function useDraftEditor(
 
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
-      if (!editor) return
       const draftState: DraftState | undefined = appQueryClient.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
@@ -362,37 +392,29 @@ export function useDraftEditor(
       })
 
       changed.forEach((blockId) => {
-        const currentBlock = editor.getBlock(blockId)
-        if (!currentBlock) return
-        const serverBlock = editorBlockToServerBlock(currentBlock)
+        // todo, get the block from the editor, somehow
         changes.push(
           new DocumentChange({
             op: {
               case: 'replaceBlock',
-              value: serverBlock,
+              value: {
+                id: blockId,
+                annotations: [],
+                attributes: {},
+                text: '',
+                type: '',
+              },
             },
           }),
         )
       })
-
-      await draftsClient.updateDraft({
-        documentId,
-        changes,
-      })
-
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (state: DraftState | undefined) => {
-          if (!state) return undefined
-          return {
-            ...state,
-            changes: createEmptyChanges(),
-          }
-        },
-      )
+      console.log('= SAVING changes ', changed)
     },
   })
 
+  let debounceTimeout = useRef<number | null | undefined>(null)
+
+  // let currentEditor = useRef<hdBlockSchema | null>(null)
   let lastBlocks = useRef<Record<string, any>>({})
 
   const editor = useBlockNote<typeof hdBlockSchema>({
@@ -420,10 +442,7 @@ export function useDraftEditor(
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: DraftState | undefined) => {
-          if (!state) {
-            console.warn('no draft state found for tracking block id changes')
-            return undefined
-          }
+          if (!state) throw Error('no state. fuck')
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
           )
@@ -437,14 +456,7 @@ export function useDraftEditor(
     uiFactories: {
       formattingToolbarFactory,
     },
-    blockSchema: {
-      ...hdBlockSchema,
-      image: ImageBlock,
-    },
-    slashCommands: [...defaultReactSlashMenuItems, insertImage],
-    _tiptapOptions: {
-      // onf
-    },
+    _tiptapOptions: {},
   })
 
   const draftState = useQuery({
@@ -455,13 +467,17 @@ export function useDraftEditor(
         documentId,
       })
       let debugExampleDoc = null
-      // debugExampleDoc = examples.withOverlappingAnnotations // comment me out before committing, thankyouu
+      debugExampleDoc = examples.nestedHeadings // comment me out before committing, thankyouu
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )
       const draftState: DraftState = {
         children: topChildren,
-        changes: createEmptyChanges(),
+        changes: {
+          changed: new Set<string>(),
+          deleted: new Set<string>(),
+          moves: [],
+        },
         webUrl: serverDraft.webUrl,
       }
       // convert data to editor blocks

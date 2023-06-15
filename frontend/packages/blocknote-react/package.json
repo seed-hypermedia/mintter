@@ -24,16 +24,18 @@
   "description": "A \"Notion-style\" block-based extensible text editor built on top of Prosemirror and Tiptap.",
   "type": "module",
   "source": "src/index.ts",
-  "main": "./src/index",
-  "module": "./src/index",
+  "types": "./types/src/index.d.ts",
+  "main": "./dist/blocknote-react.umd.cjs",
+  "module": "./dist/blocknote-react.js",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "require": "./dist/blocknote.umd.cjs"
+      "types": "./types/src/index.d.ts",
+      "import": "./dist/blocknote-react.js",
+      "require": "./dist/blocknote-react.umd.cjs"
     },
     "./style.css": {
-      "import": "./src/style.css",
-      "require": "./src/style.css"
+      "import": "./dist/style.css",
+      "require": "./dist/style.css"
     }
   },
   "scripts": {
@@ -44,11 +46,11 @@
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
+    "@blocknote/core": "^0.8.0",
     "@emotion/react": "^11.10.5",
     "@mantine/core": "^5.6.1",
     "@mantine/hooks": "^5.6.1",
     "@mantine/utils": "^6.0.5",
-    "@mtt-blocknote/core": "workspace:*",
     "@tippyjs/react": "^4.2.6",
     "@tiptap/react": "^2.0.3",
     "react-icons": "^4.3.1"
