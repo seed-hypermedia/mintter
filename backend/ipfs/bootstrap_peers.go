@@ -16,5 +16,5 @@ var DefaultBootstrapAddresses = []string{
 	"/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",       // mars.i.ipfs.io
 	"/ip4/104.131.131.82/udp/4001/quic/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",  // mars.i.ipfs.io
 	"/ip4/52.22.139.174/tcp/55000/p2p/12D3KooWFCV4kKdegz8Wp4XPXSRS1ia8Z9CeupJPBMd6jUNot9wb", // mintter peer
-	// "/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w",  // mintter gateway
+	"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w",  // mintter gateway
 }
