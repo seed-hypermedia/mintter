@@ -30,18 +30,18 @@ const extraFields: Record<
   //   hint: 'Used for subsections and group headings',
   //   // shortcut: formatKeyboardShortcut('Mod-Alt-3'),
   // },
-  'Numbered List': {
-    group: 'Text Content',
-    icon: <RiListOrdered size={18} />,
-    hint: 'Used to display a numbered list',
-    // shortcut: formatKeyboardShortcut('Mod-Alt-7'),
-  },
-  'Bullet List': {
-    group: 'Text Content',
-    icon: <RiListUnordered size={18} />,
-    hint: 'Used to display an unordered list',
-    // shortcut: formatKeyboardShortcut('Mod-Alt-9'),
-  },
+  // 'Numbered List': {
+  //   group: 'Text Content',
+  //   icon: <RiListOrdered size={18} />,
+  //   hint: 'Used to display a numbered list',
+  //   // shortcut: formatKeyboardShortcut('Mod-Alt-7'),
+  // },
+  // 'Bullet List': {
+  //   group: 'Text Content',
+  //   icon: <RiListUnordered size={18} />,
+  //   hint: 'Used to display an unordered list',
+  //   // shortcut: formatKeyboardShortcut('Mod-Alt-9'),
+  // },
   Paragraph: {
     group: 'Text Content',
     icon: <RiText size={18} />,

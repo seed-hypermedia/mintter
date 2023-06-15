@@ -436,7 +436,10 @@ export function useDraftEditor(
     uiFactories: {
       formattingToolbarFactory,
     },
-    _tiptapOptions: {},
+    blockSchema: hdBlockSchema,
+    _tiptapOptions: {
+      // onf
+    },
   })
 
   const draftState = useQuery({

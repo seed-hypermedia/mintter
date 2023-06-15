@@ -74,30 +74,30 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
           icon: headingIcons['1'],
           isSelected: block.type === 'heading',
         },
-        {
-          onClick: () => {
-            props.editor.focus()
-            props.editor.updateBlock(block, {
-              type: 'bulletListItem',
-              props: {},
-            })
-          },
-          text: 'Bullet List',
-          icon: RiListUnordered,
-          isSelected: block.type === 'bulletListItem',
-        },
-        {
-          onClick: () => {
-            props.editor.focus()
-            props.editor.updateBlock(block, {
-              type: 'numberedListItem',
-              props: {},
-            })
-          },
-          text: 'Numbered List',
-          icon: RiListOrdered,
-          isSelected: block.type === 'numberedListItem',
-        },
+        // {
+        //   onClick: () => {
+        //     props.editor.focus()
+        //     props.editor.updateBlock(block, {
+        //       type: 'bulletListItem',
+        //       props: {},
+        //     })
+        //   },
+        //   text: 'Bullet List',
+        //   icon: RiListUnordered,
+        //   isSelected: block.type === 'bulletListItem',
+        // },
+        // {
+        //   onClick: () => {
+        //     props.editor.focus()
+        //     props.editor.updateBlock(block, {
+        //       type: 'numberedListItem',
+        //       props: {},
+        //     })
+        //   },
+        //   text: 'Numbered List',
+        //   icon: RiListOrdered,
+        //   isSelected: block.type === 'numberedListItem',
+        // },
       ]}
     />
   )
