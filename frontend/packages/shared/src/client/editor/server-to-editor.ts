@@ -126,47 +126,6 @@ export function serverBlockNodeToEditorParagraph(
   }
 }
 
-export function serverBlockToEditorOLI(
-  serverBlock: BlockNode,
-  opts: RecursiveOpts,
-): PartialBlock<typeof hdBlockSchema> {
-  if (!serverBlock.block) {
-    throw new Error('Server BlockNode is missing Block data')
-  }
-
-  const {block, children} = serverBlock
-  return {
-    id: block.id,
-    type: 'numberedListItem',
-    content: serverBlockToEditorInline(block),
-    children: serverChildrenToEditorChildren(children, {
-      ...opts,
-      childrenType: extractChildrenType(block.attributes.childrenType),
-    }),
-    props: {},
-  }
-}
-
-export function serverBlockToEditorULI(
-  serverBlock: BlockNode,
-  opts: RecursiveOpts,
-): PartialBlock<typeof hdBlockSchema> {
-  if (!serverBlock.block) {
-    throw new Error('Server BlockNode is missing Block data')
-  }
-  const {block, children} = serverBlock
-  return {
-    id: block.id,
-    type: 'bulletListItem',
-    content: serverBlockToEditorInline(block),
-    children: serverChildrenToEditorChildren(children, {
-      ...opts,
-      childrenType: extractChildrenType(block.attributes.childrenType),
-    }),
-    props: {},
-  }
-}
-
 export function serverBlockToHeading(
   serverBlock: BlockNode,
   opts?: RecursiveOpts,
@@ -207,12 +166,12 @@ export function serverChildrenToEditorChildren(
     if (serverBlock.block?.type === 'heading') {
       return serverBlockToHeading(serverBlock, childRecursiveOpts)
     }
-    if (opts?.childrenType === 'numbers') {
-      return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
-    }
-    if (opts?.childrenType === 'bullet') {
-      return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
-    }
+    // if (opts?.childrenType === 'numbers') {
+    //   return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
+    // }
+    // if (opts?.childrenType === 'bullet') {
+    //   return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
+    // }
 
     return serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
   })

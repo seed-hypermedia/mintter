@@ -3,7 +3,7 @@ import {
   DefaultBlockSchema,
   defaultSlashMenuItems,
 } from '@mtt-blocknote/core'
-import {RiH1, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
+import {RiH1, RiText} from 'react-icons/ri'
 import {ReactSlashMenuItem} from './ReactSlashMenuItem'
 const extraFields: Record<
   string,

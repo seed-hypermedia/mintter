@@ -5,14 +5,7 @@ import {
 } from '@mtt-blocknote/core'
 import {useEffect, useState} from 'react'
 import {IconType} from 'react-icons'
-import {
-  RiH1,
-  RiH2,
-  RiH3,
-  RiListOrdered,
-  RiListUnordered,
-  RiText,
-} from 'react-icons/ri'
+import {RiH1, RiH2, RiH3, RiText} from 'react-icons/ri'
 import {ToolbarDropdown} from '../../../SharedComponents/Toolbar/components/ToolbarDropdown'
 
 type HeadingLevels = '1' | '2' | '3'
