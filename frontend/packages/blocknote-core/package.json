@@ -24,18 +24,16 @@
   "description": "A \"Notion-style\" block-based extensible text editor built on top of Prosemirror and Tiptap.",
   "type": "module",
   "source": "src/index.ts",
-  "types": "./types/src/index.d.ts",
-  "main": "./dist/blocknote.umd.cjs",
-  "module": "./dist/blocknote.js",
+  "main": "./src/index",
+  "module": "./src/index",
   "exports": {
     ".": {
-      "types": "./types/src/index.d.ts",
-      "import": "./dist/blocknote.js",
+      "import": "./src/index.ts",
       "require": "./dist/blocknote.umd.cjs"
     },
     "./style.css": {
-      "import": "./dist/style.css",
-      "require": "./dist/style.css"
+      "import": "./src/style.css",
+      "require": "./src/style.css"
     }
   },
   "scripts": {

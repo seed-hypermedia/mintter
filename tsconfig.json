@@ -5,9 +5,8 @@
     "paths": {
       "@mintter/ui/*": ["./frontend/packages/ui/*"],
       "@mintter/shared/*": ["./frontend/packages/shared/*"],
-      "@mtt-blocknote/react": ["./frontend/packages/blocknote-react"],
-      "@mtt-blocknote/react/*": ["./frontend/packages/blocknote-react/*"],
-      "@mtt-blocknote/core/*": ["./frontend/packages/blocknote-core/*"]
+      "@mtt-blocknote/react": ["./frontend/packages/blocknote-react/src/index.ts"],
+      "@mtt-blocknote/core": ["./frontend/packages/blocknote-core/src/index.ts"]
     }
   },
   "extends": "./tsconfig.base.json"
