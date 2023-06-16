@@ -1,10 +1,5 @@
+import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 import {InlineContent, PartialBlock} from '@mtt-blocknote/core'
-import {
-  Annotation,
-  Block,
-  BlockNode,
-} from '../.generated/documents/v1alpha/documents_pb'
-import {TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
 
 function areStylesEqual(

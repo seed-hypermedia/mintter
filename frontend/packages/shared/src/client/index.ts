@@ -4,20 +4,20 @@ import {Changes} from './.generated/documents/v1alpha/changes_connectweb'
 import {Comments} from './.generated/documents/v1alpha/comments_connectweb'
 import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
 
+import {PartialMessage} from '@bufbuild/protobuf'
 import {
   Drafts,
   Publications,
 } from './.generated/documents/v1alpha/documents_connectweb'
 import {
+  Publication as APIPublication,
+  Document,
+} from './.generated/documents/v1alpha/documents_pb'
+import {
   WebPublishing,
   WebSite,
 } from './.generated/documents/v1alpha/web_publishing_connectweb'
 import {Networking} from './.generated/networking/v1alpha/networking_connectweb'
-import {PartialMessage} from '@bufbuild/protobuf'
-import {
-  Document,
-  Publication as APIPublication,
-} from './.generated/documents/v1alpha/documents_pb'
 export {
   Account,
   Device,
@@ -46,9 +46,9 @@ export {
   Selector,
 } from './.generated/documents/v1alpha/comments_pb'
 export {
-  Link as MttLink,
   LinkNode,
   ListCitationsResponse,
+  Link as MttLink,
 } from './.generated/documents/v1alpha/content_graph_pb'
 export {
   Annotation,
@@ -79,20 +79,20 @@ export * from './block-to-api'
 export * from './block-to-slate'
 export * from './change-creators'
 export * from './client-utils'
-export {Document}
+export * from './hyperdocs-presentation'
 export {
   Accounts,
-  ContentGraph,
-  Comments,
   Changes,
-  Drafts,
-  Publications,
+  Comments,
+  ContentGraph,
   Daemon,
+  Document,
+  Drafts,
   Networking,
+  Publications,
   WebPublishing,
   WebSite,
 }
-export * from './editor'
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
 }

@@ -1,5 +1,5 @@
+import {Block as ServerBlock, TextAnnotation} from '@mintter/shared'
 import {Block as EditorBlock, InlineContent, Styles} from '@mtt-blocknote/core'
-import {Block as ServerBlock, TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
 
 export function extractContent(content: InlineContent[]): {
@@ -81,20 +81,20 @@ export function editorBlockToServerBlock(
 ): ServerBlock {
   if (!editorBlock.id) throw new Error('this block has no id')
   if (editorBlock.type === 'paragraph') {
-    return {
+    return new ServerBlock({
       id: editorBlock.id,
       type: 'paragraph',
       attributes: {},
       ...extractContent(editorBlock.content),
-    }
+    })
   }
   if (editorBlock.type === 'heading') {
-    return {
+    return new ServerBlock({
       id: editorBlock.id,
       type: 'heading',
       attributes: {},
       ...extractContent(editorBlock.content),
-    }
+    })
   }
 
   throw new Error('not implemented')

@@ -3,8 +3,8 @@ import {
   Block,
   BlockNode,
   Document,
-} from '../.generated/documents/v1alpha/documents_pb'
-import {SectionBlockAttributes} from './hyperdocs-presentation'
+  SectionBlockAttributes,
+} from '@mintter/shared'
 
 function createAnnotation(
   type: string,

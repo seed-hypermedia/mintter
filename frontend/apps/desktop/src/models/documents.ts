@@ -3,9 +3,12 @@ import {
   getWebSiteClient,
   publicationsClient,
 } from '@app/api-clients'
+import {editorBlockToServerBlock} from '@app/client/editor-to-server'
+import {hdBlockSchema} from '@app/client/schema'
+import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
-import {ImageBlock, insertImage} from '@app/types/image'
+import {insertImage} from '@app/types/image'
 import {NavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -15,12 +18,9 @@ import {
   GroupingContent,
   Publication,
   WebPublicationRecord,
-  hdBlockSchema,
-  serverChildrenToEditorChildren,
-  editorBlockToServerBlock,
 } from '@mintter/shared'
 import {Block, BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
-import {useBlockNote, defaultReactSlashMenuItems} from '@mtt-blocknote/react'
+import {defaultReactSlashMenuItems, useBlockNote} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
   QueryClient,
@@ -512,10 +512,8 @@ export function useDraftEditor(
       formattingToolbarFactory,
     },
     _tiptapOptions: {},
-    blockSchema: {
-      ...hdBlockSchema,
-      image: ImageBlock,
-    },
+    blockSchema: hdBlockSchema,
+    // @ts-expect-error
     slashCommands: [...defaultReactSlashMenuItems, insertImage],
   })
 

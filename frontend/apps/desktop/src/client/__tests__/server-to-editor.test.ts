@@ -1,10 +1,10 @@
 import {describe, expect, test} from 'vitest'
-import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
+import {Block, BlockNode} from '@mintter/shared'
 import {
   serverBlockToEditorInline,
   serverChildrenToEditorChildren,
-} from '../editor/server-to-editor'
-import {examples} from '../editor/example-docs'
+} from '../server-to-editor'
+import {examples} from '../example-docs'
 
 describe('Editor: ', () => {
   describe('Server to Editor: ', () => {

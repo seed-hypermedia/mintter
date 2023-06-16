@@ -1,8 +1,5 @@
 import {describe, expect, test} from 'vitest'
-import {
-  extractContent,
-  editorBlockToServerBlock,
-} from '../editor/editor-to-server'
+import {extractContent} from '../editor-to-server'
 
 describe('Editor to Server: ', () => {
   describe('Extract Content: ', () => {
