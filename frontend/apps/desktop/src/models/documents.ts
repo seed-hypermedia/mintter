@@ -20,7 +20,7 @@ import {
   editorBlockToServerBlock,
 } from '@mintter/shared'
 import {Block, BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
-import {useBlockNote} from '@mtt-blocknote/react'
+import {useBlockNote, defaultReactSlashMenuItems} from '@mtt-blocknote/react'
 import {
   FetchQueryOptions,
   QueryClient,
@@ -513,6 +513,11 @@ export function useDraftEditor(
       formattingToolbarFactory,
     },
     _tiptapOptions: {},
+    blockSchema: {
+      ...hdBlockSchema,
+      image: ImageBlock,
+    },
+    slashCommands: [...defaultReactSlashMenuItems, insertImage],
   })
 
   const draftState = useQuery({
@@ -652,7 +657,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     // _tiptapOptions: {
     //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
-    blockSchema: hdBlockSchema,
+    blockSchema: hdBlockSchema
   })
   useEffect(() => {
     if (pub.data?.document && editor) {
