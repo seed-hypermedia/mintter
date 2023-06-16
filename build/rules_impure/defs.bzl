@@ -6,6 +6,7 @@ def _tool_impl(rctx):
     tool = rctx.which(bin)
     if not tool:
         fail("Couldn't find tool '{}'. Make sure it's in your PATH.".format(bin))
+    tool = tool.realpath
 
     rctx.symlink(tool, bin)
 
