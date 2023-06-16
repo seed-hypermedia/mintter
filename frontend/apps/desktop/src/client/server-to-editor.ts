@@ -77,11 +77,13 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
     }
   }
 
-  inlines.push({
-    text: currentText,
-    type: 'text',
-    styles: currentStyles || {},
-  })
+  if (currentText.length) {
+    inlines.push({
+      text: currentText,
+      type: 'text',
+      styles: currentStyles || {},
+    })
+  }
 
   return inlines
 }

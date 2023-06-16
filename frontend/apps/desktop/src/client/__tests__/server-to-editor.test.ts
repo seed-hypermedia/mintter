@@ -22,7 +22,7 @@ describe('Editor: ', () => {
           id: 'a',
           type: 'paragraph',
           props: {},
-          content: [{text: '', type: 'text', styles: {}}],
+          content: [],
           children: [],
         },
       ])
