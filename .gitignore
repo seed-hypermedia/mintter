@@ -5,10 +5,6 @@
 # Local output for hacking.
 tmp
 
-# Redo
-.redo
-out
-
 !.vscode
 
 rice-box.go
@@ -59,9 +55,6 @@ apps/desktop/.vite
 
 # tamagui
 **/.tamagui/*
-
-# production
-/build
 
 # development files
 **/*.typegen.ts
