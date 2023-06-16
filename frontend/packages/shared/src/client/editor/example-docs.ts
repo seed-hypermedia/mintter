@@ -20,6 +20,21 @@ function createAnnotation(
   })
 }
 
+function createLinkAnnotation(
+  start: number,
+  end: number,
+  ref: string,
+  attributes?: Record<string, string>,
+) {
+  return new Annotation({
+    type: 'link',
+    ref,
+    starts: [start],
+    ends: [end],
+    attributes,
+  })
+}
+
 function createSectionNode(
   {
     text,
@@ -106,6 +121,18 @@ export const examples = {
       ),
     ],
     'withList',
+  ),
+
+  withLink: createDoc(
+    [
+      createSectionNode({
+        text: 'a link',
+        id: '1',
+        attributes: {},
+        annotations: [createLinkAnnotation(2, 6, 'https://example.com')],
+      }),
+    ],
+    'withLink',
   ),
 
   nestedList: createDoc(

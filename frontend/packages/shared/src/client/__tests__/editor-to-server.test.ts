@@ -48,4 +48,35 @@ describe('Editor to Server: ', () => {
       })
     })
   })
+  describe('Extract Links content: ', () => {
+    test('single link', () => {
+      const extracted = extractContent([
+        {type: 'text', text: 'a', styles: {}},
+        {
+          type: 'link',
+          content: [
+            {type: 'text', text: 'good', styles: {bold: true}},
+            {type: 'text', text: 'link', styles: {}},
+          ],
+          href: 'https://example.com',
+        },
+      ])
+      expect(extracted).toEqual({
+        text: 'agoodlink',
+        annotations: [
+          {
+            type: 'strong',
+            starts: [1],
+            ends: [5],
+          },
+          {
+            type: 'link',
+            starts: [1],
+            ends: [9],
+            ref: 'https://example.com',
+          },
+        ],
+      })
+    })
+  })
 })

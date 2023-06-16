@@ -1,10 +1,10 @@
-import {Block as EditorBlock, InlineContent} from '@mtt-blocknote/core'
+import {Block as EditorBlock, InlineContent, Styles} from '@mtt-blocknote/core'
 import {Block as ServerBlock, TextAnnotation} from './hyperdocs-presentation'
 import {hdBlockSchema} from './schema'
 
 export function extractContent(content: InlineContent[]): {
-  text: string
   annotations: TextAnnotation[]
+  text: string
 } {
   let text = ''
   const annotations: TextAnnotation[] = []
@@ -13,34 +13,53 @@ export function extractContent(content: InlineContent[]): {
 
   content.forEach((inline) => {
     if (inline.type === 'link') {
-      throw new Error('links unsupported')
-    }
-    const {styles} = inline
-    const inlineLength = inline.text.length
-
-    // Check for style starts
-    for (const style in styles) {
-      // @ts-expect-error
-      if (styles[style] && styleStarts[style] === undefined) {
-        styleStarts[style] = charIndex
-      }
-    }
-
-    // Check for style ends
-    for (const style in styleStarts) {
-      // @ts-expect-error
-      if (!styles[style] && styleStarts[style] !== undefined) {
+      const linkContent = extractContent(inline.content)
+      const linkLength = linkContent.text.length
+      text += linkContent.text
+      linkContent.annotations.forEach((annotation) => {
         annotations.push({
-          type: style === 'bold' ? 'strong' : 'emphasis',
-          starts: [styleStarts[style]],
-          ends: [charIndex],
+          ...annotation,
+          starts: annotation.starts.map((start) => start + charIndex),
+          ends: annotation.ends.map((end) => end + charIndex),
         })
-        delete styleStarts[style]
-      }
-    }
+      })
+      annotations.push({
+        type: 'link',
+        starts: [charIndex],
+        ends: [charIndex + linkLength],
+        ref: inline.href,
+      })
+      charIndex += linkLength
+    } else {
+      let {styles} = inline
+      if (!styles) styles = {}
+      const inlineLength = inline.text.length
 
-    text += inline.text
-    charIndex += inlineLength
+      // Check for style starts
+      for (const style in styles) {
+        if (styles[style as keyof Styles] && styleStarts[style] === undefined) {
+          styleStarts[style] = charIndex
+        }
+      }
+
+      // Check for style ends
+      for (const style in styleStarts) {
+        if (
+          !styles[style as keyof Styles] &&
+          styleStarts[style] !== undefined
+        ) {
+          annotations.push({
+            type: style === 'bold' ? 'strong' : 'emphasis',
+            starts: [styleStarts[style]],
+            ends: [charIndex],
+          })
+          delete styleStarts[style]
+        }
+      }
+
+      text += inline.text
+      charIndex += inlineLength
+    }
   })
 
   // Check for any styles that didn't end

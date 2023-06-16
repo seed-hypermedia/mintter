@@ -50,8 +50,8 @@ export type Block =
 
 export type InlineEmbedAnnotation = {
   type: 'embed'
-  starts: [number]
-  ends: [number]
+  starts: number[]
+  ends: number[]
   ref: string // 'hd://... with #BlockRef
   attributes: {}
 }
@@ -78,6 +78,11 @@ export type CodeAnnotation = BaseAnnotation & {
   type: 'code'
 }
 
+export type LinkAnnotation = BaseAnnotation & {
+  type: 'link'
+  ref: string
+}
+
 export type ColorAnnotation = BaseAnnotation & {
   type: 'color'
   attributes: {
@@ -86,6 +91,7 @@ export type ColorAnnotation = BaseAnnotation & {
 }
 
 export type TextAnnotation =
+  | LinkAnnotation
   | StrongAnnotation
   | EmphasisAnnotation
   | CodeAnnotation
