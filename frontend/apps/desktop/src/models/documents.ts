@@ -19,7 +19,12 @@ import {
   Publication,
   WebPublicationRecord,
 } from '@mintter/shared'
-import {Block, BlockNoteEditor, PartialBlock} from '@app/blocknote-core'
+import {
+  Block,
+  BlockNoteEditor,
+  InlineContent,
+  PartialBlock,
+} from '@app/blocknote-core'
 import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {
   FetchQueryOptions,
@@ -258,6 +263,7 @@ export function usePublishDraft(
 
 type DraftState = {
   children: PartialBlock<typeof hdBlockSchema>[]
+  title: string
   changes: DraftChangesState
   webUrl: string
 }
@@ -273,24 +279,32 @@ export function useDraftTitle(
   return useMemo(() => getDocumentTitle(data), [data])
 }
 
-export function getTitleFromContent(children: Array<GroupingContent>): string {
-  // @ts-ignore
-  return SlateNode.string(SlateNode.get({children}, [0, 0, 0])) || ''
+function getTitleFromInline(children: InlineContent[]): string {
+  const topChild = children[0]
+  if (!topChild) return ''
+  return children
+    .map((inline) => {
+      if (inline.type === 'link') {
+        return getTitleFromInline(inline.content)
+      }
+      return inline.text
+    })
+    .join('')
+}
+
+export function getTitleFromContent(children: HDBlock[]): string {
+  const topChild = children[0]
+  if (!topChild) return ''
+  return getTitleFromInline(topChild.content)
 }
 
 export function getDocumentTitle(doc?: DraftState) {
-  // let titleText = doc?.children.length ? getTitleFromContent(doc?.children) : ''
-  let titleText = 'todo'
-
+  let titleText = doc?.title || ''
   return titleText
     ? titleText.length < 50
       ? titleText
       : `${titleText.substring(0, 49)}...`
     : 'Untitled Document'
-}
-
-export type SaveDraftInput = {
-  content: GroupingContent[]
 }
 
 type DraftChangesState = {
@@ -357,15 +371,14 @@ export function useDraftEditor(
         queryKeys.EDITOR_DRAFT,
         documentId,
       ])
-      console.log('= mutationFn', draftState)
       if (!draftState) return
       const {changed, moves, deleted} = draftState.changes
-      console.log('= saveDraftMutation', draftState.changes)
+      const newTitle = getTitleFromContent(editor.topLevelBlocks)
       const changes: Array<DocumentChange> = [
         new DocumentChange({
           op: {
             case: 'setTitle',
-            value: 'LOL is this your title?',
+            value: newTitle,
           },
         }),
       ]
@@ -400,7 +413,6 @@ export function useDraftEditor(
         const currentBlock = editor.getBlock(blockId)
         if (!currentBlock) return
         const serverBlock = editorBlockToServerBlock(currentBlock)
-        console.log({serverBlock})
         changes.push(
           new DocumentChange({
             op: {
@@ -438,11 +450,6 @@ export function useDraftEditor(
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!isReadyForChanges.current) return
-
-      console.log('== editor changed', {
-        lastBlocks: Object.keys(lastBlocks.current),
-        lastBlockParent: JSON.stringify(lastBlockParent.current),
-      })
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -503,6 +510,7 @@ export function useDraftEditor(
           )
           return {
             ...state,
+            title: getTitleFromContent(editor.topLevelBlocks),
             changes: state.changes,
           }
         },
@@ -521,6 +529,7 @@ export function useDraftEditor(
     enabled: !!editor,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
+      if (!editor) throw new Error('editor unavailable from draftQuery')
       const serverDraft = await draftsClient.getDraft({
         documentId,
       })
@@ -529,7 +538,6 @@ export function useDraftEditor(
       const topChildren = serverChildrenToEditorChildren(
         (debugExampleDoc || serverDraft).children,
       )
-      console.log('loaded from serever', {topChildren, serverDraft})
       const draftState: DraftState = {
         children: topChildren,
         changes: {
@@ -538,15 +546,11 @@ export function useDraftEditor(
           moves: [],
         },
         webUrl: serverDraft.webUrl,
+        title: getTitleFromContent(editor.topLevelBlocks),
       }
-      // convert data to editor blocks
-      // return {} as DraftState
-      console.log('=== whathyyyy', draftState)
       return draftState
     },
     onSuccess: (draft: DraftState) => {
-      console.log('=== ??')
-
       if (!editor)
         throw new Error('editor unavailable from draftQuery success fn')
       // we load the data from the backend here
@@ -561,7 +565,6 @@ export function useDraftEditor(
         return true
       })
       isReadyForChanges.current = true
-      console.log('StART LISTNING TO CHANGES')
     },
   })
 

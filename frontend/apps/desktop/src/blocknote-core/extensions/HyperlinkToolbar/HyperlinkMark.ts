@@ -1,4 +1,4 @@
-import {Link} from '@tiptap/extension-link'
+import Link from '@app/tiptap-extension-link'
 import {
   createHyperlinkToolbarPlugin,
   HyperlinkToolbarPluginProps,
