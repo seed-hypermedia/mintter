@@ -2,15 +2,15 @@ import {
   BlockNoteEditor,
   BlockSchema,
   RequiredStaticParams,
-} from '@mtt-blocknote/core'
-import {Toolbar, getBlockNoteTheme} from '@mtt-blocknote/react'
-import {ColorStyleButton} from '@mtt-blocknote/react'
-import {CreateLinkButton} from '@mtt-blocknote/react'
-import {NestBlockButton, UnnestBlockButton} from '@mtt-blocknote/react'
-import {ToggledStyleButton} from '@mtt-blocknote/react'
-import {BlockTypeDropdown} from '@mtt-blocknote/react'
-import {ReactElementFactory} from '@mtt-blocknote/react'
-import {blockNoteColorScheme} from '@mtt-blocknote/react'
+} from '@app/blocknote-core'
+import {Toolbar, getBlockNoteTheme} from '@app/blocknote-react'
+import {ColorStyleButton} from '@app/blocknote-react'
+import {CreateLinkButton} from '@app/blocknote-react'
+import {NestBlockButton, UnnestBlockButton} from '@app/blocknote-react'
+import {ToggledStyleButton} from '@app/blocknote-react'
+import {BlockTypeDropdown} from '@app/blocknote-react'
+import {ReactElementFactory} from '@app/blocknote-react'
+import {blockNoteColorScheme} from '@app/blocknote-react'
 
 console.log('blockNoteColorScheme', blockNoteColorScheme)
 

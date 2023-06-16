@@ -19,8 +19,8 @@ import {
   Publication,
   WebPublicationRecord,
 } from '@mintter/shared'
-import {Block, BlockNoteEditor, PartialBlock} from '@mtt-blocknote/core'
-import {defaultReactSlashMenuItems, useBlockNote} from '@mtt-blocknote/react'
+import {Block, BlockNoteEditor, PartialBlock} from '@app/blocknote-core'
+import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {
   FetchQueryOptions,
   QueryClient,

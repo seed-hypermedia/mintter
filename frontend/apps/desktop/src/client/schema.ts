@@ -1,5 +1,5 @@
 import {ImageBlock} from '@app/types/image'
-import {defaultBlockSchema} from '@mtt-blocknote/core'
+import {defaultBlockSchema} from '@app/blocknote-core'
 
 export const hdBlockSchema = {
   paragraph: defaultBlockSchema.paragraph,

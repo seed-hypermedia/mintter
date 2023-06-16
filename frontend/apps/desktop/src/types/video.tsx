@@ -1,5 +1,5 @@
-import { DefaultBlockSchema, defaultProps } from "@mtt-blocknote/core";
-import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@mtt-blocknote/react";
+import { DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
+import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
 import { RiVideoAddFill } from "react-icons/ri";
 
 export const VideoBlock = createReactBlockSpec({

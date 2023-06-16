@@ -1,6 +1,7 @@
-import {Block as ServerBlock, TextAnnotation} from '@mintter/shared'
-import {Block as EditorBlock, InlineContent, Styles} from '@mtt-blocknote/core'
+import {Block as ServerBlock} from '@mintter/shared'
+import {Block as EditorBlock, InlineContent, Styles} from '@app/blocknote-core'
 import {hdBlockSchema} from './schema'
+import {TextAnnotation} from '@mintter/shared'
 
 export function extractContent(content: InlineContent[]): {
   annotations: TextAnnotation[]

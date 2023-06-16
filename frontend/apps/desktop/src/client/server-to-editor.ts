@@ -1,5 +1,5 @@
 import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
-import {InlineContent, PartialBlock} from '@mtt-blocknote/core'
+import {InlineContent, PartialBlock} from '@app/blocknote-core'
 import {hdBlockSchema} from './schema'
 
 function areStylesEqual(

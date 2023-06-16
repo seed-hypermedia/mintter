@@ -7,7 +7,7 @@ import {useNavRoute} from '@app/utils/navigation'
 import {DebugData} from '@components/debug-data'
 import Footer from '@components/footer'
 import {MainWrapper} from '@mintter/ui'
-import '@mtt-blocknote/core/style.css'
+import '@app/blocknote-core/style.css'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 

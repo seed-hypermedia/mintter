@@ -1,6 +1,6 @@
 import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
-import { BlockNoteEditor, DefaultBlockSchema, defaultProps, SpecificBlock } from "@mtt-blocknote/core";
-import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@mtt-blocknote/react";
+import { BlockNoteEditor, DefaultBlockSchema, defaultProps, SpecificBlock } from "@app/blocknote-core";
+import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { RiImage2Fill } from "react-icons/ri";
 
