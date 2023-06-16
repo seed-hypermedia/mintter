@@ -4,9 +4,12 @@ def _tool_impl(rctx):
         bin = rctx.name
 
     tool = rctx.which(bin)
+    print("Found path", tool)
     if not tool:
         fail("Couldn't find tool '{}'. Make sure it's in your PATH.".format(bin))
     tool = tool.realpath
+
+    print("Real path", tool)
 
     rctx.symlink(tool, bin)
 
