@@ -11,6 +11,22 @@ describe('Editor: ', () => {
     test('empty/basic', () => {
       expect(serverChildrenToEditorChildren([])).toEqual([])
     })
+    test('single empty paragraph', () => {
+      const eChildren = serverChildrenToEditorChildren([
+        new BlockNode({
+          block: new Block({id: 'a', type: 'section', text: ''}),
+        }),
+      ])
+      expect(eChildren).toEqual([
+        {
+          id: 'a',
+          type: 'paragraph',
+          props: {},
+          content: [{text: '', type: 'text', styles: {}}],
+          children: [],
+        },
+      ])
+    })
     test('single paragraph', () => {
       const eChildren = serverChildrenToEditorChildren([
         new BlockNode({

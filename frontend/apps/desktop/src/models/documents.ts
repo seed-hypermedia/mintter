@@ -32,7 +32,6 @@ import {
 } from '@tanstack/react-query'
 import {findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {examples} from '../../../../packages/shared/src/client/editor/example-docs'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
@@ -657,7 +656,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     // _tiptapOptions: {
     //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
-    blockSchema: hdBlockSchema
+    blockSchema: hdBlockSchema,
   })
   useEffect(() => {
     if (pub.data?.document && editor) {
