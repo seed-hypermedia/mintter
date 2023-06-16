@@ -97,6 +97,15 @@ export function editorBlockToServerBlock(
       ...extractContent(editorBlock.content),
     })
   }
-
+  if (editorBlock.type === 'image') {
+    return new ServerBlock({
+      id: editorBlock.id,
+      type: 'image',
+      attributes: {
+        alt: editorBlock.props.alt,
+      },
+      ref: `ipfs://${editorBlock.props.url}`, // currently the url is always an ipfs url
+    })
+  }
   throw new Error('not implemented')
 }

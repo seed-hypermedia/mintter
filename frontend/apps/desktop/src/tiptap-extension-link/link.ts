@@ -174,13 +174,11 @@ export const Link = Mark.create<LinkOptions>({
       )
     }
 
-    if (this.options.openOnClick) {
-      // plugins.push(
-      //   clickHandler({
-      //     type: this.type,
-      //   }),
-      // )
-    }
+    plugins.push(
+      clickHandler({
+        type: this.type,
+      }),
+    )
 
     plugins.push(
       pasteHandler({

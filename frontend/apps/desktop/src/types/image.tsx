@@ -137,7 +137,7 @@ function ImageComponent({block}: any) {
         ) : null} */}
         {/* <img src={`http://localhost:55001/ipfs/${(element as ImageType).url}`} /> */}
         <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
-        <XStack>
+        {/* <XStack>
           <TextArea
             size="$3"
             multiline={true}
@@ -159,7 +159,7 @@ function ImageComponent({block}: any) {
             // onKeyPress={onKeyPress}
             // disabled={editor.mode != EditorMode.Draft}
           />
-        </XStack>  
+        </XStack> */}
       </YStack>
       <InlineContent />
     </div>

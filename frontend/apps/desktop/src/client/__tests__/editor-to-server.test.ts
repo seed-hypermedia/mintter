@@ -1,5 +1,6 @@
+import {Block} from '@mintter/shared'
 import {describe, expect, test} from 'vitest'
-import {extractContent} from '../editor-to-server'
+import {editorBlockToServerBlock, extractContent} from '../editor-to-server'
 
 describe('Editor to Server: ', () => {
   describe('Extract Content: ', () => {
@@ -74,6 +75,36 @@ describe('Editor to Server: ', () => {
           },
         ],
       })
+    })
+  })
+})
+describe('editorBlockToServerBlock', () => {
+  describe('Image block: ', () => {
+    test('a image', () => {
+      const eBlock = editorBlockToServerBlock({
+        id: 'abc',
+        type: 'image',
+        children: [],
+        content: [],
+        props: {
+          url: '123',
+          alt: 'alt',
+          // why is this garbage required for image props??:
+          backgroundColor: 'default',
+          textColor: 'default',
+          textAlignment: 'left',
+        },
+      })
+      expect(eBlock).toEqual(
+        new Block({
+          id: 'abc',
+          type: 'image',
+          attributes: {
+            alt: 'alt',
+          },
+          ref: 'ipfs://123',
+        }),
+      )
     })
   })
 })

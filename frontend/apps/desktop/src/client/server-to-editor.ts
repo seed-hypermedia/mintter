@@ -148,6 +148,12 @@ export function serverBlockToHeading(
   }
 }
 
+function getCIDFromIPFSUrl(url: string): string | null {
+  const regex = /ipfs:\/\/(.+)/
+  const match = url.match(regex)
+  return match ? match[1] : null
+}
+
 export function serverChildrenToEditorChildren(
   children: BlockNode[],
   opts?: RecursiveOpts & {
@@ -158,6 +164,22 @@ export function serverChildrenToEditorChildren(
     headingLevel: opts?.headingLevel || 0,
   }
   return children.map((serverBlock) => {
+    if (serverBlock.block?.type === 'image') {
+      return {
+        type: 'image',
+        id: serverBlock.block.id,
+        props: {
+          url:
+            getCIDFromIPFSUrl(serverBlock.block.ref) ||
+            'bafybeihzo56er7wf7edzy7ihi5ncjvz2f46to45kgrxnv574ico3ofd7tu',
+          alt: serverBlock.block.attributes.alt,
+          backgroundColor: 'default',
+          textColor: 'default',
+          textAlignment: 'left',
+        },
+      }
+    }
+
     // how to handle when serverBlock.type is 'heading' but we are inside of a list?
     // for now, we prioritize the node type
     if (serverBlock.block?.type === 'heading') {

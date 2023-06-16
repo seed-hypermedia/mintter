@@ -11,7 +11,6 @@ import {
  */
 const Hyperlink = Link.extend<HyperlinkToolbarPluginProps>({
   priority: 500,
-  openOnClick: false,
   addProseMirrorPlugins() {
     if (!this.options.hyperlinkToolbarFactory) {
       throw new Error('UI Element factory not defined for HyperlinkMark')

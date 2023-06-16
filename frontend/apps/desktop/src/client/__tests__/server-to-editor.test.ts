@@ -172,45 +172,42 @@ describe('Editor: ', () => {
       ])
     })
   })
-})
 
-// const ex1 = [
-//   {
-//     id: '91c64611-da17-4408-8a5f-6cb1c8f4ad11',
-//     type: 'paragraph',
-//     props: {
-//       textColor: 'default',
-//       backgroundColor: 'default',
-//       textAlignment: 'left',
-//     },
-//     content: [
-//       {type: 'text', text: 'hello ', styles: {}},
-//       {type: 'text', text: 'example', styles: {bold: true}},
-//       {type: 'text', text: ' world', styles: {}},
-//     ],
-//     children: [
-//       {
-//         id: '5bc97e0b-51dd-4620-bc6a-f5556a361025',
-//         type: 'bulletListItem',
-//         props: {
-//           textColor: 'default',
-//           backgroundColor: 'default',
-//           textAlignment: 'left',
-//         },
-//         content: [{type: 'text', text: 'foo', styles: {}}],
-//         children: [],
-//       },
-//       {
-//         id: 'bcac6949-1142-4a8d-8be0-9c6218b037b1',
-//         type: 'bulletListItem',
-//         props: {
-//           textColor: 'default',
-//           backgroundColor: 'default',
-//           textAlignment: 'left',
-//         },
-//         content: [{type: 'text', text: 'bar', styles: {}}],
-//         children: [],
-//       },
-//     ],
-//   },
-// ]
+  describe('Server Image Block to Editor: ', () => {
+    test('basic', () => {
+      const result = serverChildrenToEditorChildren([
+        // A - no style
+        // B - bold
+        // C - bold + italic
+        // D - italic
+        // E - no style
+        new BlockNode({
+          block: new Block({
+            id: 'a',
+            type: 'image',
+            text: '',
+            annotations: [],
+            attributes: {
+              alt: 'alto',
+            },
+            ref: 'ipfs://ABC',
+          }),
+        }),
+      ])
+      expect(result).toEqual([
+        {
+          id: 'a',
+          type: 'image',
+          props: {
+            alt: 'alto',
+            url: 'ABC',
+            // junk:
+            backgroundColor: 'default',
+            textAlignment: 'left',
+            textColor: 'default',
+          },
+        },
+      ])
+    })
+  })
+})
