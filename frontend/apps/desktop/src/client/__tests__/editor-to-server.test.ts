@@ -45,6 +45,25 @@ describe('Editor to Server: ', () => {
         ],
       })
     })
+    test.only('simple marks kitchen sink', () => {
+      const extracted = extractContent([
+        {text: '0', type: 'text', styles: {bold: true}},
+        {text: '1', type: 'text', styles: {italic: true}},
+        {text: '2', type: 'text', styles: {underline: true}},
+        {text: '3', type: 'text', styles: {strike: true}},
+        {text: '4', type: 'text', styles: {code: true}},
+      ])
+      expect(extracted).toEqual({
+        text: '01234',
+        annotations: [
+          {type: 'strong', starts: [0], ends: [1]},
+          {type: 'emphasis', starts: [1], ends: [2]},
+          {type: 'underline', starts: [2], ends: [3]},
+          {type: 'strike', starts: [3], ends: [4]},
+          {type: 'code', starts: [4], ends: [5]},
+        ],
+      })
+    })
   })
   describe('Extract Links content: ', () => {
     test('single link', () => {

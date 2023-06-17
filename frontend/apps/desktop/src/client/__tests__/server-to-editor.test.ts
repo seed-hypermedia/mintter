@@ -141,6 +141,28 @@ describe('Editor: ', () => {
       ])
     })
 
+    test('simple marks kitchen sink', () => {
+      const result: InlineContent[] = serverBlockToEditorInline(
+        new Block({
+          text: '01234',
+          annotations: [
+            {type: 'strong', starts: [0], ends: [1], attributes: {}},
+            {type: 'emphasis', starts: [1], ends: [2], attributes: {}},
+            {type: 'underline', starts: [2], ends: [3], attributes: {}},
+            {type: 'strike', starts: [3], ends: [4], attributes: {}},
+            {type: 'code', starts: [4], ends: [5], attributes: {}},
+          ],
+        }),
+      )
+      expect(result).toEqual([
+        {text: '0', type: 'text', styles: {bold: true}},
+        {text: '1', type: 'text', styles: {italic: true}},
+        {text: '2', type: 'text', styles: {underline: true}},
+        {text: '3', type: 'text', styles: {strike: true}},
+        {text: '4', type: 'text', styles: {code: true}},
+      ])
+    })
+
     test('overlapping annotations', () => {
       const result: InlineContent[] = serverBlockToEditorInline(
         // A - no style

@@ -70,8 +70,12 @@ export type EmphasisAnnotation = BaseAnnotation & {
   type: 'emphasis'
 }
 
-export type UnderlineAnnoation = BaseAnnotation & {
+export type UnderlineAnnotation = BaseAnnotation & {
   type: 'underline'
+}
+
+export type StrikeAnnotation = BaseAnnotation & {
+  type: 'strike'
 }
 
 export type CodeAnnotation = BaseAnnotation & {
@@ -95,6 +99,7 @@ export type TextAnnotation =
   | StrongAnnotation
   | EmphasisAnnotation
   | CodeAnnotation
-  | UnderlineAnnoation
+  | UnderlineAnnotation
+  | StrikeAnnotation
   | ColorAnnotation
   | InlineEmbedAnnotation

@@ -33,6 +33,9 @@ function annotationStyle(a: Annotation): InternalAnnotation {
   if (annotation.type === 'underline') {
     return {underline: true}
   }
+  if (annotation.type === 'strike') {
+    return {strike: true}
+  }
   if (annotation.type === 'code') {
     return {code: true}
   }

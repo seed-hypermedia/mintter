@@ -15,7 +15,7 @@ const shortcuts: Record<ToggledStyle, string> = {
   italic: 'Mod+I',
   underline: 'Mod+U',
   strike: 'Mod+Shift+X',
-  code: '',
+  code: 'Mod+Shift+C',
 }
 
 const icons: Record<ToggledStyle, IconType> = {

@@ -1,7 +1,22 @@
-import {Block as ServerBlock} from '@mintter/shared'
+import {
+  Block as ServerBlock,
+  ColorAnnotation,
+  InlineEmbedAnnotation,
+} from '@mintter/shared'
 import {Block as EditorBlock, InlineContent, Styles} from '@app/blocknote-core'
 import {hdBlockSchema} from './schema'
 import {TextAnnotation} from '@mintter/shared'
+
+function styleMarkToAnnotationType(
+  style: keyof Styles,
+): Exclude<TextAnnotation, InlineEmbedAnnotation | ColorAnnotation>['type'] {
+  if (style === 'bold') return 'strong'
+  if (style === 'italic') return 'emphasis'
+  if (style === 'underline') return 'underline'
+  if (style === 'strike') return 'strike'
+  if (style === 'code') return 'code'
+  throw new Error('Cannot handle this style yet')
+}
 
 export function extractContent(content: InlineContent[]): {
   annotations: TextAnnotation[]
@@ -48,8 +63,9 @@ export function extractContent(content: InlineContent[]): {
           !styles[style as keyof Styles] &&
           styleStarts[style] !== undefined
         ) {
+          // @ts-expect-error
           annotations.push({
-            type: style === 'bold' ? 'strong' : 'emphasis',
+            type: styleMarkToAnnotationType(style as keyof Styles),
             starts: [styleStarts[style]],
             ends: [charIndex],
           })
@@ -65,8 +81,9 @@ export function extractContent(content: InlineContent[]): {
   // Check for any styles that didn't end
   for (const style in styleStarts) {
     if (styleStarts[style] !== undefined) {
+      // @ts-expect-error
       annotations.push({
-        type: style === 'bold' ? 'strong' : 'emphasis',
+        type: styleMarkToAnnotationType(style as keyof Styles),
         starts: [styleStarts[style]],
         ends: [charIndex],
       })
