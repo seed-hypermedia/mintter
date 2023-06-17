@@ -1,6 +1,7 @@
-import { getAttributes } from '@tiptap/core'
-import { MarkType } from '@tiptap/pm/model'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import {open} from '@tauri-apps/api/shell'
+import {getAttributes} from '@tiptap/core'
+import {MarkType} from '@tiptap/pm/model'
+import {Plugin, PluginKey} from '@tiptap/pm/state'
 
 type ClickHandlerOptions = {
   type: MarkType
@@ -16,14 +17,11 @@ export function clickHandler(options: ClickHandlerOptions): Plugin {
         }
 
         const attrs = getAttributes(view.state, options.type.name)
-        const link = (event.target as HTMLElement)?.closest('a')
 
-        const href = link?.href ?? attrs.href
-        const target = link?.target ?? attrs.target
+        const href = attrs.href
 
-        if (link && href) {
-          window.open(href, target)
-
+        if (href) {
+          open(href)
           return true
         }
 

@@ -1,4 +1,4 @@
-import Link from '@app/tiptap-extension-link'
+import Link, {LinkOptions} from '@app/tiptap-extension-link'
 import {
   createHyperlinkToolbarPlugin,
   HyperlinkToolbarPluginProps,
@@ -9,7 +9,7 @@ import {
  * The menu will be triggered by hovering over the link with the mouse,
  * or by moving the cursor inside the link text
  */
-const Hyperlink = Link.extend<HyperlinkToolbarPluginProps>({
+const Hyperlink = Link.extend<HyperlinkToolbarPluginProps & LinkOptions>({
   priority: 500,
   addProseMirrorPlugins() {
     if (!this.options.hyperlinkToolbarFactory) {

@@ -99,7 +99,7 @@ export const Link = Mark.create<LinkOptions>({
       HTMLAttributes: {
         target: '_blank',
         rel: 'noopener noreferrer nofollow',
-        class: null,
+        class: 'link',
       },
       validate: undefined,
     }
@@ -173,12 +173,14 @@ export const Link = Mark.create<LinkOptions>({
         }),
       )
     }
-
-    plugins.push(
-      clickHandler({
-        type: this.type,
-      }),
-    )
+    console.log('addProseMirrorPlugins', this.options)
+    if (this.options.openOnClick) {
+      plugins.push(
+        clickHandler({
+          type: this.type,
+        }),
+      )
+    }
 
     plugins.push(
       pasteHandler({

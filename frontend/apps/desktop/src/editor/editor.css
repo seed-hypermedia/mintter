@@ -1,3 +1,8 @@
 .ProseMirror {
     background-color: transparent;
 }
+
+.ProseMirror .link {
+    color: #5c6ac4;
+    text-decoration: underline;
+}

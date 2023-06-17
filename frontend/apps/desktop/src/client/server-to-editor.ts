@@ -1,10 +1,11 @@
 import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
-import {InlineContent, PartialBlock} from '@app/blocknote-core'
+import {InlineContent, PartialBlock, StyledText} from '@app/blocknote-core'
 import {hdBlockSchema} from './schema'
+import {s} from '@tauri-apps/api/event-2a9960e7'
 
 function areStylesEqual(
-  styles1: Record<string, string> | null,
-  styles2: Record<string, string> | null,
+  styles1: InternalAnnotation | null,
+  styles2: InternalAnnotation | null,
   keys: Set<string>,
 ): boolean {
   if (styles1 === null && styles2 === null) return true
@@ -19,30 +20,93 @@ function areStylesEqual(
   return true
 }
 
-function annotationStyle(a: Annotation): Record<string, string> {
+type InternalAnnotation = Record<string, string | boolean>
+
+function annotationStyle(a: Annotation): InternalAnnotation {
   const annotation: TextAnnotation = a as any //umm, hacks! I guess we should handle unknown annotations too
   if (annotation.type === 'emphasis') {
-    return {italic: 'true'}
+    return {italic: true}
   }
   if (annotation.type === 'strong') {
-    return {bold: 'true'}
+    return {bold: true}
   }
   if (annotation.type === 'underline') {
-    return {underline: 'true'}
+    return {underline: true}
   }
   if (annotation.type === 'code') {
-    return {code: 'true'}
+    return {code: true}
   }
   return {}
 }
 
 export function serverBlockToEditorInline(block: Block): InlineContent[] {
-  let {text, annotations} = block
-  if (!text) text = ''
-  const stylesForIndex: (Record<string, string> | null)[] = Array(
-    text.length,
-  ).fill(null)
+  const linkAnnotations = block.annotations.filter((a) => a.type === 'link')
+  if (!linkAnnotations.length) {
+    return partialBlockToStyledText(block)
+  }
+  if (
+    linkAnnotations.find((a) => {
+      if (a.starts.length !== 1) return true
+      if (a.ends.length !== 1) return true
+    })
+  ) {
+    throw new Error(
+      'Invalid link annotations in this block. only one range per annotation',
+    )
+  }
+  const sortedLinkAnnotations = linkAnnotations.sort(
+    (a, b) => a.starts[0] - b.starts[0],
+  )
+
+  function getSlicedContent(start: number, end: number) {
+    return partialBlockToStyledText({
+      text: block.text.slice(start, end),
+      annotations: block.annotations.map((a) => {
+        return new Annotation({
+          ...a,
+          starts: a.starts.map((s) => s - start),
+          ends: a.ends.map((e) => e - start),
+        })
+      }),
+    })
+  }
+
+  let linkStart = sortedLinkAnnotations[0].starts[0]
   const inlines: InlineContent[] = []
+  inlines.push(...getSlicedContent(0, linkStart))
+
+  sortedLinkAnnotations.forEach((a, aIndex) => {
+    const length = a.ends[0] - a.starts[0]
+    const linkEnd = linkStart + length
+
+    inlines.push({
+      type: 'link',
+      href: a.ref,
+      content: getSlicedContent(linkStart, linkEnd),
+    })
+
+    const nonLinkContentEnd =
+      sortedLinkAnnotations[aIndex + 1]?.starts[0] || block.text.length
+    inlines.push(...getSlicedContent(linkEnd, nonLinkContentEnd))
+
+    linkStart = nonLinkContentEnd
+  })
+
+  return inlines
+}
+
+export function partialBlockToStyledText({
+  text,
+  annotations,
+}: {
+  text: string
+  annotations: Annotation[]
+}): StyledText[] {
+  if (!text) text = ''
+  const stylesForIndex: (InternalAnnotation | null)[] = Array(text.length).fill(
+    null,
+  )
+  const inlines: StyledText[] = []
   const allStyleKeys = new Set<string>()
 
   annotations.forEach((annotation) => {

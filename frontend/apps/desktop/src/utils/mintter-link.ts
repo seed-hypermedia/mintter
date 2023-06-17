@@ -1,7 +1,7 @@
-import {MINTTER_LINK_PREFIX, getIdsfromUrl} from '@mintter/shared'
+import {HYPERDOCS_LINK_PREFIX, getIdsfromUrl} from '@mintter/shared'
 
 export function isMintterScheme(text?: string) {
-  return !!text?.startsWith(MINTTER_LINK_PREFIX)
+  return !!text?.startsWith(HYPERDOCS_LINK_PREFIX)
 }
 
 export function isMintterGatewayLink(text: string) {
@@ -16,7 +16,7 @@ export function normalizeMintterLink(urlMaybe: string): string | undefined {
   if (isMintterGatewayLink(urlMaybe)) {
     const [docId, version, blockRef] = getIdsfromUrl(urlMaybe)
     if (docId) {
-      let url = `${MINTTER_LINK_PREFIX}${docId}`
+      let url = `${HYPERDOCS_LINK_PREFIX}${docId}`
       if (version) {
         url += `?v=${version}`
       }

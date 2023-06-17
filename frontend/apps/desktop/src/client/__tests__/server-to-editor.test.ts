@@ -5,6 +5,7 @@ import {
   serverChildrenToEditorChildren,
 } from '../server-to-editor'
 import {examples} from '../example-docs'
+import {InlineContent} from '@app/blocknote-core'
 
 describe('Editor: ', () => {
   describe('Server to Editor: ', () => {
@@ -81,7 +82,7 @@ describe('Editor: ', () => {
           props: {},
           content: [
             {text: 'hello ', type: 'text', styles: {}},
-            {text: 'world', type: 'text', styles: {bold: 'true'}},
+            {text: 'world', type: 'text', styles: {bold: true}},
             {text: '!', type: 'text', styles: {}},
           ],
           children: [],
@@ -100,9 +101,9 @@ describe('Editor: ', () => {
           props: {},
           content: [
             {text: 'A', type: 'text', styles: {}},
-            {text: 'B', type: 'text', styles: {bold: 'true'}},
-            {text: 'C', type: 'text', styles: {bold: 'true', italic: 'true'}},
-            {text: 'D', type: 'text', styles: {italic: 'true'}},
+            {text: 'B', type: 'text', styles: {bold: true}},
+            {text: 'C', type: 'text', styles: {bold: true, italic: true}},
+            {text: 'D', type: 'text', styles: {italic: true}},
             {text: 'E', type: 'text', styles: {}},
           ],
           children: [],
@@ -113,7 +114,7 @@ describe('Editor: ', () => {
 
   describe('Server Block to Editor Inline: ', () => {
     test('no annotations', () => {
-      const result = serverBlockToEditorInline(
+      const result: InlineContent[] = serverBlockToEditorInline(
         new Block({text: 'ABC', annotations: []}),
       )
       expect(result.length).toEqual(1)
@@ -125,7 +126,7 @@ describe('Editor: ', () => {
       })
     })
     test('basic annotation', () => {
-      const result = serverBlockToEditorInline(
+      const result: InlineContent[] = serverBlockToEditorInline(
         new Block({
           text: 'ABC',
           annotations: [
@@ -135,13 +136,13 @@ describe('Editor: ', () => {
       )
       expect(result).toEqual([
         {text: 'A', type: 'text', styles: {}},
-        {text: 'B', type: 'text', styles: {bold: 'true'}},
+        {text: 'B', type: 'text', styles: {bold: true}},
         {text: 'C', type: 'text', styles: {}},
       ])
     })
 
     test('overlapping annotations', () => {
-      const result = serverBlockToEditorInline(
+      const result: InlineContent[] = serverBlockToEditorInline(
         // A - no style
         // B - bold
         // C - bold + italic
@@ -165,10 +166,103 @@ describe('Editor: ', () => {
       )
       expect(result).toEqual([
         {text: 'A', type: 'text', styles: {}},
-        {text: 'B', type: 'text', styles: {bold: 'true'}},
-        {text: 'C', type: 'text', styles: {bold: 'true', italic: 'true'}},
-        {text: 'D', type: 'text', styles: {italic: 'true'}},
+        {text: 'B', type: 'text', styles: {bold: true}},
+        {text: 'C', type: 'text', styles: {bold: true, italic: true}},
+        {text: 'D', type: 'text', styles: {italic: true}},
         {text: 'E', type: 'text', styles: {}},
+      ])
+    })
+
+    test('link annotation', () => {
+      const result: InlineContent[] = serverBlockToEditorInline(
+        new Block({
+          text: 'a link',
+          annotations: [
+            {
+              type: 'link',
+              ref: 'http://example.com',
+              starts: [2],
+              ends: [6],
+            },
+          ],
+        }),
+      )
+      expect(result).toEqual([
+        {text: 'a ', type: 'text', styles: {}},
+        {
+          type: 'link',
+          href: 'http://example.com',
+          content: [{text: 'link', type: 'text', styles: {}}],
+        },
+      ])
+    })
+
+    test('two link annotations', () => {
+      const result: InlineContent[] = serverBlockToEditorInline(
+        new Block({
+          text: 'ok link ok link ok',
+          annotations: [
+            {
+              type: 'link',
+              ref: 'http://1',
+              starts: [3],
+              ends: [7],
+            },
+            {
+              type: 'link',
+              ref: 'http://2',
+              starts: [11],
+              ends: [15],
+            },
+          ],
+        }),
+      )
+      expect(result).toEqual([
+        {text: 'ok ', type: 'text', styles: {}},
+        {
+          type: 'link',
+          href: 'http://1',
+          content: [{text: 'link', type: 'text', styles: {}}],
+        },
+        {text: ' ok ', type: 'text', styles: {}},
+        {
+          type: 'link',
+          href: 'http://2',
+          content: [{text: 'link', type: 'text', styles: {}}],
+        },
+        {text: ' ok', type: 'text', styles: {}},
+      ])
+    })
+
+    test('link annotation with bold inside', () => {
+      const result: InlineContent[] = serverBlockToEditorInline(
+        new Block({
+          text: 'a strong link',
+          annotations: [
+            {
+              type: 'link',
+              ref: 'http://example.com',
+              starts: [2],
+              ends: [13],
+            },
+            {
+              type: 'strong',
+              starts: [2],
+              ends: [8],
+            },
+          ],
+        }),
+      )
+      expect(result).toEqual([
+        {text: 'a ', type: 'text', styles: {}},
+        {
+          type: 'link',
+          href: 'http://example.com',
+          content: [
+            {text: 'strong', type: 'text', styles: {bold: true}},
+            {text: ' link', type: 'text', styles: {}},
+          ],
+        },
       ])
     })
   })

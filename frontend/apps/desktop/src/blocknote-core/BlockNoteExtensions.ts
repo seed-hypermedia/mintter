@@ -51,6 +51,7 @@ export type UiFactories<BSchema extends BlockSchema> = Partial<{
  * Get all the Tiptap extensions BlockNote is configured with by default
  */
 export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
+  editable?: boolean
   editor: BlockNoteEditor<BSchema>
   uiFactories: UiFactories<BSchema>
   slashCommands: BaseSlashMenuItem<any>[] // couldn't fix type, see https://github.com/TypeCellOS/BlockNote/pull/191#discussion_r1210708771
@@ -171,10 +172,11 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
       }),
     )
   }
-
+  console.log('BlockNoteExtensions', opts)
   ret.push(
     HyperlinkMark.configure({
       hyperlinkToolbarFactory: opts.uiFactories.hyperlinkToolbarFactory,
+      openOnClick: opts.editable === false,
     }),
   )
 

@@ -1,4 +1,4 @@
-export const MINTTER_LINK_PREFIX = 'mintter://'
+export const HYPERDOCS_LINK_PREFIX = 'hd://'
 
 export function getIdsfromUrl(
   entry: string,
@@ -22,11 +22,11 @@ export function getIdsfromUrl(
     }
   }
 
-  if (!entry.startsWith(MINTTER_LINK_PREFIX)) {
+  if (!entry.startsWith(HYPERDOCS_LINK_PREFIX)) {
     return [undefined, undefined, undefined]
   }
 
-  const [, restUrl] = entry.split(MINTTER_LINK_PREFIX)
+  const [, restUrl] = entry.split(HYPERDOCS_LINK_PREFIX)
 
   if (restUrl.length <= 3) {
     return [undefined, undefined, undefined]

@@ -1,23 +1,25 @@
-import { useState } from "react";
-import { EditHyperlinkMenu } from "../EditHyperlinkMenu/components/EditHyperlinkMenu";
-import { Toolbar } from "../../SharedComponents/Toolbar/components/Toolbar";
-import { ToolbarButton } from "../../SharedComponents/Toolbar/components/ToolbarButton";
-import { RiExternalLinkFill, RiLinkUnlink } from "react-icons/ri";
+import {useState} from 'react'
+import {Button} from '@mantine/core'
+import {EditHyperlinkMenu} from '../EditHyperlinkMenu/components/EditHyperlinkMenu'
+import {Toolbar} from '../../SharedComponents/Toolbar/components/Toolbar'
+import {ToolbarButton} from '../../SharedComponents/Toolbar/components/ToolbarButton'
+import {RiExternalLinkFill, RiLinkUnlink} from 'react-icons/ri'
 // import rootStyles from "../../../root.module.css";
+import {open} from '@tauri-apps/api/shell'
 
 export type HyperlinkToolbarProps = {
-  url: string;
-  text: string;
-  editHyperlink: (url: string, text: string) => void;
-  deleteHyperlink: () => void;
-};
+  url: string
+  text: string
+  editHyperlink: (url: string, text: string) => void
+  deleteHyperlink: () => void
+}
 
 /**
  * Main menu component for the hyperlink extension.
  * Renders a toolbar that appears on hyperlink hover.
  */
 export const HyperlinkToolbar = (props: HyperlinkToolbarProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false)
 
   if (isEditing) {
     return (
@@ -26,22 +28,20 @@ export const HyperlinkToolbar = (props: HyperlinkToolbarProps) => {
         text={props.text}
         update={props.editHyperlink}
       />
-    );
+    )
   }
 
   return (
     <Toolbar>
-      <ToolbarButton
-        mainTooltip="Edit"
-        isSelected={false}
-        onClick={() => setIsEditing(true)}>
+      <Button onClick={() => setIsEditing(true)} size={'xs'}>
         Edit Link
-      </ToolbarButton>
+      </Button>
+
       <ToolbarButton
-        mainTooltip="Open in new tab"
+        mainTooltip="Open"
         isSelected={false}
         onClick={() => {
-          window.open(props.url, "_blank");
+          open(props.url)
         }}
         icon={RiExternalLinkFill}
       />
@@ -52,5 +52,5 @@ export const HyperlinkToolbar = (props: HyperlinkToolbarProps) => {
         icon={RiLinkUnlink}
       />
     </Toolbar>
-  );
-};
+  )
+}

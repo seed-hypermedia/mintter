@@ -1,7 +1,7 @@
 import {
   getIdsfromUrl,
   Link as LinkType,
-  MINTTER_LINK_PREFIX,
+  HYPERDOCS_LINK_PREFIX,
 } from '@mintter/shared'
 import Link from 'next/link'
 import {useMemo} from 'react'
@@ -68,5 +68,5 @@ export function ElementLink({element, ...props}: ElementLinkProps) {
 }
 
 function isMintterScheme(entry: string): boolean {
-  return entry.startsWith(MINTTER_LINK_PREFIX)
+  return entry.startsWith(HYPERDOCS_LINK_PREFIX)
 }

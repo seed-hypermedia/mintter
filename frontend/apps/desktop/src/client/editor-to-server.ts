@@ -32,8 +32,7 @@ export function extractContent(content: InlineContent[]): {
       })
       charIndex += linkLength
     } else {
-      let {styles} = inline
-      if (!styles) styles = {}
+      const {styles} = inline
       const inlineLength = inline.text.length
 
       // Check for style starts

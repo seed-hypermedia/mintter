@@ -9,7 +9,7 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {
   Document,
   formattedDate,
-  MINTTER_LINK_PREFIX,
+  HYPERDOCS_LINK_PREFIX,
   Publication,
 } from '@mintter/shared'
 import {

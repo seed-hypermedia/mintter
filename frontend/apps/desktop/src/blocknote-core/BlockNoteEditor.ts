@@ -175,6 +175,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
 
     const extensions = getBlockNoteExtensions<BSchema>({
       editor: this,
+      editable: newOptions.editable,
       uiFactories: newOptions.uiFactories || {},
       slashCommands: newOptions.slashCommands || defaultSlashMenuItems,
       blockSchema: newOptions.blockSchema,

@@ -12,7 +12,7 @@ import Footer from '@components/footer'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {
   formattedDate,
-  MINTTER_LINK_PREFIX,
+  HYPERDOCS_LINK_PREFIX,
   WebPublicationRecord,
 } from '@mintter/shared'
 import {

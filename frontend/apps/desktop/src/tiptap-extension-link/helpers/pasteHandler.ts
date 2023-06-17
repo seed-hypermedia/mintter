@@ -1,7 +1,7 @@
-import { Editor } from '@tiptap/core'
-import { Mark, MarkType } from '@tiptap/pm/model'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { find } from 'linkifyjs'
+import {Editor} from '@tiptap/core'
+import {Mark, MarkType} from '@tiptap/pm/model'
+import {Plugin, PluginKey} from '@tiptap/pm/state'
+import {find} from 'linkifyjs'
 
 type PasteHandlerOptions = {
   editor: Editor
@@ -14,8 +14,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
     key: new PluginKey('handlePasteLink'),
     props: {
       handlePaste: (view, event, slice) => {
-        const { state } = view
-        const { selection } = state
+        const {state} = view
+        const {selection} = state
 
         // Do not proceed if in code block.
         if (state.doc.resolve(selection.from).parent.type.spec.code) {
@@ -25,10 +25,10 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         const pastedLinkMarks: Mark[] = []
         let textContent = ''
 
-        slice.content.forEach(node => {
+        slice.content.forEach((node) => {
           textContent += node.textContent
 
-          node.marks.forEach(mark => {
+          node.marks.forEach((mark) => {
             if (mark.type.name === options.type.name) {
               pastedLinkMarks.push(mark)
             }
@@ -36,32 +36,40 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         })
 
         const hasPastedLink = pastedLinkMarks.length > 0
-        const link = find(textContent).find(item => item.isLink && item.value === textContent)
+        const link = find(textContent).find(
+          (item) => item.isLink && item.value === textContent,
+        )
 
         if (!selection.empty && options.linkOnPaste) {
-          const pastedLink = hasPastedLink ? pastedLinkMarks[0].attrs.href : link?.href || null
+          const pastedLink = hasPastedLink
+            ? pastedLinkMarks[0].attrs.href
+            : link?.href || null
 
           if (pastedLink) {
-            options.editor.commands.setMark(options.type, { href: pastedLink })
+            options.editor.commands.setMark(options.type, {href: pastedLink})
 
             return true
           }
         }
 
         const firstChildIsText = slice.content.firstChild?.type.name === 'text'
-        const firstChildContainsLinkMark = slice.content.firstChild?.marks.some(mark => mark.type.name === options.type.name)
+        const firstChildContainsLinkMark = slice.content.firstChild?.marks.some(
+          (mark) => mark.type.name === options.type.name,
+        )
 
         if (firstChildIsText && firstChildContainsLinkMark) {
           return false
         }
 
         if (link && selection.empty) {
-          options.editor.commands.insertContent(`<a href="${link.href}">${link.href}</a>`)
+          options.editor.commands.insertContent(
+            `<a href="${link.href}">${link.href}</a>`,
+          )
 
           return true
         }
 
-        const { tr } = state
+        const {tr} = state
         let deleteOnly = false
 
         if (!selection.empty) {
@@ -73,7 +81,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         let currentPos = selection.from
         let fragmentLinks = []
 
-        slice.content.forEach(node => {
+        slice.content.forEach((node) => {
           fragmentLinks = find(node.textContent)
 
           tr.insert(currentPos - 1, node)
@@ -81,16 +89,23 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           if (fragmentLinks.length > 0) {
             deleteOnly = false
 
-            fragmentLinks.forEach(fragmentLink => {
+            fragmentLinks.forEach((fragmentLink) => {
               const linkStart = currentPos + fragmentLink.start
               const linkEnd = currentPos + fragmentLink.end
-              const hasMark = tr.doc.rangeHasMark(linkStart, linkEnd, options.type)
+              const hasMark = tr.doc.rangeHasMark(
+                linkStart,
+                linkEnd,
+                options.type,
+              )
 
               if (!hasMark) {
-                tr.addMark(linkStart, linkEnd, options.type.create({ href: fragmentLink.href }))
+                tr.addMark(
+                  linkStart,
+                  linkEnd,
+                  options.type.create({href: fragmentLink.href}),
+                )
               }
             })
-
           }
           currentPos += node.nodeSize
         })

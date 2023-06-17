@@ -1,207 +1,204 @@
-import { Editor, getMarkRange, posToDOMRect, Range } from "@tiptap/core";
-import { Mark } from "prosemirror-model";
-import { Plugin, PluginKey } from "prosemirror-state";
+import {Editor, getMarkRange, posToDOMRect, Range} from '@tiptap/core'
+import {Mark} from 'prosemirror-model'
+import {Plugin, PluginKey} from 'prosemirror-state'
 import {
   HyperlinkToolbar,
   HyperlinkToolbarDynamicParams,
   HyperlinkToolbarFactory,
   HyperlinkToolbarStaticParams,
-} from "./HyperlinkToolbarFactoryTypes";
-const PLUGIN_KEY = new PluginKey("HyperlinkToolbarPlugin");
+} from './HyperlinkToolbarFactoryTypes'
+const PLUGIN_KEY = new PluginKey('HyperlinkToolbarPlugin')
 
 export type HyperlinkToolbarPluginProps = {
-  hyperlinkToolbarFactory: HyperlinkToolbarFactory;
-};
+  hyperlinkToolbarFactory: HyperlinkToolbarFactory
+}
 
 export type HyperlinkToolbarViewProps = {
-  editor: Editor;
-  hyperlinkToolbarFactory: HyperlinkToolbarFactory;
-};
+  editor: Editor
+  hyperlinkToolbarFactory: HyperlinkToolbarFactory
+}
 
 class HyperlinkToolbarView {
-  editor: Editor;
+  editor: Editor
 
-  hyperlinkToolbar: HyperlinkToolbar;
+  hyperlinkToolbar: HyperlinkToolbar
 
-  menuUpdateTimer: NodeJS.Timeout | undefined;
-  startMenuUpdateTimer: () => void;
-  stopMenuUpdateTimer: () => void;
+  menuUpdateTimer: NodeJS.Timeout | undefined
+  startMenuUpdateTimer: () => void
+  stopMenuUpdateTimer: () => void
 
-  mouseHoveredHyperlinkMark: Mark | undefined;
-  mouseHoveredHyperlinkMarkRange: Range | undefined;
+  mouseHoveredHyperlinkMark: Mark | undefined
+  mouseHoveredHyperlinkMarkRange: Range | undefined
 
-  keyboardHoveredHyperlinkMark: Mark | undefined;
-  keyboardHoveredHyperlinkMarkRange: Range | undefined;
+  keyboardHoveredHyperlinkMark: Mark | undefined
+  keyboardHoveredHyperlinkMarkRange: Range | undefined
 
-  hyperlinkMark: Mark | undefined;
-  hyperlinkMarkRange: Range | undefined;
+  hyperlinkMark: Mark | undefined
+  hyperlinkMarkRange: Range | undefined
 
-  constructor({ editor, hyperlinkToolbarFactory }: HyperlinkToolbarViewProps) {
-    this.editor = editor;
+  constructor({editor, hyperlinkToolbarFactory}: HyperlinkToolbarViewProps) {
+    this.editor = editor
 
-    this.hyperlinkToolbar = hyperlinkToolbarFactory(this.getStaticParams());
+    this.hyperlinkToolbar = hyperlinkToolbarFactory(this.getStaticParams())
 
     this.startMenuUpdateTimer = () => {
       this.menuUpdateTimer = setTimeout(() => {
-        this.update();
-      }, 250);
-    };
+        this.update()
+      }, 250)
+    }
 
     this.stopMenuUpdateTimer = () => {
       if (this.menuUpdateTimer) {
-        clearTimeout(this.menuUpdateTimer);
-        this.menuUpdateTimer = undefined;
+        clearTimeout(this.menuUpdateTimer)
+        this.menuUpdateTimer = undefined
       }
 
-      return false;
-    };
+      return false
+    }
 
-    this.editor.view.dom.addEventListener("mouseover", this.mouseOverHandler);
-    document.addEventListener("scroll", this.scrollHandler);
+    this.editor.view.dom.addEventListener('mouseover', this.mouseOverHandler)
+    document.addEventListener('scroll', this.scrollHandler)
   }
 
   mouseOverHandler = (event: MouseEvent) => {
     // Resets the hyperlink mark currently hovered by the mouse cursor.
-    this.mouseHoveredHyperlinkMark = undefined;
-    this.mouseHoveredHyperlinkMarkRange = undefined;
+    this.mouseHoveredHyperlinkMark = undefined
+    this.mouseHoveredHyperlinkMarkRange = undefined
 
-    this.stopMenuUpdateTimer();
+    this.stopMenuUpdateTimer()
 
     if (
       event.target instanceof HTMLAnchorElement &&
-      event.target.nodeName === "A"
+      event.target.nodeName === 'A'
     ) {
       // Finds link mark at the hovered element's position to update mouseHoveredHyperlinkMark and
       // mouseHoveredHyperlinkMarkRange.
-      const hoveredHyperlinkElement = event.target;
+      const hoveredHyperlinkElement = event.target
       const posInHoveredHyperlinkMark =
-        this.editor.view.posAtDOM(hoveredHyperlinkElement, 0) + 1;
+        this.editor.view.posAtDOM(hoveredHyperlinkElement, 0) + 1
       const resolvedPosInHoveredHyperlinkMark = this.editor.state.doc.resolve(
-        posInHoveredHyperlinkMark
-      );
-      const marksAtPos = resolvedPosInHoveredHyperlinkMark.marks();
+        posInHoveredHyperlinkMark,
+      )
+      const marksAtPos = resolvedPosInHoveredHyperlinkMark.marks()
 
       for (const mark of marksAtPos) {
-        if (mark.type.name === this.editor.schema.mark("link").type.name) {
-          this.mouseHoveredHyperlinkMark = mark;
+        if (mark.type.name === this.editor.schema.mark('link').type.name) {
+          this.mouseHoveredHyperlinkMark = mark
           this.mouseHoveredHyperlinkMarkRange =
             getMarkRange(
               resolvedPosInHoveredHyperlinkMark,
               mark.type,
-              mark.attrs
-            ) || undefined;
+              mark.attrs,
+            ) || undefined
 
-          break;
+          break
         }
       }
     }
 
-    this.startMenuUpdateTimer();
+    this.startMenuUpdateTimer()
 
-    return false;
-  };
+    return false
+  }
 
   scrollHandler = () => {
     if (this.hyperlinkMark !== undefined) {
-      this.hyperlinkToolbar.render(this.getDynamicParams(), false);
+      this.hyperlinkToolbar.render(this.getDynamicParams(), false)
     }
-  };
+  }
 
   update() {
     if (!this.editor.view.hasFocus()) {
-      return;
+      return
     }
 
     // Saves the currently hovered hyperlink mark before it's updated.
-    const prevHyperlinkMark = this.hyperlinkMark;
+    const prevHyperlinkMark = this.hyperlinkMark
 
     // Resets the currently hovered hyperlink mark.
-    this.hyperlinkMark = undefined;
-    this.hyperlinkMarkRange = undefined;
+    this.hyperlinkMark = undefined
+    this.hyperlinkMarkRange = undefined
 
     // Resets the hyperlink mark currently hovered by the keyboard cursor.
-    this.keyboardHoveredHyperlinkMark = undefined;
-    this.keyboardHoveredHyperlinkMarkRange = undefined;
+    this.keyboardHoveredHyperlinkMark = undefined
+    this.keyboardHoveredHyperlinkMarkRange = undefined
 
     // Finds link mark at the editor selection's position to update keyboardHoveredHyperlinkMark and
     // keyboardHoveredHyperlinkMarkRange.
     if (this.editor.state.selection.empty) {
-      const marksAtPos = this.editor.state.selection.$from.marks();
+      const marksAtPos = this.editor.state.selection.$from.marks()
 
       for (const mark of marksAtPos) {
-        if (mark.type.name === this.editor.schema.mark("link").type.name) {
-          this.keyboardHoveredHyperlinkMark = mark;
+        if (mark.type.name === this.editor.schema.mark('link').type.name) {
+          this.keyboardHoveredHyperlinkMark = mark
           this.keyboardHoveredHyperlinkMarkRange =
             getMarkRange(
               this.editor.state.selection.$from,
               mark.type,
-              mark.attrs
-            ) || undefined;
+              mark.attrs,
+            ) || undefined
 
-          break;
+          break
         }
       }
     }
 
     if (this.mouseHoveredHyperlinkMark) {
-      this.hyperlinkMark = this.mouseHoveredHyperlinkMark;
-      this.hyperlinkMarkRange = this.mouseHoveredHyperlinkMarkRange;
+      this.hyperlinkMark = this.mouseHoveredHyperlinkMark
+      this.hyperlinkMarkRange = this.mouseHoveredHyperlinkMarkRange
     }
 
     // Keyboard cursor position takes precedence over mouse hovered hyperlink.
     if (this.keyboardHoveredHyperlinkMark) {
-      this.hyperlinkMark = this.keyboardHoveredHyperlinkMark;
-      this.hyperlinkMarkRange = this.keyboardHoveredHyperlinkMarkRange;
+      this.hyperlinkMark = this.keyboardHoveredHyperlinkMark
+      this.hyperlinkMarkRange = this.keyboardHoveredHyperlinkMarkRange
     }
 
     if (this.hyperlinkMark && this.editor.isEditable) {
-      this.getDynamicParams();
+      this.getDynamicParams()
 
       // Shows menu.
       if (!prevHyperlinkMark) {
-        this.hyperlinkToolbar.render(this.getDynamicParams(), true);
+        this.hyperlinkToolbar.render(this.getDynamicParams(), true)
 
         this.hyperlinkToolbar.element?.addEventListener(
-          "mouseleave",
-          this.startMenuUpdateTimer
-        );
+          'mouseleave',
+          this.startMenuUpdateTimer,
+        )
         this.hyperlinkToolbar.element?.addEventListener(
-          "mouseenter",
-          this.stopMenuUpdateTimer
-        );
+          'mouseenter',
+          this.stopMenuUpdateTimer,
+        )
 
-        return;
+        return
       }
 
       // Updates menu.
-      this.hyperlinkToolbar.render(this.getDynamicParams(), false);
+      this.hyperlinkToolbar.render(this.getDynamicParams(), false)
 
-      return;
+      return
     }
 
     // Hides menu.
     if (prevHyperlinkMark && (!this.hyperlinkMark || !this.editor.isEditable)) {
       this.hyperlinkToolbar.element?.removeEventListener(
-        "mouseleave",
-        this.startMenuUpdateTimer
-      );
+        'mouseleave',
+        this.startMenuUpdateTimer,
+      )
       this.hyperlinkToolbar.element?.removeEventListener(
-        "mouseenter",
-        this.stopMenuUpdateTimer
-      );
+        'mouseenter',
+        this.stopMenuUpdateTimer,
+      )
 
-      this.hyperlinkToolbar.hide();
+      this.hyperlinkToolbar.hide()
 
-      return;
+      return
     }
   }
 
   destroy() {
-    this.editor.view.dom.removeEventListener(
-      "mouseover",
-      this.mouseOverHandler
-    );
-    document.removeEventListener("scroll", this.scrollHandler);
+    this.editor.view.dom.removeEventListener('mouseover', this.mouseOverHandler)
+    document.removeEventListener('scroll', this.scrollHandler)
   }
 
   getStaticParams(): HyperlinkToolbarStaticParams {
@@ -210,17 +207,17 @@ class HyperlinkToolbarView {
         const tr = this.editor.view.state.tr.insertText(
           text,
           this.hyperlinkMarkRange!.from,
-          this.hyperlinkMarkRange!.to
-        );
+          this.hyperlinkMarkRange!.to,
+        )
         tr.addMark(
           this.hyperlinkMarkRange!.from,
           this.hyperlinkMarkRange!.from + text.length,
-          this.editor.schema.mark("link", { href: url })
-        );
-        this.editor.view.dispatch(tr);
-        this.editor.view.focus();
+          this.editor.schema.mark('link', {href: url}),
+        )
+        this.editor.view.dispatch(tr)
+        this.editor.view.focus()
 
-        this.hyperlinkToolbar.hide();
+        this.hyperlinkToolbar.hide()
       },
       deleteHyperlink: () => {
         this.editor.view.dispatch(
@@ -228,15 +225,15 @@ class HyperlinkToolbarView {
             .removeMark(
               this.hyperlinkMarkRange!.from,
               this.hyperlinkMarkRange!.to,
-              this.hyperlinkMark!.type
+              this.hyperlinkMark!.type,
             )
-            .setMeta("preventAutolink", true)
-        );
-        this.editor.view.focus();
+            .setMeta('preventAutolink', true),
+        )
+        this.editor.view.focus()
 
-        this.hyperlinkToolbar.hide();
+        this.hyperlinkToolbar.hide()
       },
-    };
+    }
   }
 
   getDynamicParams(): HyperlinkToolbarDynamicParams {
@@ -244,20 +241,20 @@ class HyperlinkToolbarView {
       url: this.hyperlinkMark!.attrs.href,
       text: this.editor.view.state.doc.textBetween(
         this.hyperlinkMarkRange!.from,
-        this.hyperlinkMarkRange!.to
+        this.hyperlinkMarkRange!.to,
       ),
       referenceRect: posToDOMRect(
         this.editor.view,
         this.hyperlinkMarkRange!.from,
-        this.hyperlinkMarkRange!.to
+        this.hyperlinkMarkRange!.to,
       ),
-    };
+    }
   }
 }
 
 export const createHyperlinkToolbarPlugin = (
   editor: Editor,
-  options: HyperlinkToolbarPluginProps
+  options: HyperlinkToolbarPluginProps,
 ) => {
   return new Plugin({
     key: PLUGIN_KEY,
@@ -266,5 +263,5 @@ export const createHyperlinkToolbarPlugin = (
         editor: editor,
         hyperlinkToolbarFactory: options.hyperlinkToolbarFactory,
       }),
-  });
-};
+  })
+}

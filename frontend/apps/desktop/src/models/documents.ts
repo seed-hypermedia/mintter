@@ -448,6 +448,7 @@ export function useDraftEditor(
 
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
+      console.log('editor content change', editor.topLevelBlocks)
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!isReadyForChanges.current) return
 
@@ -654,6 +655,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     versionId,
   })
   const editor: HyperDocsEditor = useBlockNote<typeof hdBlockSchema>({
+    editable: false,
     // _tiptapOptions: {
     //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
