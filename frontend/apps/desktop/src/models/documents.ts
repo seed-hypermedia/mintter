@@ -574,7 +574,10 @@ export function useDraftEditor(
   }
 }
 
-export type HyperDocsEditor = ReturnType<typeof useDraftEditor>['editor']
+export type HyperDocsEditor = Exclude<
+  ReturnType<typeof useDraftEditor>['editor'],
+  null
+>
 
 export function useWriteDraftWebUrl(draftId?: string) {
   return useMutation({
@@ -649,27 +652,54 @@ export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
 
+function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
+  // console.log('= applyPubToEditor')
+  editor.isEditable = false // this is the way
+  const editorBlocks = serverChildrenToEditorChildren(
+    pub.document?.children || [],
+  )
+  editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+}
+
 export function usePublicationEditor(documentId: string, versionId?: string) {
+  // both the publication data and the editor are asyncronously loaded
+  // using a ref to avoid extra renders, and ensure the editor is available and ready
+  const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
+    null,
+    null,
+  ])
   const pub = usePublication({
     documentId,
     versionId,
+    onSuccess: (pub: Publication) => {
+      // console.log('= pub loaded')
+      readyThings.current[1] = pub
+      const readyEditor = readyThings.current[0]
+      if (readyEditor) {
+        applyPubToEditor(readyEditor, pub)
+      }
+    },
   })
-  const editor: HyperDocsEditor = useBlockNote<typeof hdBlockSchema>({
+  // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
+  const editor: HyperDocsEditor | null = useBlockNote<typeof hdBlockSchema>({
     editable: false,
     // _tiptapOptions: {
     //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
     // },
     blockSchema: hdBlockSchema,
+    onEditorReady: (e) => {
+      // console.log('= EDITOR READY', e)
+      readyThings.current[0] = e
+      const readyPub = readyThings.current[1]
+      if (readyPub) {
+        applyPubToEditor(e, readyPub)
+      }
+    },
   })
-  useEffect(() => {
-    if (pub.data?.document && editor) {
-      editor.isEditable = false // this is the way
-      editor.replaceBlocks(
-        editor.topLevelBlocks,
-        serverChildrenToEditorChildren(pub.data.document?.children || []),
-      )
-    }
-  }, [pub.data, editor])
 
-  return {...pub, editor}
+  return {
+    ...pub,
+    editor,
+    isLoading: pub.isLoading || editor === null,
+  }
 }
