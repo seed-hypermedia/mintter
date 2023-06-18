@@ -33,7 +33,7 @@ export default function DraftPage() {
       <MainWrapper>
         <HDEditorContainer>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-          <HyperDocsEditorView editor={editor} />
+          {editor && <HyperDocsEditorView editor={editor} />}
           {debugValue && <DebugData data={debugValue} />}
         </HDEditorContainer>
       </MainWrapper>
