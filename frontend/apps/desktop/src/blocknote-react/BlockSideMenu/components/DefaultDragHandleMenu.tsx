@@ -8,6 +8,6 @@ export const DefaultDragHandleMenu = <BSchema extends BlockSchema>(
 ) => (
   <DragHandleMenu>
     <RemoveBlockButton {...props}>Delete</RemoveBlockButton>
-    <BlockColorsButton {...props}>Colors</BlockColorsButton>
+    {/* <BlockColorsButton {...props}>Colors</BlockColorsButton> */}
   </DragHandleMenu>
 )

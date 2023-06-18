@@ -24,7 +24,7 @@ export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
       <ToggledStyleButton editor={props.editor} toggledStyle={'strike'} />
       <ToggledStyleButton editor={props.editor} toggledStyle={'code'} />
 
-      <ColorStyleButton editor={props.editor} />
+      {/* <ColorStyleButton editor={props.editor} /> */}
 
       <NestBlockButton editor={props.editor} />
       <UnnestBlockButton editor={props.editor} />
