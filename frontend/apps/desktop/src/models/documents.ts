@@ -662,12 +662,6 @@ function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
 }
 
 export function usePublicationEditor(documentId: string, versionId?: string) {
-  // both the publication data and the editor are asyncronously loaded
-  // using a ref to avoid extra renders, and ensure the editor is available and ready
-  const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
-    null,
-    null,
-  ])
   const pub = usePublication({
     documentId,
     versionId,
@@ -680,6 +674,14 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
       }
     },
   })
+
+  // both the publication data and the editor are asyncronously loaded
+  // using a ref to avoid extra renders, and ensure the editor is available and ready
+  const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
+    null,
+    pub.data || null,
+  ])
+
   // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
   const editor: HyperDocsEditor | null = useBlockNote<typeof hdBlockSchema>({
     editable: false,
