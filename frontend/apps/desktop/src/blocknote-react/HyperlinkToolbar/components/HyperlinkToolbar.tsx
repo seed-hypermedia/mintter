@@ -4,8 +4,8 @@ import {EditHyperlinkMenu} from '../EditHyperlinkMenu/components/EditHyperlinkMe
 import {Toolbar} from '../../SharedComponents/Toolbar/components/Toolbar'
 import {ToolbarButton} from '../../SharedComponents/Toolbar/components/ToolbarButton'
 import {RiExternalLinkFill, RiLinkUnlink} from 'react-icons/ri'
+import {openUrl} from '@app/utils/open-url'
 // import rootStyles from "../../../root.module.css";
-import {open} from '@tauri-apps/api/shell'
 
 export type HyperlinkToolbarProps = {
   url: string
@@ -41,7 +41,7 @@ export const HyperlinkToolbar = (props: HyperlinkToolbarProps) => {
         mainTooltip="Open"
         isSelected={false}
         onClick={() => {
-          open(props.url)
+          openUrl(props.url, true)
         }}
         icon={RiExternalLinkFill}
       />

@@ -10,9 +10,6 @@ import {NestBlockButton, UnnestBlockButton} from '@app/blocknote-react'
 import {ToggledStyleButton} from '@app/blocknote-react'
 import {BlockTypeDropdown} from '@app/blocknote-react'
 import {ReactElementFactory} from '@app/blocknote-react'
-import {blockNoteColorScheme} from '@app/blocknote-react'
-
-console.log('blockNoteColorScheme', blockNoteColorScheme)
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>

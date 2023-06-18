@@ -165,6 +165,8 @@ function simpleStringy(obj: any): string {
   return '?'
 }
 
+let appNavDispatch: null | React.Dispatch<NavAction> = null
+
 export function NavigationProvider({
   children,
   initialNav = {
@@ -196,6 +198,13 @@ export function NavigationProvider({
     )
   }, [routes, routeIndex])
 
+  useEffect(() => {
+    appNavDispatch = dispatch
+    return () => {
+      appNavDispatch = null
+    }
+  }, [])
+
   // go to pub with pending edit
   // resume editing
   // press forward
@@ -214,6 +223,13 @@ export function NavigationProvider({
       {children}
     </NavContext.Provider>
   )
+}
+
+export function dispatchAppNavigation(action: NavAction) {
+  if (!appNavDispatch) {
+    throw new Error('App Navigation not ready or available')
+  }
+  return appNavDispatch(action)
 }
 
 export function useNavRoute() {
@@ -243,7 +259,7 @@ export function useNavigate(mode: NavMode = 'push') {
   const dispatch = useNavigationDispatch()
   return (route: NavRoute) => {
     if (mode === 'spawn') {
-      openWindow(encodeRouteToPath(route))
+      openRouteWindow(route)
     } else if (mode === 'push') {
       dispatch({type: 'push', route})
     } else if (mode === 'replace') {
@@ -254,6 +270,10 @@ export function useNavigate(mode: NavMode = 'push') {
   }
 }
 
-export function openWindow(path: string) {
+export function openRouteWindow(route: NavRoute) {
+  openAppWindow(encodeRouteToPath(route))
+}
+
+function openAppWindow(path: string) {
   invoke('plugin:window|open', {path})
 }

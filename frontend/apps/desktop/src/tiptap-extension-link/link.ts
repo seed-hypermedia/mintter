@@ -173,7 +173,7 @@ export const Link = Mark.create<LinkOptions>({
         }),
       )
     }
-    console.log('addProseMirrorPlugins', this.options)
+
     if (this.options.openOnClick) {
       plugins.push(
         clickHandler({

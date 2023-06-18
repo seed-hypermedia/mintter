@@ -1,4 +1,4 @@
-import {open} from '@tauri-apps/api/shell'
+import {openUrl} from '@app/utils/open-url'
 import {getAttributes} from '@tiptap/core'
 import {MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'
@@ -21,7 +21,8 @@ export function clickHandler(options: ClickHandlerOptions): Plugin {
         const href = attrs.href
 
         if (href) {
-          open(href)
+          let newWindow = false // todo, check for meta key
+          openUrl(href, newWindow)
           return true
         }
 
