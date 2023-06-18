@@ -1,3 +1,9 @@
+import {
+  isMintterGatewayLink,
+  isMintterScheme,
+  normalizeMintterLink,
+} from '@app/utils/mintter-link'
+import {HYPERDOCS_LINK_PREFIX} from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'
@@ -39,11 +45,15 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         const link = find(textContent).find(
           (item) => item.isLink && item.value === textContent,
         )
+        const nativeHyperLink =
+          isMintterScheme(textContent) || isMintterGatewayLink(textContent)
+            ? normalizeMintterLink(textContent)
+            : null
 
         if (!selection.empty && options.linkOnPaste) {
-          const pastedLink = hasPastedLink
-            ? pastedLinkMarks[0].attrs.href
-            : link?.href || null
+          const pastedLink =
+            nativeHyperLink ||
+            (hasPastedLink ? pastedLinkMarks[0].attrs.href : link?.href || null)
 
           if (pastedLink) {
             options.editor.commands.setMark(options.type, {href: pastedLink})
@@ -59,6 +69,15 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
 
         if (firstChildIsText && firstChildContainsLinkMark) {
           return false
+        }
+
+        if (nativeHyperLink && selection.empty) {
+          options.editor.commands.insertContent(
+            // we annotate with data-fresh so the link will async load the title
+            `<a href="${nativeHyperLink}" data-fresh="1">...</a>`,
+          )
+
+          return true
         }
 
         if (link && selection.empty) {
