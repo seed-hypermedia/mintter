@@ -444,13 +444,39 @@ export function useDraftEditor(
   let lastBlockParent = useRef<Record<string, string>>({})
   let lastBlockLeftSibling = useRef<Record<string, string>>({})
 
-  let isReadyForChanges = useRef(false)
+  function prepareBlockObservations(
+    blocks: Block<typeof hdBlockSchema>[],
+    parentId: string,
+  ) {
+    blocks.forEach((block, index) => {
+      const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
+      lastBlockParent.current[block.id] = parentId
+      lastBlockLeftSibling.current[block.id] = leftSibling
+      lastBlocks.current[block.id] = block
+      if (block.children) {
+        prepareBlockObservations(block.children, block.id)
+      }
+    })
+  }
+
+  function handleMaybeReady() {
+    const [editor, draft] = readyThings.current
+    if (!editor || !draft) return
+    // we load the data from the backend here
+    editor.replaceBlocks(editor.topLevelBlocks, [
+      ...draft.children,
+      // editor._tiptapEditor.schema.nodes.paragraph.create(),
+    ])
+
+    // this is to populate the blocks we use to compare changes
+    prepareBlockObservations(editor.topLevelBlocks, '')
+  }
 
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       console.log('editor content change', editor.topLevelBlocks)
       opts?.onEditorState?.(editor.topLevelBlocks)
-      if (!isReadyForChanges.current) return
+      if (!readyThings.current[0] || !readyThings.current[1]) return
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -517,6 +543,10 @@ export function useDraftEditor(
         },
       )
     },
+    onEditorReady: (e) => {
+      readyThings.current[0] = e
+      handleMaybeReady()
+    },
     uiFactories: {
       formattingToolbarFactory,
     },
@@ -526,7 +556,7 @@ export function useDraftEditor(
     slashCommands: [...defaultReactSlashMenuItems, insertImage],
   })
 
-  const draftState = useQuery({
+  const draft = useQuery({
     enabled: !!editor,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
@@ -552,22 +582,17 @@ export function useDraftEditor(
       return draftState
     },
     onSuccess: (draft: DraftState) => {
-      if (!editor)
-        throw new Error('editor unavailable from draftQuery success fn')
-      // we load the data from the backend here
-      editor.replaceBlocks(editor.topLevelBlocks, [
-        ...draft.children,
-        // editor._tiptapEditor.schema.nodes.paragraph.create(),
-      ])
-
-      // this is to populate the blocks we use to compare changes
-      editor.forEachBlock((block) => {
-        lastBlocks.current[block.id] = block
-        return true
-      })
-      isReadyForChanges.current = true
+      readyThings.current[1] = draft
+      handleMaybeReady()
     },
   })
+
+  // both the publication data and the editor are asyncronously loaded
+  // using a ref to avoid extra renders, and ensure the editor is available and ready
+  const readyThings = useRef<[HyperDocsEditor | null, DraftState | null]>([
+    null,
+    draft.data || null,
+  ])
 
   return {
     editor,
