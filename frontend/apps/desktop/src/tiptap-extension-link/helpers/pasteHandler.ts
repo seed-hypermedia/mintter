@@ -72,10 +72,26 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         }
 
         if (nativeHyperLink && selection.empty) {
+          const placeholder = '...'
           options.editor.commands.insertContent(
             // we annotate with data-fresh so the link will async load the title
-            `<a href="${nativeHyperLink}" data-fresh="1">...</a>`,
+            `<a href="${nativeHyperLink}" data-fresh="1">${placeholder}</a>`,
           )
+          // const {$from, $to} = selection
+          // const schema = view.state.schema
+          // setTimeout(() => {
+          //   if ($from.sameParent($to) && $from.parent.isTextblock) {
+          //     const tr = view.state.tr
+          //     tr.replaceWith(
+          //       $from.pos,
+          //       $to.pos + placeholder.length,
+          //       schema.text('doc title', [
+          //         schema.marks.link.create({href: nativeHyperLink}),
+          //       ]),
+          //     )
+          //     view.dispatch(tr)
+          //   }
+          // }, 1000)
 
           return true
         }
