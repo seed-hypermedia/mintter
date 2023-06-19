@@ -80,6 +80,8 @@ export * from './block-to-slate'
 export * from './change-creators'
 export * from './client-utils'
 export * from './hyperdocs-presentation'
+export * from './editor-types'
+export * from './server-to-editor'
 export {
   Accounts,
   Changes,

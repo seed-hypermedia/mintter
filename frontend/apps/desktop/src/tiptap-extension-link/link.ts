@@ -1,6 +1,5 @@
-import {HyperDocsEditor} from '@app/models/documents'
 import {toast} from '@app/toast'
-import {isMintterScheme} from '@app/utils/mintter-link'
+import {isMintterScheme} from '@mintter/shared'
 import {Mark, mergeAttributes} from '@tiptap/core'
 import {Plugin, Transaction} from '@tiptap/pm/state'
 import {AddMarkStep} from '@tiptap/pm/transform'

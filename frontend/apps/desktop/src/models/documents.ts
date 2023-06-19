@@ -15,7 +15,9 @@ import {Timestamp} from '@bufbuild/protobuf'
 import {
   Document,
   DocumentChange,
-  GroupingContent,
+  isMintterGatewayLink,
+  isMintterScheme,
+  normalizeMintterLink,
   Publication,
   WebPublicationRecord,
 } from '@mintter/shared'
@@ -40,11 +42,6 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
-import {
-  isMintterGatewayLink,
-  isMintterScheme,
-  normalizeMintterLink,
-} from '@app/utils/mintter-link'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>

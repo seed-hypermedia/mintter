@@ -11,7 +11,7 @@ import type {
   Heading,
   Image,
   File,
-  Link,
+  OldAsLink,
   Mark,
   MttastContent,
   MttDocument,
@@ -87,7 +87,7 @@ export const isVideo = isType<Video>('video')
 export const isImage = isType<Image>('image')
 export const isFile = isType<File>('file')
 export const isEmbed = isType<Embed>('embed')
-export const isLink = isType<Link>('link')
+export const isLink = isType<OldAsLink>('link')
 export const isText = (value: any) =>
   isPlainObject(value) && typeof value.text == 'string'
 

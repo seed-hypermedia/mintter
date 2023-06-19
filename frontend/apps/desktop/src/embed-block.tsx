@@ -1,5 +1,11 @@
 import {PartialMessage} from '@bufbuild/protobuf'
-import {Block, getIdsfromUrl} from '@mintter/shared'
+import {
+  Block,
+  getCIDFromIPFSUrl,
+  getIdsfromUrl,
+  isMintterScheme,
+  serverBlockToEditorInline,
+} from '@mintter/shared'
 import type {
   Block as ServerBlock,
   PresentationBlock,
@@ -11,10 +17,7 @@ import {YStack, Text} from '@mintter/ui'
 import {useMemo} from 'react'
 import {createReactBlockSpec} from './blocknote-react'
 import {usePublication} from './models/documents'
-import {getCIDFromIPFSUrl} from './utils/ipfs-cid'
-import {serverBlockToEditorInline} from './client/server-to-editor'
 import {InlineContent} from '@app/blocknote-core'
-import {isMintterScheme} from './utils/mintter-link'
 import {openUrl} from './utils/open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {

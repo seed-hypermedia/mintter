@@ -108,7 +108,7 @@ export interface Embed extends Alternative, Resource, Parent {
   type: 'embed'
 }
 
-export interface Link extends Resource, Parent {
+export interface OldAsLink extends Resource, Parent {
   type: 'link'
   children: Text[]
 }
@@ -162,4 +162,4 @@ export type GroupingContent = Group | OrderedList | UnorderedList
 export type FlowContent = Statement | Heading | Blockquote | Code
 
 // the text and markup of a document
-export type PhrasingContent = Link | Embed | Text
+export type PhrasingContent = OldAsLink | Embed | Text

@@ -1,9 +1,6 @@
 import {describe, expect, test} from 'vitest'
-import {Block, BlockNode} from '@mintter/shared'
-import {
-  serverBlockToEditorInline,
-  serverChildrenToEditorChildren,
-} from '../server-to-editor'
+import {Block, BlockNode, serverBlockToEditorInline} from '@mintter/shared'
+import {serverChildrenToEditorChildren} from '../server-to-editor'
 import {examples} from '../example-docs'
 import {InlineContent} from '@app/blocknote-core'
 

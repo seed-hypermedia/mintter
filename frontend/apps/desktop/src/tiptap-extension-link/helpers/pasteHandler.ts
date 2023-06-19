@@ -1,11 +1,9 @@
-import {insertBlocks} from '@app/blocknote-core/api/blockManipulation/blockManipulation'
 import {findBlock} from '@app/blocknote-core/extensions/Blocks/helpers/findBlock'
 import {
   isMintterGatewayLink,
   isMintterScheme,
   normalizeMintterLink,
-} from '@app/utils/mintter-link'
-import {HYPERDOCS_LINK_PREFIX} from '@mintter/shared'
+} from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'

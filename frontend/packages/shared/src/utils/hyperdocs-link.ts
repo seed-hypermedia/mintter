@@ -1,4 +1,4 @@
-import {HYPERDOCS_LINK_PREFIX, getIdsfromUrl} from '@mintter/shared'
+import {getIdsfromUrl, HYPERDOCS_LINK_PREFIX} from './get-ids-from-url'
 
 export function isMintterScheme(text?: string) {
   return !!text?.startsWith(HYPERDOCS_LINK_PREFIX)

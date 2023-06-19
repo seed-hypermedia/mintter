@@ -8,7 +8,7 @@ import {
   Group,
   Heading,
   Image,
-  Link,
+  OldAsLink,
   OrderedList,
   Paragraph,
   Statement,
@@ -86,7 +86,7 @@ export const paragraph = createParent<Paragraph>('paragraph')
 
 export const staticParagraph = createParent<StaticParagraph>('staticParagraph')
 
-export const link = createParent<Link>('link')
+export const link = createParent<OldAsLink>('link')
 
 export const embed = createParent<Embed>('embed')
 
