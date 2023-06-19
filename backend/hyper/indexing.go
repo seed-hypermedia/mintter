@@ -139,7 +139,7 @@ func (bs *Storage) indexLinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Cha
 		}
 
 		switch u.Scheme {
-		case "mintter":
+		case "hd":
 			ld := LinkData{
 				SourceBlock:    sourceBlockID,
 				TargetFragment: u.Fragment,
