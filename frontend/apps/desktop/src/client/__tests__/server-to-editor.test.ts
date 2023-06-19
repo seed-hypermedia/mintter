@@ -292,11 +292,6 @@ describe('Editor: ', () => {
   describe('Server Image Block to Editor: ', () => {
     test('basic', () => {
       const result = serverChildrenToEditorChildren([
-        // A - no style
-        // B - bold
-        // C - bold + italic
-        // D - italic
-        // E - no style
         new BlockNode({
           block: new Block({
             id: 'a',
@@ -317,6 +312,36 @@ describe('Editor: ', () => {
           props: {
             alt: 'alto',
             url: 'ABC',
+            // junk:
+            backgroundColor: 'default',
+            textAlignment: 'left',
+            textColor: 'default',
+          },
+        },
+      ])
+    })
+  })
+
+  describe('Server Embed Block to Editor: ', () => {
+    test('basic', () => {
+      const result = serverChildrenToEditorChildren([
+        new BlockNode({
+          block: new Block({
+            id: 'a',
+            type: 'embed',
+            text: '',
+            annotations: [],
+            attributes: {},
+            ref: 'hd://foobar',
+          }),
+        }),
+      ])
+      expect(result).toEqual([
+        {
+          id: 'a',
+          type: 'embedBlock',
+          props: {
+            ref: 'hd://foobar',
             // junk:
             backgroundColor: 'default',
             textAlignment: 'left',

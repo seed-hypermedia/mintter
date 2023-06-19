@@ -1,4 +1,5 @@
 import {InlineContent, PartialBlock, StyledText} from '@app/blocknote-core'
+import {getCIDFromIPFSUrl} from '@app/utils/ipfs-cid'
 import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 import {hdBlockSchema} from './schema'
 
@@ -220,12 +221,6 @@ export function serverBlockToHeading(
   }
 }
 
-function getCIDFromIPFSUrl(url: string): string | null {
-  const regex = /ipfs:\/\/(.+)/
-  const match = url.match(regex)
-  return match ? match[1] : null
-}
-
 export function serverChildrenToEditorChildren(
   children: BlockNode[],
   opts?: RecursiveOpts & {
@@ -243,7 +238,19 @@ export function serverChildrenToEditorChildren(
         props: {
           url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
           alt: serverBlock.block.attributes.alt,
-          defaultOpen: 'false',
+          backgroundColor: 'default',
+          textColor: 'default',
+          textAlignment: 'left',
+        },
+      }
+    }
+
+    if (serverBlock.block?.type === 'embed') {
+      return {
+        type: 'embedBlock',
+        id: serverBlock.block.id,
+        props: {
+          ref: serverBlock.block.ref,
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',

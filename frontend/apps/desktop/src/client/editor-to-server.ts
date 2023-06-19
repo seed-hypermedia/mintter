@@ -142,18 +142,11 @@ export function editorBlockToServerBlock(
   if (editorBlock.type == 'embedBlock') {
     return new ServerBlock({
       id: editorBlock.id,
-      type: 'embedBlock',
+      type: 'embed',
       ref: editorBlock.props.ref,
-      text: ' ',
-      annotations: [
-        new Annotation({
-          type: 'embed',
-          starts: [0],
-          ends: [1],
-          ref: editorBlock.props.ref,
-          attributes: {},
-        }),
-      ],
+      text: '',
+      annotations: [],
+      attributes: {},
     })
   }
   throw new Error('not implemented')

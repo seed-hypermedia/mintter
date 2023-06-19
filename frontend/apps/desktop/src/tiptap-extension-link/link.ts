@@ -110,17 +110,17 @@ export const Link = Mark.create<LinkOptions>({
     toast.success('link updated. detected')
     setTimeout(() => {
       toast.success('trying to upgrade link to hd://')
-      editor
-        .chain()
-        .unsetMark(
-          // @ts-expect-error
-          this.name,
-          // {extendEmptyMarkRange: true}
-        )
-        // @ts-expect-error
-        .setMark(this.name, {href: 'hd://fml'})
-        .setMeta('preventAutolink', true)
-        .run()
+      // editor
+      //   .chain()
+      //   .unsetMark(
+      //     // @ts-expect-error
+      //     this.name,
+      //     // {extendEmptyMarkRange: true}
+      //   )
+      //   // @ts-expect-error
+      //   .setMark(this.name, {href: 'hd://fml'})
+      //   .setMeta('preventAutolink', true)
+      //   .run()
     }, 500)
   },
 

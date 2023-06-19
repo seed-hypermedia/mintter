@@ -42,7 +42,7 @@ export type EmbedBlock = {
   attributes: {}
 }
 
-export type Block =
+export type PresentationBlock =
   | ImageBlock // video and files coming soon
   | EmbedBlock
   | SectionBlock

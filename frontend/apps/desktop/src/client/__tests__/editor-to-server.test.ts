@@ -148,6 +148,32 @@ describe('editorBlockToServerBlock', () => {
         }),
       )
     })
+
+    describe('Embed block: ', () => {
+      test('a embed', () => {
+        const eBlock = editorBlockToServerBlock({
+          id: 'abc',
+          type: 'embedBlock',
+          children: [],
+          content: [],
+          props: {
+            ref: 'hd://foo',
+            // why is this garbage required for embed props??:
+            backgroundColor: 'default',
+            textColor: 'default',
+            textAlignment: 'left',
+          },
+        })
+        expect(eBlock).toEqual(
+          new Block({
+            id: 'abc',
+            type: 'embed',
+            attributes: {},
+            ref: 'hd://foo',
+          }),
+        )
+      })
+    })
   })
 
   // describe('Embed block: ', () => {
