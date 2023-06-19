@@ -255,6 +255,7 @@ export function usePublishDraft(
       setTimeout(() => {
         // do this later to wait for the draft component to unmount
         appInvalidateQueries([queryKeys.GET_DRAFT, pub.document?.id])
+        appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, pub.document?.id])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
@@ -528,6 +529,13 @@ export function useDraftEditor(
             console.warn('no editor state yet!')
             return
           }
+          console.log('applying draft changes', {
+            changed: [...state.changes.changed].map(
+              (change) => lastBlocks.current[change],
+            ),
+            moves: state.changes.moves,
+            deleted: [...state.changes.deleted],
+          })
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
           )
