@@ -3,8 +3,8 @@ package documents
 
 import (
 	context "context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -43,43 +44,23 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return nil, fmt.Errorf("add site: site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
 	}
-	var response map[string]interface{}
-	err = json.NewDecoder(res.Body).Decode(&response)
+
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("add site: unrecognized response format %w", err)
-	}
-	addressesRes, ok := response["addresses"]
-	if !ok {
-		return nil, fmt.Errorf("add site: address not found in payload")
+		return nil, fmt.Errorf("failed to read json body: %w", err)
 	}
 
-	var addresses []string
-	addressesList, ok := addressesRes.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("add site: error getting p2p addresses from site, wrong format: addresses must be a list of multiaddresses even if only one provided")
-	}
-	for _, addrs := range addressesList {
-		addr, ok := addrs.(string)
-		if !ok {
-			return nil, fmt.Errorf("add site: error getting p2p addresses from site, wrong format: individual multiaddresses must be a string")
-		}
-		addresses = append(addresses, addr)
+	var resp documents.SiteDiscoveryConfig
+	if err := protojson.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
 	}
 
-	accountRes, ok := response["account_id"]
-	if !ok {
-		return nil, fmt.Errorf("add site: account_id not found in payload")
-	}
-
-	accountID, ok := accountRes.(string)
-	if !ok {
-		return nil, fmt.Errorf("add site: error getting account_id from remote site, wrong format: account id must me a string")
-	}
-	account, err := core.DecodePrincipal(accountID)
+	account, err := core.DecodePrincipal(resp.AccountId)
 	if err != nil {
-		return nil, fmt.Errorf("add site: got an invalid accountID [%s]: %w", accountID, err)
+		return nil, fmt.Errorf("add site: got an invalid accountID [%s]: %w", resp.AccountId, err)
 	}
-	info, err := mttnet.AddrInfoFromStrings(addresses...)
+
+	info, err := mttnet.AddrInfoFromStrings(resp.Addresses...)
 	if err != nil {
 		return nil, fmt.Errorf("add site: couldn't parse multiaddress: %w", err)
 	}
@@ -105,7 +86,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	// make it a proxy call since we want to talk with the site by attaching headers
 	header := metadata.New(map[string]string{mttnet.TargetSiteHeader: in.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, accountID)
+	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, resp.AccountId)
 
 	var role documents.Member_Role
 	if in.InviteToken != "" {
@@ -126,7 +107,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		role = res.Role
 	}
 
-	if err = sitesql.AddSite(conn, account, strings.Join(addresses, " "), in.Hostname, int64(role)); err != nil {
+	if err = sitesql.AddSite(conn, account, strings.Join(resp.Addresses, " "), in.Hostname, int64(role)); err != nil {
 		return nil, fmt.Errorf("add site: could not insert site in the database: %w", err)
 	}
 
