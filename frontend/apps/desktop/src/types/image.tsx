@@ -1,6 +1,7 @@
-import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
-import { BlockNoteEditor, DefaultBlockSchema, defaultProps, SpecificBlock } from "@app/blocknote-core";
+import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
 import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
+import { hdBlockSchema } from '@app/client/schema';
+import { Button, Form, Input, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
 import { ChangeEvent, useEffect, useState } from "react";
 import { RiImage2Fill } from "react-icons/ri";
 
@@ -13,88 +14,73 @@ export const ImageBlock = createReactBlockSpec({
       },
       alt: {
         default: "",
-      }
+      },
+      defaultOpen: {
+        values: ["false", "true"],
+        default: "true",
+      },
     },
     containsInlineContent: true,
-    render: ({ block, editor }: {block: any, editor: any}) => (
+    // @ts-ignore
+    render: ({ block, editor }: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) => (
       Render(block, editor)
     ),
-
-  //   type: "image",
-  // propSchema: {
-  //   src: {
-  //     default: "https://via.placeholder.com/1000",
-  //   },
-  // },
-  // containsInlineContent: true,
-  // render: ({ block }) => (
-  //   <div
-  //     style={{
-  //       display: "flex",
-  //       flexDirection: "column",
-  //     }}>
-  //     <img
-  //       style={{
-  //         width: "100%",
-  //       }}
-  //       src={block.props.src}
-  //       alt={"Image"}
-  //       contentEditable={false}
-  //     />
-  //     <InlineContent />
-  //   </div>
-  // ),
   });
 
 type ImageProps = {
-  id: '',
-  url: '',
-  alt: '',
+  id: string,
+  url: string,
+  alt: string,
   children: [],
-  type: 'image',
+  content: [],
+  type: string,
+  defaultOpen: boolean,
 }
 
-const Render = (block: any, editor: any) => {
+const boolRegex = new RegExp("true");
+
+const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>) => {
   const [image, setImage] = useState<ImageProps>({
     // name: undefined,
     // size: 0,
     id: block.id,
-    url: '',
-    alt: '',
+    url: block.props.url,
+    alt: block.props.alt,
     children: [],
+    content: block.content,
     type: block.type,
+    defaultOpen: boolRegex.test(block.props.defaultOpen),
   } as ImageProps)
 
   useEffect(() => {
     if (block.props.url && !image.url) {
-      block.name
-        ? setImage({
-            ...image,
-            url: block.props.url,
-          })
-        : setImage({...image, url: block.props.url})
+      // block.name
+      //   ? setImage({
+      //       ...image,
+      //       url: block.props.url,
+      //     })
+        // : 
+      setImage({...image, url: block.props.url})
     }
     editor.setTextCursorPosition(block.id, 'end');
   }, [])
 
-  const assignFile = (newImage: ImageProps) => {
-    setImage({...image, ...newImage})
-    editor.updateBlock(block.id, { props: { url: newImage.url }});
-    editor.setTextCursorPosition(block.id, 'end');
+  const assignFile = (newImageProps: ImageProps) => {
+    setImage({...image, ...newImageProps})
+    editor.updateBlock(image.id, { props: { url: newImageProps.url, alt: newImageProps.alt }});
+    editor.setTextCursorPosition(image.id, 'end');
   }
 
-  // if ((element as FileType).defaultOpen)
-  //   Transforms.setNodes<FileType>(editor, {defaultOpen: false}, {at: path})
+  if (image.defaultOpen)
+    editor.updateBlock(image.id, { props: { defaultOpen: "false" } })
 
   return (
     <YStack
-      // {...attributes}
-      // borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
       borderWidth={0}
       outlineWidth={0}
     >
-      {block.props.url ? (
-        <ImageComponent block={block} />
+      {image.url ? (
+        <ImageComponent block={block} assign={assignFile} />
       ) : (
         <ImageForm block={block} assign={assignFile} />
       )}
@@ -102,25 +88,27 @@ const Render = (block: any, editor: any) => {
   )
 }
 
-function ImageComponent({block}: any) {
+function ImageComponent({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
+  const [replace, setReplace] = useState(false)
+
   return (
     <div>
       <YStack
         // @ts-ignore
         contentEditable={false}
         className={block.type}
-        // onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        //   setReplace(true)
-        // }}
-        // onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        //   setReplace(false)
-        // }}
+        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          setReplace(true)
+        }}
+        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+          setReplace(false)
+        }}
         borderWidth={0}
         outlineWidth={0}
         outlineColor="transparent"
         borderColor="transparent"
       >
-        {/* {editor.mode == EditorMode.Draft && replace ? (
+        {replace ? (
           <Button
             theme="gray"
             position="absolute"
@@ -130,12 +118,20 @@ function ImageComponent({block}: any) {
             size="$1"
             width={60}
             color="muted"
-            onPress={() => send('IMAGE.REPLACE')}
+            onPress={() =>
+              assign({
+                // name: undefined,
+                // size: 0,
+                url: '',
+                alt: '',
+                children: [],
+                content: [],
+                type: 'image',
+              } as ImageProps)}
           >
             replace
           </Button>
-        ) : null} */}
-        {/* <img src={`http://localhost:55001/ipfs/${(element as ImageType).url}`} /> */}
+        ) : null}
         <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
         {/* <XStack>
           <TextArea
@@ -166,7 +162,7 @@ function ImageComponent({block}: any) {
   )
 }
 
-function ImageForm({block, assign}: {block: any, assign: any}) {
+function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
   const [url, setUrl] = useState('');
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -241,7 +237,6 @@ function ImageForm({block, assign}: {block: any, assign: any}) {
         //@ts-ignore
         contentEditable={false}
         position="relative"
-        // borderColor={selected && focused ? '#B4D5FF' : 'transparent'}
         borderColor="transparent"
         outlineColor="transparent"
         borderWidth={0}
@@ -250,7 +245,7 @@ function ImageForm({block, assign}: {block: any, assign: any}) {
         <Popover
           placement="bottom"
           size="$5"
-          // defaultOpen={element.defaultOpen}
+          defaultOpen={boolRegex.test(block.props.defaultOpen)}
           stayInFrame
         >
           <Popover.Trigger asChild>
@@ -432,8 +427,10 @@ export const insertImage = new ReactSlashMenuItem<
 DefaultBlockSchema & { image: typeof ImageBlock }
 >(
 "Image",
-(editor: any) => {
-  editor.insertBlocks(
+// @ts-ignore
+(editor: BlockNoteEditor<typeof hdBlockSchema>) => {
+  editor.replaceBlocks(
+    [editor.getTextCursorPosition().block.id],
     [
       {
         type: "image",
@@ -442,9 +439,7 @@ DefaultBlockSchema & { image: typeof ImageBlock }
           alt: "",
         },
       },
-    ],
-    editor.getTextCursorPosition().block,
-    "after"
+    ]
   );
 },
 ["image", "img", "picture", "media"],

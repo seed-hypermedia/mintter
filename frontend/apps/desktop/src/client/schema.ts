@@ -1,7 +1,7 @@
 import {ImageBlock} from '@app/types/image'
-import {defaultBlockSchema} from '@app/blocknote-core'
+import {BlockSchema, defaultBlockSchema} from '@app/blocknote-core'
 
-export const hdBlockSchema = {
+export const hdBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
   heading: defaultBlockSchema.heading,
   image: ImageBlock,
