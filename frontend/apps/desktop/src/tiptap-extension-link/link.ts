@@ -123,10 +123,15 @@ export const Link = Mark.create<LinkOptions>({
     return [{tag: 'a[href]:not([href *= "javascript:" i])'}]
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({HTMLAttributes, mark}) {
+    const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)
+    const isHD = isMintterScheme(HTMLAttributes.href)
     return [
       'span',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      {
+        ...attrs,
+        class: `${attrs.class} ${isHD ? 'hd-link' : ''}`,
+      },
       0,
     ]
   },

@@ -58,7 +58,9 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             (hasPastedLink ? pastedLinkMarks[0].attrs.href : link?.href || null)
 
           if (pastedLink) {
-            options.editor.commands.setMark(options.type, {href: pastedLink})
+            options.editor.commands.setMark(options.type, {
+              href: pastedLink,
+            })
 
             return true
           }
@@ -77,7 +79,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           const placeholder = '...'
           options.editor.commands.insertContent(
             // we annotate with data-fresh so the link will async load the title
-            `<a href="${nativeHyperLink}" data-fresh="1">${placeholder}</a>`,
+            `<a href="${nativeHyperLink}">${placeholder}</a>`,
           )
 
           let currentBlock = findBlock(selection)

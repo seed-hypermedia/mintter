@@ -3,6 +3,11 @@
 }
 
 .ProseMirror .link {
-    color: #5c6ac4;
+    color: #454f94;
+    text-decoration: underline;
+}
+
+.ProseMirror .hd-link {
+    color: #40847a;
     text-decoration: underline;
 }
