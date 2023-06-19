@@ -1,7 +1,7 @@
 import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
 import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
 import { hdBlockSchema } from '@app/client/schema';
-import { Button, Form, Input, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
+import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
 import { ChangeEvent, useEffect, useState } from "react";
 import { RiImage2Fill } from "react-icons/ri";
 
@@ -27,51 +27,44 @@ export const ImageBlock = createReactBlockSpec({
     ),
   });
 
-type ImageProps = {
+type ImageType = {
   id: string,
-  url: string,
-  alt: string,
+  props: {
+    url: string,
+    alt: string,
+  }
   children: [],
   content: [],
   type: string,
-  defaultOpen: boolean,
 }
 
 const boolRegex = new RegExp("true");
 
 const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>) => {
-  const [image, setImage] = useState<ImageProps>({
+  const [image, setImage] = useState<ImageType>({
     // name: undefined,
     // size: 0,
     id: block.id,
-    url: block.props.url,
-    alt: block.props.alt,
+    props: {
+      url: block.props.url,
+      alt: block.props.alt,
+    },
     children: [],
     content: block.content,
     type: block.type,
-    defaultOpen: boolRegex.test(block.props.defaultOpen),
-  } as ImageProps)
+  } as ImageType)
 
   useEffect(() => {
-    if (block.props.url && !image.url) {
-      // block.name
-      //   ? setImage({
-      //       ...image,
-      //       url: block.props.url,
-      //     })
-        // : 
-      setImage({...image, url: block.props.url})
-    }
     editor.setTextCursorPosition(block.id, 'end');
   }, [])
 
-  const assignFile = (newImageProps: ImageProps) => {
-    setImage({...image, ...newImageProps})
-    editor.updateBlock(image.id, { props: { url: newImageProps.url, alt: newImageProps.alt }});
+  const assignFile = (newImage: ImageType) => {
+    setImage({...image, props: { ...image.props, ...newImage.props }})
+    editor.updateBlock(image.id, { props: { ...block.props, ...newImage.props }});
     editor.setTextCursorPosition(image.id, 'end');
   }
 
-  if (image.defaultOpen)
+  if (boolRegex.test(block.props.defaultOpen))
     editor.updateBlock(image.id, { props: { defaultOpen: "false" } })
 
   return (
@@ -79,17 +72,20 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
       borderWidth={0}
       outlineWidth={0}
     >
-      {image.url ? (
-        <ImageComponent block={block} assign={assignFile} />
-      ) : (
+      {image.props.url ? (
+        <ImageComponent block={block} editor={editor} assign={assignFile} />
+      ) : editor.isEditable ? (
         <ImageForm block={block} assign={assignFile} />
+      ) : (
+        <></>
       )}
     </YStack>
   )
 }
 
-function ImageComponent({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
+function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
+  const [caption, setCaption] = useState(block.props.alt)
 
   return (
     <div>
@@ -122,40 +118,50 @@ function ImageComponent({block, assign}: {block: Block<typeof hdBlockSchema>, as
               assign({
                 // name: undefined,
                 // size: 0,
-                url: '',
-                alt: '',
+                props: {
+                  url: '',
+                  alt: '',
+                },
                 children: [],
                 content: [],
                 type: 'image',
-              } as ImageProps)}
+              } as ImageType)}
           >
             replace
           </Button>
         ) : null}
         <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
-        {/* <XStack>
-          <TextArea
-            size="$3"
-            multiline={true}
-            width="100%"
-            placeholder="Media Caption"
-            wordWrap="break-word"
-            placeholderTextColor="grey"
-            borderWidth="$0"
-            focusStyle={{
-              outlineWidth: '$0',
-            }}
-            backgroundColor="var(--base-background-normal)"
-            // value={element.alt}
-            // onChange={() => [console.log('CHANGE CAPTION', element)]}
-            // onChangeText={(val: string) => {
-            //   console.log('CHANGE CAPTION', val)
-            //   send({type: 'CAPTION.UPDATE', value: val})
-            // }}
-            // onKeyPress={onKeyPress}
-            // disabled={editor.mode != EditorMode.Draft}
-          />
-        </XStack> */}
+        <XStack>
+          {editor.isEditable ? (
+            <TextArea
+              size="$3"
+              multiline={true}
+              width="100%"
+              placeholder="Media Caption"
+              wordWrap="break-word"
+              placeholderTextColor="grey"
+              borderWidth="$0"
+              focusStyle={{
+                outlineWidth: '$0',
+              }}
+              backgroundColor="var(--base-background-normal)"
+              value={caption}
+              onBlur={(e) => (assign({ props: { alt: caption }} as ImageType))}
+              onEndEditing={(e) => {console.log('here', e)}}
+              onChangeText={(val: string) => {
+                setCaption(val)
+              }}
+            />
+          ) : (
+            <SizableText
+              size="$3"
+              marginLeft="$3"
+              marginTop="$2"
+            >
+              {caption}
+            </SizableText>
+          )}
+        </XStack>
       </YStack>
       <InlineContent />
     </div>
@@ -181,7 +187,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             },
           )
           const data = await response.text()
-          assign({ url: data } as ImageProps)
+          assign({props: { url: data }} as ImageType)
         } catch (error) {
           console.error(error)
         }
@@ -214,7 +220,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             },
           )
           const data = await response.text()
-          assign({url: data} as ImageProps)
+          assign({props: { url: data }} as ImageType)
         } catch (error) {
           console.error(error)
         }
