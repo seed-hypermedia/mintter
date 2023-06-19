@@ -4,7 +4,7 @@ import {useState} from 'react'
 export function DevDebugData({data}: {data: any}) {
   const [debugValue, setDebugValue] = useState(false)
   return (
-    <YStack maxWidth="500px" marginHorizontal="auto">
+    <YStack maxWidth="500px" marginHorizontal="auto" marginVertical="200px">
       <Button
         size="$1"
         theme="gray"

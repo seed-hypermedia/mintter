@@ -1,13 +1,19 @@
+.editor {
+  max-width: 68ch;
+  margin: 40px auto;
+  width: 90%;
+}
+
 .ProseMirror {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .ProseMirror .link {
-    color: #454f94;
-    text-decoration: underline;
+  color: #454f94;
+  text-decoration: underline;
 }
 
 .ProseMirror .hd-link {
-    color: #40847a;
-    text-decoration: underline;
+  color: #40847a;
+  text-decoration: underline;
 }
