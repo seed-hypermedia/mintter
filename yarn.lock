@@ -4410,6 +4410,7 @@ __metadata:
     "@tiptap/extension-underline": ^2.0.3
     "@tiptap/pm": ^2.0.3
     "@tiptap/react": ^2.0.3
+    "@tiptap/suggestion": ^2.0.3
     "@types/autosize": 4.0.1
     "@types/hast": 2.3.4
     "@types/is-hotkey": 0.1.7
@@ -7981,6 +7982,16 @@ __metadata:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
   checksum: 904878c4039e0c065f82f44cf8704c942028615af95449e93ed3ed21b08a90852f5bcf8abcda4e6ea217ee0d2fb1a8e0b9e29a524daa5ed4a88eaea7c73c5568
+  languageName: node
+  linkType: hard
+
+"@tiptap/suggestion@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@tiptap/suggestion@npm:2.0.3"
+  peerDependencies:
+    "@tiptap/core": ^2.0.0
+    "@tiptap/pm": ^2.0.0
+  checksum: a9f4507c9a558783ca45634fb61462760a8734e9f4b73c0f60297568fbb48d4effb9c39144816a41e18fb123585d40f311b3b8ad26eeb191ecd659f8d0b3bdcc
   languageName: node
   linkType: hard
 

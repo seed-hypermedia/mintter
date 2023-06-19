@@ -65,6 +65,7 @@
     "@tiptap/extension-underline": "^2.0.3",
     "@tiptap/pm": "^2.0.3",
     "@tiptap/react": "^2.0.3",
+    "@tiptap/suggestion": "^2.0.3",
     "@types/lodash.debounce": "4.0.7",
     "@types/uuid": "^9.0.2",
     "@xstate/react": "3.2.1",

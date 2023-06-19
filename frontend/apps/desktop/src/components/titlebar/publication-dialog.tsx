@@ -42,7 +42,6 @@ function PublishDialogForm({
 
   const {data: draft} = useDraft({
     documentId: draftId,
-    routeKey: route.key, //??? what is this
   })
   const init = useMemo(() => {
     const title = draft?.title

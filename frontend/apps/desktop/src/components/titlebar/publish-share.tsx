@@ -1,16 +1,12 @@
 import {MINTTER_GATEWAY_URL} from '@app/constants'
 import {
+  EditorDraftState,
   useDraft,
   usePublication,
   usePublishDraft,
   useWriteDraftWebUrl,
 } from '@app/models/documents'
-import {
-  useDocPublications,
-  useDocRepublish,
-  useSiteList,
-  useSitePublishDraft,
-} from '@app/models/sites'
+import {useDocPublications, useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
@@ -21,7 +17,6 @@ import {
   Button,
   Check,
   ChevronDown,
-  Container,
   Copy,
   ExternalLink,
   Globe,
@@ -35,7 +30,7 @@ import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
 import {Tooltip} from '@components/tooltip'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {CheckCheck, FileCheck, FileUp, Upload} from '@tamagui/lucide-icons'
+import {Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
 import {getDocUrl} from '@app/utils/doc-url'
 import {MintterIcon} from '@components/mintter-icon'
@@ -145,26 +140,11 @@ function PublishButtons({
   )
 }
 
-function PublishShareContent({
-  docId,
-  publications,
-  onPublish,
-  publication,
+function DraftPublicationDialog({
+  draft,
 }: {
-  docId?: string
-  publications: UseQueryResult<WebPublicationRecord[]>
-  onPublish: (hostname: string) => void
-  publication?: Publication
+  draft?: EditorDraftState | undefined
 }) {
-  return (
-    <>
-      {docId && <PublishedURLs publications={publications} doc={publication} />}
-      <PublishButtons publications={publications.data} onPublish={onPublish} />
-    </>
-  )
-}
-
-function DraftPublicationDialog({draft}: {draft?: Document | undefined}) {
   const sites = useSiteList()
   const sitesList = sites.data || []
   const foundSiteHostname = sitesList.find(
@@ -263,7 +243,6 @@ function DraftPubDropdown() {
       : undefined
   const {data: draft} = useDraft({
     documentId,
-    routeKey: route.key,
     enabled: route.key == 'draft' && !!documentId,
   })
 
@@ -354,7 +333,6 @@ export function PublishShareButton() {
   const pub = route.key === 'publication' ? loadedPub : undefined
   const {data: draft} = useDraft({
     documentId,
-    routeKey: route.key,
     enabled: route.key == 'draft' && !!documentId,
   })
   const draftId = route.key == 'draft' ? route.draftId : undefined

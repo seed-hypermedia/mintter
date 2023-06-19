@@ -123,20 +123,11 @@ export function useDeletePublication(
 
 export function useDraft({
   documentId,
-  routeKey,
   ...options
-}: UseQueryOptions<Document> & {
+}: UseQueryOptions<EditorDraftState> & {
   documentId?: string
-  routeKey: NavRoute['key']
 }) {
-  return useQuery({
-    queryKey: [queryKeys.GET_DRAFT, documentId],
-    enabled: routeKey == 'draft' && !!documentId,
-    queryFn: () => {
-      return draftsClient.getDraft({documentId: documentId})
-    },
-    ...options,
-  })
+  return useQuery(getDraftQuery(documentId, options))
 }
 
 function queryPublication(
@@ -218,6 +209,8 @@ export function usePublishDraft(
       draftId: string
       webPub: WebPublicationRecord | undefined
     }) => {
+      console.log('Hello usePublishDraft', {webPub, draftId})
+
       const pub = await draftsClient.publishDraft({documentId: draftId})
       const doc = pub.document
       if (webPub && doc && webPub.hostname === pub.document?.webUrl) {
@@ -262,7 +255,8 @@ export function usePublishDraft(
   })
 }
 
-type DraftState = {
+export type EditorDraftState = {
+  id: string
   children: PartialBlock<typeof hdBlockSchema>[]
   title: string
   changes: DraftChangesState
@@ -270,9 +264,9 @@ type DraftState = {
 }
 
 export function useDraftTitle(
-  input: UseQueryOptions<DraftState> & {documentId: string},
+  input: UseQueryOptions<EditorDraftState> & {documentId: string},
 ) {
-  let data = useCacheListener<DraftState>([
+  let data = useCacheListener<EditorDraftState>([
     queryKeys.EDITOR_DRAFT,
     input.documentId,
   ])
@@ -299,7 +293,7 @@ export function getTitleFromContent(children: HDBlock[]): string {
   return getTitleFromInline(topChild.content)
 }
 
-export function getDocumentTitle(doc?: DraftState) {
+export function getDocumentTitle(doc?: EditorDraftState) {
   let titleText = doc?.title || ''
   return titleText
     ? titleText.length < 50
@@ -312,6 +306,7 @@ type DraftChangesState = {
   moves: MoveBlockAction[]
   changed: Set<string>
   deleted: Set<string>
+  webUrl?: string
 }
 
 type MoveBlockAction = {
@@ -359,6 +354,40 @@ type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
 //   return state
 // }
 
+function getDraftQuery(
+  documentId: string | undefined,
+  opts?: UseQueryOptions<EditorDraftState>,
+) {
+  const {enabled = true, ...restOpts} = opts || {}
+  return {
+    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
+    queryFn: async () => {
+      const serverDraft = await draftsClient.getDraft({
+        documentId,
+      })
+      let debugExampleDoc = null
+      // debugExampleDoc = examples.twoParagraphs // comment me out before committing, thankyouu
+      const topChildren = serverChildrenToEditorChildren(
+        (debugExampleDoc || serverDraft).children,
+      )
+      const draftState: EditorDraftState = {
+        children: topChildren,
+        changes: {
+          changed: new Set<string>(),
+          deleted: new Set<string>(),
+          moves: [],
+        },
+        webUrl: serverDraft.webUrl,
+        title: serverDraft.title,
+        id: serverDraft.id,
+      }
+      return draftState
+    },
+    enabled: !!documentId && enabled,
+    ...restOpts,
+  }
+}
+
 export function useDraftEditor(
   documentId?: string,
   opts?: {onEditorState?: (v: any) => void},
@@ -368,11 +397,10 @@ export function useDraftEditor(
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       if (!editor) return
-      const draftState: DraftState | undefined = appQueryClient.getQueryData([
-        queryKeys.EDITOR_DRAFT,
-        documentId,
-      ])
+      const draftState: EditorDraftState | undefined =
+        appQueryClient.getQueryData([queryKeys.EDITOR_DRAFT, documentId])
       if (!draftState) return
+
       const {changed, moves, deleted} = draftState.changes
       const newTitle = getTitleFromContent(editor.topLevelBlocks)
       const changes: Array<DocumentChange> = [
@@ -430,7 +458,7 @@ export function useDraftEditor(
 
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
-        (state: DraftState | undefined) => {
+        (state: EditorDraftState | undefined) => {
           if (!state) return undefined
           return {
             ...state,
@@ -524,7 +552,7 @@ export function useDraftEditor(
 
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
-        (state: DraftState | undefined) => {
+        (state: EditorDraftState | undefined) => {
           if (!state) {
             console.warn('no editor state yet!')
             return
@@ -564,43 +592,21 @@ export function useDraftEditor(
     slashCommands: [...defaultReactSlashMenuItems, insertImage],
   })
 
-  const draft = useQuery({
-    enabled: !!editor,
-    queryKey: [queryKeys.EDITOR_DRAFT, documentId],
-    queryFn: async () => {
-      if (!editor) throw new Error('editor unavailable from draftQuery')
-      const serverDraft = await draftsClient.getDraft({
-        documentId,
-      })
-      let debugExampleDoc = null
-      // debugExampleDoc = examples.twoParagraphs // comment me out before committing, thankyouu
-      const topChildren = serverChildrenToEditorChildren(
-        (debugExampleDoc || serverDraft).children,
-      )
-      const draftState: DraftState = {
-        children: topChildren,
-        changes: {
-          changed: new Set<string>(),
-          deleted: new Set<string>(),
-          moves: [],
-        },
-        webUrl: serverDraft.webUrl,
-        title: getTitleFromContent(editor.topLevelBlocks),
-      }
-      return draftState
-    },
-    onSuccess: (draft: DraftState) => {
-      readyThings.current[1] = draft
-      handleMaybeReady()
-    },
-  })
+  const draft = useQuery(
+    getDraftQuery(documentId, {
+      enabled: !!editor,
+      onSuccess: (draft: EditorDraftState) => {
+        readyThings.current[1] = draft
+        handleMaybeReady()
+      },
+    }),
+  )
 
   // both the publication data and the editor are asyncronously loaded
   // using a ref to avoid extra renders, and ensure the editor is available and ready
-  const readyThings = useRef<[HyperDocsEditor | null, DraftState | null]>([
-    null,
-    draft.data || null,
-  ])
+  const readyThings = useRef<[HyperDocsEditor | null, EditorDraftState | null]>(
+    [null, draft.data || null],
+  )
 
   return {
     editor,
@@ -618,21 +624,19 @@ export function useWriteDraftWebUrl(draftId?: string) {
       let title: string
 
       appQueryClient.setQueryData(
-        [queryKeys.GET_DRAFT, draftId],
-        (draft: Document | undefined) => {
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (draft: EditorDraftState | undefined) => {
           if (!draft) return undefined
-          return new Document({
+          return {
             ...draft,
             webUrl,
-          })
+          }
         },
       )
     },
     mutationFn: async (webUrl: string) => {
-      const draftData: DraftState | undefined = appQueryClient.getQueryData([
-        queryKeys.EDITOR_DRAFT,
-        draftId,
-      ])
+      const draftData: EditorDraftState | undefined =
+        appQueryClient.getQueryData([queryKeys.EDITOR_DRAFT, draftId])
       if (!draftData) {
         throw new Error(
           'failed to access editor from useWriteDraftWebUrl mutation',
@@ -641,12 +645,27 @@ export function useWriteDraftWebUrl(draftId?: string) {
       await draftsClient.updateDraft({
         documentId: draftId,
         // changes: draftData.changes,
-        changes: [],
+        changes: [
+          new DocumentChange({
+            op: {
+              case: 'setWebUrl',
+              value: webUrl,
+            },
+          }),
+        ],
       })
 
-      appInvalidateQueries([draftId])
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       return null
+    },
+    onSuccess: (response, webUrl) => {
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (draft: EditorDraftState | undefined) => {
+          if (!draft) return draft
+          return {...draft, webUrl}
+        },
+      )
     },
   })
 }
