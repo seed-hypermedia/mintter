@@ -1,7 +1,6 @@
-import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 import {InlineContent, PartialBlock, StyledText} from '@app/blocknote-core'
+import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 import {hdBlockSchema} from './schema'
-import {s} from '@tauri-apps/api/event-2a9960e7'
 
 function areStylesEqual(
   styles1: InternalAnnotation | null,
@@ -39,6 +38,10 @@ function annotationStyle(a: Annotation): InternalAnnotation {
   if (annotation.type === 'code') {
     return {code: true}
   }
+
+  // if (annotation.type === 'embed') {
+  //   return {embed: annotation.ref}
+  // }
   return {}
 }
 
@@ -85,6 +88,7 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
     inlines.push({
       type: 'link',
       href: a.ref,
+      // @ts-expect-error
       content: getSlicedContent(linkStart, linkEnd),
     })
 
@@ -104,7 +108,7 @@ export function partialBlockToStyledText({
 }: {
   text: string
   annotations: Annotation[]
-}): StyledText[] {
+}): InlineContent[] {
   if (!text) text = ''
   const stylesForIndex: (InternalAnnotation | null)[] = Array(text.length).fill(
     null,
@@ -139,6 +143,7 @@ export function partialBlockToStyledText({
         type: 'text',
         styles: currentStyles || {},
       })
+
       currentText = text[i]
       currentStyles = stylesForIndex[i]
     }
@@ -236,11 +241,9 @@ export function serverChildrenToEditorChildren(
         type: 'image',
         id: serverBlock.block.id,
         props: {
-          url:
-            getCIDFromIPFSUrl(serverBlock.block.ref) ||
-            '',
+          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
           alt: serverBlock.block.attributes.alt,
-          defaultOpen: "false",
+          defaultOpen: 'false',
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',

@@ -28,6 +28,7 @@ describe('Editor to Server: ', () => {
         ],
       })
     })
+
     test('single annotation', () => {
       const extracted = extractContent([
         {type: 'text', text: 'Hello ', styles: {}},
@@ -45,7 +46,7 @@ describe('Editor to Server: ', () => {
         ],
       })
     })
-    test.only('simple marks kitchen sink', () => {
+    test('simple marks kitchen sink', () => {
       const extracted = extractContent([
         {text: '0', type: 'text', styles: {bold: true}},
         {text: '1', type: 'text', styles: {italic: true}},
@@ -96,6 +97,28 @@ describe('Editor to Server: ', () => {
       })
     })
   })
+
+  // describe('Extract embed content', () => {
+  //   test('single embed', () => {
+  //     const extracted = extractContent([
+  //       {type: 'text', text: 'Hello', styles: {}},
+  //       {type: 'embed', ref: 'hd://foobar'},
+  //     ])
+
+  //     expect(extracted).toEqual({
+  //       text: 'Hello ',
+  //       annotations: [
+  //         {
+  //           type: 'embed',
+  //           ref: 'hd://foobar',
+  //           starts: [5],
+  //           ends: [6],
+  //           attributes: {},
+  //         },
+  //       ],
+  //     })
+  //   })
+  // })
 })
 describe('editorBlockToServerBlock', () => {
   describe('Image block: ', () => {
@@ -126,4 +149,30 @@ describe('editorBlockToServerBlock', () => {
       )
     })
   })
+
+  // describe('Embed block: ', () => {
+  //   test('a embed', () => {
+  //     const eBlock = editorBlockToServerBlock({
+  //       id: 'abc',
+  //       type: 'embedBlock',
+  //       children: [],
+  //       content: [],
+  //       props: {
+  //         ref: 'hd://foobar',
+  //         // TODO: remove this garbage for image props
+  //         backgroundColor: 'default',
+  //         textColor: 'default',
+  //         textAlignment: 'left',
+  //       },
+  //     })
+  //     expect(eBlock).toEqual(
+  //       new Block({
+  //         id: 'abc',
+  //         type: 'embedBlock',
+  //         attributes: {},
+  //         ref: 'hd://foobar',
+  //       }),
+  //     )
+  //   })
+  // })
 })

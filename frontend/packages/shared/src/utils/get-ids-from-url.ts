@@ -7,6 +7,7 @@ export function getIdsfromUrl(
   version: string | undefined,
   blockId: string | undefined,
 ] {
+  console.log('embed ~ restUrl:', entry)
   if (
     entry.startsWith('https://mintter.com/p') ||
     entry.startsWith('https://www.mintter.com/p')
@@ -27,6 +28,7 @@ export function getIdsfromUrl(
   }
 
   const [, restUrl] = entry.split(HYPERDOCS_LINK_PREFIX)
+  console.log('🚀 ~ file: embed ~ restUrl:', restUrl)
 
   if (restUrl.length <= 3) {
     return [undefined, undefined, undefined]

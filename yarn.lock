@@ -4403,6 +4403,7 @@ __metadata:
     "@tiptap/extension-gapcursor": ^2.0.3
     "@tiptap/extension-hard-break": ^2.0.3
     "@tiptap/extension-history": ^2.0.3
+    "@tiptap/extension-image": ^2.0.3
     "@tiptap/extension-italic": ^2.0.3
     "@tiptap/extension-link": ^2.0.3
     "@tiptap/extension-strike": ^2.0.3
@@ -7891,6 +7892,15 @@ __metadata:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
   checksum: 2a9bb3e9bd713f80c13f4221585991d5dfbe7ef75becbd1af09787fc39cb1495cab4ac1bb8705d22c1b4e1fa986af7a6687fe72976298e9fc87594b7f59fa9c9
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-image@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@tiptap/extension-image@npm:2.0.3"
+  peerDependencies:
+    "@tiptap/core": ^2.0.0
+  checksum: cfb4f94b4061fb6fcab6358700ded0f4c742a94dbbaa3419e75b7c58adeb07d73fe8fbac8604dfc41b0827de8ad4d0e80eb1f0f6b63edf66c64e18d727710c39
   languageName: node
   linkType: hard
 

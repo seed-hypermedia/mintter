@@ -326,4 +326,55 @@ describe('Editor: ', () => {
       ])
     })
   })
+
+  // describe('Server Embed to Block Editor', () => {
+  //   test('simple embed', () => {
+  //     const result: InlineContent[] = serverBlockToEditorInline(
+  //       new Block({
+  //         text: ' ',
+  //         annotations: [
+  //           {
+  //             type: 'embed',
+  //             ref: 'hd://foobar',
+  //             starts: [0],
+  //             ends: [1],
+  //           },
+  //         ],
+  //       }),
+  //     )
+  //     expect(result).toEqual([{type: 'embed', ref: 'hd://foobar'}])
+  //   })
+
+  //   test('overlapping annotations + embed', () => {
+  //     const result: InlineContent[] = serverBlockToEditorInline(
+  //       new Block({
+  //         text: 'ABC DE',
+  //         annotations: [
+  //           {
+  //             type: 'strong',
+  //             starts: [1],
+  //             ends: [3],
+  //           },
+  //           {
+  //             type: 'embed',
+  //             ref: 'hd://foobar',
+  //             starts: [3],
+  //             ends: [4],
+  //           },
+  //           {
+  //             type: 'emphasis',
+  //             starts: [4],
+  //             ends: [6],
+  //           },
+  //         ],
+  //       }),
+  //     )
+  //     expect(result).toEqual([
+  //       {text: 'A', type: 'text', styles: {}},
+  //       {text: 'BC', type: 'text', styles: {bold: true}},
+  //       {type: 'embed', ref: 'hd://foobar'},
+  //       {text: 'DE', type: 'text', styles: {italic: true}},
+  //     ])
+  //   })
+  // })
 })

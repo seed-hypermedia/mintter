@@ -1,4 +1,5 @@
 import {
+  Annotation,
   Block as ServerBlock,
   ColorAnnotation,
   InlineEmbedAnnotation,
@@ -47,6 +48,19 @@ export function extractContent(content: InlineContent[]): {
       })
       charIndex += linkLength
     } else {
+      // if (inline.type == 'embed') {
+      //   const inlineLength = 1
+      //   annotations.push({
+      //     type: 'embed',
+      //     ref: inline.ref,
+      //     starts: [charIndex],
+      //     ends: [charIndex + inlineLength],
+      //     attributes: {},
+      //   })
+
+      //   text += ' '
+      //   charIndex++
+      // } else {
       const {styles} = inline
       const inlineLength = inline.text.length
 
@@ -75,6 +89,7 @@ export function extractContent(content: InlineContent[]): {
 
       text += inline.text
       charIndex += inlineLength
+      // }
     }
   })
 
@@ -121,6 +136,24 @@ export function editorBlockToServerBlock(
         alt: editorBlock.props.alt,
       },
       ref: `ipfs://${editorBlock.props.url}`, // currently the url is always an ipfs url
+    })
+  }
+
+  if (editorBlock.type == 'embedBlock') {
+    return new ServerBlock({
+      id: editorBlock.id,
+      type: 'embedBlock',
+      ref: editorBlock.props.ref,
+      text: ' ',
+      annotations: [
+        new Annotation({
+          type: 'embed',
+          starts: [0],
+          ends: [1],
+          ref: editorBlock.props.ref,
+          attributes: {},
+        }),
+      ],
     })
   }
   throw new Error('not implemented')

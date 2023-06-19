@@ -172,7 +172,7 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
       }),
     )
   }
-  console.log('BlockNoteExtensions', opts)
+
   ret.push(
     HyperlinkMark.configure({
       hyperlinkToolbarFactory: opts.uiFactories.hyperlinkToolbarFactory,

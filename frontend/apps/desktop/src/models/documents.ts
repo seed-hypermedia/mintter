@@ -503,7 +503,6 @@ export function useDraftEditor(
 
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
-      console.log('editor content change', editor.topLevelBlocks)
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!readyThings.current[0] || !readyThings.current[1]) return
 
@@ -518,6 +517,22 @@ export function useDraftEditor(
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
+          let isEmbedBlock = isContentEmbed(block)
+          if (isEmbedBlock) {
+            editor.updateBlock(block, {
+              type: 'embedBlock',
+              content: [
+                {
+                  type: 'text',
+                  text: ' ',
+                  styles: {},
+                },
+              ],
+              props: {
+                ref: isEmbedBlock,
+              },
+            })
+          }
           possiblyRemovedBlockIds.delete(block.id)
           const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
           if (
@@ -755,5 +770,19 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     ...pub,
     editor,
     isLoading: pub.isLoading || editor === null,
+  }
+}
+
+function isContentEmbed(block: any) {
+  if (block.content.length == 1) {
+    let leaf = block.content[0]
+
+    if (leaf.type == 'link' && leaf.href.startsWith('hd://')) {
+      return leaf.href
+    } else {
+      return false
+    }
+  } else {
+    return false
   }
 }

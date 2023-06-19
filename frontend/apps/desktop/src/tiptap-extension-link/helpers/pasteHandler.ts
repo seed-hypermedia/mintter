@@ -1,3 +1,5 @@
+import {insertBlocks} from '@app/blocknote-core/api/blockManipulation/blockManipulation'
+import {findBlock} from '@app/blocknote-core/extensions/Blocks/helpers/findBlock'
 import {
   isMintterGatewayLink,
   isMintterScheme,
@@ -77,6 +79,23 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             // we annotate with data-fresh so the link will async load the title
             `<a href="${nativeHyperLink}" data-fresh="1">${placeholder}</a>`,
           )
+
+          let currentBlock = findBlock(selection)
+          if (currentBlock) {
+            console.log('PASTE BLOCK HERE', currentBlock, options.editor)
+            // insertBlocks(
+            //   [
+            //     {
+            //       type: 'embedBlock',
+            //       ref: nativeHyperLink,
+            //     },
+            //   ],
+            //   currentBlock.node.attrs.id,
+            //   'after',
+            //   options.editor,
+            // )
+          }
+
           // const {$from, $to} = selection
           // const schema = view.state.schema
           // setTimeout(() => {
