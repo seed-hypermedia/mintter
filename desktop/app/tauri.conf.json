@@ -78,7 +78,7 @@
       "http": {
         "all": false,
         "request": true,
-        "scope": ["https://**/*", "http://**/*"] 
+        "scope": ["https://**/*", "http://**/*"]
       },
       "fs": {
         "all": false,
@@ -100,7 +100,8 @@
     ],
     "security": {
       "csp": {
-        "default-src": "'none'",
+        "font-src": "'self'",
+        "default-src": "'self'",
         "script-src": "'unsafe-eval'",
         "style-src": "'self' 'unsafe-inline'",
         "connect-src": "'self' http://localhost:55001 wss://*",
