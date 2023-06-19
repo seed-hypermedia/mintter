@@ -40,6 +40,11 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
+import {
+  isMintterGatewayLink,
+  isMintterScheme,
+  normalizeMintterLink,
+} from '@app/utils/mintter-link'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -517,8 +522,8 @@ export function useDraftEditor(
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
-          let isEmbedBlock = isContentEmbed(block)
-          if (isEmbedBlock) {
+          let embedRef = extractEmbedRefOfLink(block)
+          if (embedRef) {
             editor.updateBlock(block, {
               type: 'embedBlock',
               content: [
@@ -529,7 +534,7 @@ export function useDraftEditor(
                 },
               ],
               props: {
-                ref: isEmbedBlock,
+                ref: embedRef,
               },
             })
           }
@@ -773,16 +778,16 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
   }
 }
 
-function isContentEmbed(block: any) {
+function extractEmbedRefOfLink(block: any): false | string {
   if (block.content.length == 1) {
     let leaf = block.content[0]
 
-    if (leaf.type == 'link' && leaf.href.startsWith('hd://')) {
-      return leaf.href
-    } else {
-      return false
+    if (leaf.type == 'link') {
+      if (isMintterGatewayLink(leaf.href) || isMintterScheme(leaf.href)) {
+        const hdLink = normalizeMintterLink(leaf.href)
+        if (hdLink) return hdLink
+      }
     }
-  } else {
-    return false
   }
+  return false
 }
