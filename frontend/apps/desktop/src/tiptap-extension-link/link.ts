@@ -1,5 +1,10 @@
+import {HyperDocsEditor} from '@app/models/documents'
+import {toast} from '@app/toast'
+import {isMintterScheme} from '@app/utils/mintter-link'
 import {Mark, mergeAttributes} from '@tiptap/core'
-import {Plugin} from '@tiptap/pm/state'
+import {Plugin, Transaction} from '@tiptap/pm/state'
+import {AddMarkStep} from '@tiptap/pm/transform'
+import {Editor} from '@tiptap/react'
 import {registerCustomProtocol, reset} from 'linkifyjs'
 
 import {autolink} from './helpers/autolink'
@@ -88,6 +93,35 @@ export const Link = Mark.create<LinkOptions>({
 
   inclusive() {
     return this.options.autolink
+  },
+
+  // @ts-ignore
+  onUpdate({editor, transaction}: {editor: Editor; transaction: Transaction}) {
+    // @ts-ignore
+    const addMarkStep: AddMarkStep = transaction.steps.find(
+      // @ts-ignore
+      (step) => step.jsonID === 'addMark',
+    )
+    if (!addMarkStep) return
+    const newMark = addMarkStep?.mark
+    const newHref = newMark?.attrs?.href
+    console.log('transaction', transaction)
+
+    toast.success('link updated. detected')
+    setTimeout(() => {
+      toast.success('trying to upgrade link to hd://')
+      editor
+        .chain()
+        .unsetMark(
+          // @ts-expect-error
+          this.name,
+          // {extendEmptyMarkRange: true}
+        )
+        // @ts-expect-error
+        .setMark(this.name, {href: 'hd://fml'})
+        .setMeta('preventAutolink', true)
+        .run()
+    }, 500)
   },
 
   addOptions() {
