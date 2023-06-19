@@ -106,7 +106,7 @@ do
     do
         echo "  - $line"
     done < "${workspace}/.env"
-    read -p "Do you want to use(u) those those params or edit(e) them before update(u/e)?" response
+    read -p "Do you want to use(u) those params or edit(e) them before update(u/e)?" response
     if [ "$response" = "u" ]; then
         mkdir -p ${workspace}/proxy
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml

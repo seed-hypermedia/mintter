@@ -47,6 +47,7 @@ services:
     container_name: minttersite
     ports:
       - '56000:56000'
+      - '56002:56002'
     networks:
       - internal_network
     volumes:
@@ -58,6 +59,7 @@ services:
       - '-p2p.port=56000'
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
+      - '-site.no-auth'
       - '-p2p.public-reachability'
       - '-p2p.no-private-ips'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'

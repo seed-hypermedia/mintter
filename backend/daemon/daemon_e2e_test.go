@@ -153,7 +153,9 @@ func TestSite(t *testing.T) {
 	siteCfg := makeTestConfig(t)
 	siteCfg.Site.Hostname = "http://127.0.0.1:59011"
 	siteCfg.HTTPPort = 59011
+	siteCfg.GRPCPort = mttnet.GRPCPort
 	siteCfg.Identity.NoAccountWait = true
+	siteCfg.Site.NoAuth = true
 	siteCfg.Site.Title = "initial Site Title"
 	siteCfg.Site.OwnerID = owner.Me.MustGet().Account().String()
 	siteCfg.P2P.NoListing = true
@@ -212,7 +214,11 @@ func TestSite(t *testing.T) {
 	const newTitle = "new title"
 	const newDescription = " new brief description"
 	_, err = editor.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
-	require.Error(t, err)
+	if siteCfg.Site.NoAuth {
+		require.NoError(t, err)
+	} else {
+		require.Error(t, err)
+	}
 
 	// Change site info by the owner shouldn't fail
 	siteInfo, err = owner.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
