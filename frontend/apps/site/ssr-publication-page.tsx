@@ -1,4 +1,4 @@
-import {Account, blockNodeToSlate, SiteInfo} from '@mintter/shared'
+import {Account, SiteInfo} from '@mintter/shared'
 import {
   ArticleContainer,
   Container,
@@ -17,9 +17,6 @@ import {PublicationMetadata} from './author'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
-import {SlateReactPresentation} from './slate-react-presentation'
-import {useRenderElement} from './slate-react-presentation/render-element'
-import {useRenderLeaf} from './slate-react-presentation/render-leaf'
 import {JsonValue} from '@bufbuild/protobuf'
 import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from 'trpc'
@@ -64,30 +61,32 @@ function preparePublicationData(
   }
 }
 
+function PublicationContent({
+  publication,
+}: {
+  publication: Publication | undefined
+}) {
+  return <span>{JSON.stringify(publication)}</span>
+}
+
 export default function PublicationPage({
   metadata = true,
   ...props
 }: PublicationPageProps) {
   const {publication, siteInfo, editors} = preparePublicationData(props)
   let media = useMedia()
-  const renderElement = useRenderElement()
-  const renderLeaf = useRenderLeaf()
   const {documentId} = props
   const loadedPublication = trpc.publication.get.useQuery({
     documentId: props.documentId,
     versionId: props.version || undefined,
   })
 
-  const {slateChildren, displayPub} = useMemo(() => {
+  const {displayPub} = useMemo(() => {
     const loadedPub = loadedPublication.data?.publication
       ? Publication.fromJson(loadedPublication.data.publication)
       : null
     const displayPub = loadedPub || publication
-    const blockChildren = displayPub?.document?.children
-    const slateChildren = blockChildren
-      ? blockNodeToSlate(blockChildren, 'group')
-      : undefined
-    return {slateChildren, displayPub}
+    return {displayPub}
   }, [loadedPublication.data, publication])
 
   return (
@@ -118,12 +117,8 @@ export default function PublicationPage({
             paddingRight={media.gtSm ? '$4' : 0}
           >
             <MainContainer flex={3}>
-              {slateChildren ? (
-                <SlateReactPresentation
-                  value={[slateChildren]}
-                  renderElement={renderElement}
-                  renderLeaf={renderLeaf}
-                />
+              {displayPub ? (
+                <PublicationContent publication={displayPub} />
               ) : loadedPublication.isLoading ? (
                 <YStack>
                   <Header>Querying for document on the network.</Header>
@@ -137,7 +132,7 @@ export default function PublicationPage({
               {metadata ? (
                 <>
                   <PublicationMetadata
-                    publication={displayPub}
+                    publication={displayPub || undefined}
                     editors={editors || []}
                   />
                   {editors?.length && documentId ? (
