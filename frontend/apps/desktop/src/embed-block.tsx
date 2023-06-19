@@ -14,6 +14,8 @@ import {usePublication} from './models/documents'
 import {getCIDFromIPFSUrl} from './utils/ipfs-cid'
 import {serverBlockToEditorInline} from './client/server-to-editor'
 import {InlineContent} from '@app/blocknote-core'
+import {isMintterScheme} from './utils/mintter-link'
+import {openUrl} from './utils/open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   return (
@@ -46,16 +48,19 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
             </Text>
           )
         }
-        if (content.type === 'link')
+        if (content.type === 'link') {
           return (
             <span
-              className="hd-link"
-              onClick={() => {}}
+              className={isMintterScheme(content.href) ? 'hd-link' : 'link'}
+              onClick={() => {
+                openUrl(content.href, true)
+              }}
               style={{cursor: 'pointer'}}
             >
               <InlineContentView inline={content.content} />
             </span>
           )
+        }
         return null
       })}
     </>
@@ -100,6 +105,31 @@ function StaticBlock({block}: {block: ServerBlock}) {
   return <span>mystery block 👻</span>
 }
 
+function EmbedPresentation({reference}: {reference: string}) {
+  let embed = useEmbed(reference)
+
+  return (
+    <div
+      data-ref={reference}
+      style={{userSelect: 'none'}}
+      contentEditable={false}
+    >
+      <YStack
+        backgroundColor="#d8ede7"
+        borderColor="#95bfb4"
+        borderWidth={1}
+        padding="$4"
+        paddingVertical="$2"
+        borderRadius="$4"
+      >
+        {embed.content?.map((block) => (
+          <StaticBlockNode block={block} />
+        ))}
+      </YStack>
+    </div>
+  )
+}
+
 function StaticBlockNode({block}: {block: BlockNode}) {
   const children =
     block.children.length > 0 ? (
@@ -129,39 +159,15 @@ export const EmbedBlock = createReactBlockSpec({
   atom: true,
 
   render: ({block}) => {
-    let embed = useEmbed(block.props.ref)
-    console.log('=', embed, block)
-    return (
-      <div
-        data-ref={block.props.ref}
-        style={{userSelect: 'none'}}
-        contentEditable={false}
-      >
-        <YStack
-          backgroundColor="#d8ede7"
-          borderColor="#95bfb4"
-          borderWidth={1}
-          padding="$4"
-          paddingVertical="$2"
-          borderRadius="$4"
-        >
-          {embed.content?.map((block) => (
-            <StaticBlockNode block={block} />
-          ))}
-        </YStack>
-      </div>
-    )
+    return <EmbedPresentation reference={block.props.ref} />
   },
 })
 
 function useEmbed(ref: string): ReturnType<typeof usePublication> & {
   content?: BlockNode[] & PartialMessage<BlockNode>[]
 } {
-  // get the linked publication
-  // filter the block
-  // return the string
   let [documentId, versionId, blockId] = getIdsfromUrl(ref)
-  console.log('HELLOOOO', {documentId, versionId, blockId})
+
   let pubQuery = usePublication({
     documentId,
     versionId,
@@ -177,28 +183,29 @@ function useEmbed(ref: string): ReturnType<typeof usePublication> & {
       : null
 
     const embedBlocks = selectedBlock ? [selectedBlock] : data.document.children
-
     return {...pubQuery, content: embedBlocks}
-  }, [pubQuery.data])
+  }, [pubQuery.data, blockId])
 }
 
 function getBlockNodeById(
   blocks: Array<BlockNode>,
   blockId: string,
 ): BlockNode | null {
+  if (!blockId) return null
+
   let res: BlockNode | undefined
-  for (const bn of blocks) {
+  blocks.find((bn) => {
     if (bn.block?.id == blockId) {
       res = bn
-      return res
+      return true
     } else if (bn.children.length) {
-      return getBlockNodeById(bn.children, blockId)
+      const foundChild = getBlockNodeById(bn.children, blockId)
+      if (foundChild) {
+        res = foundChild
+        return true
+      }
     }
-  }
-
-  if (!res) {
-    return null
-  }
-
-  return res
+    return false
+  })
+  return res || null
 }
