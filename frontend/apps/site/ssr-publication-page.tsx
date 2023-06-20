@@ -9,6 +9,7 @@ import {
   isMintterScheme,
   getCIDFromIPFSUrl,
   serverBlockToEditorInline,
+  getIdsfromUrl,
 } from '@mintter/shared'
 import {
   ArticleContainer,
@@ -37,7 +38,15 @@ import {
 } from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from 'trpc'
 import {useMemo} from 'react'
-import Image from 'next/image'
+
+function hdLinkToSitePath(link: string) {
+  const [docId, version, block] = getIdsfromUrl(link)
+  if (!docId) return link
+  let path = `/p/${docId}`
+  if (version) path += `?v=${version}`
+  if (block) path += `#${block}`
+  return path
+}
 
 export type PublicationPageProps = {
   documentId: string
@@ -205,18 +214,18 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           )
         }
         if (content.type === 'link') {
+          const href = isMintterScheme(content.href)
+            ? hdLinkToSitePath(content.href)
+            : content.href
           return (
-            <span
+            <a
+              href={href}
               key={index}
               className={isMintterScheme(content.href) ? 'hd-link' : 'link'}
-              onClick={() => {
-                // @ts-expect-error
-                window.location = content.href
-              }}
               style={{cursor: 'pointer'}}
             >
               <InlineContentView inline={content.content} />
-            </span>
+            </a>
           )
         }
         return null
