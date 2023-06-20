@@ -453,11 +453,6 @@ export function useDraftEditor(
           }),
         )
       })
-      await draftsClient.updateDraft({
-        documentId,
-        changes,
-      })
-
       appQueryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: EditorDraftState | undefined) => {
@@ -468,6 +463,10 @@ export function useDraftEditor(
           }
         },
       )
+      await draftsClient.updateDraft({
+        documentId,
+        changes,
+      })
     },
   })
 
