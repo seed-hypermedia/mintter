@@ -214,6 +214,7 @@ export function usePublishDraft(
       console.log('Hello usePublishDraft', {webPub, draftId})
 
       const pub = await draftsClient.publishDraft({documentId: draftId})
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       const doc = pub.document
       if (webPub && doc && webPub.hostname === pub.document?.webUrl) {
         const site = getWebSiteClient(webPub.hostname)
