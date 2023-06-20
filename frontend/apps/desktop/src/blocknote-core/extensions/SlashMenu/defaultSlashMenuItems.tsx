@@ -89,6 +89,33 @@ export const defaultSlashMenuItems = [
     ['p'],
   ),
 
+  new BaseSlashMenuItem<DefaultBlockSchema>(
+    'Video / Audio',
+    (editor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'paragraph',
+      }),
+    ['video'],
+  ),
+
+  new BaseSlashMenuItem<DefaultBlockSchema>(
+    'File / Folder',
+    (editor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'paragraph',
+      }),
+    ['file'],
+  ),
+
+  new BaseSlashMenuItem<DefaultBlockSchema>(
+    'Embed',
+    (editor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'paragraph',
+      }),
+    ['embed'],
+  ),
+
   //     replaceRangeWithNode(editor, range, node);
 
   //     return true;

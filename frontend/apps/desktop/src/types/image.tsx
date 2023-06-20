@@ -464,5 +464,5 @@ DefaultBlockSchema & { image: typeof ImageBlock }
 ["image", "img", "picture", "media"],
 "Media",
 <RiImage2Fill />,
-"Insert an image"
+"Display an Image"
 );

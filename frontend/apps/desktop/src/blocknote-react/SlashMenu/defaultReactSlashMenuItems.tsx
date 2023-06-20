@@ -3,7 +3,14 @@ import {
   DefaultBlockSchema,
   defaultSlashMenuItems,
 } from '@app/blocknote-core'
-import {RiH1, RiText} from 'react-icons/ri'
+import {MdPreview} from 'react-icons/md'
+import {
+  RiFolder2Line,
+  RiH1,
+  RiPlayCircleLine,
+  RiPlayListLine,
+  RiText,
+} from 'react-icons/ri'
 import {ReactSlashMenuItem} from './ReactSlashMenuItem'
 const extraFields: Record<
   string,
@@ -46,6 +53,26 @@ const extraFields: Record<
     group: 'Text Content',
     icon: <RiText size={18} />,
     hint: 'Used for the body of your document',
+    // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
+  },
+
+  'Video / Audio': {
+    group: 'Media',
+    icon: <RiPlayCircleLine size={18} />,
+    hint: 'Multimedia player',
+    // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
+  },
+
+  'File / Folder': {
+    group: 'Media',
+    icon: <RiFolder2Line size={18} />,
+    hint: 'Include Files and Folders for downloading',
+    // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
+  },
+  Embed: {
+    group: 'Media',
+    icon: <MdPreview size={18} />,
+    hint: 'Include a HyperDocs Section or Document',
     // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
   },
 }

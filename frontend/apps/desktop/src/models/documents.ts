@@ -606,7 +606,11 @@ export function useDraftEditor(
     _tiptapOptions: {},
     blockSchema: hdBlockSchema,
     // @ts-expect-error
-    slashCommands: [...defaultReactSlashMenuItems, insertImage],
+    slashCommands: [
+      ...defaultReactSlashMenuItems.slice(0, 2),
+      insertImage,
+      ...defaultReactSlashMenuItems.slice(2),
+    ],
   })
 
   const draft = useQuery(
