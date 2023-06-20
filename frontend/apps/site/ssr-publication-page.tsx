@@ -148,7 +148,7 @@ export default function PublicationPage({
             flexDirection={media.gtSm ? 'row' : 'column'}
             paddingRight={media.gtSm ? '$4' : 0}
           >
-            <MainContainer flex={3}>
+            <MainContainer flex={3} className="web-publication">
               {displayPub ? (
                 <PublicationContent publication={displayPub} />
               ) : loadedPublication.isLoading ? (

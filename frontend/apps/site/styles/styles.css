@@ -2,6 +2,7 @@ html,
 body {
   width: 100vw;
   overflow-x: hidden;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .image {
@@ -16,4 +17,17 @@ body {
 }
 .unset-img > * {
   position: unset !important;
+}
+
+.web-publication {
+  font-size: 18px;
+}
+
+.web-publication > div {
+  display: block;
+}
+
+.web-publication > div > div {
+  line-height: 160%;
+  margin-bottom: 14px;
 }
