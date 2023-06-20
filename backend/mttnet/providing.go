@@ -5,16 +5,16 @@ import (
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
 )
 
-func makeProvidingStrategy(db *sqlitex.Pool) ipfs.ReprovidingStrategy {
+func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
 	// except those which are marked as draft changes.
 	// TODO(burdiyan): this is a temporary solution during the braking change.

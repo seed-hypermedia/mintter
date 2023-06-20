@@ -16,9 +16,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ipfs/boxo/blockstore"
-	"github.com/ipfs/boxo/provider"
-	"github.com/ipfs/boxo/provider/queue"
-	"github.com/ipfs/boxo/provider/simple"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
@@ -130,20 +127,8 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 
 	t.Cleanup(func() { require.NoError(t, n.Close()) })
 
-	queue, err := queue.NewQueue(context.Background(), "repro", n.Datastore())
+	providing, err := NewProviderSystem(ds, n.Routing, bs.AllKeysChan)
 	require.NoError(t, err)
-
-	prov := simple.NewProvider(context.Background(), queue, n.Routing)
-
-	reprov := simple.NewReprovider(
-		context.Background(),
-		defaultReprovideInterval,
-		n.Routing,
-		simple.NewBlockstoreProvider(blockstore.NewBlockstore(n.Datastore())),
-	)
-
-	providing := provider.NewSystem(prov, reprov)
-	providing.Run()
 
 	require.NoError(t, fileManager.Start(bs, bitswap, providing))
 	return fileManager

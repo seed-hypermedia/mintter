@@ -4,6 +4,8 @@
 package logging
 
 import (
+	"fmt"
+
 	"github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -25,7 +27,7 @@ func New(subsystem, level string) *zap.Logger {
 // in case of a non-existing name.
 func SetLogLevel(subsystem, level string) {
 	if err := log.SetLogLevel(subsystem, level); err != nil {
-		panic(err)
+		panic(fmt.Errorf("%s %s %w", subsystem, level, err))
 	}
 }
 

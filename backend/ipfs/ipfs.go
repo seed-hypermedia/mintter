@@ -9,8 +9,6 @@ import (
 
 	"github.com/ipfs/boxo/bitswap"
 	"github.com/ipfs/boxo/bitswap/network"
-	"github.com/ipfs/boxo/provider/queue"
-	"github.com/ipfs/boxo/provider/simple"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
@@ -22,7 +20,14 @@ import (
 	provider "github.com/ipfs/boxo/provider"
 	"github.com/multiformats/go-multiaddr"
 	multihash "github.com/multiformats/go-multihash"
+
+	quic "github.com/quic-go/quic-go"
+	webtransport "github.com/quic-go/webtransport-go"
 )
+
+// Using to ensure direct dependency.
+var _ = quic.AEADLimitReached
+var _ = webtransport.WebTransportBufferedStreamRejectedErrorCode
 
 const defaultReprovideInterval = 12 * time.Hour
 
@@ -97,23 +102,7 @@ func (b *Bitswap) Close() error {
 	return err
 }
 
-// ReprovidingStrategy is a function that returns a channel of CIDs to be reprovided.
-type ReprovidingStrategy func(context.Context) (<-chan cid.Cid, error)
-
 // NewProviderSystem creates a new provider.System. Users must call Run() to start and Close() to shutdown.
-func NewProviderSystem(ds datastore.Datastore, rt routing.ContentRouting, strategy ReprovidingStrategy) (provider.System, error) {
-	ctx := context.Background() // This will be canceled when Close() is called explicitly.
-	q, err := queue.NewQueue(ctx, "provider-v1", ds)
-	if err != nil {
-		return nil, err
-	}
-
-	// No need to call q.Close() because provider will call it.
-	// It's weird but this is how it works at the moment.
-
-	prov := simple.NewProvider(ctx, q, rt)
-
-	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.KeyChanFunc(strategy))
-
-	return provider.NewSystem(prov, sp), nil
+func NewProviderSystem(ds datastore.Batching, rt routing.ContentRouting, strategy provider.KeyChanFunc) (provider.System, error) {
+	return provider.New(ds, provider.Online(rt), provider.KeyProvider(strategy))
 }

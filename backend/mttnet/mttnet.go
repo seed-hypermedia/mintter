@@ -45,7 +45,7 @@ import (
 // Protocol values.
 const (
 	protocolPrefix  = "/mintter/"
-	protocolVersion = "0.0.4"
+	protocolVersion = "0.0.5"
 
 	ProtocolID protocol.ID = protocolPrefix + protocolVersion
 
@@ -364,8 +364,6 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	if err := n.startLibp2p(ctx); err != nil {
 		return err
 	}
-
-	n.providing.Run()
 
 	lis, err := gostream.Listen(n.p2p.Host, ProtocolID)
 	if err != nil {

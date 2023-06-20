@@ -169,11 +169,11 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 			// manager wants to flush records into the database, we would have closed the database
 			// already. Because of this we always have an annoying error during our shutdown.
 			// Here we manually ensure all the goroutines started by provider manager are closed.
-			provStore, err := providers.NewProviderManager(ctx, h.ID(), h.Peerstore(), ds)
+			provStore, err := providers.NewProviderManager(h.ID(), h.Peerstore(), ds)
 			if err != nil {
 				return nil, err
 			}
-			n.clean.Add(provStore.Process())
+			n.clean.Add(provStore)
 
 			r, err := dualdht.New(
 				ctx, h,
