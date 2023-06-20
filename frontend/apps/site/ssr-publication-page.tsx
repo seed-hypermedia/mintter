@@ -243,7 +243,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   return (
     <img
       alt={block.attributes.alt}
-      src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`}
+      src={`/ipfs/${cid}`}
       // layout="fill"
       className="image"
     />
