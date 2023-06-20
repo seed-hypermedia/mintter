@@ -40,3 +40,15 @@ export function getIdsfromUrl(
   const blockId = oldBlockId ?? newBlockId
   return [docId, version, blockId]
 }
+
+export function createHyperdocsLink(
+  documentId: string,
+  version?: string,
+  blockId?: string,
+): string {
+  let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
+  if (version) res += `?v=${version}`
+  if (blockId) res += `#${blockId}`
+
+  return res
+}
