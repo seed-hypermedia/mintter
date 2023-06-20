@@ -266,6 +266,20 @@ function StaticBlock({block}: {block: ServerBlock}) {
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
     return <StaticSectionBlock block={niceBlock} />
   }
+  // legacy node
+  // @ts-expect-error
+  if (niceBlock.type === 'statement') {
+    return (
+      <StaticSectionBlock
+        block={{
+          type: 'paragraph',
+          // @ts-expect-error
+          ...niceBlock,
+        }}
+      />
+    )
+  }
+
   if (niceBlock.type === 'image') {
     return <StaticImageBlock block={niceBlock} />
   }
