@@ -20,7 +20,7 @@ export const ImageBlock = createReactBlockSpec({
         default: "true",
       },
     },
-    containsInlineContent: true,
+    containsInlineContent: false,
     // @ts-ignore
     render: ({ block, editor }: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) => (
       Render(block, editor)
@@ -163,7 +163,6 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
           )}
         </XStack>
       </YStack>
-      <InlineContent />
     </div>
   )
 }
@@ -424,7 +423,6 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
           </Popover.Content>
         </Popover>
       </YStack>
-      <InlineContent />
     </div>
   )
 }
@@ -435,8 +433,8 @@ DefaultBlockSchema & { image: typeof ImageBlock }
 "Image",
 // @ts-ignore
 (editor: BlockNoteEditor<typeof hdBlockSchema>) => {
-  editor.replaceBlocks(
-    [editor.getTextCursorPosition().block.id],
+  if (editor.topLevelBlocks.length === 1) 
+    editor.insertBlocks(
     [
       {
         type: "image",
@@ -445,8 +443,23 @@ DefaultBlockSchema & { image: typeof ImageBlock }
           alt: "",
         },
       },
-    ]
-  );
+    ],
+    editor.getTextCursorPosition().block,
+    "before"
+    )
+  else 
+    editor.replaceBlocks(
+      [editor.getTextCursorPosition().block.id],
+      [
+        {
+          type: "image",
+          props: {
+            url: "",
+            alt: "",
+          },
+        },
+      ]
+    );
 },
 ["image", "img", "picture", "media"],
 "Media",

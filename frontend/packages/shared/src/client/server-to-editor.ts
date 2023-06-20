@@ -249,6 +249,7 @@ export function serverChildrenToEditorChildren(
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',
+          defaultOpen: 'false',
         },
       }
     }
