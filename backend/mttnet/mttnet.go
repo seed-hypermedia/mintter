@@ -16,7 +16,6 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"strconv"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -35,7 +34,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
-	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -62,7 +60,7 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				//must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
 			},
 		},
 		// Mintter test server
@@ -70,7 +68,7 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				//must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
 			},
 		},
 	}
@@ -105,7 +103,7 @@ type Site struct {
 type Server struct {
 	Node *future.ReadOnly[*Node]
 	*Site
-	localFunctions LocalFunctions
+	localFunctions DocumentsAPI
 	synchronizer   Synchronizer
 	NoAuth         bool
 }
@@ -130,9 +128,9 @@ type Node struct {
 	ctx        context.Context // will be set after calling Start()
 }
 
-// LocalFunctions is an interface for not having to pass a full-fledged documents service,
+// DocumentsAPI is an interface for not having to pass a full-fledged documents service,
 // just the getPublication that is what we need to call in getPath.
-type LocalFunctions interface {
+type DocumentsAPI interface {
 	// GetPublication gets a local publication.
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
 }
@@ -144,7 +142,7 @@ type Synchronizer interface {
 }
 
 // NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions, sync Synchronizer) *Server {
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], docSrv DocumentsAPI, sync Synchronizer) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 
 	srv := &Server{
@@ -153,7 +151,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			InviteTokenExpirationDelay: expirationDelay,
 		},
 		Node:           node,
-		localFunctions: localFunctions,
+		localFunctions: docSrv,
 		synchronizer:   sync,
 		NoAuth:         siteCfg.NoAuth,
 	}
@@ -414,14 +412,15 @@ func (n *Node) Ready() <-chan struct{} {
 }
 
 func (n *Node) startLibp2p(ctx context.Context) error {
-	port := strconv.Itoa(n.cfg.Port)
+	lis := ipfs.DefaultListenAddrs(n.cfg.Port)
 
-	addrs := []multiaddr.Multiaddr{
-		must.Do2(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
-		must.Do2(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
-		// TODO(burdiyan): uncomment this when quic is known to work. Find other places for `quic-support`.
-		// must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")),
-		// must.Two(multiaddr.NewMultiaddr("/ip6/::/udp/" + port + "/quic")),
+	addrs := make([]multiaddr.Multiaddr, len(lis))
+	for i, l := range lis {
+		addr, err := multiaddr.NewMultiaddr(l)
+		if err != nil {
+			return err
+		}
+		addrs[i] = addr
 	}
 
 	if err := n.p2p.Network().Listen(addrs...); err != nil {
@@ -515,8 +514,6 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
 		libp2p.EnableNATService(),
-		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
-		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
 			if cfg.ExtraAddrs == nil {
 				return addrs
@@ -532,7 +529,6 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		opts = append(opts, libp2p.ForceReachabilityPrivate())
 	}
 
-	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
 			libp2p.EnableHolePunching(),
