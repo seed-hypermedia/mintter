@@ -178,13 +178,6 @@ export function useDocumentVersions(
   })
 }
 
-export function prefetchDraft(client: QueryClient, draft: Document) {
-  client.prefetchQuery({
-    queryKey: [queryKeys.GET_DRAFT, draft.id],
-    queryFn: () => draftsClient.getDraft({documentId: draft.id}),
-  })
-}
-
 function sortDocuments(a?: Timestamp, b?: Timestamp) {
   let dateA = a ? a.toDate() : 0
   let dateB = b ? b.toDate() : 1
@@ -249,8 +242,6 @@ export function usePublishDraft(
       opts?.onSuccess?.(pub, variables, context)
 
       setTimeout(() => {
-        // do this later to wait for the draft component to unmount
-        appInvalidateQueries([queryKeys.GET_DRAFT, pub.document?.id])
         appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, pub.document?.id])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
@@ -644,7 +635,6 @@ export function useDraftEditor(
         .then(() => {
           appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
           appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-
         })
         .catch((e) => {
           toast.error('Draft changes were not saved correctly.')

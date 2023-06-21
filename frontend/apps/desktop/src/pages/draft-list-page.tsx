@@ -1,5 +1,5 @@
 import {Dropdown} from '@components/dropdown'
-import {prefetchDraft, useDraftList} from '@app/models/documents'
+import {useDraftList} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
 import {DraftRoute, useNavigate} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
@@ -77,7 +77,7 @@ export function DraftListItem({draft}: {draft: Document}) {
       chromeless
       theme="gray"
       tag="li"
-      onPointerEnter={() => prefetchDraft(client, draft)}
+      // onPointerEnter={() => prefetchDraft(client, draft)}
     >
       <ButtonText
         fontWeight="700"

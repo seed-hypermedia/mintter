@@ -89,7 +89,6 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
 
   if (mocks.draft) {
-    client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)
     values.draft = mocks.draft
   }
 
