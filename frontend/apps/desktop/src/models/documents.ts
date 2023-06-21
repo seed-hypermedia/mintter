@@ -630,6 +630,29 @@ export function useDraftEditor(
     [null, draft.data || null],
   )
 
+  useEffect(() => {
+    return () => {
+      clearTimeout(savingDebounceTimout.current)
+      const state: EditorDraftState | undefined = appQueryClient.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        documentId,
+      ])
+      const {changes} = state || {}
+      if (!changes) return
+      saveDraftMutation
+        .mutateAsync()
+        .then(() => {
+          appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+          appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+
+        })
+        .catch((e) => {
+          toast.error('Draft changes were not saved correctly.')
+          console.error(e)
+        })
+    }
+  }, [])
+
   return {
     editor,
   }
