@@ -139,6 +139,17 @@ export function editorBlockToServerBlock(
     })
   }
 
+  if (editorBlock.type === 'file') {
+    return new ServerBlock({
+      id: editorBlock.id,
+      type: 'file',
+      attributes: {
+        name: editorBlock.props.name,
+      },
+      ref: `ipfs://${editorBlock.props.url}`,
+    })
+  }
+
   if (editorBlock.type == 'embedBlock') {
     return new ServerBlock({
       id: editorBlock.id,

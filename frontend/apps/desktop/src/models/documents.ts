@@ -42,6 +42,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
+import {insertFile} from '@app/types/file'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -608,6 +609,7 @@ export function useDraftEditor(
     slashCommands: [
       ...defaultReactSlashMenuItems.slice(0, 2),
       insertImage,
+      insertFile,
       ...defaultReactSlashMenuItems.slice(2),
     ],
   })

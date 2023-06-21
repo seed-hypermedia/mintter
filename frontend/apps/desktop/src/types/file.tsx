@@ -1,18 +1,23 @@
 import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
-import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
+import { createReactBlockSpec, ReactSlashMenuItem } from "@app/blocknote-react";
 import { hdBlockSchema } from '@app/client/schema';
+import { toast } from '@app/toast';
 import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
+import { save } from '@tauri-apps/api/dialog';
+import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
+import { getClient, ResponseType } from '@tauri-apps/api/http';
+import { appDataDir } from '@tauri-apps/api/path';
 import { ChangeEvent, useEffect, useState } from "react";
-import { RiImage2Fill } from "react-icons/ri";
+import { RiFile2Line } from "react-icons/ri";
 
-export const ImageBlock = createReactBlockSpec({
-    type: "image",
+export const FileBlock = createReactBlockSpec({
+    type: "file",
     propSchema: {
       ...defaultProps,
       url: {
         default: "",
       },
-      alt: {
+      name: {
         default: "",
       },
       defaultOpen: {
@@ -27,11 +32,11 @@ export const ImageBlock = createReactBlockSpec({
     ),
   });
 
-type ImageType = {
+type FileType = {
   id: string,
   props: {
     url: string,
-    alt: string,
+    name: string,
   }
   children: [],
   content: [],
@@ -41,16 +46,16 @@ type ImageType = {
 const boolRegex = new RegExp("true");
 
 const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>) => {
-  const [image, setImage] = useState<ImageType>({
+  const [file, setFile] = useState<FileType>({
     id: block.id,
     props: {
       url: block.props.url,
-      alt: block.props.alt,
+      name: block.props.name,
     },
     children: [],
     content: block.content,
     type: block.type,
-  } as ImageType)
+  } as FileType)
 
   editor._tiptapEditor.commands.setNodeSelection(1)
 
@@ -58,24 +63,24 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     editor.setTextCursorPosition(block.id, 'end');
   }, [])
 
-  const assignFile = (newImage: ImageType) => {
-    setImage({...image, props: { ...image.props, ...newImage.props }})
-    editor.updateBlock(image.id, { props: { ...block.props, ...newImage.props }});
-    editor.setTextCursorPosition(image.id, 'end');
+  const assignFile = (newFile: FileType) => {
+    setFile({...file, props: { ...file.props, ...newFile.props }})
+    editor.updateBlock(file.id, { props: { ...block.props, ...newFile.props }});
+    editor.setTextCursorPosition(file.id, 'end');
   }
 
   if (boolRegex.test(block.props.defaultOpen))
-    editor.updateBlock(image.id, { props: { defaultOpen: "false" } })
+    editor.updateBlock(file.id, { props: { defaultOpen: "false" } })
 
   return (
     <YStack
       borderWidth={0}
       outlineWidth={0}
     >
-      {image.props.url ? (
-        <ImageComponent block={block} editor={editor} assign={assignFile} />
+      {file.props.url ? (
+        <FileComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
-        <ImageForm block={block} assign={assignFile} />
+        <FileForm block={block} assign={assignFile} />
       ) : (
         <></>
       )}
@@ -83,9 +88,36 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
   )
 }
 
-function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
+function FileComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
-  const [caption, setCaption] = useState(block.props.alt)
+
+  const saveFile = async () => {
+    const client = await getClient()
+    const data = (
+      await client.get(
+        `http://localhost:55001/ipfs/${block.props.url}`,
+        {
+          responseType: ResponseType.Binary,
+        },
+      )
+    ).data as any
+
+    const filePath = await save({
+      defaultPath: (await appDataDir()) + '/' + block.props.name,
+    })
+
+    if (filePath) {
+      try {
+        await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {
+          dir: BaseDirectory.AppData,
+        })
+        toast.success(`Successfully downloaded file ${block.props.name}`)
+      } catch (e) {
+        toast.error(`Failed to download file ${block.props.name}`)
+        console.log(e)
+      }
+    }
+  }
 
   return (
     <div>
@@ -116,59 +148,51 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
             color="muted"
             onPress={() =>
               assign({
-                // name: undefined,
                 // size: 0,
                 props: {
                   url: '',
-                  alt: '',
+                  name: "",
                 },
                 children: [],
                 content: [],
-                type: 'image',
-              } as ImageType)}
+                type: 'file',
+              } as FileType)}
           >
             replace
           </Button>
         ) : null}
-        <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
-        <XStack>
-          {editor.isEditable ? (
-            <TextArea
-              size="$3"
-              multiline={true}
-              width="100%"
-              placeholder="Media Caption"
-              wordWrap="break-word"
-              placeholderTextColor="grey"
-              borderWidth="$0"
-              focusStyle={{
-                outlineWidth: '$0',
-              }}
-              backgroundColor="var(--base-background-normal)"
-              value={caption}
-              onBlur={(e) => (assign({ props: { alt: caption }} as ImageType))}
-              onEndEditing={(e) => {console.log('here', e)}}
-              onChangeText={(val: string) => {
-                setCaption(val)
-              }}
-            />
-          ) : (
-            <SizableText
-              size="$3"
-              marginLeft="$3"
-              marginTop="$2"
-            >
-              {caption}
-            </SizableText>
-          )}
-        </XStack>
+        {!editor.isEditable ? (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$2"
+            zIndex="$4"
+            size="$1"
+            width={50}
+            color="muted"
+            onPress={saveFile}
+          >
+            save
+          </Button>
+        ) : null}
+        <Button
+          theme="gray"
+          borderRadius={1}
+          size="$5"
+          justifyContent="flex-start"
+          icon={RiFile2Line}
+          disabled
+        >
+          {block.props.name}
+        </Button>
       </YStack>
       {/* <InlineContent /> */}
     </div>
   )
 }
 
-function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
+function FileForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
   const [url, setUrl] = useState('');
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
@@ -180,6 +204,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
     if (event.target.files) {
       const uploadedFile = event.target.files[0]
       if (uploadedFile && uploadedFile.size <= 62914560) {
+        const {name} = uploadedFile
         const formData = new FormData()
         formData.append('file', uploadedFile)
 
@@ -192,49 +217,11 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             },
           )
           const data = await response.text()
-          assign({props: { url: data }} as ImageType)
+          assign({props: { url: data, name: name }} as FileType)
         } catch (error) {
           console.error(error)
         }
       } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
-  }
-  
-
-  const submitImage = async (url: string) => {
-    if (isValidUrl(url)) {
-      const blob = await fetch(url).then((res) => res.blob())
-      const webFile = new File(
-        [blob],
-        `mintterImage.${blob.type.split('/').pop()}`,
-      )
-      if (webFile && webFile.size <= 62914560) {
-        const formData = new FormData()
-        formData.append('file', webFile)
-
-        try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
-            {
-              method: 'POST',
-              body: formData,
-            },
-          )
-          const data = await response.text()
-          assign({props: { url: data }} as ImageType)
-        } catch (error) {
-          console.error(error)
-        }
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
-  }
-
-  const isValidUrl = (urlString: string) => {
-    try {
-      return Boolean(new URL(urlString))
-    } catch (e) {
-      console.log(e)
-      return false
     }
   }
   
@@ -257,13 +244,13 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
         >
           <Popover.Trigger asChild>
             <Button
-              // icon={FileIcon}
+              icon={RiFile2Line}
               theme="gray"
               borderRadius={0}
               size="$5"
               justifyContent="flex-start"
             >
-              Add an Image
+              Add a File
             </Button>
           </Popover.Trigger>
           <Popover.Content
@@ -322,7 +309,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                     Upload
                   </SizableText>
                 </Tabs.Tab>
-                <Tabs.Tab
+                {/* <Tabs.Tab
                   unstyled
                   value="embed"
                   paddingHorizontal="$4"
@@ -340,7 +327,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                   <SizableText size="$2" color="black">
                     Embed Link
                   </SizableText>
-                </Tabs.Tab>
+                </Tabs.Tab> */}
               </Tabs.List>
 
               <Tabs.Content value="upload">
@@ -380,11 +367,11 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                   </XStack>
                 </XStack>
               </Tabs.Content>
-              <Tabs.Content value="embed">
+              {/* <Tabs.Content value="embed">
                 <XStack padding="$4" alignItems="center" backgroundColor="white">
                   <Form
                     alignItems="center"
-                    onSubmit={() => submitImage(url)}
+                    onSubmit={() => submitFile(url)}
                     borderWidth={0}
                   >
                     <XStack>
@@ -396,7 +383,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                         borderWidth="$0.5"
                         borderRadius="$0"
                         color="black"
-                        placeholder="Add an Image URL"
+                        placeholder="Add an File URL"
                         focusStyle={{
                           borderColor: 'lightgrey',
                           outlineWidth: 0,
@@ -420,7 +407,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                     </XStack>
                   </Form>
                 </XStack>
-              </Tabs.Content>
+              </Tabs.Content> */}
             </Tabs>
           </Popover.Content>
         </Popover>
@@ -429,17 +416,17 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
   )
 }
 
-export const insertImage = new ReactSlashMenuItem<
-DefaultBlockSchema & { image: typeof ImageBlock }
+export const insertFile = new ReactSlashMenuItem<
+DefaultBlockSchema & { file: typeof FileBlock }
 >(
-"Image",
+"File",
 // @ts-ignore
 (editor: BlockNoteEditor<typeof hdBlockSchema>) => {
   if (editor.topLevelBlocks.length === 1) 
     editor.insertBlocks(
     [
       {
-        type: "image",
+        type: "file",
         props: {
           url: "",
           alt: "",
@@ -454,7 +441,7 @@ DefaultBlockSchema & { image: typeof ImageBlock }
       [editor.getTextCursorPosition().block.id],
       [
         {
-          type: "image",
+          type: "file",
           props: {
             url: "",
             alt: "",
@@ -463,8 +450,8 @@ DefaultBlockSchema & { image: typeof ImageBlock }
       ]
     );
 },
-["image", "img", "picture"],
+["file", "folder"],
 "Media",
-<RiImage2Fill size={18} />,
-"Insert an image"
+<RiFile2Line size={18} />,
+"Insert a File"
 );

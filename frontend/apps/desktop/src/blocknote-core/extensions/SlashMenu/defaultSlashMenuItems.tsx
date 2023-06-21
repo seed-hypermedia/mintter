@@ -98,14 +98,14 @@ export const defaultSlashMenuItems = [
     ['video'],
   ),
 
-  new BaseSlashMenuItem<DefaultBlockSchema>(
-    'File / Folder',
-    (editor) =>
-      insertOrUpdateBlock(editor, {
-        type: 'paragraph',
-      }),
-    ['file'],
-  ),
+  // new BaseSlashMenuItem<DefaultBlockSchema>(
+  //   'File / Folder',
+  //   (editor) =>
+  //     insertOrUpdateBlock(editor, {
+  //       type: 'paragraph',
+  //     }),
+  //   ['file'],
+  // ),
 
   new BaseSlashMenuItem<DefaultBlockSchema>(
     'Embed',

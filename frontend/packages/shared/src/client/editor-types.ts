@@ -60,6 +60,15 @@ export type EditorImageBlock = {
   }
 }
 
+export type EditorFileBlock = {
+  type: 'file'
+  id: string
+  props: {
+    url: string
+    name: string
+  }
+}
+
 export type EditorEmbedBlock = {
   type: 'embedBlock'
   id: string
@@ -72,4 +81,5 @@ export type EditorBlock =
   | EditorParagraphBlock
   | EditorHeadingBlock
   | EditorImageBlock
+  | EditorFileBlock
   | EditorEmbedBlock

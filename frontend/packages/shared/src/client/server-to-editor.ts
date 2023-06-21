@@ -254,6 +254,21 @@ export function serverChildrenToEditorChildren(
       }
     }
 
+    if (serverBlock.block?.type === 'file') {
+      return {
+        type: 'file',
+        id: serverBlock.block.id,
+        props: {
+          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          name: serverBlock.block.attributes.name,
+          backgroundColor: 'default',
+          textColor: 'default',
+          textAlignment: 'left',
+          defaultOpen: 'false',
+        },
+      }
+    }
+
     if (serverBlock.block?.type === 'embed') {
       return {
         type: 'embedBlock',
