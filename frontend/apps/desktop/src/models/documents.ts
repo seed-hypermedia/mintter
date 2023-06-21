@@ -3,17 +3,23 @@ import {
   getWebSiteClient,
   publicationsClient,
 } from '@app/api-clients'
+import {
+  Block,
+  BlockNoteEditor,
+  InlineContent,
+  PartialBlock,
+} from '@app/blocknote-core'
+import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {editorBlockToServerBlock} from '@app/client/editor-to-server'
 import {hdBlockSchema} from '@app/client/schema'
 import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
+import {insertFile} from '@app/types/file'
 import {insertImage} from '@app/types/image'
-import {NavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
-  Document,
   DocumentChange,
   isMintterGatewayLink,
   isMintterScheme,
@@ -22,27 +28,18 @@ import {
   WebPublicationRecord,
 } from '@mintter/shared'
 import {
-  Block,
-  BlockNoteEditor,
-  InlineContent,
-  PartialBlock,
-} from '@app/blocknote-core'
-import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
-import {
   FetchQueryOptions,
-  QueryClient,
-  UseMutationOptions,
-  UseQueryOptions,
   useMutation,
+  UseMutationOptions,
   useQueries,
   useQuery,
+  UseQueryOptions,
 } from '@tanstack/react-query'
 import {findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
-import {insertFile} from '@app/types/file'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -594,7 +591,6 @@ export function useDraftEditor(
     uiFactories: {
       formattingToolbarFactory,
     },
-    _tiptapOptions: {},
     blockSchema: hdBlockSchema,
     // @ts-expect-error
     slashCommands: [
