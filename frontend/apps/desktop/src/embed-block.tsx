@@ -13,7 +13,7 @@ import type {
   SectionBlock,
   ImageBlock,
 } from '@mintter/shared'
-import {YStack, Text} from '@mintter/ui'
+import {YStack, Text, Spinner} from '@mintter/ui'
 import {useMemo} from 'react'
 import {createReactBlockSpec} from './blocknote-react'
 import {usePublication} from './models/documents'
@@ -110,7 +110,16 @@ function StaticBlock({block}: {block: ServerBlock}) {
 
 function EmbedPresentation({reference}: {reference: string}) {
   let embed = useEmbed(reference)
-
+  let content = <Spinner />
+  if (embed.content) {
+    content = (
+      <>
+        {embed.content?.map((block) => (
+          <StaticBlockNode block={block} />
+        ))}
+      </>
+    )
+  }
   return (
     <div
       data-ref={reference}
@@ -125,9 +134,7 @@ function EmbedPresentation({reference}: {reference: string}) {
         paddingVertical="$2"
         borderRadius="$4"
       >
-        {embed.content?.map((block) => (
-          <StaticBlockNode block={block} />
-        ))}
+        {content}
       </YStack>
     </div>
   )
@@ -174,7 +181,7 @@ function useEmbed(ref: string): ReturnType<typeof usePublication> & {
   let pubQuery = usePublication({
     documentId,
     versionId,
-    enabled: !!documentId && !!versionId,
+    enabled: !!documentId,
   })
 
   return useMemo(() => {
