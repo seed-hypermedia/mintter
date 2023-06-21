@@ -10,6 +10,7 @@ import {MainWrapper} from '@mintter/ui'
 import '@app/blocknote-core/style.css'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {useListen} from '@app/ipc'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -24,6 +25,19 @@ export default function DraftPage() {
   })
 
   let isDaemonReady = useDaemonReady()
+
+  useListen(
+    'select_all',
+    () => {
+      if (editor) {
+        if (!editor?._tiptapEditor.isFocused) {
+          editor?.focus()
+        }
+        editor?._tiptapEditor.commands.selectAll()
+      }
+    },
+    [editor],
+  )
 
   return (
     <ErrorBoundary
