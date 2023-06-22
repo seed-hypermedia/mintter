@@ -1,0 +1,23 @@
+name: "Test"
+on:
+  push:
+    branches:
+      - 'fix/ci'
+  pull_request:
+    branches:
+      - 'fix/ci'  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          # Use the same version as our local development environment.
+          go-version: '1.20.4'
+          check-latest: false
+      - run: go test ./backend/...

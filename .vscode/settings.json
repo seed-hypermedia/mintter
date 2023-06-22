@@ -65,4 +65,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/test.yml"
+  ],
 }
