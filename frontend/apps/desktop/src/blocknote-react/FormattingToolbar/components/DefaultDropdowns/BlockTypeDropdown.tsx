@@ -19,10 +19,8 @@ const headingIcons: Record<HeadingLevels, IconType> = {
 const shouldShow = (schema: BlockSchema) => {
   const paragraph = 'paragraph' in schema
   const heading = 'heading' in schema && 'level' in schema.heading.propSchema
-  const bulletListItem = 'bulletListItem' in schema
-  const numberedListItem = 'numberedListItem' in schema
 
-  return paragraph && heading && bulletListItem && numberedListItem
+  return paragraph && heading
 }
 
 export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {

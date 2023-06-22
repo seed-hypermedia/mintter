@@ -3,13 +3,16 @@ import {
   BlockSchema,
   RequiredStaticParams,
 } from '@app/blocknote-core'
-import {Toolbar, getBlockNoteTheme} from '@app/blocknote-react'
-import {ColorStyleButton} from '@app/blocknote-react'
-import {CreateLinkButton} from '@app/blocknote-react'
-import {NestBlockButton, UnnestBlockButton} from '@app/blocknote-react'
-import {ToggledStyleButton} from '@app/blocknote-react'
-import {BlockTypeDropdown} from '@app/blocknote-react'
-import {ReactElementFactory} from '@app/blocknote-react'
+import {
+  BlockTypeDropdown,
+  CreateLinkButton,
+  getBlockNoteTheme,
+  NestBlockButton,
+  ReactElementFactory,
+  ToggledStyleButton,
+  Toolbar,
+  UnnestBlockButton,
+} from '@app/blocknote-react'
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>
