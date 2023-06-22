@@ -74,11 +74,6 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
-type wellKnownInfo struct {
-	Addresses []string `json:"addresses,omitempty"`
-	AccountID string   `json:"account_id,omitempty"`
-}
-
 type docInfo struct {
 	ID      string
 	Version string

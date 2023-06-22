@@ -5,10 +5,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
+	documents "mintter/backend/genproto/documents/v1alpha"
 	site "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	rpcpeer "google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -814,36 +815,46 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
 	if srv.hostname == "" { // if i'm not a site, then don't expose addresses
-		w.WriteHeader(500)
+		http.Error(w, "This node is not a Site", http.StatusExpectationFailed)
 		return
 	}
 
-	encoder := json.NewEncoder(w)
-	w.Header().Set("Content-Type", "application/json")
-	var siteInfo wellKnownInfo
+	info := &documents.SiteDiscoveryConfig{}
+
 	n, ok := srv.Node.Get()
 	if !ok {
 		w.Header().Set("Retry-After", "30")
-		w.WriteHeader(http.StatusServiceUnavailable)
-		_ = encoder.Encode("Error: site p2p node not ready yet")
+		http.Error(w, "P2P node is not ready yet", http.StatusServiceUnavailable)
 		return
 	}
+	pid := n.me.DeviceKey().PeerID()
 
-	siteInfo.AccountID = n.me.Account().String()
+	info.AccountId = n.me.Account().String()
+	info.PeerId = pid.String()
 
-	pid := n.me.DeviceKey().ID()
 	addrinfo := n.Libp2p().Peerstore().PeerInfo(pid)
 	mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_ = encoder.Encode("Error: failed to get own site addresses")
+		http.Error(w, "failed to get our own adresses", http.StatusInternalServerError)
 		return
 	}
 
 	for _, addr := range mas {
-		siteInfo.Addresses = append(siteInfo.Addresses, addr.String())
+		info.Addresses = append(info.Addresses, addr.String())
 	}
-	_ = encoder.Encode(siteInfo)
+
+	data, err := protojson.MarshalOptions{
+		Multiline: true,
+		Indent:    "  ",
+	}.Marshal(info)
+	if err != nil {
+		http.Error(w, "Failed to marshal site info: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
 
 // proxyToSite calls a remote site function over libp2p. It uses reflections to

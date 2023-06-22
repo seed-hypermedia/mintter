@@ -187,14 +187,12 @@ message CreateInviteTokenRequest {
 message RedeemInviteTokenRequest {
   // Value of the invite token.
   string token = 1;
-
 }
 
 // Response after the token is redeemed.
 message RedeemInviteTokenResponse {
   // The role associated with the redeemed token
   Member.Role role = 1;
-
 }
 
 // Request to get the site info.
@@ -281,7 +279,7 @@ message ListWebPublicationsRequest {
   // Token for a specific page.
   string page_token = 2;
 
-  // Optional. DocumentID of the publication to retrieve. 
+  // Optional. DocumentID of the publication to retrieve.
   // If not provided, all publications will be returned
   string document_id = 3;
 }
@@ -319,12 +317,14 @@ message SiteInfo {
 
 // Response for the /.well-known discovery HTTP page.
 message SiteDiscoveryConfig {
-  // The addresses to connect to the remote site via p2p. In multiaddress format.
-  repeated string addresses = 1;
-
   // Mintter Account ID of the site.
-  string account_id = 2;
+  string account_id = 1;
 
+  // The PeerID of this P2P node.
+  string peer_id = 2;
+
+  // The addresses of this site node in multiaddr format.
+  repeated string addresses = 3;
 }
 
 // Description of "referenced" materials that go along
@@ -345,5 +345,4 @@ message GetPathRequest {
 message GetPathResponse {
   // Publication
   Publication publication = 1;
-
 }

@@ -9,6 +9,7 @@ import {
   Publication,
   ReferencedDocument,
   SiteConfig,
+  SiteDiscoveryConfig,
   SiteInfo,
   WebPublicationRecord,
 } from '@mintter/shared'
@@ -268,9 +269,12 @@ export function useSitePublish() {
         throw new Error(
           `Failed to query well-known of site when determining publisher id. Status: ${wellKnownResponse.status}`,
         )
-      const siteWellKnown = await wellKnownResponse.json()
+      const siteWellKnown = SiteDiscoveryConfig.fromJson(
+        await wellKnownResponse.json(),
+      )
+
       const publisherId: string | undefined =
-        siteWellKnown?.account_id ?? String(siteWellKnown?.account_id)
+        siteWellKnown?.accountId ?? String(siteWellKnown?.accountId)
 
       if (!publisherId) {
         throw new Error(
@@ -364,20 +368,6 @@ export function useSitePublishDraft(draftId: string | undefined) {
           hostname: undefined,
         }
       }
-      // const wellKnownResponse = await fetch(`${webUrl}/api/mintter-well-known`)
-      // if (!wellKnownResponse.ok)
-      //   throw new Error(
-      //     `Failed to query well-known of site when determining publisher id. Status: ${wellKnownResponse.status}`,
-      //   )
-      // const siteWellKnown = await wellKnownResponse.json()
-      // const publisherId: string | undefined =
-      //   siteWellKnown?.account_id ?? String(siteWellKnown?.account_id)
-
-      // if (!publisherId) {
-      //   throw new Error(
-      //     'Publisher id could not be found from site well-known response',
-      //   )
-      // }
 
       await performWebPublish(
         document,

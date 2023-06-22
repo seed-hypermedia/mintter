@@ -135,6 +135,10 @@ func PrincipalFromPubKey(k crypto.PubKey) Principal {
 
 // DecodePrincipal decodes the principal from its string representation.
 func DecodePrincipal(s string) (Principal, error) {
+	if s == "" {
+		return nil, fmt.Errorf("must specify principal to decode")
+	}
+
 	enc, data, err := multibase.Decode(s)
 	if err != nil {
 		return nil, err
