@@ -59,7 +59,10 @@
     ]
   },
   "go.lintTool": "golangci-lint",
-  "python.formatting.provider": "black",
+  "python.formatting.provider": "none",
   "prettier.bracketSpacing": false,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
 }
