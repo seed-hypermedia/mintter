@@ -61,7 +61,6 @@ services:
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
       - '-site.no-auth'
-      - '-p2p.public-reachability'
       - '-p2p.no-private-ips'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
       - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
