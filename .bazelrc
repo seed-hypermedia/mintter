@@ -1,0 +1,21 @@
+# Settings for Bazel, see https://docs.aspect.build/guides/bazelrc
+
+# Import Aspect recommended Bazel settings for all projects
+
+import %workspace%/.aspect/bazelrc/bazel6.bazelrc
+import %workspace%/.aspect/bazelrc/convenience.bazelrc
+import %workspace%/.aspect/bazelrc/correctness.bazelrc
+import %workspace%/.aspect/bazelrc/debug.bazelrc
+import %workspace%/.aspect/bazelrc/performance.bazelrc
+
+### YOUR PROJECT SPECIFIC SETTINGS GO HERE ###
+
+# Group all the convenience symlinks Bazel produces under a single dot-directory
+# to make it easier for IDEs and other tools to ignore them.
+build --symlink_prefix=.bazel/
+
+# Load any settings & overrides specific to the current user from `build/bazelrc/user.bazelrc`.
+# This file should appear in `.gitignore` so that settings are not shared with team members. This
+# should be last statement in this config so the user configuration is able to overwrite flags from
+# this file. See https://bazel.build/configure/best-practices#bazelrc-file.
+try-import %workspace%/user.bazelrc
