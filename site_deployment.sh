@@ -186,12 +186,14 @@ BLOCK
     listing="n"
   fi
   echo "Nice, we will create a site with the following characteristics:"
+  public_ip=$(curl ifconfig.me)
   echo "  - Hostname: ${hostname}"
   if [ ! -z "$owner" ]; then
     echo "  - Owner ID: ${owner}"
   else
     echo "  - Owner ID: [not known yet]"
   fi
+  echo "  - Public IP: ${public_ip}"
   if [ "$listing" != "y" ] && [ "$turn" = "ADVANCED" ]; then
     echo "  - Additional flags: -p2p.disable-listing"
   fi
@@ -201,6 +203,7 @@ BLOCK
     mkdir -p ${workspace}
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
+	echo "MTT_SITE_PUBLICIP=${public_ip}" >> ${workspace}/.env
     mkdir -p ${workspace}/proxy
     docker compose -f mttsite.yml down || true
     cat << BLOCK > ${workspace}/proxy/CaddyFile
@@ -231,6 +234,7 @@ BLOCK
       else
         docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       fi
+	  
       rm mttsite.yml
       payload="["
       index=0
