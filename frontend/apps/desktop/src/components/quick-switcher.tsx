@@ -1,7 +1,7 @@
 import {useDraftList, usePublicationList} from '@app/models/documents'
 import {fetchWebLink} from '@app/models/web-links'
 import {useNavigate} from '@app/utils/navigation'
-import {getIdsfromUrl, isMintterScheme} from '@mintter/shared'
+import {getIdsfromUrl, isHyperdocsScheme} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
 import {listen, useListen} from '@app/ipc'
 import {Command} from 'cmdk'
@@ -47,7 +47,7 @@ export default function QuickSwitcher() {
       ) : (
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {(isMintterScheme(search) ||
+          {(isHyperdocsScheme(search) ||
             search.startsWith('http://') ||
             search.startsWith('https://')) && (
             <Command.Item
@@ -55,7 +55,7 @@ export default function QuickSwitcher() {
               value={search}
               onSelect={() => {
                 let [docId, version, block] = getIdsfromUrl(search)
-                if (docId && isMintterScheme(search)) {
+                if (docId && isHyperdocsScheme(search)) {
                   setOpen(false)
                   navigate({
                     key: 'publication',

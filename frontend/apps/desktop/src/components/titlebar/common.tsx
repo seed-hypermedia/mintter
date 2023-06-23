@@ -18,7 +18,12 @@ import {useOpenDraft} from '@app/utils/open-draft'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Avatar} from '@components/avatar'
 import {ContactsPrompt} from '@components/contacts-prompt'
-import {Account, HYPERDOCS_LINK_PREFIX, SiteConfig} from '@mintter/shared'
+import {
+  Account,
+  createHyperdocsDocLink,
+  HYPERDOCS_LINK_PREFIX,
+  SiteConfig,
+} from '@mintter/shared'
 import {
   Add,
   Back,
@@ -54,9 +59,11 @@ export function ActionButtons(props: TitleBarProps) {
   const onCopy =
     route.key == 'publication'
       ? () => {
-          let reference = `${HYPERDOCS_LINK_PREFIX}${route.documentId}`
-          if (route.versionId) reference += `?v=${route.versionId}`
-          if (route.blockId) reference += `#${route.blockId}`
+          const reference = createHyperdocsDocLink(
+            route.documentId,
+            route.versionId,
+            route.blockId,
+          )
           copyTextToClipboard(reference)
           toast.success('Document reference copied!')
         }

@@ -1,7 +1,7 @@
 import {getIdsfromUrl, HYPERDOCS_LINK_PREFIX} from './get-ids-from-url'
 
-export function isMintterScheme(text?: string) {
-  return !!text?.startsWith(HYPERDOCS_LINK_PREFIX)
+export function isHyperdocsScheme(url?: string) {
+  return !!url?.startsWith(HYPERDOCS_LINK_PREFIX)
 }
 
 export function isMintterGatewayLink(text: string) {
@@ -11,20 +11,25 @@ export function isMintterGatewayLink(text: string) {
   )
 }
 
-export function normalizeMintterLink(urlMaybe: string): string | undefined {
-  if (isMintterScheme(urlMaybe)) return urlMaybe
+export function normalizeHyperdocsLink(urlMaybe: string): string | undefined {
+  if (isHyperdocsScheme(urlMaybe)) return urlMaybe
   if (isMintterGatewayLink(urlMaybe)) {
     const [docId, version, blockRef] = getIdsfromUrl(urlMaybe)
     if (docId) {
-      let url = `${HYPERDOCS_LINK_PREFIX}${docId}`
-      if (version) {
-        url += `?v=${version}`
-      }
-      if (blockRef) {
-        url += `#${blockRef}`
-      }
-      return url
+      return createHyperdocsDocLink(docId, version, blockRef)
     }
     return undefined
   }
+}
+
+export function createHyperdocsDocLink(
+  documentId: string,
+  version?: string,
+  blockRef?: string,
+): string {
+  let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
+  if (version) res += `?v=${version}`
+  if (blockRef) res += `#${blockRef}`
+
+  return res
 }

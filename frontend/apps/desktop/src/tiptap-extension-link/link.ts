@@ -3,9 +3,8 @@ import {toast} from '@app/toast'
 import {
   getIdsfromUrl,
   isMintterGatewayLink,
-  isMintterScheme,
-  normalizeMintterLink,
-  createHyperdocsLink,
+  isHyperdocsScheme,
+  createHyperdocsDocLink,
 } from '@mintter/shared'
 import {Mark, mergeAttributes} from '@tiptap/core'
 import {MarkType} from '@tiptap/pm/model'
@@ -181,7 +180,7 @@ export const Link = Mark.create<LinkOptions>({
 
   renderHTML({HTMLAttributes, mark}) {
     const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)
-    const isHD = isMintterScheme(HTMLAttributes.href)
+    const isHD = isHyperdocsScheme(HTMLAttributes.href)
     return [
       'span',
       {
@@ -319,14 +318,14 @@ async function checkHyperLink({
 
   let {href} = step.mark.attrs
   if (href) {
-    let syncRes = isMintterScheme(href) || isMintterGatewayLink(href)
+    let syncRes = isHyperdocsScheme(href) || isMintterGatewayLink(href)
 
     if (syncRes) {
       let [docId, versionId, blockId] = getIdsfromUrl(href)
 
       if (dispatch && docId) {
         let mark = view.state.schema.mark('link', {
-          href: createHyperdocsLink(docId, versionId, blockId),
+          href: createHyperdocsDocLink(docId, versionId, blockId),
         })
         dispatch(
           view.state.tr
@@ -343,7 +342,7 @@ async function checkHyperLink({
     if (asyncRes && asyncRes.documentId) {
       if (dispatch) {
         let mark = view.state.schema.mark('link', {
-          href: createHyperdocsLink(
+          href: createHyperdocsDocLink(
             asyncRes.documentId,
             asyncRes.documentVersion || undefined,
           ),

@@ -22,8 +22,8 @@ import {Timestamp} from '@bufbuild/protobuf'
 import {
   DocumentChange,
   isMintterGatewayLink,
-  isMintterScheme,
-  normalizeMintterLink,
+  isHyperdocsScheme,
+  normalizeHyperdocsLink,
   Publication,
   WebPublicationRecord,
 } from '@mintter/shared'
@@ -794,8 +794,8 @@ function extractEmbedRefOfLink(block: any): false | string {
     let leaf = block.content[0]
 
     if (leaf.type == 'link') {
-      if (isMintterGatewayLink(leaf.href) || isMintterScheme(leaf.href)) {
-        const hdLink = normalizeMintterLink(leaf.href)
+      if (isMintterGatewayLink(leaf.href) || isHyperdocsScheme(leaf.href)) {
+        const hdLink = normalizeHyperdocsLink(leaf.href)
         if (hdLink) return hdLink
       }
     }

@@ -3,7 +3,7 @@ import {
   Block,
   getCIDFromIPFSUrl,
   getIdsfromUrl,
-  isMintterScheme,
+  isHyperdocsScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
 import type {
@@ -54,7 +54,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
         if (content.type === 'link') {
           return (
             <span
-              className={isMintterScheme(content.href) ? 'hd-link' : 'link'}
+              className={isHyperdocsScheme(content.href) ? 'hd-link' : 'link'}
               onClick={() => {
                 openUrl(content.href, true)
               }}

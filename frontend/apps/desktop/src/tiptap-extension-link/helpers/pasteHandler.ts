@@ -1,8 +1,8 @@
 import {findBlock} from '@app/blocknote-core/extensions/Blocks/helpers/findBlock'
 import {
   isMintterGatewayLink,
-  isMintterScheme,
-  normalizeMintterLink,
+  isHyperdocsScheme,
+  normalizeHyperdocsLink,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
@@ -46,8 +46,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           (item) => item.isLink && item.value === textContent,
         )
         const nativeHyperLink =
-          isMintterScheme(textContent) || isMintterGatewayLink(textContent)
-            ? normalizeMintterLink(textContent)
+          isHyperdocsScheme(textContent) || isMintterGatewayLink(textContent)
+            ? normalizeHyperdocsLink(textContent)
             : null
 
         if (!selection.empty && options.linkOnPaste) {
