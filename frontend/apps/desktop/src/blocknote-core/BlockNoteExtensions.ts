@@ -172,13 +172,14 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
       }),
     )
   }
-
-  ret.push(
-    HyperlinkMark.configure({
-      hyperlinkToolbarFactory: opts.uiFactories.hyperlinkToolbarFactory,
-      openOnClick: opts.editable === false,
-    }),
-  )
+  if (opts.uiFactories.hyperlinkToolbarFactory) {
+    ret.push(
+      HyperlinkMark.configure({
+        hyperlinkToolbarFactory: opts.uiFactories.hyperlinkToolbarFactory,
+        openOnClick: opts.editable === false,
+      }),
+    )
+  }
 
   if (opts.uiFactories.slashMenuFactory) {
     ret.push(

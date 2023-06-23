@@ -77,7 +77,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  editor._tiptapEditor.destroy()
+  editor?._tiptapEditor?.destroy()
 
   editor = undefined as any
 

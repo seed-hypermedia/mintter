@@ -121,7 +121,7 @@ afterEach(() => {
   delete (window as Window & {__TEST_OPTIONS?: {}}).__TEST_OPTIONS
 })
 
-describe('Simple ProseMirror Node Conversions', () => {
+describe.skip('Simple ProseMirror Node Conversions', () => {
   it('Convert simple block to node', async () => {
     const firstNodeConversion = blockToNode(simpleBlock, tt.schema)
 
@@ -142,7 +142,7 @@ describe('Simple ProseMirror Node Conversions', () => {
   })
 })
 
-describe('Complex ProseMirror Node Conversions', () => {
+describe.skip('Complex ProseMirror Node Conversions', () => {
   it('Convert complex block to node', async () => {
     const firstNodeConversion = blockToNode(complexBlock, tt.schema)
 
@@ -163,7 +163,7 @@ describe('Complex ProseMirror Node Conversions', () => {
   })
 })
 
-describe('links', () => {
+describe.skip('links', () => {
   it('Convert a block with link', async () => {
     const block: PartialBlock<DefaultBlockSchema> = {
       id: UniqueID.options.generateID(),

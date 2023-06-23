@@ -6,16 +6,7 @@ import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {
-  Block,
-  Conversation,
-  formattedDate,
-  paragraph,
-  PhrasingContent,
-  Selector,
-  statement,
-  text,
-} from '@mintter/shared'
+import {Block, Conversation, formattedDate, Selector} from '@mintter/shared'
 import {SizableText, Text, TextArea} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
@@ -344,7 +335,7 @@ function ConversationSelectors({
   let convContext = useConversations()
 
   let selectorText = useMemo(() => {
-    let leafs: Array<PhrasingContent> = []
+    let leafs: Array<any> = []
     selectors.forEach((sel) => {
       let p = convContext.clientSelectors[sel.blockId]?.children?.[0]
       if (!p) return

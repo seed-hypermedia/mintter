@@ -1,9 +1,8 @@
-import {FlowContent} from '@mintter/shared'
 import {Button, Comment} from '@mintter/ui'
 import {MessageSquare} from '@tamagui/lucide-icons'
 import {useEffect, useMemo} from 'react'
 
-export function ConversationBlockBubble({block}: {block: FlowContent}) {
+export function ConversationBlockBubble({block}: {block: any}) {
   // let editor = useSlate()
   // let conversations = useBlockConversations(block.id, block.revision)
 

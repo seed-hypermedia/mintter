@@ -306,6 +306,7 @@ describe('Editor: ', () => {
           type: 'image',
           props: {
             url: 'ABC',
+            defaultOpen: 'false',
             // junk:
             backgroundColor: 'default',
             textAlignment: 'left',

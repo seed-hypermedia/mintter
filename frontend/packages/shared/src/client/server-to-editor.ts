@@ -244,7 +244,6 @@ export function serverChildrenToEditorChildren(
   }
   return children.map((serverBlock) => {
     if (serverBlock.block?.type === 'image') {
-      console.log('\n\n==============image block', serverBlock)
       return {
         type: 'image',
         id: serverBlock.block.id,
