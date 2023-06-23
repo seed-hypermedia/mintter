@@ -264,12 +264,16 @@ jobs:
           environment: 'development'
           version: mintter@${{ needs.get-version.outputs.version }}
           finalize: true
-          ignore-missing: true
-          sourcemaps:
-            './artifacts/sourcemaps-aarch64-apple-darwin
-            ./artifacts/sourcemaps-x86_64-apple-darwin
-            ./artifacts/sourcemaps-x86_64-pc-windows-msvc
-            ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
+          ignore_missing: true
+          ignore_empty: true
+          # sourcemaps:
+          #   './artifacts/sourcemaps-aarch64-apple-darwin
+          #   ./artifacts/sourcemaps-x86_64-apple-darwin
+          #   ./artifacts/sourcemaps-x86_64-pc-windows-msvc
+          #   ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
+            sourcemaps:
+              './artifacts/sourcemaps-aarch64-apple-darwin
+              ./artifacts/sourcemaps-x86_64-apple-darwin
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -323,7 +327,6 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
         run: |
           yarn set version latest
-          yarn cache clean
           yarn
 
       - name: Generate static updater manifest

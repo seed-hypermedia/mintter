@@ -23,11 +23,11 @@ async function main() {
         "app.tar.gz",
         "app.tar.gz.sig",
       ]),
-      "linux-x86_64": await getPlatform("amd64", [
-        "AppImage.tar.gz",
-        "AppImage.tar.gz.sig",
-      ]),
-      "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
+      // "linux-x86_64": await getPlatform("amd64", [
+      //   "AppImage.tar.gz",
+      //   "AppImage.tar.gz.sig",
+      // ]),
+      // "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
 
