@@ -349,7 +349,7 @@ function ConversationSelectors({
       let p = convContext.clientSelectors[sel.blockId]?.children?.[0]
       if (!p) return
 
-      p.children.forEach((leaf) => {
+      p.children.forEach((leaf: any) => {
         if (
           //@ts-ignore
           Array.isArray(leaf.conversations) &&

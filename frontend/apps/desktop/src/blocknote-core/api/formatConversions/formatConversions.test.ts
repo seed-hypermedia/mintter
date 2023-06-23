@@ -53,6 +53,7 @@ beforeEach(() => {
       id: UniqueID.options.generateID(),
       type: 'paragraph',
       props: {
+        type: 'p',
         backgroundColor: 'default',
         textColor: 'default',
         textAlignment: 'left',
@@ -133,6 +134,7 @@ Paragraph
           id: UniqueID.options.generateID(),
           type: 'paragraph',
           props: {
+            type: 'p',
             backgroundColor: 'default',
             textColor: 'default',
             textAlignment: 'left',
@@ -200,6 +202,7 @@ Paragraph
       id: UniqueID.options.generateID(),
       type: 'paragraph',
       props: {
+        type: 'p',
         backgroundColor: 'default',
         textColor: 'default',
         textAlignment: 'left',
@@ -323,6 +326,7 @@ Paragraph
       id: UniqueID.options.generateID(),
       type: 'paragraph',
       props: {
+        type: 'p',
         backgroundColor: 'default',
         textColor: 'default',
         textAlignment: 'left',
@@ -343,6 +347,7 @@ Paragraph
       id: UniqueID.options.generateID(),
       type: 'paragraph',
       props: {
+        type: 'p',
         backgroundColor: 'default',
         textColor: 'default',
         textAlignment: 'left',
@@ -379,6 +384,7 @@ Paragraph
       id: UniqueID.options.generateID(),
       type: 'paragraph',
       props: {
+        type: 'p',
         backgroundColor: 'default',
         textColor: 'default',
         textAlignment: 'left',
@@ -481,6 +487,7 @@ Paragraph
               id: UniqueID.options.generateID(),
               type: 'paragraph',
               props: {
+                type: 'p',
                 backgroundColor: 'default',
                 textColor: 'default',
                 textAlignment: 'left',
