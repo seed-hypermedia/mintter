@@ -105,6 +105,9 @@ do
     while read -r line
     do
         echo "  - $line"
+        if echo "$line" | grep -qE '^MTT_SITE_HOSTNAME='; then
+            dns=$(echo "$line" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
+        fi
     done < "${workspace}/.env"
     read -p "Do you want to use(u) those params or edit(e) them before update(u/e)?" response
     if [ "$response" = "u" ]; then
@@ -122,7 +125,7 @@ reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
-        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
         rm mttsite.yml
         exit 0
     fi
@@ -186,14 +189,12 @@ BLOCK
     listing="n"
   fi
   echo "Nice, we will create a site with the following characteristics:"
-  public_ip=$(curl ifconfig.me)
   echo "  - Hostname: ${hostname}"
   if [ ! -z "$owner" ]; then
     echo "  - Owner ID: ${owner}"
   else
     echo "  - Owner ID: [not known yet]"
   fi
-  echo "  - Public IP: ${public_ip}"
   if [ "$listing" != "y" ] && [ "$turn" = "ADVANCED" ]; then
     echo "  - Additional flags: -p2p.disable-listing"
   fi
@@ -201,9 +202,9 @@ BLOCK
   read -p "Confirm (y/n)?" confirmation
   if [ "$confirmation" = "y" ]; then
     mkdir -p ${workspace}
+	dns=$(echo "$hostname" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
-	echo "MTT_SITE_PUBLICIP=${public_ip}" >> ${workspace}/.env
     mkdir -p ${workspace}/proxy
     docker compose -f mttsite.yml down || true
     cat << BLOCK > ${workspace}/proxy/CaddyFile
@@ -230,7 +231,7 @@ BLOCK
 	docker compose -f mttsite.yml down || true
     if [ -z "$owner" ]; then
       if [ "$listing" != "y" ]; then
-        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       else
         docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       fi
@@ -267,7 +268,7 @@ BLOCK
         exit 1
       fi
     else
-      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       rm mttsite.yml
     fi
     exit 0
