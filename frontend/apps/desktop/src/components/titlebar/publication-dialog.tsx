@@ -66,7 +66,7 @@ function PublishDialogForm({
       <Heading>Publish to {hostnameStripProtocol(init.webUrl)}</Heading>
       <Label htmlFor="pretty-path">Public URL (/Path)</Label>
       <Input
-        placeholder={'Unlisted Document'}
+        placeholder={'No path name'}
         id="pretty-path"
         value={path}
         onChangeText={(val: string) => {
