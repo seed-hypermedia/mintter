@@ -24,6 +24,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
+	manet "github.com/multiformats/go-multiaddr/net"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 
@@ -515,16 +516,23 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	}
 
 	if cfg.AnnounceAddrs != nil {
-		var announce []multiaddr.Multiaddr
-		announce = append(announce, cfg.AnnounceAddrs...)
 		opts = append(opts,
 			libp2p.AddrsFactory(func([]multiaddr.Multiaddr) []multiaddr.Multiaddr {
-				return announce
+				return cfg.AnnounceAddrs
 			}),
 		)
 	} else {
 		opts = append(opts,
 			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				announce := make([]multiaddr.Multiaddr, 0, len(addrs))
+				if cfg.NoPrivateIps {
+					for _, a := range addrs {
+						if manet.IsPublicAddr(a) {
+							announce = append(announce, a)
+						}
+					}
+					return announce
+				}
 				return addrs
 			}),
 		)
