@@ -264,6 +264,7 @@ jobs:
           environment: 'development'
           version: mintter@${{ needs.get-version.outputs.version }}
           finalize: true
+          ignore-missing: true
           sourcemaps:
             './artifacts/sourcemaps-aarch64-apple-darwin
             ./artifacts/sourcemaps-x86_64-apple-darwin
