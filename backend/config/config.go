@@ -123,7 +123,8 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
-	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
+	fs.Var(newAddrsFlag(cfg.P2P.AnnounceAddrs, &cfg.P2P.AnnounceAddrs), "p2p.announce-addrs", "Addresses will be announced for this node to be reachable at (comma separated multiaddresses format)")
+	fs.Var(newAddrsFlag(cfg.P2P.ListenAddrs, &cfg.P2P.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
 
 	fs.BoolVar(&cfg.Site.NoAuth, "site.no-auth", cfg.Site.NoAuth, "Disable site authentication")
 	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
@@ -196,7 +197,8 @@ type P2P struct {
 	NoListing          bool
 	NoMetrics          bool
 	RelayBackoff       time.Duration
-	ExtraAddrs         []multiaddr.Multiaddr
+	AnnounceAddrs      []multiaddr.Multiaddr
+	ListenAddrs        []multiaddr.Multiaddr
 }
 
 // NoBootstrap indicates whether bootstrap nodes are configured.

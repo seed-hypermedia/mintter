@@ -407,15 +407,18 @@ func (n *Node) Ready() <-chan struct{} {
 }
 
 func (n *Node) startLibp2p(ctx context.Context) error {
-	lis := ipfs.DefaultListenAddrs(n.cfg.Port)
-
-	addrs := make([]multiaddr.Multiaddr, len(lis))
-	for i, l := range lis {
-		addr, err := multiaddr.NewMultiaddr(l)
-		if err != nil {
-			return err
+	var addrs []multiaddr.Multiaddr
+	if n.cfg.ListenAddrs != nil {
+		addrs = append(addrs, n.cfg.ListenAddrs...)
+	} else {
+		lis := ipfs.DefaultListenAddrs(n.cfg.Port)
+		for _, l := range lis {
+			addr, err := multiaddr.NewMultiaddr(l)
+			if err != nil {
+				return err
+			}
+			addrs = append(addrs, addr)
 		}
-		addrs[i] = addr
 	}
 
 	if err := n.p2p.Network().Listen(addrs...); err != nil {
@@ -509,17 +512,23 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
 		libp2p.EnableNATService(),
-		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-			if cfg.ExtraAddrs == nil {
-				return addrs
-			}
-			out := make([]multiaddr.Multiaddr, 0, len(addrs)+len(cfg.ExtraAddrs))
-			out = append(out, addrs...)
-			out = append(out, cfg.ExtraAddrs...)
-			return out
-		}),
 	}
 
+	if cfg.AnnounceAddrs != nil {
+		var announce []multiaddr.Multiaddr
+		announce = append(announce, cfg.AnnounceAddrs...)
+		opts = append(opts,
+			libp2p.AddrsFactory(func([]multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				return announce
+			}),
+		)
+	} else {
+		opts = append(opts,
+			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				return addrs
+			}),
+		)
+	}
 	if !cfg.PublicReachability && !cfg.NoRelay {
 		opts = append(opts, libp2p.ForceReachabilityPrivate())
 	}
