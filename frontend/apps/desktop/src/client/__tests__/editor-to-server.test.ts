@@ -127,10 +127,15 @@ describe('editorBlockToServerBlock', () => {
         id: 'abc',
         type: 'image',
         children: [],
-        content: [],
+        content: [
+          {
+            type: 'text',
+            text: 'alt',
+            styles: {},
+          },
+        ],
         props: {
           url: '123',
-          alt: 'alt',
           // why is this garbage required for image props??:
           backgroundColor: 'default',
           textColor: 'default',
@@ -141,9 +146,9 @@ describe('editorBlockToServerBlock', () => {
         new Block({
           id: 'abc',
           type: 'image',
-          attributes: {
-            alt: 'alt',
-          },
+          attributes: {},
+          text: 'alt',
+          annotations: [],
           ref: 'ipfs://123',
         }),
       )

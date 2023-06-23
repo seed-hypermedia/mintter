@@ -12,15 +12,12 @@ export const ImageBlock = createReactBlockSpec({
       url: {
         default: "",
       },
-      alt: {
-        default: "",
-      },
       defaultOpen: {
         values: ["false", "true"],
         default: "true",
       },
     },
-    containsInlineContent: false,
+    containsInlineContent: true,
     // @ts-ignore
     render: ({ block, editor }: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) => (
       Render(block, editor)
@@ -31,7 +28,6 @@ type ImageType = {
   id: string,
   props: {
     url: string,
-    alt: string,
   }
   children: [],
   content: [],
@@ -45,18 +41,17 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     id: block.id,
     props: {
       url: block.props.url,
-      alt: block.props.alt,
     },
     children: [],
     content: block.content,
     type: block.type,
   } as ImageType)
 
-  editor._tiptapEditor.commands.setNodeSelection(1)
+  // editor._tiptapEditor.commands.setNodeSelection(1)
 
-  useEffect(() => {
-    editor.setTextCursorPosition(block.id, 'end');
-  }, [])
+  // useEffect(() => {
+  //   editor.setTextCursorPosition(block.id, 'end');
+  // }, [])
 
   const assignFile = (newImage: ImageType) => {
     setImage({...image, props: { ...image.props, ...newImage.props }})
@@ -85,10 +80,9 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
 
 function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
-  const [caption, setCaption] = useState(block.props.alt)
 
   return (
-    <div>
+    <div className="image-block-wrapper">
       <YStack
         // @ts-ignore
         contentEditable={false}
@@ -120,7 +114,6 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
                 // size: 0,
                 props: {
                   url: '',
-                  alt: '',
                 },
                 children: [],
                 content: [],
@@ -131,39 +124,8 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
           </Button>
         ) : null}
         <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
-        <XStack>
-          {editor.isEditable ? (
-            <TextArea
-              size="$3"
-              multiline={true}
-              width="100%"
-              placeholder="Media Caption"
-              wordWrap="break-word"
-              placeholderTextColor="grey"
-              borderWidth="$0"
-              focusStyle={{
-                outlineWidth: '$0',
-              }}
-              backgroundColor="var(--base-background-normal)"
-              value={caption}
-              onBlur={(e) => (assign({ props: { alt: caption }} as ImageType))}
-              onEndEditing={(e) => {console.log('here', e)}}
-              onChangeText={(val: string) => {
-                setCaption(val)
-              }}
-            />
-          ) : (
-            <SizableText
-              size="$3"
-              marginLeft="$3"
-              marginTop="$2"
-            >
-              {caption}
-            </SizableText>
-          )}
-        </XStack>
       </YStack>
-      {/* <InlineContent /> */}
+      <InlineContent className="image-caption" />
     </div>
   )
 }
@@ -442,7 +404,6 @@ DefaultBlockSchema & { image: typeof ImageBlock }
         type: "image",
         props: {
           url: "",
-          alt: "",
         },
       },
     ],
@@ -457,7 +418,6 @@ DefaultBlockSchema & { image: typeof ImageBlock }
           type: "image",
           props: {
             url: "",
-            alt: "",
           },
         },
       ]

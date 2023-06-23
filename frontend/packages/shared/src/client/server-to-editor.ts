@@ -240,17 +240,18 @@ export function serverChildrenToEditorChildren(
   }
   return children.map((serverBlock) => {
     if (serverBlock.block?.type === 'image') {
+      console.log('\n\n==============image block', serverBlock)
       return {
         type: 'image',
         id: serverBlock.block.id,
         props: {
           url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
-          alt: serverBlock.block.attributes.alt,
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',
           defaultOpen: 'false',
         },
+        content: serverBlockToEditorInline(serverBlock.block),
       }
     }
 

@@ -56,8 +56,8 @@ export type EditorImageBlock = {
   id: string
   props: {
     url: string
-    alt: string
   }
+  content: InlineContent[]
 }
 
 export type EditorFileBlock = {

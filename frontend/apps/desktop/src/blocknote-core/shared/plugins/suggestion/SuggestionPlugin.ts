@@ -1,39 +1,40 @@
-import { Editor, Range } from "@tiptap/core";
-import { EditorState, Plugin, PluginKey } from "prosemirror-state";
-import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { findBlock } from "../../../extensions/Blocks/helpers/findBlock";
+import {Editor, Range} from '@tiptap/core'
+import {EditorState, Plugin, PluginKey} from 'prosemirror-state'
+import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
+import {findBlock} from '../../../extensions/Blocks/helpers/findBlock'
 import {
   SuggestionsMenu,
   SuggestionsMenuDynamicParams,
   SuggestionsMenuFactory,
   SuggestionsMenuStaticParams,
-} from "./SuggestionsMenuFactoryTypes";
-import { SuggestionItem } from "./SuggestionItem";
-import { BlockNoteEditor } from "../../../BlockNoteEditor";
-import { BlockSchema } from "../../../extensions/Blocks/api/blockTypes";
+} from './SuggestionsMenuFactoryTypes'
+import {SuggestionItem} from './SuggestionItem'
+import {BlockNoteEditor} from '../../../BlockNoteEditor'
+import {BlockSchema} from '../../../extensions/Blocks/api/blockTypes'
+import {getBlockInfoFromPos} from '@app/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 
 export type SuggestionPluginOptions<
   T extends SuggestionItem,
-  BSchema extends BlockSchema
+  BSchema extends BlockSchema,
 > = {
   /**
    * The name of the plugin.
    *
    * Used for ensuring that the plugin key is unique when more than one instance of the SuggestionPlugin is used.
    */
-  pluginKey: PluginKey;
+  pluginKey: PluginKey
 
   /**
    * The BlockNote editor.
    */
-  editor: BlockNoteEditor<BSchema>;
+  editor: BlockNoteEditor<BSchema>
 
   /**
    * The character that should trigger the suggestion menu to pop up (e.g. a '/' for commands), when typed by the user.
    */
-  defaultTriggerCharacter: string;
+  defaultTriggerCharacter: string
 
-  suggestionsMenuFactory: SuggestionsMenuFactory<T>;
+  suggestionsMenuFactory: SuggestionsMenuFactory<T>
 
   /**
    * The callback that gets executed when an item is selected by the user.
@@ -42,37 +43,37 @@ export type SuggestionPluginOptions<
    * this should be done manually. The `editor` and `range` properties passed
    * to the callback function might come in handy when doing this.
    */
-  onSelectItem?: (props: { item: T; editor: BlockNoteEditor<BSchema> }) => void;
+  onSelectItem?: (props: {item: T; editor: BlockNoteEditor<BSchema>}) => void
 
   /**
    * A function that should supply the plugin with items to suggest, based on a certain query string.
    */
-  items?: (query: string) => T[];
+  items?: (query: string) => T[]
 
-  allow?: (props: { editor: Editor; range: Range }) => boolean;
-};
+  allow?: (props: {editor: Editor; range: Range}) => boolean
+}
 
 type SuggestionPluginState<T extends SuggestionItem> = {
   // True when the menu is shown, false when hidden.
-  active: boolean;
+  active: boolean
   // The character that triggered the menu being shown. Allowing the trigger to be different to the default
   // trigger allows other extensions to open it programmatically.
-  triggerCharacter: string | undefined;
+  triggerCharacter: string | undefined
   // The editor position just after the trigger character, i.e. where the user query begins. Used to figure out
   // which menu items to show and can also be used to delete the trigger character.
-  queryStartPos: number | undefined;
+  queryStartPos: number | undefined
   // The items that should be shown in the menu.
-  items: T[];
+  items: T[]
   // The index of the item in the menu that's currently hovered using the keyboard.
-  keyboardHoveredItemIndex: number | undefined;
+  keyboardHoveredItemIndex: number | undefined
   // The number of characters typed after the last query that matched with at least 1 item. Used to close the
   // menu if the user keeps entering queries that don't return any results.
-  notFoundCount: number | undefined;
-  decorationId: string | undefined;
-};
+  notFoundCount: number | undefined
+  decorationId: string | undefined
+}
 
 function getDefaultPluginState<
-  T extends SuggestionItem
+  T extends SuggestionItem,
 >(): SuggestionPluginState<T> {
   return {
     active: false,
@@ -82,30 +83,30 @@ function getDefaultPluginState<
     keyboardHoveredItemIndex: undefined,
     notFoundCount: 0,
     decorationId: undefined,
-  };
+  }
 }
 
 type SuggestionPluginViewOptions<
   T extends SuggestionItem,
-  BSchema extends BlockSchema
+  BSchema extends BlockSchema,
 > = {
-  editor: BlockNoteEditor<BSchema>;
-  pluginKey: PluginKey;
-  onSelectItem: (props: { item: T; editor: BlockNoteEditor<BSchema> }) => void;
-  suggestionsMenuFactory: SuggestionsMenuFactory<T>;
-};
+  editor: BlockNoteEditor<BSchema>
+  pluginKey: PluginKey
+  onSelectItem: (props: {item: T; editor: BlockNoteEditor<BSchema>}) => void
+  suggestionsMenuFactory: SuggestionsMenuFactory<T>
+}
 
 class SuggestionPluginView<
   T extends SuggestionItem,
-  BSchema extends BlockSchema
+  BSchema extends BlockSchema,
 > {
-  editor: BlockNoteEditor<BSchema>;
-  pluginKey: PluginKey;
+  editor: BlockNoteEditor<BSchema>
+  pluginKey: PluginKey
 
-  suggestionsMenu: SuggestionsMenu<T>;
+  suggestionsMenu: SuggestionsMenu<T>
 
-  pluginState: SuggestionPluginState<T>;
-  itemCallback: (item: T) => void;
+  pluginState: SuggestionPluginState<T>
+  itemCallback: (item: T) => void
 
   constructor({
     editor,
@@ -113,10 +114,10 @@ class SuggestionPluginView<
     onSelectItem: selectItemCallback = () => {},
     suggestionsMenuFactory,
   }: SuggestionPluginViewOptions<T, BSchema>) {
-    this.editor = editor;
-    this.pluginKey = pluginKey;
+    this.editor = editor
+    this.pluginKey = pluginKey
 
-    this.pluginState = getDefaultPluginState<T>();
+    this.pluginState = getDefaultPluginState<T>()
 
     this.itemCallback = (item: T) => {
       editor._tiptapEditor
@@ -128,86 +129,86 @@ class SuggestionPluginView<
             this.pluginState.triggerCharacter!.length,
           to: editor._tiptapEditor.state.selection.from,
         })
-        .run();
+        .run()
 
       selectItemCallback({
         item: item,
         editor: editor,
-      });
-    };
+      })
+    }
 
-    this.suggestionsMenu = suggestionsMenuFactory(this.getStaticParams());
+    this.suggestionsMenu = suggestionsMenuFactory(this.getStaticParams())
 
-    document.addEventListener("scroll", this.handleScroll);
+    document.addEventListener('scroll', this.handleScroll)
   }
 
   handleScroll = () => {
     if (this.pluginKey.getState(this.editor._tiptapEditor.state).active) {
-      this.suggestionsMenu.render(this.getDynamicParams(), false);
+      this.suggestionsMenu.render(this.getDynamicParams(), false)
     }
-  };
+  }
 
   update(view: EditorView, prevState: EditorState) {
-    const prev = this.pluginKey.getState(prevState);
-    const next = this.pluginKey.getState(view.state);
+    const prev = this.pluginKey.getState(prevState)
+    const next = this.pluginKey.getState(view.state)
 
     // See how the state changed
-    const started = !prev.active && next.active;
-    const stopped = prev.active && !next.active;
+    const started = !prev.active && next.active
+    const stopped = prev.active && !next.active
     // TODO: Currently also true for cases in which an update isn't needed so selected list item index updates still
     //  cause the view to update. May need to be more strict.
-    const changed = prev.active && next.active;
+    const changed = prev.active && next.active
 
     // Cancel when suggestion isn't active
     if (!started && !changed && !stopped) {
-      return;
+      return
     }
 
-    this.pluginState = stopped ? prev : next;
+    this.pluginState = stopped ? prev : next
 
     if (stopped || !this.editor.isEditable) {
-      this.suggestionsMenu.hide();
+      this.suggestionsMenu.hide()
 
       // Listener stops focus moving to the menu on click.
-      this.suggestionsMenu.element!.removeEventListener("mousedown", (event) =>
-        event.preventDefault()
-      );
+      this.suggestionsMenu.element!.removeEventListener('mousedown', (event) =>
+        event.preventDefault(),
+      )
     }
 
     if (changed) {
-      this.suggestionsMenu.render(this.getDynamicParams(), false);
+      this.suggestionsMenu.render(this.getDynamicParams(), false)
     }
 
     if (started && this.editor.isEditable) {
-      this.suggestionsMenu.render(this.getDynamicParams(), true);
+      this.suggestionsMenu.render(this.getDynamicParams(), true)
 
       // Listener stops focus moving to the menu on click.
-      this.suggestionsMenu.element!.addEventListener("mousedown", (event) =>
-        event.preventDefault()
-      );
+      this.suggestionsMenu.element!.addEventListener('mousedown', (event) =>
+        event.preventDefault(),
+      )
     }
   }
 
   destroy() {
-    document.removeEventListener("scroll", this.handleScroll);
+    document.removeEventListener('scroll', this.handleScroll)
   }
 
   getStaticParams(): SuggestionsMenuStaticParams<T> {
     return {
       itemCallback: (item: T) => this.itemCallback(item),
-    };
+    }
   }
 
   getDynamicParams(): SuggestionsMenuDynamicParams<T> {
     const decorationNode = document.querySelector(
-      `[data-decoration-id="${this.pluginState.decorationId}"]`
-    );
+      `[data-decoration-id="${this.pluginState.decorationId}"]`,
+    )
 
     return {
       items: this.pluginState.items,
       keyboardHoveredItemIndex: this.pluginState.keyboardHoveredItemIndex!,
       referenceRect: decorationNode!.getBoundingClientRect(),
-    };
+    }
   }
 }
 
@@ -226,7 +227,7 @@ class SuggestionPluginView<
  */
 export function createSuggestionPlugin<
   T extends SuggestionItem,
-  BSchema extends BlockSchema
+  BSchema extends BlockSchema,
 >({
   pluginKey,
   editor,
@@ -237,12 +238,12 @@ export function createSuggestionPlugin<
 }: SuggestionPluginOptions<T, BSchema>) {
   // Assertions
   if (defaultTriggerCharacter.length !== 1) {
-    throw new Error("'char' should be a single character");
+    throw new Error("'char' should be a single character")
   }
 
   const deactivate = (view: EditorView) => {
-    view.dispatch(view.state.tr.setMeta(pluginKey, { deactivate: true }));
-  };
+    view.dispatch(view.state.tr.setMeta(pluginKey, {deactivate: true}))
+  }
 
   // Plugin key is passed in as a parameter, so it can be exported and used in the DraggableBlocksPlugin.
   return new Plugin({
@@ -252,12 +253,9 @@ export function createSuggestionPlugin<
       new SuggestionPluginView<T, BSchema>({
         editor: editor,
         pluginKey: pluginKey,
-        onSelectItem: (props: {
-          item: T;
-          editor: BlockNoteEditor<BSchema>;
-        }) => {
-          deactivate(view);
-          selectItemCallback(props);
+        onSelectItem: (props: {item: T; editor: BlockNoteEditor<BSchema>}) => {
+          deactivate(view)
+          selectItemCallback(props)
         },
         suggestionsMenuFactory: suggestionsMenuFactory,
       }),
@@ -265,14 +263,14 @@ export function createSuggestionPlugin<
     state: {
       // Initialize the plugin's internal state.
       init(): SuggestionPluginState<T> {
-        return getDefaultPluginState<T>();
+        return getDefaultPluginState<T>()
       },
 
       // Apply changes to the plugin state from an editor transaction.
       apply(transaction, prev, oldState, newState): SuggestionPluginState<T> {
         // TODO: More clearly define which transactions should be ignored.
-        if (transaction.getMeta("orderedListIndexing") !== undefined) {
-          return prev;
+        if (transaction.getMeta('orderedListIndexing') !== undefined) {
+          return prev
         }
 
         // Checks if the menu should be shown.
@@ -280,40 +278,43 @@ export function createSuggestionPlugin<
           return {
             active: true,
             triggerCharacter:
-              transaction.getMeta(pluginKey)?.triggerCharacter || "",
+              transaction.getMeta(pluginKey)?.triggerCharacter || '',
             queryStartPos: newState.selection.from,
-            items: items(""),
+            items: items(''),
             keyboardHoveredItemIndex: 0,
             // TODO: Maybe should be 1 if the menu has no possible items? Probably redundant since a menu with no items
             //  is useless in practice.
             notFoundCount: 0,
             decorationId: `id_${Math.floor(Math.random() * 0xffffffff)}`,
-          };
+          }
         }
 
         // Checks if the menu is hidden, in which case it doesn't need to be hidden or updated.
         if (!prev.active) {
-          return prev;
+          return prev
         }
 
-        const next = { ...prev };
+        const next = {...prev}
 
         // Updates which menu items to show by checking which items the current query (the text between the trigger
         // character and caret) matches with.
         next.items = items(
-          newState.doc.textBetween(prev.queryStartPos!, newState.selection.from)
-        );
+          newState.doc.textBetween(
+            prev.queryStartPos!,
+            newState.selection.from,
+          ),
+        )
 
         // Updates notFoundCount if the query doesn't match any items.
-        next.notFoundCount = 0;
+        next.notFoundCount = 0
         if (next.items.length === 0) {
           // Checks how many characters were typed or deleted since the last transaction, and updates the notFoundCount
           // accordingly. Also ensures the notFoundCount does not become negative.
           next.notFoundCount = Math.max(
             0,
             prev.notFoundCount! +
-              (newState.selection.from - oldState.selection.from)
-          );
+              (newState.selection.from - oldState.selection.from),
+          )
         }
 
         // Hides the menu. This is done after items and notFoundCount are already updated as notFoundCount is needed to
@@ -325,45 +326,53 @@ export function createSuggestionPlugin<
           transaction.getMeta(pluginKey)?.deactivate ||
           // Certain mouse events should hide the menu.
           // TODO: Change to global mousedown listener.
-          transaction.getMeta("focus") ||
-          transaction.getMeta("blur") ||
-          transaction.getMeta("pointer") ||
+          transaction.getMeta('focus') ||
+          transaction.getMeta('blur') ||
+          transaction.getMeta('pointer') ||
           // Moving the caret before the character which triggered the menu should hide it.
           (prev.active && newState.selection.from < prev.queryStartPos!) ||
           // Entering more than 3 characters, after the last query that matched with at least 1 menu item, should hide
           // the menu.
           next.notFoundCount > 3
         ) {
-          return getDefaultPluginState<T>();
+          return getDefaultPluginState<T>()
         }
 
         // Updates keyboardHoveredItemIndex if necessary.
         if (
           transaction.getMeta(pluginKey)?.selectedItemIndexChanged !== undefined
         ) {
-          let newIndex =
-            transaction.getMeta(pluginKey).selectedItemIndexChanged;
+          let newIndex = transaction.getMeta(pluginKey).selectedItemIndexChanged
 
           // Allows selection to jump between first and last items.
           if (newIndex < 0) {
-            newIndex = prev.items.length - 1;
+            newIndex = prev.items.length - 1
           } else if (newIndex >= prev.items.length) {
-            newIndex = 0;
+            newIndex = 0
           }
 
-          next.keyboardHoveredItemIndex = newIndex;
+          next.keyboardHoveredItemIndex = newIndex
         }
 
-        return next;
+        return next
       },
     },
 
     props: {
       handleKeyDown(view, event) {
-        const menuIsActive = (this as Plugin).getState(view.state).active;
+        const menuIsActive = (this as Plugin).getState(view.state).active
+
+        let blockInfo = getBlockInfoFromPos(
+          view.state.doc,
+          view.state.selection.from,
+        )
 
         // Shows the menu if the default trigger character was pressed and the menu isn't active.
-        if (event.key === defaultTriggerCharacter && !menuIsActive) {
+        if (
+          event.key === defaultTriggerCharacter &&
+          !menuIsActive &&
+          blockInfo?.contentType.name !== 'image'
+        ) {
           view.dispatch(
             view.state.tr
               .insertText(defaultTriggerCharacter)
@@ -371,15 +380,15 @@ export function createSuggestionPlugin<
               .setMeta(pluginKey, {
                 activate: true,
                 triggerCharacter: defaultTriggerCharacter,
-              })
-          );
+              }),
+          )
 
-          return true;
+          return true
         }
 
         // Doesn't handle other keystrokes if the menu isn't active.
         if (!menuIsActive) {
-          return false;
+          return false
         }
 
         // Handles keystrokes for navigating the menu.
@@ -388,31 +397,31 @@ export function createSuggestionPlugin<
           queryStartPos,
           items,
           keyboardHoveredItemIndex,
-        } = pluginKey.getState(view.state);
+        } = pluginKey.getState(view.state)
 
         // Moves the keyboard selection to the previous item.
-        if (event.key === "ArrowUp") {
+        if (event.key === 'ArrowUp') {
           view.dispatch(
             view.state.tr.setMeta(pluginKey, {
               selectedItemIndexChanged: keyboardHoveredItemIndex - 1,
-            })
-          );
-          return true;
+            }),
+          )
+          return true
         }
 
         // Moves the keyboard selection to the next item.
-        if (event.key === "ArrowDown") {
+        if (event.key === 'ArrowDown') {
           view.dispatch(
             view.state.tr.setMeta(pluginKey, {
               selectedItemIndexChanged: keyboardHoveredItemIndex + 1,
-            })
-          );
-          return true;
+            }),
+          )
+          return true
         }
 
         // Selects an item and closes the menu.
-        if (event.key === "Enter") {
-          deactivate(view);
+        if (event.key === 'Enter') {
+          deactivate(view)
           editor._tiptapEditor
             .chain()
             .focus()
@@ -420,56 +429,56 @@ export function createSuggestionPlugin<
               from: queryStartPos! - triggerCharacter!.length,
               to: editor._tiptapEditor.state.selection.from,
             })
-            .run();
+            .run()
 
           selectItemCallback({
             item: items[keyboardHoveredItemIndex],
             editor: editor,
-          });
+          })
 
-          return true;
+          return true
         }
 
         // Closes the menu.
-        if (event.key === "Escape") {
-          deactivate(view);
-          return true;
+        if (event.key === 'Escape') {
+          deactivate(view)
+          return true
         }
 
-        return false;
+        return false
       },
 
       // Hides menu in cases where mouse click does not cause an editor state change.
       handleClick(view) {
-        deactivate(view);
+        deactivate(view)
       },
 
       // Setup decorator on the currently active suggestion.
       decorations(state) {
-        const { active, decorationId, queryStartPos, triggerCharacter } = (
+        const {active, decorationId, queryStartPos, triggerCharacter} = (
           this as Plugin
-        ).getState(state);
+        ).getState(state)
 
         if (!active) {
-          return null;
+          return null
         }
 
         // If the menu was opened programmatically by another extension, it may not use a trigger character. In this
         // case, the decoration is set on the whole block instead, as the decoration range would otherwise be empty.
-        if (triggerCharacter === "") {
-          const blockNode = findBlock(state.selection);
+        if (triggerCharacter === '') {
+          const blockNode = findBlock(state.selection)
           if (blockNode) {
             return DecorationSet.create(state.doc, [
               Decoration.node(
                 blockNode.pos,
                 blockNode.pos + blockNode.node.nodeSize,
                 {
-                  nodeName: "span",
-                  class: "suggestion-decorator",
-                  "data-decoration-id": decorationId,
-                }
+                  nodeName: 'span',
+                  class: 'suggestion-decorator',
+                  'data-decoration-id': decorationId,
+                },
               ),
-            ]);
+            ])
           }
         }
         // Creates an inline decoration around the trigger character.
@@ -478,13 +487,13 @@ export function createSuggestionPlugin<
             queryStartPos - triggerCharacter.length,
             queryStartPos,
             {
-              nodeName: "span",
-              class: "suggestion-decorator",
-              "data-decoration-id": decorationId,
-            }
+              nodeName: 'span',
+              class: 'suggestion-decorator',
+              'data-decoration-id': decorationId,
+            },
           ),
-        ]);
+        ])
       },
     },
-  });
+  })
 }

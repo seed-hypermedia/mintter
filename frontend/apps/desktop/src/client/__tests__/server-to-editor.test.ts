@@ -293,11 +293,9 @@ describe('Editor: ', () => {
           block: new Block({
             id: 'a',
             type: 'image',
-            text: '',
+            text: 'new alt image',
             annotations: [],
-            attributes: {
-              alt: 'alto',
-            },
+            attributes: {},
             ref: 'ipfs://ABC',
           }),
         }),
@@ -307,13 +305,13 @@ describe('Editor: ', () => {
           id: 'a',
           type: 'image',
           props: {
-            alt: 'alto',
             url: 'ABC',
             // junk:
             backgroundColor: 'default',
             textAlignment: 'left',
             textColor: 'default',
           },
+          content: [{type: 'text', text: 'new alt image', styles: {}}],
         },
       ])
     })

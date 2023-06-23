@@ -77,10 +77,6 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  console.log(
-    '🚀 ~ file: blockManipulation.test.ts:81 ~ afterEach ~ editor:',
-    editor,
-  )
   editor._tiptapEditor.destroy()
 
   editor = undefined as any
