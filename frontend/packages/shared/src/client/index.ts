@@ -75,9 +75,6 @@ export type {
   PeerInfo,
 } from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
-export * from './block-to-api'
-export * from './block-to-slate'
-export * from './change-creators'
 export * from './client-utils'
 export * from './hyperdocs-presentation'
 export * from './editor-types'

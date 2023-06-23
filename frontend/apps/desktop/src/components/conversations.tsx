@@ -8,7 +8,6 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {
   Block,
-  blockToApi,
   Conversation,
   formattedDate,
   paragraph,
@@ -22,11 +21,12 @@ import {useQuery} from '@tanstack/react-query'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {AccessoryContainer} from './accessory-sidebar'
-import {useConversations} from './conversations-context'
 
 export const ConversationsAccessory = features.comments
   ? EnabledConversationsAccessory
   : () => null
+
+function useConversations(): any {}
 
 export function EnabledConversationsAccessory() {
   const context = useConversations()
@@ -38,7 +38,7 @@ export function EnabledConversationsAccessory() {
     <AccessoryContainer title="Conversations">
       {documentId ? (
         data?.length ? (
-          data?.map((conversation) => (
+          data?.map((conversation: any) => (
             <ConversationItem
               isHighlighted={highlights.includes(conversation.id)}
               key={conversation.id}
@@ -160,7 +160,6 @@ function MintterReplyForm({
     commentsClient
       .addComment({
         conversationId,
-        comment: blockToApi(statement([paragraph([text(comment)])])),
       })
       .then((res) => {
         onSuccess()

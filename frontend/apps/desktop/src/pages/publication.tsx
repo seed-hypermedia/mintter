@@ -33,7 +33,6 @@ import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
 import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
 import {DebugData} from '@components/debug-data'
-import {ConversationsProvider} from '@components/conversations-context'
 import {CitationsProvider} from '@components/citations-context'
 
 export default function PublicationPage() {
@@ -100,108 +99,97 @@ export default function PublicationPage() {
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <ConversationsProvider
+        <CitationsProvider
           documentId={docId}
-          isOpen={accessoryKey === 'comments'}
-          onConversationsOpen={() => {
-            // todo, pass clicked on conversation into route
-            replace({...route, accessory: {key: 'comments'}})
+          onCitationsOpen={(citations: Array<MttLink>) => {
+            // todo, pass active citations into route
+            replace({...route, accessory: {key: 'citations'}})
           }}
-          publication={data}
         >
-          <CitationsProvider
-            documentId={docId}
-            onCitationsOpen={(citations: Array<MttLink>) => {
-              // todo, pass active citations into route
-              replace({...route, accessory: {key: 'citations'}})
-            }}
-          >
-            {/* <MouseProvider value={mouseService}> */}
-            <MainWrapper noScroll>
-              <Allotment defaultSizes={[100]} onChange={(values) => {}}>
-                <Allotment.Pane>
-                  <YStack
-                    height="100%"
-                    // @ts-ignore
-                    onMouseMove={(event) =>
-                      mouseService.send({
-                        type: 'MOUSE.MOVE',
-                        position: event.clientY,
-                      })
-                    }
-                    onMouseLeave={() => {
-                      mouseService.send('DISABLE.CHANGE')
-                    }}
+          {/* <MouseProvider value={mouseService}> */}
+          <MainWrapper noScroll>
+            <Allotment defaultSizes={[100]} onChange={(values) => {}}>
+              <Allotment.Pane>
+                <YStack
+                  height="100%"
+                  // @ts-ignore
+                  onMouseMove={(event) =>
+                    mouseService.send({
+                      type: 'MOUSE.MOVE',
+                      position: event.clientY,
+                    })
+                  }
+                  onMouseLeave={() => {
+                    mouseService.send('DISABLE.CHANGE')
+                  }}
+                >
+                  <ScrollView
+                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
                   >
-                    <ScrollView
-                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                    >
-                      {versionId && (
-                        <OutOfDateBanner docId={docId} version={versionId} />
-                      )}
-                      {editor && (
-                        <HDEditorContainer>
-                          <HyperDocsEditorView editor={editor} />
-                          <DebugData data={data} />
-                        </HDEditorContainer>
-                      )}
-                    </ScrollView>
-                  </YStack>
-                </Allotment.Pane>
-                {accessoryKey &&
-                  (accessoryKey == 'comments' ? (
-                    <ConversationsAccessory />
-                  ) : accessoryKey == 'versions' ? (
-                    <VersionsAccessory />
-                  ) : (
-                    <CitationsAccessory docId={docId} version={versionId} />
-                  ))}
-              </Allotment>
-            </MainWrapper>
-            <Footer>
+                    {versionId && (
+                      <OutOfDateBanner docId={docId} version={versionId} />
+                    )}
+                    {editor && (
+                      <HDEditorContainer>
+                        <HyperDocsEditorView editor={editor} />
+                        <DebugData data={data} />
+                      </HDEditorContainer>
+                    )}
+                  </ScrollView>
+                </YStack>
+              </Allotment.Pane>
+              {accessoryKey &&
+                (accessoryKey == 'comments' ? (
+                  <ConversationsAccessory />
+                ) : accessoryKey == 'versions' ? (
+                  <VersionsAccessory />
+                ) : (
+                  <CitationsAccessory docId={docId} version={versionId} />
+                ))}
+            </Allotment>
+          </MainWrapper>
+          <Footer>
+            <FooterButton
+              active={accessoryKey === 'versions'}
+              label={`${changes?.changes?.length} ${pluralS(
+                changes?.changes?.length,
+                'Version',
+              )}`}
+              icon={Pencil}
+              onPress={() => {
+                if (route.accessory) return replace({...route, accessory: null})
+                replace({...route, accessory: {key: 'versions'}})
+              }}
+            />
+            {citations?.links?.length ? (
               <FooterButton
-                active={accessoryKey === 'versions'}
-                label={`${changes?.changes?.length} ${pluralS(
-                  changes?.changes?.length,
-                  'Version',
+                active={accessoryKey === 'citations'}
+                label={`${citations?.links?.length} ${pluralS(
+                  citations?.links?.length,
+                  'Citation',
                 )}`}
-                icon={Pencil}
+                icon={Link}
                 onPress={() => {
                   if (route.accessory)
                     return replace({...route, accessory: null})
-                  replace({...route, accessory: {key: 'versions'}})
+                  replace({...route, accessory: {key: 'citations'}})
                 }}
               />
-              {citations?.links?.length ? (
-                <FooterButton
-                  active={accessoryKey === 'citations'}
-                  label={`${citations?.links?.length} ${pluralS(
-                    citations?.links?.length,
-                    'Citation',
-                  )}`}
-                  icon={Link}
-                  onPress={() => {
-                    if (route.accessory)
-                      return replace({...route, accessory: null})
-                    replace({...route, accessory: {key: 'citations'}})
-                  }}
-                />
-              ) : null}
-              {features.comments ? (
-                <FooterButton
-                  active={accessoryKey === 'comments'}
-                  label={`Conversations`}
-                  icon={Comment}
-                  onPress={() => {
-                    if (route.accessory?.key === 'versions')
-                      return replace({...route, accessory: null})
-                    replace({...route, accessory: {key: 'comments'}})
-                  }}
-                />
-              ) : null}
-            </Footer>
-          </CitationsProvider>
-        </ConversationsProvider>
+            ) : null}
+            {features.comments ? (
+              <FooterButton
+                active={accessoryKey === 'comments'}
+                label={`Conversations`}
+                icon={Comment}
+                onPress={() => {
+                  if (route.accessory?.key === 'versions')
+                    return replace({...route, accessory: null})
+                  replace({...route, accessory: {key: 'comments'}})
+                }}
+              />
+            ) : null}
+          </Footer>
+        </CitationsProvider>
       </ErrorBoundary>
     )
   }
