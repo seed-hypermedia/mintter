@@ -5,6 +5,8 @@ import {
 } from '@app/blocknote-core'
 import {MdPreview} from 'react-icons/md'
 import {
+  RiChatQuoteLine,
+  RiCodeLine,
   RiFolder2Line,
   RiH1,
   RiPlayCircleLine,
@@ -54,6 +56,18 @@ const extraFields: Record<
     icon: <RiText size={18} />,
     hint: 'Used for the body of your document',
     // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
+  },
+
+  Code: {
+    group: 'Text Content',
+    icon: <RiCodeLine size={18} />,
+    hint: 'Test code',
+  },
+
+  Blockquote: {
+    group: 'Text Content',
+    icon: <RiChatQuoteLine size={18} />,
+    hint: 'Test blockquote',
   },
 
   'Video / Audio': {

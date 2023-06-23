@@ -40,7 +40,9 @@ export type EditorParagraphBlock = {
   id: string
   content: InlineContent[]
   children: EditorBlock[]
-  props: Record<string, never>
+  props: {
+    type: 'p' | 'blockquote'
+  }
 }
 export type EditorHeadingBlock = {
   type: 'heading'

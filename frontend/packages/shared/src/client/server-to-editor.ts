@@ -190,8 +190,10 @@ export function serverBlockNodeToEditorParagraph(
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
-
   const {block, children} = serverBlock
+  // let type: 'p' | 'code' | 'blockquote' = 'p'
+  // if (opts?.paragraphType === 'code') type = 'code'
+  // if (opts?.paragraphType === 'blockquote') type = 'blockquote'
   return {
     id: block.id,
     type: 'paragraph',
@@ -200,7 +202,9 @@ export function serverBlockNodeToEditorParagraph(
       ...opts,
       childrenType: extractChildrenType(block.attributes.childrenType),
     }),
-    props: {},
+    props: {
+      type: serverBlock.block.attributes.type as 'p' | 'blockquote',
+    },
   }
 }
 
@@ -294,7 +298,6 @@ export function serverChildrenToEditorChildren(
     // if (opts?.childrenType === 'bullet') {
     //   return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
     // }
-
     return serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
   })
 }
