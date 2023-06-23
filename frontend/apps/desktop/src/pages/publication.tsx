@@ -28,8 +28,6 @@ import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor} from 'slate'
-import {ReactEditor} from 'slate-react'
 
 import {useWindowListen} from '@app/ipc'
 import {AppError} from '@app/root'
