@@ -6,10 +6,10 @@ import {
   PresentationBlock,
   SectionBlock,
   SiteInfo,
-  isMintterScheme,
   getCIDFromIPFSUrl,
   serverBlockToEditorInline,
   getIdsfromUrl,
+  isHyperdocsScheme,
 } from '@mintter/shared'
 import {
   ArticleContainer,
@@ -23,8 +23,6 @@ import {
   YStack,
 } from '@mintter/ui'
 import Head from 'next/head'
-import {HighlightProvider} from 'slate-react-presentation/highlight'
-import {HoverProvider} from 'slate-react-presentation/hover'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
@@ -122,62 +120,52 @@ export default function PublicationPage({
   }, [loadedPublication.data, publication])
 
   return (
-    <HighlightProvider>
-      <HoverProvider>
-        <Container tag="main" id="main-content" tabIndex={-1}>
-          {siteInfo ? (
-            <SiteHead siteInfo={siteInfo} />
+    <Container tag="main" id="main-content" tabIndex={-1}>
+      {siteInfo ? (
+        <SiteHead siteInfo={siteInfo} />
+      ) : (
+        <GatewayHead title={publication?.document?.title} />
+      )}
+      <Head>
+        <meta name="mintter-document-id" content={publication?.document?.id} />
+        <meta name="mintter-document-version" content={publication?.version} />
+        <meta
+          name="mintter-document-title"
+          content={publication?.document?.title}
+        />
+      </Head>
+      <ArticleContainer
+        flexDirection={media.gtSm ? 'row' : 'column'}
+        paddingRight={media.gtSm ? '$4' : 0}
+      >
+        <MainContainer flex={3} className="web-publication">
+          {displayPub ? (
+            <PublicationContent publication={displayPub} />
+          ) : loadedPublication.isLoading ? (
+            <YStack>
+              <Header>Querying for document on the network.</Header>
+              <Spinner />
+            </YStack>
           ) : (
-            <GatewayHead title={publication?.document?.title} />
+            <Header>Document not found.</Header>
           )}
-          <Head>
-            <meta
-              name="mintter-document-id"
-              content={publication?.document?.id}
-            />
-            <meta
-              name="mintter-document-version"
-              content={publication?.version}
-            />
-            <meta
-              name="mintter-document-title"
-              content={publication?.document?.title}
-            />
-          </Head>
-          <ArticleContainer
-            flexDirection={media.gtSm ? 'row' : 'column'}
-            paddingRight={media.gtSm ? '$4' : 0}
-          >
-            <MainContainer flex={3} className="web-publication">
-              {displayPub ? (
-                <PublicationContent publication={displayPub} />
-              ) : loadedPublication.isLoading ? (
-                <YStack>
-                  <Header>Querying for document on the network.</Header>
-                  <Spinner />
-                </YStack>
-              ) : (
-                <Header>Document not found.</Header>
-              )}
-            </MainContainer>
-            <SideContainer flex={1}>
-              {metadata ? (
-                <>
-                  <PublicationMetadata
-                    publication={displayPub || undefined}
-                    editors={editors || []}
-                  />
-                  {editors?.length && documentId ? (
-                    <WebTipping docId={documentId} editors={editors || []} />
-                  ) : null}
-                </>
+        </MainContainer>
+        <SideContainer flex={1}>
+          {metadata ? (
+            <>
+              <PublicationMetadata
+                publication={displayPub || undefined}
+                editors={editors || []}
+              />
+              {editors?.length && documentId ? (
+                <WebTipping docId={documentId} editors={editors || []} />
               ) : null}
-            </SideContainer>
-          </ArticleContainer>
-          {siteInfo ? null : <Footer />}
-        </Container>
-      </HoverProvider>
-    </HighlightProvider>
+            </>
+          ) : null}
+        </SideContainer>
+      </ArticleContainer>
+      {siteInfo ? null : <Footer />}
+    </Container>
   )
 }
 
@@ -214,14 +202,14 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           )
         }
         if (content.type === 'link') {
-          const href = isMintterScheme(content.href)
+          const href = isHyperdocsScheme(content.href)
             ? hdLinkToSitePath(content.href)
             : content.href
           return (
             <a
               href={href}
               key={index}
-              className={isMintterScheme(content.href) ? 'hd-link' : 'link'}
+              className={isHyperdocsScheme(content.href) ? 'hd-link' : 'link'}
               style={{cursor: 'pointer'}}
             >
               <InlineContentView inline={content.content} />
