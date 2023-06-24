@@ -13,40 +13,40 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  # generate-docker-images:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     - name: Login to Docker Hub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #     - name: Build and push mintterd
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         push: true
-  #         file: backend/cmd/mintterd/Dockerfile
-  #         tags: mintter/mintterd:latest
-  #     - name: Build and push nextjs
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         push: true
-  #         file: frontend/apps/site/Dockerfile
-  #         tags: mintter/sitegw:latest
-  #     - name: Build and push gateway
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         push: true
-  #         file: backend/cmd/minttergw/Dockerfile
-  #         tags: mintter/minttergw:latest
-  #     - name: Build and push relay
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         push: true
-  #         file: backend/cmd/relayd/Dockerfile
-  #         tags: mintter/relayd:latest
+  generate-docker-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push mintterd
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: backend/cmd/mintterd/Dockerfile
+          tags: mintter/mintterd:latest
+      - name: Build and push nextjs
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: frontend/apps/site/Dockerfile
+          tags: mintter/sitegw:latest
+      - name: Build and push gateway
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: backend/cmd/minttergw/Dockerfile
+          tags: mintter/minttergw:latest
+      - name: Build and push relay
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: backend/cmd/relayd/Dockerfile
+          tags: mintter/relayd:latest
   push-site-scripts:
     runs-on: ubuntu-latest
     steps:
@@ -273,7 +273,8 @@ jobs:
           #   ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
           sourcemaps:
             './artifacts/sourcemaps-x86_64-apple-darwin
-            ./artifacts/sourcemaps-aarch64-apple-darwin'
+            ./artifacts/sourcemaps-aarch64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
