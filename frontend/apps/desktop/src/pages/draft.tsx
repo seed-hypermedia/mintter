@@ -6,10 +6,10 @@ import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
 import {DebugData} from '@components/debug-data'
 import Footer from '@components/footer'
-import {MainWrapper} from '@mintter/ui'
+import {Button, Container, MainWrapper, Text, YStack} from '@mintter/ui'
 import '@app/blocknote-core/style.css'
-import {useState} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
+import {useEffect, useState} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useListen} from '@app/ipc'
 
 export default function DraftPage() {
@@ -26,33 +26,22 @@ export default function DraftPage() {
 
   let isDaemonReady = useDaemonReady()
 
-  useListen(
-    'select_all',
-    () => {
-      if (editor) {
-        if (!editor?._tiptapEditor.isFocused) {
-          editor?.focus()
-        }
-        editor?._tiptapEditor.commands.selectAll()
-      }
-    },
-    [editor],
-  )
-
   return (
-    <ErrorBoundary
-      FallbackComponent={AppError}
-      onReset={() => window.location.reload()}
-    >
+    <>
       <MainWrapper>
-        <HDEditorContainer>
-          {!isDaemonReady ? <NotSavingBanner /> : null}
-          {editor && <HyperDocsEditorView editor={editor} />}
-          {debugValue && <DebugData data={debugValue} />}
-        </HDEditorContainer>
+        <ErrorBoundary
+          FallbackComponent={DraftError}
+          onReset={() => window.location.reload()}
+        >
+          <HDEditorContainer>
+            {!isDaemonReady ? <NotSavingBanner /> : null}
+            {editor && <HyperDocsEditorView editor={editor} />}
+            {debugValue && <DebugData data={debugValue} />}
+          </HDEditorContainer>
+        </ErrorBoundary>
       </MainWrapper>
       <Footer />
-    </ErrorBoundary>
+    </>
   )
 }
 
@@ -61,5 +50,17 @@ function NotSavingBanner() {
     <AppBanner>
       <BannerText>The Draft is not being saved right now.</BannerText>
     </AppBanner>
+  )
+}
+
+function DraftError({error, resetErrorBoundary}: FallbackProps) {
+  return (
+    <Container>
+      <YStack role="alert" space>
+        <Text fontWeight="800">Draft Error:</Text>
+        <Text tag="pre">{error.message}</Text>
+        <Button onPress={resetErrorBoundary}>Try again</Button>
+      </YStack>
+    </Container>
   )
 }

@@ -13,6 +13,7 @@ import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {editorBlockToServerBlock} from '@app/client/editor-to-server'
 import {hdBlockSchema} from '@app/client/schema'
 import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
+import {useListen} from '@app/ipc'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {toast} from '@app/toast'
 import {insertFile} from '@app/types/file'
@@ -345,11 +346,20 @@ type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
 //   return state
 // }
 
+var defaultOnError = (err: any) => {
+  console.log('== getDraftQuery ERROR', err)
+}
+
 function getDraftQuery(
   documentId: string | undefined,
   opts?: UseQueryOptions<EditorDraftState>,
 ) {
-  const {enabled = true, ...restOpts} = opts || {}
+  const {
+    enabled = true,
+    retry = false,
+    onError = defaultOnError,
+    ...restOpts
+  } = opts || {}
   return {
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
@@ -374,7 +384,9 @@ function getDraftQuery(
       }
       return draftState
     },
+    retry,
     enabled: !!documentId && enabled,
+    onError,
     ...restOpts,
   }
 }
@@ -457,11 +469,16 @@ export function useDraftEditor(
         changes,
       })
     },
+    retry: false,
+    onError: (err) => {
+      console.log('=== DRAFT MUTATION ERROR', err)
+    },
   })
 
   let lastBlocks = useRef<Record<string, HDBlock>>({})
   let lastBlockParent = useRef<Record<string, string>>({})
   let lastBlockLeftSibling = useRef<Record<string, string>>({})
+  let [ready, setReady] = useState(false)
 
   function prepareBlockObservations(
     blocks: Block<typeof hdBlockSchema>[],
@@ -601,12 +618,39 @@ export function useDraftEditor(
     ],
   })
 
+  useEffect(() => {
+    if (editor && !ready) {
+      if (!editor?._tiptapEditor.isFocused) {
+        editor._tiptapEditor.commands.focus()
+        setReady(true)
+        console.log('READY', editor, ready)
+      }
+    }
+  }, [editor])
+
+  useListen(
+    'select_all',
+    () => {
+      if (editor) {
+        if (!editor?._tiptapEditor.isFocused) {
+          editor.focus()
+        }
+        editor?._tiptapEditor.commands.selectAll()
+      }
+    },
+    [editor],
+  )
+
   const draft = useQuery(
     getDraftQuery(documentId, {
       enabled: !!editor,
       onSuccess: (draft: EditorDraftState) => {
         readyThings.current[1] = draft
         handleMaybeReady()
+      },
+      retry: false,
+      onError: (err) => {
+        console.log('== DRAFT FETCH ERROR', err)
       },
     }),
   )
@@ -641,6 +685,8 @@ export function useDraftEditor(
 
   return {
     editor,
+    query: draft,
+    mutation: saveDraftMutation,
   }
 }
 
