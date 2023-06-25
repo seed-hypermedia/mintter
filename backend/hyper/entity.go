@@ -27,14 +27,9 @@ import (
 // EntityID is a type for IDs of mutable entities.
 type EntityID string
 
-// NewEntityID creates a new ID for an entity.
-func NewEntityID(namespace string, id string) EntityID {
-	return EntityID(namespace + ":" + id)
-}
-
 // CID representation of the entity ID. Used for announcing on the DHT.
 func (eid EntityID) CID() (cid.Cid, error) {
-	c, err := ipfs.NewCID(uint64(multicodec.Raw), uint64(multicodec.Identity), []byte("/mintter/entity/"+string(eid)))
+	c, err := ipfs.NewCID(uint64(multicodec.Raw), uint64(multicodec.Identity), []byte(eid))
 	if err != nil {
 		return c, fmt.Errorf("failed to convert entity ID %s into CID: %w", eid, err)
 	}
@@ -288,7 +283,7 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 	if err != nil {
 		return err
 	}
-	if edb.HyperEntitiesID == 0 {
+	if edb.HDEntitiesID == 0 {
 		return status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
@@ -299,12 +294,12 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.HyperChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
 		if err != nil {
 			return err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.HyperChangesViewCodec), change.HyperChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.HDChangesViewCodec), change.HDChangesViewMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
@@ -334,11 +329,11 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	if err != nil {
 		return nil, err
 	}
-	if edb.HyperEntitiesID == 0 {
+	if edb.HDEntitiesID == 0 {
 		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
-	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HyperEntitiesID)
+	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HDEntitiesID)
 	if err != nil {
 		return nil, err
 	}
@@ -410,11 +405,11 @@ func (bs *Storage) FindDraft(ctx context.Context, eid EntityID) (cid.Cid, error)
 	if err != nil {
 		return cid.Undef, err
 	}
-	if res.HyperDraftsViewBlobID == 0 {
+	if res.HDDraftsViewBlobID == 0 {
 		return cid.Undef, fmt.Errorf("no draft for entity %s", eid)
 	}
 
-	return cid.NewCidV1(uint64(res.HyperDraftsViewCodec), res.HyperDraftsViewMultihash), nil
+	return cid.NewCidV1(uint64(res.HDDraftsViewCodec), res.HDDraftsViewMultihash), nil
 }
 
 // LoadEntityFromHeads returns the loaded entity at a given "version" corresponding to the provided HEAD changes.
@@ -476,12 +471,12 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.HyperChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
 		if err != nil {
 			return nil, err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.HyperChangesViewCodec), change.HyperChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.HDChangesViewCodec), change.HDChangesViewMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)

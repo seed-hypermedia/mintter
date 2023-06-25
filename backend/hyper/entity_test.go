@@ -12,7 +12,7 @@ import (
 )
 
 func TestEntity(t *testing.T) {
-	e := NewEntity("mintter:account:alice")
+	e := NewEntity("hd://a/alice")
 	alice := coretest.NewTester("alice")
 
 	name, _ := e.Get("name")

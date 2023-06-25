@@ -466,18 +466,18 @@ WHERE key_delegations_view.delegate = :keyDelegationsViewDelegate`
 }
 
 type EntitiesInsertOrIgnoreResult struct {
-	HyperEntitiesID int64
+	HDEntitiesID int64
 }
 
-func EntitiesInsertOrIgnore(conn *sqlite.Conn, hyperEntitiesEID string) (EntitiesInsertOrIgnoreResult, error) {
-	const query = `INSERT OR IGNORE INTO hyper_entities (eid)
-VALUES (:hyperEntitiesEID)
-RETURNING hyper_entities.id`
+func EntitiesInsertOrIgnore(conn *sqlite.Conn, hdEntitiesEID string) (EntitiesInsertOrIgnoreResult, error) {
+	const query = `INSERT OR IGNORE INTO hd_entities (eid)
+VALUES (:hdEntitiesEID)
+RETURNING hd_entities.id`
 
 	var out EntitiesInsertOrIgnoreResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -485,7 +485,7 @@ RETURNING hyper_entities.id`
 			return errors.New("EntitiesInsertOrIgnore: more than one result return for a single-kind query")
 		}
 
-		out.HyperEntitiesID = stmt.ColumnInt64(0)
+		out.HDEntitiesID = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -498,19 +498,19 @@ RETURNING hyper_entities.id`
 }
 
 type EntitiesLookupIDResult struct {
-	HyperEntitiesID int64
+	HDEntitiesID int64
 }
 
-func EntitiesLookupID(conn *sqlite.Conn, hyperEntitiesEID string) (EntitiesLookupIDResult, error) {
-	const query = `SELECT hyper_entities.id
-FROM hyper_entities
-WHERE hyper_entities.eid = :hyperEntitiesEID
+func EntitiesLookupID(conn *sqlite.Conn, hdEntitiesEID string) (EntitiesLookupIDResult, error) {
+	const query = `SELECT hd_entities.id
+FROM hd_entities
+WHERE hd_entities.eid = :hdEntitiesEID
 LIMIT 1`
 
 	var out EntitiesLookupIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -518,7 +518,7 @@ LIMIT 1`
 			return errors.New("EntitiesLookupID: more than one result return for a single-kind query")
 		}
 
-		out.HyperEntitiesID = stmt.ColumnInt64(0)
+		out.HDEntitiesID = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -531,15 +531,15 @@ LIMIT 1`
 }
 
 type EntitiesListByPrefixResult struct {
-	HyperEntitiesID  int64
-	HyperEntitiesEID string
+	HDEntitiesID  int64
+	HDEntitiesEID string
 }
 
 func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
-	const query = `SELECT hyper_entities.id, hyper_entities.eid
-FROM hyper_entities
-WHERE hyper_entities.eid GLOB :prefix
-ORDER BY hyper_entities.id`
+	const query = `SELECT hd_entities.id, hd_entities.eid
+FROM hd_entities
+WHERE hd_entities.eid GLOB :prefix
+ORDER BY hd_entities.id`
 
 	var out []EntitiesListByPrefixResult
 
@@ -549,8 +549,8 @@ ORDER BY hyper_entities.id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, EntitiesListByPrefixResult{
-			HyperEntitiesID:  stmt.ColumnInt64(0),
-			HyperEntitiesEID: stmt.ColumnText(1),
+			HDEntitiesID:  stmt.ColumnInt64(0),
+			HDEntitiesEID: stmt.ColumnText(1),
 		})
 
 		return nil
@@ -564,12 +564,12 @@ ORDER BY hyper_entities.id`
 	return out, err
 }
 
-func EntitiesDelete(conn *sqlite.Conn, hyperEntitiesEID string) error {
-	const query = `DELETE FROM hyper_entities
-WHERE hyper_entities.eid = :hyperEntitiesEID`
+func EntitiesDelete(conn *sqlite.Conn, hdEntitiesEID string) error {
+	const query = `DELETE FROM hd_entities
+WHERE hd_entities.eid = :hdEntitiesEID`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -584,14 +584,14 @@ WHERE hyper_entities.eid = :hyperEntitiesEID`
 	return err
 }
 
-func ChangesInsertOrIgnore(conn *sqlite.Conn, hyperChangesBlob int64, hyperChangesEntity int64, hyperChangesHlcTime int64) error {
-	const query = `INSERT OR IGNORE INTO hyper_changes (blob, entity, hlc_time)
-VALUES (:hyperChangesBlob, :hyperChangesEntity, :hyperChangesHlcTime)`
+func ChangesInsertOrIgnore(conn *sqlite.Conn, hdChangesBlob int64, hdChangesEntity int64, hdChangesHlcTime int64) error {
+	const query = `INSERT OR IGNORE INTO hd_changes (blob, entity, hlc_time)
+VALUES (:hdChangesBlob, :hdChangesEntity, :hdChangesHlcTime)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangesBlob", hyperChangesBlob)
-		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
-		stmt.SetInt64(":hyperChangesHlcTime", hyperChangesHlcTime)
+		stmt.SetInt64(":hdChangesBlob", hdChangesBlob)
+		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
+		stmt.SetInt64(":hdChangesHlcTime", hdChangesHlcTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -607,38 +607,38 @@ VALUES (:hyperChangesBlob, :hyperChangesEntity, :hyperChangesHlcTime)`
 }
 
 type ChangesListFromChangeSetResult struct {
-	HyperChangesViewBlobID    int64
-	HyperChangesViewCodec     int64
-	HyperChangesViewData      []byte
-	HyperChangesViewEntityID  int64
-	HyperChangesViewHlcTime   int64
-	HyperChangesViewMultihash []byte
-	HyperChangesViewSize      int64
+	HDChangesViewBlobID    int64
+	HDChangesViewCodec     int64
+	HDChangesViewData      []byte
+	HDChangesViewEntityID  int64
+	HDChangesViewHlcTime   int64
+	HDChangesViewMultihash []byte
+	HDChangesViewSize      int64
 }
 
-func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, hyperChangesViewEntity string) ([]ChangesListFromChangeSetResult, error) {
-	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
-FROM hyper_changes_view, json_each(:cset) AS cset
-WHERE hyper_changes_view.entity = :hyperChangesViewEntity
-AND hyper_changes_view.blob_id = cset.value
-ORDER BY hyper_changes_view.hlc_time`
+func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, hdChangesViewEntity string) ([]ChangesListFromChangeSetResult, error) {
+	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.data, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size
+FROM hd_changes_view, json_each(:cset) AS cset
+WHERE hd_changes_view.entity = :hdChangesViewEntity
+AND hd_changes_view.blob_id = cset.value
+ORDER BY hd_changes_view.hlc_time`
 
 	var out []ChangesListFromChangeSetResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":cset", cset)
-		stmt.SetText(":hyperChangesViewEntity", hyperChangesViewEntity)
+		stmt.SetText(":hdChangesViewEntity", hdChangesViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListFromChangeSetResult{
-			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
-			HyperChangesViewCodec:     stmt.ColumnInt64(1),
-			HyperChangesViewData:      stmt.ColumnBytes(2),
-			HyperChangesViewEntityID:  stmt.ColumnInt64(3),
-			HyperChangesViewHlcTime:   stmt.ColumnInt64(4),
-			HyperChangesViewMultihash: stmt.ColumnBytes(5),
-			HyperChangesViewSize:      stmt.ColumnInt64(6),
+			HDChangesViewBlobID:    stmt.ColumnInt64(0),
+			HDChangesViewCodec:     stmt.ColumnInt64(1),
+			HDChangesViewData:      stmt.ColumnBytes(2),
+			HDChangesViewEntityID:  stmt.ColumnInt64(3),
+			HDChangesViewHlcTime:   stmt.ColumnInt64(4),
+			HDChangesViewMultihash: stmt.ColumnBytes(5),
+			HDChangesViewSize:      stmt.ColumnInt64(6),
 		})
 
 		return nil
@@ -653,36 +653,36 @@ ORDER BY hyper_changes_view.hlc_time`
 }
 
 type ChangesListForEntityResult struct {
-	HyperChangesViewBlobID    int64
-	HyperChangesViewCodec     int64
-	HyperChangesViewData      []byte
-	HyperChangesViewEntityID  int64
-	HyperChangesViewHlcTime   int64
-	HyperChangesViewMultihash []byte
-	HyperChangesViewSize      int64
+	HDChangesViewBlobID    int64
+	HDChangesViewCodec     int64
+	HDChangesViewData      []byte
+	HDChangesViewEntityID  int64
+	HDChangesViewHlcTime   int64
+	HDChangesViewMultihash []byte
+	HDChangesViewSize      int64
 }
 
-func ChangesListForEntity(conn *sqlite.Conn, hyperChangesViewEntity string) ([]ChangesListForEntityResult, error) {
-	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.data, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size
-FROM hyper_changes_view
-WHERE hyper_changes_view.entity = :hyperChangesViewEntity
-ORDER BY hyper_changes_view.hlc_time`
+func ChangesListForEntity(conn *sqlite.Conn, hdChangesViewEntity string) ([]ChangesListForEntityResult, error) {
+	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.data, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size
+FROM hd_changes_view
+WHERE hd_changes_view.entity = :hdChangesViewEntity
+ORDER BY hd_changes_view.hlc_time`
 
 	var out []ChangesListForEntityResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperChangesViewEntity", hyperChangesViewEntity)
+		stmt.SetText(":hdChangesViewEntity", hdChangesViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListForEntityResult{
-			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
-			HyperChangesViewCodec:     stmt.ColumnInt64(1),
-			HyperChangesViewData:      stmt.ColumnBytes(2),
-			HyperChangesViewEntityID:  stmt.ColumnInt64(3),
-			HyperChangesViewHlcTime:   stmt.ColumnInt64(4),
-			HyperChangesViewMultihash: stmt.ColumnBytes(5),
-			HyperChangesViewSize:      stmt.ColumnInt64(6),
+			HDChangesViewBlobID:    stmt.ColumnInt64(0),
+			HDChangesViewCodec:     stmt.ColumnInt64(1),
+			HDChangesViewData:      stmt.ColumnBytes(2),
+			HDChangesViewEntityID:  stmt.ColumnInt64(3),
+			HDChangesViewHlcTime:   stmt.ColumnInt64(4),
+			HDChangesViewMultihash: stmt.ColumnBytes(5),
+			HDChangesViewSize:      stmt.ColumnInt64(6),
 		})
 
 		return nil
@@ -697,22 +697,22 @@ ORDER BY hyper_changes_view.hlc_time`
 }
 
 type ChangesListPublicNoDataResult struct {
-	HyperChangesViewBlobID    int64
-	HyperChangesViewCodec     int64
-	HyperChangesViewEntityID  int64
-	HyperChangesViewHlcTime   int64
-	HyperChangesViewMultihash []byte
-	HyperChangesViewSize      int64
-	HyperChangesViewEntity    string
-	HyperDraftsBlob           int64
+	HDChangesViewBlobID    int64
+	HDChangesViewCodec     int64
+	HDChangesViewEntityID  int64
+	HDChangesViewHlcTime   int64
+	HDChangesViewMultihash []byte
+	HDChangesViewSize      int64
+	HDChangesViewEntity    string
+	HDDraftsBlob           int64
 }
 
 func ChangesListPublicNoData(conn *sqlite.Conn) ([]ChangesListPublicNoDataResult, error) {
-	const query = `SELECT hyper_changes_view.blob_id, hyper_changes_view.codec, hyper_changes_view.entity_id, hyper_changes_view.hlc_time, hyper_changes_view.multihash, hyper_changes_view.size, hyper_changes_view.entity, hyper_drafts.blob
-FROM hyper_changes_view
-LEFT JOIN hyper_drafts ON hyper_drafts.entity = hyper_changes_view.entity_id
-WHERE hyper_drafts.blob IS NULL
-ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
+	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size, hd_changes_view.entity, hd_drafts.blob
+FROM hd_changes_view
+LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes_view.entity_id
+WHERE hd_drafts.blob IS NULL
+ORDER BY hd_changes_view.entity, hd_changes_view.hlc_time`
 
 	var out []ChangesListPublicNoDataResult
 
@@ -721,14 +721,14 @@ ORDER BY hyper_changes_view.entity, hyper_changes_view.hlc_time`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListPublicNoDataResult{
-			HyperChangesViewBlobID:    stmt.ColumnInt64(0),
-			HyperChangesViewCodec:     stmt.ColumnInt64(1),
-			HyperChangesViewEntityID:  stmt.ColumnInt64(2),
-			HyperChangesViewHlcTime:   stmt.ColumnInt64(3),
-			HyperChangesViewMultihash: stmt.ColumnBytes(4),
-			HyperChangesViewSize:      stmt.ColumnInt64(5),
-			HyperChangesViewEntity:    stmt.ColumnText(6),
-			HyperDraftsBlob:           stmt.ColumnInt64(7),
+			HDChangesViewBlobID:    stmt.ColumnInt64(0),
+			HDChangesViewCodec:     stmt.ColumnInt64(1),
+			HDChangesViewEntityID:  stmt.ColumnInt64(2),
+			HDChangesViewHlcTime:   stmt.ColumnInt64(3),
+			HDChangesViewMultihash: stmt.ColumnBytes(4),
+			HDChangesViewSize:      stmt.ColumnInt64(5),
+			HDChangesViewEntity:    stmt.ColumnText(6),
+			HDDraftsBlob:           stmt.ColumnInt64(7),
 		})
 
 		return nil
@@ -747,7 +747,7 @@ type ChangesResolveHeadsResult struct {
 }
 
 func ChangesResolveHeads(conn *sqlite.Conn, heads []byte) (ChangesResolveHeadsResult, error) {
-	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hyper_change_deps.parent FROM hyper_change_deps JOIN changeset ON changeset.change = hyper_change_deps.child)
+	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hd_change_deps.parent FROM hd_change_deps JOIN changeset ON changeset.change = hd_change_deps.child)
 SELECT json_group_array(change) AS resolved_json
 FROM changeset
 LIMIT 1`
@@ -779,19 +779,19 @@ type ChangesGetPublicHeadsJSONResult struct {
 	Heads []byte
 }
 
-func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, hyperChangesEntity int64) (ChangesGetPublicHeadsJSONResult, error) {
-	const query = `SELECT json_group_array(hyper_changes.blob) AS heads
-FROM hyper_changes
-LEFT JOIN hyper_drafts ON hyper_drafts.entity = hyper_changes.entity
-WHERE hyper_changes.entity = :hyperChangesEntity
-AND hyper_drafts.blob IS NULL
-AND hyper_changes.blob NOT IN (SELECT hyper_change_deps.parent FROM hyper_change_deps)
+func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, hdChangesEntity int64) (ChangesGetPublicHeadsJSONResult, error) {
+	const query = `SELECT json_group_array(hd_changes.blob) AS heads
+FROM hd_changes
+LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes.entity
+WHERE hd_changes.entity = :hdChangesEntity
+AND hd_drafts.blob IS NULL
+AND hd_changes.blob NOT IN (SELECT hd_change_deps.parent FROM hd_change_deps)
 LIMIT 1`
 
 	var out ChangesGetPublicHeadsJSONResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
+		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -811,12 +811,12 @@ LIMIT 1`
 	return out, err
 }
 
-func ChangesDeleteForEntity(conn *sqlite.Conn, hyperChangesEntity int64) error {
+func ChangesDeleteForEntity(conn *sqlite.Conn, hdChangesEntity int64) error {
 	const query = `DELETE FROM blobs
-WHERE blobs.id IN (SELECT hyper_changes.blob FROM hyper_changes WHERE hyper_changes.entity = :hyperChangesEntity)`
+WHERE blobs.id IN (SELECT hd_changes.blob FROM hd_changes WHERE hd_changes.entity = :hdChangesEntity)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperChangesEntity", hyperChangesEntity)
+		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -831,16 +831,16 @@ WHERE blobs.id IN (SELECT hyper_changes.blob FROM hyper_changes WHERE hyper_chan
 	return err
 }
 
-func LinksInsert(conn *sqlite.Conn, hyperLinksSourceBlob int64, hyperLinksRel string, hyperLinksTargetBlob int64, hyperLinksTargetEntity int64, hyperLinksData []byte) error {
-	const query = `INSERT OR IGNORE INTO hyper_links (source_blob, rel, target_blob, target_entity, data)
-VALUES (:hyperLinksSourceBlob, :hyperLinksRel, NULLIF(:hyperLinksTargetBlob, 0), NULLIF(:hyperLinksTargetEntity, 0), :hyperLinksData)`
+func LinksInsert(conn *sqlite.Conn, hdLinksSourceBlob int64, hdLinksRel string, hdLinksTargetBlob int64, hdLinksTargetEntity int64, hdLinksData []byte) error {
+	const query = `INSERT OR IGNORE INTO hd_links (source_blob, rel, target_blob, target_entity, data)
+VALUES (:hdLinksSourceBlob, :hdLinksRel, NULLIF(:hdLinksTargetBlob, 0), NULLIF(:hdLinksTargetEntity, 0), :hdLinksData)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperLinksSourceBlob", hyperLinksSourceBlob)
-		stmt.SetText(":hyperLinksRel", hyperLinksRel)
-		stmt.SetInt64(":hyperLinksTargetBlob", hyperLinksTargetBlob)
-		stmt.SetInt64(":hyperLinksTargetEntity", hyperLinksTargetEntity)
-		stmt.SetBytes(":hyperLinksData", hyperLinksData)
+		stmt.SetInt64(":hdLinksSourceBlob", hdLinksSourceBlob)
+		stmt.SetText(":hdLinksRel", hdLinksRel)
+		stmt.SetInt64(":hdLinksTargetBlob", hdLinksTargetBlob)
+		stmt.SetInt64(":hdLinksTargetEntity", hdLinksTargetEntity)
+		stmt.SetBytes(":hdLinksData", hdLinksData)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -902,13 +902,13 @@ WHERE content_links_view.target_eid = :contentLinksViewTargetEID`
 	return out, err
 }
 
-func DraftsInsert(conn *sqlite.Conn, hyperDraftsEntity int64, hyperDraftsBlob int64) error {
-	const query = `INSERT INTO hyper_drafts (entity, blob)
-VALUES (:hyperDraftsEntity, :hyperDraftsBlob)`
+func DraftsInsert(conn *sqlite.Conn, hdDraftsEntity int64, hdDraftsBlob int64) error {
+	const query = `INSERT INTO hd_drafts (entity, blob)
+VALUES (:hdDraftsEntity, :hdDraftsBlob)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperDraftsEntity", hyperDraftsEntity)
-		stmt.SetInt64(":hyperDraftsBlob", hyperDraftsBlob)
+		stmt.SetInt64(":hdDraftsEntity", hdDraftsEntity)
+		stmt.SetInt64(":hdDraftsBlob", hdDraftsBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -924,22 +924,22 @@ VALUES (:hyperDraftsEntity, :hyperDraftsBlob)`
 }
 
 type DraftsGetResult struct {
-	HyperDraftsViewBlobID    int64
-	HyperDraftsViewCodec     int64
-	HyperDraftsViewEntity    string
-	HyperDraftsViewEntityID  int64
-	HyperDraftsViewMultihash []byte
+	HDDraftsViewBlobID    int64
+	HDDraftsViewCodec     int64
+	HDDraftsViewEntity    string
+	HDDraftsViewEntityID  int64
+	HDDraftsViewMultihash []byte
 }
 
-func DraftsGet(conn *sqlite.Conn, hyperDraftsViewEntity string) (DraftsGetResult, error) {
-	const query = `SELECT hyper_drafts_view.blob_id, hyper_drafts_view.codec, hyper_drafts_view.entity, hyper_drafts_view.entity_id, hyper_drafts_view.multihash
-FROM hyper_drafts_view
-WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
+func DraftsGet(conn *sqlite.Conn, hdDraftsViewEntity string) (DraftsGetResult, error) {
+	const query = `SELECT hd_drafts_view.blob_id, hd_drafts_view.codec, hd_drafts_view.entity, hd_drafts_view.entity_id, hd_drafts_view.multihash
+FROM hd_drafts_view
+WHERE hd_drafts_view.entity = :hdDraftsViewEntity LIMIT 1`
 
 	var out DraftsGetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperDraftsViewEntity", hyperDraftsViewEntity)
+		stmt.SetText(":hdDraftsViewEntity", hdDraftsViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -947,11 +947,11 @@ WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
 			return errors.New("DraftsGet: more than one result return for a single-kind query")
 		}
 
-		out.HyperDraftsViewBlobID = stmt.ColumnInt64(0)
-		out.HyperDraftsViewCodec = stmt.ColumnInt64(1)
-		out.HyperDraftsViewEntity = stmt.ColumnText(2)
-		out.HyperDraftsViewEntityID = stmt.ColumnInt64(3)
-		out.HyperDraftsViewMultihash = stmt.ColumnBytes(4)
+		out.HDDraftsViewBlobID = stmt.ColumnInt64(0)
+		out.HDDraftsViewCodec = stmt.ColumnInt64(1)
+		out.HDDraftsViewEntity = stmt.ColumnText(2)
+		out.HDDraftsViewEntityID = stmt.ColumnInt64(3)
+		out.HDDraftsViewMultihash = stmt.ColumnBytes(4)
 		return nil
 	}
 
@@ -963,12 +963,12 @@ WHERE hyper_drafts_view.entity = :hyperDraftsViewEntity LIMIT 1`
 	return out, err
 }
 
-func DraftsDelete(conn *sqlite.Conn, hyperDraftsBlob int64) error {
-	const query = `DELETE FROM hyper_drafts
-WHERE hyper_drafts.blob = :hyperDraftsBlob`
+func DraftsDelete(conn *sqlite.Conn, hdDraftsBlob int64) error {
+	const query = `DELETE FROM hd_drafts
+WHERE hd_drafts.blob = :hdDraftsBlob`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hyperDraftsBlob", hyperDraftsBlob)
+		stmt.SetInt64(":hdDraftsBlob", hdDraftsBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

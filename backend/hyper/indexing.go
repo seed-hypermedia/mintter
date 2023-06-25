@@ -33,7 +33,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 		if v.Purpose != DelegationPurposeRegistration {
 			bs.log.Warn("UnknownKeyDelegationPurpose", zap.String("purpose", v.Purpose))
 		} else {
-			_, err := hypersql.EntitiesInsertOrIgnore(conn, string(NewEntityID("mintter:account", v.Issuer.String())))
+			_, err := hypersql.EntitiesInsertOrIgnore(conn, "hd://a/"+v.Issuer.String())
 			if err != nil {
 				return err
 			}
@@ -80,19 +80,19 @@ func (bs *Storage) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) 
 	if err != nil {
 		return 0, err
 	}
-	if look.HyperEntitiesID != 0 {
-		return look.HyperEntitiesID, nil
+	if look.HDEntitiesID != 0 {
+		return look.HDEntitiesID, nil
 	}
 
 	ins, err := hypersql.EntitiesInsertOrIgnore(conn, string(eid))
 	if err != nil {
 		return 0, err
 	}
-	if ins.HyperEntitiesID == 0 {
+	if ins.HDEntitiesID == 0 {
 		return 0, fmt.Errorf("failed to insert entity for some reason")
 	}
 
-	return ins.HyperEntitiesID, nil
+	return ins.HDEntitiesID, nil
 }
 
 func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64, error) {
@@ -118,7 +118,7 @@ func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64
 }
 
 func (bs *Storage) indexLinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Change) error {
-	if !ch.Entity.HasPrefix("mintter:document:") {
+	if !ch.Entity.HasPrefix("hd://d/") {
 		return nil
 	}
 
@@ -146,7 +146,7 @@ func (bs *Storage) indexLinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Cha
 				TargetVersion:  u.Query().Get("v"),
 			}
 
-			target := NewEntityID("mintter:document", u.Host)
+			target := EntityID("hd://d/" + u.Host)
 			rel := "href:" + linkType
 
 			targetID, err := bs.ensureEntity(conn, target)

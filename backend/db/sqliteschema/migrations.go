@@ -82,7 +82,7 @@ var migrations = []string{
 		JOIN public_keys del ON del.id = kd.delegate;`,
 
 	// Stores IDs of Hypermedia Entities.
-	`CREATE TABLE hyper_entities (
+	`CREATE TABLE hd_entities (
 		-- Local shorthand ID.
 		id INTEGER PRIMARY KEY,
 		-- Entity ID.
@@ -90,37 +90,37 @@ var migrations = []string{
 	);`,
 
 	// Changes to the Hypermedia Entities.
-	`CREATE TABLE hyper_changes (
+	`CREATE TABLE hd_changes (
 		-- Blob ID of the change.
 		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- Entity being changed.
-		entity INTEGER REFERENCES hyper_entities (id) NOT NULL,
+		entity INTEGER REFERENCES hd_entities (id) NOT NULL,
 		-- HLC timestamp of the change.
 		hlc_time INTEGER NOT NULL,
 		PRIMARY KEY (entity, blob)
 	) WITHOUT ROWID;`,
 
-	`CREATE INDEX idx_hyper_changes_to_entity ON hyper_changes (blob, entity);`,
+	`CREATE INDEX idx_hd_changes_to_entity ON hd_changes (blob, entity);`,
 
 	// View of changes with dereferences foreign keys.
-	`CREATE VIEW hyper_changes_view AS
+	`CREATE VIEW hd_changes_view AS
 		SELECT
-			hyper_changes.blob AS blob_id,
-			hyper_changes.entity AS entity_id,
-			hyper_changes.hlc_time AS hlc_time,
-			hyper_entities.eid AS entity,
+			hd_changes.blob AS blob_id,
+			hd_changes.entity AS entity_id,
+			hd_changes.hlc_time AS hlc_time,
+			hd_entities.eid AS entity,
 			blobs.codec AS codec,
 			blobs.multihash AS multihash,
 			blobs.data AS data,
 			blobs.size AS size
-		FROM hyper_changes
-		JOIN blobs ON blobs.id = hyper_changes.blob
-		JOIN hyper_entities ON hyper_changes.entity = hyper_entities.id
+		FROM hd_changes
+		JOIN blobs ON blobs.id = hd_changes.blob
+		JOIN hd_entities ON hd_changes.entity = hd_entities.id
 	;`,
 
 	// Draft changes. Only one draft is allowed for now.
-	`CREATE TABLE hyper_drafts (
-		entity INTEGER PRIMARY KEY REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+	`CREATE TABLE hd_drafts (
+		entity INTEGER PRIMARY KEY REFERENCES hd_entities (id) ON DELETE CASCADE NOT NULL,
 		blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
 	);`,
 
@@ -130,65 +130,65 @@ var migrations = []string{
 			blobs.codec,
 			blobs.multihash
 		FROM blobs
-		LEFT OUTER JOIN hyper_drafts ON hyper_drafts.blob = blobs.id
-		WHERE hyper_drafts.blob IS NULL
+		LEFT OUTER JOIN hd_drafts ON hd_drafts.blob = blobs.id
+		WHERE hd_drafts.blob IS NULL
 	;`,
 
 	// View of drafts with dereferenced foreign keys.
-	`CREATE VIEW hyper_drafts_view AS
+	`CREATE VIEW hd_drafts_view AS
 		SELECT
-			hyper_drafts.entity AS entity_id,
-			hyper_drafts.blob AS blob_id,
-			hyper_entities.eid AS entity,
+			hd_drafts.entity AS entity_id,
+			hd_drafts.blob AS blob_id,
+			hd_entities.eid AS entity,
 			blobs.codec AS codec,
 			blobs.multihash AS multihash
-		FROM hyper_drafts
-		JOIN hyper_entities ON hyper_entities.id = hyper_drafts.entity
-		JOIN blobs ON blobs.id = hyper_drafts.blob
+		FROM hd_drafts
+		JOIN hd_entities ON hd_entities.id = hd_drafts.entity
+		JOIN blobs ON blobs.id = hd_drafts.blob
 	;`,
 
 	// Stores links between blobs.
-	`CREATE TABLE hyper_links (
+	`CREATE TABLE hd_links (
 		source_blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
 		-- TODO(burdiyan): normalize this to reduce disk usage.
 		rel TEXT NOT NULL,
-		target_entity INTEGER REFERENCES hyper_entities (id),
+		target_entity INTEGER REFERENCES hd_entities (id),
 		target_blob INTEGER REFERENCES blobs (id),
 		data BLOB,
 		CHECK ((target_entity, target_blob) IS NOT (null, null))
 	);`,
 
 	// These are probably not the most optimal indices.
-	`CREATE INDEX idx_hyper_links_blobs ON hyper_links (source_blob, target_blob) WHERE target_blob IS NOT NULL;`,
-	`CREATE INDEX idx_hyper_links_blobs_rev ON hyper_links (target_blob, source_blob) WHERE target_blob IS NOT NULL;`,
-	`CREATE INDEX idx_hyper_links_by_target_entity ON hyper_links (target_entity) WHERE target_entity IS NOT NULL;`,
+	`CREATE INDEX idx_hd_links_blobs ON hd_links (source_blob, target_blob) WHERE target_blob IS NOT NULL;`,
+	`CREATE INDEX idx_hd_links_blobs_rev ON hd_links (target_blob, source_blob) WHERE target_blob IS NOT NULL;`,
+	`CREATE INDEX idx_hd_links_by_target_entity ON hd_links (target_entity) WHERE target_entity IS NOT NULL;`,
 
 	// View for dependency links between changes.
-	`CREATE VIEW hyper_change_deps AS
+	`CREATE VIEW hd_change_deps AS
 		SELECT
 			source_blob AS child,
 			target_blob AS parent
-		FROM hyper_links
+		FROM hd_links
 		WHERE rel = 'change:depends'
 		AND target_blob IS NOT NULL
 	;`,
 
 	`CREATE VIEW content_links_view AS
 		SELECT
-			hyper_changes.entity AS source_entity,
+			hd_changes.entity AS source_entity,
 			sources.eid AS source_eid,
-			hyper_links.source_blob AS source_blob,
+			hd_links.source_blob AS source_blob,
 			blobs.codec AS source_blob_codec,
 			blobs.multihash AS source_blob_multihash,
-			hyper_links.rel AS rel,
-			hyper_links.target_entity AS target_entity,
+			hd_links.rel AS rel,
+			hd_links.target_entity AS target_entity,
 			targets.eid AS target_eid,
-			hyper_links.data AS data
-		FROM hyper_links
-		JOIN hyper_changes ON hyper_changes.blob = hyper_links.source_blob
-		JOIN blobs ON blobs.id = hyper_links.source_blob
-		JOIN hyper_entities sources ON sources.id = hyper_changes.entity
-		JOIN hyper_entities targets ON targets.id = hyper_links.target_entity
+			hd_links.data AS data
+		FROM hd_links
+		JOIN hd_changes ON hd_changes.blob = hd_links.source_blob
+		JOIN blobs ON blobs.id = hd_links.source_blob
+		JOIN hd_entities sources ON sources.id = hd_changes.entity
+		JOIN hd_entities targets ON targets.id = hd_links.target_entity
 		WHERE rel GLOB 'href*'
 		AND target_entity IS NOT NULL
 	;`,
@@ -259,7 +259,7 @@ var migrations = []string{
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE web_publications (
 		-- Entity of the published document.
-		document INTEGER PRIMARY KEY REFERENCES hyper_entities (id) ON DELETE CASCADE NOT NULL,
+		document INTEGER PRIMARY KEY REFERENCES hd_entities (id) ON DELETE CASCADE NOT NULL,
 		-- doc version of the base document published. Not its references.
 		version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL is not listed.

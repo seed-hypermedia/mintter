@@ -91,7 +91,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
 	}
 
-	entity, err := srv.blobs.LoadEntity(ctx, hyper.NewEntityID("mintter:account", aids))
+	entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID("hd://a/"+aids))
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 }
 
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
-	eid := hyper.NewEntityID("mintter:account", me.Account().Principal().String())
+	eid := hyper.EntityID("hd://a/" + me.Account().Principal().String())
 
 	e, err := blobs.LoadEntity(ctx, eid)
 	if err != nil {
@@ -236,7 +236,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 		return nil, err
 	}
 
-	entities, err := srv.blobs.ListEntities(ctx, "mintter:account:")
+	entities, err := srv.blobs.ListEntities(ctx, "hd://a/")
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}
 
 	for _, e := range entities {
-		aid := e.TrimPrefix("mintter:account:")
+		aid := e.TrimPrefix("hd://a/")
 		if aid == mine {
 			continue
 		}

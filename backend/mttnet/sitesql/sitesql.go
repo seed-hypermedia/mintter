@@ -48,19 +48,19 @@ func ensureEntity(conn *sqlite.Conn, entity string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if look.HyperEntitiesID != 0 {
-		return look.HyperEntitiesID, nil
+	if look.HDEntitiesID != 0 {
+		return look.HDEntitiesID, nil
 	}
 
 	ins, err := hypersql.EntitiesInsertOrIgnore(conn, entity)
 	if err != nil {
 		return 0, err
 	}
-	if ins.HyperEntitiesID == 0 {
+	if ins.HDEntitiesID == 0 {
 		return 0, fmt.Errorf("failed to insert entity %q for some reason", entity)
 	}
 
-	return ins.HyperEntitiesID, nil
+	return ins.HDEntitiesID, nil
 }
 
 func ensurePublicKey(conn *sqlite.Conn, key []byte) (int64, error) {

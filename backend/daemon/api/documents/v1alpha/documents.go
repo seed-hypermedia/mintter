@@ -71,7 +71,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}
 
 	if in.ExistingDocumentId != "" {
-		eid := hyper.NewEntityID("mintter:document", in.ExistingDocumentId)
+		eid := hyper.EntityID("hd://d/" + in.ExistingDocumentId)
 
 		_, err := api.blobs.FindDraft(ctx, eid)
 		if err == nil {
@@ -114,7 +114,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}
 
 	docid := newDocumentID()
-	eid := hyper.NewEntityID("mintter:document", docid)
+	eid := hyper.EntityID("hd://d/" + docid)
 
 	entity := hyper.NewEntity(eid)
 
@@ -163,7 +163,7 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 		return nil, err
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	draft, err := api.blobs.LoadDraft(ctx, eid)
 	if err != nil {
@@ -235,7 +235,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, err
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
 	if err != nil {
@@ -260,7 +260,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 // ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
+	entities, err := api.blobs.ListEntities(ctx, "hd://d/")
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 	}
 
 	for _, e := range entities {
-		docid := e.TrimPrefix("mintter:document:")
+		docid := e.TrimPrefix("hd://d/")
 		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
 			DocumentId: docid,
 		})
@@ -289,7 +289,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	oid, err := eid.CID()
 	if err != nil {
@@ -320,7 +320,7 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 		return nil, status.Errorf(codes.InvalidArgument, "must specify draft ID to delete")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	if err := api.blobs.DeleteDraft(ctx, eid); err != nil {
 		return nil, err
@@ -335,7 +335,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 	version := hyper.Version(in.Version)
 
 	pub, err := api.loadPublication(ctx, eid, version)
@@ -420,7 +420,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
 		return nil, err
@@ -431,7 +431,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "mintter:document:")
+	entities, err := api.blobs.ListEntities(ctx, "hd://d/")
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +441,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 
 	for _, e := range entities {
-		docid := e.TrimPrefix("mintter:document:")
+		docid := e.TrimPrefix("hd://d/")
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: docid,
 			LocalOnly:  true,

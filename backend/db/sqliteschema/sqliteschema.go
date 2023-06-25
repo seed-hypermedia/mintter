@@ -22,6 +22,7 @@ func init() {
 		"IPLD",
 		"EID",
 		"JSON",
+		"HD",
 	)
 }
 

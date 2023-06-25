@@ -457,11 +457,11 @@ VALUES (:webPublicationsDocument, :webPublicationsVersion, :webPublicationsPath)
 	return err
 }
 
-func RemoveWebPublicationRecord(conn *sqlite.Conn, hyperEntitiesEID string, webPublicationsVersion string) error {
-	const query = `DELETE FROM web_publications WHERE web_publications.document = (SELECT hyper_entities.id FROM hyper_entities WHERE hyper_entities.eid = :hyperEntitiesEID) AND web_publications.version = :webPublicationsVersion`
+func RemoveWebPublicationRecord(conn *sqlite.Conn, hdEntitiesEID string, webPublicationsVersion string) error {
+	const query = `DELETE FROM web_publications WHERE web_publications.document = (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.eid = :hdEntitiesEID) AND web_publications.version = :webPublicationsVersion`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
 		stmt.SetText(":webPublicationsVersion", webPublicationsVersion)
 	}
 
@@ -478,16 +478,16 @@ func RemoveWebPublicationRecord(conn *sqlite.Conn, hyperEntitiesEID string, webP
 }
 
 type ListWebPublicationsResult struct {
-	HyperEntitiesID        int64
-	HyperEntitiesEID       string
+	HDEntitiesID           int64
+	HDEntitiesEID          string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
 func ListWebPublications(conn *sqlite.Conn) ([]ListWebPublicationsResult, error) {
-	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hyper_entities ON web_publications.document = hyper_entities.id`
+JOIN hd_entities ON web_publications.document = hd_entities.id`
 
 	var out []ListWebPublicationsResult
 
@@ -496,8 +496,8 @@ JOIN hyper_entities ON web_publications.document = hyper_entities.id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ListWebPublicationsResult{
-			HyperEntitiesID:        stmt.ColumnInt64(0),
-			HyperEntitiesEID:       stmt.ColumnText(1),
+			HDEntitiesID:           stmt.ColumnInt64(0),
+			HDEntitiesEID:          stmt.ColumnText(1),
 			WebPublicationsVersion: stmt.ColumnText(2),
 			WebPublicationsPath:    stmt.ColumnText(3),
 		})
@@ -514,16 +514,16 @@ JOIN hyper_entities ON web_publications.document = hyper_entities.id`
 }
 
 type GetWebPublicationRecordByPathResult struct {
-	HyperEntitiesID        int64
-	HyperEntitiesEID       string
+	HDEntitiesID           int64
+	HDEntitiesEID          string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
 func GetWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationsPath string) (GetWebPublicationRecordByPathResult, error) {
-	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE web_publications.path = :webPublicationsPath`
+JOIN hd_entities ON web_publications.document = hd_entities.id WHERE web_publications.path = :webPublicationsPath`
 
 	var out GetWebPublicationRecordByPathResult
 
@@ -536,8 +536,8 @@ JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE web_p
 			return errors.New("GetWebPublicationRecordByPath: more than one result return for a single-kind query")
 		}
 
-		out.HyperEntitiesID = stmt.ColumnInt64(0)
-		out.HyperEntitiesEID = stmt.ColumnText(1)
+		out.HDEntitiesID = stmt.ColumnInt64(0)
+		out.HDEntitiesEID = stmt.ColumnText(1)
 		out.WebPublicationsVersion = stmt.ColumnText(2)
 		out.WebPublicationsPath = stmt.ColumnText(3)
 		return nil
@@ -552,27 +552,27 @@ JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE web_p
 }
 
 type GetWebPublicationsByIDResult struct {
-	HyperEntitiesID        int64
-	HyperEntitiesEID       string
+	HDEntitiesID           int64
+	HDEntitiesEID          string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
-func GetWebPublicationsByID(conn *sqlite.Conn, hyperEntitiesEID string) ([]GetWebPublicationsByIDResult, error) {
-	const query = `SELECT hyper_entities.id, hyper_entities.eid, web_publications.version, web_publications.path
+func GetWebPublicationsByID(conn *sqlite.Conn, hdEntitiesEID string) ([]GetWebPublicationsByIDResult, error) {
+	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hyper_entities ON web_publications.document = hyper_entities.id WHERE hyper_entities.eid = :hyperEntitiesEID`
+JOIN hd_entities ON web_publications.document = hd_entities.id WHERE hd_entities.eid = :hdEntitiesEID`
 
 	var out []GetWebPublicationsByIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hyperEntitiesEID", hyperEntitiesEID)
+		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, GetWebPublicationsByIDResult{
-			HyperEntitiesID:        stmt.ColumnInt64(0),
-			HyperEntitiesEID:       stmt.ColumnText(1),
+			HDEntitiesID:           stmt.ColumnInt64(0),
+			HDEntitiesEID:          stmt.ColumnText(1),
 			WebPublicationsVersion: stmt.ColumnText(2),
 			WebPublicationsPath:    stmt.ColumnText(3),
 		})

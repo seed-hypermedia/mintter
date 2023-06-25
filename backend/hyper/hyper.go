@@ -108,11 +108,11 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 		if err != nil {
 			return err
 		}
-		if resp.HyperEntitiesID == 0 {
+		if resp.HDEntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.HDEntitiesID, id)
 	})
 }
 
@@ -130,7 +130,7 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 
 	out := make([]EntityID, len(resp))
 	for i, r := range resp {
-		out[i] = EntityID(r.HyperEntitiesEID)
+		out[i] = EntityID(r.HDEntitiesEID)
 	}
 
 	return out, nil
@@ -149,15 +149,15 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 		if err != nil {
 			return err
 		}
-		if res.HyperDraftsViewBlobID == 0 {
+		if res.HDDraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.HDDraftsViewBlobID); err != nil {
 			return err
 		}
 
-		out = cid.NewCidV1(uint64(res.HyperDraftsViewCodec), res.HyperDraftsViewMultihash)
+		out = cid.NewCidV1(uint64(res.HDDraftsViewCodec), res.HDDraftsViewMultihash)
 
 		return nil
 	}); err != nil {
@@ -183,15 +183,15 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 		if err != nil {
 			return err
 		}
-		if res.HyperDraftsViewBlobID == 0 {
+		if res.HDDraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.HDDraftsViewBlobID); err != nil {
 			return err
 		}
 
-		_, err = hypersql.BlobsDelete(conn, res.HyperDraftsViewMultihash)
+		_, err = hypersql.BlobsDelete(conn, res.HDDraftsViewMultihash)
 		if err != nil {
 			return err
 		}
@@ -217,11 +217,11 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 		if err != nil {
 			return err
 		}
-		if edb.HyperEntitiesID == 0 {
+		if edb.HDEntitiesID == 0 {
 			return fmt.Errorf("no such entity: %s", eid)
 		}
 
-		if err := hypersql.ChangesDeleteForEntity(conn, edb.HyperEntitiesID); err != nil {
+		if err := hypersql.ChangesDeleteForEntity(conn, edb.HDEntitiesID); err != nil {
 			return err
 		}
 
@@ -268,11 +268,11 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 		if err != nil {
 			return err
 		}
-		if resp.HyperEntitiesID == 0 {
+		if resp.HDEntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.HDEntitiesID, id)
 	})
 }
 

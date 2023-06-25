@@ -301,7 +301,7 @@ func (dm *docModel) cleanupPatch() {
 func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
 	e := dm.e
 	docpb := &documents.Document{
-		Id: e.ID().TrimPrefix("mintter:document:"),
+		Id: e.ID().TrimPrefix("hd://d/"),
 	}
 
 	{

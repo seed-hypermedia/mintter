@@ -43,8 +43,8 @@ import (
 
 // Protocol values.
 const (
-	protocolPrefix  = "/mintter/"
-	protocolVersion = "0.0.5"
+	protocolPrefix  = "/hyperdocs/"
+	protocolVersion = "0.0.6"
 
 	ProtocolID protocol.ID = protocolPrefix + protocolVersion
 

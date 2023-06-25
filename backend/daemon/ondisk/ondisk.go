@@ -18,7 +18,7 @@ import (
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2023-06-05.01"
+	compatibilityVersion = "2023-06-26.01"
 
 	keysDir = "keys"
 	dbDir   = "db"

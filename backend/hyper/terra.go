@@ -38,8 +38,8 @@ func init() {
 
 // Available types.
 const (
-	TypeKeyDelegation BlobType = "mintter:KeyDelegation"
-	TypeChange        BlobType = "mintter:Change"
+	TypeKeyDelegation BlobType = "hyperdocs:KeyDelegation"
+	TypeChange        BlobType = "hyperdocs:Change"
 )
 
 // Delegation purposes.

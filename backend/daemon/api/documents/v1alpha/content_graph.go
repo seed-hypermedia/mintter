@@ -20,7 +20,7 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 		return nil, status.Error(codes.InvalidArgument, "must specify document ID")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 
 	var backlinks []hypersql.BacklinksForEntityResult
 	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
@@ -45,12 +45,12 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 
 		resp.Links[i] = &documents.Link{
 			Source: &documents.LinkNode{
-				DocumentId: hyper.EntityID(link.ContentLinksViewSourceEID).TrimPrefix("mintter:document:"),
+				DocumentId: hyper.EntityID(link.ContentLinksViewSourceEID).TrimPrefix("hd://d/"),
 				BlockId:    ld.SourceBlock,
 				Version:    src.String(),
 			},
 			Target: &documents.LinkNode{
-				DocumentId: hyper.EntityID(link.ContentLinksViewTargetEID).TrimPrefix("mintter:document:"),
+				DocumentId: hyper.EntityID(link.ContentLinksViewTargetEID).TrimPrefix("hd://d/"),
 				BlockId:    ld.TargetFragment,
 				Version:    ld.TargetVersion,
 			},

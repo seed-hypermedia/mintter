@@ -70,9 +70,9 @@ FROM ` + sqliteschema.T_PublicBlobsView + `;`
 			}
 
 			for _, e := range entities {
-				c, err := hyper.EntityID(e.HyperEntitiesEID).CID()
+				c, err := hyper.EntityID(e.HDEntitiesEID).CID()
 				if err != nil {
-					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HyperEntitiesEID))
+					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HDEntitiesEID))
 					return
 				}
 

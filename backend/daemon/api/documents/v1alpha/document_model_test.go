@@ -22,7 +22,7 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
+	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
 	dm, err := newDocModel(entity, alice.Device, delegation)
 	require.NoError(t, err)
 
@@ -34,11 +34,11 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	_, err = dm.Commit(ctx, blobs)
 	require.NoError(t, err)
 
-	entity, err = blobs.LoadEntity(ctx, "mintter:document:doc-1")
+	entity, err = blobs.LoadEntity(ctx, "hd://d/doc-1")
 	require.NoError(t, err)
 	require.Nil(t, entity)
 
-	entity, err = blobs.LoadDraftEntity(ctx, "mintter:document:doc-1")
+	entity, err = blobs.LoadDraftEntity(ctx, "hd://d/doc-1")
 	require.NoError(t, err)
 	require.NotNil(t, entity)
 }
@@ -50,7 +50,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
+	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
 	dm, err := newDocModel(entity, alice.Device, delegation)
 	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
 	require.NoError(t, err)
@@ -107,7 +107,7 @@ func TestDocument_Cleanup(t *testing.T) {
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.NewEntityID("mintter:document", "doc-1"))
+	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
 	dm, err := newDocModel(entity, alice.Device, delegation)
 	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
 	require.NoError(t, err)
@@ -203,7 +203,7 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
 	require.NoError(t, err)
-	eid := hyper.NewEntityID("mintter:document", "doc-1")
+	eid := hyper.EntityID("hd://d/" + "doc-1")
 	entity := hyper.NewEntity(eid)
 	dm, err := newDocModel(entity, alice.Device, delegation)
 	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
@@ -247,7 +247,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	// Create draft.
 	var c1 hyper.Blob
 	{
-		entity := hyper.NewEntity("mintter:document:foo")
+		entity := hyper.NewEntity("hd://d/foo")
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
@@ -258,7 +258,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 
 	// Update draft in place.
 	{
-		entity := hyper.NewEntity("mintter:document:foo")
+		entity := hyper.NewEntity("hd://d/foo")
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		must.Do(model.restoreDraft(c1.CID, c1.Decoded.(hyper.Change)))
 		must.Do(model.MoveBlock("b1", "", ""))
@@ -277,7 +277,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	// Create a new change on top of the previous.
 	var c2 hyper.Blob
 	{
-		entity := hyper.NewEntity("mintter:document:foo")
+		entity := hyper.NewEntity("hd://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
@@ -294,7 +294,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	}
 
 	// Try to apply changes one by one.
-	entity := hyper.NewEntity("mintter:document:foo")
+	entity := hyper.NewEntity("hd://d/foo")
 	must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 	must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 	model := must.Do2(newDocModel(entity, alice.Device, kd.CID))

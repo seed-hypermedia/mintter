@@ -27,7 +27,7 @@ export function createHyperdocsDocLink(
   version?: string,
   blockRef?: string,
 ): string {
-  let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
+  let res = `${HYPERDOCS_LINK_PREFIX}d/${documentId}`
   if (version) res += `?v=${version}`
   if (blockRef) res += `#${blockRef}`
 
