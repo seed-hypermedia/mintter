@@ -91,7 +91,7 @@ export const defaultSlashMenuItems = [
 
   // new BaseSlashMenuItem<DefaultBlockSchema>(
   //   'Code',
-  //   (editor) => 
+  //   (editor) =>
   //     insertOrUpdateBlock(editor, {
   //       type: 'paragraph',
   //       props: {type: 'code'}
@@ -101,12 +101,12 @@ export const defaultSlashMenuItems = [
 
   new BaseSlashMenuItem<DefaultBlockSchema>(
     'Blockquote',
-    (editor) => 
+    (editor) =>
       insertOrUpdateBlock(editor, {
         type: 'paragraph',
-        props: {type: 'blockquote'}
+        props: {type: 'blockquote'},
       }),
-    ['blockquote']
+    ['blockquote'],
   ),
 
   new BaseSlashMenuItem<DefaultBlockSchema>(

@@ -1,14 +1,14 @@
-import { Editor, Extension } from "@tiptap/core";
-import { BlockSideMenuFactory } from "./BlockSideMenuFactoryTypes";
-import { createDraggableBlocksPlugin } from "./DraggableBlocksPlugin";
-import { BlockNoteEditor } from "../../BlockNoteEditor";
-import { BlockSchema } from "../Blocks/api/blockTypes";
+import {Editor, Extension} from '@tiptap/core'
+import {BlockSideMenuFactory} from './BlockSideMenuFactoryTypes'
+import {createDraggableBlocksPlugin} from './DraggableBlocksPlugin'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
+import {BlockSchema} from '../Blocks/api/blockTypes'
 
 export type DraggableBlocksOptions<BSchema extends BlockSchema> = {
-  tiptapEditor: Editor;
-  editor: BlockNoteEditor<BSchema>;
-  blockSideMenuFactory: BlockSideMenuFactory<BSchema>;
-};
+  tiptapEditor: Editor
+  editor: BlockNoteEditor<BSchema>
+  blockSideMenuFactory: BlockSideMenuFactory<BSchema>
+}
 
 /**
  * This extension adds a menu to the side of blocks which features various BlockNote functions such as adding and
@@ -18,13 +18,13 @@ export type DraggableBlocksOptions<BSchema extends BlockSchema> = {
  */
 export const createDraggableBlocksExtension = <BSchema extends BlockSchema>() =>
   Extension.create<DraggableBlocksOptions<BSchema>>({
-    name: "DraggableBlocksExtension",
+    name: 'DraggableBlocksExtension',
     priority: 1000, // Need to be high, in order to hide menu when typing slash
     addProseMirrorPlugins() {
       if (!this.options.blockSideMenuFactory) {
         throw new Error(
-          "UI Element factory not defined for DraggableBlocksExtension"
-        );
+          'UI Element factory not defined for DraggableBlocksExtension',
+        )
       }
       return [
         createDraggableBlocksPlugin({
@@ -32,6 +32,6 @@ export const createDraggableBlocksExtension = <BSchema extends BlockSchema>() =>
           editor: this.options.editor,
           blockSideMenuFactory: this.options.blockSideMenuFactory,
         }),
-      ];
+      ]
     },
-  });
+  })

@@ -1,9 +1,9 @@
-import { Extension } from "@tiptap/core";
-import { Plugin } from "prosemirror-state";
-import { DOMSerializer, Schema } from "prosemirror-model";
+import {Extension} from '@tiptap/core'
+import {Plugin} from 'prosemirror-state'
+import {DOMSerializer, Schema} from 'prosemirror-model'
 
 const customBlockSerializer = (schema: Schema) => {
-  const defaultSerializer = DOMSerializer.fromSchema(schema);
+  const defaultSerializer = DOMSerializer.fromSchema(schema)
 
   return new DOMSerializer(
     {
@@ -13,9 +13,9 @@ const customBlockSerializer = (schema: Schema) => {
       //  should be defined in the custom blocks API though, and implement that,
       //  before we can do this.
     },
-    defaultSerializer.marks
-  );
-};
+    defaultSerializer.marks,
+  )
+}
 export const CustomBlockSerializerExtension = Extension.create({
   addProseMirrorPlugins() {
     return [
@@ -24,6 +24,6 @@ export const CustomBlockSerializerExtension = Extension.create({
           clipboardSerializer: customBlockSerializer(this.editor.schema),
         },
       }),
-    ];
+    ]
   },
-});
+})

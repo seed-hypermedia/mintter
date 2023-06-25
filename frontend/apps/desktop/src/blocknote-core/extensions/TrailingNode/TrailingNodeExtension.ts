@@ -1,5 +1,5 @@
-import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
+import {Extension} from '@tiptap/core'
+import {Plugin, PluginKey} from 'prosemirror-state'
 
 // based on https://github.com/ueberdosis/tiptap/blob/40a9404c94c7fef7900610c195536384781ae101/demos/src/Experiments/TrailingNode/Vue/trailing-node.ts
 
@@ -10,17 +10,17 @@ import { Plugin, PluginKey } from "prosemirror-state";
  */
 
 export interface TrailingNodeOptions {
-  node: string;
+  node: string
 }
 
 /**
  * Add a trailing node to the document so the user can always click at the bottom of the document and start typing
  */
 export const TrailingNode = Extension.create<TrailingNodeOptions>({
-  name: "trailingNode",
+  name: 'trailingNode',
 
   addProseMirrorPlugins() {
-    const plugin = new PluginKey(this.name);
+    const plugin = new PluginKey(this.name)
     // const disabledNodes = Object.entries(this.editor.schema.nodes)
     //   .map(([, value]) => value)
     //   .filter((node) => this.options.notAfter.includes(node.name));
@@ -29,19 +29,19 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
       new Plugin({
         key: plugin,
         appendTransaction: (_, __, state) => {
-          const { doc, tr, schema } = state;
-          const shouldInsertNodeAtEnd = plugin.getState(state);
-          const endPosition = doc.content.size - 2;
-          const type = schema.nodes["blockContainer"];
-          const contentType = schema.nodes["paragraph"];
+          const {doc, tr, schema} = state
+          const shouldInsertNodeAtEnd = plugin.getState(state)
+          const endPosition = doc.content.size - 2
+          const type = schema.nodes['blockContainer']
+          const contentType = schema.nodes['paragraph']
           if (!shouldInsertNodeAtEnd) {
-            return;
+            return
           }
 
           return tr.insert(
             endPosition,
-            type.create(undefined, contentType.create())
-          );
+            type.create(undefined, contentType.create()),
+          )
         },
         state: {
           init: (_, _state) => {
@@ -50,24 +50,24 @@ export const TrailingNode = Extension.create<TrailingNodeOptions>({
           },
           apply: (tr, value) => {
             if (!tr.docChanged) {
-              return value;
+              return value
             }
 
-            let lastNode = tr.doc.lastChild;
+            let lastNode = tr.doc.lastChild
 
-            if (!lastNode || lastNode.type.name !== "blockGroup") {
-              throw new Error("Expected blockGroup");
+            if (!lastNode || lastNode.type.name !== 'blockGroup') {
+              throw new Error('Expected blockGroup')
             }
 
-            lastNode = lastNode.lastChild;
+            lastNode = lastNode.lastChild
 
-            if (!lastNode || lastNode.type.name !== "blockContainer") {
-              throw new Error("Expected blockContainer");
+            if (!lastNode || lastNode.type.name !== 'blockContainer') {
+              throw new Error('Expected blockContainer')
             }
-            return lastNode.nodeSize > 4; // empty <block><content/></block> is length 4
+            return lastNode.nodeSize > 4 // empty <block><content/></block> is length 4
           },
         },
       }),
-    ];
+    ]
   },
-});
+})

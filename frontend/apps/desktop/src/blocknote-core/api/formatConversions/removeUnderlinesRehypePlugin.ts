@@ -1,4 +1,4 @@
-import { Element as HASTElement, Parent as HASTParent } from "hast";
+import {Element as HASTElement, Parent as HASTParent} from 'hast'
 
 /**
  * Rehype plugin which removes <u> tags. Used to remove underlines before converting HTML to markdown, as Markdown
@@ -6,34 +6,34 @@ import { Element as HASTElement, Parent as HASTParent } from "hast";
  */
 export function removeUnderlines() {
   const removeUnderlinesHelper = (tree: HASTParent) => {
-    let numChildElements = tree.children.length;
+    let numChildElements = tree.children.length
 
     for (let i = 0; i < numChildElements; i++) {
-      const node = tree.children[i];
+      const node = tree.children[i]
 
-      if (node.type === "element") {
+      if (node.type === 'element') {
         // Recursively removes underlines from child elements.
-        removeUnderlinesHelper(node);
+        removeUnderlinesHelper(node)
 
-        if ((node as HASTElement).tagName === "u") {
+        if ((node as HASTElement).tagName === 'u') {
           // Lifts child nodes outside underline element, deletes the underline element, and updates current index &
           // the number of child elements.
           if (node.children.length > 0) {
-            tree.children.splice(i, 1, ...node.children);
+            tree.children.splice(i, 1, ...node.children)
 
-            const numElementsAdded = node.children.length - 1;
-            numChildElements += numElementsAdded;
-            i += numElementsAdded;
+            const numElementsAdded = node.children.length - 1
+            numChildElements += numElementsAdded
+            i += numElementsAdded
           } else {
-            tree.children.splice(i, 1);
+            tree.children.splice(i, 1)
 
-            numChildElements--;
-            i--;
+            numChildElements--
+            i--
           }
         }
       }
     }
-  };
+  }
 
-  return removeUnderlinesHelper;
+  return removeUnderlinesHelper
 }

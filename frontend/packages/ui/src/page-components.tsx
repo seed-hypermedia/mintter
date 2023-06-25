@@ -1,8 +1,6 @@
 import {styled, YStack, XStack} from 'tamagui'
 
-export const ArticleContainer = styled(XStack, {
-  
-})
+export const ArticleContainer = styled(XStack, {})
 
 export const MainContainer = styled(YStack, {
   paddingRight: '$5',

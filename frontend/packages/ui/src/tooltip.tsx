@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {Paragraph, Theme, Tooltip} from 'tamagui'
 
 export function SimpleTooltip({

@@ -1,10 +1,10 @@
-import { Editor, Extension } from "@tiptap/core";
-import { Node as ProsemirrorNode } from "prosemirror-model";
-import { Plugin, PluginKey } from "prosemirror-state";
-import { Decoration, DecorationSet } from "prosemirror-view";
-import { SlashMenuPluginKey } from "../SlashMenu/SlashMenuExtension";
+import {Editor, Extension} from '@tiptap/core'
+import {Node as ProsemirrorNode} from 'prosemirror-model'
+import {Plugin, PluginKey} from 'prosemirror-state'
+import {Decoration, DecorationSet} from 'prosemirror-view'
+import {SlashMenuPluginKey} from '../SlashMenu/SlashMenuExtension'
 
-const PLUGIN_KEY = new PluginKey(`blocknote-placeholder`);
+const PLUGIN_KEY = new PluginKey(`blocknote-placeholder`)
 
 /**
  * This is a modified version of the tiptap
@@ -14,37 +14,37 @@ const PLUGIN_KEY = new PluginKey(`blocknote-placeholder`);
  *
  */
 export interface PlaceholderOptions {
-  emptyEditorClass: string;
-  emptyNodeClass: string;
-  isFilterClass: string;
-  hasAnchorClass: string;
+  emptyEditorClass: string
+  emptyNodeClass: string
+  isFilterClass: string
+  hasAnchorClass: string
   placeholder:
     | ((PlaceholderProps: {
-        editor: Editor;
-        node: ProsemirrorNode;
-        pos: number;
-        hasAnchor: boolean;
+        editor: Editor
+        node: ProsemirrorNode
+        pos: number
+        hasAnchor: boolean
       }) => string)
-    | string;
-  showOnlyWhenEditable: boolean;
-  showOnlyCurrent: boolean;
-  includeChildren: boolean;
+    | string
+  showOnlyWhenEditable: boolean
+  showOnlyCurrent: boolean
+  includeChildren: boolean
 }
 
 export const Placeholder = Extension.create<PlaceholderOptions>({
-  name: "placeholder",
+  name: 'placeholder',
 
   addOptions() {
     return {
-      emptyEditorClass: "is-editor-empty",
-      emptyNodeClass: "is-empty",
-      isFilterClass: "is-filter",
-      hasAnchorClass: "has-anchor",
-      placeholder: "Write something …",
+      emptyEditorClass: 'is-editor-empty',
+      emptyNodeClass: 'is-empty',
+      isFilterClass: 'is-filter',
+      hasAnchorClass: 'has-anchor',
+      placeholder: 'Write something …',
       showOnlyWhenEditable: true,
       showOnlyCurrent: true,
       includeChildren: false,
-    };
+    }
   },
 
   addProseMirrorPlugins() {
@@ -53,37 +53,37 @@ export const Placeholder = Extension.create<PlaceholderOptions>({
         key: PLUGIN_KEY,
         props: {
           decorations: (state) => {
-            const { doc, selection } = state;
+            const {doc, selection} = state
             // Get state of slash menu
-            const menuState = SlashMenuPluginKey.getState(state);
+            const menuState = SlashMenuPluginKey.getState(state)
             const active =
-              this.editor.isEditable || !this.options.showOnlyWhenEditable;
-            const { anchor } = selection;
-            const decorations: Decoration[] = [];
+              this.editor.isEditable || !this.options.showOnlyWhenEditable
+            const {anchor} = selection
+            const decorations: Decoration[] = []
 
             if (!active) {
-              return;
+              return
             }
 
             doc.descendants((node, pos) => {
-              const hasAnchor = anchor >= pos && anchor <= pos + node.nodeSize;
-              const isEmpty = !node.isLeaf && !node.childCount;
+              const hasAnchor = anchor >= pos && anchor <= pos + node.nodeSize
+              const isEmpty = !node.isLeaf && !node.childCount
 
               if ((hasAnchor || !this.options.showOnlyCurrent) && isEmpty) {
-                const classes = [this.options.emptyNodeClass];
+                const classes = [this.options.emptyNodeClass]
 
                 // TODO: Doesn't work?
                 if (this.editor.isEmpty) {
-                  classes.push(this.options.emptyEditorClass);
+                  classes.push(this.options.emptyEditorClass)
                 }
 
                 if (hasAnchor) {
-                  classes.push(this.options.hasAnchorClass);
+                  classes.push(this.options.hasAnchorClass)
                 }
 
                 // If slash menu is of drag type and active, show the filter placeholder
-                if (menuState?.triggerCharacter === "" && menuState?.active) {
-                  classes.push(this.options.isFilterClass);
+                if (menuState?.triggerCharacter === '' && menuState?.active) {
+                  classes.push(this.options.isFilterClass)
                 }
                 // using widget, didn't work (caret position bug)
                 // const decoration = Decoration.widget(
@@ -114,18 +114,18 @@ export const Placeholder = Extension.create<PlaceholderOptions>({
                 // Latest version, only set isEmpty and hasAnchor, rest is done via CSS
 
                 const decoration = Decoration.node(pos, pos + node.nodeSize, {
-                  class: classes.join(" "),
-                });
-                decorations.push(decoration);
+                  class: classes.join(' '),
+                })
+                decorations.push(decoration)
               }
 
-              return this.options.includeChildren;
-            });
+              return this.options.includeChildren
+            })
 
-            return DecorationSet.create(doc, decorations);
+            return DecorationSet.create(doc, decorations)
           },
         },
       }),
-    ];
+    ]
   },
-});
+})

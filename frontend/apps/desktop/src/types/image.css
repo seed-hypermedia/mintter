@@ -1,0 +1,3 @@
+.isEmpty .image-caption > :first-child::before {
+    content: var(--placeholder);
+  }

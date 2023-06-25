@@ -1,18 +1,18 @@
 export const isAppleOS = () =>
   /Mac/.test(navigator.platform) ||
   (/AppleWebKit/.test(navigator.userAgent) &&
-    /Mobile\/\w+/.test(navigator.userAgent));
+    /Mobile\/\w+/.test(navigator.userAgent))
 
 export function formatKeyboardShortcut(shortcut: string) {
   if (isAppleOS()) {
-    return shortcut.replace("Mod", "⌘");
+    return shortcut.replace('Mod', '⌘')
   } else {
-    return shortcut.replace("Mod", "Ctrl");
+    return shortcut.replace('Mod', 'Ctrl')
   }
 }
 
 export class UnreachableCaseError extends Error {
   constructor(val: never) {
-    super(`Unreachable case: ${val}`);
+    super(`Unreachable case: ${val}`)
   }
 }

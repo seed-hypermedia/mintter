@@ -1,23 +1,21 @@
-import { Account, Publication, SiteInfo } from '@mintter/shared'
-import { useQuery } from '@tanstack/react-query'
-import { GetServerSideProps } from 'next'
-import { setAllowAnyHostGetCORS } from 'server/cors'
-import { accountsClient, localWebsiteClient, publicationsClient } from '../client'
-import { GatewayHead } from '../gateway-head'
-import { getSiteInfo } from '../get-site-info'
-import { PublicationPlaceholder } from '../publication-placeholder'
-import { SiteHead } from '../site-head'
-import PublicationPage, { PublicationPageProps } from '../ssr-publication-page'
-import { JsonValue } from '@bufbuild/protobuf'
+import {Account, Publication, SiteInfo} from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
+import {GetServerSideProps} from 'next'
+import {setAllowAnyHostGetCORS} from 'server/cors'
+import {accountsClient, localWebsiteClient, publicationsClient} from '../client'
+import {GatewayHead} from '../gateway-head'
+import {getSiteInfo} from '../get-site-info'
+import {PublicationPlaceholder} from '../publication-placeholder'
+import {SiteHead} from '../site-head'
+import PublicationPage, {PublicationPageProps} from '../ssr-publication-page'
+import {JsonValue} from '@bufbuild/protobuf'
 import {
   getPublicationPageProps,
   impatientGetPublication,
   setResponsePublication,
 } from 'server/server-publications'
 
-let pubId =
-  process.env.MINTTER_HOME_PUBID ||
-  'mnoboS11GwRlRAh2dhYlTw'
+let pubId = process.env.MINTTER_HOME_PUBID || 'mnoboS11GwRlRAh2dhYlTw'
 let version =
   process.env.MINTTER_HOME_VERSION ||
   'bafy2bzacednwllikmc7rittnmz4s7cfpo3p2ldsap3bcmgxp7cdpzhoiu5w'
@@ -40,7 +38,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     if (!publication) {
       try {
-        const pathRecord = await localWebsiteClient.getPath({ path: '/' })
+        const pathRecord = await localWebsiteClient.getPath({path: '/'})
         publication = pathRecord.publication || null
       } catch (error) {
         const isNotFound = !!error.rawMessage?.match(

@@ -10,5 +10,5 @@
     "lib": ["esnext", "dom"]
   },
   "include": ["./**/*.ts"],
-  "references": [{ "path": "../../tsconfig.node.json" }]
+  "references": [{"path": "../../tsconfig.node.json"}]
 }

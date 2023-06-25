@@ -3,7 +3,7 @@ import {styled, YStack} from 'tamagui'
 export const SiteAside = styled(YStack, {
   paddingHorizontal: '$4',
   paddingVertical: '$2',
-  borderColor: "$borderColor",
+  borderColor: '$borderColor',
   borderWidth: 1,
   borderRadius: '$3',
   $gtSm: {

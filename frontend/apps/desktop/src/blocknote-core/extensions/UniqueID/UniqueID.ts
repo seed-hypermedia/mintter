@@ -4,10 +4,10 @@ import {
   findChildren,
   findChildrenInRange,
   getChangedRanges,
-} from "@tiptap/core";
-import { Fragment, Slice } from "prosemirror-model";
-import { Plugin, PluginKey } from "prosemirror-state";
-import { v4 } from "uuid";
+} from '@tiptap/core'
+import {Fragment, Slice} from 'prosemirror-model'
+import {Plugin, PluginKey} from 'prosemirror-state'
+import {v4} from 'uuid'
 
 /**
  * Code from Tiptap UniqueID extension (https://tiptap.dev/api/extensions/unique-id)
@@ -22,13 +22,13 @@ import { v4 } from "uuid";
  * Supports numbers, strings and objects.
  */
 function removeDuplicates(array: any, by = JSON.stringify) {
-  const seen: any = {};
+  const seen: any = {}
   return array.filter((item: any) => {
-    const key = by(item);
+    const key = by(item)
     return Object.prototype.hasOwnProperty.call(seen, key)
       ? false
-      : (seen[key] = true);
-  });
+      : (seen[key] = true)
+  })
 }
 
 /**
@@ -36,37 +36,37 @@ function removeDuplicates(array: any, by = JSON.stringify) {
  */
 function findDuplicates(items: any) {
   const filtered = items.filter(
-    (el: any, index: number) => items.indexOf(el) !== index
-  );
-  const duplicates = removeDuplicates(filtered);
-  return duplicates;
+    (el: any, index: number) => items.indexOf(el) !== index,
+  )
+  const duplicates = removeDuplicates(filtered)
+  return duplicates
 }
 
 const UniqueID = Extension.create({
-  name: "uniqueID",
+  name: 'uniqueID',
   // we’ll set a very high priority to make sure this runs first
   // and is compatible with `appendTransaction` hooks of other extensions
   priority: 10000,
   addOptions() {
     return {
-      attributeName: "id",
+      attributeName: 'id',
       types: [],
       generateID: () => {
         // Use mock ID if tests are running.
         if ((window as any).__TEST_OPTIONS) {
           if ((window as any).__TEST_OPTIONS.mockID === undefined) {
-            (window as any).__TEST_OPTIONS.mockID = 0;
+            ;(window as any).__TEST_OPTIONS.mockID = 0
           } else {
-            (window as any).__TEST_OPTIONS.mockID++;
+            ;(window as any).__TEST_OPTIONS.mockID++
           }
 
-          return (window as any).__TEST_OPTIONS.mockID.toString() as string;
+          return (window as any).__TEST_OPTIONS.mockID.toString() as string
         }
 
-        return v4();
+        return v4()
       },
       filterTransaction: null,
-    };
+    }
   },
   addGlobalAttributes() {
     return [
@@ -84,7 +84,7 @@ const UniqueID = Extension.create({
           },
         },
       },
-    ];
+    ]
   },
   // check initial content for missing ids
   onCreate() {
@@ -94,75 +94,75 @@ const UniqueID = Extension.create({
     // See: https://github.com/ueberdosis/tiptap/issues/2400
     if (
       this.editor.extensionManager.extensions.find(
-        (extension) => extension.name === "collaboration"
+        (extension) => extension.name === 'collaboration',
       )
     ) {
-      return;
+      return
     }
-    const { view, state } = this.editor;
-    const { tr, doc } = state;
-    const { types, attributeName, generateID } = this.options;
+    const {view, state} = this.editor
+    const {tr, doc} = state
+    const {types, attributeName, generateID} = this.options
     const nodesWithoutId = findChildren(doc, (node) => {
       return (
         types.includes(node.type.name) && node.attrs[attributeName] === null
-      );
-    });
-    nodesWithoutId.forEach(({ node, pos }) => {
+      )
+    })
+    nodesWithoutId.forEach(({node, pos}) => {
       tr.setNodeMarkup(pos, undefined, {
         ...node.attrs,
         [attributeName]: generateID(),
-      });
-    });
-    tr.setMeta("addToHistory", false);
-    view.dispatch(tr);
+      })
+    })
+    tr.setMeta('addToHistory', false)
+    view.dispatch(tr)
   },
   addProseMirrorPlugins() {
-    let dragSourceElement: any = null;
-    let transformPasted = false;
+    let dragSourceElement: any = null
+    let transformPasted = false
     return [
       new Plugin({
-        key: new PluginKey("uniqueID"),
+        key: new PluginKey('uniqueID'),
         appendTransaction: (transactions, oldState, newState) => {
           // console.log("appendTransaction");
           const docChanges =
             transactions.some((transaction) => transaction.docChanged) &&
-            !oldState.doc.eq(newState.doc);
+            !oldState.doc.eq(newState.doc)
           const filterTransactions =
             this.options.filterTransaction &&
             transactions.some((tr) => {
-              var _a, _b;
+              var _a, _b
               return !((_b = (_a = this.options).filterTransaction) === null ||
               _b === void 0
                 ? void 0
-                : _b.call(_a, tr));
-            });
+                : _b.call(_a, tr))
+            })
           if (!docChanges || filterTransactions) {
-            return;
+            return
           }
-          const { tr } = newState;
-          const { types, attributeName, generateID } = this.options;
+          const {tr} = newState
+          const {types, attributeName, generateID} = this.options
           const transform = combineTransactionSteps(
             oldState.doc,
-            transactions as any
-          );
-          const { mapping } = transform;
+            transactions as any,
+          )
+          const {mapping} = transform
           // get changed ranges based on the old state
-          const changes = getChangedRanges(transform);
+          const changes = getChangedRanges(transform)
 
-          changes.forEach(({ newRange }) => {
+          changes.forEach(({newRange}) => {
             const newNodes = findChildrenInRange(
               newState.doc,
               newRange,
               (node) => {
-                return types.includes(node.type.name);
-              }
-            );
+                return types.includes(node.type.name)
+              },
+            )
             const newIds = newNodes
-              .map(({ node }) => node.attrs[attributeName])
-              .filter((id) => id !== null);
-            const duplicatedNewIds = findDuplicates(newIds);
-            newNodes.forEach(({ node, pos }) => {
-              var _a;
+              .map(({node}) => node.attrs[attributeName])
+              .filter((id) => id !== null)
+            const duplicatedNewIds = findDuplicates(newIds)
+            newNodes.forEach(({node, pos}) => {
+              var _a
               // instead of checking `node.attrs[attributeName]` directly
               // we look at the current state of the node within `tr.doc`.
               // this helps to prevent adding new ids to the same node
@@ -170,48 +170,48 @@ const UniqueID = Extension.create({
               const id =
                 (_a = tr.doc.nodeAt(pos)) === null || _a === void 0
                   ? void 0
-                  : _a.attrs[attributeName];
+                  : _a.attrs[attributeName]
               if (id === null) {
                 tr.setNodeMarkup(pos, undefined, {
                   ...node.attrs,
                   [attributeName]: generateID(),
-                });
-                return;
+                })
+                return
               }
               // check if the node doesn’t exist in the old state
-              const { deleted } = mapping.invert().mapResult(pos);
-              const newNode = deleted && duplicatedNewIds.includes(id);
+              const {deleted} = mapping.invert().mapResult(pos)
+              const newNode = deleted && duplicatedNewIds.includes(id)
               if (newNode) {
                 tr.setNodeMarkup(pos, undefined, {
                   ...node.attrs,
                   [attributeName]: generateID(),
-                });
+                })
               }
-            });
-          });
+            })
+          })
           if (!tr.steps.length) {
-            return;
+            return
           }
-          return tr;
+          return tr
         },
         // we register a global drag handler to track the current drag source element
         view(view) {
           const handleDragstart = (event: any) => {
-            var _a;
+            var _a
             dragSourceElement = (
               (_a = view.dom.parentElement) === null || _a === void 0
                 ? void 0
                 : _a.contains(event.target)
             )
               ? view.dom.parentElement
-              : null;
-          };
-          window.addEventListener("dragstart", handleDragstart);
+              : null
+          }
+          window.addEventListener('dragstart', handleDragstart)
           return {
             destroy() {
-              window.removeEventListener("dragstart", handleDragstart);
+              window.removeEventListener('dragstart', handleDragstart)
             },
-          };
+          }
         },
         props: {
           // `handleDOMEvents` is called before `transformPasted`
@@ -220,43 +220,43 @@ const UniqueID = Extension.create({
             // only create new ids for dropped content while holding `alt`
             // or content is dragged from another editor
             drop: (view, event: any) => {
-              var _a;
+              var _a
               if (
                 dragSourceElement !== view.dom.parentElement ||
                 ((_a = event.dataTransfer) === null || _a === void 0
                   ? void 0
-                  : _a.effectAllowed) === "copy"
+                  : _a.effectAllowed) === 'copy'
               ) {
-                dragSourceElement = null;
-                transformPasted = true;
+                dragSourceElement = null
+                transformPasted = true
               }
-              return false;
+              return false
             },
             // always create new ids on pasted content
             paste: () => {
-              transformPasted = true;
-              return false;
+              transformPasted = true
+              return false
             },
           },
           // we’ll remove ids for every pasted node
           // so we can create a new one within `appendTransaction`
           transformPasted: (slice) => {
             if (!transformPasted) {
-              return slice;
+              return slice
             }
-            const { types, attributeName } = this.options;
+            const {types, attributeName} = this.options
             const removeId = (fragment: any) => {
-              const list: any[] = [];
+              const list: any[] = []
               fragment.forEach((node: any) => {
                 // don’t touch text nodes
                 if (node.isText) {
-                  list.push(node);
-                  return;
+                  list.push(node)
+                  return
                 }
                 // check for any other child nodes
                 if (!types.includes(node.type.name)) {
-                  list.push(node.copy(removeId(node.content)));
-                  return;
+                  list.push(node.copy(removeId(node.content)))
+                  return
                 }
                 // remove id
                 const nodeWithoutId = node.type.create(
@@ -265,25 +265,25 @@ const UniqueID = Extension.create({
                     [attributeName]: null,
                   },
                   removeId(node.content),
-                  node.marks
-                );
-                list.push(nodeWithoutId);
-              });
-              return Fragment.from(list);
-            };
+                  node.marks,
+                )
+                list.push(nodeWithoutId)
+              })
+              return Fragment.from(list)
+            }
             // reset check
-            transformPasted = false;
+            transformPasted = false
             return new Slice(
               removeId(slice.content),
               slice.openStart,
-              slice.openEnd
-            );
+              slice.openEnd,
+            )
           },
         },
       }),
-    ];
+    ]
   },
-});
+})
 
-export { UniqueID, UniqueID as default };
+export {UniqueID, UniqueID as default}
 //# sourceMappingURL=tiptap-extension-unique-id.esm.js.map

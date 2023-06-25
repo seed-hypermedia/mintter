@@ -1,61 +1,58 @@
-import { Extension } from "@tiptap/core";
-import { getBlockInfoFromPos } from "../Blocks/helpers/getBlockInfoFromPos";
+import {Extension} from '@tiptap/core'
+import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     blockBackgroundColor: {
-      setBlockBackgroundColor: (
-        posInBlock: number,
-        color: string
-      ) => ReturnType;
-    };
+      setBlockBackgroundColor: (posInBlock: number, color: string) => ReturnType
+    }
   }
 }
 
 export const BackgroundColorExtension = Extension.create({
-  name: "blockBackgroundColor",
+  name: 'blockBackgroundColor',
 
   addGlobalAttributes() {
     return [
       {
-        types: ["blockContainer"],
+        types: ['blockContainer'],
         attributes: {
           backgroundColor: {
-            default: "default",
+            default: 'default',
             parseHTML: (element) =>
-              element.hasAttribute("data-background-color")
-                ? element.getAttribute("data-background-color")
-                : "default",
+              element.hasAttribute('data-background-color')
+                ? element.getAttribute('data-background-color')
+                : 'default',
             renderHTML: (attributes) =>
-              attributes.backgroundColor !== "default" && {
-                "data-background-color": attributes.backgroundColor,
+              attributes.backgroundColor !== 'default' && {
+                'data-background-color': attributes.backgroundColor,
               },
           },
         },
       },
-    ];
+    ]
   },
 
   addCommands() {
     return {
       setBlockBackgroundColor:
         (posInBlock, color) =>
-        ({ state, view }) => {
-          const blockInfo = getBlockInfoFromPos(state.doc, posInBlock);
+        ({state, view}) => {
+          const blockInfo = getBlockInfoFromPos(state.doc, posInBlock)
           if (blockInfo === undefined) {
-            return false;
+            return false
           }
 
           state.tr.setNodeAttribute(
             blockInfo.startPos - 1,
-            "backgroundColor",
-            color
-          );
+            'backgroundColor',
+            color,
+          )
 
-          view.focus();
+          view.focus()
 
-          return true;
+          return true
         },
-    };
+    }
   },
-});
+})

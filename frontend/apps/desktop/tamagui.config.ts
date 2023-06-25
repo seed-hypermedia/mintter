@@ -1,3 +1,3 @@
-import { config } from '@mintter/ui'
+import {config} from '@mintter/ui'
 
 export default config

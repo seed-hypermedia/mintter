@@ -1,10 +1,10 @@
-import { Element as HASTElement, Parent as HASTParent } from "hast";
-import { fromDom } from "hast-util-from-dom";
+import {Element as HASTElement, Parent as HASTParent} from 'hast'
+import {fromDom} from 'hast-util-from-dom'
 
 type SimplifyBlocksOptions = {
-  orderedListItemBlockTypes: Set<string>;
-  unorderedListItemBlockTypes: Set<string>;
-};
+  orderedListItemBlockTypes: Set<string>
+  unorderedListItemBlockTypes: Set<string>
+}
 
 /**
  * Rehype plugin which converts the HTML output string rendered by BlockNote into a simplified structure which better
@@ -19,36 +19,36 @@ export function simplifyBlocks(options: SimplifyBlocksOptions) {
   const listItemBlockTypes = new Set<string>([
     ...options.orderedListItemBlockTypes,
     ...options.unorderedListItemBlockTypes,
-  ]);
+  ])
 
   const simplifyBlocksHelper = (tree: HASTParent) => {
-    let numChildElements = tree.children.length;
-    let activeList: HASTElement | undefined;
+    let numChildElements = tree.children.length
+    let activeList: HASTElement | undefined
 
     for (let i = 0; i < numChildElements; i++) {
-      const blockOuter = tree.children[i] as HASTElement;
-      const blockContainer = blockOuter.children[0] as HASTElement;
-      const blockContent = blockContainer.children[0] as HASTElement;
+      const blockOuter = tree.children[i] as HASTElement
+      const blockContainer = blockOuter.children[0] as HASTElement
+      const blockContent = blockContainer.children[0] as HASTElement
       const blockGroup =
         blockContainer.children.length === 2
           ? (blockContainer.children[1] as HASTElement)
-          : null;
+          : null
 
       const isListItemBlock = listItemBlockTypes.has(
-        blockContent.properties!["dataContentType"] as string
-      );
+        blockContent.properties!['dataContentType'] as string,
+      )
 
       const listItemBlockType = isListItemBlock
         ? options.orderedListItemBlockTypes.has(
-            blockContent.properties!["dataContentType"] as string
+            blockContent.properties!['dataContentType'] as string,
           )
-          ? "ol"
-          : "ul"
-        : null;
+          ? 'ol'
+          : 'ul'
+        : null
 
       // Plugin runs recursively to process nested blocks.
       if (blockGroup !== null) {
-        simplifyBlocksHelper(blockGroup);
+        simplifyBlocksHelper(blockGroup)
       }
 
       // Checks that there is an active list, but the block can't be added to it as it's of a different type.
@@ -57,15 +57,15 @@ export function simplifyBlocks(options: SimplifyBlocksOptions) {
         tree.children.splice(
           i - activeList.children.length,
           activeList.children.length,
-          activeList
-        );
+          activeList,
+        )
 
         // Updates the current index and number of child elements.
-        const numElementsRemoved = activeList.children.length - 1;
-        i -= numElementsRemoved;
-        numChildElements -= numElementsRemoved;
+        const numElementsRemoved = activeList.children.length - 1
+        i -= numElementsRemoved
+        numChildElements -= numElementsRemoved
 
-        activeList = undefined;
+        activeList = undefined
       }
 
       // Checks if the block represents a list item.
@@ -75,38 +75,38 @@ export function simplifyBlocks(options: SimplifyBlocksOptions) {
         if (!activeList) {
           // Creates a new list element to represent an active list.
           activeList = fromDom(
-            document.createElement(listItemBlockType!)
-          ) as HASTElement;
+            document.createElement(listItemBlockType!),
+          ) as HASTElement
         }
 
         // Creates a new list item element to represent the block.
         const listItemElement = fromDom(
-          document.createElement("li")
-        ) as HASTElement;
+          document.createElement('li'),
+        ) as HASTElement
 
         // Adds only the content inside the block to the active list.
-        listItemElement.children.push(blockContent.children[0]);
+        listItemElement.children.push(blockContent.children[0])
         // Nested blocks have already been processed in the recursive function call, so the resulting elements are
         // also added to the active list.
         if (blockGroup !== null) {
-          listItemElement.children.push(...blockGroup.children);
+          listItemElement.children.push(...blockGroup.children)
         }
 
         // Adds the list item representing the block to the active list.
-        activeList.children.push(listItemElement);
+        activeList.children.push(listItemElement)
       } else if (blockGroup !== null) {
         // Lifts all children out of the current block, as only list items should allow nesting.
-        tree.children.splice(i + 1, 0, ...blockGroup.children);
+        tree.children.splice(i + 1, 0, ...blockGroup.children)
         // Replaces the block with only the content inside it.
-        tree.children[i] = blockContent.children[0];
+        tree.children[i] = blockContent.children[0]
 
         // Updates the current index and number of child elements.
-        const numElementsAdded = blockGroup.children.length;
-        i += numElementsAdded;
-        numChildElements += numElementsAdded;
+        const numElementsAdded = blockGroup.children.length
+        i += numElementsAdded
+        numChildElements += numElementsAdded
       } else {
         // Replaces the block with only the content inside it.
-        tree.children[i] = blockContent.children[0];
+        tree.children[i] = blockContent.children[0]
       }
     }
 
@@ -116,10 +116,10 @@ export function simplifyBlocks(options: SimplifyBlocksOptions) {
       tree.children.splice(
         numChildElements - activeList.children.length,
         activeList.children.length,
-        activeList
-      );
+        activeList,
+      )
     }
-  };
+  }
 
-  return simplifyBlocksHelper;
+  return simplifyBlocksHelper
 }
