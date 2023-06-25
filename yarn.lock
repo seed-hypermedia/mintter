@@ -9732,11 +9732,11 @@ __metadata:
   linkType: hard
 
 "aria-query@npm:^5.1.3":
-  version: 5.2.1
-  resolution: "aria-query@npm:5.2.1"
+  version: 5.3.0
+  resolution: "aria-query@npm:5.3.0"
   dependencies:
     dequal: ^2.0.3
-  checksum: fdb7a337d97acf4dae831e4c2c786233aca5ccb779a02c10fe65a65af9849f6e9868073593313ab52b7b0d9817e05cfb22a5cd43ecf22a8e7f2abea2268bdac9
+  checksum: 305bd73c76756117b59aba121d08f413c7ff5e80fa1b98e217a3443fcddb9a232ee790e24e432b59ae7625aebcf4c47cb01c2cac872994f0b426f5bdfcd96ba9
   languageName: node
   linkType: hard
 
@@ -15644,9 +15644,9 @@ __metadata:
   linkType: hard
 
 "html-entities@npm:^2.3.2":
-  version: 2.3.6
-  resolution: "html-entities@npm:2.3.6"
-  checksum: 559a88dc3a2059b1e8882940dcaf996ea9d8151b9a780409ff223a79dc1d42ee8bb19b3365064f241f2e2543b0f90612d63f9b8e36d14c4c7fbb73540a8f41cb
+  version: 2.4.0
+  resolution: "html-entities@npm:2.4.0"
+  checksum: 25bea32642ce9ebd0eedc4d24381883ecb0335ccb8ac26379a0958b9b16652fdbaa725d70207ce54a51db24103436a698a8e454397d3ba8ad81460224751f1dc
   languageName: node
   linkType: hard
 
@@ -19239,11 +19239,11 @@ __metadata:
   linkType: hard
 
 "minimatch@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "minimatch@npm:9.0.1"
+  version: 9.0.2
+  resolution: "minimatch@npm:9.0.2"
   dependencies:
     brace-expansion: ^2.0.1
-  checksum: 97f5f5284bb57dc65b9415dec7f17a0f6531a33572193991c60ff18450dcfad5c2dad24ffeaf60b5261dccd63aae58cc3306e2209d57e7f88c51295a532d8ec3
+  checksum: 2eb12e2047a062fdb973fb51b9803f2455e3a00977858c038d66646d303a5a15bbcbc6ed5a2fc403bc869b1309f829ed3acd881d3246faf044ea7a494974b924
   languageName: node
   linkType: hard
 
@@ -23148,8 +23148,8 @@ __metadata:
   linkType: hard
 
 "rollup@npm:>=3.7.0, rollup@npm:^3.20.2, rollup@npm:^3.21.0":
-  version: 3.25.1
-  resolution: "rollup@npm:3.25.1"
+  version: 3.25.2
+  resolution: "rollup@npm:3.25.2"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -23157,7 +23157,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: f483b28a0605097a725b080c088262b0fa21f7bce66f741df73d9ff0be6a3baaf2927916b094ce95412f4f15cc59bb5eae020f59cae3d3a6993d123faceb5b41
+  checksum: 80034ec8d71022b816cd31c24455d7b06ab8d8ff49ab9e583ceb03e2ebd0f6ad00824c6257fa4f8d12a12c2dceda999cec9509c1fff956e8a707b0add1bf2d9c
   languageName: node
   linkType: hard
 
