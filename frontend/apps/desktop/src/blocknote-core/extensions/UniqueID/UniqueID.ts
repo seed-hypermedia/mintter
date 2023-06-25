@@ -5,9 +5,14 @@ import {
   findChildrenInRange,
   getChangedRanges,
 } from '@tiptap/core'
+import {nanoid} from 'nanoid'
 import {Fragment, Slice} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {v4} from 'uuid'
+
+function createId() {
+  let id = nanoid(8)
+  return id
+}
 
 /**
  * Code from Tiptap UniqueID extension (https://tiptap.dev/api/extensions/unique-id)
@@ -63,7 +68,7 @@ const UniqueID = Extension.create({
           return (window as any).__TEST_OPTIONS.mockID.toString() as string
         }
 
-        return v4()
+        return createId()
       },
       filterTransaction: null,
     }
