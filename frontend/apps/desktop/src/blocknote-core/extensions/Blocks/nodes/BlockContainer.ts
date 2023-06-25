@@ -280,30 +280,20 @@ export const BlockContainer = Node.create<IBlock>({
 
           // Deletes next block and adds its text content to the nearest previous block.
           if (dispatch) {
-            if (contentNode.childCount == 0) {
-              dispatch(
-                state.tr
-                  .deleteRange(startPos - 1, endPos + 1)
-                  .setSelection(
-                    new TextSelection(state.doc.resolve(prevBlockEndPos - 1)),
-                  ),
-              )
-            } else {
-              dispatch(
-                state.tr
-                  .deleteRange(startPos, startPos + contentNode.nodeSize)
-                  .replace(
-                    prevBlockEndPos - 1,
-                    startPos,
-                    new Slice(contentNode.content, 0, 0),
-                  )
-                  .scrollIntoView(),
-              )
+            dispatch(
+              state.tr
+                .deleteRange(startPos, startPos + contentNode.nodeSize)
+                .replace(
+                  prevBlockEndPos - 1,
+                  startPos,
+                  new Slice(contentNode.content, 0, 0),
+                )
+                .scrollIntoView(),
+            )
 
-              state.tr.setSelection(
-                new TextSelection(state.doc.resolve(prevBlockEndPos - 1)),
-              )
-            }
+            state.tr.setSelection(
+              new TextSelection(state.doc.resolve(prevBlockEndPos - 1)),
+            )
           }
           return true
         },
