@@ -27,6 +27,7 @@ import {
   normalizeHyperdocsLink,
   Publication,
   WebPublicationRecord,
+  Document,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -100,9 +101,13 @@ export function useDeleteDraft(
     mutationFn: async (documentId) => {
       await draftsClient.deleteDraft({documentId})
     },
-    onSuccess: (...args) => {
+    onSuccess: (response, documentId, context) => {
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      opts?.onSuccess?.(...args)
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        () => null,
+      )
+      opts?.onSuccess?.(response, documentId, context)
     },
   })
 }
@@ -230,11 +235,16 @@ export function usePublishDraft(
       return pub
     },
     onSuccess: (pub: Publication, variables, context) => {
+      const documentId = pub.document?.id
+      appQueryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        () => null,
+      )
       appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      appInvalidateQueries([queryKeys.GET_PUBLICATION, pub.document?.id])
-      appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, pub.document?.id])
+      appInvalidateQueries([queryKeys.GET_PUBLICATION, documentId])
+      appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, documentId])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS])
       opts?.onSuccess?.(pub, variables, context)
@@ -352,7 +362,7 @@ var defaultOnError = (err: any) => {
 
 function getDraftQuery(
   documentId: string | undefined,
-  opts?: UseQueryOptions<EditorDraftState>,
+  opts?: UseQueryOptions<EditorDraftState | null>,
 ) {
   const {
     enabled = true,
@@ -363,14 +373,22 @@ function getDraftQuery(
   return {
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
-      const serverDraft = await draftsClient.getDraft({
-        documentId,
-      })
-      let debugExampleDoc = null
-      // debugExampleDoc = examples.twoParagraphs // comment me out before committing, thankyouu
-      const topChildren = serverChildrenToEditorChildren(
-        (debugExampleDoc || serverDraft).children,
-      )
+      let serverDraft: Document | null = null
+      try {
+        serverDraft = await draftsClient.getDraft({
+          documentId,
+        })
+      } catch (error: any) {
+        const message: string = error.message || ''
+        if (!message.includes('no draft for entity')) {
+          throw error
+        }
+        // draft will be null
+      }
+      if (!serverDraft) {
+        return null
+      }
+      const topChildren = serverChildrenToEditorChildren(serverDraft.children)
       const draftState: EditorDraftState = {
         children: topChildren,
         changes: {
@@ -644,7 +662,7 @@ export function useDraftEditor(
   const draft = useQuery(
     getDraftQuery(documentId, {
       enabled: !!editor,
-      onSuccess: (draft: EditorDraftState) => {
+      onSuccess: (draft: EditorDraftState | null) => {
         readyThings.current[1] = draft
         handleMaybeReady()
       },

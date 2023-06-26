@@ -1,4 +1,4 @@
-import {appInvalidateQueries} from '@app/query-client'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {
   Block,
   Document,
@@ -391,6 +391,7 @@ export function useSitePublishDraft(draftId: string | undefined) {
         appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
         appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+        appQueryClient.setQueryData([queryKeys.EDITOR_DRAFT, docId], () => null)
         navigate({
           key: 'publication',
           documentId: docId,
