@@ -42,7 +42,7 @@ function getMintterPublicURL(docId: string, version: string) {
     import.meta.env.PROD || forceProductionURL
       ? MINTTER_GATEWAY_URL
       : 'http://localhost:3000'
-  }/p/${docId}?v=${version}`
+  }/d/${docId}?v=${version}`
 }
 
 function MintterURLRow({doc}: {doc: Publication}) {
@@ -84,12 +84,12 @@ function PublishedURLs({
           ? pub.path == '/'
             ? shortHost
             : `${shortHost}/${pub.path}`
-          : `${shortHost}/p/${pub.documentId}`
+          : `${shortHost}/d/${pub.documentId}`
         const fullURL = pub.path
           ? pub.path == '/'
             ? pub.hostname
             : `${pub.hostname}/${pub.path}?v=${pub.version}`
-          : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`
+          : `${pub.hostname}/d/${pub.documentId}?v=${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}

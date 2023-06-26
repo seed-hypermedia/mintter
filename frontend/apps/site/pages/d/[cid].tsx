@@ -1,6 +1,6 @@
 import {Publication} from '@mintter/shared'
 import {GetServerSidePropsContext} from 'next'
-import {localWebsiteClient, publicationsClient} from '../../client'
+import {localWebsiteClient} from '../../client'
 import PublicationPage, {PublicationPageProps} from '../../ssr-publication-page'
 import {
   getPublicationPageProps,

@@ -56,7 +56,7 @@ function PublishDialogForm({
 
   const [path, setPath] = useState<string>(init.path)
   const pubUrl = `${init.webUrl}/${
-    path === '/' ? '' : path === '' ? `p/${init.docId}` : readPathState(path)
+    path === '/' ? '' : path === '' ? `d/${init.docId}` : readPathState(path)
   }`
   if (route.key !== 'draft') {
     return null

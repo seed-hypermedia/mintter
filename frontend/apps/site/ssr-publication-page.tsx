@@ -40,7 +40,7 @@ import {useMemo} from 'react'
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
   if (!docId) return link
-  let path = `/p/${docId}`
+  let path = `/d/${docId}`
   if (version) path += `?v=${version}`
   if (block) path += `#${block}`
   return path

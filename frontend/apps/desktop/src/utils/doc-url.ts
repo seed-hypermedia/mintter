@@ -11,7 +11,7 @@ export function getDocUrl(
   const publishedWebHost = pub?.document
     ? pub.document.webUrl || 'https://mintter.com'
     : null
-  let path = `/p/${id}`
+  let path = `/d/${id}`
   if (webPub?.path === '/') {
     path = '/'
   } else if (webPub?.path) {
