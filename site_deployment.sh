@@ -202,7 +202,7 @@ BLOCK
   read -p "Confirm (y/n)?" confirmation
   if [ "$confirmation" = "y" ]; then
     mkdir -p ${workspace}
-	dns=$(echo "$hostname" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
+    dns=$(echo "MTT_SITE_HOSTNAME=${hostname}" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
     mkdir -p ${workspace}/proxy
