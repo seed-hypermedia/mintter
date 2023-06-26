@@ -832,7 +832,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	info.AccountId = n.me.Account().String()
 	info.PeerId = pid.String()
 
-	addrinfo := n.Libp2p().Peerstore().PeerInfo(pid)
+	addrinfo := n.AddrInfo()
 	mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
 	if err != nil {
 		http.Error(w, "failed to get our own adresses", http.StatusInternalServerError)
