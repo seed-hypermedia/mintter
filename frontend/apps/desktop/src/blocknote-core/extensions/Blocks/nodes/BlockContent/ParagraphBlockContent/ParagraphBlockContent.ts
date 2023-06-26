@@ -64,7 +64,6 @@ export const ParagraphBlockContent = createTipTapBlock<'paragraph'>({
   },
 
   renderHTML({node, HTMLAttributes}) {
-    console.log(node)
     return [
       'div',
       mergeAttributes(HTMLAttributes, {

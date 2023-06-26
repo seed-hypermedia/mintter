@@ -57,8 +57,6 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     type: block.type,
   } as FileType)
 
-  editor._tiptapEditor.commands.setNodeSelection(1)
-
   useEffect(() => {
     editor.setTextCursorPosition(block.id, 'end');
   }, [])

@@ -1,6 +1,6 @@
 import {mergeAttributes, Node} from '@tiptap/core'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
-import {TextSelection} from 'prosemirror-state'
+import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {
   blockToNode,
   inlineContentToNodes,
@@ -386,17 +386,47 @@ export const BlockContainer = Node.create<IBlock>({
         () => commands.undoInputRule(),
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
-          commands.command(({state}) => {
-            const {contentType} = getBlockInfoFromPos(
+          commands.command(({state, view}) => {
+            const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
             )!
 
             const selectionAtBlockStart =
               state.selection.$anchor.parentOffset === 0
-            const isParagraph = contentType.name === 'paragraph'
+            const isParagraph = blockInfo.contentType.name === 'paragraph'
 
             if (selectionAtBlockStart && !isParagraph) {
+              if (
+                blockInfo.contentType.name === 'image' &&
+                blockInfo.contentNode.attrs.backgroundColor != 'blue'
+              ) {
+                let tr = state.tr
+                const selection = NodeSelection.create(
+                  state.doc,
+                  blockInfo.startPos,
+                )
+                tr = tr.setSelection(selection)
+                view.dispatch(tr)
+                // tr = tr.setNodeMarkup(
+                //   blockInfo.startPos,
+                //   undefined,
+                //   {
+                //     ...blockInfo.contentNode.attrs,
+                //     backgroundColor: 'blue',
+                //   },
+                //   undefined,
+                // )
+                // return commands.BNUpdateBlock(blockInfo.startPos, {
+                //   type: blockInfo.contentType.name,
+                //   props: {
+                //     ...blockInfo.contentNode.attrs,
+                //     backgroundColor: 'blue',
+                //   },
+                // })
+                return false
+              }
+
               return commands.BNUpdateBlock(state.selection.from, {
                 type: 'paragraph',
                 props: {},
