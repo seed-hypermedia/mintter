@@ -233,7 +233,7 @@ BLOCK
       if [ "$listing" != "y" ]; then
         MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       else
-        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       fi
 	  
       rm mttsite.yml
