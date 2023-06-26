@@ -62,6 +62,7 @@ services:
       - '-grpc-port=56002'
       - '-site.no-auth'
       - '-p2p.public-reachability'
+      - '-p2p.no-relay'
       - '-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
       - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
