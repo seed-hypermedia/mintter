@@ -2,22 +2,17 @@ import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {
   Block,
   Document,
-  DocumentChange,
   getIdsfromUrl,
   Member,
   Member_Role,
-  Publication,
   ReferencedDocument,
   SiteConfig,
-  SiteDiscoveryConfig,
   SiteInfo,
-  WebPublicationRecord,
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {
   draftsClient,
   getWebSiteClient,
-  publicationsClient,
   webPublishingClient,
 } from '@app/api-clients'
 import {queryKeys} from './query-keys'
@@ -59,7 +54,7 @@ async function getDocWebPublications(documentId: string) {
   return result.publications
 }
 
-export function useDocPublications(docId?: string) {
+export function useDocWebPublications(docId?: string) {
   return useQuery({
     queryKey: [queryKeys.GET_DOC_SITE_PUBLICATIONS, docId],
     queryFn: async () => {
@@ -230,117 +225,7 @@ async function performWebPublish(
   })
 }
 
-export function useSitePublish() {
-  const navigate = useNavigate('replace')
-  return useMutation(
-    async ({
-      hostname,
-      documentId,
-      version,
-      path,
-    }: {
-      hostname: string
-      documentId: string
-      version: string
-      path: string
-    }) => {
-      // welcome to New Publish
-      // right now the doc is currently published to the p2p and we want to put it on a site
-
-      // 1. get the account ID of the publisher
-      // 2. ensure document has correct publisher set
-      //   a. if not, create a draft, set the publisher, save new version
-      // 3. get referenced dependencies of the document
-      // 4. publish the document to the site
-
-      const {document, ...localPub} = await publicationsClient.getPublication({
-        documentId,
-        version,
-      })
-      if (!document)
-        throw new Error('Cannot publish document that is not available locally')
-
-      // 1. get the account ID of the publisher
-
-      const wellKnownResponse = await fetch(
-        `${hostname}/api/mintter-well-known`,
-      )
-      if (!wellKnownResponse.ok)
-        throw new Error(
-          `Failed to query well-known of site when determining publisher id. Status: ${wellKnownResponse.status}`,
-        )
-      const siteWellKnown = SiteDiscoveryConfig.fromJson(
-        await wellKnownResponse.json(),
-      )
-
-      const publisherId: string | undefined =
-        siteWellKnown?.accountId ?? String(siteWellKnown?.accountId)
-
-      if (!publisherId) {
-        throw new Error(
-          'Publisher id could not be found from site well-known response',
-        )
-      }
-
-      if (document.webUrl === hostname) {
-        // continue if the publisher is already correct for this version
-        await performWebPublish(document, hostname, path, version)
-        return {version, fromDocument: document, fromVersion: version}
-      }
-      // we need to create a new version with the correct publisher id
-      if (version !== localPub.version) {
-        throw new Error(
-          'You can only publish the latest version of a document, because we need to write the publisher field, and drafts cannot be created on old versions yet.',
-        )
-      }
-      const draft = await draftsClient.createDraft({
-        existingDocumentId: documentId,
-        version,
-      })
-      await draftsClient.updateDraft({
-        documentId: draft.id,
-        changes: [
-          new DocumentChange({
-            op: {case: 'setWebUrl', value: hostname},
-          }),
-        ],
-      })
-      const newPub = await draftsClient.publishDraft({
-        documentId: draft.id,
-      })
-      await performWebPublish(document, hostname, path, newPub.version)
-      return {
-        version: newPub.version,
-        fromDocument: document,
-        fromVersion: version,
-      }
-    },
-    {
-      onSuccess: ({version, fromDocument, fromVersion}, input) => {
-        if (version !== fromVersion) {
-          appInvalidateQueries([
-            queryKeys.PUBLICATION_CHANGES,
-            input.documentId,
-          ])
-          appInvalidateQueries([queryKeys.GET_PUBLICATION, input.documentId])
-          appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-          navigate({
-            key: 'publication',
-            documentId: fromDocument.id,
-            versionId: version,
-          })
-        }
-        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
-        appInvalidateQueries([
-          queryKeys.GET_DOC_SITE_PUBLICATIONS,
-          input.documentId,
-        ])
-      },
-    },
-  )
-}
-
-export function useSitePublishDraft(draftId: string | undefined) {
+export function useSitePublish(draftId: string | undefined) {
   const navigate = useNavigate('replace')
   return useMutation(
     async ({path}: {path: string}) => {
@@ -352,7 +237,7 @@ export function useSitePublishDraft(draftId: string | undefined) {
       // 1. publish the document to the site
 
       const docId = draftId
-      if (!docId) throw new Error('No draftId provided to useSitePublishDraft')
+      if (!docId) throw new Error('No draftId provided to useSitePublish')
       const publication = await draftsClient.publishDraft({documentId: docId})
       const document = publication.document
       if (!document) throw new Error('No document in new publication?!')
@@ -361,7 +246,7 @@ export function useSitePublishDraft(draftId: string | undefined) {
       const webUrl = publication.document?.webUrl
 
       if (!webUrl) {
-        // Bailing because no webUrl on this draft. this should not happen because useSitePublishDraft should only be called on drafts that have a webUrl set
+        // Bailing because no webUrl on this draft. this should not happen because useSitePublish should only be called on drafts that have a webUrl set
         return {
           publication,
           docId,
@@ -400,53 +285,6 @@ export function useSitePublishDraft(draftId: string | undefined) {
         if (hostname)
           appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, hostname])
         appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, docId])
-      },
-    },
-  )
-}
-
-export function useDocRepublish(
-  opts: UseMutationOptions<
-    WebPublicationRecord[],
-    unknown,
-    Publication,
-    unknown
-  >,
-) {
-  return useMutation(
-    async ({document, version}: Publication) => {
-      if (!document)
-        throw new Error('Cannot publish document that is not available locally')
-      const referencedDocuments = extractReferencedDocs(document)
-      const webPubs = await getDocWebPublications(document.id)
-      await Promise.all(
-        webPubs.map(async (webPub) => {
-          if (document.webUrl !== webPub.hostname) return
-          const site = getWebSiteClient(webPub.hostname)
-          await site.publishDocument({
-            documentId: document.id,
-            path: webPub.path,
-            version: version,
-            referencedDocuments,
-          })
-        }),
-      )
-      return webPubs
-    },
-    {
-      ...opts,
-      onSuccess: (webPubs, input, ctx) => {
-        appInvalidateQueries([
-          queryKeys.GET_DOC_SITE_PUBLICATIONS,
-          input.document?.id,
-        ])
-        webPubs.forEach((webPub) =>
-          appInvalidateQueries([
-            queryKeys.GET_SITE_PUBLICATIONS,
-            webPub.hostname,
-          ]),
-        )
-        opts.onSuccess?.(webPubs, input, ctx)
       },
     },
   )

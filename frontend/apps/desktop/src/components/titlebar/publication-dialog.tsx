@@ -1,5 +1,5 @@
 import {useDraft} from '@app/models/documents'
-import {useSitePublishDraft} from '@app/models/sites'
+import {useSitePublish} from '@app/models/sites'
 import {styled} from '@app/stitches.config'
 import {NavRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
@@ -38,7 +38,7 @@ function PublishDialogForm({
   route: NavRoute
 }) {
   const draftId = route.key === 'draft' ? route.draftId : undefined
-  const publish = useSitePublishDraft(draftId)
+  const publish = useSitePublish(draftId)
 
   const {data: draft} = useDraft({
     documentId: draftId,

@@ -6,13 +6,13 @@ import {
   usePublishDraft,
   useWriteDraftWebUrl,
 } from '@app/models/documents'
-import {useDocPublications, useSiteList} from '@app/models/sites'
+import {useDocWebPublications, useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
 import {AccessURLRow} from '@components/url'
-import {Publication, Document, WebPublicationRecord} from '@mintter/shared'
+import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
   Check,
@@ -291,7 +291,7 @@ function DraftPubDropdown() {
                 gap: '$4',
               }}
             >
-              <DraftPublicationDialog draft={draft} />
+              <DraftPublicationDialog draft={draft || undefined} />
             </Box>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
@@ -366,7 +366,7 @@ export function PublishShareButton() {
   }, [route, pub, draft])
 
   let copyReferenceButton
-  const webPubs = useDocPublications(documentId)
+  const webPubs = useDocWebPublications(documentId)
   const webPub = webPubs.data?.find(
     (pub) =>
       documentId && pub.hostname === webUrl && pub.documentId === documentId,

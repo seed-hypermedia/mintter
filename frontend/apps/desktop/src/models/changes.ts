@@ -9,7 +9,7 @@ import {useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useDocumentVersions, usePublicationList} from './documents'
 import {queryKeys} from './query-keys'
-import {useDocPublications} from './sites'
+import {useDocWebPublications} from './sites'
 
 function createDocChangesQuery(docId: string | undefined) {
   return {
@@ -64,7 +64,7 @@ export function getTextOfBlock(block: BlockNode): string {
 // this involves loading every version of the doc, and using block revisions to see what changed
 export function useSmartChanges(docId?: string, version?: string) {
   const docChanges = useDocChanges(docId)
-  const docPubs = useDocPublications(docId)
+  const docPubs = useDocWebPublications(docId)
   // const loadedDocs = useQueries()
   const changes = docChanges.data?.changes
   const versionPublications = useDocumentVersions(

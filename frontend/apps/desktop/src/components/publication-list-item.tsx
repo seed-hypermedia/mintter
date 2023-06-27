@@ -1,6 +1,6 @@
 import {Dropdown, MenuItem} from '@components/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
-import {useDocPublications} from '@app/models/sites'
+import {useDocWebPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDocUrl} from '@app/utils/doc-url'
@@ -45,7 +45,7 @@ export function PublicationListItem({
   const docId = publication.document?.id
   const popoverState = usePopoverState()
   const dialogState = usePopoverState()
-  const webPubs = useDocPublications(docId)
+  const webPubs = useDocWebPublications(docId)
   const route = useNavRoute()
   const webPub = webPubs.data?.find(
     (pub) =>
