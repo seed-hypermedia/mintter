@@ -41,12 +41,15 @@ export const appQueryClient = new QueryClient({
   },
 })
 
-listen('invalidate_queries', (event) => {
-  const queryKey = event.payload as QueryKey
-  appQueryClient.invalidateQueries(queryKey)
-}).then((unlisten) => {
-  // noop
-})
+// horrible hack during tauri/electron migration. used to defer execution until the ipc is ready
+setTimeout(() => {
+  listen('invalidate_queries', (event) => {
+    const queryKey = event.payload as QueryKey
+    appQueryClient.invalidateQueries(queryKey)
+  }).then((unlisten) => {
+    // noop
+  })
+}, 1)
 
 export function appInvalidateQueries(queryKeys: QueryKey) {
   send('invalidate_queries', queryKeys)

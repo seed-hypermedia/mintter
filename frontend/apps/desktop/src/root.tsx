@@ -126,22 +126,26 @@ export function StyleProvider({
   )
 }
 
-listen<string>('reset_zoom', (event) => {
-  console.log('RESET ZOOM!', event)
-  // @ts-ignore
-  document.body.style = `zoom: 1;`
-  store.set('zoom', 1)
-}).then((unlisten) => {
-  // noop
-})
+// horrible hack during tauri/electron migration. used to defer execution until the ipc is ready
+setTimeout(() => {
+  // after migration we can move these back to module scope
+  listen<string>('reset_zoom', (event) => {
+    console.log('RESET ZOOM!', event)
+    // @ts-ignore
+    document.body.style = `zoom: 1;`
+    store.set('zoom', 1)
+  }).then((unlisten) => {
+    // noop
+  })
 
-listen<'zoomIn' | 'zoomOut'>('change_zoom', async (event) => {
-  let currentZoom = (await store.get<number>('zoom')) || 1
-  let newVal =
-    event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
-  // @ts-ignore
-  document.body.style = `zoom: ${newVal};`
-  store.set('zoom', currentZoom)
-}).then((unlisten) => {
-  // noop
-})
+  listen<'zoomIn' | 'zoomOut'>('change_zoom', async (event) => {
+    let currentZoom = (await store.get<number>('zoom')) || 1
+    let newVal =
+      event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
+    // @ts-ignore
+    document.body.style = `zoom: ${newVal};`
+    store.set('zoom', currentZoom)
+  }).then((unlisten) => {
+    // noop
+  })
+}, 1)
