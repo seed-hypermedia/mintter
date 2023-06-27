@@ -130,7 +130,7 @@ export function useDeletePublication(
 export function useDraft({
   documentId,
   ...options
-}: UseQueryOptions<EditorDraftState> & {
+}: UseQueryOptions<EditorDraftState | null> & {
   documentId?: string
 }) {
   return useQuery(getDraftQuery(documentId, options))
