@@ -67,9 +67,6 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     editor.setTextCursorPosition(file.id, 'end');
   }
 
-  if (boolRegex.test(block.props.defaultOpen))
-    editor.updateBlock(file.id, { props: { defaultOpen: "false" } })
-
   return (
     <YStack
       borderWidth={0}

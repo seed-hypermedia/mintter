@@ -43,6 +43,13 @@ function getDraggableBlockFromCoords(
     return undefined
   }
 
+  if (node.parentNode === null) {
+    let parentNode = view.domAtPos(pos.inside).node as HTMLElement
+    if (parentNode.getAttribute('data-id') !== null) {
+      node = parentNode
+    } else return undefined
+  }
+
   while (
     node &&
     node.parentNode &&

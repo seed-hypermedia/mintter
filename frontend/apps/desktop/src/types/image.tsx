@@ -47,20 +47,11 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     type: block.type,
   } as ImageType)
 
-  // editor._tiptapEditor.commands.setNodeSelection(1)
-
-  // useEffect(() => {
-  //   editor.setTextCursorPosition(block.id, 'end');
-  // }, [])
-
   const assignFile = (newImage: ImageType) => {
     setImage({...image, props: { ...image.props, ...newImage.props }})
     editor.updateBlock(image.id, { props: { ...block.props, ...newImage.props }});
     editor.setTextCursorPosition(image.id, 'end');
   }
-
-  if (boolRegex.test(block.props.defaultOpen))
-    editor.updateBlock(image.id, { props: { defaultOpen: "false" } })
 
   return (
     <YStack
@@ -80,7 +71,6 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
 
 function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
-
   return (
     <div className="image-block-wrapper">
       <YStack
