@@ -20,6 +20,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {useQueryClient} from '@tanstack/react-query'
+import {X} from '@tamagui/lucide-icons'
 
 export default function DraftList() {
   let {data, isInitialLoading} = useDraftList()
@@ -117,7 +118,8 @@ export function DraftListItem({draft}: {draft: Document}) {
               />
               <Separator />
               <Dropdown.Item
-                title="delete"
+                title="Delete Draft"
+                icon={X}
                 onPress={() => {
                   popoverState.onOpenChange(false)
                   dialogState.onOpenChange(true)
