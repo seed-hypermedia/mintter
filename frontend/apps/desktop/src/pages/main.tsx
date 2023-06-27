@@ -1,15 +1,14 @@
 import {useListen} from '@app/ipc'
+import {AppError} from '@app/root'
 import {
+  getRouteKey,
   NavRoute,
   useNavigate,
   useNavRoute,
-  getRouteKey,
 } from '@app/utils/navigation'
-import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
-import {Button, Heading} from '@mintter/ui'
 import {lazy, useMemo} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
 
@@ -66,7 +65,7 @@ export default function Main() {
     <>
       <TitleBar clean={isSettings} />
       <ErrorBoundary
-        FallbackComponent={MainBoundary}
+        FallbackComponent={AppError}
         onReset={() => {
           window.location.reload()
         }}
@@ -75,47 +74,5 @@ export default function Main() {
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </>
-  )
-}
-
-function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
-  return (
-    <Box
-      css={{
-        background: '$base-background-normal',
-        display: 'flex',
-        minHeight: '100vh',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-      data-tauri-drag-region
-    >
-      <Box
-        css={{
-          background: '$base-background-subtle',
-          boxShadow: '$menu',
-          padding: '$4',
-          display: 'flex',
-          flexDirection: 'column',
-          minWidth: '50vw',
-          maxWidth: 565,
-        }}
-      >
-        <Heading theme="red">App Error!</Heading>
-        <Box
-          css={{
-            fontFamily: 'ui-monospace,monospace',
-            padding: '$2',
-            background: '$warning-background-normal',
-            marginVertical: '$6',
-          }}
-        >
-          {error.message}
-        </Box>
-        <Button onPress={resetErrorBoundary} alignSelf="flex-end">
-          Reload
-        </Button>
-      </Box>
-    </Box>
   )
 }
