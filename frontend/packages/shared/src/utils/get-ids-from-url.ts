@@ -1,4 +1,4 @@
-export const HYPERDOCS_LINK_PREFIX = 'hd://'
+export const HYPERDOCS_LINK_PREFIX = 'hd://d/'
 
 export function getIdsfromUrl(
   entry: string,
@@ -8,11 +8,11 @@ export function getIdsfromUrl(
   blockId: string | undefined,
 ] {
   if (
-    entry.startsWith('https://mintter.com/p') ||
-    entry.startsWith('https://www.mintter.com/p')
+    entry.startsWith('https://mintter.com/d/') ||
+    entry.startsWith('https://www.mintter.com/d/')
   ) {
     const urlPattern =
-      /^https:\/\/(www\.)?mintter\.com\/p\/(\w+)(\?v=(\w+))?(#([\w,:]+))?$/
+      /^https:\/\/(www\.)?mintter\.com\/d\/(\w+)(\?v=(\w+))?(#([\w,:]+))?$/
     const match = entry.match(urlPattern)
     if (match) {
       const docId: string = match[2]
@@ -38,5 +38,6 @@ export function getIdsfromUrl(
   const newBlockId = entry.match(/#(.*)$/)?.[1]
   const version = oldVersion ?? newVersion // support old format for a while
   const blockId = oldBlockId ?? newBlockId
+
   return [docId, version, blockId]
 }

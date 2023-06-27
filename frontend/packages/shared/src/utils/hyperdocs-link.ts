@@ -6,8 +6,8 @@ export function isHyperdocsScheme(url?: string) {
 
 export function isMintterGatewayLink(text: string) {
   return (
-    text.startsWith('https://mintter.com/p/') ||
-    text.startsWith('https://www.mintter.com/p/')
+    text.startsWith('https://mintter.com/d/') ||
+    text.startsWith('https://www.mintter.com/d/')
   )
 }
 
@@ -27,7 +27,7 @@ export function createHyperdocsDocLink(
   version?: string,
   blockRef?: string,
 ): string {
-  let res = `${HYPERDOCS_LINK_PREFIX}d/${documentId}`
+  let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
   if (version) res += `?v=${version}`
   if (blockRef) res += `#${blockRef}`
 
