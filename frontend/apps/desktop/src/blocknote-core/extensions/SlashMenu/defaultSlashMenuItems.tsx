@@ -1,9 +1,9 @@
+import {HDBlockSchema} from '@app/client/schema'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {PartialBlock} from '../Blocks/api/blockTypes'
-import {DefaultBlockSchema} from '../Blocks/api/defaultBlocks'
 import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 
-export function insertOrUpdateBlock<BSchema extends DefaultBlockSchema>(
+export function insertOrUpdateBlock<BSchema extends HDBlockSchema>(
   editor: BlockNoteEditor<BSchema>,
   block: PartialBlock<BSchema>,
 ) {
@@ -27,7 +27,7 @@ export function insertOrUpdateBlock<BSchema extends DefaultBlockSchema>(
  */
 export const defaultSlashMenuItems = [
   // Command for creating a level 1 heading
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Heading',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -38,7 +38,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a level 2 heading
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Heading 2',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -49,7 +49,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a level 3 heading
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Heading 3',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -60,7 +60,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating an ordered list
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Numbered List',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -70,7 +70,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a bullet list
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Bullet List',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -80,7 +80,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a paragraph (pretty useless)
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Paragraph',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -89,7 +89,7 @@ export const defaultSlashMenuItems = [
     ['paragraph', 'p'],
   ),
 
-  // new BaseSlashMenuItem<DefaultBlockSchema>(
+  // new BaseSlashMenuItem<HDBlockSchema>(
   //   'Code',
   //   (editor) =>
   //     insertOrUpdateBlock(editor, {
@@ -99,7 +99,7 @@ export const defaultSlashMenuItems = [
   //   ['code']
   // ),
 
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Blockquote',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -109,7 +109,7 @@ export const defaultSlashMenuItems = [
     ['blockquote'],
   ),
 
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Video / Audio',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -118,7 +118,7 @@ export const defaultSlashMenuItems = [
     ['video'],
   ),
 
-  // new BaseSlashMenuItem<DefaultBlockSchema>(
+  // new BaseSlashMenuItem<HDBlockSchema>(
   //   'File / Folder',
   //   (editor) =>
   //     insertOrUpdateBlock(editor, {
@@ -127,7 +127,7 @@ export const defaultSlashMenuItems = [
   //   ['file'],
   // ),
 
-  new BaseSlashMenuItem<DefaultBlockSchema>(
+  new BaseSlashMenuItem<HDBlockSchema>(
     'Embed',
     (editor) =>
       insertOrUpdateBlock(editor, {

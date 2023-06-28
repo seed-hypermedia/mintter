@@ -3,6 +3,7 @@ import {
   DefaultBlockSchema,
   defaultSlashMenuItems,
 } from '@app/blocknote-core'
+import {HDBlockSchema} from '@app/client/schema'
 import {MdPreview} from 'react-icons/md'
 import {
   RiChatQuoteLine,
@@ -10,7 +11,6 @@ import {
   RiFolder2Line,
   RiH1,
   RiPlayCircleLine,
-  RiPlayListLine,
   RiText,
 } from 'react-icons/ri'
 import {ReactSlashMenuItem} from './ReactSlashMenuItem'
@@ -96,7 +96,7 @@ export const defaultReactSlashMenuItems = defaultSlashMenuItems
     if (!extraFields[item.name]) {
       return false
     }
-    return new ReactSlashMenuItem<DefaultBlockSchema>(
+    return new ReactSlashMenuItem<HDBlockSchema>(
       item.name,
       item.execute,
       item.aliases,

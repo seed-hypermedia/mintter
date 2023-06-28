@@ -1,43 +1,70 @@
-import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
-import { getBlockInfoFromPos } from "@app/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos";
-import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
-import { hdBlockSchema } from '@app/client/schema';
-import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
-import { ChangeEvent, useEffect, useState } from "react";
-import { RiImage2Fill } from "react-icons/ri";
+import {
+  Block,
+  BlockNoteEditor,
+  DefaultBlockSchema,
+  defaultProps,
+} from '@app/blocknote-core'
+import {getBlockInfoFromPos} from '@app/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
+import {insertOrUpdateBlock} from '@app/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems'
+import {
+  createReactBlockSpec,
+  InlineContent,
+  ReactSlashMenuItem,
+} from '@app/blocknote-react'
+import {hdBlockSchema} from '@app/client/schema'
+import {
+  Button,
+  Form,
+  Input,
+  Label,
+  Popover,
+  SizableText,
+  Tabs,
+  XStack,
+  YStack,
+} from '@mintter/ui'
+import {ChangeEvent, useEffect, useState} from 'react'
+import {RiImage2Fill} from 'react-icons/ri'
 
 export const ImageBlock = createReactBlockSpec({
-    type: "image",
-    propSchema: {
-      ...defaultProps,
-      url: {
-        default: "",
-      },
-      defaultOpen: {
-        values: ["false", "true"],
-        default: "true",
-      },
+  type: 'image',
+  propSchema: {
+    ...defaultProps,
+    url: {
+      default: '',
     },
-    containsInlineContent: true,
-    // @ts-ignore
-    render: ({ block, editor }: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) => (
-      Render(block, editor)
-    ),
-  });
+    defaultOpen: {
+      values: ['false', 'true'],
+      default: 'true',
+    },
+  },
+  containsInlineContent: true,
+  // @ts-ignore
+  render: ({
+    block,
+    editor,
+  }: {
+    block: Block<typeof hdBlockSchema>
+    editor: BlockNoteEditor<typeof hdBlockSchema>
+  }) => Render(block, editor),
+})
 
 type ImageType = {
-  id: string,
+  id: string
   props: {
-    url: string,
+    url: string
   }
-  children: [],
-  content: [],
-  type: string,
+  children: []
+  content: []
+  type: string
 }
 
-const boolRegex = new RegExp("true");
+const boolRegex = new RegExp('true')
 
-const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>) => {
+const Render = (
+  block: Block<typeof hdBlockSchema>,
+  editor: BlockNoteEditor<typeof hdBlockSchema>,
+) => {
   const [image, setImage] = useState<ImageType>({
     id: block.id,
     props: {
@@ -49,16 +76,13 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
   } as ImageType)
 
   const assignFile = (newImage: ImageType) => {
-    setImage({...image, props: { ...image.props, ...newImage.props }})
-    editor.updateBlock(image.id, { props: { ...block.props, ...newImage.props }});
-    editor.setTextCursorPosition(image.id, 'end');
+    setImage({...image, props: {...image.props, ...newImage.props}})
+    editor.updateBlock(image.id, {props: {...block.props, ...newImage.props}})
+    editor.setTextCursorPosition(image.id, 'end')
   }
 
   return (
-    <YStack
-      borderWidth={0}
-      outlineWidth={0}
-    >
+    <YStack borderWidth={0} outlineWidth={0}>
       {image.props.url ? (
         <ImageComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
@@ -70,7 +94,15 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
   )
 }
 
-function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
+function ImageComponent({
+  block,
+  editor,
+  assign,
+}: {
+  block: Block<typeof hdBlockSchema>
+  editor: BlockNoteEditor<typeof hdBlockSchema>
+  assign: any
+}) {
   const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
@@ -82,19 +114,19 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
       tiptapEditor.state.selection.from,
     )
     if (selectedNode && selectedNode.id) {
-      if (selectedNode.id === block.id && selectedNode.startPos === selection.$anchor.pos) {
-        setSelected(true);
+      if (
+        selectedNode.id === block.id &&
+        selectedNode.startPos === selection.$anchor.pos
+      ) {
+        setSelected(true)
+      } else if (selectedNode.id !== block.id) {
+        setSelected(false)
       }
-      else if (selectedNode.id !== block.id) {
-        setSelected(false);
-      }
-    }   
+    }
   }, [selection])
-  
+
   return (
-    <div 
-      className={selected ? "ProseMirror-selectednode" : ''}
-    >
+    <div className={selected ? 'ProseMirror-selectednode' : ''}>
       <YStack
         // @ts-ignore
         contentEditable={false}
@@ -130,20 +162,30 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
                 children: [],
                 content: [],
                 type: 'image',
-              } as ImageType)}
+              } as ImageType)
+            }
           >
             replace
           </Button>
         ) : null}
-        <img src={`http://localhost:55001/ipfs/${block.props.url}`} contentEditable={false} />
+        <img
+          src={`http://localhost:55001/ipfs/${block.props.url}`}
+          contentEditable={false}
+        />
       </YStack>
       <InlineContent className="image-caption" />
     </div>
   )
 }
 
-function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
-  const [url, setUrl] = useState('');
+function ImageForm({
+  block,
+  assign,
+}: {
+  block: Block<typeof hdBlockSchema>
+  assign: any
+}) {
+  const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
     name: 'Upload File',
@@ -166,14 +208,13 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             },
           )
           const data = await response.text()
-          assign({props: { url: data }} as ImageType)
+          assign({props: {url: data}} as ImageType)
         } catch (error) {
           console.error(error)
         }
       } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
-  
 
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
@@ -195,7 +236,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             },
           )
           const data = await response.text()
-          assign({props: { url: data }} as ImageType)
+          assign({props: {url: data}} as ImageType)
         } catch (error) {
           console.error(error)
         }
@@ -211,7 +252,7 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
       return false
     }
   }
-  
+
   return (
     <div>
       <YStack
@@ -247,8 +288,8 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
             x={0}
             y={0}
             opacity={1}
-            enterStyle={{ x: 0, y: -1, opacity: 0 }}
-            exitStyle={{ x: 0, y: -1, opacity: 0 }}
+            enterStyle={{x: 0, y: -1, opacity: 0}}
+            exitStyle={{x: 0, y: -1, opacity: 0}}
             animation={[
               'quick',
               {
@@ -318,7 +359,11 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
               </Tabs.List>
 
               <Tabs.Content value="upload">
-                <XStack padding="$4" alignItems="center" backgroundColor="white">
+                <XStack
+                  padding="$4"
+                  alignItems="center"
+                  backgroundColor="white"
+                >
                   <XStack flex={1} backgroundColor="white">
                     <Label
                       htmlFor="file-upload"
@@ -350,12 +395,17 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                         padding: '0 2px',
                         display: 'none',
                       }}
-                      onChange={handleUpload} />
+                      onChange={handleUpload}
+                    />
                   </XStack>
                 </XStack>
               </Tabs.Content>
               <Tabs.Content value="embed">
-                <XStack padding="$4" alignItems="center" backgroundColor="white">
+                <XStack
+                  padding="$4"
+                  alignItems="center"
+                  backgroundColor="white"
+                >
                   <Form
                     alignItems="center"
                     onSubmit={() => submitImage(url)}
@@ -376,7 +426,8 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
                           outlineWidth: 0,
                           cursor: 'pointer',
                         }}
-                        onChange={(e) => setUrl(e.nativeEvent.text)} />
+                        onChange={(e) => setUrl(e.nativeEvent.text)}
+                      />
                       <Form.Trigger asChild>
                         <Button
                           size="$3"
@@ -404,39 +455,20 @@ function ImageForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign:
 }
 
 export const insertImage = new ReactSlashMenuItem<
-DefaultBlockSchema & { image: typeof ImageBlock }
+  DefaultBlockSchema & {image: typeof ImageBlock}
 >(
-"Image",
-// @ts-ignore
-(editor: BlockNoteEditor<typeof hdBlockSchema>) => {
-  if (editor.topLevelBlocks.length === 1) 
-    editor.insertBlocks(
-    [
-      {
-        type: "image",
-        props: {
-          url: "",
-        },
+  'Image',
+  // @ts-ignore
+  (editor: BlockNoteEditor<typeof hdBlockSchema>) => {
+    insertOrUpdateBlock(editor, {
+      type: 'image',
+      props: {
+        url: '',
       },
-    ],
-    editor.getTextCursorPosition().block,
-    "before"
-    )
-  else 
-    editor.replaceBlocks(
-      [editor.getTextCursorPosition().block.id],
-      [
-        {
-          type: "image",
-          props: {
-            url: "",
-          },
-        },
-      ]
-    );
-},
-["image", "img", "picture"],
-"Media",
-<RiImage2Fill size={18} />,
-"Insert an image"
-);
+    })
+  },
+  ['image', 'img', 'picture'],
+  'Media',
+  <RiImage2Fill size={18} />,
+  'Insert an image',
+)
