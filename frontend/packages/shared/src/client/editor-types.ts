@@ -72,7 +72,7 @@ export type EditorFileBlock = {
 }
 
 export type EditorEmbedBlock = {
-  type: 'embedBlock'
+  type: 'embed'
   id: string
   props: {
     ref: string

@@ -151,7 +151,7 @@ export function editorBlockToServerBlock(
     })
   }
 
-  if (editorBlock.type == 'embedBlock') {
+  if (editorBlock.type == 'embed') {
     return new ServerBlock({
       id: editorBlock.id,
       type: 'embed',

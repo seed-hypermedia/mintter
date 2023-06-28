@@ -1,8 +1,9 @@
 import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
+import { insertOrUpdateBlock } from "@app/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems";
 import { createReactBlockSpec, ReactSlashMenuItem } from "@app/blocknote-react";
-import { hdBlockSchema } from '@app/client/schema';
+import { HDBlockSchema, hdBlockSchema } from '@app/client/schema';
 import { toast } from '@app/toast';
-import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
+import { Button, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
 import { save } from '@tauri-apps/api/dialog';
 import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
 import { getClient, ResponseType } from '@tauri-apps/api/http';
@@ -411,39 +412,15 @@ function FileForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: 
   )
 }
 
-export const insertFile = new ReactSlashMenuItem<
-DefaultBlockSchema & { file: typeof FileBlock }
->(
+export const insertFile = new ReactSlashMenuItem<HDBlockSchema>(
 "File",
-// @ts-ignore
-(editor: BlockNoteEditor<typeof hdBlockSchema>) => {
-  if (editor.topLevelBlocks.length === 1) 
-    editor.insertBlocks(
-    [
-      {
-        type: "file",
-        props: {
-          url: "",
-          alt: "",
-        },
-      },
-    ],
-    editor.getTextCursorPosition().block,
-    "before"
-    )
-  else 
-    editor.replaceBlocks(
-      [editor.getTextCursorPosition().block.id],
-      [
-        {
-          type: "file",
-          props: {
-            url: "",
-            alt: "",
-          },
-        },
-      ]
-    );
+(editor: BlockNoteEditor<HDBlockSchema>) => {
+  insertOrUpdateBlock(editor, {
+    type: 'file',
+    props: {
+      url: ''
+    }
+  })
 },
 ["file", "folder"],
 "Media",

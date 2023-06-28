@@ -86,7 +86,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             // insertBlocks(
             //   [
             //     {
-            //       type: 'embedBlock',
+            //       type: 'embed',
             //       ref: nativeHyperLink,
             //     },
             //   ],

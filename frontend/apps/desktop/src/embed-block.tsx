@@ -158,7 +158,7 @@ function StaticBlockNode({block}: {block: BlockNode}) {
 }
 
 export const EmbedBlock = createReactBlockSpec({
-  type: 'embedBlock',
+  type: 'embed',
   propSchema: {
     ref: {
       default: '',

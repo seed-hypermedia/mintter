@@ -158,7 +158,7 @@ describe('editorBlockToServerBlock', () => {
       test('a embed', () => {
         const eBlock = editorBlockToServerBlock({
           id: 'abc',
-          type: 'embedBlock',
+          type: 'embed',
           children: [],
           content: [],
           props: {
@@ -185,7 +185,7 @@ describe('editorBlockToServerBlock', () => {
   //   test('a embed', () => {
   //     const eBlock = editorBlockToServerBlock({
   //       id: 'abc',
-  //       type: 'embedBlock',
+  //       type: 'embed',
   //       children: [],
   //       content: [],
   //       props: {
@@ -199,7 +199,7 @@ describe('editorBlockToServerBlock', () => {
   //     expect(eBlock).toEqual(
   //       new Block({
   //         id: 'abc',
-  //         type: 'embedBlock',
+  //         type: 'embed',
   //         attributes: {},
   //         ref: 'hd://foobar',
   //       }),

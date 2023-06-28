@@ -335,7 +335,7 @@ describe('Editor: ', () => {
       expect(result).toEqual([
         {
           id: 'a',
-          type: 'embedBlock',
+          type: 'embed',
           props: {
             ref: 'hd://foobar',
             // junk:

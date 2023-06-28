@@ -545,7 +545,7 @@ export function useDraftEditor(
           let embedRef = extractEmbedRefOfLink(block)
           if (embedRef) {
             editor.updateBlock(block, {
-              type: 'embedBlock',
+              type: 'embed',
               content: [
                 {
                   type: 'text',
@@ -813,7 +813,6 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     documentId,
     versionId,
     onSuccess: (pub: Publication) => {
-      // console.log('= pub loaded')
       readyThings.current[1] = pub
       const readyEditor = readyThings.current[0]
       if (readyEditor) {
@@ -837,7 +836,6 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     // },
     blockSchema: hdBlockSchema,
     onEditorReady: (e) => {
-      // console.log('= EDITOR READY', e)
       readyThings.current[0] = e
       const readyPub = readyThings.current[1]
       if (readyPub) {
@@ -856,7 +854,6 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
 function extractEmbedRefOfLink(block: any): false | string {
   if (block.content.length == 1) {
     let leaf = block.content[0]
-
     if (leaf.type == 'link') {
       if (isMintterGatewayLink(leaf.href) || isHyperdocsScheme(leaf.href)) {
         const hdLink = normalizeHyperdocsLink(leaf.href)

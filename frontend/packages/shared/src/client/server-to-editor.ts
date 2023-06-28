@@ -277,7 +277,7 @@ export function serverChildrenToEditorChildren(
 
     if (serverBlock.block?.type === 'embed') {
       return {
-        type: 'embedBlock',
+        type: 'embed',
         id: serverBlock.block.id,
         props: {
           ref: serverBlock.block.ref,
