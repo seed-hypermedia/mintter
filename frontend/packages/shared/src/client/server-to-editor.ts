@@ -255,6 +255,7 @@ export function serverChildrenToEditorChildren(
           defaultOpen: 'false',
         },
         content: serverBlockToEditorInline(serverBlock.block),
+        children: serverChildrenToEditorChildren(serverBlock.children),
       }
     }
 
@@ -270,6 +271,7 @@ export function serverChildrenToEditorChildren(
           textAlignment: 'left',
           defaultOpen: 'false',
         },
+        children: serverChildrenToEditorChildren(serverBlock.children),
       }
     }
 
@@ -283,6 +285,7 @@ export function serverChildrenToEditorChildren(
           textColor: 'default',
           textAlignment: 'left',
         },
+        children: serverChildrenToEditorChildren(serverBlock.children),
       }
     }
 
