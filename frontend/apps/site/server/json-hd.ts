@@ -8,12 +8,8 @@ import type {
   Profile,
   Publication,
   SiteInfo,
+  HDTimestamp,
 } from '@mintter/shared'
-
-export type HDTimestamp = {
-  seconds: bigint
-  nanos: number
-}
 
 export type ServerAnnotation = Annotation
 export type HDAnnotation = {

@@ -25,7 +25,12 @@ var months = [
   'Dec',
 ]
 
-export function formattedDate(value: string | Date | Timestamp) {
+export type HDTimestamp = {
+  seconds: bigint
+  nanos: number
+}
+
+export function formattedDate(value: string | Date | Timestamp | HDTimestamp) {
   let _value =
     typeof value == 'string' ||
     (value instanceof Date && !isNaN(value.valueOf()))

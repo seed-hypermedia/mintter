@@ -10,11 +10,12 @@ import {
   SimpleTooltip,
 } from '@mintter/ui'
 import {formattedDate, abbreviateCid, pluralS} from '@mintter/shared'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
-import {HDAccount, HDPublication} from 'server/json-hd'
+import {HDAccount, HDPublication, HDTimestamp} from 'server/json-hd'
+import {Timestamp} from '@bufbuild/protobuf'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -66,6 +67,27 @@ export function LoadedAccountId({
   return <Text>{abbreviateCid(account.id)}</Text>
 }
 
+function useInterval(ms: number) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    let id = setInterval(() => setCount((c) => c + 1), ms)
+    return () => clearInterval(id)
+  }, [ms])
+  return count
+}
+
+function useFormattedTime(
+  time: string | Date | HDTimestamp | null | undefined,
+) {
+  const updateInterval = useInterval(10_000) // update the time every 10 seconds
+  return useMemo(() => {
+    updateInterval // silence react-hooks/exhaustive-deps.. the time is an implicit dependency of formattedDate
+    if (typeof time === 'string') return formattedDate(time)
+    if (time instanceof Date) return formattedDate(time)
+    return formattedDate(time)
+  }, [time, updateInterval])
+}
+
 export function PublicationMetadata({
   publication,
   editors,
@@ -75,6 +97,8 @@ export function PublicationMetadata({
 }) {
   let media = useMedia()
   let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
+  const publishTime = useFormattedTime(publication?.document?.publishTime)
+  const updateTime = useFormattedTime(publication?.document?.updateTime)
   return publication ? (
     <SiteAside>
       <SizableText opacity={0.5}>
@@ -93,15 +117,11 @@ export function PublicationMetadata({
         .filter((e) => !!e)}
       <Paragraph size={size}>
         <SizableText o={0.5}>Published at:&nbsp;</SizableText>
-        {publication?.document?.publishTime
-          ? formattedDate(publication.document.publishTime)
-          : null}
+        {publishTime}
       </Paragraph>
       <Paragraph size={size}>
         <SizableText o={0.5}>Last update:&nbsp;</SizableText>
-        {publication?.document?.updateTime
-          ? formattedDate(publication.document.updateTime)
-          : null}
+        {updateTime}
       </Paragraph>
       <IDLabelRow label="Document ID" id={publication?.document?.id} />
       <IDLabelRow label="Version ID" id={publication?.version} />
