@@ -16,13 +16,17 @@ const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
 
 function writePathState(s: string) {
   if (s === '/') return '/'
-  const basicPath = s.replace(/[^a-z0-9-]/gi, '_').toLocaleLowerCase()
+  const basicPath = s
+    .trim()
+    .replace(/[^a-z0-9-]/gi, '-')
+    .replace(/-+/gi, '-')
+    .toLocaleLowerCase()
   if (basicPath === 'home') return '/'
   return basicPath
 }
 function readPathState(s: string) {
   if (s === '/') return '/'
-  const basicPath = s.replace(/_+$/, '').toLocaleLowerCase()
+  const basicPath = s.replace(/-+$/, '').toLocaleLowerCase()
   return basicPath
 }
 const Heading = styled('h2', {
