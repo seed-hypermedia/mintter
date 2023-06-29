@@ -803,9 +803,9 @@ function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
   const editorBlocks = serverChildrenToEditorChildren(
     pub.document?.children || [],
   )
-  editor._tiptapEditor.commands.clearContent()
-  // editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-  editor._tiptapEditor.commands.setContent(editorBlocks)
+  // editor._tiptapEditor.commands.clearContent()
+  editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+  // editor._tiptapEditor.commands.setContent(editorBlocks)
 }
 
 export function usePublicationEditor(documentId: string, versionId?: string) {
@@ -842,11 +842,12 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
         const editor = readyThings.current[0]
 
         if (editor && pub.data) {
-          applyPubToEditor(editor, pub.data)
+          editor?._tiptapEditor.commands.clearContent()
+          const editorBlocks = serverChildrenToEditorChildren(
+            pub.data.document?.children || [],
+          )
+          editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
         }
-
-        // editor?._tiptapEditor.commands.clearContent()
-        // editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
       }
     }
   }, [pub.data])
