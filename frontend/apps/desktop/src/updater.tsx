@@ -1,5 +1,5 @@
 import {listen} from '@app/ipc'
-import {Button} from '@mintter/ui'
+import {Button, SizableText, XStack, YStack} from '@mintter/ui'
 import {relaunch} from '@tauri-apps/api/process'
 import {
   checkUpdate,
@@ -10,6 +10,8 @@ import {
 import toast from 'react-hot-toast'
 
 checkUpdate()
+
+console.log('== UPDATE')
 
 const TOAST_ID = 'updater'
 
@@ -51,33 +53,58 @@ window.addEventListener('beforeunload', () => {
 })
 
 function UpdateAvailable({version, body}: {version: string; body: string}) {
+  console.log(
+    '🚀 ~ file: updater.tsx:54 ~ UpdateAvailable ~ body:',
+    version,
+    body,
+  )
   return (
-    <div>
-      <div>Mintter version {version} is available!</div>
-      <Button chromeless paddingLeft={0} onPress={() => installUpdate()}>
-        Download
-      </Button>
-      <Button chromeless color="muted" onPress={() => toast.dismiss(TOAST_ID)}>
-        Remind me later
-      </Button>
-    </div>
+    <YStack>
+      <SizableText fontWeight="800" size="$2">
+        Mintter version {version} is available!
+      </SizableText>
+      <XStack gap="$3">
+        <Button
+          size="$1"
+          chromeless
+          paddingLeft={0}
+          onPress={() => installUpdate()}
+        >
+          Download
+        </Button>
+        <Button size="$1" chromeless onPress={() => toast.dismiss(TOAST_ID)}>
+          Remind me later
+        </Button>
+      </XStack>
+    </YStack>
   )
 }
 
 function UpdateSuccess() {
   return (
-    <div>
-      <div>Update successful. Restart now?</div>
-      <Button chromeless onPress={() => relaunch()}>
-        Restart
-      </Button>
-      <Button chromeless onPress={() => toast.dismiss(TOAST_ID)}>
-        no thanks
-      </Button>
-    </div>
+    <YStack>
+      <SizableText fontWeight="800" size="$2">
+        Update successful. Restart now?
+      </SizableText>
+      <XStack gap="$3">
+        <Button size="$1" chromeless onPress={() => relaunch()}>
+          Restart
+        </Button>
+        <Button size="$1" chromeless onPress={() => toast.dismiss(TOAST_ID)}>
+          no thanks
+        </Button>
+      </XStack>
+    </YStack>
   )
 }
 
 function UpdateError({error}: {error?: string}) {
-  return <div>Failed to install update! {error}</div>
+  return (
+    <YStack>
+      <SizableText fontWeight="800" size="$2">
+        Failed to install update!
+      </SizableText>
+      <pre>{error}</pre>
+    </YStack>
+  )
 }
