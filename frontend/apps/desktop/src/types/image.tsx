@@ -1,4 +1,5 @@
 import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
+import { getBlockInfoFromPos } from "@app/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos";
 import { createReactBlockSpec, InlineContent, ReactSlashMenuItem } from "@app/blocknote-react";
 import { hdBlockSchema } from '@app/client/schema';
 import { Button, Form, Input, Label, Popover, SizableText, Tabs, TextArea, XStack, YStack } from "@mintter/ui";
@@ -16,6 +17,10 @@ export const ImageBlock = createReactBlockSpec({
         values: ["false", "true"],
         default: "true",
       },
+      selected: {
+        values: ["false", "true"],
+        default: "false",
+      }
     },
     containsInlineContent: true,
     // @ts-ignore
@@ -71,11 +76,32 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
 
 function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
+
+  useEffect(() => {
+    const selectedNode = getBlockInfoFromPos(
+      tiptapEditor.state.doc,
+      tiptapEditor.state.selection.from,
+    )
+    if (selectedNode && selectedNode.id) {
+      if (selectedNode.id === block.id && selectedNode.startPos === selection.$anchor.pos) {
+        setSelected(true);
+      }
+      else if (selectedNode.id !== block.id) {
+        setSelected(false);
+      }
+    }   
+  }, [selection])
+  
   return (
-    <div className="image-block-wrapper">
+    <div 
+      className={selected ? "ProseMirror-selectednode" : ''}
+    >
       <YStack
         // @ts-ignore
-        contentEditable={false}
+        // contentEditable={false}
         className={block.type}
         onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           setReplace(true)

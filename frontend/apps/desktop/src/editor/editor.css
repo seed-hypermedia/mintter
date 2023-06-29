@@ -17,3 +17,7 @@
   color: #40847a;
   text-decoration: underline;
 }
+
+.ProseMirror-selectednode {
+  outline: 2px solid #8cf;
+}

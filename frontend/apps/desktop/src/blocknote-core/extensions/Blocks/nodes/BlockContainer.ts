@@ -190,6 +190,7 @@ export const BlockContainer = Node.create<IBlock>({
               )
             }
 
+            console.log(block.props)
             // Changes the blockContent node type and adds the provided props as attributes. Also preserves all existing
             // attributes that are compatible with the new type.
             state.tr.setNodeMarkup(
@@ -387,6 +388,7 @@ export const BlockContainer = Node.create<IBlock>({
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
           commands.command(({state, view}) => {
+            // If image first select image
             const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
@@ -397,10 +399,7 @@ export const BlockContainer = Node.create<IBlock>({
             const isParagraph = blockInfo.contentType.name === 'paragraph'
 
             if (selectionAtBlockStart && !isParagraph) {
-              if (
-                blockInfo.contentType.name === 'image' &&
-                blockInfo.contentNode.attrs.backgroundColor != 'blue'
-              ) {
+              if (blockInfo.contentType.name === 'image') {
                 let tr = state.tr
                 const selection = NodeSelection.create(
                   state.doc,
@@ -408,22 +407,6 @@ export const BlockContainer = Node.create<IBlock>({
                 )
                 tr = tr.setSelection(selection)
                 view.dispatch(tr)
-                // tr = tr.setNodeMarkup(
-                //   blockInfo.startPos,
-                //   undefined,
-                //   {
-                //     ...blockInfo.contentNode.attrs,
-                //     backgroundColor: 'blue',
-                //   },
-                //   undefined,
-                // )
-                // return commands.BNUpdateBlock(blockInfo.startPos, {
-                //   type: blockInfo.contentType.name,
-                //   props: {
-                //     ...blockInfo.contentNode.attrs,
-                //     backgroundColor: 'blue',
-                //   },
-                // })
                 return false
               }
 

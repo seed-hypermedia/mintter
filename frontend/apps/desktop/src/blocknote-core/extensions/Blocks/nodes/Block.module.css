@@ -268,18 +268,25 @@ NESTED BLOCKS
   content: 'Type to filter';
 }
 
-.blockContent[data-content-type='heading'].isEmpty .inlineContent:before {
+.blockContent[data-content-type='heading'].isEmpty.hasAnchor .inlineContent:before {
   content: 'Heading';
 }
 
-.blockContent[data-content-type='image'].isEmpty .inlineContent:before {
-  content: 'Image Caption';
+.blockContent[data-content-type='image'].isEmpty.hasAnchor .inlineContent:before {
+  content: 'Image Caption' !important;
 }
 
-.isEmpty.hasAnchor .inlineContent.image-caption:before {
-  content: 'Image Caption';
-  background: red;
+/* .image-block-wrapper .inlineContent:before {
+  content: 'Image Caption' !important;
+  background: red !important;
+  padding: 50px 0px 0px 50px !important;
 }
+
+.image-caption .inlineContent:before {
+  content: 'Image Caption' !important;
+  background: red !important;
+  padding: 50px 0px 0px 50px !important;
+} */
 
 /* TEXT COLORS */
 [data-text-color='gray'] {
