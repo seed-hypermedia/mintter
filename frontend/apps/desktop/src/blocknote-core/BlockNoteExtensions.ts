@@ -1,7 +1,6 @@
-import {Extensions, extensions} from '@tiptap/core'
-
+import {Extension, Extensions, extensions} from '@tiptap/core'
+import {createVirtualCursor} from 'prosemirror-virtual-cursor'
 import {BlockNoteEditor} from './BlockNoteEditor'
-
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
 import Collaboration from '@tiptap/extension-collaboration'
@@ -118,6 +117,11 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),
     // should be handled before Enter handlers in other components like splitListItem
     TrailingNode,
+    Extension.create({
+      addProseMirrorPlugins() {
+        return [createVirtualCursor()]
+      },
+    }),
   ]
 
   if (opts.collaboration) {

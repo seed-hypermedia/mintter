@@ -4467,6 +4467,7 @@ __metadata:
     navaid: 1.2.0
     prettier: 2.8.7
     prosemirror-state: ^1.4.3
+    prosemirror-virtual-cursor: ^0.3.5
     react: 18.2.0
     react-copy-to-clipboard: 5.1.0
     react-dom: 18.2.0
@@ -21587,6 +21588,24 @@ __metadata:
     prosemirror-state: ^1.0.0
     prosemirror-transform: ^1.1.0
   checksum: 1006585b7c4f2fd59af352cb4c9845050b7170edb94981f1a16281fecc498cbd8bf7941acbe96bf4b723c8b9496a28662b96b8959bc9bebc7c19d4f21f5ec0d8
+  languageName: node
+  linkType: hard
+
+"prosemirror-virtual-cursor@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "prosemirror-virtual-cursor@npm:0.3.5"
+  peerDependencies:
+    prosemirror-model: ^1.0.0
+    prosemirror-state: ^1.0.0
+    prosemirror-view: ^1.0.0
+  peerDependenciesMeta:
+    prosemirror-model:
+      optional: true
+    prosemirror-state:
+      optional: true
+    prosemirror-view:
+      optional: true
+  checksum: 88f36d6accea5957efe8f65f54ed0b2653888da61eaf6973e8f7101d309c116916a5ea57ea0d3218b6435269d7eb9558cd5c109d3221fdb399f42e0e943b787a
   languageName: node
   linkType: hard
 

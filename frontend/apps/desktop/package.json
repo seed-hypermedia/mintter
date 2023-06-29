@@ -98,6 +98,7 @@
     "nanoid": "4.0.2",
     "navaid": "1.2.0",
     "prosemirror-state": "^1.4.3",
+    "prosemirror-virtual-cursor": "^0.3.5",
     "react": "18.2.0",
     "react-copy-to-clipboard": "5.1.0",
     "react-dom": "18.2.0",
