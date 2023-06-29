@@ -17,10 +17,6 @@ export const ImageBlock = createReactBlockSpec({
         values: ["false", "true"],
         default: "true",
       },
-      selected: {
-        values: ["false", "true"],
-        default: "false",
-      }
     },
     containsInlineContent: true,
     // @ts-ignore
@@ -101,7 +97,7 @@ function ImageComponent({block, editor, assign}: {block: Block<typeof hdBlockSch
     >
       <YStack
         // @ts-ignore
-        // contentEditable={false}
+        contentEditable={false}
         className={block.type}
         onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           setReplace(true)
