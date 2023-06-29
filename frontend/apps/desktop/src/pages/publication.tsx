@@ -40,8 +40,6 @@ export default function PublicationPage() {
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 
-  const [debugValue, setDebugValue] = useState(false)
-
   const docId = route?.documentId
   const versionId = route?.versionId
   const blockId = route?.blockId
@@ -57,9 +55,6 @@ export default function PublicationPage() {
     versionId,
   )
 
-  let mouseService = useInterpret(() => mouseMachine)
-  let scrollWrapperRef = useRef<HTMLDivElement>(null)
-
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)
 
@@ -70,10 +65,7 @@ export default function PublicationPage() {
     status == 'success' ? docId : undefined,
   )
 
-  useWindowListen('selector_click', (event) => {
-    // TODO: send the conversationID through this event to highlight the appropiate conversation in the panel
-    replace({...route, accessory: {key: 'comments'}})
-  })
+  console.log('== 🚀 ~ citations:', citations)
 
   if (status == 'error') {
     return (
@@ -106,26 +98,14 @@ export default function PublicationPage() {
             replace({...route, accessory: {key: 'citations'}})
           }}
         >
-          {/* <MouseProvider value={mouseService}> */}
           <MainWrapper noScroll>
-            <Allotment defaultSizes={[100]} onChange={(values) => {}}>
+            <Allotment defaultSizes={[100]}>
               <Allotment.Pane>
                 <YStack
                   height="100%"
                   // @ts-ignore
-                  onMouseMove={(event) =>
-                    mouseService.send({
-                      type: 'MOUSE.MOVE',
-                      position: event.clientY,
-                    })
-                  }
-                  onMouseLeave={() => {
-                    mouseService.send('DISABLE.CHANGE')
-                  }}
                 >
-                  <ScrollView
-                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                  >
+                  <ScrollView>
                     {versionId && (
                       <OutOfDateBanner docId={docId} version={versionId} />
                     )}

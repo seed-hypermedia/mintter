@@ -56,7 +56,7 @@ NESTED BLOCKS
   transition: all 0.2s 0.1s;
 }
 
-[data-theme='light']
+/* [data-theme='light']
   .blockGroup
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
@@ -68,7 +68,7 @@ NESTED BLOCKS
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
   border-left: 1px solid #999999;
-}
+} */
 
 .blockGroup .blockGroup > .blockOuter[data-prev-depth-change='-2']::before {
   height: 0;
@@ -268,11 +268,13 @@ NESTED BLOCKS
   content: 'Type to filter';
 }
 
-.blockContent[data-content-type='heading'].isEmpty.hasAnchor .inlineContent:before {
+.blockContent[data-content-type='heading'].isEmpty.hasAnchor
+  .inlineContent:before {
   content: 'Heading';
 }
 
-.blockContent[data-content-type='image'].isEmpty.hasAnchor .inlineContent:before {
+.blockContent[data-content-type='image'].isEmpty.hasAnchor
+  .inlineContent:before {
   content: 'Image Caption' !important;
 }
 

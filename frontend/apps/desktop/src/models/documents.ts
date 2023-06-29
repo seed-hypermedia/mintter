@@ -800,12 +800,12 @@ export const findBlock = findParentNode(
 )
 
 function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
-  // console.log('= applyPubToEditor')
-  editor.isEditable = false // this is the way
   const editorBlocks = serverChildrenToEditorChildren(
     pub.document?.children || [],
   )
-  editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+  editor._tiptapEditor.commands.clearContent()
+  // editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+  editor._tiptapEditor.commands.setContent(editorBlocks)
 }
 
 export function usePublicationEditor(documentId: string, versionId?: string) {
@@ -816,6 +816,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
       readyThings.current[1] = pub
       const readyEditor = readyThings.current[0]
       if (readyEditor) {
+        readyEditor.isEditable = false // this is the way
         applyPubToEditor(readyEditor, pub)
       }
     },
@@ -827,6 +828,28 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     null,
     pub.data || null,
   ])
+
+  const currentVersion = useRef<string | null>(null)
+
+  // this effect let you change the content of the editor when the version from the version panel is changed.
+  // without this the editor do not update.
+  useEffect(() => {
+    const readyPub = readyThings.current[1]
+    if (readyPub) {
+      let newVersion = pub.data?.version
+
+      if (newVersion != currentVersion.current) {
+        const editor = readyThings.current[0]
+
+        if (editor && pub.data) {
+          applyPubToEditor(editor, pub.data)
+        }
+
+        // editor?._tiptapEditor.commands.clearContent()
+        // editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+      }
+    }
+  }, [pub.data])
 
   // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
   const editor: HyperDocsEditor | null = useBlockNote<typeof hdBlockSchema>({
