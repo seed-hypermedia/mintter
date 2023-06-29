@@ -15,7 +15,12 @@ import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
 import 'raf/polyfill'
 
-import {Hydrate, QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {
+  DehydratedState,
+  Hydrate,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
 
@@ -33,7 +38,11 @@ export default trpc.withTRPC(App)
 const isMintterSite = process.env.GW_NEXT_HOST === 'https://mintter.com'
 const hostIconPrefix = isMintterSite ? '/mintter-icon' : '/generic-icon'
 
-function App({Component, pageProps}: AppProps) {
+export type EveryPageProps = {
+  trpcState?: DehydratedState
+}
+
+function App({Component, pageProps}: AppProps<EveryPageProps>) {
   let [client] = useState(() => new QueryClient())
 
   // memo to avoid re-render on dark/light change
@@ -76,7 +85,7 @@ function App({Component, pageProps}: AppProps) {
           }}
         />
       </Head>
-      <Hydrate state={pageProps.dehydratedState}>
+      <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
           {contents}
           <Toaster position="bottom-right" />

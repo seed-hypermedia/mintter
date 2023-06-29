@@ -1,6 +1,6 @@
-import {SiteInfo} from '@mintter/shared'
 import {Container, SiteTitle, XStack} from '@mintter/ui'
 import Head from 'next/head'
+import {HDSiteInfo} from 'server/json-hd'
 import {NextLink} from './next-link'
 
 const SITE_NAME = process.env.GW_SITE_NAME || 'Mintter Site'
@@ -9,7 +9,7 @@ export function SiteHead({
   siteInfo,
   title,
 }: {
-  siteInfo: SiteInfo | null
+  siteInfo: HDSiteInfo | null
   title?: string
 }) {
   return (

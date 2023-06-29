@@ -1,52 +1,42 @@
-import {Publication} from '@mintter/shared'
-import {GetServerSidePropsContext} from 'next'
-import {localWebsiteClient} from '../../client'
-import PublicationPage, {PublicationPageProps} from '../../ssr-publication-page'
 import {
-  getPublicationPageProps,
-  impatientGetPublication,
-  setResponsePublication,
-} from 'server/server-publications'
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+} from 'next'
+import PublicationPage from '../../ssr-publication-page'
+import {impatiently} from 'server/impatiently'
+import {getPageProps, serverHelpers} from 'server/ssr-helpers'
+import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
 
-export default function IDPublicationPage(props: PublicationPageProps) {
-  return <PublicationPage {...props} />
+export default function IDPublicationPage(
+  props: InferGetServerSidePropsType<typeof getServerSideProps>,
+) {
+  return (
+    <PublicationPage
+      documentId={useRequiredRouteQuery('cid')}
+      version={useRouteQuery('v')}
+    />
+  )
 }
 
-export const getServerSideProps = async (
+export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   const {params, query} = context
   let cid = params?.cid ? String(params.cid) : undefined
-  let version = query.v ? String(query.v) : undefined
-  let publication: Publication | null = null
+  let version = query.v ? String(query.v) : null
   if (!cid) return {notFound: true}
-  try {
-    publication = await impatientGetPublication({
-      documentId: cid,
-      version,
-    })
-    const allWebPubs = await localWebsiteClient.listWebPublications({})
-    const webPub = allWebPubs.publications.find((pub) => pub.documentId === cid)
-    if (webPub) {
-      const destPath = webPub.path === '/' ? '/' : `/${webPub.path}`
-      return {
-        redirect: {
-          destination: `${destPath}?v=${version || webPub.version}`,
-          permanent: false,
-        },
-      }
-    }
 
-    setResponsePublication(context, publication)
-    return {
-      props: await getPublicationPageProps(publication, cid, version || null),
-    }
-  } catch (error) {
-    const isNotFound = !!error.rawMessage?.match('[not_found]')
-    if (isNotFound)
-      return {
-        notFound: true,
-      }
-    throw error
+  const helpers = serverHelpers({})
+
+  await impatiently(
+    helpers.publication.get.prefetch({
+      documentId: cid,
+      versionId: version || undefined,
+    }),
+  )
+
+  return {
+    props: await getPageProps(helpers, {}),
   }
 }

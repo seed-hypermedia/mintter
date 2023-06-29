@@ -1,7 +1,6 @@
 import {
   Account,
   ImageBlock,
-  Block as ServerBlock,
   InlineContent,
   PresentationBlock,
   SectionBlock,
@@ -19,7 +18,6 @@ import {
   SideContainer,
   Spinner,
   Text,
-  useMedia,
   YStack,
 } from '@mintter/ui'
 import Head from 'next/head'
@@ -28,14 +26,14 @@ import {PublicationMetadata} from './author'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
-import {JsonValue} from '@bufbuild/protobuf'
 import {
   Block,
-  BlockNode,
   Publication,
 } from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from 'trpc'
 import {useMemo} from 'react'
+import {DehydratedState} from '@tanstack/react-query'
+import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -47,12 +45,10 @@ function hdLinkToSitePath(link: string) {
 }
 
 export type PublicationPageProps = {
-  documentId: string
-  version: string | null
-  metadata?: boolean
-  publication: JsonValue | null
-  editors: JsonValue[] | null
-  siteInfo: JsonValue | null
+  // documentId: string
+  // version: string | null
+  // metadata?: boolean
+  trpcState: DehydratedState
 }
 
 export type PublicationPageData = {
@@ -64,31 +60,10 @@ export type PublicationPageData = {
   siteInfo: SiteInfo | null
 }
 
-function preparePublicationData(
-  props: PublicationPageProps,
-): PublicationPageData {
-  return {
-    documentId: props.documentId,
-    version: props.version || undefined,
-    publication:
-      props.publication == null
-        ? null
-        : Publication.fromJson(props.publication),
-    editors: props.editors
-      ? props.editors.map((editor) => {
-          if (typeof editor === 'object') return Account.fromJson(editor)
-          if (typeof editor === 'string') return editor
-          return null
-        })
-      : null,
-    siteInfo: props.siteInfo ? SiteInfo.fromJson(props.siteInfo) : null,
-  }
-}
-
 function PublicationContent({
   publication,
 }: {
-  publication: Publication | undefined
+  publication: HDPublication | undefined
 }) {
   return (
     <YStack>
@@ -101,47 +76,39 @@ function PublicationContent({
 
 export default function PublicationPage({
   metadata = true,
-  ...props
-}: PublicationPageProps) {
-  const {publication, siteInfo, editors} = preparePublicationData(props)
-  let media = useMedia()
-  const {documentId} = props
-  const loadedPublication = trpc.publication.get.useQuery({
-    documentId: props.documentId,
-    versionId: props.version || undefined,
+  documentId,
+  version,
+}: {
+  documentId: string
+  version?: string | null
+  metadata?: boolean
+}) {
+  // let media = useMedia()
+  const siteInfo = trpc.siteInfo.get.useQuery()
+  const publication = trpc.publication.get.useQuery({
+    documentId: documentId,
+    versionId: version || undefined,
   })
 
-  const {displayPub} = useMemo(() => {
-    const loadedPub = loadedPublication.data?.publication
-      ? Publication.fromJson(loadedPublication.data.publication)
-      : null
-    const displayPub = loadedPub || publication
-    return {displayPub}
-  }, [loadedPublication.data, publication])
+  const pub = publication.data?.publication
 
   return (
     <Container tag="main" id="main-content" tabIndex={-1}>
-      {siteInfo ? (
-        <SiteHead siteInfo={siteInfo} />
+      {siteInfo.data ? (
+        <SiteHead siteInfo={siteInfo.data} />
       ) : (
-        <GatewayHead title={publication?.document?.title} />
+        <GatewayHead title={pub?.document?.title} />
       )}
       <Head>
-        <meta name="mintter-document-id" content={publication?.document?.id} />
-        <meta name="mintter-document-version" content={publication?.version} />
-        <meta
-          name="mintter-document-title"
-          content={publication?.document?.title}
-        />
+        <meta name="mintter-document-id" content={pub?.document?.id} />
+        <meta name="mintter-document-version" content={pub?.version} />
+        <meta name="mintter-document-title" content={pub?.document?.title} />
       </Head>
-      <ArticleContainer
-        flexDirection={media.gtSm ? 'row' : 'column'}
-        paddingRight={media.gtSm ? '$4' : 0}
-      >
+      <ArticleContainer flexWrap="wrap">
         <MainContainer flex={3} className="web-publication">
-          {displayPub ? (
-            <PublicationContent publication={displayPub} />
-          ) : loadedPublication.isLoading ? (
+          {pub ? (
+            <PublicationContent publication={pub} />
+          ) : publication.isLoading ? (
             <YStack>
               <Header>Querying for document on the network.</Header>
               <Spinner />
@@ -154,11 +121,14 @@ export default function PublicationPage({
           {metadata ? (
             <>
               <PublicationMetadata
-                publication={displayPub || undefined}
-                editors={editors || []}
+                publication={pub || undefined}
+                editors={pub?.document?.editors || []}
               />
-              {editors?.length && documentId ? (
-                <WebTipping docId={documentId} editors={editors || []} />
+              {pub?.document?.editors?.length && documentId ? (
+                <WebTipping
+                  docId={documentId}
+                  editors={pub?.document?.editors || []}
+                />
               ) : null}
             </>
           ) : null}
@@ -248,7 +218,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
 }
 
-function StaticBlock({block}: {block: ServerBlock}) {
+function StaticBlock({block}: {block: HDBlock}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
@@ -282,11 +252,11 @@ function StaticBlock({block}: {block: ServerBlock}) {
   return <span>mystery block 👻</span>
 }
 
-function StaticBlockNode({block}: {block: BlockNode}) {
+function StaticBlockNode({block}: {block: HDBlockNode}) {
   const children =
-    block.children.length > 0 ? (
+    (block.children?.length || 0) > 0 ? (
       <YStack paddingLeft="$5">
-        {block.children.map((child, index) => (
+        {block.children?.map((child, index) => (
           <StaticBlockNode key={child.block?.id || index} block={child} />
         ))}
       </YStack>

@@ -77,8 +77,34 @@ export const transport = createGrpcWebTransport({
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
 
+function augmentWebsiteClient(
+  client: ReturnType<typeof createPromiseClient<typeof WebSite>>,
+) {
+  return {
+    ...client,
+    getPath: async (req: {path: string}) => {
+      const result = await client.getPath(req).catch((error) => {
+        if (error.rawMessage?.match('Could not get record for path')) {
+          return null
+        }
+        if (
+          error.rawMessage?.match(
+            'Could not get local document although was found',
+          )
+        ) {
+          return null
+        }
+        throw error
+      })
+      return result
+    },
+  }
+}
+
 export const publicationsClient = createPromiseClient(Publications, transport)
-export const localWebsiteClient = createPromiseClient(WebSite, transport)
+export const localWebsiteClient = augmentWebsiteClient(
+  createPromiseClient(WebSite, transport),
+)
 export const accountsClient = createPromiseClient(Accounts, transport)
 export const daemonClient = createPromiseClient(Daemon, transport)
 export const networkingClient = createPromiseClient(Networking, transport)

@@ -44,6 +44,7 @@ import React, {
 } from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
+import {HDAccount} from 'server/json-hd'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},
@@ -73,7 +74,7 @@ export function WebTipping({
   editors = [],
 }: {
   docId: string
-  editors: Array<Account | string | null>
+  editors: Array<HDAccount | string | null>
 }) {
   const [open, onOpenChange] = useState<boolean>(false)
 
@@ -282,7 +283,7 @@ function CreateInvoiceStep({
 }: {
   onInvoice: (invoice: InternalInvoice) => void
   onComplete: (complete: boolean) => void
-  editors: Array<Account | string | null>
+  editors: Array<HDAccount | string | null>
   docId: string
 }) {
   let [amount, setAmount] = useState(100)
@@ -557,7 +558,7 @@ function DontationDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   docId: string
-  editors: Array<Account | string | null>
+  editors: Array<HDAccount | string | null>
 }) {
   let [invoice, setInvoice] = useState<InternalInvoice | null>(null)
   let [completion, setCompletion] = useState<boolean>(false)

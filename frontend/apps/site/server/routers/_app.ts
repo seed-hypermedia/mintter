@@ -1,6 +1,8 @@
 import {createPromiseClient} from '@bufbuild/connect'
 import {Accounts, Publications, WebPublishing} from '@mintter/shared'
 import {transport} from 'client'
+import {getSiteInfo} from 'get-site-info'
+import {hdAccount, hdPublication, hdSiteInfo} from 'server/to-json-hd'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
@@ -37,9 +39,8 @@ const publicationRouter = router({
         documentId: input.documentId,
         version: input.versionId,
       })
-
       return {
-        publication: pub.toJson(),
+        publication: hdPublication(pub),
       }
     }),
 })
@@ -55,17 +56,23 @@ const accountRouter = router({
       const account = await accountsClient.getAccount({
         id: input.accountId,
       })
-
       return {
-        account: account.toJson(),
+        account: hdAccount(account),
       }
     }),
+})
+
+const siteInfoRouter = router({
+  get: procedure.query(async () => {
+    const siteInfo = await getSiteInfo()
+    return hdSiteInfo(siteInfo)
+  }),
 })
 
 export const appRouter = router({
   publication: publicationRouter,
   account: accountRouter,
+  siteInfo: siteInfoRouter,
 })
 
-// export type definition of API
 export type AppRouter = typeof appRouter

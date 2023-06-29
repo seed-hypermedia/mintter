@@ -8,19 +8,13 @@ import {
   Button,
   XStack,
   SimpleTooltip,
-  Avatar,
 } from '@mintter/ui'
-import {
-  Publication,
-  formattedDate,
-  Account,
-  abbreviateCid,
-  pluralS,
-} from '@mintter/shared'
+import {formattedDate, abbreviateCid, pluralS} from '@mintter/shared'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
+import {HDAccount, HDPublication} from 'server/json-hd'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -52,12 +46,13 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
 export function LoadedAccountId({
   account,
 }: {
-  account?: Account | string | null
+  account?: HDAccount | string | null
 }) {
   const id = typeof account === 'string' ? account : account?.id
   const acct = trpc.account.get.useQuery({
     accountId: id,
   })
+  if (typeof account === 'string') return <Text>{abbreviateCid(account)}</Text>
   let profile = acct.data?.account?.profile || account?.profile
   if (profile) {
     // todo avatar!
@@ -68,7 +63,6 @@ export function LoadedAccountId({
     )
   }
   if (!account) return <Text>?</Text>
-  if (typeof account === 'string') return <Text>{abbreviateCid(account)}</Text>
   return <Text>{abbreviateCid(account.id)}</Text>
 }
 
@@ -76,8 +70,8 @@ export function PublicationMetadata({
   publication,
   editors,
 }: {
-  publication?: Publication
-  editors?: (Account | string | null)[]
+  publication?: HDPublication
+  editors?: (HDAccount | string | null)[]
 }) {
   let media = useMedia()
   let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
