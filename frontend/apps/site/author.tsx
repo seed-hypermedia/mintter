@@ -14,8 +14,7 @@ import {useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
-import {HDAccount, HDPublication, HDTimestamp} from 'server/json-hd'
-import {Timestamp} from '@bufbuild/protobuf'
+import {HDPublication} from 'server/json-hd'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -44,19 +43,12 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
   )
 }
 
-export function LoadedAccountId({
-  account,
-}: {
-  account?: HDAccount | string | null
-}) {
-  const id = typeof account === 'string' ? account : account?.id
+export function LoadedAccountId({account}: {account?: string}) {
   const acct = trpc.account.get.useQuery({
-    accountId: id,
+    accountId: account,
   })
-  if (typeof account === 'string') return <Text>{abbreviateCid(account)}</Text>
-  let profile = acct.data?.account?.profile || account?.profile
+  let profile = acct.data?.account?.profile
   if (profile) {
-    // todo avatar!
     return (
       <>
         <Text>{profile.alias}</Text>
@@ -64,7 +56,7 @@ export function LoadedAccountId({
     )
   }
   if (!account) return <Text>?</Text>
-  return <Text>{abbreviateCid(account.id)}</Text>
+  return <Text>{abbreviateCid(account)}</Text>
 }
 
 function useInterval(ms: number) {
@@ -93,7 +85,7 @@ export function PublicationMetadata({
   editors,
 }: {
   publication?: HDPublication
-  editors?: (HDAccount | string | null)[]
+  editors?: string[]
 }) {
   let media = useMedia()
   let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
@@ -107,12 +99,7 @@ export function PublicationMetadata({
       {editors
         ?.map((editor) => {
           if (!editor) return null
-          return (
-            <LoadedAccountId
-              account={editor}
-              key={typeof editor === 'string' ? editor : editor.id}
-            />
-          )
+          return <LoadedAccountId account={editor} key={editor} />
         })
         .filter((e) => !!e)}
       <Paragraph size={size}>

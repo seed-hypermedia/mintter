@@ -1,6 +1,7 @@
 import {
   Account,
   ImageBlock,
+  EmbedBlock,
   InlineContent,
   PresentationBlock,
   SectionBlock,
@@ -139,7 +140,13 @@ export default function PublicationPage({
   )
 }
 
-function InlineContentView({inline}: {inline: InlineContent[]}) {
+function InlineContentView({
+  inline,
+  style,
+}: {
+  inline: InlineContent[]
+  style?: {heading: boolean}
+}) {
   return (
     <>
       {inline.map((content, index) => {
@@ -159,10 +166,13 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           } else if (content.styles.strike) {
             textDecorationLine = 'line-through'
           }
+          const isHeading = style?.heading || false
+          const isBold = content.styles.bold || false
           return (
             <Text
               key={index}
-              fontWeight={content.styles.bold ? 'bold' : ''}
+              fontSize={isHeading ? 24 : undefined}
+              fontWeight={isHeading || isBold ? 'bold' : ''}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
               fontFamily={content.styles.code ? 'monospace' : undefined}
@@ -197,10 +207,21 @@ function StaticSectionBlock({block}: {block: SectionBlock}) {
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
+  const isBlockquote = block.attributes?.type === 'blockquote'
   return (
-    <span>
-      <InlineContentView inline={inline} />
-    </span>
+    <YStack
+      id={block.id}
+      paddingLeft={isBlockquote ? 20 : 0}
+      borderLeftWidth={isBlockquote ? 1 : 0}
+      borderLeftColor={'blue'}
+    >
+      <InlineContentView
+        inline={inline}
+        style={{
+          heading: block.type === 'heading',
+        }}
+      />
+    </YStack>
   )
 }
 
@@ -209,6 +230,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   if (!cid) return null
   return (
     <img
+      id={block.id}
       alt={block.attributes.alt}
       src={`/ipfs/${cid}`}
       // layout="fill"
@@ -216,6 +238,47 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
     />
   )
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
+}
+
+function StaticEmbedBlock({block}: {block: EmbedBlock}) {
+  const reference = block.ref
+  const [documentId, versionId, blockId] = getIdsfromUrl(reference)
+  let embed = trpc.publication.get.useQuery(
+    {
+      documentId,
+      versionId,
+    },
+    {enabled: !!documentId},
+  )
+  let content = <Spinner />
+  if (embed.data?.publication?.document?.children) {
+    content = (
+      <>
+        {embed.data?.publication?.document?.children?.map((block) => (
+          <StaticBlockNode block={block} key={block?.block?.id} />
+        ))}
+      </>
+    )
+  }
+  return (
+    <div
+      id={block.id}
+      data-ref={reference}
+      style={{userSelect: 'none'}}
+      contentEditable={false}
+    >
+      <YStack
+        backgroundColor="#d8ede7"
+        borderColor="#95bfb4"
+        borderWidth={1}
+        padding="$4"
+        paddingVertical="$2"
+        borderRadius="$4"
+      >
+        {content}
+      </YStack>
+    </div>
+  )
 }
 
 function StaticBlock({block}: {block: HDBlock}) {
@@ -242,14 +305,31 @@ function StaticBlock({block}: {block: HDBlock}) {
     return <StaticImageBlock block={niceBlock} />
   }
   if (niceBlock.type === 'embed') {
-    return <span>nested embeds not supported yet, should be easy though.</span>
+    return <StaticEmbedBlock block={niceBlock} />
   }
   if (niceBlock.type === 'code') {
     return <span>code blocks not supported yet.</span>
   }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
-  return <span>mystery block 👻</span>
+  return (
+    <ErrorMessageBlock message={`Unknown block type: "${niceBlock.type}"`} />
+  )
+}
+
+function ErrorMessageBlock({message}: {message: string}) {
+  return (
+    <YStack
+      backgroundColor="#d8ede7"
+      borderColor="#95bfb4"
+      borderWidth={1}
+      padding="$4"
+      paddingVertical="$2"
+      borderRadius="$4"
+    >
+      <Text>{message}</Text>
+    </YStack>
+  )
 }
 
 function StaticBlockNode({block}: {block: HDBlockNode}) {

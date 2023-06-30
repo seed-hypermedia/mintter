@@ -1,3 +1,4 @@
+import 'raf/polyfill'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
@@ -9,11 +10,6 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   globalThis['setImmediate'] = setTimeout
 }
-
-import '@tamagui/core/reset.css'
-import '@tamagui/font-inter/css/400.css'
-import '@tamagui/font-inter/css/700.css'
-import 'raf/polyfill'
 
 import {
   DehydratedState,
@@ -29,7 +25,7 @@ import React, {startTransition} from 'react'
 import type {AppProps} from 'next/app'
 import {useMemo, useState} from 'react'
 import {trpc} from '../trpc'
-import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
+import {TamaguiProvider, Theme} from '@mintter/ui'
 import tamaguiConfig from '../tamagui.config'
 import {Toaster} from 'react-hot-toast'
 
@@ -103,7 +99,8 @@ function ThemeProvider({children}: {children: React.ReactNode}) {
     <NextThemeProvider
       onChangeTheme={(next) => {
         startTransition(() => {
-          setTheme(next)
+          if (next === 'dark') setTheme('dark')
+          else if (next === 'light') setTheme('light')
         })
       }}
     >

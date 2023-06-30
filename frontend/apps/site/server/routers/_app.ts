@@ -30,11 +30,14 @@ const publicationRouter = router({
   get: procedure
     .input(
       z.object({
-        documentId: z.string(),
+        documentId: z.string().optional(),
         versionId: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
+      if (!input.documentId) {
+        return {publication: null}
+      }
       const pub = await publicationsClient.getPublication({
         documentId: input.documentId,
         version: input.versionId,

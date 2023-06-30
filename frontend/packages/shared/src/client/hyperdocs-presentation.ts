@@ -11,6 +11,7 @@ export type ImageBlock = {
 }
 
 export type SectionBlockAttributes = {
+  type?: 'blockquote' | 'p'
   childrenType?: 'group' | 'numbers' | 'bullet' | 'blockquote' // default is "group"
   showContent?: string // interpret as a bool
   isContentHeading?: string // interpret as a bool
