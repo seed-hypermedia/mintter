@@ -231,7 +231,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   return (
     <img
       id={block.id}
-      alt={block.attributes.alt}
+      alt={block.attributes?.alt}
       src={`/ipfs/${cid}`}
       // layout="fill"
       className="image"
