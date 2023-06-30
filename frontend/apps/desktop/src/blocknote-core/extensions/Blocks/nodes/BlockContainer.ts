@@ -190,7 +190,6 @@ export const BlockContainer = Node.create<IBlock>({
               )
             }
 
-            console.log(block.props)
             // Changes the blockContent node type and adds the provided props as attributes. Also preserves all existing
             // attributes that are compatible with the new type.
             state.tr.setNodeMarkup(

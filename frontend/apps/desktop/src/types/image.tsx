@@ -173,7 +173,7 @@ function ImageComponent({
           contentEditable={false}
         />
       </YStack>
-      <InlineContent className="image-caption" />
+      <InlineContent className="image-caption" onClick={() => (setSelected(false))} />
     </div>
   )
 }

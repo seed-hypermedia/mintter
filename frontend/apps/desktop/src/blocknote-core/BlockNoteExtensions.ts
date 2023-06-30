@@ -39,6 +39,7 @@ import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
 import {SuggestionsMenuFactory} from './shared/plugins/suggestion/SuggestionsMenuFactoryTypes'
+import {SelectableBlocksExtension} from './extensions/SelectableBlocks/SelectableBlocksExtension'
 
 export type UiFactories<BSchema extends BlockSchema> = Partial<{
   formattingToolbarFactory: FormattingToolbarFactory<BSchema>
@@ -104,6 +105,7 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     BackgroundColorMark,
     BackgroundColorExtension,
     TextAlignmentExtension,
+    SelectableBlocksExtension,
 
     // custom blocks:
     ...blocks,
