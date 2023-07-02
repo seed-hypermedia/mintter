@@ -4430,6 +4430,7 @@ __metadata:
     "@types/lodash.debounce": 4.0.7
     "@types/mdast": 3.0.11
     "@types/node": 18.15.13
+    "@types/prosemirror-dev-tools": ^3.0.3
     "@types/react": 18.0.37
     "@types/react-copy-to-clipboard": 5.0.4
     "@types/react-dom": 18.0.11
@@ -8515,6 +8516,15 @@ __metadata:
   version: 15.7.5
   resolution: "@types/prop-types@npm:15.7.5"
   checksum: 5b43b8b15415e1f298243165f1d44390403bb2bd42e662bca3b5b5633fdd39c938e91b7fce3a9483699db0f7a715d08cef220c121f723a634972fdf596aec980
+  languageName: node
+  linkType: hard
+
+"@types/prosemirror-dev-tools@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "@types/prosemirror-dev-tools@npm:3.0.3"
+  dependencies:
+    prosemirror-view: ^1.24.0
+  checksum: a518bc20ff9758a38ba77b6c540c50b419f4fbf369c3df64fece4e9e5f6c13427c77aea47985a8b9b5deb69f6e7755fbd1c3cabd063fde94f9ea83a4908657de
   languageName: node
   linkType: hard
 
@@ -21739,7 +21749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prosemirror-view@npm:^1.0.0, prosemirror-view@npm:^1.1.0, prosemirror-view@npm:^1.13.3, prosemirror-view@npm:^1.27.0, prosemirror-view@npm:^1.28.2, prosemirror-view@npm:^1.31.0":
+"prosemirror-view@npm:^1.0.0, prosemirror-view@npm:^1.1.0, prosemirror-view@npm:^1.13.3, prosemirror-view@npm:^1.24.0, prosemirror-view@npm:^1.27.0, prosemirror-view@npm:^1.28.2, prosemirror-view@npm:^1.31.0":
   version: 1.31.5
   resolution: "prosemirror-view@npm:1.31.5"
   dependencies:

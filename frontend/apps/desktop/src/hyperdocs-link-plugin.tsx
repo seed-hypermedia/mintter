@@ -41,6 +41,7 @@ export function createHyperdocsDocLinkPlugin() {
         let linkId = tr.getMeta('hdPlugin:uncheckedLink')
         if (!linkId) return map
         let markStep = tr.steps.find((step) => {
+          // @ts-expect-error
           if (step.jsonID == 'addMark') {
             let mark = step.toJSON().mark
             console.log('== ~ markStep ~ mark:', mark)
