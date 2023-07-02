@@ -1,3 +1,4 @@
+import applyDevTools from 'prosemirror-dev-tools'
 import {Editor, EditorOptions} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
 // import "./blocknote.css";
@@ -234,6 +235,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
 
     this._tiptapEditor = new Editor(tiptapOptions) as Editor & {
       contentComponent: any
+    }
+    if (import.meta.env.DEV) {
+      applyDevTools(this._tiptapEditor.view)
     }
   }
 
