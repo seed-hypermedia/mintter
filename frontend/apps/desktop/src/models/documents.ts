@@ -13,8 +13,10 @@ import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {editorBlockToServerBlock} from '@app/client/editor-to-server'
 import {hdBlockSchema} from '@app/client/schema'
 import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
+import {createHyperdocsDocLinkPlugin} from '@app/hyperdocs-link-plugin'
 import {useListen} from '@app/ipc'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import Link from '@app/tiptap-extension-link'
 import {toast} from '@app/toast'
 import {insertFile} from '@app/types/file'
 import {insertImage} from '@app/types/image'
@@ -597,13 +599,13 @@ export function useDraftEditor(
             console.warn('no editor state yet!')
             return
           }
-          console.log('applying draft changes', {
-            changed: [...state.changes.changed].map(
-              (change) => lastBlocks.current[change],
-            ),
-            moves: state.changes.moves,
-            deleted: [...state.changes.deleted],
-          })
+          // console.log('applying draft changes', {
+          //   changed: [...state.changes.changed].map(
+          //     (change) => lastBlocks.current[change],
+          //   ),
+          //   moves: state.changes.moves,
+          //   deleted: [...state.changes.deleted],
+          // })
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
           )
@@ -634,6 +636,15 @@ export function useDraftEditor(
       insertFile,
       ...defaultReactSlashMenuItems.slice(2),
     ],
+    _tiptapOptions: {
+      extensions: [
+        Link.extend({
+          addProseMirrorPlugins() {
+            return [createHyperdocsDocLinkPlugin().plugin]
+          },
+        }),
+      ],
+    },
   })
 
   useEffect(() => {

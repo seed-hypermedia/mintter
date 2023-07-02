@@ -77,8 +77,6 @@ declare module '@tiptap/core' {
   }
 }
 
-const hdPluginKey = new PluginKey('hyperlinkPasting')
-
 export const Link = Mark.create<LinkOptions>({
   name: 'link',
 
@@ -105,45 +103,6 @@ export const Link = Mark.create<LinkOptions>({
   // },
 
   inclusive: false,
-  // @ts-ignore
-  onUpdate({editor, transaction}: {editor: Editor; transaction: Transaction}) {
-    let link = editor.getAttributes('link')
-
-    if (!link.href) return true
-
-    const addMarkStep: Step | undefined = transaction.steps.find(
-      // @ts-ignore
-      (step) => step.jsonID === 'addMark',
-    )
-
-    if (!addMarkStep) return true
-
-    toast.success('link updated. detected')
-    transaction.setMeta(hdPluginKey, link.href)
-    // editor.view.dispatch(transaction)
-    // setTimeout(() => {
-    //   toast.success('trying to upgrade link to hd://')
-
-    //   console.log(
-    //     '🚀 ~ file: link.ts:113 ~ setTimeout ~ addMarkStep:',
-    //     addMarkStep,
-    //   )
-
-    //   editor
-    //     .chain()
-    //     .focus()
-    //     .extendMarkRange('link')
-
-    //     // .unsetLink()
-    //     .setLink({href: 'hd://newfml'})
-    //     .setMeta('preventAutolink', true)
-    //     .run()
-    //   // .setMark('link', {href: 'hd://fml', alt: 'demo alt'})
-    //   // .setMeta('preventAutolink', true)
-
-    //   return false
-    // }, 1000)
-  },
 
   addOptions() {
     return {
@@ -170,6 +129,9 @@ export const Link = Mark.create<LinkOptions>({
       },
       class: {
         default: this.options.HTMLAttributes.class,
+      },
+      id: {
+        default: null,
       },
     }
   },
@@ -250,117 +212,6 @@ export const Link = Mark.create<LinkOptions>({
       }),
     )
 
-    plugins.push(hyperdocsLinkPlugin)
-
     return plugins
   },
 })
-
-// TODO: add proper types
-const hyperdocsLinkPlugin: any = new Plugin({
-  key: hdPluginKey,
-  view(editorView) {
-    return {
-      update(view, prevState) {
-        let state: {step: AddMarkStep | null} = hyperdocsLinkPlugin.getState(
-          view.state,
-        )
-
-        if (!state) return false
-
-        return checkHyperLink({
-          view: view,
-          step: state.step,
-          dispatch: view.dispatch,
-        })
-      },
-      destroy() {},
-    }
-  },
-  state: {
-    init() {
-      return {step: null}
-    },
-    // @ts-expect-error
-    apply(tr, value, oldState, newState) {
-      if (tr.getMeta(hdPluginKey) == 'complete') {
-        console.log('=== STOP!!')
-        return {step: null}
-      }
-      if (newState.doc.eq(oldState.doc)) return value
-      const addMarkStep = tr.steps.find(
-        // @ts-ignore
-        (step) => step.jsonID === 'addMark',
-      )
-
-      if (!addMarkStep) return value
-      console.log(
-        '🚀 ~ === link.ts:273 ~ apply ~ addMarkStep:',
-        addMarkStep,
-        value,
-      )
-
-      return {step: addMarkStep}
-    },
-  },
-})
-
-async function checkHyperLink({
-  view,
-  step,
-  dispatch,
-}: {
-  view: EditorView
-  step: AddMarkStep | null
-  dispatch?: EditorView['dispatch']
-}): Promise<boolean> {
-  if (!step) return false
-
-  let {href} = step.mark.attrs
-  if (href) {
-    let syncRes = isHyperdocsScheme(href) || isMintterGatewayLink(href)
-
-    if (syncRes) {
-      let [docId, versionId, blockId] = getIdsfromUrl(href)
-
-      if (dispatch && docId) {
-        let mark = view.state.schema.mark('link', {
-          href: createHyperdocsDocLink(docId, versionId, blockId),
-        })
-        dispatch(
-          view.state.tr
-            .addMark(step.from, step.to, mark)
-            .setMeta(hdPluginKey, 'complete'),
-        )
-        toast.success('link converted to permanent link!')
-        return true
-      }
-    }
-
-    let asyncRes = await fetchWebLink(href)
-
-    if (asyncRes && asyncRes.documentId) {
-      if (dispatch) {
-        let mark = view.state.schema.mark('link', {
-          href: createHyperdocsDocLink(
-            asyncRes.documentId,
-            asyncRes.documentVersion || undefined,
-          ),
-        })
-
-        dispatch(
-          view.state.tr
-            .addMark(step.from, step.to, mark)
-            .setMeta(hdPluginKey, 'complete'),
-        )
-        toast.success('link converted to permanent link!')
-        return true
-      }
-    }
-    console.log('🚀 ~ === checkHyperLink ~ NONE')
-    return false
-  } else {
-    console.log('🚀 ~ === checkHyperLink ~ ELSE')
-    return false
-  }
-}

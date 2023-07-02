@@ -8,6 +8,7 @@ import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'
 import {find} from 'linkifyjs'
+import {nanoid} from 'nanoid'
 
 type PasteHandlerOptions = {
   editor: Editor
@@ -56,9 +57,27 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             (hasPastedLink ? pastedLinkMarks[0].attrs.href : link?.href || null)
 
           if (pastedLink) {
-            options.editor.commands.setMark(options.type, {
-              href: pastedLink,
-            })
+            if (nativeHyperLink) {
+              options.editor
+                .chain()
+                .setMark(options.type, {
+                  href: pastedLink,
+                })
+                .run()
+            } else {
+              let id = nanoid(8)
+              options.editor
+                .chain()
+                .command(({tr}) => {
+                  tr.setMeta('hdPlugin:uncheckedLink', id)
+                  return true
+                })
+                .setMark(options.type, {
+                  href: pastedLink,
+                  id,
+                })
+                .run()
+            }
 
             return true
           }
@@ -73,47 +92,47 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           return false
         }
 
-        if (nativeHyperLink && selection.empty) {
-          const placeholder = '...'
-          options.editor.commands.insertContent(
-            // we annotate with data-fresh so the link will async load the title
-            `<a href="${nativeHyperLink}">${placeholder}</a>`,
-          )
+        // if (nativeHyperLink && selection.empty) {
+        //   const placeholder = '...'
+        //   options.editor.commands.insertContent(
+        //     // we annotate with data-fresh so the link will async load the title
+        //     `<a href="${nativeHyperLink}">${placeholder}</a>`,
+        //   )
 
-          let currentBlock = findBlock(selection)
-          if (currentBlock) {
-            console.log('PASTE BLOCK HERE', currentBlock, options.editor)
-            // insertBlocks(
-            //   [
-            //     {
-            //       type: 'embed',
-            //       ref: nativeHyperLink,
-            //     },
-            //   ],
-            //   currentBlock.node.attrs.id,
-            //   'after',
-            //   options.editor,
-            // )
-          }
+        //   let currentBlock = findBlock(selection)
+        //   if (currentBlock) {
+        //     console.log('PASTE BLOCK HERE', currentBlock, options.editor)
+        //     // insertBlocks(
+        //     //   [
+        //     //     {
+        //     //       type: 'embed',
+        //     //       ref: nativeHyperLink,
+        //     //     },
+        //     //   ],
+        //     //   currentBlock.node.attrs.id,
+        //     //   'after',
+        //     //   options.editor,
+        //     // )
+        //   }
 
-          // const {$from, $to} = selection
-          // const schema = view.state.schema
-          // setTimeout(() => {
-          //   if ($from.sameParent($to) && $from.parent.isTextblock) {
-          //     const tr = view.state.tr
-          //     tr.replaceWith(
-          //       $from.pos,
-          //       $to.pos + placeholder.length,
-          //       schema.text('doc title', [
-          //         schema.marks.link.create({href: nativeHyperLink}),
-          //       ]),
-          //     )
-          //     view.dispatch(tr)
-          //   }
-          // }, 1000)
+        //   // const {$from, $to} = selection
+        //   // const schema = view.state.schema
+        //   // setTimeout(() => {
+        //   //   if ($from.sameParent($to) && $from.parent.isTextblock) {
+        //   //     const tr = view.state.tr
+        //   //     tr.replaceWith(
+        //   //       $from.pos,
+        //   //       $to.pos + placeholder.length,
+        //   //       schema.text('doc title', [
+        //   //         schema.marks.link.create({href: nativeHyperLink}),
+        //   //       ]),
+        //   //     )
+        //   //     view.dispatch(tr)
+        //   //   }
+        //   // }, 1000)
 
-          return true
-        }
+        //   return true
+        // }
 
         if (link && selection.empty) {
           options.editor.commands.insertContent(

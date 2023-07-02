@@ -8,6 +8,7 @@ import {
 import {MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'
 import {find, test} from 'linkifyjs'
+import {nanoid} from 'nanoid'
 
 type AutolinkOptions = {
   type: MarkType
@@ -160,12 +161,14 @@ export function autolink(options: AutolinkOptions): Plugin {
               ) {
                 return
               }
-
+              let id = nanoid(8)
+              tr.setMeta('hdPlugin:uncheckedLink', id)
               tr.addMark(
                 link.from,
                 link.to,
                 options.type.create({
                   href: link.href,
+                  id,
                 }),
               )
             })

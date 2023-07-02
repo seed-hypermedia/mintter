@@ -1,22 +1,8 @@
-import {useDraft, useDraftTitle, usePublication} from '@app/models/documents'
-import {useAccount} from '@app/models/accounts'
-import {
-  DraftRoute,
-  PublicationRoute,
-  useNavRoute,
-  useNavigate,
-} from '@app/utils/navigation'
+import {useDraftTitle, usePublication} from '@app/models/documents'
+import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {
-  ButtonText,
-  SizeTokens,
-  TitleText,
-  XStack,
-  File,
-  User,
-  Pencil,
-} from '@mintter/ui'
 import {AccountLinkAvatar} from '@components/account-link-avatar'
+import {File, Pencil, SizeTokens, TitleText, User, XStack} from '@mintter/ui'
 
 export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
   const route = useNavRoute()
