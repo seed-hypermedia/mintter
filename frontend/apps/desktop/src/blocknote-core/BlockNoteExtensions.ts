@@ -117,11 +117,6 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
     // This needs to be at the bottom of this list, because Key events (such as enter, when selecting a /command),
     // should be handled before Enter handlers in other components like splitListItem
     TrailingNode,
-    Extension.create({
-      addProseMirrorPlugins() {
-        return [createVirtualCursor()]
-      },
-    }),
   ]
 
   if (opts.collaboration) {
