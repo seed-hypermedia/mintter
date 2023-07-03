@@ -13,7 +13,9 @@ import {
 } from '@mintter/shared'
 import {
   ArticleContainer,
+  Button,
   Container,
+  Copy,
   Header,
   MainContainer,
   SideContainer,
@@ -32,7 +34,7 @@ import {
   Publication,
 } from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from 'trpc'
-import {useMemo} from 'react'
+import {createContext, useMemo, useState} from 'react'
 import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 
@@ -69,7 +71,14 @@ function PublicationContent({
   return (
     <YStack>
       {publication?.document?.children?.map((block, index) => (
-        <StaticBlockNode block={block} key={block.block?.id || index} />
+        <StaticBlockNode
+          block={block}
+          key={block.block?.id || index}
+          ctx={{
+            enableBlockCopy: true,
+            ref: `/d/${publication?.document?.id}?v=${publication.version}`,
+          }}
+        />
       ))}
     </YStack>
   )
@@ -205,7 +214,7 @@ function StaticSectionBlock({block}: {block: SectionBlock}) {
   const isBlockquote = block.attributes?.type === 'blockquote'
   return (
     <YStack
-      id={block.id}
+      id={`${block.id}-block`}
       paddingLeft={isBlockquote ? 20 : 0}
       borderLeftWidth={isBlockquote ? 1 : 0}
       borderLeftColor={'blue'}
@@ -224,13 +233,18 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
   return (
-    <img
-      id={block.id}
-      alt={block.attributes?.alt}
-      src={`/ipfs/${cid}`}
-      // layout="fill"
-      className="image"
-    />
+    <Container minHeight={60} margin={10}>
+      <img
+        id={`${block.id}-block`}
+        alt={block.attributes?.alt}
+        src={`/ipfs/${cid}`}
+        // layout="fill"
+        className="image"
+        onError={() => {
+          alert('image errored')
+        }}
+      />
+    </Container>
   )
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
 }
@@ -250,14 +264,14 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
     content = (
       <>
         {embed.data?.publication?.document?.children?.map((block) => (
-          <StaticBlockNode block={block} key={block?.block?.id} />
+          <StaticBlockNode block={block} key={block?.block?.id} ctx={{}} />
         ))}
       </>
     )
   }
   return (
     <div
-      id={block.id}
+      id={`${block.id}-block`}
       data-ref={reference}
       style={{userSelect: 'none'}}
       contentEditable={false}
@@ -308,11 +322,14 @@ function StaticBlock({block}: {block: HDBlock}) {
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
   return (
-    <ErrorMessageBlock message={`Unknown block type: "${niceBlock.type}"`} />
+    <ErrorMessageBlock
+      id={`${niceBlock.id}-block`}
+      message={`Unknown block type: "${niceBlock.type}"`}
+    />
   )
 }
 
-function ErrorMessageBlock({message}: {message: string}) {
+function ErrorMessageBlock({message, id}: {message: string; id: string}) {
   return (
     <YStack
       backgroundColor="#d8ede7"
@@ -321,25 +338,66 @@ function ErrorMessageBlock({message}: {message: string}) {
       padding="$4"
       paddingVertical="$2"
       borderRadius="$4"
+      id={id}
     >
       <Text>{message}</Text>
     </YStack>
   )
 }
 
-function StaticBlockNode({block}: {block: HDBlockNode}) {
+type PublicationViewContext = {
+  headingDepth?: number
+  enableBlockCopy?: boolean
+  ref?: string
+}
+
+function StaticBlockNode({
+  block,
+  ctx,
+}: {
+  block: HDBlockNode
+  ctx?: PublicationViewContext
+}) {
+  const [isHovering, setIsHovering] = useState(false)
   const children =
     (block.children?.length || 0) > 0 ? (
       <YStack paddingLeft="$5">
         {block.children?.map((child, index) => (
-          <StaticBlockNode key={child.block?.id || index} block={child} />
+          <StaticBlockNode
+            key={child.block?.id || index}
+            block={child}
+            ctx={ctx}
+          />
         ))}
       </YStack>
     ) : null
+  const id = block.block?.id || 'unknown-block'
   return (
-    <YStack>
+    <YStack
+      id={id}
+      onHoverIn={() => setIsHovering(true)}
+      onHoverOut={() => setIsHovering(false)}
+      position="relative"
+    >
       {block.block && <StaticBlock block={block.block} />}
       {children}
+      {ctx?.enableBlockCopy && (
+        <Button
+          tag="a"
+          href={`#${id}`}
+          position="absolute"
+          top={0}
+          right={0}
+          icon={Copy}
+          size={'$2'}
+          display={isHovering ? 'flex' : 'none'}
+          onPress={() => {
+            navigator.clipboard.writeText(
+              `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
+            )
+          }}
+        ></Button>
+      )}
     </YStack>
   )
 }
