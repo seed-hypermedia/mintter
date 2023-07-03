@@ -43,9 +43,6 @@ const (
 	GRPCPort = 56002
 	// TargetSiteHostnameHeader is the headers bearing the remote site hostname to proxy calls to.
 	TargetSiteHostnameHeader = "x-mintter-site-hostname"
-	// TargetSiteAddrsHeader is the headers bearing the remote site addresses to proxy calls to.
-	// In initial site add, the address are not in the database and they need to proxy to call redeemtoken.
-	TargetSiteAddrsHeader headerKey = "x-mintter-site-addresses"
 	// GRPCOriginAcc is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	GRPCOriginAcc headerKey = "x-mintter-site-grpc-origin-acc"
@@ -730,7 +727,6 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 	if !ok {
 		return nil, fmt.Errorf("Node not ready yet")
 	}
-	contextAddrs := ctx.Value(TargetSiteAddrsHeader)
 
 	conn, cancel, err := n.db.Conn(ctx)
 	if err != nil {
@@ -745,12 +741,25 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 	}
 	addrs := remoteSite.SitesAddresses
 	if addrs == "" { //means we haven't added the site yet (redeem token at adding site).
-		if contextAddrs == nil {
-			return nil, fmt.Errorf("Site [%s] address not found neither in headers nor db: %w", remoteHostname, err)
+		n.log.Info("No site addresses yet, trying to get addresses from well-known")
+		resp, err := GetSiteInfoHttp(remoteHostname)
+		if err != nil {
+			return nil, fmt.Errorf("Could not get site [%s] info via http: %w", remoteHostname, err)
 		}
-		if addrs, ok = contextAddrs.(string); !ok {
-			return nil, fmt.Errorf("Could not parse [%v] to string", contextAddrs)
+		info, err := AddrInfoFromStrings(resp.Addresses...)
+		if err != nil {
+			return nil, fmt.Errorf("Couldn't parse multiaddress [%s]: %w", strings.Join(resp.Addresses, ","), err)
 		}
+		if err := n.Connect(ctx, info); err != nil {
+			return nil, fmt.Errorf("failed to connect to site [%s] with new addresses [%s]: %w", remoteHostname, strings.Join(resp.Addresses, ","), err)
+		}
+		if remoteSite.SitesHostname != "" && remoteSite.SitesAddresses != "" && remoteSite.SitesAddresses != strings.Join(resp.Addresses, ",") { // if "" means We haven't added the site yet (redeem token at adding site).
+			//update the site with new addresses
+			if err = sitesql.AddSite(conn, remoteSite.PublicKeysPrincipal, strings.Join(resp.Addresses, ","), remoteHostname, remoteSite.SitesRole); err != nil {
+				return nil, fmt.Errorf("add site: could not insert site in the database: %w", err)
+			}
+		}
+		return n.client.DialSite(ctx, info.ID)
 	}
 	info, err := AddrInfoFromStrings(strings.Split(addrs, ",")...)
 	if err != nil {
@@ -764,7 +773,7 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 	// i.e. site owner deleted the db and started over with new peer IDs.
 	err = n.Connect(ctx, info)
 	if err != nil {
-		n.log.Warn("Could not reuse site connection, getting new addresses", zap.Error(err))
+		n.log.Warn("Failed to connect with old addresses, getting new addresses", zap.String("Peer Info", info.String()), zap.Error(err))
 		resp, err := GetSiteInfoHttp(remoteHostname)
 		if err != nil {
 			return nil, fmt.Errorf("Could not get site [%s] info via http: %w", remoteHostname, err)

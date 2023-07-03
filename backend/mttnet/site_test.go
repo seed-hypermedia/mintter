@@ -11,7 +11,7 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"strings"
+	"net/http"
 	"testing"
 	"time"
 
@@ -31,7 +31,6 @@ func TestLocalPublish(t *testing.T) {
 }
 
 func TestMembers(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
@@ -48,7 +47,7 @@ func TestMembers(t *testing.T) {
 	defer stopreader()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 	cfg.Site.OwnerID = owner.me.Account().String()
 	cfg.Site.NoAuth = false
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
@@ -59,6 +58,13 @@ func TestMembers(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
@@ -67,7 +73,6 @@ func TestMembers(t *testing.T) {
 		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
 	}
 	site.p2p.ID().String()
-	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
 
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
@@ -116,7 +121,6 @@ func TestMembers(t *testing.T) {
 }
 
 func TestCreateTokens(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
@@ -132,7 +136,7 @@ func TestCreateTokens(t *testing.T) {
 	defer stopeditor()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 
 	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
@@ -143,6 +147,13 @@ func TestCreateTokens(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
 	tsFuture := time.Now().Add(48 * time.Hour).Unix()
 	_, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
@@ -162,8 +173,6 @@ func TestCreateTokens(t *testing.T) {
 	for _, ma := range site.AddrInfo().Addrs {
 		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
 	}
-
-	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
 
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
@@ -207,14 +216,13 @@ func TestCreateTokens(t *testing.T) {
 }
 
 func TestSiteInfo(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
 	defer stopowner()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 	cfg.Site.Title = "My title"
 	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "bob", cfg.Site)
@@ -225,6 +233,14 @@ func TestSiteInfo(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
+	time.Sleep(500 * time.Millisecond)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
@@ -233,12 +249,10 @@ func TestSiteInfo(t *testing.T) {
 		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
 	}
 
-	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
 
-	//time.Sleep(100 * time.Millisecond)
 	siteInfo, err := ownerSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)

@@ -192,7 +192,6 @@ func TestSite(t *testing.T) {
 		address += " " + ma.String()
 	}
 	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteHostnameHeader, site.Me.MustGet().Account().String())
-	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteAddrsHeader, address)
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
 

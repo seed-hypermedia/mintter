@@ -61,7 +61,6 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	// make it a proxy call since we want to talk with the site by attaching headers
 	header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: in.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, mttnet.TargetSiteAddrsHeader, strings.Join(resp.Addresses, ","))
 	ctx = context.WithValue(ctx, mttnet.GRPCOriginAcc, resp.AccountId)
 	var role documents.Member_Role
 	if in.InviteToken != "" {
@@ -146,7 +145,6 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 		header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: siteInfo.SitesHostname})
 		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 
-		ctx = context.WithValue(ctx, mttnet.TargetSiteAddrsHeader, siteInfo.SitesAddresses)
 		docs, err := api.RemoteCaller.ListWebPublications(ctx, &documents.ListWebPublicationsRequest{})
 		if err != nil {
 			continue
