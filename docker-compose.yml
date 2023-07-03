@@ -60,7 +60,6 @@ services:
       - '-p2p.port=56000'
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
-      - '-site.no-auth'
       - '-p2p.public-reachability'
       - '-p2p.no-relay'
       - '-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1'

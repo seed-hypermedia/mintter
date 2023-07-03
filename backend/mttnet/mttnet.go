@@ -283,7 +283,14 @@ func (n *Node) Provider() provider.System {
 
 // ProvideCID notifies the providing system to provide the given CID on the DHT.
 func (n *Node) ProvideCID(c cid.Cid) error {
-	return n.providing.Provide(c)
+	n.log.Debug("Providing to the DHT", zap.String("CID", c.String()))
+	err := n.providing.Provide(c)
+	if err != nil {
+		n.log.Warn("Provided Failed", zap.String("CID", c.String()), zap.Error(err))
+		return err
+	}
+	n.log.Debug("Provided Succeeded!", zap.String("CID", c.String()))
+	return nil
 }
 
 // Bitswap returns the underlying Bitswap service.

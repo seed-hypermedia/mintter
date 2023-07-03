@@ -86,8 +86,11 @@ func (n *Node) checkMintterProtocolVersion(pid peer.ID, desiredVersion string) (
 	}
 
 	var isMintter bool
-
+	if len(protos) == 0 {
+		n.log.Warn("peer does not support any protocol", zap.String("PeerID", pid.String()))
+	}
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
+	fmt.Println("desired version:", desiredVersion)
 	for _, p := range protos {
 		version := strings.TrimPrefix(string(p), protocolPrefix)
 		if version == string(p) {

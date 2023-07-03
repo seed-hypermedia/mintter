@@ -155,7 +155,7 @@ func TestSite(t *testing.T) {
 	siteCfg.HTTPPort = 59011
 	siteCfg.GRPCPort = mttnet.GRPCPort
 	siteCfg.Identity.NoAccountWait = true
-	siteCfg.Site.NoAuth = true
+	siteCfg.Site.NoAuth = false
 	siteCfg.Site.Title = "initial Site Title"
 	siteCfg.Site.OwnerID = owner.Me.MustGet().Account().String()
 	siteCfg.P2P.NoListing = true
@@ -185,9 +185,14 @@ func TestSite(t *testing.T) {
 	require.Error(t, err)
 
 	// Generate a token for the editor.
-	header := metadata.New(map[string]string{string(mttnet.TargetSiteHeader): siteCfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(mttnet.TargetSiteHostnameHeader): siteCfg.Site.Hostname})
 	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().Account().String())
+	address := ""
+	for _, ma := range site.Net.MustGet().AddrInfo().Addrs {
+		address += " " + ma.String()
+	}
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteHostnameHeader, site.Me.MustGet().Account().String())
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteAddrsHeader, address)
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
 

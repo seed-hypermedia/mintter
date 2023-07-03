@@ -11,6 +11,7 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
+	"strings"
 	"testing"
 	"time"
 
@@ -30,7 +31,6 @@ func TestLocalPublish(t *testing.T) {
 }
 
 func TestMembers(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -50,7 +50,7 @@ func TestMembers(t *testing.T) {
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 	cfg.Site.OwnerID = owner.me.Account().String()
-	cfg.Site.NoAuth = true
+	cfg.Site.NoAuth = false
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
@@ -60,9 +60,15 @@ func TestMembers(t *testing.T) {
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+	site.p2p.ID().String()
+	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
+
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
@@ -110,7 +116,6 @@ func TestMembers(t *testing.T) {
 }
 
 func TestCreateTokens(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -151,9 +156,15 @@ func TestCreateTokens(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+
+	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
+
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
@@ -192,11 +203,10 @@ func TestCreateTokens(t *testing.T) {
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
 	})
 
-	require.Error(t, err)
+	require.NoError(t, err)
 }
 
 func TestSiteInfo(t *testing.T) {
-	t.Skip("Rework in progress with gRPC calls")
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -216,9 +226,14 @@ func TestSiteInfo(t *testing.T) {
 
 	ctx := context.Background()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+
+	ctx = context.WithValue(ctx, TargetSiteAddrsHeader, strings.Join(addresses, ","))
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)

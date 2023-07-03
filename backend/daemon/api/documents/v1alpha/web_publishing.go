@@ -4,16 +4,13 @@ package documents
 import (
 	context "context"
 	"fmt"
-	"io"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/mttnet/sitesql"
-	"net/http"
 	"strings"
 
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -29,32 +26,10 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		return nil, fmt.Errorf("add site: site " + in.Hostname + " already taken")
 	}
 
-	requestURL := fmt.Sprintf("%s/%s", in.Hostname, mttnet.WellKnownPath)
-
-	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	resp, err := mttnet.GetSiteInfoHttp(in.Hostname)
 	if err != nil {
-		return nil, fmt.Errorf("add site: could not create request to well-known site: %w ", err)
+		return nil, fmt.Errorf("add site: Could not get site [%s] info via http: %w", in.Hostname, err)
 	}
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("add site: could not contact to provided site [%s]: %w ", requestURL, err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("add site: site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read json body: %w", err)
-	}
-
-	var resp documents.SiteDiscoveryConfig
-	if err := protojson.Unmarshal(data, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
-	}
-
 	account, err := core.DecodePrincipal(resp.AccountId)
 	if err != nil {
 		return nil, fmt.Errorf("add site: got an invalid accountID [%s]: %w", resp.AccountId, err)
@@ -84,10 +59,10 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	}
 
 	// make it a proxy call since we want to talk with the site by attaching headers
-	header := metadata.New(map[string]string{mttnet.TargetSiteHeader: in.Hostname})
+	header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: in.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, resp.AccountId)
-
+	ctx = context.WithValue(ctx, mttnet.TargetSiteAddrsHeader, strings.Join(resp.Addresses, ","))
+	ctx = context.WithValue(ctx, mttnet.GRPCOriginAcc, resp.AccountId)
 	var role documents.Member_Role
 	if in.InviteToken != "" {
 		res, err := api.RemoteCaller.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
@@ -107,7 +82,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		role = res.Role
 	}
 
-	if err = sitesql.AddSite(conn, account, strings.Join(resp.Addresses, " "), in.Hostname, int64(role)); err != nil {
+	if err = sitesql.AddSite(conn, account, strings.Join(resp.Addresses, ","), in.Hostname, int64(role)); err != nil {
 		return nil, fmt.Errorf("add site: could not insert site in the database: %w", err)
 	}
 
@@ -168,9 +143,10 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 		return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Could not list sites: %w", err)
 	}
 	for _, siteInfo := range sites {
-		header := metadata.New(map[string]string{mttnet.TargetSiteHeader: siteInfo.SitesHostname})
+		header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: siteInfo.SitesHostname})
 		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-		ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, core.Principal(siteInfo.PublicKeysPrincipal).String())
+
+		ctx = context.WithValue(ctx, mttnet.TargetSiteAddrsHeader, siteInfo.SitesAddresses)
 		docs, err := api.RemoteCaller.ListWebPublications(ctx, &documents.ListWebPublicationsRequest{})
 		if err != nil {
 			continue
