@@ -1,6 +1,6 @@
 import {GetPathResponse} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
-import PublicationPage from '../ssr-publication-page'
+import PublicationPage from '../publication-page'
 import {useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {localWebsiteClient} from 'client'

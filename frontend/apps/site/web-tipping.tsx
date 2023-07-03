@@ -32,7 +32,7 @@ import {
   X,
   Zap,
 } from '@tamagui/lucide-icons'
-import {LoadedAccountId} from 'author'
+import {LoadedAccountId} from 'publication-metadata'
 import Link from 'next/link'
 import React, {
   ReactNode,
@@ -73,19 +73,21 @@ export function WebTipping({
   docId,
   editors = [],
 }: {
-  docId: string
+  docId?: string
   editors: Array<HDAccount | string | null>
 }) {
   const [open, onOpenChange] = useState<boolean>(false)
 
   return (
     <>
-      <DontationDialog
-        open={open}
-        onOpenChange={onOpenChange}
-        docId={docId}
-        editors={editors}
-      />
+      {docId && (
+        <DontationDialog
+          open={open}
+          onOpenChange={onOpenChange}
+          docId={docId}
+          editors={editors}
+        />
+      )}
       <Button
         icon={Zap}
         theme="green"

@@ -30,7 +30,8 @@ export type HDTimestamp = {
   nanos: number
 }
 
-export function formattedDate(value: string | Date | Timestamp | HDTimestamp) {
+export function formattedDate(value?: string | Date | Timestamp | HDTimestamp | undefined) {
+  if (!value) return ''
   let _value =
     typeof value == 'string' ||
     (value instanceof Date && !isNaN(value.valueOf()))

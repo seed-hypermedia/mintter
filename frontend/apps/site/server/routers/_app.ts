@@ -1,14 +1,21 @@
 import {createPromiseClient} from '@bufbuild/connect'
-import {Accounts, Publications, WebPublishing} from '@mintter/shared'
+import {Accounts, Changes, Publications, WebPublishing} from '@mintter/shared'
 import {transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
-import {hdAccount, hdPublication, hdSiteInfo} from 'server/to-json-hd'
+import {HDChangeInfo} from 'server/json-hd'
+import {
+  hdAccount,
+  hdChangeInfos,
+  hdPublication,
+  hdSiteInfo,
+} from 'server/to-json-hd'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
 const publicationsClient = createPromiseClient(Publications, transport)
 const webClient = createPromiseClient(WebPublishing, transport)
 const accountsClient = createPromiseClient(Accounts, transport)
+const changesClient = createPromiseClient(Changes, transport)
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -44,6 +51,19 @@ const publicationRouter = router({
       })
       return {
         publication: hdPublication(pub),
+      }
+    }),
+  getChanges: procedure
+    .input(
+      z.object({
+        documentId: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      const {documentId} = input
+      const {changes} = await changesClient.listChanges({documentId})
+      return {
+        changes: hdChangeInfos(changes),
       }
     }),
 })

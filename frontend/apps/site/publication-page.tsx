@@ -23,7 +23,7 @@ import {
 } from '@mintter/ui'
 import Head from 'next/head'
 import {WebTipping} from 'web-tipping'
-import {PublicationMetadata} from './author'
+import {PublicationMetadata, PublishedMeta} from './publication-metadata'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
@@ -121,16 +121,11 @@ export default function PublicationPage({
         <SideContainer flex={1}>
           {metadata ? (
             <>
-              <PublicationMetadata
-                publication={pub || undefined}
+              <PublicationMetadata publication={pub} />
+              <WebTipping
+                docId={documentId}
                 editors={pub?.document?.editors || []}
               />
-              {pub?.document?.editors?.length && documentId ? (
-                <WebTipping
-                  docId={documentId}
-                  editors={pub?.document?.editors || []}
-                />
-              ) : null}
             </>
           ) : null}
         </SideContainer>

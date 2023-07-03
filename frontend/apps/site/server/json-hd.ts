@@ -9,7 +9,17 @@ import type {
   Publication,
   SiteInfo,
   HDTimestamp,
+  ChangeInfo,
 } from '@mintter/shared'
+
+export type ServerChangeInfo = ChangeInfo
+export type HDChangeInfo = {
+  id?: string
+  author?: string
+  createTime?: HDTimestamp
+  version?: string
+  deps?: string[]
+}
 
 export type ServerAnnotation = Annotation
 export type HDAnnotation = {
