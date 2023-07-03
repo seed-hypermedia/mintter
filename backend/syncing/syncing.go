@@ -56,7 +56,7 @@ type Service struct {
 }
 
 const (
-	defaultWarmupDuration  = time.Minute
+	defaultWarmupDuration  = time.Second * 20
 	defaultSyncInterval    = time.Minute
 	defaultPeerSyncTimeout = time.Minute * 5
 )

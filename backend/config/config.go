@@ -53,7 +53,7 @@ func Default() Config {
 			InviteTokenExpirationDelay: time.Hour * 24 * 7,
 		},
 		Syncing: Syncing{
-			WarmupDuration: time.Minute,
+			WarmupDuration: time.Second * 20,
 			Interval:       time.Minute,
 			TimeoutPerPeer: time.Minute * 2,
 			NoInbound:      false,
