@@ -4,6 +4,7 @@ import PublicationPage from '../publication-page'
 import {useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {localWebsiteClient} from 'client'
+import {setResponsePublication} from 'server/server-publications'
 
 // Temp Mintter home screen document:
 let fallbackDocId = process.env.MINTTER_HOME_PUBID || 'mnoboS11GwRlRAh2dhYlTw'
@@ -49,6 +50,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     documentId: docId,
     versionId: version,
   })
+
+  setResponsePublication(context, docId, version)
 
   return {
     props: await getPageProps(helpers, {

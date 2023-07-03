@@ -5,6 +5,7 @@ import PublicationPage from '../publication-page'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRouteQuery} from 'server/router-queries'
 import {impatiently} from 'server/impatiently'
+import {setResponsePublication} from 'server/server-publications'
 
 export default function PathPublicationPage(props: {
   documentId: string
@@ -48,6 +49,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       versionId: requestedVersion,
     }),
   )
+
+  setResponsePublication(context, docId, version)
 
   return {
     props: await getPageProps(helpers, {

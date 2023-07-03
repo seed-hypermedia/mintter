@@ -33,12 +33,13 @@ export async function impatientGetPublication(
 
 export function setResponsePublication(
   {res}: GetServerSidePropsContext,
-  publication: Publication | null,
+  docId: string,
+  version?: string | null,
 ) {
   setAllowAnyHostGetCORS(res)
-  if (!publication) return
-  const docId = publication.document?.id
   if (!docId) throw new Error('Publication does not have document id')
   res.setHeader('x-mintter-document-id', docId)
-  res.setHeader('x-mintter-version', publication.version)
+  if (version) {
+    res.setHeader('x-mintter-version', version)
+  }
 }

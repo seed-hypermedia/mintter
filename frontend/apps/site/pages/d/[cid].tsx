@@ -7,6 +7,7 @@ import PublicationPage from '../../publication-page'
 import {impatiently} from 'server/impatiently'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
+import {setResponsePublication} from 'server/server-publications'
 
 export default function IDPublicationPage(
   props: InferGetServerSidePropsType<typeof getServerSideProps>,
@@ -35,6 +36,8 @@ export const getServerSideProps: GetServerSideProps = async (
       versionId: version || undefined,
     }),
   )
+
+  setResponsePublication(context, cid, version)
 
   return {
     props: await getPageProps(helpers, {}),
