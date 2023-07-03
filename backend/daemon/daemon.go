@@ -4,12 +4,14 @@ package daemon
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -40,6 +42,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -551,6 +554,7 @@ func initHTTP(
 		router.Handle("/debug/pprof", http.DefaultServeMux, routePrefix|routeNav)
 		router.Handle("/debug/vars", http.DefaultServeMux, routePrefix|routeNav)
 		router.Handle("/debug/grpc", grpcLogsHandler(), routeNav)
+		router.Handle("/debug/buildinfo", buildInfoHandler(), routeNav)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
 		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler, routeNav)
@@ -625,4 +629,35 @@ func GwEssentials(ctx context.Context,
 	h, err := handler(ctx, req)
 
 	return h, err
+}
+
+func buildInfoHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		info, ok := debug.ReadBuildInfo()
+		if !ok {
+			http.Error(w, "doesn't support build info", http.StatusExpectationFailed)
+			return
+		}
+
+		// Don't want to show information about all the dependencies.
+		info.Deps = nil
+
+		// Want to support text and json.
+		wantJSON := slices.Contains(r.Header.Values("Accept"), "application/json") ||
+			r.URL.Query().Get("format") == "json"
+
+		if wantJSON {
+			w.Header().Set("Content-Type", "application/json")
+
+			enc := json.NewEncoder(w)
+			enc.SetIndent("", "  ")
+
+			if err := enc.Encode(info); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			fmt.Fprint(w, info.String())
+		}
+	})
 }
