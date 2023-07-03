@@ -1,7 +1,8 @@
-import { Block, BlockNoteEditor, DefaultBlockSchema, defaultProps } from "@app/blocknote-core";
+import { Block, BlockNoteEditor, defaultProps } from "@app/blocknote-core";
+import { getBlockInfoFromPos } from "@app/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos";
 import { insertOrUpdateBlock } from "@app/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems";
 import { createReactBlockSpec, ReactSlashMenuItem } from "@app/blocknote-react";
-import { HDBlockSchema, hdBlockSchema } from '@app/client/schema';
+import { HDBlockSchema } from '@app/client/schema';
 import { toast } from '@app/toast';
 import { Button, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
 import { save } from '@tauri-apps/api/dialog';
@@ -26,9 +27,9 @@ export const FileBlock = createReactBlockSpec({
         default: "true",
       },
     },
-    containsInlineContent: false,
+    containsInlineContent: true,
     // @ts-ignore
-    render: ({ block, editor }: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) => (
+    render: ({ block, editor }: {block: Block<HDBlockSchema>, editor: BlockNoteEditor<HDBlockSchema>}) => (
       Render(block, editor)
     ),
   });
@@ -46,7 +47,7 @@ type FileType = {
 
 const boolRegex = new RegExp("true");
 
-const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>) => {
+const Render = (block: Block<HDBlockSchema>, editor: BlockNoteEditor<HDBlockSchema>) => {
   const [file, setFile] = useState<FileType>({
     id: block.id,
     props: {
@@ -57,10 +58,6 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
     content: block.content,
     type: block.type,
   } as FileType)
-
-  useEffect(() => {
-    editor.setTextCursorPosition(block.id, 'end');
-  }, [])
 
   const assignFile = (newFile: FileType) => {
     setFile({...file, props: { ...file.props, ...newFile.props }})
@@ -84,8 +81,28 @@ const Render = (block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<type
   )
 }
 
-function FileComponent({block, editor, assign}: {block: Block<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>, assign: any}) {
+function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, editor: BlockNoteEditor<HDBlockSchema>, assign: any}) {
   const [replace, setReplace] = useState(false)
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
+
+  useEffect(() => {
+    const selectedNode = getBlockInfoFromPos(
+      tiptapEditor.state.doc,
+      tiptapEditor.state.selection.from,
+    )
+    if (selectedNode && selectedNode.id) {
+      if (
+        selectedNode.id === block.id &&
+        selectedNode.startPos === selection.$anchor.pos
+      ) {
+        setSelected(true)
+      } else if (selectedNode.id !== block.id) {
+        setSelected(false)
+      }
+    }
+  }, [selection])
 
   const saveFile = async () => {
     const client = await getClient()
@@ -116,7 +133,7 @@ function FileComponent({block, editor, assign}: {block: Block<typeof hdBlockSche
   }
 
   return (
-    <div>
+    <div className={selected ? 'ProseMirror-selectednode' : ''}>
       <YStack
         // @ts-ignore
         contentEditable={false}
@@ -183,12 +200,11 @@ function FileComponent({block, editor, assign}: {block: Block<typeof hdBlockSche
           {block.props.name}
         </Button>
       </YStack>
-      {/* <InlineContent /> */}
     </div>
   )
 }
 
-function FileForm({block, assign}: {block: Block<typeof hdBlockSchema>, assign: any}) {
+function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
   const [url, setUrl] = useState('');
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({

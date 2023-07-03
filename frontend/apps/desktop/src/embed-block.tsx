@@ -14,11 +14,13 @@ import type {
   ImageBlock,
 } from '@mintter/shared'
 import {YStack, Text, Spinner} from '@mintter/ui'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import {createReactBlockSpec} from './blocknote-react'
 import {usePublication} from './models/documents'
-import {InlineContent} from '@app/blocknote-core'
+import {InlineContent, Block as BlockNoteBlock, BlockNoteEditor} from '@app/blocknote-core'
 import {openUrl} from './utils/open-url'
+import { getBlockInfoFromPos } from './blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
+import { hdBlockSchema } from './client/schema'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   return (
@@ -108,9 +110,29 @@ function StaticBlock({block}: {block: ServerBlock}) {
   return <span>mystery block 👻</span>
 }
 
-function EmbedPresentation({reference}: {reference: string}) {
-  let embed = useEmbed(reference)
+function EmbedPresentation({block, editor}: {block: BlockNoteBlock<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) {
+  let embed = useEmbed(block.props.ref)
   let content = <Spinner />
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
+
+  useEffect(() => {
+    const selectedNode = getBlockInfoFromPos(
+      tiptapEditor.state.doc,
+      tiptapEditor.state.selection.from,
+    )
+    if (selectedNode && selectedNode.id) {
+      if (
+        selectedNode.id === block.id &&
+        selectedNode.startPos === selection.$anchor.pos
+      ) {
+        setSelected(true)
+      } else if (selectedNode.id !== block.id) {
+        setSelected(false)
+      }
+    }
+  }, [selection])
   if (embed.content) {
     content = (
       <>
@@ -122,9 +144,10 @@ function EmbedPresentation({reference}: {reference: string}) {
   }
   return (
     <div
-      data-ref={reference}
+      data-ref={block.props.ref}
       style={{userSelect: 'none'}}
       contentEditable={false}
+      className={selected ? 'ProseMirror-selectednode' : ''}
     >
       <YStack
         backgroundColor="#d8ede7"
@@ -168,8 +191,9 @@ export const EmbedBlock = createReactBlockSpec({
   // @ts-expect-error
   atom: true,
 
-  render: ({block}) => {
-    return <EmbedPresentation reference={block.props.ref} />
+  render: ({block, editor}) => {
+    // @ts-ignore
+    return <EmbedPresentation block={block} editor={editor} />
   },
 })
 

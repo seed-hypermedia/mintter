@@ -1,5 +1,10 @@
 import {Node} from 'prosemirror-model'
-import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
+import {
+  NodeSelection,
+  Plugin,
+  PluginKey,
+  TextSelection,
+} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 
 export const createSelectableBlocksPlugin = () => {
@@ -13,8 +18,12 @@ export const createSelectableBlocksPlugin = () => {
         nodePos: number,
         event: MouseEvent,
       ) => {
-        // @ts-ignore
-        if (node.type.name === 'image' && event.target?.nodeName === 'IMG') {
+        if (
+          // @ts-ignore
+          (node.type.name === 'image' && event.target?.nodeName === 'IMG') ||
+          node.type.name === 'embed' ||
+          node.type.name === 'file'
+        ) {
           let tr = view.state.tr
           const selection = NodeSelection.create(view.state.doc, nodePos)
           tr = tr.setSelection(selection)
