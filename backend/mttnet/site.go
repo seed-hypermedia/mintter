@@ -754,7 +754,7 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 	}
 	info, err := AddrInfoFromStrings(strings.Split(addrs, ",")...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse site address [%s]: %w", remoteSite.SitesAddresses, err)
+		return nil, fmt.Errorf("failed to parse site address [%s]: %w", addrs, err)
 	}
 	ctx, cancelCtx := context.WithTimeout(ctx, 7*time.Second)
 	defer cancelCtx()
