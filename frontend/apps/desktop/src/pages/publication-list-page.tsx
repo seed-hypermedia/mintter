@@ -7,6 +7,8 @@ import {MainWrapper, Container, Spinner, YStack} from '@mintter/ui'
 import {FixedSizeList as List} from 'react-window'
 import {useState} from 'react'
 
+import './publication-list-page.css'
+
 export default function PublicationList() {
   let {data} = usePublicationList()
   let drafts = useDraftList()
@@ -44,17 +46,17 @@ export default function PublicationList() {
       content = (
         <div
           style={{
-            paddingTop: 20,
             display: 'flex',
             flexGrow: 1,
             alignSelf: 'stretch',
           }}
         >
           <List
+            className="publication-list-scroller"
             height={scrollHeight}
             width={'100%'}
             itemSize={44}
-            overscanCount={20}
+            overscanCount={40}
             itemCount={pubs?.length || 0}
           >
             {RenderPublicationRow}
