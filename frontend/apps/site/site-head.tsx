@@ -9,7 +9,7 @@ export function SiteHead({
   siteInfo,
   title,
 }: {
-  siteInfo: HDSiteInfo | null
+  siteInfo: HDSiteInfo | null | undefined
   title?: string
 }) {
   return (

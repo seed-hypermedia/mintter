@@ -23,6 +23,7 @@ import {Clipboard, History} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
 import {HDPublication} from 'server/json-hd'
 import {format} from 'date-fns'
+import Link from 'next/link'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -51,18 +52,19 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
   )
 }
 
-export function LoadedAccountId({account}: {account?: string}) {
+export function AccountRow({account}: {account?: string}) {
   // return <Text>{account}</Text>
   const acct = trpc.account.get.useQuery({
     accountId: account,
   })
   let profile = acct.data?.account?.profile
-  console.log('Loaded profile', account, profile)
+  let content = <Text>?</Text>
   if (profile && profile.alias) {
-    return <Text>{profile.alias}</Text>
+    content = <Text>{profile.alias}</Text>
+  } else if (account) {
+    content = <Text>{abbreviateCid(account)}</Text>
   }
-  if (!account) return <Text>?</Text>
-  return <Text>{abbreviateCid(account)}</Text>
+  return <Link href={`/a/${account}`}>{content}</Link>
 }
 
 function useInterval(ms: number) {
@@ -101,7 +103,7 @@ export function AuthorsMeta({
       {editors
         ?.map((editor) => {
           if (!editor) return null
-          return <LoadedAccountId account={editor} key={editor} />
+          return <AccountRow account={editor} key={editor} />
         })
         .filter((e) => !!e)}
     </YStack>

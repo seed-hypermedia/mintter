@@ -14,7 +14,7 @@ export default function IDPublicationPage(
 ) {
   return (
     <PublicationPage
-      documentId={useRequiredRouteQuery('cid')}
+      documentId={useRequiredRouteQuery('docId')}
       version={useRouteQuery('v')}
     />
   )
@@ -24,20 +24,20 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   const {params, query} = context
-  let cid = params?.cid ? String(params.cid) : undefined
+  let docId = params?.docId ? String(params.docId) : undefined
   let version = query.v ? String(query.v) : null
-  if (!cid) return {notFound: true}
+  if (!docId) return {notFound: true}
 
   const helpers = serverHelpers({})
 
   await impatiently(
     helpers.publication.get.prefetch({
-      documentId: cid,
+      documentId: docId,
       versionId: version || undefined,
     }),
   )
 
-  setResponsePublication(context, cid, version)
+  setResponsePublication(context, docId, version)
 
   return {
     props: await getPageProps(helpers, {}),

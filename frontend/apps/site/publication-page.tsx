@@ -23,7 +23,7 @@ import {
 } from '@mintter/ui'
 import Head from 'next/head'
 import {WebTipping} from 'web-tipping'
-import {PublicationMetadata, PublishedMeta} from './publication-metadata'
+import {PublicationMetadata} from './publication-metadata'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
