@@ -11,12 +11,15 @@ export function useContactsList() {
     queryFn: async () => {
       return await accountsClient.listAccounts({})
     },
+    refetchInterval: 10000,
   })
   return contacts
 }
 
 export function useConnectionSummary() {
-  const peerInfo = useConnectedPeers()
+  const peerInfo = useConnectedPeers({
+    refetchInterval: 10000,
+  })
   const connectedPeers = peerInfo.data || []
   return {
     online: connectedPeers.length > 0,
