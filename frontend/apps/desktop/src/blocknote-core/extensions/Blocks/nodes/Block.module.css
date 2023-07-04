@@ -273,9 +273,10 @@ NESTED BLOCKS
   content: 'Heading';
 }
 
-.blockContent[data-content-type='image'].isEmpty.hasAnchor
+.isEmpty.hasAnchor
+  .blockContent[data-content-type='image']
   .inlineContent:before {
-  content: 'Image Caption' !important;
+  content: 'Image caption';
 }
 
 /* .image-block-wrapper .inlineContent:before {
