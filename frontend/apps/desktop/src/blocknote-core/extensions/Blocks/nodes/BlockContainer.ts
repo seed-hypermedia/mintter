@@ -1,4 +1,5 @@
 import {mergeAttributes, Node} from '@tiptap/core'
+import {EditorView} from '@tiptap/pm/view'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {
@@ -384,10 +385,49 @@ export const BlockContainer = Node.create<IBlock>({
         () => commands.deleteSelection(),
         // Undoes an input rule if one was triggered in the last editor state change.
         () => commands.undoInputRule(),
+        // If previous block is media, node select it
+        () =>
+          commands.command(({state, view}) => {
+            const blockInfo = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+            const prevBlockInfo = getBlockInfoFromPos(
+              state.doc,
+              state.selection.$anchor.pos - state.selection.$anchor.depth,
+            )
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+
+            if (selectionAtBlockStart) {
+              if (blockInfo.contentType.name === 'image') {
+                let tr = state.tr
+                const selection = NodeSelection.create(
+                  state.doc,
+                  blockInfo.startPos,
+                )
+                tr = tr.setSelection(selection)
+                view.dispatch(tr)
+                return true
+              }
+              if (!prevBlockInfo) return false
+              if (['file', 'embed'].includes(prevBlockInfo.contentType.name)) {
+                let tr = state.tr
+                const selection = NodeSelection.create(
+                  state.doc,
+                  prevBlockInfo.startPos,
+                )
+                tr = tr.setSelection(selection)
+                view.dispatch(tr)
+                return true
+              }
+            }
+
+            return false
+          }),
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
           commands.command(({state, view}) => {
-            // If image first select image
             const blockInfo = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
@@ -398,17 +438,6 @@ export const BlockContainer = Node.create<IBlock>({
             const isParagraph = blockInfo.contentType.name === 'paragraph'
 
             if (selectionAtBlockStart && !isParagraph) {
-              if (blockInfo.contentType.name === 'image') {
-                let tr = state.tr
-                const selection = NodeSelection.create(
-                  state.doc,
-                  blockInfo.startPos,
-                )
-                tr = tr.setSelection(selection)
-                view.dispatch(tr)
-                return false
-              }
-
               return commands.BNUpdateBlock(state.selection.from, {
                 type: 'paragraph',
                 props: {},
