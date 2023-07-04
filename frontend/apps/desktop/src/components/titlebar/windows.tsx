@@ -414,7 +414,7 @@ function SystemMenu() {
           },
           {
             id: 'connections',
-            title: 'Untrusted Contacts',
+            title: 'Connections',
             accelerator: 'Ctrl+9',
             onSelect: () => {},
             icon: Reload,

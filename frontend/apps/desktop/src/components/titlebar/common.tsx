@@ -243,7 +243,7 @@ function NaveMenuContentUnpure({
               onRoute({key: 'connections'})
             }}
             icon={User}
-            title="Untrusted Contacts"
+            title="Connections"
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 9
