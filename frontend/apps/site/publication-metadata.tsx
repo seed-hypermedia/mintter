@@ -10,6 +10,7 @@ import {
   SimpleTooltip,
   YStack,
   Tooltip,
+  Avatar,
 } from '@mintter/ui'
 import {
   formattedDate,
@@ -24,6 +25,7 @@ import {trpc} from './trpc'
 import {HDPublication} from 'server/json-hd'
 import {format} from 'date-fns'
 import Link from 'next/link'
+import {cidURL} from 'ipfs'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -58,13 +60,25 @@ export function AccountRow({account}: {account?: string}) {
     accountId: account,
   })
   let profile = acct.data?.account?.profile
-  let content = <Text>?</Text>
+  let label = '?'
   if (profile && profile.alias) {
-    content = <Text>{profile.alias}</Text>
+    label = profile.alias
   } else if (account) {
-    content = <Text>{abbreviateCid(account)}</Text>
+    label = abbreviateCid(account)
   }
-  return <Link href={`/a/${account}`}>{content}</Link>
+  return (
+    <Link href={`/a/${account}`}>
+      <XStack gap="$3" alignItems="center">
+        <Avatar circular size={24}>
+          {profile?.avatar ? (
+            <Avatar.Image src={cidURL(profile.avatar)} />
+          ) : null}
+          <Avatar.Fallback backgroundColor={'#26ab95'} />
+        </Avatar>
+        <Text>{label}</Text>
+      </XStack>
+    </Link>
+  )
 }
 
 function useInterval(ms: number) {

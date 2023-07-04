@@ -34,9 +34,10 @@ import {
   Publication,
 } from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from 'trpc'
-import {createContext, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
+import {cidURL} from 'ipfs'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -237,8 +238,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
       <img
         id={`${block.id}-block`}
         alt={block.attributes?.alt}
-        src={`/ipfs/${cid}`}
-        // layout="fill"
+        src={cidURL(cid)}
         className="image"
         onError={() => {
           alert('image errored')
