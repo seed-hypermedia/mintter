@@ -17,15 +17,19 @@ import {YStack, Text, Spinner} from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
 import {createReactBlockSpec} from './blocknote-react'
 import {usePublication} from './models/documents'
-import {InlineContent, Block as BlockNoteBlock, BlockNoteEditor} from '@app/blocknote-core'
+import {
+  InlineContent,
+  Block as BlockNoteBlock,
+  BlockNoteEditor,
+} from '@app/blocknote-core'
 import {openUrl} from './utils/open-url'
-import { getBlockInfoFromPos } from './blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
-import { hdBlockSchema } from './client/schema'
+import {getBlockInfoFromPos} from './blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
+import {hdBlockSchema} from './client/schema'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   return (
     <>
-      {inline.map((content) => {
+      {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
             | 'underline'
@@ -44,6 +48,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           }
           return (
             <Text
+              key={`${content.type}-${index}`}
               fontWeight={content.styles.bold ? 'bold' : ''}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
@@ -110,7 +115,13 @@ function StaticBlock({block}: {block: ServerBlock}) {
   return <span>mystery block 👻</span>
 }
 
-function EmbedPresentation({block, editor}: {block: BlockNoteBlock<typeof hdBlockSchema>, editor: BlockNoteEditor<typeof hdBlockSchema>}) {
+function EmbedPresentation({
+  block,
+  editor,
+}: {
+  block: BlockNoteBlock<typeof hdBlockSchema>
+  editor: BlockNoteEditor<typeof hdBlockSchema>
+}) {
   let embed = useEmbed(block.props.ref)
   let content = <Spinner />
   const [selected, setSelected] = useState(false)
@@ -137,21 +148,22 @@ function EmbedPresentation({block, editor}: {block: BlockNoteBlock<typeof hdBloc
     content = (
       <>
         {embed.content?.map((block) => (
-          <StaticBlockNode block={block} />
+          <StaticBlockNode key={block.block?.id} block={block} />
         ))}
       </>
     )
   }
   return (
-    <div
+    <YStack
       data-ref={block.props.ref}
       style={{userSelect: 'none'}}
+      // @ts-expect-error
       contentEditable={false}
       className={selected ? 'ProseMirror-selectednode' : ''}
     >
       <YStack
-        backgroundColor="#d8ede7"
-        borderColor="#95bfb4"
+        backgroundColor="$color5"
+        borderColor="$color8"
         borderWidth={1}
         padding="$4"
         paddingVertical="$2"
@@ -159,7 +171,7 @@ function EmbedPresentation({block, editor}: {block: BlockNoteBlock<typeof hdBloc
       >
         {content}
       </YStack>
-    </div>
+    </YStack>
   )
 }
 
