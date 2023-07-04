@@ -1,12 +1,15 @@
 import {findBlock} from '@app/blocknote-core/extensions/Blocks/helpers/findBlock'
+import {fetchWebLink} from '@app/models/web-links'
 import {
   isMintterGatewayLink,
   isHyperdocsScheme,
   normalizeHyperdocsLink,
+  createHyperdocsDocLink,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
-import {Plugin, PluginKey} from '@tiptap/pm/state'
+import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
+import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {find} from 'linkifyjs'
 import {nanoid} from 'nanoid'
 
@@ -17,10 +20,45 @@ type PasteHandlerOptions = {
 }
 
 export function pasteHandler(options: PasteHandlerOptions): Plugin {
-  return new Plugin({
+  let pastePlugin = new Plugin({
     key: new PluginKey('handlePasteLink'),
+    state: {
+      init() {
+        return DecorationSet.empty
+      },
+      apply(tr, set) {
+        // Adjust decoration positions to changes made by the transaction
+        set = set.map(tr.mapping, tr.doc)
+        // See if the transaction adds or removes any placeholders
+        let action = tr.getMeta('link-placeholder')
+        if (action && action.add) {
+          let widget = document.createElement('span')
+          widget.contentEditable = 'false'
+          widget.classList.add('link-placeholder')
+          widget.innerHTML = action.add.link.href
+          let deco = Decoration.widget(action.add.pos, widget, {
+            link: action.add.link,
+          })
+          set = set.add(tr.doc, [deco])
+        } else if (action && action.remove) {
+          set = set.remove(
+            set.find(
+              // @ts-expect-error
+              null,
+              null,
+              (spec) => spec.link.href == action.remove.link.href,
+            ),
+          )
+        }
+        return set
+      },
+    },
     props: {
+      decorations(state) {
+        return this.getState(state)
+      },
       handlePaste: (view, event, slice) => {
+        console.log('== ~ pasteHandler', event, slice)
         const {state} = view
         const {selection} = state
 
@@ -46,6 +84,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         const link = find(textContent).find(
           (item) => item.isLink && item.value === textContent,
         )
+
         const nativeHyperLink =
           isHyperdocsScheme(textContent) || isMintterGatewayLink(textContent)
             ? normalizeHyperdocsLink(textContent)
@@ -55,7 +94,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           const pastedLink =
             nativeHyperLink ||
             (hasPastedLink ? pastedLinkMarks[0].attrs.href : link?.href || null)
-
           if (pastedLink) {
             if (nativeHyperLink) {
               options.editor
@@ -135,9 +173,44 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         // }
 
         if (link && selection.empty) {
-          options.editor.commands.insertContent(
-            `<a href="${link.href}">${link.href}</a>`,
-          )
+          // TODO: insert a link placeholder here
+          let tr = view.state.tr
+          if (!tr.selection.empty) tr.deleteSelection()
+          tr.setMeta('link-placeholder', {
+            add: {link, pos: tr.selection.from},
+          })
+          view.dispatch(tr)
+          // options.editor.commands.insertContent(
+          //   `<a href="${link.href}">${link.href}</a>`,
+          // )
+
+          fetchWebLink(link.href)
+            .then((res) => {
+              if (res && res.documentId) {
+                console.log('== ~ fetchWebLink result', res)
+                let pos = findPlaceholder(view.state, link.href)
+                if (!pos) return null
+
+                view.dispatch(
+                  view.state.tr
+                    .insertText(link.href, pos)
+                    .addMark(
+                      pos,
+                      pos + link.href.length,
+                      options.editor.schema.mark('link', {
+                        href: createHyperdocsDocLink(
+                          res.documentId,
+                          res.documentVersion || undefined,
+                        ),
+                      }),
+                    )
+                    .setMeta('link-placeholder', {remove: {link}}),
+                )
+              }
+            })
+            .catch((err) => {
+              console.log('== ~ fetchWebLink error', err)
+            })
 
           return true
         }
@@ -195,4 +268,14 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
       },
     },
   })
+
+  function findPlaceholder(state: EditorState, url: string) {
+    let decos = pastePlugin.getState(state)
+    if (!decos) return null
+    // @ts-expect-error
+    let found = decos.find(null, null, (spec) => spec.link.href == url)
+    return found.length ? found[0].from : null
+  }
+
+  return pastePlugin
 }
