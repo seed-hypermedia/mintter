@@ -97,9 +97,8 @@ async function checkHyperLink(
             }),
           )
           tr.setMeta('hdPlugin:removeId', id)
-          setTimeout(() => {
-            view.dispatch(tr)
-          }, 2000)
+
+          view.dispatch(tr)
         }
       })
     } else {

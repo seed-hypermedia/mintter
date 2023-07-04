@@ -1,4 +1,5 @@
 import {Editor, getMarkRange, posToDOMRect, Range} from '@tiptap/core'
+import {nanoid} from 'nanoid'
 import {Mark} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {
@@ -228,11 +229,12 @@ class HyperlinkToolbarView {
           this.hyperlinkMarkRange!.from,
           this.hyperlinkMarkRange!.to,
         )
+        let id = nanoid(8)
         tr.addMark(
           this.hyperlinkMarkRange!.from,
           this.hyperlinkMarkRange!.from + text.length,
-          this.editor.schema.mark('link', {href: url}),
-        )
+          this.editor.schema.mark('link', {href: url, id}),
+        ).setMeta('hdPlugin:uncheckedLink', id)
         this.editor.view.dispatch(tr)
         this.editor.view.focus()
 

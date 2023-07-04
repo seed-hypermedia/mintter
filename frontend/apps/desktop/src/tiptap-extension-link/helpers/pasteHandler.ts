@@ -1,10 +1,9 @@
-import {findBlock} from '@app/blocknote-core/extensions/Blocks/helpers/findBlock'
 import {fetchWebLink} from '@app/models/web-links'
 import {
-  isMintterGatewayLink,
-  isHyperdocsScheme,
-  normalizeHyperdocsLink,
   createHyperdocsDocLink,
+  isHyperdocsScheme,
+  isMintterGatewayLink,
+  normalizeHyperdocsLink,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
@@ -12,7 +11,6 @@ import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {find} from 'linkifyjs'
 import {nanoid} from 'nanoid'
-import './link-placeholder.css'
 
 type PasteHandlerOptions = {
   editor: Editor
@@ -261,11 +259,12 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               )
 
               if (!hasMark) {
+                let id = nanoid(8)
                 tr.addMark(
                   linkStart,
                   linkEnd,
-                  options.type.create({href: fragmentLink.href}),
-                )
+                  options.type.create({href: fragmentLink.href, id}),
+                ).setMeta('hdPlugin:uncheckedLink', id)
               }
             })
           }
