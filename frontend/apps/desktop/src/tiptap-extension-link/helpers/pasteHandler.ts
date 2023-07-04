@@ -186,30 +186,47 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
 
           fetchWebLink(link.href)
             .then((res) => {
-              if (res && res.documentId) {
-                console.log('== ~ fetchWebLink result', res)
-                let pos = findPlaceholder(view.state, link.href)
-                if (!pos) return null
-
-                view.dispatch(
-                  view.state.tr
-                    .insertText(link.href, pos)
-                    .addMark(
-                      pos,
-                      pos + link.href.length,
-                      options.editor.schema.mark('link', {
-                        href: createHyperdocsDocLink(
-                          res.documentId,
-                          res.documentVersion || undefined,
-                        ),
-                      }),
+              let tr = view.state.tr
+              let pos = findPlaceholder(view.state, link.href)
+              if (!pos) return null
+              let href =
+                res && res.documentId
+                  ? createHyperdocsDocLink(
+                      res.documentId,
+                      res.documentVersion || undefined,
                     )
-                    .setMeta('link-placeholder', {remove: {link}}),
-                )
-              }
+                  : link.href
+
+              view.dispatch(
+                tr
+                  .insertText(link.href, pos)
+                  .addMark(
+                    pos,
+                    pos + link.href.length,
+                    options.editor.schema.mark('link', {
+                      href,
+                    }),
+                  )
+                  .setMeta('link-placeholder', {remove: {link}}),
+              )
             })
             .catch((err) => {
+              let tr = view.state.tr
+              let pos = findPlaceholder(view.state, link.href)
+              if (!pos) return null
               console.log('== ~ fetchWebLink error', err)
+              view.dispatch(
+                tr
+                  .insertText(link.href, pos)
+                  .addMark(
+                    pos,
+                    pos + link.href.length,
+                    options.editor.schema.mark('link', {
+                      href: link.href,
+                    }),
+                  )
+                  .setMeta('link-placeholder', {remove: {link}}),
+              )
             })
 
           return true
