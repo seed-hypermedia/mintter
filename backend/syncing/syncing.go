@@ -371,6 +371,9 @@ func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjec
 		}
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	c, err := s.client(ctx, device)
 	if err != nil {
 		return err
