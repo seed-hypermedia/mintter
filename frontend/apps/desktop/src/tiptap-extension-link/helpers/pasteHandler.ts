@@ -12,6 +12,7 @@ import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
 import {find} from 'linkifyjs'
 import {nanoid} from 'nanoid'
+import './link-placeholder.css'
 
 type PasteHandlerOptions = {
   editor: Editor
@@ -35,7 +36,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           let widget = document.createElement('span')
           widget.contentEditable = 'false'
           widget.classList.add('link-placeholder')
-          widget.innerHTML = action.add.link.href
           let deco = Decoration.widget(action.add.pos, widget, {
             link: action.add.link,
           })
@@ -58,7 +58,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         return this.getState(state)
       },
       handlePaste: (view, event, slice) => {
-        console.log('== ~ pasteHandler', event, slice)
         const {state} = view
         const {selection} = state
 

@@ -1,10 +1,7 @@
 import {createHyperdocsDocLink} from '@mintter/shared'
-import {combineTransactionSteps, getChangedRanges} from '@tiptap/core'
-import {DecorationSet, EditorView} from '@tiptap/pm/view'
-import {log} from 'console'
-import {EditorState, Plugin, PluginKey} from 'prosemirror-state'
+import {EditorView} from '@tiptap/pm/view'
+import {Plugin, PluginKey} from 'prosemirror-state'
 import {fetchWebLink} from './models/web-links'
-import Link from './tiptap-extension-link'
 
 export const hyperdocsPluginKey = new PluginKey('hyperdocs-link')
 
@@ -88,7 +85,6 @@ async function checkHyperLink(
     if (res && res.documentId) {
       view.state.doc.descendants((node, pos) => {
         if (node.marks.some((mark) => mark.attrs.id == id)) {
-          console.log('== ~ hdlink ~ CHECK LINK RESOLVE:', res)
           let tr = view.state.tr
           tr.addMark(
             pos,
