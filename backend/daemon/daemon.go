@@ -40,6 +40,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -416,6 +418,14 @@ func initSyncing(
 	})
 
 	return f.ReadOnly, nil
+}
+
+func init() {
+	otel.SetTracerProvider(
+		trace.NewTracerProvider(
+			trace.WithSampler(trace.AlwaysSample()),
+		),
+	)
 }
 
 func initGRPC(
