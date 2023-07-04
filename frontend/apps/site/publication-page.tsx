@@ -21,6 +21,7 @@ import {
   SideContainer,
   Spinner,
   Text,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import Head from 'next/head'
@@ -38,6 +39,7 @@ import {useMemo, useState} from 'react'
 import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 import {cidURL} from 'ipfs'
+import {useRouter} from 'next/router'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -106,7 +108,11 @@ export default function PublicationPage({
   return (
     <Container tag="main" id="main-content" tabIndex={-1}>
       {siteInfo.data ? (
-        <SiteHead siteInfo={siteInfo.data} />
+        <SiteHead
+          siteInfo={siteInfo.data}
+          title={pub?.document?.title}
+          titleHref={`/d/${documentId}`}
+        />
       ) : (
         <GatewayHead title={pub?.document?.title} />
       )}
@@ -240,8 +246,8 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
         alt={block.attributes?.alt}
         src={cidURL(cid)}
         className="image"
-        onError={() => {
-          alert('image errored')
+        onError={(e) => {
+          console.error('image errored', e)
         }}
       />
     </Container>
@@ -249,9 +255,14 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
 }
 
+function stripHDLinkPrefix(link: string) {
+  return link.replace(/^hd:\//, '')
+}
+
 function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   const reference = block.ref
   const [documentId, versionId, blockId] = getIdsfromUrl(reference)
+  const router = useRouter()
   let embed = trpc.publication.get.useQuery(
     {
       documentId,
@@ -270,12 +281,7 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
     )
   }
   return (
-    <div
-      id={`${block.id}-block`}
-      data-ref={reference}
-      style={{userSelect: 'none'}}
-      contentEditable={false}
-    >
+    <div id={`${block.id}-block`} data-ref={reference}>
       <YStack
         backgroundColor="#d8ede7"
         borderColor="#95bfb4"
@@ -283,6 +289,15 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
         padding="$4"
         paddingVertical="$2"
         borderRadius="$4"
+        hoverStyle={{
+          backgroundColor: '#e8f4f0',
+          cursor: 'pointer',
+        }}
+        onPress={() => {
+          const ref = stripHDLinkPrefix(block.ref)
+          router.push(ref)
+        }}
+        href={stripHDLinkPrefix(block.ref)}
       >
         {content}
       </YStack>
@@ -374,6 +389,7 @@ function StaticBlockNode({
   const id = block.block?.id || 'unknown-block'
   return (
     <YStack
+      paddingVertical="$2"
       id={id}
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
@@ -382,21 +398,29 @@ function StaticBlockNode({
       {block.block && <StaticBlock block={block.block} />}
       {children}
       {ctx?.enableBlockCopy && (
-        <Button
-          tag="a"
-          href={`#${id}`}
+        <XStack
+          padding="$2"
+          gap="$1"
+          backgroundColor={'$background'}
           position="absolute"
+          borderRadius="$2"
           top={0}
           right={0}
-          icon={Copy}
-          size={'$2'}
           display={isHovering ? 'flex' : 'none'}
-          onPress={() => {
-            navigator.clipboard.writeText(
-              `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
-            )
-          }}
-        ></Button>
+        >
+          <Button
+            tag="a"
+            size="$2"
+            chromeless
+            href={`#${id}`}
+            icon={Copy}
+            onPress={() => {
+              navigator.clipboard.writeText(
+                `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
+              )
+            }}
+          ></Button>
+        </XStack>
       )}
     </YStack>
   )

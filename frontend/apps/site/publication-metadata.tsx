@@ -146,9 +146,14 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
 }
 
 function EmbedMeta({publication}: {publication?: HDPublication | null}) {
+  const embedMeta = trpc.publication.getEmbedMeta.useQuery({
+    documentId: publication?.document?.id,
+    versionId: publication?.version,
+  })
+  const embeds = embedMeta.data
   return (
     <YStack>
-      <SizableText fontWeight={'bold'}>Embedded Documents:&nbsp;</SizableText>
+      <SizableText fontWeight={'bold'}>Embeds:&nbsp;</SizableText>
     </YStack>
   )
 }

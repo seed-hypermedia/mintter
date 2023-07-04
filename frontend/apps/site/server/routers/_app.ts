@@ -53,6 +53,26 @@ const publicationRouter = router({
         publication: hdPublication(pub),
       }
     }),
+  getEmbedMeta: procedure
+    .input(
+      z.object({
+        documentId: z.string().optional(),
+        versionId: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      if (!input.documentId) {
+        return {publication: null}
+      }
+      const pub = await publicationsClient.getPublication({
+        documentId: input.documentId,
+        version: input.versionId,
+      })
+      return {
+        embeds: [],
+        // publication: hdPublication(pub),
+      }
+    }),
   getChanges: procedure
     .input(
       z.object({

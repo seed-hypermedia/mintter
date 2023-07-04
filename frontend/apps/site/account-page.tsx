@@ -1,5 +1,6 @@
 import {
   ArticleContainer,
+  Avatar,
   Container,
   Header,
   Heading,
@@ -7,6 +8,7 @@ import {
   SideContainer,
   Spinner,
   Text,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import Head from 'next/head'
@@ -14,19 +16,22 @@ import Footer from './footer'
 import {trpc} from 'trpc'
 import {HDAccount} from 'server/json-hd'
 import {SiteHead} from 'site-head'
+import {cidURL} from 'ipfs'
 
 function AccountContent({account}: {account: HDAccount | null | undefined}) {
   const {alias, bio, avatar} = account?.profile || {}
   return (
     <YStack>
-      <Heading>{account?.profile?.alias}</Heading>
-      <Container>
-        {avatar ? (
-          <img alt={`${alias} avatar`} src={`/ipfs/${avatar}`} />
-        ) : null}
-      </Container>
-      <Text>{account?.profile?.bio}</Text>
-      {/* <Text>{JSON.stringify(account)}</Text> */}
+      <XStack gap="$2">
+        {avatar && (
+          <Avatar size={64}>
+            <Avatar.Image src={cidURL(avatar)} />
+            <Avatar.Fallback />
+          </Avatar>
+        )}
+        <Heading>{alias}</Heading>
+      </XStack>
+      <Text>{bio}</Text>
     </YStack>
   )
 }
@@ -45,7 +50,11 @@ export default function AccountPage({accountId}: {accountId: string}) {
 
   return (
     <Container tag="main" id="main-content" tabIndex={-1}>
-      <SiteHead siteInfo={siteInfo.data} />
+      <SiteHead
+        siteInfo={siteInfo.data}
+        title={account?.profile?.alias}
+        titleHref={`/a/${accountId}`}
+      />
       <Head>
         <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
       </Head>

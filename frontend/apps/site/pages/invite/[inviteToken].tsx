@@ -25,7 +25,11 @@ export default function InvitePage({
   const inviteToken = useRouter().query.inviteToken as string
   return (
     <>
-      {siteInfo ? <SiteHead siteInfo={siteInfo} /> : <GatewayHead />}
+      {siteInfo ? (
+        <SiteHead siteInfo={siteInfo} title={`Invite to ${hostname}`} />
+      ) : (
+        <GatewayHead />
+      )}
       <Container tag="main" id="main-content" tabIndex={-1}>
         <MainContainer>
           <H1>You&apos;re invited to {hostname}</H1>
