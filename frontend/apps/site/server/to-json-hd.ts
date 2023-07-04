@@ -16,7 +16,7 @@ export function hdAccount(input?: Account | null) {
   return input.toJson() as HDAccount
 }
 
-export function hdChangeInfos(input?: ChangeInfo[] | null) {
+export function hdChangeInfo(input?: ChangeInfo | null) {
   if (!input) return null
-  return input.map((changeInfo) => changeInfo.toJson() as HDChangeInfo)
+  return input.toJson() as HDChangeInfo
 }

@@ -18,14 +18,14 @@ import {
   pluralS,
   HDTimestamp,
 } from '@mintter/shared'
-import {useEffect, useMemo, useState} from 'react'
+import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {Clipboard, History} from '@tamagui/lucide-icons'
+import {Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
-import {HDPublication} from 'server/json-hd'
-import {format} from 'date-fns'
+import {HDChangeInfo, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
 import {cidURL} from 'ipfs'
+import {NextLink} from 'next-link'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -54,7 +54,13 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
   )
 }
 
-export function AccountRow({account}: {account?: string}) {
+export function AccountRow({
+  account,
+  bold,
+}: {
+  account?: string
+  bold?: boolean
+}) {
   // return <Text>{account}</Text>
   const acct = trpc.account.get.useQuery({
     accountId: account,
@@ -67,7 +73,7 @@ export function AccountRow({account}: {account?: string}) {
     label = abbreviateCid(account)
   }
   return (
-    <Link href={`/a/${account}`}>
+    <Link href={`/a/${account}`} style={{textDecoration: 'none'}}>
       <XStack gap="$3" alignItems="center">
         <Avatar circular size={24}>
           {profile?.avatar ? (
@@ -75,7 +81,12 @@ export function AccountRow({account}: {account?: string}) {
           ) : null}
           <Avatar.Fallback backgroundColor={'#26ab95'} />
         </Avatar>
-        <Text>{label}</Text>
+        <Text
+          hoverStyle={{textDecorationLine: 'underline'}}
+          fontWeight={bold ? 'bold' : undefined}
+        >
+          {label}
+        </Text>
       </XStack>
     </Link>
   )
@@ -109,6 +120,13 @@ export function AuthorsMeta({
 }) {
   if (!publication) return null
   const editors = publication?.document?.editors
+  const docChanges = trpc.publication.getChanges.useQuery(
+    {
+      documentId: publication?.document?.id,
+      version: publication?.version || undefined,
+    },
+    {enabled: !!publication?.document?.id},
+  )
   return (
     <YStack>
       <SizableText fontWeight={'bold'}>
@@ -116,11 +134,33 @@ export function AuthorsMeta({
       </SizableText>
       {editors
         ?.map((editor) => {
+          const isMainAuthor = !!docChanges.data?.versionChanges.find(
+            (change) => change?.author === editor,
+          )
           if (!editor) return null
-          return <AccountRow account={editor} key={editor} />
+          return (
+            <AccountRow account={editor} key={editor} bold={isMainAuthor} />
+          )
         })
         .filter((e) => !!e)}
     </YStack>
+  )
+}
+
+function DepPreview({
+  dep,
+  publication,
+}: {
+  dep: HDChangeInfo | null
+  publication?: HDPublication | null
+}) {
+  const depTime = useFormattedTime(dep?.createTime)
+  const docId = publication?.document?.id
+  if (!docId || !dep) return null
+  return (
+    <NextLink href={`/d/${publication?.document?.id}?v=${dep.version}`}>
+      <Text>{depTime}</Text>
+    </NextLink>
   )
 }
 
@@ -128,19 +168,39 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
   const docChanges = trpc.publication.getChanges.useQuery(
     {
       documentId: publication?.document?.id,
+      version: publication?.version || undefined,
     },
     {enabled: !!publication?.document?.id},
   )
+  const deps = docChanges.data?.deps
 
+  let previousVersions: ReactElement | null = null
+
+  if (deps?.length) {
+    previousVersions = (
+      <>
+        <SizableText fontWeight={'bold'}>
+          Previous {pluralS(deps?.length, 'Version')}:&nbsp;
+        </SizableText>
+        {deps?.map((dep) => (
+          <DepPreview dep={dep} key={dep?.id} publication={publication} />
+        ))}
+      </>
+    )
+  }
+
+  console.log('DOC CHANGES', docChanges.data)
   return (
     <YStack>
-      <SizableText fontWeight={'bold'}>Previous Version:&nbsp;</SizableText>
-      <Button icon={History} size={'$2'}>
+      {previousVersions}
+
+      {/* <Button icon={History} size={'$2'}>
         All 4 Previous Versions
-      </Button>
-      {docChanges.data?.changes?.map((change) => {
+      </Button> */}
+
+      {/* {docChanges.data?.changes?.map((change) => {
         return <Text key={change.id}>{change.id}</Text>
-      })}
+      })} */}
     </YStack>
   )
 }
@@ -174,7 +234,7 @@ export function PublicationMetadata({
       <PublishedMeta publication={publication} />
       <AuthorsMeta publication={publication} />
       {/* <EmbedMeta publication={publication} /> */}
-      {/* <VersionsMeta publication={publication} /> */}
+      <VersionsMeta publication={publication} />
     </>
   )
 }

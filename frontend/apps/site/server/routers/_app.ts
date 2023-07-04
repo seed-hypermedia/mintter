@@ -5,7 +5,7 @@ import {getSiteInfo} from 'get-site-info'
 import {HDChangeInfo} from 'server/json-hd'
 import {
   hdAccount,
-  hdChangeInfos,
+  hdChangeInfo,
   hdPublication,
   hdSiteInfo,
 } from 'server/to-json-hd'
@@ -77,13 +77,70 @@ const publicationRouter = router({
     .input(
       z.object({
         documentId: z.string().optional(),
+        version: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
+      const pub = await publicationsClient.getPublication({
+        documentId: input.documentId,
+        version: input.version,
+      })
+      if (!pub) throw new Error('getPublication returned null')
+      const docId = pub.document?.id
+      if (!docId) throw new Error('docId not retreived from getPublication')
+      const version = pub.version
+      if (!version) throw new Error('version not retrieved from getPublication')
+      const changesIndex: Map<string, HDChangeInfo> = new Map()
+      const changeDeps: Map<string, Set<string>> = new Map()
+      const downstreamChanges: Map<string, Set<string>> = new Map()
+      // pub.changes = pub.changes || []
       const {documentId} = input
       const {changes} = await changesClient.listChanges({documentId})
+      changes.forEach((change) => {
+        const hdChange = hdChangeInfo(change)
+        hdChange && changesIndex.set(change.id, hdChange)
+        if (!changeDeps.has(change.id)) changeDeps.set(change.id, new Set())
+        change.deps.forEach((dep) => {
+          changeDeps.get(change.id)!.add(dep)
+          if (!downstreamChanges.has(dep)) downstreamChanges.set(dep, new Set())
+          downstreamChanges.get(dep)!.add(change.id)
+        })
+      })
+      function changeIdsToChanges(ids: string[]) {
+        return ids.map((id) => changesIndex.get(id)).filter(Boolean)
+      }
+      const versionChanges = version.split(',')
+      const versionDownstream = downstreamChanges.get(version)
+      const deps = new Set<string>()
+      const allDeps: string[] = []
+      versionChanges.forEach((versionChangeId) => {
+        changeDeps.get(versionChangeId)?.forEach((dep) => {
+          deps.add(dep)
+        })
+        downstreamChanges.get(versionChangeId)?.forEach((changeId) => {
+          versionDownstream?.add(changeId)
+        })
+      })
+
+      function lookForDeps(changeId: string) {
+        if (allDeps.indexOf(changeId) !== -1) {
+          return
+        }
+        allDeps.push(changeId)
+        const downstreamDepx = changeDeps.get(changeId)
+        if (downstreamDepx) {
+          downstreamDepx.forEach(lookForDeps)
+        }
+      }
+
+      versionChanges.forEach(lookForDeps)
+
       return {
-        changes: hdChangeInfos(changes),
+        versionChanges: changeIdsToChanges(versionChanges),
+        changes: changes.map(hdChangeInfo),
+        deps: changeIdsToChanges(Array.from(deps)),
+        allDeps: changeIdsToChanges(allDeps),
+        pub: hdPublication(pub),
       }
     }),
 })

@@ -117,6 +117,13 @@ export default function PublicationPage({
         <GatewayHead title={pub?.document?.title} />
       )}
       <Head>
+        <meta
+          name="hyperdocs-entity-id"
+          content={`hd://d/${pub?.document?.id}`}
+        />
+        <meta name="hyperdocs-entity-version" content={pub?.version} />
+        <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
+        {/* legacy mintter metadata */}
         <meta name="mintter-document-id" content={pub?.document?.id} />
         <meta name="mintter-document-version" content={pub?.version} />
         <meta name="mintter-document-title" content={pub?.document?.title} />
