@@ -762,16 +762,16 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 		return n.client.DialSite(ctx, info.ID)
 	}
 	info, err := AddrInfoFromStrings(strings.Split(addrs, ",")...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse site address [%s]: %w", addrs, err)
-	}
 	ctx, cancelCtx := context.WithTimeout(ctx, 7*time.Second)
 	defer cancelCtx()
 	// we don't want to call well-known if either 1) we are already connected or 2) we were connected
 	// in previous sessions and we just woke up. In either case calling well-known would be slowdown.
 	// The only case where well-known will be called again is if the old addresses are no longer valid
 	// i.e. site owner deleted the db and started over with new peer IDs.
-	err = n.Connect(ctx, info)
+	if err == nil {
+		err = n.Connect(ctx, info)
+	}
+
 	if err != nil {
 		n.log.Warn("Failed to connect with old addresses, getting new addresses", zap.String("Peer Info", info.String()), zap.Error(err))
 		resp, err := GetSiteInfoHttp(remoteHostname)
