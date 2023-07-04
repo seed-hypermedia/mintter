@@ -37,11 +37,13 @@ function queryWebLink(url: string, enabled: boolean) {
         const doc = parseHTML(htmlData)
         return {
           documentId: extractMetaTagValue(doc, 'mintter-document-id'),
-          documentVersion: extractMetaTagValue(doc, 'mintter-document-version'),
+          documentVersion:
+            extractMetaTagValue(doc, 'mintter-document-version') || undefined,
           documentTitle:
             extractMetaTagValue(doc, 'mintter-document-title') ||
             doc.querySelector('title')?.innerText ||
             url,
+          blockId: url.match(/#(.*)$/)?.[1] || undefined,
         }
       } catch (e) {
         return null

@@ -2,11 +2,7 @@ export const HYPERDOCS_LINK_PREFIX = 'hd://d/'
 
 export function getIdsfromUrl(
   entry: string,
-): [
-  docId: string | undefined,
-  version: string | undefined,
-  blockId: string | undefined,
-] {
+): [docId: string | undefined, version?: string, blockId?: string] {
   if (
     entry.startsWith('https://mintter.com/d/') ||
     entry.startsWith('https://www.mintter.com/d/')

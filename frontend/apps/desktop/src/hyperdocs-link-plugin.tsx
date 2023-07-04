@@ -92,7 +92,8 @@ async function checkHyperLink(
             view.state.schema.mark('link', {
               href: createHyperdocsDocLink(
                 res!.documentId!,
-                res?.documentVersion || undefined,
+                res?.documentVersion,
+                res?.blockId,
               ),
             }),
           )

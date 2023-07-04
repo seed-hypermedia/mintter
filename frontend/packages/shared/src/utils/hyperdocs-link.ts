@@ -24,8 +24,8 @@ export function normalizeHyperdocsLink(urlMaybe: string): string | undefined {
 
 export function createHyperdocsDocLink(
   documentId: string,
-  version?: string,
-  blockRef?: string,
+  version?: string | null,
+  blockRef?: string | null,
 ): string {
   let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
   if (version) res += `?v=${version}`

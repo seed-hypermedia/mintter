@@ -82,7 +82,7 @@ export default function QuickSwitcher() {
                             navigate({
                               key: 'publication',
                               documentId: result.documentId,
-                              versionId: result.documentVersion || undefined,
+                              versionId: result.documentVersion,
                             })
                           }
                         })

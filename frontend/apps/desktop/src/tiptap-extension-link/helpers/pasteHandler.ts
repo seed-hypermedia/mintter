@@ -190,7 +190,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                 res && res.documentId
                   ? createHyperdocsDocLink(
                       res.documentId,
-                      res.documentVersion || undefined,
+                      res.documentVersion,
+                      res.blockId,
                     )
                   : link.href
 
