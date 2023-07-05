@@ -4,7 +4,6 @@ import '@tamagui/polyfill-dev'
 
 import {store} from '@app/app-store'
 import Main from '@app/pages/main'
-import {themeMachine, ThemeProvider} from '@app/theme'
 import {
   Button,
   TamaguiProvider,
@@ -50,30 +49,26 @@ onUpdaterEvent(({error, status}) => {
 })
 
 export function Root() {
-  const themeService = useInterpret(themeMachine)
-
   globalStyles()
 
   return (
     <StyleProvider>
-      <ThemeProvider value={themeService}>
-        <QueryClientProvider client={appQueryClient}>
-          <Suspense>
-            <Hydrate state={dehydrateState}>
-              <ErrorBoundary FallbackComponent={AppError}>
-                <NavigationProvider>
-                  <App />
-                </NavigationProvider>
-                <Toaster
-                  position="bottom-right"
-                  toastOptions={{className: 'toaster'}}
-                />
-              </ErrorBoundary>
-            </Hydrate>
-          </Suspense>
-          <ReactQueryDevtools />
-        </QueryClientProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={appQueryClient}>
+        <Suspense>
+          <Hydrate state={dehydrateState}>
+            <ErrorBoundary FallbackComponent={AppError}>
+              <NavigationProvider>
+                <App />
+              </NavigationProvider>
+              <Toaster
+                position="bottom-right"
+                toastOptions={{className: 'toaster'}}
+              />
+            </ErrorBoundary>
+          </Hydrate>
+        </Suspense>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </StyleProvider>
   )
 }

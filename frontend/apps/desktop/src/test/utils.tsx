@@ -15,7 +15,6 @@ import {nanoid} from 'nanoid'
 import {ReactNode, Suspense} from 'react'
 import {mouseMachine} from '../mouse-machine'
 import {globalStyles} from '../stitches.config'
-import {themeMachine, ThemeProvider} from '../theme'
 import {NavState} from '../utils/navigation'
 
 type TestMockData = {
@@ -162,15 +161,11 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 }
 
 export function TestProvider({client, children}: TestProviderProps) {
-  let themeService = useInterpret(() => themeMachine)
-
   // return null
   globalStyles()
   return (
     <QueryClientProvider client={client}>
-      <Suspense fallback={<p>Loading...</p>}>
-        <ThemeProvider value={themeService}>{children}</ThemeProvider>
-      </Suspense>
+      <Suspense fallback={<p>Loading...</p>}>{children}</Suspense>
     </QueryClientProvider>
   )
 }
