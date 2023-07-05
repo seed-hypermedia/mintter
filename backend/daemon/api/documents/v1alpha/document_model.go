@@ -27,7 +27,7 @@ type docModel struct {
 	delegation cid.Cid
 	tree       *Tree
 	patch      map[string]any
-	oldCID     cid.Cid
+	oldDraft   cid.Cid
 	done       bool
 	nextHLC    hlc.Time
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
@@ -63,7 +63,18 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	if len(dm.patch) != 0 {
 		panic("BUG: restoring draft when patch is not empty")
 	}
-	dm.oldCID = c
+	dm.oldDraft = c
+
+	if len(dm.e.Heads()) != len(ch.Deps) {
+		return fmt.Errorf("failed to restore draft: state has %d heads while draft change has %d deps", len(dm.e.Heads()), len(ch.Deps))
+	}
+
+	for _, dep := range ch.Deps {
+		_, ok := dm.e.Heads()[dep]
+		if !ok {
+			return fmt.Errorf("failed to restore draft: state doesn't have draft's dependency %s in its heads", dep)
+		}
+	}
 
 	if ch.Patch != nil {
 		dm.patch = ch.Patch
@@ -91,12 +102,6 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 				return fmt.Errorf("failed to replay local moves: %w", err)
 			}
 		}
-	}
-
-	delete(dm.e.Heads(), dm.oldCID)
-
-	if len(dm.e.Heads()) > 1 {
-		panic("BUG: more than one draft head")
 	}
 
 	return nil
@@ -216,8 +221,8 @@ func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blo
 		return hb, err
 	}
 
-	if dm.oldCID.Defined() {
-		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.oldCID, hb)
+	if dm.oldDraft.Defined() {
+		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.oldDraft, hb)
 	}
 
 	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
@@ -403,7 +408,7 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 
 		oo := dm.origins[origin]
 		if !oo.Defined() {
-			oo = dm.oldCID
+			oo = dm.oldDraft
 		}
 
 		blk, err := blockFromMap(id, oo.String(), mm.(map[string]any))

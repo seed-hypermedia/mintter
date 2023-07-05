@@ -300,3 +300,73 @@ func TestBug_RedundantMoves(t *testing.T) {
 	model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 	_ = model
 }
+
+func TestBug_DraftWithMultipleDeps(t *testing.T) {
+	alice := coretest.NewTester("alice")
+	kd := must.Do2(hyper.NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now())).Blob()
+
+	// Create document.
+	var c1 hyper.Blob
+	{
+		entity := hyper.NewEntity("hd://d/foo")
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		must.Do(model.SetCreateTime(time.Now()))
+		must.Do(model.SetTitle("Hello World!"))
+		must.Do(model.SetAuthor(alice.Account.Principal()))
+		model.nextHLC = entity.NextTimestamp()
+		c1 = must.Do2(model.Change())
+	}
+
+	// Create two concurrent changes.
+	var c2 hyper.Blob
+	{
+		entity := hyper.NewEntity("hd://d/foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.SetTitle("Changing title 1"))
+		c2 = must.Do2(model.Change())
+	}
+
+	var c3 hyper.Blob
+	{
+		entity := hyper.NewEntity("hd://d/foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.SetTitle("Changing title 2"))
+		c3 = must.Do2(model.Change())
+	}
+
+	// Create draft from the all the changes.
+	var draft hyper.Blob
+	{
+		entity := hyper.NewEntity("hd://d/foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
+		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
+
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		require.Len(t, model.e.Heads(), 2, "current document state must have 2 heads")
+		must.Do(model.SetTitle("The final title!"))
+		draft = must.Do2(model.Change())
+	}
+
+	// Update the draft in place.
+	{
+		entity := hyper.NewEntity("hd://d/foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
+		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
+
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.restoreDraft(draft.CID, draft.Decoded.(hyper.Change)))
+		require.Len(t, model.e.Heads(), 2, "current document state must have 2 heads")
+		must.Do(model.SetTitle("The final title updated!"))
+		draft = must.Do2(model.Change())
+	}
+
+	require.Equal(t, hyper.SortCIDs([]cid.Cid{c2.CID, c3.CID}), draft.Decoded.(hyper.Change).Deps, "draft must have concurrent changes as deps")
+}

@@ -234,13 +234,21 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 	return hb, nil
 }
 
+// SortCIDs sorts the multiple CIDs when determinism is needed.
+// The sorting is done in place, and the same slice is returned for convenience.
+func SortCIDs(cids []cid.Cid) []cid.Cid {
+	slices.SortFunc(cids, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+	return cids
+}
+
 // NewChange creates a new Change blob.
 func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
 	// Make sure deps field is not present in the patch if there're no deps.
 	if len(deps) == 0 {
 		deps = nil
 	}
-	slices.SortFunc(deps, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+
+	SortCIDs(deps)
 
 	ch := Change{
 		Type:       TypeChange,
