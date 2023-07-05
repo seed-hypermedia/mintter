@@ -26,6 +26,7 @@ import {HDChangeInfo, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
 import {cidURL} from 'ipfs'
 import {NextLink} from 'next-link'
+import {format} from 'date-fns'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -103,14 +104,16 @@ function useInterval(ms: number) {
 
 function useFormattedTime(
   time: string | Date | HDTimestamp | null | undefined,
+  onlyRelative?: boolean,
 ) {
   const updateInterval = useInterval(10_000) // update the time every 10 seconds
   return useMemo(() => {
+    const opts = {onlyRelative}
     updateInterval // silence react-hooks/exhaustive-deps.. the time is an implicit dependency of formattedDate
-    if (typeof time === 'string') return formattedDate(time)
-    if (time instanceof Date) return formattedDate(time)
-    return formattedDate(time)
-  }, [time, updateInterval])
+    if (typeof time === 'string') return formattedDate(time, opts)
+    if (time instanceof Date) return formattedDate(time, opts)
+    return formattedDate(time, opts)
+  }, [time, updateInterval, onlyRelative])
 }
 
 export function AuthorsMeta({
@@ -246,19 +249,25 @@ export function PublishedMeta({
 }) {
   const publishTimeRelative = useFormattedTime(
     publication?.document?.publishTime,
+    true,
   )
   const publishTime = publication?.document?.publishTime
+  const publishTimeDate = publishTime && new Date(publishTime)
   return (
     <YStack>
       <Paragraph>
         <SizableText fontWeight={'bold'}>Published &nbsp;</SizableText>
         {publishTimeRelative}
       </Paragraph>
-      {/* <SimpleTooltip content="hello">
-        <Paragraph>
-          {format(new Date(publishTime), 'EEEE, MMMM do, yyyy')}
-        </Paragraph>
-      </SimpleTooltip> */}
+      {publishTimeDate && (
+        <SimpleTooltip
+          content={format(publishTimeDate, 'MMMM do yyyy, HH:mm:ss z')}
+        >
+          <Paragraph>
+            {format(publishTimeDate, 'EEEE, MMMM do, yyyy')}
+          </Paragraph>
+        </SimpleTooltip>
+      )}
     </YStack>
   )
 }
