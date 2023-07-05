@@ -183,40 +183,45 @@ function SplitRow({
       overflow="hidden"
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
+      justifyContent="space-between"
     >
-      <AccountRow account={id} />
-      <Text width={100} color="$gray10">
-        {Math.round(percentage * 1000) / 10}%
-      </Text>
-      {dispatchSplit ? (
-        <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
-          <XGroup.Item>
-            <Button
-              size="$2"
-              icon={PlusCircle}
-              onPress={() => {
-                dispatchSplit({type: 'incrementPercentage', id, increment: 0.1})
-              }}
-            />
-          </XGroup.Item>
-          <XGroup.Item>
-            <Button
-              size="$2"
-              icon={MinusCircle}
-              onPress={() => {
-                dispatchSplit({
-                  type: 'incrementPercentage',
-                  id,
-                  increment: -0.1,
-                })
-              }}
-            />
-          </XGroup.Item>
-        </XGroup>
-      ) : null}
-      <Container>
+      <XStack gap="$2">
+        <AccountRow account={id} />
+        <Text color="$gray10">– {Math.round(percentage * 1000) / 10}%</Text>
+      </XStack>
+      <XStack gap="$2">
+        {dispatchSplit ? (
+          <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
+            <XGroup.Item>
+              <Button
+                size="$2"
+                icon={MinusCircle}
+                onPress={() => {
+                  dispatchSplit({
+                    type: 'incrementPercentage',
+                    id,
+                    increment: -0.1,
+                  })
+                }}
+              />
+            </XGroup.Item>
+            <XGroup.Item>
+              <Button
+                size="$2"
+                icon={PlusCircle}
+                onPress={() => {
+                  dispatchSplit({
+                    type: 'incrementPercentage',
+                    id,
+                    increment: 0.1,
+                  })
+                }}
+              />
+            </XGroup.Item>
+          </XGroup>
+        ) : null}
         <Text>{sats} Sats</Text>
-      </Container>
+      </XStack>
     </XStack>
   )
 }
@@ -268,7 +273,10 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
         return {id: s.id, percentage: nextPercentage}
       }
       // these split the remainder based on their ratio from the previous remainder
-      const prevRatioExcludingTarget = s.percentage / prevRemainderPercentage
+      const prevRatioExcludingTarget =
+        prevRemainderPercentage === 0
+          ? 0
+          : s.percentage / prevRemainderPercentage
       const percentage = prevRatioExcludingTarget * nextRemainderPercentage
 
       return {id: s.id, percentage}
