@@ -1,16 +1,11 @@
 import {
   Paragraph,
   Text,
-  useMedia,
-  FontSizeTokens,
-  SiteAside,
   SizableText,
   Button,
   XStack,
   SimpleTooltip,
   YStack,
-  Tooltip,
-  Avatar,
 } from '@mintter/ui'
 import {
   formattedDate,
@@ -24,9 +19,9 @@ import {Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
 import {HDChangeInfo, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
-import {cidURL} from 'ipfs'
-import {NextLink} from 'next-link'
 import {format} from 'date-fns'
+import {AccountRow} from 'components/account-row'
+import {NextLink} from 'next-link'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -52,44 +47,6 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
         </Button>
       </SimpleTooltip>
     </XStack>
-  )
-}
-
-export function AccountRow({
-  account,
-  bold,
-}: {
-  account?: string
-  bold?: boolean
-}) {
-  // return <Text>{account}</Text>
-  const acct = trpc.account.get.useQuery({
-    accountId: account,
-  })
-  let profile = acct.data?.account?.profile
-  let label = '?'
-  if (profile && profile.alias) {
-    label = profile.alias
-  } else if (account) {
-    label = abbreviateCid(account)
-  }
-  return (
-    <Link href={`/a/${account}`} style={{textDecoration: 'none'}}>
-      <XStack gap="$3" alignItems="center">
-        <Avatar circular size={24}>
-          {profile?.avatar ? (
-            <Avatar.Image src={cidURL(profile.avatar)} />
-          ) : null}
-          <Avatar.Fallback backgroundColor={'#26ab95'} />
-        </Avatar>
-        <Text
-          hoverStyle={{textDecorationLine: 'underline'}}
-          fontWeight={bold ? 'bold' : undefined}
-        >
-          {label}
-        </Text>
-      </XStack>
-    </Link>
   )
 }
 
@@ -192,7 +149,7 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
     )
   }
 
-  console.log('DOC CHANGES', docChanges.data)
+  // console.log('DOC CHANGES', docChanges.data)
   return (
     <YStack>
       {previousVersions}
@@ -226,12 +183,7 @@ export function PublicationMetadata({
 }: {
   publication?: HDPublication | null
 }) {
-  let media = useMedia()
-  // let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
-  const publishTime = useFormattedTime(publication?.document?.publishTime)
-  const updateTime = useFormattedTime(publication?.document?.updateTime)
   if (!publication) return null
-  const editors = publication?.document?.editors
   return (
     <>
       <PublishedMeta publication={publication} />

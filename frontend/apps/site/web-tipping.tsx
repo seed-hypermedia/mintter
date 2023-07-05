@@ -32,7 +32,6 @@ import {
   X,
   Zap,
 } from '@tamagui/lucide-icons'
-import {LoadedAccountId} from 'publication-metadata'
 import Link from 'next/link'
 import React, {
   ReactNode,
@@ -45,6 +44,7 @@ import React, {
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {HDAccount} from 'server/json-hd'
+import {AccountRow} from 'components/account-row'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},
@@ -184,7 +184,7 @@ function SplitRow({
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
     >
-      <LoadedAccountId account={id} />
+      <AccountRow account={id} />
       <Text width={100} color="$gray10">
         {Math.round(percentage * 1000) / 10}%
       </Text>
