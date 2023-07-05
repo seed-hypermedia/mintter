@@ -198,8 +198,10 @@ function PubDropdown() {
       : route.key == 'draft'
       ? route.draftId
       : undefined
+  const versionId = route.key == 'publication' ? route.versionId : undefined
   const {data: publication} = usePublication({
     documentId,
+    versionId,
   })
   const isWebPub = publication?.document?.webUrl != null
   const label = publication?.document?.webUrl
