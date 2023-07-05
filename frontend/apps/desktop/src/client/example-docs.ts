@@ -3,7 +3,7 @@ import {
   Block,
   BlockNode,
   Document,
-  SectionBlockAttributes,
+  HDBlockAttributes,
 } from '@mintter/shared'
 
 function createAnnotation(
@@ -47,7 +47,7 @@ function createSectionNode(
     type?: 'section' | 'paragraph' | 'heading'
     id: string
     annotations?: Annotation[]
-    attributes?: SectionBlockAttributes
+    attributes?: HDBlockAttributes
   },
   children?: BlockNode[],
 ) {
@@ -111,7 +111,7 @@ export const examples = {
           text: 'this is a list:',
           id: '1',
           attributes: {
-            childrenType: 'bullet',
+            childrenType: 'ul',
           },
         },
         [
@@ -142,13 +142,13 @@ export const examples = {
           text: 'this is a list:',
           id: '1',
           attributes: {
-            childrenType: 'bullet',
+            childrenType: 'ul',
           },
         },
         [
           createSectionNode({text: 'item 1', id: '2'}),
           createSectionNode(
-            {text: 'item 2', id: '3', attributes: {childrenType: 'numbers'}},
+            {text: 'item 2', id: '3', attributes: {childrenType: 'ol'}},
             [
               createSectionNode({text: 'numbered A', id: 'a'}),
               createSectionNode({text: 'numbered B', id: 'b'}),

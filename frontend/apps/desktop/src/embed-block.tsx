@@ -1,4 +1,15 @@
+import {
+  Block as BlockNoteBlock,
+  BlockNoteEditor,
+  InlineContent,
+} from '@app/blocknote-core'
 import {PartialMessage} from '@bufbuild/protobuf'
+import type {
+  Block as ServerBlock,
+  BlockNode,
+  ImageBlock,
+  PresentationBlock,
+} from '@mintter/shared'
 import {
   Block,
   getCIDFromIPFSUrl,
@@ -6,25 +17,13 @@ import {
   isHyperdocsScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
-import type {
-  Block as ServerBlock,
-  PresentationBlock,
-  BlockNode,
-  SectionBlock,
-  ImageBlock,
-} from '@mintter/shared'
-import {YStack, Text, Spinner} from '@mintter/ui'
+import {Spinner, Text, YStack} from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
-import {createReactBlockSpec} from './blocknote-react'
-import {usePublication} from './models/documents'
-import {
-  InlineContent,
-  Block as BlockNoteBlock,
-  BlockNoteEditor,
-} from '@app/blocknote-core'
-import {openUrl} from './utils/open-url'
 import {getBlockInfoFromPos} from './blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
+import {createReactBlockSpec} from './blocknote-react'
 import {hdBlockSchema} from './client/schema'
+import {usePublication} from './models/documents'
+import {openUrl} from './utils/open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   return (
@@ -77,7 +76,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
   )
 }
 
-function StaticSectionBlock({block}: {block: SectionBlock}) {
+function StaticPresentationBlock({block}: {block: PresentationBlock}) {
   const inline = useMemo(
     () => serverBlockToEditorInline(new Block(block)),
     [block],
@@ -99,7 +98,7 @@ function StaticBlock({block}: {block: ServerBlock}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
-    return <StaticSectionBlock block={niceBlock} />
+    return <StaticPresentationBlock block={niceBlock} />
   }
   if (niceBlock.type === 'image') {
     return <StaticImageBlock block={niceBlock} />

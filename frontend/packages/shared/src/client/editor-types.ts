@@ -1,3 +1,5 @@
+import {HDBlockChildrenType} from './hyperdocs-presentation'
+
 export type Styles = {
   bold?: true
   italic?: true
@@ -34,49 +36,58 @@ export type PartialLink = Omit<Link, 'content'> & {
 
 export type InlineContent = StyledText | Link
 export type PartialInlineContent = StyledText | PartialLink
+export type EditorBlockProps<T = unknown> = {
+  childrenType?: HDBlockChildrenType
+  start?: string
+  backgroundColor?: string
+  textColor?: string
+  textAlignment?: string
+  defaultOpen?: string
+} & T
 
 export type EditorParagraphBlock = {
   type: 'paragraph'
   id: string
   content: InlineContent[]
   children: EditorBlock[]
-  props: {
-    type: 'p' | 'blockquote'
-  }
+  props: EditorBlockProps
 }
 export type EditorHeadingBlock = {
   type: 'heading'
   id: string
   content: InlineContent[]
   children: EditorBlock[]
-  props: {
+  props: EditorBlockProps<{
     level: '1' | '2' | '3'
-  }
+  }>
 }
 export type EditorImageBlock = {
   type: 'image'
   id: string
-  props: {
+  props: EditorBlockProps<{
     url: string
-  }
+  }>
   content: InlineContent[]
+  children: EditorBlock[]
 }
 
 export type EditorFileBlock = {
   type: 'file'
   id: string
-  props: {
+  props: EditorBlockProps<{
     url: string
     name: string
-  }
+  }>
+  children: EditorBlock[]
 }
 
 export type EditorEmbedBlock = {
   type: 'embed'
   id: string
-  props: {
+  props: EditorBlockProps<{
     ref: string
-  }
+  }>
+  children: EditorBlock[]
 }
 
 export type EditorBlock =

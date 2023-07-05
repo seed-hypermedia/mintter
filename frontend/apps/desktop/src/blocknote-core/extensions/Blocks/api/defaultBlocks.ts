@@ -23,7 +23,7 @@ export const defaultBlockSchema = {
   paragraph: {
     propSchema: {
       ...defaultProps,
-      type: {default: 'p', values: ['p', 'blockquote'] as const},
+      type: {default: 'p', values: ['p'] as const},
     },
     node: ParagraphBlockContent,
   },

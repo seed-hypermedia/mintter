@@ -1,10 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import {
   Account,
   ImageBlock,
   EmbedBlock,
   InlineContent,
   PresentationBlock,
-  SectionBlock,
   SiteInfo,
   getCIDFromIPFSUrl,
   serverBlockToEditorInline,
@@ -220,13 +220,13 @@ function InlineContentView({
   )
 }
 
-function StaticSectionBlock({block}: {block: SectionBlock}) {
+function StaticPresentationBlock({block}: {block: PresentationBlock}) {
   const inline = useMemo(
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
-  const isBlockquote = block.attributes?.type === 'blockquote'
   return (
+<<<<<<< Updated upstream
     <YStack
       id={`${block.id}-block`}
       paddingLeft={isBlockquote ? 20 : 0}
@@ -241,6 +241,15 @@ function StaticSectionBlock({block}: {block: SectionBlock}) {
           }}
         />
       </Text>
+=======
+    <YStack id={`${block.id}-block`}>
+      <InlineContentView
+        inline={inline}
+        style={{
+          heading: block.type === 'heading',
+        }}
+      />
+>>>>>>> Stashed changes
     </YStack>
   )
 }
@@ -318,13 +327,13 @@ function StaticBlock({block}: {block: HDBlock}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
-    return <StaticSectionBlock block={niceBlock} />
+    return <StaticPresentationBlock block={niceBlock} />
   }
   // legacy node
   // @ts-expect-error
   if (niceBlock.type === 'statement') {
     return (
-      <StaticSectionBlock
+      <StaticPresentationBlock
         block={{
           type: 'paragraph',
           // @ts-expect-error
@@ -347,7 +356,9 @@ function StaticBlock({block}: {block: HDBlock}) {
   // return <span>{JSON.stringify(block)}</span>
   return (
     <ErrorMessageBlock
+      // @ts-expect-error
       id={`${niceBlock.id}-block`}
+      // @ts-expect-error
       message={`Unknown block type: "${niceBlock.type}"`}
     />
   )

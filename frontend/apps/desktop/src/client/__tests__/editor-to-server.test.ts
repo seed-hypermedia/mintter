@@ -207,3 +207,113 @@ describe('editorBlockToServerBlock', () => {
   //   })
   // })
 })
+
+describe('blockGroup types', () => {
+  test('Default list', () => {
+    const eBlock = editorBlockToServerBlock({
+      id: 'abc',
+      type: 'paragraph',
+      content: [],
+      props: {
+        ref: 'hd://foo',
+        // why is this garbage required for embed props??:
+        backgroundColor: 'default',
+        textColor: 'default',
+        textAlignment: 'left',
+        childrenType: 'group',
+      },
+      children: [],
+    })
+    expect(eBlock).toEqual(
+      new Block({
+        id: 'abc',
+        type: 'paragraph',
+        attributes: {
+          childrenType: 'group',
+        },
+      }),
+    )
+  })
+
+  test('Unordered list', () => {
+    const eBlock = editorBlockToServerBlock({
+      id: 'abc',
+      type: 'paragraph',
+
+      content: [],
+      props: {
+        ref: 'hd://foo',
+        // why is this garbage required for embed props??:
+        backgroundColor: 'default',
+        textColor: 'default',
+        textAlignment: 'left',
+        childrenType: 'ul',
+      },
+      children: [],
+    })
+    expect(eBlock).toEqual(
+      new Block({
+        id: 'abc',
+        type: 'paragraph',
+        attributes: {
+          childrenType: 'ul',
+        },
+      }),
+    )
+  })
+
+  test('Ordered list', () => {
+    const eBlock = editorBlockToServerBlock({
+      id: 'abc',
+      type: 'paragraph',
+
+      content: [],
+      props: {
+        ref: 'hd://foo',
+        // why is this garbage required for embed props??:
+        backgroundColor: 'default',
+        textColor: 'default',
+        textAlignment: 'left',
+        childrenType: 'ol',
+        start: '2',
+      },
+      children: [],
+    })
+    expect(eBlock).toEqual(
+      new Block({
+        id: 'abc',
+        type: 'paragraph',
+        attributes: {
+          childrenType: 'ol',
+          start: '2',
+        },
+      }),
+    )
+  })
+  test('Blockquote list', () => {
+    const eBlock = editorBlockToServerBlock({
+      id: 'abc',
+      type: 'paragraph',
+
+      content: [],
+      props: {
+        ref: 'hd://foo',
+        // why is this garbage required for embed props??:
+        backgroundColor: 'default',
+        textColor: 'default',
+        textAlignment: 'left',
+        childrenType: 'blockquote',
+      },
+      children: [],
+    })
+    expect(eBlock).toEqual(
+      new Block({
+        id: 'abc',
+        type: 'paragraph',
+        attributes: {
+          childrenType: 'blockquote',
+        },
+      }),
+    )
+  })
+})
