@@ -233,12 +233,14 @@ function StaticSectionBlock({block}: {block: SectionBlock}) {
       borderLeftWidth={isBlockquote ? 1 : 0}
       borderLeftColor={'blue'}
     >
-      <InlineContentView
-        inline={inline}
-        style={{
-          heading: block.type === 'heading',
-        }}
-      />
+      <Text>
+        <InlineContentView
+          inline={inline}
+          style={{
+            heading: block.type === 'heading',
+          }}
+        />
+      </Text>
     </YStack>
   )
 }
