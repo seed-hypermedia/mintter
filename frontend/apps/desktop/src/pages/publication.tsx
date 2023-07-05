@@ -106,9 +106,6 @@ export default function PublicationPage() {
                   // @ts-ignore
                 >
                   <ScrollView>
-                    {versionId && (
-                      <OutOfDateBanner docId={docId} version={versionId} />
-                    )}
                     {editor && (
                       <HDEditorContainer>
                         <HyperDocsEditorView editor={editor} />
@@ -116,6 +113,9 @@ export default function PublicationPage() {
                       </HDEditorContainer>
                     )}
                   </ScrollView>
+                  {versionId && (
+                    <OutOfDateBanner docId={docId} version={versionId} />
+                  )}
                 </YStack>
               </Allotment.Pane>
               {accessoryKey &&
@@ -274,22 +274,19 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   if (version === pub?.version) return null
   if (!pub?.version) return null
   return (
-    <AppBanner onMouseEnter={() => {}}>
+    <AppBanner
+      onPress={() => {
+        navigate({
+          key: 'publication',
+          documentId: docId,
+          versionId: pub.version,
+          accessory: pubAccessory,
+        })
+      }}
+    >
       <BannerText>
-        <a
-          onClick={(e) => {
-            e.preventDefault()
-            navigate({
-              key: 'publication',
-              documentId: docId,
-              versionId: pub.version,
-              accessory: pubAccessory,
-            })
-          }}
-        >
-          There is a newer version of this Publication. Click here to go to
-          latest version →
-        </a>
+        There is a newer version of this Publication. Click here to go to latest
+        version →
       </BannerText>
     </AppBanner>
   )

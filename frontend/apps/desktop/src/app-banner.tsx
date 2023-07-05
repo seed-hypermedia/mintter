@@ -6,11 +6,11 @@ export function AppBanner({
   ...props
 }: {
   children: ReactNode
-  onMouseEnter?: MouseEventHandler<HTMLDivElement>
+  onPress?: () => void
 }) {
   return (
     <XStack
-      backgroundColor="$backgroundStrong"
+      backgroundColor="$yellow1"
       width="100%"
       position="absolute"
       top={0}
@@ -27,6 +27,8 @@ export function AppBanner({
       opacity={1}
       padding="$1"
       cursor="pointer"
+      borderColor={'$gray4'}
+      borderBottomWidth={1}
       paddingHorizontal="$3"
       {...props}
     >
