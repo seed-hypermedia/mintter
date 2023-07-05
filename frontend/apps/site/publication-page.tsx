@@ -100,7 +100,7 @@ export default function PublicationPage({
   const siteInfo = trpc.siteInfo.get.useQuery()
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
-    versionId: version || undefined,
+    versionId: version || '',
   })
 
   const pub = publication.data?.publication

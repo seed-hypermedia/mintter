@@ -33,7 +33,7 @@ export const getServerSideProps: GetServerSideProps = async (
   await impatiently(
     helpers.publication.get.prefetch({
       documentId: docId,
-      versionId: version || undefined,
+      versionId: version || '',
     }),
   )
 

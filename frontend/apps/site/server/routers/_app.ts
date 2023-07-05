@@ -47,7 +47,7 @@ const publicationRouter = router({
       }
       const pub = await publicationsClient.getPublication({
         documentId: input.documentId,
-        version: input.versionId,
+        version: input.versionId || '',
       })
       return {
         publication: hdPublication(pub),
