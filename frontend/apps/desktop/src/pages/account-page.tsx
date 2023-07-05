@@ -22,6 +22,8 @@ import {
   XStack,
 } from '@mintter/ui'
 import {ComponentProps, ReactNode} from 'react'
+import {Clipboard, Copy} from '@tamagui/lucide-icons'
+import {getAccountUrl} from '@app/utils/account-url'
 
 function DeviceRow({
   isOnline,
@@ -118,30 +120,41 @@ export default function AccountPage() {
                 'device',
               )}, ${connectedCount} connected`}
             > */}
-            <Dropdown.Root>
-              <Dropdown.Trigger iconAfter={ChevronDown} size="$4">
-                <OnlineIndicator online={isConnected} />
-                {isConnected ? 'Connected' : 'Offline'}
-              </Dropdown.Trigger>
-              <Dropdown.Content align="end">
-                <Dropdown.Label>
-                  <SizableText size="$3" fontWeight="700" theme="mint">
-                    {pluralizer(account.devices.length, 'Device')}
-                  </SizableText>
-                </Dropdown.Label>
+            <XStack>
+              <Tooltip content="Copy Account Link to clipboard">
+                <Button
+                  icon={Copy}
+                  size="$4"
+                  onPress={() => {
+                    copyTextToClipboard(getAccountUrl(accountId))
+                  }}
+                ></Button>
+              </Tooltip>
+              <Dropdown.Root>
+                <Dropdown.Trigger iconAfter={ChevronDown} size="$4">
+                  <OnlineIndicator online={isConnected} />
+                  {isConnected ? 'Connected' : 'Offline'}
+                </Dropdown.Trigger>
+                <Dropdown.Content align="end">
+                  <Dropdown.Label>
+                    <SizableText size="$3" fontWeight="700" theme="mint">
+                      {pluralizer(account.devices.length, 'Device')}
+                    </SizableText>
+                  </Dropdown.Label>
 
-                {account.devices.map((device) => {
-                  if (!device) return null
-                  return (
-                    <DeviceRow
-                      key={device.deviceId}
-                      isOnline={device.isConnected}
-                      deviceId={device.deviceId}
-                    />
-                  )
-                })}
-              </Dropdown.Content>
-            </Dropdown.Root>
+                  {account.devices.map((device) => {
+                    if (!device) return null
+                    return (
+                      <DeviceRow
+                        key={device.deviceId}
+                        isOnline={device.isConnected}
+                        deviceId={device.deviceId}
+                      />
+                    )
+                  })}
+                </Dropdown.Content>
+              </Dropdown.Root>
+            </XStack>
             {/* </Tooltip> */}
           </Section>
           {account.profile?.bio && (
