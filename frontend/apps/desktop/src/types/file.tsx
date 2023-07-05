@@ -149,9 +149,9 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
         outlineColor="transparent"
         borderColor="transparent"
       >
-        {replace ? (
+        {replace ? editor.isEditable ? (
           <Button
-            theme="gray"
+            theme="white"
             position="absolute"
             top="$1.5"
             right="$1.5"
@@ -173,8 +173,7 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
           >
             replace
           </Button>
-        ) : null}
-        {!editor.isEditable ? (
+        ) : (
           <Button
             theme="white"
             position="absolute"

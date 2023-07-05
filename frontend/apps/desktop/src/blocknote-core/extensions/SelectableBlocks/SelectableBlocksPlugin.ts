@@ -18,6 +18,7 @@ export const createSelectableBlocksPlugin = () => {
         nodePos: number,
         event: MouseEvent,
       ) => {
+        if (!view.editable) return false
         if (
           // @ts-ignore
           (node.type.name === 'image' && event.target?.nodeName === 'IMG') ||

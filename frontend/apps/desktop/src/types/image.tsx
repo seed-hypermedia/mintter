@@ -142,7 +142,7 @@ function ImageComponent({
         outlineColor="transparent"
         borderColor="transparent"
       >
-        {replace ? (
+        {replace && editor.isEditable ? (
           <Button
             theme="gray"
             position="absolute"
