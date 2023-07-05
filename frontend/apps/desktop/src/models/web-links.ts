@@ -35,14 +35,33 @@ function queryWebLink(url: string, enabled: boolean) {
         // parsing for the meta tags is heavier but works, no problem
         const htmlData = await webResponse.text()
         const doc = parseHTML(htmlData)
+
+        // legacy aer meta tags
+        const fallbackDocumentId = extractMetaTagValue(
+          doc,
+          'mintter-document-id',
+        )
+        const fallbackDocumentVersion =
+          extractMetaTagValue(doc, 'mintter-document-version') || undefined
+        const fallbackDocumentTitle =
+          extractMetaTagValue(doc, 'mintter-document-title') ||
+          doc.querySelector('title')?.innerText ||
+          url
+
+        // new aer meta tags
+        const hdEntityId = extractMetaTagValue(doc, 'hyperdocs-entity-id')
+        const hdIdMatch = hdEntityId ? hdEntityId.match(/hd:\/\/d\/(.*)/) : null
+        const hdDocId = hdIdMatch?.[1]
+        const hdEntityVersion = extractMetaTagValue(
+          doc,
+          'hyperdocs-entity-version',
+        )
+        const hdEntityTitle = extractMetaTagValue(doc, 'hyperdocs-entity-title')
+
         return {
-          documentId: extractMetaTagValue(doc, 'mintter-document-id'),
-          documentVersion:
-            extractMetaTagValue(doc, 'mintter-document-version') || undefined,
-          documentTitle:
-            extractMetaTagValue(doc, 'mintter-document-title') ||
-            doc.querySelector('title')?.innerText ||
-            url,
+          documentId: hdDocId || fallbackDocumentId,
+          documentVersion: hdEntityVersion || fallbackDocumentVersion,
+          documentTitle: hdEntityTitle || fallbackDocumentTitle,
           blockId: url.match(/#(.*)$/)?.[1] || undefined,
         }
       } catch (e) {
