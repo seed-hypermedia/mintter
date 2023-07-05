@@ -114,12 +114,6 @@ export default function AccountPage() {
               <Heading>{account.profile?.alias || accountId}</Heading>
             </XStack>
 
-            {/* <Tooltip
-              content={`${deviceCount} ${pluralS(
-                deviceCount,
-                'device',
-              )}, ${connectedCount} connected`}
-            > */}
             <XStack>
               <Tooltip content="Copy Account Link to clipboard">
                 <Button

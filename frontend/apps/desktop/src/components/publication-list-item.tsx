@@ -1,32 +1,19 @@
-import {Dropdown, MenuItem} from '@components/dropdown'
+import {Dropdown} from '@components/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
-import {useDocWebPublications} from '@app/models/sites'
 import {usePopoverState} from '@app/use-popover-state'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getDocUrl} from '@app/utils/doc-url'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
-import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {
-  Document,
-  formattedDate,
-  HYPERDOCS_LINK_PREFIX,
-  Publication,
-} from '@mintter/shared'
+import {Document, formattedDate, Publication} from '@mintter/shared'
 import {
   Button,
   ButtonText,
-  Copy,
   Delete,
   ExternalLink,
   MoreHorizontal,
-  Popover,
-  Separator,
   Text,
   XStack,
-  YGroup,
 } from '@mintter/ui'
 import {MouseEvent} from 'react'
-import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {DeleteDialog} from './delete-dialog'
 
@@ -45,15 +32,7 @@ export function PublicationListItem({
   const docId = publication.document?.id
   const popoverState = usePopoverState()
   const dialogState = usePopoverState()
-  const webPubs = useDocWebPublications(docId)
   const route = useNavRoute()
-  const webPub = webPubs.data?.find(
-    (pub) =>
-      docId &&
-      pub.hostname === publication.document?.webUrl &&
-      pub.documentId === docId,
-  )
-  const publishedWebHost = publication.document?.webUrl || 'https://mintter.com'
   const deletePub = useDeletePublication({
     onSuccess: () => {
       dialogState.onOpenChange(false)
@@ -147,7 +126,7 @@ export function PublicationListItem({
             //   },
             // ]}
           >
-            <Dropdown.Item
+            {/* <Dropdown.Item
               data-testid="copy-item"
               onPress={() => {
                 const docUrl = getDocUrl(publication, webPub)
@@ -161,7 +140,7 @@ export function PublicationListItem({
                 publishedWebHost,
               )}`}
               icon={Copy}
-            />
+            /> */}
             <Dropdown.Item
               data-testid="new-window-item"
               onPress={() =>
