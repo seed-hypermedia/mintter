@@ -210,7 +210,15 @@ export function usePublishDraft(
       draftId: string
       webPub: WebPublicationRecord | undefined
     }) => {
-      console.log('Hello usePublishDraft', {webPub, draftId})
+      const draft = await draftsClient.getDraft({documentId: draftId})
+      if (!draft) throw new Error('no draft found')
+      const site = getWebSiteClient(draft.webUrl)
+
+      const pubs = await site.listWebPublications({}).catch((e) => {
+        if (e.message.includes('failed to dial to site')) {
+          throw new Error('Cannot connect to ' + draft.webUrl)
+        }
+      })
 
       const pub = await draftsClient.publishDraft({documentId: draftId})
       const doc = pub.document
@@ -247,6 +255,7 @@ export function usePublishDraft(
       appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       appInvalidateQueries([queryKeys.GET_PUBLICATION, documentId])
       appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, documentId])
+      appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, documentId])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS])
       opts?.onSuccess?.(pub, variables, context)

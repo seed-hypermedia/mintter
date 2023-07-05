@@ -229,12 +229,22 @@ export function useSitePublish(draftId: string | undefined) {
   const navigate = useNavigate('replace')
   return useMutation(
     async ({path}: {path: string}) => {
-      // welcome to draft Web Publish flow!
+      // welcome to the "initial" Web Publish flow, when the path is set
 
-      // right now the doc is a draft and we want to put it on a site
+      const draft = await draftsClient.getDraft({documentId: draftId})
+      if (!draft) throw new Error('no draft found')
+      const site = getWebSiteClient(draft.webUrl)
 
-      // 1. re-implement usePublishDraft
-      // 1. publish the document to the site
+      const pubs = await site.listWebPublications({}).catch((e) => {
+        if (e.message.includes('failed to dial to site')) {
+          throw new Error('Cannot connect to ' + draft.webUrl)
+        }
+      })
+      if (!pubs) throw new Error('Cannot connect to ' + draft.webUrl)
+
+      if (pubs.publications.find((pub) => pub.path === path)) {
+        throw new Error(`Path ${path} already exists on ${draft.webUrl}`)
+      }
 
       const docId = draftId
       if (!docId) throw new Error('No draftId provided to useSitePublish')

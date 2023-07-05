@@ -361,6 +361,9 @@ export function PublishShareButton() {
         toast.success('Document saved and set to public')
       }
     },
+    onError: (e: any) => {
+      toast.error('Failed to publish: ' + e.message)
+    },
   })
 
   let webUrl = useMemo(() => {
@@ -406,6 +409,7 @@ export function PublishShareButton() {
   if (isDraft) {
     return (
       <>
+        {webPubs.isInitialLoading ? <Spinner /> : null}
         <Button
           size="$2"
           chromeless={!isDraft}

@@ -6,7 +6,7 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {Publication} from '@mintter/shared'
-import {Input, Label} from '@mintter/ui'
+import {Container, Input, Label, Spinner, Text, XStack} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -68,6 +68,17 @@ function PublishDialogForm({
   return (
     <>
       <Heading>Publish to {hostnameStripProtocol(init.webUrl)}</Heading>
+      {publish.error ? (
+        <Container
+          backgroundColor="$red5"
+          borderColor="$red8"
+          borderWidth={1}
+          padding="$3"
+          borderRadius="$2"
+        >
+          <Text color="$red11">{publish.error?.message}</Text>
+        </Container>
+      ) : null}
       <Label htmlFor="pretty-path">Public URL (/Path)</Label>
       <Input
         placeholder={'No path name'}
@@ -79,25 +90,28 @@ function PublishDialogForm({
       />
 
       <URLPreview>{pubUrl}</URLPreview>
-      <Button
-        disabled={publish.isLoading}
-        onClick={() => {
-          publish
-            .mutateAsync({
-              path: readPathState(path),
-            })
-            .then(({publication}) => {
-              onDone?.(publication)
-              toast.success(`Document published to ${pubUrl}`, {})
-            })
-            .catch((e) => {
-              console.error(e)
-              toast('Error publishing document', {})
-            })
-        }}
-      >
-        Publish Document
-      </Button>
+      <XStack jc="space-between">
+        <Spinner opacity={publish.isLoading ? 1 : 0} />
+        <Button
+          disabled={publish.isLoading}
+          onClick={() => {
+            publish
+              .mutateAsync({
+                path: readPathState(path),
+              })
+              .then(({publication}) => {
+                onDone?.(publication)
+                toast.success(`Document published to ${pubUrl}`, {})
+              })
+              .catch((e) => {
+                console.error(e)
+                toast('Error publishing document', {})
+              })
+          }}
+        >
+          Publish Document
+        </Button>
+      </XStack>
     </>
   )
 }
