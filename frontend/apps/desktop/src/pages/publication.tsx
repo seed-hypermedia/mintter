@@ -65,8 +65,6 @@ export default function PublicationPage() {
     status == 'success' ? docId : undefined,
   )
 
-  console.log('== 🚀 ~ citations:', citations)
-
   if (status == 'error') {
     return (
       <YStack>

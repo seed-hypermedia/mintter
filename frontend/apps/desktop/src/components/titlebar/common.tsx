@@ -1,4 +1,4 @@
-import {draftsClient} from '@app/api-clients'
+import {draftsClient, webPublishingClient} from '@app/api-clients'
 import {Dropdown, MenuItem} from '@components/dropdown'
 import appError from '@app/errors'
 import {send} from '@app/ipc'
@@ -21,6 +21,7 @@ import {ContactsPrompt} from '@components/contacts-prompt'
 import {
   Account,
   createHyperdocsDocLink,
+  DocumentChange,
   HYPERDOCS_LINK_PREFIX,
   SiteConfig,
 } from '@mintter/shared'
@@ -342,6 +343,25 @@ function WriteActions({route}: {route: PublicationRoute}) {
         existingDocumentId: route.documentId,
         version: route.versionId,
       })
+      if (draft.webUrl) {
+        // the previous version had a webUrl set.
+        // we should check if the user has the site added. if not, set the webUrl to empty
+        const sites = await webPublishingClient.listSites({})
+        const foundPublishingSite = sites.sites.find(
+          (site) => site.hostname === draft.webUrl,
+        )
+        if (!foundPublishingSite) {
+          await draftsClient.updateDraft({
+            documentId: draft.id,
+            changes: [
+              new DocumentChange({
+                op: {case: 'setWebUrl', value: ''},
+              }),
+            ],
+          })
+        }
+      }
+
       navigateReplace({
         key: 'draft',
         draftId: draft.id,
