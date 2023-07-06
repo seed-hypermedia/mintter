@@ -12,12 +12,13 @@ import {
   abbreviateCid,
   pluralS,
   HDTimestamp,
+  getIdsfromUrl,
 } from '@mintter/shared'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
-import {HDChangeInfo, HDPublication} from 'server/json-hd'
+import {HDBlockNode, HDChangeInfo, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
 import {format} from 'date-fns'
 import {AccountRow} from 'components/account-row'
@@ -258,15 +259,72 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
   )
 }
 
+type EmbedRef = {ref: string; blockId: string}
+
+function surfaceEmbedRefs(children?: HDBlockNode[]): EmbedRef[] {
+  if (!children) return []
+  let refs: EmbedRef[] = []
+  for (let child of children) {
+    const ref = child.block?.ref
+    const blockId = child.block?.id
+    if (ref && blockId && child.block?.type === 'embed') {
+      refs.push({
+        ref,
+        blockId,
+      })
+    } else if (child.children) {
+      refs = refs.concat(surfaceEmbedRefs(child.children))
+    }
+  }
+  return refs
+}
+
+function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
+  const [docId, versionId, refBlockId] = getIdsfromUrl(url)
+  const pub = trpc.publication.get.useQuery(
+    {
+      documentId: docId,
+      versionId,
+    },
+    {
+      enabled: !!docId,
+    },
+  )
+  if (!docId) return null
+  return (
+    <NextLink
+      href={getDocUrl(docId, versionId, refBlockId)}
+      style={{textDecoration: 'none'}}
+    >
+      <YStack gap="$2">
+        <Text fontWeight={'bold'}>
+          {pub.data?.publication?.document?.title}
+        </Text>
+        {pub.data?.publication?.document?.editors?.map((editor) => (
+          <AccountRow key={editor} account={editor} clickable={false} />
+        ))}
+      </YStack>
+    </NextLink>
+  )
+}
+
 function EmbedMeta({publication}: {publication?: HDPublication | null}) {
-  const embedMeta = trpc.publication.getEmbedMeta.useQuery({
-    documentId: publication?.document?.id,
-    versionId: publication?.version,
-  })
-  const embeds = embedMeta.data
+  const embedRefs = useMemo(() => {
+    return surfaceEmbedRefs(publication?.document?.children)
+  }, [publication?.document?.children])
+  if (!embedRefs.length) return null
   return (
     <YStack>
-      <SizableText fontWeight={'bold'}>Embeds:&nbsp;</SizableText>
+      <SizableText>Featuring:&nbsp;</SizableText>
+      <YStack gap="$2">
+        {embedRefs.map((embedRef) => (
+          <EmbeddedDocMeta
+            blockId={embedRef.blockId}
+            url={embedRef.ref}
+            key={embedRef.ref}
+          />
+        ))}
+      </YStack>
     </YStack>
   )
 }
@@ -282,15 +340,18 @@ export function PublicationMetadata({
       <PublishedMeta publication={publication} />
       <NextVersionsMeta publication={publication} />
       <AuthorsMeta publication={publication} />
-      {/* <EmbedMeta publication={publication} /> */}
+      <EmbedMeta publication={publication} />
       <VersionsMeta publication={publication} />
     </>
   )
 }
 
-function getDocUrl(docId: string, versionId: string) {
+function getDocUrl(docId: string, versionId?: string, blockRef?: string) {
   // todo centralize this url creation logic better
-  return `/d/${docId}?v=${versionId}`
+  let url = `/d/${docId}`
+  if (versionId) url += `?v=${versionId}`
+  if (blockRef) url += `#${blockRef}`
+  return url
 }
 
 export function PublishedMeta({
