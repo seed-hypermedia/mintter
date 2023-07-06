@@ -146,7 +146,7 @@ func (bs *Storage) indexLinks(conn *sqlite.Conn, blobID int64, c cid.Cid, ch Cha
 				TargetVersion:  u.Query().Get("v"),
 			}
 
-			target := EntityID("hd://d/" + u.Host)
+			target := EntityID("hd://" + u.Host + u.Path)
 			rel := "href:" + linkType
 
 			targetID, err := bs.ensureEntity(conn, target)
