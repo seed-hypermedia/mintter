@@ -57,6 +57,28 @@ NESTED BLOCKS
   transition: all 0.2s 0.1s;
 }
 
+.blockGroup[data-list-type='ul'], .blockGroup[data-list-type='ol'] {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.blockGroup[data-list-type='ul'] {
+  margin-left: 2.5em;
+}
+
+.blockGroup[data-list-type='ol'] {
+  margin-left: 2.7em;
+}
+
+.blockGroup[data-list-type='ul'] > .blockOuter {
+  display: list-item !important;
+}
+
+.blockGroup[data-list-type='ol'] > .blockOuter {
+  display: list-item !important;
+}
+
 /* [data-theme='light']
   .blockGroup
   .blockGroup

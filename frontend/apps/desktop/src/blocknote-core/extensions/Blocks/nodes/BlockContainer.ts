@@ -32,6 +32,10 @@ declare module '@tiptap/core' {
         posInBlock: number,
         block: PartialBlock<BSchema>,
       ) => ReturnType
+      UpdateGroup: <BSchema extends BlockSchema>(
+        posInBlock: number,
+        listType: string,
+      ) => ReturnType
     }
   }
 }
@@ -57,7 +61,7 @@ export const BlockContainer = Node.create<IBlock>({
   parseHTML() {
     return [
       {
-        tag: 'div',
+        tag: 'li',
         getAttrs: (element) => {
           if (typeof element === 'string') {
             return false
@@ -82,13 +86,13 @@ export const BlockContainer = Node.create<IBlock>({
 
   renderHTML({HTMLAttributes}) {
     return [
-      'div',
+      'li',
       mergeAttributes(HTMLAttributes, {
         class: styles.blockOuter,
         'data-node-type': 'block-outer',
       }),
       [
-        'div',
+        'li',
         mergeAttributes(HTMLAttributes, {
           // TODO: maybe remove html attributes from inner block
           class: styles.block,
@@ -365,6 +369,42 @@ export const BlockContainer = Node.create<IBlock>({
                   )
                 : undefined,
             )
+          }
+
+          return true
+        },
+      // Updates a block group at a given position.
+      UpdateGroup:
+        (posInBlock, listType) =>
+        ({state, dispatch}) => {
+          const $pos = state.doc.resolve(posInBlock)
+          const maxDepth = $pos.depth
+          let node = $pos.node(maxDepth)
+          let depth = maxDepth
+
+          while (true) {
+            if (depth < 0) {
+              break
+            }
+
+            if (node.type.name === 'blockGroup') {
+              break
+            }
+
+            depth -= 1
+            node = $pos.node(depth)
+          }
+
+          if ($pos.node(depth - 1).type.name === 'doc') {
+            return false
+          }
+
+          if (dispatch && node.type.name === 'blockGroup') {
+            const newAttrs = {listType: listType}
+            state.tr.setNodeMarkup($pos.before(depth), null, {
+              ...node.attrs,
+              ...newAttrs,
+            })
           }
 
           return true
