@@ -507,7 +507,7 @@ export function useDraftEditor(
   let lastBlocks = useRef<Record<string, HDBlock>>({})
   let lastBlockParent = useRef<Record<string, string>>({})
   let lastBlockLeftSibling = useRef<Record<string, string>>({})
-  let [ready, setReady] = useState(false)
+  let isReady = useRef<boolean>(false)
 
   function prepareBlockObservations(
     blocks: Block<typeof hdBlockSchema>[],
@@ -524,6 +524,14 @@ export function useDraftEditor(
     })
   }
 
+  function handleAfterReady() {
+    const [editor, draft] = readyThings.current
+    const tiptap = editor?._tiptapEditor
+    if (tiptap && !tiptap.isFocused) {
+      editor._tiptapEditor.commands.focus()
+    }
+  }
+
   function handleMaybeReady() {
     const [editor, draft] = readyThings.current
     if (!editor || !draft) return
@@ -535,12 +543,15 @@ export function useDraftEditor(
 
     // this is to populate the blocks we use to compare changes
     prepareBlockObservations(editor.topLevelBlocks, '')
+    isReady.current = true
+    handleAfterReady()
   }
 
   const editor = useBlockNote<typeof hdBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!readyThings.current[0] || !readyThings.current[1]) return
+      if (!isReady.current) return
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -656,15 +667,6 @@ export function useDraftEditor(
     },
   })
 
-  useEffect(() => {
-    if (editor && !ready) {
-      if (!editor?._tiptapEditor.isFocused) {
-        editor._tiptapEditor.commands.focus()
-        setReady(true)
-        console.log('READY', editor, ready)
-      }
-    }
-  }, [editor])
 
   useListen(
     'select_all',
