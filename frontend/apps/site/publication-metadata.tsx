@@ -15,7 +15,7 @@ import {
 } from '@mintter/shared'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {Clipboard} from '@tamagui/lucide-icons'
+import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
 import {HDChangeInfo, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
@@ -88,7 +88,7 @@ export function AuthorsMeta({
     {enabled: !!publication?.document?.id},
   )
   return (
-    <YStack>
+    <YStack gap="$2">
       <SizableText fontWeight={'bold'}>
         {pluralS(editors?.length || 0, 'Author')}:&nbsp;
       </SizableText>
@@ -110,17 +110,54 @@ export function AuthorsMeta({
 function DepPreview({
   dep,
   publication,
+  displayAuthor = false,
 }: {
   dep: HDChangeInfo | null
   publication?: HDPublication | null
+  displayAuthor?: boolean
 }) {
-  const depTime = useFormattedTime(dep?.createTime)
+  const createTime = dep?.createTime
+  const depTime =
+    createTime && format(new Date(createTime), 'd MMMM yyyy • HH:mm')
   const docId = publication?.document?.id
   if (!docId || !dep) return null
   return (
-    <NextLink href={`/d/${publication?.document?.id}?v=${dep.version}`}>
-      <Text>{depTime}</Text>
+    <NextLink
+      href={`/d/${publication?.document?.id}?v=${dep.version}`}
+      style={{textDecoration: 'none'}}
+    >
+      {displayAuthor ? (
+        <AccountRow account={dep.author} key={dep.author} clickable={false} />
+      ) : null}
+      <Text paddingLeft={37}>{depTime}</Text>
     </NextLink>
+  )
+}
+
+function NextVersionsMeta({publication}: {publication?: HDPublication | null}) {
+  const docChanges = trpc.publication.getChanges.useQuery(
+    {
+      documentId: publication?.document?.id,
+      version: publication?.version || undefined,
+    },
+    {enabled: !!publication?.document?.id},
+  )
+  const downstreamChanges = docChanges.data?.downstreamChanges
+  if (!downstreamChanges?.length) return null
+  return (
+    <>
+      <SizableText fontWeight={'bold'}>
+        Next {pluralS(downstreamChanges?.length, 'Version')}:&nbsp;
+      </SizableText>
+      {downstreamChanges?.map((dep) => (
+        <DepPreview
+          dep={dep}
+          key={dep?.id}
+          publication={publication}
+          displayAuthor
+        />
+      ))}
+    </>
   )
 }
 
@@ -132,35 +169,91 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
     },
     {enabled: !!publication?.document?.id},
   )
-  const deps = docChanges.data?.deps
+  const [isCollapsed, setIsCollapsed] = useState(true)
+  const directDeps = docChanges.data?.deps
+  const allDeps = docChanges.data?.allDeps
 
-  let previousVersions: ReactElement | null = null
+  let prevContextAuthor: string | null = null
 
-  if (deps?.length) {
-    previousVersions = (
-      <>
-        <SizableText fontWeight={'bold'}>
-          Previous {pluralS(deps?.length, 'Version')}:&nbsp;
-        </SizableText>
-        {deps?.map((dep) => (
-          <DepPreview dep={dep} key={dep?.id} publication={publication} />
-        ))}
-      </>
+  let previousVersionsContent: ReactElement[] = []
+
+  const depsCount = directDeps?.length || 0
+  const allDepsCount = allDeps?.length || 0
+  const directDepsId = new Set(directDeps?.map((dep) => dep?.id))
+  const restDeps = allDeps?.filter((dep) => !directDepsId.has(dep?.id))
+  let hasMore = false
+  if (directDeps) {
+    directDeps?.forEach((dep) => {
+      if (!dep?.author) return
+      previousVersionsContent.push(
+        <DepPreview
+          dep={dep}
+          key={dep?.id}
+          publication={publication}
+          displayAuthor={prevContextAuthor !== dep?.author}
+        />,
+      )
+      prevContextAuthor = dep?.author
+    })
+  }
+
+  const allVersionsContent: ReactElement[] = []
+
+  restDeps?.forEach((dep) => {
+    hasMore = true
+    if (!dep?.author) return
+    const prevAuthor = prevContextAuthor
+    allVersionsContent.push(
+      <DepPreview
+        dep={dep}
+        key={dep.id}
+        publication={publication}
+        displayAuthor={prevAuthor !== dep.author}
+      />,
+    )
+    prevContextAuthor = dep.author
+  })
+
+  if (depsCount === 0) {
+    return (
+      <YStack gap="$2">
+        <SizableText fontWeight={'bold'}>First Version</SizableText>
+      </YStack>
     )
   }
 
-  // console.log('DOC CHANGES', docChanges.data)
+  const seeAllButton = hasMore ? (
+    <Button
+      size="$1"
+      onPress={() => {
+        setIsCollapsed(false)
+      }}
+      icon={ChevronDown}
+    >
+      See All
+    </Button>
+  ) : null
+
   return (
-    <YStack>
-      {previousVersions}
-
-      {/* <Button icon={History} size={'$2'}>
-        All 4 Previous Versions
-      </Button> */}
-
-      {/* {docChanges.data?.changes?.map((change) => {
-        return <Text key={change.id}>{change.id}</Text>
-      })} */}
+    <YStack gap="$2">
+      <SizableText fontWeight={'bold'}>
+        {allDepsCount} Previous Versions:&nbsp;
+      </SizableText>
+      {previousVersionsContent}
+      {isCollapsed ? (
+        seeAllButton
+      ) : (
+        <>
+          {allVersionsContent}
+          <Button
+            size="$1"
+            onPress={() => {
+              setIsCollapsed(true)
+            }}
+            icon={ChevronUp}
+          ></Button>
+        </>
+      )}
     </YStack>
   )
 }
@@ -187,11 +280,17 @@ export function PublicationMetadata({
   return (
     <>
       <PublishedMeta publication={publication} />
+      <NextVersionsMeta publication={publication} />
       <AuthorsMeta publication={publication} />
       {/* <EmbedMeta publication={publication} /> */}
       <VersionsMeta publication={publication} />
     </>
   )
+}
+
+function getDocUrl(docId: string, versionId: string) {
+  // todo centralize this url creation logic better
+  return `/d/${docId}?v=${versionId}`
 }
 
 export function PublishedMeta({
@@ -209,7 +308,14 @@ export function PublishedMeta({
     <YStack>
       <Paragraph>
         <SizableText fontWeight={'bold'}>Published &nbsp;</SizableText>
-        {publishTimeRelative}
+        <NextLink
+          href={getDocUrl(
+            publication?.document?.id || '',
+            publication?.version || '',
+          )}
+        >
+          {publishTimeRelative}
+        </NextLink>
       </Paragraph>
       {publishTimeDate && (
         <SimpleTooltip

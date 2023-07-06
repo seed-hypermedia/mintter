@@ -7,9 +7,11 @@ import {trpc} from '../trpc'
 export function AccountRow({
   account,
   bold,
+  clickable = true,
 }: {
   account?: string
   bold?: boolean
+  clickable?: boolean
 }) {
   // return <Text>{account}</Text>
   const acct = trpc.account.get.useQuery({
@@ -22,22 +24,27 @@ export function AccountRow({
   } else if (account) {
     label = abbreviateCid(account)
   }
-  return (
-    <Link href={`/a/${account}`} style={{textDecoration: 'none'}}>
-      <XStack gap="$3" alignItems="center">
-        <Avatar circular size={24}>
-          {profile?.avatar ? (
-            <Avatar.Image src={cidURL(profile.avatar)} />
-          ) : null}
-          <Avatar.Fallback backgroundColor={'#26ab95'} />
-        </Avatar>
-        <Text
-          hoverStyle={{textDecorationLine: 'underline'}}
-          fontWeight={bold ? 'bold' : undefined}
-        >
-          {label}
-        </Text>
-      </XStack>
-    </Link>
+  const content = (
+    <XStack gap="$3" alignItems="center">
+      <Avatar circular size={24}>
+        {profile?.avatar ? <Avatar.Image src={cidURL(profile.avatar)} /> : null}
+        <Avatar.Fallback backgroundColor={'#26ab95'} />
+      </Avatar>
+      <Text
+        hoverStyle={clickable ? {textDecorationLine: 'underline'} : undefined}
+        fontWeight={bold ? 'bold' : undefined}
+      >
+        {label}
+      </Text>
+    </XStack>
   )
+
+  if (clickable) {
+    return (
+      <Link href={`/a/${account}`} style={{textDecoration: 'none'}}>
+        {content}
+      </Link>
+    )
+  }
+  return content
 }

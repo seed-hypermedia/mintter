@@ -110,6 +110,7 @@ const publicationRouter = router({
         return ids.map((id) => changesIndex.get(id)).filter(Boolean)
       }
       const versionChanges = version.split(',')
+      const versionChangesSet = new Set(versionChanges)
       const versionDownstream = downstreamChanges.get(version)
       const deps = new Set<string>()
       const allDeps: string[] = []
@@ -126,7 +127,7 @@ const publicationRouter = router({
         if (allDeps.indexOf(changeId) !== -1) {
           return
         }
-        allDeps.push(changeId)
+        if (changeId !== version) allDeps.push(changeId)
         const downstreamDepx = changeDeps.get(changeId)
         if (downstreamDepx) {
           downstreamDepx.forEach(lookForDeps)
@@ -134,11 +135,14 @@ const publicationRouter = router({
       }
 
       versionChanges.forEach(lookForDeps)
-
       return {
         versionChanges: changeIdsToChanges(versionChanges),
-        changes: changes.map(hdChangeInfo),
         deps: changeIdsToChanges(Array.from(deps)),
+        downstreamChanges: changeIdsToChanges(
+          Array.from(downstreamChanges.get(version) || []).filter(
+            (changeId) => !versionChangesSet.has(changeId),
+          ),
+        ),
         allDeps: changeIdsToChanges(allDeps),
         pub: hdPublication(pub),
       }
