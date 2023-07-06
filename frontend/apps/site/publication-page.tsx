@@ -12,15 +12,14 @@ import {
   isHyperdocsScheme,
 } from '@mintter/shared'
 import {
-  ArticleContainer,
   Button,
-  Container,
+  ContainerLarge,
   Copy,
   Header,
-  MainContainer,
-  SideContainer,
+  Main,
   Spinner,
   Text,
+  useMedia,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -40,6 +39,7 @@ import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 import {cidURL} from 'ipfs'
 import {useRouter} from 'next/router'
+import {SidebarContainer} from '@mintter/ui/src/container'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -106,16 +106,7 @@ export default function PublicationPage({
   const pub = publication.data?.publication
 
   return (
-    <Container tag="main" id="main-content" tabIndex={-1}>
-      {siteInfo.data ? (
-        <SiteHead
-          siteInfo={siteInfo.data}
-          title={pub?.document?.title}
-          titleHref={`/d/${documentId}`}
-        />
-      ) : (
-        <GatewayHead title={pub?.document?.title} />
-      )}
+    <>
       <Head>
         <meta
           name="hyperdocs-entity-id"
@@ -128,8 +119,17 @@ export default function PublicationPage({
         <meta name="mintter-document-version" content={pub?.version} />
         <meta name="mintter-document-title" content={pub?.document?.title} />
       </Head>
-      <ArticleContainer flexWrap="wrap">
-        <MainContainer flex={3} className="web-publication">
+      <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
+        {siteInfo.data ? (
+          <SiteHead
+            siteInfo={siteInfo.data}
+            title={pub?.document?.title}
+            titleHref={`/d/${documentId}`}
+          />
+        ) : (
+          <GatewayHead title={pub?.document?.title} />
+        )}
+        <Main>
           {pub ? (
             <PublicationContent publication={pub} />
           ) : publication.isLoading ? (
@@ -140,21 +140,42 @@ export default function PublicationPage({
           ) : (
             <Header>Document not found.</Header>
           )}
-        </MainContainer>
-        <SideContainer flex={1}>
-          {metadata ? (
-            <>
-              <PublicationMetadata publication={pub} />
-              <WebTipping
-                docId={documentId}
-                editors={pub?.document?.editors || []}
-              />
-            </>
-          ) : null}
-        </SideContainer>
-      </ArticleContainer>
-      {siteInfo ? null : <Footer />}
-    </Container>
+        </Main>
+        {siteInfo ? null : <Footer />}
+      </ContainerLarge>
+      {/* <SidebarContainer> */}
+      <YStack
+        marginHorizontal={'auto'}
+        paddingHorizontal="$4"
+        width="100%"
+        maxWidth={760}
+        marginTop="$6"
+        borderColor="$gray6"
+        gap="$2"
+        borderTopWidth={1}
+        paddingVertical="$6"
+        $gtXl={{
+          borderTopWidth: 0,
+          // @ts-expect-error
+          position: 'fixed', // tamagui doesnt like fixed I guess
+          right: 40,
+          top: 0,
+          width: 300,
+          bottom: 0,
+          overflow: 'scroll',
+        }}
+      >
+        {metadata ? (
+          <>
+            <PublicationMetadata publication={pub} />
+            <WebTipping
+              docId={documentId}
+              editors={pub?.document?.editors || []}
+            />
+          </>
+        ) : null}
+      </YStack>
+    </>
   )
 }
 
@@ -249,7 +270,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
   return (
-    <Container minHeight={60} margin={10}>
+    <XStack minHeight={60} margin={10}>
       <img
         id={`${block.id}-block`}
         alt={block.attributes?.alt}
@@ -259,7 +280,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
           console.error('image errored', e)
         }}
       />
-    </Container>
+    </XStack>
   )
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
 }

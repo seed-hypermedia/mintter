@@ -1,4 +1,4 @@
-import {Avatar as StyledAvatar, SizeTokens, styled, Text} from 'tamagui'
+import {Avatar as StyledAvatar, FontSizeTokens, styled, Text} from 'tamagui'
 import {useMemo} from 'react'
 
 export function UIAvatar({
@@ -10,7 +10,7 @@ export function UIAvatar({
 }: {
   url?: string
   accountId?: string
-  size?: SizeTokens
+  size?: FontSizeTokens
   color?: string
   alias: string
 }) {

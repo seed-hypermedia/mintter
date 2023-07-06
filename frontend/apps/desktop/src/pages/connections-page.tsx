@@ -31,7 +31,12 @@ function ContactItem({account}: {account: Account}) {
             {alias}
           </Text>
         ) : (
-          <Text fontFamily="$body" fontWeight="bold" color="muted">
+          <Text
+            fontFamily="$body"
+            // @ts-expect-error tamagui upgrade
+            fontWeight="bold"
+            color="muted"
+          >
             {account.id.slice(0, 5)}...{account.id.slice(-5)}
           </Text>
         )}

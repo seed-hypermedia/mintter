@@ -187,7 +187,7 @@ export function MenuItem({
       title={
         title ? (
           <SizableText
-            fontSize="600"
+            fontSize="$2"
             cursor={disabled ? 'not-allowed' : 'pointer'}
             userSelect="none"
           >

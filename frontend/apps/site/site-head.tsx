@@ -59,7 +59,7 @@ export function SiteHead({
         {titleContent}
       </XStack>
       <Head>
-        <title>{title ? `${title} - ${siteTitle}` : siteTitle} </title>
+        <title>{title ? `${title} - ${siteTitle}` : siteTitle}</title>
         {siteInfo?.description && (
           <meta name="description" content={siteInfo?.description} />
         )}

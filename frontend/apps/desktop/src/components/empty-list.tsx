@@ -10,7 +10,7 @@ export function EmptyList({
 }) {
   return (
     <YStack gap="$5" paddingVertical="$8">
-      <Text fontFamily="$body" fontSize={'1.5em'}>
+      <Text fontFamily="$body" fontSize="$3">
         {description}
       </Text>
       <Button size="$4" onPress={() => action()} alignSelf="flex-start">

@@ -338,9 +338,9 @@ export function PublicationMetadata({
   return (
     <>
       <PublishedMeta publication={publication} />
-      <NextVersionsMeta publication={publication} />
       <AuthorsMeta publication={publication} />
       <EmbedMeta publication={publication} />
+      <NextVersionsMeta publication={publication} />
       <VersionsMeta publication={publication} />
     </>
   )

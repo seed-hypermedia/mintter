@@ -3,15 +3,13 @@ import {
   Button,
   Copy,
   ExternalLink,
-  Globe,
   Separator,
   SizableText,
   Stack,
   XGroup,
 } from '@mintter/ui'
-import {IconProps} from '@tamagui/lucide-icons/types/IconProps'
 import {open} from '@tauri-apps/api/shell'
-import {ComponentProps, FC, ReactNode, useState} from 'react'
+import {ComponentProps, FC, useState} from 'react'
 import {toast} from 'react-hot-toast'
 
 export function AccessURLRow({
@@ -25,7 +23,7 @@ export function AccessURLRow({
   url: string
   title?: string
   onPress?: () => void
-  icon?: FC<IconProps>
+  icon?: FC<{size: number}>
   enableLink?: boolean
 } & ComponentProps<typeof XGroup>) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)

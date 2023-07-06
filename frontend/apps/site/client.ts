@@ -1,6 +1,3 @@
-if (typeof globalThis.EdgeRuntime !== 'string') {
-  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
-}
 if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   global.setImmediate = setTimeout

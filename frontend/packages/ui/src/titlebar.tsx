@@ -33,12 +33,11 @@ export const TitlebarSection = styled(XStack, {
 export const TitleTextH1 = styled(H1, {
   name: 'TitlebarH1',
   color: '$color12',
-  size: '$4',
+  fontSize: '$4',
   userSelect: 'none',
   cursor: 'default',
   padding: 0,
   margin: 0,
-  letterSpacing: 'auto',
   textTransform: 'none',
   fontWeight: '700',
 })

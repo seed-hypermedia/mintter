@@ -49,9 +49,11 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           return (
             <Text
               key={`${content.type}-${index}`}
-              fontWeight={content.styles.bold ? 'bold' : ''}
+              // @ts-expect-error tamagui upgrade
+              fontWeight={content.styles.bold ? 'bold' : '100'}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
+              // @ts-expect-error tamagui upgrade
               fontFamily={content.styles.code ? 'monospace' : undefined}
             >
               {content.text}

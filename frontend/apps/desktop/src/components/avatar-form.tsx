@@ -1,7 +1,7 @@
-import {useMyAccount, useSetProfile} from '@app/models/accounts'
+import {useMyAccount} from '@app/models/accounts'
 import {Avatar} from '@components/avatar'
 import {Tooltip} from '@components/tooltip'
-import {SizeTokens, Stack} from '@mintter/ui'
+import {FontSizeTokens, Stack} from '@mintter/ui'
 import {ChangeEvent} from 'react'
 import toast from 'react-hot-toast'
 
@@ -10,7 +10,7 @@ export function AvatarForm({
   url,
   onAvatarUpload,
 }: {
-  size?: SizeTokens
+  size?: FontSizeTokens
   url?: string
   onAvatarUpload: (avatar: string) => Promise<void>
 }) {

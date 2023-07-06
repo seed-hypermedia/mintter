@@ -2,9 +2,6 @@ export const config = {
   runtime: 'nodejs',
 }
 
-if (typeof globalThis.EdgeRuntime !== 'string') {
-  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
-}
 if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   global.setImmediate = setTimeout
@@ -26,7 +23,7 @@ export default function DownloadPage({
       <GatewayHead title="Download" />
       <MainContainer>
         <H1>Download Mintter</H1>
-        <XStack space my="$7">
+        <XStack space marginVertical="$7">
           {manifest?.platforms.map((item, i) => (
             <Button
               tag="a"
@@ -64,6 +61,7 @@ export async function getStaticProps(context) {
         ...manifest,
         platforms: Object.entries(manifest.platforms).map(([key, value]) => ({
           platform: platforms[key],
+          //@ts-expect-error
           url: value.url,
         })),
       },

@@ -1,7 +1,7 @@
 import {
   ArticleContainer,
   Avatar,
-  Container,
+  ContainerLarge,
   Header,
   Heading,
   MainContainer,
@@ -49,7 +49,7 @@ export default function AccountPage({accountId}: {accountId: string}) {
   const account = publication.data?.account
 
   return (
-    <Container tag="main" id="main-content" tabIndex={-1}>
+    <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
       <SiteHead
         siteInfo={siteInfo.data}
         title={account?.profile?.alias}
@@ -75,6 +75,6 @@ export default function AccountPage({accountId}: {accountId: string}) {
         </SideContainer>
       </ArticleContainer>
       {siteInfo ? null : <Footer />}
-    </Container>
+    </ContainerLarge>
   )
 }
