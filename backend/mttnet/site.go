@@ -12,14 +12,12 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	site "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet/sitesql"
 	"net/http"
 	"net/url"
 	"reflect"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -82,7 +80,7 @@ func GetSiteInfoHttp(SiteHostname string) (*documents.SiteDiscoveryConfig, error
 
 // CreateInviteToken creates a new invite token for registering a new member.
 func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +142,7 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
-	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
+	acc, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +220,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 
 // GetSiteInfo Gets public-facing site information.
 func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +260,7 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 
 // UpdateSiteInfo updates public-facing site information. Doesn't support partial updates, hence all the fields must be provided.
 func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +305,7 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 
 // ListMembers lists registered members on the site.
 func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +341,7 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 
 // GetMember gets information about a specific member.
 func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +377,7 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 
 // DeleteMember deletes an existing member.
 func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +421,7 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 
 // PublishDocument publishes and pins the document to the public web site.
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
-	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
+	_, pid, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return nil, err
 	}
@@ -457,38 +455,15 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		toSync = append(toSync, hyper.EntityID("hd://d/"+ref.DocumentId))
 	}
 
-	var dels []hypersql.KeyDelegationsListResult
-	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		dels, err = hypersql.KeyDelegationsList(conn, acc)
-		return err
-	}); err != nil {
-		return nil, err
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
+	defer cancel()
+	n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", pid.String()), zap.Int("Documents to sync", len(toSync)))
+
+	if err = srv.synchronizer.SyncWithPeer(ctx, pid, toSync...); err != nil {
+		n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", pid.String()), zap.Error(err))
+		return nil, fmt.Errorf("Publish Document: couldn't sync content with device: %w", err)
 	}
-
-	var wg sync.WaitGroup
-	for _, del := range dels {
-		wg.Add(1)
-		device := core.Principal(del.KeyDelegationsViewDelegate)
-		pid, err := device.PeerID()
-		if err != nil {
-			n.log.Warn("BadPeer", zap.String("principal", device.String()))
-			continue
-		}
-
-		go func(pid peer.ID) {
-			defer wg.Done()
-			ctx, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
-			defer cancel()
-			n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(toSync)))
-
-			if err = srv.synchronizer.SyncWithPeer(ctx, pid, toSync...); err != nil {
-				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", device.String()), zap.Error(err))
-				return
-			}
-			n.log.Debug("Successfully synced", zap.String("Peer", device.String()))
-		}(pid)
-	}
-	wg.Wait()
+	n.log.Debug("Successfully synced", zap.String("Peer", pid.String()))
 
 	_, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 		DocumentId: in.DocumentId,
@@ -537,7 +512,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 // UnpublishDocument un-publishes a given document. Only the author of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
+	acc, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return nil, err
 	}
@@ -587,7 +562,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 
 // ListWebPublications lists all the published documents.
 func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return nil, err
 	}
@@ -635,7 +610,7 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 
 // GetPath gets a publication given the path it has been publish to.
 func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.GetPathResponse, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
+	_, _, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return nil, err
 	}
@@ -796,28 +771,29 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 	return n.client.DialSite(ctx, info.ID)
 }
 
-func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role, params ...interface{}) (core.Principal, bool, interface{}, error) {
+func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role, params ...interface{}) (core.Principal, peer.ID, bool, interface{}, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
-		return nil, false, nil, fmt.Errorf("Node not ready yet")
+		return nil, "", false, nil, fmt.Errorf("Node not ready yet")
 	}
 
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
 	if err != nil && srv.hostname == "" { // no headers and not a site
-		return nil, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site: %w", err)
+		return nil, "", false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site: %w", err)
 	}
 
 	acc := n.me.Account().Principal()
+	peerID := n.me.Account().PeerID()
 	n.log.Debug("Check permissions", zap.String("Site hostname", srv.hostname), zap.String("remoteHostname", remoteHostname), zap.Error(err))
 	if err == nil && srv.hostname != remoteHostname && srv.hostname != "" {
-		return acc, false, nil, fmt.Errorf("Hostnames don't match. This site's hostname is [%s] but called with headers [%s]", srv.hostname, remoteHostname)
+		return acc, peerID, false, nil, fmt.Errorf("Hostnames don't match. This site's hostname is [%s] but called with headers [%s]", srv.hostname, remoteHostname)
 	}
 
 	if err == nil && srv.hostname != remoteHostname && srv.hostname == "" { //This call is intended to be proxied so its site's duty to check permission
 		// proxy to remote
 		if len(params) == 0 {
 			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
-			return acc, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
+			return acc, peerID, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
 		}
 		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(string(TargetSiteHostnameHeader), remoteHostname))
 
@@ -832,11 +808,11 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		if errInterface != nil {
 			err, ok := errInterface.(error)
 			if !ok {
-				return acc, true, res, fmt.Errorf("Proxied call returned unknown second parameter. Error type expected")
+				return acc, peerID, true, res, fmt.Errorf("Proxied call returned unknown second parameter. Error type expected")
 			}
-			return acc, true, res, err
+			return acc, peerID, true, res, err
 		}
-		return acc, true, res, nil
+		return acc, peerID, true, res, nil
 	}
 
 	if err != nil || srv.hostname == remoteHostname { //either a proxied call or a direct call without headers (nodejs)
@@ -848,11 +824,12 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 				// this would mean this is a proxied call so we take the account from the remote caller ID
 				remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
 				if err != nil {
-					return nil, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+					return nil, "", false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
 				}
 
 				n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
 				acc = remotAcc
+				peerID = remoteDeviceID
 			} else {
 				// this would mean we cannot get remote ID it must be a local call
 				n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()), zap.String("remoteHostname", remoteHostname), zap.Error(err))
@@ -860,7 +837,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		} else {
 			acc, err = core.DecodePrincipal(remoteAcc)
 			if err != nil {
-				return nil, false, nil, fmt.Errorf("Invalid Account [%s]: %w", remoteAcc, err)
+				return nil, "", false, nil, fmt.Errorf("Invalid Account [%s]: %w", remoteAcc, err)
 			}
 
 		}
@@ -868,20 +845,20 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	}
 
 	if !srv.NoAuth && requiredRole == site.Member_OWNER && acc.String() != srv.owner.String() {
-		return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+		return nil, "", false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.owner.String() {
 		conn, cancel, err := n.db.Conn(ctx)
 		if err != nil {
-			return nil, false, nil, fmt.Errorf("Cannot connect to internal db: %w", err)
+			return nil, "", false, nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 		}
 		defer cancel()
 
 		role, err := sitesql.GetMemberRole(conn, acc)
 		if !srv.NoAuth && (err != nil || role != requiredRole) {
-			return nil, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+			return nil, "", false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 		}
 	}
-	return acc, false, nil, nil
+	return acc, peerID, false, nil, nil
 }
 
 // updateSiteBio updates the site bio according to the site SEO description.
