@@ -76,7 +76,7 @@ function PublishDialogForm({
           padding="$3"
           borderRadius="$2"
         >
-          <Text color="$red11">{publish.error?.message}</Text>
+          <Text color="$red11">{(publish.error as any)?.message}</Text>
         </Container>
       ) : null}
       <Label htmlFor="pretty-path">Public URL (/Path)</Label>
@@ -90,7 +90,7 @@ function PublishDialogForm({
       />
 
       <URLPreview>{pubUrl}</URLPreview>
-      <XStack jc="space-between">
+      <XStack justifyContent="space-between">
         <Spinner opacity={publish.isLoading ? 1 : 0} />
         <Button
           disabled={publish.isLoading}
