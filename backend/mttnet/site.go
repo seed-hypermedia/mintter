@@ -715,6 +715,9 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 		return nil, fmt.Errorf("Could not get address info for site [%s]: %w", remoteHostname, err)
 	}
 	addrs := remoteSite.SitesAddresses
+	ctx, cancelCtx := context.WithTimeout(ctx, 7*time.Second)
+	defer cancelCtx()
+
 	if addrs == "" { //means we haven't added the site yet (redeem token at adding site).
 		n.log.Info("No site addresses yet, trying to get addresses from well-known")
 		resp, err := GetSiteInfoHttp(remoteHostname)
@@ -737,8 +740,7 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 		return n.client.DialSite(ctx, info.ID)
 	}
 	info, err := AddrInfoFromStrings(strings.Split(addrs, ",")...)
-	ctx, cancelCtx := context.WithTimeout(ctx, 7*time.Second)
-	defer cancelCtx()
+
 	// we don't want to call well-known if either 1) we are already connected or 2) we were connected
 	// in previous sessions and we just woke up. In either case calling well-known would be slowdown.
 	// The only case where well-known will be called again is if the old addresses are no longer valid
