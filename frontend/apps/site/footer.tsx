@@ -4,6 +4,7 @@ import {MenuItem} from './menu-item'
 
 export default function Footer() {
   let router = useRouter()
+  return null
   return (
     <TFooter>
       <Container tag="nav" aria-label="social" marginVertical="$7">

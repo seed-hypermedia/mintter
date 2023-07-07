@@ -1,11 +1,9 @@
 import {
-  ArticleContainer,
   Avatar,
   ContainerLarge,
   Header,
   Heading,
   MainContainer,
-  SideContainer,
   Spinner,
   Text,
   XStack,
@@ -21,27 +19,22 @@ import {cidURL} from 'ipfs'
 function AccountContent({account}: {account: HDAccount | null | undefined}) {
   const {alias, bio, avatar} = account?.profile || {}
   return (
-    <YStack>
-      <XStack gap="$2">
+    <XStack>
+      <YStack gap="$2">
         {avatar && (
-          <Avatar size={64}>
+          <Avatar circular size={64}>
             <Avatar.Image src={cidURL(avatar)} />
-            <Avatar.Fallback />
+            <Avatar.Fallback backgroundColor={'#26ab95'} />
           </Avatar>
         )}
         <Heading>{alias}</Heading>
-      </XStack>
+      </YStack>
       <Text>{bio}</Text>
-    </YStack>
+    </XStack>
   )
 }
 
-function AccountMetadata({account}: {account: HDAccount | null | undefined}) {
-  return null
-}
-
 export default function AccountPage({accountId}: {accountId: string}) {
-  const siteInfo = trpc.siteInfo.get.useQuery()
   const publication = trpc.account.get.useQuery({
     accountId,
   })
@@ -50,31 +43,22 @@ export default function AccountPage({accountId}: {accountId: string}) {
 
   return (
     <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
-      <SiteHead
-        siteInfo={siteInfo.data}
-        title={account?.profile?.alias}
-        titleHref={`/a/${accountId}`}
-      />
+      <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
       <Head>
         <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
       </Head>
-      <ArticleContainer flexWrap="wrap">
-        <MainContainer flex={3} className="web-publication">
-          {account ? (
-            <AccountContent account={account} />
-          ) : publication.isLoading ? (
-            <YStack>
-              <Spinner />
-            </YStack>
-          ) : (
-            <Header>Document not found.</Header>
-          )}
-        </MainContainer>
-        <SideContainer flex={1}>
-          <AccountMetadata account={account} />
-        </SideContainer>
-      </ArticleContainer>
-      {siteInfo ? null : <Footer />}
+      <MainContainer flex={3} className="web-publication">
+        {account ? (
+          <AccountContent account={account} />
+        ) : publication.isLoading ? (
+          <YStack>
+            <Spinner />
+          </YStack>
+        ) : (
+          <Header>Document not found.</Header>
+        )}
+      </MainContainer>
+      <Footer />
     </ContainerLarge>
   )
 }

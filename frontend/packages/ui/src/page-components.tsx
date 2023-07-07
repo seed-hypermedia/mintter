@@ -8,6 +8,7 @@ export const MainContainer = styled(YStack, {
   $gtSm: {
     width: '75%',
   },
+  tag: 'main',
 })
 
 export const SideContainer = styled(YStack, {

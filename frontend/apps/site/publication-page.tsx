@@ -13,13 +13,13 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  Container,
   ContainerLarge,
   Copy,
   Header,
   Main,
   Spinner,
   Text,
-  useMedia,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -27,7 +27,6 @@ import Head from 'next/head'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
 import Footer from './footer'
-import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
 import {
   Block,
@@ -39,7 +38,6 @@ import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 import {cidURL} from 'ipfs'
 import {useRouter} from 'next/router'
-import {SidebarContainer} from '@mintter/ui/src/container'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -88,16 +86,12 @@ function PublicationContent({
 }
 
 export default function PublicationPage({
-  metadata = true,
   documentId,
   version,
 }: {
   documentId: string
   version?: string | null
-  metadata?: boolean
 }) {
-  // let media = useMedia()
-  const siteInfo = trpc.siteInfo.get.useQuery()
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
     versionId: version || '',
@@ -119,61 +113,61 @@ export default function PublicationPage({
         <meta name="mintter-document-version" content={pub?.version} />
         <meta name="mintter-document-title" content={pub?.document?.title} />
       </Head>
-      <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
-        {siteInfo.data ? (
-          <SiteHead
-            siteInfo={siteInfo.data}
-            title={pub?.document?.title}
-            titleHref={`/d/${documentId}`}
-          />
-        ) : (
-          <GatewayHead title={pub?.document?.title} />
-        )}
-        <Main>
-          {pub ? (
-            <PublicationContent publication={pub} />
-          ) : publication.isLoading ? (
-            <YStack>
-              <Header>Querying for document on the network.</Header>
-              <Spinner />
-            </YStack>
-          ) : (
-            <Header>Document not found.</Header>
-          )}
-        </Main>
-        {siteInfo ? null : <Footer />}
-      </ContainerLarge>
-      {/* <SidebarContainer> */}
-      <YStack
-        marginHorizontal={'auto'}
-        paddingHorizontal="$4"
-        width="100%"
-        maxWidth={760}
-        marginTop="$6"
-        borderColor="$gray6"
-        gap="$2"
-        borderTopWidth={1}
-        paddingVertical="$6"
-        $gtXl={{
-          borderTopWidth: 0,
-          // @ts-expect-error
-          position: 'fixed', // tamagui doesnt like fixed I guess
-          right: 40,
-          top: 0,
-          width: 300,
-          bottom: 0,
-          overflow: 'scroll',
-        }}
-      >
-        {metadata ? (
-          <>
+      <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
+      <YStack height="100%" flex={1} justifyContent="space-between">
+        <YStack $gtXl={{flexDirection: 'row', paddingTop: '$4'}} gap="$2">
+          <YStack
+            marginHorizontal={'auto'}
+            paddingHorizontal="$4"
+            width="100%"
+            maxWidth={760}
+            $gtXl={{
+              borderTopWidth: 0,
+              width: 300,
+              overflow: 'scroll',
+            }}
+          ></YStack>
+          <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
+            <Main>
+              {pub ? (
+                <PublicationContent publication={pub} />
+              ) : publication.isLoading ? (
+                <YStack>
+                  <Header>Querying for document on the network.</Header>
+                  <Spinner />
+                </YStack>
+              ) : (
+                <Header>Document not found.</Header>
+              )}
+            </Main>
+          </ContainerLarge>
+          <YStack
+            marginHorizontal={'auto'}
+            paddingHorizontal="$4"
+            width="100%"
+            maxWidth={760}
+            borderColor="$gray6"
+            gap="$2"
+            borderTopWidth={1}
+            paddingTop="$6"
+            paddingBottom="$6"
+            $gtXl={{
+              paddingTop: 0,
+              borderTopWidth: 0,
+              width: 300,
+              overflow: 'scroll',
+            }}
+          >
             <PublicationMetadata publication={pub} />
             <WebTipping
               docId={documentId}
               editors={pub?.document?.editors || []}
             />
-          </>
-        ) : null}
+          </YStack>
+        </YStack>
+        <ContainerLarge>
+          <Footer />
+        </ContainerLarge>
       </YStack>
     </>
   )

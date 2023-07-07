@@ -37,9 +37,4 @@ export function setResponsePublication(
   version?: string | null,
 ) {
   setAllowAnyHostGetCORS(res)
-  if (!docId) throw new Error('Publication does not have document id')
-  res.setHeader('x-mintter-document-id', docId)
-  if (version) {
-    res.setHeader('x-mintter-version', version)
-  }
 }

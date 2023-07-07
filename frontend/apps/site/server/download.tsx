@@ -1,17 +1,6 @@
-export const config = {
-  runtime: 'nodejs',
-}
-
-if (!global.setImmediate || !globalThis['setImmediate']) {
-  //@ts-ignore
-  global.setImmediate = setTimeout
-  //@ts-ignore
-  globalThis['setImmediate'] = setTimeout
-}
-
 import {Container, XStack, H1, Button, MainContainer} from '@mintter/ui'
+import {SiteHead} from 'site-head'
 import Footer from '../footer'
-import {GatewayHead} from '../gateway-head'
 
 export default function DownloadPage({
   manifest = null,
@@ -20,7 +9,7 @@ export default function DownloadPage({
 }) {
   return (
     <Container>
-      <GatewayHead title="Download" />
+      <SiteHead title="Download Mintter" />
       <MainContainer>
         <H1>Download Mintter</H1>
         <XStack space marginVertical="$7">
