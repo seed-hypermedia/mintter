@@ -455,7 +455,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		toSync = append(toSync, hyper.EntityID("hd://d/"+ref.DocumentId))
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(7*time.Second))
 	defer cancel()
 	n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", pid.String()), zap.Int("Documents to sync", len(toSync)))
 
@@ -715,8 +715,6 @@ func (srv *Server) Client(ctx context.Context, remoteHostname string) (site.WebS
 		return nil, fmt.Errorf("Could not get address info for site [%s]: %w", remoteHostname, err)
 	}
 	addrs := remoteSite.SitesAddresses
-	ctx, cancelCtx := context.WithTimeout(ctx, 7*time.Second)
-	defer cancelCtx()
 
 	if addrs == "" { //means we haven't added the site yet (redeem token at adding site).
 		n.log.Info("No site addresses yet, trying to get addresses from well-known")

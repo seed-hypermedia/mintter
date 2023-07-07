@@ -9,6 +9,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"strings"
+	"time"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -34,6 +35,8 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	}
 
 	log := n.log.With(zap.String("peer", info.ID.String()))
+	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
+	defer cancel()
 
 	log.Debug("ConnectStarted")
 	defer func() {
