@@ -2,9 +2,9 @@
 package sitesql
 
 import (
-	"mintter/backend/db/sqlitegen"
-	"mintter/backend/db/sqlitegen/qb"
 	s "mintter/backend/db/sqliteschema"
+	"mintter/backend/pkg/sqlitegen"
+	"mintter/backend/pkg/sqlitegen/qb"
 	"os"
 )
 

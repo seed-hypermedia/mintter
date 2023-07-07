@@ -1,8 +1,8 @@
 package qb_test
 
 import (
-	"mintter/backend/db/sqlitegen"
-	. "mintter/backend/db/sqlitegen/qb"
+	"mintter/backend/pkg/sqlitegen"
+	. "mintter/backend/pkg/sqlitegen/qb"
 	"testing"
 
 	"github.com/stretchr/testify/require"

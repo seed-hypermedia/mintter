@@ -3,10 +3,10 @@ package hypersql
 
 import (
 	"io/ioutil"
-	sgen "mintter/backend/db/sqlitegen"
-	"mintter/backend/db/sqlitegen/qb"
 	"mintter/backend/db/sqliteschema"
 	s "mintter/backend/db/sqliteschema"
+	sgen "mintter/backend/pkg/sqlitegen"
+	"mintter/backend/pkg/sqlitegen/qb"
 )
 
 //go:generate gorun generateQueries

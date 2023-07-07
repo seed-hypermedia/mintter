@@ -27,7 +27,7 @@ import (
 	"errors"
 
 	"crawshaw.io/sqlite"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 )
 
 var _ = errors.New

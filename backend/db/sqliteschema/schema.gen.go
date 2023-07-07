@@ -3,7 +3,7 @@
 package sqliteschema
 
 import (
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 )
 
 // Table blobs.

@@ -5,7 +5,7 @@ package sqliteschema
 
 import (
 	"io/ioutil"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 	"os"
 	"path/filepath"
 

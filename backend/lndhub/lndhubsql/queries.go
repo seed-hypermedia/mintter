@@ -2,9 +2,9 @@ package lndhubsql
 
 import (
 	"io/ioutil"
-	"mintter/backend/db/sqlitegen"
-	"mintter/backend/db/sqlitegen/qb"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/pkg/sqlitegen"
+	"mintter/backend/pkg/sqlitegen/qb"
 )
 
 const (

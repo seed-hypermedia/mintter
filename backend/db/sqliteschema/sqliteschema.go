@@ -5,7 +5,7 @@ package sqliteschema
 import (
 	"context"
 	"fmt"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 	"regexp"
 	"strings"
 

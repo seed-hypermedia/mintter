@@ -2,7 +2,7 @@ package qb
 
 import (
 	"html/template"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 	"strings"
 	"sync"
 )

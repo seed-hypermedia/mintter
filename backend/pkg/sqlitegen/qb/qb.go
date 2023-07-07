@@ -6,7 +6,7 @@ package qb
 
 import (
 	"fmt"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 	"strings"
 )
 

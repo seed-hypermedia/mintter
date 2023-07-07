@@ -85,7 +85,7 @@ func TestCodegenSchema(t *testing.T) {
 package testschema
 
 import (
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 )
 
 // Table users.

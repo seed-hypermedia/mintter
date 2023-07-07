@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
