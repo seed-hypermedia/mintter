@@ -379,7 +379,8 @@ export const BlockContainer = Node.create<IBlock>({
         ({state, dispatch}) => {
           const $pos = state.doc.resolve(posInBlock)
           const maxDepth = $pos.depth
-          let node = $pos.node(maxDepth)
+          let group = $pos.node(maxDepth)
+          let container
           let depth = maxDepth
 
           while (true) {
@@ -387,22 +388,45 @@ export const BlockContainer = Node.create<IBlock>({
               break
             }
 
-            if (node.type.name === 'blockGroup') {
+            if (group.type.name === 'blockGroup') {
               break
             }
 
+            if (group.type.name === 'blockContainer') {
+              container = group
+            }
+
             depth -= 1
-            node = $pos.node(depth)
+            group = $pos.node(depth)
           }
 
           if ($pos.node(depth - 1).type.name === 'doc') {
+            if (
+              group.firstChild &&
+              container &&
+              group.firstChild.attrs.id !== container.attrs.id
+            ) {
+              setTimeout(() => {
+                this.editor
+                  .chain()
+                  .sinkListItem('blockContainer')
+                  .UpdateGroup(posInBlock, listType)
+                  .deleteRange({
+                    from: listType === 'ul' ? posInBlock - 1 : posInBlock - 2,
+                    to: posInBlock,
+                  })
+                  .run()
+
+                return true
+              })
+            }
             return false
           }
 
-          if (dispatch && node.type.name === 'blockGroup') {
+          if (dispatch && group.type.name === 'blockGroup') {
             const newAttrs = {listType: listType}
             state.tr.setNodeMarkup($pos.before(depth), null, {
-              ...node.attrs,
+              ...group.attrs,
               ...newAttrs,
             })
           }
