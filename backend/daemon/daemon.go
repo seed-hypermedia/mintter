@@ -141,6 +141,17 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		}
 	}(a)
 
+	tp := trace.NewTracerProvider(
+		trace.WithSampler(trace.AlwaysSample()),
+	)
+	a.clean.AddErrFunc(func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		return tp.Shutdown(ctx)
+	})
+
+	otel.SetTracerProvider(tp)
+
 	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
 	if err != nil {
 		return nil, err
@@ -186,7 +197,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
 
 	// We can't use futures in ipfs.NewManager since we will incur in a
-	// cyclic dependency loop between ifps and mttnet packages. This is why
+	// cyclic dependency loop between ipfs and mttnet packages. This is why
 	// we need a separate Start function to be called when the necessary
 	// resources (bitswap, blockstore, porvider, etc, ...) are available.
 	a.g.Go(func() error {
@@ -418,14 +429,6 @@ func initSyncing(
 	})
 
 	return f.ReadOnly, nil
-}
-
-func init() {
-	otel.SetTracerProvider(
-		trace.NewTracerProvider(
-			trace.WithSampler(trace.AlwaysSample()),
-		),
-	)
 }
 
 func initGRPC(
