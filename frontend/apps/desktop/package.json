@@ -27,6 +27,8 @@
     "@mantine/hooks": "^6.0.13",
     "@mintter/shared": "workspace:*",
     "@mintter/ui": "workspace:*",
+    "@prosemirror-adapter/core": "^0.2.5",
+    "@prosemirror-adapter/react": "^0.2.5",
     "@radix-ui/colors": "0.1.8",
     "@radix-ui/react-accessible-icon": "1.0.2",
     "@radix-ui/react-alert-dialog": "1.0.3",

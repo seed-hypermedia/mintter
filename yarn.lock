@@ -4387,6 +4387,8 @@ __metadata:
     "@mantine/hooks": ^6.0.13
     "@mintter/shared": "workspace:*"
     "@mintter/ui": "workspace:*"
+    "@prosemirror-adapter/core": ^0.2.5
+    "@prosemirror-adapter/react": ^0.2.5
     "@radix-ui/colors": 0.1.8
     "@radix-ui/react-accessible-icon": 1.0.2
     "@radix-ui/react-alert-dialog": 1.0.3
@@ -4894,6 +4896,29 @@ __metadata:
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: e5c69fdebf52a4012f6a1f14817ca8e9599cb1be73dd1387e1785e2ed5e5f0862ff817f420a87c7fc532add1f88a12e25aeb010ffcbdc98eace3d55ce2139cf0
+  languageName: node
+  linkType: hard
+
+"@prosemirror-adapter/core@npm:0.2.5, @prosemirror-adapter/core@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "@prosemirror-adapter/core@npm:0.2.5"
+  dependencies:
+    tslib: ^2.5.0
+  checksum: 15e1fe4a34ede9cf5259ddb29302abfb2aed7d934d29dfd86e992f5fec184d36633590e6ee62ce32971624848a38bb99c6ae7ff971e8499c7a39548f76b172de
+  languageName: node
+  linkType: hard
+
+"@prosemirror-adapter/react@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "@prosemirror-adapter/react@npm:0.2.5"
+  dependencies:
+    "@prosemirror-adapter/core": 0.2.5
+    nanoid: ^4.0.2
+    tslib: ^2.5.0
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 1d6d1c38676c97b178954879ad1156e8637cfaeaf9328cad8bc352c3103db25be299e626fe1e97bae19833341b6b5aebff1e5a10a6cd82e68684933998eb8c03
   languageName: node
   linkType: hard
 
@@ -20549,7 +20574,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:4.0.2":
+"nanoid@npm:4.0.2, nanoid@npm:^4.0.2":
   version: 4.0.2
   resolution: "nanoid@npm:4.0.2"
   bin:

@@ -330,7 +330,7 @@ export function PublishShareButton() {
   const {data: loadedPub} = usePublication({
     documentId,
     versionId,
-    enabled: route.key == 'publication',
+    enabled: route.key == 'publication' && !!documentId,
   })
   const pub = route.key === 'publication' ? loadedPub : undefined
   const {data: draft} = useDraft({

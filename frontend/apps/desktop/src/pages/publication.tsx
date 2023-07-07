@@ -3,7 +3,6 @@ import {features} from '@app/constants'
 import {useDocChanges} from '@app/models/changes'
 import {useDocCitations} from '@app/models/content-graph'
 import {usePublication, usePublicationEditor} from '@app/models/documents'
-import {mouseMachine} from '@app/mouse-machine'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {VersionsAccessory} from '@components/changes-list'
 import {CitationsAccessory} from '@components/citations'
@@ -18,22 +17,18 @@ import {
   MainWrapper,
   Pencil,
   ScrollView,
-  SizableText,
   Text,
-  XStack,
   YStack,
 } from '@mintter/ui'
-import {useInterpret} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useEffect, useRef, useState} from 'react'
+import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 
-import {useWindowListen} from '@app/ipc'
-import {AppError} from '@app/root'
 import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
-import {DebugData} from '@components/debug-data'
+import {AppError} from '@app/root'
 import {CitationsProvider} from '@components/citations-context'
+import {DebugData} from '@components/debug-data'
 
 export default function PublicationPage() {
   const route = useNavRoute()

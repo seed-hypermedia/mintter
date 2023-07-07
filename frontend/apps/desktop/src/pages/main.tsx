@@ -7,6 +7,7 @@ import {
   useNavRoute,
 } from '@app/utils/navigation'
 import {TitleBar} from '@components/titlebar'
+import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
@@ -70,7 +71,9 @@ export default function Main() {
           window.location.reload()
         }}
       >
-        <PageComponent key={routeKey} />
+        <ProsemirrorAdapterProvider>
+          <PageComponent key={routeKey} />
+        </ProsemirrorAdapterProvider>
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </>

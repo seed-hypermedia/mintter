@@ -11,6 +11,7 @@ BASIC STYLES
 .block {
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /*Ensures block content inside React node views spans editor width*/

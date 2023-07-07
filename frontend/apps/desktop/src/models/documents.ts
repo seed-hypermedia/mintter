@@ -3,6 +3,7 @@ import {
   getWebSiteClient,
   publicationsClient,
 } from '@app/api-clients'
+import {Extension} from '@tiptap/core'
 import {
   Block,
   BlockNoteEditor,
@@ -16,6 +17,10 @@ import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {createHyperdocsDocLinkPlugin} from '@app/hyperdocs-link-plugin'
 import {useListen} from '@app/ipc'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import {
+  createRightsideBlockWidgetExtension,
+  RightsideWidget,
+} from '@app/rightside-block-widget'
 import Link from '@app/tiptap-extension-link'
 import {toast} from '@app/toast'
 import {insertFile} from '@app/types/file'
@@ -23,14 +28,15 @@ import {insertImage} from '@app/types/image'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  Document,
   DocumentChange,
-  isMintterGatewayLink,
   isHyperdocsScheme,
+  isMintterGatewayLink,
   normalizeHyperdocsLink,
   Publication,
   WebPublicationRecord,
-  Document,
 } from '@mintter/shared'
+import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
   FetchQueryOptions,
   useMutation,
@@ -660,7 +666,7 @@ export function useDraftEditor(
     ],
     _tiptapOptions: {
       extensions: [
-        Link.extend({
+        Extension.create({
           addProseMirrorPlugins() {
             return [createHyperdocsDocLinkPlugin().plugin]
           },
@@ -845,6 +851,8 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     },
   })
 
+  const widgetViewFactory = useWidgetViewFactory()
+
   // both the publication data and the editor are asyncronously loaded
   // using a ref to avoid extra renders, and ensure the editor is available and ready
   const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
@@ -888,6 +896,16 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
       if (readyPub) {
         applyPubToEditor(e, readyPub)
       }
+    },
+    _tiptapOptions: {
+      extensions: [
+        createRightsideBlockWidgetExtension({
+          getWidget: widgetViewFactory({
+            component: RightsideWidget,
+            as: 'div',
+          }),
+        }),
+      ],
     },
   })
 

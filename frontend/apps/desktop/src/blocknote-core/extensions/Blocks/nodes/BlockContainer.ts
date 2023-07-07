@@ -1,5 +1,4 @@
 import {mergeAttributes, Node} from '@tiptap/core'
-import {EditorView} from '@tiptap/pm/view'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {

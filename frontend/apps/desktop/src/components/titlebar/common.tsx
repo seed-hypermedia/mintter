@@ -43,7 +43,6 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
@@ -56,19 +55,6 @@ export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
   const route = useNavRoute()
   const isDaemonReady = useDaemonReady()
-
-  const onCopy =
-    route.key == 'publication'
-      ? () => {
-          const reference = createHyperdocsDocLink(
-            route.documentId,
-            route.versionId,
-            route.blockId,
-          )
-          copyTextToClipboard(reference)
-          toast.success('Document reference copied!')
-        }
-      : undefined
 
   return (
     <TitlebarSection>
