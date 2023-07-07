@@ -513,15 +513,17 @@ export function useDraftEditor(
     blocks: Block<typeof hdBlockSchema>[],
     parentId: string,
   ) {
-    blocks.forEach((block, index) => {
-      const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
-      lastBlockParent.current[block.id] = parentId
-      lastBlockLeftSibling.current[block.id] = leftSibling
-      lastBlocks.current[block.id] = block
-      if (block.children) {
-        prepareBlockObservations(block.children, block.id)
-      }
-    })
+    if (isReady.current) {
+      blocks.forEach((block, index) => {
+        const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
+        lastBlockParent.current[block.id] = parentId
+        lastBlockLeftSibling.current[block.id] = leftSibling
+        lastBlocks.current[block.id] = block
+        if (block.children) {
+          prepareBlockObservations(block.children, block.id)
+        }
+      })
+    }
   }
 
   function handleAfterReady() {
@@ -666,7 +668,6 @@ export function useDraftEditor(
       ],
     },
   })
-
 
   useListen(
     'select_all',
