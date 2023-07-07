@@ -277,6 +277,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
   public getBlock(
     blockIdentifier: BlockIdentifier,
   ): Block<BSchema> | undefined {
+    if (!blockIdentifier) return undefined
     const id =
       typeof blockIdentifier === 'string' ? blockIdentifier : blockIdentifier.id
     let newBlock: Block<BSchema> | undefined = undefined

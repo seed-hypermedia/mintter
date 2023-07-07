@@ -35,6 +35,7 @@ declare module '@tiptap/core' {
       UpdateGroup: <BSchema extends BlockSchema>(
         posInBlock: number,
         listType: string,
+        start?: string,
       ) => ReturnType
     }
   }
@@ -375,8 +376,9 @@ export const BlockContainer = Node.create<IBlock>({
         },
       // Updates a block group at a given position.
       UpdateGroup:
-        (posInBlock, listType) =>
+        (posInBlock, listType, start) =>
         ({state, dispatch}) => {
+          if (posInBlock < 0) posInBlock = state.selection.from
           const $pos = state.doc.resolve(posInBlock)
           const maxDepth = $pos.depth
           let group = $pos.node(maxDepth)
@@ -410,11 +412,7 @@ export const BlockContainer = Node.create<IBlock>({
                 this.editor
                   .chain()
                   .sinkListItem('blockContainer')
-                  .UpdateGroup(posInBlock, listType)
-                  .deleteRange({
-                    from: listType === 'ul' ? posInBlock - 1 : posInBlock - 2,
-                    to: posInBlock,
-                  })
+                  .UpdateGroup(-1, listType, start)
                   .run()
 
                 return true
@@ -424,11 +422,16 @@ export const BlockContainer = Node.create<IBlock>({
           }
 
           if (dispatch && group.type.name === 'blockGroup') {
-            const newAttrs = {listType: listType}
-            state.tr.setNodeMarkup($pos.before(depth), null, {
-              ...group.attrs,
-              ...newAttrs,
-            })
+            start
+              ? state.tr.setNodeMarkup($pos.before(depth), null, {
+                  ...group.attrs,
+                  listType: listType,
+                  start: parseInt(start),
+                })
+              : state.tr.setNodeMarkup($pos.before(depth), null, {
+                  ...group.attrs,
+                  listType: listType,
+                })
           }
 
           return true

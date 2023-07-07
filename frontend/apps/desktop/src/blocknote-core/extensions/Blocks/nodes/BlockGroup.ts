@@ -24,6 +24,18 @@ export const BlockGroup = Node.create({
           }
         },
       },
+      start: {
+        default: undefined,
+        renderHTML: (attributes) => {
+          if (attributes.listType === 'ol' && attributes.start) {
+            const offset = 0.65 * attributes.start.toString().length
+            return {
+              start: attributes.start,
+              style: `margin-left: calc(2em + ${offset}em);`,
+            }
+          }
+        },
+      },
     }
   },
 
@@ -40,10 +52,14 @@ export const BlockGroup = Node.create({
         },
       }),
       new InputRule({
-        find: new RegExp(`^1\\.\\s$`),
+        find: new RegExp(`^[0-9]*\\.\\s$`),
         handler: ({state, chain, range}) => {
           chain()
-            .UpdateGroup(state.selection.from, 'ol')
+            .UpdateGroup(
+              state.selection.from,
+              'ol',
+              this.editor.state.doc.textBetween(range.from, range.to - 1),
+            )
             // Removes the "1." characters used to set the list.
             .deleteRange({from: range.from, to: range.to})
         },
