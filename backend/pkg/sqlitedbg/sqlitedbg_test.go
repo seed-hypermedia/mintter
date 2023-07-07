@@ -1,7 +1,7 @@
 package sqlitedbg_test
 
 import (
-	"mintter/backend/db/sqlitedbg"
+	"mintter/backend/pkg/sqlitedbg"
 	"os"
 
 	"crawshaw.io/sqlite"
