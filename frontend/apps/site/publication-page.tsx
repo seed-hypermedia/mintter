@@ -85,6 +85,29 @@ function PublicationContent({
   )
 }
 
+function getBlockNodeById(
+  blocks: Array<HDBlockNode>,
+  blockId: string,
+): HDBlockNode | null {
+  if (!blockId) return null
+
+  let res: HDBlockNode | undefined
+  blocks.find((bn) => {
+    if (bn.block?.id == blockId) {
+      res = bn
+      return true
+    } else if (bn.children?.length) {
+      const foundChild = getBlockNodeById(bn.children, blockId)
+      if (foundChild) {
+        res = foundChild
+        return true
+      }
+    }
+    return false
+  })
+  return res || null
+}
+
 export default function PublicationPage({
   documentId,
   version,
@@ -296,13 +319,25 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   )
   let content = <Spinner />
   if (embed.data?.publication?.document?.children) {
-    content = (
-      <>
-        {embed.data?.publication?.document?.children?.map((block) => (
-          <StaticBlockNode block={block} key={block?.block?.id} ctx={{}} />
-        ))}
-      </>
-    )
+    if (blockId) {
+      const blockNode = getBlockNodeById(
+        embed.data?.publication?.document?.children,
+        blockId,
+      )
+      content = blockNode ? (
+        <StaticBlockNode block={blockNode} />
+      ) : (
+        <Text>Block not found.</Text>
+      )
+    } else {
+      content = (
+        <>
+          {embed.data?.publication?.document?.children?.map((block) => (
+            <StaticBlockNode block={block} key={block?.block?.id} ctx={{}} />
+          ))}
+        </>
+      )
+    }
   }
   return (
     <div id={`${block.id}-block`} data-ref={reference}>
