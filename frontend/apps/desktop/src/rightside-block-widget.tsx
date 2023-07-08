@@ -70,7 +70,7 @@ export function RightsideWidget() {
           <SizableText size="$1">{citations.length}</SizableText>
         </Button>
       ) : null}
-      <Button size="$1" padding="$2" borderRadius="$2" icon={Copy} />
+      {/* <Button size="$1" padding="$2" borderRadius="$2" icon={Copy} /> */}
     </XStack>
   )
 }
