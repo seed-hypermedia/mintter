@@ -329,6 +329,67 @@ function EmbedMeta({publication}: {publication?: HDPublication | null}) {
   )
 }
 
+type SectionHeading = {
+  title?: string
+  blockId: string
+  children: SectionHeading[]
+}
+
+function TOCHeading({heading}: {heading: SectionHeading}) {
+  return (
+    <>
+      {heading.title && (
+        <NextLink href={`#${heading.blockId}`} style={{textDecoration: 'none'}}>
+          <Text color={'$blue11'}>{heading.title}</Text>
+        </NextLink>
+      )}
+      <YStack paddingLeft="$3" gap="$1">
+        {heading.children.map((child) => (
+          <TOCHeading heading={child} key={child.blockId} />
+        ))}
+      </YStack>
+    </>
+  )
+}
+
+function getToc(blockNodes?: HDBlockNode[] | null): SectionHeading[] {
+  if (!blockNodes) return []
+  let headings: SectionHeading[] = []
+  for (let blockNode of blockNodes) {
+    if (blockNode.block?.type === 'heading') {
+      headings.push({
+        title: blockNode.block?.text || '',
+        blockId: blockNode.block?.id || '',
+        children: getToc(blockNode.children),
+      })
+    } else if (blockNode.children) {
+      headings.push({
+        blockId: blockNode.block?.id || '',
+        children: getToc(blockNode.children),
+      })
+    }
+  }
+  return headings
+}
+
+export function TableOfContents({
+  publication,
+}: {publication?: HDPublication | null} = {}) {
+  const toc = useMemo(
+    () => getToc(publication?.document?.children),
+    [publication],
+  )
+  if (!toc || !toc.length) return null
+  return (
+    <YStack gap="$1">
+      {/* <SizableText fontWeight={'bold'}>Containing:</SizableText> */}
+      {toc?.map((heading) => (
+        <TOCHeading heading={heading} key={heading.blockId} />
+      ))}
+    </YStack>
+  )
+}
+
 export function PublicationMetadata({
   publication,
 }: {
@@ -337,6 +398,7 @@ export function PublicationMetadata({
   if (!publication) return null
   return (
     <>
+      <TableOfContents publication={publication} />
       <PublishedMeta publication={publication} />
       <AuthorsMeta publication={publication} />
       <EmbedMeta publication={publication} />
