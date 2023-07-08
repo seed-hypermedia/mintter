@@ -10,6 +10,7 @@ import type {
   SiteInfo,
   HDTimestamp,
   ChangeInfo,
+  MttLink,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
@@ -91,4 +92,18 @@ export type HDAccount = {
   id?: string
   profile?: HDProfile
   devices?: {[key: string]: HDDevice}
+}
+
+export type ServerLink = MttLink
+export type HDLink = {
+  target?: {
+    documentId?: string
+    version?: string
+    blockId?: string
+  }
+  source?: {
+    documentId?: string
+    version?: string
+    blockId?: string
+  }
 }

@@ -18,11 +18,12 @@ import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
-import {HDBlockNode, HDChangeInfo, HDPublication} from 'server/json-hd'
+import {HDBlockNode, HDChangeInfo, HDLink, HDPublication} from 'server/json-hd'
 import Link from 'next/link'
 import {format} from 'date-fns'
 import {AccountRow} from 'components/account-row'
 import {NextLink} from 'next-link'
+import {get} from 'http'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -329,6 +330,59 @@ function EmbedMeta({publication}: {publication?: HDPublication | null}) {
   )
 }
 
+function CitationPreview({citationLink}: {citationLink: HDLink}) {
+  const {source, target} = citationLink
+  const sourcePub = trpc.publication.get.useQuery(
+    {
+      documentId: source?.documentId,
+      versionId: source?.version,
+    },
+    {enabled: !!source?.documentId},
+  )
+  if (!sourcePub.data) return null
+  if (!source?.documentId) return null
+  return (
+    <NextLink
+      href={getDocUrl(source?.documentId, source?.version, source?.blockId)}
+      style={{textDecoration: 'none'}}
+    >
+      <Text>{sourcePub.data?.publication?.document?.title}</Text>
+    </NextLink>
+  )
+}
+function CitationsMeta({
+  publication,
+}: {publication?: HDPublication | null} = {}) {
+  const citations = trpc.publication.getCitations.useQuery(
+    {
+      documentId: publication?.document?.id,
+    },
+    {
+      enabled: !!publication?.document?.id,
+    },
+  )
+  if (!citations.data?.citationLinks?.length) return null
+  const content = citations.data?.citationLinks
+    ?.map((link) => {
+      if (!link) return false
+      const {source, target} = link
+      return (
+        <CitationPreview
+          key={`${source?.documentId}-${source?.version}-${source?.blockId}-${target?.documentId}-${target?.version}-${target?.blockId}`}
+          citationLink={link}
+        />
+      )
+    })
+    .filter(Boolean)
+  if (content.length === 0) return null
+  return (
+    <YStack gap="$2">
+      <SizableText fontWeight={'bold'}>Citations:</SizableText>
+      {content}
+    </YStack>
+  )
+}
+
 type SectionHeading = {
   title?: string
   blockId: string
@@ -404,6 +458,7 @@ export function PublicationMetadata({
       <EmbedMeta publication={publication} />
       <NextVersionsMeta publication={publication} />
       <VersionsMeta publication={publication} />
+      <CitationsMeta publication={publication} />
     </>
   )
 }

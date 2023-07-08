@@ -1,17 +1,25 @@
 import {createPromiseClient} from '@bufbuild/connect'
-import {Accounts, Changes, Publications, WebPublishing} from '@mintter/shared'
+import {
+  Accounts,
+  Changes,
+  ContentGraph,
+  Publications,
+  WebPublishing,
+} from '@mintter/shared'
 import {transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
 import {HDChangeInfo} from 'server/json-hd'
 import {
   hdAccount,
   hdChangeInfo,
+  hdLink,
   hdPublication,
   hdSiteInfo,
 } from 'server/to-json-hd'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
+const contentGraphClient = createPromiseClient(ContentGraph, transport)
 const publicationsClient = createPromiseClient(Publications, transport)
 const webClient = createPromiseClient(WebPublishing, transport)
 const accountsClient = createPromiseClient(Accounts, transport)
@@ -73,6 +81,24 @@ const publicationRouter = router({
         // publication: hdPublication(pub),
       }
     }),
+  getCitations: procedure
+    .input(
+      z.object({
+        documentId: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      if (!input.documentId) {
+        return {citationLinks: []}
+      }
+      const citationList = await contentGraphClient.listCitations({
+        documentId: input.documentId,
+      })
+      return {
+        citationLinks: citationList.links.map(hdLink),
+      }
+    }),
+
   getChanges: procedure
     .input(
       z.object({
