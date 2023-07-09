@@ -55,7 +55,6 @@ export function createRightsideBlockWidgetPlugin({
       apply(tr, decos, oldState, newState) {
         let hoveredBlockId = tr.getMeta(RightSidePluginKey)
         if (hoveredBlockId) {
-          console.log('== hoveredBlockId', hoveredBlockId)
           return updateDecorations(newState, getWidget, hoveredBlockId)
         }
         if (oldState.doc.eq(newState.doc)) return decos
@@ -225,10 +224,8 @@ class MouseMoveView {
       return
 
     this.hoveredBlock = block.node
-    // console.log('== ~ hoveredBlock:', this.hoveredBlock)
 
     const blockContent = block.node.firstChild as HTMLElement
-    // console.log('== ~ blockContent:', blockContent)
 
     if (!blockContent) return
 
@@ -253,9 +250,11 @@ function getBlockFromCoords(
   }
 
   let pos = view.posAtCoords(coords)
+
   if (!pos) {
     return undefined
   }
+  // this is the text node from the block content
   let node = view.domAtPos(pos.pos).node as HTMLElement
 
   if (node === view.dom) {
@@ -265,6 +264,7 @@ function getBlockFromCoords(
 
   if (node.parentNode === null) {
     let parentNode = view.domAtPos(pos.inside).node as HTMLElement
+
     if (parentNode.getAttribute('data-id') !== null) {
       node = parentNode
     } else return undefined
@@ -278,6 +278,7 @@ function getBlockFromCoords(
   ) {
     node = node.parentNode as HTMLElement
   }
+
   if (!node) {
     return undefined
   }
