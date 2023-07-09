@@ -39,7 +39,7 @@ export function createHyperdocsDocLink(
   version?: string | null,
   blockRef?: string | null,
 ): string {
-  return `${HYPERDOCS_LINK_PREFIX}/${createLinkParams(
+  return `${HYPERDOCS_LINK_PREFIX}${createLinkParams(
     documentId,
     version,
     blockRef,
@@ -51,7 +51,7 @@ export function createMintterLink(
   version?: string | null,
   blockRef?: string | null,
 ): string {
-  return `https://mintter.com/${createLinkParams(
+  return `https://mintter.com/d/${createLinkParams(
     documentId,
     version,
     blockRef,

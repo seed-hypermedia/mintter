@@ -97,7 +97,6 @@ export function RightsideWidget() {
   let route = useNavRoute()
 
   function onCopy() {
-    console.log('COPY')
     if (route.key !== 'publication') return
     let {documentId, versionId} = route
     if (spec && spec.id) {
