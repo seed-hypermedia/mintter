@@ -201,12 +201,10 @@ export const EmbedBlock = createReactBlockSpec({
       default: '',
     },
   },
-  containsInlineContent: true,
-  // @ts-expect-error
-  atom: true,
+  containsInlineContent: false,
 
   render: ({block, editor}) => {
-    // @ts-ignore
+    // @ts-expect-error
     return <EmbedPresentation block={block} editor={editor} />
   },
 })
