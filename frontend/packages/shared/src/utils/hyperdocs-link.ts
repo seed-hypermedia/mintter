@@ -22,14 +22,38 @@ export function normalizeHyperdocsLink(urlMaybe: string): string | undefined {
   }
 }
 
+export function createLinkParams(
+  documentId: string,
+  version?: string | null,
+  blockRef?: string | null,
+): string {
+  let res = documentId
+  if (version) res += `?v=${version}`
+  if (blockRef) res += `#${blockRef}`
+
+  return res
+}
+
 export function createHyperdocsDocLink(
   documentId: string,
   version?: string | null,
   blockRef?: string | null,
 ): string {
-  let res = `${HYPERDOCS_LINK_PREFIX}${documentId}`
-  if (version) res += `?v=${version}`
-  if (blockRef) res += `#${blockRef}`
+  return `${HYPERDOCS_LINK_PREFIX}/${createLinkParams(
+    documentId,
+    version,
+    blockRef,
+  )}`
+}
 
-  return res
+export function createMintterLink(
+  documentId: string,
+  version?: string | null,
+  blockRef?: string | null,
+): string {
+  return `https://mintter.com/${createLinkParams(
+    documentId,
+    version,
+    blockRef,
+  )}`
 }

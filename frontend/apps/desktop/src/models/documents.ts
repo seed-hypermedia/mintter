@@ -12,7 +12,7 @@ import {
 } from '@app/blocknote-core'
 import {defaultReactSlashMenuItems, useBlockNote} from '@app/blocknote-react'
 import {editorBlockToServerBlock} from '@app/client/editor-to-server'
-import {hdBlockSchema} from '@app/client/schema'
+import {HDBlockSchema, hdBlockSchema} from '@app/client/schema'
 import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {createHyperdocsDocLinkPlugin} from '@app/hyperdocs-link-plugin'
 import {useListen} from '@app/ipc'
@@ -884,11 +884,8 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
   }, [pub.data])
 
   // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
-  const editor: HyperDocsEditor | null = useBlockNote<typeof hdBlockSchema>({
+  const editor: HyperDocsEditor | null = useBlockNote<HDBlockSchema>({
     editable: false,
-    // _tiptapOptions: {
-    //   editable: false, // for some reason this doesn't work, but it works to set `editor.isEditable = false` after it is created
-    // },
     blockSchema: hdBlockSchema,
     onEditorReady: (e) => {
       readyThings.current[0] = e
@@ -897,15 +894,11 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
         applyPubToEditor(e, readyPub)
       }
     },
-    _tiptapOptions: {
-      extensions: [
-        createRightsideBlockWidgetExtension({
-          getWidget: widgetViewFactory({
-            component: RightsideWidget,
-            as: 'div',
-          }),
-        }),
-      ],
+    uiFactories: {
+      rightsideFactory: widgetViewFactory({
+        component: RightsideWidget,
+        as: 'div',
+      }),
     },
   })
 

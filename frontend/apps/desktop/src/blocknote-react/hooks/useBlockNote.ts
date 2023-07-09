@@ -4,6 +4,7 @@ import {
   BlockSchema,
   DefaultBlockSchema,
 } from '@app/blocknote-core'
+import {HDBlockSchema} from '@app/client/schema'
 import {DependencyList, FC, useEffect, useState} from 'react'
 import {getBlockNoteTheme} from '../BlockNoteTheme'
 import {createReactBlockSideMenuFactory} from '../BlockSideMenu/BlockSideMenuFactory'
@@ -29,7 +30,7 @@ function useForceUpdate() {
 /**
  * Main hook for importing a BlockNote editor into a React project
  */
-export const useBlockNote = <BSchema extends BlockSchema = DefaultBlockSchema>(
+export const useBlockNote = <BSchema extends HDBlockSchema>(
   options: Partial<
     BlockNoteEditorOptions<BSchema> & {
       customElements: CustomElements<BSchema>

@@ -1,6 +1,7 @@
-import {Extension, Extensions, extensions} from '@tiptap/core'
-import {createVirtualCursor} from 'prosemirror-virtual-cursor'
-import {BlockNoteEditor} from './BlockNoteEditor'
+import {HDBlockSchema} from '@app/client/schema'
+import {createRightsideBlockWidgetExtension} from '@app/rightside-block-widget'
+import {WidgetDecorationFactory} from '@prosemirror-adapter/core'
+import {Extensions, extensions} from '@tiptap/core'
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
 import Collaboration from '@tiptap/extension-collaboration'
@@ -14,11 +15,11 @@ import {Strike} from '@tiptap/extension-strike'
 import {Text} from '@tiptap/extension-text'
 import {Underline} from '@tiptap/extension-underline'
 import * as Y from 'yjs'
+import {BlockNoteEditor} from './BlockNoteEditor'
 import styles from './editor.module.css'
 import {BackgroundColorExtension} from './extensions/BackgroundColor/BackgroundColorExtension'
 import {BackgroundColorMark} from './extensions/BackgroundColor/BackgroundColorMark'
 import {blocks} from './extensions/Blocks'
-import {BlockSchema} from './extensions/Blocks/api/blockTypes'
 import {CustomBlockSerializerExtension} from './extensions/Blocks/api/serialization'
 import blockStyles from './extensions/Blocks/nodes/Block.module.css'
 import {BlockSideMenuFactory} from './extensions/DraggableBlocks/BlockSideMenuFactoryTypes'
@@ -28,6 +29,7 @@ import {FormattingToolbarFactory} from './extensions/FormattingToolbar/Formattin
 import HyperlinkMark from './extensions/HyperlinkToolbar/HyperlinkMark'
 import {HyperlinkToolbarFactory} from './extensions/HyperlinkToolbar/HyperlinkToolbarFactoryTypes'
 import {Placeholder} from './extensions/Placeholder/PlaceholderExtension'
+import {SelectableBlocksExtension} from './extensions/SelectableBlocks/SelectableBlocksExtension'
 import {
   BaseSlashMenuItem,
   createSlashMenuExtension,
@@ -38,19 +40,19 @@ import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
 import {SuggestionsMenuFactory} from './shared/plugins/suggestion/SuggestionsMenuFactoryTypes'
-import {SelectableBlocksExtension} from './extensions/SelectableBlocks/SelectableBlocksExtension'
 
-export type UiFactories<BSchema extends BlockSchema> = Partial<{
+export type UiFactories<BSchema extends HDBlockSchema> = Partial<{
   formattingToolbarFactory: FormattingToolbarFactory<BSchema>
   hyperlinkToolbarFactory: HyperlinkToolbarFactory
   slashMenuFactory: SuggestionsMenuFactory<BaseSlashMenuItem<BSchema>>
   blockSideMenuFactory: BlockSideMenuFactory<BSchema>
+  rightsideFactory: WidgetDecorationFactory
 }>
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
  */
-export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
+export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
   editable?: boolean
   editor: BlockNoteEditor<BSchema>
   uiFactories: UiFactories<BSchema>
@@ -188,6 +190,16 @@ export const getBlockNoteExtensions = <BSchema extends BlockSchema>(opts: {
         editor: opts.editor,
         commands: opts.slashCommands,
         slashMenuFactory: opts.uiFactories.slashMenuFactory,
+      }),
+    )
+  }
+
+  if (opts.uiFactories.rightsideFactory) {
+    ret.push(
+      createRightsideBlockWidgetExtension({
+        getWidget: opts.uiFactories.rightsideFactory,
+        //@ts-expect-error
+        editor: opts.editor,
       }),
     )
   }
