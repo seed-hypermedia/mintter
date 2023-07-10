@@ -559,7 +559,14 @@ export function useDraftEditor(
     onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!readyThings.current[0] || !readyThings.current[1]) return
-      if (!isReady.current) return
+
+      // trim empty blocks from the end of the document before treating them.
+      // @ts-expect-error
+      let _blocks = editor.topLevelBlocks.reduceRight((acc, block) => {
+        return acc.length === 0 && block.content.length == 0
+          ? acc
+          : [block].concat(acc)
+      }, [])
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -611,12 +618,14 @@ export function useDraftEditor(
           }
         })
       }
-      observeBlocks(editor.topLevelBlocks, '')
+      // @ts-expect-error
+      observeBlocks(_blocks, '')
       const removedBlockIds = possiblyRemovedBlockIds
       lastBlocks.current = nextBlocks
 
       clearTimeout(savingDebounceTimout.current)
       savingDebounceTimout.current = setTimeout(() => {
+        if (!isReady.current) return
         saveDraftMutation.mutate()
       }, 500)
 
@@ -667,6 +676,7 @@ export function useDraftEditor(
     _tiptapOptions: {
       extensions: [
         Extension.create({
+          name: 'hyperdocs-link',
           addProseMirrorPlugins() {
             return [createHyperdocsDocLinkPlugin().plugin]
           },
