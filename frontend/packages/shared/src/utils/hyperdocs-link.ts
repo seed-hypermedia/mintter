@@ -29,7 +29,7 @@ export function createLinkParams(
 ): string {
   let res = documentId
   if (version) res += `?v=${version}`
-  if (blockRef) res += `#${blockRef}`
+  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
 
   return res
 }

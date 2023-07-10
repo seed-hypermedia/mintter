@@ -14,10 +14,8 @@ export function createHyperdocsDocLinkPlugin() {
         update(view, prevState) {
           let state = plugin.getState(view.state)
           if (state?.size && state?.size > 0) {
-            console.log('== ~ hdlink ~ state:', state)
             if (state) {
               for (const entry of state) {
-                console.log('== ~ hdlink ~ update ~ for loop entry:', entry)
                 checkHyperLink(view, entry)
               }
             }
@@ -41,7 +39,6 @@ export function createHyperdocsDocLinkPlugin() {
           // @ts-expect-error
           if (step.jsonID == 'addMark') {
             let mark = step.toJSON().mark
-            console.log('== ~ markStep ~ mark:', mark)
             if (mark.type == 'link' && mark.attrs.id == linkId) {
               console.log('== ~ hdlink is link mark: ', step.toJSON().mark)
               return true
@@ -51,9 +48,7 @@ export function createHyperdocsDocLinkPlugin() {
         })
 
         if (!markStep) return map
-        console.log('== ~ hdlink ~ markStep:', markStep)
         let mark = markStep.toJSON().mark
-        console.log('== ~ hdlink ~ mark:', mark)
         map.set(mark.attrs.id, mark.attrs.href)
         return map
       },
@@ -77,7 +72,6 @@ async function checkHyperLink(
   | undefined
 > {
   let [id, entryUrl] = entry
-  console.log('== ~ hdlink ~ CHECK LINK START:', entry)
   if (!entryUrl) return
   view.dispatch(view.state.tr.setMeta('hdPlugin:removeId', id))
   try {
