@@ -216,9 +216,6 @@ export function serverBlockToHeading(
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
-  let level: '3' | '2' | '1' = '3'
-  if (opts?.headingLevel === 0) level = '1'
-  if (opts?.headingLevel === 1) level = '2'
   return {
     type: 'heading',
     id: block.id,
@@ -228,7 +225,7 @@ export function serverBlockToHeading(
       childrenType: extractChildrenType(block.attributes.childrenType),
     }),
     props: {
-      level,
+      level: '2',
     },
   }
 }

@@ -21,7 +21,7 @@ BASIC STYLES
 }
 
 .blockContent {
-  padding: 3px 0;
+  padding: 12px 0 3px 0;
   flex-grow: 1;
   transition: font-size 0.2s;
   /*
@@ -118,24 +118,12 @@ NESTED BLOCKS
 }
 
 /* HEADINGS*/
-[data-level='1'] {
-  --level: 3em;
-}
-[data-level='2'] {
-  --level: 2em;
-}
-[data-level='3'] {
-  --level: 1.3em;
+[data-level] {
+  --level: 1.8em;
 }
 
-[data-prev-level='1'] {
-  --prev-level: 3em;
-}
-[data-prev-level='2'] {
-  --prev-level: 2em;
-}
-[data-prev-level='3'] {
-  --prev-level: 1.3em;
+[data-prev-level] {
+  --prev-level: 1.8em;
 }
 
 .blockOuter[data-prev-type='heading'] > .block > .blockContent {
@@ -147,6 +135,9 @@ NESTED BLOCKS
   > .block
   > .blockContent[data-content-type='heading'] {
   font-size: var(--level);
+  line-height: 1.2;
+  max-width: 24ch;
+  margin-top: 1.5em;
   font-weight: bold;
 }
 
@@ -249,15 +240,15 @@ NESTED BLOCKS
   font-style: italic;
 }
 
-[data-theme='light'] .isEmpty .inlineContent:before,
+.isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
-  color: #cccccc;
+  opacity: 0.5;
 }
 
-[data-theme='dark'] .isEmpty .inlineContent:before,
+/* [data-theme='dark'] .isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
   color: #999999;
-}
+} */
 
 /* TODO: would be nicer if defined from code */
 
@@ -279,18 +270,6 @@ NESTED BLOCKS
   .inlineContent:before {
   content: 'Image caption';
 }
-
-/* .image-block-wrapper .inlineContent:before {
-  content: 'Image Caption' !important;
-  background: red !important;
-  padding: 50px 0px 0px 50px !important;
-}
-
-.image-caption .inlineContent:before {
-  content: 'Image Caption' !important;
-  background: red !important;
-  padding: 50px 0px 0px 50px !important;
-} */
 
 /* TEXT COLORS */
 [data-text-color='gray'] {

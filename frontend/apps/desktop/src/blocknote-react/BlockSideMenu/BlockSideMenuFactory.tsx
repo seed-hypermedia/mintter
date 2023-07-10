@@ -26,7 +26,7 @@ export const createReactBlockSideMenuFactory = <BSchema extends BlockSchema>(
       BlockSideMenuDynamicParams<BSchema>
     >(staticParams, CustomBlockSideMenu, theme, {
       animation: 'fade',
-      offset: [4, 0],
+      offset: [12, 0],
       placement: 'left-start',
       popperOptions: {
         modifiers: [
