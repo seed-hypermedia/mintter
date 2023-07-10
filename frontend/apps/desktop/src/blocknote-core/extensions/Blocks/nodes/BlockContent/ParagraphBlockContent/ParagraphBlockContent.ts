@@ -54,12 +54,6 @@ export const ParagraphBlockContent = createTipTapBlock<'paragraph'>({
         attrs: {type: 'p'},
         node: 'paragraph',
       },
-      {
-        tag: 'blockquote',
-        priority: 200,
-        attrs: {type: 'blockquote'},
-        node: 'paragraph',
-      },
     ]
   },
 
