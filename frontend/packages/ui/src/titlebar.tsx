@@ -30,7 +30,10 @@ export const TitlebarSection = styled(XStack, {
   userSelect: 'none',
 })
 
-export const TitleTextH1 = styled(H1, {
+export const TitleText = styled(H1, {
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   name: 'TitlebarH1',
   color: '$color12',
   fontSize: '$4',
@@ -43,6 +46,3 @@ export const TitleTextH1 = styled(H1, {
   // @ts-expect-error
   letterSpacing: '0',
 })
-export function TitleText(props) {
-  return <TitleTextH1 {...props} />
-}

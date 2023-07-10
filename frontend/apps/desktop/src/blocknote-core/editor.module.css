@@ -55,16 +55,6 @@ Tippy popups that are appended to document.body directly
   -moz-osx-font-smoothing: grayscale;
 }
 
-[data-theme='light'] {
-  background-color: #ffffff;
-  color: #444444;
-}
-
-[data-theme='dark'] {
-  background-color: #444444;
-  color: #dddddd;
-}
-
 .dragPreview {
   position: absolute;
   top: -1000px;
