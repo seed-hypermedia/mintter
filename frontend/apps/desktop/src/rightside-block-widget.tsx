@@ -8,9 +8,12 @@ import {Decoration, DecorationSet, EditorView} from '@tiptap/pm/view'
 import {useMemo} from 'react'
 import {BlockNoteEditor} from './blocknote-core'
 import {HDBlockSchema} from './client/schema'
+import appError from './errors'
 import {useDocCitations} from './models/content-graph'
+import {usePublication} from './models/documents'
 import {toast} from './toast'
 import {copyTextToClipboard} from './utils/copy-to-clipboard'
+import {getDocUrl} from './utils/doc-url'
 import {useNavRoute} from './utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
@@ -94,17 +97,22 @@ function updateDecorations(
 export function RightsideWidget() {
   let {citations, spec} = useBlockCitation()
   let route = useNavRoute()
+  let pub = usePublication({
+    documentId: route.key == 'publication' ? route.documentId : undefined,
+    versionId: route.key == 'publication' ? route.versionId : undefined,
+    enabled: route.key == 'publication',
+  })
 
   function onCopy() {
-    if (route.key !== 'publication') return
-    let {documentId, versionId} = route
-    if (spec && spec.id) {
-      copyTextToClipboard(createMintterLink(documentId, versionId, spec.id))
+    let docUrl = getDocUrl(pub.data)
+    if (docUrl && spec && spec.id) {
+      copyTextToClipboard(`${docUrl}#${spec.id}`)
       toast.success('Block reference copied!')
     } else {
-      console.error('RightsideWidget: no spec for block')
+      appError('Block reference copy failed', {docUrl, spec})
     }
   }
+
   return (
     <XStack
       // @ts-expect-error
@@ -143,13 +151,9 @@ function useBlockCitation() {
   const {spec} = useWidgetViewContext()
   const route = useNavRoute()
 
-  if (route.key != 'publication')
-    return {
-      citations: [],
-      id: '',
-      active: false,
-    }
-  const _citations = useDocCitations(route.documentId)
+  const _citations = useDocCitations(
+    route.key == 'publication' ? route.documentId : undefined,
+  )
 
   let citations = useMemo(() => {
     if (spec && _citations.data?.links.length) {

@@ -3,7 +3,6 @@ import {
   getWebSiteClient,
   publicationsClient,
 } from '@app/api-clients'
-import {Extension} from '@tiptap/core'
 import {
   Block,
   BlockNoteEditor,
@@ -17,11 +16,7 @@ import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {createHyperdocsDocLinkPlugin} from '@app/hyperdocs-link-plugin'
 import {useListen} from '@app/ipc'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
-import {
-  createRightsideBlockWidgetExtension,
-  RightsideWidget,
-} from '@app/rightside-block-widget'
-import Link from '@app/tiptap-extension-link'
+import {RightsideWidget} from '@app/rightside-block-widget'
 import {toast} from '@app/toast'
 import {insertFile} from '@app/types/file'
 import {insertImage} from '@app/types/image'
@@ -45,7 +40,7 @@ import {
   useQuery,
   UseQueryOptions,
 } from '@tanstack/react-query'
-import {findParentNode} from '@tiptap/core'
+import {Extension, findParentNode} from '@tiptap/core'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
@@ -286,7 +281,7 @@ export function useDraftTitle(
   input: UseQueryOptions<EditorDraftState> & {documentId: string},
 ) {
   const draft = useDraft({documentId: input.documentId})
-  return useMemo(() => getDocumentTitle(draft.data || undefined), [draft.data])
+  return draft.data?.title || undefined
 }
 
 function getTitleFromInline(children: InlineContent[]): string {
@@ -306,15 +301,6 @@ export function getTitleFromContent(children: HDBlock[]): string {
   const topChild = children[0]
   if (!topChild) return ''
   return getTitleFromInline(topChild.content)
-}
-
-export function getDocumentTitle(doc?: EditorDraftState) {
-  let titleText = doc?.title || ''
-  return titleText
-    ? titleText.length < 50
-      ? titleText
-      : `${titleText.substring(0, 49)}...`
-    : 'Untitled Document'
 }
 
 type DraftChangesState = {
