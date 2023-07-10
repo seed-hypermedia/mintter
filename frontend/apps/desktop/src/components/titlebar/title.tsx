@@ -2,9 +2,16 @@ import {useDraftTitle, usePublication} from '@app/models/documents'
 import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {AccountLinkAvatar} from '@components/account-link-avatar'
-import {File, Pencil, SizeTokens, TitleText, User, XStack} from '@mintter/ui'
+import {
+  File,
+  FontSizeTokens,
+  Pencil,
+  TitleText,
+  User,
+  XStack,
+} from '@mintter/ui'
 
-export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
+export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
   if (route.key === 'home') {
     return (
@@ -59,14 +66,17 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
   return null
 }
 
-export function Title({size}: {size?: SizeTokens}) {
+export function Title({size}: {size?: FontSizeTokens}) {
   return (
     <XStack
+      data-tauri-drag-region
       gap="$2"
       alignItems="center"
       margin="auto"
       marginVertical={0}
-      data-tauri-drag-region
+      paddingHorizontal="$4"
+      flex={1}
+      justifyContent="center"
     >
       <TitleContent size={size} />
     </XStack>
@@ -78,7 +88,7 @@ function PublicationTitle({
   size = '$4',
 }: {
   route: PublicationRoute
-  size?: SizeTokens
+  size?: FontSizeTokens
 }) {
   let {data: pub} = usePublication({
     documentId: route.documentId,
@@ -107,7 +117,7 @@ function DraftTitle({
   size = '$4',
 }: {
   route: DraftRoute
-  size?: SizeTokens
+  size?: FontSizeTokens
 }) {
   const title = useDraftTitle({
     documentId: route.draftId,
