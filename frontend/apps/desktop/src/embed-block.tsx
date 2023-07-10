@@ -1,30 +1,32 @@
+import {
+  Block as BlockNoteBlock,
+  BlockNoteEditor,
+  InlineContent,
+} from '@app/blocknote-core'
 import {PartialMessage} from '@bufbuild/protobuf'
+import type {
+  Block as ServerBlock,
+  BlockNode,
+  ImageBlock,
+  PresentationBlock,
+  SectionBlock,
+} from '@mintter/shared'
 import {
   Block,
+  EmbedBlock as EmbedBlockType,
   getCIDFromIPFSUrl,
   getIdsfromUrl,
   isHyperdocsScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
-import type {
-  Block as ServerBlock,
-  PresentationBlock,
-  BlockNode,
-  SectionBlock,
-  ImageBlock,
-} from '@mintter/shared'
-import {YStack, Text, Spinner} from '@mintter/ui'
+import {Spinner, Text, YStack} from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
-import {createReactBlockSpec} from './blocknote-react'
-import {usePublication} from './models/documents'
-import {
-  InlineContent,
-  Block as BlockNoteBlock,
-  BlockNoteEditor,
-} from '@app/blocknote-core'
-import {openUrl} from './utils/open-url'
 import {getBlockInfoFromPos} from './blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
-import {hdBlockSchema} from './client/schema'
+import {createReactBlockSpec} from './blocknote-react'
+import {HDBlockSchema, hdBlockSchema} from './client/schema'
+import {usePublication} from './models/documents'
+import {useNavigate} from './utils/navigation'
+import {openUrl} from './utils/open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   return (
@@ -107,10 +109,11 @@ function StaticBlock({block}: {block: ServerBlock}) {
     return <StaticImageBlock block={niceBlock} />
   }
   if (niceBlock.type === 'embed') {
-    return <span>nested embeds not supported yet, should be easy though.</span>
+    return <StaticEmbedPresentation block={niceBlock} />
   }
   if (niceBlock.type === 'code') {
-    return <span>code blocks not supported yet.</span>
+    // @ts-expect-error
+    return <StaticSectionBlock block={niceBlock} />
   }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
@@ -122,30 +125,12 @@ function EmbedPresentation({
   editor,
 }: {
   block: BlockNoteBlock<typeof hdBlockSchema>
-  editor: BlockNoteEditor<typeof hdBlockSchema>
+  editor?: BlockNoteEditor<typeof hdBlockSchema>
 }) {
+  let spawn = useNavigate('spawn')
   let embed = useEmbed(block.props.ref)
   let content = <Spinner />
-  const [selected, setSelected] = useState(false)
-  const tiptapEditor = editor._tiptapEditor
-  const selection = tiptapEditor.state.selection
-
-  useEffect(() => {
-    const selectedNode = getBlockInfoFromPos(
-      tiptapEditor.state.doc,
-      tiptapEditor.state.selection.from,
-    )
-    if (selectedNode && selectedNode.id) {
-      if (
-        selectedNode.id === block.id &&
-        selectedNode.startPos === selection.$anchor.pos
-      ) {
-        setSelected(true)
-      } else if (selectedNode.id !== block.id) {
-        setSelected(false)
-      }
-    }
-  }, [selection])
+  const selected = useSelected(block, editor)
   if (embed.content) {
     content = (
       <>
@@ -157,11 +142,55 @@ function EmbedPresentation({
   }
   return (
     <YStack
-      data-ref={block.props.ref}
-      style={{userSelect: 'none'}}
       // @ts-expect-error
       contentEditable={false}
+      data-ref={block.props.ref}
+      style={{userSelect: 'none'}}
       className={selected ? 'ProseMirror-selectednode' : ''}
+    >
+      <YStack
+        backgroundColor="$color5"
+        borderColor="$color8"
+        borderWidth={1}
+        padding="$4"
+        paddingVertical="$2"
+        borderRadius="$4"
+        onPress={() => {
+          let [documentId, version, blockId] = getIdsfromUrl(block.props.ref)
+          if (documentId) {
+            spawn({key: 'publication', documentId, versionId: version, blockId})
+          }
+        }}
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: '$color6',
+        }}
+      >
+        {content}
+      </YStack>
+    </YStack>
+  )
+}
+
+function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
+  let embed = useEmbed(block.ref)
+  let content = <Spinner />
+
+  if (embed.content) {
+    content = (
+      <>
+        {embed.content?.map((block) => (
+          <StaticBlockNode key={block.block?.id} block={block} />
+        ))}
+      </>
+    )
+  }
+  return (
+    <YStack
+      // @ts-expect-error
+      contentEditable={false}
+      data-ref={block.ref}
+      style={{userSelect: 'none'}}
     >
       <YStack
         backgroundColor="$color5"
@@ -175,6 +204,36 @@ function EmbedPresentation({
       </YStack>
     </YStack>
   )
+}
+
+function useSelected(
+  block: BlockNoteBlock<HDBlockSchema>,
+  editor?: BlockNoteEditor<HDBlockSchema>,
+) {
+  const [selected, setSelected] = useState(false)
+
+  useEffect(() => {
+    if (editor) {
+      const tiptapEditor = editor?._tiptapEditor
+      const selection = tiptapEditor?.state.selection
+      const selectedNode = getBlockInfoFromPos(
+        tiptapEditor.state.doc,
+        tiptapEditor.state.selection.from,
+      )
+      if (selectedNode && selectedNode.id) {
+        if (
+          selectedNode.id === block.id &&
+          selectedNode.startPos === selection.$anchor.pos
+        ) {
+          setSelected(true)
+        } else if (selectedNode.id !== block.id) {
+          setSelected(false)
+        }
+      }
+    }
+  }, [editor?._tiptapEditor])
+
+  return selected
 }
 
 function StaticBlockNode({block}: {block: BlockNode}) {
@@ -201,7 +260,7 @@ export const EmbedBlock = createReactBlockSpec({
       default: '',
     },
   },
-  containsInlineContent: false,
+  containsInlineContent: true,
 
   render: ({block, editor}) => {
     // @ts-expect-error
