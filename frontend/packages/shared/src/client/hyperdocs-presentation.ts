@@ -1,28 +1,24 @@
-export type ImageBlock = {
-  // and any media object really
-  id: string
-  type: 'image'
-  content: ''
-  annotations: []
-  ref: string // ipfs://..., https://...
-  attributes: {
-    alt?: string
-  }
-}
+export type HDBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
 
-export type SectionBlockAttributes = {
-  type?: 'blockquote' | 'p'
-  childrenType?: 'group' | 'numbers' | 'bullet' | 'blockquote' // default is "group"
-  showContent?: string // interpret as a bool
-  isContentHeading?: string // interpret as a bool
+export type HDBlockAttributes = {
+  childrenType?: HDBlockChildrenType // default is "group"
   start?: string // interpret as a number
+  showContent?: string // interpret as a bool
 }
 
-export type SectionBlock = {
+export type ParagraphBlock = {
   id: string
-  type: 'heading' | 'paragraph'
+  type: 'paragraph'
   text: string
-  attributes: SectionBlockAttributes
+  attributes: HDBlockAttributes
+  annotations: TextAnnotation[]
+}
+
+export type HeadingBlock = {
+  id: string
+  type: 'heading'
+  text: string
+  attributes: HDBlockAttributes
   annotations: TextAnnotation[]
 }
 
@@ -35,18 +31,31 @@ export type CodeBlock = {
   }
 }
 
+export type ImageBlock = {
+  // and any media object really
+  id: string
+  type: 'image'
+  content: ''
+  annotations: []
+  ref: string // ipfs://..., https://...
+  attributes: HDBlockAttributes & {
+    alt?: string
+  }
+}
+
 export type EmbedBlock = {
   id: string
   type: 'embed'
   content: ''
   ref: string // ipfs://..., https://...
-  attributes: {}
+  attributes: HDBlockAttributes
 }
 
 export type PresentationBlock =
   | ImageBlock // video and files coming soon
   | EmbedBlock
-  | SectionBlock
+  | ParagraphBlock
+  | HeadingBlock
   | CodeBlock
 
 export type InlineEmbedAnnotation = {

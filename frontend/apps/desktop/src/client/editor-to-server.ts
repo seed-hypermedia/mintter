@@ -112,8 +112,10 @@ export function editorBlockToServerBlock(
   editorBlock: EditorBlock<typeof hdBlockSchema>,
 ): ServerBlock {
   if (!editorBlock.id) throw new Error('this block has no id')
+
+  let res: ServerBlock | null = null
   if (editorBlock.type === 'paragraph') {
-    return new ServerBlock({
+    res = new ServerBlock({
       id: editorBlock.id,
       type: 'paragraph',
       attributes: {
@@ -123,7 +125,7 @@ export function editorBlockToServerBlock(
     })
   }
   if (editorBlock.type === 'heading') {
-    return new ServerBlock({
+    res = new ServerBlock({
       id: editorBlock.id,
       type: 'heading',
       attributes: {},
@@ -131,7 +133,7 @@ export function editorBlockToServerBlock(
     })
   }
   if (editorBlock.type === 'image') {
-    return new ServerBlock({
+    res = new ServerBlock({
       id: editorBlock.id,
       type: 'image',
       attributes: {},
@@ -141,7 +143,7 @@ export function editorBlockToServerBlock(
   }
 
   if (editorBlock.type === 'file') {
-    return new ServerBlock({
+    res = new ServerBlock({
       id: editorBlock.id,
       type: 'file',
       attributes: {
@@ -152,7 +154,7 @@ export function editorBlockToServerBlock(
   }
 
   if (editorBlock.type == 'embed') {
-    return new ServerBlock({
+    res = new ServerBlock({
       id: editorBlock.id,
       type: 'embed',
       ref: editorBlock.props.ref,
@@ -161,5 +163,26 @@ export function editorBlockToServerBlock(
       attributes: {},
     })
   }
+
+  if (res) {
+    res = extractChildrenType(res, editorBlock)
+    return res
+  }
+
   throw new Error('not implemented')
+}
+
+function extractChildrenType(
+  block: ServerBlock,
+  editorBlock: EditorBlock<typeof hdBlockSchema>,
+): ServerBlock {
+  if (editorBlock.props.childrenType) {
+    block.attributes.childrenType = editorBlock.props.childrenType
+  }
+
+  if (editorBlock.props.start) {
+    block.attributes.start = editorBlock.props.start
+  }
+
+  return block
 }

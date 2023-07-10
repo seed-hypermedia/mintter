@@ -5,6 +5,7 @@ import {
 } from '@app/api-clients'
 import {
   Block,
+  BlockIdentifier,
   BlockNoteEditor,
   InlineContent,
   PartialBlock,
@@ -460,7 +461,15 @@ export function useDraftEditor(
 
       changed.forEach((blockId) => {
         const currentBlock = editor.getBlock(blockId)
+        const childGroup = getBlockGroup(blockId)
         if (!currentBlock) return
+        if (childGroup) {
+          currentBlock.props.childrenType = childGroup.type
+            ? childGroup.type
+            : 'group'
+          if (childGroup.start)
+            currentBlock.props.start = childGroup.start.toString()
+        }
         const serverBlock = editorBlockToServerBlock(currentBlock)
         changes.push(
           new DocumentChange({
@@ -514,9 +523,74 @@ export function useDraftEditor(
     }
   }
 
+  function getBlockGroup(blockId: BlockIdentifier) {
+    const [editor] = readyThings.current
+    const tiptap = editor?._tiptapEditor
+    if (tiptap) {
+      const id = typeof blockId === 'string' ? blockId : blockId.id
+      let group: {type: string; start?: number} | undefined
+      tiptap.state.doc.firstChild!.descendants((node: any) => {
+        if (typeof group !== 'undefined') {
+          return false
+        }
+
+        if (node.attrs.id !== id) {
+          return false
+        }
+
+        node.content.forEach((child: any) => {
+          if (child.attrs.listType && child.type.name === 'blockGroup') {
+            group = {type: child.attrs.listType, start: child.attrs.start}
+            return true
+          }
+        })
+
+        return false
+      })
+
+      return group
+    }
+
+    return undefined
+  }
+
   function handleAfterReady() {
     const [editor, draft] = readyThings.current
     const tiptap = editor?._tiptapEditor
+    if (tiptap && draft) {
+      draft.children.forEach((block: PartialBlock<typeof hdBlockSchema>) => {
+        let group: any
+        tiptap.state.doc.descendants((node: any, pos: number) => {
+          if (typeof group !== 'undefined') {
+            return false
+          }
+
+          if (
+            node.attrs.id === block.id &&
+            block.props &&
+            block.props.childrenType
+          ) {
+            node.descendants((child: any, childPos: number) => {
+              if (child.type.name === 'blockGroup') {
+                let tr = tiptap.state.tr
+                tr = block.props?.start
+                  ? tr.setNodeMarkup(pos + childPos + 1, null, {
+                      listType: block.props?.childrenType,
+                      start: parseInt(block.props?.start),
+                    })
+                  : tr.setNodeMarkup(pos + childPos + 1, null, {
+                      listType: block.props?.childrenType,
+                    })
+                tiptap.view.dispatch(tr)
+                return false
+              }
+            })
+          }
+
+          return true
+        })
+      })
+    }
     if (tiptap && !tiptap.isFocused) {
       editor._tiptapEditor.commands.focus()
     }
