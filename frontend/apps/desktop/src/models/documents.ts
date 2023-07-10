@@ -285,12 +285,8 @@ export type EditorDraftState = {
 export function useDraftTitle(
   input: UseQueryOptions<EditorDraftState> & {documentId: string},
 ) {
-  let data = useCacheListener<EditorDraftState>([
-    queryKeys.EDITOR_DRAFT,
-    input.documentId,
-  ])
-  // let {data} = useEditorDraft({documentId: input.documentId})
-  return useMemo(() => getDocumentTitle(data), [data])
+  const draft = useDraft({documentId: input.documentId})
+  return useMemo(() => getDocumentTitle(draft.data || undefined), [draft.data])
 }
 
 function getTitleFromInline(children: InlineContent[]): string {
