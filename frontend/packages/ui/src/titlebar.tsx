@@ -40,6 +40,7 @@ export const TitleTextH1 = styled(H1, {
   margin: 0,
   textTransform: 'none',
   fontWeight: '700',
+  letterSpacing: '0',
 })
 export function TitleText(props) {
   return <TitleTextH1 {...props} />
