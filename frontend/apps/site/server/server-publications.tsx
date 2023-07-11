@@ -30,11 +30,3 @@ export async function impatientGetPublication(
       })
   })
 }
-
-export function setResponsePublication(
-  {res}: GetServerSidePropsContext,
-  docId: string,
-  version?: string | null,
-) {
-  setAllowAnyHostGetCORS(res)
-}

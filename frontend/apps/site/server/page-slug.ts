@@ -1,5 +1,5 @@
 import {GetServerSidePropsContext} from 'next'
-import {setResponsePublication} from './server-publications'
+import {setAllowAnyHostGetCORS} from './cors'
 import {getPageProps, serverHelpers} from './ssr-helpers'
 
 export async function prepareSlugPage(
@@ -8,6 +8,8 @@ export async function prepareSlugPage(
 ) {
   const helpers = serverHelpers({})
 
+  setAllowAnyHostGetCORS(context.res)
+
   const path = await helpers.publication.getPath.fetch({pathName})
 
   if (!path) return {notFound: true} as const
@@ -15,7 +17,6 @@ export async function prepareSlugPage(
     documentId: path.documentId,
     versionId: path.versionId,
   })
-  setResponsePublication(context, path.documentId, path.versionId)
   return {
     props: await getPageProps(helpers, {pathName}),
   }

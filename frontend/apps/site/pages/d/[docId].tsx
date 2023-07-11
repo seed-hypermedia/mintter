@@ -7,7 +7,7 @@ import PublicationPage from '../../publication-page'
 import {impatiently} from 'server/impatiently'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
-import {setResponsePublication} from 'server/server-publications'
+import {setAllowAnyHostGetCORS} from 'server/cors'
 
 function getDocSlugUrl(
   pathName: string | undefined,
@@ -39,7 +39,10 @@ export const getServerSideProps: GetServerSideProps = async (
   const {params, query} = context
   let docId = params?.docId ? String(params.docId) : undefined
   let version = query.v ? String(query.v) : null
-  if (!docId) return {notFound: true}
+
+  setAllowAnyHostGetCORS(context.res)
+
+  if (!docId) return {notFound: true} as const
 
   const helpers = serverHelpers({})
 
@@ -56,7 +59,8 @@ export const getServerSideProps: GetServerSideProps = async (
           version || docRecord.versionId,
         ),
       },
-    }
+      props: {},
+    } as const
   }
   await impatiently(
     helpers.publication.get.prefetch({
@@ -64,8 +68,6 @@ export const getServerSideProps: GetServerSideProps = async (
       versionId: version || '',
     }),
   )
-
-  setResponsePublication(context, docId, version)
 
   return {
     props: await getPageProps(helpers, {}),
