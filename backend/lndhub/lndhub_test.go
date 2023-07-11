@@ -4,15 +4,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"io/ioutil"
 	"math/rand"
 	"mintter/backend/core"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/pkg/future"
 	"mintter/backend/wallet/walletsql"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -136,25 +133,7 @@ func makeTestWallet(t *testing.T, conn *sqlite.Conn, wallet walletsql.Wallet, lo
 }
 
 func makeConn(t *testing.T) (*sqlitex.Pool, error) {
-	dir, err := ioutil.TempDir("", "sqlitegen-")
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err != nil {
-			os.RemoveAll(dir)
-		}
-	}()
-
-	pool, err := sqliteschema.Open(filepath.Join(dir, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool, nil
+	return storage.MakeTestDB(t), nil
 }
 
 func credentials2Id(wType, login, password, domain string) string {

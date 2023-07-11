@@ -2,7 +2,7 @@ package mttnet
 
 import (
 	"context"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
@@ -22,9 +22,9 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	log := logging.New("mintter/reprovider", "debug")
 	const q = `
 SELECT
-	` + sqliteschema.C_PublicBlobsViewCodec + `,
-	` + sqliteschema.C_PublicBlobsViewMultihash + `
-FROM ` + sqliteschema.T_PublicBlobsView + `;`
+	` + storage.C_PublicBlobsViewCodec + `,
+	` + storage.C_PublicBlobsViewMultihash + `
+FROM ` + storage.T_PublicBlobsView + `;`
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer

@@ -3,8 +3,8 @@ package hypersql
 
 import (
 	"io/ioutil"
-	"mintter/backend/db/sqliteschema"
-	s "mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
+	s "mintter/backend/daemon/storage"
 	sgen "mintter/backend/pkg/sqlitegen"
 	"mintter/backend/pkg/sqlitegen/qb"
 )
@@ -240,9 +240,9 @@ func generateQueries() error {
 				"SELECT value",
 				"FROM", qb.Concat("json_each(", qb.Var("heads", sgen.TypeBytes), ")"),
 				"UNION",
-				"SELECT", sqliteschema.HDChangeDepsParent,
-				"FROM", sqliteschema.HDChangeDeps,
-				"JOIN changeset ON changeset.change", "=", sqliteschema.HDChangeDepsChild,
+				"SELECT", storage.HDChangeDepsParent,
+				"FROM", storage.HDChangeDeps,
+				"JOIN changeset ON changeset.change", "=", storage.HDChangeDepsChild,
 			), '\n',
 			"SELECT", qb.Results(
 				qb.ResultRaw("json_group_array(change) AS resolved_json", "resolved_json", sgen.TypeBytes),

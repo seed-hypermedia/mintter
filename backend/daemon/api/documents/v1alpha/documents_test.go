@@ -5,17 +5,15 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"path/filepath"
 	"testing"
 	"time"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sanity-io/litter"
@@ -865,7 +863,7 @@ func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, upda
 func newTestDocsAPI(t *testing.T, name string) *Server {
 	u := coretest.NewTester("alice")
 
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
@@ -879,18 +877,4 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	require.NoError(t, err)
 
 	return srv
-}
-
-func newTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }

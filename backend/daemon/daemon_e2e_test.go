@@ -61,13 +61,13 @@ func TestDaemonSmoke(t *testing.T) {
 	_, err = core.DecodePrincipal(reg.AccountId)
 	require.NoError(t, err, "account must have principal encoding")
 
-	_, err = dmn.Me.Await(ctx)
+	_, err = dmn.Storage.Identity().Await(ctx)
 	require.NoError(t, err)
 
 	_, err = dmn.Net.Await(ctx)
 	require.NoError(t, err)
 
-	me := dmn.Me.MustGet()
+	me := dmn.Storage.Identity().MustGet()
 	require.Equal(t, me.Account().String(), reg.AccountId)
 
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
@@ -157,7 +157,7 @@ func TestSite(t *testing.T) {
 	siteCfg.Identity.NoAccountWait = true
 	siteCfg.Site.NoAuth = false
 	siteCfg.Site.Title = "initial Site Title"
-	siteCfg.Site.OwnerID = owner.Me.MustGet().Account().String()
+	siteCfg.Site.OwnerID = owner.Storage.Identity().MustGet().Account().String()
 	siteCfg.P2P.NoListing = true
 	siteCfg.Syncing.NoInbound = true
 
@@ -191,7 +191,7 @@ func TestSite(t *testing.T) {
 	for _, ma := range site.Net.MustGet().AddrInfo().Addrs {
 		address += " " + ma.String()
 	}
-	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteHostnameHeader, site.Me.MustGet().Account().String())
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteHostnameHeader, site.Storage.Identity().MustGet().Account().String())
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
 
@@ -207,7 +207,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, "", siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
+	require.Equal(t, owner.Storage.Identity().MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, siteCfg.Site.Title, siteInfo.Title)
 	siteAcc, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -230,7 +230,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, newDescription, siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
+	require.Equal(t, owner.Storage.Identity().MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, newTitle, siteInfo.Title)
 	siteAcc, err = site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -460,7 +460,7 @@ func TestGateway(t *testing.T) {
 	_, err = gw.Net.Await(ctx)
 	require.NoError(t, err)
 
-	_, err = gw.Me.Await(ctx)
+	_, err = gw.Storage.Identity().Await(ctx)
 	require.NoError(t, err)
 	// Create new document so the gateway owns at least 1. This one must not be transferred to the requester, since the
 	// gateway only syncs in one direction (in order not to flood requesters with documents from everybody)
@@ -603,7 +603,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 
 	pub := publishDocument(t, ctx, alice)
 
-	cc, err := bob.Net.MustGet().Client(ctx, alice.Repo.Device().PeerID())
+	cc, err := bob.Net.MustGet().Client(ctx, alice.Storage.Device().PeerID())
 	require.NoError(t, err)
 
 	list, err := cc.ListObjects(ctx, &p2p.ListObjectsRequest{})
@@ -692,14 +692,14 @@ func TestMultiDevice(t *testing.T) {
 		sr := must.Do2(alice1.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice1.Repo.Device().PeerID(), alice2.Repo.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID(), alice2.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	{
 		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice2.Repo.Device().PeerID(), alice1.Repo.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
@@ -721,8 +721,8 @@ func TestNetworkingListPeers(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	pid := bob.Me.MustGet().DeviceKey().PeerID()
-	acc := bob.Me.MustGet().Account().Principal()
+	pid := bob.Storage.Identity().MustGet().DeviceKey().PeerID()
+	acc := bob.Storage.Identity().MustGet().Account().Principal()
 	pList, err := alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.Peers, 1)
@@ -759,7 +759,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		_, err = app.Net.Await(ctx)
 		require.NoError(t, err)
 
-		_, err = app.Me.Await(ctx)
+		_, err = app.Storage.Identity().Await(ctx)
 		require.NoError(t, err)
 
 		prof := &accounts.Profile{
@@ -790,8 +790,8 @@ func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) 
 	}
 
 	// Make sure bob does't know anything about publisher.
-	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Repo.Device().ID()))
-	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Repo.Device().ID())
+	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Storage.Device().ID()))
+	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Storage.Device().ID())
 
 	publishedDocument := publishDocument(t, ctx, publisher)
 

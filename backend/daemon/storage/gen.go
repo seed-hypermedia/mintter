@@ -1,7 +1,7 @@
 //go:build codegen
 // +build codegen
 
-package sqliteschema
+package storage
 
 import (
 	"io/ioutil"
@@ -12,8 +12,20 @@ import (
 	"crawshaw.io/sqlite"
 )
 
+func init() {
+	sqlitegen.AddInitialism(
+		"IPFS",
+		"CID",
+		"SQLite",
+		"IPLD",
+		"EID",
+		"JSON",
+		"HD",
+	)
+}
+
 func generateSchema() error {
-	dir, err := ioutil.TempDir("", "sqliteschema-")
+	dir, err := ioutil.TempDir("", "mintter-storage-")
 	if err != nil {
 		return err
 	}
@@ -25,7 +37,7 @@ func generateSchema() error {
 	}
 	defer conn.Close()
 
-	if err := Migrate(conn); err != nil {
+	if err := initSQLite(conn); err != nil {
 		return err
 	}
 
@@ -34,7 +46,7 @@ func generateSchema() error {
 		return err
 	}
 
-	code, err := sqlitegen.CodegenSchema("sqliteschema", schema)
+	code, err := sqlitegen.CodegenSchema("storage", schema)
 	if err != nil {
 		return err
 	}

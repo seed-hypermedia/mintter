@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/config"
-	"mintter/backend/core"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	documents "mintter/backend/daemon/api/documents/v1alpha"
 	networking "mintter/backend/daemon/api/networking/v1alpha"
-	"mintter/backend/daemon/ondisk"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
@@ -33,8 +32,7 @@ type Server struct {
 // New creates a new API server.
 func New(
 	ctx context.Context,
-	id *future.ReadOnly[core.Identity],
-	repo *ondisk.OnDisk,
+	repo *storage.Dir,
 	db *sqlitex.Pool,
 	blobs *hyper.Storage,
 	node *future.ReadOnly[*mttnet.Node],
@@ -57,11 +55,11 @@ func New(
 		return nil
 	}
 
-	documentsSrv := documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}, nil)
+	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, nil)
 	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv, &lazyDiscoverer{sync: sync})
 	documentsSrv.RemoteCaller = siteSrv
 	return Server{
-		Accounts:   accounts.NewServer(id, blobs),
+		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),

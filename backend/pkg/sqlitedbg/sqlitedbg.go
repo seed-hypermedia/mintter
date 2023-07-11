@@ -13,7 +13,21 @@ import (
 )
 
 // Exec a query and print the results into w.
-func Exec(conn *sqlite.Conn, w io.Writer, query string) {
+func Exec[T *sqlitex.Pool | *sqlite.Conn](db T, w io.Writer, query string) {
+	var conn *sqlite.Conn
+
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		defer release()
+		conn = c
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 0, 1, '.', tabwriter.TabIndent|tabwriter.Debug)
 
 	var rows int

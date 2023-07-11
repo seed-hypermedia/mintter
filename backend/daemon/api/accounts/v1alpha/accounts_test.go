@@ -5,7 +5,7 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
@@ -107,7 +107,7 @@ func TestAPIUpdateProfile(t *testing.T) {
 func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 
-	pool := sqliteschema.MakeTestDB(t)
+	pool := storage.MakeTestDB(t)
 	ctx := context.Background()
 	blobs := hyper.NewStorage(pool, logging.New("mintter/hyper", "debug"))
 

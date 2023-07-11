@@ -5,6 +5,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
+	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	siteproto "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
@@ -281,7 +282,7 @@ func TestSiteInfo(t *testing.T) {
 func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *simulatedDocs, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
-	db := makeTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())

@@ -2,6 +2,7 @@ package sqlitegen
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"go/format"
 	"strings"
@@ -139,7 +140,21 @@ func typeFromSQLType(sqlType string) Type {
 
 // IntrospectSchema attempt to infer the Schema from existing SQLite tables.
 // We only support base SQLite data types.
-func IntrospectSchema(conn *sqlite.Conn) (Schema, error) {
+func IntrospectSchema[T *sqlite.Conn | *sqlitex.Pool](db T) (Schema, error) {
+	var conn *sqlite.Conn
+
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(context.Background())
+		if err != nil {
+			return Schema{}, err
+		}
+		defer release()
+		conn = c
+	}
+
 	const query = `
 SELECT 
 	m.name AS table_name, 

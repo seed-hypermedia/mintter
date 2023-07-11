@@ -4,6 +4,7 @@ import (
 	"context"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
+	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
@@ -17,7 +18,7 @@ import (
 
 func TestDocument_LoadingDrafts(t *testing.T) {
 	alice := coretest.NewTester("alice")
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
@@ -45,7 +46,7 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 
 func TestDocument_DeleteTurnaround(t *testing.T) {
 	alice := coretest.NewTester("alice")
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
@@ -102,7 +103,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 
 func TestDocument_Cleanup(t *testing.T) {
 	alice := coretest.NewTester("alice")
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
@@ -198,7 +199,7 @@ func TestDocument_Cleanup(t *testing.T) {
 
 func TestDocumentUpdatePublished(t *testing.T) {
 	alice := coretest.NewTester("alice")
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
 	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
