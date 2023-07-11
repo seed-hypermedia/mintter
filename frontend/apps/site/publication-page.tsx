@@ -18,6 +18,7 @@ import {
   Copy,
   Header,
   Main,
+  MainContainer,
   Spinner,
   Text,
   XStack,
@@ -32,7 +33,7 @@ import {
   Block,
   Publication,
 } from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
-import {trpc} from 'trpc'
+import {trpc} from './trpc'
 import {useMemo, useState} from 'react'
 import {DehydratedState} from '@tanstack/react-query'
 import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
@@ -109,9 +110,11 @@ function getBlockNodeById(
 }
 
 export default function PublicationPage({
+  pathName,
   documentId,
   version,
 }: {
+  pathName?: string
   documentId: string
   version?: string | null
 }) {
@@ -137,61 +140,29 @@ export default function PublicationPage({
         <meta name="mintter-document-title" content={pub?.document?.title} />
       </Head>
       <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
-      <YStack height="100%" flex={1} justifyContent="space-between">
-        <YStack $gtXl={{flexDirection: 'row', paddingTop: '$4'}} gap="$2">
-          <YStack
-            marginHorizontal={'auto'}
-            paddingHorizontal="$4"
-            width="100%"
-            maxWidth={760}
-            $gtXl={{
-              borderTopWidth: 0,
-              width: 300,
-              overflow: 'scroll',
-            }}
-          ></YStack>
-          <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
-            <Main>
-              {pub ? (
-                <PublicationContent publication={pub} />
-              ) : publication.isLoading ? (
-                <YStack>
-                  <Header>Querying for document on the network.</Header>
-                  <Spinner />
-                </YStack>
-              ) : (
-                <Header>Document not found.</Header>
-              )}
-            </Main>
-          </ContainerLarge>
-          <YStack
-            marginHorizontal={'auto'}
-            paddingHorizontal="$4"
-            width="100%"
-            maxWidth={760}
-            borderColor="$gray6"
-            gap="$2"
-            borderTopWidth={1}
-            paddingTop="$6"
-            paddingBottom="$6"
-            $gtXl={{
-              paddingTop: 0,
-              borderTopWidth: 0,
-              width: 300,
-              overflow: 'scroll',
-            }}
-          >
-            <PublicationMetadata publication={pub} />
+      <MainContainer
+        sidebarAfter={
+          <>
+            <PublicationMetadata publication={pub} pathName={pathName} />
             <WebTipping
               docId={documentId}
               editors={pub?.document?.editors || []}
             />
+          </>
+        }
+      >
+        {pub ? (
+          <PublicationContent publication={pub} />
+        ) : publication.isLoading ? (
+          <YStack>
+            <Header>Querying for document on the network.</Header>
+            <Spinner />
           </YStack>
-        </YStack>
-        <ContainerLarge>
-          <Footer />
-        </ContainerLarge>
-      </YStack>
+        ) : (
+          <Header>Document not found.</Header>
+        )}
+      </MainContainer>
+      <Footer />
     </>
   )
 }

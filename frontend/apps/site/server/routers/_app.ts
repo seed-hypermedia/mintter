@@ -6,7 +6,7 @@ import {
   Publications,
   WebPublishing,
 } from '@mintter/shared'
-import {transport} from 'client'
+import {localWebsiteClient, transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
 import {HDChangeInfo} from 'server/json-hd'
 import {
@@ -40,6 +40,45 @@ const publicationRouter = router({
       })
       return {
         webPublications: records.publications,
+      }
+    }),
+  getPath: procedure
+    .input(
+      z.object({
+        pathName: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      if (!input.pathName) return null
+      const pathRecord = await localWebsiteClient.getPath({
+        path: input.pathName,
+      })
+      const publication = pathRecord?.publication
+      const documentId = publication?.document?.id
+      if (!publication || !documentId) return null
+      return {
+        versionId: publication.version,
+        documentId,
+        publishTime: publication.document?.publishTime?.toJson() as string,
+      }
+    }),
+  getDocRecord: procedure
+    .input(
+      z.object({
+        documentId: z.string().optional(),
+      }),
+    )
+    .query(async ({input}) => {
+      if (!input.documentId) return null
+      const webPubs = await localWebsiteClient.listWebPublications({})
+      const pub = webPubs.publications.find(
+        (pub) => pub.documentId === input.documentId,
+      )
+      if (!pub) return null
+      return {
+        path: pub.path,
+        versionId: pub.version,
+        documentId: pub.documentId,
       }
     }),
   get: procedure

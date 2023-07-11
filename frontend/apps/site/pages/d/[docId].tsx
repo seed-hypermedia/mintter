@@ -9,6 +9,19 @@ import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
 import {setResponsePublication} from 'server/server-publications'
 
+function getDocSlugUrl(
+  pathName: string | undefined,
+  docId: string,
+  versionId?: string,
+  blockRef?: string,
+) {
+  let url = `/d/${docId}`
+  if (pathName) url = pathName === '/' ? '/' : `/${pathName}`
+  if (versionId) url += `?v=${versionId}`
+  if (blockRef) url += `#${blockRef}`
+  return url
+}
+
 export default function IDPublicationPage(
   props: InferGetServerSidePropsType<typeof getServerSideProps>,
 ) {
@@ -30,6 +43,21 @@ export const getServerSideProps: GetServerSideProps = async (
 
   const helpers = serverHelpers({})
 
+  const docRecord = await helpers.publication.getDocRecord.fetch({
+    documentId: docId,
+  })
+  if (docRecord) {
+    return {
+      redirect: {
+        temporary: true,
+        destination: getDocSlugUrl(
+          docRecord.path,
+          docId,
+          version || docRecord.versionId,
+        ),
+      },
+    }
+  }
   await impatiently(
     helpers.publication.get.prefetch({
       documentId: docId,

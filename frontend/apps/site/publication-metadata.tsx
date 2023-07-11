@@ -19,11 +19,9 @@ import {toast} from 'react-hot-toast'
 import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
 import {trpc} from './trpc'
 import {HDBlockNode, HDChangeInfo, HDLink, HDPublication} from 'server/json-hd'
-import Link from 'next/link'
 import {format} from 'date-fns'
 import {AccountRow} from 'components/account-row'
 import {NextLink} from 'next-link'
-import {get} from 'http'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
@@ -113,10 +111,12 @@ function DepPreview({
   dep,
   publication,
   displayAuthor = false,
+  pathName,
 }: {
   dep: HDChangeInfo | null
   publication?: HDPublication | null
   displayAuthor?: boolean
+  pathName?: string
 }) {
   const createTime = dep?.createTime
   const depTime =
@@ -125,7 +125,7 @@ function DepPreview({
   if (!docId || !dep) return null
   return (
     <NextLink
-      href={`/d/${publication?.document?.id}?v=${dep.version}`}
+      href={getDocSlugUrl(pathName, docId, dep?.version)}
       style={{textDecoration: 'none'}}
     >
       {displayAuthor ? (
@@ -136,7 +136,13 @@ function DepPreview({
   )
 }
 
-function NextVersionsMeta({publication}: {publication?: HDPublication | null}) {
+function NextVersionsMeta({
+  publication,
+  pathName,
+}: {
+  publication?: HDPublication | null
+  pathName?: string
+}) {
   const docChanges = trpc.publication.getChanges.useQuery(
     {
       documentId: publication?.document?.id,
@@ -156,6 +162,7 @@ function NextVersionsMeta({publication}: {publication?: HDPublication | null}) {
           dep={dep}
           key={dep?.id}
           publication={publication}
+          pathName={pathName}
           displayAuthor
         />
       ))}
@@ -163,7 +170,13 @@ function NextVersionsMeta({publication}: {publication?: HDPublication | null}) {
   )
 }
 
-function VersionsMeta({publication}: {publication?: HDPublication | null}) {
+function VersionsMeta({
+  publication,
+  pathName,
+}: {
+  publication?: HDPublication | null
+  pathName?: string
+}) {
   const docChanges = trpc.publication.getChanges.useQuery(
     {
       documentId: publication?.document?.id,
@@ -192,6 +205,7 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
           dep={dep}
           key={dep?.id}
           publication={publication}
+          pathName={pathName}
           displayAuthor={prevContextAuthor !== dep?.author}
         />,
       )
@@ -210,6 +224,7 @@ function VersionsMeta({publication}: {publication?: HDPublication | null}) {
         dep={dep}
         key={dep.id}
         publication={publication}
+        pathName={pathName}
         displayAuthor={prevAuthor !== dep.author}
       />,
     )
@@ -446,18 +461,20 @@ export function TableOfContents({
 
 export function PublicationMetadata({
   publication,
+  pathName,
 }: {
   publication?: HDPublication | null
+  pathName?: string
 }) {
   if (!publication) return null
   return (
     <>
       <TableOfContents publication={publication} />
-      <PublishedMeta publication={publication} />
+      <PublishedMeta publication={publication} pathName={pathName} />
       <AuthorsMeta publication={publication} />
       <EmbedMeta publication={publication} />
-      <NextVersionsMeta publication={publication} />
-      <VersionsMeta publication={publication} />
+      <NextVersionsMeta publication={publication} pathName={pathName} />
+      <VersionsMeta publication={publication} pathName={pathName} />
       <CitationsMeta publication={publication} />
     </>
   )
@@ -471,17 +488,94 @@ function getDocUrl(docId: string, versionId?: string, blockRef?: string) {
   return url
 }
 
+function getDocSlugUrl(
+  pathName: string | undefined,
+  docId: string,
+  versionId?: string,
+  blockRef?: string,
+) {
+  let url = `/d/${docId}`
+  if (pathName) url = pathName === '/' ? '/' : `/${pathName}`
+  if (versionId) url += `?v=${versionId}`
+  if (blockRef) url += `#${blockRef}`
+  return url
+}
+
+function LatestVersionBanner({
+  record,
+  pathName,
+}: {
+  record: {
+    versionId: string
+    documentId: string
+    publishTime: string
+  }
+  pathName: string
+}) {
+  const publishTimeRelative = useFormattedTime(record?.publishTime, true)
+  if (!pathName || !record) return null
+
+  return (
+    <NextLink
+      href={getDocSlugUrl(pathName, record.documentId, record.versionId)}
+      style={{textDecoration: 'none'}}
+    >
+      <SizableText fontWeight={'bold'} color="$blue11">
+        Latest Version:&nbsp;
+      </SizableText>
+      <SizableText textDecorationLine="underline" color="$blue11">
+        {publishTimeRelative}
+      </SizableText>
+
+      <SimpleTooltip
+        content={format(
+          new Date(record.publishTime),
+          'MMMM do yyyy, HH:mm:ss z',
+        )}
+      >
+        <Paragraph color="$blue11">
+          {format(new Date(record.publishTime), 'EEEE, MMMM do, yyyy')}
+        </Paragraph>
+      </SimpleTooltip>
+    </NextLink>
+  )
+}
+
 export function PublishedMeta({
   publication,
+  pathName,
 }: {
   publication?: HDPublication | null
+  pathName?: string
 }) {
+  const pathRecord = trpc.publication.getPath.useQuery(
+    {pathName},
+    {enabled: !!pathName},
+  )
   const publishTimeRelative = useFormattedTime(
     publication?.document?.publishTime,
     true,
   )
   const publishTime = publication?.document?.publishTime
   const publishTimeDate = publishTime && new Date(publishTime)
+  let latestVersion: null | ReactElement = null
+  const {documentId: pathDocId, versionId: pathVersionId} =
+    pathRecord.data || {}
+  if (
+    pathName &&
+    pathRecord.data &&
+    pathRecord &&
+    publication &&
+    pathDocId &&
+    pathVersionId &&
+    (pathDocId !== publication.document?.id ||
+      pathVersionId !== publication.version)
+  ) {
+    latestVersion = (
+      <LatestVersionBanner pathName={pathName} record={pathRecord.data} />
+    )
+  }
+
   return (
     <YStack>
       <Paragraph>
@@ -504,6 +598,7 @@ export function PublishedMeta({
           </Paragraph>
         </SimpleTooltip>
       )}
+      {latestVersion}
     </YStack>
   )
 }
