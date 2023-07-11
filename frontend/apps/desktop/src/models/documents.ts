@@ -41,8 +41,9 @@ import {
   useQuery,
   UseQueryOptions,
 } from '@tanstack/react-query'
-import {Extension, findParentNode} from '@tiptap/core'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {Editor, Extension, findParentNode} from '@tiptap/core'
+import {Node} from 'prosemirror-model'
+import {useEffect, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
@@ -529,23 +530,27 @@ export function useDraftEditor(
     if (tiptap) {
       const id = typeof blockId === 'string' ? blockId : blockId.id
       let group: {type: string; start?: number} | undefined
-      tiptap.state.doc.firstChild!.descendants((node: any) => {
+      tiptap.state.doc.firstChild!.descendants((node: Node) => {
         if (typeof group !== 'undefined') {
           return false
         }
 
         if (node.attrs.id !== id) {
-          return false
+          return true
         }
 
-        node.content.forEach((child: any) => {
+        node.descendants((child: Node) => {
           if (child.attrs.listType && child.type.name === 'blockGroup') {
-            group = {type: child.attrs.listType, start: child.attrs.start}
-            return true
+            group = {
+              type: child.attrs.listType,
+              start: child.attrs.start,
+            }
+            return false
           }
+          return true
         })
 
-        return false
+        return true
       })
 
       return group
@@ -558,38 +563,7 @@ export function useDraftEditor(
     const [editor, draft] = readyThings.current
     const tiptap = editor?._tiptapEditor
     if (tiptap && draft) {
-      draft.children.forEach((block: PartialBlock<typeof hdBlockSchema>) => {
-        let group: any
-        tiptap.state.doc.descendants((node: any, pos: number) => {
-          if (typeof group !== 'undefined') {
-            return false
-          }
-
-          if (
-            node.attrs.id === block.id &&
-            block.props &&
-            block.props.childrenType
-          ) {
-            node.descendants((child: any, childPos: number) => {
-              if (child.type.name === 'blockGroup') {
-                let tr = tiptap.state.tr
-                tr = block.props?.start
-                  ? tr.setNodeMarkup(pos + childPos + 1, null, {
-                      listType: block.props?.childrenType,
-                      start: parseInt(block.props?.start),
-                    })
-                  : tr.setNodeMarkup(pos + childPos + 1, null, {
-                      listType: block.props?.childrenType,
-                    })
-                tiptap.view.dispatch(tr)
-                return false
-              }
-            })
-          }
-
-          return true
-        })
-      })
+      setGroupTypes(tiptap, draft.children)
     }
     if (tiptap && !tiptap.isFocused) {
       editor._tiptapEditor.commands.focus()
@@ -900,6 +874,7 @@ function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
   )
   // editor._tiptapEditor.commands.clearContent()
   editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+  setGroupTypes(editor._tiptapEditor, editorBlocks)
   // editor._tiptapEditor.commands.setContent(editorBlocks)
 }
 
@@ -943,6 +918,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
           const editorBlocks = serverChildrenToEditorChildren(
             pub.data.document?.children || [],
           )
+          setGroupTypes(editor._tiptapEditor, editorBlocks)
           editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
         }
       }
@@ -986,4 +962,40 @@ function extractEmbedRefOfLink(block: any): false | string {
     }
   }
   return false
+}
+
+function setGroupTypes(
+  tiptap: Editor,
+  blocks: PartialBlock<typeof hdBlockSchema>[],
+) {
+  blocks.forEach((block: PartialBlock<typeof hdBlockSchema>) => {
+    tiptap.state.doc.descendants((node: Node, pos: number) => {
+      if (
+        node.attrs.id === block.id &&
+        block.props &&
+        block.props.childrenType
+      ) {
+        node.descendants((child: Node, childPos: number) => {
+          if (child.type.name === 'blockGroup') {
+            setTimeout(() => {
+              let tr = tiptap.state.tr
+              tr = block.props?.start
+                ? tr.setNodeMarkup(pos + childPos + 1, null, {
+                    listType: block.props?.childrenType,
+                    start: parseInt(block.props?.start),
+                  })
+                : tr.setNodeMarkup(pos + childPos + 1, null, {
+                    listType: block.props?.childrenType,
+                  })
+              tiptap.view.dispatch(tr)
+            })
+            return false
+          }
+        })
+      }
+    })
+    if (block.children) {
+      setGroupTypes(tiptap, block.children)
+    }
+  })
 }
