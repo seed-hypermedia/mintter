@@ -1,5 +1,5 @@
-import type {Document} from '../client'
 import {Timestamp} from '@bufbuild/protobuf'
+import type {Document} from '../client'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never
@@ -27,9 +27,11 @@ var months = [
 
 export type HDTimestamp = string
 
+export function formattedDate(
+  value?: string | Date | Timestamp | HDTimestamp | undefined,
+  options?: {onlyRelative?: boolean},
+) {
 
-export function formattedDate(value?: string | Date | Timestamp | HDTimestamp | undefined, options?: {onlyRelative?: boolean}) {
-  const onlyRelative = !!options?.onlyRelative
   if (!value) return ''
   let _value =
     typeof value == 'string' ||
@@ -37,33 +39,48 @@ export function formattedDate(value?: string | Date | Timestamp | HDTimestamp | 
       ? value
       : (value as Timestamp).toDate()
 
+  if (typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat !== 'undefined') {
+    // Intl.RelativeTimeFormat is supported
+    return relativeFormattedDate(_value, options)
+    // Use the rtf object for relative time formatting
+  } else {
+    let date = new Date(_value)
+    return date.toLocaleDateString('en', {
+      day: '2-digit',
+      month: '2-digit'
+    });
+  }
+}
+
+export function relativeFormattedDate(
+  value: string | Date,
+  options?: {onlyRelative?: boolean},
+) {
+  const onlyRelative = !!options?.onlyRelative
   var now = new Date()
-  var date = new Date(_value)
+  var date = new Date(value)
   let formatter = new Intl.RelativeTimeFormat('en-US', {
     style: 'short',
   })
 
   var result = difference(date, now)
 
-  let relative  = 'just now'
+  let relative = 'just now'
   if (result.year < -1) {
-    relative= formatter.format(Math.floor(result.year), 'year')
-
+    relative = formatter.format(Math.floor(result.year), 'year')
   } else if (result.day < -30) {
-    relative= formatter.format(Math.floor(result.day / 30), 'month')
-
+    relative = formatter.format(Math.floor(result.day / 30), 'month')
   } else if (result.day < -1) {
-    relative= formatter.format(Math.floor(result.day), 'day')
+    relative = formatter.format(Math.floor(result.day), 'day')
   } else if (result.hour < -1) {
-relative= formatter.format(Math.floor(result.hour), 'hour')
+    relative = formatter.format(Math.floor(result.hour), 'hour')
   } else if (result.minute < -2) {
-  relative= formatter.format(Math.floor(result.minute), 'minute')
+    relative = formatter.format(Math.floor(result.minute), 'minute')
   }
 
-  
-    if (onlyRelative) {
-      return relative
-  } else  if (result.year < -1) {
+  if (onlyRelative) {
+    return relative
+  } else if (result.year < -1) {
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
   } else if (result.day > -1) {
     return relative
