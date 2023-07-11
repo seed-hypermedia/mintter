@@ -300,7 +300,9 @@ export function serverChildrenToEditorChildren(
     // if (opts?.childrenType === 'bullet') {
     //   return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
     // }
-    res = serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
+    if (!res) {
+      res = serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
+    }
 
     if (serverBlock.block?.attributes.childrenType) {
       // @ts-expect-error
