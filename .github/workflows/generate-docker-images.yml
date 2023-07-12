@@ -3,7 +3,7 @@ name: Update Images
 on:
   workflow_dispatch:
   schedule:
-    - cron: '50 6 * * 1-7'
+    - cron: '50 6 * * 0-6'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
