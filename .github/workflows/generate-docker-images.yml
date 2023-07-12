@@ -1,4 +1,4 @@
-name: Update Images
+name: Update Docker Images
 
 on:
   workflow_dispatch:
@@ -53,7 +53,7 @@ jobs:
           push: true
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:latest
-  push-site-scripts:
+  push-deployment-scripts:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
