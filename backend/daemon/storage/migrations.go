@@ -1,12 +1,15 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"mintter/backend/core"
 	"os"
 	"path/filepath"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/libp2p/go-libp2p/core/crypto"
 
 	"golang.org/x/exp/slices"
@@ -31,19 +34,22 @@ and add the necessary migrations to drive the current state of the directory to 
 
 // migration specifies the version of the desired state of the directory,
 // and provides a run function to drive the directory to that state from the previous version.
+// The Run function should be as idempotent as possible to avoid issues with partially applied migrations.
+// The DB connection inside the Run function is already wrapped into an immediate write transaction.
 type migration struct {
 	Version string
-	Run     func(d *Dir) error
+	Run     func(*Dir, *sqlite.Conn) error
 }
 
 var migrations = []migration{
 	// The pre-migration version does nothing.
 	// It's here to find the starting point.
-	{
-		Version: "2023-06-26.01", Run: func(*Dir) error {
-			return nil
-		},
-	},
+	{Version: "2023-06-26.01", Run: func(*Dir, *sqlite.Conn) error {
+		return nil
+	}},
+	{Version: "2023-07-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, "PRAGMA user_version = 0;")
+	}},
 }
 
 const (
@@ -126,19 +132,36 @@ func (d *Dir) migrate(currentVersion string) error {
 		}
 
 		pending := migrations[idx+1:]
-		for _, mig := range pending {
-			// In case of a problem (e.g. power cut) we could end up with an applied migration,
-			// but without the version file being written, in which case things will be bad.
-			// To reduce this risk to some extent, we write the version file after each migration.
-			// TODO(burdiyan): maybe move the version information into the database so everything could be done atomically,
-			// or implement some sort of recovery mechanism for these situations.
-
-			if err := mig.Run(d); err != nil {
-				return fmt.Errorf("failed to run migration %s: %w", mig.Version, err)
+		if len(pending) > 0 {
+			db, err := OpenSQLite(d.SQLitePath(), 0, 1)
+			if err != nil {
+				return err
 			}
+			defer db.Close()
 
-			if err := writeVersionFile(d.path, mig.Version); err != nil {
-				return fmt.Errorf("failed to write version file: %w", err)
+			conn, release, err := db.Conn(context.Background())
+			if err != nil {
+				return err
+			}
+			defer release()
+
+			for _, mig := range pending {
+				// In case of a problem (e.g. power cut) we could end up with an applied migration,
+				// but without the version file being written, in which case things will be bad.
+				// To reduce this risk to some extent, we write the version file after each migration.
+				//
+				// TODO(burdiyan): maybe move the version information into the database so everything could be done atomically,
+				// or implement some sort of recovery mechanism for these situations.
+
+				if err := sqlitex.WithTx(conn, func() error {
+					return mig.Run(d, conn)
+				}); err != nil {
+					return fmt.Errorf("failed to run migration %s: %w", mig.Version, err)
+				}
+
+				if err := writeVersionFile(d.path, mig.Version); err != nil {
+					return fmt.Errorf("failed to write version file: %w", err)
+				}
 			}
 		}
 	}

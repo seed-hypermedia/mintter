@@ -170,7 +170,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	defer release()
 
 	var resp *site.RedeemInviteTokenResponse
-	if err := sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	if err := sqlitex.WithTx(conn, func() error {
 		// check if that account already a member
 		if in.Token == "" {
 			role, err := sitesql.GetMemberRole(conn, acc)

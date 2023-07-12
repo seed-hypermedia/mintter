@@ -63,7 +63,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
@@ -89,7 +89,7 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
@@ -144,7 +144,7 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 	defer release()
 
 	var out cid.Cid
-	if err := sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	if err := sqlitex.WithTx(conn, func() error {
 		res, err := hypersql.DraftsGet(conn, string(eid))
 		if err != nil {
 			return err
@@ -178,7 +178,7 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		res, err := hypersql.DraftsGet(conn, string(eid))
 		if err != nil {
 			return err
@@ -212,7 +212,7 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		edb, err := hypersql.EntitiesLookupID(conn, string(eid))
 		if err != nil {
 			return err
@@ -244,7 +244,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		oldid, err := bs.bs.deleteBlock(conn, old)
 		if err != nil {
 			return err

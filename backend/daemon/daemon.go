@@ -266,7 +266,7 @@ func initRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err err
 	}
 
 	if err := r.Migrate(); err != nil {
-		return nil, fmt.Errorf("failed to run storage migrations: %w", err)
+		return nil, err
 	}
 
 	return r, nil

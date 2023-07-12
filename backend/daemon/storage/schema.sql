@@ -253,6 +253,3 @@ CREATE TABLE web_publications (
     -- Path this publication is published to. If NULL is not listed.
     path TEXT UNIQUE
 );
-
--- Setting user version to match the resulting database with the pre-migrations database.
-PRAGMA user_version = 25;
