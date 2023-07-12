@@ -10,5 +10,6 @@ RUN go install ./backend/cmd/monitord/
 
 FROM alpine:latest
 COPY --from=builder /go/bin/monitord /usr/local/bin/monitord
+COPY --from=builder /code/backend/cmd/monitord/template.html /template.html
 EXPOSE 5002
 CMD ["/usr/local/bin/monitord"]

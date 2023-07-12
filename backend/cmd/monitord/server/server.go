@@ -37,7 +37,7 @@ type siteStatus struct {
 }
 
 // NewServer returns a new monitor server. It also starts serving content on the provided port.
-func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration, siteTimeout time.Duration, templateFile string, log *zap.Logger, sites ...string) (*Srv, error) {
+func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration, peerTimeout time.Duration, templateFile string, log *zap.Logger, sites ...string) (*Srv, error) {
 	node, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/" + strconv.Itoa(portP2P)),
 	)
@@ -69,7 +69,7 @@ func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration
 
 	go srv.httpServer.ListenAndServe()
 
-	go srv.scan(siteTimeout)
+	go srv.scan(peerTimeout)
 	return srv, nil
 }
 
