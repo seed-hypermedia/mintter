@@ -1,5 +1,5 @@
 import {styled, YStack, Main} from 'tamagui'
-import {ContainerLarge} from './container'
+import {Container} from './container'
 
 export function MainContainer({
   children,
@@ -26,9 +26,9 @@ export function MainContainer({
         >
           {sidebarBefore}
         </YStack>
-        <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
+        <Container tag="main" id="main-content" tabIndex={-1}>
           <Main>{children}</Main>
-        </ContainerLarge>
+        </Container>
         <YStack
           marginHorizontal={'auto'}
           paddingHorizontal="$4"

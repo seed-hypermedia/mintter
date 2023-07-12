@@ -10,8 +10,8 @@ export function HyperDocsEditorView({editor}: {editor: HyperDocsEditor}) {
 
 export function HDEditorContainer({children}: {children: React.ReactNode}) {
   return (
-    <Container>
+    <>
       <YStack className="editor">{children}</YStack>
-    </Container>
+    </>
   )
 }

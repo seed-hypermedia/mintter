@@ -1,4 +1,4 @@
-import {ContainerLarge, H1, styled, XStack} from '@mintter/ui'
+import {Container, H1, styled, XStack} from '@mintter/ui'
 import Head from 'next/head'
 import {trpc} from 'trpc'
 import {NextLink} from './next-link'
@@ -42,7 +42,7 @@ export function SiteHead({
   const {title: siteInfoTitle, description} = siteInfo?.data || {}
   const siteTitle = siteInfoTitle || SITE_NAME
   return (
-    <ContainerLarge>
+    <Container>
       <XStack>
         <XStack
           alignItems="center"
@@ -64,6 +64,6 @@ export function SiteHead({
           {description && <meta name="description" content={description} />}
         </Head>
       </XStack>
-    </ContainerLarge>
+    </Container>
   )
 }

@@ -1,9 +1,9 @@
-import {Dropdown} from '@components/dropdown'
 import {useDraftList} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
 import {DraftRoute, useNavigate} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
+import {Dropdown} from '@components/dropdown'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Document, formattedDate} from '@mintter/shared'
@@ -19,8 +19,8 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useQueryClient} from '@tanstack/react-query'
 import {X} from '@tamagui/lucide-icons'
+import {useQueryClient} from '@tanstack/react-query'
 
 export default function DraftList() {
   let {data, isInitialLoading} = useDraftList()

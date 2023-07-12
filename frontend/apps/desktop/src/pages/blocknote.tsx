@@ -28,12 +28,10 @@ export default function BlockNoteDemo() {
 
   return (
     <MainWrapper>
-      <Container>
-        <YStack className="editor" maxWidth={600}>
-          <h1>BlockNote demo</h1>
-          <BlockNoteView editor={editor} />
-        </YStack>
-      </Container>
+      <YStack className="editor" maxWidth={600}>
+        <h1>BlockNote demo</h1>
+        <BlockNoteView editor={editor} />
+      </YStack>
     </MainWrapper>
   )
 }

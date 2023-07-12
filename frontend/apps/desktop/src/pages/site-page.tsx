@@ -10,11 +10,7 @@ import {Dropdown} from '@components/dropdown'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
-import {
-  formattedDate,
-  HYPERDOCS_LINK_PREFIX,
-  WebPublicationRecord,
-} from '@mintter/shared'
+import {formattedDate, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
   ButtonText,

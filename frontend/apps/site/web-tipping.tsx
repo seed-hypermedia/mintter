@@ -1,50 +1,24 @@
-import {Account, Publication} from '@mintter/shared'
 import {
   Button,
   Dialog,
-  Info,
   Input,
   Label,
-  ListItem,
-  Help,
   RadioGroup,
   Separator,
   SizableText,
   SizeTokens,
-  Slider,
-  SliderProps,
-  User,
-  XStack,
-  YGroup,
-  YStack,
-  Card,
-  ErrorIcon,
-  Container,
   Text,
   XGroup,
-  DialogClose,
+  XStack,
+  YStack,
 } from '@mintter/ui'
-import {
-  Check,
-  MinusCircle,
-  Plus,
-  PlusCircle,
-  X,
-  Zap,
-} from '@tamagui/lucide-icons'
+import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
+import {AccountRow} from 'components/account-row'
 import Link from 'next/link'
-import React, {
-  ReactNode,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
+import React, {useEffect, useMemo, useReducer, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {HDAccount} from 'server/json-hd'
-import {AccountRow} from 'components/account-row'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},
@@ -419,23 +393,23 @@ function CreateInvoiceStep({
           })}
 
           <XStack overflow="hidden">
-            <Container width={600}>
+            <YStack width={600}>
               <Text flex={1}>Transaction Fee</Text>
-            </Container>
-            <Container>
+            </YStack>
+            <YStack>
               <Text>{computed.serviceFeeSats} Sats</Text>
-            </Container>
+            </YStack>
           </XStack>
           <Separator />
           <XStack overflow="hidden">
-            <Container width={600}>
+            <YStack width={600}>
               <Text color="$green11" flex={1}>
                 Payment Total
               </Text>
-            </Container>
-            <Container>
+            </YStack>
+            <YStack>
               <Text color="$green11">{computed.total} Sats</Text>
-            </Container>
+            </YStack>
           </XStack>
         </YStack>
         <XStack justifyContent="center">

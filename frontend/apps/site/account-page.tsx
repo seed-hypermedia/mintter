@@ -1,6 +1,6 @@
 import {
   Avatar,
-  ContainerLarge,
+  Container,
   Header,
   Heading,
   MainContainer,
@@ -42,7 +42,7 @@ export default function AccountPage({accountId}: {accountId: string}) {
   const account = publication.data?.account
 
   return (
-    <ContainerLarge tag="main" id="main-content" tabIndex={-1}>
+    <Container tag="main" id="main-content" tabIndex={-1}>
       <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
       <Head>
         <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
@@ -59,6 +59,6 @@ export default function AccountPage({accountId}: {accountId: string}) {
         )}
       </MainContainer>
       <Footer />
-    </ContainerLarge>
+    </Container>
   )
 }

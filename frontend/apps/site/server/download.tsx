@@ -1,4 +1,11 @@
-import {Container, XStack, H1, Button, MainContainer} from '@mintter/ui'
+import {
+  Container,
+  XStack,
+  H1,
+  Button,
+  MainContainer,
+  MainWrapper,
+} from '@mintter/ui'
 import {SiteHead} from 'site-head'
 import Footer from '../footer'
 
@@ -8,7 +15,7 @@ export default function DownloadPage({
   manifest: {platforms: Array<{url: string; platform: string}>} | null
 }) {
   return (
-    <Container>
+    <MainWrapper>
       <SiteHead title="Download Mintter" />
       <MainContainer>
         <H1>Download Mintter</H1>
@@ -27,7 +34,7 @@ export default function DownloadPage({
         </XStack>
       </MainContainer>
       <Footer />
-    </Container>
+    </MainWrapper>
   )
 }
 

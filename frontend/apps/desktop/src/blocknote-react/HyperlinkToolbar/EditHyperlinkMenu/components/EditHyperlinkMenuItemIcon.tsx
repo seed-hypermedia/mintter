@@ -25,7 +25,7 @@ export function EditHyperlinkMenuItemIcon(
       placement="left"
     >
       <Container>
-        <Icon size={16}></Icon>
+        <Icon size={16} />
       </Container>
     </Tippy>
   )

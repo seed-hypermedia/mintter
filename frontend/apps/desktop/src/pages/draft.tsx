@@ -1,16 +1,14 @@
 import {AppBanner, BannerText} from '@app/app-banner'
+import '@app/blocknote-core/style.css'
 import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
 import {useDraftEditor} from '@app/models/documents'
 import {useDaemonReady} from '@app/node-status-context'
-import {AppError} from '@app/root'
 import {useNavRoute} from '@app/utils/navigation'
 import {DebugData} from '@components/debug-data'
 import Footer from '@components/footer'
 import {Button, Container, MainWrapper, Text, YStack} from '@mintter/ui'
-import '@app/blocknote-core/style.css'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useListen} from '@app/ipc'
 
 export default function DraftPage() {
   let route = useNavRoute()

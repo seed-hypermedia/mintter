@@ -1,4 +1,4 @@
-import {YStack, styled} from 'tamagui'
+import {styled, YStack} from 'tamagui'
 
 const variants = {
   hide: {
@@ -32,8 +32,6 @@ export const ContainerDefault = styled(YStack, {
   variants,
 })
 
-export const Container = styled(YStack, {})
-
 export const ContainerLarge = styled(YStack, {
   marginHorizontal: 'auto',
   paddingHorizontal: '$4',
@@ -65,3 +63,4 @@ export const ContainerXL = styled(YStack, {
 })
 
 export const AppContainer = ContainerLarge
+export const Container = ContainerLarge

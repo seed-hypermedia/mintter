@@ -2,12 +2,19 @@ import appError from '@app/errors'
 import {useAccount} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
-import {Button, Tooltip, Theme, SizableText, Container} from '@mintter/ui'
+import {
+  Button,
+  Tooltip,
+  Theme,
+  SizableText,
+  Container,
+  YStack,
+} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 
 export function ErrorDot() {
   return (
-    <Container
+    <YStack
       backgroundColor={'#ff3333'}
       display="flex"
       position="absolute"
@@ -20,7 +27,7 @@ export function ErrorDot() {
       borderRadius={8}
     >
       <AlertCircle size={16} />
-    </Container>
+    </YStack>
   )
 }
 

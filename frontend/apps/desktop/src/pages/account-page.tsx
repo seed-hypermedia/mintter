@@ -1,29 +1,28 @@
-import {Dropdown} from '@components/dropdown'
 import {useAccountPublicationList} from '@app/models/changes'
 import {useAccountWithDevices} from '@app/models/contacts'
 import {toast} from '@app/toast'
+import {getAccountUrl} from '@app/utils/account-url'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
+import {Dropdown} from '@components/dropdown'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import {PublicationListItem} from '@components/publication-list-item'
 import {Tooltip} from '@components/tooltip'
-import {abbreviateCid, pluralizer, pluralS} from '@mintter/shared'
+import {abbreviateCid, pluralizer} from '@mintter/shared'
 import {
   Button,
   ChevronDown,
   Container,
   Heading,
   MainWrapper,
-  Popover,
   SizableText,
   XStack,
 } from '@mintter/ui'
+import {Copy} from '@tamagui/lucide-icons'
 import {ComponentProps, ReactNode} from 'react'
-import {Clipboard, Copy} from '@tamagui/lucide-icons'
-import {getAccountUrl} from '@app/utils/account-url'
 
 function DeviceRow({
   isOnline,
