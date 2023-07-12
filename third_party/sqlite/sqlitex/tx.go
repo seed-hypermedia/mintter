@@ -9,12 +9,12 @@ import (
 
 // WithTx executes fn within an immediate transaction, and commits
 // or rolls back accordingly.
-func WithTx(conn *sqlite.Conn, fn func(*sqlite.Conn) error) error {
+func WithTx(conn *sqlite.Conn, fn func() error) error {
 	if err := Exec(conn, "BEGIN IMMEDIATE TRANSACTION;", nil); err != nil {
 		return err
 	}
 
-	if err := fn(conn); err != nil {
+	if err := fn(); err != nil {
 		if rberr := Exec(conn, "ROLLBACK", nil); rberr != nil {
 			return fmt.Errorf("ROLLBACK error: %v; original error: %w", rberr, err)
 		}
@@ -32,7 +32,7 @@ func (p *Pool) WithTx(ctx context.Context, fn func(*sqlite.Conn) error) error {
 	}
 	defer release()
 
-	return WithTx(conn, fn)
+	return WithTx(conn, func() error { return fn(conn) })
 }
 
 // WithSave executes fn within a Savepoint.

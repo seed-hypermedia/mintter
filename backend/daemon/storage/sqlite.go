@@ -44,7 +44,7 @@ func openSQLite(uri string, flags sqlite.OpenFlags, poolSize int, prelude ...str
 }
 
 func initSQLite(conn *sqlite.Conn) error {
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		return sqlitex.ExecScript(conn, schema)
 	})
 }
