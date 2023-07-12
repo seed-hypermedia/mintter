@@ -37,9 +37,9 @@ type siteStatus struct {
 }
 
 // NewServer returns a new monitor server. It also starts serving content on the provided port.
-func NewServer(port int, numPings int, scanPeriod time.Duration, siteTimeout time.Duration, templateFile string, log *zap.Logger, sites ...string) (*Srv, error) {
+func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration, siteTimeout time.Duration, templateFile string, log *zap.Logger, sites ...string) (*Srv, error) {
 	node, err := libp2p.New(
-		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/0"),
+		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/" + strconv.Itoa(portP2P)),
 	)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func NewServer(port int, numPings int, scanPeriod time.Duration, siteTimeout tim
 	}
 
 	srv.httpServer = &http.Server{
-		Addr:              ":" + strconv.Itoa(port),
+		Addr:              ":" + strconv.Itoa(portHTTP),
 		ReadHeaderTimeout: 3 * time.Second,
 		Handler:           srv,
 	}
@@ -121,21 +121,21 @@ func (s *Srv) scan(timeout time.Duration) {
 					if err != nil {
 						checkError := fmt.Errorf("Could not get site [%s] address from mintter-well-known: %w", site, err)
 						stat.StatusDNS = err.Error()
-						stat.StatusP2P = "N/A :|"
+						stat.StatusP2P = "N/A"
 						stat.LastDNSError = now + " Err:" + err.Error()
 						s.log.Warn("CheckMintterAddrs error", zap.Error(checkError))
 						return
 					}
-					stat.StatusDNS = "OK :)"
+					stat.StatusDNS = "OK"
 					duration, err := s.checkP2P(ctx, info, s.numPings)
 					if err != nil {
 						checkError := fmt.Errorf("Could not ping site [%s]: %w", site, err)
-						stat.StatusP2P = "KO :("
+						stat.StatusP2P = "KO"
 						stat.LastP2PError = now + " Err:" + err.Error()
 						s.log.Warn("checkP2P error", zap.Error(checkError))
 						return
 					}
-					stat.StatusP2P = "OK :)Average Ping time:" + duration.Round(time.Millisecond).String()
+					stat.StatusP2P = "OK Avg. Ping:" + duration.Round(time.Millisecond).String()
 					/*
 						if mustInclude != "" {
 							for _, addr := range info.Addrs {
