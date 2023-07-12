@@ -202,6 +202,7 @@ function PubDropdown() {
   const {data: publication} = usePublication({
     documentId,
     versionId,
+    enabled: !!documentId,
   })
   const isWebPub = publication?.document?.webUrl != null
   const label = publication?.document?.webUrl

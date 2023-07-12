@@ -258,6 +258,7 @@ type ResizablePanelMachineServices = {
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication({
     documentId: docId,
+    enabled: !!docId,
   })
 
   const navigate = useNavigate()

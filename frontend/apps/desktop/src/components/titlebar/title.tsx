@@ -93,6 +93,7 @@ function PublicationTitle({
   let {data: pub} = usePublication({
     documentId: route.documentId,
     versionId: route.versionId,
+    enabled: !!route.documentId,
   })
   return (
     <>

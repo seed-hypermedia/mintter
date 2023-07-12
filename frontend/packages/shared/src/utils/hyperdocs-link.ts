@@ -16,14 +16,7 @@ export function normalizeHyperdocsLink(urlMaybe: string): string | undefined {
   if (isMintterGatewayLink(urlMaybe)) {
     const [docId, version, blockRef] = getIdsfromUrl(urlMaybe)
 
-    console.log(
-      `== ~ normalizeHyperdocsLink ~ docId, version, blockRef:`,
-      urlMaybe,
-      docId,
-      version,
-      blockRef,
-    )
-    if (docId) {
+    if (docId && docId != 'undefined') {
       return createHyperdocsDocLink(docId, version, blockRef)
     }
     return undefined

@@ -882,6 +882,7 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
   const pub = usePublication({
     documentId,
     versionId,
+    enabled: !!documentId,
     onSuccess: (pub: Publication) => {
       readyThings.current[1] = pub
       const readyEditor = readyThings.current[0]
@@ -957,6 +958,8 @@ function extractEmbedRefOfLink(block: any): false | string {
     if (leaf.type == 'link') {
       if (isMintterGatewayLink(leaf.href) || isHyperdocsScheme(leaf.href)) {
         const hdLink = normalizeHyperdocsLink(leaf.href)
+
+        console.log(`== ~ extractEmbedRefOfLink ~ hdLink:`, hdLink)
         if (hdLink) return hdLink
       }
     }

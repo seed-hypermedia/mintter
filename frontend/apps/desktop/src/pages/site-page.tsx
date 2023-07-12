@@ -109,6 +109,7 @@ function WebPublicationListItem({
   const {data: publication} = usePublication({
     documentId: webPub.documentId,
     versionId: webPub.version,
+    enabled: !!webPub.documentId,
   })
   const publishedWebHost = publication?.document
     ? publication.document.webUrl || 'https://mintter.com'

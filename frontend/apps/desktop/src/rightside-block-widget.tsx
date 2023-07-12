@@ -105,7 +105,7 @@ export function RightsideWidget() {
   let pub = usePublication({
     documentId: route.key == 'publication' ? route.documentId : undefined,
     versionId: route.key == 'publication' ? route.versionId : undefined,
-    enabled: route.key == 'publication',
+    enabled: route.key == 'publication' && !!route.documentId,
   })
 
   function onCopy() {
@@ -133,7 +133,7 @@ export function RightsideWidget() {
       position="absolute"
       right={-100}
       width={80}
-      top={0}
+      top={16}
     >
       {citations?.length ? (
         <Button
@@ -160,9 +160,7 @@ export function RightsideWidget() {
         zIndex={100}
         icon={Copy}
         onPress={onCopy}
-      >
-        {/* {spec?.id} */}
-      </Button>
+      />
     </XStack>
   )
 }
