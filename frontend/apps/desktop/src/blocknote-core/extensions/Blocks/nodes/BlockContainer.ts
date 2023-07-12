@@ -93,7 +93,7 @@ export const BlockContainer = Node.create<IBlock>({
         'data-node-type': 'block-outer',
       }),
       [
-        'li',
+        'div',
         mergeAttributes(HTMLAttributes, {
           // TODO: maybe remove html attributes from inner block
           class: styles.block,

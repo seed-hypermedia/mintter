@@ -98,15 +98,15 @@ export const defaultSlashMenuItems = [
   //   ['code']
   // ),
 
-  new BaseSlashMenuItem<HDBlockSchema>(
-    'Blockquote',
-    (editor) =>
-      insertOrUpdateBlock(editor, {
-        type: 'paragraph',
-        props: {type: 'blockquote'},
-      }),
-    ['blockquote'],
-  ),
+  // new BaseSlashMenuItem<HDBlockSchema>(
+  //   'Blockquote',
+  //   (editor) =>
+  //     insertOrUpdateBlock(editor, {
+  //       type: 'paragraph',
+  //       props: {type: 'blockquote'},
+  //     }),
+  //   ['blockquote'],
+  // ),
 
   new BaseSlashMenuItem<HDBlockSchema>(
     'Video / Audio',

@@ -234,12 +234,12 @@ function StaticSectionBlock({block}: {block: SectionBlock}) {
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
-  const isBlockquote = block.attributes?.type === 'blockquote'
+  // const isBlockquote = block.attributes?.type === 'blockquote'
   return (
     <YStack
       id={`${block.id}-block`}
-      paddingLeft={isBlockquote ? 20 : 0}
-      borderLeftWidth={isBlockquote ? 1 : 0}
+      // paddingLeft={isBlockquote ? 20 : 0}
+      // borderLeftWidth={isBlockquote ? 1 : 0}
       borderLeftColor={'blue'}
     >
       <Text>

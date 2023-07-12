@@ -204,7 +204,7 @@ export function serverBlockNodeToEditorParagraph(
       childrenType: block.attributes.childrenType as HDBlockChildrenType,
     }),
     props: {
-      type: serverBlock.block.attributes.type as 'p' | 'blockquote',
+      type: serverBlock.block.attributes.type as 'p',
     },
   }
 }

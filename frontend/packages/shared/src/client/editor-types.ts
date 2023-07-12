@@ -51,7 +51,7 @@ export type EditorParagraphBlock = {
   content: InlineContent[]
   children: EditorBlock[]
   props: EditorBlockProps<{
-    type: 'p' | 'blockquote'
+    type: 'p'
   }>
 }
 export type EditorHeadingBlock = {
