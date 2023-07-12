@@ -95,6 +95,11 @@ function updateDecorations(
 
 export function RightsideWidget() {
   let {citations, spec} = useBlockCitation()
+
+  if (spec?.active) {
+    console.log(`== ~ RightsideWidget ~ spec:`, spec)
+  }
+
   let route = useNavRoute()
   let replace = useNavigate('replace')
   let pub = usePublication({
@@ -155,7 +160,9 @@ export function RightsideWidget() {
         zIndex={100}
         icon={Copy}
         onPress={onCopy}
-      />
+      >
+        {/* {spec?.id} */}
+      </Button>
     </XStack>
   )
 }
