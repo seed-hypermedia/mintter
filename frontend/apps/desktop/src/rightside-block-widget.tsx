@@ -14,7 +14,7 @@ import {usePublication} from './models/documents'
 import {toast} from './toast'
 import {copyTextToClipboard} from './utils/copy-to-clipboard'
 import {getDocUrl} from './utils/doc-url'
-import {useNavRoute} from './utils/navigation'
+import {useNavigate, useNavRoute} from './utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
   getWidget,
@@ -97,6 +97,7 @@ function updateDecorations(
 export function RightsideWidget() {
   let {citations, spec} = useBlockCitation()
   let route = useNavRoute()
+  let replace = useNavigate('replace')
   let pub = usePublication({
     documentId: route.key == 'publication' ? route.documentId : undefined,
     versionId: route.key == 'publication' ? route.versionId : undefined,
@@ -113,6 +114,13 @@ export function RightsideWidget() {
     }
   }
 
+  function onCitation() {
+    if (route.key == 'publication') {
+      // if (route.accessory) return replace({...route, accessory: null})
+      replace({...route, accessory: {key: 'citations'}})
+    }
+  }
+
   return (
     <XStack
       // @ts-expect-error
@@ -124,7 +132,13 @@ export function RightsideWidget() {
       top={0}
     >
       {citations?.length ? (
-        <Button size="$1" padding="$2" borderRadius="$2" chromeless>
+        <Button
+          size="$1"
+          padding="$2"
+          borderRadius="$2"
+          chromeless
+          onPress={onCitation}
+        >
           <SizableText color="$blue11" fontWeight="700" size="$1">
             {citations.length}
           </SizableText>
