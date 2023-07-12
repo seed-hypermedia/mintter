@@ -24,14 +24,14 @@ export const defaultBlockSchema = {
   paragraph: {
     propSchema: {
       ...defaultProps,
-      type: {default: 'p', values: ['p', 'blockquote'] as const},
+      type: {default: 'p'},
     },
     node: ParagraphBlockContent,
   },
   heading: {
     propSchema: {
       ...defaultProps,
-      level: {default: '1', values: ['1', '2', '3'] as const},
+      level: {default: '2', values: ['1', '2', '3'] as const},
     },
     node: HDHeadingBlockContent,
   },

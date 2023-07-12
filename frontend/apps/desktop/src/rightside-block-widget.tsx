@@ -1,4 +1,3 @@
-import {createMintterLink} from '@mintter/shared'
 import {Button, Copy, SizableText, XStack} from '@mintter/ui'
 import {WidgetDecorationFactory} from '@prosemirror-adapter/core'
 import {useWidgetViewContext} from '@prosemirror-adapter/react'
@@ -96,6 +95,11 @@ function updateDecorations(
 
 export function RightsideWidget() {
   let {citations, spec} = useBlockCitation()
+
+  if (spec?.active) {
+    console.log(`== ~ RightsideWidget ~ spec:`, spec)
+  }
+
   let route = useNavRoute()
   let replace = useNavigate('replace')
   let pub = usePublication({
@@ -156,7 +160,9 @@ export function RightsideWidget() {
         zIndex={100}
         icon={Copy}
         onPress={onCopy}
-      />
+      >
+        {/* {spec?.id} */}
+      </Button>
     </XStack>
   )
 }

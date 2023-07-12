@@ -32,6 +32,11 @@ declare module '@tiptap/core' {
         posInBlock: number,
         block: PartialBlock<BSchema>,
       ) => ReturnType
+      UpdateGroup: <BSchema extends BlockSchema>(
+        posInBlock: number,
+        listType: string,
+        start?: string,
+      ) => ReturnType
     }
   }
 }
@@ -57,7 +62,7 @@ export const BlockContainer = Node.create<IBlock>({
   parseHTML() {
     return [
       {
-        tag: 'div',
+        tag: 'li',
         getAttrs: (element) => {
           if (typeof element === 'string') {
             return false
@@ -82,7 +87,7 @@ export const BlockContainer = Node.create<IBlock>({
 
   renderHTML({HTMLAttributes}) {
     return [
-      'div',
+      'li',
       mergeAttributes(HTMLAttributes, {
         class: styles.blockOuter,
         'data-node-type': 'block-outer',
@@ -365,6 +370,68 @@ export const BlockContainer = Node.create<IBlock>({
                   )
                 : undefined,
             )
+          }
+
+          return true
+        },
+      // Updates a block group at a given position.
+      UpdateGroup:
+        (posInBlock, listType, start) =>
+        ({state, dispatch}) => {
+          if (posInBlock < 0) posInBlock = state.selection.from
+          const $pos = state.doc.resolve(posInBlock)
+          const maxDepth = $pos.depth
+          let group = $pos.node(maxDepth)
+          let container
+          let depth = maxDepth
+
+          while (true) {
+            if (depth < 0) {
+              break
+            }
+
+            if (group.type.name === 'blockGroup') {
+              break
+            }
+
+            if (group.type.name === 'blockContainer') {
+              container = group
+            }
+
+            depth -= 1
+            group = $pos.node(depth)
+          }
+
+          if ($pos.node(depth - 1).type.name === 'doc') {
+            if (
+              group.firstChild &&
+              container &&
+              group.firstChild.attrs.id !== container.attrs.id
+            ) {
+              setTimeout(() => {
+                this.editor
+                  .chain()
+                  .sinkListItem('blockContainer')
+                  .UpdateGroup(-1, listType, start)
+                  .run()
+
+                return true
+              })
+            }
+            return false
+          }
+
+          if (dispatch && group.type.name === 'blockGroup') {
+            start
+              ? state.tr.setNodeMarkup($pos.before(depth), null, {
+                  ...group.attrs,
+                  listType: listType,
+                  start: parseInt(start),
+                })
+              : state.tr.setNodeMarkup($pos.before(depth), null, {
+                  ...group.attrs,
+                  listType: listType,
+                })
           }
 
           return true

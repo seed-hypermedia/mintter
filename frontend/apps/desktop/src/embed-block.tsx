@@ -7,9 +7,10 @@ import {PartialMessage} from '@bufbuild/protobuf'
 import type {
   Block as ServerBlock,
   BlockNode,
+  HeadingBlock,
   ImageBlock,
+  ParagraphBlock,
   PresentationBlock,
-  SectionBlock,
 } from '@mintter/shared'
 import {
   Block,
@@ -81,7 +82,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
   )
 }
 
-function StaticSectionBlock({block}: {block: SectionBlock}) {
+function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
   const inline = useMemo(
     () => serverBlockToEditorInline(new Block(block)),
     [block],
@@ -100,7 +101,8 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
 }
 
 function StaticBlock({block}: {block: ServerBlock}) {
-  let niceBlock = block as PresentationBlock // todo, validation
+  // TODO: validation
+  let niceBlock = block as PresentationBlock
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
     return <StaticSectionBlock block={niceBlock} />

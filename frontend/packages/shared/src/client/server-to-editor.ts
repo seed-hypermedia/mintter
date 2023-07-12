@@ -5,7 +5,7 @@ import {
   BlockNode,
 } from './.generated/documents/v1alpha/documents_pb'
 import {EditorBlock, InlineContent, StyledText} from './editor-types'
-import {TextAnnotation} from './hyperdocs-presentation'
+import {HDBlockChildrenType, TextAnnotation} from './hyperdocs-presentation'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 // import {hdBlockSchema} from './schema'
 
@@ -167,7 +167,7 @@ export function partialBlockToStyledText({
   return inlines
 }
 
-export type EditorChildrenType = 'group' | 'numbers' | 'bullet' | 'blockquote'
+export type EditorChildrenType = HDBlockChildrenType
 
 export type ServerToEditorRecursiveOpts = {
   headingLevel: number
@@ -177,8 +177,8 @@ function extractChildrenType(
   childrenType: string | undefined,
 ): EditorChildrenType {
   if (!childrenType) return 'group'
-  if (childrenType === 'numbers') return 'numbers'
-  if (childrenType === 'bullet') return 'bullet'
+  if (childrenType === 'ol') return 'ol'
+  if (childrenType === 'ul') return 'ul'
   if (childrenType === 'blockquote') return 'blockquote'
   throw new Error('Unknown childrenType block attr: ' + childrenType)
 }
@@ -200,10 +200,11 @@ export function serverBlockNodeToEditorParagraph(
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       ...opts,
-      childrenType: extractChildrenType(block.attributes.childrenType),
+      // childrenType: extractChildrenType(block.attributes.childrenType),
+      childrenType: block.attributes.childrenType as HDBlockChildrenType,
     }),
     props: {
-      type: serverBlock.block.attributes.type as 'p' | 'blockquote',
+      type: serverBlock.block.attributes.type as 'p',
     },
   }
 }
@@ -234,14 +235,16 @@ export function serverChildrenToEditorChildren(
   children: BlockNode[],
   opts?: ServerToEditorRecursiveOpts & {
     childrenType?: EditorChildrenType
+    start?: string
   },
 ): EditorBlock[] {
   const childRecursiveOpts: ServerToEditorRecursiveOpts = {
     headingLevel: opts?.headingLevel || 0,
   }
   return children.map((serverBlock) => {
+    let res: EditorBlock | null = null
     if (serverBlock.block?.type === 'image') {
-      return {
+      res = {
         type: 'image',
         id: serverBlock.block.id,
         props: {
@@ -257,7 +260,7 @@ export function serverChildrenToEditorChildren(
     }
 
     if (serverBlock.block?.type === 'file') {
-      return {
+      res = {
         type: 'file',
         id: serverBlock.block.id,
         props: {
@@ -273,7 +276,7 @@ export function serverChildrenToEditorChildren(
     }
 
     if (serverBlock.block?.type === 'embed') {
-      return {
+      res = {
         type: 'embed',
         id: serverBlock.block.id,
         props: {
@@ -289,7 +292,7 @@ export function serverChildrenToEditorChildren(
     // how to handle when serverBlock.type is 'heading' but we are inside of a list?
     // for now, we prioritize the node type
     if (serverBlock.block?.type === 'heading') {
-      return serverBlockToHeading(serverBlock, childRecursiveOpts)
+      res = serverBlockToHeading(serverBlock, childRecursiveOpts)
     }
     // if (opts?.childrenType === 'numbers') {
     //   return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
@@ -297,6 +300,19 @@ export function serverChildrenToEditorChildren(
     // if (opts?.childrenType === 'bullet') {
     //   return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
     // }
-    return serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
+    if (!res) {
+      res = serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
+    }
+
+    if (serverBlock.block?.attributes.childrenType) {
+      // @ts-expect-error
+      res.props.childrenType = serverBlock.block.attributes.childrenType
+    }
+
+    if (serverBlock.block?.attributes.start) {
+      res.props.start = serverBlock.block.attributes.start
+    }
+
+    return res
   })
 }
