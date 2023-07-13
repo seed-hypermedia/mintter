@@ -602,6 +602,7 @@ function SiteInfoForm({
           id="site-title"
           value={title}
           disabled={!isOwner}
+          editable={isOwner}
           onChangeText={isOwner ? (val) => setTitle(val) : undefined}
         />
       </YStack>
@@ -611,6 +612,7 @@ function SiteInfoForm({
           id="site-title"
           value={description}
           disabled={!isOwner}
+          editable={isOwner}
           onChangeText={
             isOwner ? (val: string) => setDescription(val) : undefined
           }
