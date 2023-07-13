@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
@@ -100,49 +99,45 @@ func (s *Srv) scan(timeout time.Duration) {
 		case <-s.chScan:
 			return
 		case <-s.ticker.C:
-			var wg sync.WaitGroup
 			for site, stat := range *s.MonitorStatus {
-				wg.Add(1)
-				go func(site string, stat *siteStatus) {
-					var err error
-					ctx, cancel := context.WithTimeout(context.Background(), timeout)
-					defer wg.Done()
-					defer cancel()
-					stat.LastCheck = time.Now().UTC().Format("2006-01-02 15:04:05")
-					info, err := s.checkMintterAddrs(ctx, site, "")
+				ctx, cancel := context.WithTimeout(context.Background(), timeout)
+				var err error
+				stat.LastCheck = time.Now().UTC().Format("2006-01-02 15:04:05")
+				info, err := s.checkMintterAddrs(ctx, site, "")
 
-					if err != nil {
-						checkError := fmt.Errorf("Could not get site [%s] address from mintter-well-known: %w", site, err)
-						stat.StatusDNS = err.Error()
-						stat.StatusP2P = "N/A"
-						stat.LastDNSError = time.Now().UTC().Format("2006-01-02 15:04:05") + " " + err.Error()
-						s.log.Warn("CheckMintterAddrs error", zap.Error(checkError))
-						return
-					}
-					stat.StatusDNS = "OK"
-					duration, err := s.checkP2P(ctx, info, s.numPings)
-					if err != nil {
-						checkError := fmt.Errorf("P2P error [%s]: %w", site, err)
-						stat.StatusP2P = "KO"
-						stat.LastP2PError = time.Now().UTC().Format("2006-01-02 15:04:05") + " " + err.Error()
-						s.log.Warn("CheckP2P error", zap.Error(checkError))
-						return
-					}
-					stat.StatusP2P = "OK Avg. Ping:" + duration.Round(time.Millisecond).String()
-					/*
-						if mustInclude != "" {
-							for _, addr := range info.Addrs {
-								if mustInclude == addr.String() {
-									includedAddress = true
-									break
-								}
+				if err != nil {
+					checkError := fmt.Errorf("Could not get site [%s] address from mintter-well-known: %w", site, err)
+					stat.StatusDNS = err.Error()
+					stat.StatusP2P = "N/A"
+					stat.LastDNSError = time.Now().UTC().Format("2006-01-02 15:04:05") + " " + err.Error()
+					s.log.Warn("CheckMintterAddrs error", zap.Error(checkError))
+					cancel()
+					continue
+				}
+				stat.StatusDNS = "OK"
+				duration, err := s.checkP2P(ctx, info, s.numPings)
+				if err != nil {
+					checkError := fmt.Errorf("P2P error [%s]: %w", site, err)
+					stat.StatusP2P = "KO"
+					stat.LastP2PError = time.Now().UTC().Format("2006-01-02 15:04:05") + " " + err.Error()
+					s.log.Warn("CheckP2P error", zap.Error(checkError))
+					cancel()
+					continue
+				}
+				stat.StatusP2P = "OK Avg. Ping:" + duration.Round(time.Millisecond).String()
+				cancel()
+				/*
+					if mustInclude != "" {
+						for _, addr := range info.Addrs {
+							if mustInclude == addr.String() {
+								includedAddress = true
+								break
 							}
-							return includedAddress, nil
 						}
-					*/
-				}(site, stat)
+						return includedAddress, nil
+					}
+				*/
 			}
-			wg.Wait()
 
 		}
 	}
