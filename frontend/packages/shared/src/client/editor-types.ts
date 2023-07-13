@@ -79,6 +79,7 @@ export type EditorFileBlock = {
   props: EditorBlockProps<{
     url: string
     name: string
+    size: string
   }>
   children: EditorBlock[]
 }

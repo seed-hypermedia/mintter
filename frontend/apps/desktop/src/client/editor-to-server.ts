@@ -148,6 +148,7 @@ export function editorBlockToServerBlock(
       type: 'file',
       attributes: {
         name: editorBlock.props.name,
+        size: editorBlock.props.size,
       },
       ref: `ipfs://${editorBlock.props.url}`,
     })

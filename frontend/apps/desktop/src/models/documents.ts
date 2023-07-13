@@ -591,12 +591,17 @@ export function useDraftEditor(
       if (!readyThings.current[0] || !readyThings.current[1]) return
 
       // trim empty blocks from the end of the document before treating them.
-      // @ts-expect-error
-      let _blocks = editor.topLevelBlocks.reduceRight((acc, block) => {
-        return acc.length === 0 && block.content.length == 0
-          ? acc
-          : [block].concat(acc)
-      }, [])
+      // TODO: Deal with deleting blocks
+      // let _blocks = editor.topLevelBlocks.reduceRight((acc, block) => {
+      //   return acc.length === 0 &&
+      //     block.content.length == 0 &&
+      //     (!['image', 'file'].includes(block.type) ||
+      //       !block.props.url ||
+      //       block.type !== 'embed' ||
+      //       block.props.ref !== 'hd://d/undefined')
+      //     ? acc
+      //     : [block].concat(acc)
+      // }, [])
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -648,8 +653,7 @@ export function useDraftEditor(
           }
         })
       }
-      // @ts-expect-error
-      observeBlocks(_blocks, '')
+      observeBlocks(editor.topLevelBlocks, '')
       const removedBlockIds = possiblyRemovedBlockIds
       lastBlocks.current = nextBlocks
 

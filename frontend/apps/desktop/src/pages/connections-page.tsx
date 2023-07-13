@@ -54,9 +54,15 @@ export default function ConnectionsPage() {
       <MainWrapper>
         <Container>
           <YStack tag="ul" padding={0} gap="$2">
-            {accounts.map((account) => {
+            {accounts.length > 0 ? (accounts.map((account) => {
               return <ContactItem key={account.id} account={account} />
-            })}
+            })) : 
+             (<YStack gap="$5" paddingVertical="$8">
+              <Text fontFamily="$body" fontSize="$3">
+                You have no Connections yet.
+              </Text>
+            </YStack>
+            )}
           </YStack>
         </Container>
       </MainWrapper>

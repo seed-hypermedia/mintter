@@ -26,6 +26,9 @@ export const FileBlock = createReactBlockSpec({
         values: ["false", "true"],
         default: "true",
       },
+      size: {
+        default: "",
+      },
     },
     containsInlineContent: true,
     // @ts-ignore
@@ -39,6 +42,7 @@ type FileType = {
   props: {
     url: string,
     name: string,
+    size: string,
   }
   children: [],
   content: [],
@@ -53,11 +57,13 @@ const Render = (block: Block<HDBlockSchema>, editor: BlockNoteEditor<HDBlockSche
     props: {
       url: block.props.url,
       name: block.props.name,
+      size: block.props.size,
     },
     children: [],
     content: block.content,
     type: block.type,
   } as FileType)
+  
 
   const assignFile = (newFile: FileType) => {
     setFile({...file, props: { ...file.props, ...newFile.props }})
@@ -132,6 +138,18 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
     }
   }
 
+  function formatBytes(bytes: number, decimals = 2) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
+
   return (
     <div className={selected ? 'ProseMirror-selectednode' : ''}>
       <YStack
@@ -196,7 +214,17 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
           icon={RiFile2Line}
           disabled
         >
-          {block.props.name}
+          <SizableText
+            size='$5'
+          >
+            {block.props.name}
+          </SizableText>
+          <SizableText
+            color='gray'
+            size='$2'
+          >
+            {formatBytes(parseInt(block.props.size))}
+          </SizableText>
         </Button>
       </YStack>
     </div>
@@ -213,7 +241,7 @@ function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const uploadedFile = event.target.files[0]
+      const uploadedFile: File = event.target.files[0]
       if (uploadedFile && uploadedFile.size <= 62914560) {
         const {name} = uploadedFile
         const formData = new FormData()
@@ -228,7 +256,7 @@ function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
             },
           )
           const data = await response.text()
-          assign({props: { url: data, name: name }} as FileType)
+          assign({props: { url: data, name: name, size: uploadedFile.size.toString() }} as FileType)
         } catch (error) {
           console.error(error)
         }
