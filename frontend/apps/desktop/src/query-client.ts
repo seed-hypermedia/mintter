@@ -52,5 +52,5 @@ setTimeout(() => {
 }, 1)
 
 export function appInvalidateQueries(queryKeys: QueryKey) {
-  send('invalidate_queries', queryKeys)
+  send?.('invalidate_queries', queryKeys)
 }
