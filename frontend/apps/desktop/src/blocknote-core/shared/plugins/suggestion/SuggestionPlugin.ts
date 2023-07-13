@@ -107,6 +107,7 @@ class SuggestionPluginView<
 
   pluginState: SuggestionPluginState<T>
   itemCallback: (item: T) => void
+  private lastPosition: DOMRect | undefined
 
   constructor({
     editor,
@@ -138,14 +139,6 @@ class SuggestionPluginView<
     }
 
     this.suggestionsMenu = suggestionsMenuFactory(this.getStaticParams())
-
-    document.addEventListener('scroll', this.handleScroll)
-  }
-
-  handleScroll = () => {
-    if (this.pluginKey.getState(this.editor._tiptapEditor.state).active) {
-      this.suggestionsMenu.render(this.getDynamicParams(), false)
-    }
   }
 
   update(view: EditorView, prevState: EditorState) {
@@ -189,25 +182,33 @@ class SuggestionPluginView<
     }
   }
 
-  destroy() {
-    document.removeEventListener('scroll', this.handleScroll)
-  }
-
   getStaticParams(): SuggestionsMenuStaticParams<T> {
     return {
       itemCallback: (item: T) => this.itemCallback(item),
+      getReferenceRect: () => {
+        const decorationNode = document.querySelector(
+          `[data-decoration-id="${this.pluginState.decorationId}"]`,
+        )
+        if (!decorationNode) {
+          if (this.lastPosition === undefined) {
+            throw new Error(
+              'Attempted to access trigger character reference rect before rendering suggestions menu.',
+            )
+          }
+          return this.lastPosition
+        }
+        const triggerCharacterBoundingBox =
+          decorationNode.getBoundingClientRect()
+        this.lastPosition = triggerCharacterBoundingBox
+        return triggerCharacterBoundingBox
+      },
     }
   }
 
   getDynamicParams(): SuggestionsMenuDynamicParams<T> {
-    const decorationNode = document.querySelector(
-      `[data-decoration-id="${this.pluginState.decorationId}"]`,
-    )
-
     return {
       items: this.pluginState.items,
       keyboardHoveredItemIndex: this.pluginState.keyboardHoveredItemIndex!,
-      referenceRect: decorationNode!.getBoundingClientRect(),
     }
   }
 }
