@@ -51,9 +51,10 @@ func main() {
 		if idx == 0 && strings.ToLower(strings.Replace(row[0], " ", "", -1)) != "hostname" {
 			panic("First row First column of the CSV must be hostname")
 		}
-		if idx == 0 {
+		if idx == 0 || row[0][0:1] == "#" {
 			continue
 		}
+
 		sitesList = append(sitesList, strings.Replace(strings.Replace(row[0], " ", "", -1), ",", "", -1))
 	}
 

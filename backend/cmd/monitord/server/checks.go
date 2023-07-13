@@ -13,24 +13,21 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (time.Duration, error) {
 	var pingAvg time.Duration
-
 	if err := s.node.Connect(ctx, peer); err != nil {
-		return pingAvg, err
+		return pingAvg, fmt.Errorf("Could not connect: %w", err)
 	}
-	pingService := ping.NewPingService(s.node)
-	s.node.SetStreamHandler(ping.ID, pingService.PingHandler)
-	ch := pingService.Ping(ctx, peer.ID)
+
+	ch := s.pingService.Ping(ctx, peer.ID)
 	for i := 0; i < numPings; i++ {
 		res := <-ch
 		pingAvg += res.RTT
 		if res.Error != nil {
-			return pingAvg, res.Error
+			return pingAvg, fmt.Errorf("Could not ping: %w", res.Error)
 		}
 	}
 	pingAvg = time.Duration((pingAvg.Nanoseconds()) / int64(numPings))
@@ -55,16 +52,16 @@ func (s *Srv) getSiteInfoHTTP(SiteHostname string) (*documents.SiteDiscoveryConf
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("add site: could not create request to well-known site: %w ", err)
+		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("add site: could not contact to provided site [%s]: %w ", requestURL, err)
+		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("add site: site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
+		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
 	}
 
 	data, err := io.ReadAll(res.Body)
