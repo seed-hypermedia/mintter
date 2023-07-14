@@ -468,5 +468,5 @@ export const insertFile = new ReactSlashMenuItem<HDBlockSchema>(
 ["file", "folder"],
 "Media",
 <RiFile2Line size={18} />,
-"Insert a File"
+"Insert a file"
 );
