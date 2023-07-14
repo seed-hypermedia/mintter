@@ -1,13 +1,12 @@
 package main
 
 import (
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"mintter/backend/cmd/monitord/server"
 	"os"
 	"os/signal"
-	"strings"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -36,36 +35,12 @@ func main() {
 
 	logging.SetAllLoggers(lvl)
 
-	f, err := os.Open(*sitesCSV)
-	if err != nil {
-		panic(fmt.Errorf("Unable to read sites file [%s]:%w ", *sitesCSV, err))
-	}
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		panic(fmt.Errorf("Unable to parse file as CSV for %s: %w", *sitesCSV, err))
-	}
-
-	sitesList := []string{}
-	for idx, row := range records {
-		if idx == 0 && strings.ToLower(strings.Replace(row[0], " ", "", -1)) != "hostname" {
-			panic("First row First column of the CSV must be hostname")
-		}
-		if idx == 0 || row[0][0:1] == "#" {
-			continue
-		}
-
-		sitesList = append(sitesList, strings.Replace(strings.Replace(row[0], " ", "", -1), ",", "", -1))
-	}
-
-	if len(sitesList) == 0 {
-		panic(fmt.Errorf("You must provide at least 1 site in sites csv"))
-	}
-	srv, err := server.NewServer(*portHTTP, *portP2P, *numPings, *scanPeriod, *peerTimeout, *templateFile, log.Desugar(), sitesList...)
+	srv, err := server.NewServer(*portHTTP, *portP2P, log.Desugar(), *sitesCSV)
 	if err != nil {
 		panic(err)
 	}
-	log.Desugar().Info("server successfully created.", zap.Int("Sites to be monitored", len(sitesList)))
+	log.Desugar().Info("server successfully created.", zap.String("server addr:", "127.0.0.1:"+strconv.Itoa(*portHTTP)))
+	srv.Start(*numPings, *scanPeriod, *peerTimeout, *templateFile)
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -78,6 +53,6 @@ func main() {
 		done <- true
 	}()
 	<-done
-	srv.Shutdown()
+	srv.Stop()
 	log.Desugar().Info("Exited normally")
 }

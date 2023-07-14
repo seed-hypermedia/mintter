@@ -3,10 +3,15 @@ package server
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
+	"reflect"
+	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +25,7 @@ import (
 type Srv struct {
 	// MonitorStatus is a map where the key is the site hostname and the value the status.
 	MonitorStatus *map[string]*siteStatus
+	mu            sync.Mutex
 	node          host.Host
 	pingService   *ping.PingService
 	numPings      int
@@ -28,6 +34,7 @@ type Srv struct {
 	log           *zap.Logger
 	httpServer    *http.Server
 	templateFile  string
+	sitesCSV      string
 }
 
 type siteStatus struct {
@@ -39,29 +46,24 @@ type siteStatus struct {
 }
 
 // NewServer returns a new monitor server. It also starts serving content on the provided port.
-func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration, peerTimeout time.Duration, templateFile string, log *zap.Logger, sites ...string) (*Srv, error) {
+func NewServer(portHTTP int, portP2P int, log *zap.Logger, sitesCSVPath string) (*Srv, error) {
 	node, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/" + strconv.Itoa(portP2P)),
 	)
 	if err != nil {
 		return nil, err
 	}
-	monitorStatus := make(map[string]*siteStatus)
-	for _, site := range sites {
-		monitorStatus[site] = &siteStatus{
-			StatusDNS: "N/A",
-			StatusP2P: "N/A",
-		}
-	}
 
+	monitorStatus := make(map[string]*siteStatus)
 	srv := &Srv{
 		MonitorStatus: &monitorStatus,
 		node:          node,
-		ticker:        time.NewTicker(scanPeriod),
-		numPings:      numPings,
 		log:           log,
-		templateFile:  templateFile,
 		pingService:   ping.NewPingService(node),
+		sitesCSV:      sitesCSVPath,
+	}
+	if err := srv.updateSiteList(); err != nil {
+		return nil, err
 	}
 
 	srv.httpServer = &http.Server{
@@ -70,14 +72,21 @@ func NewServer(portHTTP int, portP2P int, numPings int, scanPeriod time.Duration
 		Handler:           srv,
 	}
 
-	go srv.httpServer.ListenAndServe()
-
-	go srv.scan(peerTimeout)
 	return srv, nil
 }
 
-// Shutdown closes the server and p2p node inside.
-func (s *Srv) Shutdown() {
+// Start starts the monitor.
+func (s *Srv) Start(numPings int, scanPeriod time.Duration, peerTimeout time.Duration, templateFile string) {
+	s.ticker = time.NewTicker(scanPeriod)
+	s.numPings = numPings
+	s.templateFile = templateFile
+	go s.httpServer.ListenAndServe()
+
+	go s.scan(peerTimeout)
+}
+
+// Stop closes the server and p2p node inside.
+func (s *Srv) Stop() {
 	s.ticker.Stop()
 	s.chScan <- true
 	_ = s.httpServer.Shutdown(context.Background())
@@ -93,6 +102,57 @@ func (s *Srv) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Srv) updateSiteList() error {
+	f, err := os.Open(s.sitesCSV)
+	if err != nil {
+		return fmt.Errorf("Unable to read sites file [%s]:%w ", s.sitesCSV, err)
+	}
+	defer f.Close()
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return fmt.Errorf("Unable to parse sites reader as CSV for: %w", err)
+	}
+
+	newSitesList := []string{}
+	for idx, row := range records {
+		if idx == 0 && strings.ToLower(strings.Replace(row[0], " ", "", -1)) != "hostname" {
+			return fmt.Errorf("First row First column of the CSV must be hostname")
+		}
+		if idx == 0 || row[0][0:1] == "#" {
+			continue
+		}
+
+		newSitesList = append(newSitesList, strings.Replace(strings.Replace(row[0], " ", "", -1), ",", "", -1))
+	}
+	sort.Strings(newSitesList)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	currentSiteList := make([]string, len(*s.MonitorStatus))
+	i := 0
+	for k := range *s.MonitorStatus {
+		currentSiteList[i] = k
+		i++
+	}
+
+	sort.Strings(currentSiteList)
+	if !reflect.DeepEqual(currentSiteList, newSitesList) {
+		newMonitorStatus := make(map[string]*siteStatus)
+		for _, site := range newSitesList {
+			if _, ok := (*s.MonitorStatus)[site]; !ok {
+				newMonitorStatus[site] = &siteStatus{
+					StatusDNS: "N/A",
+					StatusP2P: "N/A",
+				}
+			} else {
+				newMonitorStatus[site] = (*s.MonitorStatus)[site]
+			}
+		}
+		s.MonitorStatus = &newMonitorStatus
+		s.log.Info("Updated Site list", zap.Int("Sites to monitor", len(newSitesList)))
+	}
+	return nil
+}
 func (s *Srv) scan(timeout time.Duration) {
 	s.chScan = make(chan bool)
 	for {
@@ -100,6 +160,9 @@ func (s *Srv) scan(timeout time.Duration) {
 		case <-s.chScan:
 			return
 		case <-s.ticker.C:
+			if err := s.updateSiteList(); err != nil {
+				s.log.Warn("Failed tu update site list from CSV", zap.Error(err))
+			}
 			var wg sync.WaitGroup
 			for site, stat := range *s.MonitorStatus {
 				wg.Add(1)
