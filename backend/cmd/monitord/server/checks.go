@@ -13,11 +13,18 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (time.Duration, error) {
 	var pingAvg time.Duration
+	{
+		sw, ok := s.node.Network().(*swarm.Swarm)
+		if ok {
+			sw.Backoff().Clear(peer.ID)
+		}
+	}
 	if err := s.node.Connect(ctx, peer); err != nil {
 		return pingAvg, fmt.Errorf("Could not connect: %w", err)
 	}
