@@ -421,6 +421,23 @@ export const BlockContainer = Node.create<IBlock>({
             return false
           }
 
+          if (
+            group.attrs.listType !== 'div' &&
+            group.attrs.listType !== listType &&
+            container
+          ) {
+            setTimeout(() => {
+              this.editor
+                .chain()
+                .sinkListItem('blockContainer')
+                .UpdateGroup(-1, listType, start)
+                .run()
+
+              return true
+            })
+            return false
+          }
+
           if (dispatch && group.type.name === 'blockGroup') {
             start
               ? state.tr.setNodeMarkup($pos.before(depth), null, {
