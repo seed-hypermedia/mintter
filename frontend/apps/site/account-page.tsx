@@ -4,6 +4,7 @@ import {
   Header,
   Heading,
   MainContainer,
+  PageSection,
   Spinner,
   Text,
   XStack,
@@ -24,7 +25,7 @@ function AccountContent({account}: {account: HDAccount | null | undefined}) {
         {avatar && (
           <Avatar circular size={64}>
             <Avatar.Image src={cidURL(avatar)} />
-            <Avatar.Fallback backgroundColor={'#26ab95'} />
+            <Avatar.Fallback backgroundColor="$color6" />
           </Avatar>
         )}
         <Heading>{alias}</Heading>
@@ -42,23 +43,77 @@ export default function AccountPage({accountId}: {accountId: string}) {
   const account = publication.data?.account
 
   return (
-    <Container tag="main" id="main-content" tabIndex={-1}>
-      <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
+    <YStack flex={1}>
       <Head>
         <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
       </Head>
-      <MainContainer flex={3} className="web-publication">
-        {account ? (
-          <AccountContent account={account} />
-        ) : publication.isLoading ? (
-          <YStack>
-            <Spinner />
-          </YStack>
-        ) : (
-          <Header>Document not found.</Header>
-        )}
-      </MainContainer>
+      <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
+      <PageSection.Root flex={1}>
+        <PageSection.Side />
+        <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
+          <AccountPlaceholder />
+          {/* {account ? (
+            <AccountContent account={account} />
+          ) : publication.isLoading ? (
+            <AccountPlaceholder />
+          ) : (
+            <Header>Document not found.</Header>
+          )} */}
+        </PageSection.Content>
+        <PageSection.Side />
+      </PageSection.Root>
       <Footer />
-    </Container>
+    </YStack>
+  )
+}
+
+function AccountPlaceholder() {
+  return (
+    <YStack gap="$6">
+      <YStack gap="$3" flex={1} alignItems="center">
+        <Avatar circular size={64}>
+          <Avatar.Fallback backgroundColor="$color7" />
+        </Avatar>
+
+        <YStack
+          width="100%"
+          maxWidth={300}
+          height={16}
+          backgroundColor="$color7"
+        />
+        <YStack
+          width="100%"
+          maxWidth={240}
+          height={12}
+          backgroundColor="$color6"
+        />
+      </YStack>
+      <YStack gap="$3" width="100%" alignItems="center">
+        <YStack
+          width="100%"
+          maxWidth={240}
+          height={12}
+          backgroundColor="$color7"
+        />
+        <YStack
+          width="100%"
+          maxWidth={270}
+          height={12}
+          backgroundColor="$color7"
+        />
+        <YStack
+          width="100%"
+          maxWidth={220}
+          height={12}
+          backgroundColor="$color7"
+        />
+        <YStack
+          width="100%"
+          maxWidth={200}
+          height={12}
+          backgroundColor="$color7"
+        />
+      </YStack>
+    </YStack>
   )
 }

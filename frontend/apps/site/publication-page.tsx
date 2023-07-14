@@ -1,44 +1,42 @@
 import {
   Account,
-  ImageBlock,
   EmbedBlock,
+  getCIDFromIPFSUrl,
+  getIdsfromUrl,
+  ImageBlock,
   InlineContent,
+  isHyperdocsScheme,
   PresentationBlock,
   SectionBlock,
-  SiteInfo,
-  getCIDFromIPFSUrl,
   serverBlockToEditorInline,
-  getIdsfromUrl,
-  isHyperdocsScheme,
+  SiteInfo,
 } from '@mintter/shared'
 import {
+  Block,
+  Publication,
+} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
+import {
   Button,
-  Container,
-  ContainerLarge,
   Copy,
+  Footer,
   Header,
-  Main,
-  MainContainer,
+  PageSection,
+  SizableText,
   Spinner,
   Text,
   XStack,
   YStack,
 } from '@mintter/ui'
+import {DehydratedState} from '@tanstack/react-query'
+import {cidURL} from 'ipfs'
 import Head from 'next/head'
+import {useRouter} from 'next/router'
+import {useMemo, useState} from 'react'
+import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
-import Footer from './footer'
 import {SiteHead} from './site-head'
-import {
-  Block,
-  Publication,
-} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from './trpc'
-import {useMemo, useState} from 'react'
-import {DehydratedState} from '@tanstack/react-query'
-import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
-import {cidURL} from 'ipfs'
-import {useRouter} from 'next/router'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -126,7 +124,7 @@ export default function PublicationPage({
   const pub = publication.data?.publication
 
   return (
-    <>
+    <YStack flex={1}>
       <Head>
         <meta
           name="hyperdocs-entity-id"
@@ -135,35 +133,48 @@ export default function PublicationPage({
         <meta name="hyperdocs-entity-version" content={pub?.version} />
         <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
         {/* legacy mintter metadata */}
-        <meta name="mintter-document-id" content={pub?.document?.id} />
-        <meta name="mintter-document-version" content={pub?.version} />
-        <meta name="mintter-document-title" content={pub?.document?.title} />
+        <meta name="hyperdocs-document-id" content={pub?.document?.id} />
+        <meta name="hyperdocs-document-version" content={pub?.version} />
+        <meta name="hyperdocs-document-title" content={pub?.document?.title} />
       </Head>
       <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
-      <MainContainer
-        sidebarAfter={
-          <>
-            <PublicationMetadata publication={pub} pathName={pathName} />
-            <WebTipping
-              docId={documentId}
-              editors={pub?.document?.editors || []}
-            />
-          </>
-        }
-      >
-        {pub ? (
-          <PublicationContent publication={pub} />
-        ) : publication.isLoading ? (
-          <YStack>
-            <Header>Querying for document on the network.</Header>
-            <Spinner />
-          </YStack>
-        ) : (
-          <Header>Document not found.</Header>
-        )}
-      </MainContainer>
+      <PageSection.Root flex={1}>
+        <PageSection.Side />
+        <PageSection.Content>
+          {pub ? (
+            <PublicationContent publication={pub} />
+          ) : publication.isLoading ? (
+            <PublicationPlaceholder />
+          ) : (
+            <YStack
+              padding="$4"
+              borderRadius="$4"
+              borderColor="$color6"
+              borderWidth={1}
+            >
+              <SizableText
+                tag="h1"
+                size="$7"
+                letterSpacing={0}
+                fontWeight="600"
+                flexDirection="column"
+                display="flex"
+              >
+                Document not found.
+              </SizableText>
+            </YStack>
+          )}
+        </PageSection.Content>
+        <PageSection.Side paddingTop={0}>
+          <PublicationMetadata publication={pub} pathName={pathName} />
+          <WebTipping
+            docId={documentId}
+            editors={pub?.document?.editors || []}
+          />
+        </PageSection.Side>
+      </PageSection.Root>
       <Footer />
-    </>
+    </YStack>
   )
 }
 
@@ -311,16 +322,21 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
     }
   }
   return (
-    <div id={`${block.id}-block`} data-ref={reference}>
+    <YStack
+      id={`${block.id}-block`}
+      data-ref={reference}
+      transform="translateX(-19px)"
+      width="calc(100% + 16px)"
+      // borderLeftWidth={3}
+      // borderLeftColor="$color7"
+      position="relative"
+    >
       <YStack
-        backgroundColor="#d8ede7"
-        borderColor="#95bfb4"
-        borderWidth={1}
         padding="$4"
         paddingVertical="$2"
         borderRadius="$4"
+        backgroundColor="$color5"
         hoverStyle={{
-          backgroundColor: '#e8f4f0',
           cursor: 'pointer',
         }}
         onPress={() => {
@@ -330,9 +346,31 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
         href={stripHDLinkPrefix(block.ref)}
       >
         {content}
+        {/* <EmbedMetadata embed={embed} /> */}
       </YStack>
-    </div>
+    </YStack>
   )
+}
+
+function EmbedMetadata({embed}: {embed: any}) {
+  if (embed.data?.publication) {
+    return (
+      <YStack
+        position="absolute"
+        top={0}
+        left={0}
+        width="100%"
+        maxWidth={200}
+        transform="translateX(-100%)"
+        paddingRight="$3"
+      >
+        <SizableText textAlign="right" size="$1">
+          {embed.data.publication.document.title}
+        </SizableText>
+      </YStack>
+    )
+  }
+  return null
 }
 
 function StaticBlock({block}: {block: HDBlock}) {
@@ -449,9 +487,31 @@ function StaticBlockNode({
                 `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
               )
             }}
-          ></Button>
+          />
         </XStack>
       )}
+    </YStack>
+  )
+}
+
+function PublicationPlaceholder() {
+  return (
+    <YStack gap="$6">
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+    </YStack>
+  )
+}
+
+function BlockPlaceholder() {
+  return (
+    <YStack gap="$3">
+      <YStack width="90%" height={16} backgroundColor="$color6" />
+      <YStack height={16} backgroundColor="$color6" />
+      <YStack width="75%" height={16} backgroundColor="$color6" />
+      <YStack width="60%" height={16} backgroundColor="$color6" />
     </YStack>
   )
 }
