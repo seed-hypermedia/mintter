@@ -331,6 +331,23 @@ func generateQueries() error {
 			"DELETE FROM", s.HDDrafts, '\n',
 			"WHERE", s.HDDraftsBlob, "=", qb.VarCol(s.HDDraftsBlob),
 		),
+
+		qb.MakeQuery(s.Schema, "SetReindexTime", sgen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.GlobalMeta, qb.ListColShort(
+				s.GlobalMetaKey,
+				s.GlobalMetaValue,
+			), '\n',
+			"VALUES", qb.List(
+				"'last_reindex_time'",
+				qb.VarCol(s.GlobalMetaValue),
+			), '\n',
+		),
+		qb.MakeQuery(s.Schema, "GetReindexTime", sgen.QueryKindSingle,
+			"SELECT", qb.Results(s.GlobalMetaValue), '\n',
+			"FROM", s.GlobalMeta, '\n',
+			"WHERE", s.GlobalMetaKey, "= 'last_reindex_time'", '\n',
+			"LIMIT 1",
+		),
 	)
 
 	if err != nil {

@@ -155,6 +155,9 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 	}
 
 	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", "debug"))
+	if err := a.Blobs.MaybeReindex(ctx); err != nil {
+		return nil, fmt.Errorf("failed to reindex database: %w", err)
+	}
 
 	me := a.Storage.Identity()
 

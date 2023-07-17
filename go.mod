@@ -8,6 +8,7 @@ require (
 	github.com/btcsuite/btcd v0.23.3
 	github.com/btcsuite/btcd/btcutil v1.1.2
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
+	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/getsentry/sentry-go v0.16.0
 	github.com/google/go-cmp v0.5.9
 	github.com/gorilla/mux v1.8.0
@@ -182,6 +183,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.7 // indirect
 	github.com/whyrusleeping/cbor-gen v0.0.0-20230418232409-daab9ece03a0 // indirect
 	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.5 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.5 // indirect

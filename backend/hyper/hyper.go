@@ -3,18 +3,21 @@ package hyper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/boxo/blockstore"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multicodec"
 	"github.com/multiformats/go-multihash"
+	"github.com/sanity-io/litter"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
@@ -32,8 +35,9 @@ type Storage struct {
 // NewStorage creates a new blob storage.
 func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
 	return &Storage{
-		db: db,
-		bs: newBlockstore(db),
+		db:  db,
+		bs:  newBlockstore(db),
+		log: log,
 	}
 }
 
@@ -318,6 +322,7 @@ type Blob struct {
 	Decoded any
 }
 
+// EncodeBlob produces a Blob from any object.
 func EncodeBlob(t BlobType, v any) (hb Blob, err error) {
 	data, err := cbornode.DumpObject(v)
 	if err != nil {
@@ -337,4 +342,53 @@ func EncodeBlob(t BlobType, v any) (hb Blob, err error) {
 		Data:    data,
 		Decoded: v,
 	}, nil
+}
+
+var errNotHyperBlob = errors.New("not a hyper blob")
+
+// DecodeBlob attempts to infer hyper Blob information from arbitrary IPFS block.
+func DecodeBlob(c cid.Cid, data []byte) (hb Blob, err error) {
+	codec := c.Prefix().Codec
+
+	if codec != uint64(multicodec.DagCbor) {
+		return hb, fmt.Errorf("%s: %w", c, errNotHyperBlob)
+	}
+
+	var v struct {
+		Type string `cbor:"@type"`
+	}
+	if err := cbor.Unmarshal(data, &v); err != nil {
+		var vv any
+		if err := cbornode.DecodeInto(data, &vv); err != nil {
+			panic(err)
+		}
+		litter.Dump(vv)
+
+		return hb, fmt.Errorf("failed to infer hyper blob %s: %w", c, err)
+	}
+
+	switch BlobType(v.Type) {
+	case TypeKeyDelegation:
+		var v KeyDelegation
+		if err := cbornode.DecodeInto(data, &v); err != nil {
+			return hb, err
+		}
+		hb.Decoded = v
+	case TypeChange:
+		var v Change
+		if err := cbornode.DecodeInto(data, &v); err != nil {
+			return hb, err
+		}
+		hb.Decoded = v
+	default:
+		return hb, fmt.Errorf("unknown hyper blob type: '%s'", v.Type)
+	}
+
+	hb.Type = BlobType(v.Type)
+	hb.CID = c
+	hb.Codec = multicodec.Code(codec)
+	hb.Hash = c.Hash()
+	hb.Data = data
+
+	return hb, nil
 }

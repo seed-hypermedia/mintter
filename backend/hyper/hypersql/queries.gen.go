@@ -982,3 +982,56 @@ WHERE hd_drafts.blob = :hdDraftsBlob`
 
 	return err
 }
+
+func SetReindexTime(conn *sqlite.Conn, globalMetaValue string) error {
+	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+VALUES ('last_reindex_time', :globalMetaValue)
+`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":globalMetaValue", globalMetaValue)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: SetReindexTime: %w", err)
+	}
+
+	return err
+}
+
+type GetReindexTimeResult struct {
+	GlobalMetaValue string
+}
+
+func GetReindexTime(conn *sqlite.Conn) (GetReindexTimeResult, error) {
+	const query = `SELECT global_meta.value
+FROM global_meta
+WHERE global_meta.key = 'last_reindex_time'
+LIMIT 1`
+
+	var out GetReindexTimeResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("GetReindexTime: more than one result return for a single-kind query")
+		}
+
+		out.GlobalMetaValue = stmt.ColumnText(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: GetReindexTime: %w", err)
+	}
+
+	return out, err
+}
