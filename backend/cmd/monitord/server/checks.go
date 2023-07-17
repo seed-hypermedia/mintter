@@ -11,37 +11,55 @@ import (
 
 	"mintter/backend/mttnet"
 
-	"github.com/libp2p/go-libp2p/core/peer"
-	peerstore "github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/p2p/net/swarm"
+	peer "github.com/libp2p/go-libp2p/core/peer"
+	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
+	ping "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (time.Duration, error) {
-	var pingAvg time.Duration
-	{
-		sw, ok := s.node.Network().(*swarm.Swarm)
-		if ok {
-			sw.Backoff().Clear(peer.ID)
-		}
+	ttl := peerstore.TempAddrTTL
+	deadline, hasDeadline := ctx.Deadline()
+	if hasDeadline {
+		ttl = time.Until(deadline)
 	}
-	if err := s.node.Connect(ctx, peer); err != nil {
-		return pingAvg, fmt.Errorf("Could not connect: %w", err)
+	s.node.Peerstore().AddAddrs(peer.ID, peer.Addrs, ttl)
+
+	pings := ping.Ping(ctx, s.node, peer.ID)
+
+	var (
+		count int
+		total time.Duration
+	)
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for i := 0; i < numPings; i++ {
+		res, ok := <-pings
+		if !ok {
+			break
+		}
+		if res.Error != nil {
+			return total, fmt.Errorf("Could not ping: %w", res.Error)
+		}
+		count++
+		total += res.RTT
+
+		select {
+		case <-ticker.C:
+		case <-ctx.Done():
+			return total, ctx.Err()
+		}
 	}
 
-	ch := s.pingService.Ping(ctx, peer.ID)
-	for i := 0; i < numPings; i++ {
-		res := <-ch
-		pingAvg += res.RTT
-		if res.Error != nil {
-			return pingAvg, fmt.Errorf("Could not ping: %w", res.Error)
-		}
+	if count == 0 {
+		return total, fmt.Errorf("Ping Failed")
 	}
-	pingAvg = time.Duration((pingAvg.Nanoseconds()) / int64(numPings))
+	pingAvg := time.Duration((total.Nanoseconds()) / int64(count))
 	return pingAvg, nil
 }
 
-func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peerstore.AddrInfo, err error) {
+func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
 	resp, err := s.getSiteInfoHTTP(hostname)
 	if err != nil {
 		return

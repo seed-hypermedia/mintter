@@ -17,7 +17,6 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +26,6 @@ type Srv struct {
 	MonitorStatus *map[string]*siteStatus
 	mu            sync.Mutex
 	node          host.Host
-	pingService   *ping.PingService
 	numPings      int
 	ticker        *time.Ticker
 	chScan        chan bool
@@ -59,7 +57,6 @@ func NewServer(portHTTP int, portP2P int, log *zap.Logger, sitesCSVPath string) 
 		MonitorStatus: &monitorStatus,
 		node:          node,
 		log:           log,
-		pingService:   ping.NewPingService(node),
 		sitesCSV:      sitesCSVPath,
 	}
 	if err := srv.updateSiteList(); err != nil {
@@ -94,11 +91,11 @@ func (s *Srv) Stop() {
 }
 
 func (s *Srv) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.log.Info("http Request", zap.String("template file", s.templateFile), zap.Any("data", s.MonitorStatus))
+	s.log.Debug("http Request", zap.String("template file", s.templateFile), zap.Any("data", s.MonitorStatus))
 	tmpl, _ := template.ParseFiles(s.templateFile)
 	err := tmpl.Execute(w, *s.MonitorStatus)
 	if err != nil {
-		s.log.Error("Errorn rendering page", zap.String("template file", s.templateFile), zap.Any("data", s.MonitorStatus), zap.Error(err))
+		s.log.Error("Error rendering page", zap.String("template file", s.templateFile), zap.Any("data", s.MonitorStatus), zap.Error(err))
 	}
 }
 
@@ -161,7 +158,7 @@ func (s *Srv) scan(timeout time.Duration) {
 			return
 		case <-s.ticker.C:
 			if err := s.updateSiteList(); err != nil {
-				s.log.Warn("Failed tu update site list from CSV", zap.Error(err))
+				s.log.Warn("Failed to update site list from CSV", zap.Error(err))
 			}
 			var wg sync.WaitGroup
 			for site, stat := range *s.MonitorStatus {
