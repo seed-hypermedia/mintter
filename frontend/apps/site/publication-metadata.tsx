@@ -495,7 +495,7 @@ export function PublicationMetadata({
 }) {
   if (!publication) return null
   return (
-    <YStack>
+    <>
       <TableOfContents publication={publication} />
       <PublishedMeta publication={publication} pathName={pathName} />
       <AuthorsMeta publication={publication} />
@@ -503,7 +503,7 @@ export function PublicationMetadata({
       <NextVersionsMeta publication={publication} pathName={pathName} />
       <VersionsMeta publication={publication} pathName={pathName} />
       <CitationsMeta publication={publication} />
-    </YStack>
+    </>
   )
 }
 

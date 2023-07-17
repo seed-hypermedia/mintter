@@ -1,6 +1,7 @@
 export * from 'tamagui'
+export {Paragraph as TParagraph} from 'tamagui'
+export {Paragraph} from './text'
 export * from './site-title'
-export * from './site-aside'
 export * from './container'
 export * from './page-components'
 export * from './icons'

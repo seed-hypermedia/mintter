@@ -83,7 +83,7 @@ function App({Component, pageProps}: AppProps<EveryPageProps>) {
       </Head>
       <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
-          {contents}
+          <Theme name="mint">{contents}</Theme>
           <Toaster position="bottom-right" />
         </ThemeProvider>
       </Hydrate>

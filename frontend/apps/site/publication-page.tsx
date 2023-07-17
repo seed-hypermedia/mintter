@@ -3,11 +3,12 @@ import {
   EmbedBlock,
   getCIDFromIPFSUrl,
   getIdsfromUrl,
+  HeadingBlock,
   ImageBlock,
   InlineContent,
   isHyperdocsScheme,
+  ParagraphBlock,
   PresentationBlock,
-  SectionBlock,
   serverBlockToEditorInline,
   SiteInfo,
 } from '@mintter/shared'
@@ -19,7 +20,6 @@ import {
   Button,
   Copy,
   Footer,
-  Header,
   PageSection,
   SizableText,
   Spinner,
@@ -165,12 +165,14 @@ export default function PublicationPage({
             </YStack>
           )}
         </PageSection.Content>
-        <PageSection.Side paddingTop={0}>
-          <PublicationMetadata publication={pub} pathName={pathName} />
-          <WebTipping
-            docId={documentId}
-            editors={pub?.document?.editors || []}
-          />
+        <PageSection.Side>
+          <YStack className="publication-sidenav-sticky">
+            <PublicationMetadata publication={pub} pathName={pathName} />
+            <WebTipping
+              docId={documentId}
+              editors={pub?.document?.editors || []}
+            />
+          </YStack>
         </PageSection.Side>
       </PageSection.Root>
       <Footer />
@@ -207,16 +209,16 @@ function InlineContentView({
           const isHeading = style?.heading || false
           const isBold = content.styles.bold || false
           return (
-            <Text
+            <SizableText
               key={index}
               fontSize={isHeading ? 24 : undefined}
-              fontWeight={isHeading || isBold ? 'bold' : ''}
+              fontWeight={isHeading || isBold ? '800' : '400'}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
-              fontFamily={content.styles.code ? 'monospace' : undefined}
+              fontFamily={content.styles.code ? '$mono' : undefined}
             >
               {content.text}
-            </Text>
+            </SizableText>
           )
         }
         if (content.type === 'link') {
@@ -240,7 +242,7 @@ function InlineContentView({
   )
 }
 
-function StaticSectionBlock({block}: {block: SectionBlock}) {
+function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
   const inline = useMemo(
     () => serverBlockToEditorInline(new Block(block)),
     [block],
@@ -327,8 +329,6 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
       data-ref={reference}
       transform="translateX(-19px)"
       width="calc(100% + 16px)"
-      // borderLeftWidth={3}
-      // borderLeftColor="$color7"
       position="relative"
     >
       <YStack
@@ -352,45 +352,11 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   )
 }
 
-function EmbedMetadata({embed}: {embed: any}) {
-  if (embed.data?.publication) {
-    return (
-      <YStack
-        position="absolute"
-        top={0}
-        left={0}
-        width="100%"
-        maxWidth={200}
-        transform="translateX(-100%)"
-        paddingRight="$3"
-      >
-        <SizableText textAlign="right" size="$1">
-          {embed.data.publication.document.title}
-        </SizableText>
-      </YStack>
-    )
-  }
-  return null
-}
-
 function StaticBlock({block}: {block: HDBlock}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
     return <StaticSectionBlock block={niceBlock} />
-  }
-  // legacy node
-  // @ts-expect-error
-  if (niceBlock.type === 'statement') {
-    return (
-      <StaticSectionBlock
-        block={{
-          type: 'paragraph',
-          // @ts-expect-error
-          ...niceBlock,
-        }}
-      />
-    )
   }
 
   if (niceBlock.type === 'image') {
@@ -406,7 +372,9 @@ function StaticBlock({block}: {block: HDBlock}) {
   // return <span>{JSON.stringify(block)}</span>
   return (
     <ErrorMessageBlock
+      // @ts-expect-error
       id={`${niceBlock.id}-block`}
+      // @ts-expect-error
       message={`Unknown block type: "${niceBlock.type}"`}
     />
   )

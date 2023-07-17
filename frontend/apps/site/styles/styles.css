@@ -188,6 +188,7 @@ button,
 [type='reset'],
 [type='submit'] {
   -webkit-appearance: button;
+  appearance: button;
 }
 
 /**
@@ -280,6 +281,7 @@ textarea {
 
 [type='search'] {
   -webkit-appearance: textfield; /* 1 */
+  appearance: textfield;
   outline-offset: -2px; /* 2 */
 }
 
@@ -367,13 +369,13 @@ template {
   box-sizing: inherit;
 }
 
-::selection {
+/* ::selection {
   background: var(--color-selection);
 }
 
 ::-moz-selection {
   background: var(--color-selection);
-}
+} */
 
 html {
   box-sizing: border-box;
@@ -415,4 +417,10 @@ body {
 }
 .unset-img > * {
   position: unset !important;
+}
+
+.publication-sidenav-sticky {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0;
 }

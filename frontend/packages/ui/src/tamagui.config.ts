@@ -1,13 +1,12 @@
-import {createFont, Variable, GenericFont} from '@tamagui/web'
-import {createTamagui, createTokens} from 'tamagui'
-import {createInterFont} from '@tamagui/font-inter'
-import {shorthands} from '@tamagui/shorthands'
+import { createInterFont } from '@tamagui/font-inter'
+import { shorthands } from '@tamagui/shorthands'
 import * as tamaguiDefaults from '@tamagui/themes'
+import { createFont, GenericFont, Variable } from '@tamagui/web'
+import { createTamagui, createTokens } from 'tamagui'
 
-import {createMedia} from '@tamagui/react-native-media-driver'
 import * as colors from '@tamagui/colors'
+import { createMedia } from '@tamagui/react-native-media-driver'
 
-import {animations} from './animations'
 
 var headingFont = createInterFont({
   size: {
