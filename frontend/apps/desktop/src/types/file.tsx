@@ -79,7 +79,7 @@ const Render = (block: Block<HDBlockSchema>, editor: BlockNoteEditor<HDBlockSche
       {file.props.url ? (
         <FileComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
-        <FileForm block={block} assign={assignFile} />
+        <FileForm block={block} assign={assignFile} editor={editor} />
       ) : (
         <></>
       )}
@@ -231,7 +231,7 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
   )
 }
 
-function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
+function FileForm({block, assign, editor}: {block: Block<HDBlockSchema>, assign: any, editor: BlockNoteEditor<HDBlockSchema>}) {
   const [url, setUrl] = useState('');
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
@@ -241,11 +241,34 @@ function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const uploadedFile: File = event.target.files[0]
-      if (uploadedFile && uploadedFile.size <= 62914560) {
-        const {name} = uploadedFile
+      const files = [...event.target.files]
+      const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+      if (largeFileIndex > -1) {
+        setFileName({name: largeFileIndex > 0 ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.` : 'The file size exceeds 60 MB.', color: 'red'})
+        return
+      }
+
+      const {name} = files[0]
+      const formData = new FormData()
+      formData.append('file', files[0])
+
+      try {
+        const response = await fetch(
+          'http://localhost:55001/ipfs/file-upload',
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+        const data = await response.text()
+        assign({props: { url: data, name: name, size: files[0].size.toString() }} as FileType)
+      } catch (error) {
+        console.error(error)
+      }
+      for (let i = files.length - 1; i > 0; i--) {
+        const {name} = files[i]
         const formData = new FormData()
-        formData.append('file', uploadedFile)
+        formData.append('file', files[i])
 
         try {
           const response = await fetch(
@@ -256,11 +279,19 @@ function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
             },
           )
           const data = await response.text()
-          assign({props: { url: data, name: name, size: uploadedFile.size.toString() }} as FileType)
+          editor.insertBlocks([{
+            type: 'file',
+            props: {
+              url: data,
+              name: name,
+              size: files[i].size.toString()
+            },
+          }], block.id, 'after')
         } catch (error) {
           console.error(error)
         }
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      }
+      editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     }
   }
   
@@ -397,6 +428,7 @@ function FileForm({block, assign}: {block: Block<HDBlockSchema>, assign: any}) {
                     <input
                       id="file-upload"
                       type="file"
+                      multiple
                       style={{
                         background: 'white',
                         padding: '0 2px',

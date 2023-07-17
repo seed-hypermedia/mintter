@@ -86,7 +86,7 @@ const Render = (
       {image.props.url ? (
         <ImageComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
-        <ImageForm block={block} assign={assignFile} />
+        <ImageForm block={block} assign={assignFile} editor={editor} />
       ) : (
         <></>
       )}
@@ -181,9 +181,11 @@ function ImageComponent({
 function ImageForm({
   block,
   assign,
+  editor,
 }: {
   block: Block<HDBlockSchema>
   assign: any
+  editor: BlockNoteEditor<HDBlockSchema>
 }) {
   const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
@@ -194,10 +196,32 @@ function ImageForm({
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const uploadedFile = event.target.files[0]
-      if (uploadedFile && uploadedFile.size <= 62914560) {
+      const files = [...event.target.files]
+      const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+      if (largeFileIndex > -1) {
+        setFileName({name: largeFileIndex > 0 ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.` : 'The image size exceeds 60 MB.', color: 'red'})
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', files[0])
+
+      try {
+        const response = await fetch(
+          'http://localhost:55001/ipfs/file-upload',
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+        const data = await response.text()
+        assign({props: { url: data }} as ImageType)
+      } catch (error) {
+        console.error(error)
+      }
+      for (let i = files.length - 1; i > 0; i--) {
         const formData = new FormData()
-        formData.append('file', uploadedFile)
+        formData.append('file', files[i])
 
         try {
           const response = await fetch(
@@ -208,11 +232,17 @@ function ImageForm({
             },
           )
           const data = await response.text()
-          assign({props: {url: data}} as ImageType)
+          editor.insertBlocks([{
+            type: 'image',
+            props: {
+              url: data
+            },
+          }], block.id, 'after')
         } catch (error) {
           console.error(error)
         }
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      }
+      editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     }
   }
 
@@ -390,6 +420,8 @@ function ImageForm({
                     <input
                       id="file-upload"
                       type="file"
+                      multiple
+                      accept="image/*"
                       style={{
                         background: 'white',
                         padding: '0 2px',
