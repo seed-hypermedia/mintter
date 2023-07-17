@@ -64,7 +64,7 @@ func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude strin
 	if err != nil {
 		return
 	}
-	info, err = mttnet.AddrInfoFromStrings(resp.Addresses...)
+	info, err = mttnet.AddrInfoFromStrings(resp.Addresses[0]) // only TCP which is the first one
 	if err != nil {
 		return
 	}
