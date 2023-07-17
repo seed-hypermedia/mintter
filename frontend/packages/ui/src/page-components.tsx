@@ -89,10 +89,13 @@ const PageSectionContent = styled(YStack, {
   // backgroundColor: 'lightgreen',
   padding: '$4',
   width: '100%',
-  flex: 3,
+  flex: 1,
   maxWidth: 640,
+  alignSelf: 'center',
   $gtSm: {
+    flex: 3,
     flexGrow: 1,
+    alignSelf: 'auto',
   },
   // borderWidth: 1,
   // borderColor: '$color6',
@@ -103,9 +106,13 @@ const PageSectionSide = styled(YStack, {
   width: '100%',
   flex: 1,
   position: 'relative',
+  maxWidth: 640,
+  alignSelf: 'center',
+  padding: '$4',
   $gtSm: {
     padding: '$4',
     maxWidth: 180,
+    alignSelf: 'auto',
   },
   $gtMd: {
     padding: '$6',
