@@ -148,20 +148,20 @@ export default function PublicationPage({
           ) : (
             <YStack
               padding="$4"
-              borderRadius="$4"
-              borderColor="$color6"
+              borderRadius="$5"
+              elevation="$1"
+              borderColor="$color5"
               borderWidth={1}
+              backgroundColor="$color3"
+              gap="$3"
             >
-              <SizableText
-                tag="h1"
-                size="$7"
-                letterSpacing={0}
-                fontWeight="600"
-                flexDirection="column"
-                display="flex"
-              >
+              <SizableText size="$5" fontWeight="800" textAlign="center">
                 Document not found.
               </SizableText>
+              <SizableText color="$color9">
+                Document Id: {documentId}
+              </SizableText>
+              <SizableText color="$color9">version: {version}</SizableText>
             </YStack>
           )}
         </PageSection.Content>

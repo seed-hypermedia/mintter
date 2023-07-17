@@ -352,8 +352,15 @@ template {
   --wrap-wide: 1000px;
   --wrap-normal: 37em;
   --input-width: 20em;
+  --color-light-bg-primary: rgb(255, 255, 255);
+  --color-light-bg-secondary: rgb(238, 238, 238);
 
-  @media (max-width: 860px) {
+  --color-dark-bg-primary: rgb(22, 23, 24);
+  --color-dark-bg-secondary: rgb(35, 36, 37);
+  --color-bg-primary: var(--color-light-bg-primary);
+  --color-bg-secondary: var(--color-light-bg-secondary);
+
+  @media (max-width: 768px) {
     --wrap-normal: 88vw;
     --wrap-wide: 100vw;
     --input-width: 100%;
@@ -361,6 +368,11 @@ template {
       --border-radius: 0;
     }
   }
+}
+
+.t_dark {
+  --color-bg-primary: var(--color-dark-bg-primary);
+  --color-bg-secondary: var(--color-dark-bg-secondary);
 }
 
 *,
@@ -423,4 +435,26 @@ body {
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0;
+}
+
+@keyframes placeholder-anim {
+  0% {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.placeholder {
+  background: linear-gradient(
+    to right,
+    var(--color-bg-secondary),
+    var(--color-bg-primary),
+    var(--color-bg-secondary)
+  );
+  background-size: 200% 100%;
+  animation: placeholder-anim 2s linear infinite;
+  /* border-radius: var(--border-radius-6); */
 }
