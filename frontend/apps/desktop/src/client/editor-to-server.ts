@@ -136,7 +136,9 @@ export function editorBlockToServerBlock(
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'image',
-      attributes: {},
+      attributes: {
+        name: editorBlock.props.name,
+      },
       ref: `ipfs://${editorBlock.props.url}`, // currently the url is always an ipfs url
       ...extractContent(editorBlock.content),
     })

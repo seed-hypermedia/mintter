@@ -249,6 +249,7 @@ export function serverChildrenToEditorChildren(
         id: serverBlock.block.id,
         props: {
           url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          name: serverBlock.block.attributes.name,
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',

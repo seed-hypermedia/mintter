@@ -27,7 +27,7 @@ export const FileBlock = createReactBlockSpec({
         default: "true",
       },
       size: {
-        default: "",
+        default: "0",
       },
     },
     containsInlineContent: true,
@@ -179,10 +179,10 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
             color="muted"
             onPress={() =>
               assign({
-                // size: 0,
                 props: {
                   url: '',
-                  name: "",
+                  name: '',
+                  size: '0',
                 },
                 children: [],
                 content: [],
@@ -201,6 +201,7 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
             size="$1"
             width={50}
             color="muted"
+            backgroundColor="lightgrey"
             onPress={saveFile}
           >
             save
@@ -232,7 +233,6 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
 }
 
 function FileForm({block, assign, editor}: {block: Block<HDBlockSchema>, assign: any, editor: BlockNoteEditor<HDBlockSchema>}) {
-  const [url, setUrl] = useState('');
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{name: string; color: string}>({
     name: 'Upload File',

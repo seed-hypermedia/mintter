@@ -68,6 +68,7 @@ export type EditorImageBlock = {
   id: string
   props: EditorBlockProps<{
     url: string
+    name: string
   }>
   content: InlineContent[]
   children: EditorBlock[]

@@ -12,6 +12,7 @@ import {
   ReactSlashMenuItem
 } from '@app/blocknote-react'
 import { HDBlockSchema } from '@app/client/schema'
+import { toast } from '@app/toast'
 import {
   Button,
   Form,
@@ -23,6 +24,10 @@ import {
   XStack,
   YStack
 } from '@mintter/ui'
+import { save } from '@tauri-apps/api/dialog'
+import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs'
+import { getClient, ResponseType } from '@tauri-apps/api/http'
+import { appDataDir } from '@tauri-apps/api/path'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { RiImage2Fill } from 'react-icons/ri'
 
@@ -31,6 +36,9 @@ export const ImageBlock = createReactBlockSpec({
   propSchema: {
     ...defaultProps,
     url: {
+      default: '',
+    },
+    name: {
       default: '',
     },
     defaultOpen: {
@@ -53,6 +61,7 @@ type ImageType = {
   id: string
   props: {
     url: string
+    name: string
   }
   children: []
   content: []
@@ -69,6 +78,7 @@ const Render = (
     id: block.id,
     props: {
       url: block.props.url,
+      name: block.props.name,
     },
     children: [],
     content: block.content,
@@ -125,6 +135,34 @@ function ImageComponent({
     }
   }, [selection])
 
+  const saveImage = async () => {
+    const client = await getClient()
+    const data = (
+      await client.get(
+        `http://localhost:55001/ipfs/${block.props.url}`,
+        {
+          responseType: ResponseType.Binary,
+        },
+      )
+    ).data as any
+
+    const filePath = await save({
+      defaultPath: (await appDataDir()) + '/' + block.props.name,
+    })
+
+    if (filePath) {
+      try {
+        await writeBinaryFile(filePath ? filePath : 'mintter-image', data, {
+          dir: BaseDirectory.AppData,
+        })
+        toast.success(`Successfully downloaded image ${block.props.name}`)
+      } catch (e) {
+        toast.error(`Failed to download image ${block.props.name}`)
+        console.log(e)
+      }
+    }
+  }
+
   return (
     <div className={selected ? 'ProseMirror-selectednode' : ''}>
       <YStack
@@ -142,7 +180,7 @@ function ImageComponent({
         outlineColor="transparent"
         borderColor="transparent"
       >
-        {replace && editor.isEditable ? (
+        {replace ? editor.isEditable ? (
           <Button
             theme="gray"
             position="absolute"
@@ -154,10 +192,9 @@ function ImageComponent({
             color="muted"
             onPress={() =>
               assign({
-                // name: undefined,
-                // size: 0,
                 props: {
                   url: '',
+                  name: '',
                 },
                 children: [],
                 content: [],
@@ -166,6 +203,21 @@ function ImageComponent({
             }
           >
             replace
+          </Button>
+        ) : (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$2"
+            zIndex="$4"
+            size="$1"
+            width={50}
+            color="muted"
+            backgroundColor="lightgrey"
+            onPress={saveImage}
+          >
+            save
           </Button>
         ) : null}
         <img
@@ -203,6 +255,7 @@ function ImageForm({
         return
       }
 
+      const {name} = files[0]
       const formData = new FormData()
       formData.append('file', files[0])
 
@@ -215,11 +268,12 @@ function ImageForm({
           },
         )
         const data = await response.text()
-        assign({props: { url: data }} as ImageType)
+        assign({props: { url: data, name: name }} as ImageType)
       } catch (error) {
         console.error(error)
       }
       for (let i = files.length - 1; i > 0; i--) {
+        const {name} = files[i]
         const formData = new FormData()
         formData.append('file', files[i])
 
@@ -235,7 +289,8 @@ function ImageForm({
           editor.insertBlocks([{
             type: 'image',
             props: {
-              url: data
+              url: data,
+              name: name
             },
           }], block.id, 'after')
         } catch (error) {
