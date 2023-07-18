@@ -45,8 +45,12 @@ type siteStatus struct {
 
 // NewServer returns a new monitor server. It also starts serving content on the provided port.
 func NewServer(portHTTP int, portP2P int, log *zap.Logger, sitesCSVPath string) (*Srv, error) {
+	portStr := strconv.Itoa(portP2P)
 	node, err := libp2p.New(
-		libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/" + strconv.Itoa(portP2P)),
+		libp2p.ListenAddrStrings([]string{
+			"/ip4/0.0.0.0/tcp/" + portStr,
+			"/ip4/0.0.0.0/udp/" + portStr + "/quic",
+			"/ip4/0.0.0.0/udp/" + portStr + "/quic-v1"}...),
 	)
 	if err != nil {
 		return nil, err
@@ -64,7 +68,7 @@ func NewServer(portHTTP int, portP2P int, log *zap.Logger, sitesCSVPath string) 
 	}
 
 	srv.httpServer = &http.Server{
-		Addr:              ":" + strconv.Itoa(portHTTP),
+		Addr:              "0.0.0.0:" + strconv.Itoa(portHTTP),
 		ReadHeaderTimeout: 3 * time.Second,
 		Handler:           srv,
 	}

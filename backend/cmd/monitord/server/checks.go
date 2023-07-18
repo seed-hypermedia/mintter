@@ -60,7 +60,7 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 }
 
 func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
-	resp, err := s.getSiteInfoHTTP(hostname)
+	resp, err := s.getSiteInfoHTTP(ctx, hostname)
 	if err != nil {
 		return
 	}
@@ -72,10 +72,10 @@ func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude strin
 	return
 }
 
-func (s *Srv) getSiteInfoHTTP(SiteHostname string) (*documents.SiteDiscoveryConfig, error) {
+func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*documents.SiteDiscoveryConfig, error) {
 	requestURL := fmt.Sprintf("%s/%s", SiteHostname, mttnet.WellKnownPath)
 
-	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
 	}
