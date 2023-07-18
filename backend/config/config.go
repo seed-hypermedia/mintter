@@ -20,6 +20,7 @@ type Config struct {
 	HTTPPort int
 	GRPCPort int
 	RepoPath string
+	LogLevel string
 
 	Identity Identity
 	Lndhub   Lndhub
@@ -34,7 +35,7 @@ func Default() Config {
 		HTTPPort: 55001,
 		GRPCPort: 55002,
 		RepoPath: "~/.mtt",
-
+		LogLevel: "debug",
 		Lndhub: Lndhub{
 			Mainnet: false,
 		},
@@ -114,6 +115,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.HTTPPort, "http-port", cfg.HTTPPort, "Port to expose HTTP Server (including grpc-web)")
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
+	fs.StringVar(&cfg.LogLevel, "log-level", cfg.LogLevel, "Log verbosity debug | info | warning | error")
 
 	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity.devicekey-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
 	fs.BoolVar(&cfg.Identity.NoAccountWait, "identity.no-account-wait", cfg.Identity.NoAccountWait, "If set, the daemon auto generates a random Account ID (if not found any in the database) and starts right away")

@@ -60,7 +60,7 @@ func main() {
 			return err
 		}
 
-		log := logging.New("mintterd", "debug")
+		log := logging.New("mintterd", cfg.LogLevel)
 		if err := sentry.Init(sentry.ClientOptions{}); err != nil {
 			log.Debug("SentryInitError", zap.Error(err))
 		} else {
