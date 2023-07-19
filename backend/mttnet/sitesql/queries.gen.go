@@ -324,7 +324,7 @@ type InsertMemberResult struct {
 }
 
 func InsertMember(conn *sqlite.Conn, siteMembersAccountID int64, siteMembersRole int64) (InsertMemberResult, error) {
-	const query = `INSERT INTO site_members (account_id, role)
+	const query = `INSERT OR REPLACE INTO site_members (account_id, role)
 VALUES (:siteMembersAccountID, :siteMembersRole)
 RETURNING site_members.role`
 

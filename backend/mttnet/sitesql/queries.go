@@ -131,7 +131,7 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(s.Schema, "InsertMember", sqlitegen.QueryKindSingle,
-			"INSERT INTO", s.SiteMembers, qb.ListColShort(
+			"INSERT OR REPLACE INTO", s.SiteMembers, qb.ListColShort(
 				s.SiteMembersAccountID,
 				s.SiteMembersRole,
 			), '\n',
