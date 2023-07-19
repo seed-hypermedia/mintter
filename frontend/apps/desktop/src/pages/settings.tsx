@@ -632,6 +632,49 @@ function SiteInfoForm({
   )
 }
 
+function SiteInfoTable({
+  info
+}: {
+  info: SiteInfo
+}) {
+  const {title, description} = info
+  return (
+    <TableList>
+      <TableList.Item>
+        <SizableText size="$3" flex={0} width={80} fontWeight="700">
+          Title
+        </SizableText>
+        <Separator vertical marginHorizontal={10} />
+        <SizableText
+          size="$3"
+          flex={2}
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {title}
+        </SizableText>
+      </TableList.Item>
+
+      <Separator />
+      <TableList.Item>
+        <SizableText size="$3" flex={0} width={80} flexShrink={0} flexGrow={0} fontWeight="700">
+          Description
+        </SizableText>
+        <Separator vertical marginHorizontal={10} />
+        <SizableText
+          size="$3"
+          flex={2}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          userSelect="text"
+        >
+          {description}
+        </SizableText>
+      </TableList.Item>
+    </TableList>
+  )
+}
+
 function SiteSettings({
   hostname,
   onDone,
@@ -698,13 +741,17 @@ function SiteInfoSection({
   const writeSiteInfo = useWriteSiteInfo(hostname)
   return (
     <SettingsSection title="Public SEO Info">
-      {siteInfo?.data ? (
+      {siteInfo?.data ? (isOwner ? (
         <SiteInfoForm
           info={siteInfo.data}
           onSubmit={(info) => writeSiteInfo.mutate(info)}
           isOwner={isOwner}
         />
-      ) : null}
+      ) : (
+        <SiteInfoTable 
+          info={siteInfo.data}
+        />
+      )) : null}
     </SettingsSection>
   )
 }
