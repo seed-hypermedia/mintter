@@ -357,7 +357,7 @@ function ImageForm({
         >
           <Popover.Trigger asChild>
             <Button
-              // icon={FileIcon}
+              icon={RiImage2Fill}
               theme="gray"
               borderRadius={0}
               size="$5"

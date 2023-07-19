@@ -211,18 +211,28 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
           theme="gray"
           borderRadius={1}
           size="$5"
-          justifyContent="flex-start"
+          fontSize="$4"
+          flex={1}
+          justifyContent="space-between"
           icon={RiFile2Line}
           disabled
         >
           <SizableText
             size='$5'
+            maxWidth='17em'
+            marginRight='auto'
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            userSelect="text"
           >
             {block.props.name}
           </SizableText>
           <SizableText
             color='gray'
             size='$2'
+            marginLeft='auto'
+            minWidth='4.5em'
           >
             {formatBytes(parseInt(block.props.size))}
           </SizableText>
