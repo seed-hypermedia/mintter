@@ -26,7 +26,7 @@ function queryWebLink(url: string, enabled: boolean) {
 
         // // for some reason the headers aren't coming through?!
         // return {
-        //   documentId: webResponse.headers.get('x-mintter-document-id'),
+        //   documentId: webResponse.headers.get('x-hd-document-id'),
         //   documentVersion: webResponse.headers.get(
         //     'x-mintter-document-version',
         //   ),
@@ -35,16 +35,14 @@ function queryWebLink(url: string, enabled: boolean) {
         // parsing for the meta tags is heavier but works, no problem
         const htmlData = await webResponse.text()
         const doc = parseHTML(htmlData)
-
-        // legacy aer meta tags
         const fallbackDocumentId = extractMetaTagValue(
           doc,
-          'mintter-document-id',
+          'hyperdocs-document-id',
         )
         const fallbackDocumentVersion =
-          extractMetaTagValue(doc, 'mintter-document-version') || undefined
+          extractMetaTagValue(doc, 'hyperdocs-document-version') || undefined
         const fallbackDocumentTitle =
-          extractMetaTagValue(doc, 'mintter-document-title') ||
+          extractMetaTagValue(doc, 'hyperdocs-document-title') ||
           doc.querySelector('title')?.innerText ||
           url
 

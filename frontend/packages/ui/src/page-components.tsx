@@ -1,4 +1,4 @@
-import {styled, YStack, Main} from 'tamagui'
+import {styled, YStack, Main, Stack, SizableStack, SizableText} from 'tamagui'
 import {Container} from './container'
 
 export function MainContainer({
@@ -62,3 +62,81 @@ export const SideContainer = styled(YStack, {
     maxWidth: 300,
   },
 })
+
+const PageSectionRoot = styled(Stack, {
+  position: 'relative',
+  paddingVertical: '$4',
+  // backgroundColor: '$background5',
+  flexDirection: 'column',
+  width: '100%',
+  $gtSm: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  variants: {
+    isHeader: {
+      true: {
+        $gtSm: {
+          paddingTop: '$7',
+          paddingBottom: '$4',
+        },
+      },
+    },
+  },
+})
+
+const PageSectionContent = styled(YStack, {
+  // backgroundColor: 'lightgreen',
+  padding: '$4',
+  width: '100%',
+  flex: 1,
+  maxWidth: 640,
+  alignSelf: 'center',
+  $gtSm: {
+    flex: 3,
+    flexGrow: 1,
+    alignSelf: 'auto',
+  },
+  // borderWidth: 1,
+  // borderColor: '$color6',
+})
+
+const PageSectionSide = styled(YStack, {
+  // backgroundColor: 'lightblue',
+  width: '100%',
+  flex: 1,
+  position: 'relative',
+  maxWidth: 640,
+  alignSelf: 'center',
+  padding: '$4',
+  $gtSm: {
+    padding: '$4',
+    maxWidth: 180,
+    alignSelf: 'auto',
+  },
+  $gtMd: {
+    padding: '$6',
+    maxWidth: 300,
+  },
+  // borderWidth: 1,
+  // borderColor: '$color6',
+})
+
+export const SideSection = styled(YStack, {
+  paddingVertical: '$4',
+  gap: '$1',
+  borderTopColor: '$color6',
+  borderTopWidth: 1,
+})
+
+export const SideSectionTitle = styled(SizableText, {
+  size: '$1',
+  fontWeight: '800',
+  opacity: 0.4,
+})
+
+const Root = PageSectionRoot
+const Content = PageSectionContent
+const Side = PageSectionSide
+
+export const PageSection = {Root, Content, Side}

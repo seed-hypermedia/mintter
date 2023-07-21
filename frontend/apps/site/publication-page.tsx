@@ -1,44 +1,42 @@
 import {
   Account,
-  ImageBlock,
   EmbedBlock,
-  InlineContent,
-  PresentationBlock,
-  SectionBlock,
-  SiteInfo,
   getCIDFromIPFSUrl,
-  serverBlockToEditorInline,
   getIdsfromUrl,
+  HeadingBlock,
+  ImageBlock,
+  InlineContent,
   isHyperdocsScheme,
+  ParagraphBlock,
+  PresentationBlock,
+  serverBlockToEditorInline,
+  SiteInfo,
 } from '@mintter/shared'
 import {
+  Block,
+  Publication,
+} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
+import {
   Button,
-  Container,
-  ContainerLarge,
   Copy,
-  Header,
-  Main,
-  MainContainer,
+  Footer,
+  PageSection,
+  SizableText,
   Spinner,
   Text,
   XStack,
   YStack,
 } from '@mintter/ui'
+import {DehydratedState} from '@tanstack/react-query'
+import {cidURL} from 'ipfs'
 import Head from 'next/head'
+import {useRouter} from 'next/router'
+import {useMemo, useState} from 'react'
+import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
-import Footer from './footer'
 import {SiteHead} from './site-head'
-import {
-  Block,
-  Publication,
-} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
 import {trpc} from './trpc'
-import {useMemo, useState} from 'react'
-import {DehydratedState} from '@tanstack/react-query'
-import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
-import {cidURL} from 'ipfs'
-import {useRouter} from 'next/router'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -126,7 +124,7 @@ export default function PublicationPage({
   const pub = publication.data?.publication
 
   return (
-    <>
+    <YStack flex={1}>
       <Head>
         <meta
           name="hyperdocs-entity-id"
@@ -135,35 +133,50 @@ export default function PublicationPage({
         <meta name="hyperdocs-entity-version" content={pub?.version} />
         <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
         {/* legacy mintter metadata */}
-        <meta name="mintter-document-id" content={pub?.document?.id} />
-        <meta name="mintter-document-version" content={pub?.version} />
-        <meta name="mintter-document-title" content={pub?.document?.title} />
+        <meta name="hyperdocs-document-id" content={pub?.document?.id} />
+        <meta name="hyperdocs-document-version" content={pub?.version} />
+        <meta name="hyperdocs-document-title" content={pub?.document?.title} />
       </Head>
       <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
-      <MainContainer
-        sidebarAfter={
-          <>
+      <PageSection.Root flex={1}>
+        <PageSection.Side />
+        <PageSection.Content>
+          {pub ? (
+            <PublicationContent publication={pub} />
+          ) : publication.isLoading ? (
+            <PublicationPlaceholder />
+          ) : (
+            <YStack
+              padding="$4"
+              borderRadius="$5"
+              elevation="$1"
+              borderColor="$color5"
+              borderWidth={1}
+              backgroundColor="$color3"
+              gap="$3"
+            >
+              <SizableText size="$5" fontWeight="800" textAlign="center">
+                Document not found.
+              </SizableText>
+              <SizableText color="$color9">
+                Document Id: {documentId}
+              </SizableText>
+              <SizableText color="$color9">version: {version}</SizableText>
+            </YStack>
+          )}
+        </PageSection.Content>
+        <PageSection.Side>
+          <YStack className="publication-sidenav-sticky">
             <PublicationMetadata publication={pub} pathName={pathName} />
             <WebTipping
               docId={documentId}
               editors={pub?.document?.editors || []}
             />
-          </>
-        }
-      >
-        {pub ? (
-          <PublicationContent publication={pub} />
-        ) : publication.isLoading ? (
-          <YStack>
-            <Header>Querying for document on the network.</Header>
-            <Spinner />
           </YStack>
-        ) : (
-          <Header>Document not found.</Header>
-        )}
-      </MainContainer>
+        </PageSection.Side>
+      </PageSection.Root>
       <Footer />
-    </>
+    </YStack>
   )
 }
 
@@ -196,16 +209,16 @@ function InlineContentView({
           const isHeading = style?.heading || false
           const isBold = content.styles.bold || false
           return (
-            <Text
+            <SizableText
               key={index}
               fontSize={isHeading ? 24 : undefined}
-              fontWeight={isHeading || isBold ? 'bold' : ''}
+              fontWeight={isHeading || isBold ? '800' : '400'}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
-              fontFamily={content.styles.code ? 'monospace' : undefined}
+              fontFamily={content.styles.code ? '$mono' : undefined}
             >
               {content.text}
-            </Text>
+            </SizableText>
           )
         }
         if (content.type === 'link') {
@@ -229,7 +242,7 @@ function InlineContentView({
   )
 }
 
-function StaticSectionBlock({block}: {block: SectionBlock}) {
+function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
   const inline = useMemo(
     () => serverBlockToEditorInline(new Block(block)),
     [block],
@@ -311,16 +324,19 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
     }
   }
   return (
-    <div id={`${block.id}-block`} data-ref={reference}>
+    <YStack
+      id={`${block.id}-block`}
+      data-ref={reference}
+      transform="translateX(-19px)"
+      width="calc(100% + 16px)"
+      position="relative"
+    >
       <YStack
-        backgroundColor="#d8ede7"
-        borderColor="#95bfb4"
-        borderWidth={1}
         padding="$4"
         paddingVertical="$2"
         borderRadius="$4"
+        backgroundColor="$color5"
         hoverStyle={{
-          backgroundColor: '#e8f4f0',
           cursor: 'pointer',
         }}
         onPress={() => {
@@ -330,8 +346,9 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
         href={stripHDLinkPrefix(block.ref)}
       >
         {content}
+        {/* <EmbedMetadata embed={embed} /> */}
       </YStack>
-    </div>
+    </YStack>
   )
 }
 
@@ -340,19 +357,6 @@ function StaticBlock({block}: {block: HDBlock}) {
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
     return <StaticSectionBlock block={niceBlock} />
-  }
-  // legacy node
-  // @ts-expect-error
-  if (niceBlock.type === 'statement') {
-    return (
-      <StaticSectionBlock
-        block={{
-          type: 'paragraph',
-          // @ts-expect-error
-          ...niceBlock,
-        }}
-      />
-    )
   }
 
   if (niceBlock.type === 'image') {
@@ -368,7 +372,9 @@ function StaticBlock({block}: {block: HDBlock}) {
   // return <span>{JSON.stringify(block)}</span>
   return (
     <ErrorMessageBlock
+      // @ts-expect-error
       id={`${niceBlock.id}-block`}
+      // @ts-expect-error
       message={`Unknown block type: "${niceBlock.type}"`}
     />
   )
@@ -449,9 +455,31 @@ function StaticBlockNode({
                 `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
               )
             }}
-          ></Button>
+          />
         </XStack>
       )}
+    </YStack>
+  )
+}
+
+function PublicationPlaceholder() {
+  return (
+    <YStack gap="$6">
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+    </YStack>
+  )
+}
+
+function BlockPlaceholder() {
+  return (
+    <YStack gap="$3">
+      <YStack width="90%" height={16} backgroundColor="$color6" />
+      <YStack height={16} backgroundColor="$color6" />
+      <YStack width="75%" height={16} backgroundColor="$color6" />
+      <YStack width="60%" height={16} backgroundColor="$color6" />
     </YStack>
   )
 }

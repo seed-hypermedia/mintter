@@ -5,6 +5,7 @@ import {
   Label,
   RadioGroup,
   Separator,
+  SideSection,
   SizableText,
   SizeTokens,
   Text,
@@ -53,7 +54,7 @@ export function WebTipping({
   const [open, onOpenChange] = useState<boolean>(false)
 
   return (
-    <>
+    <SideSection>
       {docId && (
         <DontationDialog
           open={open}
@@ -71,7 +72,7 @@ export function WebTipping({
       >
         Donate Bitcoin
       </Button>
-    </>
+    </SideSection>
   )
 }
 

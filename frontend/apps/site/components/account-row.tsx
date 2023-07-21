@@ -1,17 +1,19 @@
 import {abbreviateCid} from '@mintter/shared'
 import {cidURL} from '../ipfs'
 import Link from 'next/link'
-import {Avatar, XStack, Text} from '@mintter/ui'
+import {Avatar, XStack, Text, SizableText} from '@mintter/ui'
 import {trpc} from '../trpc'
 
 export function AccountRow({
   account,
-  bold,
+  isMainAuthor,
   clickable = true,
+  onlyAvatar = false,
 }: {
   account?: string
-  bold?: boolean
+  isMainAuthor?: boolean
   clickable?: boolean
+  onlyAvatar?: boolean
 }) {
   // return <Text>{account}</Text>
   const acct = trpc.account.get.useQuery({
@@ -25,17 +27,38 @@ export function AccountRow({
     label = abbreviateCid(account)
   }
   const content = (
-    <XStack gap="$3" alignItems="center">
-      <Avatar circular size={24}>
+    <XStack gap="$2" alignItems="center">
+      <Avatar circular size={20}>
         {profile?.avatar ? <Avatar.Image src={cidURL(profile.avatar)} /> : null}
-        <Avatar.Fallback backgroundColor={'#26ab95'} />
+        <Avatar.Fallback backgroundColor="$color7" />
       </Avatar>
-      <Text
-        hoverStyle={clickable ? {textDecorationLine: 'underline'} : undefined}
-        fontWeight={bold ? 'bold' : undefined}
-      >
-        {label}
-      </Text>
+      {!onlyAvatar ? (
+        <>
+          <SizableText
+            flex={1}
+            size="$3"
+            hoverStyle={
+              clickable ? {textDecorationLine: 'underline'} : undefined
+            }
+          >
+            {label}
+          </SizableText>
+          {isMainAuthor ? (
+            <SizableText
+              paddingVertical="$1.5"
+              paddingHorizontal="$2"
+              backgroundColor="$color8"
+              color="white"
+              borderRadius="$2"
+              size="$1"
+              fontWeight="600"
+              lineHeight={12}
+            >
+              main
+            </SizableText>
+          ) : null}
+        </>
+      ) : null}
     </XStack>
   )
 

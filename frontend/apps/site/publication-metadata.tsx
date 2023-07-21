@@ -1,33 +1,35 @@
 import {
-  Paragraph,
-  Text,
-  SizableText,
+  abbreviateCid,
+  formattedDate,
+  getIdsfromUrl,
+  HDTimestamp,
+  pluralS,
+} from '@mintter/shared'
+import {
   Button,
-  XStack,
+  Paragraph,
+  SideSection,
+  SideSectionTitle,
   SimpleTooltip,
+  SizableText,
+  Text,
+  XStack,
   YStack,
 } from '@mintter/ui'
-import {
-  formattedDate,
-  abbreviateCid,
-  pluralS,
-  HDTimestamp,
-  getIdsfromUrl,
-} from '@mintter/shared'
+import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
+import {AccountRow} from 'components/account-row'
+import {format} from 'date-fns'
+import {NextLink} from 'next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
-import {trpc} from './trpc'
 import {HDBlockNode, HDChangeInfo, HDLink, HDPublication} from 'server/json-hd'
-import {format} from 'date-fns'
-import {AccountRow} from 'components/account-row'
-import {NextLink} from 'next-link'
+import {trpc} from './trpc'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
   return (
     <XStack>
-      <SizableText o={0.5}>{label}:&nbsp;</SizableText>
+      <SizableText opacity={0.5}>{label}:&nbsp;</SizableText>
       <SimpleTooltip
         content={
           <>
@@ -88,10 +90,10 @@ export function AuthorsMeta({
     {enabled: !!publication?.document?.id},
   )
   return (
-    <YStack gap="$2">
-      <SizableText fontWeight={'bold'}>
+    <SideSection>
+      <SideSectionTitle>
         {pluralS(editors?.length || 0, 'Author')}:&nbsp;
-      </SizableText>
+      </SideSectionTitle>
       {editors
         ?.map((editor) => {
           const isMainAuthor = !!docChanges.data?.versionChanges.find(
@@ -99,11 +101,15 @@ export function AuthorsMeta({
           )
           if (!editor) return null
           return (
-            <AccountRow account={editor} key={editor} bold={isMainAuthor} />
+            <AccountRow
+              account={editor}
+              key={editor}
+              isMainAuthor={isMainAuthor}
+            />
           )
         })
         .filter((e) => !!e)}
-    </YStack>
+    </SideSection>
   )
 }
 
@@ -131,7 +137,9 @@ function DepPreview({
       {displayAuthor ? (
         <AccountRow account={dep.author} key={dep.author} clickable={false} />
       ) : null}
-      <Text paddingLeft={37}>{depTime}</Text>
+      <SizableText size="$2" paddingLeft={28}>
+        {depTime}
+      </SizableText>
     </NextLink>
   )
 }
@@ -153,20 +161,22 @@ function NextVersionsMeta({
   const downstreamChanges = docChanges.data?.downstreamChanges
   if (!downstreamChanges?.length) return null
   return (
-    <>
-      <SizableText fontWeight={'bold'}>
+    <SideSection>
+      <SideSectionTitle>
         Next {pluralS(downstreamChanges?.length, 'Version')}:&nbsp;
-      </SizableText>
-      {downstreamChanges?.map((dep) => (
-        <DepPreview
-          dep={dep}
-          key={dep?.id}
-          publication={publication}
-          pathName={pathName}
-          displayAuthor
-        />
-      ))}
-    </>
+      </SideSectionTitle>
+      <YStack gap="$2">
+        {downstreamChanges?.map((dep) => (
+          <DepPreview
+            dep={dep}
+            key={dep?.id}
+            publication={publication}
+            pathName={pathName}
+            displayAuthor
+          />
+        ))}
+      </YStack>
+    </SideSection>
   )
 }
 
@@ -233,9 +243,9 @@ function VersionsMeta({
 
   if (depsCount === 0) {
     return (
-      <YStack gap="$2">
-        <SizableText fontWeight={'bold'}>First Version</SizableText>
-      </YStack>
+      <SideSection>
+        <SideSectionTitle>First Version</SideSectionTitle>
+      </SideSection>
     )
   }
 
@@ -246,32 +256,34 @@ function VersionsMeta({
         setIsCollapsed(false)
       }}
       icon={ChevronDown}
-    >
-      See All
-    </Button>
+      chromeless
+      circular
+    />
   ) : null
 
   return (
-    <YStack gap="$2">
-      <SizableText fontWeight={'bold'}>
-        {allDepsCount} Previous Versions:&nbsp;
-      </SizableText>
-      {previousVersionsContent}
-      {isCollapsed ? (
-        seeAllButton
-      ) : (
-        <>
-          {allVersionsContent}
+    <SideSection>
+      <XStack alignItems="center">
+        <SideSectionTitle flex={1}>
+          {allDepsCount} Previous Versions:&nbsp;
+        </SideSectionTitle>
+        {isCollapsed ? (
+          seeAllButton
+        ) : (
           <Button
             size="$1"
+            chromeless
+            circular
             onPress={() => {
               setIsCollapsed(true)
             }}
             icon={ChevronUp}
-          ></Button>
-        </>
-      )}
-    </YStack>
+          />
+        )}
+      </XStack>
+      {previousVersionsContent}
+      {!isCollapsed && allVersionsContent}
+    </SideSection>
   )
 }
 
@@ -312,14 +324,27 @@ function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
       href={getDocUrl(docId, versionId, refBlockId)}
       style={{textDecoration: 'none'}}
     >
-      <YStack gap="$2">
-        <Text fontWeight={'bold'}>
+      <XStack
+        gap="$2"
+        padding="$2"
+        borderRadius="$3"
+        borderColor="$color6"
+        borderWidth={1}
+      >
+        <SizableText size="$3" fontWeight="800" flex={1}>
           {pub.data?.publication?.document?.title}
-        </Text>
-        {pub.data?.publication?.document?.editors?.map((editor) => (
-          <AccountRow key={editor} account={editor} clickable={false} />
-        ))}
-      </YStack>
+        </SizableText>
+        <XStack gap="-$2">
+          {pub.data?.publication?.document?.editors?.map((editor) => (
+            <AccountRow
+              key={editor}
+              account={editor}
+              clickable={false}
+              onlyAvatar
+            />
+          ))}
+        </XStack>
+      </XStack>
     </NextLink>
   )
 }
@@ -330,8 +355,8 @@ function EmbedMeta({publication}: {publication?: HDPublication | null}) {
   }, [publication?.document?.children])
   if (!embedRefs.length) return null
   return (
-    <YStack>
-      <SizableText>Featuring:&nbsp;</SizableText>
+    <SideSection>
+      <SideSectionTitle>Featuring:&nbsp;</SideSectionTitle>
       <YStack gap="$2">
         {embedRefs.map((embedRef) => (
           <EmbeddedDocMeta
@@ -341,7 +366,7 @@ function EmbedMeta({publication}: {publication?: HDPublication | null}) {
           />
         ))}
       </YStack>
-    </YStack>
+    </SideSection>
   )
 }
 
@@ -391,10 +416,10 @@ function CitationsMeta({
     .filter(Boolean)
   if (content.length === 0) return null
   return (
-    <YStack gap="$2">
-      <SizableText fontWeight={'bold'}>Citations:</SizableText>
-      {content}
-    </YStack>
+    <SideSection>
+      <SideSectionTitle>Citations:</SideSectionTitle>
+      <YStack gap="$2">{content}</YStack>
+    </SideSection>
   )
 }
 
@@ -409,10 +434,12 @@ function TOCHeading({heading}: {heading: SectionHeading}) {
     <>
       {heading.title && (
         <NextLink href={`#${heading.blockId}`} style={{textDecoration: 'none'}}>
-          <Text color={'$blue11'}>{heading.title}</Text>
+          <SizableText size="$2" color="$blue11" fontWeight="600">
+            {heading.title}
+          </SizableText>
         </NextLink>
       )}
-      <YStack paddingLeft="$3" gap="$1">
+      <YStack paddingLeft="$3">
         {heading.children.map((child) => (
           <TOCHeading heading={child} key={child.blockId} />
         ))}
@@ -450,12 +477,12 @@ export function TableOfContents({
   )
   if (!toc || !toc.length) return null
   return (
-    <YStack gap="$1">
-      {/* <SizableText fontWeight={'bold'}>Containing:</SizableText> */}
+    <SideSection>
+      <SideSectionTitle>Containing:</SideSectionTitle>
       {toc?.map((heading) => (
         <TOCHeading heading={heading} key={heading.blockId} />
       ))}
-    </YStack>
+    </SideSection>
   )
 }
 
@@ -520,9 +547,7 @@ function LatestVersionBanner({
       href={getDocSlugUrl(pathName, record.documentId, record.versionId)}
       style={{textDecoration: 'none'}}
     >
-      <SizableText fontWeight={'bold'} color="$blue11">
-        Latest Version:&nbsp;
-      </SizableText>
+      <SideSectionTitle>Latest Version:&nbsp;</SideSectionTitle>
       <SizableText textDecorationLine="underline" color="$blue11">
         {publishTimeRelative}
       </SizableText>
@@ -552,11 +577,9 @@ export function PublishedMeta({
     {pathName},
     {enabled: !!pathName},
   )
-  const publishTimeRelative = useFormattedTime(
-    publication?.document?.publishTime,
-    true,
-  )
   const publishTime = publication?.document?.publishTime
+  const publishTimeRelative = useFormattedTime(publishTime, true)
+
   const publishTimeDate = publishTime && new Date(publishTime)
   let latestVersion: null | ReactElement = null
   const {documentId: pathDocId, versionId: pathVersionId} =
@@ -577,28 +600,24 @@ export function PublishedMeta({
   }
 
   return (
-    <YStack>
-      <Paragraph>
-        <SizableText fontWeight={'bold'}>Published &nbsp;</SizableText>
+    <SideSection>
+      <SideSectionTitle>Published:</SideSectionTitle>
+      <SizableText size="$3" fontWeight="800">
         <NextLink
           href={getDocUrl(
             publication?.document?.id || '',
             publication?.version || '',
           )}
         >
-          {publishTimeRelative}
+          {publishTimeRelative}{' '}
+          {publishTimeDate && (
+            <SizableText size="$1" opacity={0.5}>
+              ( {format(publishTimeDate, 'EEEE, MMMM do, yyyy')} )
+            </SizableText>
+          )}
         </NextLink>
-      </Paragraph>
-      {publishTimeDate && (
-        <SimpleTooltip
-          content={format(publishTimeDate, 'MMMM do yyyy, HH:mm:ss z')}
-        >
-          <Paragraph>
-            {format(publishTimeDate, 'EEEE, MMMM do, yyyy')}
-          </Paragraph>
-        </SimpleTooltip>
-      )}
+      </SizableText>
       {latestVersion}
-    </YStack>
+    </SideSection>
   )
 }
