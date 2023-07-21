@@ -18,17 +18,17 @@
     "test": "echo 'UI: NO TESTS'"
   },
   "dependencies": {
-    "@tamagui/animations-react-native": "1.39.1",
-    "@tamagui/colors": "^1.39.1",
-    "@tamagui/font-inter": "1.39.1",
-    "@tamagui/lucide-icons": "1.39.1",
-    "@tamagui/react-native-media-driver": "1.39.1",
-    "@tamagui/shorthands": "1.39.1",
-    "@tamagui/themes": "1.39.1",
-    "@tamagui/web": "^1.39.1",
-    "tamagui": "1.39.1"
+    "@tamagui/animations-react-native": "1.43.15",
+    "@tamagui/colors": "^1.43.15",
+    "@tamagui/font-inter": "1.43.15",
+    "@tamagui/lucide-icons": "1.43.15",
+    "@tamagui/react-native-media-driver": "1.43.15",
+    "@tamagui/shorthands": "1.43.15",
+    "@tamagui/themes": "1.43.15",
+    "@tamagui/web": "^1.43.15",
+    "tamagui": "1.43.15"
   },
   "devDependencies": {
-    "@tamagui/build": "1.30.21"
+    "@tamagui/build": "1.43.15"
   }
 }
