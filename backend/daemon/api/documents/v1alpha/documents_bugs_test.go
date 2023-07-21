@@ -342,3 +342,57 @@ func TestBug_FailToUpdatePublication(t *testing.T) {
 		}
 	}
 }
+
+func TestBug_MissingPublicationListItemWithActiveDraft(t *testing.T) {
+	// See: https://www.notion.so/mintter/When-I-edit-a-publication-it-becomes-a-draft-and-disappears-from-the-All-Documents-5997095f6e264b01830b0d78ae9bb6f0.
+	// When a publication has an active draft it's now shown in the list of publications.
+
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: published.Document.Id,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, pub)
+	require.Equal(t, published.Version, pub.Version)
+
+	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1, "publication must be in the list even with an active draft")
+
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 1, "draft must be in the list")
+
+	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+}

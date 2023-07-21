@@ -779,19 +779,28 @@ type ChangesGetPublicHeadsJSONResult struct {
 	Heads []byte
 }
 
-func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, hdChangesEntity int64) (ChangesGetPublicHeadsJSONResult, error) {
-	const query = `SELECT json_group_array(hd_changes.blob) AS heads
-FROM hd_changes
-LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes.entity
-WHERE hd_changes.entity = :hdChangesEntity
-AND hd_drafts.blob IS NULL
-AND hd_changes.blob NOT IN (SELECT hd_change_deps.parent FROM hd_change_deps)
-LIMIT 1`
+func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetPublicHeadsJSONResult, error) {
+	const query = `WITH
+non_drafts (blob) AS (
+	SELECT hd_changes.blob
+	FROM hd_changes
+	LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes.entity AND hd_changes.blob = hd_drafts.blob
+	WHERE hd_changes.entity = :entity
+	AND hd_drafts.blob IS NULL
+),
+deps (blob) AS (
+	SELECT DISTINCT hd_change_deps.parent
+	FROM hd_change_deps
+	JOIN non_drafts ON non_drafts.blob = hd_change_deps.child
+)
+SELECT json_group_array(blob) AS heads
+FROM non_drafts
+WHERE blob NOT IN deps`
 
 	var out ChangesGetPublicHeadsJSONResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
+		stmt.SetInt64(":entity", entity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

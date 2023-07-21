@@ -250,20 +250,32 @@ func generateQueries() error {
 			"FROM changeset", '\n',
 			"LIMIT 1",
 		),
-		qb.MakeQuery(s.Schema, "ChangesGetPublicHeadsJSON", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultExpr("json_group_array("+s.HDChangesBlob.String()+")", "heads", sgen.TypeBytes),
-			), '\n',
-			"FROM", s.HDChanges, '\n',
-			"LEFT JOIN", s.HDDrafts, "ON", s.HDDraftsEntity, "=", s.HDChangesEntity, '\n',
-			"WHERE", s.HDChangesEntity, "=", qb.VarCol(s.HDChangesEntity), '\n',
-			"AND", s.HDDraftsBlob, "IS NULL", '\n',
-			"AND", s.HDChangesBlob, "NOT IN", qb.SubQuery(
-				"SELECT", s.HDChangeDepsParent,
-				"FROM", s.HDChangeDeps,
-			), '\n',
-			"LIMIT 1",
-		),
+		sgen.QueryTemplate{
+			Name: "ChangesGetPublicHeadsJSON",
+			Kind: sgen.QueryKindSingle,
+			Inputs: []sgen.GoSymbol{
+				{Name: "entity", Type: sgen.TypeInt},
+			},
+			Outputs: []sgen.GoSymbol{
+				{Name: "Heads", Type: sgen.TypeBytes},
+			},
+			SQL: `WITH
+non_drafts (blob) AS (
+	SELECT ` + s.C_HDChangesBlob + `
+	FROM ` + s.T_HDChanges + `
+	LEFT JOIN ` + s.T_HDDrafts + ` ON ` + s.C_HDDraftsEntity + ` = ` + s.C_HDChangesEntity + ` AND ` + s.C_HDChangesBlob + ` = ` + s.C_HDDraftsBlob + `
+	WHERE ` + s.C_HDChangesEntity + ` = :entity
+	AND ` + s.C_HDDraftsBlob + ` IS NULL
+),
+deps (blob) AS (
+	SELECT DISTINCT ` + s.C_HDChangeDepsParent + `
+	FROM ` + s.T_HDChangeDeps + `
+	JOIN non_drafts ON non_drafts.blob = ` + s.C_HDChangeDepsChild + `
+)
+SELECT json_group_array(blob) AS heads
+FROM non_drafts
+WHERE blob NOT IN deps`,
+		},
 		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
 			"DELETE FROM", s.Blobs, '\n',
 			"WHERE", s.BlobsID, "IN", qb.SubQuery(
