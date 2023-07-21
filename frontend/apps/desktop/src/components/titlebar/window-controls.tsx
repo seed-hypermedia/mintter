@@ -1,7 +1,6 @@
+import {Button, Close, useTheme} from '@mintter/ui'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useState} from 'react'
-import {Button, Close, useTheme} from '@mintter/ui'
-import {tokens} from '@mintter/ui/types/tamagui.config'
 
 export function CloseButton() {
   const win = getCurrent()

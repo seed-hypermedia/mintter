@@ -4,7 +4,15 @@ import {Avatar} from '@components/avatar'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import {Account} from '@mintter/shared'
-import {Button, Container, MainWrapper, Spinner, Text, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  Container,
+  MainWrapper,
+  Spinner,
+  Text,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 
 function ContactItem({account}: {account: Account}) {
   const navigate = useNavigate()
@@ -31,12 +39,7 @@ function ContactItem({account}: {account: Account}) {
             {alias}
           </Text>
         ) : (
-          <Text
-            fontFamily="$body"
-            // @ts-expect-error tamagui upgrade
-            fontWeight="bold"
-            color="muted"
-          >
+          <Text fontFamily="$body" fontWeight="bold" color="muted">
             {account.id.slice(0, 5)}...{account.id.slice(-5)}
           </Text>
         )}
@@ -49,19 +52,19 @@ function ContactItem({account}: {account: Account}) {
 export default function ConnectionsPage() {
   const contacts = useAllAccounts()
   const accounts = contacts.data?.accounts || []
-  let content = contacts.isLoading ?
-    <Spinner /> :
-    accounts.length > 0 ?
-      (accounts.map((account) => {
-        return <ContactItem key={account.id} account={account} />
-      })) : 
-      (
-        <YStack gap="$5" paddingVertical="$8">
-          <Text fontFamily="$body" fontSize="$3">
-            You have no Connections yet.
-          </Text>
-        </YStack>
-      )
+  let content = contacts.isLoading ? (
+    <Spinner />
+  ) : accounts.length > 0 ? (
+    accounts.map((account) => {
+      return <ContactItem key={account.id} account={account} />
+    })
+  ) : (
+    <YStack gap="$5" paddingVertical="$8">
+      <Text fontFamily="$body" fontSize="$3">
+        You have no Connections yet.
+      </Text>
+    </YStack>
+  )
   return (
     <>
       <MainWrapper>

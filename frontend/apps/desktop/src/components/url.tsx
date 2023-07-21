@@ -78,7 +78,7 @@ export function AccessURLRow({
               setIsClipboardCopied(false)
             }, 2000)
           }}
-          active={isClipboardCopied}
+          // active={isClipboardCopied}
         >
           <Copy size={16} />
         </Button>

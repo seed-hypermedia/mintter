@@ -52,7 +52,6 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           return (
             <Text
               key={`${content.type}-${index}`}
-              // @ts-expect-error tamagui upgrade
               fontWeight={content.styles.bold ? 'bold' : '100'}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}

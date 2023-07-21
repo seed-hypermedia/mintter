@@ -63,14 +63,7 @@ import {
 
 import {ArrowDownRight, X} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {
-  ComponentProps,
-  ComponentType,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {ComponentProps, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 
 export default function Settings({}: {}) {
@@ -632,11 +625,7 @@ function SiteInfoForm({
   )
 }
 
-function SiteInfoTable({
-  info
-}: {
-  info: SiteInfo
-}) {
+function SiteInfoTable({info}: {info: SiteInfo}) {
   const {title, description} = info
   return (
     <TableList>
@@ -657,7 +646,14 @@ function SiteInfoTable({
 
       <Separator />
       <TableList.Item>
-        <SizableText size="$3" flex={0} width={80} flexShrink={0} flexGrow={0} fontWeight="700">
+        <SizableText
+          size="$3"
+          flex={0}
+          width={80}
+          flexShrink={0}
+          flexGrow={0}
+          fontWeight="700"
+        >
           Description
         </SizableText>
         <Separator vertical marginHorizontal={10} />
@@ -741,17 +737,17 @@ function SiteInfoSection({
   const writeSiteInfo = useWriteSiteInfo(hostname)
   return (
     <SettingsSection title="Public SEO Info">
-      {siteInfo?.data ? (isOwner ? (
-        <SiteInfoForm
-          info={siteInfo.data}
-          onSubmit={(info) => writeSiteInfo.mutate(info)}
-          isOwner={isOwner}
-        />
-      ) : (
-        <SiteInfoTable 
-          info={siteInfo.data}
-        />
-      )) : null}
+      {siteInfo?.data ? (
+        isOwner ? (
+          <SiteInfoForm
+            info={siteInfo.data}
+            onSubmit={(info) => writeSiteInfo.mutate(info)}
+            isOwner={isOwner}
+          />
+        ) : (
+          <SiteInfoTable info={siteInfo.data} />
+        )
+      ) : null}
     </SettingsSection>
   )
 }
@@ -812,6 +808,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         >
           <Label htmlFor="host">site domain or invite url</Label>
           <Input
+            //@ts-expect-error
             ref={hostRef}
             id="host"
             onChangeText={setSiteUrl}

@@ -23,7 +23,14 @@ export function UIAvatar({
   return (
     <StyledAvatar circular size={size}>
       <StyledAvatar.Image src={url} />
-      <AvatarFallback backgroundColor={color || avatarColor}>
+      <StyledAvatar.Fallback
+        backgroundColor={color || avatarColor}
+        alignItems="center"
+        justifyContent="center"
+        enterStyle={{
+          opacity: 0,
+        }}
+      >
         {initials ? (
           <Text
             fontFamily="$body"
@@ -35,7 +42,7 @@ export function UIAvatar({
             {initials}
           </Text>
         ) : null}
-      </AvatarFallback>
+      </StyledAvatar.Fallback>
     </StyledAvatar>
   )
 }
@@ -49,11 +56,3 @@ export function getRandomColor(id: string) {
   const shortened = hash % 360
   return `hsl(${shortened},60%,80%)`
 }
-
-const AvatarFallback = styled(StyledAvatar.Fallback, {
-  alignItems: 'center',
-  justifyContent: 'center',
-  enterStyle: {
-    opacity: 0,
-  },
-})
