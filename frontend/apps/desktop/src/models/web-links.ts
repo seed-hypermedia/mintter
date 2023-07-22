@@ -1,6 +1,6 @@
-import {appQueryClient} from '@app/query-client'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
+import {AppQueryClient} from '@mintter/app/src/query-client'
 
 function parseHTML(html: string): Document {
   const parser = new DOMParser()
@@ -72,6 +72,6 @@ function queryWebLink(url: string, enabled: boolean) {
 export function useWebLink(url: string, enabled: boolean) {
   return useQuery(queryWebLink(url, enabled))
 }
-export function fetchWebLink(url: string) {
-  return appQueryClient.fetchQuery(queryWebLink(url, true))
+export function fetchWebLink(appClient: AppQueryClient, url: string) {
+  return appClient.client.fetchQuery(queryWebLink(url, true))
 }

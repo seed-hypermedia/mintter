@@ -1,4 +1,3 @@
-import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {
   Block,
   Document,
@@ -17,7 +16,7 @@ import {
 } from '@app/api-clients'
 import {queryKeys} from './query-keys'
 import {useNavigate} from '@app/utils/navigation'
-import {toast} from '@app/toast'
+import {toast, useAppContext, useQueryInvalidator} from '@mintter/app'
 
 function blockExtractReferencedDocs(
   block: Block,
@@ -82,6 +81,7 @@ export function useAddSite(
     unknown
   >,
 ) {
+  const invalidate = useQueryInvalidator()
   return useMutation(
     async (input: {hostname: string; inviteToken?: string}) => {
       await webPublishingClient.addSite(input)
@@ -90,7 +90,7 @@ export function useAddSite(
     {
       ...options,
       onSuccess: (_result, _hostname, ctx) => {
-        appInvalidateQueries([queryKeys.GET_SITES])
+        invalidate([queryKeys.GET_SITES])
         options?.onSuccess?.(_result, _hostname, ctx)
       },
     },
@@ -110,6 +110,7 @@ export function useWriteSiteInfo(
   hostname: string,
   opts?: UseMutationOptions<unknown, unknown, Partial<SiteInfo>>,
 ) {
+  const invalidate = useQueryInvalidator()
   return useMutation(
     async (info: Partial<SiteInfo>) => {
       await getWebSiteClient(hostname).updateSiteInfo(info)
@@ -117,7 +118,7 @@ export function useWriteSiteInfo(
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        appInvalidateQueries([queryKeys.GET_SITE_INFO, hostname])
+        invalidate([queryKeys.GET_SITE_INFO, hostname])
         opts?.onSuccess?.(response, input, ctx)
       },
     },
@@ -163,6 +164,7 @@ export function useRemoveMember(
   hostname: string,
   opts?: UseMutationOptions<void, unknown, string>,
 ) {
+  const invalidate = useQueryInvalidator()
   return useMutation(
     async (accountId: string) => {
       await getWebSiteClient(hostname).deleteMember({
@@ -173,7 +175,7 @@ export function useRemoveMember(
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        appInvalidateQueries([queryKeys.GET_SITE_MEMBERS, hostname])
+        invalidate([queryKeys.GET_SITE_MEMBERS, hostname])
         opts?.onSuccess?.(response, input, ctx)
       },
     },
@@ -181,6 +183,7 @@ export function useRemoveMember(
 }
 
 export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
+  const invalidate = useQueryInvalidator()
   return useMutation(
     async () => {
       await webPublishingClient.removeSite({hostname})
@@ -188,7 +191,7 @@ export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        appInvalidateQueries([queryKeys.GET_SITES])
+        invalidate([queryKeys.GET_SITES])
         opts?.onSuccess?.(response, input, ctx)
       },
     },
@@ -226,6 +229,7 @@ async function performWebPublish(
 }
 
 export function useSitePublish(draftId: string | undefined) {
+  const {invalidate, client} = useAppContext().queryClient
   const navigate = useNavigate('replace')
   return useMutation(
     async ({path}: {path: string}) => {
@@ -282,25 +286,25 @@ export function useSitePublish(draftId: string | undefined) {
     },
     {
       onSuccess: ({publication, docId, hostname}, input) => {
-        appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, docId])
-        appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
-        appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-        appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-        appQueryClient.setQueryData([queryKeys.EDITOR_DRAFT, docId], () => null)
+        invalidate([queryKeys.PUBLICATION_CHANGES, docId])
+        invalidate([queryKeys.GET_PUBLICATION, docId])
+        invalidate([queryKeys.GET_PUBLICATION_LIST])
+        invalidate([queryKeys.GET_DRAFT_LIST])
+        client.setQueryData([queryKeys.EDITOR_DRAFT, docId], () => null)
         navigate({
           key: 'publication',
           documentId: docId,
           versionId: publication.version,
         })
-        if (hostname)
-          appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, hostname])
-        appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, docId])
+        if (hostname) invalidate([queryKeys.GET_SITE_PUBLICATIONS, hostname])
+        invalidate([queryKeys.GET_DOC_SITE_PUBLICATIONS, docId])
       },
     },
   )
 }
 
 export function useSiteUnpublish() {
+  const invalidate = useQueryInvalidator()
   return useMutation(
     async ({
       hostname,
@@ -319,8 +323,8 @@ export function useSiteUnpublish() {
     },
     {
       onSuccess: (a, input) => {
-        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
-        appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS])
+        invalidate([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
+        invalidate([queryKeys.GET_DOC_SITE_PUBLICATIONS])
       },
     },
   )

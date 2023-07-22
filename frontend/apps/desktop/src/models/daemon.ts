@@ -1,5 +1,4 @@
 import {daemonClient} from '@app/api-clients'
-import {appQueryClient} from '@app/query-client'
 import {Info} from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -30,10 +29,6 @@ function queryDaemonInfo():
 }
 export function useDaemonInfo() {
   return useQuery(queryDaemonInfo())
-}
-
-export function fetchDaemonInfo() {
-  return appQueryClient.fetchQuery(queryDaemonInfo())
 }
 
 export function useMnemonics() {

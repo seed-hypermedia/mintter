@@ -1,7 +1,7 @@
 import {useDraftTitle, usePublication} from '@app/models/documents'
 import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {AccountLinkAvatar} from '@components/account-link-avatar'
+import {AccountLinkAvatar} from '@app/components/account-link-avatar'
 import {
   File,
   FontSizeTokens,

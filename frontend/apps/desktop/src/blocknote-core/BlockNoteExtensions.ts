@@ -67,6 +67,7 @@ export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
     provider: any
     renderCursor?: (user: any) => HTMLElement
   }
+  linkExtensionOptions?: any
 }) => {
   const ret: Extensions = [
     extensions.ClipboardTextSerializer,
@@ -178,6 +179,7 @@ export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
   if (opts.uiFactories.hyperlinkToolbarFactory) {
     ret.push(
       HyperlinkMark.configure({
+        ...opts.linkExtensionOptions,
         hyperlinkToolbarFactory: opts.uiFactories.hyperlinkToolbarFactory,
         openOnClick: opts.editable === false,
       }),

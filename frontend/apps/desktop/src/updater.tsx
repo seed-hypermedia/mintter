@@ -11,8 +11,6 @@ import toast from 'react-hot-toast'
 
 checkUpdate()
 
-console.log('== UPDATE')
-
 const TOAST_ID = 'updater'
 
 let ul1: () => void

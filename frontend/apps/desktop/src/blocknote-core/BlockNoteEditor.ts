@@ -41,6 +41,8 @@ import {getBlockInfoFromPos} from './extensions/Blocks/helpers/getBlockInfoFromP
 import {BaseSlashMenuItem, defaultSlashMenuItems} from './extensions/SlashMenu'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
+  linkExtensionOptions: any
+
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
   enableBlockNoteExtensions: boolean
 
@@ -178,8 +180,8 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       blockSchema: options.blockSchema || (defaultBlockSchema as any),
       ...options,
     }
-
     const extensions = getBlockNoteExtensions<BSchema>({
+      linkExtensionOptions: newOptions.linkExtensionOptions,
       editor: this,
       editable: newOptions.editable,
       uiFactories: newOptions.uiFactories || {},

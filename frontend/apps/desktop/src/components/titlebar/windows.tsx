@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {TitleBarProps} from '@components/titlebar'
+import {TitleBarProps} from '@app/components/titlebar'
 import {
   AddSquare,
   ButtonText,
@@ -47,10 +47,8 @@ import {
   Container,
 } from '@mintter/ui'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
-import {invoke, send} from '@app/ipc'
-import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useMemo} from 'react'
-import {ActionButtons, NavigationButtons, NavMenu} from './common'
+import {ActionButtons, NavigationButtons} from './common'
 import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
@@ -58,6 +56,8 @@ import {
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
+import {useWindowUtils} from '@mintter/app'
+import {useIPC} from '@mintter/app'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
@@ -142,9 +142,10 @@ export default function TitleBarWindows(props: TitleBarProps) {
 
 function SystemMenu() {
   const route = useNavRoute()
+  const {hide, close} = useWindowUtils()
   const editingDisabled = route.key != 'draft'
   const spawn = useNavigate('spawn')
-
+  const {invoke, send} = useIPC()
   const menuItems: Array<MenuItemElement> = useMemo(
     () => [
       {
@@ -168,7 +169,7 @@ function SystemMenu() {
             id: 'hide',
             title: 'Hide',
             accelerator: 'Ctrl+H',
-            onSelect: () => getCurrent().hide(),
+            onSelect: () => hide(),
             icon: Hide,
           },
           {
@@ -194,7 +195,7 @@ function SystemMenu() {
             id: 'close',
             title: 'Close',
             accelerator: 'Ctrl+F4',
-            onSelect: () => getCurrent().close(),
+            onSelect: () => close(),
             icon: Close,
           },
           {

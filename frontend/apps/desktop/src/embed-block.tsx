@@ -27,9 +27,10 @@ import {createReactBlockSpec} from './blocknote-react'
 import {HDBlockSchema, hdBlockSchema} from './client/schema'
 import {usePublication} from './models/documents'
 import {useNavigate} from './utils/navigation'
-import {openUrl} from './utils/open-url'
+import {useOpenUrl} from '@app/open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
+  const openUrl = useOpenUrl()
   return (
     <>
       {inline.map((content, index) => {

@@ -4,21 +4,12 @@ import {
   SizableText,
   SizableTextProps,
   ListItem,
-  useTheme,
   ListItemProps,
 } from '@mintter/ui'
 import {Button} from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import {forwardRef} from 'react'
-
-// export const dropdownContentStyle = css({
-//   minWidth: 220,
-//   background: '$base-background-subtle',
-//   boxShadow: '$menu',
-//   borderRadius: '$2',
-//   overflow: 'hidden',
-//   zIndex: '$max',
-// })
+import {DialogOverlay} from './dialog'
 
 const Content = ({
   children,
@@ -136,6 +127,7 @@ const Item = forwardRef<
 export const Dropdown = {
   ...DropdownMenuPrimitive,
   // Content,
+  Overlay: DialogOverlay,
   Trigger: ElementDropdown,
   Label,
   Content,
@@ -146,22 +138,6 @@ export const Dropdown = {
   // Separator: StyledSeparator,
   RightSlot,
 }
-
-// export var ElementDropdown = styled('button', {
-//   all: 'unset',
-//   zIndex: 10,
-//   padding: 0,
-//   blockSize: '1.2rem',
-//   inlineSize: '1.2rem',
-//   borderRadius: '$2',
-//   display: 'flex',
-//   alignItems: 'center',
-//   justifyContent: 'center',
-//   '&:hover': {
-//     cursor: 'pointer',
-//     backgroundColor: '$base-component-bg-normal',
-//   },
-// })
 
 export function MenuItem({
   disabled,

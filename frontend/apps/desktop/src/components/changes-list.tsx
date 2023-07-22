@@ -1,15 +1,10 @@
 import {useAccount} from '@app/models/accounts'
 import {SmartChangeInfo, useSmartChanges} from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {Avatar} from '@components/avatar'
+import {Avatar} from '@app/components/avatar'
 import {formattedDate, pluralS} from '@mintter/shared'
-import {Copy, SizableText, XStack} from '@mintter/ui'
-import copyTextToClipboard from 'copy-text-to-clipboard'
-import {MouseEvent} from 'react'
-import {toast} from 'react-hot-toast'
+import {Button, SizableText, XStack} from '@mintter/ui'
 import {AccessoryContainer} from './accessory-sidebar'
-import {Box} from './box'
-import {Button} from './button'
 
 function ChangeItem({
   change,
@@ -24,17 +19,15 @@ function ChangeItem({
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
-  const openAccount = (e: MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const openAccount = () => {
     navigate({key: 'account', accountId: change.author})
   }
   return (
     <Button
       key={change.id}
-      as="li"
-      variant="ghost"
-      onClick={() => {
+      chromeless
+      padding={0}
+      onPress={() => {
         navigate({
           key: 'publication',
           documentId: docId,
@@ -44,18 +37,14 @@ function ChangeItem({
           },
         })
       }}
-      css={{
-        listStyle: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$3',
-        background: active ? '$highlight-surface1' : 'transparent',
-        alignItems: 'center',
-        position: 'relative',
-        '&:hover': {
-          cursor: 'pointer',
-          background: active ? '$highlight-surface1' : 'transparent',
-        },
+      flexDirection="column"
+      gap="$3"
+      backgroundColor={active ? '$highlight-surface1' : 'transparent'}
+      alignItems="center"
+      position="relative"
+      hoverStyle={{
+        backgroundColor: active ? '$highlight-surface1' : 'transparent',
+        cursor: 'pointer',
       }}
     >
       <XStack
@@ -75,40 +64,26 @@ function ChangeItem({
           }}
         /> */}
       </XStack>
-      <Box
-        css={{
-          display: 'flex',
-          alignSelf: 'stretch',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-        }}
+      <XStack
+        alignSelf="stretch"
+        alignItems="center"
+        justifyContent="flex-start"
       >
-        <Box onClick={openAccount}>
+        <XStack onPress={openAccount}>
           <Avatar
             accountId={change.author}
             alias={author?.data?.profile?.alias || 'A'}
           />
-        </Box>
+        </XStack>
 
-        <Button
-          css={{
-            color: '$base-text-high',
-            padding: '$3',
-            '&:hover': {
-              textDecoration: 'underline',
-              color: '$base-text-high',
-            },
-          }}
-          variant="ghost"
-          onClick={openAccount}
-        >
+        <Button onPress={openAccount}>
           {author?.data?.profile?.alias || change.author}
         </Button>
 
         <SizableText size="$2">
           {change.createTime ? formattedDate(change.createTime) : null}
         </SizableText>
-      </Box>
+      </XStack>
 
       {/* {change.webPubs.map((pub) => (
         <Text size="2" color="muted" key={pub.hostname}>

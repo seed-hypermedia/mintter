@@ -2,11 +2,12 @@ import {createHyperdocsDocLink} from '@mintter/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {fetchWebLink} from './models/web-links'
+import {AppQueryClient} from '@mintter/app/src/query-client'
 
 export const hyperdocsPluginKey = new PluginKey('hyperdocs-link')
 
 // TODO: use `createX` function instead of just exporting the plugin
-export function createHyperdocsDocLinkPlugin() {
+export function createHyperdocsDocLinkPlugin(queryClient: AppQueryClient) {
   let plugin = new Plugin({
     key: hyperdocsPluginKey,
     view(editorView) {
@@ -16,7 +17,7 @@ export function createHyperdocsDocLinkPlugin() {
           if (state?.size && state?.size > 0) {
             if (state) {
               for (const entry of state) {
-                checkHyperLink(view, entry)
+                checkHyperLink(queryClient, view, entry)
               }
             }
           }
@@ -61,6 +62,7 @@ export function createHyperdocsDocLinkPlugin() {
 }
 
 async function checkHyperLink(
+  queryClient: AppQueryClient,
   view: EditorView,
   entry: [key: string, value: string],
 ): Promise<
@@ -75,7 +77,7 @@ async function checkHyperLink(
   if (!entryUrl) return
   view.dispatch(view.state.tr.setMeta('hdPlugin:removeId', id))
   try {
-    let res = await fetchWebLink(entryUrl)
+    let res = await fetchWebLink(queryClient, entryUrl)
     if (res && res.documentId) {
       view.state.doc.descendants((node, pos) => {
         if (node.marks.some((mark) => mark.attrs.id == id)) {

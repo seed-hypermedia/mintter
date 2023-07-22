@@ -40,7 +40,6 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "xstate.showVisualEditorWarnings": false,
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform"
   },

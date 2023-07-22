@@ -12,24 +12,26 @@ import {
   Theme,
   YStack,
 } from '@mintter/ui'
-import {dehydrate, Hydrate, QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
-import {useInterpret} from '@xstate/react'
-import {Suspense, useEffect} from 'react'
+import {Suspense, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
-import {globalStyles} from './stitches.config'
-
 import {DaemonStatusProvider} from '@app/node-status-context'
 import tamaguiConfig from '../tamagui.config'
-import {appQueryClient} from './query-client'
+import {getQueryClient} from '@mintter/app/src/query-client'
 import './styles/root.css'
 import './styles/root.scss'
 import './styles/toaster.scss'
 import {NavigationProvider} from './utils/navigation'
-import {listen, useListen} from '@app/ipc'
+import {createIPC, listen} from '@app/ipc'
+import {createGRPCClient} from '@mintter/shared'
+import {transport} from './api-clients'
+import {AppContextProvider, AppPlatform, WindowUtils} from '@mintter/app'
+import {open} from '@tauri-apps/api/shell'
+import {getCurrent} from '@tauri-apps/api/window'
+import {saveCidAsFile} from './save-cid-as-file'
 
 import('./updater')
 
@@ -48,28 +50,82 @@ onUpdaterEvent(({error, status}) => {
   debug(`Updater event. error: ${error} status: ${status}`)
 })
 
-export function Root() {
-  globalStyles()
+const osPlatform = import.meta.env.TAURI_PLATFORM
 
+function appPlatform(): AppPlatform {
+  if (osPlatform === 'linux') return 'linux'
+  if (osPlatform === 'macos') return 'macos'
+  if (osPlatform === 'windows') return 'windows'
+  throw new Error(`Unsupported platform: ${osPlatform}`)
+}
+
+function useWindowUtils(): WindowUtils {
+  const win = getCurrent()
+  const [isMaximized, setIsMaximized] = useState<boolean | undefined>()
+  useEffect(() => {
+    win.isMaximized().then((v) => setIsMaximized(v))
+  }, [])
+  const windowUtils = {
+    maximize: () => {
+      setIsMaximized(true)
+      win.maximize()
+    },
+    unmaximize: () => {
+      setIsMaximized(false)
+      win.unmaximize()
+    },
+    close: () => {
+      win.close()
+    },
+    minimize: () => {
+      win.minimize()
+    },
+    hide: () => {
+      win.hide()
+    },
+    isMaximized,
+  }
+  return windowUtils
+}
+
+export function Root() {
+  const ipc = useMemo(() => createIPC(), [])
+  const grpcClient = useMemo(() => createGRPCClient(transport), [])
+  const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
+  const windowUtils = useWindowUtils()
+
+  console.log(`== ~ Root ~ windowUtils:`, {
+    ipc,
+    grpcClient,
+    queryClient,
+    windowUtils,
+  })
   return (
-    <StyleProvider>
-      <QueryClientProvider client={appQueryClient}>
+    <AppContextProvider
+      grpcClient={grpcClient}
+      queryClient={queryClient}
+      platform={appPlatform()}
+      ipc={ipc}
+      externalOpen={async (url: string) => {
+        await open(url)
+      }}
+      windowUtils={windowUtils}
+      saveCidAsFile={saveCidAsFile}
+    >
+      <StyleProvider>
         <Suspense>
-          <Hydrate state={dehydrateState}>
-            <ErrorBoundary FallbackComponent={AppError}>
-              <NavigationProvider>
-                <App />
-              </NavigationProvider>
-              <Toaster
-                position="bottom-right"
-                toastOptions={{className: 'toaster'}}
-              />
-            </ErrorBoundary>
-          </Hydrate>
+          <ErrorBoundary FallbackComponent={AppError}>
+            <NavigationProvider>
+              <App />
+            </NavigationProvider>
+            <Toaster
+              position="bottom-right"
+              toastOptions={{className: 'toaster'}}
+            />
+          </ErrorBoundary>
         </Suspense>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-    </StyleProvider>
+      </StyleProvider>
+    </AppContextProvider>
   )
 }
 
@@ -82,8 +138,6 @@ function App() {
     </DaemonStatusProvider>
   )
 }
-
-var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
@@ -111,6 +165,7 @@ export function StyleProvider({
 }: Omit<TamaguiProviderProps, 'config'>) {
   return (
     <TamaguiProvider
+      // @ts-ignore
       config={tamaguiConfig}
       defaultTheme="light"
       disableRootThemeClass

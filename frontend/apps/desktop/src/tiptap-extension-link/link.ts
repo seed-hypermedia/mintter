@@ -1,22 +1,12 @@
-import {fetchWebLink} from '@app/models/web-links'
-import {toast} from '@app/toast'
-import {
-  getIdsfromUrl,
-  isMintterGatewayLink,
-  isHyperdocsScheme,
-  createHyperdocsDocLink,
-} from '@mintter/shared'
+import {isHyperdocsScheme} from '@mintter/shared'
 import {Mark, mergeAttributes} from '@tiptap/core'
-import {MarkType} from '@tiptap/pm/model'
-import {Plugin, PluginKey, PluginSpec, Transaction} from '@tiptap/pm/state'
-import {AddMarkStep, Step} from '@tiptap/pm/transform'
-import {EditorView} from '@tiptap/pm/view'
-import {Editor} from '@tiptap/react'
+import {Plugin} from '@tiptap/pm/state'
 import {registerCustomProtocol, reset} from 'linkifyjs'
 
 import {autolink} from './helpers/autolink'
 import {clickHandler} from './helpers/clickHandler'
 import {pasteHandler} from './helpers/pasteHandler'
+import {AppQueryClient} from '@mintter/app/src/query-client'
 
 export interface LinkProtocolOptions {
   scheme: string
@@ -199,13 +189,14 @@ export const Link = Mark.create<LinkOptions>({
     if (this.options.openOnClick) {
       plugins.push(
         clickHandler({
+          openUrl: (this.options as any).openUrl,
           type: this.type,
         }),
       )
     }
-
     plugins.push(
       pasteHandler({
+        client: (this.options as any).queryClient,
         editor: this.editor,
         type: this.type,
         linkOnPaste: this.options.linkOnPaste,

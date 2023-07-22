@@ -1,10 +1,10 @@
-import {openUrl} from '@app/utils/open-url'
 import {getAttributes} from '@tiptap/core'
 import {MarkType} from '@tiptap/pm/model'
 import {Plugin, PluginKey} from '@tiptap/pm/state'
 
 type ClickHandlerOptions = {
   type: MarkType
+  openUrl?: any
 }
 
 export function clickHandler(options: ClickHandlerOptions): Plugin {
@@ -22,7 +22,7 @@ export function clickHandler(options: ClickHandlerOptions): Plugin {
 
         if (href) {
           let newWindow = false // todo, check for meta key
-          openUrl(href, newWindow)
+          options.openUrl(href, newWindow)
           return true
         }
 

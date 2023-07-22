@@ -1,5 +1,4 @@
 import {daemonClient} from '@app/api-clients'
-import {Box} from '@app/components/box'
 import {useAccount, useMyAccount, useSetProfile} from '@app/models/accounts'
 import {useDaemonInfo} from '@app/models/daemon'
 import {usePeerInfo} from '@app/models/networking'
@@ -17,9 +16,9 @@ import {
 import {TableList} from '@app/table-list'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {AvatarForm} from '@components/avatar-form'
-import {Tooltip} from '@components/tooltip'
-import {AccessURLRow} from '@components/url'
+import {AvatarForm} from '@app/components/avatar-form'
+import {Tooltip} from '@app/components/tooltip'
+import {AccessURLRow} from '@app/components/url'
 import {
   LightningWallet,
   Member,
@@ -65,6 +64,7 @@ import {ArrowDownRight, X} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
+import {TextInput} from 'react-native'
 
 export default function Settings({}: {}) {
   return (
@@ -757,7 +757,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
     onSuccess: (result, input) => onDone(input.hostname),
   })
   const [siteUrl, setSiteUrl] = useState<string | null>(null)
-  const hostRef = useRef<HTMLInputElement>(null)
+  const hostRef = useRef<TextInput>(null)
 
   // focus input on first render
   useEffect(() => {
@@ -777,10 +777,8 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
       ) : null}
       {addSite.isLoading ? <Spinner /> : null}
       <p>Follow the self-hosting guide and copy the invite URL:</p>
-      <Box
-        as={'form'}
-        onSubmit={(e) => {
-          e.preventDefault()
+      <Form
+        onSubmit={() => {
           const matchedHostProtocol = siteUrl?.match(
             /^(https?:\/\/)?([^/]*)\/?/,
           )
@@ -794,11 +792,8 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
           console.log({fullHostname, matchedHostProtocol, siteUrl, hostname})
           if (hostname) addSite.mutate({hostname: fullHostname, inviteToken})
         }}
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1em',
-        }}
+        flexDirection="column"
+        gap="$3"
       >
         <Fieldset
           paddingHorizontal={0}
@@ -808,7 +803,6 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         >
           <Label htmlFor="host">site domain or invite url</Label>
           <Input
-            //@ts-expect-error
             ref={hostRef}
             id="host"
             onChangeText={setSiteUrl}
@@ -819,7 +813,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         <Button disabled={!siteUrl} size="$2" color="green">
           Connect + Add Site
         </Button>
-      </Box>
+      </Form>
     </>
   )
 }

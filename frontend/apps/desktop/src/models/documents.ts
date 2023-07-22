@@ -15,10 +15,9 @@ import {editorBlockToServerBlock} from '@app/client/editor-to-server'
 import {HDBlockSchema, hdBlockSchema} from '@app/client/schema'
 import {serverChildrenToEditorChildren} from '@app/client/server-to-editor'
 import {createHyperdocsDocLinkPlugin} from '@app/hyperdocs-link-plugin'
-import {useListen} from '@app/ipc'
-import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import {useListen} from '@mintter/app'
 import {RightsideWidget} from '@app/rightside-block-widget'
-import {toast} from '@app/toast'
+import {toast, useAppContext, useQueryInvalidator} from '@mintter/app'
 import {insertFile} from '@app/types/file'
 import {insertImage} from '@app/types/image'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
@@ -39,6 +38,7 @@ import {
   UseMutationOptions,
   useQueries,
   useQuery,
+  useQueryClient,
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
@@ -47,6 +47,7 @@ import {useEffect, useRef, useState} from 'react'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
+import {useOpenUrl} from '@app/open-url'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -101,14 +102,15 @@ export function useDraftList() {
 export function useDeleteDraft(
   opts: UseMutationOptions<void, unknown, string>,
 ) {
+  const {queryClient} = useAppContext()
   return useMutation({
     ...opts,
     mutationFn: async (documentId) => {
       await draftsClient.deleteDraft({documentId})
     },
     onSuccess: (response, documentId, context) => {
-      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      appQueryClient.setQueryData(
+      queryClient.invalidate([queryKeys.GET_DRAFT_LIST])
+      queryClient.client.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         () => null,
       )
@@ -120,13 +122,14 @@ export function useDeleteDraft(
 export function useDeletePublication(
   opts: UseMutationOptions<void, unknown, string>,
 ) {
+  const invalidate = useQueryInvalidator()
   return useMutation({
     ...opts,
     mutationFn: async (documentId) => {
       await publicationsClient.deletePublication({documentId})
     },
     onSuccess: (...args) => {
-      appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
       opts?.onSuccess?.(...args)
     },
   })
@@ -170,11 +173,8 @@ export function usePublication({
 }
 
 export function prefetchPublication(documentId: string, versionId?: string) {
-  appQueryClient.prefetchQuery(queryPublication(documentId, versionId))
-}
-
-export function fetchPublication(documentId: string, versionId?: string) {
-  return appQueryClient.fetchQuery(queryPublication(documentId, versionId))
+  // todo, bring this back
+  // appQueryClient.prefetchQuery(queryPublication(documentId, versionId))
 }
 
 export function useDocumentVersions(
@@ -204,6 +204,7 @@ export function usePublishDraft(
     }
   >,
 ) {
+  const {client, invalidate} = useAppContext().queryClient
   return useMutation({
     ...opts,
     mutationFn: async ({
@@ -249,22 +250,19 @@ export function usePublishDraft(
     },
     onSuccess: (pub: Publication, variables, context) => {
       const documentId = pub.document?.id
-      appQueryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        () => null,
-      )
-      appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-      appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
-      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-      appInvalidateQueries([queryKeys.GET_PUBLICATION, documentId])
-      appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, documentId])
-      appInvalidateQueries([queryKeys.GET_DOC_SITE_PUBLICATIONS, documentId])
-      appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
-      appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS])
+      client.setQueryData([queryKeys.EDITOR_DRAFT, documentId], () => null)
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
+      invalidate([queryKeys.PUBLICATION_CITATIONS])
+      invalidate([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.GET_PUBLICATION, documentId])
+      invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
+      invalidate([queryKeys.GET_DOC_SITE_PUBLICATIONS, documentId])
+      invalidate([queryKeys.PUBLICATION_CITATIONS])
+      invalidate([queryKeys.GET_SITE_PUBLICATIONS])
       opts?.onSuccess?.(pub, variables, context)
 
       setTimeout(() => {
-        appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, pub.document?.id])
+        client.removeQueries([queryKeys.EDITOR_DRAFT, pub.document?.id])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
@@ -415,12 +413,16 @@ export function useDraftEditor(
   opts?: {onEditorState?: (v: any) => void},
 ) {
   let savingDebounceTimout = useRef<any>(null)
-
+  const queryClient = useAppContext().queryClient
+  const openUrl = useOpenUrl()
+  const {invalidate, client} = queryClient
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       if (!editor) return
-      const draftState: EditorDraftState | undefined =
-        appQueryClient.getQueryData([queryKeys.EDITOR_DRAFT, documentId])
+      const draftState: EditorDraftState | undefined = client.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        documentId,
+      ])
       if (!draftState) return
 
       const {changed, moves, deleted} = draftState.changes
@@ -481,7 +483,7 @@ export function useDraftEditor(
           }),
         )
       })
-      appQueryClient.setQueryData(
+      client.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: EditorDraftState | undefined) => {
           if (!state) return undefined
@@ -498,7 +500,7 @@ export function useDraftEditor(
     },
     retry: false,
     onError: (err) => {
-      console.log('=== DRAFT MUTATION ERROR', err)
+      console.error('Failed to save draft', err)
     },
   })
 
@@ -663,7 +665,7 @@ export function useDraftEditor(
         saveDraftMutation.mutate()
       }, 500)
 
-      appQueryClient.setQueryData(
+      client.setQueryData(
         [queryKeys.EDITOR_DRAFT, documentId],
         (state: EditorDraftState | undefined) => {
           if (!state) {
@@ -692,6 +694,10 @@ export function useDraftEditor(
         },
       )
     },
+    linkExtensionOptions: {
+      queryClient,
+      openUrl,
+    },
     onEditorReady: (e) => {
       readyThings.current[0] = e
       handleMaybeReady()
@@ -712,7 +718,7 @@ export function useDraftEditor(
         Extension.create({
           name: 'hyperdocs-link',
           addProseMirrorPlugins() {
-            return [createHyperdocsDocLinkPlugin().plugin]
+            return [createHyperdocsDocLinkPlugin(queryClient).plugin]
           },
         }),
       ],
@@ -755,7 +761,7 @@ export function useDraftEditor(
   useEffect(() => {
     return () => {
       clearTimeout(savingDebounceTimout.current)
-      const state: EditorDraftState | undefined = appQueryClient.getQueryData([
+      const state: EditorDraftState | undefined = client.getQueryData([
         queryKeys.EDITOR_DRAFT,
         documentId,
       ])
@@ -764,8 +770,8 @@ export function useDraftEditor(
       saveDraftMutation
         .mutateAsync()
         .then(() => {
-          appQueryClient.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
-          appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+          client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
+          invalidate([queryKeys.GET_DRAFT_LIST])
         })
         .catch((e) => {
           toast.error('Draft changes were not saved correctly.')
@@ -787,11 +793,12 @@ export type HyperDocsEditor = Exclude<
 >
 
 export function useWriteDraftWebUrl(draftId?: string) {
+  const {invalidate, client} = useAppContext().queryClient
   return useMutation({
     onMutate: (webUrl: string) => {
       let title: string
 
-      appQueryClient.setQueryData(
+      client.setQueryData(
         [queryKeys.EDITOR_DRAFT, draftId],
         (draft: EditorDraftState | undefined) => {
           if (!draft) return undefined
@@ -803,8 +810,10 @@ export function useWriteDraftWebUrl(draftId?: string) {
       )
     },
     mutationFn: async (webUrl: string) => {
-      const draftData: EditorDraftState | undefined =
-        appQueryClient.getQueryData([queryKeys.EDITOR_DRAFT, draftId])
+      const draftData: EditorDraftState | undefined = client.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        draftId,
+      ])
       if (!draftData) {
         throw new Error(
           'failed to access editor from useWriteDraftWebUrl mutation',
@@ -823,11 +832,11 @@ export function useWriteDraftWebUrl(draftId?: string) {
         ],
       })
 
-      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+      invalidate([queryKeys.GET_DRAFT_LIST])
       return null
     },
     onSuccess: (response, webUrl) => {
-      appQueryClient.setQueryData(
+      client.setQueryData(
         [queryKeys.EDITOR_DRAFT, draftId],
         (draft: EditorDraftState | undefined) => {
           if (!draft) return draft
@@ -836,36 +845,6 @@ export function useWriteDraftWebUrl(draftId?: string) {
       )
     },
   })
-}
-
-function useCacheListener<T = unknown>(queryKey: string[]) {
-  const [data, setData] = useState<T | undefined>(undefined)
-
-  useEffect(() => {
-    let unsubscribe = appQueryClient.getQueryCache().subscribe((event) => {
-      if (
-        event.type == 'updated' &&
-        event.action.type == 'success' &&
-        compareArrays(queryKey, event.query.queryKey)
-      ) {
-        setData(event.action.data)
-      }
-    })
-
-    return () => {
-      unsubscribe?.()
-    }
-  }, [queryKey])
-
-  return data
-}
-
-function compareArrays(arr1: any[], arr2: any[]): boolean {
-  if (arr1.length !== arr2.length) {
-    return false
-  }
-
-  return arr1.every((value, index) => value === arr2[index])
 }
 
 export const findBlock = findParentNode(
@@ -930,8 +909,15 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
     }
   }, [pub.data])
 
+  const {queryClient} = useAppContext()
+  const openUrl = useOpenUrl()
+
   // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
   const editor: HyperDocsEditor | null = useBlockNote<HDBlockSchema>({
+    linkExtensionOptions: {
+      queryClient,
+      openUrl,
+    },
     editable: false,
     blockSchema: hdBlockSchema,
     onEditorReady: (e) => {

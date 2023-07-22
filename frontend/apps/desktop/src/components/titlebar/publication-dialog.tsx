@@ -1,18 +1,23 @@
 import {useDraft} from '@app/models/documents'
 import {useSitePublish} from '@app/models/sites'
-import {styled} from '@app/stitches.config'
 import {NavRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Button} from '@components/button'
-import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {Publication} from '@mintter/shared'
-import {Container, Input, Label, Spinner, Text, XStack} from '@mintter/ui'
+import {
+  Button,
+  Container,
+  Input,
+  Label,
+  SizableText,
+  Spinner,
+  Text,
+  XStack,
+  styled,
+} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-
-const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
-const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
+import {DialogContent, DialogOverlay} from '../dialog'
 
 function writePathState(s: string) {
   if (s === '/') return '/'
@@ -29,10 +34,6 @@ function readPathState(s: string) {
   const basicPath = s.replace(/-+$/, '').toLocaleLowerCase()
   return basicPath
 }
-const Heading = styled('h2', {
-  margin: 0,
-  fontSize: '$4',
-})
 
 function PublishDialogForm({
   onDone,
@@ -67,7 +68,9 @@ function PublishDialogForm({
   }
   return (
     <>
-      <Heading>Publish to {hostnameStripProtocol(init.webUrl)}</Heading>
+      <SizableText size="$5" fontWeight="800">
+        Publish to {hostnameStripProtocol(init.webUrl)}
+      </SizableText>
       {publish.error ? (
         <Container
           backgroundColor="$red5"
@@ -89,12 +92,12 @@ function PublishDialogForm({
         }}
       />
 
-      <URLPreview>{pubUrl}</URLPreview>
+      <SizableText>{pubUrl}</SizableText>
       <XStack justifyContent="space-between">
         <Spinner opacity={publish.isLoading ? 1 : 0} />
         <Button
           disabled={publish.isLoading}
-          onClick={() => {
+          onPress={() => {
             publish
               .mutateAsync({
                 path: readPathState(path),
@@ -131,8 +134,8 @@ export function usePublicationDialog() {
         }}
       >
         <DialogPrimitive.Portal>
-          <StyledOverlay />
-          <StyledContent>
+          <DialogOverlay />
+          <DialogContent>
             {openSiteHostname && (
               <PublishDialogForm
                 route={route}
@@ -141,14 +144,10 @@ export function usePublicationDialog() {
                 }}
               />
             )}
-          </StyledContent>
+          </DialogContent>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
     ),
     open,
   }
 }
-
-const URLPreview = styled('p', {
-  color: '$success-text-low',
-})

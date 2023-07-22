@@ -1,4 +1,3 @@
-import {invoke} from '@app/ipc'
 import {Buffer} from 'buffer'
 import {
   createContext,
@@ -8,6 +7,7 @@ import {
   useReducer,
 } from 'react'
 import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
+import {useIPC} from '@mintter/app'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -257,6 +257,11 @@ export type NavMode = 'push' | 'replace' | 'spawn' | 'backplace'
 
 export function useNavigate(mode: NavMode = 'push') {
   const dispatch = useNavigationDispatch()
+  const {invoke} = useIPC()
+  function openRouteWindow(route: NavRoute) {
+    const path = encodeRouteToPath(route)
+    invoke('plugin:window|open', {path})
+  }
   return (route: NavRoute) => {
     if (mode === 'spawn') {
       openRouteWindow(route)
@@ -268,12 +273,4 @@ export function useNavigate(mode: NavMode = 'push') {
       dispatch({type: 'backplace', route})
     }
   }
-}
-
-export function openRouteWindow(route: NavRoute) {
-  openAppWindow(encodeRouteToPath(route))
-}
-
-function openAppWindow(path: string) {
-  invoke('plugin:window|open', {path})
 }

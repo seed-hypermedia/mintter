@@ -1,4 +1,4 @@
-import {warn} from '@app/utils/logger'
+import {warn} from '@mintter/app'
 import {lazy} from 'react'
 
 var TitleBarMacos = lazy(() => import('./macos'))

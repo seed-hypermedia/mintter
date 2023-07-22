@@ -4,11 +4,10 @@ import {useDocChanges} from '@app/models/changes'
 import {useDocCitations} from '@app/models/content-graph'
 import {usePublication, usePublicationEditor} from '@app/models/documents'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {VersionsAccessory} from '@components/changes-list'
-import {CitationsAccessory} from '@components/citations'
-import {ConversationsAccessory} from '@components/conversations'
-import Footer, {FooterButton} from '@components/footer'
-import {Placeholder} from '@components/placeholder-box'
+import {VersionsAccessory} from '@app/components/changes-list'
+import {CitationsAccessory} from '@app/components/citations'
+import Footer, {FooterButton} from '@app/components/footer'
+import {Placeholder} from '@app/components/placeholder-box'
 import {MttLink, pluralS} from '@mintter/shared'
 import {
   Button,
@@ -27,8 +26,8 @@ import {ErrorBoundary} from 'react-error-boundary'
 
 import {HDEditorContainer, HyperDocsEditorView} from '@app/editor/editor'
 import {AppError} from '@app/root'
-import {CitationsProvider} from '@components/citations-context'
-import {DebugData} from '@components/debug-data'
+import {CitationsProvider} from '@app/components/citations-context'
+import {DebugData} from '@app/components/debug-data'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -112,9 +111,7 @@ export default function PublicationPage() {
                 </YStack>
               </Allotment.Pane>
               {accessoryKey &&
-                (accessoryKey == 'comments' ? (
-                  <ConversationsAccessory />
-                ) : accessoryKey == 'versions' ? (
+                (accessoryKey == 'versions' ? (
                   <VersionsAccessory />
                 ) : (
                   <CitationsAccessory docId={docId} version={versionId} />

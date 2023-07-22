@@ -1,7 +1,7 @@
-import {Dropdown} from '@components/dropdown'
+import {Dropdown} from '@app/components/dropdown'
 import {prefetchPublication, useDeletePublication} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {copyTextToClipboard} from '@mintter/app'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Document, formattedDate, Publication} from '@mintter/shared'
 import {

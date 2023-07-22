@@ -3,10 +3,9 @@ import {CitationLink, useDocCitations} from '@app/models/content-graph'
 import {queryKeys} from '@app/models/query-keys'
 import {useNavigate} from '@app/utils/navigation'
 import {pluralS} from '@mintter/shared'
-import {SizableText} from '@mintter/ui'
+import {Button, SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {AccessoryContainer} from './accessory-sidebar'
-import {Button} from './button'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   if (!link.source?.documentId) throw 'Invalid citation'
@@ -27,10 +26,8 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   return (
     <Button
       key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
-      as="li"
-      variant="ghost"
-      color="muted"
-      onClick={() => {
+      chromeless
+      onPress={() => {
         const sourceDocId = link.source?.documentId
         if (!sourceDocId) return
         spawn({
@@ -40,16 +37,12 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
           blockId: link.source?.blockId,
         })
       }}
-      css={{
-        listStyle: 'none',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '$3',
-        alignItems: 'center',
-        position: 'relative',
-        '&:hover': {
-          cursor: 'default',
-        },
+      flexDirection="row"
+      gap="$3"
+      alignItems="center"
+      position="relative"
+      hoverStyle={{
+        cursor: 'default',
       }}
     >
       <SizableText size="$2">{pub.data?.document?.title}</SizableText>

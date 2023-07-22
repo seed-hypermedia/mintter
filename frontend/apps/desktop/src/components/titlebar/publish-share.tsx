@@ -10,8 +10,7 @@ import {useDocWebPublications, useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Box} from '@components/box'
-import {AccessURLRow} from '@components/url'
+import {AccessURLRow} from '@app/components/url'
 import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
@@ -22,18 +21,19 @@ import {
   Globe,
   SizableText,
   Spinner,
+  YStack,
 } from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {UseQueryResult} from '@tanstack/react-query'
 import {useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
-import {Tooltip} from '@components/tooltip'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {Tooltip} from '@app/components/tooltip'
+import {copyTextToClipboard} from '@mintter/app'
 import {Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
 import {getDocUrl} from '@app/utils/doc-url'
-import {MintterIcon} from '@components/mintter-icon'
+import {MintterIcon} from '@app/components/mintter-icon'
 
 const forceProductionURL = true
 
@@ -279,23 +279,18 @@ function DraftPubDropdown() {
               zIndex: 200000,
             }}
           >
-            <Box
-              css={{
-                width: '300px',
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '$4',
-                margin: '$2',
-                boxShadow: '$3',
-                borderRadius: '$2',
-                backgroundColor: '$primary-background-subtle',
-                border: '1px solid blue',
-                borderColor: '$primary-border-subtle',
-                gap: '$4',
-              }}
+            <YStack
+              width={300}
+              padding="$4"
+              margin="$2"
+              borderRadius="$2"
+              backgroundColor="$backgroundStrong"
+              borderWidth={1}
+              borderColor="$gray4"
+              gap="$4"
             >
               <DraftPublicationDialog draft={draft || undefined} />
-            </Box>
+            </YStack>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>

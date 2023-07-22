@@ -1,4 +1,4 @@
-import {Avatar as StyledAvatar, FontSizeTokens, styled, Text} from 'tamagui'
+import {Avatar, FontSizeTokens, Text} from 'tamagui'
 import {useMemo} from 'react'
 
 export function UIAvatar({
@@ -21,15 +21,12 @@ export function UIAvatar({
   )
 
   return (
-    <StyledAvatar circular size={size}>
-      <StyledAvatar.Image src={url} />
-      <StyledAvatar.Fallback
+    <Avatar circular size={size} alignItems="center" justifyContent="center">
+      {url && <Avatar.Image source={{uri: url}} />}
+      <Avatar.Fallback
         backgroundColor={color || avatarColor}
         alignItems="center"
         justifyContent="center"
-        enterStyle={{
-          opacity: 0,
-        }}
       >
         {initials ? (
           <Text
@@ -42,8 +39,8 @@ export function UIAvatar({
             {initials}
           </Text>
         ) : null}
-      </StyledAvatar.Fallback>
-    </StyledAvatar>
+      </Avatar.Fallback>
+    </Avatar>
   )
 }
 

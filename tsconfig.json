@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strictNullChecks": true,
+    "declaration": false,
     "noUncheckedIndexedAccess": true,
     "paths": {
       "@mintter/ui/*": ["./frontend/packages/ui/*"],

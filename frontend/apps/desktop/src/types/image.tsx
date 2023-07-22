@@ -12,7 +12,7 @@ import {
   ReactSlashMenuItem
 } from '@app/blocknote-react'
 import { HDBlockSchema } from '@app/client/schema'
-import { toast } from '@app/toast'
+import { toast } from 'react-hot-toast'
 import {
   Button,
   Form,

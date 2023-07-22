@@ -1,4 +1,4 @@
-import {error} from '@app/utils/logger'
+import {error} from '@mintter/app'
 import {Store as TauriStore} from 'tauri-plugin-store-api'
 
 export function createStore(path: string): TauriStore | LocalStore {

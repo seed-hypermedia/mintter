@@ -1,4 +1,5 @@
 import {fetchWebLink} from '@app/models/web-links'
+import {AppQueryClient} from '@mintter/app/src/query-client'
 import {
   createHyperdocsDocLink,
   isHyperdocsScheme,
@@ -13,6 +14,7 @@ import {find} from 'linkifyjs'
 import {nanoid} from 'nanoid'
 
 type PasteHandlerOptions = {
+  client: AppQueryClient
   editor: Editor
   type: MarkType
   linkOnPaste?: boolean
@@ -181,7 +183,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           //   `<a href="${link.href}">${link.href}</a>`,
           // )
 
-          fetchWebLink(link.href)
+          fetchWebLink(options.client, link.href)
             .then((res) => {
               let tr = view.state.tr
               let pos = findPlaceholder(view.state, link.href)
@@ -212,7 +214,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               let tr = view.state.tr
               let pos = findPlaceholder(view.state, link.href)
               if (!pos) return null
-              console.log('== ~ fetchWebLink error', err)
               view.dispatch(
                 tr
                   .insertText(link.href, pos)

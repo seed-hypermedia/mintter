@@ -1,6 +1,6 @@
 import {useDeleteDraft} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
-import {DeleteDialog} from '@components/delete-dialog'
+import {DeleteDialog} from '@app/components/delete-dialog'
 import {Button, XStack} from '@mintter/ui'
 import {ReactNode} from 'react'
 

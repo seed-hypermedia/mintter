@@ -13,13 +13,17 @@
     "desktop:prod": "yarn workspace @mintter/desktop build",
     "docs": "yarn workspace @mintter/docs start",
     "e2e": "playwright test",
+    "electron": "./dev build-backend && yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run dev",
+    "electron:make": "./dev build-backend && yarn workspace @mintter/electron make",
+    "electron:audit": "yarn workspace @mintter/electron audit",
+    "electron:publish": "yarn workspace @mintter/electron publish",
+    "electron:test:e2e": "yarn workspace @mintter/electron e2e",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
     "fix": "manypkg fix",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/electron --exclude @mintter/docs -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
     "format": "prettier --write ./frontend",
-    "test": "yarn workspaces foreach run test",
-    "d2:dev": "yarn workspace @mintter/electron dev"
+    "test": "yarn workspaces foreach run test"
   },
   "resolutions": {
     "@types/react-native": "0.70.8",
@@ -29,20 +33,6 @@
     "react-native-svg": "13.4.0",
     "react-native-web": "0.18.9"
   },
-  "devDependencies": {
-    "@babel/runtime": "7.18.9",
-    "@bufbuild/protoc-gen-connect-web": "0.8.6",
-    "@bufbuild/protoc-gen-es": "1.2.0",
-    "@manypkg/cli": "0.19.2",
-    "@playwright/test": "^1.32.3",
-    "@types/react-window": "^1.8.5",
-    "cross-env": "7.0.3",
-    "eslint": "8.38.0",
-    "graphql-codegen": "0.4.0",
-    "prettier": "2.8.7",
-    "ts-node": "10.9.1",
-    "typescript": "4.9.5"
-  },
   "packageManager": "yarn@3.5.1",
   "workspaces": [
     "frontend/apps/*",
@@ -51,6 +41,18 @@
     "docs"
   ],
   "dependencies": {
-    "react-window": "^1.8.9"
+    "@babel/runtime": "7.18.9",
+    "@bufbuild/protoc-gen-connect-web": "0.8.6",
+    "@bufbuild/protoc-gen-es": "1.2.0",
+    "@manypkg/cli": "0.19.2",
+    "@playwright/test": "^1.36.1",
+    "@types/react-window": "^1.8.5",
+    "cross-env": "7.0.3",
+    "eslint": "8.38.0",
+    "graphql-codegen": "0.4.0",
+    "prettier": "2.8.7",
+    "react-window": "^1.8.9",
+    "ts-node": "10.9.1",
+    "typescript": "5.1.6"
   }
 }

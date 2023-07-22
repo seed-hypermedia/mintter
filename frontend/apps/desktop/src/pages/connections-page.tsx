@@ -1,8 +1,8 @@
 import {useAccountIsConnected, useAllAccounts} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
-import {Avatar} from '@components/avatar'
-import Footer from '@components/footer'
-import {OnlineIndicator} from '@components/indicator'
+import {Avatar} from '@app/components/avatar'
+import Footer from '@app/components/footer'
+import {OnlineIndicator} from '@app/components/indicator'
 import {Account} from '@mintter/shared'
 import {
   Button,

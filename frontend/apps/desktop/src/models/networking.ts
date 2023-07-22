@@ -1,7 +1,6 @@
 import {networkingClient} from '@app/api-clients'
 import appError from '@app/errors'
 import {useDaemonReady} from '@app/node-status-context'
-import {appQueryClient} from '@app/query-client'
 import {ConnectError} from '@bufbuild/connect-web'
 import {PeerInfo} from '@mintter/shared'
 import {ConnectionStatus} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
@@ -49,10 +48,6 @@ function queryPeerInfo(
     // refetchInterval: 2000,
     // refetchIntervalInBackground: true,
   }
-}
-
-export async function fetchPeerInfo(deviceId: string) {
-  return await appQueryClient.fetchQuery(queryPeerInfo(deviceId))
 }
 
 export function usePeerInfo(deviceId?: string) {

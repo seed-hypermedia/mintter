@@ -1,5 +1,4 @@
-import {css, keyframes, styled} from '@app/stitches.config'
-import {LinearGradient, XStack} from '@mintter/ui'
+import {XStack} from '@mintter/ui'
 import {SizeTokens} from '@mintter/ui'
 
 export const Placeholder = ({

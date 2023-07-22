@@ -86,16 +86,8 @@ export default function Footer({children}: {children?: ReactNode}) {
         </XStack>
       ) : null}
       {/* {isDaemonReady ? (
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0',
-          }}
-        >
           <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
           <Contacts service={contactListService} />
-        </Box>
       ) : null} */}
       <FooterContactsButton />
       <XStack alignItems="center" paddingHorizontal="$2">

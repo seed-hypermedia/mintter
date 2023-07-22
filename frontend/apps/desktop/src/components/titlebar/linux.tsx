@@ -1,9 +1,8 @@
-import {Dropdown} from '@components/dropdown'
-import {invoke, send} from '@app/ipc'
+import {Dropdown} from '@app/components/dropdown'
 import {useMyAccount} from '@app/models/accounts'
 import {useSiteList} from '@app/models/sites'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
-import {TitleBarProps} from '@components/titlebar'
+import {TitleBarProps} from '@app/components/titlebar'
 import {
   Draft,
   File,
@@ -30,6 +29,7 @@ import {
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
+import {useIPC} from '@mintter/app'
 
 export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
@@ -93,6 +93,7 @@ function NavMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
   const sites = useSiteList()
+  const {send, invoke} = useIPC()
   const myAccount = useMyAccount()
   const editingEnabled = route.key == 'draft'
   const spawn = useNavigate('spawn')

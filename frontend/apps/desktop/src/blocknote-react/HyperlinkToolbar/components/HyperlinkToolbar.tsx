@@ -4,7 +4,7 @@ import {EditHyperlinkMenu} from '../EditHyperlinkMenu/components/EditHyperlinkMe
 import {Toolbar} from '../../SharedComponents/Toolbar/components/Toolbar'
 import {ToolbarButton} from '../../SharedComponents/Toolbar/components/ToolbarButton'
 import {RiExternalLinkFill, RiLinkUnlink} from 'react-icons/ri'
-import {openUrl} from '@app/utils/open-url'
+import {useOpenUrl} from '@app/open-url'
 // import rootStyles from "../../../root.module.css";
 
 export type HyperlinkToolbarProps = {
@@ -20,6 +20,7 @@ export type HyperlinkToolbarProps = {
  */
 export const HyperlinkToolbar = (props: HyperlinkToolbarProps) => {
   const [isEditing, setIsEditing] = useState(false)
+  const openUrl = useOpenUrl()
 
   if (isEditing) {
     return (

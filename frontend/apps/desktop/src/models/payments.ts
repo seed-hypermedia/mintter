@@ -1,14 +1,4 @@
-import {useDaemonInfo} from '@app/models/daemon'
-import {useDaemonReady} from '@app/node-status-context'
-import {appQueryClient} from '@app/query-client'
-import {
-  Invoice,
-  LightningWallet,
-  Maybe,
-  Me,
-  Payments,
-  Query,
-} from '@mintter/shared'
+import {LightningWallet, Payments, Query} from '@mintter/shared'
 import {
   FetchQueryOptions,
   useQuery,
@@ -39,7 +29,6 @@ function queryWallets():
     queryFn: async () => {
       try {
         let req: Query = await request(GRAPHQL_ENDPOINT, getWalletsQuery)
-        console.log('🚀 ~ file: payments.ts:35 ~ queryFn: ~ me:', req.me)
         return req.me.wallets ?? []
       } catch (error) {
         console.error(`queryWallets error: ${JSON.stringify(error)}`)
@@ -51,10 +40,6 @@ function queryWallets():
 
 export function useWallets() {
   return useQuery(queryWallets())
-}
-
-export function fetchWallets() {
-  appQueryClient.fetchQuery(queryWallets())
 }
 
 const getInvoicesByWalletQuery = gql`
@@ -111,8 +96,4 @@ function queryInvoicesByWallet(
 
 export function useInvoicesBywallet(walletId?: string) {
   return useQuery(queryInvoicesByWallet(walletId))
-}
-
-export function fetchInvoicesByWallet(walletId?: string) {
-  appQueryClient.fetchQuery(queryInvoicesByWallet(walletId))
 }

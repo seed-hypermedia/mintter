@@ -1,4 +1,4 @@
-import {useListen} from '@app/ipc'
+import {useListen} from '@mintter/app'
 import {AppError} from '@app/root'
 import {
   getRouteKey,
@@ -6,12 +6,13 @@ import {
   useNavigate,
   useNavRoute,
 } from '@app/utils/navigation'
-import {TitleBar} from '@components/titlebar'
+import {TitleBar} from '@app/components/titlebar'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
@@ -21,7 +22,7 @@ var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
-var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
+var QuickSwitcher = lazy(() => import('@app/components/quick-switcher'))
 
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
@@ -52,7 +53,6 @@ export default function Main() {
   const navigate = useNavigate()
   const PageComponent = useMemo(() => getPageComponent(navR), [navR.key])
   const routeKey = useMemo(() => getRouteKey(navR), [navR])
-
   useListen<NavRoute>(
     'open_route',
     (event) => {
@@ -61,7 +61,6 @@ export default function Main() {
     },
     [navigate],
   )
-
   return (
     <>
       <TitleBar clean={isSettings} />
@@ -75,6 +74,7 @@ export default function Main() {
           <PageComponent key={routeKey} />
         </ProsemirrorAdapterProvider>
         {!isSettings ? <QuickSwitcher /> : null}
+        {/* <ReactQueryDevtools /> */}
       </ErrorBoundary>
     </>
   )

@@ -3,11 +3,12 @@ import {fetchWebLink} from '@app/models/web-links'
 import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl, isHyperdocsScheme} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
-import {listen, useListen} from '@app/ipc'
+import {useListen} from '@mintter/app'
 import {Command} from 'cmdk'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import '../styles/quick-switcher.scss'
+import {useAppContext} from '@mintter/app'
 
 export default function QuickSwitcher() {
   const {data: drafts} = useDraftList()
@@ -24,7 +25,7 @@ export default function QuickSwitcher() {
       setOpen(true)
     }
   })
-
+  const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
 
   return (
@@ -74,8 +75,9 @@ export default function QuickSwitcher() {
                     })
                     setOpen(false)
                   } else {
+                    console.log('HELLO111 ==========', queryClient, search)
                     setActionPromise(
-                      fetchWebLink(search)
+                      fetchWebLink(queryClient, search)
                         .then((result) => {
                           if (result && result?.documentId) {
                             setOpen(false)
@@ -86,7 +88,7 @@ export default function QuickSwitcher() {
                             })
                           }
                         })
-                        .catch((e) => {
+                        .catch(() => {
                           toast.error('Failed to open link.')
                         })
                         .finally(() => {

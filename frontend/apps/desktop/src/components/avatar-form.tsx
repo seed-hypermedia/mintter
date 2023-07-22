@@ -1,6 +1,6 @@
 import {useMyAccount} from '@app/models/accounts'
-import {Avatar} from '@components/avatar'
-import {Tooltip} from '@components/tooltip'
+import {Avatar} from '@app/components/avatar'
+import {Tooltip} from '@app/components/tooltip'
 import {FontSizeTokens, Stack} from '@mintter/ui'
 import {ChangeEvent} from 'react'
 import toast from 'react-hot-toast'

@@ -1,18 +1,13 @@
-import {styled} from '@app/stitches.config'
-import {Button, H3, SizableText} from '@mintter/ui'
+import {Button, DialogContent, H3, SizableText} from '@mintter/ui'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import type {ComponentProps, PropsWithChildren} from 'react'
 import React from 'react'
-import {Box} from './box'
-import {dialogContentStyles, dialogFooterStyles} from './dialog-styles'
 
 function Root({children, ...props}: AlertDialogPrimitive.AlertDialogProps) {
   return (
     <AlertDialogPrimitive.Root {...props}>{children}</AlertDialogPrimitive.Root>
   )
 }
-
-const StyledContent = styled(AlertDialogPrimitive.Content, dialogContentStyles)
 
 function Title(props: any) {
   return (
@@ -30,7 +25,6 @@ function Description(props: any) {
   )
 }
 
-const Actions = styled(Box, dialogFooterStyles)
 type ButtonProps = ComponentProps<typeof Button>
 function Cancel({
   disabled = false,
@@ -66,10 +60,9 @@ export const Alert = {
   ...AlertDialogPrimitive,
   Root,
   Trigger: AlertDialogPrimitive.Trigger,
-  Content: StyledContent,
+  Content: DialogContent,
   Title,
   Description,
-  Actions,
   Cancel,
   Action,
 }

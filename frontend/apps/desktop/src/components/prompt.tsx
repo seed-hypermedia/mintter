@@ -1,20 +1,12 @@
-import {styled} from '@app/stitches.config'
 import {Button, H3, SizableText} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type {ComponentProps} from 'react'
-import {Box} from './box'
-import {
-  dialogContentStyles,
-  dialogFooterStyles,
-  overlayStyles,
-} from './dialog-styles'
-
-export const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
+import {DialogContent, DialogOverlay, DialogFooter} from './dialog'
 
 function Root({children, ...props}: DialogPrimitive.DialogProps) {
   return (
     <DialogPrimitive.Root {...props}>
-      <StyledOverlay />
+      <DialogOverlay />
       {children}
     </DialogPrimitive.Root>
   )
@@ -30,8 +22,6 @@ function Trigger(
     </DialogPrimitive.Trigger>
   )
 }
-
-const Content = styled(DialogPrimitive.Content, dialogContentStyles)
 
 function Title(props: any) {
   return (
@@ -49,15 +39,13 @@ function Description(props: any) {
   )
 }
 
-const Actions = styled(Box, dialogFooterStyles)
-
 export const Prompt = {
   Root,
   Trigger,
-  Content,
+  Content: DialogContent,
   Title,
   Description,
-  Actions,
+  Actions: DialogFooter,
   Close: DialogPrimitive.Close,
   Portal: DialogPrimitive.Portal,
 }

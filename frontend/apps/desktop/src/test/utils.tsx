@@ -9,12 +9,9 @@ import {
 } from '@mintter/shared'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
-import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {nanoid} from 'nanoid'
-import {ReactNode, Suspense} from 'react'
-import {mouseMachine} from '../mouse-machine'
-import {globalStyles} from '../stitches.config'
+import {Suspense} from 'react'
 import {NavState} from '../utils/navigation'
 
 type TestMockData = {
@@ -161,8 +158,6 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 }
 
 export function TestProvider({client, children}: TestProviderProps) {
-  // return null
-  globalStyles()
   return (
     <QueryClientProvider client={client}>
       <Suspense fallback={<p>Loading...</p>}>{children}</Suspense>
@@ -180,15 +175,6 @@ export type CustomMountOptions = {
 export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
-}
-
-export function TestPublicationProvider({children}: {children: ReactNode}) {
-  let mouseService = useInterpret(() => mouseMachine)
-  return (
-    <div>
-      {/* <MouseProvider value={mouseService}>{children}</MouseProvider> */}
-    </div>
-  )
 }
 
 export function createTestDraft(entry: Partial<Document> = {}): Document {

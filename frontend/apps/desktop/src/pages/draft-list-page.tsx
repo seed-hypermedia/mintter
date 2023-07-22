@@ -2,10 +2,10 @@ import {useDraftList} from '@app/models/documents'
 import {usePopoverState} from '@app/use-popover-state'
 import {DraftRoute, useNavigate} from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
-import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
-import {Dropdown} from '@components/dropdown'
-import {EmptyList} from '@components/empty-list'
-import Footer from '@components/footer'
+import {useDeleteDraftDialog} from '@app/components/delete-draft-dialog'
+import {Dropdown} from '@app/components/dropdown'
+import {EmptyList} from '@app/components/empty-list'
+import Footer from '@app/components/footer'
 import {Document, formattedDate} from '@mintter/shared'
 import {
   Button,
@@ -20,7 +20,6 @@ import {
   YStack,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
-import {useQueryClient} from '@tanstack/react-query'
 
 export default function DraftList() {
   let {data, isInitialLoading} = useDraftList()
@@ -56,7 +55,6 @@ export default function DraftList() {
 export function DraftListItem({draft}: {draft: Document}) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
-  let client = useQueryClient()
   let title = draft.title || 'Untitled Document'
   const popoverState = usePopoverState()
   const {deleteDialog, ...dialogState} = useDeleteDraftDialog({

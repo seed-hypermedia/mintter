@@ -1,4 +1,5 @@
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {copyTextToClipboard} from '@mintter/app'
+import {useOpenUrl} from '@app/open-url'
 import {
   Button,
   Copy,
@@ -8,7 +9,6 @@ import {
   Stack,
   XGroup,
 } from '@mintter/ui'
-import {open} from '@tauri-apps/api/shell'
 import {ComponentProps, FC, useState} from 'react'
 import {toast} from 'react-hot-toast'
 
@@ -28,6 +28,7 @@ export function AccessURLRow({
 } & ComponentProps<typeof XGroup>) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
   let IconComponent = icon || ExternalLink
+  const openUrl = useOpenUrl()
   return (
     <XGroup borderColor="$color6" borderWidth="$0.5" borderRadius="$3">
       <XGroup.Item>
@@ -41,7 +42,7 @@ export function AccessURLRow({
               return onPress()
             }
             if (!enableLink) return
-            open(url)
+            openUrl(url)
           }}
           width="100%"
           alignItems="center"

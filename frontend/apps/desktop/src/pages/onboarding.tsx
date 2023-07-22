@@ -1,8 +1,8 @@
 import appError from '@app/errors'
 import {useSetProfile} from '@app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@app/models/daemon'
-import {MintterIcon} from '@components/mintter-icon'
-import {Tooltip} from '@components/tooltip'
+import {MintterIcon} from '@app/components/mintter-icon'
+import {Tooltip} from '@app/components/tooltip'
 import {Profile as ProfileType} from '@mintter/shared'
 import {
   AnimatePresence,
@@ -28,7 +28,6 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {open} from '@tauri-apps/api/shell'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {
   createContext,

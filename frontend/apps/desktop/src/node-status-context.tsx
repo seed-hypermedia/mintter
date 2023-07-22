@@ -1,8 +1,8 @@
 import {Onboarding} from '@app/pages/onboarding'
-import {ConnectionStatus, Info, PeerInfo} from '@mintter/shared'
+import {ConnectionStatus} from '@mintter/shared'
 import {
-  createContext,
   ReactNode,
+  createContext,
   useContext,
   useEffect,
   useMemo,

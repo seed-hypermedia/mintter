@@ -1,4 +1,4 @@
-import {TitleBarProps} from '@components/titlebar'
+import {TitleBarProps} from '@app/components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import {Title} from './title'
 import {Container, TitlebarWrapper, XStack} from '@mintter/ui'

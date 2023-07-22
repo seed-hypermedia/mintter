@@ -1,7 +1,6 @@
 import {draftsClient, webPublishingClient} from '@app/api-clients'
-import {Dropdown, MenuItem} from '@components/dropdown'
+import {Dropdown, MenuItem} from '@app/components/dropdown'
 import appError from '@app/errors'
-import {send} from '@app/ipc'
 import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
 import {useSiteList} from '@app/models/sites'
@@ -16,8 +15,8 @@ import {
 } from '@app/utils/navigation'
 import {useOpenDraft} from '@app/utils/open-draft'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Avatar} from '@components/avatar'
-import {ContactsPrompt} from '@components/contacts-prompt'
+import {Avatar} from '@app/components/avatar'
+import {ContactsPrompt} from '@app/components/contacts-prompt'
 import {
   Account,
   createHyperdocsDocLink,
@@ -47,9 +46,10 @@ import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
 import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
-import {Tooltip} from '@components/tooltip'
+import {Tooltip} from '@app/components/tooltip'
 import {memo, useState} from 'react'
 import {usePopoverState} from '@app/use-popover-state'
+import {useIPC} from '@mintter/app'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
@@ -183,6 +183,7 @@ function NaveMenuContentUnpure({
   onRoute: (route: NavRoute) => void
 }) {
   const route = useNavRoute()
+  const {send} = useIPC()
   const {data: account} = useMyAccount()
 
   return (

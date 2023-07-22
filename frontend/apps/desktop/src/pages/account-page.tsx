@@ -1,16 +1,15 @@
 import {useAccountPublicationList} from '@app/models/changes'
 import {useAccountWithDevices} from '@app/models/contacts'
-import {toast} from '@app/toast'
+import {toast} from '@mintter/app'
 import {getAccountUrl} from '@app/utils/account-url'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {copyTextToClipboard} from '@mintter/app'
 import {useNavRoute} from '@app/utils/navigation'
-import {Avatar} from '@components/avatar'
-import {Box} from '@components/box'
-import {Dropdown} from '@components/dropdown'
-import Footer from '@components/footer'
-import {OnlineIndicator} from '@components/indicator'
-import {PublicationListItem} from '@components/publication-list-item'
-import {Tooltip} from '@components/tooltip'
+import {Avatar} from '@app/components/avatar'
+import {Dropdown} from '@app/components/dropdown'
+import Footer from '@app/components/footer'
+import {OnlineIndicator} from '@app/components/indicator'
+import {PublicationListItem} from '@app/components/publication-list-item'
+import {Tooltip} from '@app/components/tooltip'
 import {abbreviateCid, pluralizer} from '@mintter/shared'
 import {
   Button,
@@ -20,9 +19,10 @@ import {
   MainWrapper,
   SizableText,
   XStack,
+  YStack,
 } from '@mintter/ui'
 import {Copy} from '@tamagui/lucide-icons'
-import {ComponentProps, ReactNode} from 'react'
+import {ReactNode} from 'react'
 
 function DeviceRow({
   isOnline,
@@ -44,24 +44,16 @@ function DeviceRow({
   )
 }
 
-function Section({
-  children,
-  css,
-}: {
-  children: ReactNode
-  css?: ComponentProps<typeof Box>['css']
-}) {
+function Section({children}: {children: ReactNode}) {
   return (
-    <Box
-      css={{
-        borderBottom: '1px solid black',
-        borderColor: '$base-border-normal',
-        paddingVertical: '$4',
-        ...css,
-      }}
+    <YStack
+      borderBottomWidth={1}
+      borderBottomColor="black"
+      borderColor="$gray6"
+      paddingVertical="$4"
     >
       {children}
-    </Box>
+    </YStack>
   )
 }
 
@@ -96,14 +88,7 @@ export default function AccountPage() {
     <>
       <MainWrapper>
         <Container>
-          <Section
-            css={{
-              display: 'flex',
-              gap: '$4',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
+          <XStack gap="$4" alignItems="center" justifyContent="space-between">
             <XStack gap="$4" alignItems="center">
               <Avatar
                 accountId={accountId}
@@ -148,8 +133,7 @@ export default function AccountPage() {
                 </Dropdown.Content>
               </Dropdown.Root>
             </XStack>
-            {/* </Tooltip> */}
-          </Section>
+          </XStack>
           {account.profile?.bio && (
             <Section>
               <span>{account.profile?.bio}</span>

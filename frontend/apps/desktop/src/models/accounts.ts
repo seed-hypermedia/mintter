@@ -4,10 +4,10 @@ import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/models/query-keys'
 import {useConnectedPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
-import {fetchDaemonInfo, useDaemonInfo} from '@app/models/daemon'
-import {appInvalidateQueries} from '@app/query-client'
+import {useDaemonInfo} from '@app/models/daemon'
 import appError from '@app/errors'
 import {ConnectError} from '@bufbuild/connect-web'
+import {useGRPCClient, useQueryInvalidator} from '@mintter/app'
 
 export function useAccount(accountId?: string) {
   return useQuery<Account, ConnectError>({
@@ -46,16 +46,18 @@ export function useMyAccount() {
 export function useSetProfile(
   opts?: UseMutationOptions<string, unknown, Partial<Profile>>,
 ) {
+  const invalidate = useQueryInvalidator()
+  const grpcClient = useGRPCClient()
   return useMutation({
     mutationFn: async (profile: Partial<Profile>) => {
-      const daemonInfo = await fetchDaemonInfo()
+      const daemonInfo = await grpcClient.daemon.getInfo({})
       const accountId = daemonInfo?.accountId
       await accountsClient.updateProfile(profile)
       return accountId || '' // empty string here is nonsense but we need to pass the account id to the invalidation fn if we have it
       // but accountId is empty during onboarding, so the invalidate will be nonsense but who cares
     },
     onSuccess: (accountId, ...rest) => {
-      appInvalidateQueries([queryKeys.GET_ACCOUNT, accountId])
+      invalidate([queryKeys.GET_ACCOUNT, accountId])
       opts?.onSuccess?.(accountId, ...rest)
     },
     ...opts,

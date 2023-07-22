@@ -3,12 +3,8 @@ import { getBlockInfoFromPos } from "@app/blocknote-core/extensions/Blocks/helpe
 import { insertOrUpdateBlock } from "@app/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems";
 import { createReactBlockSpec, ReactSlashMenuItem } from "@app/blocknote-react";
 import { HDBlockSchema } from '@app/client/schema';
-import { toast } from '@app/toast';
+import { useAppContext } from '@mintter/app';
 import { Button, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
-import { save } from '@tauri-apps/api/dialog';
-import { BaseDirectory, writeBinaryFile } from '@tauri-apps/api/fs';
-import { getClient, ResponseType } from '@tauri-apps/api/http';
-import { appDataDir } from '@tauri-apps/api/path';
 import { ChangeEvent, useEffect, useState } from "react";
 import { RiFile2Line } from "react-icons/ri";
 
@@ -16,6 +12,7 @@ export const FileBlock = createReactBlockSpec({
     type: "file",
     propSchema: {
       ...defaultProps,
+      
       url: {
         default: "",
       },
@@ -91,8 +88,9 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
   const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
-  const selection = tiptapEditor.state.selection
+  const selection = tiptapEditor.state.selection  
 
+const   {saveCidAsFile} = useAppContext()
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
@@ -111,31 +109,7 @@ function FileComponent({block, editor, assign}: {block: Block<HDBlockSchema>, ed
   }, [selection])
 
   const saveFile = async () => {
-    const client = await getClient()
-    const data = (
-      await client.get(
-        `http://localhost:55001/ipfs/${block.props.url}`,
-        {
-          responseType: ResponseType.Binary,
-        },
-      )
-    ).data as any
-
-    const filePath = await save({
-      defaultPath: (await appDataDir()) + '/' + block.props.name,
-    })
-
-    if (filePath) {
-      try {
-        await writeBinaryFile(filePath ? filePath : 'mintter-file', data, {
-          dir: BaseDirectory.AppData,
-        })
-        toast.success(`Successfully downloaded file ${block.props.name}`)
-      } catch (e) {
-        toast.error(`Failed to download file ${block.props.name}`)
-        console.log(e)
-      }
-    }
+    await saveCidAsFile(block.props.url, block.props.name)
   }
 
   function formatBytes(bytes: number, decimals = 2) {

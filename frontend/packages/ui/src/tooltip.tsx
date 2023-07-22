@@ -29,6 +29,7 @@ export function SimpleTooltip({
           ]}
         >
           <Tooltip.Arrow />
+
           <Paragraph size="$2" lineHeight="$1">
             {content}
           </Paragraph>

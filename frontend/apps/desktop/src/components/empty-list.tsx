@@ -1,5 +1,4 @@
 import {Button, Text, YStack} from '@mintter/ui'
-import {Icon} from './icon'
 
 export function EmptyList({
   description,
@@ -14,7 +13,6 @@ export function EmptyList({
         {description}
       </Text>
       <Button size="$4" onPress={() => action()} alignSelf="flex-start">
-        <Icon name="PencilAdd" color="primary" />
         Start a new Draft
       </Button>
     </YStack>
