@@ -1,4 +1,5 @@
 import type {NavRoute} from './navigation'
+import {Buffer} from 'buffer'
 
 export function encodeRouteToPath(route: NavRoute): string {
   return `/${Buffer.from(JSON.stringify(route))

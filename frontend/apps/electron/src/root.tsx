@@ -1,13 +1,13 @@
 import React, {useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
-// import Main from '@mintter/app/src/pages/main'
-import {App} from './app'
+import Main from '@mintter/app/src/pages/main'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
 import './index.css'
 import {createGRPCClient} from '@mintter/shared'
 import {AppContextProvider, WindowUtils, toast} from '@mintter/app'
 import {getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
+import {NavigationProvider} from '@mintter/app/src/utils/navigation'
 
 const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:56011',
@@ -69,8 +69,9 @@ function ElectronApp() {
       }}
       windowUtils={windowUtils}
     >
-      {/* <Main /> */}
-      <App />
+      <NavigationProvider>
+        <Main />
+      </NavigationProvider>
     </AppContextProvider>
   )
 }

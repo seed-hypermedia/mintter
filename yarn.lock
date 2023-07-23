@@ -5199,7 +5199,7 @@ __metadata:
     allotment: 1.18.1
     autosize: 5.0.2
     browser-headers: 0.4.1
-    buffer: 6.0.3
+    buffer: ^6.0.3
     clipboardy: 3.0.0
     cmdk: 0.1.21
     concurrently: 7.6.0
@@ -12333,7 +12333,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:6.0.3":
+"buffer@npm:6.0.3, buffer@npm:^6.0.3":
   version: 6.0.3
   resolution: "buffer@npm:6.0.3"
   dependencies:
