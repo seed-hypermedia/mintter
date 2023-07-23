@@ -5122,12 +5122,158 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/app@workspace:frontend/packages/app"
   dependencies:
-    "@mintter/shared": 0.1.0
-    "@mintter/ui": 0.0.1
-    "@tanstack/react-query": 4.29.19
-    "@tanstack/react-query-devtools": 4.29.19
+    "@babel/core": 7.20.7
+    "@bufbuild/connect-web": 0.7.0
+    "@bufbuild/protobuf": 1.2.0
+    "@emotion/core": ^11.0.0
+    "@emotion/react": ^11.11.1
+    "@emotion/serialize": ^1.1.2
+    "@emotion/utils": ^1.2.1
+    "@floating-ui/react": ^0.24.8
+    "@graphql-codegen/cli": 2.16.5
+    "@graphql-codegen/typescript": 2.8.5
+    "@happy-dom/global-registrator": 7.8.1
+    "@juggle/resize-observer": 3.4.0
+    "@mantine/core": ^6.0.13
+    "@mantine/hooks": ^6.0.13
+    "@mintter/shared": "workspace:*"
+    "@mintter/ui": "workspace:*"
+    "@prosemirror-adapter/core": ^0.2.5
+    "@prosemirror-adapter/react": ^0.2.5
+    "@radix-ui/colors": 0.1.8
+    "@radix-ui/react-accessible-icon": 1.0.2
+    "@radix-ui/react-alert-dialog": 1.0.3
+    "@radix-ui/react-collapsible": 1.0.2
+    "@radix-ui/react-context-menu": 2.1.3
+    "@radix-ui/react-dialog": 1.0.3
+    "@radix-ui/react-dropdown-menu": 2.0.4
+    "@radix-ui/react-hover-card": 1.0.5
+    "@radix-ui/react-label": 2.0.1
+    "@radix-ui/react-navigation-menu": 1.1.2
+    "@radix-ui/react-popover": 1.0.5
+    "@radix-ui/react-portal": 1.0.2
+    "@radix-ui/react-scroll-area": 1.0.3
+    "@radix-ui/react-slot": 1.0.1
+    "@sentry/tracing": 7.49.0
+    "@tamagui/config": 1.43.15
+    "@tamagui/lucide-icons": 1.43.15
+    "@tamagui/vite-plugin": 1.43.15
+    "@tamagui/web": 1.43.15
+    "@tanstack/react-query": 4.32.0
+    "@tanstack/react-query-devtools": 4.32.0
+    "@tippyjs/react": ^4.2.6
+    "@tiptap/core": ^2.0.3
+    "@tiptap/extension-bold": ^2.0.3
+    "@tiptap/extension-code": ^2.0.3
+    "@tiptap/extension-collaboration": ^2.0.3
+    "@tiptap/extension-collaboration-cursor": ^2.0.3
+    "@tiptap/extension-dropcursor": ^2.0.3
+    "@tiptap/extension-gapcursor": ^2.0.3
+    "@tiptap/extension-hard-break": ^2.0.3
+    "@tiptap/extension-history": ^2.0.3
+    "@tiptap/extension-image": ^2.0.3
+    "@tiptap/extension-italic": ^2.0.3
+    "@tiptap/extension-link": ^2.0.3
+    "@tiptap/extension-strike": ^2.0.3
+    "@tiptap/extension-text": ^2.0.3
+    "@tiptap/extension-underline": ^2.0.3
+    "@tiptap/pm": ^2.0.3
+    "@tiptap/react": ^2.0.3
+    "@tiptap/suggestion": ^2.0.3
+    "@types/autosize": 4.0.1
+    "@types/hast": 2.3.4
+    "@types/is-hotkey": 0.1.7
+    "@types/is-url": 1.2.30
+    "@types/lodash.debounce": 4.0.7
+    "@types/mdast": 3.0.11
+    "@types/node": 18.15.13
+    "@types/prosemirror-dev-tools": ^3.0.3
+    "@types/react": 18.0.37
+    "@types/react-copy-to-clipboard": 5.0.4
+    "@types/react-dom": 18.0.11
+    "@types/react-highlight-words": 0.16.4
+    "@types/react-native": 0.71.6
+    "@types/unist": 2.0.6
+    "@types/uuid": ^9.0.2
+    "@vitejs/plugin-react": 3.1.0
+    allotment: 1.18.1
+    autosize: 5.0.2
+    browser-headers: 0.4.1
+    buffer: 6.0.3
+    clipboardy: 3.0.0
+    cmdk: 0.1.21
+    concurrently: 7.6.0
+    copy-text-to-clipboard: 3.1.0
+    covector: 0.7.3
+    csstype: 3.1.2
+    deepmerge: 4.3.1
+    fast-deep-equal: 3.1.3
+    framer-motion: 5.6.0
+    graphql: 16.6.0
+    graphql-request: ^6.0.0
+    happy-dom: 7.8.1
+    hast: 1.0.0
+    hast-util-from-dom: ^4.2.0
+    hast-util-has-property: 2.0.1
+    hast-util-is-element: 2.1.3
+    hast-util-sanitize: 4.1.0
+    hast-util-to-text: 3.1.2
+    hastscript: 7.2.0
+    immer: 9.0.21
+    is-hidden: 2.0.1
+    is-hotkey: 0.2.0
+    is-plain-object: 5.0.0
+    is-url: 1.2.4
+    js-video-url-parser: 0.5.1
+    jsdom: ^22.1.0
+    lodash.debounce: 4.0.8
+    long: 5.2.3
+    nanoid: 4.0.2
+    navaid: 1.2.0
+    prettier: 2.8.7
+    prosemirror-dev-tools: ^4.0.0
+    prosemirror-state: ^1.4.3
+    prosemirror-virtual-cursor: ^0.3.5
     react: 18.2.0
+    react-copy-to-clipboard: 5.1.0
+    react-dom: ^18.2.0
+    react-error-boundary: 4.0.4
+    react-highlight-words: 0.20.0
     react-hot-toast: ^2.4.1
+    react-icons: ^4.9.0
+    react-native: ^0.71.7
+    react-qr-code: ^2.0.11
+    rehype: 12.0.1
+    rehype-minify-whitespace: 5.0.1
+    rehype-parse: 8.0.4
+    rehype-remark: ^9.1.2
+    rehype-sanitize: 5.0.1
+    rehype-stringify: 9.0.3
+    remark-gfm: ^3.0.1
+    remark-parse: ^10.0.1
+    remark-rehype: ^10.1.0
+    remark-stringify: ^10.0.2
+    sass: 1.56.1
+    shiki: 0.14.1
+    show-keys: 1.1.2
+    tiny-glob: 0.2.9
+    tiny-secp256k1: 2.2.1
+    trim-trailing-lines: 2.1.0
+    ts-node: 10.9.1
+    typescript: 5.1.6
+    unified: ^10.1.2
+    unist-builder: 3.0.1
+    unist-util-remove-position: 4.0.2
+    unist-util-visit: 4.1.2
+    unist-util-visit-parents: 5.1.3
+    uuid: ^9.0.0
+    vite: 4.3.1
+    vite-tsconfig-paths: 4.2.0
+    vitest: ^0.33.0
+    ws: 8.13.0
+    y-prosemirror: ^1.2.1
+    y-protocols: ^1.0.5
+    yjs: ^13.6.4
   languageName: unknown
   linkType: soft
 
@@ -5355,7 +5501,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mintter/shared@0.1.0, @mintter/shared@workspace:*, @mintter/shared@workspace:frontend/packages/shared":
+"@mintter/shared@workspace:*, @mintter/shared@workspace:frontend/packages/shared":
   version: 0.0.0-use.local
   resolution: "@mintter/shared@workspace:frontend/packages/shared"
   dependencies:
@@ -5456,7 +5602,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mintter/ui@0.0.1, @mintter/ui@workspace:*, @mintter/ui@workspace:frontend/packages/ui":
+"@mintter/ui@workspace:*, @mintter/ui@workspace:frontend/packages/ui":
   version: 0.0.0-use.local
   resolution: "@mintter/ui@workspace:frontend/packages/ui"
   dependencies:
@@ -9284,32 +9430,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:4.29.19":
-  version: 4.29.19
-  resolution: "@tanstack/query-core@npm:4.29.19"
-  checksum: 91a79dbebebc139d118542a5fe83fb54a6f6448bbe1563db1a0bed0c6d44e1d023613efde3c4ac747c72d067110013ac56f90611bf8affc390eda1ac3f99066e
-  languageName: node
-  linkType: hard
-
 "@tanstack/query-core@npm:4.32.0":
   version: 4.32.0
   resolution: "@tanstack/query-core@npm:4.32.0"
   checksum: 7b3d965d634ff7e754d5f36fe2e4bd9a34548c1d7b13161a2f1a84c8eaafa835f8193e9494952ae20d330f3b56680a5ef516228b2d85b5bc5a34a49947223e58
-  languageName: node
-  linkType: hard
-
-"@tanstack/react-query-devtools@npm:4.29.19":
-  version: 4.29.19
-  resolution: "@tanstack/react-query-devtools@npm:4.29.19"
-  dependencies:
-    "@tanstack/match-sorter-utils": ^8.7.0
-    superjson: ^1.10.0
-    use-sync-external-store: ^1.2.0
-  peerDependencies:
-    "@tanstack/react-query": 4.29.19
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: f077028c109da225b8e8e907a8fb4ad47d3049f6f5d16e5613adb135c531abf62c8975384edbb4d502bb064c98c3c513ee4f3df7c686198e644808311145e79c
   languageName: node
   linkType: hard
 
@@ -9325,25 +9449,6 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 5d8d55043e8dddf8cb3361ec4f66ec07da61343b0f522c20991ce6718f45206659be6d4ab90792aec4ea6862228fe0ada792313c5b238803aa78dbbefe93b194
-  languageName: node
-  linkType: hard
-
-"@tanstack/react-query@npm:4.29.19":
-  version: 4.29.19
-  resolution: "@tanstack/react-query@npm:4.29.19"
-  dependencies:
-    "@tanstack/query-core": 4.29.19
-    use-sync-external-store: ^1.2.0
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-native: "*"
-  peerDependenciesMeta:
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-  checksum: 2780ac35b4d1dabcd3e708b95891376e7e609109270d40442b33f4747c508c23e46bcadc692f997f81d38f62b5ab31f8e42bc9a785dfa4afe0c390adb6f37e52
   languageName: node
   linkType: hard
 

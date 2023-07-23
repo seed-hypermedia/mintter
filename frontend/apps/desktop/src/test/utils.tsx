@@ -1,4 +1,4 @@
-import {queryKeys} from '@app/models/query-keys'
+import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {
   Account,
   Document,
@@ -12,7 +12,7 @@ import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import deepmerge from 'deepmerge'
 import {nanoid} from 'nanoid'
 import {Suspense} from 'react'
-import {NavState} from '../utils/navigation'
+import {NavState} from '@mintter/app/src/utils/navigation'
 
 type TestMockData = {
   account?: Partial<Account>

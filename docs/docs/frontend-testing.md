@@ -56,7 +56,7 @@ We are using [react-query's `QueryClient`](https://tanstack.com/query/v4/docs/re
 // block-to-api.test.ts
 
 import {describe, expect, test} from 'vitest'
-import {Block} from '@app/client'
+import {Block} from '@mintter/app/src/client'
 import {
   paragraph,
   Statement,

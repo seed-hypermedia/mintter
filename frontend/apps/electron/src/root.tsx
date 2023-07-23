@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
+// import Main from '@mintter/app/src/pages/main'
 import {App} from './app'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
 import './index.css'
@@ -68,6 +69,7 @@ function ElectronApp() {
       }}
       windowUtils={windowUtils}
     >
+      {/* <Main /> */}
       <App />
     </AppContextProvider>
   )

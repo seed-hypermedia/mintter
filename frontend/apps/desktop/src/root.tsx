@@ -3,7 +3,7 @@
 import '@tamagui/polyfill-dev'
 
 import {store} from '@app/app-store'
-import Main from '@app/pages/main'
+import Main from '@mintter/app/src/pages/main'
 import {
   Button,
   TamaguiProvider,
@@ -18,13 +18,14 @@ import {Suspense, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
-import {DaemonStatusProvider} from '@app/node-status-context'
+import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
 import tamaguiConfig from '../tamagui.config'
 import {getQueryClient} from '@mintter/app/src/query-client'
 import './styles/root.css'
 import './styles/root.scss'
 import './styles/toaster.scss'
-import {NavigationProvider} from './utils/navigation'
+import {NavigationProvider} from '@mintter/app/src/utils/navigation'
+import {AppError} from '@mintter/app/src/components/app-error'
 import {createIPC, listen} from '@app/ipc'
 import {createGRPCClient} from '@mintter/shared'
 import {transport} from './api-clients'
@@ -136,16 +137,6 @@ function App() {
     <DaemonStatusProvider>
       <Main />
     </DaemonStatusProvider>
-  )
-}
-
-export function AppError({error, resetErrorBoundary}: FallbackProps) {
-  return (
-    <YStack role="alert" space>
-      <Text>Something went wrong loading the App:</Text>
-      <Text tag="pre">{error.message}</Text>
-      <Button onPress={resetErrorBoundary}>Try again</Button>
-    </YStack>
   )
 }
 

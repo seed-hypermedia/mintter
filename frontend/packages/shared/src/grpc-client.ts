@@ -23,9 +23,12 @@ export type GRPCClient = {
   networking: PromiseClient<typeof Networking>
   webPublishing: PromiseClient<typeof WebPublishing>
   webSite: PromiseClient<typeof WebSite>
+  getRemoteWebClient: (siteOrigin: string) => PromiseClient<typeof WebSite>
 }
 
 export function createGRPCClient(transport: any): GRPCClient {
+  const localWebSite = createPromiseClient(WebSite, transport)
+
   return {
     accounts: createPromiseClient(Accounts, transport),
     contentGraph: createPromiseClient(ContentGraph, transport),
@@ -36,6 +39,22 @@ export function createGRPCClient(transport: any): GRPCClient {
     daemon: createPromiseClient(Daemon, transport),
     networking: createPromiseClient(Networking, transport),
     webPublishing: createPromiseClient(WebPublishing, transport),
-    webSite: createPromiseClient(WebSite, transport),
+    webSite: localWebSite,
+    getRemoteWebClient: (siteOrigin: string) => {
+      return Object.fromEntries(
+        Object.entries(localWebSite).map(([rpcCallName, rpcHandler]) => {
+          return [
+            rpcCallName,
+            async (input: Parameters<typeof rpcHandler>[0]) => {
+              return rpcHandler(input, {
+                headers: {
+                  'x-mintter-site-hostname': siteOrigin,
+                },
+              })
+            },
+          ]
+        }),
+      ) as typeof localWebSite
+    },
   } as const
 }
