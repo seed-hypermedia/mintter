@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_MINTTER_SENTRY_DESKTOP: string
   // more env variables...
+  readonly RELEASE_NIGHTLY: string
 }
 
 interface ImportMeta {

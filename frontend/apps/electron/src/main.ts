@@ -39,6 +39,9 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
+    icon: import.meta.env.RELEASE_NIGHTLY
+      ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
+      : path.resolve(__dirname, '../assets/icons/icon.png'),
   })
 
   // and load the index.html of the app.

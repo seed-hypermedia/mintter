@@ -1,7 +1,20 @@
+const path = require('path')
+
+let iconsPath = process.env.NIGHTLY_RELEASE
+  ? path.resolve(__dirname, 'assets/icons-nightly/icon')
+  : path.resolve(__dirname, 'assets/icons/icon')
+
 module.exports = {
   packagerConfig: {
     asar: true, // or an object containing your asar options
-    osxSign: {},
+    osxSign: {}, // object must exist even if empty
+    // osxNotarize: {
+    //   tool: 'notarytool',
+    //   appleId: process.env.APPLE_ID,
+    //   appleIdPassword: process.env.APPLE_PASSWORD,
+    //   teamId: process.env.APPLE_TEAM_ID,
+    // },
+    icon: iconsPath,
   },
   rebuildConfig: {},
   makers: [
@@ -9,39 +22,45 @@ module.exports = {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
-    {
-      name: '@electron-forge/maker-dmg',
-      config: {
-        // background: './assets/dmg-background.png',
-        format: 'ULFO',
-        debug: true,
-        overwrite: true,
-      },
-    },
     // {
-    //   name: '@electron-forge/maker-deb',
-    //   config: {},
+    //   name: '@electron-forge/maker-dmg',
+    //   config: {
+    //     // background: './assets/dmg-background.png',
+    //     format: 'ULFO',
+    //     debug: true,
+    //     overwrite: true,
+    //     icon: `${iconsPath}.icns`,
+    //   },
     // },
     // {
-    //   name: '@electron-forge/maker-rpm',
-    //   config: {},
+    //   name: '@electron-forge/maker-deb',
+    //   config: {
+    //     options: {
+    //       icon: `${iconsPath}.png`,
+    //     },
+    //   },
     // },
     // {
     //   name: '@electron-forge/maker-squirrel',
-    //   config: {},
+    //   config: {
+    //     // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+    //     iconUrl: 'https://url/to/icon.ico',
+    //     // The ICO file to use as the icon for the generated Setup.exe
+    //     setupIcon: `${iconsPath}.ico`,
+    //   },
     // },
   ],
   plugins: [
-    {
-      name: '@electron-forge/plugin-electronegativity',
-      config: {
-        isSarif: true,
-      },
-    },
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
+    // {
+    //   name: '@electron-forge/plugin-electronegativity',
+    //   config: {
+    //     isSarif: true,
+    //   },
+    // },
+    // {
+    //   name: '@electron-forge/plugin-auto-unpack-natives',
+    //   config: {},
+    // },
     {
       name: '@electron-forge/plugin-vite',
       config: {
