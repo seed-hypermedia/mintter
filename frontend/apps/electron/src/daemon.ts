@@ -4,10 +4,16 @@ import {join} from 'path'
 import {homedir, platform} from 'os'
 
 const devProjectRoot = join(process.cwd(), '../../..')
-const daemonBinaryPath = join(
+const devDaemonBinaryPath = join(
   devProjectRoot,
   // TODO: parametrize this for each platform
   'plz-out/bin/backend/mintterd-aarch64-apple-darwin',
+)
+
+const prodDaemonBinaryPath = join(
+  process.resourcesPath,
+  // TODO: parametrize this for each platform
+  'mintterd-aarch64-apple-darwin',
 )
 
 const daemonHttpPort = 56011
@@ -23,8 +29,13 @@ if (platform() === 'darwin') {
     'com.mintter.dev',
   )
 }
+
+let godPath =
+  process.env.NODE_ENV == 'development'
+    ? devDaemonBinaryPath
+    : prodDaemonBinaryPath
 const daemonProcess = spawn(
-  daemonBinaryPath,
+  godPath,
   [
     // daemon arguments
 

@@ -1,5 +1,12 @@
 const path = require('path')
 
+const devProjectRoot = path.join(process.cwd(), '../../..')
+const daemonBinaryPath = path.join(
+  devProjectRoot,
+  // TODO: parametrize this for each platform
+  'plz-out/bin/backend/mintterd-aarch64-apple-darwin',
+)
+
 let iconsPath = process.env.NIGHTLY_RELEASE
   ? path.resolve(__dirname, 'assets/icons-nightly/icon')
   : path.resolve(__dirname, 'assets/icons/icon')
@@ -15,6 +22,7 @@ module.exports = {
     //   teamId: process.env.APPLE_TEAM_ID,
     // },
     icon: iconsPath,
+    extraResource: [daemonBinaryPath],
   },
   rebuildConfig: {},
   makers: [

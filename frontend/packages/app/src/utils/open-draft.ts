@@ -29,7 +29,6 @@ export function useOpenDraft() {
   const spawn = useNavigate('spawn')
   const invalidate = useQueryInvalidator()
   const grpcClient = useGRPCClient()
-  console.log('hello invalidate', invalidate)
   function openNewDraft(newWindow = true, hostname?: string | undefined) {
     createDraft(grpcClient, hostname)
       .then((docId: string) => {

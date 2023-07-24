@@ -103,14 +103,13 @@ export default function PublicationPage() {
                   height="100%"
                   // @ts-ignore
                 >
-                  <ScrollView>
-                    {editor && (
-                      <HDEditorContainer>
-                        <HyperDocsEditorView editor={editor} />
-                        <DebugData data={data} />
-                      </HDEditorContainer>
-                    )}
-                  </ScrollView>
+                  {editor && (
+                    <HDEditorContainer>
+                      <HyperDocsEditorView editor={editor} />
+                      <DebugData data={data} />
+                    </HDEditorContainer>
+                  )}
+
                   {versionId && (
                     <OutOfDateBanner docId={docId} version={versionId} />
                   )}

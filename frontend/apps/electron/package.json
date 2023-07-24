@@ -11,7 +11,7 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
     "audit": "echo \"electronegativity not configured\"",
-    "e2e": "yarn playwright test"
+    "e2e": "npx playwright test"
   },
   "keywords": [],
   "author": {
@@ -34,7 +34,7 @@
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
     "electron": "25.3.0",
-    "playwright": "^1.36.1"
+    "electron-playwright-helpers": "^1.6.0"
   },
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
@@ -44,7 +44,6 @@
     "@mintter/ui": "workspace:*",
     "@sentry/electron": "^4.7.0",
     "@sentry/vite-plugin": "latest",
-    "electron-squirrel-startup": "^1.0.0",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1"

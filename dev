@@ -84,6 +84,13 @@ def main():
         run("plz build //backend:mintterd //:yarn")
         run("cargo tauri build --debug")
 
+    @cmd(
+        cmds, "build-app", "Builds the desktop app for the current platform."
+    )
+    def build_app(args):
+        run("plz build //backend:mintterd //:yarn")
+        run("yarn electron:make")
+
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):
         return run("plz run //backend:pingp2p", args=args)
@@ -114,6 +121,11 @@ def main():
     def run_desktop(args):
         run("plz build //backend:mintterd //:yarn")
         return run("yarn tauri:dev", args=args)
+    
+    @cmd(cmds, "run-app", "Run desktop app for development.")
+    def run_app(args):
+        run("plz build //backend:mintterd //:yarn")
+        return run("yarn electron", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):

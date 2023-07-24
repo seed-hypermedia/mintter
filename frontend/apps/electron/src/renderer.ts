@@ -28,10 +28,11 @@
 import './root.tsx'
 import * as Sentry from '@sentry/electron/renderer'
 
-Sentry.init({
-  debug: true,
-})
-
+if (import.meta.env.PROD) {
+  Sentry.init({
+    debug: true,
+  })
+}
 // setTimeout(() => {
 //   throw new Error('Some renderer error')
 // }, 500)

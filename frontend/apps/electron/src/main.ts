@@ -5,40 +5,43 @@ import {mainDaemon} from './daemon'
 
 mainDaemon.grpcPort
 
-Sentry.init({
-  debug: true,
-  dsn: import.meta.env.VITE_MINTTER_SENTRY_DESKTOP,
-  transportOptions: {
-    // The maximum number of days to keep an event in the queue.
-    maxQueueAgeDays: 30,
-    // The maximum number of events to keep in the queue.
-    maxQueueCount: 30,
-    // Called every time the number of requests in the queue changes.
-    queuedLengthChanged: (length) => {
-      console.log('Sentry queue changed', length)
+if (import.meta.env.PROD) {
+  Sentry.init({
+    debug: true,
+    dsn: import.meta.env.VITE_MINTTER_SENTRY_DESKTOP,
+    transportOptions: {
+      // The maximum number of days to keep an event in the queue.
+      maxQueueAgeDays: 30,
+      // The maximum number of events to keep in the queue.
+      maxQueueCount: 30,
+      // Called every time the number of requests in the queue changes.
+      queuedLengthChanged: (length) => {
+        console.log('Sentry queue changed', length)
+      },
+      // Called before attempting to send an event to Sentry. Used to override queuing behavior.
+      //
+      // Return 'send' to attempt to send the event.
+      // Return 'queue' to queue and persist the event for sending later.
+      // Return 'drop' to drop the event.
+      // beforeSend: (request) => (isOnline() ? 'send' : 'queue'),
     },
-    // Called before attempting to send an event to Sentry. Used to override queuing behavior.
-    //
-    // Return 'send' to attempt to send the event.
-    // Return 'queue' to queue and persist the event for sending later.
-    // Return 'drop' to drop the event.
-    // beforeSend: (request) => (isOnline() ? 'send' : 'queue'),
-  },
-})
-
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit()
+  })
 }
+// const squirrelStartup = import('electron-squirrel-startup')
+
+// // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+// if (squirrelStartup) {
+//   app.quit()
+// }
 
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-    },
+    // webPreferences: {
+    //   preload: path.join(__dirname, 'preload.js'),
+    // },
     icon: import.meta.env.RELEASE_NIGHTLY
       ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
       : path.resolve(__dirname, '../assets/icons/icon.png'),
@@ -46,6 +49,7 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    console.log('== LOAD APP', mainWindow)
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
     mainWindow.loadFile(
