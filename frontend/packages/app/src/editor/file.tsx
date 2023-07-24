@@ -256,7 +256,7 @@ function FileForm({
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const files = [...event.target.files]
+      const files = Array.from(event.target.files)
       const largeFileIndex = files.findIndex((file) => file.size > 62914560)
       if (largeFileIndex > -1) {
         setFileName({
