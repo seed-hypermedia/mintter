@@ -1,6 +1,12 @@
 import {Editor} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {NodeSelection, Plugin, PluginKey, Selection} from 'prosemirror-state'
+import {
+  NodeSelection,
+  Plugin,
+  PluginKey,
+  Selection,
+  TextSelection,
+} from 'prosemirror-state'
 import * as pv from 'prosemirror-view'
 import {EditorView} from 'prosemirror-view'
 import styles from '../../editor.module.css'
@@ -374,6 +380,43 @@ export class BlockMenuView<BSchema extends BlockSchema> {
     }
 
     this.menuFrozen = false
+
+    const editorBoundingBox = (
+      this.ttEditor.view.dom.firstChild! as HTMLElement
+    ).getBoundingClientRect()
+
+    // Gets block at mouse cursor's vertical position.
+    const coords = {
+      left: editorBoundingBox.left + editorBoundingBox.width / 2, // take middle of editor
+      top: event.clientY,
+    }
+
+    // Get position of the block at coordinates of the click
+    const pos = this.ttEditor.view.posAtCoords(coords)
+    if (pos) {
+      // Focus either the start or the end of the block depending if it's clicked to the right or left
+      this.ttEditor.commands.focus(
+        event.clientX < coords.left
+          ? pos.inside
+          : pos.inside +
+              this.ttEditor.state.doc.resolve(pos.pos).node().nodeSize -
+              1,
+      )
+    }
+    // else {
+    //   const blocks = this.editor.topLevelBlocks
+    //   this.editor.insertBlocks(
+    //     [
+    //       {
+    //         type: 'paragraph',
+    //         content: '',
+    //         props: {},
+    //       },
+    //     ],
+    //     blocks[blocks.length - 1],
+    //     'after',
+    //   )
+    // }
   }
 
   onMouseMove = (event: MouseEvent) => {
