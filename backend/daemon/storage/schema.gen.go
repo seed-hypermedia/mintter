@@ -354,18 +354,18 @@ const (
 
 // Table web_publications.
 const (
-	WebPublications         sqlitegen.Table  = "web_publications"
-	WebPublicationsDocument sqlitegen.Column = "web_publications.document"
-	WebPublicationsPath     sqlitegen.Column = "web_publications.path"
-	WebPublicationsVersion  sqlitegen.Column = "web_publications.version"
+	WebPublications        sqlitegen.Table  = "web_publications"
+	WebPublicationsEID     sqlitegen.Column = "web_publications.eid"
+	WebPublicationsPath    sqlitegen.Column = "web_publications.path"
+	WebPublicationsVersion sqlitegen.Column = "web_publications.version"
 )
 
 // Table web_publications. Plain strings.
 const (
-	T_WebPublications         = "web_publications"
-	C_WebPublicationsDocument = "web_publications.document"
-	C_WebPublicationsPath     = "web_publications.path"
-	C_WebPublicationsVersion  = "web_publications.version"
+	T_WebPublications        = "web_publications"
+	C_WebPublicationsEID     = "web_publications.eid"
+	C_WebPublicationsPath    = "web_publications.path"
+	C_WebPublicationsVersion = "web_publications.version"
 )
 
 // Schema describes SQLite columns.
@@ -449,7 +449,7 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:                     {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                        {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                         {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationsDocument:             {Table: WebPublications, SQLType: "INTEGER"},
+		WebPublicationsEID:                  {Table: WebPublications, SQLType: "TEXT"},
 		WebPublicationsPath:                 {Table: WebPublications, SQLType: "TEXT"},
 		WebPublicationsVersion:              {Table: WebPublications, SQLType: "TEXT"},
 	},

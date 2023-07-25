@@ -174,12 +174,12 @@ func generateQueries() error {
 
 		qb.MakeQuery(s.Schema, "InsertWebPublicationRecord", sqlitegen.QueryKindExec,
 			"INSERT INTO", s.WebPublications, qb.ListColShort(
-				s.WebPublicationsDocument,
+				s.WebPublicationsEID,
 				s.WebPublicationsVersion,
 				s.WebPublicationsPath,
 			), '\n',
 			"VALUES", qb.List(
-				qb.VarCol(s.WebPublicationsDocument),
+				qb.VarCol(s.WebPublicationsEID),
 				qb.VarCol(s.WebPublicationsVersion),
 				qb.VarCol(s.WebPublicationsPath),
 			),
@@ -187,11 +187,7 @@ func generateQueries() error {
 
 		qb.MakeQuery(s.Schema, "RemoveWebPublicationRecord", sqlitegen.QueryKindExec,
 			"DELETE FROM", s.WebPublications,
-			"WHERE", s.WebPublicationsDocument, "=", qb.SubQuery(
-				"SELECT", s.HDEntitiesID,
-				"FROM", s.HDEntities,
-				"WHERE", s.HDEntitiesEID, "=", qb.VarCol(s.HDEntitiesEID),
-			),
+			"WHERE", s.WebPublicationsEID, "=", qb.VarCol(s.HDEntitiesEID),
 			"AND", s.WebPublicationsVersion, "=", qb.VarCol(s.WebPublicationsVersion),
 		),
 
@@ -203,7 +199,7 @@ func generateQueries() error {
 				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
 			"FROM", s.WebPublications, '\n',
-			"JOIN", s.HDEntities, "ON", s.WebPublicationsDocument, "=", s.HDEntitiesID,
+			"JOIN", s.HDEntities, "ON", s.WebPublicationsEID, "=", s.HDEntitiesEID,
 		),
 
 		qb.MakeQuery(s.Schema, "GetWebPublicationRecordByPath", sqlitegen.QueryKindSingle,
@@ -215,7 +211,7 @@ func generateQueries() error {
 				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
 			"FROM", s.WebPublications, '\n',
-			"JOIN", s.HDEntities, "ON", s.WebPublicationsDocument, "=", s.HDEntitiesID,
+			"JOIN", s.HDEntities, "ON", s.WebPublicationsEID, "=", s.HDEntitiesEID,
 			"WHERE", s.WebPublicationsPath, "=", qb.VarCol(s.WebPublicationsPath),
 		),
 
@@ -228,7 +224,7 @@ func generateQueries() error {
 				qb.ResultCol(s.WebPublicationsPath),
 			), '\n',
 			"FROM", s.WebPublications, '\n',
-			"JOIN", s.HDEntities, "ON", s.WebPublicationsDocument, "=", s.HDEntitiesID,
+			"JOIN", s.HDEntities, "ON", s.WebPublicationsEID, "=", s.HDEntitiesEID,
 			"WHERE", s.HDEntitiesEID, "=", qb.VarCol(s.HDEntitiesEID),
 		),
 	)
