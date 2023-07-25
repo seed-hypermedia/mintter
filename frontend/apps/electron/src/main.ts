@@ -45,6 +45,15 @@ const createWindow = () => {
     icon: import.meta.env.RELEASE_NIGHTLY
       ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
       : path.resolve(__dirname, '../assets/icons/icon.png'),
+    // frame: false,
+    // trafficLightPosition: {
+    //   x: 12,
+    //   y: 12,
+    // },
+    // titleBarOverlay: true,
+    // webPreferences: {
+    //   preload: path.join(__dirname, 'preload.js'),
+    // },
   })
 
   // and load the index.html of the app.

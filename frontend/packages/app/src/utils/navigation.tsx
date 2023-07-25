@@ -7,7 +7,7 @@ import {
   useReducer,
 } from 'react'
 import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
-import {useIPC} from '@mintter/app'
+import {useIPC} from '@mintter/app/src/app-context'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -143,9 +143,11 @@ let initRoute: NavRoute = homeRoute
 try {
   if (initRouteEncoded === '') {
     initRoute = homeRoute
+  } else {
+    initRoute = decodeRouteFromPath(initRouteEncoded)
   }
-  initRoute = decodeRouteFromPath(initRouteEncoded)
 } catch (e) {
+  console.log(`Initial Route: "${initRouteEncoded}"`)
   console.error('Error parsing initial route! ', e)
 }
 

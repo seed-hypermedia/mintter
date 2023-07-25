@@ -1,4 +1,4 @@
-import {copyTextToClipboard} from '@mintter/app'
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {
   Button,

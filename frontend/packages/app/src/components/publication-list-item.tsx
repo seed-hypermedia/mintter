@@ -4,7 +4,7 @@ import {
   useDeletePublication,
 } from '@mintter/app/src/models/documents'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {copyTextToClipboard} from '@mintter/app'
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {
   PublicationRoute,
   useNavigate,

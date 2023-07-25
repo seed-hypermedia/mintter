@@ -12,7 +12,8 @@ import {
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {toast, useAppContext, useQueryInvalidator} from '@mintter/app'
+import {toast} from '@mintter/app/src/toast'
+import {useAppContext, useQueryInvalidator} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '../app-context'
 
 function blockExtractReferencedDocs(

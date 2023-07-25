@@ -6,7 +6,7 @@ import {useDaemonReady} from '@mintter/app/src/node-status-context'
 import {useDaemonInfo} from '@mintter/app/src/models/daemon'
 import appError from '@mintter/app/src/errors'
 import {ConnectError} from '@bufbuild/connect-web'
-import {useGRPCClient, useQueryInvalidator} from '@mintter/app'
+import {useGRPCClient, useQueryInvalidator} from '@mintter/app/src/app-context'
 
 export function useAccount(accountId?: string) {
   const grpcClient = useGRPCClient()

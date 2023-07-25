@@ -33,7 +33,7 @@ import {
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
-import {useIPC} from '@mintter/app'
+import {useIPC} from '@mintter/app/src/app-context'
 
 export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)

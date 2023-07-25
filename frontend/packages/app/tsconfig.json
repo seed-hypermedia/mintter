@@ -2,10 +2,12 @@
   "extends": "../../../tsconfig.base",
   "include": ["src"],
   "compilerOptions": {
-    "declaration": false,
     "composite": true,
     "esModuleInterop": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "paths": {
+      "@mintter/app/src/*": ["src/*"]
+    }
   },
   "references": []
 }

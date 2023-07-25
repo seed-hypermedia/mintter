@@ -56,8 +56,8 @@ import {
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
-import {useWindowUtils} from '@mintter/app'
-import {useIPC} from '@mintter/app'
+import {useWindowUtils} from '@mintter/app/src/app-context'
+import {useIPC} from '@mintter/app/src/app-context'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar

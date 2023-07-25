@@ -29,10 +29,11 @@ import {AppError} from '@mintter/app/src/components/app-error'
 import {createIPC, listen} from '@app/ipc'
 import {createGRPCClient} from '@mintter/shared'
 import {transport} from './api-clients'
-import {AppContextProvider, AppPlatform, WindowUtils} from '@mintter/app'
+import {AppContextProvider, AppPlatform} from '@mintter/app/src/app-context'
 import {open} from '@tauri-apps/api/shell'
 import {getCurrent} from '@tauri-apps/api/window'
 import {saveCidAsFile} from './save-cid-as-file'
+import {WindowUtils} from '@mintter/app/src/window-utils'
 
 import('./updater')
 
@@ -95,12 +96,6 @@ export function Root() {
   const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
   const windowUtils = useWindowUtils()
 
-  console.log(`== ~ Root ~ windowUtils:`, {
-    ipc,
-    grpcClient,
-    queryClient,
-    windowUtils,
-  })
   return (
     <AppContextProvider
       grpcClient={grpcClient}

@@ -4,7 +4,9 @@ import Main from '@mintter/app/src/pages/main'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
 import './index.css'
 import {createGRPCClient} from '@mintter/shared'
-import {AppContextProvider, WindowUtils, toast} from '@mintter/app'
+import {toast} from '@mintter/app/src/toast'
+import {WindowUtils} from '@mintter/app/src/window-utils'
+import {AppContextProvider} from '@mintter/app/src/app-context'
 import {getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
 import {NavigationProvider} from '@mintter/app/src/utils/navigation'
@@ -49,12 +51,6 @@ function ElectronApp() {
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
   const windowUtils = useWindowUtils()
-  console.log(`== ~ Root ~ windowUtils:`, {
-    ipc,
-    grpcClient,
-    queryClient,
-    windowUtils,
-  })
   return (
     <AppContextProvider
       grpcClient={grpcClient}

@@ -5,12 +5,10 @@ import {
 } from '@mintter/app/src/blocknote-core'
 import {getBlockInfoFromPos} from '@mintter/app/src/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 import {insertOrUpdateBlock} from '@mintter/app/src/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems'
-import {
-  createReactBlockSpec,
-  ReactSlashMenuItem,
-} from '@mintter/app/src/blocknote-react'
+import {createReactBlockSpec} from '@mintter/app/src/blocknote-react/ReactBlockSpec'
+import {ReactSlashMenuItem} from '@mintter/app/src/blocknote-react/SlashMenu/ReactSlashMenuItem'
 import {HDBlockSchema} from '@mintter/app/src/client/schema'
-import {useAppContext} from '@mintter/app'
+import {useAppContext} from '@mintter/app/src/app-context'
 import {
   Button,
   Label,

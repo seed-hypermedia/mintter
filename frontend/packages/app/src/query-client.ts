@@ -1,9 +1,9 @@
 import {QueryCache, QueryClient, QueryKey} from '@tanstack/react-query'
-import {toast} from '@mintter/app'
+import {toast} from '@mintter/app/src/toast'
 // import {labelOfQueryKey, queryKeys} from './models/query-keys'
 import {JsonValue} from '@bufbuild/protobuf'
-import {copyTextToClipboard} from '@mintter/app'
-import {AppIPC} from '@mintter/app'
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
+import {AppIPC} from '@mintter/app/src/app-ipc'
 
 function copyDetails(randomDetails: JsonValue) {
   const detailString = JSON.stringify(randomDetails, null, 2)

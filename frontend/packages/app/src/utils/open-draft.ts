@@ -2,7 +2,7 @@ import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {toast} from 'react-hot-toast'
 import {DocumentChange, GRPCClient} from '@mintter/shared'
 import {DraftRoute, useNavigate, useNavRoute} from './navigation'
-import {useQueryInvalidator} from '@mintter/app'
+import {useQueryInvalidator} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '../app-context'
 
 async function createDraft(

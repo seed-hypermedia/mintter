@@ -1,4 +1,4 @@
-import {toast} from '@mintter/app'
+import {toast} from '@mintter/app/src/toast'
 import {save} from '@tauri-apps/api/dialog'
 import {BaseDirectory, writeBinaryFile} from '@tauri-apps/api/fs'
 import {getClient, ResponseType} from '@tauri-apps/api/http'

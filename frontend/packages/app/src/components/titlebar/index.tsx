@@ -1,5 +1,5 @@
-import {warn} from '@mintter/app'
 import {lazy} from 'react'
+import {useAppContext} from '@mintter/app/src/app-context'
 
 var TitleBarMacos = lazy(() => import('./macos'))
 var TitleBarWindows = lazy(() => import('./windows'))
@@ -10,13 +10,10 @@ export interface TitleBarProps {
 }
 
 export function TitleBar(props: TitleBarProps) {
-  if (import.meta.env.TAURI_PLATFORM == 'macos')
-    return <TitleBarMacos {...props} />
-  if (import.meta.env.TAURI_PLATFORM == 'windows')
-    return <TitleBarWindows {...props} />
-  if (import.meta.env.TAURI_PLATFORM == 'linux')
-    return <TitleBarLinux {...props} />
-  // throw new Error(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
-  warn(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
+  const {platform} = useAppContext()
+  if (platform == 'macos') return <TitleBarMacos {...props} />
+  if (platform == 'windows') return <TitleBarWindows {...props} />
+  if (platform == 'linux') return <TitleBarLinux {...props} />
+  console.warn(`Titlebar: unsupported platform: ${platform}`)
   return <TitleBarMacos {...props} />
 }

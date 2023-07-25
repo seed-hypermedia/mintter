@@ -1,4 +1,4 @@
-import {AppIPC} from '@mintter/app'
+import {AppIPC} from '@mintter/app/src/app-ipc'
 
 export function createIPC(): AppIPC {
   return {

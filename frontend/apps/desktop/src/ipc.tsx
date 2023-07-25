@@ -4,7 +4,7 @@ import type {
 } from '@tauri-apps/api/event'
 import type {invoke as tauriInvoke} from '@tauri-apps/api/tauri'
 import type {appWindow} from '@tauri-apps/api/window'
-import {AppIPC} from '@mintter/app'
+import {AppIPC} from '@mintter/app/src/app-ipc'
 
 export let _listen: typeof tauriListen | null = null
 export let _send: typeof tauriSend | null = null

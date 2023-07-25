@@ -1,4 +1,3 @@
-import {error} from '@mintter/app'
 import {Store as TauriStore} from 'tauri-plugin-store-api'
 
 export function createStore(path: string): TauriStore | LocalStore {
@@ -69,7 +68,7 @@ function setFallback({path, key, value}: SetParams): Promise<void> {
   return getStoreFallback(path)
     .then(setValueFallback)
     .catch((err) => {
-      error(`setFallback error for ${path}: ${err}`)
+      console.error(`setFallback error for ${path}: ${err}`)
     })
 
   function setValueFallback(store: LocalStorageStore) {
@@ -88,7 +87,7 @@ function getFallback<T>({path, key}: GetParams): Promise<T | null> {
   return getStoreFallback(path)
     .then(getValueFallback)
     .catch((err) => {
-      error(`getFallback error for ${path}: ${err}`)
+      console.error(`getFallback error for ${path}: ${err}`)
     })
 
   function getValueFallback(store: LocalStorageStore) {

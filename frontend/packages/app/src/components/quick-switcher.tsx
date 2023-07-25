@@ -6,12 +6,12 @@ import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {getIdsfromUrl, isHyperdocsScheme} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
-import {useListen} from '@mintter/app'
+import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import './quick-switcher.scss'
-import {useAppContext} from '@mintter/app'
+import {useAppContext} from '@mintter/app/src/app-context'
 
 export default function QuickSwitcher() {
   const {data: drafts} = useDraftList()

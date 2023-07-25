@@ -16,13 +16,7 @@ import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
-import {
-  Account,
-  createHyperdocsDocLink,
-  DocumentChange,
-  HYPERDOCS_LINK_PREFIX,
-  SiteConfig,
-} from '@mintter/shared'
+import {Account, DocumentChange, SiteConfig} from '@mintter/shared'
 import {
   Add,
   Back,
@@ -31,7 +25,6 @@ import {
   File,
   Forward,
   Menu,
-  Popover,
   Separator,
   Settings,
   SizableText,
@@ -46,10 +39,10 @@ import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
 import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
-import {memo, useState} from 'react'
+import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {useIPC} from '@mintter/app'
-import {useGRPCClient} from '../../app-context'
+import {useIPC} from '@mintter/app/src/app-context'
+import {useGRPCClient} from '@mintter/app/src/app-context'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
