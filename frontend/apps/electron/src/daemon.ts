@@ -3,11 +3,16 @@ import {spawn} from 'child_process'
 import {join} from 'path'
 import {homedir, platform} from 'os'
 
+const daemonName = {
+  darwin: 'mintterd-aarch64-apple-darwin',
+  linux: 'mintterd-x86_64-unknown-linux-gnu',
+}
+
 const devProjectRoot = join(process.cwd(), '../../..')
 const devDaemonBinaryPath = join(
   devProjectRoot,
   // TODO: parametrize this for each platform
-  'plz-out/bin/backend/mintterd-aarch64-apple-darwin',
+  `plz-out/bin/backend/${daemonName[platform()]}`,
 )
 
 const prodDaemonBinaryPath = join(
