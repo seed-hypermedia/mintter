@@ -1,5 +1,5 @@
 import {GRPCClient} from '@mintter/shared'
-import {createContext, ReactNode, useContext} from 'react'
+import {createContext, ReactNode, Suspense, useContext} from 'react'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {
   TamaguiProvider,
@@ -12,6 +12,8 @@ import {AppQueryClient} from './query-client'
 import {useEffect} from 'react'
 import {WindowUtils} from './window-utils'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AppError} from './components/app-error'
 
 export type AppPlatform = 'macos' | 'windows' | 'linux'
 
@@ -61,7 +63,11 @@ export function AppContextProvider({
       }}
     >
       <QueryClientProvider client={queryClient.client}>
-        <StyleProvider>{children}</StyleProvider>
+        <Suspense>
+          <ErrorBoundary FallbackComponent={AppError}>
+            <StyleProvider>{children}</StyleProvider>
+          </ErrorBoundary>
+        </Suspense>
         <ReactQueryDevtools />
       </QueryClientProvider>
     </AppContext.Provider>

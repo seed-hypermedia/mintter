@@ -157,24 +157,11 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   return values
 }
 
-export function TestProvider({client, children}: TestProviderProps) {
-  return (
-    <QueryClientProvider client={client}>
-      <Suspense fallback={<p>Loading...</p>}>{children}</Suspense>
-    </QueryClientProvider>
-  )
-}
-
 export type CustomMountOptions = {
   account?: Account
   nav?: NavState
   setLocation?: () => void
   client?: QueryClient
-}
-
-export type TestProviderProps = CustomMountOptions & {
-  children: React.ReactNode
-  client: QueryClient
 }
 
 export function createTestDraft(entry: Partial<Document> = {}): Document {

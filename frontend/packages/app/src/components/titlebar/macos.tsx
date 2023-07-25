@@ -9,7 +9,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper data-tauri-drag-region>
+    <TitlebarWrapper data-tauri-drag-region className="window-drag">
       <XStack
         paddingHorizontal="$2"
         justifyContent="space-between"
@@ -27,7 +27,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
             alignItems="flex-start"
             data-tauri-drag-region
           >
-            <XStack data-tauri-drag-region>
+            <XStack data-tauri-drag-region className="no-window-drag">
               <NavMenu />
               <NavigationButtons />
             </XStack>
@@ -38,6 +38,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
         </XStack>
         <XStack
           data-tauri-drag-region
+          className="no-window-drag"
           flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}

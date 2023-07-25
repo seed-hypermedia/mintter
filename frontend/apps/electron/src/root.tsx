@@ -2,7 +2,6 @@ import React, {useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import Main from '@mintter/app/src/pages/main'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
-import './index.css'
 import {createGRPCClient} from '@mintter/shared'
 import {toast} from '@mintter/app/src/toast'
 import {WindowUtils} from '@mintter/app/src/window-utils'
@@ -10,6 +9,9 @@ import {AppContextProvider} from '@mintter/app/src/app-context'
 import {getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
 import {NavigationProvider} from '@mintter/app/src/utils/navigation'
+import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
+import {Toaster} from 'react-hot-toast'
+import './root.css'
 
 const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:56011',
@@ -66,8 +68,11 @@ function ElectronApp() {
       windowUtils={windowUtils}
     >
       <NavigationProvider>
-        <Main />
+        <DaemonStatusProvider>
+          <Main />
+        </DaemonStatusProvider>
       </NavigationProvider>
+      <Toaster position="bottom-right" toastOptions={{className: 'toaster'}} />
     </AppContextProvider>
   )
 }
