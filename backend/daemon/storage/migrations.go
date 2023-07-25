@@ -50,6 +50,38 @@ var migrations = []migration{
 	{Version: "2023-07-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return sqlitex.ExecScript(conn, "PRAGMA user_version = 0;")
 	}},
+	//Sites migration Hotfix
+	{Version: "2023-07-25.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
+PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+ALTER TABLE web_publications RENAME TO old_web_publications;
+
+-- Stores all the records published on this site. Although this table is relevant only
+-- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+CREATE TABLE web_publications (
+    -- Entity ID of the published document.
+    eid TEXT PRIMARY KEY CHECK (eid != ''),
+    -- doc version of the base document published. Not its references.
+    version TEXT NOT NULL,
+    -- Path this publication is published to. If NULL is not listed.
+    path TEXT UNIQUE
+);	
+
+INSERT INTO web_publications (eid, version, path) 
+SELECT hd_entities.eid, old_web_publications.version, old_web_publications.path
+FROM old_web_publications
+INNER JOIN hd_entities ON hd_entities.id=old_web_publications.document;
+
+COMMIT;
+
+PRAGMA foreign_keys=on;
+
+DROP TABLE old_web_publications;
+		`)
+	}},
 }
 
 const (
