@@ -35,7 +35,7 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	_, err = dm.Commit(ctx, blobs)
 	require.NoError(t, err)
 
-	entity, err = blobs.LoadEntity(ctx, "hd://d/doc-1")
+	entity, err = blobs.LoadEntity(ctx, "hd://d/doc-1", false)
 	require.NoError(t, err)
 	require.Nil(t, entity)
 
@@ -220,7 +220,7 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	_, err = blobs.PublishDraft(ctx, eid)
 	require.NoError(t, err)
 
-	entity, err = blobs.LoadEntity(ctx, eid)
+	entity, err = blobs.LoadEntity(ctx, eid, false)
 	require.NoError(t, err)
 
 	_, ok := entity.Heads()[hb.CID]

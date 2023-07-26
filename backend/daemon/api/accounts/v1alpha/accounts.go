@@ -91,7 +91,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
 	}
 
-	entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID("hd://a/"+aids))
+	entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID("hd://a/"+aids), false)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
 	eid := hyper.EntityID("hd://a/" + me.Account().Principal().String())
 
-	e, err := blobs.LoadEntity(ctx, eid)
+	e, err := blobs.LoadEntity(ctx, eid, false)
 	if err != nil {
 		return err
 	}

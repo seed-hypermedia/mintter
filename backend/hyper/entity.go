@@ -18,6 +18,7 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multibase"
 	"github.com/multiformats/go-multicodec"
+	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -324,7 +325,9 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 }
 
 // LoadEntity from the database. If not found returns nil result and nil error.
-func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
+// If trustedOnly true, then it will returnl the lastest version changed by a trusted peer.
+// It will return the latest version available otherwhise, regardles on who made the change.
+func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID, trustedOnly bool) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -346,7 +349,7 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 		return nil, err
 	}
 
-	return bs.loadFromHeads(conn, eid, heads.Heads)
+	return bs.loadFromHeads(conn, eid, heads.Heads, trustedOnly)
 }
 
 type Draft struct {
@@ -455,13 +458,13 @@ func (bs *Storage) LoadEntityFromHeads(ctx context.Context, eid EntityID, heads 
 		return nil, err
 	}
 
-	return bs.loadFromHeads(conn, eid, jsonheads)
+	return bs.loadFromHeads(conn, eid, jsonheads, false)
 }
 
 // localHeads is a JSON-encoded array of integers corresponding to heads.
 type localHeads []byte
 
-func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHeads) (e *Entity, err error) {
+func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHeads, trustedOnly bool) (e *Entity, err error) {
 	cset, err := hypersql.ChangesResolveHeads(conn, heads)
 	if err != nil {
 		return nil, err
@@ -476,7 +479,6 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 	}
 
 	entity := NewEntity(eid)
-
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
 		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
@@ -489,9 +491,51 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
-		if err := entity.ApplyChange(chcid, ch); err != nil {
-			return nil, err
+		if trustedOnly {
+			if err := ch.Verify(); err != nil {
+				continue // TODO: maybe return an error?
+			}
+			pid, err := ch.Signer.PeerID()
+			if err != nil {
+				return nil, err
+			}
+			// Get author's account
+			var acc core.Principal
+			if err := bs.Query(context.Background(), func(conn *sqlite.Conn) error {
+				list, err := hypersql.KeyDelegationsListByDelegate(conn, ch.Signer)
+				if err != nil {
+					return err
+				}
+
+				if len(list) == 0 {
+					return fmt.Errorf("not found key delegation for peer: %s", pid)
+				}
+
+				if len(list) > 1 {
+					return fmt.Errorf("MoreThanOneKeyDelegation for peer %s", pid.String())
+				}
+
+				del := list[0]
+
+				acc = core.Principal(del.KeyDelegationsViewIssuer)
+				return nil
+			}); err != nil {
+				bs.log.Error("Could not get change's author", zap.Error(err))
+				return nil, err
+			}
+			// TODO: check if acc is trusted. It should return trusted on myself.
+			if acc != nil {
+				return nil, fmt.Errorf("Not implemented yet")
+			}
+			if err := entity.ApplyChange(chcid, ch); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := entity.ApplyChange(chcid, ch); err != nil {
+				return nil, err
+			}
 		}
+
 		buf = buf[:0] // reset the slice reusing the backing array
 	}
 
