@@ -175,8 +175,8 @@ message ListPublicationsRequest {
 
   // Optional. Whether to return trusted publications only
   // or including all publications regardless of the trusted state
-  // By default, it returns all publications (trusted_publications_only = false)
-  bool trusted_publications_only = 3;
+  // By default, it returns all publications (trusted_only = false)
+  bool trusted_only = 3; 
 }
 
 // Response with list of publications.
