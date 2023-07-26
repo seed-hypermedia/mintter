@@ -328,6 +328,18 @@ const (
 	C_SQLITESequenceSeq  = "sqlite_sequence.seq"
 )
 
+// Table trusted_accounts.
+const (
+	TrustedAccounts   sqlitegen.Table  = "trusted_accounts"
+	TrustedAccountsID sqlitegen.Column = "trusted_accounts.id"
+)
+
+// Table trusted_accounts. Plain strings.
+const (
+	T_TrustedAccounts   = "trusted_accounts"
+	C_TrustedAccountsID = "trusted_accounts.id"
+)
+
 // Table wallets.
 const (
 	Wallets         sqlitegen.Table  = "wallets"
@@ -444,6 +456,7 @@ var Schema = sqlitegen.Schema{
 		SitesRole:                           {Table: Sites, SQLType: "INTEGER"},
 		SQLITESequenceName:                  {Table: SQLITESequence, SQLType: ""},
 		SQLITESequenceSeq:                   {Table: SQLITESequence, SQLType: ""},
+		TrustedAccountsID:                   {Table: TrustedAccounts, SQLType: "INTEGER"},
 		WalletsAddress:                      {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:                      {Table: Wallets, SQLType: "INTEGER"},
 		WalletsID:                           {Table: Wallets, SQLType: "TEXT"},

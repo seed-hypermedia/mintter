@@ -229,6 +229,15 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	return nil
 }
 
+// SetAccountTrust implements the corresponding gRPC method.
+func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountTrustRequest) (*accounts.Account, error) {
+	me, err := srv.me.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return nil, fmt.Errorf("Not implemented yet %v", me)
+}
+
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
 	me, err := srv.me.Await(ctx)
