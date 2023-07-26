@@ -1,5 +1,5 @@
 .editor {
-  max-width: 68ch;
+  max-width: calc(68ch + 120px);
   margin: 40px auto;
   width: 90%;
 }

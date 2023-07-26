@@ -28,21 +28,19 @@ export default function DraftPage() {
   let isDaemonReady = useDaemonReady()
 
   return (
-    <>
+    <ErrorBoundary
+      FallbackComponent={DraftError}
+      onReset={() => window.location.reload()}
+    >
       <MainWrapper>
-        <ErrorBoundary
-          FallbackComponent={DraftError}
-          onReset={() => window.location.reload()}
-        >
-          <HDEditorContainer>
-            {!isDaemonReady ? <NotSavingBanner /> : null}
-            {editor && <HyperDocsEditorView editor={editor} />}
-            {debugValue && <DebugData data={debugValue} />}
-          </HDEditorContainer>
-        </ErrorBoundary>
+        <HDEditorContainer>
+          {!isDaemonReady ? <NotSavingBanner /> : null}
+          {editor && <HyperDocsEditorView editor={editor} />}
+          {debugValue && <DebugData data={debugValue} />}
+        </HDEditorContainer>
       </MainWrapper>
       <Footer />
-    </>
+    </ErrorBoundary>
   )
 }
 

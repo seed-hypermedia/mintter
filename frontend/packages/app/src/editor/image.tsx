@@ -162,7 +162,10 @@ function ImageComponent({
   }
 
   return (
-    <div className={selected ? 'ProseMirror-selectednode' : ''}>
+    <div
+      className={selected ? 'ProseMirror-selectednode' : ''}
+      style={{width: '100%'}}
+    >
       <YStack
         // @ts-ignore
         contentEditable={false}

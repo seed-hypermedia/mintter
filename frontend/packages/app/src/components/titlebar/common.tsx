@@ -274,8 +274,8 @@ export function NavMenu() {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
-    <XStack paddingRight="$2" position="relative">
-      <Dropdown.Root {...popoverState}>
+    <XStack paddingRight="$2" position="relative" zIndex={1000}>
+      <Dropdown.Root {...popoverState} modal={true}>
         <Dropdown.Trigger size="$2" icon={Menu} />
 
         <NavMenuContent

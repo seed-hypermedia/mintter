@@ -1,4 +1,4 @@
-import {ScrollViewProps, YStack, YStackProps, styled} from 'tamagui'
+import {ScrollView, ScrollViewProps, YStack, YStackProps, styled} from 'tamagui'
 
 export const AppMain = styled(YStack, {
   flexDirection: 'column',
@@ -19,6 +19,6 @@ export const MainWrapper = ({
   noScroll?: boolean
 }) => (
   <YStack flex={1} className="content-wrapper" {...props}>
-    {children}
+    {noScroll ? children : <ScrollView>{children}</ScrollView>}
   </YStack>
 )

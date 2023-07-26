@@ -1,4 +1,8 @@
 import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
+import {VersionsAccessory} from '@mintter/app/src/components/changes-list'
+import {CitationsAccessory} from '@mintter/app/src/components/citations'
+import Footer, {FooterButton} from '@mintter/app/src/components/footer'
+import {Placeholder} from '@mintter/app/src/components/placeholder-box'
 import {features} from '@mintter/app/src/constants'
 import {useDocChanges} from '@mintter/app/src/models/changes'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
@@ -6,11 +10,7 @@ import {
   usePublication,
   usePublicationEditor,
 } from '@mintter/app/src/models/documents'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
-import {VersionsAccessory} from '@mintter/app/src/components/changes-list'
-import {CitationsAccessory} from '@mintter/app/src/components/citations'
-import Footer, {FooterButton} from '@mintter/app/src/components/footer'
-import {Placeholder} from '@mintter/app/src/components/placeholder-box'
+import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
 import {MttLink, pluralS} from '@mintter/shared'
 import {
   Button,
@@ -18,7 +18,6 @@ import {
   Link,
   MainWrapper,
   Pencil,
-  ScrollView,
   Text,
   YStack,
 } from '@mintter/ui'
@@ -27,13 +26,13 @@ import 'allotment/dist/style.css'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 
+import {AppError} from '@mintter/app/src/components/app-error'
+import {CitationsProvider} from '@mintter/app/src/components/citations-context'
+import {DebugData} from '@mintter/app/src/components/debug-data'
 import {
   HDEditorContainer,
   HyperDocsEditorView,
 } from '@mintter/app/src/editor/editor'
-import {AppError} from '@mintter/app/src/components/app-error'
-import {CitationsProvider} from '@mintter/app/src/components/citations-context'
-import {DebugData} from '@mintter/app/src/components/debug-data'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -96,13 +95,10 @@ export default function PublicationPage() {
             replace({...route, accessory: {key: 'citations'}})
           }}
         >
-          <MainWrapper noScroll>
-            <Allotment defaultSizes={[100]}>
-              <Allotment.Pane>
-                <YStack
-                  height="100%"
-                  // @ts-ignore
-                >
+          <Allotment defaultSizes={[100]}>
+            <Allotment.Pane>
+              <YStack height="100%">
+                <MainWrapper>
                   {editor && (
                     <HDEditorContainer>
                       <HyperDocsEditorView editor={editor} />
@@ -113,16 +109,17 @@ export default function PublicationPage() {
                   {versionId && (
                     <OutOfDateBanner docId={docId} version={versionId} />
                   )}
-                </YStack>
-              </Allotment.Pane>
-              {accessoryKey &&
-                (accessoryKey == 'versions' ? (
-                  <VersionsAccessory />
-                ) : (
-                  <CitationsAccessory docId={docId} version={versionId} />
-                ))}
-            </Allotment>
-          </MainWrapper>
+                </MainWrapper>
+              </YStack>
+            </Allotment.Pane>
+            {accessoryKey &&
+              (accessoryKey == 'versions' ? (
+                <VersionsAccessory />
+              ) : (
+                <CitationsAccessory docId={docId} version={versionId} />
+              ))}
+          </Allotment>
+
           <Footer>
             <FooterButton
               active={accessoryKey === 'versions'}
