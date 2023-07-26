@@ -3,6 +3,7 @@ import {
   createPromiseClient,
   Interceptor,
 } from '@bufbuild/connect-web'
+import {BACKEND_HTTP_PORT, BACKEND_HTTP_URL} from '@mintter/app/src/constants'
 import {
   Accounts,
   Changes,
@@ -32,7 +33,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
 }
 
 export const transport = createGrpcWebTransport({
-  baseUrl: 'http://localhost:55001',
+  baseUrl: BACKEND_HTTP_URL,
   interceptors: import.meta.env.DEV
     ? [loggingInterceptor, toastInterceptor]
     : [loggingInterceptor, toastInterceptor, prodInter],

@@ -1,13 +1,14 @@
+import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
 import {toast} from '@mintter/app/src/toast'
 import {save} from '@tauri-apps/api/dialog'
 import {BaseDirectory, writeBinaryFile} from '@tauri-apps/api/fs'
-import {getClient, ResponseType} from '@tauri-apps/api/http'
+import {ResponseType, getClient} from '@tauri-apps/api/http'
 import {appDataDir} from '@tauri-apps/api/path'
 
 export async function saveCidAsFile(cid: string, name: string): Promise<void> {
   const client = await getClient()
   const data = (
-    await client.get(`http://localhost:55001/ipfs/${cid}`, {
+    await client.get(`${BACKEND_HTTP_URL}/ipfs/${cid}`, {
       responseType: ResponseType.Binary,
     })
   ).data as any

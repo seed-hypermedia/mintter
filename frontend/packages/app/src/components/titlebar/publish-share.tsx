@@ -38,6 +38,7 @@ import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
 const forceProductionURL = true
 
 function getMintterPublicURL(docId: string, version: string) {
+  // TODO: DAEMON_URL: make sure this component should receive the url it needs to ask the image from. not having it inside.
   return `${
     import.meta.env.PROD || forceProductionURL
       ? MINTTER_GATEWAY_URL

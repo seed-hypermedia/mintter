@@ -30,6 +30,7 @@ import {getClient, ResponseType} from '@tauri-apps/api/http'
 import {appDataDir} from '@tauri-apps/api/path'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {RiImage2Fill} from 'react-icons/ri'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -138,7 +139,7 @@ function ImageComponent({
   const saveImage = async () => {
     const client = await getClient()
     const data = (
-      await client.get(`http://localhost:55001/ipfs/${block.props.url}`, {
+      await client.get(`${BACKEND_FILE_URL}/${block.props.url}`, {
         responseType: ResponseType.Binary,
       })
     ).data as any
@@ -220,7 +221,7 @@ function ImageComponent({
           )
         ) : null}
         <img
-          src={`http://localhost:55001/ipfs/${block.props.url}`}
+          src={`${BACKEND_FILE_URL}/${block.props.url}`}
           contentEditable={false}
         />
       </YStack>
@@ -268,13 +269,10 @@ function ImageForm({
       formData.append('file', files[0])
 
       try {
-        const response = await fetch(
-          'http://localhost:55001/ipfs/file-upload',
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
+        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+          method: 'POST',
+          body: formData,
+        })
         const data = await response.text()
         assign({props: {url: data, name: name}} as ImageType)
       } catch (error) {
@@ -286,13 +284,10 @@ function ImageForm({
         formData.append('file', files[i])
 
         try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
-            {
-              method: 'POST',
-              body: formData,
-            },
-          )
+          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+            method: 'POST',
+            body: formData,
+          })
           const data = await response.text()
           editor.insertBlocks(
             [
@@ -327,13 +322,10 @@ function ImageForm({
         formData.append('file', webFile)
 
         try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
-            {
-              method: 'POST',
-              body: formData,
-            },
-          )
+          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+            method: 'POST',
+            body: formData,
+          })
           const data = await response.text()
           assign({props: {url: data}} as ImageType)
         } catch (error) {

@@ -28,6 +28,7 @@ import {HDBlockSchema, hdBlockSchema} from '../client/schema'
 import {usePublication} from '../models/documents'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {useOpenUrl} from '../open-url'
+import {BACKEND_FILE_URL} from '../constants'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -97,7 +98,7 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
 function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
-  return <img src={`http://localhost:55001/ipfs/${cid}`} />
+  return <img src={`${BACKEND_FILE_URL}/${cid}`} />
 }
 
 function StaticBlock({block}: {block: ServerBlock}) {

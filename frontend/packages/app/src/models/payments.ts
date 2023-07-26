@@ -5,8 +5,7 @@ import {
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {request, gql} from 'graphql-request'
-
-export const GRAPHQL_ENDPOINT = 'http://localhost:55001/graphql'
+import {BACKEND_GRAPHQL_ENDPOINT} from '../constants'
 
 const getWalletsQuery = gql`
   query getWallets {
@@ -28,7 +27,10 @@ function queryWallets():
     queryKey: ['payments', 'wallets'],
     queryFn: async () => {
       try {
-        let req: Query = await request(GRAPHQL_ENDPOINT, getWalletsQuery)
+        let req: Query = await request(
+          BACKEND_GRAPHQL_ENDPOINT,
+          getWalletsQuery,
+        )
         return req.me.wallets ?? []
       } catch (error) {
         console.error(`queryWallets error: ${JSON.stringify(error)}`)
@@ -78,7 +80,7 @@ function queryInvoicesByWallet(
     queryFn: async () => {
       try {
         let req: Query = await request(
-          GRAPHQL_ENDPOINT,
+          BACKEND_GRAPHQL_ENDPOINT,
           getInvoicesByWalletQuery,
           {
             walletId,

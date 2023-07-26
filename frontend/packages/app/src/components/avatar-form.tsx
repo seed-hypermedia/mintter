@@ -4,6 +4,7 @@ import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {FontSizeTokens, Stack} from '@mintter/ui'
 import {ChangeEvent} from 'react'
 import toast from 'react-hot-toast'
+import {BACKEND_FILE_UPLOAD_URL} from '../constants'
 
 export function AvatarForm({
   size = '$12',
@@ -33,7 +34,7 @@ export function AvatarForm({
   const handleUpload = async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    const response = await fetch('http://localhost:55001/ipfs/file-upload', {
+    const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
       method: 'POST',
       body: formData,
     })

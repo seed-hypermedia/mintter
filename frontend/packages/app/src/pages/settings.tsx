@@ -68,6 +68,7 @@ import {ComponentProps, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {TextInput} from 'react-native'
 import {useGRPCClient} from '../app-context'
+import {BACKEND_FILE_URL} from '../constants'
 
 export default function Settings({}: {}) {
   return (
@@ -164,7 +165,7 @@ export function ProfileForm({
           }}
           url={
             profile?.avatar
-              ? `http://localhost:55001/ipfs/${profile.avatar}`
+              ? `${BACKEND_FILE_URL}/${profile.avatar}`
               : undefined
           }
         />

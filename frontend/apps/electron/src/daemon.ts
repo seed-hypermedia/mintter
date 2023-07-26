@@ -2,6 +2,13 @@ import {app} from 'electron'
 import {spawn} from 'child_process'
 import {join} from 'path'
 import {homedir, platform} from 'os'
+import {
+  BACKEND_P2P_PORT,
+  BACKEND_GRPC_PORT,
+  BACKEND_HTTP_PORT,
+} from '@mintter/app/src/constants'
+
+console.log('== BACKEND_HTTP_PORT', BACKEND_HTTP_PORT)
 
 const daemonName = {
   darwin: 'mintterd-aarch64-apple-darwin',
@@ -15,15 +22,13 @@ const devDaemonBinaryPath = join(
   `plz-out/bin/backend/${daemonName[platform()]}`,
 )
 
+console.log(`== ~ devDaemonBinaryPath:`, devDaemonBinaryPath)
+
 const prodDaemonBinaryPath = join(
   process.resourcesPath,
   // TODO: parametrize this for each platform
   'mintterd-aarch64-apple-darwin',
 )
-
-const daemonHttpPort = 56011
-const daemonGrpcPort = 56012
-const daemonP2pPort = 56010
 
 let userDataDir = join(homedir(), '.mtt')
 if (platform() === 'darwin') {
@@ -45,13 +50,13 @@ const daemonProcess = spawn(
     // daemon arguments
 
     '-http-port',
-    String(daemonHttpPort),
+    String(BACKEND_HTTP_PORT),
 
     '-grpc-port',
-    String(daemonGrpcPort),
+    String(BACKEND_GRPC_PORT),
 
     '-p2p.port',
-    String(daemonP2pPort),
+    String(BACKEND_P2P_PORT),
 
     '-repo-path',
     userDataDir,
@@ -111,7 +116,7 @@ app.addListener('will-quit', () => {
 })
 
 export const mainDaemon = {
-  httpPort: daemonHttpPort,
-  grpcPort: daemonGrpcPort,
-  p2pPort: daemonP2pPort,
+  httpPort: BACKEND_HTTP_PORT,
+  grpcPort: BACKEND_GRPC_PORT,
+  p2pPort: BACKEND_P2P_PORT,
 }

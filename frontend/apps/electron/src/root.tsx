@@ -12,9 +12,10 @@ import {NavigationProvider} from '@mintter/app/src/utils/navigation'
 import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
 import {Toaster} from 'react-hot-toast'
 import './root.css'
+import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
 
 const transport = createGrpcWebTransport({
-  baseUrl: 'http://localhost:56011',
+  baseUrl: BACKEND_HTTP_URL,
 })
 
 function useWindowUtils(): WindowUtils {

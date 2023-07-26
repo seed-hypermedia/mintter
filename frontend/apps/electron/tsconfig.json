@@ -20,12 +20,12 @@
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true
     },
-    "include": ["src"],
+    "include": ["src", "env.d.ts"],
     "references": [{ "path": "./tsconfig.node.json" }],
     "paths": {
-      "@/": ["src/*"],
+      "@/*": ["src/*"],
       "@mintter/shared": "../shared/src/index",
-      "@mintter/shared/": "../shared/src/index/*"
+      "@mintter/shared/*": "../shared/src/index/*"
     }
   }
   

@@ -20,6 +20,7 @@ import {
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {RiFile2Line} from 'react-icons/ri'
+import {BACKEND_FILE_UPLOAD_URL} from '../constants'
 
 export const FileBlock = createReactBlockSpec({
   type: 'file',
@@ -272,13 +273,10 @@ function FileForm({
       formData.append('file', files[0])
 
       try {
-        const response = await fetch(
-          'http://localhost:55001/ipfs/file-upload',
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
+        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+          method: 'POST',
+          body: formData,
+        })
         const data = await response.text()
         assign({
           props: {url: data, name: name, size: files[0].size.toString()},
@@ -292,13 +290,10 @@ function FileForm({
         formData.append('file', files[i])
 
         try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
-            {
-              method: 'POST',
-              body: formData,
-            },
-          )
+          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+            method: 'POST',
+            body: formData,
+          })
           const data = await response.text()
           editor.insertBlocks(
             [
