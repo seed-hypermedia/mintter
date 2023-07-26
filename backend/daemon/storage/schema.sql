@@ -39,6 +39,12 @@ CREATE TABLE public_keys (
     principal BLOB UNIQUE NOT NULL
 );
 
+-- Stores the accounts that used marked as trusted.
+CREATE TABLE trusted_accounts (
+    -- Account that we trust
+    id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
+) WITHOUT ROWID;
+
 -- Stores derived information from Key Delegation blobs.
 CREATE TABLE key_delegations (
     -- Issuer key.

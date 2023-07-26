@@ -69,7 +69,7 @@ var migrations = []migration{
 
 	// Remove foreign key from web_publications to hd_entities, to avoid losing data when reindexing.
 	{Version: "2023-07-25.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		if err := sqlitex.ExecScript(conn, sqlfmt(`
+		return sqlitex.ExecScript(conn, sqlfmt(`
 			ALTER TABLE web_publications RENAME TO old_web_publications;
 
 			CREATE TABLE web_publications (
@@ -86,7 +86,18 @@ var migrations = []migration{
 			DROP TABLE old_web_publications;
 
 			PRAGMA foreign_key_check;
-		`)); err != nil {
+		`))
+	}},
+
+	// Adding a trusted table to store the accounts we trust.
+	{Version: "2023-07-26.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		if err := sqlitex.ExecScript(conn, sqlfmt(`
+				-- Stores the accounts that used marked as trusted.
+				CREATE TABLE IF NOT EXISTS trusted_accounts (
+					-- Account that we trust
+					id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
+				) WITHOUT ROWID;
+			`)); err != nil {
 			return err
 		}
 
