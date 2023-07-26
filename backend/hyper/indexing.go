@@ -14,6 +14,7 @@ import (
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -144,6 +145,34 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			return err
 		}
 	case Change:
+		iss, err := hypersql.KeyDelegationsGetIssuer(conn, v.Delegation.Hash())
+		if err != nil {
+			return err
+		}
+		if iss.KeyDelegationsIssuer == 0 {
+			// Try to get the issuer from the actual blob. This can happen when we are reindexing all the blobs,
+			// and we happen to index a change before the key delegation.
+
+			blk, err := bs.bs.get(conn, v.Delegation)
+			if err != nil {
+				return err
+			}
+
+			var del KeyDelegation
+			if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
+				return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", blob.CID, err)
+			}
+
+			iss.KeyDelegationsIssuer, err = bs.ensurePublicKey(conn, del.Issuer)
+			if err != nil {
+				return err
+			}
+
+			if iss.KeyDelegationsIssuer == 0 {
+				return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, blob.CID)
+			}
+		}
+
 		// ensure entity
 		eid, err := bs.ensureEntity(conn, v.Entity)
 		if err != nil {
@@ -164,7 +193,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			}
 		}
 
-		if err := hypersql.ChangesInsertOrIgnore(conn, id, eid, v.HLCTime.Pack()); err != nil {
+		if err := hypersql.ChangesInsertOrIgnore(conn, id, eid, v.HLCTime.Pack(), iss.KeyDelegationsIssuer); err != nil {
 			return err
 		}
 

@@ -87,6 +87,7 @@ const (
 // Table hd_changes.
 const (
 	HDChanges        sqlitegen.Table  = "hd_changes"
+	HDChangesAuthor  sqlitegen.Column = "hd_changes.author"
 	HDChangesBlob    sqlitegen.Column = "hd_changes.blob"
 	HDChangesEntity  sqlitegen.Column = "hd_changes.entity"
 	HDChangesHlcTime sqlitegen.Column = "hd_changes.hlc_time"
@@ -95,6 +96,7 @@ const (
 // Table hd_changes. Plain strings.
 const (
 	T_HDChanges        = "hd_changes"
+	C_HDChangesAuthor  = "hd_changes.author"
 	C_HDChangesBlob    = "hd_changes.blob"
 	C_HDChangesEntity  = "hd_changes.entity"
 	C_HDChangesHlcTime = "hd_changes.hlc_time"
@@ -390,6 +392,7 @@ var Schema = sqlitegen.Schema{
 		GlobalMetaValue:                     {Table: GlobalMeta, SQLType: "TEXT"},
 		HDChangeDepsChild:                   {Table: HDChangeDeps, SQLType: "INTEGER"},
 		HDChangeDepsParent:                  {Table: HDChangeDeps, SQLType: "INTEGER"},
+		HDChangesAuthor:                     {Table: HDChanges, SQLType: "INTEGER"},
 		HDChangesBlob:                       {Table: HDChanges, SQLType: "INTEGER"},
 		HDChangesEntity:                     {Table: HDChanges, SQLType: "INTEGER"},
 		HDChangesHlcTime:                    {Table: HDChanges, SQLType: "INTEGER"},

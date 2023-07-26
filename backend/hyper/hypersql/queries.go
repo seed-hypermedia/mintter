@@ -146,6 +146,15 @@ func generateQueries() error {
 			"FROM", s.KeyDelegationsView, '\n',
 			"WHERE", s.KeyDelegationsViewDelegate, "=", qb.VarCol(s.KeyDelegationsViewDelegate),
 		),
+		qb.MakeQuery(s.Schema, "KeyDelegationsGetIssuer", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.KeyDelegationsIssuer,
+			), '\n',
+			"FROM", s.KeyDelegations, '\n',
+			"JOIN", s.Blobs, "ON", s.BlobsID, "=", s.KeyDelegationsBlob, '\n',
+			"WHERE", s.BlobsMultihash, "=", qb.VarCol(s.BlobsMultihash), '\n',
+			"LIMIT 1",
+		),
 
 		qb.MakeQuery(s.Schema, "EntitiesInsertOrIgnore", sgen.QueryKindSingle,
 			"INSERT OR IGNORE INTO", s.HDEntities, qb.ListColShort(
@@ -183,11 +192,13 @@ func generateQueries() error {
 				s.HDChangesBlob,
 				s.HDChangesEntity,
 				s.HDChangesHlcTime,
+				s.HDChangesAuthor,
 			), '\n',
 			"VALUES", qb.List(
 				qb.VarCol(s.HDChangesBlob),
 				qb.VarCol(s.HDChangesEntity),
 				qb.VarCol(s.HDChangesHlcTime),
+				qb.VarCol(s.HDChangesAuthor),
 			),
 		),
 		qb.MakeQuery(s.Schema, "ChangesListFromChangeSet", sgen.QueryKindMany,

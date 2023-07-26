@@ -54,6 +54,8 @@ CREATE TABLE key_delegations (
 
 CREATE INDEX idx_key_delegations_by_delegate ON key_delegations (delegate, issuer, blob);
 
+CREATE INDEX idx_key_delegations_by_blob ON key_delegations (blob, issuer, delegate);
+
 -- View of key delegations dereferencing foreign keys.
 CREATE VIEW key_delegations_view AS
     SELECT
@@ -79,12 +81,14 @@ CREATE TABLE hd_entities (
 
 -- Changes to the Hypermedia Entities.
 CREATE TABLE hd_changes (
-    -- Blob ID of the change.
-    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
     -- Entity being changed.
     entity INTEGER REFERENCES hd_entities (id) NOT NULL,
+    -- Blob ID of the change.
+    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
     -- HLC timestamp of the change.
     hlc_time INTEGER NOT NULL,
+    -- Author of the change.
+    author INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (entity, blob)
 ) WITHOUT ROWID;
 
