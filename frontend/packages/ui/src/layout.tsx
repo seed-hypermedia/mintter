@@ -1,4 +1,4 @@
-import { ScrollView, ScrollViewProps, YStack, styled } from 'tamagui'
+import {ScrollView, ScrollViewProps, YStack, styled} from 'tamagui'
 
 export const AppMain = styled(YStack, {
   flexDirection: 'column',
