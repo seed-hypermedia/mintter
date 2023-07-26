@@ -1,7 +1,8 @@
-import {app, BrowserWindow} from 'electron'
+import {app, BrowserWindow, session} from 'electron'
 import path from 'path'
 import * as Sentry from '@sentry/electron/main'
 import {mainDaemon} from './daemon'
+import os from 'os'
 
 mainDaemon.grpcPort
 
@@ -26,6 +27,19 @@ if (import.meta.env.PROD) {
       // beforeSend: (request) => (isOnline() ? 'send' : 'queue'),
     },
   })
+} else {
+  // on macOS
+  if (os.platform() == 'darwin') {
+    const reactDevToolsPath = path.join(
+      os.homedir(),
+      '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi',
+    )
+
+    console.log(`== ~ reactDevToolsPath:`, reactDevToolsPath)
+    app.whenReady().then(async () => {
+      await session.defaultSession.loadExtension(reactDevToolsPath)
+    })
+  }
 }
 // const squirrelStartup = import('electron-squirrel-startup')
 
