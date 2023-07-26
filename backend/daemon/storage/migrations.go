@@ -92,9 +92,7 @@ var migrations = []migration{
 	// Adding a trusted table to store the accounts we trust.
 	{Version: "2023-07-26.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		if err := sqlitex.ExecScript(conn, sqlfmt(`
-				-- Stores the accounts that used marked as trusted.
 				CREATE TABLE IF NOT EXISTS trusted_accounts (
-					-- Account that we trust
 					id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
 				) WITHOUT ROWID;
 			`)); err != nil {
