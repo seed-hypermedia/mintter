@@ -246,8 +246,8 @@ CREATE UNIQUE INDEX idx_site_owner ON site_members (role) WHERE role = 1;
 -- Stores all the records published on this site. Although this table is relevant only
 -- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 CREATE TABLE web_publications (
-    -- Entity of the published document.
-    document INTEGER PRIMARY KEY REFERENCES hd_entities (id) ON DELETE CASCADE NOT NULL,
+    -- Entity ID of the published document.
+    eid TEXT PRIMARY KEY CHECK (eid != ''),
     -- doc version of the base document published. Not its references.
     version TEXT NOT NULL,
     -- Path this publication is published to. If NULL is not listed.

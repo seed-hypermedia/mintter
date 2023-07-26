@@ -47,8 +47,56 @@ var migrations = []migration{
 	{Version: "2023-06-26.01", Run: func(*Dir, *sqlite.Conn) error {
 		return nil
 	}},
+
+	// Clear the user_version pragma which we used to use before migration framework was implemented.
 	{Version: "2023-07-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return sqlitex.ExecScript(conn, "PRAGMA user_version = 0;")
+	}},
+
+	// Replace tabs to spaces in the SQL schema text, to make it compatible with the new schema file.
+	{Version: "2023-07-24.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
+			PRAGMA writable_schema = ON;
+			UPDATE sqlite_schema SET sql = replace(sql, '	', '    ');
+			PRAGMA writable_schema = OFF;
+		`)
+	}},
+
+	// Remove foreign key from web_publications to hd_entities, to avoid losing data when reindexing.
+	{Version: "2023-07-25.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		if err := sqlitex.ExecScript(conn, sqlfmt(`
+			ALTER TABLE web_publications RENAME TO old_web_publications;
+
+			CREATE TABLE web_publications (
+				eid TEXT PRIMARY KEY CHECK (eid != ''),
+				version TEXT NOT NULL,
+				path TEXT UNIQUE
+			);
+
+			INSERT INTO web_publications (eid, version, path)
+			SELECT hd_entities.eid, old_web_publications.version, old_web_publications.path
+			FROM old_web_publications
+			INNER JOIN hd_entities ON hd_entities.id = old_web_publications.document;
+
+			DROP TABLE old_web_publications;
+
+			PRAGMA foreign_key_check;
+		`)); err != nil {
+			return err
+		}
+
+		// Committing the transaction started by the migration framework.
+		if err := sqlitex.ExecTransient(conn, "COMMIT", nil); err != nil {
+			return err
+		}
+
+		// Running VACUUM to defragment the database.
+		if err := sqlitex.ExecTransient(conn, "VACUUM", nil); err != nil {
+			return err
+		}
+
+		// Starting a new transaction because migration framework will always want to COMMIT.
+		return sqlitex.ExecTransient(conn, "BEGIN", nil)
 	}},
 }
 

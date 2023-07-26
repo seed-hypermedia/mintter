@@ -435,12 +435,12 @@ JOIN public_keys ON public_keys.id = site_members.account_id`
 	return out, err
 }
 
-func InsertWebPublicationRecord(conn *sqlite.Conn, webPublicationsDocument int64, webPublicationsVersion string, webPublicationsPath string) error {
-	const query = `INSERT INTO web_publications (document, version, path)
-VALUES (:webPublicationsDocument, :webPublicationsVersion, :webPublicationsPath)`
+func InsertWebPublicationRecord(conn *sqlite.Conn, webPublicationsEID string, webPublicationsVersion string, webPublicationsPath string) error {
+	const query = `INSERT INTO web_publications (eid, version, path)
+VALUES (:webPublicationsEID, :webPublicationsVersion, :webPublicationsPath)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationsDocument", webPublicationsDocument)
+		stmt.SetText(":webPublicationsEID", webPublicationsEID)
 		stmt.SetText(":webPublicationsVersion", webPublicationsVersion)
 		stmt.SetText(":webPublicationsPath", webPublicationsPath)
 	}
@@ -458,7 +458,7 @@ VALUES (:webPublicationsDocument, :webPublicationsVersion, :webPublicationsPath)
 }
 
 func RemoveWebPublicationRecord(conn *sqlite.Conn, hdEntitiesEID string, webPublicationsVersion string) error {
-	const query = `DELETE FROM web_publications WHERE web_publications.document = (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.eid = :hdEntitiesEID) AND web_publications.version = :webPublicationsVersion`
+	const query = `DELETE FROM web_publications WHERE web_publications.eid = :hdEntitiesEID AND web_publications.version = :webPublicationsVersion`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
@@ -487,7 +487,7 @@ type ListWebPublicationsResult struct {
 func ListWebPublications(conn *sqlite.Conn) ([]ListWebPublicationsResult, error) {
 	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.document = hd_entities.id`
+JOIN hd_entities ON web_publications.eid = hd_entities.eid`
 
 	var out []ListWebPublicationsResult
 
@@ -523,7 +523,7 @@ type GetWebPublicationRecordByPathResult struct {
 func GetWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationsPath string) (GetWebPublicationRecordByPathResult, error) {
 	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.document = hd_entities.id WHERE web_publications.path = :webPublicationsPath`
+JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE web_publications.path = :webPublicationsPath`
 
 	var out GetWebPublicationRecordByPathResult
 
@@ -561,7 +561,7 @@ type GetWebPublicationsByIDResult struct {
 func GetWebPublicationsByID(conn *sqlite.Conn, hdEntitiesEID string) ([]GetWebPublicationsByIDResult, error) {
 	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.document = hd_entities.id WHERE hd_entities.eid = :hdEntitiesEID`
+JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE hd_entities.eid = :hdEntitiesEID`
 
 	var out []GetWebPublicationsByIDResult
 
