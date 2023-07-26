@@ -1,14 +1,14 @@
+import {EmptyList} from '@mintter/app/src/components/empty-list'
+import Footer from '@mintter/app/src/components/footer'
+import {PublicationListItem} from '@mintter/app/src/components/publication-list-item'
 import {
   useDraftList,
   usePublicationList,
 } from '@mintter/app/src/models/documents'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
-import {EmptyList} from '@mintter/app/src/components/empty-list'
-import Footer from '@mintter/app/src/components/footer'
-import {PublicationListItem} from '@mintter/app/src/components/publication-list-item'
-import {MainWrapper, Container, Spinner, YStack} from '@mintter/ui'
-import {FixedSizeList as List} from 'react-window'
+import {Container, Spinner, YStack} from '@mintter/ui'
 import {useState} from 'react'
+import {FixedSizeList as List} from 'react-window'
 
 import './publication-list-page.css'
 
@@ -39,6 +39,7 @@ export default function PublicationList() {
       </div>
     )
   }
+
   let content = (
     <YStack justifyContent="center" height={scrollHeight}>
       <Spinner />
@@ -47,24 +48,23 @@ export default function PublicationList() {
   if (pubs) {
     if (pubs.length) {
       content = (
-        <div
-          style={{
-            display: 'flex',
-            flexGrow: 1,
-            alignSelf: 'stretch',
-          }}
+        // <div
+        //   style={{
+        //     display: 'flex',
+        //     flexGrow: 1,
+        //     alignSelf: 'stretch',
+        //   }}
+        // >
+        <List
+          className="publication-list-scroller"
+          height={scrollHeight}
+          width="100%"
+          itemSize={44}
+          overscanCount={40}
+          itemCount={pubs?.length || 0}
         >
-          <List
-            className="publication-list-scroller"
-            height={scrollHeight}
-            width={'100%'}
-            itemSize={44}
-            overscanCount={40}
-            itemCount={pubs?.length || 0}
-          >
-            {RenderPublicationRow}
-          </List>
-        </div>
+          {RenderPublicationRow}
+        </List>
       )
     } else {
       content = (
@@ -79,13 +79,15 @@ export default function PublicationList() {
   }
   return (
     <>
-      <MainWrapper
+      <YStack
+        flex={1}
+        className="content-wrapper"
         onLayout={(e) => {
           setScrollHeight(e.nativeEvent.layout.height)
         }}
       >
         <Container>{content}</Container>
-      </MainWrapper>
+      </YStack>
       <Footer />
     </>
   )

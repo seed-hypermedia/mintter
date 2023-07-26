@@ -1,18 +1,19 @@
 import {useListen} from '@mintter/app/src/app-context'
 
+import {AppError} from '@mintter/app/src//components/app-error'
+import {TitleBar} from '@mintter/app/src/components/titlebar'
 import {
   getRouteKey,
   NavRoute,
   useNavigate,
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
-import {TitleBar} from '@mintter/app/src/components/titlebar'
+import {YStack} from '@mintter/ui'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
-import {AppError} from '@mintter/app/src//components/app-error'
 
 var PublicationList = lazy(
   () => import('@mintter/app/src/pages/publication-list-page'),
@@ -66,8 +67,9 @@ export default function Main() {
     [navigate],
   )
   return (
-    <>
+    <YStack position="absolute" top={0} left={0} width="100%" height="100%">
       <TitleBar clean={isSettings} />
+
       <ErrorBoundary
         FallbackComponent={AppError}
         onReset={() => {
@@ -80,6 +82,6 @@ export default function Main() {
         {!isSettings ? <QuickSwitcher /> : null}
         {/* <ReactQueryDevtools /> */}
       </ErrorBoundary>
-    </>
+    </YStack>
   )
 }
