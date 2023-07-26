@@ -55,7 +55,7 @@ func TestEntityMutation(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, blobs.SaveBlob(ctx, ch1))
 
-	ee, err := blobs.LoadEntity(ctx, "foo", false)
+	ee, err := blobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 
 	require.Equal(t, map[cid.Cid]struct{}{ch1.CID: {}}, e.heads, "heads must have most recent change")
@@ -68,7 +68,7 @@ func TestEntityMutation(t *testing.T) {
 	require.Equal(t, []cid.Cid{ch1.CID}, ch2.Decoded.(Change).Deps, "new change must have previous heads")
 	require.NoError(t, blobs.SaveBlob(ctx, ch2))
 
-	ee, err = blobs.LoadEntity(ctx, "foo", false)
+	ee, err = blobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 
 	require.Equal(t, map[cid.Cid]struct{}{ch2.CID: {}}, ee.heads)
@@ -94,7 +94,7 @@ func TestEntityMutation_Drafts(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, blobs.SaveBlob(ctx, ch1))
 
-	ee, err := blobs.LoadEntity(ctx, "foo", false)
+	ee, err := blobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 
 	require.Equal(t, map[cid.Cid]struct{}{ch1.CID: {}}, e.heads, "heads must have most recent change")

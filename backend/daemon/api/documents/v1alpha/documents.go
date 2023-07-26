@@ -80,7 +80,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 
 		var entity *hyper.Entity
 		if in.Version == "" {
-			entity, err = api.blobs.LoadEntity(ctx, eid, false)
+			entity, err = api.blobs.LoadEntity(ctx, eid)
 			if err != nil {
 				return nil, err
 			}
@@ -378,7 +378,7 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 			return nil, err
 		}
 	} else {
-		entity, err = api.blobs.LoadEntity(ctx, docid, false)
+		entity, err = api.blobs.LoadEntity(ctx, docid)
 		if err != nil {
 			return nil, err
 		}
