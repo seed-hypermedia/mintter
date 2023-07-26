@@ -6,7 +6,7 @@ import {
   usePublicationList,
 } from '@mintter/app/src/models/documents'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
-import {Container, Spinner, YStack} from '@mintter/ui'
+import {Container, MainWrapper, Spinner, YStack} from '@mintter/ui'
 import {useState} from 'react'
 import {FixedSizeList as List} from 'react-window'
 
@@ -48,13 +48,6 @@ export default function PublicationList() {
   if (pubs) {
     if (pubs.length) {
       content = (
-        // <div
-        //   style={{
-        //     display: 'flex',
-        //     flexGrow: 1,
-        //     alignSelf: 'stretch',
-        //   }}
-        // >
         <List
           className="publication-list-scroller"
           height={scrollHeight}
@@ -79,15 +72,13 @@ export default function PublicationList() {
   }
   return (
     <>
-      <YStack
-        flex={1}
-        className="content-wrapper"
+      <MainWrapper
         onLayout={(e) => {
           setScrollHeight(e.nativeEvent.layout.height)
         }}
       >
         <Container>{content}</Container>
-      </YStack>
+      </MainWrapper>
       <Footer />
     </>
   )
