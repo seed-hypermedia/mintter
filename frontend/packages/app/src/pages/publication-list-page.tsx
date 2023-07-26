@@ -47,17 +47,32 @@ export default function PublicationList() {
   )
   if (pubs) {
     if (pubs.length) {
+      // content = (
+      //   <List
+      //     className="publication-list-scroller"
+      //     height={scrollHeight}
+      //     width="100%"
+      //     itemSize={44}
+      //     overscanCount={100}
+      //     itemCount={pubs?.length || 0}
+      //   >
+      //     {RenderPublicationRow}
+      //   </List>
+      // )
       content = (
-        <List
-          className="publication-list-scroller"
-          height={scrollHeight}
-          width="100%"
-          itemSize={44}
-          overscanCount={40}
-          itemCount={pubs?.length || 0}
-        >
-          {RenderPublicationRow}
-        </List>
+        <>
+          {pubs.map((publication) => {
+            return (
+              <PublicationListItem
+                key={publication.document?.id}
+                hasDraft={drafts.data?.documents.find(
+                  (d) => d.id == publication.document?.id,
+                )}
+                publication={publication}
+              />
+            )
+          })}
+        </>
       )
     } else {
       content = (
@@ -74,7 +89,8 @@ export default function PublicationList() {
     <>
       <MainWrapper
         onLayout={(e) => {
-          setScrollHeight(e.nativeEvent.layout.height)
+          // console.log('layout height!', e.nativeEvent.layout.height)
+          // setScrollHeight(() => e.nativeEvent.layout.height)
         }}
       >
         <Container>{content}</Container>
