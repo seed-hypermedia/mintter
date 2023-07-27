@@ -67,6 +67,7 @@
     "@tiptap/pm": "^2.0.3",
     "@tiptap/react": "^2.0.3",
     "@tiptap/suggestion": "^2.0.3",
+    "@trpc/client": "^10.35.0",
     "@types/lodash.debounce": "4.0.7",
     "@types/uuid": "^9.0.2",
     "allotment": "1.18.1",

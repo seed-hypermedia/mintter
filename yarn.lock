@@ -1944,7 +1944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.3, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.16.7, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.18.6, @babel/runtime@npm:^7.20.13, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.21.5, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.10.3, @babel/runtime@npm:^7.12.13, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.16.7, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.18.6, @babel/runtime@npm:^7.20.13, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.21.5, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.9.0":
   version: 7.22.6
   resolution: "@babel/runtime@npm:7.22.6"
   dependencies:
@@ -5190,6 +5190,7 @@ __metadata:
     "@tiptap/pm": ^2.0.3
     "@tiptap/react": ^2.0.3
     "@tiptap/suggestion": ^2.0.3
+    "@trpc/client": ^10.35.0
     "@types/autosize": 4.0.1
     "@types/hast": 2.3.4
     "@types/is-hotkey": 0.1.7
@@ -5328,13 +5329,19 @@ __metadata:
     "@sentry/electron": ^4.7.0
     "@sentry/vite-plugin": latest
     "@tamagui/vite-plugin": ^1.43.13
+    "@trpc/react": ^9.27.4
+    "@trpc/react-query": ^10.35.0
+    "@trpc/server": ^10.35.0
     "@types/react": 18.0.37
     "@types/react-dom": 18.0.11
     electron: 25.3.0
     electron-playwright-helpers: ^1.6.0
+    electron-trpc: ^0.5.2
     react: 18.2.0
     react-dom: ^18.2.0
     react-hot-toast: ^2.4.1
+    superjson: ^1.13.1
+    zod: ^3.21.4
   languageName: unknown
   linkType: soft
 
@@ -9578,6 +9585,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@trpc/client@npm:^10.35.0":
+  version: 10.35.0
+  resolution: "@trpc/client@npm:10.35.0"
+  peerDependencies:
+    "@trpc/server": 10.35.0
+  checksum: 907784dc40e11ead63f7bc6ad387614b2f320c6efb58080eb890bcf60807c8371f416dc765e25d47c215520858efd4d7e051d6f67c4d99e0ee76264261a197c1
+  languageName: node
+  linkType: hard
+
 "@trpc/next@npm:10.32.0":
   version: 10.32.0
   resolution: "@trpc/next@npm:10.32.0"
@@ -9608,10 +9624,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@trpc/react-query@npm:^10.35.0":
+  version: 10.35.0
+  resolution: "@trpc/react-query@npm:10.35.0"
+  peerDependencies:
+    "@tanstack/react-query": ^4.18.0
+    "@trpc/client": 10.35.0
+    "@trpc/server": 10.35.0
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: ccdd47253221f25b6a750aec4b35ea4ca5ab3d7df2d19b23ef4aa826881f8eaef20198c81cb375aa8c3179e0df7482ec631e9b4657d77894ad2810c17e966fa9
+  languageName: node
+  linkType: hard
+
+"@trpc/react@npm:^9.27.4":
+  version: 9.27.4
+  resolution: "@trpc/react@npm:9.27.4"
+  dependencies:
+    "@babel/runtime": ^7.9.0
+  peerDependencies:
+    "@trpc/client": 9.27.4
+    "@trpc/server": 9.27.4
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    react-query: ^3.37.0
+  checksum: 79c0b2ad07f0fad8f18f337587254bb329cde44fb90d631439bd205c025a4f4777791d613cc437b64b82f64027f821cc011bef272d9b2834dbdb44e739116b7d
+  languageName: node
+  linkType: hard
+
 "@trpc/server@npm:10.32.0":
   version: 10.32.0
   resolution: "@trpc/server@npm:10.32.0"
   checksum: 7e77d5b564734675cb6e394237238a18eb6ed2f92d03c45c3ad270e4b9c81486e53d1b0854fc3357390d68f4e0b94d66873ca5a6a6e4d7226f49c10caaf2bc2c
+  languageName: node
+  linkType: hard
+
+"@trpc/server@npm:^10.35.0":
+  version: 10.35.0
+  resolution: "@trpc/server@npm:10.35.0"
+  checksum: 4184f467193d04d25a747b34f6a29f2b10cb1e6c97463b584dfb20850170293578d3a239b3ef6adc0426d1254f21cc15e66d48fc1024efb8dad889ab80cffdd4
   languageName: node
   linkType: hard
 
@@ -14787,6 +14838,19 @@ __metadata:
   version: 1.4.468
   resolution: "electron-to-chromium@npm:1.4.468"
   checksum: 3da242381c95286a928ef03501c0fdcc71b773e382cc8574aa998562ae8c9b14712c910879b41d6184fd954ccecc2424865754a86e20d83077a35a0b75a1cfea
+  languageName: node
+  linkType: hard
+
+"electron-trpc@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "electron-trpc@npm:0.5.2"
+  dependencies:
+    debug: ^4.3.4
+  peerDependencies:
+    "@trpc/client": ">10.0.0"
+    "@trpc/server": ">10.0.0"
+    electron: ">19.0.0"
+  checksum: a9976134d5001a812e2db8940744fa4b44fd2b61310d2f8748dfc744bb5a1ad46309d381645505536bacb5fe2525aad245fafa8e8e7474eb7dd7ce7f6d2b9b78
   languageName: node
   linkType: hard
 
@@ -27795,7 +27859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superjson@npm:^1.10.0":
+"superjson@npm:^1.10.0, superjson@npm:^1.13.1":
   version: 1.13.1
   resolution: "superjson@npm:1.13.1"
   dependencies:
@@ -30835,7 +30899,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.21.4":
+"zod@npm:3.21.4, zod@npm:^3.21.4":
   version: 3.21.4
   resolution: "zod@npm:3.21.4"
   checksum: f185ba87342ff16f7a06686767c2b2a7af41110c7edf7c1974095d8db7a73792696bcb4a00853de0d2edeb34a5b2ea6a55871bc864227dace682a0a28de33e1f

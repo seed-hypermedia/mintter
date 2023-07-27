@@ -6,13 +6,20 @@ import {createGRPCClient} from '@mintter/shared'
 import {toast} from '@mintter/app/src/toast'
 import {WindowUtils} from '@mintter/app/src/window-utils'
 import {AppContextProvider} from '@mintter/app/src/app-context'
-import {getQueryClient} from '@mintter/app/src/query-client'
+import {AppQueryClient, getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
 import {NavigationProvider} from '@mintter/app/src/utils/navigation'
 import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
 import {Toaster} from 'react-hot-toast'
 import './root.css'
 import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
+import {ipcLink} from 'electron-trpc/renderer'
+import {AppRouter} from './api'
+import {createTRPCReact} from '@trpc/react-query'
+import superjson from 'superjson'
+import {AppIPC} from '@mintter/app/src/app-ipc'
+
+const trpcReact = createTRPCReact<AppRouter>()
 
 const transport = createGrpcWebTransport({
   baseUrl: BACKEND_HTTP_URL,
@@ -49,10 +56,14 @@ function useWindowUtils(): WindowUtils {
   return windowUtils
 }
 
-function ElectronApp() {
-  const ipc = useMemo(() => createIPC(), [])
+function MainApp({
+  queryClient,
+  ipc,
+}: {
+  queryClient: AppQueryClient
+  ipc: AppIPC
+}) {
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
-  const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
   const windowUtils = useWindowUtils()
   return (
     <AppContextProvider
@@ -75,6 +86,24 @@ function ElectronApp() {
       </NavigationProvider>
       <Toaster position="bottom-right" toastOptions={{className: 'toaster'}} />
     </AppContextProvider>
+  )
+}
+
+function ElectronApp() {
+  const ipc = useMemo(() => createIPC(), [])
+  const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
+  const trpcClient = useMemo(
+    () =>
+      trpcReact.createClient({
+        links: [ipcLink()],
+        transformer: superjson,
+      }),
+    [],
+  )
+  return (
+    <trpcReact.Provider queryClient={queryClient.client} client={trpcClient}>
+      <MainApp queryClient={queryClient} ipc={ipc} />
+    </trpcReact.Provider>
   )
 }
 

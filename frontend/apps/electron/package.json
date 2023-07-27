@@ -44,8 +44,14 @@
     "@mintter/ui": "workspace:*",
     "@sentry/electron": "^4.7.0",
     "@sentry/vite-plugin": "latest",
+    "@trpc/react": "^9.27.4",
+    "@trpc/react-query": "^10.35.0",
+    "@trpc/server": "^10.35.0",
+    "electron-trpc": "^0.5.2",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "superjson": "^1.13.1",
+    "zod": "^3.21.4"
   }
 }
