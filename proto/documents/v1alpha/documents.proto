@@ -206,6 +206,9 @@ message Document {
   // Permanent ID of the document.
   string id = 1;
 
+  // Entity ID of the document.
+  string eid = 12;
+
   // Title of the document.
   string title = 2;
 
