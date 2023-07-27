@@ -235,6 +235,29 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 	if err != nil {
 		return nil, err
 	}
+
+	acc, err := core.DecodePrincipal(in.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		var err error
+		if in.IsTrusted {
+			err = hypersql.SetAccountTrust(conn, acc)
+		} else {
+			err = hypersql.RemoveAccountTrust(conn, acc)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
 	return nil, fmt.Errorf("Not implemented yet %v", me)
 }
 

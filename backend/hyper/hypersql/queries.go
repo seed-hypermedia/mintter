@@ -96,6 +96,26 @@ func generateQueries() error {
 			"RETURNING", qb.Results(s.PublicKeysID),
 		),
 
+		qb.MakeQuery(s.Schema, "SetAccountTrust", sgen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.TrustedAccounts, qb.ListColShort(
+				s.TrustedAccountsID,
+			), '\n',
+			"VALUES", qb.List(
+				qb.SubQuery(
+					"SELECT", s.PublicKeysID,
+					"FROM", s.PublicKeys,
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+				),
+			),
+		),
+		qb.MakeQuery(s.Schema, "RemoveAccountTrust", sgen.QueryKindExec,
+			"DELETE FROM", s.TrustedAccounts, '\n',
+			"WHERE", s.TrustedAccountsID, "IN", qb.SubQuery(
+				"SELECT", s.PublicKeysID,
+				"FROM", s.PublicKeys,
+				"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+			),
+		),
 		qb.MakeQuery(s.Schema, "KeyDelegationsInsertOrIgnore", sgen.QueryKindSingle,
 			"INSERT OR IGNORE INTO", s.KeyDelegations, qb.ListColShort(
 				s.KeyDelegationsBlob,

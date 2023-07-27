@@ -309,6 +309,46 @@ RETURNING public_keys.id`
 	return out, err
 }
 
+func SetAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+	const query = `INSERT OR REPLACE INTO trusted_accounts (id)
+VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: SetAccountTrust: %w", err)
+	}
+
+	return err
+}
+
+func RemoveAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+	const query = `DELETE FROM trusted_accounts
+WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: RemoveAccountTrust: %w", err)
+	}
+
+	return err
+}
+
 type KeyDelegationsInsertOrIgnoreResult struct {
 	KeyDelegationsBlob int64
 }
