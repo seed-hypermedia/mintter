@@ -665,6 +665,7 @@ func TestPeriodicSync(t *testing.T) {
 		bacc := must.Do2(b.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
 		require.Len(t, accs.Accounts, 1, msg)
+		bacc.IsTrusted = accs.Accounts[0].IsTrusted // just bc they synced they dont trust each other
 		testutil.ProtoEqual(t, bacc, accs.Accounts[0], "a must fetch b's account fully")
 	}
 
@@ -683,9 +684,10 @@ func TestMultiDevice(t *testing.T) {
 		Addrs: getAddrs(t, alice2),
 	})
 	require.NoError(t, err)
-
+	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+
 	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
 
 	{
@@ -701,12 +703,83 @@ func TestMultiDevice(t *testing.T) {
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
-
+	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
 
 	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
+}
+
+func TestTrustedPeers(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+	time.Sleep(100 * time.Millisecond) // to give time to trust own account
+
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+	time.Sleep(100 * time.Millisecond) // to give time to trust own account
+
+	acc1 := must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 := must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc1.IsTrusted)
+
+	//Just because they sync the should not be trusted
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+	time.Sleep(100 * time.Millisecond) // to give time to sync
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: false})
+	require.NoError(t, err)
+	require.False(t, acc1.IsTrusted)
+	acc2, err = bob.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: alice.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc2.IsTrusted)
+
+	//Double check
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc2.IsTrusted)
 }
 
 func TestNetworkingListPeers(t *testing.T) {

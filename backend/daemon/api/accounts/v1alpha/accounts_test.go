@@ -29,8 +29,9 @@ func TestGetAccount_Own(t *testing.T) {
 				DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 			},
 		},
+		IsTrusted: true,
 	}
-
+	time.Sleep(100 * time.Millisecond) // give time to trust own account
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
@@ -67,12 +68,13 @@ func TestAPIUpdateProfile(t *testing.T) {
 				DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 			},
 		},
+		IsTrusted: true,
 	}
 
 	updated, err := alice.UpdateProfile(ctx, want.Profile)
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, updated, "account must be equal")
-
+	time.Sleep(100 * time.Millisecond) // give time to trust own account
 	stored, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, stored, "get account must return updated account")
@@ -90,6 +92,7 @@ func TestAPIUpdateProfile(t *testing.T) {
 					DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 				},
 			},
+			IsTrusted: true,
 		}
 
 		updated, err := alice.UpdateProfile(ctx, want.Profile)
