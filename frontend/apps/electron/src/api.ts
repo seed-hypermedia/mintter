@@ -7,15 +7,24 @@ import {BrowserWindow} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 
-// const ee = new EventEmitter()
-
 const t = initTRPC.create({isServer: true, transformer: superjson})
+
+let windowIdCount = 1
+
+const allWindows = new Map<string, BrowserWindow>()
 
 export const router = t.router({
   createAppWindow: t.procedure
-    .input(z.object({}).optional())
+    .input(
+      z
+        .object({
+          route: z.any(),
+        })
+        .optional(),
+    )
     .mutation(async ({input}) => {
-      const mainWindow = new BrowserWindow({
+      const windowId = `Window${windowIdCount++}`
+      const browserWindow = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
@@ -30,18 +39,30 @@ export const router = t.router({
           y: 12,
         },
       })
+      allWindows[windowId] = browserWindow
+      trpcHandlers.attachWindow(browserWindow)
+      browserWindow.on('show', () => {
+        browserWindow.webContents.send('initWindow', {
+          route: input?.route,
+          windowId,
+        })
+      })
 
-      // mainWindow.on('', () => {})
-      // mainWindow.on('closed', () => {})
-
-      createIPCHandler({router, windows: [mainWindow]})
+      browserWindow.on('close', () => {
+        trpcHandlers.detachWindow(browserWindow)
+        delete allWindows[windowId]
+      })
 
       // and load the index.html of the app.
       if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-        console.log('== LOAD APP', mainWindow, MAIN_WINDOW_VITE_DEV_SERVER_URL)
-        mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
+        console.log(
+          '== LOAD APP',
+          browserWindow,
+          MAIN_WINDOW_VITE_DEV_SERVER_URL,
+        )
+        browserWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
       } else {
-        mainWindow.loadFile(
+        browserWindow.loadFile(
           path.join(
             __dirname,
             `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`,
@@ -49,17 +70,8 @@ export const router = t.router({
         )
       }
 
-      if (!import.meta.env.PROD) mainWindow.webContents.openDevTools()
+      // if (!import.meta.env.PROD) browserWindow.webContents.openDevTools()
     }),
-
-  // greeting: t.procedure.input(z.object({name: z.string() }).query((req) => {
-  //   const {input} = req
-
-  //   ee.emit('greeting', `Greeted ${input.name}`)
-  //   return {
-  //     text: `Hello ${input.name}` as const,
-  //   }
-  // }),
 
   // subscription: t.procedure.subscription(() => {
   //   return observable((emit) => {
@@ -75,5 +87,7 @@ export const router = t.router({
   //   })
   // }),
 })
+
+const trpcHandlers = createIPCHandler({router, windows: []})
 
 export type AppRouter = typeof router

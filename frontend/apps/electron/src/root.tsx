@@ -8,7 +8,7 @@ import {WindowUtils} from '@mintter/app/src/window-utils'
 import {AppContextProvider} from '@mintter/app/src/app-context'
 import {AppQueryClient, getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
-import {NavigationProvider} from '@mintter/app/src/utils/navigation'
+import {NavRoute, NavigationProvider} from '@mintter/app/src/utils/navigation'
 import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
 import {Toaster} from 'react-hot-toast'
 import './root.css'
@@ -18,6 +18,7 @@ import {AppRouter} from './api'
 import {createTRPCReact} from '@trpc/react-query'
 import superjson from 'superjson'
 import {AppIPC} from '@mintter/app/src/app-ipc'
+import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
@@ -65,6 +66,26 @@ function MainApp({
 }) {
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils()
+  const initialNav = useMemo(() => {
+    let initRoute: NavRoute | null = null
+    const rawPath = window.location.pathname.slice(1)
+    try {
+      initRoute = decodeRouteFromPath(rawPath)
+    } catch (e) {}
+    // @ts-expect-error
+    if (!initRoute && window.windowInfo?.route) {
+      // @ts-expect-error
+      initRoute = window.windowInfo.route
+    }
+    if (!initRoute) {
+      initRoute = {key: 'home'}
+    }
+    return {
+      routes: [initRoute],
+      routeIndex: 0,
+      lastAction: null,
+    }
+  }, [])
   return (
     <AppContextProvider
       grpcClient={grpcClient}
@@ -79,7 +100,7 @@ function MainApp({
       }}
       windowUtils={windowUtils}
     >
-      <NavigationProvider>
+      <NavigationProvider initialNav={initialNav}>
         <DaemonStatusProvider>
           <Main />
         </DaemonStatusProvider>

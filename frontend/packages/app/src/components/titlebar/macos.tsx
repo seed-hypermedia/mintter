@@ -5,7 +5,7 @@ import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper data-tauri-drag-region />
+    return <TitlebarWrapper data-tauri-drag-region className="window-drag" />
   }
 
   return (
