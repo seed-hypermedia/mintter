@@ -98,6 +98,23 @@ var migrations = []migration{
 		// Starting a new transaction because migration framework will always want to COMMIT.
 		return sqlitex.ExecTransient(conn, "BEGIN", nil)
 	}},
+
+	// Index the author of each change.
+	{Version: "2023-07-27.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE hd_changes;
+			CREATE TABLE hd_changes (
+				entity INTEGER REFERENCES hd_entities (id) NOT NULL,
+				blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				hlc_time INTEGER NOT NULL,
+				author INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+				PRIMARY KEY (entity, blob)
+			) WITHOUT ROWID;
+			CREATE INDEX idx_hd_changes_to_entity ON hd_changes (blob, entity);
+			CREATE INDEX idx_key_delegations_by_blob ON key_delegations (blob, issuer, delegate);
+			DELETE FROM global_meta WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

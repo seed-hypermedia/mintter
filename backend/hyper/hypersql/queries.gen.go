@@ -465,6 +465,40 @@ WHERE key_delegations_view.delegate = :keyDelegationsViewDelegate`
 	return out, err
 }
 
+type KeyDelegationsGetIssuerResult struct {
+	KeyDelegationsIssuer int64
+}
+
+func KeyDelegationsGetIssuer(conn *sqlite.Conn, blobsMultihash []byte) (KeyDelegationsGetIssuerResult, error) {
+	const query = `SELECT key_delegations.issuer
+FROM key_delegations
+JOIN blobs ON blobs.id = key_delegations.blob
+WHERE blobs.multihash = :blobsMultihash
+LIMIT 1`
+
+	var out KeyDelegationsGetIssuerResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":blobsMultihash", blobsMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("KeyDelegationsGetIssuer: more than one result return for a single-kind query")
+		}
+
+		out.KeyDelegationsIssuer = stmt.ColumnInt64(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: KeyDelegationsGetIssuer: %w", err)
+	}
+
+	return out, err
+}
+
 type EntitiesInsertOrIgnoreResult struct {
 	HDEntitiesID int64
 }
@@ -584,14 +618,15 @@ WHERE hd_entities.eid = :hdEntitiesEID`
 	return err
 }
 
-func ChangesInsertOrIgnore(conn *sqlite.Conn, hdChangesBlob int64, hdChangesEntity int64, hdChangesHlcTime int64) error {
-	const query = `INSERT OR IGNORE INTO hd_changes (blob, entity, hlc_time)
-VALUES (:hdChangesBlob, :hdChangesEntity, :hdChangesHlcTime)`
+func ChangesInsertOrIgnore(conn *sqlite.Conn, hdChangesBlob int64, hdChangesEntity int64, hdChangesHlcTime int64, hdChangesAuthor int64) error {
+	const query = `INSERT OR IGNORE INTO hd_changes (blob, entity, hlc_time, author)
+VALUES (:hdChangesBlob, :hdChangesEntity, :hdChangesHlcTime, :hdChangesAuthor)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt64(":hdChangesBlob", hdChangesBlob)
 		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
 		stmt.SetInt64(":hdChangesHlcTime", hdChangesHlcTime)
+		stmt.SetInt64(":hdChangesAuthor", hdChangesAuthor)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
