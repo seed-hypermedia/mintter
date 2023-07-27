@@ -3,6 +3,9 @@ import path from 'path'
 import * as Sentry from '@sentry/electron/main'
 import os from 'os'
 import {router} from './api'
+import {mainDaemon} from './daemon'
+
+mainDaemon
 
 const trpc = router.createCaller({})
 

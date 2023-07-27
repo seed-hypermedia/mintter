@@ -1,9 +1,15 @@
 import {AppIPC} from '@mintter/app/src/app-ipc'
 
+import {client} from './trpc'
+
 export function createIPC(): AppIPC {
   return {
     invoke: async (cmd: string, args?: Record<string, unknown>) => {
-      console.log('IPC Invoke', cmd, args)
+      if (cmd === 'plugin:window|open') {
+        client.createAppWindow.mutate({})
+      } else {
+        console.log('IPC Invoke', cmd, args)
+      }
     },
     send: async (cmd, data) => {
       console.log('IPC Send', cmd, data)
