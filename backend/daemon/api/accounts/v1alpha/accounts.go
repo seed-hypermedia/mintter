@@ -1,10 +1,10 @@
+// Package accounts implements account functions.
 package accounts
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
@@ -27,7 +27,22 @@ type Server struct {
 }
 
 // NewServer creates a new Server.
-func NewServer(id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
+func NewServer(ctx context.Context, id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
+	go func() {
+		me, err := id.Await(ctx)
+		if err != nil {
+			return
+		}
+		if err := blobs.Exec(ctx, func(conn *sqlite.Conn) error {
+			err := hypersql.SetAccountTrust(conn, me.Account().Principal())
+			if err != nil {
+				panic("Could not set own account to trusted: " + err.Error())
+			}
+			return nil
+		}); err != nil {
+			panic("Could not set own account to trusted: " + err.Error())
+		}
+	}()
 	return &Server{
 		me:    id,
 		blobs: blobs,
@@ -81,7 +96,13 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 				DeviceId: pids,
 			}
 		}
-
+		istrusted, err := hypersql.IsTrustedAccount(conn, aid)
+		if err != nil {
+			return err
+		}
+		if istrusted.TrustedAccountsID != 0 {
+			acc.IsTrusted = true
+		}
 		return nil
 	}); err != nil {
 		return nil, err
@@ -172,6 +193,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
 }
 
+// UpdateProfile is public so it can be called from sites.
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
 	eid := hyper.EntityID("hd://a/" + me.Account().Principal().String())
 
@@ -231,22 +253,17 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 
 // SetAccountTrust implements the corresponding gRPC method.
 func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountTrustRequest) (*accounts.Account, error) {
-	me, err := srv.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	acc, err := core.DecodePrincipal(in.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+	if err := srv.blobs.Exec(ctx, func(conn *sqlite.Conn) error {
 		var err error
 		if in.IsTrusted {
 			err = hypersql.SetAccountTrust(conn, acc)
 		} else {
-			err = hypersql.RemoveAccountTrust(conn, acc)
+			err = hypersql.UnsetAccountTrust(conn, acc)
 		}
 
 		if err != nil {
@@ -258,7 +275,17 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 		return nil, err
 	}
 
-	return nil, fmt.Errorf("Not implemented yet %v", me)
+	updatedAcc, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: acc.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if updatedAcc.IsTrusted != in.IsTrusted {
+		return nil, fmt.Errorf("Expected trusted %t but got %t", in.IsTrusted, updatedAcc.IsTrusted)
+	}
+
+	return updatedAcc, err
 }
 
 // ListAccounts implements the corresponding gRPC method.

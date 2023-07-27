@@ -41,6 +41,17 @@ func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
 	}
 }
 
+// Exec allows to execute raw SQLite write operations.
+func (bs *Storage) Exec(ctx context.Context, fn func(conn *sqlite.Conn) error) (err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return fn(conn)
+}
+
 // Query allows to execute raw SQLite queries.
 func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) (err error) {
 	conn, release, err := bs.db.Conn(ctx)

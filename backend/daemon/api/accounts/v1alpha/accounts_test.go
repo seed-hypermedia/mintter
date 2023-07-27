@@ -102,6 +102,22 @@ func TestAPIUpdateProfile(t *testing.T) {
 	}
 }
 
+func TestTrustOwnAccount(t *testing.T) {
+	alice := newTestServer(t, "alice")
+	bob := coretest.NewTester("bob")
+	ctx := context.Background()
+	time.Sleep(100 * time.Millisecond) // to give time to trust own account
+	acc, err := alice.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{
+		Id:        bob.Account.Principal().String(),
+		IsTrusted: true,
+	})
+	require.Error(t, err, "Alice must not have Bob's account")
+	require.Nil(t, acc)
+	acc, err = alice.GetAccount(ctx, &accounts.GetAccountRequest{}) //No id=own account
+	require.NoError(t, err)
+	require.True(t, acc.IsTrusted)
+}
+
 // TODO: update profile idempotent no change
 
 func newTestServer(t *testing.T, name string) *Server {
@@ -117,5 +133,5 @@ func newTestServer(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	return NewServer(fut.ReadOnly, blobs)
+	return NewServer(ctx, fut.ReadOnly, blobs)
 }

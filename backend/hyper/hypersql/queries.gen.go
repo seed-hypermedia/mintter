@@ -309,12 +309,12 @@ RETURNING public_keys.id`
 	return out, err
 }
 
-func SetAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+func SetAccountTrust(conn *sqlite.Conn, principal []byte) error {
 	const query = `INSERT OR REPLACE INTO trusted_accounts (id)
-VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :principal))`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+		stmt.SetBytes(":principal", principal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -329,12 +329,12 @@ VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :p
 	return err
 }
 
-func RemoveAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
+func UnsetAccountTrust(conn *sqlite.Conn, principal []byte) error {
 	const query = `DELETE FROM trusted_accounts
-WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal)`
+WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :principal)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+		stmt.SetBytes(":principal", principal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -343,10 +343,42 @@ WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE publi
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: RemoveAccountTrust: %w", err)
+		err = fmt.Errorf("failed query: UnsetAccountTrust: %w", err)
 	}
 
 	return err
+}
+
+type IsTrustedAccountResult struct {
+	TrustedAccountsID int64
+}
+
+func IsTrustedAccount(conn *sqlite.Conn, principal []byte) (IsTrustedAccountResult, error) {
+	const query = `SELECT trusted_accounts.id
+FROM trusted_accounts
+WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :principal)`
+
+	var out IsTrustedAccountResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":principal", principal)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IsTrustedAccount: more than one result return for a single-kind query")
+		}
+
+		out.TrustedAccountsID = stmt.ColumnInt64(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IsTrustedAccount: %w", err)
+	}
+
+	return out, err
 }
 
 type KeyDelegationsInsertOrIgnoreResult struct {

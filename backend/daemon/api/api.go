@@ -59,7 +59,7 @@ func New(
 	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv, &lazyDiscoverer{sync: sync})
 	documentsSrv.RemoteCaller = siteSrv
 	return Server{
-		Accounts:   accounts.NewServer(repo.Identity(), blobs),
+		Accounts:   accounts.NewServer(ctx, repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
