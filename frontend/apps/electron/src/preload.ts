@@ -13,13 +13,18 @@ ipcRenderer.addListener('initWindow', (info, event) => {
 
 contextBridge.exposeInMainWorld('ipc', {
   send: (cmd, args) => {
+    console.log('IPC SENDING', cmd, args)
     ipcRenderer.send(cmd, args)
   },
   listen: async (cmd: string, handler: (event: any) => void) => {
+    const innerHandler = (value: any) => {
+      console.log('IPC event received', cmd, value)
+      handler(value)
+    }
     console.log('listening!', cmd)
-    ipcRenderer.addListener(cmd, handler)
+    ipcRenderer.addListener(cmd, innerHandler)
     return () => {
-      ipcRenderer.removeListener(cmd, handler)
+      ipcRenderer.removeListener(cmd, innerHandler)
     }
   },
 })

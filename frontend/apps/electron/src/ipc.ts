@@ -3,7 +3,7 @@ import {AppIPC} from '@mintter/app/src/app-ipc'
 import {client} from './trpc'
 import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
 // import {ipcRenderer} from 'electron/renderer'
-console.log('load ipc.ts')
+
 export function createIPC(): AppIPC {
   return {
     invoke: async (cmd: string, args?: Record<string, unknown>) => {

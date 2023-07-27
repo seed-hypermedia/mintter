@@ -59,7 +59,8 @@ export function getQueryClient(ipc: AppIPC): AppQueryClient {
 
   function appInvalidateQueries(queryKey: QueryKey) {
     ipc.send?.('invalidate_queries', queryKey)
-    client.invalidateQueries(queryKey)
+    // this invalidation is required in Tauri but not in electron because the ipc invalidation will be triggered in root.tsx
+    // client.invalidateQueries(queryKey)
   }
 
   return {

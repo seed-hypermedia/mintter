@@ -1,9 +1,9 @@
 import z from 'zod'
 import {initTRPC} from '@trpc/server'
-// import {observable} from '@trpc/server/observable'
+import {observable} from '@trpc/server/observable'
 // import {EventEmitter} from 'events'
 import superjson from 'superjson'
-import {BrowserWindow} from 'electron'
+import {BrowserWindow, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 
@@ -12,6 +12,12 @@ const t = initTRPC.create({isServer: true, transformer: superjson})
 let windowIdCount = 1
 
 const allWindows = new Map<string, BrowserWindow>()
+
+const invalidationHandlers = new Set<(queryKey: any) => void>()
+
+ipcMain.on('invalidate_queries', (_event, info) => {
+  invalidationHandlers.forEach((handler) => handler(info))
+})
 
 export const router = t.router({
   createAppWindow: t.procedure
@@ -73,19 +79,17 @@ export const router = t.router({
       // if (!import.meta.env.PROD) browserWindow.webContents.openDevTools()
     }),
 
-  // subscription: t.procedure.subscription(() => {
-  //   return observable((emit) => {
-  //     function onGreet(text: string) {
-  //       emit.next({text})
-  //     }
-
-  //     ee.on('greeting', onGreet)
-
-  //     return () => {
-  //       ee.off('greeting', onGreet)
-  //     }
-  //   })
-  // }),
+  queryInvalidation: t.procedure.subscription(() => {
+    return observable((emit) => {
+      function handler(value: any[]) {
+        emit.next(value)
+      }
+      invalidationHandlers.add(handler)
+      return () => {
+        invalidationHandlers.delete(handler)
+      }
+    })
+  }),
 })
 
 const trpcHandlers = createIPCHandler({router, windows: []})

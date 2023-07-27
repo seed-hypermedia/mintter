@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import Main from '@mintter/app/src/pages/main'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
@@ -19,6 +19,7 @@ import {createTRPCReact} from '@trpc/react-query'
 import superjson from 'superjson'
 import {AppIPC} from '@mintter/app/src/app-ipc'
 import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
+import {client} from './trpc'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
@@ -113,6 +114,16 @@ function MainApp({
 function ElectronApp() {
   const ipc = useMemo(() => createIPC(), [])
   const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
+  useEffect(() => {
+    const sub = client.queryInvalidation.subscribe(undefined, {
+      onData: (queryKey) => {
+        queryClient.client.invalidateQueries(queryKey)
+      },
+    })
+    return () => {
+      sub.unsubscribe()
+    }
+  }, [queryClient])
   const trpcClient = useMemo(
     () =>
       trpcReact.createClient({
