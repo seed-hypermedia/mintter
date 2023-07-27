@@ -814,10 +814,11 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
             value={siteUrl ?? undefined}
           />
         </Fieldset>
-
-        <Button disabled={!siteUrl} size="$2" color="green">
-          Connect + Add Site
-        </Button>
+        <Form.Trigger disabled={!siteUrl} asChild>
+          <Button size="$2" color="green">
+            Connect + Add Site
+          </Button>
+        </Form.Trigger>
       </Form>
     </>
   )
