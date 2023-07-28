@@ -421,6 +421,84 @@ func TestSite(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestTrustedChanges(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	t.Cleanup(func() {
+		cancel()
+	})
+
+	trusted := makeTestApp(t, "alice", makeTestConfig(t), true)
+	untrusted := makeTestApp(t, "bob", makeTestConfig(t), true)
+
+	// Both peers connect connect to each other, to exchange documents. Does not mean they trust each other.
+	_, err := trusted.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, untrusted)})
+	require.NoError(t, err)
+
+	// Create a document.
+	sharedDocument := publishDocument(t, ctx, trusted)
+
+	// Sync the document with the untusted peer so it can modify it.
+	_, err = untrusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	var publicationList *documents.ListPublicationsResponse
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the received version is the one the initial author created.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Add an untrusted change
+	const anotherTitle = "New Document title leading to a new version"
+	newVersion := updateDocumenTitle(t, ctx, untrusted, sharedDocument.Document.Id, anotherTitle)
+	require.Equal(t, sharedDocument.Document.Id, newVersion.Document.Id)
+
+	// Send the document back to the creator which the new untrusted changes.
+	_, err = trusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the version is the latest one (untrusted).
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Now ask for trusted changes only.
+	publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+
+	// Check that the version is the initial one, without any untrusted changes.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// But the untrusted peer (last editor) should get the latest version since it was him
+	// the one who wrote the latest changes and hi trust himself by default.
+	publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+}
+
 func TestGateway(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
