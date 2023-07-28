@@ -277,6 +277,39 @@ LIMIT 1`
 	return out, err
 }
 
+type PublicKeysLookupPrincipalResult struct {
+	PublicKeysPrincipal []byte
+}
+
+func PublicKeysLookupPrincipal(conn *sqlite.Conn, publicKeysID int64) (PublicKeysLookupPrincipalResult, error) {
+	const query = `SELECT public_keys.principal
+FROM public_keys
+WHERE public_keys.id = :publicKeysID
+LIMIT 1`
+
+	var out PublicKeysLookupPrincipalResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":publicKeysID", publicKeysID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("PublicKeysLookupPrincipal: more than one result return for a single-kind query")
+		}
+
+		out.PublicKeysPrincipal = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PublicKeysLookupPrincipal: %w", err)
+	}
+
+	return out, err
+}
+
 type PublicKeysInsertResult struct {
 	PublicKeysID int64
 }

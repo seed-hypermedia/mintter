@@ -352,6 +352,20 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	return bs.loadFromHeads(conn, eid, heads.Heads)
 }
 
+func enqueue(queue []hypersql.ChangesListFromChangeSetResult, element hypersql.ChangesListFromChangeSetResult) []hypersql.ChangesListFromChangeSetResult {
+	queue = append(queue, element) // Simply append to enqueue.
+	return queue
+}
+
+func dequeue(queue []hypersql.ChangesListFromChangeSetResult) []hypersql.ChangesListFromChangeSetResult {
+	return queue[1:] // Slice off the element once it is dequeued.
+}
+
+type changeToApply struct {
+	chID cid.Cid
+	ch   Change
+}
+
 // LoadTrustedEntity will return the lastest entity version changed by a trusted peer.
 func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
@@ -375,26 +389,33 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 		return nil, err
 	}
 
-	jsonheads, err := json.Marshal(heads)
-	if err != nil {
-		return nil, err
-	}
-	cset, err := hypersql.ChangesResolveHeads(conn, jsonheads)
+	cset, err := hypersql.ChangesResolveHeads(conn, heads.Heads)
 	if err != nil {
 		return nil, err
 	}
 
 	changes, err := hypersql.ChangesListFromChangeSet(conn, cset.ResolvedJSON, string(eid))
-	if err != nil {
-		return nil, err
-	}
+
 	if len(changes) == 0 {
 		return nil, nil
 	}
 
-	entity := NewEntity(eid)
+	lastTrustedchangeIdx := -1
+
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
-	for _, change := range changes {
+	/*
+		heads = queue(D)
+		for head = heads.dequeue() and head is not null:
+		  if head is not trusted:
+		    heads.enqueue(head.deps)
+		  else:
+		    break
+		for change := dequeue(changes); change != nil; dequeue(changes) {
+
+		}
+	*/
+	chToApply := []changeToApply{}
+	for idx, change := range changes {
 		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
 		if err != nil {
 			return nil, err
@@ -402,18 +423,15 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 
 		chcid := cid.NewCidV1(uint64(change.HDChangesViewCodec), change.HDChangesViewMultihash)
 		var ch Change
+
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
-		}
-
-		if err := ch.Verify(); err != nil {
-			continue // TODO: maybe return an error?
 		}
 		pid, err := ch.Signer.PeerID()
 		if err != nil {
 			return nil, err
 		}
-		// Get author's account
+		// get account of the change
 		var acc core.Principal
 		if err := bs.Query(context.Background(), func(conn *sqlite.Conn) error {
 			list, err := hypersql.KeyDelegationsListByDelegate(conn, ch.Signer)
@@ -437,21 +455,23 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 			bs.log.Error("Could not get change's author", zap.Error(err))
 			return nil, err
 		}
-		// TODO: check if acc is trusted. It should return trusted on myself.
-		if acc != nil {
-			return nil, fmt.Errorf("Not implemented yet")
-		}
-		if err := entity.ApplyChange(chcid, ch); err != nil {
-			return nil, err
-		}
 
 		buf = buf[:0] // reset the slice reusing the backing array
+		trusted, err := hypersql.IsTrustedAccount(conn, acc)
+		if err == nil && trusted.TrustedAccountsID != 0 { // means its trusted
+			lastTrustedchangeIdx = idx
+		}
+		chToApply = append(chToApply, changeToApply{chID: chcid, ch: ch})
 	}
-	jsonheads, err = json.Marshal(entity.heads)
-	if err != nil {
-		return nil, err
+	entity := NewEntity(eid)
+	for i := 0; i <= lastTrustedchangeIdx; i++ {
+		change := chToApply[i]
+		if err := entity.ApplyChange(change.chID, change.ch); err != nil {
+			return nil, err
+		}
 	}
-	return bs.loadFromHeads(conn, eid, jsonheads)
+
+	return entity, nil
 }
 
 type Draft struct {

@@ -86,6 +86,16 @@ func generateQueries() error {
 			"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal), '\n',
 			"LIMIT 1",
 		),
+
+		qb.MakeQuery(s.Schema, "PublicKeysLookupPrincipal", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.PublicKeysPrincipal,
+			), '\n',
+			"FROM", s.PublicKeys, '\n',
+			"WHERE", s.PublicKeysID, "=", qb.VarCol(s.PublicKeysID), '\n',
+			"LIMIT 1",
+		),
+
 		qb.MakeQuery(s.Schema, "PublicKeysInsert", sgen.QueryKindSingle,
 			"INSERT INTO", s.PublicKeys, qb.ListColShort(
 				s.PublicKeysPrincipal,

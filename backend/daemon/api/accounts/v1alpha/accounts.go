@@ -262,7 +262,7 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 		return nil, fmt.Errorf("Expected trusted %t but got %t", in.IsTrusted, updatedAcc.IsTrusted)
 	}
 
-	return updatedAcc, err
+	return updatedAcc, nil
 }
 
 // ListAccounts implements the corresponding gRPC method.
