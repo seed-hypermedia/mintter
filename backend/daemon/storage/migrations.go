@@ -110,6 +110,7 @@ var migrations = []migration{
 			CREATE TABLE IF NOT EXISTS trusted_accounts (
 				id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
 			) WITHOUT ROWID;
+			INSERT INTO trusted_accounts (id) VALUES (1);
 		`))
 	}},
 

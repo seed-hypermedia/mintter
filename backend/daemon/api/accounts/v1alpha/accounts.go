@@ -10,7 +10,6 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/future"
-	"time"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -28,37 +27,7 @@ type Server struct {
 }
 
 // NewServer creates a new Server.
-func NewServer(ctx context.Context, id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
-	go func() {
-		me, err := id.Await(ctx)
-		if err != nil {
-			return
-		}
-		if err := blobs.Exec(ctx, func(conn *sqlite.Conn) error {
-			res, err := hypersql.PublicKeysLookupID(conn, me.Account().Principal())
-
-			if err != nil || res.PublicKeysID == 0 {
-				ticker := time.NewTicker(100 * time.Millisecond)
-				done := ctx.Done()
-
-			wait:
-				for {
-					select {
-					case <-done:
-						return nil
-					case <-ticker.C:
-						res, err = hypersql.PublicKeysLookupID(conn, me.Account().Principal())
-						if err == nil || res.PublicKeysID != 0 {
-							break wait
-						}
-					}
-				}
-			}
-			return hypersql.SetAccountTrust(conn, me.Account().Principal())
-		}); err != nil {
-			panic("Could not set own account to trusted: " + err.Error())
-		}
-	}()
+func NewServer(id *future.ReadOnly[core.Identity], blobs *hyper.Storage) *Server {
 	return &Server{
 		me:    id,
 		blobs: blobs,
@@ -273,21 +242,13 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 	if err != nil {
 		return nil, err
 	}
+	if in.IsTrusted {
+		err = srv.blobs.SetAccountTrust(ctx, acc)
+	} else {
+		err = srv.blobs.UnsetAccountTrust(ctx, acc)
+	}
 
-	if err := srv.blobs.Exec(ctx, func(conn *sqlite.Conn) error {
-		var err error
-		if in.IsTrusted {
-			err = hypersql.SetAccountTrust(conn, acc)
-		} else {
-			err = hypersql.UnsetAccountTrust(conn, acc)
-		}
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

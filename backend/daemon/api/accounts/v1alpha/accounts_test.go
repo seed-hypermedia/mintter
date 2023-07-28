@@ -136,5 +136,5 @@ func newTestServer(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	return NewServer(ctx, fut.ReadOnly, blobs)
+	return NewServer(fut.ReadOnly, blobs)
 }

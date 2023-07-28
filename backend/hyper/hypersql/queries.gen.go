@@ -309,12 +309,12 @@ RETURNING public_keys.id`
 	return out, err
 }
 
-func SetAccountTrust(conn *sqlite.Conn, principal []byte) error {
+func SetAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
 	const query = `INSERT OR REPLACE INTO trusted_accounts (id)
-VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :principal))`
+VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":principal", principal)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -329,12 +329,12 @@ VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :p
 	return err
 }
 
-func UnsetAccountTrust(conn *sqlite.Conn, principal []byte) error {
+func UnsetAccountTrust(conn *sqlite.Conn, publicKeysPrincipal []byte) error {
 	const query = `DELETE FROM trusted_accounts
-WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :principal)`
+WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":principal", principal)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

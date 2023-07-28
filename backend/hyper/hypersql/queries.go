@@ -104,7 +104,7 @@ func generateQueries() error {
 				qb.SubQuery(
 					"SELECT", s.PublicKeysID,
 					"FROM", s.PublicKeys,
-					"WHERE", s.PublicKeysPrincipal, "=", qb.Var("principal", sgen.TypeBytes),
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
 				),
 			),
 		),
@@ -113,7 +113,7 @@ func generateQueries() error {
 			"WHERE", s.TrustedAccountsID, "IN", qb.SubQuery(
 				"SELECT", s.PublicKeysID,
 				"FROM", s.PublicKeys,
-				"WHERE", s.PublicKeysPrincipal, "=", qb.Var("principal", sgen.TypeBytes),
+				"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
 			),
 		),
 		qb.MakeQuery(s.Schema, "IsTrustedAccount", sgen.QueryKindSingle,

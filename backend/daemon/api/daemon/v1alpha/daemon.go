@@ -1,3 +1,5 @@
+// Package daemon assembles everything to boot the mintterd program. It's like main, but made a separate package
+// to be importable and testable by other packages, because package main can't be imported.
 package daemon
 
 import (
@@ -119,6 +121,9 @@ func Register(ctx context.Context, bs *hyper.Storage, account core.KeyPair, devi
 		return cid.Undef, err
 	}
 
+	if err = bs.SetAccountTrust(ctx, account.Principal()); err != nil {
+		return blob.CID, fmt.Errorf("Could not set own account to trusted: " + err.Error())
+	}
 	return blob.CID, nil
 }
 
