@@ -1,8 +1,6 @@
-import {Button, TextArea} from '@mintter/ui'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {Button, Dialog, TextArea, XStack} from '@mintter/ui'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {Prompt} from './prompt'
 import {useGRPCClient} from '../app-context'
 
 export function ContactsPrompt({refetch}: {refetch?: () => void}) {
@@ -28,16 +26,41 @@ export function ContactsPrompt({refetch}: {refetch?: () => void}) {
   }
 
   return (
-    <Prompt.Root>
-      <DialogPrimitive.Trigger asChild>
+    <Dialog>
+      <Dialog.Trigger asChild>
         <Button size="$2">Add Connection</Button>
-      </DialogPrimitive.Trigger>
-      <Prompt.Portal>
-        <Prompt.Content>
-          <Prompt.Title>Add a Contact</Prompt.Title>
-          <Prompt.Description>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          key="overlay"
+          // animation="quick"
+          opacity={0.5}
+          // enterStyle={{opacity: 0}}
+          // exitStyle={{opacity: 0}}
+        />
+        <Dialog.Content
+          elevation="$2"
+          key="content"
+          // animation={[
+          //   'quick',
+          //   {
+          //     opacity: {
+          //       overshootClamping: true,
+          //     },
+          //   },
+          // ]}
+          // enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+          // exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+          // x={0}
+          // scale={1}
+          // opacity={1}
+          // y={0}
+          // padding={0}
+        >
+          <Dialog.Title>Add a Contact</Dialog.Title>
+          <Dialog.Description>
             Enter a contact address to connect
-          </Prompt.Description>
+          </Dialog.Description>
           <TextArea
             value={peer}
             onChangeText={setPeer}
@@ -45,15 +68,15 @@ export function ContactsPrompt({refetch}: {refetch?: () => void}) {
             numberOfLines={4}
             data-testid="add-contact-input"
           />
-          <Prompt.Actions>
-            <Prompt.Close asChild>
+          <XStack>
+            <Dialog.Close asChild>
               <Button onPress={handleConnect} disabled={!peer}>
                 Connect
               </Button>
-            </Prompt.Close>
-          </Prompt.Actions>
-        </Prompt.Content>
-      </Prompt.Portal>
-    </Prompt.Root>
+            </Dialog.Close>
+          </XStack>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   )
 }

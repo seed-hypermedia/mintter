@@ -16,13 +16,17 @@ import {
   ChevronDown,
   Container,
   Heading,
+  ListItem,
   MainWrapper,
+  Popover,
   SizableText,
   XStack,
+  YGroup,
   YStack,
 } from '@mintter/ui'
 import {Copy} from '@tamagui/lucide-icons'
 import {ReactNode} from 'react'
+import {MenuItem} from '../components/dropdown'
 
 function DeviceRow({
   isOnline,
@@ -32,15 +36,17 @@ function DeviceRow({
   deviceId: string
 }) {
   return (
-    <Dropdown.Item
-      onPress={() => {
-        copyTextToClipboard(deviceId)
-        toast.success('Copied Device ID to clipboard')
-      }}
-    >
-      <OnlineIndicator online={isOnline} />
-      {abbreviateCid(deviceId)}
-    </Dropdown.Item>
+    <YGroup.Item>
+      <ListItem
+        onPress={() => {
+          copyTextToClipboard(deviceId)
+          toast.success('Copied Device ID to clipboard')
+        }}
+      >
+        <OnlineIndicator online={isOnline} />
+        {abbreviateCid(deviceId)}
+      </ListItem>
+    </YGroup.Item>
   )
 }
 
@@ -95,43 +101,64 @@ export default function AccountPage() {
                 size="$6"
                 alias={account.profile?.alias || ''}
               />
-              <Heading>{account.profile?.alias || accountId}</Heading>
+
+              <SizableText
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+                size="$5"
+                fontWeight="700"
+              >
+                {account.profile?.alias || 'Untitled Account'}
+              </SizableText>
             </XStack>
 
-            <XStack>
+            <XStack space="$2">
               <Tooltip content="Copy Account Link to clipboard">
                 <Button
                   icon={Copy}
-                  size="$4"
+                  size="$2"
                   onPress={() => {
                     copyTextToClipboard(getAccountUrl(accountId))
                   }}
-                ></Button>
+                />
               </Tooltip>
-              <Dropdown.Root>
-                <Dropdown.Trigger iconAfter={ChevronDown} size="$4">
-                  <OnlineIndicator online={isConnected} />
-                  {isConnected ? 'Connected' : 'Offline'}
-                </Dropdown.Trigger>
-                <Dropdown.Content align="end">
-                  <Dropdown.Label>
-                    <SizableText size="$3" fontWeight="700" theme="mint">
-                      {pluralizer(account.devices.length, 'Device')}
-                    </SizableText>
-                  </Dropdown.Label>
-
-                  {account.devices.map((device) => {
-                    if (!device) return null
-                    return (
-                      <DeviceRow
-                        key={device.deviceId}
-                        isOnline={device.isConnected}
-                        deviceId={device.deviceId}
-                      />
-                    )
-                  })}
-                </Dropdown.Content>
-              </Dropdown.Root>
+              <Popover placement="bottom-end">
+                <Popover.Trigger asChild>
+                  <Button
+                    icon={<OnlineIndicator online={isConnected} />}
+                    iconAfter={ChevronDown}
+                    size="$2"
+                  >
+                    {isConnected ? 'Connected' : 'Offline'}
+                  </Button>
+                </Popover.Trigger>
+                <Popover.Content padding={0} elevation="$3">
+                  <YGroup>
+                    <YGroup.Item>
+                      <XStack paddingHorizontal="$4">
+                        <MenuItem
+                          disabled
+                          title={pluralizer(account.devices.length, 'Device')}
+                          size="$1"
+                          fontWeight="700"
+                          theme="mint"
+                        />
+                      </XStack>
+                    </YGroup.Item>
+                    {account.devices.map((device) => {
+                      if (!device) return null
+                      return (
+                        <DeviceRow
+                          key={device.deviceId}
+                          isOnline={device.isConnected}
+                          deviceId={device.deviceId}
+                        />
+                      )
+                    })}
+                  </YGroup>
+                </Popover.Content>
+              </Popover>
             </XStack>
           </XStack>
           {account.profile?.bio && (

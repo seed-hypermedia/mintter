@@ -49,27 +49,27 @@ export function DeleteDialog({
           key="overlay"
           animation="quick"
           opacity={0.5}
-          enterStyle={{opacity: 0}}
-          exitStyle={{opacity: 0}}
+          // enterStyle={{opacity: 0}}
+          // exitStyle={{opacity: 0}}
         />
         <AlertDialog.Content
           elevate
           key="content"
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-          exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
-          x={0}
-          scale={1}
-          opacity={1}
-          y={0}
-          padding={0}
+          // animation={[
+          //   'quick',
+          //   {
+          //     opacity: {
+          //       overshootClamping: true,
+          //     },
+          //   },
+          // ]}
+          // enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+          // exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+          // x={0}
+          // scale={1}
+          // opacity={1}
+          // y={0}
+          // padding={0}
           {...dialogContentProps}
         >
           <YStack

@@ -6,18 +6,29 @@ import {
   usePublicationList,
 } from '@mintter/app/src/models/documents'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
-import {Container, MainWrapper, Spinner, YStack} from '@mintter/ui'
+import {Button, Container, MainWrapper, Spinner, YStack} from '@mintter/ui'
 import {useState} from 'react'
 import {FixedSizeList as List} from 'react-window'
 
 import './publication-list-page.css'
+import {useDeletePublication} from '../models/documents'
+import {usePopoverState} from '../use-popover-state'
+import {DeleteDialog} from '../components/delete-dialog'
 
 export default function PublicationList() {
   let {data} = usePublicationList()
   let drafts = useDraftList()
   let openDraft = useOpenDraft()
   const pubs = data?.publications
+  const dialogState = usePopoverState()
+  const [deleteDocId, setDeleteDocId] = useState('')
   const [scrollHeight, setScrollHeight] = useState(800)
+
+  const deletePub = useDeletePublication({
+    onSuccess: () => {
+      dialogState.onOpenChange(false)
+    },
+  })
 
   const RenderPublicationRow = ({
     index,
@@ -35,6 +46,10 @@ export default function PublicationList() {
             (d) => d.id == publication.document?.id,
           )}
           publication={publication}
+          handleDelete={(docId: string) => {
+            setDeleteDocId(docId)
+            dialogState.onOpenChange(true)
+          }}
         />
       </div>
     )
@@ -69,6 +84,10 @@ export default function PublicationList() {
                   (d) => d.id == publication.document?.id,
                 )}
                 publication={publication}
+                handleDelete={(docId: string) => {
+                  setDeleteDocId(docId)
+                  dialogState.onOpenChange(true)
+                }}
               />
             )
           })}
@@ -93,7 +112,39 @@ export default function PublicationList() {
           // setScrollHeight(() => e.nativeEvent.layout.height)
         }}
       >
-        <Container>{content}</Container>
+        <Container>
+          {content}
+          <DeleteDialog
+            modal
+            {...dialogState}
+            title="Delete document"
+            description="Are you sure you want to delete this document? This action is not reversible."
+            cancelButton={
+              <Button
+                onPress={() => {
+                  setDeleteDocId('')
+                  dialogState.onOpenChange(false)
+                }}
+                chromeless
+              >
+                Cancel
+              </Button>
+            }
+            actionButton={
+              <Button
+                theme="red"
+                onPress={() => {
+                  if (deleteDocId) {
+                    deletePub.mutate(deleteDocId)
+                    dialogState.onOpenChange(false)
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            }
+          />
+        </Container>
       </MainWrapper>
       <Footer />
     </>

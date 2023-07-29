@@ -1,27 +1,24 @@
-import {Button, DialogContent, H3, SizableText} from '@mintter/ui'
-import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
+import {AlertDialog, Button, DialogContent, H3, SizableText} from '@mintter/ui'
 import type {ComponentProps, PropsWithChildren} from 'react'
 import React from 'react'
 
 function Root({children, ...props}: AlertDialogPrimitive.AlertDialogProps) {
-  return (
-    <AlertDialogPrimitive.Root {...props}>{children}</AlertDialogPrimitive.Root>
-  )
+  return <AlertDialog {...props}>{children}</AlertDialog>
 }
 
 function Title(props: any) {
   return (
-    <AlertDialogPrimitive.Title asChild>
+    <AlertDialog.Title asChild>
       <H3 {...props} />
-    </AlertDialogPrimitive.Title>
+    </AlertDialog.Title>
   )
 }
 
 function Description(props: any) {
   return (
-    <AlertDialogPrimitive.Description asChild>
+    <AlertDialog.Description asChild>
       <SizableText {...props} />
-    </AlertDialogPrimitive.Description>
+    </AlertDialog.Description>
   )
 }
 
@@ -35,9 +32,9 @@ function Cancel({
   }
 >) {
   return (
-    <AlertDialogPrimitive.Cancel asChild>
+    <AlertDialog.Cancel asChild>
       <Button chromeless size="$1" disabled={disabled} {...props} />
-    </AlertDialogPrimitive.Cancel>
+    </AlertDialog.Cancel>
   )
 }
 
@@ -50,16 +47,16 @@ function Action({
   }
 >) {
   return (
-    <AlertDialogPrimitive.Action asChild>
+    <AlertDialog.Action asChild>
       <Button size="$1" disabled={disabled} {...props} />
-    </AlertDialogPrimitive.Action>
+    </AlertDialog.Action>
   )
 }
 
 export const Alert = {
-  ...AlertDialogPrimitive,
+  ...AlertDialog,
   Root,
-  Trigger: AlertDialogPrimitive.Trigger,
+  Trigger: AlertDialog.Trigger,
   Content: DialogContent,
   Title,
   Description,

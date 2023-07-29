@@ -31,8 +31,10 @@ export const router = t.router({
     .mutation(async ({input}) => {
       const windowId = `Window${windowIdCount++}`
       const browserWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        show: false,
+        width: 1200,
+        height: 800,
+
         webPreferences: {
           preload: path.join(__dirname, 'preload.js'),
         },
@@ -47,6 +49,12 @@ export const router = t.router({
       })
       allWindows[windowId] = browserWindow
       trpcHandlers.attachWindow(browserWindow)
+
+      // First render trick: https://getlotus.app/21-making-electron-apps-feel-native-on-mac
+      browserWindow.on('ready-to-show', () => {
+        browserWindow.show()
+      })
+
       browserWindow.on('show', () => {
         browserWindow.webContents.send('initWindow', {
           route: input?.route,

@@ -17,35 +17,44 @@ import {
   Delete,
   ExternalLink,
   MoreHorizontal,
+  Popover,
+  Separator,
   Text,
+  Unspaced,
   XStack,
+  YGroup,
 } from '@mintter/ui'
-import {MouseEvent} from 'react'
+import {MouseEvent, useEffect, useState} from 'react'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {DeleteDialog} from './delete-dialog'
+import {MenuItem} from '@mintter/app/src/components/dropdown'
 
 export function PublicationListItem({
   publication,
   hasDraft,
   copy = copyTextToClipboard,
+  handleDelete,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
+  handleDelete?: (docId: string) => void
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const title = publication.document?.title || 'Untitled Document'
   const docId = publication.document?.id
   const popoverState = usePopoverState()
-  const dialogState = usePopoverState()
   const route = useNavRoute()
-  const deletePub = useDeletePublication({
-    onSuccess: () => {
-      dialogState.onOpenChange(false)
-    },
-  })
+
+  const [isHovering, setIsHovering] = useState(false)
   if (!docId) throw new Error('PublicationListItem requires id')
+
+  useEffect(() => {
+    if (popoverState.open) {
+      popoverState.onOpenChange(false)
+    }
+  }, [isHovering])
 
   function goToItem(event: MouseEvent) {
     event.preventDefault()
@@ -63,6 +72,8 @@ export function PublicationListItem({
 
   return (
     <Button
+      onPointerEnter={() => setIsHovering(true)}
+      onPointerLeave={() => setIsHovering(false)}
       chromeless
       tag="li"
       onMouseEnter={() => {
@@ -114,89 +125,43 @@ export function PublicationListItem({
           : '...'}
       </Text>
       <XStack>
-        <Dropdown.Root {...popoverState}>
-          <Dropdown.Trigger circular data-trigger icon={MoreHorizontal} />
-
-          <Dropdown.Content
-            align="end"
-            data-testid="library-item-dropdown-root"
-            // padding={0}
-            // size="$5"
-            // enterStyle={{x: 0, y: -1, opacity: 0}}
-            // exitStyle={{x: 0, y: -1, opacity: 0}}
-            // animation={[
-            //   'quick',
-            //   {
-            //     opacity: {
-            //       overshootClamping: true,
-            //     },
-            //   },
-            // ]}
-          >
-            {/* <Dropdown.Item
-              data-testid="copy-item"
-              onPress={() => {
-                const docUrl = getDocUrl(publication, webPub)
-                if (!docUrl) return
-                copyTextToClipboard(docUrl)
-                toast.success(
-                  `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
-                )
-              }}
-              title={`Copy Document URL on ${hostnameStripProtocol(
-                publishedWebHost,
-              )}`}
-              icon={Copy}
-            /> */}
-            <Dropdown.Item
-              data-testid="new-window-item"
-              onPress={() =>
-                spawn({
-                  key: 'publication',
-                  documentId: docId,
-                  versionId: publication.version,
-                })
-              }
-              title="Open in new Window"
-              icon={ExternalLink}
-            />
-
-            <Dropdown.Item
-              title="Delete Publication"
-              onPress={() => {
-                popoverState.onOpenChange(false)
-                dialogState.onOpenChange(true)
-              }}
-              icon={Delete}
-            />
-          </Dropdown.Content>
-        </Dropdown.Root>
-        <DeleteDialog
-          {...dialogState}
-          title="Delete document"
-          description="Are you sure you want to delete this document? This action is not reversible."
-          cancelButton={
-            <Button
-              onPress={() => {
-                dialogState.onOpenChange(false)
-              }}
-              chromeless
-            >
-              Cancel
-            </Button>
-          }
-          actionButton={
-            <Button
-              theme="red"
-              onPress={() => {
-                deletePub.mutate(docId)
-                dialogState.onOpenChange(false)
-              }}
-            >
-              Delete
-            </Button>
-          }
-        />
+        {isHovering ? (
+          <Popover {...popoverState} placement="bottom-end">
+            <Popover.Trigger asChild>
+              <Button size="$1" circular data-trigger icon={MoreHorizontal} />
+            </Popover.Trigger>
+            <Popover.Content padding={0} elevation="$2">
+              <YGroup separator={<Separator />}>
+                <YGroup.Item>
+                  <MenuItem
+                    data-testid="new-window-item"
+                    onPress={() =>
+                      spawn({
+                        key: 'publication',
+                        documentId: docId,
+                        versionId: publication.version,
+                      })
+                    }
+                    title="Open in new Window"
+                    icon={ExternalLink}
+                  />
+                </YGroup.Item>
+                <YGroup.Item>
+                  <MenuItem
+                    title="Delete Publication"
+                    onPress={() => {
+                      popoverState.onOpenChange(false)
+                      handleDelete?.(docId)
+                    }}
+                    icon={Delete}
+                  />
+                </YGroup.Item>
+              </YGroup>
+            </Popover.Content>
+          </Popover>
+        ) : (
+          <Button size="$1" opacity={0} circular icon={MoreHorizontal} />
+        )}
       </XStack>
     </Button>
   )

@@ -25,6 +25,7 @@ import {
   File,
   Forward,
   Menu,
+  Popover,
   Separator,
   Settings,
   SizableText,
@@ -125,12 +126,13 @@ export function SitesNavDropdownItems({
   return (
     <>
       {sites.map((site) => (
-        <Dropdown.Item
-          key={site.hostname}
-          onPress={() => onRoute({key: 'site', hostname: site.hostname})}
-          icon={Globe}
-          title={hostnameStripProtocol(site.hostname)}
-        />
+        <YGroup.Item key={site.hostname}>
+          <MenuItem
+            onPress={() => onRoute({key: 'site', hostname: site.hostname})}
+            icon={Globe}
+            title={hostnameStripProtocol(site.hostname)}
+          />
+        </YGroup.Item>
       ))}
     </>
   )
@@ -166,7 +168,7 @@ export function AccountDropdownItem({
   )
 }
 
-function NaveMenuContentUnpure({
+function NavMenuContentUnpure({
   onClose,
   sites,
   onRoute,
@@ -180,7 +182,7 @@ function NaveMenuContentUnpure({
   const {data: account} = useMyAccount()
 
   return (
-    <Dropdown.Content align="start">
+    <Popover.Content padding={0} elevation="$2">
       <YGroup separator={<Separator />} elevation="$4">
         <YGroup.Item>
           <AccountDropdownItem account={account} onRoute={onRoute} />
@@ -262,10 +264,10 @@ function NaveMenuContentUnpure({
           />
         </YGroup.Item>
       </YGroup>
-    </Dropdown.Content>
+    </Popover.Content>
   )
 }
-const NavMenuContent = memo(NaveMenuContentUnpure)
+const NavMenuContent = memo(NavMenuContentUnpure)
 
 export function NavMenu() {
   const sites = useSiteList()
@@ -275,8 +277,10 @@ export function NavMenu() {
   const spawn = useNavigate('spawn')
   return (
     <XStack paddingRight="$2" position="relative" zIndex={1000}>
-      <Dropdown.Root {...popoverState} modal={true}>
-        <Dropdown.Trigger size="$2" icon={Menu} />
+      <Popover {...popoverState} placement="bottom-start">
+        <Popover.Trigger asChild>
+          <Button size="$2" icon={Menu} />
+        </Popover.Trigger>
 
         <NavMenuContent
           sites={sites.data}
@@ -295,7 +299,7 @@ export function NavMenu() {
             popoverState.onOpenChange(false)
           }}
         />
-      </Dropdown.Root>
+      </Popover>
     </XStack>
   )
 }
