@@ -1,4 +1,4 @@
-import {app, BrowserWindow, session} from 'electron'
+import {app, BrowserWindow, session, ipcMain, nativeTheme} from 'electron'
 import path from 'path'
 import * as Sentry from '@sentry/electron/main'
 import os from 'os'
@@ -44,6 +44,20 @@ if (import.meta.env.PROD) {
     })
   }
 }
+
+// dark mode support: https://www.electronjs.org/docs/latest/tutorial/dark-mode
+ipcMain.handle('dark-mode:toggle', () => {
+  if (nativeTheme.shouldUseDarkColors) {
+    nativeTheme.themeSource = 'light'
+  } else {
+    nativeTheme.themeSource = 'dark'
+  }
+  return nativeTheme.shouldUseDarkColors
+})
+
+ipcMain.handle('dark-mode:system', () => {
+  nativeTheme.themeSource = 'system'
+})
 
 app.on('ready', () => {
   trpc.createAppWindow()
