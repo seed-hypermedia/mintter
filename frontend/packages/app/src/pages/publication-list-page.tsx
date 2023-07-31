@@ -15,8 +15,8 @@ import {useDeletePublication} from '../models/documents'
 import {usePopoverState} from '../use-popover-state'
 import {DeleteDialog} from '../components/delete-dialog'
 
-export default function PublicationList() {
-  let {data} = usePublicationList()
+export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
+  let {data} = usePublicationList(trustedOnly)
   let drafts = useDraftList()
   let openDraft = useOpenDraft()
   const pubs = data?.publications
@@ -149,4 +149,8 @@ export default function PublicationList() {
       <Footer />
     </>
   )
+}
+
+export default function TrustedPublicationList() {
+  return <PublicationListPage trustedOnly={true} />
 }

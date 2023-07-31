@@ -181,7 +181,7 @@ export function useSmartChanges(docId?: string, version?: string) {
 }
 
 export function useAllPublicationChanges() {
-  const allPublications = usePublicationList()
+  const allPublications = usePublicationList(true)
   const pubs = allPublications?.data?.publications || []
   const grpcClient = useGRPCClient()
   const queries = pubs.map((pub) => {

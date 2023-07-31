@@ -62,13 +62,15 @@ function createEmptyChanges(): DraftChangesState {
   }
 }
 
-export function usePublicationList() {
+export function usePublicationList(trustedOnly: boolean) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_LIST],
+    queryKey: [queryKeys.GET_PUBLICATION_LIST, trustedOnly ? 'trusted' : 'global'],
     refetchOnMount: true,
     queryFn: async () => {
-      const result = await grpcClient.publications.listPublications({})
+      const result = await grpcClient.publications.listPublications({
+        trustedOnly: trustedOnly,
+      })
       const publications =
         result.publications.sort((a, b) =>
           sortDocuments(a.document?.updateTime, b.document?.updateTime),

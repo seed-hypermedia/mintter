@@ -29,6 +29,7 @@ import {
   Separator,
   Settings,
   SizableText,
+  Globe,
   TitlebarSection,
   User,
   XGroup,
@@ -38,7 +39,7 @@ import {
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
-import {FilePlus2, Globe, Pencil, Search} from '@tamagui/lucide-icons'
+import {FilePlus2, Pencil, Search} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
@@ -194,11 +195,27 @@ function NavMenuContentUnpure({
             onPress={() => {
               onRoute({key: 'home'})
             }}
-            title="All Publications"
+            title="Trusted Publications"
             icon={File}
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 1
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            disabled={route.key == 'global-publications'}
+            data-testid="menu-item-inbox"
+            onPress={() => {
+              onRoute({key: 'global-publications'})
+            }}
+            title="Global Publications"
+            icon={Globe}
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 2
               </SizableText>
             }
           />
@@ -226,7 +243,7 @@ function NavMenuContentUnpure({
               onRoute({key: 'connections'})
             }}
             icon={User}
-            title="Connections"
+            title="Contacts"
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 9

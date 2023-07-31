@@ -9,6 +9,7 @@ import {AccountLinkAvatar} from '@mintter/app/src/components/account-link-avatar
 import {
   File,
   FontSizeTokens,
+  Globe,
   Pencil,
   TitleText,
   User,
@@ -22,7 +23,17 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       <>
         <File size={12} />
         <TitleText data-tauri-drag-region size={size}>
-          All Publications
+          Trusted Publications
+        </TitleText>
+      </>
+    )
+  }
+  if (route.key === 'global-publications') {
+    return (
+      <>
+        <Globe size={12} />
+        <TitleText data-tauri-drag-region size={size}>
+          Global Publications
         </TitleText>
       </>
     )
