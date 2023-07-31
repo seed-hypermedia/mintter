@@ -50,16 +50,14 @@ export const router = t.router({
       allWindows[windowId] = browserWindow
       trpcHandlers.attachWindow(browserWindow)
 
+      browserWindow.webContents.send('initWindow', {
+        route: input?.route,
+        windowId,
+      })
+
       // First render trick: https://getlotus.app/21-making-electron-apps-feel-native-on-mac
       browserWindow.on('ready-to-show', () => {
         browserWindow.show()
-      })
-
-      browserWindow.on('show', () => {
-        browserWindow.webContents.send('initWindow', {
-          route: input?.route,
-          windowId,
-        })
       })
 
       browserWindow.on('close', () => {
