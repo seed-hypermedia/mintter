@@ -13,7 +13,7 @@ global.Buffer = global.Buffer || Buffer
 
 export type HomeRoute = {key: 'home'}
 export type GlobalPublications = {key: 'global-publications'}
-export type ConnectionsRoute = {key: 'connections'}
+export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
 export type SiteRoute = {key: 'site'; hostname: string}
@@ -43,7 +43,7 @@ export type SettingsRoute = {key: 'settings'}
 
 export type NavRoute =
   | HomeRoute
-  | ConnectionsRoute
+  | ContactsRoute
   | AccountRoute
   | SettingsRoute
   | SitesRoute

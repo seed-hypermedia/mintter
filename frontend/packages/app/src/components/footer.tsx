@@ -50,10 +50,10 @@ function FooterContactsButton() {
     <XStack alignItems="center" theme="mint" gap="$2">
       <Button
         size="$1"
-        chromeless={route.key != 'connections'}
-        color={route.key == 'connections' ? '$blue10' : undefined}
+        chromeless={route.key != 'contacts'}
+        color={route.key == 'contacts' ? '$blue10' : undefined}
         onPress={() => {
-          navigate({key: 'connections'})
+          navigate({key: 'contacts'})
         }}
         paddingHorizontal="$2"
       >

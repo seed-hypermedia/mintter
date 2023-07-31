@@ -56,6 +56,8 @@ export function useSetTrusted(
     },
     onSuccess: (result, input, ctx) => {
       invalidate([queryKeys.GET_ACCOUNT, input.accountId])
+      invalidate([queryKeys.GET_ALL_ACCOUNTS])
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
       opts?.onSuccess?.(result, input, ctx)
     },
     ...opts,

@@ -15,15 +15,16 @@ import {
   User,
   XStack,
 } from '@mintter/ui'
+import {Folder} from '@tamagui/lucide-icons'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
   if (route.key === 'home') {
     return (
       <>
-        <File size={12} />
+        <Folder size={12} />
         <TitleText data-tauri-drag-region size={size}>
-          Trusted Publications
+          Publications
         </TitleText>
       </>
     )
@@ -38,12 +39,12 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'connections') {
+  if (route.key === 'contacts') {
     return (
       <>
         <User size={12} />
         <TitleText data-tauri-drag-region size={size}>
-          Connections
+          Contacts
         </TitleText>
       </>
     )
