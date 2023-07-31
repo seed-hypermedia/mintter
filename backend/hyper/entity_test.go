@@ -59,7 +59,6 @@ func TestEntityMutation(t *testing.T) {
 	ee, err := blobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 
-	alice.Account.MarshalBinary()
 	require.Equal(t, map[cid.Cid]struct{}{ch1.CID: {}}, e.heads, "heads must have most recent change")
 	require.Equal(t, map[cid.Cid]struct{}{ch1.CID: {}}, ee.heads, "heads must have most recent change")
 
@@ -83,7 +82,6 @@ func TestEntityMutation(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, tee.heads, ee.heads)
-
 }
 
 func TestEntityMutation_Drafts(t *testing.T) {

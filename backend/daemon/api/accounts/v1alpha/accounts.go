@@ -245,6 +245,13 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 	if in.IsTrusted {
 		err = srv.blobs.SetAccountTrust(ctx, acc)
 	} else {
+		me, ok := srv.me.Get()
+		if !ok {
+			return nil, fmt.Errorf("account not initialized yet")
+		}
+		if acc.String() == me.Account().Principal().String() {
+			return nil, fmt.Errorf("cannot untrust self")
+		}
 		err = srv.blobs.UnsetAccountTrust(ctx, acc)
 	}
 
