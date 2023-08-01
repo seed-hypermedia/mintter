@@ -19,6 +19,7 @@ import {toast} from '@mintter/app/src/toast'
 import {useAppContext, useQueryInvalidator} from '@mintter/app/src/app-context'
 import {insertFile} from '@mintter/app/src/editor/file'
 import {insertImage} from '@mintter/app/src/editor/image'
+import {insertVideo} from '@mintter/app/src/editor/video'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
@@ -723,6 +724,7 @@ export function useDraftEditor(
       ...defaultReactSlashMenuItems.slice(0, 2),
       insertImage,
       insertFile,
+      insertVideo,
       ...defaultReactSlashMenuItems.slice(2),
     ],
     _tiptapOptions: {

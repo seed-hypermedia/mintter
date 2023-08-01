@@ -85,6 +85,16 @@ export type EditorFileBlock = {
   children: EditorBlock[]
 }
 
+export type EditorVideoBlock = {
+  type: 'video'
+  id: string
+  props: EditorBlockProps<{
+    url: string
+  }>
+  content: InlineContent[]
+  children: EditorBlock[]
+}
+
 export type EditorEmbedBlock = {
   type: 'embed'
   id: string
@@ -99,4 +109,5 @@ export type EditorBlock =
   | EditorHeadingBlock
   | EditorImageBlock
   | EditorFileBlock
+  | EditorVideoBlock
   | EditorEmbedBlock

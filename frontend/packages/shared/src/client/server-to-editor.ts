@@ -277,6 +277,22 @@ export function serverChildrenToEditorChildren(
       }
     }
 
+    if (serverBlock.block?.type === 'video') {
+      res = {
+        type: 'video',
+        id: serverBlock.block.id,
+        props: {
+          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          backgroundColor: 'default',
+          textColor: 'default',
+          textAlignment: 'left',
+          defaultOpen: 'false',
+        },
+        content: serverBlockToEditorInline(serverBlock.block),
+        children: serverChildrenToEditorChildren(serverBlock.children),
+      }
+    }
+
     if (serverBlock.block?.type === 'embed') {
       res = {
         type: 'embed',

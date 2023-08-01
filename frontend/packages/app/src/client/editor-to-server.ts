@@ -118,6 +118,7 @@ export function editorBlockToServerBlock(
   if (!editorBlock.id) throw new Error('this block has no id')
 
   let res: ServerBlock | null = null
+
   if (editorBlock.type === 'paragraph') {
     res = new ServerBlock({
       id: editorBlock.id,
@@ -128,6 +129,7 @@ export function editorBlockToServerBlock(
       ...extractContent(editorBlock.content),
     })
   }
+
   if (editorBlock.type === 'heading') {
     res = new ServerBlock({
       id: editorBlock.id,
@@ -136,6 +138,7 @@ export function editorBlockToServerBlock(
       ...extractContent(editorBlock.content),
     })
   }
+
   if (editorBlock.type === 'image') {
     res = new ServerBlock({
       id: editorBlock.id,
@@ -156,6 +159,15 @@ export function editorBlockToServerBlock(
         name: editorBlock.props.name,
         size: editorBlock.props.size,
       },
+      ref: `ipfs://${editorBlock.props.url}`,
+    })
+  }
+
+  if (editorBlock.type == 'video') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'video',
+      attributes: {},
       ref: `ipfs://${editorBlock.props.url}`,
     })
   }
