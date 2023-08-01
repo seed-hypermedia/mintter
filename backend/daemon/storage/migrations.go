@@ -41,6 +41,11 @@ type migration struct {
 	Run     func(*Dir, *sqlite.Conn) error
 }
 
+// In order for a migration to actually run, it has to have a version higher than the version of the data directory.
+// Care has to be taken when migrations are being added in master, and feature branches in parallel.
+//
+// It's important to backup your data directory when trying out the code from a feature branch that has a migration.
+// Otherwise when you switch back to the main branch the program will complain about an unknown version of the data directory.
 var migrations = []migration{
 	// The pre-migration version does nothing.
 	// It's here to find the starting point.
