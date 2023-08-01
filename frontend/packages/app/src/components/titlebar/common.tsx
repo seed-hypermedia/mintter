@@ -38,7 +38,7 @@ import {
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
-import {FilePlus2, Globe, Pencil} from '@tamagui/lucide-icons'
+import {FilePlus2, Globe, Pencil, Search} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
@@ -241,7 +241,8 @@ function NavMenuContentUnpure({
               send('open_quick_switcher')
               onClose()
             }}
-            title="Quick Switcher"
+            title="Search / Open"
+            icon={Search}
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; K

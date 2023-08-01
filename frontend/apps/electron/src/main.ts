@@ -1,13 +1,13 @@
-import {app, BrowserWindow, session, ipcMain, nativeTheme} from 'electron'
+import {app, BrowserWindow, session, ipcMain, nativeTheme, Menu} from 'electron'
 import path from 'path'
 import * as Sentry from '@sentry/electron/main'
 import os from 'os'
-import {router} from './api'
+import {mainMenu, trpc} from './api'
 import {mainDaemon} from './daemon'
 
 mainDaemon
 
-const trpc = router.createCaller({})
+Menu.setApplicationMenu(mainMenu)
 
 if (import.meta.env.PROD) {
   Sentry.init({
