@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/electron/main'
 import os from 'os'
 import {mainMenu, trpc} from './api'
 import {mainDaemon} from './daemon'
+import {saveCidAsFile} from './save-cid-as-file'
 
 mainDaemon
 
@@ -58,6 +59,14 @@ ipcMain.handle('dark-mode:toggle', () => {
 ipcMain.handle('dark-mode:system', () => {
   nativeTheme.themeSource = 'system'
 })
+
+ipcMain.handle('get-path', () => {
+  const path = app.getPath('appData')
+  console.log(path)
+  return path
+})
+
+ipcMain.on('save-file', saveCidAsFile)
 
 app.on('ready', () => {
   trpc.createAppWindow()

@@ -12,7 +12,6 @@ import {
   ReactSlashMenuItem,
 } from '@mintter/app/src/blocknote-react'
 import {HDBlockSchema} from '@mintter/app/src/client/schema'
-import {toast} from 'react-hot-toast'
 import {
   Button,
   Form,
@@ -24,13 +23,10 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {save} from '@tauri-apps/api/dialog'
-import {BaseDirectory, writeBinaryFile} from '@tauri-apps/api/fs'
-import {getClient, ResponseType} from '@tauri-apps/api/http'
-import {appDataDir} from '@tauri-apps/api/path'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {RiImage2Fill} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
+import { useAppContext } from '@mintter/app/src/app-context'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -136,29 +132,9 @@ function ImageComponent({
     }
   }, [selection])
 
+  const {saveCidAsFile} = useAppContext()
   const saveImage = async () => {
-    const client = await getClient()
-    const data = (
-      await client.get(`${BACKEND_FILE_URL}/${block.props.url}`, {
-        responseType: ResponseType.Binary,
-      })
-    ).data as any
-
-    const filePath = await save({
-      defaultPath: (await appDataDir()) + '/' + block.props.name,
-    })
-
-    if (filePath) {
-      try {
-        await writeBinaryFile(filePath ? filePath : 'mintter-image', data, {
-          dir: BaseDirectory.AppData,
-        })
-        toast.success(`Successfully downloaded image ${block.props.name}`)
-      } catch (e) {
-        toast.error(`Failed to download image ${block.props.name}`)
-        console.log(e)
-      }
-    }
+    await saveCidAsFile(block.props.url, block.props.name)
   }
 
   return (

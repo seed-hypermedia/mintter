@@ -20,6 +20,7 @@ import superjson from 'superjson'
 import {AppIPC} from '@mintter/app/src/app-ipc'
 import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
 import {client} from './trpc'
+import { app, ipcRenderer } from 'electron'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
@@ -97,7 +98,7 @@ function MainApp({
         toast.error('Not implemented open: ' + url)
       }}
       saveCidAsFile={async (cid: string, name: string) => {
-        toast.error('Not implemented saveCidAsFile: ' + cid + name)
+        ipc.send?.('save-file', {cid, name})
       }}
       windowUtils={windowUtils}
     >
