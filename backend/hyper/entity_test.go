@@ -174,15 +174,14 @@ func TestTrustedEntity(t *testing.T) {
 	require.NoError(t, aliceBlobs.SaveBlob(ctx, kdBobBlob))
 	require.NoError(t, aliceBlobs.SaveBlob(ctx, kdCarolBlob))
 
-	//Everyone trusts themselves and Carol trusts alice in addition.
+	//Everyone trusts themselves.
 	require.NoError(t, aliceBlobs.SetAccountTrust(ctx, alice.Account.Principal()))
 	require.NoError(t, bobBlobs.SetAccountTrust(ctx, bob.Account.Principal()))
 	require.NoError(t, carolBlobs.SetAccountTrust(ctx, carol.Account.Principal()))
-	require.NoError(t, carolBlobs.SetAccountTrust(ctx, alice.Account.Principal()))
 
 	e := NewEntity("foo")
 	chA, err := e.CreateChange(e.NextTimestamp(), alice.Device, kdAliceBlob.CID, map[string]any{
-		"Alice's Change": "A is trusted from Carol's perspective",
+		"Alice's Change": "A is trusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.NoError(t, aliceBlobs.SaveBlob(ctx, chA))
@@ -200,7 +199,7 @@ func TestTrustedEntity(t *testing.T) {
 	require.Equal(t, alicesEntity.heads, alicesEntitySyncedWithBob.heads)
 
 	chB, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), bob.Device, kdBobBlob.CID, map[string]any{
-		"Bob's change": "B is untrusted from Carol's perspective",
+		"Bob's change": "B is untrusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chA.CID}, chB.Decoded.(Change).Deps, "new change must have previous heads")
@@ -213,7 +212,7 @@ func TestTrustedEntity(t *testing.T) {
 	require.Equal(t, alicesEntity.heads, alicesEntitySyncedWithCarol.heads)
 
 	chC, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), bob.Device, kdBobBlob.CID, map[string]any{
-		"Carol's change": "C is trusted from Carol's perspective",
+		"Carol's change": "C is untrusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chA.CID}, chC.Decoded.(Change).Deps, "new change must have previous heads")
@@ -221,7 +220,7 @@ func TestTrustedEntity(t *testing.T) {
 
 	// Bob makes a change from his previous change.
 	chD, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), bob.Device, kdBobBlob.CID, map[string]any{
-		"Another Bob's change": "D is untrusted from Carol's perspective",
+		"Another Bob's change": "D is untrusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chB.CID}, chD.Decoded.(Change).Deps, "new change must have previous heads")
@@ -238,7 +237,7 @@ func TestTrustedEntity(t *testing.T) {
 
 	// Alice now changes the document on top of Bob's changes.
 	chE, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), alice.Device, kdAliceBlob.CID, map[string]any{
-		"Another Alice's change": "E is trusted from Carol's perspective",
+		"Another Alice's change": "E is trusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chD.CID}, chE.Decoded.(Change).Deps, "new change must have previous heads")
