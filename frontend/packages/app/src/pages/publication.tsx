@@ -33,6 +33,7 @@ import {
   HDEditorContainer,
   HyperDocsEditorView,
 } from '@mintter/app/src/editor/editor'
+import {useLatestPublication} from '../models/documents'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -255,13 +256,15 @@ type ResizablePanelMachineServices = {
 // }
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const {data: pub, isLoading} = usePublication({
+  const route = useNavRoute()
+  const context = route.key === 'publication' ? route.pubContext : undefined
+  const {data: pub, isLoading} = useLatestPublication({
+    trustedVersionsOnly: context === 'trusted',
     documentId: docId,
     enabled: !!docId,
   })
 
   const navigate = useNavigate()
-  const route = useNavRoute()
   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
   if (isLoading) return null
   if (version === pub?.version) return null
@@ -278,8 +281,8 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
       }}
     >
       <BannerText>
-        There is a newer version of this Publication. Click here to go to latest
-        version →
+        There is a newer {context === 'trusted' ? 'trusted version' : 'version'}{' '}
+        of this Publication. Click here to go to latest →
       </BannerText>
     </AppBanner>
   )

@@ -46,6 +46,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
             (d) => d.id == publication.document?.id,
           )}
           publication={publication}
+          pubContext={trustedOnly ? 'trusted' : null}
           handleDelete={(docId: string) => {
             setDeleteDocId(docId)
             dialogState.onOpenChange(true)
@@ -79,6 +80,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
           {pubs.map((publication) => {
             return (
               <PublicationListItem
+                pubContext={trustedOnly ? 'trusted' : null}
                 key={publication.document?.id}
                 hasDraft={drafts.data?.documents.find(
                   (d) => d.id == publication.document?.id,

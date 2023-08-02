@@ -1,8 +1,4 @@
-import {Dropdown} from '@mintter/app/src/components/dropdown'
-import {
-  prefetchPublication,
-  useDeletePublication,
-} from '@mintter/app/src/models/documents'
+import {prefetchPublication} from '@mintter/app/src/models/documents'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {
@@ -20,25 +16,26 @@ import {
   Popover,
   Separator,
   Text,
-  Unspaced,
   XStack,
   YGroup,
 } from '@mintter/ui'
 import {MouseEvent, useEffect, useState} from 'react'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {DeleteDialog} from './delete-dialog'
 import {MenuItem} from '@mintter/app/src/components/dropdown'
+import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
 
 export function PublicationListItem({
   publication,
   hasDraft,
   copy = copyTextToClipboard,
   handleDelete,
+  pubContext,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   handleDelete?: (docId: string) => void
+  pubContext: PublicationRouteContext
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -62,6 +59,7 @@ export function PublicationListItem({
       key: 'publication',
       documentId: docId!,
       versionId: publication.version,
+      pubContext,
     }
     if (event.metaKey || event.shiftKey) {
       spawn(route)

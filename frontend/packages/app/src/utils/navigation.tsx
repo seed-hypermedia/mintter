@@ -22,10 +22,12 @@ type PublicationVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
 type PublicationCommentsAccessory = {key: 'comments'}
 
+export type PublicationRouteContext = 'trusted' | null
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
+  pubContext?: PublicationRouteContext
   blockId?: string
   accessory?:
     | null

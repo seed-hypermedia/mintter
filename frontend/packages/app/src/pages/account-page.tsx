@@ -64,13 +64,20 @@ function Section({children}: {children: ReactNode}) {
   )
 }
 
-function AccountDocuments({accountId}: {accountId: string}) {
+function AccountDocuments({
+  accountId,
+  isTrusted,
+}: {
+  accountId: string
+  isTrusted?: boolean
+}) {
   const list = useAccountPublicationList(accountId)
   return (
     <Section>
       {list.data?.map((doc) => {
         return (
           <PublicationListItem
+            pubContext={isTrusted ? 'trusted' : null}
             key={doc.document?.id}
             publication={doc}
             hasDraft={undefined}
@@ -210,7 +217,10 @@ export default function AccountPage() {
               <span>{account.profile?.bio}</span>
             </Section>
           )}
-          <AccountDocuments accountId={accountId} />
+          <AccountDocuments
+            isTrusted={account.isTrusted}
+            accountId={accountId}
+          />
         </Container>
       </MainWrapper>
       <Footer />
