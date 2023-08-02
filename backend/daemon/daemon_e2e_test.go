@@ -488,7 +488,7 @@ func TestTrustedChanges(t *testing.T) {
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 
 	// But the untrusted peer (last editor) should get the latest version since it was him
-	// the one who wrote the latest changes and hi trust himself by default.
+	// the one who wrote the latest changes and he trusts himself by default.
 	publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
 		TrustedOnly: true,
 	})

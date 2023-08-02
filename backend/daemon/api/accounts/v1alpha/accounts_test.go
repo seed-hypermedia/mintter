@@ -109,7 +109,6 @@ func TestTrustOwnAccount(t *testing.T) {
 	alice := newTestServer(t, "alice")
 	bob := coretest.NewTester("bob")
 	ctx := context.Background()
-	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 	acc, err := alice.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{
 		Id:        bob.Account.Principal().String(),
 		IsTrusted: true,
