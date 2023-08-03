@@ -53,7 +53,8 @@ def main():
     )
     def gen(args):
         out = run(
-            "plz run parallel $(plz query filter -i 'generated:check')",
+            "plz run parallel $(plz query filter -i 'generated:check') "
+            + str.join(" ", args),
             capture_output=True,
         )
 
@@ -74,7 +75,7 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
-        run("plz build //:yarn") 
+        run("plz build //:yarn")
         return run("yarn desktop:prod")
 
     @cmd(
@@ -84,9 +85,7 @@ def main():
         run("plz build //backend:mintterd //:yarn")
         run("cargo tauri build --debug")
 
-    @cmd(
-        cmds, "build-app", "Builds the desktop app for the current platform."
-    )
+    @cmd(cmds, "build-app", "Builds the desktop app for the current platform.")
     def build_app(args):
         run("plz build //backend:mintterd //:yarn")
         run("yarn electron:make")
@@ -121,7 +120,7 @@ def main():
     def run_desktop(args):
         run("plz build //backend:mintterd //:yarn")
         return run("yarn tauri:dev", args=args)
-    
+
     @cmd(cmds, "run-app", "Run desktop app for development.")
     def run_app(args):
         run("plz build //backend:mintterd //:yarn")
