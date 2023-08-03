@@ -136,7 +136,7 @@ func TestEntityMutation_Drafts(t *testing.T) {
 }
 
 func TestTrustedEntity(t *testing.T) {
-	t.Skip("Under construction")
+	//t.Skip("Under construction")
 	alice := coretest.NewTester("alice")
 	bob := coretest.NewTester("bob")
 	carol := coretest.NewTester("carol")
@@ -192,7 +192,7 @@ func TestTrustedEntity(t *testing.T) {
 	require.Equal(t, map[cid.Cid]struct{}{chA.CID: {}}, e.heads, "heads must have most recent change")
 	require.Equal(t, map[cid.Cid]struct{}{chA.CID: {}}, alicesEntity.heads, "heads must have most recent change")
 
-	//Alice syncs with Bob and Bob makes a change.
+	// Alice syncs with Bob and Bob makes a change.
 	require.NoError(t, bobBlobs.SaveBlob(ctx, chA))
 	alicesEntitySyncedWithBob, err := bobBlobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
@@ -205,13 +205,13 @@ func TestTrustedEntity(t *testing.T) {
 	require.Equal(t, []cid.Cid{chA.CID}, chB.Decoded.(Change).Deps, "new change must have previous heads")
 	require.NoError(t, bobBlobs.SaveBlob(ctx, chB))
 
-	//Alice syncs with Carol the first version (not the one changed by Bob) and Carol makes a change.
+	// Alice syncs with Carol the first version (not the one changed by Bob) and Carol makes a change.
 	require.NoError(t, carolBlobs.SaveBlob(ctx, chA))
 	alicesEntitySyncedWithCarol, err := carolBlobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 	require.Equal(t, alicesEntity.heads, alicesEntitySyncedWithCarol.heads)
 
-	chC, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), bob.Device, kdBobBlob.CID, map[string]any{
+	chC, err := alicesEntitySyncedWithCarol.CreateChange(alicesEntitySyncedWithCarol.NextTimestamp(), bob.Device, kdCarolBlob.CID, map[string]any{
 		"Carol's change": "C is untrusted from Alice's perspective",
 	})
 	require.NoError(t, err)
@@ -225,7 +225,7 @@ func TestTrustedEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chB.CID}, chD.Decoded.(Change).Deps, "new change must have previous heads")
 	require.NoError(t, bobBlobs.SaveBlob(ctx, chD))
-	bobLatestChanges, err := aliceBlobs.LoadEntity(ctx, "foo")
+	bobLatestChanges, err := bobBlobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 
 	// Alice syncs latest bob changes.
@@ -236,23 +236,60 @@ func TestTrustedEntity(t *testing.T) {
 	require.Equal(t, bobLatestChanges.heads, alicesEntitySyncedWithBobChanges.heads)
 
 	// Alice now changes the document on top of Bob's changes.
-	chE, err := alicesEntitySyncedWithBob.CreateChange(alicesEntitySyncedWithBob.NextTimestamp(), alice.Device, kdAliceBlob.CID, map[string]any{
+	chE, err := alicesEntitySyncedWithBobChanges.CreateChange(alicesEntitySyncedWithBobChanges.NextTimestamp(), alice.Device, kdAliceBlob.CID, map[string]any{
 		"Another Alice's change": "E is trusted from Alice's perspective",
 	})
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{chD.CID}, chE.Decoded.(Change).Deps, "new change must have previous heads")
-	require.Equal(t, []cid.Cid{chB.CID}, chE.Decoded.(Change).Deps, "new change must have previous heads")
-	require.NoError(t, carolBlobs.SaveBlob(ctx, chE))
-	aliceLatestChanges, err := aliceBlobs.LoadEntity(ctx, "foo")
+	require.NoError(t, aliceBlobs.SaveBlob(ctx, chE))
 
-	//Carol syncs latest alice content.
+	// Carol syncs latest Alice content.
 	require.NoError(t, carolBlobs.SaveBlob(ctx, chB))
 	require.NoError(t, carolBlobs.SaveBlob(ctx, chD))
 	require.NoError(t, carolBlobs.SaveBlob(ctx, chE))
 	carolView, err := carolBlobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
-	require.Equal(t, aliceLatestChanges.heads, carolView.heads)
+	require.Len(t, carolView.heads, 2)
 
-	// Carol now uses changes from both alice an the old version of the document Carol had.
+	require.Equal(t, map[cid.Cid]struct{}{chE.CID: {}, chC.CID: {}}, carolView.heads, "heads must contain both Carol latest changes and Alice's")
 
+	// Carol now uses changes from both Alice an the old version of the document Carol had.
+	chF, err := carolView.CreateChange(carolView.NextTimestamp(), carol.Device, kdCarolBlob.CID, map[string]any{
+		"Last Carol change": "F is untrusted from Alice's perspective",
+	})
+	require.NoError(t, err)
+	require.Contains(t, chF.Decoded.(Change).Deps, chE.CID, "Changes must depend on both heads")
+	require.Contains(t, chF.Decoded.(Change).Deps, chC.CID, "Changes must depend on both heads")
+	require.NoError(t, carolBlobs.SaveBlob(ctx, chF))
+	carolLatestChanges, err := carolBlobs.LoadEntity(ctx, "foo")
+	require.NoError(t, err)
+
+	// Alice now receives Carol changes
+	require.NoError(t, aliceBlobs.SaveBlob(ctx, chF))
+	_, err = aliceBlobs.LoadEntity(ctx, "foo")
+	require.Error(t, err, "missing dependency for change C")
+	require.NoError(t, aliceBlobs.SaveBlob(ctx, chC))
+	aliceView, err := aliceBlobs.LoadEntity(ctx, "foo")
+	require.NoError(t, err)
+	require.Equal(t, carolLatestChanges.heads, aliceView.heads)
+
+	trustedEntity, err := aliceBlobs.LoadTrustedEntity(ctx, "foo")
+	require.NoError(t, err)
+
+	require.Len(t, trustedEntity.heads, 1)
+	require.Equal(t, map[cid.Cid]struct{}{chE.CID: {}}, trustedEntity.heads, "Last trusted change was E made by Alice herself")
+
+	// Now trust Carol and see if we get F changes
+	require.NoError(t, aliceBlobs.SetAccountTrust(ctx, carol.Account.Principal()))
+	trustedEntity, err = aliceBlobs.LoadTrustedEntity(ctx, "foo")
+	require.NoError(t, err)
+	require.Len(t, trustedEntity.heads, 1)
+	require.Equal(t, map[cid.Cid]struct{}{chF.CID: {}}, trustedEntity.heads, "Last trusted change is now Carol's since Carol is trusted now")
+
+	// Now untrust Carol again and see if we get back E changes
+	require.NoError(t, aliceBlobs.UnsetAccountTrust(ctx, carol.Account.Principal()))
+	trustedEntity, err = aliceBlobs.LoadTrustedEntity(ctx, "foo")
+	require.NoError(t, err)
+	require.Len(t, trustedEntity.heads, 1)
+	require.Equal(t, map[cid.Cid]struct{}{chE.CID: {}}, trustedEntity.heads, "Last trusted change was E made by Alice herself")
 }
