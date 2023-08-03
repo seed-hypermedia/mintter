@@ -86,7 +86,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	})
 }
 
-// SetAccountTrust sets or unset an account to trusted.
+// SetAccountTrust sets an account to trusted.
 func (bs *Storage) SetAccountTrust(ctx context.Context, acc []byte) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {

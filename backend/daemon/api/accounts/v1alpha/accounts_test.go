@@ -31,7 +31,6 @@ func TestGetAccount_Own(t *testing.T) {
 		},
 		IsTrusted: true,
 	}
-	time.Sleep(100 * time.Millisecond) // give time to trust own account
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
@@ -74,7 +73,6 @@ func TestAPIUpdateProfile(t *testing.T) {
 	updated, err := alice.UpdateProfile(ctx, want.Profile)
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, updated, "account must be equal")
-	time.Sleep(100 * time.Millisecond) // give time to trust own account
 	stored, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, stored, "get account must return updated account")
