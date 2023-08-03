@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package com.mintter.groups.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
+
+// Groups service exposes the functionality for managing group entities.
+// This API uses fully-qualified EID as group IDs in all the requests.
+service Groups {
+  // Creates a new group.
+  rpc CreateGroup(CreateGroupRequest) returns (Group);
+
+  // Gets a group by ID.
+  rpc GetGroup(GetGroupRequest) returns (Group);
+
+  // Updates a group.
+  rpc UpdateGroup(UpdateGroupRequest) returns (Group);
+
+  // Lists members of a group.
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+
+  // Lists content of a group.
+  rpc ListContent(ListContentRequest) returns (ListContentResponse);
+
+  // Lists groups.
+  rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+}
+
+// Request to create a group.
+message CreateGroupRequest {
+  // Required. Title of the new group.
+  string title = 1;
+
+  // Optional. Description of the new group.
+  string description = 2;
+
+  // Optional. List of initial members for the new group.
+  // Members can also be managed with separate requests after group is already created.
+  map<string, Role> members = 3;
+}
+
+// Request to get a group.
+message GetGroupRequest {
+  // Required. ID of the group to get.
+  // Must be a fully-qualified EID.
+  string id = 1;
+}
+
+// Request to update a group.
+// Some fields are required, even if unchanged,
+// to distinguish between setting the value to an empty string, from an unchanged value.
+// Read the comments!
+message UpdateGroupRequest {
+  // ID of the group to update.
+  string id = 1;
+
+  // Required. Title of the Group.
+  // Must always be provided, even if unchanged.
+  string title = 2;
+
+  // Required. Description of the Group. Can be empty string.
+  // Must always be provided, even if unchanged.
+  string description = 3;
+
+  // Optional. List of members to be updated in the Group.
+  // Key is the member's Account ID,
+  // value is the Role.
+  // To remove a member from the group, set the role to unspecified.
+  map<string, Role> updated_members = 4;
+
+  // Optional. List of content to be updated in the Group.
+  // Key is a pretty path on which the content is published,
+  // value is a Hyperdocs URL of the content.
+  // To unpublish content set the pretty path to an empty string.
+  map<string, string> updated_content = 5;
+}
+
+// Response to list members.
+message ListMembersRequest {
+  // Required. ID of the group to list members of.
+  string id = 1;
+
+  // Optional. Version of the group to list members of.
+  // If not specified, the latest version of the group
+  // according to its members is used.
+  string version = 2;
+
+  // Optional. Maximum number of members to return.
+  int32 page_size = 3;
+
+  // Optional. Page token to continue listing members from.
+  string page_token = 4;
+}
+
+// Response to list members.
+message ListMembersResponse {
+  // ID of the group owner.
+  string owner_account_id = 1;
+
+  // List of members of the group.
+  map<string, Role> members = 2;
+
+  // Token to continue listing members from.
+  string next_page_token = 3;
+}
+
+// Request to list content.
+message ListContentRequest {
+  // Required. ID of the group to list content of.
+  string id = 1;
+
+  // Optional. Version of the group to list content of.
+  // If not specified, the latest version of the group
+  // according to its members is used.
+  string version = 2;
+
+  // Optional. Maximum number of content to return.
+  int32 page_size = 3;
+
+  // Optional. Page token to continue listing content from.
+  string page_token = 4;
+}
+
+// Response to list content.
+message ListContentResponse {
+  // List of content of the group.
+  // Key is the path and value is a Hyperdocs URL to the content.
+  map<string, string> content = 1;
+
+  // Token to continue listing content from.
+  string next_page_token = 2;
+}
+
+// Request to list groups.
+message ListGroupsRequest {
+  // Optional. Maximum number of groups to return.
+  int32 page_size = 1;
+
+  // Optional. Page token to continue listing groups from.
+  string page_token = 2;
+}
+
+// Response to list groups.
+message ListGroupsResponse {
+  // List of groups.
+  repeated Group groups = 1;
+
+  // Token to continue listing groups from.
+  string next_page_token = 2;
+}
+
+// Group represents the basic information about a group entity.
+message Group {
+  // ID of the group.
+  string id = 1;
+
+  // Title of the group.
+  string title = 3;
+
+  // Description of the group.
+  string description = 4;
+
+  // Account ID of the group owner.
+  string owner_account_id = 5;
+
+  // Timestamp when the group was first created.
+  google.protobuf.Timestamp create_time = 6;
+
+  // Latest version of the group according to the information from its owner and members
+  // that we happen to have locally. Most of the time this is the version that should be used
+  // to get the most recent group information.
+  string latest_version = 7;
+
+  // Latest version of the group according to our trusted contacts.
+  // It's possible that none of the group members is our trusted contact,
+  // but still some of our trusted contacts might mutate the group entity for themselves,
+  // in which case care must be takes while displaying the group entity to the user.
+  // If none of the group members is our trusted contact, this version will be empty.
+  // If only a subset of group members are our trusted contacts, this will be the head changes produced by them.
+  string latest_local_trusted_version = 8;
+
+  // Latest version of the group entity according to all the peers we happen to know about.
+  // If no peer outside the group members produced any changes to the entity, this should be the same as latest_version.
+  string latest_local_public_version = 9;
+}
+
+// Role of a group member.
+enum Role {
+  // Zero value which is an invalid role. This role is used to delete members,
+  // and serves as a tombstone, because in our CRDT there's no way to truly delete something.
+  ROLE_UNSPECIFIED = 0;
+
+  // Editor role which allows members to manage content of the group.
+  EDITOR = 1;
+}
