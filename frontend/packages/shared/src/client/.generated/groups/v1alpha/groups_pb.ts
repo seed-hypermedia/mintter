@@ -105,6 +105,14 @@ export class GetGroupRequest extends Message<GetGroupRequest> {
    */
   id = "";
 
+  /**
+   * Optional. Version of the group to get information about.
+   * If empty, latest_version is will be used.
+   *
+   * @generated from field: string version = 2;
+   */
+  version = "";
+
   constructor(data?: PartialMessage<GetGroupRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -114,6 +122,7 @@ export class GetGroupRequest extends Message<GetGroupRequest> {
   static readonly typeName = "com.mintter.groups.v1alpha.GetGroupRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetGroupRequest {
@@ -598,6 +607,13 @@ export class Group extends Message<Group> {
   createTime?: Timestamp;
 
   /**
+   * Version of the group entity that was requested.
+   *
+   * @generated from field: string version = 10;
+   */
+  version = "";
+
+  /**
    * Latest version of the group according to the information from its owner and members
    * that we happen to have locally. Most of the time this is the version that should be used
    * to get the most recent group information.
@@ -639,6 +655,7 @@ export class Group extends Message<Group> {
     { no: 4, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "owner_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "create_time", kind: "message", T: Timestamp },
+    { no: 10, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "latest_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "latest_local_trusted_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "latest_local_public_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },

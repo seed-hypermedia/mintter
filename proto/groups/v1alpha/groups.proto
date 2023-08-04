@@ -46,6 +46,10 @@ message GetGroupRequest {
   // Required. ID of the group to get.
   // Must be a fully-qualified EID.
   string id = 1;
+
+  // Optional. Version of the group to get information about.
+  // If empty, latest_version is will be used.
+  string version = 2;
 }
 
 // Request to update a group.
@@ -167,6 +171,9 @@ message Group {
 
   // Timestamp when the group was first created.
   google.protobuf.Timestamp create_time = 6;
+
+  // Version of the group entity that was requested.
+  string version = 10;
 
   // Latest version of the group according to the information from its owner and members
   // that we happen to have locally. Most of the time this is the version that should be used
