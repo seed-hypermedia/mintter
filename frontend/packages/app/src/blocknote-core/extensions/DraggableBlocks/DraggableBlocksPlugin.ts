@@ -370,6 +370,12 @@ export class BlockMenuView<BSchema extends BlockSchema> {
   }
 
   onMouseDown = (event: MouseEvent) => {
+    if (this.menuFrozen) {
+      this.menuFrozen = false
+      this.blockMenu.hide()
+      return
+    }
+
     if (this.blockMenu.element?.contains(event.target as HTMLElement)) {
       return
     }

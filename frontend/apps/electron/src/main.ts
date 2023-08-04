@@ -60,12 +60,6 @@ ipcMain.handle('dark-mode:system', () => {
   nativeTheme.themeSource = 'system'
 })
 
-ipcMain.handle('get-path', () => {
-  const path = app.getPath('appData')
-  console.log(path)
-  return path
-})
-
 ipcMain.on('save-file', saveCidAsFile)
 
 app.on('ready', () => {
