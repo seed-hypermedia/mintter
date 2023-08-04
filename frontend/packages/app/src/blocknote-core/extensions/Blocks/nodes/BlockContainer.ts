@@ -494,7 +494,11 @@ export const BlockContainer = Node.create<IBlock>({
                 return true
               }
               if (!prevBlockInfo) return false
-              if (['file', 'embed'].includes(prevBlockInfo.contentType.name)) {
+              if (
+                ['file', 'embed', 'video'].includes(
+                  prevBlockInfo.contentType.name,
+                )
+              ) {
                 let tr = state.tr
                 const selection = NodeSelection.create(
                   state.doc,

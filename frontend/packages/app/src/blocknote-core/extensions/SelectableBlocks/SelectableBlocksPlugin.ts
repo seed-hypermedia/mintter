@@ -22,8 +22,7 @@ export const createSelectableBlocksPlugin = () => {
         if (
           // @ts-ignore
           (node.type.name === 'image' && event.target?.nodeName === 'IMG') ||
-          node.type.name === 'embed' ||
-          node.type.name === 'file'
+          ['file', 'embed', 'video'].includes(node.type.name)
         ) {
           let tr = view.state.tr
           const selection = NodeSelection.create(view.state.doc, nodePos)
