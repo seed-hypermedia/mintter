@@ -960,6 +960,50 @@ WHERE blob NOT IN deps`
 	return out, err
 }
 
+type ChangesGetTrustedHeadsJSONResult struct {
+	Heads []byte
+}
+
+func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, eid string) (ChangesGetTrustedHeadsJSONResult, error) {
+	const query = `WITH RECURSIVE
+trusted_parent (blob) AS (
+	WITH all_changes (blob, author) AS (
+		SELECT hd_changes.blob, hd_changes.author FROM hd_changes
+				JOIN hd_entities ON hd_changes.entity = hd_entities.id
+				WHERE hd_entities.eid = :eid ),
+				trusted_changes(blob, author) AS (
+				SELECT all_changes.blob, all_changes.author FROM all_changes
+				JOIN trusted_accounts ON all_changes.author = trusted_accounts.id) 
+				SELECT DISTINCT hd_change_deps.parent FROM hd_change_deps
+				JOIN trusted_changes ON trusted_changes.blob = hd_change_deps.child
+				UNION SELECT blob FROM trusted_changes
+				UNION SELECT hd_change_deps.parent FROM hd_change_deps, trusted_parent 
+				WHERE child = blob LIMIT 100000) 
+				SELECT DISTINCT json_group_array(blob) AS heads FROM trusted_parent`
+
+	var out ChangesGetTrustedHeadsJSONResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":eid", eid)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesGetTrustedHeadsJSON: more than one result return for a single-kind query")
+		}
+
+		out.Heads = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetTrustedHeadsJSON: %w", err)
+	}
+
+	return out, err
+}
+
 func ChangesDeleteForEntity(conn *sqlite.Conn, hdChangesEntity int64) error {
 	const query = `DELETE FROM blobs
 WHERE blobs.id IN (SELECT hd_changes.blob FROM hd_changes WHERE hd_changes.entity = :hdChangesEntity)`

@@ -18,7 +18,6 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multibase"
 	"github.com/multiformats/go-multicodec"
-	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -352,20 +351,6 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	return bs.loadFromHeads(conn, eid, heads.Heads)
 }
 
-func enqueue(queue []hypersql.ChangesListFromChangeSetResult, element hypersql.ChangesListFromChangeSetResult) []hypersql.ChangesListFromChangeSetResult {
-	queue = append(queue, element) // Simply append to enqueue.
-	return queue
-}
-
-func dequeue(queue []hypersql.ChangesListFromChangeSetResult) []hypersql.ChangesListFromChangeSetResult {
-	return queue[1:] // Slice off the element once it is dequeued.
-}
-
-type changeToApply struct {
-	chID cid.Cid
-	ch   Change
-}
-
 // LoadTrustedEntity will return the lastest entity version changed by a trusted peer.
 func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
@@ -376,102 +361,12 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 
 	defer sqlitex.Save(conn)(&err)
 
-	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
-	if err != nil {
-		return nil, err
-	}
-	if edb.HDEntitiesID == 0 {
-		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
-	}
-
-	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HDEntitiesID)
+	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, string(eid))
 	if err != nil {
 		return nil, err
 	}
 
-	cset, err := hypersql.ChangesResolveHeads(conn, heads.Heads)
-	if err != nil {
-		return nil, err
-	}
-
-	changes, err := hypersql.ChangesListFromChangeSet(conn, cset.ResolvedJSON, string(eid))
-
-	if len(changes) == 0 {
-		return nil, nil
-	}
-
-	lastTrustedchangeIdx := -1
-
-	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
-	/*
-		heads = queue(D)
-		for head = heads.dequeue() and head is not null:
-		  if head is not trusted:
-		    heads.enqueue(head.deps)
-		  else:
-		    break
-		for change := dequeue(changes); change != nil; dequeue(changes) {
-
-		}
-	*/
-	chToApply := []changeToApply{}
-	for idx, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
-		if err != nil {
-			return nil, err
-		}
-
-		chcid := cid.NewCidV1(uint64(change.HDChangesViewCodec), change.HDChangesViewMultihash)
-		var ch Change
-
-		if err := cbornode.DecodeInto(buf, &ch); err != nil {
-			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
-		}
-		pid, err := ch.Signer.PeerID()
-		if err != nil {
-			return nil, err
-		}
-		// get account of the change
-		var acc core.Principal
-		if err := bs.Query(context.Background(), func(conn *sqlite.Conn) error {
-			list, err := hypersql.KeyDelegationsListByDelegate(conn, ch.Signer)
-			if err != nil {
-				return err
-			}
-
-			if len(list) == 0 {
-				return fmt.Errorf("not found key delegation for peer: %s", pid)
-			}
-
-			if len(list) > 1 {
-				return fmt.Errorf("MoreThanOneKeyDelegation for peer %s", pid.String())
-			}
-
-			del := list[0]
-
-			acc = core.Principal(del.KeyDelegationsViewIssuer)
-			return nil
-		}); err != nil {
-			bs.log.Error("Could not get change's author", zap.Error(err))
-			return nil, err
-		}
-
-		buf = buf[:0] // reset the slice reusing the backing array
-		trusted, err := hypersql.IsTrustedAccount(conn, acc)
-		if err == nil && trusted.TrustedAccountsID != 0 { // means its trusted
-			lastTrustedchangeIdx = idx
-		}
-		chToApply = append(chToApply, changeToApply{chID: chcid, ch: ch})
-	}
-	entity := NewEntity(eid)
-	for i := 0; i <= lastTrustedchangeIdx; i++ {
-		change := chToApply[i]
-		if err := entity.ApplyChange(change.chID, change.ch); err != nil {
-			return nil, err
-		}
-	}
-
-	return entity, nil
+	return bs.loadFromHeads(conn, eid, heads.Heads)
 }
 
 type Draft struct {

@@ -273,6 +273,15 @@ func TestTrustedEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, carolLatestChanges.heads, aliceView.heads)
 
+	// Alice Creates another entity to check we can later get only foo changes
+	e2 := NewEntity("bar")
+	chG, err := e2.CreateChange(e2.NextTimestamp(), alice.Device, kdAliceBlob.CID, map[string]any{
+		"Alice's New unrelated entity": "G is trusted from Alice's perspective",
+	})
+	require.NoError(t, err)
+	require.NoError(t, aliceBlobs.SaveBlob(ctx, chG))
+
+	// Now we get the trusted entity foo
 	trustedEntity, err := aliceBlobs.LoadTrustedEntity(ctx, "foo")
 	require.NoError(t, err)
 
@@ -292,4 +301,10 @@ func TestTrustedEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, trustedEntity.heads, 1)
 	require.Equal(t, map[cid.Cid]struct{}{chE.CID: {}}, trustedEntity.heads, "Last trusted change was E made by Alice herself")
+
+	// Ask for an unknown entity
+	fakeEntity, err := aliceBlobs.LoadTrustedEntity(ctx, "fake_entity")
+	require.NoError(t, err)
+	require.Nil(t, fakeEntity)
+
 }
