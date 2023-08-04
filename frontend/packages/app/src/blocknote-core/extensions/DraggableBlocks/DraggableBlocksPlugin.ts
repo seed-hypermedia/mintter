@@ -391,6 +391,8 @@ export class BlockMenuView<BSchema extends BlockSchema> {
       this.ttEditor.view.dom.firstChild! as HTMLElement
     ).getBoundingClientRect()
 
+    console.log(editorBoundingBox.left, editorBoundingBox.right, event.clientX)
+
     // Gets block at mouse cursor's vertical position.
     const coords = {
       left: editorBoundingBox.left + editorBoundingBox.width / 2, // take middle of editor
@@ -401,13 +403,15 @@ export class BlockMenuView<BSchema extends BlockSchema> {
     const pos = this.ttEditor.view.posAtCoords(coords)
     if (pos) {
       // Focus either the start or the end of the block depending if it's clicked to the right or left
-      this.ttEditor.commands.focus(
-        event.clientX < coords.left
-          ? pos.inside
-          : pos.inside +
-              this.ttEditor.state.doc.resolve(pos.pos).node().nodeSize -
-              1,
-      )
+      if (event.clientX < editorBoundingBox.left) {
+        this.ttEditor.commands.focus(pos.inside)
+      } else if (event.clientX > editorBoundingBox.right) {
+        this.ttEditor.commands.focus(
+          pos.inside +
+            this.ttEditor.state.doc.resolve(pos.pos).node().nodeSize -
+            1,
+        )
+      }
     }
     // else {
     //   const blocks = this.editor.topLevelBlocks
