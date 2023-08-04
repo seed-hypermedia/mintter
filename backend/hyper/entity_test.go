@@ -136,7 +136,6 @@ func TestEntityMutation_Drafts(t *testing.T) {
 }
 
 func TestTrustedEntity(t *testing.T) {
-	//t.Skip("Under construction")
 	alice := coretest.NewTester("alice")
 	bob := coretest.NewTester("bob")
 	carol := coretest.NewTester("carol")
@@ -306,5 +305,4 @@ func TestTrustedEntity(t *testing.T) {
 	fakeEntity, err := aliceBlobs.LoadTrustedEntity(ctx, "fake_entity")
 	require.NoError(t, err)
 	require.Nil(t, fakeEntity)
-
 }
