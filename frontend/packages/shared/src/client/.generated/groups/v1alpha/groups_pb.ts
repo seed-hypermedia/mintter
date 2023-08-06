@@ -619,32 +619,12 @@ export class Group extends Message<Group> {
 
   /**
    * Latest version of the group according to the information from its owner and members
-   * that we happen to have locally. Most of the time this is the version that should be used
+   * that we happen to have locally. This is the version that should be used
    * to get the most recent group information.
    *
    * @generated from field: string latest_version = 7;
    */
   latestVersion = "";
-
-  /**
-   * Latest version of the group according to our trusted contacts.
-   * It's possible that none of the group members is our trusted contact,
-   * but still some of our trusted contacts might mutate the group entity for themselves,
-   * in which case care must be taken while displaying the group entity to the user.
-   * If none of the group members is our trusted contact, this version will be empty.
-   * If only a subset of group members are our trusted contacts, this will be the head changes produced by them.
-   *
-   * @generated from field: string latest_local_trusted_version = 8;
-   */
-  latestLocalTrustedVersion = "";
-
-  /**
-   * Latest version of the group entity according to all the peers we happen to know about.
-   * If no peer outside the group members produced any changes to the entity, this should be the same as latest_version.
-   *
-   * @generated from field: string latest_local_public_version = 9;
-   */
-  latestLocalPublicVersion = "";
 
   constructor(data?: PartialMessage<Group>) {
     super();
@@ -661,8 +641,6 @@ export class Group extends Message<Group> {
     { no: 5, name: "create_time", kind: "message", T: Timestamp },
     { no: 6, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "latest_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 8, name: "latest_local_trusted_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 9, name: "latest_local_public_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Group {
