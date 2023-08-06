@@ -1,0 +1,196 @@
+syntax = "proto3";
+
+package com.mintter.groups.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
+
+// Groups service exposes the functionality for managing group entities.
+// This API uses fully-qualified EID as group IDs in all the requests.
+service Groups {
+  // Creates a new group.
+  rpc CreateGroup(CreateGroupRequest) returns (Group);
+
+  // Gets a group by ID.
+  rpc GetGroup(GetGroupRequest) returns (Group);
+
+  // Updates a group.
+  rpc UpdateGroup(UpdateGroupRequest) returns (Group);
+
+  // Lists members of a group.
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+
+  // Lists content of a group.
+  rpc ListContent(ListContentRequest) returns (ListContentResponse);
+
+  // Lists groups.
+  rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+}
+
+// Request to create a group.
+message CreateGroupRequest {
+  // Required. Title of the new group.
+  string title = 1;
+
+  // Optional. Description of the new group.
+  string description = 2;
+
+  // Optional. List of initial members for the new group.
+  // Members can also be managed with separate requests after group is already created.
+  map<string, Role> members = 3;
+}
+
+// Request to get a group.
+message GetGroupRequest {
+  // Required. ID of the group to get.
+  // Must be a fully-qualified EID.
+  string id = 1;
+
+  // Optional. Version of the group to get information about.
+  // If empty, latest_version is assumed.
+  string version = 2;
+}
+
+// Request to update a group.
+// Some fields are required, even if unchanged,
+// to distinguish between setting the value to an empty string, from an unchanged value.
+// Read the comments!
+message UpdateGroupRequest {
+  // ID of the group to update.
+  string id = 1;
+
+  // Optional. Title of the Group.
+  // Can be omitted if unchanged.
+  string title = 2;
+
+  // Required. Description of the Group. Can be empty string.
+  // Must always be provided, even if unchanged
+  // to distinguish unchanged value from setting to empty string.
+  string description = 3;
+
+  // Optional. List of members to be updated in the Group.
+  // Key is the member's Account ID,
+  // value is the Role.
+  // To remove a member from the group, set the role to unspecified.
+  // Only updated records have to be sent, not all the members of the group.
+  map<string, Role> updated_members = 4;
+
+  // Optional. List of content to be updated in the Group.
+  // Key is a pretty path on which the content is published,
+  // value is a Hyperdocs URL of the content.
+  // To unpublish content set the value to an empty string for a given pretty path.
+  // Only updated records have to be sent, not all the content of the group.
+  map<string, string> updated_content = 5;
+}
+
+// Response to list members.
+message ListMembersRequest {
+  // Required. ID of the group to list members of.
+  string id = 1;
+
+  // Optional. Version of the group to list members of.
+  // If not specified, the latest version of the group
+  // according to its members is used.
+  string version = 2;
+
+  // Optional. Maximum number of members to return.
+  int32 page_size = 3;
+
+  // Optional. Page token to continue listing members from.
+  string page_token = 4;
+}
+
+// Response to list members.
+message ListMembersResponse {
+  // ID of the group owner.
+  string owner_account_id = 1;
+
+  // List of members of the group.
+  map<string, Role> members = 2;
+
+  // Token to continue listing members from.
+  string next_page_token = 3;
+}
+
+// Request to list content.
+message ListContentRequest {
+  // Required. ID of the group to list content of.
+  string id = 1;
+
+  // Optional. Version of the group to list content of.
+  // If not specified, the latest version of the group
+  // according to its members is used.
+  string version = 2;
+
+  // Optional. Maximum number of content to return.
+  int32 page_size = 3;
+
+  // Optional. Page token to continue listing content from.
+  string page_token = 4;
+}
+
+// Response to list content.
+message ListContentResponse {
+  // List of content of the group.
+  // Key is the path and value is a Hyperdocs URL to the content.
+  map<string, string> content = 1;
+
+  // Token to continue listing content from.
+  string next_page_token = 2;
+}
+
+// Request to list groups.
+message ListGroupsRequest {
+  // Optional. Maximum number of groups to return.
+  int32 page_size = 1;
+
+  // Optional. Page token to continue listing groups from.
+  string page_token = 2;
+}
+
+// Response to list groups.
+message ListGroupsResponse {
+  // List of groups.
+  repeated Group groups = 1;
+
+  // Token to continue listing groups from.
+  string next_page_token = 2;
+}
+
+// Group represents the basic information about a group entity.
+message Group {
+  // ID of the group.
+  string id = 1;
+
+  // Title of the group.
+  string title = 2;
+
+  // Description of the group.
+  string description = 3;
+
+  // Account ID of the group owner.
+  string owner_account_id = 4;
+
+  // Timestamp when the group was first created.
+  google.protobuf.Timestamp create_time = 5;
+
+  // Version of the group entity that is being returned by the server.
+  // When latest version is requested, this is the same as latest_version.
+  string version = 6;
+
+  // Latest version of the group according to the information from its owner and members
+  // that we happen to have locally. This is the version that should be used
+  // to get the most recent group information.
+  string latest_version = 7;
+}
+
+// Role of a group member.
+enum Role {
+  // Zero value which is an invalid role. This role is used to delete members,
+  // and serves as a tombstone, because in our CRDT there's no way to truly delete something.
+  ROLE_UNSPECIFIED = 0;
+
+  // Editor role which allows members to manage content of the group.
+  EDITOR = 1;
+}
