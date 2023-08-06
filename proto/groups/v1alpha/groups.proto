@@ -48,7 +48,7 @@ message GetGroupRequest {
   string id = 1;
 
   // Optional. Version of the group to get information about.
-  // If empty, latest_version is will be used.
+  // If empty, latest_version is assumed.
   string version = 2;
 }
 
@@ -60,24 +60,27 @@ message UpdateGroupRequest {
   // ID of the group to update.
   string id = 1;
 
-  // Required. Title of the Group.
-  // Must always be provided, even if unchanged.
+  // Optional. Title of the Group.
+  // Can be omitted if unchanged.
   string title = 2;
 
   // Required. Description of the Group. Can be empty string.
-  // Must always be provided, even if unchanged.
+  // Must always be provided, even if unchanged
+  // to distinguish unchanged value from setting to empty string.
   string description = 3;
 
   // Optional. List of members to be updated in the Group.
   // Key is the member's Account ID,
   // value is the Role.
   // To remove a member from the group, set the role to unspecified.
+  // Only updated records have to be sent, not all the members of the group.
   map<string, Role> updated_members = 4;
 
   // Optional. List of content to be updated in the Group.
   // Key is a pretty path on which the content is published,
   // value is a Hyperdocs URL of the content.
-  // To unpublish content set the pretty path to an empty string.
+  // To unpublish content set the value to an empty string for a given pretty path.
+  // Only updated records have to be sent, not all the content of the group.
   map<string, string> updated_content = 5;
 }
 
@@ -161,19 +164,20 @@ message Group {
   string id = 1;
 
   // Title of the group.
-  string title = 3;
+  string title = 2;
 
   // Description of the group.
-  string description = 4;
+  string description = 3;
 
   // Account ID of the group owner.
-  string owner_account_id = 5;
+  string owner_account_id = 4;
 
   // Timestamp when the group was first created.
-  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp create_time = 5;
 
-  // Version of the group entity that was requested.
-  string version = 10;
+  // Version of the group entity that is being returned by the server.
+  // When latest version is requested, this is the same as latest_version.
+  string version = 6;
 
   // Latest version of the group according to the information from its owner and members
   // that we happen to have locally. Most of the time this is the version that should be used
@@ -183,7 +187,7 @@ message Group {
   // Latest version of the group according to our trusted contacts.
   // It's possible that none of the group members is our trusted contact,
   // but still some of our trusted contacts might mutate the group entity for themselves,
-  // in which case care must be takes while displaying the group entity to the user.
+  // in which case care must be taken while displaying the group entity to the user.
   // If none of the group members is our trusted contact, this version will be empty.
   // If only a subset of group members are our trusted contacts, this will be the head changes produced by them.
   string latest_local_trusted_version = 8;

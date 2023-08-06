@@ -149,7 +149,7 @@ type GetGroupRequest struct {
 	// Must be a fully-qualified EID.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Optional. Version of the group to get information about.
-	// If empty, latest_version is will be used.
+	// If empty, latest_version is assumed.
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 }
 
@@ -210,21 +210,24 @@ type UpdateGroupRequest struct {
 
 	// ID of the group to update.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Required. Title of the Group.
-	// Must always be provided, even if unchanged.
+	// Optional. Title of the Group.
+	// Can be omitted if unchanged.
 	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	// Required. Description of the Group. Can be empty string.
-	// Must always be provided, even if unchanged.
+	// Must always be provided, even if unchanged
+	// to distinguish unchanged value from setting to empty string.
 	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	// Optional. List of members to be updated in the Group.
 	// Key is the member's Account ID,
 	// value is the Role.
 	// To remove a member from the group, set the role to unspecified.
+	// Only updated records have to be sent, not all the members of the group.
 	UpdatedMembers map[string]Role `protobuf:"bytes,4,rep,name=updated_members,json=updatedMembers,proto3" json:"updated_members,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3,enum=com.mintter.groups.v1alpha.Role"`
 	// Optional. List of content to be updated in the Group.
 	// Key is a pretty path on which the content is published,
 	// value is a Hyperdocs URL of the content.
-	// To unpublish content set the pretty path to an empty string.
+	// To unpublish content set the value to an empty string for a given pretty path.
+	// Only updated records have to be sent, not all the content of the group.
 	UpdatedContent map[string]string `protobuf:"bytes,5,rep,name=updated_content,json=updatedContent,proto3" json:"updated_content,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -702,15 +705,16 @@ type Group struct {
 	// ID of the group.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Title of the group.
-	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	// Description of the group.
-	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	// Account ID of the group owner.
-	OwnerAccountId string `protobuf:"bytes,5,opt,name=owner_account_id,json=ownerAccountId,proto3" json:"owner_account_id,omitempty"`
+	OwnerAccountId string `protobuf:"bytes,4,opt,name=owner_account_id,json=ownerAccountId,proto3" json:"owner_account_id,omitempty"`
 	// Timestamp when the group was first created.
-	CreateTime *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
-	// Version of the group entity that was requested.
-	Version string `protobuf:"bytes,10,opt,name=version,proto3" json:"version,omitempty"`
+	CreateTime *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	// Version of the group entity that is being returned by the server.
+	// When latest version is requested, this is the same as latest_version.
+	Version string `protobuf:"bytes,6,opt,name=version,proto3" json:"version,omitempty"`
 	// Latest version of the group according to the information from its owner and members
 	// that we happen to have locally. Most of the time this is the version that should be used
 	// to get the most recent group information.
@@ -718,7 +722,7 @@ type Group struct {
 	// Latest version of the group according to our trusted contacts.
 	// It's possible that none of the group members is our trusted contact,
 	// but still some of our trusted contacts might mutate the group entity for themselves,
-	// in which case care must be takes while displaying the group entity to the user.
+	// in which case care must be taken while displaying the group entity to the user.
 	// If none of the group members is our trusted contact, this version will be empty.
 	// If only a subset of group members are our trusted contacts, this will be the head changes produced by them.
 	LatestLocalTrustedVersion string `protobuf:"bytes,8,opt,name=latest_local_trusted_version,json=latestLocalTrustedVersion,proto3" json:"latest_local_trusted_version,omitempty"`
@@ -942,17 +946,17 @@ var file_groups_v1alpha_groups_proto_rawDesc = []byte{
 	0x01, 0x28, 0x09, 0x52, 0x0d, 0x6e, 0x65, 0x78, 0x74, 0x50, 0x61, 0x67, 0x65, 0x54, 0x6f, 0x6b,
 	0x65, 0x6e, 0x22, 0xf7, 0x02, 0x0a, 0x05, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x0e, 0x0a, 0x02,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05,
-	0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74,
+	0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74,
 	0x6c, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70,
+	0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70,
 	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x28, 0x0a, 0x10, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x5f, 0x61, 0x63,
-	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e,
 	0x6f, 0x77, 0x6e, 0x65, 0x72, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x12, 0x3b,
-	0x0a, 0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x06, 0x20,
+	0x0a, 0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x05, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52,
 	0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65,
+	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65,
 	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x25, 0x0a, 0x0e, 0x6c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x5f,
 	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x6c,
 	0x61, 0x74, 0x65, 0x73, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x3f, 0x0a, 0x1c,

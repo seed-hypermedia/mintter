@@ -107,7 +107,7 @@ export class GetGroupRequest extends Message<GetGroupRequest> {
 
   /**
    * Optional. Version of the group to get information about.
-   * If empty, latest_version is will be used.
+   * If empty, latest_version is assumed.
    *
    * @generated from field: string version = 2;
    */
@@ -159,8 +159,8 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
   id = "";
 
   /**
-   * Required. Title of the Group.
-   * Must always be provided, even if unchanged.
+   * Optional. Title of the Group.
+   * Can be omitted if unchanged.
    *
    * @generated from field: string title = 2;
    */
@@ -168,7 +168,8 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
 
   /**
    * Required. Description of the Group. Can be empty string.
-   * Must always be provided, even if unchanged.
+   * Must always be provided, even if unchanged
+   * to distinguish unchanged value from setting to empty string.
    *
    * @generated from field: string description = 3;
    */
@@ -179,6 +180,7 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
    * Key is the member's Account ID,
    * value is the Role.
    * To remove a member from the group, set the role to unspecified.
+   * Only updated records have to be sent, not all the members of the group.
    *
    * @generated from field: map<string, com.mintter.groups.v1alpha.Role> updated_members = 4;
    */
@@ -188,7 +190,8 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
    * Optional. List of content to be updated in the Group.
    * Key is a pretty path on which the content is published,
    * value is a Hyperdocs URL of the content.
-   * To unpublish content set the pretty path to an empty string.
+   * To unpublish content set the value to an empty string for a given pretty path.
+   * Only updated records have to be sent, not all the content of the group.
    *
    * @generated from field: map<string, string> updated_content = 5;
    */
@@ -581,35 +584,36 @@ export class Group extends Message<Group> {
   /**
    * Title of the group.
    *
-   * @generated from field: string title = 3;
+   * @generated from field: string title = 2;
    */
   title = "";
 
   /**
    * Description of the group.
    *
-   * @generated from field: string description = 4;
+   * @generated from field: string description = 3;
    */
   description = "";
 
   /**
    * Account ID of the group owner.
    *
-   * @generated from field: string owner_account_id = 5;
+   * @generated from field: string owner_account_id = 4;
    */
   ownerAccountId = "";
 
   /**
    * Timestamp when the group was first created.
    *
-   * @generated from field: google.protobuf.Timestamp create_time = 6;
+   * @generated from field: google.protobuf.Timestamp create_time = 5;
    */
   createTime?: Timestamp;
 
   /**
-   * Version of the group entity that was requested.
+   * Version of the group entity that is being returned by the server.
+   * When latest version is requested, this is the same as latest_version.
    *
-   * @generated from field: string version = 10;
+   * @generated from field: string version = 6;
    */
   version = "";
 
@@ -626,7 +630,7 @@ export class Group extends Message<Group> {
    * Latest version of the group according to our trusted contacts.
    * It's possible that none of the group members is our trusted contact,
    * but still some of our trusted contacts might mutate the group entity for themselves,
-   * in which case care must be takes while displaying the group entity to the user.
+   * in which case care must be taken while displaying the group entity to the user.
    * If none of the group members is our trusted contact, this version will be empty.
    * If only a subset of group members are our trusted contacts, this will be the head changes produced by them.
    *
@@ -651,11 +655,11 @@ export class Group extends Message<Group> {
   static readonly typeName = "com.mintter.groups.v1alpha.Group";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "owner_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "create_time", kind: "message", T: Timestamp },
-    { no: 10, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "owner_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "create_time", kind: "message", T: Timestamp },
+    { no: 6, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "latest_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "latest_local_trusted_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "latest_local_public_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
