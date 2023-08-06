@@ -1,14 +1,23 @@
 import {exposeElectronTRPC} from 'electron-trpc/main'
 import {contextBridge, ipcRenderer} from 'electron'
+import type {GoDaemonState} from './api'
+import {writeableStateStream} from './stream'
 
 process.once('loaded', async () => {
   exposeElectronTRPC()
 })
 
+const [updateDaemonState, daemonState] =
+  writeableStateStream<GoDaemonState | null>(null)
+
+const [updateInitRoute, initRoute] = writeableStateStream<string | null>(null)
+
+contextBridge.exposeInMainWorld('daemonState', daemonState)
+contextBridge.exposeInMainWorld('initRoute', initRoute)
+
 ipcRenderer.addListener('initWindow', (info, event) => {
-  // const {route, windowId} = event
-  console.log('INIT WINDOW', event)
-  contextBridge.exposeInMainWorld('windowInfo', event)
+  updateInitRoute(event.route)
+  updateDaemonState(event.daemonState)
 })
 
 const routeHandlers = new Set<(route: any) => void>()
@@ -20,9 +29,12 @@ ipcRenderer.addListener('openRoute', (info, route) => {
   routeHandlers.forEach((handler) => handler(route))
 })
 
+ipcRenderer.addListener('goDaemonState', (info, state) => {
+  updateDaemonState(state)
+})
+
 contextBridge.exposeInMainWorld('ipc', {
   send: (cmd, args) => {
-    console.log('IPC SENDING', cmd, args)
     ipcRenderer.send(cmd, args)
   },
   listen: async (cmd: string, handler: (event: any) => void) => {

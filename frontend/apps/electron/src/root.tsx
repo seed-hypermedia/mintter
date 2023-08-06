@@ -1,11 +1,11 @@
-import React, {useEffect, useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState, useSyncExternalStore} from 'react'
 import ReactDOM from 'react-dom/client'
 import Main from '@mintter/app/src/pages/main'
 import {createGrpcWebTransport} from '@bufbuild/connect-web'
 import {createGRPCClient} from '@mintter/shared'
 import {toast} from '@mintter/app/src/toast'
 import {WindowUtils} from '@mintter/app/src/window-utils'
-import {AppContextProvider} from '@mintter/app/src/app-context'
+import {AppContextProvider, StyleProvider} from '@mintter/app/src/app-context'
 import {AppQueryClient, getQueryClient} from '@mintter/app/src/query-client'
 import {createIPC} from './ipc'
 import {NavRoute, NavigationProvider} from '@mintter/app/src/utils/navigation'
@@ -20,7 +20,10 @@ import superjson from 'superjson'
 import {AppIPC} from '@mintter/app/src/app-ipc'
 import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
 import {client} from './trpc'
-import { app, ipcRenderer } from 'electron'
+import type {GoDaemonState} from './api'
+import type {StateStream} from './stream'
+import {AppErrorPage} from '@mintter/app/src/components/app-error'
+import {Spinner, XStack, YStack} from '@mintter/ui'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
@@ -59,6 +62,32 @@ function useWindowUtils(): WindowUtils {
   return windowUtils
 }
 
+// @ts-expect-error
+const daemonState: StateStream<GoDaemonState> = window.daemonState
+
+function useGoDaemonState(): GoDaemonState | undefined {
+  const [state, setState] = useState<GoDaemonState | undefined>(
+    daemonState.get(),
+  )
+
+  useEffect(() => {
+    const updateHandler = (value: GoDaemonState) => {
+      setState(value)
+    }
+    if (daemonState.get() !== state) {
+      // this is hacky and shouldn't be needed but this fixes some race where daemonState has changed already
+      setState(daemonState.get())
+    }
+    const sub = daemonState.subscribe(updateHandler)
+
+    return () => {
+      sub()
+    }
+  }, [])
+
+  return state
+}
+
 function MainApp({
   queryClient,
   ipc,
@@ -66,6 +95,7 @@ function MainApp({
   queryClient: AppQueryClient
   ipc: AppIPC
 }) {
+  const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils()
   const initialNav = useMemo(() => {
@@ -75,9 +105,9 @@ function MainApp({
       initRoute = decodeRouteFromPath(rawPath)
     } catch (e) {}
     // @ts-expect-error
-    if (!initRoute && window.windowInfo?.route) {
-      // @ts-expect-error
-      initRoute = window.windowInfo.route
+    const windowInitRoute = window.initRoute?.get()
+    if (!initRoute && windowInitRoute) {
+      initRoute = windowInitRoute
     }
     if (!initRoute) {
       initRoute = {key: 'home'}
@@ -88,6 +118,29 @@ function MainApp({
       lastAction: null,
     }
   }, [])
+  if (!daemonState) return null
+  if (daemonState?.t === 'error') {
+    return (
+      <StyleProvider>
+        <AppErrorPage message={daemonState?.message} />
+      </StyleProvider>
+    )
+  }
+  if (daemonState?.t !== 'ready') {
+    return (
+      <StyleProvider>
+        <XStack
+          flex={1}
+          minWidth={'100vw'}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Spinner />
+        </XStack>
+      </StyleProvider>
+    )
+  }
+
   return (
     <AppContextProvider
       grpcClient={grpcClient}

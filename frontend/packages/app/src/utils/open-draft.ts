@@ -37,15 +37,10 @@ export function useOpenDraft() {
           draftId: docId,
           contextRoute: route,
         }
-        console.log('helloiiiiii')
         invalidate([queryKeys.GET_DRAFT_LIST])
-        console.log('didinvalidate')
         if (newWindow) {
-          console.log('newWindow')
-
           spawn(draftRoute)
         } else {
-          console.log('navigate')
           navigate(draftRoute)
         }
       })

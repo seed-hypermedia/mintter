@@ -40,6 +40,20 @@ ipcMain.on('open_quick_switcher', (_event, info) => {
 
 export const mainMenu = new Menu()
 
+type ReadyState = {t: 'ready'}
+type ErrorState = {t: 'error'; message: string}
+type StartupState = {t: 'startup'}
+export type GoDaemonState = ReadyState | ErrorState | StartupState
+
+let goDaemonState: GoDaemonState = {t: 'startup'}
+
+export function updateGoDaemonState(state: GoDaemonState) {
+  goDaemonState = state
+  allWindows.forEach((window) => {
+    window.webContents.send('goDaemonState', goDaemonState)
+  })
+}
+
 mainMenu.append(
   new MenuItem({
     role: 'appMenu',
@@ -119,7 +133,19 @@ mainMenu.append(
 )
 // mainMenu.getMenuItemById('route_pubs').enabled = false
 
-mainMenu.append(new MenuItem({role: 'windowMenu'}))
+mainMenu.append(
+  new MenuItem({
+    role: 'windowMenu',
+    submenu: [
+      {
+        role: 'close',
+      },
+      {
+        role: 'minimize',
+      },
+    ],
+  }),
+)
 
 export const router = t.router({
   createAppWindow: t.procedure
@@ -149,12 +175,19 @@ export const router = t.router({
           y: 12,
         },
       })
-      allWindows[windowId] = browserWindow
+      allWindows.set(windowId, browserWindow)
       trpcHandlers.attachWindow(browserWindow)
-
       browserWindow.webContents.send('initWindow', {
         route: input?.route,
+        daemonState: goDaemonState,
         windowId,
+      })
+      browserWindow.webContents.on('did-finish-load', () => {
+        browserWindow.webContents.send('initWindow', {
+          route: input?.route,
+          daemonState: goDaemonState,
+          windowId,
+        })
       })
 
       // First render trick: https://getlotus.app/21-making-electron-apps-feel-native-on-mac
@@ -164,7 +197,7 @@ export const router = t.router({
 
       browserWindow.on('close', () => {
         trpcHandlers.detachWindow(browserWindow)
-        delete allWindows[windowId]
+        allWindows.delete(windowId)
       })
 
       browserWindow.on('focus', () => {
@@ -176,11 +209,6 @@ export const router = t.router({
 
       // and load the index.html of the app.
       if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-        console.log(
-          '== LOAD APP',
-          browserWindow,
-          MAIN_WINDOW_VITE_DEV_SERVER_URL,
-        )
         browserWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
       } else {
         browserWindow.loadFile(

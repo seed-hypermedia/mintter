@@ -10,3 +10,13 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
     </YStack>
   )
 }
+
+export function AppErrorPage({message}: {message: string}) {
+  return (
+    <YStack role="alert" space>
+      <Text>App Error</Text>
+      <Text tag="pre">{message}</Text>
+      <Text>Quit and re-launch the app to try again.</Text>
+    </YStack>
+  )
+}

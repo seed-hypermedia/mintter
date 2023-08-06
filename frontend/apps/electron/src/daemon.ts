@@ -7,6 +7,7 @@ import {
   BACKEND_GRPC_PORT,
   BACKEND_HTTP_PORT,
 } from '@mintter/app/src/constants'
+import {updateGoDaemonState} from './api'
 
 console.log('== BACKEND_HTTP_PORT', BACKEND_HTTP_PORT)
 
@@ -40,12 +41,13 @@ if (platform() === 'darwin') {
   )
 }
 
-let godPath =
+let goDaemonExecutablePath =
   process.env.NODE_ENV == 'development'
     ? devDaemonBinaryPath
     : prodDaemonBinaryPath
+
 const daemonProcess = spawn(
-  godPath,
+  goDaemonExecutablePath,
   [
     // daemon arguments
 
@@ -76,6 +78,7 @@ daemonProcess.on('error', (err) => {
 })
 daemonProcess.on('close', (code, signal) => {
   if (!expectingDaemonClose) {
+    updateGoDaemonState({t: 'error', message: 'Service Error: ' + lastStderr})
     console.log('[god] daemon close', code, signal)
   }
 })
@@ -92,11 +95,16 @@ daemonProcess.stdout.on('data', (data) => {
     .split('\n')
     .forEach((msg) => msg && console.log('[god] ' + msg))
 })
+let lastStderr = ''
 daemonProcess.stderr.on('data', (data) => {
   const multilineString = data.toString()
+  lastStderr = multilineString
   multilineString
     .split('\n')
-    .forEach((msg) => msg && console.log('[god] ' + msg))
+    .forEach((msg) => msg && console.log('[god!] ' + msg))
+  if (multilineString.match('INFO') && multilineString.match('DaemonStarted')) {
+    updateGoDaemonState({t: 'ready'})
+  }
 })
 daemonProcess.stdout.on('error', (err) => {
   console.error('[god] output error:', err)
