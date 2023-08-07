@@ -1,6 +1,7 @@
 import {Accounts} from './.generated/accounts/v1alpha/accounts_connectweb'
 import {Daemon} from './.generated/daemon/v1alpha/daemon_connectweb'
 import {Changes} from './.generated/documents/v1alpha/changes_connectweb'
+import {Groups} from './.generated/groups/v1alpha/groups_connectweb'
 import {Comments} from './.generated/documents/v1alpha/comments_connectweb'
 import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
 
@@ -35,6 +36,11 @@ export type {
   RegisterRequest,
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
+export type {
+  Group,
+  Role,
+  ListGroupsRequest,
+} from './.generated/groups/v1alpha/groups_pb'
 export {
   ChangeInfo,
   GetChangeInfoRequest,
@@ -88,6 +94,7 @@ export {
   Daemon,
   Document,
   Drafts,
+  Groups,
   Networking,
   Publications,
   WebPublishing,

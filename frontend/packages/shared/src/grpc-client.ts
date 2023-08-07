@@ -10,6 +10,7 @@ import {
   Publications,
   WebPublishing,
   WebSite,
+  Groups,
 } from './client'
 
 export type GRPCClient = {
@@ -17,6 +18,7 @@ export type GRPCClient = {
   contentGraph: PromiseClient<typeof ContentGraph>
   comments: PromiseClient<typeof Comments>
   changes: PromiseClient<typeof Changes>
+  groups: PromiseClient<typeof Groups>
   drafts: PromiseClient<typeof Drafts>
   publications: PromiseClient<typeof Publications>
   daemon: PromiseClient<typeof Daemon>
@@ -39,6 +41,7 @@ export function createGRPCClient(transport: any): GRPCClient {
     daemon: createPromiseClient(Daemon, transport),
     networking: createPromiseClient(Networking, transport),
     webPublishing: createPromiseClient(WebPublishing, transport),
+    groups: createPromiseClient(Groups, transport),
     webSite: localWebSite,
     getRemoteWebClient: (siteOrigin: string) => {
       return Object.fromEntries(

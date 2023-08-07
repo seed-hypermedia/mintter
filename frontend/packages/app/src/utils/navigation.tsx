@@ -42,7 +42,11 @@ export type DraftRoute = {
   contextRoute?: NavRoute
 }
 export type SettingsRoute = {key: 'settings'}
-
+export type GroupsRoute = {key: 'groups'}
+export type GroupRoute = {
+  key: 'group'
+  groupId: string
+}
 export type NavRoute =
   | HomeRoute
   | ContactsRoute
@@ -50,6 +54,8 @@ export type NavRoute =
   | SettingsRoute
   | SitesRoute
   | SiteRoute
+  | GroupsRoute
+  | GroupRoute
   | PublicationRoute
   | DraftsRoute
   | DraftRoute

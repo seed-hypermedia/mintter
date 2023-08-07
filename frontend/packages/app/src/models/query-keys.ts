@@ -27,6 +27,10 @@ export const queryKeys = {
   GET_SITE_PUBLICATIONS: 'GET_SITE_PUBLICATIONS', //, hostname: string
   GET_DOC_SITE_PUBLICATIONS: 'GET_DOC_SITE_PUBLICATIONS', // , docId: string
 
+  // groups
+  GET_GROUPS: 'GET_GROUPS',
+  GET_GROUP: 'GET_GROUP', // , groupId: string
+
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
   GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST', //

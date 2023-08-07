@@ -29,7 +29,6 @@ import {
   Separator,
   Settings,
   SizableText,
-  Globe,
   TitlebarSection,
   User,
   XGroup,
@@ -39,46 +38,63 @@ import {
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
-import {FilePlus2, Folder, Pencil, Search} from '@tamagui/lucide-icons'
+import {FilePlus2, Folder, Globe, Pencil, Search} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {useIPC} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '@mintter/app/src/app-context'
 
-export function ActionButtons(props: TitleBarProps) {
-  const openDraft = useOpenDraft()
+function NewDocumentButton() {
   const route = useNavRoute()
+  const openDraft = useOpenDraft()
   const isDaemonReady = useDaemonReady()
+  return (
+    <Tooltip content="New Document">
+      <Button
+        size="$2"
+        chromeless
+        disabled={!isDaemonReady}
+        iconAfter={FilePlus2}
+        onPress={(e) => {
+          e.preventDefault()
+          const host = route.key === 'site' ? route.hostname : undefined
+          // @ts-ignore
+          openDraft(!e.shiftKey, host)
+        }}
+      />
+    </Tooltip>
+  )
+}
 
+function AddGroupButton() {
+  return (
+    <Tooltip content="New Group">
+      <Button size="$2" iconAfter={FilePlus2} onPress={(e) => {}}>
+        New Group
+      </Button>
+    </Tooltip>
+  )
+}
+
+export function ActionButtons(props: TitleBarProps) {
+  const route = useNavRoute()
+
+  let buttonGroup = [<NewDocumentButton key="newDoc" />]
+  if (route.key === 'draft') {
+    buttonGroup = []
+  } else if (route.key === 'contacts') {
+    buttonGroup = [<ContactsPrompt key="addContact" />]
+  } else if (route.key === 'groups') {
+    buttonGroup = [<AddGroupButton key="addGroup" />]
+  }
   return (
     <TitlebarSection>
       {route.key == 'publication' ? <WriteActions route={route} /> : null}
-
       <PublishShareButton />
-
-      {route.key == 'draft' ? null : (
-        <div className="button-group">
-          {route.key == 'contacts' ? (
-            <ContactsPrompt />
-          ) : (
-            <Tooltip content="New Document">
-              <Button
-                size="$2"
-                chromeless
-                disabled={!isDaemonReady}
-                iconAfter={FilePlus2}
-                onPress={(e) => {
-                  e.preventDefault()
-                  const host = route.key === 'site' ? route.hostname : undefined
-                  // @ts-ignore
-                  openDraft(!e.shiftKey, host)
-                }}
-              />
-            </Tooltip>
-          )}
-        </div>
-      )}
+      {buttonGroup.length ? (
+        <div className="button-group">{buttonGroup}</div>
+      ) : null}
     </TitlebarSection>
   )
 }
@@ -191,7 +207,7 @@ function NavMenuContentUnpure({
         <YGroup.Item>
           <MenuItem
             disabled={route.key == 'home'}
-            data-testid="menu-item-inbox"
+            data-testid="menu-item-pubs"
             onPress={() => {
               onRoute({key: 'home'})
             }}
@@ -207,7 +223,7 @@ function NavMenuContentUnpure({
         <YGroup.Item>
           <MenuItem
             disabled={route.key == 'global-publications'}
-            data-testid="menu-item-inbox"
+            data-testid="menu-item-global"
             onPress={() => {
               onRoute({key: 'global-publications'})
             }}
@@ -216,6 +232,20 @@ function NavMenuContentUnpure({
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 2
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            onPress={() => {
+              onRoute({key: 'groups'})
+            }}
+            title="Groups"
+            icon={Folder}
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 3
               </SizableText>
             }
           />

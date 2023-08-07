@@ -24,6 +24,8 @@ const GlobalPublicationList = lazy(
 var DraftList = lazy(() => import('@mintter/app/src/pages/draft-list-page'))
 var Account = lazy(() => import('@mintter/app/src/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/src/pages/contacts-page'))
+var Group = lazy(() => import('@mintter/app/src/pages/group'))
+var Groups = lazy(() => import('@mintter/app/src/pages/groups'))
 var Site = lazy(() => import('@mintter/app/src/pages/site-page'))
 var Publication = lazy(() => import('@mintter/app/src/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/src/pages/draft'))
@@ -36,6 +38,10 @@ function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
     case 'home':
       return PublicationList
+    case 'groups':
+      return Groups
+    case 'group':
+      return Group
     case 'drafts':
       return DraftList
     case 'site':
