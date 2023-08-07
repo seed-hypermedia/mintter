@@ -36,12 +36,17 @@ if (import.meta.env.PROD) {
   if (os.platform() == 'darwin') {
     const reactDevToolsPath = path.join(
       os.homedir(),
-      '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi',
+      '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoieni',
     )
 
-    console.log(`== ~ reactDevToolsPath:`, reactDevToolsPath)
     app.whenReady().then(async () => {
-      await session.defaultSession.loadExtension(reactDevToolsPath)
+      try {
+        await session.defaultSession.loadExtension(reactDevToolsPath)
+      } catch (error) {
+        console.error(
+          '[REACT-DEVTOOLS]: error. no react devtools extension found',
+        )
+      }
     })
   }
 }
