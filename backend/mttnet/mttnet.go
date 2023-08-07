@@ -3,6 +3,8 @@ package mttnet
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"mintter/backend/config"
@@ -181,12 +183,19 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				panic(err)
 			}
 			defer release()
-
 			if err := func() error {
+				randomBytes := make([]byte, 16)
+				_, err := rand.Read(randomBytes)
+				if err != nil {
+					return (err)
+				}
+				if err := sitesql.SetSiteRegistrationLink(conn, siteCfg.Hostname+"/secret-invite/"+base64.RawURLEncoding.EncodeToString(randomBytes)); err != nil {
+					return err
+				}
 				if siteCfg.Title != "" {
 					title, err := sitesql.GetSiteTitle(conn)
 					if err != nil {
-						panic(err)
+						return err
 					}
 
 					if title.GlobalMetaValue != siteCfg.Title {

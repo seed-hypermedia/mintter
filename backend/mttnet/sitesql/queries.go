@@ -11,6 +11,8 @@ import (
 var _ = generateQueries
 
 const (
+	// SiteRegistrationLinkKey is the column name of the meta table where we store the registration link.
+	SiteRegistrationLinkKey = "site_registration_link"
 	// SiteTitleKey is the column name of the meta table where the site title (in case this node is a site) is stored.
 	SiteTitleKey = "site_title"
 	// SiteDescriptionKey is the column name of the meta table where the site description (in case this node is a site) is stored.
@@ -66,6 +68,25 @@ func generateQueries() error {
 			), '\n',
 			"FROM", s.Sites, '\n',
 			"JOIN", s.PublicKeys, "ON", s.PublicKeysID, "=", s.SitesAccountID,
+		),
+
+		qb.MakeQuery(s.Schema, "SetSiteRegistrationLink", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.GlobalMeta, qb.ListColShort(
+				s.GlobalMetaKey,
+				s.GlobalMetaValue,
+			), '\n',
+			"VALUES", qb.List(
+				"'"+SiteRegistrationLinkKey+"'",
+				qb.Var("link", sqlitegen.TypeText),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "GetSiteRegistrationLink", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.GlobalMetaValue),
+			),
+			"FROM", s.GlobalMeta,
+			"WHERE", s.GlobalMetaKey, "='"+SiteRegistrationLinkKey+"'",
 		),
 
 		qb.MakeQuery(s.Schema, "SetSiteTitle", sqlitegen.QueryKindExec,
