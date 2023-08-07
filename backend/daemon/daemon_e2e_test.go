@@ -762,7 +762,6 @@ func TestMultiDevice(t *testing.T) {
 		Addrs: getAddrs(t, alice2),
 	})
 	require.NoError(t, err)
-	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
@@ -781,7 +780,6 @@ func TestMultiDevice(t *testing.T) {
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
-	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
@@ -800,7 +798,6 @@ func TestTrustedPeers(t *testing.T) {
 		Addrs: getAddrs(t, bob),
 	})
 	require.NoError(t, err)
-	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 
 	{
 		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
@@ -815,7 +812,6 @@ func TestTrustedPeers(t *testing.T) {
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
 	}
-	time.Sleep(100 * time.Millisecond) // to give time to trust own account
 
 	acc1 := must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
 	require.False(t, acc1.IsTrusted)
