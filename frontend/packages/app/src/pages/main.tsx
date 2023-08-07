@@ -18,9 +18,12 @@ import './polyfills'
 var PublicationList = lazy(
   () => import('@mintter/app/src/pages/publication-list-page'),
 )
+const GlobalPublicationList = lazy(
+  () => import('@mintter/app/src/pages/global-publications'),
+)
 var DraftList = lazy(() => import('@mintter/app/src/pages/draft-list-page'))
 var Account = lazy(() => import('@mintter/app/src/pages/account-page'))
-var Connections = lazy(() => import('@mintter/app/src/pages/connections-page'))
+var Contacts = lazy(() => import('@mintter/app/src/pages/contacts-page'))
 var Site = lazy(() => import('@mintter/app/src/pages/site-page'))
 var Publication = lazy(() => import('@mintter/app/src/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/src/pages/draft'))
@@ -37,8 +40,8 @@ function getPageComponent(navRoute: NavRoute) {
       return DraftList
     case 'site':
       return Site
-    case 'connections':
-      return Connections
+    case 'contacts':
+      return Contacts
     case 'account':
       return Account
     case 'publication':
@@ -47,6 +50,8 @@ function getPageComponent(navRoute: NavRoute) {
       return Draft
     case 'settings':
       return Settings
+    case 'global-publications':
+      return GlobalPublicationList
     default:
       return NotFoundPage
   }

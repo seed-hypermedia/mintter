@@ -62,13 +62,18 @@ function createEmptyChanges(): DraftChangesState {
   }
 }
 
-export function usePublicationList() {
+export function usePublicationList(trustedOnly: boolean) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_LIST],
+    queryKey: [
+      queryKeys.GET_PUBLICATION_LIST,
+      trustedOnly ? 'trusted' : 'global',
+    ],
     refetchOnMount: true,
     queryFn: async () => {
-      const result = await grpcClient.publications.listPublications({})
+      const result = await grpcClient.publications.listPublications({
+        trustedOnly: trustedOnly,
+      })
       const publications =
         result.publications.sort((a, b) =>
           sortDocuments(a.document?.updateTime, b.document?.updateTime),
@@ -152,11 +157,29 @@ export function useDraft({
   return useQuery(getDraftQuery(grpcClient, documentId, options))
 }
 
+function queryLatestPublication(
+  grpcClient: GRPCClient,
+  documentId?: string,
+  trustedVersionsOnly?: boolean,
+) {
+  const queryKey = trustedVersionsOnly
+    ? [queryKeys.GET_PUBLICATION, documentId, 'trusted']
+    : [queryKeys.GET_PUBLICATION, documentId]
+  return {
+    queryKey,
+    enabled: !!documentId,
+    queryFn: () =>
+      grpcClient.publications.getPublication({
+        documentId,
+        trustedOnly: trustedVersionsOnly,
+      }),
+  }
+}
 function queryPublication(
+  grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
 ): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
-  const grpcClient = useGRPCClient()
   return {
     queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
     enabled: !!documentId,
@@ -175,8 +198,23 @@ export function usePublication({
   documentId?: string
   versionId?: string
 }) {
+  const grpcClient = useGRPCClient()
   return useQuery({
-    ...queryPublication(documentId, versionId),
+    ...queryPublication(grpcClient, documentId, versionId),
+    ...options,
+  })
+}
+export function useLatestPublication({
+  documentId,
+  trustedVersionsOnly,
+  ...options
+}: UseQueryOptions<Publication> & {
+  documentId?: string
+  trustedVersionsOnly?: boolean
+}) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    ...queryLatestPublication(grpcClient, documentId, trustedVersionsOnly),
     ...options,
   })
 }
@@ -190,8 +228,11 @@ export function useDocumentVersions(
   documentId: string | undefined,
   versions: string[],
 ) {
+  const grpcClient = useGRPCClient()
   return useQueries({
-    queries: versions.map((version) => queryPublication(documentId, version)),
+    queries: versions.map((version) =>
+      queryPublication(grpcClient, documentId, version),
+    ),
   })
 }
 

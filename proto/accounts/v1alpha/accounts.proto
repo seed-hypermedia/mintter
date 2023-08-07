@@ -17,6 +17,11 @@ service Accounts {
   // interacting with the network, or users can ask to discover specific accounts using
   // the Networking API.
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+
+  // Set or unset the trustness of an account. An account is untrusted by default except for our own.
+  // Returns the modified account. 
+  rpc SetAccountTrust(SetAccountTrustRequest) returns (Account);
+  
 }
 
 message GetAccountRequest {
@@ -45,6 +50,9 @@ message Account {
 
   // List of known devices of this Account.
   map<string, Device> devices = 3;
+
+  // Defining if the account is trusted or not.
+  bool is_trusted = 4;
 }
 
 message Profile {
@@ -58,4 +66,12 @@ message Profile {
 message Device {
   // CID-encoded Peer ID of this device.
   string device_id = 1;
+}
+
+message SetAccountTrustRequest {
+  // ID of the Account to trust/untrust.
+  string id = 1;
+
+  //Whether to trust or not the account.
+  bool is_trusted = 2;
 }

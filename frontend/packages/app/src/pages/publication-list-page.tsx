@@ -15,8 +15,8 @@ import {useDeletePublication} from '../models/documents'
 import {usePopoverState} from '../use-popover-state'
 import {DeleteDialog} from '../components/delete-dialog'
 
-export default function PublicationList() {
-  let {data} = usePublicationList()
+export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
+  let {data} = usePublicationList(trustedOnly)
   let drafts = useDraftList()
   let openDraft = useOpenDraft()
   const pubs = data?.publications
@@ -46,6 +46,7 @@ export default function PublicationList() {
             (d) => d.id == publication.document?.id,
           )}
           publication={publication}
+          pubContext={trustedOnly ? 'trusted' : null}
           handleDelete={(docId: string) => {
             setDeleteDocId(docId)
             dialogState.onOpenChange(true)
@@ -79,6 +80,7 @@ export default function PublicationList() {
           {pubs.map((publication) => {
             return (
               <PublicationListItem
+                pubContext={trustedOnly ? 'trusted' : null}
                 key={publication.document?.id}
                 hasDraft={drafts.data?.documents.find(
                   (d) => d.id == publication.document?.id,
@@ -149,4 +151,8 @@ export default function PublicationList() {
       <Footer />
     </>
   )
+}
+
+export default function TrustedPublicationList() {
+  return <PublicationListPage trustedOnly={true} />
 }

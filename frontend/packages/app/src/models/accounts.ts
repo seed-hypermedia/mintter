@@ -34,6 +34,36 @@ export function useAllAccounts() {
   return contacts
 }
 
+export function useSetTrusted(
+  opts?: UseMutationOptions<
+    void,
+    unknown,
+    {accountId: string; isTrusted: boolean}
+  >,
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      accountId,
+      isTrusted,
+    }: {
+      accountId: string
+      isTrusted: boolean
+    }) => {
+      await grpcClient.accounts.setAccountTrust({id: accountId, isTrusted})
+      return undefined
+    },
+    onSuccess: (result, input, ctx) => {
+      invalidate([queryKeys.GET_ACCOUNT, input.accountId])
+      invalidate([queryKeys.GET_ALL_ACCOUNTS])
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
+      opts?.onSuccess?.(result, input, ctx)
+    },
+    ...opts,
+  })
+}
+
 export function useAccountIsConnected(account: Account) {
   const peers = useConnectedPeers()
   return !!peers.data?.find((peer) => peer.accountId == account.id)

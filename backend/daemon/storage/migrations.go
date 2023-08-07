@@ -86,7 +86,7 @@ var migrations = []migration{
 			DROP TABLE old_web_publications;
 
 			PRAGMA foreign_key_check;
-		`)); err != nil {
+			`)); err != nil {
 			return err
 		}
 
@@ -118,6 +118,16 @@ var migrations = []migration{
 			CREATE INDEX idx_hd_changes_to_entity ON hd_changes (blob, entity);
 			CREATE INDEX idx_key_delegations_by_blob ON key_delegations (blob, issuer, delegate);
 			DELETE FROM global_meta WHERE key = 'last_reindex_time';
+		`))
+	}},
+
+	// Adding a trusted table to store the accounts we trust.
+	{Version: "2023-07-31.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE IF NOT EXISTS trusted_accounts (
+				id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
+			) WITHOUT ROWID;
+			INSERT OR REPLACE INTO trusted_accounts (id) VALUES (1);
 		`))
 	}},
 }

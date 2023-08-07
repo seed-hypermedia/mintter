@@ -24,9 +24,10 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {Copy} from '@tamagui/lucide-icons'
-import {ReactNode} from 'react'
+import {CheckCircle, Copy, PlusCircle, XCircle} from '@tamagui/lucide-icons'
+import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
+import {useSetTrusted} from '../models/accounts'
 
 function DeviceRow({
   isOnline,
@@ -63,13 +64,20 @@ function Section({children}: {children: ReactNode}) {
   )
 }
 
-function AccountDocuments({accountId}: {accountId: string}) {
+function AccountDocuments({
+  accountId,
+  isTrusted,
+}: {
+  accountId: string
+  isTrusted?: boolean
+}) {
   const list = useAccountPublicationList(accountId)
   return (
     <Section>
       {list.data?.map((doc) => {
         return (
           <PublicationListItem
+            pubContext={isTrusted ? 'trusted' : null}
             key={doc.document?.id}
             publication={doc}
             hasDraft={undefined}
@@ -77,6 +85,45 @@ function AccountDocuments({accountId}: {accountId: string}) {
         )
       })}
     </Section>
+  )
+}
+
+function AccountTrustButton({
+  accountId,
+  isTrusted,
+}: {
+  accountId: string
+  isTrusted?: boolean
+}) {
+  const [hovering, setHovering] = useState(false)
+  const setTrusted = useSetTrusted()
+  if (!isTrusted) {
+    return (
+      <Button
+        size="$2"
+        theme="green"
+        icon={PlusCircle}
+        onPress={() => {
+          setTrusted.mutate({accountId, isTrusted: true})
+        }}
+      >
+        Trust Account
+      </Button>
+    )
+  }
+  return (
+    <Button
+      size="$2"
+      theme={hovering ? 'red' : 'green'}
+      icon={hovering ? XCircle : CheckCircle}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onPress={() => {
+        setTrusted.mutate({accountId, isTrusted: false})
+      }}
+    >
+      {hovering ? 'Untrust Account' : 'Trusted Account'}
+    </Button>
   )
 }
 
@@ -159,6 +206,10 @@ export default function AccountPage() {
                   </YGroup>
                 </Popover.Content>
               </Popover>
+              <AccountTrustButton
+                accountId={accountId}
+                isTrusted={account.isTrusted}
+              />
             </XStack>
           </XStack>
           {account.profile?.bio && (
@@ -166,7 +217,10 @@ export default function AccountPage() {
               <span>{account.profile?.bio}</span>
             </Section>
           )}
-          <AccountDocuments accountId={accountId} />
+          <AccountDocuments
+            isTrusted={account.isTrusted}
+            accountId={accountId}
+          />
         </Container>
       </MainWrapper>
       <Footer />

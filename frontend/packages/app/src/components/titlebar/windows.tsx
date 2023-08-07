@@ -414,8 +414,8 @@ function SystemMenu() {
             icon: Search,
           },
           {
-            id: 'connections',
-            title: 'Connections',
+            id: 'contacts',
+            title: 'Contacts',
             accelerator: 'Ctrl+9',
             onSelect: () => {},
             icon: Reload,

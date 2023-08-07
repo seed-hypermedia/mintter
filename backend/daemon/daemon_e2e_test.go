@@ -421,6 +421,84 @@ func TestSite(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestTrustedChanges(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	t.Cleanup(func() {
+		cancel()
+	})
+
+	trusted := makeTestApp(t, "alice", makeTestConfig(t), true)
+	untrusted := makeTestApp(t, "bob", makeTestConfig(t), true)
+
+	// Both peers connect connect to each other, to exchange documents. Does not mean they trust each other.
+	_, err := trusted.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, untrusted)})
+	require.NoError(t, err)
+
+	// Create a document.
+	sharedDocument := publishDocument(t, ctx, trusted)
+
+	// Sync the document with the untusted peer so it can modify it.
+	_, err = untrusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	var publicationList *documents.ListPublicationsResponse
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the received version is the one the initial author created.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Add an untrusted change
+	const anotherTitle = "New Document title leading to a new version"
+	newVersion := updateDocumenTitle(t, ctx, untrusted, sharedDocument.Document.Id, anotherTitle)
+	require.Equal(t, sharedDocument.Document.Id, newVersion.Document.Id)
+
+	// Send the document back to the creator which the new untrusted changes.
+	_, err = trusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the version is the latest one (untrusted).
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Now ask for trusted changes only.
+	publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+
+	// Check that the version is the initial one, without any untrusted changes.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// But the untrusted peer (last editor) should get the latest version since it was him
+	// the one who wrote the latest changes and he trusts himself by default.
+	publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+}
+
 func TestGateway(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -665,6 +743,7 @@ func TestPeriodicSync(t *testing.T) {
 		bacc := must.Do2(b.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
 		require.Len(t, accs.Accounts, 1, msg)
+		bacc.IsTrusted = accs.Accounts[0].IsTrusted // just bc they synced they dont trust each other
 		testutil.ProtoEqual(t, bacc, accs.Accounts[0], "a must fetch b's account fully")
 	}
 
@@ -683,9 +762,9 @@ func TestMultiDevice(t *testing.T) {
 		Addrs: getAddrs(t, alice2),
 	})
 	require.NoError(t, err)
-
 	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+
 	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
 
 	{
@@ -701,12 +780,80 @@ func TestMultiDevice(t *testing.T) {
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
-
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
 
 	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
+}
+
+func TestTrustedPeers(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	acc1 := must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 := must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc1.IsTrusted)
+
+	//Just because they sync the should not be trusted
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+	time.Sleep(100 * time.Millisecond) // to give time to sync
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: false})
+	require.NoError(t, err)
+	require.False(t, acc1.IsTrusted)
+	acc2, err = bob.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: alice.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc2.IsTrusted)
+
+	//Double check
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc2.IsTrusted)
 }
 
 func TestNetworkingListPeers(t *testing.T) {

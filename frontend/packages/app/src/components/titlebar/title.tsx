@@ -9,30 +9,42 @@ import {AccountLinkAvatar} from '@mintter/app/src/components/account-link-avatar
 import {
   File,
   FontSizeTokens,
+  Globe,
   Pencil,
   TitleText,
   User,
   XStack,
 } from '@mintter/ui'
+import {Folder} from '@tamagui/lucide-icons'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
   if (route.key === 'home') {
     return (
       <>
-        <File size={12} />
+        <Folder size={12} />
         <TitleText data-tauri-drag-region size={size}>
-          All Publications
+          Publications
         </TitleText>
       </>
     )
   }
-  if (route.key === 'connections') {
+  if (route.key === 'global-publications') {
+    return (
+      <>
+        <Globe size={12} />
+        <TitleText data-tauri-drag-region size={size}>
+          Global Publications
+        </TitleText>
+      </>
+    )
+  }
+  if (route.key === 'contacts') {
     return (
       <>
         <User size={12} />
         <TitleText data-tauri-drag-region size={size}>
-          Connections
+          Contacts
         </TitleText>
       </>
     )

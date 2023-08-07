@@ -338,7 +338,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	eid := hyper.EntityID("hd://d/" + in.DocumentId)
 	version := hyper.Version(in.Version)
 
-	pub, err := api.loadPublication(ctx, eid, version)
+	pub, err := api.loadPublication(ctx, eid, version, in.TrustedOnly)
 	if err == nil {
 		return pub, nil
 	}
@@ -362,10 +362,10 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
 	}
 
-	return api.loadPublication(ctx, eid, version)
+	return api.loadPublication(ctx, eid, version, in.TrustedOnly)
 }
 
-func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, version hyper.Version) (docpb *documents.Publication, err error) {
+func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, version hyper.Version, trustedOnly bool) (docpb *documents.Publication, err error) {
 	var entity *hyper.Entity
 	if version != "" {
 		heads, err := hyper.Version(version).Parse()
@@ -378,7 +378,11 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 			return nil, err
 		}
 	} else {
-		entity, err = api.blobs.LoadEntity(ctx, docid)
+		if trustedOnly {
+			entity, err = api.blobs.LoadTrustedEntity(ctx, docid)
+		} else {
+			entity, err = api.blobs.LoadEntity(ctx, docid)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -443,8 +447,9 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	for _, e := range entities {
 		docid := e.TrimPrefix("hd://d/")
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: docid,
-			LocalOnly:  true,
+			DocumentId:  docid,
+			LocalOnly:   true,
+			TrustedOnly: in.TrustedOnly,
 		})
 		if err != nil {
 			continue

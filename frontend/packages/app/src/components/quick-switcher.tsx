@@ -15,7 +15,7 @@ import {useAppContext} from '@mintter/app/src/app-context'
 
 export default function QuickSwitcher() {
   const {data: drafts} = useDraftList()
-  const {data: publications} = usePublicationList()
+  const {data: publications} = usePublicationList(false)
 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')

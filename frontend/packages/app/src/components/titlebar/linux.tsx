@@ -146,8 +146,8 @@ function NavMenu() {
             }
           />
           <Dropdown.Item
-            disabled={route.key == 'connections'}
-            onPress={() => navigate({key: 'connections'})}
+            disabled={route.key == 'contacts'}
+            onPress={() => navigate({key: 'contacts'})}
             icon={User}
             title="Connections"
             iconAfter={

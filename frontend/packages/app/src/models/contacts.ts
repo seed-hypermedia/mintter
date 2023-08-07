@@ -32,7 +32,9 @@ export function useAccountWithDevices(accountId: string) {
   const account = useAccount(accountId)
   const peers = useConnectedPeers()
   return {
+    ...account.data,
     profile: account.data?.profile,
+
     devices: Object.values(account?.data?.devices || {}).map(
       (device: Device) => {
         const deviceId = device.deviceId

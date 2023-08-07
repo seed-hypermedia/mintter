@@ -12,20 +12,22 @@ import {useIPC} from '@mintter/app/src/app-context'
 global.Buffer = global.Buffer || Buffer
 
 export type HomeRoute = {key: 'home'}
-export type ConnectionsRoute = {key: 'connections'}
+export type GlobalPublications = {key: 'global-publications'}
+export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
 export type SiteRoute = {key: 'site'; hostname: string}
-export type BlockNoteRoute = {key: 'blocknote'}
 
 type PublicationVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
 type PublicationCommentsAccessory = {key: 'comments'}
 
+export type PublicationRouteContext = 'trusted' | null
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
+  pubContext?: PublicationRouteContext
   blockId?: string
   accessory?:
     | null
@@ -43,7 +45,7 @@ export type SettingsRoute = {key: 'settings'}
 
 export type NavRoute =
   | HomeRoute
-  | ConnectionsRoute
+  | ContactsRoute
   | AccountRoute
   | SettingsRoute
   | SitesRoute
@@ -51,7 +53,7 @@ export type NavRoute =
   | PublicationRoute
   | DraftsRoute
   | DraftRoute
-  | BlockNoteRoute
+  | GlobalPublications
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}

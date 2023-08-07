@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState, useSyncExternalStore} from 'react'
 import ReactDOM from 'react-dom/client'
 import Main from '@mintter/app/src/pages/main'
-import {createGrpcWebTransport} from '@bufbuild/connect-web'
+import {Interceptor, createGrpcWebTransport} from '@bufbuild/connect-web'
 import {createGRPCClient} from '@mintter/shared'
 import {toast} from '@mintter/app/src/toast'
 import {WindowUtils} from '@mintter/app/src/window-utils'
@@ -27,8 +27,25 @@ import {Spinner, XStack, YStack} from '@mintter/ui'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
+const loggingInterceptor: Interceptor = (next) => async (req) => {
+  try {
+    const result = await next(req)
+    // @ts-ignore
+    console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    return result
+  } catch (e) {
+    let error = e
+    if (e.message.match('stream.getReader is not a function')) {
+      error = new Error('RPC broken, try running yarn and ./dev gen')
+    }
+    console.error(`🚨 to ${req.method.name} `, req.message, error)
+    throw error
+  }
+}
+
 const transport = createGrpcWebTransport({
   baseUrl: BACKEND_HTTP_URL,
+  interceptors: import.meta.env.PROD ? undefined : [loggingInterceptor],
 })
 
 function useWindowUtils(): WindowUtils {

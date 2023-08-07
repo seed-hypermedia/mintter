@@ -86,6 +86,32 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	})
 }
 
+// SetAccountTrust sets an account to trusted.
+func (bs *Storage) SetAccountTrust(ctx context.Context, acc []byte) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		return hypersql.SetAccountTrust(conn, acc)
+	})
+}
+
+// UnsetAccountTrust untrust the provided account.
+func (bs *Storage) UnsetAccountTrust(ctx context.Context, acc []byte) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		return hypersql.UnsetAccountTrust(conn, acc)
+	})
+}
+
 func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {

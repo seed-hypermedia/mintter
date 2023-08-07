@@ -29,6 +29,7 @@ import {
   Separator,
   Settings,
   SizableText,
+  Globe,
   TitlebarSection,
   User,
   XGroup,
@@ -38,7 +39,7 @@ import {
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
-import {FilePlus2, Globe, Pencil, Search} from '@tamagui/lucide-icons'
+import {FilePlus2, Folder, Pencil, Search} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
@@ -58,7 +59,7 @@ export function ActionButtons(props: TitleBarProps) {
 
       {route.key == 'draft' ? null : (
         <div className="button-group">
-          {route.key == 'connections' ? (
+          {route.key == 'contacts' ? (
             <ContactsPrompt />
           ) : (
             <Tooltip content="New Document">
@@ -194,11 +195,27 @@ function NavMenuContentUnpure({
             onPress={() => {
               onRoute({key: 'home'})
             }}
-            title="All Publications"
-            icon={File}
+            title="Publications"
+            icon={Folder}
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 1
+              </SizableText>
+            }
+          />
+        </YGroup.Item>
+        <YGroup.Item>
+          <MenuItem
+            disabled={route.key == 'global-publications'}
+            data-testid="menu-item-inbox"
+            onPress={() => {
+              onRoute({key: 'global-publications'})
+            }}
+            title="Global Publications"
+            icon={Globe}
+            iconAfter={
+              <SizableText size="$1" color="$mint5">
+                &#8984; 2
               </SizableText>
             }
           />
@@ -221,12 +238,12 @@ function NavMenuContentUnpure({
         </YGroup.Item>
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'connections'}
+            disabled={route.key == 'contacts'}
             onPress={() => {
-              onRoute({key: 'connections'})
+              onRoute({key: 'contacts'})
             }}
             icon={User}
-            title="Connections"
+            title="Contacts"
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 9

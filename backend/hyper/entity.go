@@ -324,6 +324,8 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 }
 
 // LoadEntity from the database. If not found returns nil result and nil error.
+// If trustedOnly true, then it will returnl the lastest version changed by a trusted peer.
+// It will return the latest version available otherwhise, regardles on who made the change.
 func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
@@ -342,6 +344,32 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	}
 
 	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HDEntitiesID)
+	if err != nil {
+		return nil, err
+	}
+
+	return bs.loadFromHeads(conn, eid, heads.Heads)
+}
+
+// LoadTrustedEntity will return the latest entity version changed by a trusted peer.
+func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return nil, err
+	}
+	if edb.HDEntitiesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
+	}
+
+	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, edb.HDEntitiesID)
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +504,6 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 	}
 
 	entity := NewEntity(eid)
-
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
 		buf, err = bs.bs.decoder.DecodeAll(change.HDChangesViewData, buf)
@@ -489,9 +516,11 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
+
 		if err := entity.ApplyChange(chcid, ch); err != nil {
 			return nil, err
 		}
+
 		buf = buf[:0] // reset the slice reusing the backing array
 	}
 

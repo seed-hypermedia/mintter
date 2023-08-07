@@ -86,6 +86,16 @@ func generateQueries() error {
 			"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal), '\n',
 			"LIMIT 1",
 		),
+
+		qb.MakeQuery(s.Schema, "PublicKeysLookupPrincipal", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.PublicKeysPrincipal,
+			), '\n',
+			"FROM", s.PublicKeys, '\n',
+			"WHERE", s.PublicKeysID, "=", qb.VarCol(s.PublicKeysID), '\n',
+			"LIMIT 1",
+		),
+
 		qb.MakeQuery(s.Schema, "PublicKeysInsert", sgen.QueryKindSingle,
 			"INSERT INTO", s.PublicKeys, qb.ListColShort(
 				s.PublicKeysPrincipal,
@@ -96,6 +106,37 @@ func generateQueries() error {
 			"RETURNING", qb.Results(s.PublicKeysID),
 		),
 
+		qb.MakeQuery(s.Schema, "SetAccountTrust", sgen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.TrustedAccounts, qb.ListColShort(
+				s.TrustedAccountsID,
+			), '\n',
+			"VALUES", qb.List(
+				qb.SubQuery(
+					"SELECT", s.PublicKeysID,
+					"FROM", s.PublicKeys,
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+				),
+			),
+		),
+		qb.MakeQuery(s.Schema, "UnsetAccountTrust", sgen.QueryKindExec,
+			"DELETE FROM", s.TrustedAccounts, '\n',
+			"WHERE", s.TrustedAccountsID, "IN", qb.SubQuery(
+				"SELECT", s.PublicKeysID,
+				"FROM", s.PublicKeys,
+				"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+			),
+		),
+		qb.MakeQuery(s.Schema, "IsTrustedAccount", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.TrustedAccountsID,
+			), '\n',
+			"FROM", s.TrustedAccounts, '\n',
+			"WHERE", s.TrustedAccountsID, "IN", qb.SubQuery(
+				"SELECT", s.PublicKeysID,
+				"FROM", s.PublicKeys,
+				"WHERE", s.PublicKeysPrincipal, "=", qb.Var("principal", sgen.TypeBytes),
+			),
+		),
 		qb.MakeQuery(s.Schema, "KeyDelegationsInsertOrIgnore", sgen.QueryKindSingle,
 			"INSERT OR IGNORE INTO", s.KeyDelegations, qb.ListColShort(
 				s.KeyDelegationsBlob,
@@ -286,6 +327,20 @@ deps (blob) AS (
 SELECT json_group_array(blob) AS heads
 FROM non_drafts
 WHERE blob NOT IN deps`,
+		},
+		sgen.QueryTemplate{
+			Name: "ChangesGetTrustedHeadsJSON",
+			Kind: sgen.QueryKindSingle,
+			Inputs: []sgen.GoSymbol{
+				{Name: "entity", Type: sgen.TypeInt},
+			},
+			Outputs: []sgen.GoSymbol{
+				{Name: "Heads", Type: sgen.TypeBytes},
+			},
+			SQL: `SELECT json_group_array(` + s.C_HDChangesBlob + `) AS heads
+FROM ` + s.T_HDChanges + `
+JOIN ` + s.T_TrustedAccounts + ` ON ` + s.C_TrustedAccountsID + ` = ` + s.C_HDChangesAuthor + `
+WHERE ` + s.C_HDChangesEntity + ` = :entity`,
 		},
 		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
 			"DELETE FROM", s.Blobs, '\n',

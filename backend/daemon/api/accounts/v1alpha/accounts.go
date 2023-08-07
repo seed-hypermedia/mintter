@@ -1,10 +1,10 @@
+// Package accounts implements account functions.
 package accounts
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
@@ -81,7 +81,13 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 				DeviceId: pids,
 			}
 		}
-
+		istrusted, err := hypersql.IsTrustedAccount(conn, aid)
+		if err != nil {
+			return err
+		}
+		if istrusted.TrustedAccountsID != 0 {
+			acc.IsTrusted = true
+		}
 		return nil
 	}); err != nil {
 		return nil, err
@@ -172,6 +178,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
 }
 
+// UpdateProfile is public so it can be called from sites.
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
 	eid := hyper.EntityID("hd://a/" + me.Account().Principal().String())
 
@@ -227,6 +234,42 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	}
 
 	return nil
+}
+
+// SetAccountTrust implements the corresponding gRPC method.
+func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountTrustRequest) (*accounts.Account, error) {
+	acc, err := core.DecodePrincipal(in.Id)
+	if err != nil {
+		return nil, err
+	}
+	if in.IsTrusted {
+		err = srv.blobs.SetAccountTrust(ctx, acc)
+	} else {
+		me, ok := srv.me.Get()
+		if !ok {
+			return nil, fmt.Errorf("account not initialized yet")
+		}
+		if acc.String() == me.Account().Principal().String() {
+			return nil, fmt.Errorf("cannot untrust self")
+		}
+		err = srv.blobs.UnsetAccountTrust(ctx, acc)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAcc, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: acc.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if updatedAcc.IsTrusted != in.IsTrusted {
+		return nil, fmt.Errorf("Expected trusted %t but got %t", in.IsTrusted, updatedAcc.IsTrusted)
+	}
+
+	return updatedAcc, nil
 }
 
 // ListAccounts implements the corresponding gRPC method.

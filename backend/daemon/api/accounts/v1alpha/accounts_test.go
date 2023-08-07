@@ -29,8 +29,8 @@ func TestGetAccount_Own(t *testing.T) {
 				DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 			},
 		},
+		IsTrusted: true,
 	}
-
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
@@ -67,12 +67,12 @@ func TestAPIUpdateProfile(t *testing.T) {
 				DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 			},
 		},
+		IsTrusted: true,
 	}
 
 	updated, err := alice.UpdateProfile(ctx, want.Profile)
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, updated, "account must be equal")
-
 	stored, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, stored, "get account must return updated account")
@@ -90,6 +90,7 @@ func TestAPIUpdateProfile(t *testing.T) {
 					DeviceId: "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C",
 				},
 			},
+			IsTrusted: true,
 		}
 
 		updated, err := alice.UpdateProfile(ctx, want.Profile)
@@ -100,6 +101,21 @@ func TestAPIUpdateProfile(t *testing.T) {
 		require.NoError(t, err)
 		testutil.ProtoEqual(t, want, stored, "get account must return updated account")
 	}
+}
+
+func TestTrustOwnAccount(t *testing.T) {
+	alice := newTestServer(t, "alice")
+	bob := coretest.NewTester("bob")
+	ctx := context.Background()
+	acc, err := alice.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{
+		Id:        bob.Account.Principal().String(),
+		IsTrusted: true,
+	})
+	require.Error(t, err, "Alice must not have Bob's account")
+	require.Nil(t, acc)
+	acc, err = alice.GetAccount(ctx, &accounts.GetAccountRequest{}) //No id=own account
+	require.NoError(t, err)
+	require.True(t, acc.IsTrusted)
 }
 
 // TODO: update profile idempotent no change

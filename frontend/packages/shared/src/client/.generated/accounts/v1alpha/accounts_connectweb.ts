@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse, Profile } from "./accounts_pb";
+import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse, Profile, SetAccountTrustRequest } from "./accounts_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -48,6 +48,18 @@ export const Accounts = {
       name: "ListAccounts",
       I: ListAccountsRequest,
       O: ListAccountsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Set or unset the trustness of an account. An account is untrusted by default except for our own.
+     * Returns the modified account. 
+     *
+     * @generated from rpc com.mintter.accounts.v1alpha.Accounts.SetAccountTrust
+     */
+    setAccountTrust: {
+      name: "SetAccountTrust",
+      I: SetAccountTrustRequest,
+      O: Account,
       kind: MethodKind.Unary,
     },
   }
