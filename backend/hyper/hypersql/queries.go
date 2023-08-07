@@ -332,26 +332,15 @@ WHERE blob NOT IN deps`,
 			Name: "ChangesGetTrustedHeadsJSON",
 			Kind: sgen.QueryKindSingle,
 			Inputs: []sgen.GoSymbol{
-				{Name: "eid", Type: sgen.TypeText},
+				{Name: "entity", Type: sgen.TypeInt},
 			},
 			Outputs: []sgen.GoSymbol{
 				{Name: "Heads", Type: sgen.TypeBytes},
 			},
-			SQL: `WITH RECURSIVE
-trusted_parent (blob) AS (
-	WITH all_changes (blob, author) AS (
-		SELECT ` + s.C_HDChangesBlob + `, ` + s.C_HDChangesAuthor + ` FROM ` + s.T_HDChanges + `
-				JOIN ` + s.T_HDEntities + ` ON ` + s.C_HDChangesEntity + ` = ` + s.C_HDEntitiesID + `
-				WHERE ` + s.C_HDEntitiesEID + ` = :eid ),
-				trusted_changes(blob, author) AS (
-				SELECT all_changes.blob, all_changes.author FROM all_changes
-				JOIN ` + s.T_TrustedAccounts + ` ON all_changes.author = ` + s.C_TrustedAccountsID + `) 
-				SELECT DISTINCT ` + s.C_HDChangeDepsParent + ` FROM ` + s.T_HDChangeDeps + `
-				JOIN trusted_changes ON trusted_changes.blob = ` + s.C_HDChangeDepsChild + `
-				UNION SELECT blob FROM trusted_changes
-				UNION SELECT ` + s.C_HDChangeDepsParent + ` FROM ` + s.T_HDChangeDeps + `, trusted_parent 
-				WHERE child = blob LIMIT 100000) 
-				SELECT DISTINCT json_group_array(blob) AS heads FROM trusted_parent`,
+			SQL: `SELECT json_group_array(` + s.C_HDChangesBlob + `) AS heads
+FROM ` + s.T_HDChanges + `
+JOIN ` + s.T_TrustedAccounts + ` ON ` + s.C_TrustedAccountsID + ` = ` + s.C_HDChangesAuthor + `
+WHERE ` + s.C_HDChangesEntity + ` = :entity`,
 		},
 		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
 			"DELETE FROM", s.Blobs, '\n',

@@ -303,6 +303,6 @@ func TestTrustedEntity(t *testing.T) {
 
 	// Ask for an unknown entity
 	fakeEntity, err := aliceBlobs.LoadTrustedEntity(ctx, "fake_entity")
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.Nil(t, fakeEntity)
 }

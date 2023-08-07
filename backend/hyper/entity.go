@@ -351,7 +351,7 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	return bs.loadFromHeads(conn, eid, heads.Heads)
 }
 
-// LoadTrustedEntity will return the lastest entity version changed by a trusted peer.
+// LoadTrustedEntity will return the latest entity version changed by a trusted peer.
 func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
@@ -361,7 +361,15 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 
 	defer sqlitex.Save(conn)(&err)
 
-	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, string(eid))
+	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return nil, err
+	}
+	if edb.HDEntitiesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
+	}
+
+	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, edb.HDEntitiesID)
 	if err != nil {
 		return nil, err
 	}

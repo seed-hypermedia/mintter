@@ -964,27 +964,16 @@ type ChangesGetTrustedHeadsJSONResult struct {
 	Heads []byte
 }
 
-func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, eid string) (ChangesGetTrustedHeadsJSONResult, error) {
-	const query = `WITH RECURSIVE
-trusted_parent (blob) AS (
-	WITH all_changes (blob, author) AS (
-		SELECT hd_changes.blob, hd_changes.author FROM hd_changes
-				JOIN hd_entities ON hd_changes.entity = hd_entities.id
-				WHERE hd_entities.eid = :eid ),
-				trusted_changes(blob, author) AS (
-				SELECT all_changes.blob, all_changes.author FROM all_changes
-				JOIN trusted_accounts ON all_changes.author = trusted_accounts.id) 
-				SELECT DISTINCT hd_change_deps.parent FROM hd_change_deps
-				JOIN trusted_changes ON trusted_changes.blob = hd_change_deps.child
-				UNION SELECT blob FROM trusted_changes
-				UNION SELECT hd_change_deps.parent FROM hd_change_deps, trusted_parent 
-				WHERE child = blob LIMIT 100000) 
-				SELECT DISTINCT json_group_array(blob) AS heads FROM trusted_parent`
+func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetTrustedHeadsJSONResult, error) {
+	const query = `SELECT json_group_array(hd_changes.blob) AS heads
+FROM hd_changes
+JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
+WHERE hd_changes.entity = :entity`
 
 	var out ChangesGetTrustedHeadsJSONResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":eid", eid)
+		stmt.SetInt64(":entity", entity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
