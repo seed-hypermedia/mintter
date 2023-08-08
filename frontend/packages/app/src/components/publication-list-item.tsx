@@ -24,6 +24,10 @@ import {AccountLinkAvatar} from './account-link-avatar'
 import {MenuItem} from '@mintter/app/src/components/dropdown'
 import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
 
+function unique(keys: string[]) {
+  return Array.from(new Set(keys))
+}
+
 export function PublicationListItem({
   publication,
   hasDraft,
@@ -104,7 +108,7 @@ export function PublicationListItem({
       )}
       <XStack>
         {publication.document?.editors.length ? (
-          publication.document?.editors.map((editor) => (
+          unique(publication.document?.editors).map((editor) => (
             <AccountLinkAvatar accountId={editor} key={editor} />
           ))
         ) : publication.document?.author ? (
