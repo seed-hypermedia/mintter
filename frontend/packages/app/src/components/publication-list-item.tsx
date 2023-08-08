@@ -27,6 +27,9 @@ import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
 function unique(keys: string[]) {
   return Array.from(new Set(keys))
 }
+export function getDocumentTitle(document?: Document) {
+  return document?.title || 'Untitled Document'
+}
 
 export function PublicationListItem({
   publication,
@@ -43,7 +46,7 @@ export function PublicationListItem({
 }) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
-  const title = publication.document?.title || 'Untitled Document'
+  const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const popoverState = usePopoverState()
   const route = useNavRoute()

@@ -40,9 +40,10 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
       {account.error ? <ErrorDot /> : null}
     </>
   )
-  return account?.data?.profile?.alias ? (
-    <Tooltip content={account.data.profile.alias}>
+  return (
+    <Tooltip content={account.data?.profile?.alias || account.data?.id || ''}>
       <Button
+        className="no-window-drag"
         size="$1"
         backgroundColor="transparent"
         hoverStyle={{backgroundColor: 'transparent'}}
@@ -60,7 +61,5 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
         {content}
       </Button>
     </Tooltip>
-  ) : (
-    content
   )
 }

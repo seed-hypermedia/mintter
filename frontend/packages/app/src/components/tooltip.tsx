@@ -19,6 +19,7 @@ export function Tooltip({
         margin={0}
         padding={0}
         paddingHorizontal="$2"
+        className="no-window-drag"
         theme="inverse"
         enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}

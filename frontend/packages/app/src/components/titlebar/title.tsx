@@ -16,6 +16,7 @@ import {
   XStack,
 } from '@mintter/ui'
 import {Folder} from '@tamagui/lucide-icons'
+import {getDocumentTitle} from '../publication-list-item'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -114,7 +115,7 @@ function PublicationTitle({
   return (
     <>
       <TitleText data-tauri-drag-region size={size}>
-        {pub?.document?.title || '...'}
+        {getDocumentTitle(pub?.document)}
       </TitleText>
       <XStack gap={0} data-tauri-drag-region>
         {pub?.document?.editors.length === 0 ? (
