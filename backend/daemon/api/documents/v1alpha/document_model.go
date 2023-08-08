@@ -359,13 +359,14 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 
 	// Loading editors is a bit cumbersome because we need to go over key delegations.
 	{
-		seenEditors := map[cid.Cid]struct{}{}
+		seenAccounts := map[string]struct{}{}
+		seenDelegations := map[cid.Cid]struct{}{}
 		for _, ch := range e.AppliedChanges() {
 			del := ch.Delegation
 			if !del.Defined() {
 				return nil, fmt.Errorf("all document changes must have delegations")
 			}
-			if _, ok := seenEditors[del]; ok {
+			if _, ok := seenDelegations[del]; ok {
 				continue
 			}
 
@@ -374,8 +375,14 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 				return nil, fmt.Errorf("failed to load key delegation: %w", err)
 			}
 
+			acc := kd.Issuer.String()
+			if _, ok := seenAccounts[acc]; ok {
+				continue
+			}
+
 			docpb.Editors = append(docpb.Editors, kd.Issuer.String())
-			seenEditors[del] = struct{}{}
+			seenDelegations[del] = struct{}{}
+			seenAccounts[acc] = struct{}{}
 		}
 		sort.Strings(docpb.Editors)
 	}
