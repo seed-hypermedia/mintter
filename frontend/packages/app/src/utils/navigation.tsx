@@ -189,11 +189,11 @@ export function NavigationProvider({
   initialNav?: NavState
 }) {
   const [navState, dispatch] = useReducer(navStateReducer, initialNav)
+  const {send} = useIPC()
   const {lastAction, routes, routeIndex} = navState
   const activeRoute = routes[routeIndex]
   useEffect(() => {
-    const newPath = encodeRouteToPath(activeRoute)
-    window.history.replaceState(null, '', newPath)
+    send('windowRoute', activeRoute)
   }, [activeRoute, lastAction])
 
   useEffect(() => {

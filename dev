@@ -87,6 +87,8 @@ def main():
 
     @cmd(cmds, "build-app", "Builds the desktop app for the current platform.")
     def build_app(args):
+        run("rm -rf frontend/apps/electron/out")
+        run("rm -rf frontend/apps/electron/.vite")
         run("plz build //backend:mintterd //:yarn")
         run("yarn electron:make")
 

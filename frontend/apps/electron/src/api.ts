@@ -6,6 +6,8 @@ import superjson from 'superjson'
 import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
+import Store from 'electron-store'
+import {NavRoute} from '@mintter/app/src/utils/navigation'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -54,6 +56,53 @@ export function updateGoDaemonState(state: GoDaemonState) {
   })
 }
 
+const store = new Store()
+
+type AppWindow = {
+  route: NavRoute
+  bounds: any
+}
+
+let windowsState: Record<string, AppWindow> = store.get('windows') || {}
+
+console.log('init windowsState', windowsState)
+
+export function openInitialWindows() {
+  console.log('openInitialWindows', windowsState)
+  if (!Object.keys(windowsState).length) {
+    trpc.createAppWindow({route: {key: 'home'}})
+    return
+  }
+  Object.entries(windowsState).forEach(([windowId, window]) => {
+    trpc.createAppWindow({route: window.route, bounds: window.bounds})
+  })
+}
+
+function setWindowsState(newWindows: Record<string, AppWindow>) {
+  windowsState = newWindows
+  store.set('windows', newWindows)
+  console.log('windows did update', newWindows)
+}
+
+function deleteWindowState(windowId: string) {
+  const newWindows = {...windowsState}
+  delete newWindows[windowId]
+  setWindowsState(newWindows)
+}
+function setWindowState(windowId: string, window: AppWindow) {
+  const newWindows = {...windowsState}
+  newWindows[windowId] = window
+  setWindowsState(newWindows)
+}
+function updateWindowState(
+  windowId: string,
+  updater: (window: AppWindow) => AppWindow,
+) {
+  const newWindows = {...windowsState}
+  newWindows[windowId] = updater(newWindows[windowId])
+  setWindowsState(newWindows)
+}
+
 mainMenu.append(
   new MenuItem({
     role: 'appMenu',
@@ -87,6 +136,16 @@ mainMenu.append(
   }),
 )
 mainMenu.append(new MenuItem({role: 'editMenu'}))
+
+function openRoute(route: NavRoute) {
+  const focusedWindow = getFocusedWindow()
+  if (focusedWindow) {
+    focusedWindow.webContents.send('open_route', route)
+  } else {
+    trpc.createAppWindow({route})
+  }
+}
+
 mainMenu.append(
   new MenuItem({
     id: 'viewMenu',
@@ -101,7 +160,7 @@ mainMenu.append(
         label: 'Publications',
         accelerator: 'CmdOrCtrl+1',
         click: () => {
-          getFocusedWindow()?.webContents.send('open_route', {key: 'home'})
+          openRoute({key: 'home'})
         },
       },
       {
@@ -150,19 +209,33 @@ mainMenu.append(
 export const router = t.router({
   createAppWindow: t.procedure
     .input(
-      z
-        .object({
-          route: z.any(),
-        })
-        .optional(),
+      z.object({
+        route: z.object({
+          key: z.string(),
+        }),
+        bounds: z
+          .object({
+            x: z.number(),
+            y: z.number(),
+            width: z.number(),
+            height: z.number(),
+          })
+          .optional(),
+      }),
     )
     .mutation(async ({input}) => {
       const windowId = `Window${windowIdCount++}`
+      const bounds = input.bounds
+        ? input.bounds
+        : {
+            width: 1200,
+            height: 800,
+          }
       const browserWindow = new BrowserWindow({
         show: false,
-        width: 1200,
-        height: 800,
-
+        // width: 1200,
+        // height: 800,
+        ...bounds,
         webPreferences: {
           preload: path.join(__dirname, 'preload.js'),
         },
@@ -175,16 +248,52 @@ export const router = t.router({
           y: 12,
         },
       })
+      function saveWindowPosition() {
+        console.log('saving window position')
+        const bounds = browserWindow.getBounds()
+        updateWindowState(windowId, (window) => ({...window, bounds}))
+      }
+      let windowPositionSaveTimeout: null | NodeJS.Timeout = null
+      function saveWindowPositionDebounced() {
+        if (windowPositionSaveTimeout) {
+          clearTimeout(windowPositionSaveTimeout)
+        }
+        windowPositionSaveTimeout = setTimeout(() => {
+          saveWindowPosition()
+        }, 200)
+      }
+      browserWindow.on('resize', (e, a) => {
+        console.log('resized', e, a)
+        saveWindowPositionDebounced()
+      })
+      browserWindow.on('moved', (e, a) => {
+        console.log('moved', a)
+        saveWindowPositionDebounced()
+      })
       allWindows.set(windowId, browserWindow)
       trpcHandlers.attachWindow(browserWindow)
+
+      const initRoute = input?.route || {key: 'home'}
+      setWindowState(windowId, {route: initRoute, bounds: null})
+
       browserWindow.webContents.send('initWindow', {
-        route: input?.route,
+        route: initRoute,
+
         daemonState: goDaemonState,
         windowId,
       })
+      browserWindow.webContents.ipc.addListener(
+        'windowRoute',
+        (info, route) => {
+          console.log('did window route', route)
+          updateWindowState(windowId, (window) => ({...window, route}))
+        },
+      )
+
       browserWindow.webContents.on('did-finish-load', () => {
+        const route = windowsState[windowId].route
         browserWindow.webContents.send('initWindow', {
-          route: input?.route,
+          route,
           daemonState: goDaemonState,
           windowId,
         })
@@ -196,6 +305,7 @@ export const router = t.router({
       })
 
       browserWindow.on('close', () => {
+        deleteWindowState(windowId)
         trpcHandlers.detachWindow(browserWindow)
         allWindows.delete(windowId)
       })

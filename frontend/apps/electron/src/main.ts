@@ -2,7 +2,7 @@ import {app, BrowserWindow, session, ipcMain, nativeTheme, Menu} from 'electron'
 import path from 'path'
 import * as Sentry from '@sentry/electron/main'
 import os from 'os'
-import {mainMenu, trpc} from './api'
+import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
 
@@ -68,7 +68,7 @@ ipcMain.handle('dark-mode:system', () => {
 ipcMain.on('save-file', saveCidAsFile)
 
 app.on('ready', () => {
-  trpc.createAppWindow()
+  openInitialWindows()
 })
 
 app.on('window-all-closed', () => {
@@ -79,6 +79,8 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    trpc.createAppWindow()
+    trpc.createAppWindow({
+      route: {key: 'home'},
+    })
   }
 })

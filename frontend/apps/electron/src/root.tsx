@@ -105,6 +105,14 @@ function useGoDaemonState(): GoDaemonState | undefined {
   return state
 }
 
+function useStream<V>(stream: StateStream<V>): V {
+  const [state, setState] = useState<V>(stream.get())
+  useEffect(() => {
+    return stream.subscribe(setState)
+  }, [stream])
+  return state
+}
+
 function MainApp({
   queryClient,
   ipc,
@@ -115,26 +123,15 @@ function MainApp({
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils()
+  // @ts-expect-error
+  const initRoute = useStream<NavRoute>(window.initRoute)
   const initialNav = useMemo(() => {
-    let initRoute: NavRoute | null = null
-    const rawPath = window.location.pathname.slice(1)
-    try {
-      initRoute = decodeRouteFromPath(rawPath)
-    } catch (e) {}
-    // @ts-expect-error
-    const windowInitRoute = window.initRoute?.get()
-    if (!initRoute && windowInitRoute) {
-      initRoute = windowInitRoute
-    }
-    if (!initRoute) {
-      initRoute = {key: 'home'}
-    }
     return {
       routes: [initRoute],
       routeIndex: 0,
       lastAction: null,
     }
-  }, [])
+  }, [initRoute])
   if (!daemonState) return null
   if (daemonState?.t === 'error') {
     return (
