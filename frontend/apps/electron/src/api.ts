@@ -210,9 +210,7 @@ export const router = t.router({
   createAppWindow: t.procedure
     .input(
       z.object({
-        route: z.object({
-          key: z.string(),
-        }),
+        route: z.any(),
         bounds: z
           .object({
             x: z.number(),
