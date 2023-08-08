@@ -187,11 +187,14 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				randomBytes := make([]byte, 16)
 				_, err := rand.Read(randomBytes)
 				if err != nil {
-					return (err)
-				}
-				if err := sitesql.SetSiteRegistrationLink(conn, siteCfg.Hostname+"/secret-invite/"+base64.RawURLEncoding.EncodeToString(randomBytes)); err != nil {
 					return err
 				}
+				link := siteCfg.Hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
+				if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
+					return err
+				}
+				// Print it to stdout so its visible from the command line.
+				fmt.Println("Site Invitation secret token: " + link)
 				if siteCfg.Title != "" {
 					title, err := sitesql.GetSiteTitle(conn)
 					if err != nil {
