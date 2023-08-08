@@ -38,15 +38,7 @@ const prodDaemonBinaryPath = join(
   'mintterd-aarch64-apple-darwin',
 )
 
-let userDataDir = join(homedir(), '.mtt')
-if (platform() === 'darwin') {
-  userDataDir = join(
-    homedir(),
-    'Library',
-    'Application Support',
-    'com.mintter.dev',
-  )
-}
+const userDataDir = join(app.getPath('userData'), 'daemon')
 
 let goDaemonExecutablePath =
   process.env.NODE_ENV == 'development'
