@@ -3,6 +3,7 @@ import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
 // import {EventEmitter} from 'events'
 import superjson from 'superjson'
+import {app} from 'electron'
 import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
@@ -56,19 +57,21 @@ export function updateGoDaemonState(state: GoDaemonState) {
   })
 }
 
-const store = new Store()
+const store = new Store({
+  name: 'AppStore',
+})
 
 type AppWindow = {
   route: NavRoute
   bounds: any
 }
 
-let windowsState: Record<string, AppWindow> = store.get('windows') || {}
+const userData = app.getPath('userData')
+console.log('App UserData: ', userData)
 
-console.log('init windowsState', windowsState)
+let windowsState: Record<string, AppWindow> = store.get('WindowState') || {}
 
 export function openInitialWindows() {
-  console.log('openInitialWindows', windowsState)
   if (!Object.keys(windowsState).length) {
     trpc.createAppWindow({route: {key: 'home'}})
     return
@@ -78,10 +81,14 @@ export function openInitialWindows() {
   })
 }
 
+let isExpectingQuit = false
+app.addListener('before-quit', () => {
+  isExpectingQuit = true
+})
+
 function setWindowsState(newWindows: Record<string, AppWindow>) {
   windowsState = newWindows
-  store.set('windows', newWindows)
-  console.log('windows did update', newWindows)
+  store.set('WindowState', newWindows)
 }
 
 function deleteWindowState(windowId: string) {
@@ -247,7 +254,6 @@ export const router = t.router({
         },
       })
       function saveWindowPosition() {
-        console.log('saving window position')
         const bounds = browserWindow.getBounds()
         updateWindowState(windowId, (window) => ({...window, bounds}))
       }
@@ -261,11 +267,9 @@ export const router = t.router({
         }, 200)
       }
       browserWindow.on('resize', (e, a) => {
-        console.log('resized', e, a)
         saveWindowPositionDebounced()
       })
       browserWindow.on('moved', (e, a) => {
-        console.log('moved', a)
         saveWindowPositionDebounced()
       })
       allWindows.set(windowId, browserWindow)
@@ -283,7 +287,6 @@ export const router = t.router({
       browserWindow.webContents.ipc.addListener(
         'windowRoute',
         (info, route) => {
-          console.log('did window route', route)
           updateWindowState(windowId, (window) => ({...window, route}))
         },
       )
@@ -303,7 +306,9 @@ export const router = t.router({
       })
 
       browserWindow.on('close', () => {
-        deleteWindowState(windowId)
+        if (!isExpectingQuit) {
+          deleteWindowState(windowId)
+        }
         trpcHandlers.detachWindow(browserWindow)
         allWindows.delete(windowId)
       })
