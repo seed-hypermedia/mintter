@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('daemonState', daemonState)
 contextBridge.exposeInMainWorld('initRoute', initRoute)
 
 ipcRenderer.addListener('initWindow', (info, event) => {
+  console.log('💡 Init Window', event)
   updateInitRoute(event.route)
   updateDaemonState(event.daemonState)
 })
@@ -25,7 +26,6 @@ const routeHandlers = new Set<(route: any) => void>()
 contextBridge.exposeInMainWorld('routeHandlers', routeHandlers)
 
 ipcRenderer.addListener('openRoute', (info, route) => {
-  console.log('openRoute', route)
   routeHandlers.forEach((handler) => handler(route))
 })
 
@@ -39,10 +39,8 @@ contextBridge.exposeInMainWorld('ipc', {
   },
   listen: async (cmd: string, handler: (event: any) => void) => {
     const innerHandler = (info, payload: any) => {
-      console.log('IPC payload received', cmd, payload)
       handler({info, payload})
     }
-    console.log('listening!', cmd)
     ipcRenderer.addListener(cmd, innerHandler)
     return () => {
       ipcRenderer.removeListener(cmd, innerHandler)
