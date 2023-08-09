@@ -106,14 +106,14 @@ jobs:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
 
-      - name: create apple private key file
+      
+
+      - name: Import MacOS certs
         if: matrix.config.os == 'macos-latest'
-        run: |
-          mkdir ./frontend/apps/electron/private_keys
-          echo "$APPLE_API_PRIVKEY" > ./frontend/apps/electron/private_keys/AuthKey_$APPLE_API_KEY.p8
-        env:
-          APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
-          APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
+        uses: apple-actions/import-codesign-certs@v2
+        with: 
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       - name: create AppImage private key file
         if: matrix.config.os == 'ubuntu-latest'
@@ -147,8 +147,9 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          APPLE_API_ISSUER: '${{ secrets.APPLE_API_ISSUER }}'
-          APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
-          APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
-          WINDOWS_PFX_FILE: ${{ steps.write_file.outputs.filePath }}
-          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: '${{ secrets.APPLE_ID_PASSWORD }}'
+          APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}'
+          
+          # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
+          # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'

@@ -15,14 +15,6 @@ const LLVM_TRIPLES = {
 function getPlatformTriple() {
   return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
 }
-
-console.log(
-  '====== TRIPLES',
-  process.platform,
-  process.arch,
-  getPlatformTriple(),
-)
-
 const daemonBinaryPath = path.join(
   devProjectRoot,
   // TODO: parametrize this for each platform
