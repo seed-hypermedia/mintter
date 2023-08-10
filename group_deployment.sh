@@ -98,8 +98,7 @@ while [ "$1" != "" ]; do
         --help )            	usage
                                 exit 
                                 ;;
-        * )                     usage
-                                echo "param [$1] not valid"
+        * )                     echo "param [$1] not valid. Run --help to see available params"
                                 exit 1
     esac
     shift
