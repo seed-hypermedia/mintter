@@ -71,7 +71,7 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(s.Schema, "SetSiteRegistrationLink", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.GlobalMeta, qb.ListColShort(
+			"INSERT INTO", s.GlobalMeta, qb.ListColShort(
 				s.GlobalMetaKey,
 				s.GlobalMetaValue,
 			), '\n',

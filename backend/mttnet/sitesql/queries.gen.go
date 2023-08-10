@@ -130,7 +130,7 @@ JOIN public_keys ON public_keys.id = sites.account_id`
 }
 
 func SetSiteRegistrationLink(conn *sqlite.Conn, link string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+	const query = `INSERT INTO global_meta (key, value)
 VALUES ('site_registration_link', :link)`
 
 	before := func(stmt *sqlite.Stmt) {
