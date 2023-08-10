@@ -141,6 +141,7 @@ const config = {
           owner: 'mintterteam',
           name: 'mintter',
         },
+        draft: false,
         prerelease: true,
         tagPrefix: process.env.TAG_PREFIX,
       },
