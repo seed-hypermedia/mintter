@@ -42,7 +42,7 @@ const config = {
     asar: true,
     darwinDarkModeSupport: 'true',
     icon: iconsPath,
-    name: 'Mintter',
+    name: 'mintter-app',
     appBundleId: 'com.mintter.app',
     executableName: 'Mintter',
     appCategoryType: 'public.app-category.productivity',

@@ -1,6 +1,6 @@
 {
-  "name": "@mintter/electron",
-  "productName": "Mintter",
+  "name": "mintter-app",
+  "productName": "mintter-app",
   "version": "0.1.0",
   "description": "Mintter: A Hyperdocs client",
   "main": ".vite/build/main.js",

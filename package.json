@@ -8,7 +8,7 @@
     "site:prod": "yarn build && yarn workspace @mintter/site build",
     "site:vercel": "yarn build && cd frontend/apps/site && yarn build",
     "site:prod:serve": "yarn workspace @mintter/site serve",
-    "desktop": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/electron -pi run dev",
+    "desktop": "yarn workspaces foreach --exclude @mintter/site --exclude mintter-app -pi run dev",
     "desktop:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
     "desktop:prod": "yarn workspace @mintter/desktop build",
     "docs": "yarn workspace @mintter/docs start",
@@ -20,7 +20,7 @@
     "electron:test:e2e": "yarn workspace @mintter/electron e2e",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
     "fix": "manypkg fix",
-    "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/electron --exclude @mintter/docs -pi run build",
+    "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude mintter-app --exclude @mintter/docs -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
     "format": "prettier --write ./frontend",
     "test": "yarn workspaces foreach run test"
