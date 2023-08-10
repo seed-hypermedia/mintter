@@ -113,8 +113,10 @@ fi
 install_docker
 
 curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose-groups.yml
-docker compose -f ${workspace}/mttsite.yml down 2>/dev/null || true
-# docker compose -f docker-compose-groups.yml down 2>/dev/null || true
+rm -f ${workspace}/deployment.log
+touch ${workspace}/deployment.log
+docker stop nextjs mintterd proxy minttersite 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
+docker rm nextjs mintterd proxy minttersite 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 
 dns=$(echo "MTT_SITE_HOSTNAME=${hostname}" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
 mkdir -p ${workspace}
@@ -132,7 +134,8 @@ reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
 
-MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> /dev/null || true
-# MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" docker compose -f docker-compose-groups.yml up -d --quiet-pull 2> /dev/null || true
+MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="mintterd" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
+# MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="mintterd" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 timeout 10 docker logs -f --tail 1 mintterd 2> /dev/null | sed '/Site Invitation secret token: / q' | awk -F ': ' '{print $2}'
+rm ${workspace}/mttsite.yml
 exit 0
