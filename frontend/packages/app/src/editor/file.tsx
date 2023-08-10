@@ -252,11 +252,10 @@ function FileForm({
     name: 'Upload File',
     color: 'black',
   })
+  const [drag, setDrag] = useState(false)
 
-  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files)
-      const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+  const handleUpload = async (files: File[]) => {
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
       if (largeFileIndex > -1) {
         setFileName({
           name:
@@ -314,7 +313,6 @@ function FileForm({
         }
       }
       editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
-    }
   }
 
   return (
@@ -428,7 +426,41 @@ function FileForm({
                   alignItems="center"
                   backgroundColor="white"
                 >
-                  <XStack flex={1} backgroundColor="white">
+                  <XStack
+                    flex={1}
+                    backgroundColor={drag ? "lightgrey" : "white"}
+                    // @ts-ignore
+                    onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (drag) setDrag(false)
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const files = Array.from(e.dataTransfer.files)
+                        handleUpload(Array.from(files))
+                        return
+                      }
+                    }}
+                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(true);
+                      }
+                    }}
+                    onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(false);
+                      }
+                    }}
+                  >
                     <Label
                       htmlFor="file-upload"
                       borderColor="lightgrey"
@@ -460,7 +492,11 @@ function FileForm({
                         padding: '0 2px',
                         display: 'none',
                       }}
-                      onChange={handleUpload}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        if (event.target.files) {
+                          handleUpload(Array.from(event.target.files))
+                        }
+                      }}
                     />
                   </XStack>
                 </XStack>

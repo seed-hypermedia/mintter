@@ -227,25 +227,39 @@ function ImageForm({
     name: 'Upload File',
     color: 'black',
   })
+  const [drag, setDrag] = useState(false)
 
-  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files)
-      const largeFileIndex = files.findIndex((file) => file.size > 62914560)
-      if (largeFileIndex > -1) {
-        setFileName({
-          name:
-            largeFileIndex > 0
-              ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.`
-              : 'The image size exceeds 60 MB.',
-          color: 'red',
-        })
-        return
-      }
+  const handleUpload = async (files: File[]) => {
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+    if (largeFileIndex > -1) {
+      setFileName({
+        name:
+          largeFileIndex > 0
+            ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.`
+            : 'The image size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
+    }
 
-      const {name} = files[0]
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: name}} as ImageType)
+    } catch (error) {
+      console.error(error)
+    }
+    for (let i = files.length - 1; i > 0; i--) {
+      const {name} = files[i]
       const formData = new FormData()
-      formData.append('file', files[0])
+      formData.append('file', files[i])
 
       try {
         const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
@@ -253,40 +267,24 @@ function ImageForm({
           body: formData,
         })
         const data = await response.text()
-        assign({props: {url: data, name: name}} as ImageType)
+        editor.insertBlocks(
+          [
+            {
+              type: 'image',
+              props: {
+                url: data,
+                name: name,
+              },
+            },
+          ],
+          block.id,
+          'after',
+        )
       } catch (error) {
         console.error(error)
       }
-      for (let i = files.length - 1; i > 0; i--) {
-        const {name} = files[i]
-        const formData = new FormData()
-        formData.append('file', files[i])
-
-        try {
-          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-            method: 'POST',
-            body: formData,
-          })
-          const data = await response.text()
-          editor.insertBlocks(
-            [
-              {
-                type: 'image',
-                props: {
-                  url: data,
-                  name: name,
-                },
-              },
-            ],
-            block.id,
-            'after',
-          )
-        } catch (error) {
-          console.error(error)
-        }
-      }
-      editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     }
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   const submitImage = async (url: string) => {
@@ -434,7 +432,41 @@ function ImageForm({
                   alignItems="center"
                   backgroundColor="white"
                 >
-                  <XStack flex={1} backgroundColor="white">
+                  <XStack
+                    flex={1}
+                    backgroundColor={drag ? "lightgrey" : "white"}
+                    // @ts-ignore
+                    onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (drag) setDrag(false)
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const files = Array.from(e.dataTransfer.files)
+                        handleUpload(Array.from(files))
+                        return
+                      }
+                    }}
+                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(true);
+                      }
+                    }}
+                    onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(false);
+                      }
+                    }}
+                  >
                     <Label
                       htmlFor="file-upload"
                       borderColor="lightgrey"
@@ -467,7 +499,11 @@ function ImageForm({
                         padding: '0 2px',
                         display: 'none',
                       }}
-                      onChange={handleUpload}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        if (event.target.files) {
+                          handleUpload(Array.from(event.target.files))
+                        }
+                      }}
                     />
                   </XStack>
                 </XStack>
