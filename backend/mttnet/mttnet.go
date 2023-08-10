@@ -18,6 +18,7 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -194,7 +195,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 					return err
 				}
 				link := currentLink.GlobalMetaValue
-				if link == "" {
+				if link == "" || siteCfg.Hostname != strings.Split(link, "/secret-invite/")[0] {
 					link = siteCfg.Hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
 					if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
 						return err
