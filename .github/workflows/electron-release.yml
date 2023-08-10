@@ -150,6 +150,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: '${{ secrets.APPLE_ID_PASSWORD }}'
           APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}'
+          TAG_PREFIX: 'desktop-nightly/${{ needs.get-version.outputs.version }}-'
           
           # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
           # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'
