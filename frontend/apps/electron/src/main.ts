@@ -5,10 +5,24 @@ import os from 'os'
 import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
+import updater from 'update-electron-app'
+import log from 'electron-log/main'
 
 mainDaemon
 
 Menu.setApplicationMenu(mainMenu)
+
+// check for updates Powered by the free and open-source update.electronjs.org service.
+updater({
+  updateInterval: '1 hour',
+})
+
+//Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
+log.initialize({
+  preload: true,
+  // It makes a renderer logger available trough a global electronLog instance
+  spyRendererConsole: true,
+})
 
 if (import.meta.env.PROD) {
   Sentry.init({

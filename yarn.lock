@@ -14424,6 +14424,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"electron-is-dev@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "electron-is-dev@npm:0.3.0"
+  checksum: d251e3b4c9cfd515a599dd852319ffca5b6b59c52c40dc3109f74ff9921a71e288d66445fc713a7f6296d3a696f04bb8d2135fa23599af7d7f1bc74a7552646b
+  languageName: node
+  linkType: hard
+
+"electron-log@npm:beta":
+  version: 5.0.0-beta.25
+  resolution: "electron-log@npm:5.0.0-beta.25"
+  checksum: 2a2131f8d5f42b2f97b151d4d3daca8a288368fa7802431b27a9aae88e7f84cfdb708a9567e88a23d91fc99a4b303a555b1005c66d9d4200d601b6485d5885a2
+  languageName: node
+  linkType: hard
+
 "electron-packager@npm:^17.1.1":
   version: 17.1.1
   resolution: "electron-packager@npm:17.1.1"
@@ -16896,6 +16910,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"github-url-to-object@npm:^4.0.4":
+  version: 4.0.6
+  resolution: "github-url-to-object@npm:4.0.6"
+  dependencies:
+    is-url: ^1.1.0
+  checksum: 5056c1197cd496e2246217bc2626ab0d10a8dd293c834cb5301181db86282c312dc91831e331933c0b02e75716c87b1c13d8d202dc314d0d23cca0c38f1afb6f
+  languageName: node
+  linkType: hard
+
 "glob-parent@npm:^5.1.2, glob-parent@npm:~5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
@@ -19107,7 +19130,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-url@npm:1.2.4":
+"is-url@npm:1.2.4, is-url@npm:^1.1.0, is-url@npm:^1.2.4":
   version: 1.2.4
   resolution: "is-url@npm:1.2.4"
   checksum: 100e74b3b1feab87a43ef7653736e88d997eb7bd32e71fd3ebc413e58c1cbe56269699c776aaea84244b0567f2a7d68dfaa512a062293ed2f9fdecb394148432
@@ -21918,6 +21941,7 @@ __metadata:
     "@types/react": 18.0.37
     "@types/react-dom": 18.0.11
     electron: 25.3.0
+    electron-log: beta
     electron-playwright-helpers: ^1.6.0
     electron-store: ^8.1.0
     electron-trpc: ^0.5.2
@@ -21925,6 +21949,7 @@ __metadata:
     react-dom: ^18.2.0
     react-hot-toast: ^2.4.1
     superjson: ^1.13.1
+    update-electron-app: ^2.0.1
     zod: ^3.21.4
   languageName: unknown
   linkType: soft
@@ -29048,6 +29073,20 @@ __metadata:
   bin:
     update-browserslist-db: cli.js
   checksum: b98327518f9a345c7cad5437afae4d2ae7d865f9779554baf2a200fdf4bac4969076b679b1115434bd6557376bdd37ca7583d0f9b8f8e302d7d4cc1e91b5f231
+  languageName: node
+  linkType: hard
+
+"update-electron-app@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "update-electron-app@npm:2.0.1"
+  dependencies:
+    electron-is-dev: ^0.3.0
+    github-url-to-object: ^4.0.4
+    is-url: ^1.2.4
+    ms: ^2.1.1
+  peerDependencies:
+    electron: ">= 6.0.0"
+  checksum: 14f780087d0dbddfe915433727cb71a5c42460a9dc6ad200f1b06f1576d37303f765100d714721685459b210095606350d91a850f66d4967a53eef9d2b19631e
   languageName: node
   linkType: hard
 
