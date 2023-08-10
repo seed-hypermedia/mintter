@@ -105,11 +105,6 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$gid" ]; then
-  echo "Group ID flag (--gid) must be provided"
-  exit 1
-fi
-
 if [ -z "$hostname" ]; then
   echo "Group Hostname flag (--hostname) must be provided"
   exit 1
