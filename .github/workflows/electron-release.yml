@@ -49,6 +49,9 @@ jobs:
           matrix-os: ${{ matrix.config.os }}
           # matrix-target: ${{ matrix.config.target }}
           # matrix-goarch: ${{ matrix.config.goarch }}
+          p12_file_base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          p12_password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
 
       - name: Build Backend (Unix)
         if: matrix.config.os != 'windows-latest'
