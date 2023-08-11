@@ -13,6 +13,32 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
+  get-commits-month:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: git config --global user.name "${GITHUB_ACTOR}" && git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Get Commit Count
+        id: commit_count
+        run: |
+          # Extract the current month and year
+          CURRENT_MONTH=$(date -u +"%m")
+          CURRENT_YEAR=$(date -u +"%Y")
+
+          # Get commit count using GitHub API
+          COMMIT_COUNT=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                           "https://api.github.com/repos/${{ github.repository }}/commits?since=${CURRENT_YEAR}-${CURRENT_MONTH}-01T00:00:00Z" | \
+                           jq '. | length')
+
+          echo "Total commits this month: $COMMIT_COUNT"
+
+      - name: Use Commit Count
+        run: echo "Commits this month: ${{ steps.commit_count.outputs.commit_count }}"
+
   get-version:
     runs-on: ubuntu-latest
     outputs:
