@@ -50,6 +50,12 @@ if (import.meta.env.PROD) {
     })
   }
 }
+app.on('did-become-active', () => {
+  console.log('App active')
+})
+app.on('did-resign-active', () => {
+  console.log('App no longer active')
+})
 
 // dark mode support: https://www.electronjs.org/docs/latest/tutorial/dark-mode
 ipcMain.handle('dark-mode:toggle', () => {

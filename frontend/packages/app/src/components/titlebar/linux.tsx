@@ -134,7 +134,6 @@ function NavMenu() {
             disabled={route.key == 'drafts'}
             data-testid="menu-item-drafts"
             onPress={() => {
-              console.log('CLICK!!!')
               navigate({key: 'drafts'})
             }}
             icon={Draft}

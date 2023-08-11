@@ -17,9 +17,26 @@ import {
 } from '@mintter/ui'
 import {Folder} from '@tamagui/lucide-icons'
 import {getDocumentTitle} from '../publication-list-item'
+import {useEffect} from 'react'
+import {NavRoute} from '../../utils/navigation'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
+
+  useEffect(() => {
+    async function getTitleOfRoute(route: NavRoute): Promise<string> {
+      if (route.key === 'home') return 'Publications'
+      if (route.key === 'drafts') return 'Drafts'
+      if (route.key === 'contacts') return 'Contacts'
+      return '?'
+    }
+    getTitleOfRoute(route).then((title) => {
+      // we set the window title so the window manager knows the title in the Window menu
+      // @ts-ignore
+      window.document.title = title
+    })
+  }, [route])
+
   if (route.key === 'home') {
     return (
       <>

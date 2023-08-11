@@ -21,12 +21,9 @@ export default function QuickSwitcher() {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 
-  // Toggle the menu when ⌘K is pressed
   useListen('open_quick_switcher', () => {
-    if (document.hasFocus()) {
-      // FIXME: this is a *hack* until we just send this event to the current window from tauri
-      setOpen(true)
-    }
+    console.log('open_quick_switcher')
+    setOpen(true)
   })
   const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)

@@ -16,18 +16,18 @@ let windowIdCount = 1
 
 const allWindows = new Map<string, BrowserWindow>()
 
-let focusedWindow: string | null = null
+let focusedWindowKey: string | null = null
 
 function getFocusedWindow(): BrowserWindow | null {
-  return focusedWindow ? allWindows[focusedWindow] : null
+  return focusedWindowKey ? allWindows.get(focusedWindowKey) : null
 }
 
 function windowFocused(windowId: string) {
-  focusedWindow = windowId
+  focusedWindowKey = windowId
 }
 function windowBlurred(windowId: string) {
-  if (focusedWindow === windowId) {
-    focusedWindow = null
+  if (focusedWindowKey === windowId) {
+    focusedWindowKey = null
   }
 }
 
@@ -77,7 +77,11 @@ export function openInitialWindows() {
     return
   }
   Object.entries(windowsState).forEach(([windowId, window]) => {
-    trpc.createAppWindow({route: window.route, bounds: window.bounds})
+    trpc.createAppWindow({
+      route: window.route,
+      bounds: window.bounds,
+      id: windowId,
+    })
   })
 }
 
@@ -128,7 +132,16 @@ mainMenu.append(
         label: 'Search / Open',
         accelerator: 'CmdOrCtrl+k',
         click: () => {
-          getFocusedWindow()?.webContents.send('open_quick_switcher')
+          const focusedWindow = getFocusedWindow()
+          if (!focusedWindow) {
+            console.error(
+              'No focused window to open quick switcher',
+              focusedWindowKey,
+              windowIdCount,
+            )
+          } else {
+            focusedWindow.webContents.send('open_quick_switcher')
+          }
         },
       },
       {type: 'separator'},
@@ -142,6 +155,7 @@ mainMenu.append(
     ],
   }),
 )
+mainMenu.append(new MenuItem({role: 'fileMenu'}))
 mainMenu.append(new MenuItem({role: 'editMenu'}))
 
 function openRoute(route: NavRoute) {
@@ -204,9 +218,6 @@ mainMenu.append(
     role: 'windowMenu',
     submenu: [
       {
-        role: 'close',
-      },
-      {
         role: 'minimize',
       },
     ],
@@ -218,6 +229,7 @@ export const router = t.router({
     .input(
       z.object({
         route: z.any(),
+        id: z.string().optional(),
         bounds: z
           .object({
             x: z.number(),
@@ -229,7 +241,7 @@ export const router = t.router({
       }),
     )
     .mutation(async ({input}) => {
-      const windowId = `Window${windowIdCount++}`
+      const windowId = input.id || `window.${windowIdCount++}.${Date.now()}`
       const bounds = input.bounds
         ? input.bounds
         : {
@@ -272,6 +284,9 @@ export const router = t.router({
       browserWindow.on('moved', (e, a) => {
         saveWindowPositionDebounced()
       })
+      browserWindow.on('show', (e) => {
+        saveWindowPosition()
+      })
       allWindows.set(windowId, browserWindow)
       trpcHandlers.attachWindow(browserWindow)
 
@@ -312,7 +327,9 @@ export const router = t.router({
         trpcHandlers.detachWindow(browserWindow)
         allWindows.delete(windowId)
       })
-
+      browserWindow.on('show', () => {
+        windowFocused(windowId)
+      })
       browserWindow.on('focus', () => {
         windowFocused(windowId)
       })

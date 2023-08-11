@@ -527,7 +527,6 @@ function MenuItem(props: {
           }}
           pressTheme
           onPress={() => {
-            console.log('CLICKED!')
             props.onSelect()
           }}
         >
