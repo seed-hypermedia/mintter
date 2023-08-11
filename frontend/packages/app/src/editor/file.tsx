@@ -70,27 +70,15 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const [file, setFile] = useState<FileType>({
-    id: block.id,
-    props: {
-      url: block.props.url,
-      name: block.props.name,
-      size: block.props.size,
-    },
-    children: [],
-    content: block.content,
-    type: block.type,
-  } as FileType)
 
   const assignFile = (newFile: FileType) => {
-    setFile({...file, props: {...file.props, ...newFile.props}})
-    editor.updateBlock(file.id, {props: {...block.props, ...newFile.props}})
-    editor.setTextCursorPosition(file.id, 'end')
+    editor.updateBlock(block.id, {props: {...block.props, ...newFile.props}})
+    editor.setTextCursorPosition(block.id, 'end')
   }
 
   return (
     <YStack borderWidth={0} outlineWidth={0}>
-      {file.props.url ? (
+      {block.props.url ? (
         <FileComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
         <FileForm block={block} assign={assignFile} editor={editor} />

@@ -71,26 +71,15 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const [image, setImage] = useState<ImageType>({
-    id: block.id,
-    props: {
-      url: block.props.url,
-      name: block.props.name,
-    },
-    children: [],
-    content: block.content,
-    type: block.type,
-  } as ImageType)
 
   const assignFile = (newImage: ImageType) => {
-    setImage({...image, props: {...image.props, ...newImage.props}})
-    editor.updateBlock(image.id, {props: {...block.props, ...newImage.props}})
-    editor.setTextCursorPosition(image.id, 'end')
+    editor.updateBlock(block.id, {props: {...block.props, ...newImage.props}})
+    editor.setTextCursorPosition(block.id, 'end')
   }
 
   return (
     <YStack borderWidth={0} outlineWidth={0}>
-      {image.props.url ? (
+      {block.props.url ? (
         <ImageComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
         <ImageForm block={block} assign={assignFile} editor={editor} />
@@ -304,7 +293,7 @@ function ImageForm({
             body: formData,
           })
           const data = await response.text()
-          assign({props: {url: data}} as ImageType)
+          assign({props: {url: data, name: webFile.name}} as ImageType)
         } catch (error) {
           console.error(error)
         }
