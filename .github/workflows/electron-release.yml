@@ -34,7 +34,7 @@ jobs:
           # Get commit count using GitHub API
           BRANCH_NAME="electron-ci"  # Replace with the desired branch name
           COMMIT_COUNT=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/commits?sha=${BRANCH_NAME}&since=${CURRENT_YEAR}-${CURRENT_MONTH}-01T00:00:00Z" | \
+            "https://api.github.com/repos/${{ github.repository }}/commits?sha=${BRANCH_NAME}&since=${CURRENT_YEAR}-${CURRENT_MONTH}-01T00:00:00Z&per_page=300" | \
             jq '. | length')
 
           echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
