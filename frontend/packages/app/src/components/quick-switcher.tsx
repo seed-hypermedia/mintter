@@ -10,7 +10,7 @@ import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
-import './quick-switcher.scss'
+import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
 
 export default function QuickSwitcher() {
