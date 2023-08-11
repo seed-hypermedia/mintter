@@ -6,12 +6,16 @@ import { HDBlockSchema } from "@mintter/app/src/client/schema";
 import { Button, Form, Input, Label, Popover, SizableText, Tabs, XStack, YStack } from "@mintter/ui";
 import { ChangeEvent, useEffect, useState } from "react";
 import { RiVideoAddFill } from "react-icons/ri";
+import { BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL } from "../constants";
 
 export const VideoBlock = createReactBlockSpec({
   type: "video",
   propSchema: {
     ...defaultProps,
     url: {
+      default: '',
+    },
+    name: {
       default: '',
     },
     defaultOpen: {
@@ -34,6 +38,7 @@ type VideoType = {
   id: string
   props: {
     url: string
+    name: string
   }
   children: []
   content: []
@@ -46,28 +51,18 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const [video, setVideo] = useState<VideoType>({
-    id: block.id,
-    props: {
-      url: block.props.url,
-    },
-    children: [],
-    content: block.content,
-    type: block.type,
-  } as VideoType)
 
   const assignFile = (newVideo: VideoType) => {
-    setVideo({...video, props: {...video.props, ...newVideo.props}})
-    editor.updateBlock(video.id, {props: {...block.props, ...newVideo.props}})
-    editor.setTextCursorPosition(video.id, 'end')
+    editor.updateBlock(block.id, {props: {...block.props, ...newVideo.props}})
+    editor.setTextCursorPosition(block.id, 'end')
   }
 
   return (
     <YStack borderWidth={0} outlineWidth={0}>
-      {video.props.url ? (
+      {block.props.url ? (
         <VideoComponent block={block} editor={editor} assign={assignFile} />
       ) : editor.isEditable ? (
-        <VideoForm block={block} assign={assignFile} />
+        <VideoForm block={block} editor={editor} assign={assignFile} />
       ) : (
         <></>
       )}
@@ -105,6 +100,11 @@ function VideoComponent({
       }
     }
   }, [selection])
+
+  const getSourceType = (name: string) => {
+    const nameArray = name.split('.');
+    return `video/${nameArray[nameArray.length - 1]}`
+  }
 
   return (
     <div className={selected ? 'ProseMirror-selectednode' : ''}>
@@ -150,12 +150,14 @@ function VideoComponent({
           </Button>
         ) : null}
         <video
-          src={`http://localhost:55001/ipfs/${block.props.url}`}
           contentEditable={false}
           playsInline
           controls
           preload="metadata"
-        />
+        >
+          <source src={`${BACKEND_FILE_URL}/${block.props.url}`} type={getSourceType(block.props.name)} />
+          Something is wrong with the video file.
+        </video>
       </YStack>
     </div>
   )
@@ -164,9 +166,11 @@ function VideoComponent({
 function VideoForm({
   block,
   assign,
+  editor,
 }: {
   block: Block<HDBlockSchema>
   assign: any
+  editor: BlockNoteEditor<HDBlockSchema>
 }) {
   const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
@@ -174,29 +178,64 @@ function VideoForm({
     name: 'Upload File',
     color: 'black',
   })
+  const [drag, setDrag] = useState(false)
 
-  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const uploadedFile = event.target.files[0]
-      if (uploadedFile && uploadedFile.size <= 62914560) {
-        const formData = new FormData()
-        formData.append('file', uploadedFile)
-
-        try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
-            {
-              method: 'POST',
-              body: formData,
-            },
-          )
-          const data = await response.text()
-          assign({props: {url: data}} as VideoType)
-        } catch (error) {
-          console.error(error)
-        }
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+  const handleUpload = async (files: File[]) => {
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+    if (largeFileIndex > -1) {
+      setFileName({
+        name:
+          largeFileIndex > 0
+            ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.`
+            : 'The video size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
     }
+
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: name}} as VideoType)
+    } catch (error) {
+      console.error(error)
+    }
+    for (let i = files.length - 1; i > 0; i--) {
+      const {name} = files[i]
+      const formData = new FormData()
+      formData.append('file', files[i])
+
+      try {
+        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+          method: 'POST',
+          body: formData,
+        })
+        const data = await response.text()
+        editor.insertBlocks(
+          [
+            {
+              type: 'video',
+              props: {
+                url: data,
+                name: name,
+              },
+            },
+          ],
+          block.id,
+          'after',
+        )
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   const submitVideo = async (url: string) => {
@@ -211,15 +250,14 @@ function VideoForm({
         formData.append('file', webFile)
 
         try {
-          const response = await fetch(
-            'http://localhost:55001/ipfs/file-upload',
+          const response = await fetch(BACKEND_FILE_UPLOAD_URL,
             {
               method: 'POST',
               body: formData,
             },
           )
           const data = await response.text()
-          assign({props: {url: data}} as VideoType)
+          assign({props: {url: data, name: webFile.name}} as VideoType)
         } catch (error) {
           console.error(error)
         }
@@ -347,7 +385,41 @@ function VideoForm({
                   alignItems="center"
                   backgroundColor="white"
                 >
-                  <XStack flex={1} backgroundColor="white">
+                  <XStack
+                    flex={1}
+                    backgroundColor="white"
+                    // @ts-ignore
+                    onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (drag) setDrag(false)
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const files = Array.from(e.dataTransfer.files)
+                        handleUpload(Array.from(files))
+                        return
+                      }
+                    }}
+                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(true);
+                      }
+                    }}
+                    onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                        setDrag(false);
+                      }
+                    }}
+                  >
                     <Label
                       htmlFor="file-upload"
                       borderColor="lightgrey"
@@ -373,12 +445,18 @@ function VideoForm({
                     <input
                       id="file-upload"
                       type="file"
+                      accept="video/*"
+                      multiple
                       style={{
                         background: 'white',
                         padding: '0 2px',
                         display: 'none',
                       }}
-                      onChange={handleUpload}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        if (event.target.files) {
+                          handleUpload(Array.from(event.target.files))
+                        }
+                      }}
                     />
                   </XStack>
                 </XStack>

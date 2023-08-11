@@ -90,6 +90,7 @@ export type EditorVideoBlock = {
   id: string
   props: EditorBlockProps<{
     url: string
+    name: string
   }>
   content: InlineContent[]
   children: EditorBlock[]
