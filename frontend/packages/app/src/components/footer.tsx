@@ -88,10 +88,6 @@ export default function Footer({children}: {children?: ReactNode}) {
           </SizableText>
         </XStack>
       ) : null}
-      {/* {isDaemonReady ? (
-          <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
-          <Contacts service={contactListService} />
-      ) : null} */}
       <FooterContactsButton />
       <XStack alignItems="center" paddingHorizontal="$2">
         <SizableText

@@ -44,6 +44,7 @@ import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {useIPC} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '@mintter/app/src/app-context'
+import {AddGroupButton} from '../new-group'
 
 function NewDocumentButton() {
   const route = useNavRoute()
@@ -63,16 +64,6 @@ function NewDocumentButton() {
           openDraft(!e.shiftKey, host)
         }}
       />
-    </Tooltip>
-  )
-}
-
-function AddGroupButton() {
-  return (
-    <Tooltip content="New Group">
-      <Button size="$2" iconAfter={FilePlus2} onPress={(e) => {}}>
-        New Group
-      </Button>
     </Tooltip>
   )
 }

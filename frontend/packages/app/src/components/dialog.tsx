@@ -1,4 +1,5 @@
-import {styled, View, XStack, YStack} from '@mintter/ui'
+import {styled, Dialog, View, XStack, YStack} from '@mintter/ui'
+import {useState} from 'react'
 
 export const DialogOverlay = styled(XStack, {
   backgroundColor: '$base-component-bg-normal',
@@ -32,3 +33,34 @@ export const DialogFooter = styled(XStack, {
   justifyContent: 'flex-end',
   gap: '$4',
 })
+
+export const DialogTitle = Dialog.Title
+
+export const DialogDescription = Dialog.Description
+
+export function AppDialog({
+  TriggerComponent,
+  ContentComponent,
+}: {
+  TriggerComponent: React.FC
+  ContentComponent: React.FC<{onClose?: () => void}>
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <Dialog onOpenChange={setIsOpen} open={isOpen}>
+      <Dialog.Trigger asChild>
+        <TriggerComponent />
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay key="overlay" opacity={0.5} />
+        <Dialog.Content elevation="$2" key="content">
+          <ContentComponent
+            onClose={() => {
+              setIsOpen(false)
+            }}
+          />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
+  )
+}
