@@ -52,7 +52,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YY.M.D
+          format: YY.MM
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
@@ -64,6 +64,9 @@ jobs:
           - os: macos-latest
             goarch: arm64
             target: aarch64-apple-darwin
+          - os: macos-latest
+            goarch: x64
+            target: x86_64-apple-darwin
           - os: ubuntu-latest
             goarch: amd64
             target: x86_64-unknown-linux-gnu
@@ -111,12 +114,12 @@ jobs:
 
       # - name: Setup flatpak
       #   if: matrix.config.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
-      #   run: sudo apt install flatpak flatpak-builder elfutils
+      #   run: sudo apt install flatpak flatpak-builder elfutils 
           
       - name: Build App Package
         run: |
           TAMAGUI_TARGET=web yarn build
-          TAMAGUI_TARGET=web yarn electron:publish
+          TAMAGUI_TARGET=web yarn electron:make --arch=${{ matrix.config.goarch }}
         env:
           APP_VERSION: '${{ needs.get-date.outputs.version }}.${{needs.get-commits-count.outputs.commit_count}}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -127,3 +130,32 @@ jobs:
           
           # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
           # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ matrix.config.goarch }}
+          path: frontend/apps/electron/out/make/**/*
+  
+  publish-to-github:
+    needs: [get-date, get-commits-count, build-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download amd64 artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+          
+      - name: 'create release'
+        uses: softprops/action-gh-release@master
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        with:
+          tag_name: '${{ needs.get-date.outputs.version }}.${{needs.get-commits-count.outputs.commit_count}}'
+          prerelease: true
+          generate_release_notes: true
+          files: ./artifacts/artifacts-*/**/*
