@@ -61,13 +61,13 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: macos-latest
-            goarch: arm64
-            arch: arm64
-            target: aarch64-apple-darwin
+          # - os: macos-latest
+          #   goarch: arm64
+          #   arch: arm64
+          #   target: aarch64-apple-darwin
           - os: macos-latest
             goarch: amd64
-            arch: x64
+            arch: universal
             target: x86_64-apple-darwin
           - os: ubuntu-latest
             goarch: amd64
