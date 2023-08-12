@@ -63,12 +63,15 @@ jobs:
         config:
           - os: macos-latest
             goarch: arm64
+            arch: arm64
             target: aarch64-apple-darwin
           - os: macos-latest
             goarch: x64
+            arch: x64
             target: x86_64-apple-darwin
           - os: ubuntu-latest
-            goarch: x64
+            goarch: amd64
+            arch: x64
             target: x86_64-unknown-linux-gnu
           # - os: windows-latest
           #   goarch: amd64
@@ -119,7 +122,7 @@ jobs:
       - name: Build App Package
         run: |
           TAMAGUI_TARGET=web yarn build
-          TAMAGUI_TARGET=web yarn electron:make --arch=${{ matrix.config.goarch }}
+          TAMAGUI_TARGET=web yarn electron:make --arch=${{ matrix.config.arch }}
         env:
           APP_VERSION: '${{ needs.get-date.outputs.version }}.${{needs.get-commits-count.outputs.commit_count}}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -134,7 +137,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts-${{ matrix.config.goarch }}
+          name: artifacts-${{ matrix.config.os }}-${{ matrix.config.arch }}
           path: frontend/apps/electron/out/make/**/*
   
   publish-to-github:
