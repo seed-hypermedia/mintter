@@ -68,7 +68,7 @@ jobs:
             goarch: x64
             target: x86_64-apple-darwin
           - os: ubuntu-latest
-            goarch: amd64
+            goarch: x64
             target: x86_64-unknown-linux-gnu
           # - os: windows-latest
           #   goarch: amd64
