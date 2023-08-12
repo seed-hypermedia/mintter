@@ -13,7 +13,7 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  get-commits-month:
+  get-commits-count:
     runs-on: ubuntu-latest
     outputs:
       commit_count: ${{ steps.commit_count.outputs.commit_count }}
@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "Commits this month: ${{ steps.commit_count.outputs.commit_count }}"
 
-  get-version:
+  get-date:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.current_time.outputs.formattedTime }}
@@ -57,7 +57,7 @@ jobs:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
     # if: startsWith(github.ref, 'refs/tags/')
-    needs: get-version
+    needs: [get-date, get-commits-count]
     strategy:
       matrix:
         config:
@@ -118,12 +118,12 @@ jobs:
           TAMAGUI_TARGET=web yarn build
           TAMAGUI_TARGET=web yarn electron:publish
         env:
+          APP_VERSION: '${{ needs.get-date.outputs.version }}.${{needs.get-commits-count.outputs.commit_count}}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: '${{ secrets.APPLE_ID_PASSWORD }}'
           APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}'
-          TAG_PREFIX: 'desktop-nightly/${{ needs.get-version.outputs.version }}-'
           
           # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
           # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'
