@@ -15,6 +15,7 @@ Menu.setApplicationMenu(mainMenu)
 // check for updates Powered by the free and open-source update.electronjs.org service.
 updater({
   updateInterval: '1 hour',
+  repo: 'mintterteam/mintter',
 })
 
 //Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
