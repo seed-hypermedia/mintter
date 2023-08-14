@@ -300,10 +300,11 @@ function FileForm({
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
       if (largeFileIndex > -1) {
+        const largeFile = files[largeFileIndex]
         setFileName({
           name:
             largeFileIndex > 0
-              ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.`
+              ? `The size of ${largeFile.name.length < 36 ? largeFile.name : largeFile.name.slice(0, 32) + '...'} exceeds 60 MB.`
               : 'The file size exceeds 60 MB.',
           color: 'red',
         })

@@ -244,10 +244,11 @@ function VideoForm({
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
     if (largeFileIndex > -1) {
+      const largeFile = files[largeFileIndex]
       setFileName({
         name:
           largeFileIndex > 0
-            ? `The size of ${files[largeFileIndex].name} exceeds 60 MB.`
+            ? `The size of ${largeFile.name.length < 36 ? largeFile.name : largeFile.name.slice(0, 32) + '...'} exceeds 60 MB.`
             : 'The video size exceeds 60 MB.',
         color: 'red',
       })
@@ -455,8 +456,16 @@ function VideoForm({
                       e.stopPropagation();
                       if (drag) setDrag(false)
                       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        let isVideo = true;
                         const files = Array.from(e.dataTransfer.files)
-                        handleUpload(Array.from(files))
+                        files.forEach((file) => {
+                          if (!file.type.includes('video/')) {
+                            setFileName({ name: `File ${file.name.length < 36 ? file.name : file.name.slice(0, 32) + '...'} is not a video.`, color: 'red' })
+                            isVideo = false;
+                            return
+                          }
+                        })
+                        if (isVideo) handleUpload(Array.from(files))
                         return
                       }
                     }}
