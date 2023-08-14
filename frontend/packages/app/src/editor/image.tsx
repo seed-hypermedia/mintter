@@ -27,6 +27,7 @@ import {ChangeEvent, useEffect, useState} from 'react'
 import {RiImage2Fill} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
 import { useAppContext } from '@mintter/app/src/app-context'
+import { toast } from '../toast'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -126,6 +127,28 @@ function ImageComponent({
     await saveCidAsFile(block.props.url, block.props.name)
   }
 
+  const handleDragReplace = async (file: File) => {
+    if (file.size > 62914560) {
+      toast.error(`The size of ${file.name} exceeds 60 MB.`)
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: file.name}} as ImageType)
+    } catch (error) {
+      console.error(error)
+    }
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
+
   return (
     <div
       className={selected ? 'ProseMirror-selectednode' : ''}
@@ -140,6 +163,36 @@ function ImageComponent({
         }}
         onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
           setReplace(false)
+        }}
+        onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (selected) setSelected(false)
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const files = Array.from(e.dataTransfer.files)
+            handleDragReplace(Array.from(files)[0])
+            return
+          }
+        }}
+        onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+          const relatedTarget = e.relatedTarget as HTMLElement;
+          e.preventDefault();
+          e.stopPropagation();
+          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+            setSelected(true);
+          }
+        }}
+        onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+          const relatedTarget = e.relatedTarget as HTMLElement;
+          e.preventDefault();
+          e.stopPropagation();
+          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+            setSelected(false);
+          }
         }}
         borderWidth={0}
         outlineWidth={0}
