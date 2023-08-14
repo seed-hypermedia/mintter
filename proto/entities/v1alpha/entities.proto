@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package com.mintter.entities.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/entities/v1alpha;entities";
+
+// Provides functionality to query information about Hyperdocs Entities.
+service Entities {
+  // Gets a change by ID.
+  rpc GetChange(GetChangeRequest) returns (Change);
+
+  // Gets the DAG of changes for an entity.
+  rpc GetEntityTimeline(GetEntityTimelineRequest) returns (EntityTimeline);
+}
+
+// Request to get a change by ID.
+message GetChangeRequest {
+  // ID of the change.
+  string id = 1;
+}
+
+// Request to get the timeline of an entity.
+message GetEntityTimelineRequest {
+  // The entity ID to get the timeline for.
+  string id = 1;
+}
+
+// A change to an entity.
+message Change {
+  // ID of the change.
+  string id = 1;
+
+  // Author of the change.
+  string author = 2;
+
+  // Timestamp when the change was created.
+  google.protobuf.Timestamp create_time = 3;
+
+  // IDs of other changes this change depends on.
+  repeated string deps = 4;
+
+  // Indicates whether this changes comes from a trusted peer of ours.
+  bool is_trusted = 5;
+}
+
+// The timeline of an entity.
+message EntityTimeline {
+  // The ID of the entity.
+  string id = 1;
+
+  // The set of changes for the entity keyed by change ID.
+  map<string, Change> changes = 2;
+
+  // The sorted list of change IDs by time.
+  repeated string changes_by_time = 3;
+
+  // The latest version of the entity we know about.
+  string latest_public_version = 4;
+
+  // The latest version of the entity from our trusted peers.
+  string latest_trusted_version = 5;
+}

@@ -49,11 +49,11 @@ func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) 
 	}
 	defer release()
 
-	if err := sqlitex.ExecScript(conn, "PRAGMA query_only = on;"); err != nil {
+	if err := sqlitex.ExecTransient(conn, "PRAGMA query_only = on;", nil); err != nil {
 		return err
 	}
 	defer func() {
-		err = multierr.Combine(err, sqlitex.ExecScript(conn, "PRAGMA query_only = off;"))
+		err = multierr.Combine(err, sqlitex.ExecTransient(conn, "PRAGMA query_only = off;", nil))
 	}()
 
 	return fn(conn)

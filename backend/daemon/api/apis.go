@@ -7,6 +7,8 @@ import (
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	documents "mintter/backend/daemon/api/documents/v1alpha"
+	entities "mintter/backend/daemon/api/entities/v1alpha"
+	groups "mintter/backend/daemon/api/groups/v1alpha"
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
@@ -27,6 +29,8 @@ type Server struct {
 	Documents  *documents.Server
 	Networking *networking.Server
 	Site       *mttnet.Server
+	Entities   *entities.Server
+	Groups     *groups.Server
 }
 
 // New creates a new API server.
@@ -64,6 +68,8 @@ func New(
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
 		Site:       siteSrv,
+		Entities:   entities.NewServer(blobs),
+		Groups:     groups.NewServer(repo.Identity(), blobs),
 	}
 }
 

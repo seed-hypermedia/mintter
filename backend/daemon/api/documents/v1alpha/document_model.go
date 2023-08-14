@@ -47,9 +47,9 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 		origins:    make(map[string]cid.Cid),
 	}
 
-	for c := range e.AppliedChanges() {
-		o := hyper.OriginFromCID(c)
-		dm.origins[o] = c
+	for _, c := range e.AppliedChanges() {
+		o := hyper.OriginFromCID(c.CID)
+		dm.origins[o] = c.CID
 	}
 
 	if err := dm.replayMoves(); err != nil {
@@ -361,7 +361,8 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 	{
 		seenAccounts := map[string]struct{}{}
 		seenDelegations := map[cid.Cid]struct{}{}
-		for _, ch := range e.AppliedChanges() {
+		for _, blob := range e.AppliedChanges() {
+			ch := blob.Data
 			del := ch.Delegation
 			if !del.Defined() {
 				return nil, fmt.Errorf("all document changes must have delegations")

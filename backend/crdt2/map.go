@@ -2,6 +2,8 @@ package crdt2
 
 import (
 	"math"
+	"mintter/backend/pkg/maps"
+	"sort"
 
 	"github.com/tidwall/btree"
 )
@@ -145,6 +147,27 @@ func (m *Map) List(path ...string) (out []any, ok bool) {
 	})
 
 	return out, ok
+}
+
+func (m *Map) Keys(path ...string) []string {
+	// Appending empty string to start scanning keys grater than prefix.
+	pivot := newPivot(append(path, ""), false)
+
+	keys := map[string]struct{}{}
+	m.state.Ascend(pivot, func(item mapNode) bool {
+		if !samePath(path, item.key.path[:len(item.key.path)-1]) {
+			return false
+		}
+
+		keys[item.key.path[len(item.key.path)-1]] = struct{}{}
+
+		return true
+	})
+
+	list := maps.Keys(keys)
+	sort.Strings(list)
+
+	return list
 }
 
 func (m *Map) ForEachListChunk(path []string, fn func(time int64, origin string, items []any) (ok bool)) {

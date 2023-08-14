@@ -617,15 +617,6 @@ export class Group extends Message<Group> {
    */
   version = "";
 
-  /**
-   * Latest version of the group according to the information from its owner and members
-   * that we happen to have locally. This is the version that should be used
-   * to get the most recent group information.
-   *
-   * @generated from field: string latest_version = 7;
-   */
-  latestVersion = "";
-
   constructor(data?: PartialMessage<Group>) {
     super();
     proto3.util.initPartial(data, this);
@@ -640,7 +631,6 @@ export class Group extends Message<Group> {
     { no: 4, name: "owner_account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "create_time", kind: "message", T: Timestamp },
     { no: 6, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 7, name: "latest_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Group {

@@ -51,7 +51,8 @@ func (eid EntityID) TrimPrefix(prefix string) string {
 // Entity is our CRDT mutable object.
 type Entity struct {
 	id      EntityID
-	applied map[cid.Cid]Change
+	changes []ParsedBlob[Change]
+	applied map[cid.Cid]int
 	heads   map[cid.Cid]struct{}
 	state   *crdt2.Map
 	clock   hlc.Clock
@@ -61,7 +62,7 @@ type Entity struct {
 func NewEntity(id EntityID) *Entity {
 	return &Entity{
 		id:      id,
-		applied: make(map[cid.Cid]Change),
+		applied: make(map[cid.Cid]int),
 		heads:   make(map[cid.Cid]struct{}),
 		state:   crdt2.NewMap(),
 	}
@@ -82,8 +83,8 @@ func (e *Entity) LastChangeTime() hlc.Time {
 
 // AppliedChanges returns the map of applied changes.
 // This must be read-only. Not safe for concurrency.
-func (e *Entity) AppliedChanges() map[cid.Cid]Change {
-	return e.applied
+func (e *Entity) AppliedChanges() []ParsedBlob[Change] {
+	return e.changes
 }
 
 func (e *Entity) State() *crdt2.Map {
@@ -164,7 +165,8 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 
 	e.state.ApplyPatch(ch.HLCTime.Pack(), OriginFromCID(c), ch.Patch)
 	e.clock.Track(ch.HLCTime)
-	e.applied[c] = ch
+	e.changes = append(e.changes, ParsedBlob[Change]{c, ch})
+	e.applied[c] = len(e.changes) - 1
 	e.heads[c] = struct{}{}
 
 	return nil
@@ -213,9 +215,13 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 		return hb, fmt.Errorf("change to replace must be the current head")
 	}
 
-	prev, ok := e.applied[old]
-	if !ok {
-		return hb, fmt.Errorf("change to be replaced must be applied")
+	var prev Change
+	{
+		idx, ok := e.applied[old]
+		if !ok {
+			return hb, fmt.Errorf("change to be replaced must be applied")
+		}
+		prev = e.changes[idx].Data
 	}
 
 	e.state.ForgetState(prev.HLCTime.Pack(), OriginFromCID(old))
@@ -525,4 +531,10 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 	}
 
 	return entity, nil
+}
+
+// ParsedBlob is a decoded IPLD blob.
+type ParsedBlob[T any] struct {
+	CID  cid.Cid
+	Data T
 }

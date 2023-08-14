@@ -1013,6 +1013,125 @@ WHERE blobs.id IN (SELECT hd_changes.blob FROM hd_changes WHERE hd_changes.entit
 	return err
 }
 
+type ChangesGetInfoResult struct {
+	HDChangesBlob       int64
+	HDChangesHlcTime    int64
+	PublicKeysPrincipal []byte
+	IsTrusted           int64
+}
+
+func ChangesGetInfo(conn *sqlite.Conn, hdChangesBlob int64) (ChangesGetInfoResult, error) {
+	const query = `SELECT hd_changes.blob, hd_changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
+FROM hd_changes
+JOIN public_keys ON public_keys.id = hd_changes.author
+LEFT JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
+WHERE hd_changes.blob = :hdChangesBlob
+LIMIT 1`
+
+	var out ChangesGetInfoResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hdChangesBlob", hdChangesBlob)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesGetInfo: more than one result return for a single-kind query")
+		}
+
+		out.HDChangesBlob = stmt.ColumnInt64(0)
+		out.HDChangesHlcTime = stmt.ColumnInt64(1)
+		out.PublicKeysPrincipal = stmt.ColumnBytes(2)
+		out.IsTrusted = stmt.ColumnInt64(3)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetInfo: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesGetDepsResult struct {
+	BlobsCodec     int64
+	BlobsMultihash []byte
+}
+
+func ChangesGetDeps(conn *sqlite.Conn, hdChangeDepsChild int64) ([]ChangesGetDepsResult, error) {
+	const query = `SELECT blobs.codec, blobs.multihash
+FROM hd_change_deps
+JOIN blobs ON blobs.id = hd_change_deps.parent
+WHERE hd_change_deps.child = :hdChangeDepsChild`
+
+	var out []ChangesGetDepsResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hdChangeDepsChild", hdChangeDepsChild)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesGetDepsResult{
+			BlobsCodec:     stmt.ColumnInt64(0),
+			BlobsMultihash: stmt.ColumnBytes(1),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetDeps: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesInfoForEntityResult struct {
+	BlobsCodec          int64
+	BlobsMultihash      []byte
+	HDChangesBlob       int64
+	HDChangesHlcTime    int64
+	PublicKeysPrincipal []byte
+	IsTrusted           int64
+}
+
+func ChangesInfoForEntity(conn *sqlite.Conn, hdChangesEntity int64) ([]ChangesInfoForEntityResult, error) {
+	const query = `SELECT blobs.codec, blobs.multihash, hd_changes.blob, hd_changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
+FROM hd_changes
+JOIN blobs ON blobs.id = hd_changes.blob
+JOIN public_keys ON public_keys.id = hd_changes.author
+LEFT JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
+WHERE hd_changes.entity = :hdChangesEntity`
+
+	var out []ChangesInfoForEntityResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesInfoForEntityResult{
+			BlobsCodec:          stmt.ColumnInt64(0),
+			BlobsMultihash:      stmt.ColumnBytes(1),
+			HDChangesBlob:       stmt.ColumnInt64(2),
+			HDChangesHlcTime:    stmt.ColumnInt64(3),
+			PublicKeysPrincipal: stmt.ColumnBytes(4),
+			IsTrusted:           stmt.ColumnInt64(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesInfoForEntity: %w", err)
+	}
+
+	return out, err
+}
+
 func LinksInsert(conn *sqlite.Conn, hdLinksSourceBlob int64, hdLinksRel string, hdLinksTargetBlob int64, hdLinksTargetEntity int64, hdLinksData []byte) error {
 	const query = `INSERT OR IGNORE INTO hd_links (source_blob, rel, target_blob, target_entity, data)
 VALUES (:hdLinksSourceBlob, :hdLinksRel, NULLIF(:hdLinksTargetBlob, 0), NULLIF(:hdLinksTargetEntity, 0), :hdLinksData)`

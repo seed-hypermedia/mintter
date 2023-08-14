@@ -178,11 +178,6 @@ message Group {
   // Version of the group entity that is being returned by the server.
   // When latest version is requested, this is the same as latest_version.
   string version = 6;
-
-  // Latest version of the group according to the information from its owner and members
-  // that we happen to have locally. This is the version that should be used
-  // to get the most recent group information.
-  string latest_version = 7;
 }
 
 // Role of a group member.
