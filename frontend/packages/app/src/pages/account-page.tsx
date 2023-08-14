@@ -5,7 +5,6 @@ import {getAccountUrl} from '@mintter/app/src/utils/account-url'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {Avatar} from '@mintter/app/src/components/avatar'
-import {Dropdown} from '@mintter/app/src/components/dropdown'
 import Footer from '@mintter/app/src/components/footer'
 import {OnlineIndicator} from '@mintter/app/src/components/indicator'
 import {PublicationListItem} from '@mintter/app/src/components/publication-list-item'
@@ -15,11 +14,11 @@ import {
   Button,
   ChevronDown,
   Container,
-  Heading,
   ListItem,
   MainWrapper,
   Popover,
   SizableText,
+  Text,
   XStack,
   YGroup,
   YStack,
@@ -101,7 +100,6 @@ function AccountTrustButton({
     return (
       <Button
         size="$2"
-        theme="green"
         icon={PlusCircle}
         onPress={() => {
           setTrusted.mutate({accountId, isTrusted: true})
@@ -214,7 +212,7 @@ export default function AccountPage() {
           </XStack>
           {account.profile?.bio && (
             <Section>
-              <span>{account.profile?.bio}</span>
+              <SizableText size="$4">{account.profile?.bio}</SizableText>
             </Section>
           )}
           <AccountDocuments
