@@ -14,10 +14,13 @@ import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
 
 export default function QuickSwitcher() {
-  const {data: drafts} = useDraftList()
-  const {data: publications} = usePublicationList(false)
-
   const [open, setOpen] = useState(false)
+  const {data: drafts} = useDraftList()
+  const {data: publications} = usePublicationList({
+    enabled: open,
+    trustedOnly: false,
+  })
+
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 

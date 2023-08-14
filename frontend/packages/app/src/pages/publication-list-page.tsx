@@ -12,7 +12,7 @@ import {useState} from 'react'
 import './publication-list-page.css'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
-  let {data} = usePublicationList(trustedOnly)
+  let {data} = usePublicationList({trustedOnly})
   let drafts = useDraftList()
   let openDraft = useOpenDraft()
   const pubs = data?.publications

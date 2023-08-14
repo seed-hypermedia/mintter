@@ -28,6 +28,7 @@ import {
   GRPCClient,
   isHyperdocsScheme,
   isMintterGatewayLink,
+  ListPublicationsResponse,
   normalizeHyperdocsLink,
   Publication,
   WebPublicationRecord,
@@ -62,9 +63,13 @@ function createEmptyChanges(): DraftChangesState {
   }
 }
 
-export function usePublicationList(trustedOnly: boolean) {
+export function usePublicationList(
+  opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
+) {
+  const {trustedOnly, ...queryOpts} = opts || {}
   const grpcClient = useGRPCClient()
   return useQuery({
+    ...queryOpts,
     queryKey: [
       queryKeys.GET_PUBLICATION_LIST,
       trustedOnly ? 'trusted' : 'global',

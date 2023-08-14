@@ -65,10 +65,6 @@ export const HDHeadingBlockContent = createTipTapBlock<'heading'>({
   },
 
   renderHTML({HTMLAttributes}) {
-    console.log(
-      '🚀 ~ file: heading-component-plugin.tsx:65 ~ renderHTML ~ HTMLAttributes:',
-      HTMLAttributes,
-    )
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
