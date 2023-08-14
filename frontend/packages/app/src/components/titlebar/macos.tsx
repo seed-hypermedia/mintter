@@ -1,5 +1,10 @@
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
-import {ActionButtons, NavigationButtons, NavMenu} from './common'
+import {
+  ActionButtons,
+  GroupOptionsButton,
+  NavigationButtons,
+  NavMenu,
+} from './common'
 import {Title} from './title'
 import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
 

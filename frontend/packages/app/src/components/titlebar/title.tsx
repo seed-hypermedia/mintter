@@ -11,6 +11,7 @@ import {
   FontSizeTokens,
   Globe,
   Pencil,
+  Spinner,
   TitleText,
   User,
   XStack,
@@ -19,6 +20,7 @@ import {Folder} from '@tamagui/lucide-icons'
 import {getDocumentTitle} from '../publication-list-item'
 import {useEffect} from 'react'
 import {NavRoute} from '../../utils/navigation'
+import {useGroup} from '../../models/groups'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -64,6 +66,24 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
         <TitleText data-tauri-drag-region size={size}>
           Contacts
         </TitleText>
+      </>
+    )
+  }
+  if (route.key === 'groups') {
+    return (
+      <>
+        <Folder size={12} />
+        <TitleText data-tauri-drag-region size={size}>
+          Groups
+        </TitleText>
+      </>
+    )
+  }
+  if (route.key === 'group') {
+    return (
+      <>
+        <Folder size={12} />
+        <GroupTitle groupId={route.groupId} size={size} />
       </>
     )
   }
@@ -114,6 +134,16 @@ export function Title({size}: {size?: FontSizeTokens}) {
     >
       <TitleContent size={size} />
     </XStack>
+  )
+}
+
+function GroupTitle({groupId, size}: {groupId: string; size?: FontSizeTokens}) {
+  const group = useGroup(groupId)
+  if (group.isLoading) return <Spinner />
+  return (
+    <TitleText data-tauri-drag-region size={size}>
+      {group.data?.title}
+    </TitleText>
   )
 }
 

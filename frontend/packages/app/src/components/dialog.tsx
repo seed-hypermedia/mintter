@@ -1,5 +1,6 @@
-import {styled, Dialog, View, XStack, YStack} from '@mintter/ui'
-import {useState} from 'react'
+import {styled, Dialog, XStack, YStack, AlertDialog} from '@mintter/ui'
+import {FC, useState} from 'react'
+import {NavContextProvider, useNavigation} from '../utils/navigation'
 
 export const DialogOverlay = styled(XStack, {
   backgroundColor: '$base-component-bg-normal',
@@ -38,29 +39,112 @@ export const DialogTitle = Dialog.Title
 
 export const DialogDescription = Dialog.Description
 
+function getComponent(isAlert?: boolean) {
+  const Component = isAlert
+    ? {
+        Root: AlertDialog,
+        Trigger: AlertDialog.Trigger,
+        Portal: AlertDialog.Portal,
+        Overlay: AlertDialog.Overlay,
+        Content: AlertDialog.Content,
+      }
+    : {
+        Root: Dialog,
+        Trigger: Dialog.Trigger,
+        Portal: Dialog.Portal,
+        Overlay: DialogOverlay,
+        Content: DialogContent,
+      }
+  return Component
+}
+
 export function AppDialog({
   TriggerComponent,
   ContentComponent,
+  isAlert,
 }: {
   TriggerComponent: React.FC
   ContentComponent: React.FC<{onClose?: () => void}>
+  isAlert?: boolean
 }) {
+  const Component = getComponent(isAlert)
   const [isOpen, setIsOpen] = useState(false)
+  const nav = useNavigation()
   return (
-    <Dialog onOpenChange={setIsOpen} open={isOpen}>
-      <Dialog.Trigger asChild>
+    <Component.Root onOpenChange={setIsOpen} open={isOpen}>
+      <Component.Trigger asChild>
         <TriggerComponent />
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay key="overlay" opacity={0.5} />
-        <Dialog.Content elevation="$2" key="content">
-          <ContentComponent
-            onClose={() => {
-              setIsOpen(false)
-            }}
+      </Component.Trigger>
+      <Component.Portal>
+        <NavContextProvider value={nav}>
+          <Component.Overlay
+            backgroundColor={'#00000088'}
+            height="100vh"
+            width="100vw"
+            onPress={() => setIsOpen(false)}
           />
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+          <Component.Content backgroundColor={'$background'}>
+            <ContentComponent
+              onClose={() => {
+                setIsOpen(false)
+              }}
+            />
+          </Component.Content>
+        </NavContextProvider>
+      </Component.Portal>
+    </Component.Root>
   )
+}
+
+export function useAppDialog<DialogInput>(
+  DialogContentComponent: FC<{onClose: () => void; input: DialogInput}>,
+  options?: {isAlert?: boolean},
+) {
+  const [openState, setOpenState] = useState<null | DialogInput>(null)
+  const nav = useNavigation()
+
+  const Component = getComponent(options?.isAlert)
+
+  function open(input: DialogInput) {
+    setOpenState(input)
+  }
+
+  function close() {
+    setOpenState(null)
+  }
+
+  return {
+    open,
+    close,
+    content: (
+      <Component.Root
+        onOpenChange={(isOpen) => {
+          if (isOpen) throw new Error('Cannot open app dialog')
+          close()
+        }}
+        open={!!openState}
+      >
+        <Component.Portal>
+          <NavContextProvider value={nav}>
+            <Component.Overlay
+              backgroundColor={'#00000088'}
+              height="100vh"
+              width="100vw"
+              onPress={close}
+            />
+            <Component.Content backgroundColor={'$background'}>
+              {openState && (
+                <DialogContentComponent
+                  input={openState}
+                  onClose={() => {
+                    setOpenState(null)
+                  }}
+                />
+              )}
+            </Component.Content>
+          </NavContextProvider>
+        </Component.Portal>
+      </Component.Root>
+    ),
+  }
 }

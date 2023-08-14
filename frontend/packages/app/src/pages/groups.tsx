@@ -1,15 +1,37 @@
 import Footer from '@mintter/app/src/components/footer'
-import {Container, MainWrapper, Spinner, Text, YStack} from '@mintter/ui'
+import {
+  Button,
+  Container,
+  MainWrapper,
+  Spinner,
+  Text,
+  YStack,
+} from '@mintter/ui'
 import {useGroups} from '../models/groups'
+import {Group} from '@mintter/shared'
+import {useNavigate} from '../utils/navigation'
+
+function GroupListItem({group}: {group: Group}) {
+  const navigate = useNavigate()
+  return (
+    <Button
+      onPress={() => {
+        navigate({key: 'group', groupId: group.id})
+      }}
+    >
+      {group.title}
+    </Button>
+  )
+}
 
 export default function GroupsPage() {
-  const contacts = useGroups()
-  const groups = contacts.data?.groups || []
-  let content = contacts.isLoading ? (
+  const groupQuery = useGroups()
+  const groups = groupQuery.data?.groups || []
+  let content = groupQuery.isLoading ? (
     <Spinner />
   ) : groups.length > 0 ? (
     groups.map((group) => {
-      return
+      return <GroupListItem group={group} key={group.id} />
     })
   ) : (
     <YStack gap="$5" paddingVertical="$8">

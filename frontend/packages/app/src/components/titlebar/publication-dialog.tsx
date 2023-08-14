@@ -12,7 +12,6 @@ import {
   Spinner,
   Text,
   XStack,
-  styled,
 } from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'

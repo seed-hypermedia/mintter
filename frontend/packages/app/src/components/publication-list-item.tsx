@@ -23,6 +23,8 @@ import {MouseEvent, useEffect, useState} from 'react'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {MenuItem} from '@mintter/app/src/components/dropdown'
 import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
+import {useAppDialog} from './dialog'
+import {DeleteDocumentDialog} from './delete-dialog'
 
 function unique(keys: string[]) {
   return Array.from(new Set(keys))
@@ -35,13 +37,11 @@ export function PublicationListItem({
   publication,
   hasDraft,
   copy = copyTextToClipboard,
-  handleDelete,
   pubContext,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
-  handleDelete?: (docId: string) => void
   pubContext: PublicationRouteContext
 }) {
   const navigate = useNavigate()
@@ -50,6 +50,7 @@ export function PublicationListItem({
   const docId = publication.document?.id
   const popoverState = usePopoverState()
   const route = useNavRoute()
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
 
   const [isHovering, setIsHovering] = useState(false)
   if (!docId) throw new Error('PublicationListItem requires id')
@@ -76,98 +77,101 @@ export function PublicationListItem({
   }
 
   return (
-    <Button
-      onPointerEnter={() => setIsHovering(true)}
-      onPointerLeave={() => setIsHovering(false)}
-      chromeless
-      tag="li"
-      onMouseEnter={() => {
-        if (publication.document)
-          prefetchPublication(publication.document.id, publication.version)
-      }}
-    >
-      {/* @ts-ignore */}
-      <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
-        {title}
-      </ButtonText>
-
-      {hasDraft && (
-        <Button
-          theme="yellow"
-          zIndex="$max"
-          onPress={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            navigate({
-              key: 'draft',
-              draftId: hasDraft.id,
-              contextRoute: route,
-            })
-          }}
-          size="$1"
-        >
-          Resume Editing
-        </Button>
-      )}
-      <XStack>
-        {publication.document?.editors.length ? (
-          unique(publication.document?.editors).map((editor) => (
-            <AccountLinkAvatar accountId={editor} key={editor} />
-          ))
-        ) : publication.document?.author ? (
-          <AccountLinkAvatar accountId={publication.document?.author} />
-        ) : null}
-      </XStack>
-      <Text
-        fontFamily="$body"
-        fontSize="$2"
-        data-testid="list-item-date"
-        minWidth="10ch"
-        textAlign="right"
+    <>
+      <Button
+        onPointerEnter={() => setIsHovering(true)}
+        onPointerLeave={() => setIsHovering(false)}
+        chromeless
+        tag="li"
+        onMouseEnter={() => {
+          if (publication.document)
+            prefetchPublication(publication.document.id, publication.version)
+        }}
       >
-        {publication.document?.updateTime
-          ? formattedDate(publication.document?.updateTime)
-          : '...'}
-      </Text>
-      <XStack>
-        {isHovering ? (
-          <Popover {...popoverState} placement="bottom-end">
-            <Popover.Trigger asChild>
-              <Button size="$1" circular data-trigger icon={MoreHorizontal} />
-            </Popover.Trigger>
-            <Popover.Content padding={0} elevation="$2">
-              <YGroup separator={<Separator />}>
-                <YGroup.Item>
-                  <MenuItem
-                    data-testid="new-window-item"
-                    onPress={() =>
-                      spawn({
-                        key: 'publication',
-                        documentId: docId,
-                        versionId: publication.version,
-                      })
-                    }
-                    title="Open in new Window"
-                    icon={ExternalLink}
-                  />
-                </YGroup.Item>
-                <YGroup.Item>
-                  <MenuItem
-                    title="Delete Publication"
-                    onPress={() => {
-                      popoverState.onOpenChange(false)
-                      handleDelete?.(docId)
-                    }}
-                    icon={Delete}
-                  />
-                </YGroup.Item>
-              </YGroup>
-            </Popover.Content>
-          </Popover>
-        ) : (
-          <Button size="$1" opacity={0} circular icon={MoreHorizontal} />
+        {/* @ts-ignore */}
+        <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
+          {title}
+        </ButtonText>
+
+        {hasDraft && (
+          <Button
+            theme="yellow"
+            zIndex="$max"
+            onPress={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              navigate({
+                key: 'draft',
+                draftId: hasDraft.id,
+                contextRoute: route,
+              })
+            }}
+            size="$1"
+          >
+            Resume Editing
+          </Button>
         )}
-      </XStack>
-    </Button>
+        <XStack>
+          {publication.document?.editors.length ? (
+            unique(publication.document?.editors).map((editor) => (
+              <AccountLinkAvatar accountId={editor} key={editor} />
+            ))
+          ) : publication.document?.author ? (
+            <AccountLinkAvatar accountId={publication.document?.author} />
+          ) : null}
+        </XStack>
+        <Text
+          fontFamily="$body"
+          fontSize="$2"
+          data-testid="list-item-date"
+          minWidth="10ch"
+          textAlign="right"
+        >
+          {publication.document?.updateTime
+            ? formattedDate(publication.document?.updateTime)
+            : '...'}
+        </Text>
+        <XStack>
+          {isHovering ? (
+            <Popover {...popoverState} placement="bottom-end">
+              <Popover.Trigger asChild>
+                <Button size="$1" circular data-trigger icon={MoreHorizontal} />
+              </Popover.Trigger>
+              <Popover.Content padding={0} elevation="$2">
+                <YGroup separator={<Separator />}>
+                  <YGroup.Item>
+                    <MenuItem
+                      data-testid="new-window-item"
+                      onPress={() =>
+                        spawn({
+                          key: 'publication',
+                          documentId: docId,
+                          versionId: publication.version,
+                        })
+                      }
+                      title="Open in new Window"
+                      icon={ExternalLink}
+                    />
+                  </YGroup.Item>
+                  <YGroup.Item>
+                    <MenuItem
+                      title="Delete Publication"
+                      onPress={() => {
+                        popoverState.onOpenChange(false)
+                        deleteDialog.open(docId)
+                      }}
+                      icon={Delete}
+                    />
+                  </YGroup.Item>
+                </YGroup>
+              </Popover.Content>
+            </Popover>
+          ) : (
+            <Button size="$1" opacity={0} circular icon={MoreHorizontal} />
+          )}
+        </XStack>
+      </Button>
+      {deleteDialog.content}
+    </>
   )
 }

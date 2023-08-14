@@ -16,6 +16,8 @@ import {
 } from '@mintter/ui'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
+import {MdWarning, MdWarningAmber} from 'react-icons/md'
+import {X} from '@tamagui/lucide-icons'
 
 export function FooterButton({
   active,
@@ -82,8 +84,12 @@ export default function Footer({children}: {children?: ReactNode}) {
         </XStack>
       ) : !isOnline ? (
         <XStack alignItems="center">
-          <Delete size={12} />
-          <SizableText size="$1" userSelect="none">
+          <SizableText
+            size="$1"
+            userSelect="none"
+            color="$color9"
+            paddingHorizontal="$2"
+          >
             You are Offline
           </SizableText>
         </XStack>

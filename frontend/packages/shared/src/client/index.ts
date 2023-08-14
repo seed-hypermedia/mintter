@@ -36,7 +36,7 @@ export type {
   RegisterRequest,
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
-export type {
+export {
   Group,
   Role,
   ListGroupsRequest,

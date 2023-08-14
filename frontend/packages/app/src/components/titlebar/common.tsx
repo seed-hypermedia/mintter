@@ -18,11 +18,9 @@ import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
 import {Account, DocumentChange, SiteConfig} from '@mintter/shared'
 import {
-  Add,
   Back,
   Button,
   Draft,
-  File,
   Forward,
   Menu,
   Popover,
@@ -38,13 +36,26 @@ import {
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublicationDropdown, PublishShareButton} from './publish-share'
-import {FilePlus2, Folder, Globe, Pencil, Search} from '@tamagui/lucide-icons'
+import {
+  CircleEllipsis,
+  Copy,
+  FilePlus2,
+  Folder,
+  Globe,
+  MoreHorizontal,
+  Pencil,
+  Search,
+  Send,
+  Trash,
+} from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {useIPC} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '@mintter/app/src/app-context'
 import {AddGroupButton} from '../new-group'
+import {usePublishGroupDialog} from '../publish-group'
+import {useEditGroupInfoDialog} from '../edit-group-info'
 
 function NewDocumentButton() {
   const route = useNavRoute()
@@ -68,6 +79,47 @@ function NewDocumentButton() {
   )
 }
 
+export function GroupOptionsButton() {
+  const route = useNavRoute()
+  const groupId = route.key === 'group' ? route.groupId : null
+  if (!groupId)
+    throw new Error('GroupOptionsButton not supported in this route')
+  const publish = usePublishGroupDialog()
+  const editInfo = useEditGroupInfoDialog()
+  return (
+    <>
+      <Dropdown.Root {...usePopoverState()}>
+        <Dropdown.Trigger circular icon={MoreHorizontal} />
+        <Dropdown.Portal>
+          <Dropdown.Content align="start">
+            {/* <Dropdown.Item
+              onPress={() => {}}
+              icon={Trash}
+              title={`Delete Group`}
+            /> */}
+            <Dropdown.Item
+              onPress={() => {
+                publish.open(groupId)
+              }}
+              icon={Send}
+              title={`Publish Group to Site`}
+            />
+            <Dropdown.Item
+              onPress={() => {
+                editInfo.open(groupId)
+              }}
+              icon={Pencil}
+              title={`Edit Group Info`}
+            />
+          </Dropdown.Content>
+        </Dropdown.Portal>
+      </Dropdown.Root>
+      {publish.content}
+      {editInfo.content}
+    </>
+  )
+}
+
 export function ActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
@@ -78,14 +130,17 @@ export function ActionButtons(props: TitleBarProps) {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
     buttonGroup = [<AddGroupButton key="addGroup" />]
+  } else if (route.key === 'group') {
+    buttonGroup = [
+      <GroupOptionsButton key="groupOptions" />,
+      <NewDocumentButton key="newDoc" />,
+    ]
   }
   return (
     <TitlebarSection>
       {route.key == 'publication' ? <WriteActions route={route} /> : null}
       <PublishShareButton />
-      {buttonGroup.length ? (
-        <div className="button-group">{buttonGroup}</div>
-      ) : null}
+      {buttonGroup}
     </TitlebarSection>
   )
 }

@@ -242,6 +242,15 @@ export function dispatchAppNavigation(action: NavAction) {
   return appNavDispatch(action)
 }
 
+export function useNavigation() {
+  const nav = useContext(NavContext)
+  if (!nav)
+    throw new Error('useNavRoute must be used within a NavigationProvider')
+  return nav
+}
+
+export const NavContextProvider = NavContext.Provider
+
 export function useNavRoute() {
   const nav = useContext(NavContext)
   if (!nav)
