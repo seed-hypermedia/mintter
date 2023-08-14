@@ -155,7 +155,29 @@ mainMenu.append(
     ],
   }),
 )
-mainMenu.append(new MenuItem({role: 'fileMenu'}))
+mainMenu.append(
+  new MenuItem({
+    role: 'fileMenu',
+    submenu: [
+      // {
+      //   label: 'New Document',
+      //   accelerator: 'CmdOrCtrl+n',
+      //   click: () => {
+      //     // todo
+      //   },
+      // },
+      {
+        label: 'New Window',
+        accelerator: 'CmdOrCtrl+Shift+n',
+        click: () => {
+          trpc.createAppWindow({route: {key: 'home'}})
+        },
+      },
+      {type: 'separator'},
+      {role: 'close'},
+    ],
+  }),
+)
 mainMenu.append(new MenuItem({role: 'editMenu'}))
 
 function openRoute(route: NavRoute) {
