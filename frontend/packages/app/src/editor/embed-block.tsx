@@ -20,7 +20,7 @@ import {
   isHyperdocsScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
-import {Spinner, Text, YStack} from '@mintter/ui'
+import {Spinner, Text, XStack, YStack} from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
 import {getBlockInfoFromPos} from '../blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 import {createReactBlockSpec} from '../blocknote-react'
@@ -29,6 +29,8 @@ import {usePublication} from '../models/documents'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {useOpenUrl} from '../open-url'
 import {BACKEND_FILE_URL} from '../constants'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AlertCircle} from '@tamagui/lucide-icons'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -255,7 +257,22 @@ function StaticBlockNode({block}: {block: BlockNode}) {
     </YStack>
   )
 }
-
+function EmbedError() {
+  return (
+    <XStack
+      backgroundColor="$red5"
+      borderColor="$red8"
+      borderWidth={1}
+      padding="$4"
+      paddingVertical="$2"
+      borderRadius="$4"
+      gap="$2"
+    >
+      <AlertCircle size={18} color="$red10" />
+      <Text>Failed to load this Embedded document</Text>
+    </XStack>
+  )
+}
 export const EmbedBlock = createReactBlockSpec({
   type: 'embed',
   propSchema: {
@@ -266,8 +283,12 @@ export const EmbedBlock = createReactBlockSpec({
   containsInlineContent: true,
 
   render: ({block, editor}) => {
-    // @ts-expect-error
-    return <EmbedPresentation block={block} editor={editor} />
+    return (
+      <ErrorBoundary FallbackComponent={EmbedError}>
+        {/* @ts-expect-error */}
+        <EmbedPresentation block={block} editor={editor} />
+      </ErrorBoundary>
+    )
   },
 })
 
