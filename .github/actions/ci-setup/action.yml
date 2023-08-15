@@ -13,12 +13,6 @@ inputs:
   # matrix-goarch:
   #   description: "The Current Go Arch"
   #   required: true
-  p12_file_base64:
-    description: "The MacOS Certificate in Base64"
-    required: true
-  p12_password:
-    description: "The MacOS Certificate password"
-    required: true
 
 
 runs:
@@ -69,13 +63,6 @@ runs:
         key: ${{ inputs.matrix-os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ inputs.matrix-os }}-go-
-
-    - name: Import MacOS certs
-      if: inputs.matrix-os == 'macos-latest'
-      uses: apple-actions/import-codesign-certs@v2
-      with:
-        p12-file-base64: ${{ inputs.p12_file_base64 }}
-        p12-password: ${{ inputs.p12_password }}
 
     - name: Install Node.js 20
       uses: actions/setup-node@v3

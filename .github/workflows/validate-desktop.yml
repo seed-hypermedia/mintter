@@ -34,8 +34,6 @@ jobs:
       - uses: ./.github/actions/ci-setup
         with:
           matrix-os: 'ubuntu-latest'
-          p12_file_base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
-          p12_password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       - name: Install Node.js 20
         uses: actions/setup-node@v3
