@@ -38,10 +38,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install Frontend Dependencies
-        # env:
-          # YARN_ENABLE_IMMUTABLE_INSTALLS: false
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
         run: |
-          yarn set version latest
           yarn
 
       - name: Validate code
