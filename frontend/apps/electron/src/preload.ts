@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('appInfo', {
   arch: () => process.arch,
 })
 
+//@ts-expect-error
 ipcRenderer.addListener('initWindow', (info, event) => {
   console.log('💡 Init Window', event)
   updateInitRoute(event.route)

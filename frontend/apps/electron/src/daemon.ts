@@ -1,12 +1,11 @@
-import {app} from 'electron'
-import {spawn} from 'child_process'
-import {join} from 'path'
-import {homedir, platform} from 'os'
 import {
-  BACKEND_P2P_PORT,
   BACKEND_GRPC_PORT,
   BACKEND_HTTP_PORT,
+  BACKEND_P2P_PORT,
 } from '@mintter/app/src/constants'
+import {spawn} from 'child_process'
+import {app} from 'electron'
+import {join} from 'path'
 import {updateGoDaemonState} from './api'
 
 console.log('== BACKEND_HTTP_PORT', BACKEND_HTTP_PORT)
