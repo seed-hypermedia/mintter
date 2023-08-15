@@ -88,5 +88,5 @@ runs:
         YARN_ENABLE_IMMUTABLE_INSTALLS: false
       run: |
         yarn set version latest
-        yarn
+        yarn install --immutable --immutable-cache --check-cache
       shell: bash

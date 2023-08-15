@@ -1,0 +1,55 @@
+name: Validate + Test Desktop code
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/test-desktop.yml'
+      - 'frontend/apps/electron/**'
+      - 'frotend/packages/**'
+      - 'package.json'
+      - 'frontend/apps/electron/package.json'
+  pull_request:
+    paths:
+      - '.github/workflows/test-desktop.yml'
+      - 'frontend/apps/electron/**'
+      - 'frotend/packages/**'
+      - 'package.json'
+      - 'frontend/apps/electron/package.json'
+    branches-ignore:
+      - 'renovate/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-test-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/ci-setup
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "yarn"
+
+      - name: Install Dependencies
+        run: |
+          yarn set version latest
+          yarn install --immutable --immutable-cache --check-cache
+
+      - name: Validate code
+        run: |
+          yarn desktop:validate
+          yarn desktop:lint
+
+      - name: Package desktop app
+        run: yarn desktop:package
+
+      - name: Run desktop app tests
+        run: yarn desktop:test
