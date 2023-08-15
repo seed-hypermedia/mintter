@@ -18,7 +18,7 @@ const LLVM_TRIPLES = {
   'linux/arm64': 'aarch64-unknown-linux-gnu',
 }
 
-function getPlatformTriple() {
+const getPlatformTriple = (): string => {
   return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
 }
 

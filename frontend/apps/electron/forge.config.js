@@ -16,13 +16,6 @@ function getPlatformTriple() {
   return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
 }
 
-console.log(
-  '====== TRIPLES',
-  process.platform,
-  process.arch,
-  getPlatformTriple(),
-)
-
 const daemonBinaryPath = path.join(
   devProjectRoot,
   // TODO: parametrize this for each platform
@@ -50,18 +43,10 @@ const config = {
     asar: true,
     darwinDarkModeSupport: 'true',
     icon: iconsPath,
-    name: 'mintter-app',
+    name: 'Mintter',
     appBundleId: 'com.mintter.app',
     executableName: 'Mintter',
     appCategoryType: 'public.app-category.productivity',
-    osxSign: {
-      entitlements: './entitlements.plist',
-      'entitlements-inherit': './entitlements.plist',
-      'gatekeeper-assess': false,
-      hardenedRuntime: true,
-      identity:
-        'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
-    },
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
   },
@@ -178,6 +163,15 @@ function notarizeMaybe() {
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
     teamId: process.env.APPLE_TEAM_ID,
+  }
+
+  config.osxSign = {
+    entitlements: './entitlements.plist',
+    'entitlements-inherit': './entitlements.plist',
+    'gatekeeper-assess': false,
+    hardenedRuntime: true,
+    identity:
+      'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
   }
 }
 
