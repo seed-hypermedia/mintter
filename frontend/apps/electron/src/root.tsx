@@ -1,29 +1,28 @@
-import React, {useEffect, useMemo, useState, useSyncExternalStore} from 'react'
-import ReactDOM from 'react-dom/client'
-import Main from '@mintter/app/src/pages/main'
 import {Interceptor, createGrpcWebTransport} from '@bufbuild/connect-web'
-import {createGRPCClient} from '@mintter/shared'
-import {toast} from '@mintter/app/src/toast'
-import {WindowUtils} from '@mintter/app/src/window-utils'
 import {AppContextProvider, StyleProvider} from '@mintter/app/src/app-context'
-import {AppQueryClient, getQueryClient} from '@mintter/app/src/query-client'
-import {createIPC} from './ipc'
-import {NavRoute, NavigationProvider} from '@mintter/app/src/utils/navigation'
-import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
-import {Toaster} from 'react-hot-toast'
-import './root.css'
-import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
-import {ipcLink} from 'electron-trpc/renderer'
-import {AppRouter} from './api'
-import {createTRPCReact} from '@trpc/react-query'
-import superjson from 'superjson'
 import {AppIPC} from '@mintter/app/src/app-ipc'
-import {decodeRouteFromPath} from '@mintter/app/src/utils/route-encoding'
-import {client} from './trpc'
-import type {GoDaemonState} from './api'
-import type {StateStream} from './stream'
 import {AppErrorPage} from '@mintter/app/src/components/app-error'
-import {Spinner, XStack, YStack} from '@mintter/ui'
+import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
+import {DaemonStatusProvider} from '@mintter/app/src/node-status-context'
+import Main from '@mintter/app/src/pages/main'
+import {AppQueryClient, getQueryClient} from '@mintter/app/src/query-client'
+import {toast} from '@mintter/app/src/toast'
+import {NavRoute, NavigationProvider} from '@mintter/app/src/utils/navigation'
+import {WindowUtils} from '@mintter/app/src/window-utils'
+import {createGRPCClient} from '@mintter/shared'
+import {Spinner, XStack} from '@mintter/ui'
+import {createTRPCReact} from '@trpc/react-query'
+import {ipcLink} from 'electron-trpc/renderer'
+import React, {useEffect, useMemo, useState} from 'react'
+import ReactDOM from 'react-dom/client'
+import {Toaster} from 'react-hot-toast'
+import superjson from 'superjson'
+import type {AppInfo, GoDaemonState} from './api'
+import {AppRouter} from './api'
+import {createIPC} from './ipc'
+import './root.css'
+import type {StateStream} from './stream'
+import {client} from './trpc'
 
 const trpcReact = createTRPCReact<AppRouter>()
 
@@ -81,6 +80,8 @@ function useWindowUtils(): WindowUtils {
 
 // @ts-expect-error
 const daemonState: StateStream<GoDaemonState> = window.daemonState
+// @ts-expect-error
+const appInfo: AppInfo = window.appInfo
 
 function useGoDaemonState(): GoDaemonState | undefined {
   const [state, setState] = useState<GoDaemonState | undefined>(
@@ -158,7 +159,7 @@ function MainApp({
   return (
     <AppContextProvider
       grpcClient={grpcClient}
-      platform="macos"
+      platform={appInfo.platform()}
       queryClient={queryClient}
       ipc={ipc}
       externalOpen={async (url: string) => {

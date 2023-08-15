@@ -15,7 +15,7 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AppError} from './components/app-error'
 
-export type AppPlatform = 'macos' | 'windows' | 'linux'
+export type AppPlatform = typeof process.platform
 
 export type AppContext = {
   platform: AppPlatform

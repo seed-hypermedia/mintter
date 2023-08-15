@@ -1,62 +1,109 @@
 const path = require('path')
+const packageJson = require('./package.json')
+
+const {version} = packageJson
 
 const devProjectRoot = path.join(process.cwd(), '../../..')
+const LLVM_TRIPLES = {
+  'darwin/x64': 'x86_64-apple-darwin',
+  'darwin/arm64': 'aarch64-apple-darwin',
+  'windows/x64': 'x86_64-pc-windows-msvc',
+  'linux/x64': 'x86_64-unknown-linux-gnu',
+  'linux/arm64': 'aarch64-unknown-linux-gnu',
+}
+
+function getPlatformTriple() {
+  return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
+}
+
+console.log(
+  '====== TRIPLES',
+  process.platform,
+  process.arch,
+  getPlatformTriple(),
+)
+
 const daemonBinaryPath = path.join(
   devProjectRoot,
   // TODO: parametrize this for each platform
-  'plz-out/bin/backend/mintterd-aarch64-apple-darwin',
+  `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
 )
 
-let iconsPath = process.env.NIGHTLY_RELEASE
+let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets/icons-nightly/icon')
   : path.resolve(__dirname, 'assets/icons/icon')
 
-module.exports = {
+const commonLinuxConfig = {
+  categories: ['Development', 'Utility'],
+  icon: {
+    '1024x1024': `${iconsPath}.ico`,
+    // scalable: path.resolve(iconDir, 'fiddle.svg'),
+  },
+  mimeType: ['x-scheme-handler/mintter-app'],
+  version,
+  bin: 'Mintter',
+}
+
+const config = {
   packagerConfig: {
-    asar: true, // or an object containing your asar options
-    osxSign: {}, // object must exist even if empty
-    // osxNotarize: {
-    //   tool: 'notarytool',
-    //   appleId: process.env.APPLE_ID,
-    //   appleIdPassword: process.env.APPLE_PASSWORD,
-    //   teamId: process.env.APPLE_TEAM_ID,
-    // },
+    appVersion: process.env.APP_VERSION,
+    asar: true,
+    darwinDarkModeSupport: 'true',
     icon: iconsPath,
+    name: 'Mintter',
+    appBundleId: 'com.mintter.app',
+    executableName: 'Mintter',
+    appCategoryType: 'public.app-category.productivity',
+    osxSign: {
+      entitlements: './entitlements.plist',
+      'entitlements-inherit': './entitlements.plist',
+      'gatekeeper-assess': false,
+      hardenedRuntime: true,
+      identity:
+        'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
+    },
+    packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
   },
-  rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
+    {
+      name: '@electron-forge/maker-deb',
+      platforms: ['linux'],
+      config: commonLinuxConfig,
+    },
     // {
-    //   name: '@electron-forge/maker-dmg',
-    //   config: {
-    //     // background: './assets/dmg-background.png',
-    //     format: 'ULFO',
-    //     debug: true,
-    //     overwrite: true,
-    //     icon: `${iconsPath}.icns`,
-    //   },
+    //   name: '@electron-forge/maker-rpm',
+    //   platforms: ['linux'],
+    //   config: commonLinuxConfig,
     // },
     // {
-    //   name: '@electron-forge/maker-deb',
+    //   name: '@reforged/maker-appimage',
+    //   platforms: ['linux'],
     //   config: {
     //     options: {
-    //       icon: `${iconsPath}.png`,
+    //       categories: commonLinuxConfig.categories,
     //     },
     //   },
     // },
-    // {
-    //   name: '@electron-forge/maker-squirrel',
-    //   config: {
-    //     // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
-    //     iconUrl: 'https://url/to/icon.ico',
-    //     // The ICO file to use as the icon for the generated Setup.exe
-    //     setupIcon: `${iconsPath}.ico`,
-    //   },
-    // },
+    {
+      name: '@electron-forge/maker-squirrel',
+      config: {
+        name: 'Mintter',
+        exe: 'mintter.exe',
+        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+        iconUrl: `${iconsPath}.ico`,
+        noMsi: true,
+        setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
+        // The ICO file to use as the icon for the generated Setup.exe
+        setupIcon: `${iconsPath}.ico`,
+        certificateFile: process.env.WINDOWS_PFX_FILE,
+        certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
+      },
+    },
   ],
   plugins: [
     // {
@@ -93,16 +140,47 @@ module.exports = {
         ],
       },
     },
-    // {
-    //   name: '@electron-forge/publisher-github',
-    //   config: {
-    //     repository: {
-    //       owner: 'mintterteam',
-    //       name: 'mintter',
-    //     },
-    //     draft: true,
-    //     prerelease: true,
-    //   },
-    // },
+  ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'mintterteam',
+          name: 'mintter',
+        },
+        draft: true,
+        prerelease: true,
+      },
+    },
   ],
 }
+
+function notarizeMaybe() {
+  if (process.platform !== 'darwin') {
+    return
+  }
+
+  if (!process.env.CI) {
+    // Not in CI, skipping notarization
+    return
+  }
+
+  if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
+    console.warn(
+      'Should be notarizing, but environment variables APPLE_ID or APPLE_ID_PASSWORD are missing!',
+    )
+    return
+  }
+
+  config.packagerConfig.osxNotarize = {
+    tool: 'notarytool',
+    appleId: process.env.APPLE_ID,
+    appleIdPassword: process.env.APPLE_ID_PASSWORD,
+    teamId: process.env.APPLE_TEAM_ID,
+  }
+}
+
+notarizeMaybe()
+
+module.exports = config

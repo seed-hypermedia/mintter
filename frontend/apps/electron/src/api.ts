@@ -272,6 +272,7 @@ export const router = t.router({
           }
       const browserWindow = new BrowserWindow({
         show: false,
+        frame: false,
         // width: 1200,
         // height: 800,
         ...bounds,
@@ -392,3 +393,8 @@ export const trpc = router.createCaller({})
 const trpcHandlers = createIPCHandler({router, windows: []})
 
 export type AppRouter = typeof router
+
+export type AppInfo = {
+  platform: () => typeof process.platform
+  arch: () => typeof process.arch
+}

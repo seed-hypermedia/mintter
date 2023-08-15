@@ -19,8 +19,8 @@ const LLVM_TRIPLES = {
   'linux/arm64': 'aarch64-unknown-linux-gnu',
 }
 
-const getPlatformTriple = (): string => {
-  return LLVM_TRIPLES[process.platform + '/' + process.arch]
+function getPlatformTriple() {
+  return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
 }
 
 const devProjectRoot = join(process.cwd(), '../../..')

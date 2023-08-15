@@ -14,6 +14,10 @@ const [updateInitRoute, initRoute] = writeableStateStream<string | null>(null)
 
 contextBridge.exposeInMainWorld('daemonState', daemonState)
 contextBridge.exposeInMainWorld('initRoute', initRoute)
+contextBridge.exposeInMainWorld('appInfo', {
+  platform: () => process.platform,
+  arch: () => process.arch,
+})
 
 ipcRenderer.addListener('initWindow', (info, event) => {
   console.log('💡 Init Window', event)
