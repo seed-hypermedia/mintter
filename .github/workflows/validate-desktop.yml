@@ -31,8 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: ./.github/actions/ci-setup
-
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -42,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn install --immutable --immutable-cache --check-cache
+          yarn
 
       - name: Validate code
         run: |

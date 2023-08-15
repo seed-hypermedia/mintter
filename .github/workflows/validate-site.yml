@@ -41,7 +41,7 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-          yarn install --immutable --immutable-cache --check-cache
+          yarn
 
       - name: Validate Code
         run: |
