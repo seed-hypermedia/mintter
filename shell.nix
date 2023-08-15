@@ -13,10 +13,6 @@ let
       python3
       bazel-buildtools
       nix-prefetch
-      (rust-stable.override {
-        extensions = ["rust-src"];
-      })
-      tauri-cli
       black
     ];
     libs = [];

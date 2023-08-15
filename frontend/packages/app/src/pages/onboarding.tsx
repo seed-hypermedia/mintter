@@ -450,7 +450,7 @@ function Analytics(props: OnboardingStepProps) {
 
 function Complete() {
   return (
-    <StepWrapper data-tauri-drag-region>
+    <StepWrapper>
       <XStack flex={1} gap="$10">
         <StepTitleSection>
           <H1>You are Ready!</H1>
@@ -495,12 +495,7 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
         },
       ]}
     >
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-        data-tauri-drag-region
-      >
+      <YStack flex={1} alignItems="center" justifyContent="center">
         <YStack
           borderRadius="$7"
           elevation="$12"

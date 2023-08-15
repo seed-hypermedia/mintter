@@ -78,19 +78,17 @@ def main():
         run("plz build //:yarn")
         return run("yarn desktop:prod")
 
-    @cmd(
-        cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
-    )
+    @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):
-        run("plz build //backend:mintterd //:yarn")
-        run("cargo tauri build --debug")
-
-    @cmd(cmds, "build-app", "Builds the desktop app for the current platform.")
-    def build_app(args):
         run("rm -rf frontend/apps/electron/out")
         run("rm -rf frontend/apps/electron/.vite")
         run("plz build //backend:mintterd //:yarn")
         run("yarn electron:package")
+
+    @cmd(cmds, "build-app", "Builds the desktop app for the current platform.")
+    def build_app(args):
+        print("Tauri is gone now. Use `./dev build-desktop` instead.")
+        quit(1)
 
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):
@@ -118,15 +116,15 @@ def main():
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
 
-    @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
+    @cmd(cmds, "run-desktop", "Run the desktop app for development.")
     def run_desktop(args):
         run("plz build //backend:mintterd //:yarn")
-        return run("yarn tauri:dev", args=args)
+        return run("yarn electron", args=args)
 
     @cmd(cmds, "run-app", "Run desktop app for development.")
     def run_app(args):
-        run("plz build //backend:mintterd //:yarn")
-        return run("yarn electron", args=args)
+        print("Tauri is gone now. Use `./dev run-desktop` instead.")
+        quit(1)
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):

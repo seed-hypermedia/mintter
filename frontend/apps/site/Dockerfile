@@ -7,7 +7,6 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 COPY . .
-# RUN rm -rf ./frontend/apps/desktop
 RUN yarn install 
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production

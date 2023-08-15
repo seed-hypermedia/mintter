@@ -1,7 +1,0 @@
-filegroup(
-    name = "defs",
-    srcs = [
-        "rust.build_defs",
-    ],
-    visibility = ["PUBLIC"],
-)
