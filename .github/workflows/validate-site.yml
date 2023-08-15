@@ -32,13 +32,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Node.js
+      - name: Install Node.js 20
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: "yarn"
+          cache: 'yarn'
 
-      - name: Install Dependencies
+      - name: Install Frontend Dependencies
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
         run: |
           yarn set version latest
           yarn

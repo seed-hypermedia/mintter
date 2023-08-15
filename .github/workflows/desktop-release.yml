@@ -45,6 +45,7 @@ jobs:
             echo "Release does not exist."
           else
             echo "Release already exists."
+            exit 1
           fi
   build-binaries:
     name: Build (${{ matrix.config.os }})
