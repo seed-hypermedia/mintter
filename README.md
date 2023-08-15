@@ -62,9 +62,9 @@ rerun the [installation command](#deploy-a-site) with the same hostname. Note
 that if you change the hostname, a new secret invite will be generated to the
 new site and old one can't be retrieved again.
 
-So, if you want to update the hostname, we recomend to either backup the default
-site workspace (`~/.mtt-site`) or generate the new site in a different workspace
-until everything is checkd to work properly:
+So, if you want to update the hostname, we recomend to either backup the default site 
+workspace (`~/.mtt-site`) or generate the new site in a different workspace until 
+everything is checked to work properly:
 
 ```shell
 sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/site_deployment.sh) --workspace /home/root/new-path --hostname https://new-domain.com
