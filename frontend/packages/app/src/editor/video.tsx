@@ -155,8 +155,16 @@ function VideoComponent({
           e.stopPropagation();
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            let isVideo = true;
             const files = Array.from(e.dataTransfer.files)
-            handleDragReplace(Array.from(files)[0])
+            files.forEach((file) => {
+              if (!file.type.includes('video/')) {
+                toast.error(`The dragged file is not a video.`)
+                isVideo = false
+                return
+              }
+            })
+            if (isVideo) handleDragReplace(Array.from(files)[0])
             return
           }
         }}
@@ -449,7 +457,7 @@ function VideoForm({
                 >
                   <XStack
                     flex={1}
-                    backgroundColor="white"
+                    backgroundColor={drag ? "lightgrey" : "white"}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                       e.preventDefault();
