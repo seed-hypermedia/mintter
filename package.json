@@ -13,6 +13,7 @@
     "desktop:prod": "yarn workspace @mintter/desktop build",
     "docs": "yarn workspace @mintter/docs start",
     "electron": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run dev",
+    "electron:package": "yarn workspace @mintter/electron package",
     "electron:make": "yarn workspace @mintter/electron make",
     "electron:audit": "yarn workspace @mintter/electron audit",
     "electron:publish": "yarn workspace @mintter/electron publish",

@@ -33,8 +33,7 @@ console.log(`== ~ devDaemonBinaryPath:`, devDaemonBinaryPath)
 
 const prodDaemonBinaryPath = join(
   process.resourcesPath,
-  // TODO: parametrize this for each platform
-  'mintterd-aarch64-apple-darwin',
+  `mintterd-${getPlatformTriple()}`,
 )
 
 const userDataDir = join(app.getPath('userData'), 'daemon')

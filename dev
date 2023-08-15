@@ -90,7 +90,7 @@ def main():
         run("rm -rf frontend/apps/electron/out")
         run("rm -rf frontend/apps/electron/.vite")
         run("plz build //backend:mintterd //:yarn")
-        run("yarn electron:make")
+        run("yarn electron:package")
 
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):
