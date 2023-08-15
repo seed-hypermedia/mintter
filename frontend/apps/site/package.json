@@ -24,8 +24,8 @@
     "@tanstack/react-query": "4.32.0",
     "@trpc/client": "10.37.1",
     "@trpc/next": "10.37.1",
-    "@trpc/react-query": "10.37.1",
-    "@trpc/server": "10.37.1",
+    "@trpc/react-query": "^10.37.1",
+    "@trpc/server": "^10.37.1",
     "@types/node": "18.15.13",
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
@@ -52,7 +52,7 @@
     "tamagui": "1.43.15",
     "typescript": "5.1.6",
     "unist-util-visit": "4.1.2",
-    "zod": "3.21.4"
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@babel/core": "7.20.7",
@@ -68,8 +68,8 @@
     "webpack": "5.80.0"
   },
   "peerDependencies": {
-    "@babel/core": ">=7.0.0 <8.0.0",
-    "expo-modules-core": "0.6.3",
-    "expo-screen-orientation": "4.1.1"
+    "@babel/core": "7.20.7",
+    "expo-modules-core": "0.6.5",
+    "expo-screen-orientation": "4.3.0"
   }
 }

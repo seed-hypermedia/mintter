@@ -1,6 +1,6 @@
 {
   "name": "@mintter/ui",
-  "version": "0.0.1",
+  "version": "workspace:*",
   "sideEffects": [
     "*.css"
   ],
