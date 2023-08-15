@@ -4,15 +4,16 @@ on:
   push:
     branches:
       - master
+      - electron-ci
     paths:
-      - '.github/workflows/test-desktop.yml'
+      - '.github/workflows/validate-desktop.yml'
       - 'frontend/apps/electron/**'
       - 'frotend/packages/**'
       - 'package.json'
       - 'frontend/apps/electron/package.json'
   pull_request:
     paths:
-      - '.github/workflows/test-desktop.yml'
+      - '.github/workflows/validate-desktop.yml'
       - 'frontend/apps/electron/**'
       - 'frotend/packages/**'
       - 'package.json'

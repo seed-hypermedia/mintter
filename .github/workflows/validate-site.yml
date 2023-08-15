@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - master
+      - electron-ci
     paths:
-      - '.github/workflows/test-site.yml'
+      - '.github/workflows/validate-site.yml'
       - 'frontend/apps/site/**'
       - 'frotend/packages/shared/**'
       - 'frotend/packages/ui/**'
@@ -13,7 +14,7 @@ on:
       - 'frontend/apps/site/package.json'
   pull_request:
     paths:
-      - '.github/workflows/test-site.yml'
+      - '.github/workflows/validate-site.yml'
       - 'frontend/apps/site/**'
       - 'frotend/packages/**'
       - 'package.json'
