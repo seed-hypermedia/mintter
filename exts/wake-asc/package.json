@@ -1,9 +1,0 @@
-{
-  "name": "ext-wake",
-  "version": "1.0.0",
-  "description": "",
-  "devDependencies": {
-    "assemblyscript": "0.25.2",
-    "source-map-support": "0.5.21"
-  }
-}
