@@ -49,7 +49,9 @@ jobs:
           yarn desktop:lint
 
       - name: Package desktop app
-        run: yarn desktop:package
+        run: |
+          yarn build
+          yarn desktop:package
 
       - name: Run desktop app tests
         run: yarn desktop:test
