@@ -17,6 +17,9 @@ export default defineConfig(({command, mode}) => {
   let config = {
     build: {
       sourcemap: true,
+      rollupOptions: {
+        external: ['@trpc/client'],
+      },
     },
     plugins: [react(), tamaguiPlugin(tamaguiConfig)],
   }

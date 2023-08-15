@@ -9,6 +9,9 @@ export default defineConfig(({command, mode}) => {
   return {
     build: {
       sourcemap: true,
+      rollupOptions: {
+        external: ['@trpc/client'],
+      },
     },
     resolve: {
       // Some libs that can run in both Web and Node.js, such as `axios`, we need to tell Vite to build them in Node.js.

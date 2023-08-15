@@ -5067,132 +5067,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mintter/app@file:../../packages/app::locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron":
-  version: 0.0.1
-  resolution: "@mintter/app@file:../../packages/app#../../packages/app::hash=4df8cc&locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron"
-  dependencies:
-    "@bufbuild/connect-web": 0.7.0
-    "@bufbuild/protobuf": 1.2.0
-    "@emotion/core": ^11.0.0
-    "@emotion/react": ^11.11.1
-    "@emotion/serialize": ^1.1.2
-    "@emotion/utils": ^1.2.1
-    "@floating-ui/react": ^0.24.8
-    "@juggle/resize-observer": 3.4.0
-    "@mantine/core": ^6.0.13
-    "@mantine/hooks": ^6.0.13
-    "@mintter/shared": "file:../shared"
-    "@mintter/ui": "file:../ui"
-    "@prosemirror-adapter/core": ^0.2.5
-    "@prosemirror-adapter/react": ^0.2.5
-    "@radix-ui/colors": 0.1.8
-    "@radix-ui/react-accessible-icon": 1.0.2
-    "@radix-ui/react-alert-dialog": 1.0.3
-    "@radix-ui/react-collapsible": 1.0.2
-    "@radix-ui/react-context-menu": 2.1.3
-    "@radix-ui/react-dialog": 1.0.3
-    "@radix-ui/react-dropdown-menu": 2.0.4
-    "@radix-ui/react-hover-card": 1.0.5
-    "@radix-ui/react-label": 2.0.1
-    "@radix-ui/react-popover": 1.0.5
-    "@radix-ui/react-portal": 1.0.2
-    "@radix-ui/react-scroll-area": 1.0.3
-    "@radix-ui/react-slot": 1.0.1
-    "@sentry/tracing": 7.49.0
-    "@tamagui/config": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/web": 1.43.15
-    "@tanstack/react-query": 4.32.0
-    "@tanstack/react-query-devtools": 4.29.19
-    "@tippyjs/react": ^4.2.6
-    "@tiptap/core": ^2.0.3
-    "@tiptap/extension-bold": ^2.0.3
-    "@tiptap/extension-code": ^2.0.3
-    "@tiptap/extension-collaboration": ^2.0.3
-    "@tiptap/extension-collaboration-cursor": ^2.0.3
-    "@tiptap/extension-dropcursor": ^2.0.3
-    "@tiptap/extension-gapcursor": ^2.0.3
-    "@tiptap/extension-hard-break": ^2.0.3
-    "@tiptap/extension-history": ^2.0.3
-    "@tiptap/extension-image": ^2.0.3
-    "@tiptap/extension-italic": ^2.0.3
-    "@tiptap/extension-link": ^2.0.3
-    "@tiptap/extension-strike": ^2.0.3
-    "@tiptap/extension-text": ^2.0.3
-    "@tiptap/extension-underline": ^2.0.3
-    "@tiptap/pm": ^2.0.3
-    "@tiptap/react": ^2.0.3
-    "@tiptap/suggestion": ^2.0.3
-    "@types/lodash.debounce": 4.0.7
-    "@types/uuid": ^9.0.2
-    allotment: 1.18.1
-    autosize: 5.0.2
-    browser-headers: 0.4.1
-    buffer: ^6.0.3
-    cmdk: 0.1.21
-    csstype: 3.1.2
-    deepmerge: 4.3.1
-    fast-deep-equal: 3.1.3
-    framer-motion: 5.6.0
-    graphql: 16.6.0
-    graphql-request: ^6.0.0
-    hast: 1.0.0
-    hast-util-from-dom: ^4.2.0
-    hast-util-has-property: 2.0.1
-    hast-util-is-element: 2.1.3
-    hast-util-sanitize: 4.1.0
-    hast-util-to-text: 3.1.2
-    hastscript: 7.2.0
-    immer: 9.0.21
-    is-hotkey: 0.2.0
-    is-plain-object: 5.0.0
-    is-url: 1.2.4
-    js-video-url-parser: 0.5.1
-    lodash.debounce: 4.0.8
-    long: 5.2.3
-    nanoid: 4.0.2
-    navaid: 1.2.0
-    prosemirror-state: ^1.4.3
-    prosemirror-virtual-cursor: ^0.3.5
-    react: 18.2.0
-    react-copy-to-clipboard: 5.1.0
-    react-dom: ^18.2.0
-    react-error-boundary: 4.0.4
-    react-highlight-words: 0.20.0
-    react-hot-toast: ^2.4.1
-    react-icons: ^4.9.0
-    react-native: ^0.71.7
-    react-qr-code: ^2.0.11
-    react-window: ^1.8.9
-    rehype: 12.0.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-remark: ^9.1.2
-    rehype-sanitize: 5.0.1
-    rehype-stringify: 9.0.3
-    remark-gfm: ^3.0.1
-    remark-parse: ^10.0.1
-    remark-rehype: ^10.1.0
-    remark-stringify: ^10.0.2
-    shiki: 0.14.1
-    show-keys: 1.1.2
-    tiny-secp256k1: 2.2.1
-    trim-trailing-lines: 2.1.0
-    unified: ^10.1.2
-    unist-builder: 3.0.1
-    unist-util-remove-position: 4.0.2
-    unist-util-visit: 4.1.2
-    unist-util-visit-parents: 5.1.3
-    uuid: ^9.0.0
-    vite: 4.3.1
-    y-prosemirror: ^1.2.1
-    y-protocols: ^1.0.5
-    yjs: ^13.6.4
-  checksum: c293cb5743f785748ac1ef9e8195ebf10b89a1a1b6faa78159bf96bcc7f64e63574a538582558d0ddb97334b4c9584a726a440c04126c5ce3bb498759e8e91ac
-  languageName: node
-  linkType: hard
-
-"@mintter/app@workspace:frontend/packages/app":
+"@mintter/app@workspace:*, @mintter/app@workspace:frontend/packages/app":
   version: 0.0.0-use.local
   resolution: "@mintter/app@workspace:frontend/packages/app"
   dependencies:
@@ -5210,8 +5085,8 @@ __metadata:
     "@juggle/resize-observer": 3.4.0
     "@mantine/core": ^6.0.13
     "@mantine/hooks": ^6.0.13
-    "@mintter/shared": "file:../shared"
-    "@mintter/ui": "file:../ui"
+    "@mintter/shared": "workspace:*"
+    "@mintter/ui": "workspace:*"
     "@prosemirror-adapter/core": ^0.2.5
     "@prosemirror-adapter/react": ^0.2.5
     "@radix-ui/colors": 0.1.8
@@ -5383,9 +5258,9 @@ __metadata:
     "@electron-forge/plugin-electronegativity": 6.2.1
     "@electron-forge/plugin-vite": 6.2.1
     "@electron-forge/publisher-github": 6.2.1
-    "@mintter/app": "file:../../packages/app"
-    "@mintter/shared": "file:../../packages/shared"
-    "@mintter/ui": "file:../../packages/ui"
+    "@mintter/app": "workspace:*"
+    "@mintter/shared": "workspace:*"
+    "@mintter/ui": "workspace:*"
     "@playwright/test": 1.37.0
     "@reforged/maker-appimage": 3.3.1
     "@sentry/electron": 4.7.0
@@ -5410,139 +5285,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mintter/shared@file:../../packages/shared::locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron":
-  version: 0.1.0
-  resolution: "@mintter/shared@file:../../packages/shared#../../packages/shared::hash=47d985&locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron"
-  dependencies:
-    "@bufbuild/connect-web": 0.7.0
-    "@bufbuild/protobuf": 1.2.0
-    browser-headers: 0.4.1
-    deepmerge: 4.3.1
-    extend: 3.0.2
-    google-protobuf: 3.21.2
-    hast: 1.0.0
-    hast-util-has-property: 2.0.1
-    hast-util-is-element: 2.1.3
-    hast-util-to-text: 3.1.2
-    hastscript: 7.2.0
-    is-hidden: 2.0.1
-    is-plain-object: 5.0.0
-    long: 5.2.3
-    nanoid: 4.0.2
-    rehype: 12.0.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-sanitize: 5.0.1
-    shiki: 0.14.1
-    trim-trailing-lines: 2.1.0
-    unified: ^10.1.2
-    unist-builder: 3.0.1
-    unist-util-remove-position: 4.0.2
-    unist-util-visit: 4.1.2
-  checksum: ac6352a38270ecc99013af67d95bbbdf44d5db1bbdca49ed7bd45916bf48769365b53a73a111f007d73a1be40fb36c280170f02e9f57330741b09574122c4b6d
-  languageName: node
-  linkType: hard
-
-"@mintter/shared@file:../../packages/shared::locator=%40mintter%2Fsite%40workspace%3Afrontend%2Fapps%2Fsite":
-  version: 0.1.0
-  resolution: "@mintter/shared@file:../../packages/shared#../../packages/shared::hash=47d985&locator=%40mintter%2Fsite%40workspace%3Afrontend%2Fapps%2Fsite"
-  dependencies:
-    "@bufbuild/connect-web": 0.7.0
-    "@bufbuild/protobuf": 1.2.0
-    browser-headers: 0.4.1
-    deepmerge: 4.3.1
-    extend: 3.0.2
-    google-protobuf: 3.21.2
-    hast: 1.0.0
-    hast-util-has-property: 2.0.1
-    hast-util-is-element: 2.1.3
-    hast-util-to-text: 3.1.2
-    hastscript: 7.2.0
-    is-hidden: 2.0.1
-    is-plain-object: 5.0.0
-    long: 5.2.3
-    nanoid: 4.0.2
-    rehype: 12.0.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-sanitize: 5.0.1
-    shiki: 0.14.1
-    trim-trailing-lines: 2.1.0
-    unified: ^10.1.2
-    unist-builder: 3.0.1
-    unist-util-remove-position: 4.0.2
-    unist-util-visit: 4.1.2
-  checksum: ac6352a38270ecc99013af67d95bbbdf44d5db1bbdca49ed7bd45916bf48769365b53a73a111f007d73a1be40fb36c280170f02e9f57330741b09574122c4b6d
-  languageName: node
-  linkType: hard
-
-"@mintter/shared@file:../shared::locator=%40mintter%2Fapp%40file%3A..%2F..%2Fpackages%2Fapp%23..%2F..%2Fpackages%2Fapp%3A%3Ahash%3D4df8cc%26locator%3D%2540mintter%252Felectron%2540workspace%253Afrontend%252Fapps%252Felectron":
-  version: 0.1.0
-  resolution: "@mintter/shared@file:../shared#../shared::hash=47d985&locator=%40mintter%2Fapp%40file%3A..%2F..%2Fpackages%2Fapp%23..%2F..%2Fpackages%2Fapp%3A%3Ahash%3D4df8cc%26locator%3D%2540mintter%252Felectron%2540workspace%253Afrontend%252Fapps%252Felectron"
-  dependencies:
-    "@bufbuild/connect-web": 0.7.0
-    "@bufbuild/protobuf": 1.2.0
-    browser-headers: 0.4.1
-    deepmerge: 4.3.1
-    extend: 3.0.2
-    google-protobuf: 3.21.2
-    hast: 1.0.0
-    hast-util-has-property: 2.0.1
-    hast-util-is-element: 2.1.3
-    hast-util-to-text: 3.1.2
-    hastscript: 7.2.0
-    is-hidden: 2.0.1
-    is-plain-object: 5.0.0
-    long: 5.2.3
-    nanoid: 4.0.2
-    rehype: 12.0.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-sanitize: 5.0.1
-    shiki: 0.14.1
-    trim-trailing-lines: 2.1.0
-    unified: ^10.1.2
-    unist-builder: 3.0.1
-    unist-util-remove-position: 4.0.2
-    unist-util-visit: 4.1.2
-  checksum: ac6352a38270ecc99013af67d95bbbdf44d5db1bbdca49ed7bd45916bf48769365b53a73a111f007d73a1be40fb36c280170f02e9f57330741b09574122c4b6d
-  languageName: node
-  linkType: hard
-
-"@mintter/shared@file:../shared::locator=%40mintter%2Fapp%40workspace%3Afrontend%2Fpackages%2Fapp":
-  version: 0.1.0
-  resolution: "@mintter/shared@file:../shared#../shared::hash=47d985&locator=%40mintter%2Fapp%40workspace%3Afrontend%2Fpackages%2Fapp"
-  dependencies:
-    "@bufbuild/connect-web": 0.7.0
-    "@bufbuild/protobuf": 1.2.0
-    browser-headers: 0.4.1
-    deepmerge: 4.3.1
-    extend: 3.0.2
-    google-protobuf: 3.21.2
-    hast: 1.0.0
-    hast-util-has-property: 2.0.1
-    hast-util-is-element: 2.1.3
-    hast-util-to-text: 3.1.2
-    hastscript: 7.2.0
-    is-hidden: 2.0.1
-    is-plain-object: 5.0.0
-    long: 5.2.3
-    nanoid: 4.0.2
-    rehype: 12.0.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-sanitize: 5.0.1
-    shiki: 0.14.1
-    trim-trailing-lines: 2.1.0
-    unified: ^10.1.2
-    unist-builder: 3.0.1
-    unist-util-remove-position: 4.0.2
-    unist-util-visit: 4.1.2
-  checksum: ac6352a38270ecc99013af67d95bbbdf44d5db1bbdca49ed7bd45916bf48769365b53a73a111f007d73a1be40fb36c280170f02e9f57330741b09574122c4b6d
-  languageName: node
-  linkType: hard
-
-"@mintter/shared@workspace:frontend/packages/shared":
+"@mintter/shared@workspace:*, @mintter/shared@workspace:frontend/packages/shared":
   version: 0.0.0-use.local
   resolution: "@mintter/shared@workspace:frontend/packages/shared"
   dependencies:
@@ -5590,8 +5333,8 @@ __metadata:
     "@bufbuild/connect-node": 0.8.6
     "@bufbuild/connect-web": 0.7.0
     "@bufbuild/protobuf": 1.2.0
-    "@mintter/shared": "file:../../packages/shared"
-    "@mintter/ui": "file:../../packages/ui"
+    "@mintter/shared": "workspace:*"
+    "@mintter/ui": "workspace:*"
     "@sentry/nextjs": latest
     "@tamagui/lucide-icons": 1.43.15
     "@tamagui/next-plugin": 1.43.15
@@ -5644,75 +5387,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mintter/ui@file:../../packages/ui::locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron":
-  version: 0.0.1
-  resolution: "@mintter/ui@file:../../packages/ui#../../packages/ui::hash=828867&locator=%40mintter%2Felectron%40workspace%3Afrontend%2Fapps%2Felectron"
-  dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/colors": ^1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": ^1.43.15
-    tamagui: 1.43.15
-  checksum: 331635b4b3fcb8087859d676183a852f0b67bc62326367ba5066f55f8523633b0d618495b1c92a0f27154e417f6a36da94a4595f0bc04497583f2c6239fcd76f
-  languageName: node
-  linkType: hard
-
-"@mintter/ui@file:../../packages/ui::locator=%40mintter%2Fsite%40workspace%3Afrontend%2Fapps%2Fsite":
-  version: 0.0.1
-  resolution: "@mintter/ui@file:../../packages/ui#../../packages/ui::hash=828867&locator=%40mintter%2Fsite%40workspace%3Afrontend%2Fapps%2Fsite"
-  dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/colors": ^1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": ^1.43.15
-    tamagui: 1.43.15
-  checksum: 331635b4b3fcb8087859d676183a852f0b67bc62326367ba5066f55f8523633b0d618495b1c92a0f27154e417f6a36da94a4595f0bc04497583f2c6239fcd76f
-  languageName: node
-  linkType: hard
-
-"@mintter/ui@file:../ui::locator=%40mintter%2Fapp%40file%3A..%2F..%2Fpackages%2Fapp%23..%2F..%2Fpackages%2Fapp%3A%3Ahash%3D4df8cc%26locator%3D%2540mintter%252Felectron%2540workspace%253Afrontend%252Fapps%252Felectron":
-  version: 0.0.1
-  resolution: "@mintter/ui@file:../ui#../ui::hash=828867&locator=%40mintter%2Fapp%40file%3A..%2F..%2Fpackages%2Fapp%23..%2F..%2Fpackages%2Fapp%3A%3Ahash%3D4df8cc%26locator%3D%2540mintter%252Felectron%2540workspace%253Afrontend%252Fapps%252Felectron"
-  dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/colors": ^1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": ^1.43.15
-    tamagui: 1.43.15
-  checksum: 331635b4b3fcb8087859d676183a852f0b67bc62326367ba5066f55f8523633b0d618495b1c92a0f27154e417f6a36da94a4595f0bc04497583f2c6239fcd76f
-  languageName: node
-  linkType: hard
-
-"@mintter/ui@file:../ui::locator=%40mintter%2Fapp%40workspace%3Afrontend%2Fpackages%2Fapp":
-  version: 0.0.1
-  resolution: "@mintter/ui@file:../ui#../ui::hash=828867&locator=%40mintter%2Fapp%40workspace%3Afrontend%2Fpackages%2Fapp"
-  dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/colors": ^1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": ^1.43.15
-    tamagui: 1.43.15
-  checksum: 331635b4b3fcb8087859d676183a852f0b67bc62326367ba5066f55f8523633b0d618495b1c92a0f27154e417f6a36da94a4595f0bc04497583f2c6239fcd76f
-  languageName: node
-  linkType: hard
-
-"@mintter/ui@workspace:frontend/packages/ui":
+"@mintter/ui@workspace:*, @mintter/ui@workspace:frontend/packages/ui":
   version: 0.0.0-use.local
   resolution: "@mintter/ui@workspace:frontend/packages/ui"
   dependencies:
@@ -9585,21 +9260,6 @@ __metadata:
   version: 4.32.0
   resolution: "@tanstack/query-core@npm:4.32.0"
   checksum: 7b3d965d634ff7e754d5f36fe2e4bd9a34548c1d7b13161a2f1a84c8eaafa835f8193e9494952ae20d330f3b56680a5ef516228b2d85b5bc5a34a49947223e58
-  languageName: node
-  linkType: hard
-
-"@tanstack/react-query-devtools@npm:4.29.19":
-  version: 4.29.19
-  resolution: "@tanstack/react-query-devtools@npm:4.29.19"
-  dependencies:
-    "@tanstack/match-sorter-utils": ^8.7.0
-    superjson: ^1.10.0
-    use-sync-external-store: ^1.2.0
-  peerDependencies:
-    "@tanstack/react-query": 4.29.19
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: f077028c109da225b8e8e907a8fb4ad47d3049f6f5d16e5613adb135c531abf62c8975384edbb4d502bb064c98c3c513ee4f3df7c686198e644808311145e79c
   languageName: node
   linkType: hard
 

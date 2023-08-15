@@ -43,9 +43,9 @@
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
     "@electron-forge/publisher-github": "6.2.1",
-    "@mintter/app": "file:../../packages/app",
-    "@mintter/shared": "file:../../packages/shared",
-    "@mintter/ui": "file:../../packages/ui",
+    "@mintter/app": "workspace:*",
+    "@mintter/shared": "workspace:*",
+    "@mintter/ui": "workspace:*",
     "@sentry/electron": "4.7.0",
     "@sentry/vite-plugin": "latest",
     "@trpc/react": "9.27.4",
