@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/lint-javascript.yml'
-      - 'frontend/**'
+      - '.github/workflows/lint-desktop.yml'
+      - 'frontend/apps/desktop/**'
   pull_request:
     paths:
-      - '.github/workflows/lint-javascript.yml'
-      - 'frontend/**'
+      - '.github/workflows/lint-desktop.yml'
+      - 'frontend/apps/desktop/**'
     branches-ignore:
       - 'renovate/**'
 
@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-javascript:
+  validate-javascript:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -33,13 +33,10 @@ jobs:
       - name: Install Dependencies
         run: |
           yarn set version latest
-           yarn
+          yarn install --immutable --immutable-cache --check-cache
       
-      # - name: Lint packages
-      #   run: yarn lint
-      
-      - name: Format files (Prettier)
-        run: yarn format
+      - name: Validate Files
+        run: yarn desktop:validate
 
   # lint-go:
   #   runs-on: ubuntu-latest
