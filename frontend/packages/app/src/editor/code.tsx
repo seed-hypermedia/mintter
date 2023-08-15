@@ -1,4 +1,4 @@
-export const smth = null;
+export const smth = null
 
 // function Code({
 //     children,
@@ -11,14 +11,14 @@ export const smth = null;
 //     let editor = useSlateStatic()
 //     let path = findPath(element)
 //     let lang = (element as CodeType).lang || ''
-  
+
 //     function setLanguage(lang: any) {
 //       const {...newData} = (element as CodeType).data || {}
 //       delete newData[HIGHLIGHTER]
-  
+
 //       Transforms.setNodes(editor, {lang, data: newData}, {at: path})
 //     }
-  
+
 //     return (
 //       <YStack
 //         tag="pre"
@@ -66,7 +66,7 @@ export const smth = null;
 //       </YStack>
 //     )
 //   }
-  
+
 //   function Blockquote({
 //     children,
 //     attributes,

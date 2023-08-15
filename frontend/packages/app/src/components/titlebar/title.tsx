@@ -43,7 +43,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <Folder size={12} />
-        <TitleText data-tauri-drag-region size={size}>
+        <TitleText size={size} data-testid="titlebar-title">
           Publications
         </TitleText>
       </>
@@ -53,7 +53,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <Globe size={12} />
-        <TitleText data-tauri-drag-region size={size}>
+        <TitleText data-testid="titlebar-title" size={size}>
           Global Publications
         </TitleText>
       </>
@@ -63,7 +63,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <User size={12} />
-        <TitleText data-tauri-drag-region size={size}>
+        <TitleText data-testid="titlebar-title" size={size}>
           Contacts
         </TitleText>
       </>
@@ -91,7 +91,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <Pencil size={12} />
-        <TitleText data-tauri-drag-region size={size}>
+        <TitleText data-testid="titlebar-title" size={size}>
           Drafts
         </TitleText>
       </>
@@ -99,14 +99,14 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   }
   if (route.key === 'account') {
     return (
-      <TitleText data-tauri-drag-region size={size}>
+      <TitleText data-testid="titlebar-title" size={size}>
         Account Profile
       </TitleText>
     )
   }
   if (route.key === 'site') {
     return (
-      <TitleText data-tauri-drag-region size={size}>
+      <TitleText data-testid="titlebar-title" size={size}>
         {hostnameStripProtocol(route.hostname)}
       </TitleText>
     )
@@ -123,7 +123,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
 export function Title({size}: {size?: FontSizeTokens}) {
   return (
     <XStack
-      data-tauri-drag-region
       gap="$2"
       alignItems="center"
       margin="auto"
@@ -161,7 +160,7 @@ function PublicationTitle({
   })
   return (
     <>
-      <TitleText data-tauri-drag-region size={size}>
+      <TitleText data-testid="titlebar-title" size={size}>
         {getDocumentTitle(pub?.document)}
       </TitleText>
       <XStack gap={0} data-tauri-drag-region>
@@ -191,7 +190,7 @@ function DraftTitle({
   return (
     <>
       <Pencil size={12} />
-      <TitleText data-tauri-drag-region size={size}>
+      <TitleText data-testid="titlebar-title" size={size}>
         {displayTitle}
       </TitleText>
     </>

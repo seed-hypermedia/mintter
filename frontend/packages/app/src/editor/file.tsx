@@ -21,7 +21,7 @@ import {
 import {ChangeEvent, useEffect, useState} from 'react'
 import {RiFile2Line} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL} from '../constants'
-import { toast } from '../toast'
+import {toast} from '../toast'
 
 export const FileBlock = createReactBlockSpec({
   type: 'file',
@@ -71,7 +71,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {props: {...block.props, ...newFile.props}})
     editor.setTextCursorPosition(block.id, 'end')
@@ -154,7 +153,7 @@ function FileComponent({
       })
       const data = await response.text()
       assign({
-        props: {url: data, name: file.name, size: file.size.toString()}
+        props: {url: data, name: file.name, size: file.size.toString()},
       } as FileType)
     } catch (error) {
       console.error(error)
@@ -175,8 +174,8 @@ function FileComponent({
           setReplace(false)
         }}
         onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault()
+          e.stopPropagation()
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const files = Array.from(e.dataTransfer.files)
@@ -185,23 +184,23 @@ function FileComponent({
           }
         }}
         onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault()
+          e.stopPropagation()
         }}
         onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true);
+            setSelected(true)
           }
         }}
         onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false);
+            setSelected(false)
           }
         }}
         borderWidth={0}
@@ -299,21 +298,42 @@ function FileForm({
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
-      if (largeFileIndex > -1) {
-        const largeFile = files[largeFileIndex]
-        setFileName({
-          name:
-            largeFileIndex > 0
-              ? `The size of ${largeFile.name.length < 36 ? largeFile.name : largeFile.name.slice(0, 32) + '...'} exceeds 60 MB.`
-              : 'The file size exceeds 60 MB.',
-          color: 'red',
-        })
-        return
-      }
+    if (largeFileIndex > -1) {
+      const largeFile = files[largeFileIndex]
+      setFileName({
+        name:
+          largeFileIndex > 0
+            ? `The size of ${
+                largeFile.name.length < 36
+                  ? largeFile.name
+                  : largeFile.name.slice(0, 32) + '...'
+              } exceeds 60 MB.`
+            : 'The file size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
+    }
 
-      const {name} = files[0]
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      assign({
+        props: {url: data, name: name, size: files[0].size.toString()},
+      } as FileType)
+    } catch (error) {
+      console.error(error)
+    }
+    for (let i = files.length - 1; i > 0; i--) {
+      const {name} = files[i]
       const formData = new FormData()
-      formData.append('file', files[0])
+      formData.append('file', files[i])
 
       try {
         const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
@@ -322,41 +342,13 @@ function FileForm({
         })
         const data = await response.text()
         assign({
-          props: {url: data, name: name, size: files[0].size.toString()}
+          props: {url: data, name: name, size: files[0].size.toString()},
         } as FileType)
       } catch (error) {
         console.error(error)
       }
-      for (let i = files.length - 1; i > 0; i--) {
-        const {name} = files[i]
-        const formData = new FormData()
-        formData.append('file', files[i])
-
-        try {
-          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-            method: 'POST',
-            body: formData,
-          })
-          const data = await response.text()
-          editor.insertBlocks(
-            [
-              {
-                type: 'file',
-                props: {
-                  url: data,
-                  name: name,
-                  size: files[i].size.toString(),
-                },
-              },
-            ],
-            block.id,
-            'after',
-          )
-        } catch (error) {
-          console.error(error)
-        }
-      }
-      editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    }
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (
@@ -472,36 +464,45 @@ function FileForm({
                 >
                   <XStack
                     flex={1}
-                    backgroundColor={drag ? "lightgrey" : "white"}
+                    backgroundColor={drag ? 'lightgrey' : 'white'}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                       if (drag) setDrag(false)
-                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      if (
+                        e.dataTransfer.files &&
+                        e.dataTransfer.files.length > 0
+                      ) {
                         const files = Array.from(e.dataTransfer.files)
                         handleUpload(Array.from(files))
                         return
                       }
                     }}
                     onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                     }}
                     onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-                        setDrag(true);
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (
+                        !relatedTarget ||
+                        !e.currentTarget.contains(relatedTarget)
+                      ) {
+                        setDrag(true)
                       }
                     }}
                     onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-                        setDrag(false);
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (
+                        !relatedTarget ||
+                        !e.currentTarget.contains(relatedTarget)
+                      ) {
+                        setDrag(false)
                       }
                     }}
                   >
