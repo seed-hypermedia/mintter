@@ -70,3 +70,41 @@ export function useUpdateGroup(
     },
   })
 }
+
+type PublishDocToGroupMutationInput = {
+  groupId: string
+  docId: string
+  version: string
+}
+export function usePublishDocToGroup(
+  opts?: UseMutationOptions<void, unknown, PublishDocToGroupMutationInput>,
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      docId,
+      version,
+    }: PublishDocToGroupMutationInput) => {
+      await grpcClient.groups.updateGroup({
+        id: groupId,
+        updatedContent: {[docId]: version},
+      })
+    },
+    onSuccess: (result, input, context) => {
+      opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+    },
+  })
+}
+
+export function useGroupContent(groupId: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryKey: [queryKeys.GET_GROUP_CONTENT, groupId],
+    queryFn: async () => {
+      return await grpcClient.groups.listContent({id: groupId})
+    },
+  })
+}

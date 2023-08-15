@@ -255,54 +255,20 @@ export function usePublishDraft(
     unknown,
     {
       draftId: string
-      webPub: WebPublicationRecord | undefined
     }
   >,
 ) {
   const grpcClient = useGRPCClient()
-
   const {client, invalidate} = useAppContext().queryClient
   return useMutation({
     ...opts,
-    mutationFn: async ({
-      webPub,
-      draftId,
-    }: {
-      draftId: string
-      webPub: WebPublicationRecord | undefined
-    }) => {
+    mutationFn: async ({draftId}: {draftId: string}) => {
+      console.log('hello mutationFn', draftId)
       const draft = await grpcClient.drafts.getDraft({documentId: draftId})
       if (!draft) throw new Error('no draft found')
-      const site = grpcClient.getRemoteWebClient(draft.webUrl)
-
-      const pubs = await site.listWebPublications({}).catch((e) => {
-        if (e.message.includes('failed to dial to site')) {
-          throw new Error('Cannot connect to ' + draft.webUrl)
-        }
-      })
-
+      console.log('huh', draftId)
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
-      const doc = pub.document
-      if (webPub && doc && webPub.hostname === pub.document?.webUrl) {
-        const site = grpcClient.getRemoteWebClient(webPub.hostname)
-        const referencedDocuments = extractReferencedDocs(doc)
-        await site
-          .publishDocument({
-            documentId: doc.id,
-            path: webPub.path,
-            version: pub.version,
-            referencedDocuments,
-          })
-          .catch((e) => {
-            toast.error(
-              `Failed to publish document to ${hostnameStripProtocol(
-                webPub.hostname,
-              )}`,
-            )
-            console.error('Failed to publish document', {webPub, pub})
-            console.error(e)
-          })
-      }
+
       return pub
     },
     onSuccess: (pub: Publication, variables, context) => {

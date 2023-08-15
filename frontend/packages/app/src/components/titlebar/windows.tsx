@@ -48,7 +48,7 @@ import {
 } from '@mintter/ui'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {useEffect, useMemo} from 'react'
-import {ActionButtons, NavigationButtons} from './common'
+import {PageActionButtons, PageContextButtons} from './common'
 import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
@@ -117,7 +117,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
             paddingVertical="$1"
           >
             <XStack data-tauri-drag-region>
-              <NavigationButtons />
+              <PageContextButtons {...props} />
             </XStack>
           </Container>
         </XStack>
@@ -133,7 +133,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
           alignItems="center"
           backgroundColor="$color1"
         >
-          <ActionButtons {...props} />
+          <PageActionButtons {...props} />
         </XStack>
       </XStack>
     </TitlebarWrapper>

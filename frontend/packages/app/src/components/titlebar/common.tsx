@@ -35,7 +35,11 @@ import {
 } from '@mintter/ui'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
-import {PublicationDropdown, PublishShareButton} from './publish-share'
+import {
+  DraftPublicationButtons,
+  PublicationDropdown,
+  PublishShareButton,
+} from './publish-share'
 import {
   CircleEllipsis,
   Copy,
@@ -120,12 +124,12 @@ export function GroupOptionsButton() {
   )
 }
 
-export function ActionButtons(props: TitleBarProps) {
+export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
   let buttonGroup = [<NewDocumentButton key="newDoc" />]
   if (route.key === 'draft') {
-    buttonGroup = []
+    buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
@@ -135,17 +139,16 @@ export function ActionButtons(props: TitleBarProps) {
       <GroupOptionsButton key="groupOptions" />,
       <NewDocumentButton key="newDoc" />,
     ]
+  } else if (route.key === 'publication') {
+    buttonGroup = [
+      <WriteActions route={route} />,
+      <NewDocumentButton key="newDoc" />,
+    ]
   }
-  return (
-    <TitlebarSection>
-      {route.key == 'publication' ? <WriteActions route={route} /> : null}
-      <PublishShareButton />
-      {buttonGroup}
-    </TitlebarSection>
-  )
+  return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }
 
-export function NavigationButtons() {
+export function PageContextButtons(props: TitleBarProps) {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (

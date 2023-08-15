@@ -23,8 +23,8 @@ import {useEffect, useState} from 'react'
 import {MintterIcon} from '../mintter-icon'
 import {
   AccountDropdownItem,
-  ActionButtons,
-  NavigationButtons,
+  PageActionButtons,
+  PageContextButtons,
   SitesNavDropdownItems,
 } from './common'
 import {Title} from './title'
@@ -75,13 +75,13 @@ export default function TitleBarLinux(props: TitleBarProps) {
         <TitlebarSection data-tauri-drag-region>
           <MintterIcon />
           <NavMenu />
-          <NavigationButtons />
+          <PageContextButtons {...props} />
         </TitlebarSection>
         <TitlebarSection flex={1} data-tauri-drag-region>
           <Title />
         </TitlebarSection>
         <TitlebarSection data-tauri-drag-region>
-          <ActionButtons {...props} />
+          <PageActionButtons {...props} />
           <XStack>
             <MinimizeButton />
             <MaximizeOrRestoreButton />

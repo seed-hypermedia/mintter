@@ -30,6 +30,7 @@ export const queryKeys = {
   // groups
   GET_GROUPS: 'GET_GROUPS',
   GET_GROUP: 'GET_GROUP', // , groupId: string
+  GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //

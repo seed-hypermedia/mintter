@@ -118,6 +118,7 @@ export function useAppDialog<DialogInput>(
     close,
     content: (
       <Component.Root
+        modal
         onOpenChange={(isOpen) => {
           if (isOpen) throw new Error('Cannot open app dialog')
           close()
@@ -127,7 +128,7 @@ export function useAppDialog<DialogInput>(
         <Component.Portal>
           <NavContextProvider value={nav}>
             <Component.Overlay
-              backgroundColor={'#00000088'}
+              backgroundColor={'#00000044'}
               height="100vh"
               width="100vw"
               onPress={close}

@@ -17,15 +17,19 @@ import {
   Check,
   ChevronDown,
   Copy,
+  DialogTitle,
   ExternalLink,
+  Form,
   Globe,
+  Popover,
+  Select,
   SizableText,
   Spinner,
   YStack,
 } from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {UseQueryResult} from '@tanstack/react-query'
-import {useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
@@ -34,112 +38,10 @@ import {Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
 import {getDocUrl} from '@mintter/app/src/utils/doc-url'
 import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
-
-const forceProductionURL = true
-
-function getMintterPublicURL(docId: string, version: string) {
-  // TODO: DAEMON_URL: make sure this component should receive the url it needs to ask the image from. not having it inside.
-  return `${
-    import.meta.env.PROD || forceProductionURL
-      ? MINTTER_GATEWAY_URL
-      : 'http://localhost:3000'
-  }/d/${docId}?v=${version}`
-}
-
-function MintterURLRow({doc}: {doc: Publication}) {
-  const {url} = useMemo(
-    () => ({
-      url: doc.document
-        ? getMintterPublicURL(doc.document.id, doc.version)
-        : '',
-    }),
-    [doc],
-  )
-
-  return <AccessURLRow url={url} title={hostnameStripProtocol(url)} />
-}
-
-function PublishedURLs({
-  publications,
-  doc,
-}: {
-  publications: UseQueryResult<WebPublicationRecord[]>
-  doc?: Publication
-}) {
-  if (!publications.data) {
-    if (publications.isLoading) return <Spinner />
-    if (publications.error)
-      return <SizableText theme="red">Failed to load.</SizableText>
-  }
-  if (publications.data && publications.data?.length === 0 && doc?.document)
-    //@ts-ignore
-    return <MintterURLRow doc={doc} />
-  return (
-    <>
-      <SizableText size="$3" fontWeight="700" theme="mint">
-        Public on the Web:
-      </SizableText>
-      {publications.data?.map((pub) => {
-        const shortHost = hostnameStripProtocol(pub.hostname)
-        const displayURL = pub.path
-          ? pub.path == '/'
-            ? shortHost
-            : `${shortHost}/${pub.path}`
-          : `${shortHost}/d/${pub.documentId}`
-        const fullURL = pub.path
-          ? pub.path == '/'
-            ? pub.hostname
-            : `${pub.hostname}/${pub.path}?v=${pub.version}`
-          : `${pub.hostname}/d/${pub.documentId}?v=${pub.version}`
-        return (
-          <AccessURLRow
-            key={`${pub.documentId}/${pub.version}`}
-            url={fullURL}
-            title={displayURL}
-          />
-        )
-      })}
-    </>
-  )
-}
-
-function PublishButtons({
-  onPublish,
-  publications,
-}: {
-  onPublish: (hostname: string) => void
-  publications?: WebPublicationRecord[]
-}) {
-  const sites = useSiteList()
-  const sitesList = sites.data?.filter(({hostname}) => {
-    if (publications?.find((pub) => pub.hostname === hostname)) return false
-    return true
-  })
-  if (sitesList?.length === 0) return null
-  return (
-    <>
-      <SizableText size="$3" fontWeight="700" theme="mint">
-        Publish to:
-      </SizableText>
-      {sitesList?.map((site) => {
-        return (
-          <Button
-            size="$4"
-            theme="mint"
-            key={site.hostname}
-            onPress={() => {
-              onPublish(site.hostname)
-            }}
-            iconAfter={ExternalLink}
-            textProps={{flex: 1}}
-          >
-            {hostnameStripProtocol(site.hostname)}
-          </Button>
-        )
-      })}
-    </>
-  )
-}
+import {usePopoverState} from '../../use-popover-state'
+import {useAppDialog} from '../dialog'
+import {useGroups, usePublishDocToGroup} from '../../models/groups'
+import {useMyAccount} from '../../models/accounts'
 
 function DraftPublicationDialog({
   draft,
@@ -191,126 +93,243 @@ function DraftPublicationDialog({
   )
 }
 
-function PubDropdown() {
-  const route = useNavRoute()
-  const documentId =
-    route.key == 'publication'
-      ? route.documentId
-      : route.key == 'draft'
-      ? route.draftId
-      : undefined
-  const versionId = route.key == 'publication' ? route.versionId : undefined
-  const {data: publication} = usePublication({
-    documentId,
-    versionId,
-    enabled: !!documentId,
-  })
-  const isWebPub = publication?.document?.webUrl != null
-  const label = publication?.document?.webUrl
-    ? hostnameStripProtocol(publication.document.webUrl)
-    : 'Public'
+function GroupPublishDialog({
+  input,
+}: {
+  input: {docId: string; version: string}
+}) {
+  const groupQuery = useGroups()
+  const groups = groupQuery.data?.groups
+  const account = useMyAccount()
+  const accountId = account.data?.id
+  const myGroups = useMemo(() => {
+    if (!groups || !accountId) return undefined
+    return groups.filter((group) => group.ownerAccountId === accountId)
+  }, [groups, accountId])
+  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>()
+  useEffect(() => {
+    if (myGroups?.length && !selectedGroupId)
+      setSelectedGroupId(myGroups[0]?.id)
+  }, [myGroups, selectedGroupId])
+  const publishToGroup = usePublishDocToGroup()
+  if (!myGroups) return <Spinner />
   return (
-    <Button
-      size="$2"
-      theme={isWebPub ? 'green' : 'mint'}
-      icon={
-        isWebPub ? Globe : (props) => <MintterIcon {...props} size={'$1'} />
-      }
-      disabled // todo implement this dropdown
+    <Form
+      onSubmit={() => {
+        console.log('submit ' + selectedGroupId)
+        if (!selectedGroupId) {
+          toast.error('Please select a group')
+          return
+        }
+        toast.promise(
+          publishToGroup.mutateAsync({
+            groupId: selectedGroupId,
+            docId: input.docId,
+            version: input.version,
+          }),
+          {
+            loading: 'Publishing...',
+            success: 'Published to Group',
+            error: 'Failed to Publish!',
+          },
+        )
+      }}
     >
-      {label}
-    </Button>
+      <DialogTitle>Publish to Group</DialogTitle>
+      <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+        <Select.Trigger>
+          <Select.Value placeholder="Select Group.." />
+        </Select.Trigger>
+        <Select.Content zIndex={1000}>
+          <Select.ScrollUpButton />
+          {myGroups?.map((group, index) => (
+            <Select.Item index={index} value={group.id} key={group.id}>
+              <Select.ItemText>{group.title}</Select.ItemText>
+            </Select.Item>
+          ))}
+          <Select.ScrollDownButton />
+        </Select.Content>
+      </Select>
+      <Form.Trigger asChild>
+        <Button>Submit</Button>
+      </Form.Trigger>
+    </Form>
   )
 }
 
-function SitePubDropdown({hostname}: {hostname: string}) {
-  return (
-    <Button
-      size="$2"
-      theme="green"
-      icon={Globe}
-      disabled // todo implement this dropdown
-    >
-      {hostnameStripProtocol(hostname)}
-    </Button>
-  )
-}
-
-function DraftPubDropdown() {
-  const [isOpen, setIsOpen] = useState(false)
-  const route = useNavRoute()
-  const documentId =
-    route.key == 'publication'
-      ? route.documentId
-      : route.key == 'draft'
-      ? route.draftId
-      : undefined
-  const {data: draft} = useDraft({
-    documentId,
-    enabled: route.key == 'draft' && !!documentId,
-  })
-
-  const label = draft?.webUrl ? hostnameStripProtocol(draft.webUrl) : 'Public'
-
+function PubDropdown({docId, version}: {docId: string; version: string}) {
+  // const route = useNavRoute()
+  // const documentId =
+  //   route.key == 'publication'
+  //     ? route.documentId
+  //     : route.key == 'draft'
+  //     ? route.draftId
+  //     : undefined
+  // const versionId = route.key == 'publication' ? route.versionId : undefined
+  // const {data: publication} = usePublication({
+  //   documentId,
+  //   versionId,
+  //   enabled: !!documentId,
+  // })
+  // const isWebPub = publication?.document?.webUrl != null
+  // const label = publication?.document?.webUrl
+  //   ? hostnameStripProtocol(publication.document.webUrl)
+  //   : 'Public'
+  const popoverState = usePopoverState()
+  const groupPublish = useAppDialog(GroupPublishDialog)
   return (
     <>
-      <PopoverPrimitive.Root
-        open={isOpen}
-        onOpenChange={(open) => {
-          setIsOpen(open)
-        }}
-      >
-        <PopoverPrimitive.Trigger asChild>
-          <Button
-            size="$2"
-            theme="green"
-            icon={Globe}
-            iconAfter={ChevronDown}
-            onPress={() => {
-              // setIsOpen(true)
-            }}
-          >
-            {label}
-          </Button>
-        </PopoverPrimitive.Trigger>
-        <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content
-            align="start"
-            style={{
-              zIndex: 200000,
-            }}
-          >
-            <YStack
-              width={300}
-              padding="$4"
-              margin="$2"
-              borderRadius="$2"
-              backgroundColor="$backgroundStrong"
-              borderWidth={1}
-              borderColor="$gray4"
-              gap="$4"
+      <Popover {...popoverState} placement="bottom-end">
+        <Popover.Trigger asChild>
+          <Button size="$2" icon={Globe} />
+        </Popover.Trigger>
+        <Popover.Content padding={0} elevation="$2">
+          <YStack>
+            <Button
+              onPress={() => {
+                groupPublish.open({docId, version})
+              }}
+              size="$2"
             >
-              <DraftPublicationDialog draft={draft || undefined} />
-            </YStack>
-          </PopoverPrimitive.Content>
-        </PopoverPrimitive.Portal>
-      </PopoverPrimitive.Root>
+              Publish to Group
+            </Button>
+          </YStack>
+        </Popover.Content>
+      </Popover>
+      {groupPublish.content}
     </>
   )
 }
-function PublishedPubDropdown() {
-  return <PubDropdown />
-}
+
+// function SitePubDropdown({hostname}: {hostname: string}) {
+//   return (
+//     <Button
+//       size="$2"
+//       theme="green"
+//       icon={Globe}
+//       disabled // todo implement this dropdown
+//     >
+//       {hostnameStripProtocol(hostname)}
+//     </Button>
+//   )
+// }
+
+// function DraftPubDropdown() {
+//   const [isOpen, setIsOpen] = useState(false)
+//   const route = useNavRoute()
+//   const documentId =
+//     route.key == 'publication'
+//       ? route.documentId
+//       : route.key == 'draft'
+//       ? route.draftId
+//       : undefined
+//   const {data: draft} = useDraft({
+//     documentId,
+//     enabled: route.key == 'draft' && !!documentId,
+//   })
+
+//   const label = draft?.webUrl ? hostnameStripProtocol(draft.webUrl) : 'Public'
+
+//   return (
+//     <>
+//       <PopoverPrimitive.Root
+//         open={isOpen}
+//         onOpenChange={(open) => {
+//           setIsOpen(open)
+//         }}
+//       >
+//         <PopoverPrimitive.Trigger asChild>
+//           <Button
+//             size="$2"
+//             theme="green"
+//             icon={Globe}
+//             iconAfter={ChevronDown}
+//             onPress={() => {
+//               // setIsOpen(true)
+//             }}
+//           >
+//             {label}
+//           </Button>
+//         </PopoverPrimitive.Trigger>
+//         <PopoverPrimitive.Portal>
+//           <PopoverPrimitive.Content
+//             align="start"
+//             style={{
+//               zIndex: 200000,
+//             }}
+//           >
+//             <YStack
+//               width={300}
+//               padding="$4"
+//               margin="$2"
+//               borderRadius="$2"
+//               backgroundColor="$backgroundStrong"
+//               borderWidth={1}
+//               borderColor="$gray4"
+//               gap="$4"
+//             >
+//               <DraftPublicationDialog draft={draft || undefined} />
+//             </YStack>
+//           </PopoverPrimitive.Content>
+//         </PopoverPrimitive.Portal>
+//       </PopoverPrimitive.Root>
+//     </>
+//   )
+// }
 
 export function PublicationDropdown() {
   const route = useNavRoute()
-  const isDraft = route.key == 'draft'
-  const isPublication = route.key == 'publication'
-  const isSiteHome = route.key == 'site'
-  if (isDraft) return <DraftPubDropdown />
-  if (isPublication) return <PublishedPubDropdown />
-  if (isSiteHome) return <SitePubDropdown hostname={route.hostname} />
-  return null
+  const documentId = route.key == 'publication' ? route.documentId : undefined
+  const routeVersionId =
+    route.key == 'publication' ? route.versionId : undefined
+
+  const pub = usePublication({
+    documentId,
+    versionId: routeVersionId,
+    enabled: !!documentId,
+  })
+  if (!pub.data || !documentId) return null
+  return <PubDropdown version={pub.data.version} docId={documentId} />
+}
+
+export function DraftPublicationButtons() {
+  const route = useNavRoute()
+  if (route.key !== 'draft')
+    throw new Error('DraftPublicationButtons requires draft route')
+  const draftId = route.draftId
+  let navReplace = useNavigate('replace')
+  const isDaemonReady = useDaemonReady()
+  const publish = usePublishDraft({
+    onSuccess: (publishedDoc) => {
+      if (!publishedDoc || !draftId) return
+      navReplace({
+        key: 'publication',
+        documentId: draftId,
+        versionId: publishedDoc.version,
+      })
+      toast.success('Document saved and set to public')
+    },
+    onError: (e: any) => {
+      toast.error('Failed to publish: ' + e.message)
+    },
+  })
+  return (
+    <>
+      <Button
+        size="$2"
+        disabled={!isDaemonReady}
+        onPress={() => {
+          console.log('did start publish', draftId, isDaemonReady)
+          publish.mutate({draftId})
+        }}
+        theme="green"
+        icon={Check}
+      >
+        Save
+      </Button>
+      <DiscardDraftButton />
+    </>
+  )
 }
 
 export function PublishShareButton() {
@@ -415,7 +434,7 @@ export function PublishShareButton() {
             if (webUrl && !webPub) {
               publicationDialog.open(webUrl)
             } else if (draftId) {
-              publish.mutate({draftId, webPub})
+              publish.mutate({draftId})
             }
           }}
           theme="green"
