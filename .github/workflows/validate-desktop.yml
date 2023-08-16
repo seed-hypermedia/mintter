@@ -35,20 +35,9 @@ jobs:
         with:
           matrix-os: 'ubuntu-latest'
 
-      - name: Install Node.js 20
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: 'yarn'
-
-      - name: Install Frontend Dependencies
-        env:
-          YARN_ENABLE_IMMUTABLE_INSTALLS: false
-        run: |
-          yarn
-
       - name: Validate code
         run: |
+          yarn build
           yarn desktop:validate
           yarn desktop:lint
       
@@ -62,14 +51,7 @@ jobs:
 
       - name: Package desktop app
         run: |
-          yarn build
           yarn desktop:package
-
-      - name: Validate desktop app
-        run: |
-          yarn build
-          yarn desktop:validate
-          yarn desktop:lint
 
       - name: Run desktop app tests
         run: yarn desktop:test
