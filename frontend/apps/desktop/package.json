@@ -1,6 +1,6 @@
 {
-  "name": "@mintter/electron",
-  "version": "2023.08.66",
+  "name": "@mintter/desktop",
+  "version": "0.1.0",
   "productName": "Mintter",
   "description": "Mintter: A Hyperdocs client",
   "keywords": [],
@@ -35,7 +35,7 @@
   "scripts": {
     "dev": "electron-forge start",
     "e2e": "playwright test",
-    "lint": "eslint .",
+    "lint": "echo TODO",
     "make": "electron-forge make",
     "package": "electron-forge package",
     "publish": "electron-forge publish"

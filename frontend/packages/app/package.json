@@ -1,16 +1,11 @@
 {
   "name": "@mintter/app",
-  "version": "workspace:*",
+  "version": "0.1.0",
   "sideEffects": [
     "*.css"
   ],
   "private": true,
-  "main": "src/index.tsx",
-  "module:jsx": "src",
-  "files": [
-    "types",
-    "dist"
-  ],
+  "main": "index.ts",
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.2.0",

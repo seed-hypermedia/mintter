@@ -63,7 +63,6 @@ apps/desktop/.vite
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
 # local env files
 .env.local
@@ -82,7 +81,6 @@ yarn-error.log*
 THUMBS_DB
 thumbs.db
 
-frontend/apps/forge/*
 /test-results/
 /playwright-report/
 /playwright/.cache/

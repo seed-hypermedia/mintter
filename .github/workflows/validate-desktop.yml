@@ -7,17 +7,17 @@ on:
       - electron-ci
     paths:
       - '.github/workflows/validate-desktop.yml'
-      - 'frontend/apps/electron/**'
+      - 'frontend/apps/desktop/**'
       - 'frotend/packages/**'
       - 'package.json'
-      - 'frontend/apps/electron/package.json'
+      - 'frontend/apps/desktop/package.json'
   pull_request:
     paths:
       - '.github/workflows/validate-desktop.yml'
-      - 'frontend/apps/electron/**'
+      - 'frontend/apps/desktop/**'
       - 'frotend/packages/**'
       - 'package.json'
-      - 'frontend/apps/electron/package.json'
+      - 'frontend/apps/desktop/package.json'
     branches-ignore:
       - 'renovate/**'
 

@@ -6,6 +6,7 @@
     "paths": {
       "@mintter/ui/*": ["./frontend/packages/ui/*"],
       "@mintter/shared/*": ["./frontend/packages/shared/*"],
+      "@mintter/app/*": ["./frontend/packages/app/*"],
     }
   },
   "extends": "./tsconfig.base.json"

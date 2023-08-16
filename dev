@@ -73,7 +73,8 @@ def main():
     def run_desktop(args):
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
-        run("plz build //:yarn")
+        run("yarn build")
+        run("plz build //backend:mintterd //:yarn")
         return run("yarn desktop", args=args)
     
     @cmd(

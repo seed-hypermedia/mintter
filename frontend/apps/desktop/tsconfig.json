@@ -22,9 +22,5 @@
   },
   "include": ["src", "env.d.ts"],
   "references": [{"path": "./tsconfig.node.json"}],
-  "paths": {
-    "@/*": ["src/*"],
-    "@mintter/shared": "../shared/src/index",
-    "@mintter/shared/*": "../shared/src/index/*"
-  }
+  "extends": "../../../tsconfig"
 }

@@ -19,7 +19,7 @@ const commitCount = execSync(
 const newVersion = `${year}.${month}.${commitCount}`
 
 // Read the package.json file
-const packageJsonPath = './frontend/apps/electron/package.json'
+const packageJsonPath = './frontend/apps/desktop/package.json'
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
 
 // Update the version attribute

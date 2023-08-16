@@ -1,7 +1,6 @@
 {
   "name": "@mintter/shared",
-  "version": "workspace:*",
-  "description": "",
+  "version": "0.1.0",
   "exports": {
     ".": "./dist",
     "./*": "./dist/*"
@@ -18,11 +17,11 @@
     "build": "tsc ",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "pnpm lint:prettier && pnpm lint:eslint",
+    "lint": "yarn lint:prettier && yarn lint:eslint",
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --check '**/*.{css,md,js,jsx,json,ts,tsx}'",
     "format": "prettier --write .",
-    "validate": "pnpm lint && pnpm test"
+    "validate": "yarn lint && yarn test"
   },
   "keywords": [],
   "author": "",

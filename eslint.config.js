@@ -20,7 +20,7 @@ module.exports = [
   //   },
   // },
   {
-    files: ['frontend/apps/electron/**/*.ts'],
+    files: ['frontend/apps/desktop/**/*.ts'],
     rules: {
       semi: 'error',
       'prefer-const': 'error',

@@ -134,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.target }}
-          path: frontend/apps/electron/out/make/**/*
+          path: frontend/apps/desktop/out/make/**/*
   
   publish-to-github:
     needs: [get-version, build-binaries]
