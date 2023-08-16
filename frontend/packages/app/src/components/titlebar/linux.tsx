@@ -54,10 +54,10 @@ export default function TitleBarLinux(props: TitleBarProps) {
   // in the clean window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper data-tauri-drag-region>
-        <TitlebarRow data-tauri-drag-region>
-          <TitlebarSection data-tauri-drag-region>
-            <span data-tauri-drag-region>
+      <TitlebarWrapper>
+        <TitlebarRow>
+          <TitlebarSection>
+            <span>
               <MintterIcon />
             </span>
           </TitlebarSection>
@@ -70,17 +70,17 @@ export default function TitleBarLinux(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper data-has-focus={focus} data-tauri-drag-region>
-      <TitlebarRow data-tauri-drag-region>
-        <TitlebarSection data-tauri-drag-region>
+    <TitlebarWrapper data-has-focus={focus}>
+      <TitlebarRow>
+        <TitlebarSection>
           <MintterIcon />
           <NavMenu />
           <PageContextButtons {...props} />
         </TitlebarSection>
-        <TitlebarSection flex={1} data-tauri-drag-region>
+        <TitlebarSection flex={1}>
           <Title />
         </TitlebarSection>
-        <TitlebarSection data-tauri-drag-region>
+        <TitlebarSection>
           <PageActionButtons {...props} />
           <XStack>
             <MinimizeButton />

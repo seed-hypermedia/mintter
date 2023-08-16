@@ -10,14 +10,12 @@
     "arcanis.vscode-zipfs",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "rust-lang.rust-analyzer",
     "bazelbuild.vscode-bazel",
     "zxh404.vscode-proto3",
     "mkhl.direnv",
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": [
-    "rust-lang.rust",
     // This one doesn't work well or at all.
     "rubymaniac.vscode-direnv",
     // This one stopped working for some reason.

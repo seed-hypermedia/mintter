@@ -2,7 +2,7 @@ NOTE: this is a living document (well, as any other) and might not provide the c
 
 ## Better Build Systems (Arguably)
 
-Most build systems suck. [Bazel](https://bazel.build) is great, but it gets in the way of well-established tools and ecosystems. It requires a lot of "buy in" from the team to use it properly. Although the benefit can be substantial, the burden is often unbearable, unless the monorepo is really huge. Ours is pretty small, although has quite a few moving parts: web app, Go backend, Rust desktop app, a bunch of extra supporting tools, etc. A sane build system could help a lot with orchestrating all of this. Ideally without doing stupid things like building the same stuff that's already built.
+Most build systems suck. [Bazel](https://bazel.build) is great, but it gets in the way of well-established tools and ecosystems. It requires a lot of "buy in" from the team to use it properly. Although the benefit can be substantial, the burden is often unbearable, unless the monorepo is really huge. Ours is pretty small, although has quite a few moving parts: the web app, the Go backend, the desktop app, a bunch of extra supporting tools, etc. A sane build system could help a lot with orchestrating all of this. Ideally without doing stupid things like building the same stuff that's already built.
 
 We tried to "bend" Bazel to make it more pragmatic, with some success. Although some issues were discovered during the process, and later on we realized that [Please](https://please.build) is very similar to Bazel, but allows for more flexibility and is less strict in many aspects.
 

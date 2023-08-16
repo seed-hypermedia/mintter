@@ -73,9 +73,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <Folder size={12} />
-        <TitleText data-tauri-drag-region size={size}>
-          Groups
-        </TitleText>
+        <TitleText size={size}>Groups</TitleText>
       </>
     )
   }
@@ -139,11 +137,7 @@ export function Title({size}: {size?: FontSizeTokens}) {
 function GroupTitle({groupId, size}: {groupId: string; size?: FontSizeTokens}) {
   const group = useGroup(groupId)
   if (group.isLoading) return <Spinner />
-  return (
-    <TitleText data-tauri-drag-region size={size}>
-      {group.data?.title}
-    </TitleText>
-  )
+  return <TitleText size={size}>{group.data?.title}</TitleText>
 }
 
 function PublicationTitle({

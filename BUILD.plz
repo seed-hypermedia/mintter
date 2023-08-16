@@ -1,7 +1,6 @@
 subinclude(
     "//build/rules/go:defs",
     "//build/rules/js:defs",
-    "//build/rules/rust:defs",
 )
 
 # Installs Go dependencies.
@@ -40,11 +39,4 @@ export_file(
     name = "tools.go",
     src = "tools.go",
     visibility = ["//build/tools/..."],
-)
-
-cargo_fetch(
-    name = "cargo",
-    visibility = [
-        "//desktop/...",
-    ],
 )

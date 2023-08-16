@@ -16,7 +16,6 @@ bazel-*
 .bazel
 
 # Frontend
-frontend/apps/desktop/.vite
 frontend-old
 
 # Backend code
@@ -44,7 +43,6 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-apps/desktop/.vite
 
 # expo
 **/.expo/*

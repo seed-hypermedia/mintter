@@ -63,16 +63,15 @@ export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper data-tauri-drag-region>
-        <TitlebarRow data-tauri-drag-region>
-          <TitlebarSection data-tauri-drag-region>
+      <TitlebarWrapper>
+        <TitlebarRow>
+          <TitlebarSection>
             <MintterIcon />
           </TitlebarSection>
           <TitlebarSection
             flex={1}
             alignItems="center"
             justifyContent="flex-end"
-            data-tauri-drag-region
           >
             <XStack>
               <CloseButton />
@@ -84,17 +83,13 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper data-tauri-drag-region>
-      <TitlebarRow
-        minHeight={28}
-        backgroundColor="$color3"
-        data-tauri-drag-region
-      >
-        <TitlebarSection data-tauri-drag-region flex={1}>
+    <TitlebarWrapper>
+      <TitlebarRow minHeight={28} backgroundColor="$color3">
+        <TitlebarSection flex={1}>
           <MintterIcon />
           <SystemMenu />
         </TitlebarSection>
-        <TitlebarSection gap={0} data-tauri-drag-region>
+        <TitlebarSection gap={0}>
           <XStack>
             <MinimizeButton />
             <MaximizeOrRestoreButton />
@@ -102,30 +97,27 @@ export default function TitleBarWindows(props: TitleBarProps) {
           </XStack>
         </TitlebarSection>
       </TitlebarRow>
-      <XStack justifyContent="space-between" data-tauri-drag-region>
+      <XStack justifyContent="space-between">
         <XStack
           flex={1}
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
-          data-tauri-drag-region
         >
           <Container
             alignItems="flex-start"
-            data-tauri-drag-region
             paddingHorizontal={0}
             paddingVertical="$1"
           >
-            <XStack data-tauri-drag-region>
+            <XStack>
               <PageContextButtons {...props} />
             </XStack>
           </Container>
         </XStack>
-        <XStack flex={1} alignItems="center" data-tauri-drag-region>
+        <XStack flex={1} alignItems="center">
           <Title size="$2" />
         </XStack>
         <XStack
-          data-tauri-drag-region
           flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}
