@@ -1,7 +1,7 @@
 import {Button, Form, Input, Label} from '@mintter/ui'
 import {Tooltip} from './tooltip'
 import {FilePlus2} from '@tamagui/lucide-icons'
-import {AppDialog, DialogTitle, DialogDescription} from './dialog'
+import {AppDialog, DialogTitle} from './dialog'
 import {toast} from 'react-hot-toast'
 import {useCreateGroup} from '../models/groups'
 import {useRef} from 'react'
@@ -15,7 +15,7 @@ function AddGroupForm({onClose}: {onClose: () => void}) {
   const navigate = useNavigate()
   return (
     <>
-      <DialogTitle>New Group</DialogTitle>
+      <DialogTitle>Create HyperDocs Group</DialogTitle>
       <Form
         onSubmit={() => {
           // @ts-expect-error
@@ -64,13 +64,13 @@ function AddGroupForm({onClose}: {onClose: () => void}) {
 function NewGroupButton(props: React.ComponentProps<typeof Button>) {
   return (
     <Button size="$2" iconAfter={FilePlus2} {...props}>
-      New Group
+      Create Group
     </Button>
   )
 }
 export function AddGroupButton() {
   return (
-    <Tooltip content="New Group">
+    <Tooltip content="Create HyperDocs Group">
       <AppDialog
         TriggerComponent={NewGroupButton}
         ContentComponent={AddGroupForm}
