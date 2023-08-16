@@ -83,6 +83,7 @@ def main():
         run("./scripts/cleanup-frontend.sh")
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
+        run("yarn build")
         run("plz build //backend:mintterd //:yarn")
         run("yarn desktop:make")
 
@@ -92,6 +93,7 @@ def main():
     def validate_desktop(args):
         run("yarn desktop:format")
         run("yarn desktop:validate")
+        run("yarn desktop:lint")
         run("yarn desktop:make")
         run("yarn desktop:test")
     
@@ -125,7 +127,7 @@ def main():
     def validate_site(args):
         run("yarn site:format")
         run("yarn site:validate")
-        # run("yarn site:prod")
+        run("yarn site:lint")
         run("yarn site:test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")

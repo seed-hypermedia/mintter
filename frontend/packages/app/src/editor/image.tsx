@@ -168,7 +168,7 @@ function ImageComponent({
           e.stopPropagation()
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            let isImage = true;
+            let isImage = true
             const files = Array.from(e.dataTransfer.files)
             files.forEach((file) => {
               if (!file.type.includes('image/')) {

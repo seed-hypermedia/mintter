@@ -5104,10 +5104,10 @@ __metadata:
     "@radix-ui/react-scroll-area": 1.0.3
     "@radix-ui/react-slot": 1.0.1
     "@sentry/tracing": 7.49.0
-    "@tamagui/config": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/vite-plugin": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/config": 1.52.5
+    "@tamagui/lucide-icons": 1.52.5
+    "@tamagui/vite-plugin": 1.52.5
+    "@tamagui/web": ^1.52.5
     "@tanstack/react-query": 4.32.0
     "@tanstack/react-query-devtools": 4.32.0
     "@tippyjs/react": ^4.2.6
@@ -5265,7 +5265,8 @@ __metadata:
     "@reforged/maker-appimage": 3.3.1
     "@sentry/electron": 4.7.0
     "@sentry/vite-plugin": latest
-    "@tamagui/vite-plugin": 1.43.13
+    "@tamagui/vite-plugin": 1.52.5
+    "@trpc/client": ^10.37.1
     "@trpc/react": 9.27.4
     "@trpc/react-query": 10.35.0
     "@trpc/server": 10.35.0
@@ -5336,15 +5337,15 @@ __metadata:
     "@mintter/shared": "workspace:*"
     "@mintter/ui": "workspace:*"
     "@sentry/nextjs": latest
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/next-plugin": 1.43.15
-    "@tamagui/next-theme": 1.43.15
+    "@tamagui/lucide-icons": 1.52.5
+    "@tamagui/next-plugin": 1.52.5
+    "@tamagui/next-theme": 1.52.5
     "@tanstack/react-query": 4.32.0
     "@tanstack/react-query-devtools": 4.32.0
-    "@trpc/client": 10.32.0
-    "@trpc/next": 10.32.0
-    "@trpc/react-query": 10.32.0
-    "@trpc/server": 10.32.0
+    "@trpc/client": 10.37.1
+    "@trpc/next": 10.37.1
+    "@trpc/react-query": ^10.37.1
+    "@trpc/server": ^10.37.1
     "@types/node": 18.15.13
     "@types/react": 18.0.37
     "@types/react-dom": 18.0.11
@@ -5372,18 +5373,18 @@ __metadata:
     react-native: ^0.71.7
     react-native-svg: ^13.9.0
     react-native-web: 0.19.4
-    react-native-web-lite: 1.43.15
+    react-native-web-lite: 1.52.5
     react-qr-code: ^2.0.11
     shiki-es: 0.2.0
-    tamagui: 1.43.15
+    tamagui: 1.52.5
     typescript: 5.1.6
     unist-util-visit: 4.1.2
     webpack: 5.80.0
-    zod: 3.21.4
+    zod: ^3.21.4
   peerDependencies:
-    "@babel/core": ">=7.0.0 <8.0.0"
-    expo-modules-core: 0.6.3
-    expo-screen-orientation: 4.1.1
+    "@babel/core": 7.20.7
+    expo-modules-core: 0.6.5
+    expo-screen-orientation: 4.3.0
   languageName: unknown
   linkType: soft
 
@@ -5391,16 +5392,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/ui@workspace:frontend/packages/ui"
   dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/build": 1.43.15
-    "@tamagui/colors": ^1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/lucide-icons": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": ^1.43.15
-    tamagui: 1.43.15
+    "@tamagui/animations-react-native": 1.52.5
+    "@tamagui/build": 1.52.5
+    "@tamagui/colors": ^1.52.5
+    "@tamagui/font-inter": 1.52.5
+    "@tamagui/lucide-icons": 1.52.5
+    "@tamagui/react-native-media-driver": 1.52.5
+    "@tamagui/shorthands": 1.52.5
+    "@tamagui/themes": 1.52.5
+    "@tamagui/web": ^1.52.5
+    tamagui: 1.52.5
   languageName: unknown
   linkType: soft
 
@@ -6383,21 +6384,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-use-callback-ref@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@radix-ui/react-use-callback-ref@npm:1.0.1"
-  dependencies:
-    "@babel/runtime": ^7.13.10
-  peerDependencies:
-    "@types/react": "*"
-    react: ^16.8 || ^17.0 || ^18.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: b9fd39911c3644bbda14a84e4fca080682bef84212b8d8931fcaa2d2814465de242c4cfd8d7afb3020646bead9c5e539d478cea0a7031bee8a8a3bb164f3bc4c
-  languageName: node
-  linkType: hard
-
 "@radix-ui/react-use-controllable-state@npm:1.0.0":
   version: 1.0.0
   resolution: "@radix-ui/react-use-controllable-state@npm:1.0.0"
@@ -6434,22 +6420,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-use-escape-keydown@npm:^1.0.2":
-  version: 1.0.3
-  resolution: "@radix-ui/react-use-escape-keydown@npm:1.0.3"
-  dependencies:
-    "@babel/runtime": ^7.13.10
-    "@radix-ui/react-use-callback-ref": 1.0.1
-  peerDependencies:
-    "@types/react": "*"
-    react: ^16.8 || ^17.0 || ^18.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: c6ed0d9ce780f67f924980eb305af1f6cce2a8acbaf043a58abe0aa3cc551d9aa76ccee14531df89bbee302ead7ecc7fce330886f82d4672c5eda52f357ef9b8
-  languageName: node
-  linkType: hard
-
 "@radix-ui/react-use-layout-effect@npm:1.0.0":
   version: 1.0.0
   resolution: "@radix-ui/react-use-layout-effect@npm:1.0.0"
@@ -6469,21 +6439,6 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0
   checksum: b45bbc8a7e7dbe29f4c11922e807666ec98979ec7a2696618ceb2c60ade44f695892216a90e1f5d7a457b458b3c95f0a4ce971d5143a6a80646b6b00fda16fb5
-  languageName: node
-  linkType: hard
-
-"@radix-ui/react-use-previous@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "@radix-ui/react-use-previous@npm:1.0.1"
-  dependencies:
-    "@babel/runtime": ^7.13.10
-  peerDependencies:
-    "@types/react": "*"
-    react: ^16.8 || ^17.0 || ^18.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 66b4312e857c58b75f3bf62a2048ef090b79a159e9da06c19a468c93e62336969c33dbef60ff16969f00b20386cc25d138f6a353f1658b35baac0a6eff4761b9
   languageName: node
   linkType: hard
 
@@ -7540,136 +7495,136 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tamagui/accordion@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/accordion@npm:1.43.15"
+"@tamagui/accordion@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/accordion@npm:1.52.5"
   dependencies:
-    "@tamagui/collapsible": 1.43.15
-    "@tamagui/collection": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/collapsible": 1.52.5
+    "@tamagui/collection": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 8efdae38c3e846331d976b6917bb76519a3bfa666fa1bfad837f8b37227fa97c6ce48ff5160980f5cfb6038f5876b0f6369fd81ac401258dfafb8b120d5614c9
+  checksum: 1dd2629d6ccd2ba2f4f6fd00fff39c547c9bde88e59456ba8e3762feba0823034a53e39c149d982a60481b1de9654ae066422679c76fba903da10216e8828aa3
   languageName: node
   linkType: hard
 
-"@tamagui/adapt@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/adapt@npm:1.43.15"
+"@tamagui/adapt@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/adapt@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-  checksum: 3a233e59aca589c833511726ae482fa7af6300b78b50a283018fe916987bcaa9f4a4b20679e01931d7a09f0d5a8eecb6198201fcc6226e2cce3a99f5e4b2239c
+    "@tamagui/core": 1.52.5
+  checksum: 35370796d14faf77512ae09b9d75d8fe5c1cf2b5e4649b3d5ae119ab3b76ee956c43f4488d64c27c7482ccd1c703d90fe0d40313b48a6f77397a940d4a4546e2
   languageName: node
   linkType: hard
 
-"@tamagui/alert-dialog@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/alert-dialog@npm:1.43.15"
+"@tamagui/alert-dialog@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/alert-dialog@npm:1.52.5"
   dependencies:
-    "@tamagui/animate-presence": 1.43.15
-    "@tamagui/aria-hidden": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/dialog": 1.43.15
-    "@tamagui/dismissable": 1.43.15
-    "@tamagui/focus-scope": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/popper": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/remove-scroll": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 65f735d058940c7ce94f45980d56d2e05c3c8c6d2ba2dff3d314441164b7875dbf10f7b22c24fbd5df8039f5826fb984defa435046d74fb8b7ab07f662304f6e
-  languageName: node
-  linkType: hard
-
-"@tamagui/animate-presence@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/animate-presence@npm:1.43.15"
-  dependencies:
-    "@tamagui/use-presence": 1.43.15
-    "@tamagui/web": 1.43.15
-  checksum: 9e25fc9b2dd61655fcb84ade9668cf531cd27d783492066da4ba56754d5bf1c0111096fe29f454ba381e525f9ba1b978e00713d78bc2973abd6ed773c8b6859b
-  languageName: node
-  linkType: hard
-
-"@tamagui/animate@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/animate@npm:1.43.15"
-  dependencies:
-    "@tamagui/animate-presence": 1.43.15
-  checksum: 6ad6ce9b9c9acbaea9aafa2bcc493474487f22d50f81ccacbdfa79954d34e0ffddaddb6a3786c9ecff2f5da56adff81f31e2f8d84dc25d93023b9374b317eaee
-  languageName: node
-  linkType: hard
-
-"@tamagui/animations-css@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/animations-css@npm:1.43.15"
-  dependencies:
-    "@tamagui/cubic-bezier-animator": 1.43.15
-    "@tamagui/use-presence": 1.43.15
-    "@tamagui/web": 1.43.15
-  checksum: a643443fa8aa76e94b0f947602bab021a417b7e47b2e74d3382cb0b1f11ecd645026ec3ddd94b6946a881ee7dd811cb9a6af1965a06d989f1e5b5c806b41ae9a
-  languageName: node
-  linkType: hard
-
-"@tamagui/animations-react-native@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/animations-react-native@npm:1.43.15"
-  dependencies:
-    "@tamagui/use-presence": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/aria-hidden": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/dialog": 1.52.5
+    "@tamagui/dismissable": 1.52.5
+    "@tamagui/focus-scope": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/popper": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/remove-scroll": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ada0dd526b78f500d09fdf55a7d2be0e1638820b005437211eefd8ab973b312a7fae03103d573e3a5462feed3d99b928dc5d535a6b8ce4573fad88a743460a64
+  checksum: ca07d6211b9c1544277d86467f400a71176dad93455be2a9dcb7a343cfe2766f9576289c569fc4109e4eb8a1dd70328aa7c649b563f6713064f8e89c8c959cd4
   languageName: node
   linkType: hard
 
-"@tamagui/aria-hidden@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/aria-hidden@npm:1.43.15"
+"@tamagui/animate-presence@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/animate-presence@npm:1.52.5"
+  dependencies:
+    "@tamagui/use-presence": 1.52.5
+    "@tamagui/web": 1.52.5
+  checksum: 0e412d04e63ef0be0a841859e5efd45482e15d6da56d684f29d43ab0ab6b85587b04a4c25676766f13601bce9842c384142a6df1a3a731854f2f713304821c22
+  languageName: node
+  linkType: hard
+
+"@tamagui/animate@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/animate@npm:1.52.5"
+  dependencies:
+    "@tamagui/animate-presence": 1.52.5
+  checksum: f998ff654c8e5ca25fbcf095b63aa40599d7ea98d4e502972f41a14f9cce018fb6fc1eaa4156c4bdb488843712572a374b32aff132e47808f0012a5893e6fdd2
+  languageName: node
+  linkType: hard
+
+"@tamagui/animations-css@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/animations-css@npm:1.52.5"
+  dependencies:
+    "@tamagui/cubic-bezier-animator": 1.52.5
+    "@tamagui/use-presence": 1.52.5
+    "@tamagui/web": 1.52.5
+  checksum: 001765681796c9b2dc7538334ec7c7c988c88ce098a99de796b5538e032910e8baf99775583b72399b08b6c8ccee2d2b0178f64159fdb9c823070f479b910d91
+  languageName: node
+  linkType: hard
+
+"@tamagui/animations-react-native@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/animations-react-native@npm:1.52.5"
+  dependencies:
+    "@tamagui/use-presence": 1.52.5
+    "@tamagui/web": 1.52.5
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 4969c4561ae13b2e3c1726c384a45fd4b0db8402dd20ad5f90699c21305ac94c68e7f714faa27c6985fd62b919fb8d3230d6d81c4ac0379cf3abb83d6165473e
+  languageName: node
+  linkType: hard
+
+"@tamagui/aria-hidden@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/aria-hidden@npm:1.52.5"
   dependencies:
     aria-hidden: ^1.1.3
   peerDependencies:
     react: "*"
-  checksum: 996b5b22fbb015e80f5e4608aef1a9beb63812e9b8fe046241fdcc0cec3d52ef806eac549c5f6019de1fe9d103b6ed39c839db198af7020a5fb62a69a5dc2a39
+  checksum: c8e08f8b439cee149e0937040b29a963997e958b6d882e872374afcb29313290f65717c13f76ae8fadd0bc5735b7d1aba94bce81d397fde82fecbe1efe060bac
   languageName: node
   linkType: hard
 
-"@tamagui/avatar@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/avatar@npm:1.43.15"
+"@tamagui/avatar@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/avatar@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-    "@tamagui/image": 1.43.15
-    "@tamagui/shapes": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/image": 1.52.5
+    "@tamagui/shapes": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 65aad16f52dcfe3fa7dbb63582951f1690b0a26a1ae747ddb477f4ecb7fc301683296c2783a58b8d53b030679b086b8c03da9f91a6897dcdabb527b0c9ec2e75
+  checksum: f68321543c539a11a655a7d4f099531b66b8af8921c1bfbcd17ae17af89274bf451f26dfaf2cf7ec98a453ba021d2a7613314c4895bd2d9735d6f1121c75ab07
   languageName: node
   linkType: hard
 
-"@tamagui/build@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/build@npm:1.43.13"
+"@tamagui/build@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/build@npm:1.52.5"
   dependencies:
     "@types/fs-extra": ^9.0.13
     chokidar: ^3.5.2
-    esbuild: ^0.17.17
+    esbuild: ^0.19.0
     execa: ^5.0.0
     fast-glob: ^3.2.11
     fs-extra: ^11.1.0
@@ -7678,673 +7633,517 @@ __metadata:
     typescript: ^5.1.3
   bin:
     tamagui-build: tamagui-build.js
-  checksum: e44fe097f30b8fd1334d37f1e6bda07515381a71f4ece439ec11ad50c3e4b80f0acdd5de92bbab5720d2e0e117e40b855e702cb4bfeec4eeecfbe225c4574f20
+  checksum: 7685c4838c53784e60e3d313bd5371870f3ed3a559f0e3b9f7a98f888741a88a7f2543d33ba3cdde385d54175a1186024c436819d6ed2ff46a12fbc1f3489dd7
   languageName: node
   linkType: hard
 
-"@tamagui/build@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/build@npm:1.43.15"
+"@tamagui/button@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/button@npm:1.52.5"
   dependencies:
-    "@types/fs-extra": ^9.0.13
-    chokidar: ^3.5.2
-    esbuild: ^0.17.17
-    execa: ^5.0.0
-    fast-glob: ^3.2.11
-    fs-extra: ^11.1.0
-    get-tsconfig: ^4.5.0
-    lodash.debounce: ^4.0.8
-    typescript: ^5.1.3
-  bin:
-    tamagui-build: tamagui-build.js
-  checksum: 016ca6c8c87597217a96f9dee7736298506d71649b1eda8659a4281796dc79b5d12d18c0dfdfb3ab3064be12cd0daa34989d01bee52c583d4034f91191b1d435
-  languageName: node
-  linkType: hard
-
-"@tamagui/button@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/button@npm:1.43.15"
-  dependencies:
-    "@tamagui/font-size": 1.43.15
-    "@tamagui/get-button-sized": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/font-size": 1.52.5
+    "@tamagui/get-button-sized": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: f889a1fed7f9cee810cfa1526d56898971af51f71075c79ee6c39701691ba5e94b0164d486c9404a671850291fe39b1ad236247dcb7d58ec20638d4025029999
+  checksum: 6e05029f11845dfe72b8f17491377b7375eac5bceec5c96455ce6e1afc9c7a1fd5c7887578432509fc19646f4975c9c0bea95f55add3e35fd7ffa14145f2deb1
   languageName: node
   linkType: hard
 
-"@tamagui/card@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/card@npm:1.43.15"
+"@tamagui/card@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/card@npm:1.52.5"
   dependencies:
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 5ba5dbe2878e15681d0bf7abdd484f82551d2275111ea589c3d9540c00ff49e8b9ef1b711f163db66dde0a604c20ac0b9a93d0f2bb10e74376debdc25d00e02b
+  checksum: b9c4802dadc35cab4c39d8ef14dea959bc4528678ae8bad083ac3d7b56d6beddfd0b7e15773a6da14723fcf985f31b440c6319eaebbf14aff2e427cc5c548c67
   languageName: node
   linkType: hard
 
-"@tamagui/checkbox@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/checkbox@npm:1.43.15"
+"@tamagui/checkbox@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/checkbox@npm:1.52.5"
   dependencies:
-    "@radix-ui/react-use-previous": ^1.0.0
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/font-size": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/label": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/font-size": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/label": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-previous": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 0991147a00d12ef5bd3b79d8465f761be32541e499e28e1f81cea26c9520a4651ca2dae8c158f1fc0249ef1c57137c6df85aad0e973443b890c2ff58c2d26e3d
+  checksum: 41f005060767de034274ee9965c8b75e42b4e49e4e3324d39a67910d7db8f60dc76bef89554b0b8441f028f8ceeda7e78e26f967641682e36e4f34b0b221ef33
   languageName: node
   linkType: hard
 
-"@tamagui/cli-color@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/cli-color@npm:1.43.13"
-  checksum: 9497e01128c11ef1b3f207f54bf6050af7843c0a55005b83ea6026e19b958d3ff6c82856db7ee523e0bdc7bbb76e6dddeb146b14f2163a55c2c0332c464ed37c
+"@tamagui/cli-color@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/cli-color@npm:1.52.5"
+  checksum: b6e55661c6c2c8d989fc1e7cd228f3eaf30b1577fa98d2bc6cd5b220e2b54551470ba865222a1b09df41d891f69ad37058cd91da9949390cf7004eaa0fca8b63
   languageName: node
   linkType: hard
 
-"@tamagui/cli-color@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/cli-color@npm:1.43.15"
-  checksum: 13a1d574b3dc4f8b6f525f0d06cf068bc0047173bf4a7dbafc9c867bec78cd4be6b6595856ab060cb0ea5b434bc68e3f2bb0caabff87325dca6d2954156aa387
-  languageName: node
-  linkType: hard
-
-"@tamagui/collapsible@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/collapsible@npm:1.43.15"
+"@tamagui/collapsible@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/collapsible@npm:1.52.5"
   dependencies:
-    "@tamagui/animate-presence": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 15112f52504f38d9493bf4703a2ed35936d418b9778f37525c0ce4f498a68e34ad8d55a8af7a0eb2654174d83a14f7ae8a6c1f353e3331f208e74e711d93b9ac
+  checksum: e1aba0a896c0d46497d74917f499c20b6db87afcc24fec18314be0e9d402290f4aed53e9f3f90107b959d7f9bb1289abec22f3de0a5a18a3a1a09127c5946691
   languageName: node
   linkType: hard
 
-"@tamagui/collection@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/collection@npm:1.43.15"
+"@tamagui/collection@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/collection@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 739a6a3a7b60b88778130b04e5ea144582b4d1390842230de4b4247fd9b2a58fe956a0ab26753803c54db80f82a62bfb054b4e2809b5703ffd5c558abd079686
+  checksum: ba3ef088634a7e9432d862d6b5f45fb032e80c7d52eb41fcaa8cecc803ee916c0ae29cb5b686a929b50ad9e4d3dc021faa76ff7e41b8096df9422df4eb60225b
   languageName: node
   linkType: hard
 
-"@tamagui/colors@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/colors@npm:1.43.15"
-  checksum: 697ee49d93570cd10e55ed55eee702001243d9d8ed91007df356e41e8ad50ac3b3302a7dc3ffba4e406de822cc9ef7951fd0626f8b54e5eea807e33dc296f270
+"@tamagui/colors@npm:1.52.5, @tamagui/colors@npm:^1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/colors@npm:1.52.5"
+  checksum: 729b6828b9425f14511a5b0c92a6326994d775564fb4fdec4418e8d8425b0eeaf680868c505701d3158f2c37eb6ad87230863a923e438c0bb74e357b0f3ee7e0
   languageName: node
   linkType: hard
 
-"@tamagui/colors@npm:^1.43.15":
-  version: 1.52.4
-  resolution: "@tamagui/colors@npm:1.52.4"
-  checksum: 3c7d18759798e1c1a7fd346b537089037486fce66b0defb39a1d98b83e15d95077ac7ddb51a5bcd9add8bd15ab3d47ea0b5f64b3d24aa22d16b1f642c45d9918
-  languageName: node
-  linkType: hard
-
-"@tamagui/compose-refs@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/compose-refs@npm:1.43.13"
+"@tamagui/compose-refs@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/compose-refs@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 235c31665480cf50fc2ca741c4fdeb0e5b5d6a52f408a3211c5c97f6dbf9adee933c7cbb903cae6b7acd1f91a3c1a15a105f95d2571c36624a052a7786955b54
+  checksum: 7aaa8524d48998c557b2e3c3783a0cbd1cd65bda685bcffd6bc275fd033bad54f1e619a7b121e7c18ae7f56ecf38d50c8e04e0b6c3ec4a2d8ee78d6758243047
   languageName: node
   linkType: hard
 
-"@tamagui/compose-refs@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/compose-refs@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: 9670f69791e06c7ec8acc375556c2afbcc3fb0a8a5776c1432f4e8914d2fd3772510058d8eec99654602b7c4680a07384fbb8870eafdd8b70a32149c62d05bbe
-  languageName: node
-  linkType: hard
-
-"@tamagui/compose-refs@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/compose-refs@npm:1.52.4"
-  peerDependencies:
-    react: "*"
-  checksum: 236bc541edf38b2fd5cc03a45de320cf8f5ec9ac7bf554866879271ca23df8d5d6143fe9cf387dd477493fd768836b2219e7aaeea90f831792b60a1c9a7734a6
-  languageName: node
-  linkType: hard
-
-"@tamagui/config-default-node@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/config-default-node@npm:1.43.13"
+"@tamagui/config-default-node@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/config-default-node@npm:1.52.5"
   dependencies:
-    "@tamagui/shorthands": 1.43.13
-  checksum: ded9e3971ed0029a9ed2b18f534f26b2ab4b1fab99ed864b1fabf4f4ca71fe2dd30ec4cd55b3a134f7eb5694156226ccc32d4c69435daa3d50f69f7dca256245
+    "@tamagui/core-node": 1.52.5
+    "@tamagui/shorthands": 1.52.5
+  checksum: 6db8e9fd4db2abb5171eea53d3c418b84f24c77bbcbeaeea0ab72447e277e1cee63864e81db3cfc07a13c09206bbaf3f77ffb4bdb9fa72c89f4828cc5ae1c0a3
   languageName: node
   linkType: hard
 
-"@tamagui/config-default-node@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/config-default-node@npm:1.43.15"
+"@tamagui/config@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/config@npm:1.52.5"
   dependencies:
-    "@tamagui/shorthands": 1.43.15
-  checksum: 1800c9e695cc7944470d3e99df75d92ae0163334b31af07052ca77590a60a214aff1821ea06ababc6421ab4ab4d3e8ccad972ab858b3977eae7e94b68d0aff11
+    "@tamagui/animations-css": 1.52.5
+    "@tamagui/animations-react-native": 1.52.5
+    "@tamagui/colors": 1.52.5
+    "@tamagui/font-inter": 1.52.5
+    "@tamagui/font-silkscreen": 1.52.5
+    "@tamagui/react-native-media-driver": 1.52.5
+    "@tamagui/shorthands": 1.52.5
+    "@tamagui/themes": 1.52.5
+    "@tamagui/web": 1.52.5
+  checksum: 9ab52c919720aa790b7d47192e29a1017182720ebb69bcc85a864b83041adab535076757f114b203755752392d5a5bb8018b28dd58b47c7bb293ebf483fd742a
   languageName: node
   linkType: hard
 
-"@tamagui/config@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/config@npm:1.43.15"
-  dependencies:
-    "@tamagui/animations-css": 1.43.15
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/colors": 1.43.15
-    "@tamagui/font-inter": 1.43.15
-    "@tamagui/font-silkscreen": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/themes": 1.43.15
-    "@tamagui/web": 1.43.15
-  checksum: 156d800b0963d07f119926517a14ca042c8003bcea7fb7306043542bd2367b1c09006699870d6d95c03f1d0be5849817acecc69b089857bb337e4ec901d05f1c
-  languageName: node
-  linkType: hard
-
-"@tamagui/constants@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/constants@npm:1.43.13"
+"@tamagui/constants@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/constants@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: bbfffa8547e3fd8c06a5033a8c7bd6d6295efa43ddd6c8569a169690ad761c8e70c1828162b135d53be9e2076ad6f4edabbf5b4697c8874fb38f3db8c69c3ec2
+  checksum: 0745da3c8e9baf4ccdf700a588d1082bd9fdd7905c7ab1c48373239bb2455df3a4da79075b54c2f8e442561b167639ae910047014b2e38ff6637b49335b81cae
   languageName: node
   linkType: hard
 
-"@tamagui/constants@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/constants@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: 33fc0c2a75a8c72cb554599dd0e043a4e8960db47b54b03df56466576f3aae8ca0c51c2998e66da97f22f7191b83881c96bfec6c7c50f879570ae41368928325
-  languageName: node
-  linkType: hard
-
-"@tamagui/constants@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/constants@npm:1.52.4"
-  peerDependencies:
-    react: "*"
-  checksum: 40f16d50d39eeddbbc5e202273ad5014d1d618cefe03c3fed1b7ff4e8d20b2b99eb3a4bff6a1063ef5e99438f22c6918b4fc4541adc9ab899fc94b5fd230d017
-  languageName: node
-  linkType: hard
-
-"@tamagui/core-node@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/core-node@npm:1.43.13"
+"@tamagui/core-node@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/core-node@npm:1.52.5"
   dependencies:
     "@babel/runtime": ^7.21.5
-    "@tamagui/core": 1.43.13
-    "@tamagui/helpers": 1.43.13
-  checksum: bc83a1d6adf96d106468024f2b148b8172bd87de5d100058251190f07dd868e7ed70b1e7b35ebf58e2e2fdb5e15d4d6f9578d24c2c5496de59e4a8cfa8afd4c4
+    "@tamagui/core": 1.52.5
+    "@tamagui/helpers": 1.52.5
+  checksum: 9307be4a1633a8a2316f67e87b94e9e590045f7ee3b92d2fa485a7cec86617cd9bd814034b6127be0edadadd4f4e5a3afab40d35c52f7e5bd6145718a54f0a88
   languageName: node
   linkType: hard
 
-"@tamagui/core-node@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/core-node@npm:1.43.15"
+"@tamagui/core@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/core@npm:1.52.5"
   dependencies:
-    "@babel/runtime": ^7.21.5
-    "@tamagui/core": 1.43.15
-    "@tamagui/helpers": 1.43.15
-  checksum: 89ece5cc2c81f9f4d9638f5f389b64e945fa3bf18c8273ffc731660125d84f610f1ef202cb95b0688d06ca0b4adc0e48394cb507caa03ce984d5f25c19e0f0d1
-  languageName: node
-  linkType: hard
-
-"@tamagui/core@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/core@npm:1.43.13"
-  dependencies:
-    "@tamagui/react-native-use-pressable": 1.43.13
-    "@tamagui/react-native-use-responder-events": 1.43.13
-    "@tamagui/use-event": 1.43.13
-    "@tamagui/web": 1.43.13
+    "@tamagui/react-native-use-pressable": 1.52.5
+    "@tamagui/react-native-use-responder-events": 1.52.5
+    "@tamagui/use-event": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 7a3fbdf9de86fd0c8e368d53641de5dd15de047349e950ef824bfa92c41fcb9921a90f0631224d27ac794d129375bddf2487336c6efa009ef850807bccbc1ceb
+  checksum: 793445eacd95ed12a539f3821d527a59111d6a46c168da6e05024b8b618fd49bb712e11b76dd54b5c73c9aea4f14146ed60cf697f56a66e3abfacca1a2008819
   languageName: node
   linkType: hard
 
-"@tamagui/core@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/core@npm:1.43.15"
-  dependencies:
-    "@tamagui/react-native-use-pressable": 1.43.15
-    "@tamagui/react-native-use-responder-events": 1.43.15
-    "@tamagui/use-event": 1.43.15
-    "@tamagui/web": 1.43.15
+"@tamagui/create-context@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/create-context@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 3a9096dd2df94218a6f113ad719976ac1e3624fbbb9e0ca763d4a128b06357bb077dd802b0dcb76f11377b6a27c56e2b866f85489557efd92959d2bbf9308f10
+  checksum: b5d2df56fe5448594dd5422fe6deecd59567c5b10b8989be68e7528659704dd6bb33379bf376c4a9dd9577c2cc141d9d62a80a7b982c803b9648612966db0731
   languageName: node
   linkType: hard
 
-"@tamagui/create-context@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/create-context@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: 8bbaec85c4ff5e61ce7c652269502b9aa0745f7aa40c11bb52508724e8f15f43b4829e0b413146ca8c42a0d081daee0c6907c8f1be104c6043bb55d765d32f5e
-  languageName: node
-  linkType: hard
-
-"@tamagui/create-theme@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/create-theme@npm:1.43.13"
+"@tamagui/create-theme@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/create-theme@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.13
-  checksum: 16d135557bcb6091cbdba9efcc6432a6ccfdb4e0de6f5934ab4e81d9b934bc0409f7dece95070f8e21ec4b0a4db027b7937e3087f536cb9ef57c16bcc72c415b
+    "@tamagui/web": 1.52.5
+  checksum: 4bfcce4dbc9f8e9042ce269893b5f25fa43cd68f8b99ad8a7969ed133dae81a0bcfccdee21c859a17a6f21341aa9ec3b6d380f845d3fefca453e9245971271f6
   languageName: node
   linkType: hard
 
-"@tamagui/create-theme@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/create-theme@npm:1.43.15"
+"@tamagui/cubic-bezier-animator@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/cubic-bezier-animator@npm:1.52.5"
+  checksum: 5c02ef77dd5b3f1d69a2c2561608d2d9ad45ecaa67b1d8f553030519cdc4f4d068dc40f7db628eed0154c84a2e413f23f5397ceaf168fe770609aec4b16660a3
+  languageName: node
+  linkType: hard
+
+"@tamagui/dialog@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/dialog@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.15
-  checksum: 1242869fa6f9cfaa680bf1639998db413db475da3c4cda066995c8e3117d1d06a834ce9432504af519d6bd4dae0f5ff9e4d14783a7be50bf2c6851bf84442849
-  languageName: node
-  linkType: hard
-
-"@tamagui/cubic-bezier-animator@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/cubic-bezier-animator@npm:1.43.15"
-  checksum: b6dc462c2d9c24e4da0418f7f7a9981e62967353c79a687b8fafd14f285961010eb295afc6bcf06461d33599ae54cb705424e17c38e51f552abba30cd834b880
-  languageName: node
-  linkType: hard
-
-"@tamagui/dialog@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/dialog@npm:1.43.15"
-  dependencies:
-    "@tamagui/adapt": 1.43.15
-    "@tamagui/animate-presence": 1.43.15
-    "@tamagui/aria-hidden": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/dismissable": 1.43.15
-    "@tamagui/focus-scope": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/popper": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/remove-scroll": 1.43.15
-    "@tamagui/sheet": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/adapt": 1.52.5
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/aria-hidden": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/dismissable": 1.52.5
+    "@tamagui/focus-scope": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/popper": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/remove-scroll": 1.52.5
+    "@tamagui/sheet": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 01a3a69955a8d0d17c17013394fb82a9f02b53babd01424797497ea09d50dda6068eec3b7cd7778f6f5dcd018772c07d7a66704f86f5369ea799f9ace96200d5
+  checksum: ca6500f27eab31b1b1918801f81397f6e2e598b41f3cd63d46c289c621ed6f5b07050f50157d265c7f6a06e80c048c4ed648a0c65af81199c58733f2c680cbc6
   languageName: node
   linkType: hard
 
-"@tamagui/dismissable@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/dismissable@npm:1.43.15"
+"@tamagui/dismissable@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/dismissable@npm:1.52.5"
   dependencies:
-    "@radix-ui/react-use-escape-keydown": ^1.0.2
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/use-escape-keydown": 1.52.5
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 65f54b3ac5d690688fe282bf2a50f514448c8188f6abb7f5d2b5a740945b19a6343101f8fc4b537244c303f907977ffaa69839830fa8962ad1292a17db4c74f5
+  checksum: 5d94258f2d8621a8853fbe72f04f9f756f9a2b0268082b979e2f4e6fca2bda9933c22e24afea909687456a7bc71d9a3fff140b9d40c5dcdef3513bda2f9f8397
   languageName: node
   linkType: hard
 
-"@tamagui/fake-react-native@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/fake-react-native@npm:1.43.13"
-  checksum: c6f4edd1241c89c0a060b22c574ce05ff4774458ef3077094bfdbfe1a449eb5a00f27247731f9ef4a749ae64febc79f30b9fa0d8eb1c0d74301a11ee4d4e5349
+"@tamagui/fake-react-native@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/fake-react-native@npm:1.52.5"
+  checksum: 45649ee2031cf19d88bd2595d729fae285edaafd80886f4893ce90d63acb7532a61df7689ca9563cd8cf67b876a201ac69bbd08537d3e04d8a758ae7b0bad80e
   languageName: node
   linkType: hard
 
-"@tamagui/fake-react-native@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/fake-react-native@npm:1.43.15"
-  checksum: 9bf8a9dced51ca2ff9a2dd33ee58b194d3d68d9b9d5f15872e55a42ef00222cacf31e60aed1cac84647aba1ecf1961838228d561074c3d5852676a16cb72a7fd
-  languageName: node
-  linkType: hard
-
-"@tamagui/floating@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/floating@npm:1.43.15"
+"@tamagui/floating@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/floating@npm:1.52.5"
   dependencies:
     "@floating-ui/react-dom": ^2.0.1
     "@floating-ui/react-native": ^0.10.1
+    react-dom: ^18.2.0
   peerDependencies:
     react: "*"
-  checksum: 2a39b80152d9a44fa6cdb97d490f19d4b0b37cab97c1302698c45e6a660903f41be676245e460f0142cb01f2e201cecaddc27ba343b0662315f251f8ba5e7097
+  checksum: 381cc3533e312e8cd2f333c15b84e498b03087d6ac994e16e27bb8cd3aa100ceaa826b40acb399886a6e885966697e3ee009e2788e61ebf3b14328304355e983
   languageName: node
   linkType: hard
 
-"@tamagui/focus-scope@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/focus-scope@npm:1.43.15"
+"@tamagui/focus-scope@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/focus-scope@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: c410db1a8c452d18424f0e879587b264dccafce7a416d6ec8c13ed8a14ce219a478851b63cefeef1e1c9090e075c9c78a029078c6e6f01214b7c03dae8c11d78
+  checksum: 94bf965c22da75a7befef06e01c7182617a8802d26f3ad134814b3b7f632080b13c684eb4785301c852e735ea64835636d8ae09726c57d27db04d22f6b6f503f
   languageName: node
   linkType: hard
 
-"@tamagui/focusable@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/focusable@npm:1.43.15"
+"@tamagui/focusable@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/focusable@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 45518b018617b07c01c1249580c469f06d7fe52d887ce5cd74fc799815f58c544672b03149d1ea690ad11827c1736c3baf5a5cfc785fea1daf230fda294ee438
+  checksum: 40b8e1b96673fc4b636048bd20286a8c7cbec9a76ec25de257487918255b5457cc8dbde18127603f5455b6fc70a79775b77d1191de2ec13e3f12a6f4df21499f
   languageName: node
   linkType: hard
 
-"@tamagui/font-inter@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/font-inter@npm:1.43.15"
+"@tamagui/font-inter@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/font-inter@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-  checksum: 3d6f6f72579c9e4202fae2a4cab19b617bbb9a541032dde13fb8370eaf95f7e631d4df0250e7c925629efc1ef9438f84ee75748a11c1345bfda5566eef3829ea
+    "@tamagui/core": 1.52.5
+  checksum: 2dcd2016c940c418ebe3928ad13fd07c900bb5d24b475cd60a888a77ccce7284c1e05b6a1c39e512d643fcfdacd60c720527f647ca331fbe3371aa8cd784193f
   languageName: node
   linkType: hard
 
-"@tamagui/font-silkscreen@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/font-silkscreen@npm:1.43.15"
+"@tamagui/font-silkscreen@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/font-silkscreen@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-  checksum: 144a2c6da7f7c6a47b99e95506c0a742288e51dd5507cc06cabf901026c50dc84817f1160d4e728365016bd749198ba109cc800748fe3992028596f71eb17ddf
+    "@tamagui/core": 1.52.5
+  checksum: 132c3fe4a885d1882ba7346909684390fb1aa812cd939685e20a2a872a79098cf7ce65383085bada2e42b7b1e998844ff5388364276cbcdae437dad134c17e68
   languageName: node
   linkType: hard
 
-"@tamagui/font-size@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/font-size@npm:1.43.15"
+"@tamagui/font-size@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/font-size@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
+    "@tamagui/core": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: e10a476e7ba460932104c15fe95fd1dfa257d81a914fad31415c140fbf2d05a0bd09a1fbf7311d2fd5fe85869e9bca64caa1c476c65fdba96af92b9b6ce298e0
+  checksum: d8c5e7a44e0cc8b7d78edfd0261110e1ee5f04f8d4d2a6b203c29180004c2820dfc3bb1044a5125032cfe0f3215a689d0873007ded78923383c5c081745a4a94
   languageName: node
   linkType: hard
 
-"@tamagui/form@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/form@npm:1.43.15"
+"@tamagui/form@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/form@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/get-button-sized": 1.43.15
-    "@tamagui/get-font-sized": 1.43.15
-    "@tamagui/text": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/get-button-sized": 1.52.5
+    "@tamagui/get-font-sized": 1.52.5
+    "@tamagui/text": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 7f534f19497e1e3f3d1ef3276b32b53468da73bc094f28ce38450a0f0ead460d765afadaf0d6e7291c2de60e4924704053d866daef7161c50b5527e99320f84d
+  checksum: aa967f34da0acfdab3ec9cc821253d690b383afd67c972154f8334dd00d2de3071c2db797ae2d86f98ce0ef1116456125f6c72beaca3e1c9dc3e91d254227657
   languageName: node
   linkType: hard
 
-"@tamagui/generate-themes@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/generate-themes@npm:1.43.13"
+"@tamagui/generate-themes@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/generate-themes@npm:1.52.5"
   dependencies:
-    "@tamagui/create-theme": 1.43.13
-    "@tamagui/types": 1.43.13
+    "@tamagui/create-theme": 1.52.5
+    "@tamagui/types": 1.52.5
     esbuild-register: ^3.4.2
     fs-extra: ^11.1.0
-  checksum: 489372bccad4bb94a7b4c4024301ba50eb736ca0d79e4e6c05a7280179230c9abecaa57dd9629a2a33ffefa0ab6790b15835d70ba7967a66cda50fb11a1d5ff8
+  checksum: e7d7d65692d8533d294f9ce5280ee148285c02dcb93224f75c7867a85d7441367ab81e800b836ee36bf0483f811360199058b2414b26522e24bc99c872cd2b79
   languageName: node
   linkType: hard
 
-"@tamagui/generate-themes@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/generate-themes@npm:1.43.15"
+"@tamagui/get-button-sized@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/get-button-sized@npm:1.52.5"
   dependencies:
-    "@tamagui/create-theme": 1.43.15
-    "@tamagui/types": 1.43.15
-    esbuild-register: ^3.4.2
-    fs-extra: ^11.1.0
-  checksum: 68c2e04ff58e9acaf3e5e746a261b3071e01186d99d1365a69c4f268012720e794658f46d8e8ed290fb80338b07d1fac5dd01c6ffcc758e26338ab82ec672107
-  languageName: node
-  linkType: hard
-
-"@tamagui/get-button-sized@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/get-button-sized@npm:1.43.15"
-  dependencies:
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 5f1fcf359ce6c3b2d93bd986aea990a0fd5bc3e641f0577e0a57c471e3596647aa8c8b156b30e5e1bccb187cc2d2a9d33db1c036902aaf20ccf9d1b49ca2e0ce
+  checksum: 80290d52e8273886479fb70dbcb741f0d4a4c04a68c142c4aa804692ef753a63e365b3f447ffc025d07feda3c5ea626224f4a212f315fbfc5dcb9317b621bf74
   languageName: node
   linkType: hard
 
-"@tamagui/get-font-sized@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/get-font-sized@npm:1.43.15"
+"@tamagui/get-font-sized@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/get-font-sized@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
+    "@tamagui/core": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 3d43b92e42554670bee261ef4c3a1f8b1c581032e429f3bcd5a1b824247e643a64c10a231a26a03abd959a16f2f8be60619487d5116bfe72dd62565486d27957
+  checksum: c50fa62a393b5629d8922777267db305ceada5fbbab9e82e20ddbd34a7a1404356a78683028672c91fdf48c96962f06ce0e15c3755f82a59ba6699d997599396
   languageName: node
   linkType: hard
 
-"@tamagui/get-token@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/get-token@npm:1.43.15"
+"@tamagui/get-token@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/get-token@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.15
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: c9daaf0be445c6105a4de5406d07ba18212e7082f6dd1c676d350ac4af90e80dad48d69dc2309000042e2f51f8e88b2b11b9a9767e7ead722e22e5e52d042a16
+  checksum: 4ae0ef5f65c5fd8b7c19b7cda7c1379eb600d5b1cfa47ac2bff2ba459b5a27aac37667be5c2af20184ada55bf44dc6a4d561be222c328725d0b40fb32bf30fa0
   languageName: node
   linkType: hard
 
-"@tamagui/group@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/group@npm:1.43.15"
+"@tamagui/group@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/group@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
     reforest: ^0.12.1
   peerDependencies:
     react: "*"
-  checksum: cdc56be4ab0cb148dfa2bbe477c179b718f056ce1de1ff92fe9efc0bcc7af629a77a6dcece9c7655270a9764027e1d412c4a3250fd30199f01a66158adcc21ab
+  checksum: eb2922024065201bcaf6856c08d8374960848a2237912cd945af1d9ec5e5c84ec15d7acab08f4859dfee8624a207fe1c0e3ac0a6c0e5286b07897a27879d9fa2
   languageName: node
   linkType: hard
 
-"@tamagui/helpers-icon@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/helpers-icon@npm:1.43.15"
+"@tamagui/helpers-icon@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/helpers-icon@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
+    "@tamagui/core": 1.52.5
   peerDependencies:
     react: "*"
     react-native-svg: ">=12"
-  checksum: 07f19fa1ed324c71dad0e77141a50516ebb003b982603892a47f6986670a255dd9b94ca23e3b46338124324aa0762ff0a3d97c5304a6f8a3d12ce128706c6ce4
+  checksum: 7233847daa38229b952e7e8b44079932d863e449b2a16e1b9fcfbd1162757ab3002f79ea0c52a91512d97b8a8dfe579c6d1374de728c80c68f6c2de022357d4b
   languageName: node
   linkType: hard
 
-"@tamagui/helpers-node@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/helpers-node@npm:1.43.13"
+"@tamagui/helpers-node@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/helpers-node@npm:1.52.5"
   dependencies:
-    "@tamagui/types": 1.43.13
-  checksum: a3deca76e609b37ea5f86c5cdc62999e7964365b36d8da2c91d51b5ff07e02464bdcba6abeebef2be01c568b9c8323999364115db0464a094a8fe8870332e021
+    "@tamagui/types": 1.52.5
+  checksum: 939c8da52c88a989d14f29c0432a0296794f797607d6a4f985f97a555d9f75f3f72e9fb8db3d2af7c213ea2d61e8a22dcc0975eb80231c10d4bbe20538e8c03c
   languageName: node
   linkType: hard
 
-"@tamagui/helpers-node@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/helpers-node@npm:1.43.15"
+"@tamagui/helpers-tamagui@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/helpers-tamagui@npm:1.52.5"
   dependencies:
-    "@tamagui/types": 1.43.15
-  checksum: 0827c5a17da916d42c7faee1fad22bfab22b7c191c7ac0765a741bcce2aa4dd074180ebde37254672871f1b37d4056be594cbaea4356e06b55a6e5fc34963efe
-  languageName: node
-  linkType: hard
-
-"@tamagui/helpers-tamagui@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/helpers-tamagui@npm:1.43.15"
-  dependencies:
-    "@tamagui/helpers": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/helpers": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 79c26846d1714ef5cde1ec9861d47d15fee7e3f075e1646d404837b0d8e1ef8c5f6d3265a089a4a68b1467f93427521d5ed7104c45d078a32878533724dd8a4e
+  checksum: 09249770e13da7aaceba522cc3b36c1f26bc65794e778aec31649e252a2f9b7e2ed2d73481fc9d9b2b8c5f4390d3b130b4c7129954ad183484fd815f61774adf
   languageName: node
   linkType: hard
 
-"@tamagui/helpers@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/helpers@npm:1.43.13"
+"@tamagui/helpers@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/helpers@npm:1.52.5"
   dependencies:
-    "@tamagui/simple-hash": 1.43.13
-  checksum: 069ce070bee1d8dbedcf6780c878ce3c63d16af565587fa1356ebb717dd04c0be92f9cc9be80d4b6d55e015990ceec269c32c6b0138083169dcf834a69797575
+    "@tamagui/constants": 1.52.5
+    "@tamagui/simple-hash": 1.52.5
+  checksum: ea675833698b7ae186b599a14a8d09aae2f4896899a0fa8f92145968e6fb72fdfd92471360e0bd562c60da45a21ef6384f1b7310b9d5025d70d5a9c1120d450f
   languageName: node
   linkType: hard
 
-"@tamagui/helpers@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/helpers@npm:1.43.15"
+"@tamagui/image@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/image@npm:1.52.5"
   dependencies:
-    "@tamagui/simple-hash": 1.43.15
-  checksum: 6f0c257d5f4f5ba9def244ed1c6fc91e9fd3aec4382ce0ad6650c5a5507dc588271e8afe20ee01163c44a44d8fa158ebcc929aecf3d70095d9dd8ce7c4bf0171
-  languageName: node
-  linkType: hard
-
-"@tamagui/helpers@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/helpers@npm:1.52.4"
-  dependencies:
-    "@tamagui/constants": 1.52.4
-    "@tamagui/simple-hash": 1.52.4
-  checksum: d16bc6ddce2e1ed7f230b0f35ec4aa5cec5ff9e55f9a24ae22209e51ba809133fa35ee3f839afa61a504c5ec0310b9c5cc5b0ba391bf3087ff6d857ad9fba166
-  languageName: node
-  linkType: hard
-
-"@tamagui/image@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/image@npm:1.43.15"
-  dependencies:
-    "@tamagui/core": 1.43.15
+    "@tamagui/core": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 5a45c4d58cfd7e407bf5fd596d85d243724a47df1fc81468e93dcbcebd6606671bc282e3e159bc159453d37b73cb49b736cc62fa10aa3813cd4c63e7f7cab309
+  checksum: 5f4a388168d9711041ec38e93e850513da51c0e71304edfdb189a7af275e6ffdec2ad8e49f9d4cd8ebd68b45519a304fbdd78872ec8a04fbd91aa7db1dcc6c41
   languageName: node
   linkType: hard
 
-"@tamagui/label@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/label@npm:1.43.15"
+"@tamagui/label@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/label@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/get-button-sized": 1.43.15
-    "@tamagui/get-font-sized": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/get-button-sized": 1.52.5
+    "@tamagui/get-font-sized": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 2c02097a2bcbcfb27be53ba067b449c43c11cbfd09cb5345fb1fa1c2e1b0a53e1c4a1a41ab29fe14ec4d7474658a2de892eaed986d1d9d080c9c419cb5d05332
+  checksum: 25b6dd2bd46079df4cf2868b5a93486183df40a062efa860171caceecc6271e2be487caed0426a09060a829273c71eabbec3def02a03249902f6e7878ea5d5cc
   languageName: node
   linkType: hard
 
-"@tamagui/linear-gradient@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/linear-gradient@npm:1.43.15"
+"@tamagui/linear-gradient@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/linear-gradient@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-    "@tamagui/stacks": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/stacks": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 886759c95e66a0eb297e31e267f91c05a3bca087895dd31145a3519e0912e08a50cc1ce0e0652f29f8a50ad4cadf597a08a5eefd1430edd6191db31cc7fb7b91
+  checksum: 5f9380b716802e630f1534bebbbdd25a58f2743a58decb1a58eade4ed165f33e716321096cf094da9b5049682a6d72e89b4bf063a0e340212ab8bd1f35e80c51
   languageName: node
   linkType: hard
 
-"@tamagui/list-item@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/list-item@npm:1.43.15"
+"@tamagui/list-item@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/list-item@npm:1.52.5"
   dependencies:
-    "@tamagui/font-size": 1.43.15
-    "@tamagui/get-font-sized": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/font-size": 1.52.5
+    "@tamagui/get-font-sized": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: d2cf1f888d0a59aa77f2dfef7780acbf5f3b48df58be707798c801ee26d5ee9654ce1ea8cc41fbbac00b109bbb1fbd475fbd7e0dd48d712fadd4eb063c9e0ebf
+  checksum: 775dabb5c72332e1b2d6701de29963ae55a36cfbb7dada24a791f9340bc234366720b34e4ab392133d44de47a6d63f32de8c3fa0030cc173f71da68ea025e15a
   languageName: node
   linkType: hard
 
-"@tamagui/lucide-icons@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/lucide-icons@npm:1.43.15"
+"@tamagui/lucide-icons@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/lucide-icons@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
-    "@tamagui/helpers-icon": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/helpers-icon": 1.52.5
   peerDependencies:
     react: "*"
     react-native-svg: ">=12"
-  checksum: 740c1e1f47b57607e0660a55858102f33af8967404a309aaaa8b6a2fc26a823974bf39bc5900574ad7a5ec97c79c077052238dfa00d02fbf83e030dc64190e32
+  checksum: 22add8023b64eac48f85737a42d75ca9f19d5b16c9b71fb021566d80453ee76e8eea74c0f7d05519d30ec3c662ba25a951fe7e7e22115aa0b03d48a4e663be9a
   languageName: node
   linkType: hard
 
-"@tamagui/next-plugin@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/next-plugin@npm:1.43.15"
+"@tamagui/next-plugin@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/next-plugin@npm:1.52.5"
   dependencies:
     "@babel/preset-react": ^7.18.6
-    "@tamagui/proxy-worm": 1.43.15
-    "@tamagui/react-native-svg": 1.43.15
-    "@tamagui/static": 1.43.15
+    "@tamagui/proxy-worm": 1.52.5
+    "@tamagui/react-native-svg": 1.52.5
+    "@tamagui/static": 1.52.5
     babel-loader: ^9.1.2
     browserslist: ^4.21.1
     css-loader: ^6.7.4
@@ -8352,413 +8151,344 @@ __metadata:
     esm-resolve: ^1.0.8
     file-loader: ^6.2.0
     html-webpack-plugin: ^5.5.0
-    tamagui-loader: 1.43.15
+    tamagui-loader: 1.52.5
     thread-loader: ^4.0.1
     url-loader: ^4.1.1
   peerDependencies:
     next: ">=13"
-  checksum: 64454f4469120d104ee362ab817c85f8a4381d71db5a1aef5d976b0f51d4783cd5a0a5547a21c4294a2db99d3920561c8b2e19a896a82e6c94aaca965ff209c0
+  checksum: 8e7d6f261edff5c2be5911571ee60327304704502790aa22c0c07bb0eacf6da13ae9a92b0525952fde6fd724718cae4e84979942b024efad89c0ac376c994aae
   languageName: node
   linkType: hard
 
-"@tamagui/next-theme@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/next-theme@npm:1.43.15"
+"@tamagui/next-theme@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/next-theme@npm:1.52.5"
   dependencies:
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 135582744397b9e8ce8edd425fbd39ff9d36bb630d4727dfe2efe1bbe061ee79a06a3ac1774ebd008406f779dd6494c2540366ddcfb0198aa3c6ec4b1112a351
+  checksum: 1c734a06dd3a2d0d1fba3ed4cd98c184e817245cc5393810da6618ca303f621be4c376ba592487d2164b11a46ec9e69b6f18f05da7f9988b04d971949d1685ee
   languageName: node
   linkType: hard
 
-"@tamagui/normalize-css-color@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/normalize-css-color@npm:1.43.13"
-  checksum: d2b99ea0563900edb64fe5301ee7270474f27abff44a679462e4acf284487f3ab373d16449af45c425f4cd6b74fecc0c40d464f5e424df8485b6c213eec5a81d
+"@tamagui/normalize-css-color@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/normalize-css-color@npm:1.52.5"
+  checksum: b7a231f85b42355f430984e7e35b3c478cf065a5ebe6f0d484090f8c38dd61f5e7f4c2e5c2ab80ec66fb2f219fbd399f97e2866d0d02cdc12ef11e22c9195507
   languageName: node
   linkType: hard
 
-"@tamagui/normalize-css-color@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/normalize-css-color@npm:1.43.15"
-  checksum: d4a9c38095369a1ad3ca48bfa92f816e4de9eca016f6de01d1c0dac872ac935e5baeba2062e79ce946456de23c80ef890fedfb3672d54b36c8f330db929ab6b9
+"@tamagui/polyfill-dev@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/polyfill-dev@npm:1.52.5"
+  checksum: d88b16392cca059e888b016cdb6fdd2e3d5cec939e210efcf6d36bc16eb54aada3b536ac9c66bd51b52a9b23d9cd161d7b3fcb26384a5e84c6436b1d815bee1d
   languageName: node
   linkType: hard
 
-"@tamagui/normalize-css-color@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/normalize-css-color@npm:1.52.4"
-  checksum: ff90008ea1e319cdf89cc57b2d1579018bf36690cfa780d9a119924219a1c459499bb1b59264d6434caed8767a2a32303aecd15db22621017bd21ccd7ac1f641
-  languageName: node
-  linkType: hard
-
-"@tamagui/polyfill-dev@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/polyfill-dev@npm:1.43.15"
-  checksum: df53a48af9c85897a4c369186315c486542b8592c1af7877077190f8685d9549781d2215e95730a56fa58f027956d10ef97cc52ddbacc25f0995494ff3f170db
-  languageName: node
-  linkType: hard
-
-"@tamagui/popover@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/popover@npm:1.43.15"
+"@tamagui/popover@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/popover@npm:1.52.5"
   dependencies:
     "@floating-ui/react": ^0.24.7
-    "@tamagui/adapt": 1.43.15
-    "@tamagui/animate": 1.43.15
-    "@tamagui/aria-hidden": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/dismissable": 1.43.15
-    "@tamagui/floating": 1.43.15
-    "@tamagui/focus-scope": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/popper": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/remove-scroll": 1.43.15
-    "@tamagui/scroll-view": 1.43.15
-    "@tamagui/sheet": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/adapt": 1.52.5
+    "@tamagui/animate": 1.52.5
+    "@tamagui/aria-hidden": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/dismissable": 1.52.5
+    "@tamagui/floating": 1.52.5
+    "@tamagui/focus-scope": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/popper": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/remove-scroll": 1.52.5
+    "@tamagui/scroll-view": 1.52.5
+    "@tamagui/sheet": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
     react-freeze: ^1.0.3
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 99fc4d382c504bd02107ac9223420ca14c0314d20af40630e352f7830e7c6181e01157169173b2da0f9d4b234ad948a361b41237a9dc33dcd6af2ce27afab03e
+  checksum: 93b5b8da50f2573631f076ffcaf25483c263ff80607bd6c7a1ac5598345965e50c6a0be9dad59eec5168266491f5f7a6b7f4b687c6f58ade69afa01154d800e2
   languageName: node
   linkType: hard
 
-"@tamagui/popper@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/popper@npm:1.43.15"
+"@tamagui/popper@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/popper@npm:1.52.5"
   dependencies:
-    "@floating-ui/react-dom": ^2.0.1
-    "@floating-ui/react-native": ^0.10.1
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/floating": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-  peerDependencies:
-    react: "*"
-    react-dom: "*"
-    react-native: "*"
-  checksum: 8faa378b6f85c2d76632f12fef0adde043286f0b26a3a9cfb69a2dbf20dec3429d8feb193dfa6cce0f233816f2daca2434418ace75749a809b0a0d49c8828523
-  languageName: node
-  linkType: hard
-
-"@tamagui/portal@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/portal@npm:1.43.15"
-  dependencies:
-    "@tamagui/core": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/floating": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 7ff7a47be2d5d25ee2afef7ca997c77831b177d0a1b12c9f82d3c4b53c5fbe61111bb86b394df1e3125c0771ac5095f5f9e08ad5169935d7e2eb1b42870d2d5d
+  checksum: 5e23d76b315732765b337527a1dbdfdae812ef5b55f9760e5dd0415466b748f643ce7fe5847e4f92b330d7cd7b28ecddd37860b6095c9354116ce0930873db99
   languageName: node
   linkType: hard
 
-"@tamagui/progress@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/progress@npm:1.43.15"
+"@tamagui/portal@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/portal@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/stacks": 1.43.15
+    "@tamagui/core": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 349019aedcab9298dfc6ea33a50f25ccbfce83d4b0351b9c1bd1be585170b79e8216eab97ad0de24b06e282d027f456c09c36772333bbc536182adb0dc40a44b
+  checksum: 85dc6fd501021ea6bb30cacaa728d452e413b17118679b92dfc76c27a4350a19afdc0783fa038e934df4fb810dbeb3b87759e45ae50868e646da8b355ada859a
   languageName: node
   linkType: hard
 
-"@tamagui/proxy-worm@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/proxy-worm@npm:1.43.13"
-  checksum: f23e475f068038a2ad6f782bfc276170b0a3bc1d992197f8fe0f4b0e9be5a01e4f2fb4b6a7bda59fa042bf2b67d67a7ff6a69a496fa9aaf1a3acda73a90494c4
-  languageName: node
-  linkType: hard
-
-"@tamagui/proxy-worm@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/proxy-worm@npm:1.43.15"
-  checksum: 1ba6e54872392720e95925b3bc562e55234fe503c781d472655470ef03e7ba5ebeb7bd8dfa8997b8b2846f67a8bd36456fa5a03a474e2ac317a4fe3f70420e4d
-  languageName: node
-  linkType: hard
-
-"@tamagui/radio-group@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/radio-group@npm:1.43.15"
+"@tamagui/progress@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/progress@npm:1.52.5"
   dependencies:
-    "@radix-ui/react-use-previous": ^1.0.0
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/label": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/stacks": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: d556404992d251a076fca3a6bcff9ff435def9baf211099249153466735aa7c1bc8c7d89016384947db3ee16d6670d7d24fd5f6bfe41c0be9652853c4beba7a8
+    react-native: "*"
+  checksum: 2f6d1d5d66aaf8aa3705e312cd5c486b3da2efdf77d3bcb243a6cac3c1e1966963ba4d9e1f5d9ce0e423644af2b1c5466688b19ea94c668ea0d5c2e2926e5dd1
   languageName: node
   linkType: hard
 
-"@tamagui/react-native-media-driver@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/react-native-media-driver@npm:1.43.15"
+"@tamagui/proxy-worm@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/proxy-worm@npm:1.52.5"
+  checksum: 3d49e6c0ebdf8f6c5b8f3fe5ed1d47d1207d7a1076946286bd0c0286e7e3fbf0d2df1a7937949d7524d52c9351b290a44f4215c39833fa1d66e2999c757f332c
+  languageName: node
+  linkType: hard
+
+"@tamagui/radio-group@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/radio-group@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/label": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-previous": 1.52.5
+  peerDependencies:
+    react: "*"
+  checksum: 77e9066f50b0eec85d777050ca593928d53d7078801c2415255fb5a9721d5b9bfc8e9e951eaeddac8fa0bdbbb4ab54d07cfb2190fbd5d4e20ebb623bc713a3ae
+  languageName: node
+  linkType: hard
+
+"@tamagui/react-native-media-driver@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/react-native-media-driver@npm:1.52.5"
+  dependencies:
+    "@tamagui/web": 1.52.5
     css-mediaquery: ^0.1.2
   peerDependencies:
     react-native: "*"
-  checksum: 928536ed3c265199ced9b9778f574f5aa4e752e07f65eb4a745bdae84c115964add32c4e68198ac2bca71a3de4b1791176f6d6ee310bfb42152062a05ab86649
+  checksum: a956defe31ac756462869b851b2d0d905401794852716987d7913ca1d71f598e270c5348a5d5c312ba075259c21b88918d7a432812fbc447a72f25a24331344d
   languageName: node
   linkType: hard
 
-"@tamagui/react-native-svg@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/react-native-svg@npm:1.43.13"
-  checksum: 68be045940244b1a447e48bbbf135cce01aa0267bd4c68fc1015bf0306f8a989fa6edc5fd1751d7cdc507c6d4e77ccd822f7161fc424d7ff735fb6e5d23a31d3
+"@tamagui/react-native-svg@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/react-native-svg@npm:1.52.5"
+  checksum: 7fb58585b8df14fed7e7aa90905e43cff4ea6c2d03fefae705785ccf022f143e98ea0fdb232229a9a57bfe2466d014f1be1eab92340912a912802007ad395c9d
   languageName: node
   linkType: hard
 
-"@tamagui/react-native-svg@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/react-native-svg@npm:1.43.15"
-  checksum: f067c274c53da73ad15b7795a4666049da1971b9ae2950fca72b2009c453f5742584ef570112c87cedbe9bf418a3471b0e306ec280d1def179f8024a3bd734f9
-  languageName: node
-  linkType: hard
-
-"@tamagui/react-native-use-pressable@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/react-native-use-pressable@npm:1.43.13"
+"@tamagui/react-native-use-pressable@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/react-native-use-pressable@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 841416a3bc933b84ee45ad2e01e2fee013e71ad2f70192bf7f2a6d7eb526f2c548a22fc4491b9d1a47f1f4e17b2146f4b6c6d631ed4c5475dac58b7dea8dbc5a
+  checksum: 15a8a058752241866acf2fc2fe9f97f7af3809e35d24a49f8364d53c0d4729fdbf038401553db27e5e4346f9c65027ac797100e2645be4fcc171c928b4de7c05
   languageName: node
   linkType: hard
 
-"@tamagui/react-native-use-pressable@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/react-native-use-pressable@npm:1.43.15"
+"@tamagui/react-native-use-responder-events@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/react-native-use-responder-events@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 6c7b6d5d115c1d87ee702cb39bc3016017b6e28e074564f69bf0d824976581ecac2263a8aa15bc3529ec7f7f658af490f09267ba65cd0525e47fa1dbde212428
+  checksum: 2d6bd40a0e9ecca8a5782b43e3b7d1e6beeb861fbaac69b395d4ed9cf15fd0cac8021e2107dde09afab875673ab50e5507838c3e3276e6fc5e37c3116477b70f
   languageName: node
   linkType: hard
 
-"@tamagui/react-native-use-responder-events@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/react-native-use-responder-events@npm:1.43.13"
-  peerDependencies:
-    react: "*"
-  checksum: cbea6a53e3a86f583015c36e441dac51e367fe0354d11464946beccba3ba0eb94d6d5caadde96969bbe80f499f26a2b998f7e726348cb7faf04cff8120a170d9
-  languageName: node
-  linkType: hard
-
-"@tamagui/react-native-use-responder-events@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/react-native-use-responder-events@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: 4b9e6ad6ad08f898ed0a654793e6a9e784b140c1270d944de38cab90328f303f2325581d83c799ef3e9e108c10e910002d9ef95cb3b6a811f4435c366b03a8bd
-  languageName: node
-  linkType: hard
-
-"@tamagui/remove-scroll@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/remove-scroll@npm:1.43.15"
+"@tamagui/remove-scroll@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/remove-scroll@npm:1.52.5"
   dependencies:
     react-remove-scroll: ^2.5.5
   peerDependencies:
     react: "*"
-  checksum: e68b8e3d3a5ea61b2e0d5ceffa428611e04c0c3600448f070c02ca526c0223fba7d33264099a2ad89aa590cbe9da6a6a573bd4881bb670a74ff744bf2ea96517
+  checksum: 1996aa831aa32c5f775b4673f9164ab67796b6024e45d85e3bc385b57a30fb7fc6f7165e86894d6ea6dffabe0d46bb2fb951352a4e5034770b963c4c6def1ca7
   languageName: node
   linkType: hard
 
-"@tamagui/roving-focus@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/roving-focus@npm:1.43.15"
+"@tamagui/roving-focus@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/roving-focus@npm:1.52.5"
   dependencies:
-    "@tamagui/collection": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-direction": 1.43.15
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/collection": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-direction": 1.52.5
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 59a2fbdc8d3c0fbf9de9f885f1a9d8fdf91f5d279db98038dad68d5987ff914e676bc276bacb325cb2297697bd06f0e1846f469e086d52c15f3c25019673b327
+  checksum: 5cc469fd2dc65651c02e0d86ef38ee541908b8325f7bb5d5d3d51ab96d8c49f83235fce869508137d0316f54673a70b2a277c76d9d71008e2f164abf9380bb85
   languageName: node
   linkType: hard
 
-"@tamagui/scroll-view@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/scroll-view@npm:1.43.15"
+"@tamagui/scroll-view@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/scroll-view@npm:1.52.5"
   dependencies:
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 4e27f8d1b401d2b68bcc60ecdf74af784f245699ed8bb94da0f780a278c1d5b79a17eb9fc60bb4f4cbeddf9ab5c3834f2d3d85207cba17fe8508a3b96a243f90
+  checksum: 90c63aecacd6c63102adc9fbee31a5a8fefa156e31c7a530eae9075817285a46cf5fa36b7f9c10e2baa38a6d6bf44d35c745ff08dbf524d9f0aede510989f089
   languageName: node
   linkType: hard
 
-"@tamagui/select@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/select@npm:1.43.15"
+"@tamagui/select@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/select@npm:1.52.5"
   dependencies:
     "@floating-ui/react": ^0.24.7
     "@floating-ui/react-dom": ^2.0.1
     "@floating-ui/react-native": ^0.10.1
-    "@radix-ui/react-use-previous": ^1.0.0
-    "@tamagui/adapt": 1.43.15
-    "@tamagui/animate-presence": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/dismissable": 1.43.15
-    "@tamagui/focus-scope": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/list-item": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/separator": 1.43.15
-    "@tamagui/sheet": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-event": 1.43.15
-  peerDependencies:
-    react: "*"
-    react-dom: "*"
-    react-native: "*"
-  checksum: 0937372e25d9393b18a40a235c83fd5276e2e329fb13faec73e3299deb96f1383a56a4fa3106315faae99d15dc873a4916b36b3d07c0f58c4099926889c04fcf
-  languageName: node
-  linkType: hard
-
-"@tamagui/separator@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/separator@npm:1.43.15"
-  dependencies:
-    "@tamagui/core": 1.43.15
-  peerDependencies:
-    react: "*"
-  checksum: dd04443ce42d73d0ea89718a2016324ae11ad28e25ef1c0aa12e016e5554296c2f97c9e7b9840e960d1d559d185328bbc57b9e513b30fadbc313faa3419fc3b9
-  languageName: node
-  linkType: hard
-
-"@tamagui/shapes@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/shapes@npm:1.43.15"
-  dependencies:
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/web": 1.43.15
-  peerDependencies:
-    react: "*"
-  checksum: 86c4c5a26c4d0340543399e9e7510985ab252f70bc3e2165b4bd1d4c25739a901d0ab7bf13004b40a67d016d7cb0ba77440a0453be26bb9c5987ed424b3fa490
-  languageName: node
-  linkType: hard
-
-"@tamagui/sheet@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/sheet@npm:1.43.15"
-  dependencies:
-    "@tamagui/animations-react-native": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/remove-scroll": 1.43.15
-    "@tamagui/scroll-view": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-constant": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-keyboard-visible": 1.43.15
+    "@tamagui/adapt": 1.52.5
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/dismissable": 1.52.5
+    "@tamagui/focus-scope": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/list-item": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/separator": 1.52.5
+    "@tamagui/sheet": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-event": 1.52.5
+    "@tamagui/use-previous": 1.52.5
+    react-dom: ^18.2.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3db2bca5fc4c894dbe7591498e8b8d821ccc8343188c95d04b93f7f135814e391ebcf28516a83472129acf2a3c7a044c15c705295500c67fbe849ae0c77e2907
+  checksum: abc3d1ee80031b92037c90a0e7b516f7ff4bce76c7aef73589642b420aa7c818aeb3dd104f36df40375891e2117a617b84aa1ded792929c77c28302914c8c887
   languageName: node
   linkType: hard
 
-"@tamagui/shorthands@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/shorthands@npm:1.43.13"
-  checksum: 8a133cd11a4af29b852dd59fa9d018ab9752f6448ca02bc4c203b92a2a84e7fae0de8f62a9cebbedf0579bd620a8c148409c7a8493a33b7f1310e8df4dfe8188
-  languageName: node
-  linkType: hard
-
-"@tamagui/shorthands@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/shorthands@npm:1.43.15"
-  checksum: cc2d76e07afe7121694ffe2bdf1072ba66e77898d7bbf37309d20888395723c9844dc9ac45c98195fd5ad014d4b720c7b8e3bbc80a803d3d24ba2cc1fddaf60c
-  languageName: node
-  linkType: hard
-
-"@tamagui/simple-hash@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/simple-hash@npm:1.43.13"
-  checksum: 53361fa557a6bef47358fb59a316b30067d1a092a3752da6343016802a83b8e86fcff472fec9af94305c08579978f5ce5d6c59818abb283aa957767c143f0090
-  languageName: node
-  linkType: hard
-
-"@tamagui/simple-hash@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/simple-hash@npm:1.43.15"
-  checksum: c5c5175d839499205b2329b9c0b856001eb532276b5b7db1eb47487103920d88c664e6f3b930af03b3ccf6267cf6c5aaff6cde99d0f77ab4b3331c8f3ddf4dca
-  languageName: node
-  linkType: hard
-
-"@tamagui/simple-hash@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/simple-hash@npm:1.52.4"
-  checksum: 01227587481161743ecb2ff48e764a0bba46b3dc9d5abd7b375319a1d0eb6bae5b512e4deb6cae63d26da22e74eb8db7e698d4fb1efedb5edb47c292d1b7baf3
-  languageName: node
-  linkType: hard
-
-"@tamagui/slider@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/slider@npm:1.43.15"
+"@tamagui/separator@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/separator@npm:1.52.5"
   dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/helpers": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-direction": 1.43.15
+    "@tamagui/core": 1.52.5
+  peerDependencies:
+    react: "*"
+  checksum: 94e9f76de15b60533791c5e1e2d994e138ece9b28df7affaf58e2ce636250bd84679fef3fa0458f74d9b37f83b053607299c4ca2462efcce011d4a05f2331561
+  languageName: node
+  linkType: hard
+
+"@tamagui/shapes@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/shapes@npm:1.52.5"
+  dependencies:
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/web": 1.52.5
+  peerDependencies:
+    react: "*"
+  checksum: 0a4c3ec53a392735419b5174ce39a639cc881abd9e719bea2506465d8278aaef95428b33f89d1094cd43c2ca27004f424171906ac0077a7400a20ed2b0e1f2c1
+  languageName: node
+  linkType: hard
+
+"@tamagui/sheet@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/sheet@npm:1.52.5"
+  dependencies:
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/animations-react-native": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/remove-scroll": 1.52.5
+    "@tamagui/scroll-view": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-constant": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-keyboard-visible": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 2f5ae3a25727e6ffb8d18d0e1c5a785359370f7f2f2902c017965ef39facac7052d0c3aa841991c4d0c4e87eda324ffd791b4ff74b2631fe3d98298d407cc6a1
+  checksum: ee33f18a96466594202fd2067ec99ea95d24dc0d8bb657a50c12f6890759e70bb304b1b6afe522dc9caef3a783d930a6e03fbdca5bf8b5bb8450f3ff4b05157c
   languageName: node
   linkType: hard
 
-"@tamagui/stacks@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/stacks@npm:1.43.15"
+"@tamagui/shorthands@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/shorthands@npm:1.52.5"
+  checksum: 12a654c0526a7b5a018b0ac94e57f37185985a2b8237629e8991a1953a60fc0727dfc614cdfcbdd21b9f238dfc8ec817861e7328dd5a91c3fffa25bea6a9896f
+  languageName: node
+  linkType: hard
+
+"@tamagui/simple-hash@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/simple-hash@npm:1.52.5"
+  checksum: f0c1f2db97f380f75f7c2d00f8b5103c1a0244668defe86ec5017a9da08d8e9ed2f5883ba5594a5d7198a06587a3c3b31ce8fd6ea529bcd0d1b053329c795041
+  languageName: node
+  linkType: hard
+
+"@tamagui/slider@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/slider@npm:1.52.5"
   dependencies:
-    "@tamagui/core": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/helpers": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-direction": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 626f88eec63afab49da9d30deca94a67abdf841c3a9533047e8f36029f38e2665db37081acf873ed4ed0e943f06e34a4638c1ae7a27a4c8a086eab119e92f4f0
+    react-native: "*"
+  checksum: b073a8151afe5b8cd69e00c92350458b60bdc62b34ac7d78e65642994d018a79033b5f057677eea12bf4b30a51365318c0bbe5447f8ba92285560bd104775c29
   languageName: node
   linkType: hard
 
-"@tamagui/static@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/static@npm:1.43.13"
+"@tamagui/stacks@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/stacks@npm:1.52.5"
+  dependencies:
+    "@tamagui/core": 1.52.5
+  peerDependencies:
+    react: "*"
+  checksum: ed21e4829e509abb32ac961bad8e2b7c04873454a77e961f2bb481527044f8f591bd284c39571cbe0f5253db375e3868921f2416b672096a78151322ea3f16d2
+  languageName: node
+  linkType: hard
+
+"@tamagui/static@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/static@npm:1.52.5"
   dependencies:
     "@babel/core": ^7.21.8
     "@babel/generator": ^7.21.5
@@ -8768,19 +8498,19 @@ __metadata:
     "@babel/runtime": ^7.21.5
     "@babel/traverse": ^7.21.5
     "@babel/types": ^7.21.5
-    "@tamagui/build": 1.43.13
-    "@tamagui/cli-color": 1.43.13
-    "@tamagui/config-default-node": 1.43.13
-    "@tamagui/core-node": 1.43.13
-    "@tamagui/fake-react-native": 1.43.13
-    "@tamagui/generate-themes": 1.43.13
-    "@tamagui/helpers": 1.43.13
-    "@tamagui/helpers-node": 1.43.13
-    "@tamagui/proxy-worm": 1.43.13
-    "@tamagui/shorthands": 1.43.13
-    "@tamagui/types": 1.43.13
+    "@tamagui/build": 1.52.5
+    "@tamagui/cli-color": 1.52.5
+    "@tamagui/config-default-node": 1.52.5
+    "@tamagui/core-node": 1.52.5
+    "@tamagui/fake-react-native": 1.52.5
+    "@tamagui/generate-themes": 1.52.5
+    "@tamagui/helpers": 1.52.5
+    "@tamagui/helpers-node": 1.52.5
+    "@tamagui/proxy-worm": 1.52.5
+    "@tamagui/shorthands": 1.52.5
+    "@tamagui/types": 1.52.5
     babel-literal-to-ast: ^2.1.0
-    esbuild: ^0.17.17
+    esbuild: ^0.19.0
     esbuild-register: ^3.4.2
     find-cache-dir: ^3.3.2
     find-root: ^1.1.0
@@ -8788,462 +8518,316 @@ __metadata:
     invariant: ^2.2.4
     lodash: ^4.17.21
     react-native-web: ^0.19.6
-    react-native-web-internals: 1.43.13
-    react-native-web-lite: 1.43.13
-  checksum: 85dbe195c517dd6a5298d51f9aba3d90824a9b1cddbdb2bdddf190c92fc83c35e3ad55aa91c502220499a1a7c7af9c5a882b96386f203ca8e6711947c5845813
+    react-native-web-internals: 1.52.5
+    react-native-web-lite: 1.52.5
+  checksum: aff85b67367d4ee5fb2004f822e695b717f3b782a6405a94e620d8c1fb8cbf641ebbda4308f753769d47e41bc5fb8f4141e19804ba823fbf4031d39e43f4cf3c
   languageName: node
   linkType: hard
 
-"@tamagui/static@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/static@npm:1.43.15"
+"@tamagui/switch@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/switch@npm:1.52.5"
   dependencies:
-    "@babel/core": ^7.21.8
-    "@babel/generator": ^7.21.5
-    "@babel/helper-plugin-utils": ^7.21.5
-    "@babel/parser": ^7.21.8
-    "@babel/plugin-transform-react-jsx": ^7.21.5
-    "@babel/runtime": ^7.21.5
-    "@babel/traverse": ^7.21.5
-    "@babel/types": ^7.21.5
-    "@tamagui/build": 1.43.15
-    "@tamagui/cli-color": 1.43.15
-    "@tamagui/config-default-node": 1.43.15
-    "@tamagui/core-node": 1.43.15
-    "@tamagui/fake-react-native": 1.43.15
-    "@tamagui/generate-themes": 1.43.15
-    "@tamagui/helpers": 1.43.15
-    "@tamagui/helpers-node": 1.43.15
-    "@tamagui/proxy-worm": 1.43.15
-    "@tamagui/shorthands": 1.43.15
-    "@tamagui/types": 1.43.15
-    babel-literal-to-ast: ^2.1.0
-    esbuild: ^0.17.17
-    esbuild-register: ^3.4.2
-    find-cache-dir: ^3.3.2
-    find-root: ^1.1.0
-    fs-extra: ^11.1.0
-    invariant: ^2.2.4
-    lodash: ^4.17.21
-    react-native-web: ^0.19.6
-    react-native-web-internals: 1.43.15
-    react-native-web-lite: 1.43.15
-  checksum: 7f9d994ea4db13c23e558f5d13587582c3334ff0466acffe1a62b0a17c70d61e87c14d5dec274f055bde3e50104ae5c29fdc41ccb51ef817df7ad81e53ceca3b
-  languageName: node
-  linkType: hard
-
-"@tamagui/switch@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/switch@npm:1.43.15"
-  dependencies:
-    "@radix-ui/react-use-previous": ^1.0.0
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/label": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/label": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-previous": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 58d0472bf1ad8f2660c54f68800cd09d968a65cbba57649b49a7c01f5ee66638223fa929e69d0c1e8c00bc5ddaa14789d966ee73e94d9360c6ee1451c70ab927
+  checksum: 5516c9cbceee8ed13e1f5e924814e887cc2e7033c3dc66d2479e5cad039686ce5655d1c8c7e24c7254fa82ff4e34b26debe984b976a4b34eac2a81aa2eebee86
   languageName: node
   linkType: hard
 
-"@tamagui/tabs@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/tabs@npm:1.43.15"
+"@tamagui/tabs@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/tabs@npm:1.52.5"
   dependencies:
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/get-button-sized": 1.43.15
-    "@tamagui/group": 1.43.15
-    "@tamagui/roving-focus": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-direction": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/get-button-sized": 1.52.5
+    "@tamagui/group": 1.52.5
+    "@tamagui/roving-focus": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-direction": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 2192cf5a4d5ff4c792e377de83cc9f89720112bdf7830d6342ff78d2bddb5df6e0609c267801c7e73ac44b06d4f08cdd5e118a0f46a106d66b3afead0ecd89ee
+  checksum: 6e0b948786a94993232849161a79bd70b04211d08172dc606fd1075753e03fa67bfd5cf5d469dd1584f92f5486f536c04a2b87860ef2f2e18ead70c38b47a7b7
   languageName: node
   linkType: hard
 
-"@tamagui/text@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/text@npm:1.43.15"
+"@tamagui/text@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/text@npm:1.52.5"
   dependencies:
-    "@tamagui/get-font-sized": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/get-font-sized": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 1200011a143fa336cb1edee34337f2653598ce20e19350ec9a182c0f5a16a964406bafc0ed8e8062e9c76b2eef5ecff15a386ddc5b45a080d4e4921f139cc715
+  checksum: 10bd65c18ece70293da990712d7dfd187895efff0f76b697c4eab3baea9f7ca94533f5ebf180f321f08e271d2854c3209207e1180483386597eeb55edfde599a
   languageName: node
   linkType: hard
 
-"@tamagui/theme-builder@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/theme-builder@npm:1.43.15"
+"@tamagui/theme@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/theme@npm:1.52.5"
   dependencies:
-    "@tamagui/create-theme": 1.43.15
-  checksum: ebe3a4689dce1d9070d6133eb9dbbb4ae0be132112763768f2f09ed366b7c2563ac8b5fd3e55f043529258b113aa46e4b7a6f1d2d50f0cd461cb78c5f8fcf6fb
-  languageName: node
-  linkType: hard
-
-"@tamagui/theme@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/theme@npm:1.43.15"
-  dependencies:
-    "@tamagui/constants": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/constants": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 3ab75e0cd3c1586b5ef3f07c4406dd1e1516242f5770cef35a549b5f3fc0cfa37f3034073d82f76cec34c9a0c7edf82667be9526053f727735b998e4922daf00
+  checksum: c9ac2a71cd52820157b349cdd1e1deabc101a7972d70e0e9b0bb5d0961641acbe1d99ca3e3b609f959385bb4a774a884d17773898aabb88d44f35038f0e6a333
   languageName: node
   linkType: hard
 
-"@tamagui/themes@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/themes@npm:1.43.15"
+"@tamagui/themes@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/themes@npm:1.52.5"
   dependencies:
-    "@tamagui/colors": 1.43.15
-    "@tamagui/create-theme": 1.43.15
-    "@tamagui/theme-builder": 1.43.15
-    "@tamagui/web": 1.43.15
-  checksum: 178ec7524bfa41ca7cea52a91e4d3886f650bca1c7eb904a269686b09eac084764c9e60c7a96106e343ed8c4b0cbb5080fc0f1d5cc5ead0a457fea9de0f936a5
+    "@tamagui/colors": 1.52.5
+    "@tamagui/create-theme": 1.52.5
+    "@tamagui/web": 1.52.5
+  checksum: 80eb43c4d9575657f1561c0ca32d296dd72ef747e9b3d634ceec421f33d1974174e5d68ae6f1889b3506e3e356090fc604889e0004feeda0530eb500601d5ab5
   languageName: node
   linkType: hard
 
-"@tamagui/timer@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/timer@npm:1.52.4"
-  checksum: 1e50f16bb1435751c0f8ab714d96260b58ca94fc90ada746387b08592a47c44b911d04c5d99ec52da05255709db801e3c3ccd624884b90eeacc9d28ef7c2ef5e
+"@tamagui/timer@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/timer@npm:1.52.5"
+  checksum: 06b8fdac4b68b2c29de9c327483277ee06fc7da951f234d406aa3d7fdb1d299c01e6f3f7a0d1ff39a947bc6f8690d050d2f924743b5d00ee52fddbdc6234d770
   languageName: node
   linkType: hard
 
-"@tamagui/toggle-group@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/toggle-group@npm:1.43.15"
+"@tamagui/toggle-group@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/toggle-group@npm:1.52.5"
   dependencies:
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/font-size": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/group": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/roving-focus": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-direction": 1.43.15
-    "@tamagui/web": 1.43.15
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/font-size": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/group": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/roving-focus": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-direction": 1.52.5
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 9b924b0b86b89b07fd54129c5bc1a6b6feb21aa8d1b40f41d489789261551ce5125102b540aa018495ade5dc407cb7ed0ecc92c1a7588cd53011e1b7c35d3cbd
+  checksum: 9a124c310c096488b35195a0445aad15ca84476a206431dc68ea465fdd7f0275df4d7083e12de5705ef4b42a0b2cab33be2ea46449d7c6de31026fa01d93261e
   languageName: node
   linkType: hard
 
-"@tamagui/tooltip@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/tooltip@npm:1.43.15"
+"@tamagui/tooltip@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/tooltip@npm:1.52.5"
   dependencies:
     "@floating-ui/react": ^0.24.7
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/floating": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/polyfill-dev": 1.43.15
-    "@tamagui/popover": 1.43.15
-    "@tamagui/popper": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/floating": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/polyfill-dev": 1.52.5
+    "@tamagui/popover": 1.52.5
+    "@tamagui/popper": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 6e2eedf48de13a39898bfba4940fc7058147a62c52f11c82f66d5766f3695a8128bdcdc269fe0c4aabff15c0c5d6b89fe5e11ceb3636ee63b9d7143404c1c821
+  checksum: 85e338f9fb5e671470c5cfb87a4c3ff825f61e49ee9e8494c8790b752f0f515f771da77dff3364686bd16db7d45d112555dea1b2b7df4a332615b6c47b9d05d1
   languageName: node
   linkType: hard
 
-"@tamagui/types@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/types@npm:1.43.13"
-  checksum: 8c90874552943cef1d256447316d5157db8532201104dce5e03e2ddf58d529614918b545deddf178316c47ddb0e33146069a6da4f8c1fb6c19dc295433eb3eba
+"@tamagui/types@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/types@npm:1.52.5"
+  checksum: ddf725fbdab7fd74af14f9f5067c16d93263b10afe307dfd8343be7418570350ec30a3a63aadb5da7f119ced6307fb2b3b5862334c9be8398fc397826a5fd582
   languageName: node
   linkType: hard
 
-"@tamagui/types@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/types@npm:1.43.15"
-  checksum: 4fa0e3b741d3c7cd1d71ec90815d35b3ee9799bbf2a8bbcb6294198dc0a09b58e41ce13486b6279f1a1237ee74fc08f4b80a1a7bd1d5ea2de904d26876fd0aa6
+"@tamagui/use-callback-ref@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-callback-ref@npm:1.52.5"
+  checksum: 342da16769f445a5d0d72afba97c8992e741bdfcfb5172b71d98387d4261b66d078e7916c0ffeb07a92f7911d69c5f272ae9fd9bb2f9e57e9addc6314304fae7
   languageName: node
   linkType: hard
 
-"@tamagui/use-constant@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-constant@npm:1.43.15"
+"@tamagui/use-constant@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-constant@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: b81f05516daa5ac2aa946cdddffd520d18e075a48e0c1b458f05ad7a4ac05b9ad6b59dd3f9a826cfcd7d0958b942cf84a184c48595ae6ef2ce538cb8bbc24aa0
+  checksum: 34085b8d2bac1b333ec860e05599a248a7ba25eeff594996134692832c35ced89dc614fb468d6b1edb6f16f5b6a2540fdc2b97065415c5e9c14811133a5ee826
   languageName: node
   linkType: hard
 
-"@tamagui/use-controllable-state@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-controllable-state@npm:1.43.15"
+"@tamagui/use-controllable-state@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-controllable-state@npm:1.52.5"
   dependencies:
-    "@tamagui/use-event": 1.43.15
+    "@tamagui/use-event": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 01a4d41483d8c2dffa290f1ea60f675ec65c4a5fbcce5e4af80712947cc008ae4b9ee01c8bcb30f6f0e4d6fce72637f9de170cb9265d7f3eb55ded5d2183564f
+  checksum: 6ab83bb27fe2d1ddcd331f97cfc92c6f0a6ac7d0015f0b805ccae3fce059a88c63ae88dd11d83531bee876d12cb69ab8bba8281b104db3eabd37e7259cf630a8
   languageName: node
   linkType: hard
 
-"@tamagui/use-debounce@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-debounce@npm:1.43.15"
+"@tamagui/use-debounce@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-debounce@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: a05d525794d6e87fce8e87ebf5327017a35e4e4366ddb2ae9a57be4d8f55a8d34b2e054e2cb8602905d70b1bd72099d7eaddaff5d470fbdbf0bba6dfa1f2c7e2
+  checksum: 84d6113aaf1da1b8132f5940800cf5c700774159781c23e7a628721025b3f1f0b05673a9086123ebc83c90a3f0e6a36a9b5f331993cb80ee273384b563b40905
   languageName: node
   linkType: hard
 
-"@tamagui/use-did-finish-ssr@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/use-did-finish-ssr@npm:1.43.13"
+"@tamagui/use-did-finish-ssr@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-did-finish-ssr@npm:1.52.5"
   dependencies:
-    "@tamagui/constants": 1.43.13
+    "@tamagui/constants": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: b461c11a192669e99695dda419fc77005ff7591b7c06a608095578e25e12d6d0a3c1316c72dc2a1d3fde617b7b73cf007a9363e84768791cb12605a956d3c29e
+  checksum: aa5b90dfa0ed67597301153ae9f726f2752a30024f12431b55526af69bb1129d993866743594d20c3742802b341f6039b3623002e4a90cde0f372874ca9b46e8
   languageName: node
   linkType: hard
 
-"@tamagui/use-did-finish-ssr@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-did-finish-ssr@npm:1.43.15"
+"@tamagui/use-direction@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-direction@npm:1.52.5"
+  peerDependencies:
+    react: "*"
+  checksum: 0992033ade1d75cdefc2eabcd3b9a3801f0a26e2070f4e3222654c528005a4b3f15593b67cb9f9de0dc82468f60670f61ca639e79642cbfe7e7d51e74886d693
+  languageName: node
+  linkType: hard
+
+"@tamagui/use-escape-keydown@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-escape-keydown@npm:1.52.5"
   dependencies:
-    "@tamagui/constants": 1.43.15
-  peerDependencies:
-    react: "*"
-  checksum: 2eee53f26788b9cfc16054c009038a0e559165b00534174d9e32eac2c4aa868fdfd451350050a382e16f298bc3e514a14f332786011a352af7f663e26b1be9c4
+    "@tamagui/use-callback-ref": 1.52.5
+  checksum: 3ff4be368f91198483c87d8ffc806528f576b24374ed8bbdbbc8f68e477b080447bd6c2275be5c259d7bb448b69b6cd3fb3d5bf08b0ca42c724009b8a4fb9fe0
   languageName: node
   linkType: hard
 
-"@tamagui/use-did-finish-ssr@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/use-did-finish-ssr@npm:1.52.4"
-  dependencies:
-    "@tamagui/constants": 1.52.4
+"@tamagui/use-event@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-event@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 60a9dc3dff21ac7784adf7f8e4423694b4073e17fb59f45db502761a23d43438869e0f6068b27d27ac78e38795c90daf9b64f31c124ddc8ae784b665891e4ec0
+  checksum: 343a4be7d86d99096d7e47ce943dd8a534f670c58c1a8505204f628c12e8dc5dc4d6ef30e551f8fffc9246fb098ca1a26447bf2a8bd1b73287c1a2f51766fb15
   languageName: node
   linkType: hard
 
-"@tamagui/use-direction@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-direction@npm:1.43.15"
+"@tamagui/use-force-update@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-force-update@npm:1.52.5"
   peerDependencies:
     react: "*"
-  checksum: 2863c7644536920ad3d43507053a222407a3e67938407d386eff8a415dbe9041c6a1c0c0fcdc3cd548796781d8704fa9aa90c5ada719253b6fa0fdcaf019c8c5
+  checksum: d1e2614c4ae25d2b7fe3c6cb411680d4034b706b660bd7e50e412b926ea831bc5fb226730829c53b88f3aeac22defe66e31fef4655b7dc92a98a67c098a7604d
   languageName: node
   linkType: hard
 
-"@tamagui/use-event@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/use-event@npm:1.43.13"
-  peerDependencies:
-    react: "*"
-  checksum: a7b385c2514a9ed17e7b3d81609d196b002a8828b6a49bb2571363547d60340f020d39379c3e5a15ea2fa992744b9e92b66329090e5bd76abe0632fff4f6c5ec
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-event@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-event@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: f62106dc8c7c5b6fd2ecc15bbd24218fea941ecc286ab85d788d4e9ffa173956654ab6df72213b8a4c4badbb8f35bdf4172af2453696e806d9b61e181debb989
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-event@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/use-event@npm:1.52.4"
-  peerDependencies:
-    react: "*"
-  checksum: 29b7511a0c97fde08048351aee83fde8619387277eba0af12d1a7ac04571f3661aaaa65e574a9a51a7be925318392a24bdd850dbf791e45663a383cb99bfeb98
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-force-update@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/use-force-update@npm:1.43.13"
-  peerDependencies:
-    react: "*"
-  checksum: 846863f9fac5b0f1bb66d27c52f302165a6b2cbbd1ae60b6963378367a183f2e0b624b6ef8f99e9be1178d45edd63e5499611b0885f9c0d695af279f231bc6bc
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-force-update@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-force-update@npm:1.43.15"
-  peerDependencies:
-    react: "*"
-  checksum: 61c649ecabf4f2023ebdb17b94ea6516acf685ed33a56f86707101fca717afe30d9d86a89b1c00237ad3f473eeb9f3d95e27c362ac4fcf7d68299e400ea02e02
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-force-update@npm:1.52.4":
-  version: 1.52.4
-  resolution: "@tamagui/use-force-update@npm:1.52.4"
-  peerDependencies:
-    react: "*"
-  checksum: bd1f95c2aa583cf7e637252a471808d83d908af9cefd9f1d6a4e765b9d6cf1dae9ca37dc511192c192935a0c7c2a3df87b704d81c6a02d8af909a7c83e68653b
-  languageName: node
-  linkType: hard
-
-"@tamagui/use-keyboard-visible@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-keyboard-visible@npm:1.43.15"
+"@tamagui/use-keyboard-visible@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-keyboard-visible@npm:1.52.5"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 9b98e8cc35d4285c9996ab0e8f629916ed69ea2c1c6b3d9e04aa691a856d76a76b25fc3239cb0ead741b321c105d99774f6e7e8c7d5f0008fdec4df48ecaeb37
+  checksum: ae89e1d67e58ae75f9de0c01fbf420c820ac748fdb5e2cbbe00cdd276887bf6c65b0b10ff310374b322c5de27536407ceea3f9e6d488d2f2b206699dd02f5f6a
   languageName: node
   linkType: hard
 
-"@tamagui/use-presence@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-presence@npm:1.43.15"
+"@tamagui/use-presence@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-presence@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.15
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: f29263866e14402c4f6e43b48af8235cd76bc7d27c97e37118bc1a262d2cb47bd9e52a334d8cdd875e207a1cbc855131d6326ee7a87efe08f2f50a0a8fb6f833
+  checksum: 64893f2d6c5a2687cafca7760bf6ef5cbe1eb63908010e0d2ea12a9b3dd83ceb69434e55c3be8099889eddb4d00ce24db7ef3fb3c6e329695e4688d4574a7f09
   languageName: node
   linkType: hard
 
-"@tamagui/use-window-dimensions@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/use-window-dimensions@npm:1.43.15"
+"@tamagui/use-previous@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-previous@npm:1.52.5"
+  checksum: 73fc8a02df7496739d9cb2abd77fde5baf35b5d56e75ec36e1db356c57b4a1470fc38bcd7ec5f03e460893a4fcae5962670140b0a5d00ee45ee510cc2e94b656
+  languageName: node
+  linkType: hard
+
+"@tamagui/use-window-dimensions@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/use-window-dimensions@npm:1.52.5"
   dependencies:
-    "@tamagui/constants": 1.43.15
+    "@tamagui/constants": 1.52.5
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ed22330d5ae28664b53ab7252778ab9ad841a2bd08669b39c4a2214a92f8e20d9e008fbe9e0f3d61bc2849f228f54fc5fa35189b88c0f6685ae10f3163e6e38b
+  checksum: 8fe402f7d408d64edf01e95d6510b75ffbc6f4f4d0c72ad2f30a13d86317de494ca3e91eb71a6e2fcbaf7f18bcd81d4ad38af14641f7270960d138010c62b2a8
   languageName: node
   linkType: hard
 
-"@tamagui/visually-hidden@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/visually-hidden@npm:1.43.15"
+"@tamagui/visually-hidden@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/visually-hidden@npm:1.52.5"
   dependencies:
-    "@tamagui/web": 1.43.15
+    "@tamagui/web": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: 245c4bbf782568ba6ba2c4d2e38778a3511b9566ce84237b5c0b6e88b62802a8c89d98ba432b4dfb334d9f73a546b0d26546a1afce36f6ff17aa5199e1197e6b
+  checksum: ad4c68788b4e95a2fa222eeee94c05ca81987edea6834385b812d9d978c3746d8b81bcea55e7d7dfa0d93b4eab3e96080d256479d2a48884a8cb6eaf1cb9de42
   languageName: node
   linkType: hard
 
-"@tamagui/vite-plugin@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/vite-plugin@npm:1.43.13"
+"@tamagui/vite-plugin@npm:1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/vite-plugin@npm:1.52.5"
   dependencies:
     "@bunchtogether/vite-plugin-flow": ^1.0.2
     "@rollup/plugin-babel": ^6.0.3
     "@rollup/plugin-commonjs": ^24.0.1
     "@rollup/plugin-node-resolve": ^15.0.1
-    "@tamagui/fake-react-native": 1.43.13
-    "@tamagui/proxy-worm": 1.43.13
-    "@tamagui/react-native-svg": 1.43.13
-    "@tamagui/static": 1.43.13
-    esbuild: ^0.17.17
+    "@tamagui/fake-react-native": 1.52.5
+    "@tamagui/proxy-worm": 1.52.5
+    "@tamagui/react-native-svg": 1.52.5
+    "@tamagui/static": 1.52.5
+    esbuild: ^0.19.0
     fs-extra: ^11.1.0
     lodash: ^4.17.21
     micromatch: ">=4.0.0"
     outdent: ^0.8.0
     rollup: ">=3.7.0"
-  checksum: 3084c5ec1655ad23a461991755423765d2fc47e0c62e3feaa85a81a3b85ce5f4c3b9100d867b95ecd7d318eded82099e220e77e6e4f2727932b9738b53f461c7
+  checksum: 8d1a8c951c34569fc54ebb479db2e9ee99af03e06ddc812f8c2c5d96d0ebf1cae71dcde6b04d85666cc4c257173ceae691e23e8f26fef05d729411d2b55c5312
   languageName: node
   linkType: hard
 
-"@tamagui/vite-plugin@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/vite-plugin@npm:1.43.15"
+"@tamagui/web@npm:1.52.5, @tamagui/web@npm:^1.52.5":
+  version: 1.52.5
+  resolution: "@tamagui/web@npm:1.52.5"
   dependencies:
-    "@bunchtogether/vite-plugin-flow": ^1.0.2
-    "@rollup/plugin-babel": ^6.0.3
-    "@rollup/plugin-commonjs": ^24.0.1
-    "@rollup/plugin-node-resolve": ^15.0.1
-    "@tamagui/fake-react-native": 1.43.15
-    "@tamagui/proxy-worm": 1.43.15
-    "@tamagui/react-native-svg": 1.43.15
-    "@tamagui/static": 1.43.15
-    esbuild: ^0.17.17
-    fs-extra: ^11.1.0
-    lodash: ^4.17.21
-    micromatch: ">=4.0.0"
-    outdent: ^0.8.0
-    rollup: ">=3.7.0"
-  checksum: 166b1c9ee91000afa059654522b894346d89cecb0c2c7425f2cd7c1736e4a429e931d32ae61405e1633e3599e0d162892cc5057f7a2bbb4a0c98749458068008
-  languageName: node
-  linkType: hard
-
-"@tamagui/web@npm:1.43.13":
-  version: 1.43.13
-  resolution: "@tamagui/web@npm:1.43.13"
-  dependencies:
-    "@tamagui/compose-refs": 1.43.13
-    "@tamagui/constants": 1.43.13
-    "@tamagui/helpers": 1.43.13
-    "@tamagui/normalize-css-color": 1.43.13
-    "@tamagui/use-did-finish-ssr": 1.43.13
-    "@tamagui/use-event": 1.43.13
-    "@tamagui/use-force-update": 1.43.13
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/constants": 1.52.5
+    "@tamagui/helpers": 1.52.5
+    "@tamagui/normalize-css-color": 1.52.5
+    "@tamagui/timer": 1.52.5
+    "@tamagui/use-did-finish-ssr": 1.52.5
+    "@tamagui/use-event": 1.52.5
+    "@tamagui/use-force-update": 1.52.5
   peerDependencies:
     react: "*"
-  checksum: ff17929495c0029f38c052bdec319e1547b65135ce2243226b0053dd4f33f5b53828fb1a3152216c6d13e1c43535e02177364090aad7c25eff9d3f82314ff3e8
-  languageName: node
-  linkType: hard
-
-"@tamagui/web@npm:1.43.15":
-  version: 1.43.15
-  resolution: "@tamagui/web@npm:1.43.15"
-  dependencies:
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/constants": 1.43.15
-    "@tamagui/helpers": 1.43.15
-    "@tamagui/normalize-css-color": 1.43.15
-    "@tamagui/use-did-finish-ssr": 1.43.15
-    "@tamagui/use-event": 1.43.15
-    "@tamagui/use-force-update": 1.43.15
-  peerDependencies:
-    react: "*"
-  checksum: 0eef844a79601558fc1318c3089eeac923aa19a01c1c418b3b4c1c4212334972c3c65b039349bc6e320053510b94e7f20b41736c404d50e9030c37566c1fc56d
-  languageName: node
-  linkType: hard
-
-"@tamagui/web@npm:^1.43.15":
-  version: 1.52.4
-  resolution: "@tamagui/web@npm:1.52.4"
-  dependencies:
-    "@tamagui/compose-refs": 1.52.4
-    "@tamagui/constants": 1.52.4
-    "@tamagui/helpers": 1.52.4
-    "@tamagui/normalize-css-color": 1.52.4
-    "@tamagui/timer": 1.52.4
-    "@tamagui/use-did-finish-ssr": 1.52.4
-    "@tamagui/use-event": 1.52.4
-    "@tamagui/use-force-update": 1.52.4
-  peerDependencies:
-    react: "*"
-  checksum: 83693785c00ac6fec4c206bb63ede602acf02a9ab6e1d2f32324e262560c2147883cf22c7e387f9b8e4d91368d9b552fbee91220b41b0c1d77f336ff1fe47111
+  checksum: 6e13b52ff82915f349e32fcc4af1b2f529523b82b3f5d788c0dff5d29e7ec8e0e5e994a54db44bb704d8f2924fd46ef29a1e6bd954b675f29bba38fedc09bac6
   languageName: node
   linkType: hard
 
@@ -9317,176 +8901,176 @@ __metadata:
   linkType: hard
 
 "@tiptap/core@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/core@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/core@npm:2.1.0"
   peerDependencies:
     "@tiptap/pm": ^2.0.0
-  checksum: 730aeb9cc6f9d97d0f0d932d775f1024b69c4f0fae0d96dfdd0454633ecc1fa1f2a81b5972f73b371f2aa2d0dc83d4cace2a294f9fc8c5c4fe3cdb898fe2486c
+  checksum: f0c25aa9d63fd3478258cac0ec8fdbcbb990d443e9e3a8e78c2cb065b7b50f34e32b3eed341c85686452de1e16572a9645c21b7a9c48f316e9ae33b3136b3f5f
   languageName: node
   linkType: hard
 
 "@tiptap/extension-bold@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-bold@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-bold@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: f21d39c8db27243e4dda63505cbf46c7c464920a7d891309bf745b6ec1b009f9021476a010bed6b67521d9ea83b53ecbfa7d23b272573f9bef9f1ae7b0977899
+  checksum: 9ad178d26acd585999db7e188c631e905c771652f2c7de923aed03973ee5b387e94c73bd831d8ace09882d6c5b372a99a8b07313e59c82a2a1c6b2a8de0a987f
   languageName: node
   linkType: hard
 
-"@tiptap/extension-bubble-menu@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@tiptap/extension-bubble-menu@npm:2.0.4"
+"@tiptap/extension-bubble-menu@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@tiptap/extension-bubble-menu@npm:2.1.0"
   dependencies:
     tippy.js: ^6.3.7
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: 91bf01f165159b699a88372a37b8e459541a9d479d391fd5b0cc48ef3a4d60e34315746cf91096bf474ba95427d6bdc8f6c9baae2b75fccb8e986925684081fd
+  checksum: 46a1ba6d51d0a76ec6063f39dc4f5f74e4d336b328e0eddbd3d14cc110bf183a6d563fe87dedbf50df210e28fd725eb51b357dde68cbe6df8d7c387206ac0c94
   languageName: node
   linkType: hard
 
 "@tiptap/extension-code@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-code@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-code@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: a64941ead723fd56942b1b94a30cdf3b8ef6749f98b5ea9fac99d341e4002af580b523fc1b7617b53b534f89a078bf118a1ba03f00ad06d3d79d3ff9db7494b2
+  checksum: d7c460d6a744413018bec6add8f1e42444458701548a564d9a060668bf6d837bd73e8c5a25089ba30a7eba2ab98dc7b6f0a4edaf6dead67037f7f56bd9c0a3c2
   languageName: node
   linkType: hard
 
 "@tiptap/extension-collaboration-cursor@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-collaboration-cursor@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-collaboration-cursor@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     y-prosemirror: 1.0.20
-  checksum: 4d5ff6f02c09f640041cb66910be092cfd731170d7ff826d3a223344ee3f28a31b9a70c5b2a0edcb6bb1e49eff42efd3aea95ae892eab99c6760a8a20e7b43ee
+  checksum: d7451ec7b550a51b4f8587b1ae75c1381910f9baf673657a1c9ed9fbfd98f9fb96e6b90cd31f56943df23d8a66f2d3e035c7689c0a4f510a6ffbe41b6a274381
   languageName: node
   linkType: hard
 
 "@tiptap/extension-collaboration@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-collaboration@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-collaboration@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
     y-prosemirror: 1.0.20
-  checksum: dcaddd8dbccec17ab2067245c3216808209cdcedd64401521728a35879dcdb435b4c1ce37ff19a1199c24fa284ea507464dee9265e12bba9aab2f303baa3dfcb
+  checksum: a7e75a94566568f50b27921d8db642bbf7ebc9e57279249a0df87c7cfa76e60cfd129b62e89251fc0a1228c145db06580f0648fae6ffa0398f7f0b4732390d1c
   languageName: node
   linkType: hard
 
 "@tiptap/extension-dropcursor@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-dropcursor@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-dropcursor@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: 01e9c5091594cb51e2f0ad73a4723eab839d20b0d6164d70d5a1393a29c33877d2475143cfc12b6a4d0f17b395f7ae805a61f5c38610aac29a56fbff06716131
+  checksum: e621686573c9d2dfdba7bda6b70ef2d325a84ac7f2b5fba6e0086da2e65e39a60c599a4c82eaf3952c970c37de8441bafd1ca206d22acbd9eceaf64f08f98128
   languageName: node
   linkType: hard
 
-"@tiptap/extension-floating-menu@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@tiptap/extension-floating-menu@npm:2.0.4"
+"@tiptap/extension-floating-menu@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@tiptap/extension-floating-menu@npm:2.1.0"
   dependencies:
     tippy.js: ^6.3.7
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: 39097fc0876aa792d27692662316c26b0cf141bbac1efc18f974ce76126c4b5afaebb95ec55f46e47409c2ac7ba5cac0d78e707f458522a8af7aa8e88fa25cb1
+  checksum: 97fab8e298df776e75d308814b7d15ed7a3004b824160cc8c558d6701e763269ccd8018e3e82e34a8ca95a94a69a8f8236a9fecac142ae75a5360b6afe122c4d
   languageName: node
   linkType: hard
 
 "@tiptap/extension-gapcursor@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-gapcursor@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-gapcursor@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: fd12d10d62db955968c9c33fe89fa5e7c6542cdb470af6801b4c03003a1b23c596adefeda6eb2906cfd243c2c2292c997358fca3ed51d3016d76900461ff8745
+  checksum: d89890fac9f0c6182e0b26bf326d4e78559b66294f76552f40d878e0f67759a7ce88ef666d4355a3e658a2a8e23a7043a5f6662a5320df43d4e7dc2eccf0fff9
   languageName: node
   linkType: hard
 
 "@tiptap/extension-hard-break@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-hard-break@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-hard-break@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: f230eaf169522dd1efeab32ce140126e5aded6bd65ebff16da0b01245e922efe129e1cfb204673762c62fdf2bf94721c89b366b6dd34773aad7febcf60bb153a
+  checksum: 10a98db10d1b42afea12780af5a8d2d96144bdd8d61201399b4dc616ef703a0ba66a19fd8d0e5f6f0c21150dca7d70eaa0b24fae209d758b2c8be8af60404abd
   languageName: node
   linkType: hard
 
 "@tiptap/extension-history@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-history@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-history@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: 18ee8211501cc8d0f0f64c70cae2aa96c155e823b18a6118942fcded231f24c9fe8a48dadef3446eca49e078867434159ec19ef18c71a66d3ad3d4aa1af07065
+  checksum: 407f80ebff1b5b6c943f81a225178d83932b27f70bd59cdb0a2e3177737fb37dc8e7c9915d11be37a4e377dc0582d9c10a30a214dfbac8a75687d73185cfd256
   languageName: node
   linkType: hard
 
 "@tiptap/extension-image@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-image@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-image@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: e4dac2f1993e6bf4c39b82a997d3250da5cc10e1840aaa3d417edb447b90458c9594cca2f85eddee2abae1792725a9625d97f67278ee3785633e7b21042ddc75
+  checksum: 802dad03e7f3e3363939a9f202dc4e214c3695a3b116153a6a8ebd608786f571ba54e5dddca136cc12200b1b730c5e9234fa88b4e49ca6a038757d0db128cce0
   languageName: node
   linkType: hard
 
 "@tiptap/extension-italic@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-italic@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-italic@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: 43a79fb91cbfdb09ae679eb089e547d47111eeb72f6cc4f26a3d19e443404c518408694bb411b56518a31d306d57fb52099c4025a14c005c6f2bb8798a591789
+  checksum: 7632f450a9191986e0581e9de48a6c49b622e873dbce1c7de4e5799971f64ebd1c42fe0e6d5e26482dcc7d87d239b595664def131390c99c5cdf93dd8f57ecd5
   languageName: node
   linkType: hard
 
 "@tiptap/extension-link@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-link@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-link@npm:2.1.0"
   dependencies:
     linkifyjs: ^4.1.0
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: fa15b3b039576af4f7cf72f63c4b5ec5014135bf22696dae6bf8def29b649377449cf57b858fe93fc2e2ed75b283a3f66d111bc8bf96095b9476f926f20b9773
+  checksum: 8897d1bfc7decf0a9e251e7aa320682773d972a758aa7d911388d6ad0c3a055ab40d1852cd1b190f8f214b5588de17eddee04b38edc0fd69c8d12afd25380e24
   languageName: node
   linkType: hard
 
 "@tiptap/extension-strike@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-strike@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-strike@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: aff8e28cf69a7a31a25591ff0d74378a0a7ad6e7221695febdb1bb1994a491797251023d9c105da963d5eaadf45c7069a3e570d4a8b1571c8876eefbb67301c5
+  checksum: 4ed85feb356b0ed1732654421cc38a10bdc2b7d4f9d1868ee05ff0929cd686613b9383196df412a041a9ef43003882f8f6c1a571afc04417f43ca8a49468d71a
   languageName: node
   linkType: hard
 
 "@tiptap/extension-text@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-text@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-text@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: 52306ac844a232dd39934a03e0fb5ce5e3bb89369f69237616da8875df38dc07ebc869299c52daaaf6f5f8d34da077fd4e6d0fff17d6b8b878b0708b41063df8
+  checksum: 07b89114d92cc0ecdd571d1348475b42d17b2e13c67c000b42f4232080d9e4c757fffd5e4b09c30a198161073487b0018fbff0c1c253330d7c04872807089dad
   languageName: node
   linkType: hard
 
 "@tiptap/extension-underline@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/extension-underline@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/extension-underline@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
-  checksum: 7717772f19037cb27c58fc3ee5cf8fd57c161d4e870211ce3cd450f5628b5338cc8c95f5ff4f3afa70b88d257e7d355cfaa085e2943eb4a6a2726427196d4063
+  checksum: c9e5a95826cd89975aca78b047cab5ff2302bd98f11e7f99cb7b08fe517677f99e41b5e1254cde4ec21b963b70d00c39e265d74f9ee910096cfa9fd6056f7132
   languageName: node
   linkType: hard
 
 "@tiptap/pm@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/pm@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/pm@npm:2.1.0"
   dependencies:
     prosemirror-changeset: ^2.2.0
     prosemirror-collab: ^1.3.0
@@ -9506,34 +9090,32 @@ __metadata:
     prosemirror-trailing-node: ^2.0.2
     prosemirror-transform: ^1.7.0
     prosemirror-view: ^1.28.2
-  peerDependencies:
-    "@tiptap/core": ^2.0.0
-  checksum: 73d7e8b91ea89f981cdbdcf92d5a2ad80d350c6c2f5dba6b7944bd4cd77a0932171971ac2d9be2cc8a11388b9721525b3cfe4e66b8067e13b9ea9ebb6248036d
+  checksum: 4fee352a8804384bdb0b58e083b5f1f8b6f9ba431b30d8a3dd6ae9181d1c42a86126703208f17ceee87a2e0036e998f673ad006b1f41e96dc57bb9dd8a19f71e
   languageName: node
   linkType: hard
 
 "@tiptap/react@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/react@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/react@npm:2.1.0"
   dependencies:
-    "@tiptap/extension-bubble-menu": ^2.0.4
-    "@tiptap/extension-floating-menu": ^2.0.4
+    "@tiptap/extension-bubble-menu": ^2.1.0
+    "@tiptap/extension-floating-menu": ^2.1.0
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
-  checksum: 65607e297b912f2a6e3414156961236e57c46c79284ab0bf976d527ba3f611b5c091357a0bb18c57cdd018160a353754205ef537fd049223ac32678b361aa735
+  checksum: 9611aa1e0e374fdc61fe04b479f7da27170a68a0577e166e9f45a47c99f4e59133f9e1b2e1165c164e54aa54bf9b9766b0f7327ac6cabf574f8ade4ea565b7c0
   languageName: node
   linkType: hard
 
 "@tiptap/suggestion@npm:^2.0.3":
-  version: 2.0.4
-  resolution: "@tiptap/suggestion@npm:2.0.4"
+  version: 2.1.0
+  resolution: "@tiptap/suggestion@npm:2.1.0"
   peerDependencies:
     "@tiptap/core": ^2.0.0
     "@tiptap/pm": ^2.0.0
-  checksum: 443b2f23569d1164b8146d5f791e63e6f1cde5dbbe30fe5eb64fd7be18aac87a9a3a8071c062f6d9381319650b1d7a950e20fb8e27b3e3e3dab7ea0a9d98e290
+  checksum: 20cb433eb05e91f8db1ec194df35758d97719cb69c9ed211b48af96c8b0e99c53459467c21f47f4ab60f82e75e491da83956bd615799319cce8c339d18969910
   languageName: node
   linkType: hard
 
@@ -9544,42 +9126,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trpc/client@npm:10.32.0":
-  version: 10.32.0
-  resolution: "@trpc/client@npm:10.32.0"
+"@trpc/client@npm:10.37.1, @trpc/client@npm:^10.37.1":
+  version: 10.37.1
+  resolution: "@trpc/client@npm:10.37.1"
   peerDependencies:
-    "@trpc/server": 10.32.0
-  checksum: b7855a864cfe28843f04cf83fe6e0c800924f4b57fb13776c1818f82a955cfc57316b5ed570c44d16b799ef9f8ae7cfdd462761f393841232affccff905d3fee
+    "@trpc/server": 10.37.1
+  checksum: 82fefed08717f7bf59a9013387c69a990de1d35c142519e1e8f29472cb8d16b6ce4d530d20d336e4a371993d93663e4ff7a86d1652a500a97e0632324df2e899
   languageName: node
   linkType: hard
 
-"@trpc/next@npm:10.32.0":
-  version: 10.32.0
-  resolution: "@trpc/next@npm:10.32.0"
+"@trpc/next@npm:10.37.1":
+  version: 10.37.1
+  resolution: "@trpc/next@npm:10.37.1"
   dependencies:
     react-ssr-prepass: ^1.5.0
   peerDependencies:
     "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.32.0
-    "@trpc/react-query": 10.32.0
-    "@trpc/server": 10.32.0
+    "@trpc/client": 10.37.1
+    "@trpc/react-query": 10.37.1
+    "@trpc/server": 10.37.1
     next: "*"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 5ca3811a0667191b92467aa7ec71baa3248eeb0b889641b8b26e9af25d82ac1e93e6b0f652cc42670fc97e650b825daec3394bb2c045153c971cfaa88756f60d
-  languageName: node
-  linkType: hard
-
-"@trpc/react-query@npm:10.32.0":
-  version: 10.32.0
-  resolution: "@trpc/react-query@npm:10.32.0"
-  peerDependencies:
-    "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.32.0
-    "@trpc/server": 10.32.0
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 5285f3d235c3e11cc8d842f22e17b762204def407b51f1acbb1583929f0afd11e2a57d5715548be8f1cc9bc6270d2473171d3d3a8b5b025fbcfb5be0bbf70dd2
+  checksum: b114d7552e8aa505c470df6a7280f7847297d8f66e67951028259eeedb7cc6ee9d2c7cbe3146875c56c6f167b2dd909c913c03982782a33421746898da92e196
   languageName: node
   linkType: hard
 
@@ -9593,6 +9162,19 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
   checksum: ccdd47253221f25b6a750aec4b35ea4ca5ab3d7df2d19b23ef4aa826881f8eaef20198c81cb375aa8c3179e0df7482ec631e9b4657d77894ad2810c17e966fa9
+  languageName: node
+  linkType: hard
+
+"@trpc/react-query@npm:^10.37.1":
+  version: 10.37.1
+  resolution: "@trpc/react-query@npm:10.37.1"
+  peerDependencies:
+    "@tanstack/react-query": ^4.18.0
+    "@trpc/client": 10.37.1
+    "@trpc/server": 10.37.1
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: c9047293041d36d833086782b837a2b9fefcb44329f2288e19acf38c4f3c38dc3c347bc8308286efb8b6f74538839aa637451f70b979de6e06503cf78d4af16e
   languageName: node
   linkType: hard
 
@@ -9611,17 +9193,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trpc/server@npm:10.32.0":
-  version: 10.32.0
-  resolution: "@trpc/server@npm:10.32.0"
-  checksum: 7e77d5b564734675cb6e394237238a18eb6ed2f92d03c45c3ad270e4b9c81486e53d1b0854fc3357390d68f4e0b94d66873ca5a6a6e4d7226f49c10caaf2bc2c
-  languageName: node
-  linkType: hard
-
 "@trpc/server@npm:10.35.0":
   version: 10.35.0
   resolution: "@trpc/server@npm:10.35.0"
   checksum: 4184f467193d04d25a747b34f6a29f2b10cb1e6c97463b584dfb20850170293578d3a239b3ef6adc0426d1254f21cc15e66d48fc1024efb8dad889ab80cffdd4
+  languageName: node
+  linkType: hard
+
+"@trpc/server@npm:^10.37.1":
+  version: 10.37.1
+  resolution: "@trpc/server@npm:10.37.1"
+  checksum: 0945bc60e1966f57c5944451a9a24b9d565f50e125e71369882379e6580de4ed2e2575a78c474709876d5e2e849fe0e133658c045484a230158516f59f23d7d7
   languageName: node
   linkType: hard
 
@@ -10146,12 +9728,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-native@npm:0.70.8":
-  version: 0.70.8
-  resolution: "@types/react-native@npm:0.70.8"
+"@types/react-native@npm:0.71.6":
+  version: 0.71.6
+  resolution: "@types/react-native@npm:0.71.6"
   dependencies:
     "@types/react": "*"
-  checksum: e951992178f0a6a2a5bc5312824ad67146594840c03ec51156022eacb23e8db7be7470d0c9ad61828dbae840e531bf0cf553205b9dc290b358091329746fd094
+  checksum: 067325c549e7181c73cdf8da1cb7bdef226124d91c3f72fcc2fb8b3c98a2d184f74a16ba627e3192253103bd651e8238d0e722b93f762b3f1a3f5b96773ec7a5
   languageName: node
   linkType: hard
 
@@ -11703,6 +11285,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"asynciterator.prototype@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "asynciterator.prototype@npm:1.0.0"
+  dependencies:
+    has-symbols: ^1.0.3
+  checksum: e8ebfd9493ac651cf9b4165e9d64030b3da1d17181bb1963627b59e240cdaf021d9b59d44b827dc1dde4e22387ec04c2d0f8720cf58a1c282e34e40cc12721b3
+  languageName: node
+  linkType: hard
+
 "asynckit@npm:^0.4.0":
   version: 0.4.0
   resolution: "asynckit@npm:0.4.0"
@@ -12554,9 +12145,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001406, caniuse-lite@npm:^1.0.30001517, caniuse-lite@npm:^1.0.30001520":
-  version: 1.0.30001520
-  resolution: "caniuse-lite@npm:1.0.30001520"
-  checksum: 59991ad8f36cf282f81abbcc6074c3097c21914cdd54bd2b3f73ac9462f57fc74e90371cd22bcdff4d085d09da42a07dcea384cb81e4ac260496e1bd79e1fe7c
+  version: 1.0.30001521
+  resolution: "caniuse-lite@npm:1.0.30001521"
+  checksum: be2a2b2cd3be03401887aaa31b89f3e7c6230289e6ef704e224268389cc136480fca502ac9e5001a65ff1e50459d3d95f8c4b2d39f878ab9843af3d6f372c8bb
   languageName: node
   linkType: hard
 
@@ -13698,16 +13289,6 @@ __metadata:
   bin:
     covector: bin/covector.js
   checksum: 0a8e8b54dce5f4d5ab2af08cfd1c6f40ac87bdc9d60a3e3f926c53e5ebbcafd72f91490b935d0ec8b9140ddaa8a76adc8ecfa94a0543761b19063c44c30e0071
-  languageName: node
-  linkType: hard
-
-"create-react-class@npm:^15.7.0":
-  version: 15.7.0
-  resolution: "create-react-class@npm:15.7.0"
-  dependencies:
-    loose-envify: ^1.3.1
-    object-assign: ^4.1.1
-  checksum: 0c5f43da705fa9f67ec289051dd5780792652d440dfa17cd2c7d8423c1f604609596f895dabf46fda1960ddd93ee96fe1b61ef4d55a94fc4271b07d515486714
   languageName: node
   linkType: hard
 
@@ -14956,9 +14537,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.477":
-  version: 1.4.491
-  resolution: "electron-to-chromium@npm:1.4.491"
-  checksum: 8d96c720c808a694b907b7a9d63da89f739374f90adb9db3d2b065a8e05de5548caf1b6ab0eade3150947cdefc962d342edc6d69c68ef489ecdd45e92a17677c
+  version: 1.4.492
+  resolution: "electron-to-chromium@npm:1.4.492"
+  checksum: 39ae22dd651a3daa210e8e8e42c9725c7019d95667413423da48253dd0a14dfd070ddb53a97eb98a60003a7790978b9093ab5c530671562f2d3e65888e1451f6
   languageName: node
   linkType: hard
 
@@ -15160,7 +14741,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-abstract@npm:^1.19.0, es-abstract@npm:^1.20.4, es-abstract@npm:^1.21.2":
+"es-abstract@npm:^1.19.0, es-abstract@npm:^1.20.4, es-abstract@npm:^1.21.2, es-abstract@npm:^1.21.3":
   version: 1.22.1
   resolution: "es-abstract@npm:1.22.1"
   dependencies:
@@ -15211,6 +14792,24 @@ __metadata:
   version: 1.0.0
   resolution: "es-array-method-boxes-properly@npm:1.0.0"
   checksum: 2537fcd1cecf187083890bc6f5236d3a26bf39237433587e5bf63392e88faae929dbba78ff0120681a3f6f81c23fe3816122982c160d63b38c95c830b633b826
+  languageName: node
+  linkType: hard
+
+"es-iterator-helpers@npm:^1.0.12":
+  version: 1.0.12
+  resolution: "es-iterator-helpers@npm:1.0.12"
+  dependencies:
+    asynciterator.prototype: ^1.0.0
+    es-abstract: ^1.21.3
+    es-set-tostringtag: ^2.0.1
+    function-bind: ^1.1.1
+    globalthis: ^1.0.3
+    has-proto: ^1.0.1
+    has-symbols: ^1.0.3
+    internal-slot: ^1.0.5
+    iterator.prototype: ^1.1.0
+    safe-array-concat: ^1.0.0
+  checksum: df1800a64be755e61718d2e62eef17c22590ed668c44eb3a5c9b78f874e8e01bfa7ba27a0f258b1322f577c2b2032fec194aa20912f7417ddc580c4ec31882e4
   languageName: node
   linkType: hard
 
@@ -15356,7 +14955,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.17.17, esbuild@npm:^0.17.5":
+"esbuild@npm:^0.17.5":
   version: 0.17.19
   resolution: "esbuild@npm:0.17.19"
   dependencies:
@@ -15787,13 +15386,14 @@ __metadata:
   linkType: hard
 
 "eslint-plugin-react@npm:^7.31.7":
-  version: 7.33.1
-  resolution: "eslint-plugin-react@npm:7.33.1"
+  version: 7.33.2
+  resolution: "eslint-plugin-react@npm:7.33.2"
   dependencies:
     array-includes: ^3.1.6
     array.prototype.flatmap: ^1.3.1
     array.prototype.tosorted: ^1.1.1
     doctrine: ^2.1.0
+    es-iterator-helpers: ^1.0.12
     estraverse: ^5.3.0
     jsx-ast-utils: ^2.4.1 || ^3.0.0
     minimatch: ^3.1.2
@@ -15807,7 +15407,7 @@ __metadata:
     string.prototype.matchall: ^4.0.8
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
-  checksum: 0427bd24acb87422b7298686203167123ba289ba563384983f3d99fad7817eae7f63157fd2e9b868bdcf0760719c319ab1e22a44764a98302034b0c844763e57
+  checksum: b4c3d76390b0ae6b6f9fed78170604cc2c04b48e6778a637db339e8e3911ec9ef22510b0ae77c429698151d0f1b245f282177f384105b6830e7b29b9c9b26610
   languageName: node
   linkType: hard
 
@@ -19103,6 +18703,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-async-function@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "is-async-function@npm:2.0.0"
+  dependencies:
+    has-tostringtag: ^1.0.0
+  checksum: e3471d95e6c014bf37cad8a93f2f4b6aac962178e0a5041e8903147166964fdc1c5c1d2ef87e86d77322c370ca18f2ea004fa7420581fa747bcaf7c223069dbd
+  languageName: node
+  linkType: hard
+
 "is-bigint@npm:^1.0.1":
   version: 1.0.4
   resolution: "is-bigint@npm:1.0.4"
@@ -19199,7 +18808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-date-object@npm:^1.0.1":
+"is-date-object@npm:^1.0.1, is-date-object@npm:^1.0.5":
   version: 1.0.5
   resolution: "is-date-object@npm:1.0.5"
   dependencies:
@@ -19276,6 +18885,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-finalizationregistry@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "is-finalizationregistry@npm:1.0.2"
+  dependencies:
+    call-bind: ^1.0.2
+  checksum: 4f243a8e06228cd45bdab8608d2cb7abfc20f6f0189c8ac21ea8d603f1f196eabd531ce0bb8e08cbab047e9845ef2c191a3761c9a17ad5cabf8b35499c4ad35d
+  languageName: node
+  linkType: hard
+
 "is-fullwidth-code-point@npm:^1.0.0":
   version: 1.0.0
   resolution: "is-fullwidth-code-point@npm:1.0.0"
@@ -19296,6 +18914,15 @@ __metadata:
   version: 3.0.0
   resolution: "is-fullwidth-code-point@npm:3.0.0"
   checksum: 44a30c29457c7fb8f00297bce733f0a64cd22eca270f83e58c105e0d015e45c019491a4ab2faef91ab51d4738c670daff901c799f6a700e27f7314029e99e348
+  languageName: node
+  linkType: hard
+
+"is-generator-function@npm:^1.0.10":
+  version: 1.0.10
+  resolution: "is-generator-function@npm:1.0.10"
+  dependencies:
+    has-tostringtag: ^1.0.0
+  checksum: d54644e7dbaccef15ceb1e5d91d680eb5068c9ee9f9eb0a9e04173eb5542c9b51b5ab52c5537f5703e48d5fddfd376817c1ca07a84a407b7115b769d4bdde72b
   languageName: node
   linkType: hard
 
@@ -19368,6 +18995,13 @@ __metadata:
   dependencies:
     tslib: ^2.0.3
   checksum: ba57dd1201e15fd9b590654736afccf1b3b68e919f40c23ef13b00ebcc639b1d9c2f81fe86415bff3e8eccffec459786c9ac9dc8f3a19cfa4484206c411c1d7d
+  languageName: node
+  linkType: hard
+
+"is-map@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "is-map@npm:2.0.2"
+  checksum: ace3d0ecd667bbdefdb1852de601268f67f2db725624b1958f279316e13fecb8fa7df91fd60f690d7417b4ec180712f5a7ee967008e27c65cfd475cc84337728
   languageName: node
   linkType: hard
 
@@ -19558,6 +19192,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-set@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "is-set@npm:2.0.2"
+  checksum: b64343faf45e9387b97a6fd32be632ee7b269bd8183701f3b3f5b71a7cf00d04450ed8669d0bd08753e08b968beda96fca73a10fd0ff56a32603f64deba55a57
+  languageName: node
+  linkType: hard
+
 "is-shared-array-buffer@npm:^1.0.2":
   version: 1.0.2
   resolution: "is-shared-array-buffer@npm:1.0.2"
@@ -19663,12 +19304,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-weakmap@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "is-weakmap@npm:2.0.1"
+  checksum: 1222bb7e90c32bdb949226e66d26cb7bce12e1e28e3e1b40bfa6b390ba3e08192a8664a703dff2a00a84825f4e022f9cd58c4599ff9981ab72b1d69479f4f7f6
+  languageName: node
+  linkType: hard
+
 "is-weakref@npm:^1.0.2":
   version: 1.0.2
   resolution: "is-weakref@npm:1.0.2"
   dependencies:
     call-bind: ^1.0.2
   checksum: 95bd9a57cdcb58c63b1c401c60a474b0f45b94719c30f548c891860f051bc2231575c290a6b420c6bc6e7ed99459d424c652bd5bf9a1d5259505dc35b4bf83de
+  languageName: node
+  linkType: hard
+
+"is-weakset@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "is-weakset@npm:2.0.2"
+  dependencies:
+    call-bind: ^1.0.2
+    get-intrinsic: ^1.1.1
+  checksum: 5d8698d1fa599a0635d7ca85be9c26d547b317ed8fd83fc75f03efbe75d50001b5eececb1e9971de85fcde84f69ae6f8346bc92d20d55d46201d328e4c74a367
   languageName: node
   linkType: hard
 
@@ -19804,16 +19462,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"iterator.prototype@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "iterator.prototype@npm:1.1.0"
+  dependencies:
+    define-properties: ^1.1.4
+    get-intrinsic: ^1.1.3
+    has-symbols: ^1.0.3
+    has-tostringtag: ^1.0.0
+    reflect.getprototypeof: ^1.0.3
+  checksum: 462fe16c770affeb9c08620b13fc98d38307335821f4fabd489f491d38c79855c6a93d4b56f6146eaa56711f61690aa5c7eb0ce8586c95145d2f665a3834d916
+  languageName: node
+  linkType: hard
+
 "jackspeak@npm:^2.0.3":
-  version: 2.2.3
-  resolution: "jackspeak@npm:2.2.3"
+  version: 2.3.0
+  resolution: "jackspeak@npm:2.3.0"
   dependencies:
     "@isaacs/cliui": ^8.0.2
     "@pkgjs/parseargs": ^0.11.0
   dependenciesMeta:
     "@pkgjs/parseargs":
       optional: true
-  checksum: 8add557045eb51f619d247ac9786dbfa7ee4d52a0eb3fb488c2637aecfd15d12c284a4ff7dead2c1aba34d6228d9452e4509fb771daae87793a48786b095ee07
+  checksum: 71bf716f4b5793226d4aeb9761ebf2605ee093b59f91a61451d57d998dd64bbf2b54323fb749b8b2ae8b6d8a463de4f6e3fedab50108671f247bbc80195a6306
   languageName: node
   linkType: hard
 
@@ -20477,14 +20148,14 @@ __metadata:
   linkType: hard
 
 "lib0@npm:^0.2.42, lib0@npm:^0.2.74":
-  version: 0.2.81
-  resolution: "lib0@npm:0.2.81"
+  version: 0.2.82
+  resolution: "lib0@npm:0.2.82"
   dependencies:
     isomorphic.js: ^0.2.4
   bin:
     0gentesthtml: bin/gentesthtml.js
     0serve: bin/0serve.js
-  checksum: 4f1f2ceb0b45533fe7bad7bb880b9078b60f15c0d40cee7bbd69cf746abe576b3a79b925230c3bcb5a78d009d40fc6da07bbfaab7d56c98d2c9316082f4449a0
+  checksum: 86316afe6f89674febfa3acd695e931290effbcaa61784fc916dc3c241247edd242e70f3b7154b1fcfa4fc4015c70f3946de3a56ac3a6aca5897ff7122e92d33
   languageName: node
   linkType: hard
 
@@ -21435,6 +21106,13 @@ __metadata:
   version: 4.0.3
   resolution: "memoize-one@npm:4.0.3"
   checksum: addd18c046542f57440ba70bf8ebd48663d17626cade681f777522ef70900a87ec72c5041bed8ece4f6d40a2cb58803bae388b50a4b740d64f36bcda20c147b7
+  languageName: node
+  linkType: hard
+
+"memoize-one@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "memoize-one@npm:6.0.0"
+  checksum: f185ea69f7cceae5d1cb596266dcffccf545e8e7b4106ec6aa93b71ab9d16460dd118ac8b12982c55f6d6322fcc1485de139df07eacffaae94888b9b3ad7675f
   languageName: node
   linkType: hard
 
@@ -22432,12 +22110,14 @@ __metadata:
     "@bufbuild/protoc-gen-connect-web": 0.8.6
     "@bufbuild/protoc-gen-es": 1.2.0
     "@manypkg/cli": 0.19.2
+    "@types/react-window": ^1.8.5
     "@typescript-eslint/eslint-plugin": ^6.3.0
     "@typescript-eslint/parser": ^6.3.0
     cross-env: 7.0.3
     eslint: ^8.47.0
     graphql-codegen: 0.4.0
     prettier: 2.8.7
+    react-window: ^1.8.9
     sort-package-json: ^2.5.1
     ts-node: 10.9.1
     typescript: 5.1.6
@@ -24472,13 +24152,13 @@ __metadata:
   linkType: hard
 
 "postcss@npm:^8.3.11, postcss@npm:^8.4.14, postcss@npm:^8.4.17, postcss@npm:^8.4.21, postcss@npm:^8.4.27":
-  version: 8.4.27
-  resolution: "postcss@npm:8.4.27"
+  version: 8.4.28
+  resolution: "postcss@npm:8.4.28"
   dependencies:
     nanoid: ^3.3.6
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
-  checksum: 1cdd0c298849df6cd65f7e646a3ba36870a37b65f55fd59d1a165539c263e9b4872a402bf4ed1ca1bc31f58b68b2835545e33ea1a23b161a1f8aa6d5ded81e78
+  checksum: f605c24a36f7e400bad379735fbfc893ccb8d293ad6d419bb824db77cdcb69f43d614ef35f9f7091f32ca588d130ec60dbcf53b366e6bf88a8a64bbeb3c05f6d
   languageName: node
   linkType: hard
 
@@ -24756,14 +24436,14 @@ __metadata:
   linkType: hard
 
 "prosemirror-menu@npm:^1.2.1":
-  version: 1.2.2
-  resolution: "prosemirror-menu@npm:1.2.2"
+  version: 1.2.3
+  resolution: "prosemirror-menu@npm:1.2.3"
   dependencies:
     crelt: ^1.0.0
     prosemirror-commands: ^1.0.0
     prosemirror-history: ^1.0.0
     prosemirror-state: ^1.0.0
-  checksum: 0cc5e6c62755148786320b8bf257acb6bcd3ed40cfbaf62f4b0d2ac978741dbfa2ccc88fe166906b4cae7dd6558019d2f972ef089f222eae8bebcce14079b6c4
+  checksum: 0ec5a480c1457faec4d9f8a2237e803cf4fa40b3bfdd0f14ab6a78b244eba485da75fc31c46c9fcadc658536bc00898e89a634852d4c134c53ec5cf9782530c0
   languageName: node
   linkType: hard
 
@@ -25180,7 +24860,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.2.0":
+"react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
   dependencies:
@@ -25373,94 +25053,65 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:13.4.0":
-  version: 13.4.0
-  resolution: "react-native-svg@npm:13.4.0"
+"react-native-svg@npm:^13.9.0":
+  version: 13.11.0
+  resolution: "react-native-svg@npm:13.11.0"
   dependencies:
     css-select: ^5.1.0
     css-tree: ^1.1.3
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e630c057d6a0947c4d729538f643585a1fd9380975c1cf9adffad7647822b35219a9e1e60407f422b2b70592ed7f7e8766fab15df74f9cfce0b1c8a1c3544676
+  checksum: b6969e8a425a9f05ca368ba6fb7ea2c1dd759e1659b9270b967555a77ac82df91d287689c963b295b8281a713044c49090435a04742c20203469605a16b38821
   languageName: node
   linkType: hard
 
-"react-native-web-internals@npm:1.43.13":
-  version: 1.43.13
-  resolution: "react-native-web-internals@npm:1.43.13"
+"react-native-web-internals@npm:1.52.5":
+  version: 1.52.5
+  resolution: "react-native-web-internals@npm:1.52.5"
   dependencies:
-    "@tamagui/normalize-css-color": 1.43.13
-    "@tamagui/react-native-use-pressable": 1.43.13
-    "@tamagui/react-native-use-responder-events": 1.43.13
-    "@tamagui/simple-hash": 1.43.13
+    "@tamagui/normalize-css-color": 1.52.5
+    "@tamagui/react-native-use-pressable": 1.52.5
+    "@tamagui/react-native-use-responder-events": 1.52.5
+    "@tamagui/simple-hash": 1.52.5
     styleq: ^0.1.3
   peerDependencies:
     react: "*"
-  checksum: 47241d85de5c444ab54f161d737af467dee6f628de761752f5cce61d9227266832d47897ffce7b1d801e309fcdd2e348e4f41f490971c521a4e0234347139c02
+  checksum: c044901d44b071824d3ea2b9c56ccb891e105bfd81fe69bcef6995aae1530cd826ac13a997a02f8988da45303943e7dda0151bad1df3379c96db2cef79592b88
   languageName: node
   linkType: hard
 
-"react-native-web-internals@npm:1.43.15":
-  version: 1.43.15
-  resolution: "react-native-web-internals@npm:1.43.15"
+"react-native-web-lite@npm:1.52.5":
+  version: 1.52.5
+  resolution: "react-native-web-lite@npm:1.52.5"
   dependencies:
-    "@tamagui/normalize-css-color": 1.43.15
-    "@tamagui/react-native-use-pressable": 1.43.15
-    "@tamagui/react-native-use-responder-events": 1.43.15
-    "@tamagui/simple-hash": 1.43.15
-    styleq: ^0.1.3
-  peerDependencies:
-    react: "*"
-  checksum: c23db434b2d9ba950d0e354a44ea3fc393cdb73bfec9c63991798772181f0931e7869cd123387d3cf2d6986dd1c87965bf121b940b4fecb4f07550eeb18bdc23
-  languageName: node
-  linkType: hard
-
-"react-native-web-lite@npm:1.43.13":
-  version: 1.43.13
-  resolution: "react-native-web-lite@npm:1.43.13"
-  dependencies:
-    "@tamagui/normalize-css-color": 1.43.13
+    "@tamagui/normalize-css-color": 1.52.5
     invariant: ^2.2.4
-    react-native-web-internals: 1.43.13
+    react-native-web-internals: 1.52.5
     styleq: ^0.1.3
   peerDependencies:
     react: "*"
     react-dom: "*"
-  checksum: 15083208afcc353f68724b1dea132eccf74ed66937836a69c7344afd3e1cbb2acbbb03b7bd17468acb20cf3fde9aabd17be446614930032168667cf33b53d529
+  checksum: 72354d030da499342b3879c50ebe0c38dc7a86799f5bd3c80190d9ea4f0488d06882909575843133c885de5dee28e433e05b25fefcbcd8e3cafec9d3d756624a
   languageName: node
   linkType: hard
 
-"react-native-web-lite@npm:1.43.15":
-  version: 1.43.15
-  resolution: "react-native-web-lite@npm:1.43.15"
-  dependencies:
-    "@tamagui/normalize-css-color": 1.43.15
-    invariant: ^2.2.4
-    react-native-web-internals: 1.43.15
-    styleq: ^0.1.3
-  peerDependencies:
-    react: "*"
-    react-dom: "*"
-  checksum: cfbbf102bd33587fba6aae117348454240b81b2f4d7ff558420283f0b75f6c15b491eda5efc01761f9ecbeec026dd2625755e8014ea22ebcf61399ea4ffb55d2
-  languageName: node
-  linkType: hard
-
-"react-native-web@npm:0.18.9":
-  version: 0.18.9
-  resolution: "react-native-web@npm:0.18.9"
+"react-native-web@npm:0.19.4":
+  version: 0.19.4
+  resolution: "react-native-web@npm:0.19.4"
   dependencies:
     "@babel/runtime": ^7.18.6
-    create-react-class: ^15.7.0
     fbjs: ^3.0.4
     inline-style-prefixer: ^6.0.1
+    memoize-one: ^6.0.0
     normalize-css-color: ^1.0.2
+    nullthrows: ^1.1.1
     postcss-value-parser: ^4.2.0
     styleq: ^0.1.2
   peerDependencies:
-    react: ^17.0.2 || ^18.0.0
-    react-dom: ^17.0.2 || ^18.0.0
-  checksum: 2cd2c08d8ff92bf969a54124d21f101e8d4645b1eb0625aeabccc70ba55b05c0d1fc6ab570b237417be674346d140edc387c5deac403050a9e1f1d87b15b2253
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: e8cf1f3d01a7d160bd02a28c90d239b1dcb7ee0661344c74b908cf205f9f1acf8dd87307cf1a1a30dfd4fe1604f49820f68e5cf721cd5e8693bd16e3d5a7e87b
   languageName: node
   linkType: hard
 
@@ -25927,6 +25578,20 @@ __metadata:
   dependencies:
     minimatch: ^3.0.5
   checksum: 88ec96e276237290607edc0872b4f9842837b95cfde0cdbb1e00ba9623dfdf3514d44cdd14496ab60a0c2dd180a6ef8a3f1c34599e6cf2273afac9b72a6fb2b5
+  languageName: node
+  linkType: hard
+
+"reflect.getprototypeof@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "reflect.getprototypeof@npm:1.0.3"
+  dependencies:
+    call-bind: ^1.0.2
+    define-properties: ^1.1.4
+    es-abstract: ^1.20.4
+    get-intrinsic: ^1.1.1
+    globalthis: ^1.0.3
+    which-builtin-type: ^1.1.3
+  checksum: 843e2506c013da66f83635f943c5bd41243bc6c7703298531cfb16eb6baaefd92f83031fa37140ad31c4edc86938b6eb385e6fc85bf1628e79348ed49e044f3d
   languageName: node
   linkType: hard
 
@@ -28230,78 +27895,79 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tamagui-loader@npm:1.43.15":
-  version: 1.43.15
-  resolution: "tamagui-loader@npm:1.43.15"
+"tamagui-loader@npm:1.52.5":
+  version: 1.52.5
+  resolution: "tamagui-loader@npm:1.52.5"
   dependencies:
-    "@tamagui/cli-color": 1.43.15
-    "@tamagui/static": 1.43.15
+    "@tamagui/cli-color": 1.52.5
+    "@tamagui/static": 1.52.5
+    esbuild-loader: ^3.0.1
     fs-extra: ^11.1.0
     loader-utils: ^3.2.1
     lodash: ^4.17.21
-  checksum: b78cfeeddbd66b8da19c05b73dc63a0e340248717babe1c80b307014db637238fe878ea0db2915f47c6dda556ed5dab2ed4f914f86d5c3521e0164cd2bd035cc
+  checksum: 025126ce56d8d49ccc3ea1c26b57275fd5de89f2297ec5e87d00df382ad1ccd2ed6e581017f1b3ee6c27c83b260177863bad72b9bdbc4b0350feaafa5c9bbe92
   languageName: node
   linkType: hard
 
-"tamagui@npm:1.43.15":
-  version: 1.43.15
-  resolution: "tamagui@npm:1.43.15"
+"tamagui@npm:1.52.5":
+  version: 1.52.5
+  resolution: "tamagui@npm:1.52.5"
   dependencies:
-    "@tamagui/accordion": 1.43.15
-    "@tamagui/adapt": 1.43.15
-    "@tamagui/alert-dialog": 1.43.15
-    "@tamagui/animate-presence": 1.43.15
-    "@tamagui/avatar": 1.43.15
-    "@tamagui/button": 1.43.15
-    "@tamagui/card": 1.43.15
-    "@tamagui/checkbox": 1.43.15
-    "@tamagui/compose-refs": 1.43.15
-    "@tamagui/core": 1.43.15
-    "@tamagui/create-context": 1.43.15
-    "@tamagui/dialog": 1.43.15
-    "@tamagui/fake-react-native": 1.43.15
-    "@tamagui/focusable": 1.43.15
-    "@tamagui/font-size": 1.43.15
-    "@tamagui/form": 1.43.15
-    "@tamagui/get-button-sized": 1.43.15
-    "@tamagui/get-font-sized": 1.43.15
-    "@tamagui/get-token": 1.43.15
-    "@tamagui/helpers": 1.43.15
-    "@tamagui/helpers-tamagui": 1.43.15
-    "@tamagui/image": 1.43.15
-    "@tamagui/label": 1.43.15
-    "@tamagui/linear-gradient": 1.43.15
-    "@tamagui/list-item": 1.43.15
-    "@tamagui/popover": 1.43.15
-    "@tamagui/popper": 1.43.15
-    "@tamagui/portal": 1.43.15
-    "@tamagui/progress": 1.43.15
-    "@tamagui/radio-group": 1.43.15
-    "@tamagui/react-native-media-driver": 1.43.15
-    "@tamagui/scroll-view": 1.43.15
-    "@tamagui/select": 1.43.15
-    "@tamagui/separator": 1.43.15
-    "@tamagui/shapes": 1.43.15
-    "@tamagui/sheet": 1.43.15
-    "@tamagui/slider": 1.43.15
-    "@tamagui/stacks": 1.43.15
-    "@tamagui/switch": 1.43.15
-    "@tamagui/tabs": 1.43.15
-    "@tamagui/text": 1.43.15
-    "@tamagui/theme": 1.43.15
-    "@tamagui/toggle-group": 1.43.15
-    "@tamagui/tooltip": 1.43.15
-    "@tamagui/use-controllable-state": 1.43.15
-    "@tamagui/use-debounce": 1.43.15
-    "@tamagui/use-event": 1.43.15
-    "@tamagui/use-force-update": 1.43.15
-    "@tamagui/use-window-dimensions": 1.43.15
-    "@tamagui/visually-hidden": 1.43.15
+    "@tamagui/accordion": 1.52.5
+    "@tamagui/adapt": 1.52.5
+    "@tamagui/alert-dialog": 1.52.5
+    "@tamagui/animate-presence": 1.52.5
+    "@tamagui/avatar": 1.52.5
+    "@tamagui/button": 1.52.5
+    "@tamagui/card": 1.52.5
+    "@tamagui/checkbox": 1.52.5
+    "@tamagui/compose-refs": 1.52.5
+    "@tamagui/core": 1.52.5
+    "@tamagui/create-context": 1.52.5
+    "@tamagui/dialog": 1.52.5
+    "@tamagui/fake-react-native": 1.52.5
+    "@tamagui/focusable": 1.52.5
+    "@tamagui/font-size": 1.52.5
+    "@tamagui/form": 1.52.5
+    "@tamagui/get-button-sized": 1.52.5
+    "@tamagui/get-font-sized": 1.52.5
+    "@tamagui/get-token": 1.52.5
+    "@tamagui/helpers": 1.52.5
+    "@tamagui/helpers-tamagui": 1.52.5
+    "@tamagui/image": 1.52.5
+    "@tamagui/label": 1.52.5
+    "@tamagui/linear-gradient": 1.52.5
+    "@tamagui/list-item": 1.52.5
+    "@tamagui/popover": 1.52.5
+    "@tamagui/popper": 1.52.5
+    "@tamagui/portal": 1.52.5
+    "@tamagui/progress": 1.52.5
+    "@tamagui/radio-group": 1.52.5
+    "@tamagui/react-native-media-driver": 1.52.5
+    "@tamagui/scroll-view": 1.52.5
+    "@tamagui/select": 1.52.5
+    "@tamagui/separator": 1.52.5
+    "@tamagui/shapes": 1.52.5
+    "@tamagui/sheet": 1.52.5
+    "@tamagui/slider": 1.52.5
+    "@tamagui/stacks": 1.52.5
+    "@tamagui/switch": 1.52.5
+    "@tamagui/tabs": 1.52.5
+    "@tamagui/text": 1.52.5
+    "@tamagui/theme": 1.52.5
+    "@tamagui/toggle-group": 1.52.5
+    "@tamagui/tooltip": 1.52.5
+    "@tamagui/use-controllable-state": 1.52.5
+    "@tamagui/use-debounce": 1.52.5
+    "@tamagui/use-event": 1.52.5
+    "@tamagui/use-force-update": 1.52.5
+    "@tamagui/use-window-dimensions": 1.52.5
+    "@tamagui/visually-hidden": 1.52.5
     reforest: ^0.12.1
   peerDependencies:
     react: "*"
     react-native-web: "*"
-  checksum: eb2506b7e2cf19cd106782c02e6a24617a203cefd2d6431785ce53f37c17357d8095b50187b8df29159ecda939e9909a934903668a501d9817b6a32573ca82b6
+  checksum: db89ca2cdb1b8b7c8bf694ff1a32eaafc13c5d9d605bac46c25ad9b8aed3aad53b303949b56b9358764987e168d29af53528f6b40b86e310e03c78294fbf61fb
   languageName: node
   linkType: hard
 
@@ -30541,6 +30207,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"which-builtin-type@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "which-builtin-type@npm:1.1.3"
+  dependencies:
+    function.prototype.name: ^1.1.5
+    has-tostringtag: ^1.0.0
+    is-async-function: ^2.0.0
+    is-date-object: ^1.0.5
+    is-finalizationregistry: ^1.0.2
+    is-generator-function: ^1.0.10
+    is-regex: ^1.1.4
+    is-weakref: ^1.0.2
+    isarray: ^2.0.5
+    which-boxed-primitive: ^1.0.2
+    which-collection: ^1.0.1
+    which-typed-array: ^1.1.9
+  checksum: 43730f7d8660ff9e33d1d3f9f9451c4784265ee7bf222babc35e61674a11a08e1c2925019d6c03154fcaaca4541df43abe35d2720843b9b4cbcebdcc31408f36
+  languageName: node
+  linkType: hard
+
+"which-collection@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "which-collection@npm:1.0.1"
+  dependencies:
+    is-map: ^2.0.1
+    is-set: ^2.0.1
+    is-weakmap: ^2.0.1
+    is-weakset: ^2.0.1
+  checksum: c815bbd163107ef9cb84f135e6f34453eaf4cca994e7ba85ddb0d27cea724c623fae2a473ceccfd5549c53cc65a5d82692de418166df3f858e1e5dc60818581c
+  languageName: node
+  linkType: hard
+
 "which-module@npm:^1.0.0":
   version: 1.0.0
   resolution: "which-module@npm:1.0.0"
@@ -30555,7 +30253,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which-typed-array@npm:^1.1.10, which-typed-array@npm:^1.1.11":
+"which-typed-array@npm:^1.1.10, which-typed-array@npm:^1.1.11, which-typed-array@npm:^1.1.9":
   version: 1.1.11
   resolution: "which-typed-array@npm:1.1.11"
   dependencies:
@@ -31141,6 +30839,13 @@ __metadata:
   version: 3.21.4
   resolution: "zod@npm:3.21.4"
   checksum: f185ba87342ff16f7a06686767c2b2a7af41110c7edf7c1974095d8db7a73792696bcb4a00853de0d2edeb34a5b2ea6a55871bc864227dace682a0a28de33e1f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.21.4":
+  version: 3.22.1
+  resolution: "zod@npm:3.22.1"
+  checksum: 05b62cc1069da6e6349ad2325ec6b7d0c00699f0796e0fd071bcc2b44ac711679e52ad00bc563019504c7e64bbf0bf73737f31366d882a856962cd6e2882cf0e
   languageName: node
   linkType: hard
 

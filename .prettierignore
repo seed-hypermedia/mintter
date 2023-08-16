@@ -33,7 +33,7 @@ exts/*
 frontend/apps/site/.next
 frontend/apps/site/.vercel
 frontend/apps/site/.tamagui
-frontend/apps/desktop/.tamagui
+frontend/apps/electron/.tamagui
 
 # Shared
 frontend/packages/shared/src/client/.generated

@@ -65,5 +65,11 @@ jobs:
           yarn build
           yarn desktop:package
 
+      - name: Validate desktop app
+        run: |
+          yarn build
+          yarn desktop:validate
+          yarn desktop:lint
+
       - name: Run desktop app tests
         run: yarn desktop:test
