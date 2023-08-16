@@ -74,5 +74,5 @@ runs:
       env:
         YARN_ENABLE_IMMUTABLE_INSTALLS: false
       run: |
-        yarn install --immutable --immutable-cache --check-cache
+        yarn
       shell: bash
