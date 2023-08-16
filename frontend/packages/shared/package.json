@@ -1,6 +1,6 @@
 {
   "name": "@mintter/shared",
-  "version": "workspace:*",
+  "version": "0.1.0",
   "description": "",
   "exports": {
     ".": "./dist",

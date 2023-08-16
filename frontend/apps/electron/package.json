@@ -30,7 +30,7 @@
     "@electron-forge/plugin-electronegativity": "^6.2.1",
     "@electron-forge/plugin-vite": "^6.2.1",
     "@playwright/test": "^1.36.1",
-    "@tamagui/vite-plugin": "1.43.15",
+    "@tamagui/vite-plugin": "^1.43.13",
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
     "electron": "25.3.0",
