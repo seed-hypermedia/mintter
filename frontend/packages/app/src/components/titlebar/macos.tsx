@@ -18,7 +18,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
       <XStack
         paddingHorizontal="$2"
         justifyContent="space-between"
-       
         className="window-drag"
       >
         <XStack
@@ -27,13 +26,11 @@ export default function TitleBarMacos(props: TitleBarProps) {
           flexBasis={0}
           alignItems="center"
           className="window-drag"
-         
         >
           <Container
             paddingLeft={72}
             alignItems="flex-start"
             className="window-drag"
-           
           >
             <XStack className="no-window-drag">
               <NavMenu />
@@ -45,7 +42,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
           <Title />
         </XStack>
         <XStack
-         
           className="window-drag"
           flex={1}
           justifyContent="flex-end"
