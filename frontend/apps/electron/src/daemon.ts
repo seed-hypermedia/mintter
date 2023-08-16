@@ -7,8 +7,10 @@ import {spawn} from 'child_process'
 import {app} from 'electron'
 import {join} from 'path'
 import {updateGoDaemonState} from './api'
+import {childLogger, log} from './logger'
+import {color} from 'console-log-colors'
 
-console.log('== BACKEND_HTTP_PORT', BACKEND_HTTP_PORT)
+const logger = childLogger(color.cyan('Go Daemon'))
 
 const LLVM_TRIPLES = {
   'darwin/x64': 'x86_64-apple-darwin',
@@ -29,8 +31,6 @@ const devDaemonBinaryPath = join(
   `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
 )
 
-console.log(`== ~ devDaemonBinaryPath:`, devDaemonBinaryPath)
-
 const prodDaemonBinaryPath = join(
   process.resourcesPath,
   `mintterd-${getPlatformTriple()}`,
@@ -43,79 +43,68 @@ let goDaemonExecutablePath =
     ? devDaemonBinaryPath
     : prodDaemonBinaryPath
 
-const daemonProcess = spawn(
-  goDaemonExecutablePath,
-  [
-    // daemon arguments
+const daemonArguments = [
+  '-http-port',
+  String(BACKEND_HTTP_PORT),
 
-    '-http-port',
-    String(BACKEND_HTTP_PORT),
+  '-grpc-port',
+  String(BACKEND_GRPC_PORT),
 
-    '-grpc-port',
-    String(BACKEND_GRPC_PORT),
+  '-p2p.port',
+  String(BACKEND_P2P_PORT),
 
-    '-p2p.port',
-    String(BACKEND_P2P_PORT),
-
-    '-repo-path',
-    userDataDir,
-  ],
-  {
-    // daemon env
-    cwd: devProjectRoot,
-    env: {
-      ...process.env,
-    },
-    stdio: 'pipe',
+  '-repo-path',
+  userDataDir,
+]
+logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)
+const daemonProcess = spawn(goDaemonExecutablePath, daemonArguments, {
+  // daemon env
+  cwd: devProjectRoot,
+  env: {
+    ...process.env,
   },
-)
+  stdio: 'pipe',
+})
 let expectingDaemonClose = false
 daemonProcess.on('error', (err) => {
-  console.error('[god] process error', err)
+  logger.error('Error:', err)
 })
 daemonProcess.on('close', (code, signal) => {
   if (!expectingDaemonClose) {
     updateGoDaemonState({t: 'error', message: 'Service Error: ' + lastStderr})
-    console.log('[god] daemon close', code, signal)
+    logger.error('Closed:', code, signal)
   }
 })
-daemonProcess.on('disconnect', () => {
-  console.log('[god] unexpected disconnect')
-})
 daemonProcess.on('spawn', () => {
-  console.log('[god] daemon launching')
+  logger.info('Spawned')
 })
 
 daemonProcess.stdout.on('data', (data) => {
   const multilineString = data.toString()
-  multilineString
-    .split('\n')
-    .forEach((msg) => msg && console.log('[god] ' + msg))
+  multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
 })
 let lastStderr = ''
 daemonProcess.stderr.on('data', (data) => {
   const multilineString = data.toString()
   lastStderr = multilineString
-  multilineString
-    .split('\n')
-    .forEach((msg) => msg && console.log('[god!] ' + msg))
+  multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
   if (multilineString.match('INFO') && multilineString.match('DaemonStarted')) {
     updateGoDaemonState({t: 'ready'})
   }
 })
 daemonProcess.stdout.on('error', (err) => {
-  console.error('[god] output error:', err)
+  logger.error('output error:', err)
 })
 daemonProcess.stderr.on('error', (err) => {
-  console.error('[god] output (stderr) error:', err)
+  logger.error('output (stderr) error:', err)
 })
 daemonProcess.stdout.on('close', (code, signal) => {
   if (!expectingDaemonClose)
-    console.error('[god] unexpected stdout close', code, signal)
+    logger.error('unexpected stdout close', code, signal)
 })
 
 app.addListener('will-quit', () => {
-  console.log('[Main] App will quit')
+  log('App will quit')
   expectingDaemonClose = true
   daemonProcess.kill()
 })

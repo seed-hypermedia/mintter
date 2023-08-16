@@ -24,20 +24,38 @@ import './root.css'
 import type {StateStream} from './stream'
 import {client} from './trpc'
 
+const logger = {
+  log: wrapLogger(console.log),
+  error: wrapLogger(console.error),
+}
+
+function wrapLogger(logFn: (...args: any[]) => void) {
+  return (...input: any[]) => {
+    logFn(
+      ...input.map((item) => {
+        if (typeof item === 'string') return item
+        try {
+          return JSON.stringify(item, null, 2)
+        } catch {}
+        return item // on main thread this will likely be rendered as [object Object]
+      }),
+    )
+  }
+}
 const trpcReact = createTRPCReact<AppRouter>()
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     let error = e
     if (e.message.match('stream.getReader is not a function')) {
       error = new Error('RPC broken, try running yarn and ./dev gen')
     }
-    console.error(`🚨 to ${req.method.name} `, req.message, error)
+    logger.error(`🚨 to ${req.method.name} `, req.message, error)
     throw error
   }
 }

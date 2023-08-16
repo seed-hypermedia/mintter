@@ -5239,7 +5239,9 @@ __metadata:
     "@trpc/server": ^10.37.1
     "@types/react": 18.0.37
     "@types/react-dom": 18.0.11
+    console-log-colors: ^0.4.0
     electron: 25.3.0
+    electron-log: ^4.4.8
     electron-playwright-helpers: ^1.6.0
     electron-store: ^8.1.0
     electron-trpc: ^0.5.2
@@ -13141,6 +13143,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"console-log-colors@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "console-log-colors@npm:0.4.0"
+  checksum: eeea75d242a1f299185953ea042e494e1712c7220a77ad0981049b0c28726f2249525b109e0432ab39a423cab1b0843c3563ed7c7f51f5c4c0ca713d0e36c693
+  languageName: node
+  linkType: hard
+
 "constant-case@npm:^2.0.0":
   version: 2.0.0
   resolution: "constant-case@npm:2.0.0"
@@ -14566,6 +14575,13 @@ __metadata:
   bin:
     electron-installer-redhat: src/cli.js
   conditions: (os=darwin | os=linux)
+  languageName: node
+  linkType: hard
+
+"electron-log@npm:^4.4.8":
+  version: 4.4.8
+  resolution: "electron-log@npm:4.4.8"
+  checksum: 5a7958f8fd9a5c95987e885ffe1c5b88be15bb41d348b65c92e2d8664519faddf17ce0208cd4e7027b0908f92fecedfbef246a45061f53e4a53b5d2201aafbd9
   languageName: node
   linkType: hard
 

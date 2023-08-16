@@ -47,6 +47,8 @@
     "@trpc/client": "10.37.1",
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
+    "console-log-colors": "^0.4.0",
+    "electron-log": "^4.4.8",
     "electron-store": "^8.1.0",
     "electron-trpc": "^0.5.2",
     "react": "18.2.0",

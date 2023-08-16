@@ -9,6 +9,7 @@ import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 import Store from 'electron-store'
 import {NavRoute} from '@mintter/app/src/utils/navigation'
+import {childLogger, error, log} from './logger'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -67,7 +68,7 @@ type AppWindow = {
 }
 
 const userData = app.getPath('userData')
-console.log('App UserData: ', userData)
+log('App UserData: ', userData)
 
 let windowsState: Record<string, AppWindow> = store.get('WindowState') || {}
 
@@ -134,7 +135,7 @@ mainMenu.append(
         click: () => {
           const focusedWindow = getFocusedWindow()
           if (!focusedWindow) {
-            console.error(
+            error(
               'No focused window to open quick switcher',
               focusedWindowKey,
               windowIdCount,
@@ -288,6 +289,16 @@ export const router = t.router({
           y: 12,
         },
       })
+      const windowLogger = childLogger(windowId)
+      browserWindow.webContents.on(
+        'console-message',
+        (e, level, message, line, sourceId) => {
+          if (level === 0) windowLogger.verbose(message)
+          else if (level === 1) windowLogger.info(message)
+          else if (level === 2) windowLogger.warn(message)
+          else windowLogger.error(message)
+        },
+      )
       function saveWindowPosition() {
         const bounds = browserWindow.getBounds()
         updateWindowState(windowId, (window) => ({...window, bounds}))
