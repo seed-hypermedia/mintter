@@ -52,6 +52,7 @@
     "@trpc/react": "9.27.4",
     "@trpc/react-query": "10.35.0",
     "@trpc/server": "10.35.0",
+    "console-log-colors": "^0.4.0",
     "electron-log": "beta",
     "electron-store": "8.1.0",
     "electron-trpc": "0.5.2",

@@ -6,12 +6,14 @@ import {
 import {
   BlockTypeDropdown,
   CreateLinkButton,
-  getBlockNoteTheme,
+  blockNoteToMantineTheme,
   NestBlockButton,
   ReactElementFactory,
   ToggledStyleButton,
   Toolbar,
   UnnestBlockButton,
+  darkDefaultTheme,
+  lightDefaultTheme
 } from '@mintter/app/src/blocknote-react'
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
@@ -40,10 +42,13 @@ export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
 export const formattingToolbarFactory = (
   staticParams: RequiredStaticParams,
 ) => {
+  const preferDark = window.matchMedia('(prefers-color-scheme: dark)')
+  .matches;
+
   return ReactElementFactory<any, any>(
     staticParams,
     FormattingToolbar,
-    getBlockNoteTheme(false),
+    blockNoteToMantineTheme(preferDark ? darkDefaultTheme : lightDefaultTheme),
     {
       animation: 'fade',
       placement: 'top-start',

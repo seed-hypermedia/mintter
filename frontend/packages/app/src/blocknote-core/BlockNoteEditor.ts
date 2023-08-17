@@ -23,6 +23,7 @@ import styles from './editor.module.css'
 import {
   Block,
   BlockIdentifier,
+  BlockNoteDOMAttributes,
   BlockSchema,
   PartialBlock,
 } from './extensions/Blocks/api/blockTypes'
@@ -39,6 +40,7 @@ import {
 import {Selection} from './extensions/Blocks/api/selectionTypes'
 import {getBlockInfoFromPos} from './extensions/Blocks/helpers/getBlockInfoFromPos'
 import {BaseSlashMenuItem, defaultSlashMenuItems} from './extensions/SlashMenu'
+import {mergeCSSClasses} from './shared/utils'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   linkExtensionOptions: any
@@ -67,11 +69,11 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
    */
   parentElement: HTMLElement
   /**
-   * An object containing attributes that should be added to the editor's HTML element.
+   * An object containing attributes that should be added to HTML elements of the editor.
    *
-   * @example { class: "my-editor-class" }
+   * @example { editor: { class: "my-editor-class" } }
    */
-  editorDOMAttributes: Record<string, string>
+  domAttributes: Partial<BlockNoteDOMAttributes>
   /**
    *  A callback function that runs when the editor is ready to be used.
    */
@@ -98,12 +100,6 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
    * @default true
    */
   defaultStyles: boolean
-  /**
-   * Whether to use the light or dark theme.
-   *
-   * @default "light"
-   */
-  theme: 'light' | 'dark'
 
   /**
    * A list of block types that should be available in the editor.
@@ -184,6 +180,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       linkExtensionOptions: newOptions.linkExtensionOptions,
       editor: this,
       editable: newOptions.editable,
+      domAttributes: newOptions.domAttributes || {},
       uiFactories: newOptions.uiFactories || {},
       slashCommands: newOptions.slashCommands || defaultSlashMenuItems,
       blockSchema: newOptions.blockSchema,
@@ -231,14 +228,13 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
           : [...(newOptions._tiptapOptions?.extensions || []), ...extensions],
       editorProps: {
         attributes: {
-          'data-theme': options.theme || 'light',
-          ...(newOptions.editorDOMAttributes || {}),
-          class: [
+          ...newOptions.domAttributes?.editor,
+          class: mergeCSSClasses(
             styles.bnEditor,
             styles.bnRoot,
             newOptions.defaultStyles ? styles.defaultStyles : '',
-            newOptions.editorDOMAttributes?.class || '',
-          ].join(' '),
+            newOptions.domAttributes?.editor?.class || '',
+          ),
         },
       },
     }

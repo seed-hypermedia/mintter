@@ -33,12 +33,12 @@
   },
   "repository": "github:mintterteam/mintter",
   "resolutions": {
-    "@types/react-native": "0.71.6",
+    "@types/react-native": "0.70.8",
     "react": "18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "18.2.0",
     "react-refresh": "0.14.0",
-    "react-native-svg": "^13.9.0",
-    "react-native-web": "0.19.4"
+    "react-native-svg": "13.4.0",
+    "react-native-web": "0.18.9"
   },
   "packageManager": "yarn@3.5.1",
   "workspaces": [
@@ -47,11 +47,6 @@
     "docs"
   ],
   "dependencies": {
-    "@manypkg/cli": "0.19.2",
-    "@types/react-window": "^1.8.5",
-    "react-window": "^1.8.9"
-  },
-  "devDependencies": {
     "@babel/runtime": "7.18.9",
     "@bufbuild/protoc-gen-connect-web": "0.8.6",
     "@bufbuild/protoc-gen-es": "1.2.0",

@@ -9,6 +9,7 @@ import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 import Store from 'electron-store'
 import {NavRoute} from '@mintter/app/src/utils/navigation'
+import {childLogger, error, log} from './logger'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -41,6 +42,23 @@ ipcMain.on('open_quick_switcher', (_event, info) => {
   getFocusedWindow()?.webContents.send('open_quick_switcher')
 })
 
+ipcMain.on('minimize_window', (_event, _info) => {
+  getFocusedWindow().minimize()
+})
+
+ipcMain.on('maximize_window', (_event, _info) => {
+  const window = getFocusedWindow()
+  if (window.isMaximized()) {
+    window.unmaximize()
+  } else {
+    window.maximize()
+  }
+})
+
+ipcMain.on('close_window', (_event, _info) => {
+  getFocusedWindow().close()
+})
+
 export const mainMenu = new Menu()
 
 type ReadyState = {t: 'ready'}
@@ -67,7 +85,7 @@ type AppWindow = {
 }
 
 const userData = app.getPath('userData')
-console.log('App UserData: ', userData)
+log('App UserData: ', userData)
 
 let windowsState: Record<string, AppWindow> = store.get('WindowState') || {}
 
@@ -134,7 +152,7 @@ mainMenu.append(
         click: () => {
           const focusedWindow = getFocusedWindow()
           if (!focusedWindow) {
-            console.error(
+            error(
               'No focused window to open quick switcher',
               focusedWindowKey,
               windowIdCount,
@@ -273,6 +291,7 @@ export const router = t.router({
       const browserWindow = new BrowserWindow({
         show: false,
         frame: false,
+        autoHideMenuBar: true,
         // width: 1200,
         // height: 800,
         ...bounds,
@@ -288,6 +307,16 @@ export const router = t.router({
           y: 12,
         },
       })
+      const windowLogger = childLogger(windowId)
+      browserWindow.webContents.on(
+        'console-message',
+        (e, level, message, line, sourceId) => {
+          if (level === 0) windowLogger.verbose(message)
+          else if (level === 1) windowLogger.info(message)
+          else if (level === 2) windowLogger.warn(message)
+          else windowLogger.error(message)
+        },
+      )
       function saveWindowPosition() {
         const bounds = browserWindow.getBounds()
         updateWindowState(windowId, (window) => ({...window, bounds}))

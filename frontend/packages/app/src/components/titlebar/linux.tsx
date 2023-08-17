@@ -23,6 +23,7 @@ import {useEffect, useState} from 'react'
 import {MintterIcon} from '../mintter-icon'
 import {
   AccountDropdownItem,
+  // NavMenu,
   PageActionButtons,
   PageContextButtons,
   SitesNavDropdownItems,
@@ -37,6 +38,7 @@ import {useIPC} from '@mintter/app/src/app-context'
 
 export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
+  const {send} = useIPC()
 
   useEffect(() => {
     const focus = () => setFocus(true)
@@ -62,27 +64,33 @@ export default function TitleBarLinux(props: TitleBarProps) {
             </span>
           </TitlebarSection>
           <TitlebarSection flex={1} alignItems="flex-end">
-            <CloseButton />
+            <XStack className="no-window-drag" marginLeft="auto">
+              <CloseButton />
+            </XStack>
           </TitlebarSection>
         </TitlebarRow>
       </TitlebarWrapper>
     )
   }
-
+  
   return (
-    <TitlebarWrapper data-has-focus={focus}>
+    <TitlebarWrapper data-has-focus={focus} className="window-drag">
       <TitlebarRow>
         <TitlebarSection>
           <MintterIcon />
-          <NavMenu />
-          <PageContextButtons {...props} />
+          <XStack className="no-window-drag">
+            <NavMenu />
+            <PageContextButtons {...props} />
+          </XStack>
         </TitlebarSection>
         <TitlebarSection flex={1}>
           <Title />
         </TitlebarSection>
         <TitlebarSection>
-          <PageActionButtons {...props} />
-          <XStack>
+          <XStack className="no-window-drag">
+            <PageActionButtons {...props} />
+          </XStack>
+          <XStack className="no-window-drag">
             <MinimizeButton />
             <MaximizeOrRestoreButton />
             <CloseButton />
@@ -293,9 +301,9 @@ function NavMenu() {
           <Separator />
 
           <MenuItem
-            title="Preferences"
+            title="Settings"
             accelerator="Ctrl+,"
-            onPress={() => invoke('open_preferences')}
+            onPress={() => spawn({key: 'settings'})}
           />
 
           <MenuItem

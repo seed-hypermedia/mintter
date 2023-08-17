@@ -24,20 +24,38 @@ import './root.css'
 import type {StateStream} from './stream'
 import {client} from './trpc'
 
+const logger = {
+  log: wrapLogger(console.log),
+  error: wrapLogger(console.error),
+}
+
+function wrapLogger(logFn: (...args: any[]) => void) {
+  return (...input: any[]) => {
+    logFn(
+      ...input.map((item) => {
+        if (typeof item === 'string') return item
+        try {
+          return JSON.stringify(item, null, 2)
+        } catch {}
+        return item // on main thread this will likely be rendered as [object Object]
+      }),
+    )
+  }
+}
 const trpcReact = createTRPCReact<AppRouter>()
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     let error = e
     if (e.message.match('stream.getReader is not a function')) {
       error = new Error('RPC broken, try running yarn and ./dev gen')
     }
-    console.error(`🚨 to ${req.method.name} `, req.message, error)
+    logger.error(`🚨 to ${req.method.name} `, req.message, error)
     throw error
   }
 }
@@ -47,26 +65,30 @@ const transport = createGrpcWebTransport({
   interceptors: import.meta.env.PROD ? undefined : [loggingInterceptor],
 })
 
-function useWindowUtils(): WindowUtils {
+function useWindowUtils(ipc: AppIPC): WindowUtils {
   // const win = getCurrent()
-  const [isMaximized, setIsMaximized] = useState<boolean | undefined>()
+  const [isMaximized, setIsMaximized] = useState<boolean | undefined>(false)
   const windowUtils = {
     maximize: () => {
-      toast.error('Not implemented maximize')
+      // toast.error('Not implemented maximize')
       setIsMaximized(true)
+      ipc.send('maximize_window')
       // win.maximize()
     },
     unmaximize: () => {
-      toast.error('Not implemented')
+      // toast.error('Not implemented')
       setIsMaximized(false)
+      ipc.send('maximize_window')
       // win.unmaximize()
     },
     close: () => {
-      toast.error('Not implemented')
+      // toast.error('Not implemented')
+      ipc.send('close_window')
       // win.close()
     },
     minimize: () => {
-      toast.error('Not implemented')
+      // toast.error('Not implemented')
+      ipc.send('minimize_window')
       // win.minimize()
     },
     hide: () => {
@@ -123,7 +145,7 @@ function MainApp({
 }) {
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
-  const windowUtils = useWindowUtils()
+  const windowUtils = useWindowUtils(ipc)
   // @ts-expect-error
   const initRoute = useStream<NavRoute>(window.initRoute)
   const initialNav = useMemo(() => {
