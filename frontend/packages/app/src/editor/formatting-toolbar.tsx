@@ -13,7 +13,7 @@ import {
   Toolbar,
   UnnestBlockButton,
   darkDefaultTheme,
-  lightDefaultTheme
+  lightDefaultTheme,
 } from '@mintter/app/src/blocknote-react'
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
@@ -42,8 +42,7 @@ export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
 export const formattingToolbarFactory = (
   staticParams: RequiredStaticParams,
 ) => {
-  const preferDark = window.matchMedia('(prefers-color-scheme: dark)')
-  .matches;
+  const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
   return ReactElementFactory<any, any>(
     staticParams,

@@ -1,3 +1,4 @@
+import {useAppContext} from '@mintter/app/src/app-context'
 import {
   Block,
   BlockNoteEditor,
@@ -7,9 +8,9 @@ import {
 import {getBlockInfoFromPos} from '@mintter/app/src/blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 import {insertOrUpdateBlock} from '@mintter/app/src/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems'
 import {
-  createReactBlockSpec,
   InlineContent,
   ReactSlashMenuItem,
+  createReactBlockSpec,
 } from '@mintter/app/src/blocknote-react'
 import {HDBlockSchema} from '@mintter/app/src/client/schema'
 import {
@@ -26,8 +27,7 @@ import {
 import {ChangeEvent, useEffect, useState} from 'react'
 import {RiImage2Fill} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
-import { useAppContext } from '@mintter/app/src/app-context'
-import { toast } from '../toast'
+import {toast} from '../toast'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -72,7 +72,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-
   const assignFile = (newImage: ImageType) => {
     editor.updateBlock(block.id, {props: {...block.props, ...newImage.props}})
     editor.setTextCursorPosition(block.id, 'end')
@@ -165,8 +164,8 @@ function ImageComponent({
           setReplace(false)
         }}
         onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault()
+          e.stopPropagation()
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const file = Array.from(e.dataTransfer.files)[0]
@@ -179,23 +178,23 @@ function ImageComponent({
           }
         }}
         onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault()
+          e.stopPropagation()
         }}
         onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true);
+            setSelected(true)
           }
         }}
         onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false);
+            setSelected(false)
           }
         }}
         borderWidth={0}
@@ -282,7 +281,11 @@ function ImageForm({
       setFileName({
         name:
           largeFileIndex > 0
-            ? `The size of ${largeFile.name.length < 36 ? largeFile.name : largeFile.name.slice(0, 32) + '...'} exceeds 60 MB.`
+            ? `The size of ${
+                largeFile.name.length < 36
+                  ? largeFile.name
+                  : largeFile.name.slice(0, 32) + '...'
+              } exceeds 60 MB.`
             : 'The image size exceeds 60 MB.',
         color: 'red',
       })
@@ -481,19 +484,29 @@ function ImageForm({
                 >
                   <XStack
                     flex={1}
-                    backgroundColor={drag ? "lightgrey" : "white"}
+                    backgroundColor={drag ? 'lightgrey' : 'white'}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                       if (drag) setDrag(false)
-                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                        let isImage = true;
+                      if (
+                        e.dataTransfer.files &&
+                        e.dataTransfer.files.length > 0
+                      ) {
+                        let isImage = true
                         const files = Array.from(e.dataTransfer.files)
                         files.forEach((file) => {
                           if (!file.type.includes('image/')) {
-                            setFileName({ name: `File ${file.name.length < 36 ? file.name : file.name.slice(0, 32) + '...'} is not an image.`, color: 'red' })
-                            isImage = false;
+                            setFileName({
+                              name: `File ${
+                                file.name.length < 36
+                                  ? file.name
+                                  : file.name.slice(0, 32) + '...'
+                              } is not an image.`,
+                              color: 'red',
+                            })
+                            isImage = false
                             return
                           }
                         })
@@ -502,23 +515,29 @@ function ImageForm({
                       }
                     }}
                     onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                     }}
                     onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-                        setDrag(true);
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (
+                        !relatedTarget ||
+                        !e.currentTarget.contains(relatedTarget)
+                      ) {
+                        setDrag(true)
                       }
                     }}
                     onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-                        setDrag(false);
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (
+                        !relatedTarget ||
+                        !e.currentTarget.contains(relatedTarget)
+                      ) {
+                        setDrag(false)
                       }
                     }}
                   >

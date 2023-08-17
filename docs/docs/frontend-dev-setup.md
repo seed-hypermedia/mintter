@@ -1,13 +1,13 @@
 # Frontend Development Setup
 
-The Mintter Frontend architecture is based on a [pnpm](https://pnpm.io) workspace. Currently we have this packages:
+The Mintter Frontend architecture is based on a [yarn](https://yarnpkg.com) workspace. Currently we have this packages:
 
 1. App Package: for the desktop app code lives
 2. Gateway: for the gateway code
 3. Shared: for the shared API-related code
 4. UI (soon): for all the design system/common UI building blocks for all the Mintter applications
 
-After you [setup the project](./dev-setup) on your local machine, you should have `pnpm` available, so no need to install it globally.
+After you [setup the project](./dev-setup) on your local machine, you should have `yarn` available, so no need to install it globally.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ Please make sure that after you enter the repo root path, you see something simi
 
 ![dev-setup-root-terminal.png](./assets/dev-setup-root-terminal.png)
 
-After this is correct, you should run `pnpm install` (or `pnpm i`) to install all the frontend packages.
+After this is correct, you should run `yarn install` (or `yarn`) to install all the frontend packages.
 
 ## Run the Desktop app locally
 

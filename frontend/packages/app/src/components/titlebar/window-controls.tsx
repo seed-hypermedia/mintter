@@ -19,7 +19,6 @@ export function MaximizeOrRestoreButton() {
   const theme = useTheme()
 
   if (isMaximized === undefined) return null
-  
 
   let name: string
   let path: string
@@ -51,14 +50,14 @@ export function MaximizeOrRestoreButton() {
       color="red"
       icon={
         <svg
-        aria-hidden="true"
-        version="1.1"
-        viewBox="0 0 10 10"
-        width={10}
-        height={10}
-      >
-        <path fill={theme.color.variable} d={path} />
-      </svg>
+          aria-hidden="true"
+          version="1.1"
+          viewBox="0 0 10 10"
+          width={10}
+          height={10}
+        >
+          <path fill={theme.color.variable} d={path} />
+        </svg>
       }
     />
   )

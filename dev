@@ -68,65 +68,84 @@ def main():
         if len(targets_to_gen) == 0:
             return
         return run("plz run parallel " + " ".join(targets_to_gen))
-
-    @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
-    def build_backend(args):
-        return run("plz build //backend:mintterd")
-
-    @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
-    def build_frontend(args):
-        run("plz build //:yarn")
-        return run("yarn desktop:prod")
-
+    
+    @cmd(cmds, "run-desktop", "Run frontend desktop app for development.")
+    def run_desktop(args):
+        run("./scripts/cleanup-desktop.sh")
+        run("yarn install")
+        run("yarn build")
+        run("plz build //backend:mintterd //:yarn")
+        return run("yarn desktop", args=args)
+    
     @cmd(
-        cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
+        cmds, "build-desktop", "Builds the desktop app for the current platform."
     )
     def build_desktop(args):
+        run("./scripts/cleanup-frontend.sh")
+        run("./scripts/cleanup-desktop.sh")
+        run("yarn install")
+        run("yarn build")
         run("plz build //backend:mintterd //:yarn")
-        run("cargo tauri build --debug")
+        run("yarn desktop:make")
 
-    @cmd(cmds, "build-app", "Builds the desktop app for the current platform.")
-    def build_app(args):
-        run("rm -rf frontend/apps/electron/out")
-        run("rm -rf frontend/apps/electron/.vite")
-        run("plz build //backend:mintterd //:yarn")
-        run("yarn electron:package")
-
-    @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
-    def ping_p2p(args):
-        return run("plz run //backend:pingp2p", args=args)
-
-    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
-    def run_gateway(args):
-        return run("plz run //backend:minttergw", args=args)
-
-    @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
-    def run_backend(args):
-        return run("plz run //backend:mintterd", args=args)
-
-    @cmd(cmds, "run-frontend", "Run frontend web app for development.")
-    def run_frontend(args):
-        run("plz build //:yarn")
-        return run("yarn desktop", args=args)
-
-    @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
-    def run_frontend(args):
+    @cmd(
+        cmds, "validate-desktop", "Formats, Validates and test the desktop app"
+    )
+    def validate_desktop(args):
+        run("yarn desktop:format")
+        run("yarn desktop:validate")
+        run("yarn desktop:lint")
+        run("yarn desktop:make")
+        run("yarn desktop:test")
+    
+    
+    @cmd(cmds, "run-site", "Run sites app for development.")
+    def run_site(args):
+        run("./scripts/cleanup-site.sh")
+        run("yarn install")
         run("plz build //:yarn")
         return run(
             "yarn site",
             args=args,
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
+    
+    @cmd(cmds, "build-site", "Build site app for production.")
+    def build_site(args):
+        run("./scripts/cleanup-frontend.sh")
+        run("./scripts/cleanup-site.sh")
+        run("yarn install")
+        run("plz build //:yarn")
+        return run(
+            "yarn site:prod",
+            args=args,
+            # env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
+        )
+    
+    @cmd(
+        cmds, "validate-site", "Formats, Validates and test the site app"
+    )
+    def validate_site(args):
+        run("yarn site:format")
+        run("yarn site:validate")
+        run("yarn site:lint")
+        run("yarn site:test")
 
-    @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
-    def run_desktop(args):
-        run("plz build //backend:mintterd //:yarn")
-        return run("yarn tauri:dev", args=args)
+    @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
+    def run_backend(args):
+        return run("plz run //backend:mintterd", args=args)
+    
+    @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
+    def build_backend(args):
+        return run("plz build //backend:mintterd")
 
-    @cmd(cmds, "run-app", "Run desktop app for development.")
-    def run_app(args):
-        run("plz build //backend:mintterd //:yarn")
-        return run("yarn electron", args=args)
+    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
+    def run_gateway(args):
+        return run("plz run //backend:minttergw", args=args)
+
+    @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
+    def ping_p2p(args):
+        return run("plz run //backend:pingp2p", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):

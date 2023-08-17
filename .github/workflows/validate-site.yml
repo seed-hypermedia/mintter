@@ -1,0 +1,54 @@
+name: Validate + Test Site code
+
+on:
+  push:
+    branches:
+      - master
+      - electron-ci
+    paths:
+      - '.github/workflows/validate-site.yml'
+      - 'frontend/apps/site/**'
+      - 'frotend/packages/shared/**'
+      - 'frotend/packages/ui/**'
+      - 'package.json'
+      - 'frontend/apps/site/package.json'
+  pull_request:
+    paths:
+      - '.github/workflows/validate-site.yml'
+      - 'frontend/apps/site/**'
+      - 'frotend/packages/**'
+      - 'package.json'
+      - 'frontend/apps/site/package.json'
+    branches-ignore:
+      - 'renovate/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-test-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install Frontend Dependencies
+        env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+        run: |
+          yarn
+
+      - name: Validate Code
+        run: |
+          yarn build
+          yarn site:validate
+          yarn site:lint
+
+      - name: Run Site tests
+        run: yarn site:test

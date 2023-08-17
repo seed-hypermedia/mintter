@@ -72,9 +72,13 @@ export default function TitleBarLinux(props: TitleBarProps) {
       </TitlebarWrapper>
     )
   }
-  
+
   return (
-    <TitlebarWrapper data-has-focus={focus} className="window-drag" data-tauri-drag-region>
+    <TitlebarWrapper
+      data-has-focus={focus}
+      className="window-drag"
+      data-tauri-drag-region
+    >
       <TitlebarRow data-tauri-drag-region>
         <TitlebarSection data-tauri-drag-region>
           <MintterIcon />
@@ -83,7 +87,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
             <PageContextButtons {...props} />
           </XStack>
         </TitlebarSection>
-        <TitlebarSection flex={1} data-tauri-drag-region>
+        <TitlebarSection flex={1}>
           <Title />
         </TitlebarSection>
         <TitlebarSection data-tauri-drag-region>

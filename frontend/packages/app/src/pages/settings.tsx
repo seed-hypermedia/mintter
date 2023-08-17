@@ -127,13 +127,13 @@ export default function Settings({}: {}) {
         <ProfileInfo />
         <DevicesInfo />
       </TabsContent>
-      <TabsContent value="settings" data-tauri-drag-region>
+      <TabsContent value="settings">
         <AppSettings />
       </TabsContent>
-      <TabsContent value="sites" data-tauri-drag-region>
+      <TabsContent value="sites">
         <SitesSettings />
       </TabsContent>
-      <TabsContent value="wallets" data-tauri-drag-region>
+      <TabsContent value="wallets">
         <WalletsSettings />
       </TabsContent>
     </Tabs>
@@ -366,30 +366,6 @@ function AppSettings() {
           >
             {import.meta.env.PACKAGE_VERSION}
           </SizableText>
-        </TableList.Item>
-        <Separator />
-
-        <TableList.Item>
-          <SizableText
-            size="$1"
-            flex={0}
-            width={80}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Tauri version
-          </SizableText>
-          <YStack flex={1} position="relative">
-            <SizableText
-              size="$1"
-              width="100%"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              userSelect="text"
-            >
-              {import.meta.env.TAURI_PLATFORM_VERSION}
-            </SizableText>
-          </YStack>
         </TableList.Item>
       </TableList>
       <Separator />

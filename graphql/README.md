@@ -23,14 +23,9 @@ Based on the [GraphQL Schema](./schema.graphql) we generate all the Typescript
 Types using
 [graphql-codegen](https://github.com/dotansimha/graphql-code-generator).
 
-```bash
-cd <PROJECT_ROOT>
-pnpm codegen
-```
-
 The above command generates a `types.d.ts` file in
-`frontend/packages/shared/src/client/.generated` (checkout [codegen.yml](../codegen.yml) for
-more info about the config.)
+`frontend/packages/shared/src/client/.generated` (checkout
+[codegen.yml](../codegen.yml) for more info about the config.)
 
 ### Additional Resources
 

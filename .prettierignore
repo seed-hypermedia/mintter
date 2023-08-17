@@ -4,7 +4,6 @@ node_modules
 # build code
 build
 dist
-src-tauri
 public
 out
 plz-out
@@ -34,6 +33,7 @@ frontend/apps/site/.next
 frontend/apps/site/.vercel
 frontend/apps/site/.tamagui
 frontend/apps/desktop/.tamagui
+frotnend/apps/desktop/out
 
 # Shared
 frontend/packages/shared/src/client/.generated

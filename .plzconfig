@@ -2,19 +2,19 @@
 SelfUpdate = false
 
 [parse]
-BuildFileName = "BUILD.plz"
-GitFunctions = true
-BuildDefsDir = "build/rules"
 BlacklistDirs = "node_modules"
 BlacklistDirs = "target"
 BlacklistDirs = "third_party"
+BuildDefsDir = "build/rules"
+BuildFileName = "BUILD.plz"
+GitFunctions = true
 
 [build]
-ExitOnError = true
-Path = "/bin:/usr/bin"
 PassUnsafeEnv = "WORKSPACE" ; This is expected to be set via nix-shell to point to the absolute path to the workspace. Needed to do some nasty but useful work around.
+ExitOnError = true
 PassUnsafeEnv = "NIX_SSL_CERT_FILE"
 PassUnsafeEnv = "NIX_PATH"
+Path = "/bin:/usr/bin"
 
 [cache]
 Dir = ".plz-cache"
@@ -26,5 +26,3 @@ DirClean = true
 go-tool = //build/nix:go
 md5sum-tool = //build/nix:md5sum
 yarn-tool = //build/nix:yarn
-cargo-tool = //build/nix:cargo
-rustc-tool = //build/nix:rustc

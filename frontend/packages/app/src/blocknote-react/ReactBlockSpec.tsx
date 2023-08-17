@@ -19,7 +19,7 @@ import {
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import { createContext, ElementType, FC, HTMLProps, useContext } from "react";
+import {createContext, ElementType, FC, HTMLProps, useContext} from 'react'
 
 // extend BlockConfig but use a React render function
 export type ReactBlockConfig<
@@ -41,33 +41,33 @@ export type ReactBlockConfig<
   }>
 }
 
-const BlockNoteDOMAttributesContext = createContext<BlockNoteDOMAttributes>({});
+const BlockNoteDOMAttributesContext = createContext<BlockNoteDOMAttributes>({})
 
 export const InlineContent = <Tag extends ElementType>(
   props: {as?: Tag} & HTMLProps<Tag>,
 ) => {
   const inlineContentDOMAttributes =
-    useContext(BlockNoteDOMAttributesContext).inlineContent || {};
+    useContext(BlockNoteDOMAttributesContext).inlineContent || {}
 
   const classNames = mergeCSSClasses(
-    props.className || "",
+    props.className || '',
     // @ts-expect-error
     blockStyles.inlineContent,
-    inlineContentDOMAttributes.class
-  );
+    inlineContentDOMAttributes.class,
+  )
 
   return (
     <NodeViewContent
       {...Object.fromEntries(
         Object.entries(inlineContentDOMAttributes).filter(
-          ([key]) => key !== "class"
-        )
+          ([key]) => key !== 'class',
+        ),
       )}
       {...props}
       className={classNames}
     />
-  );
-};
+  )
+}
 
 // A function to create custom block for API consumers
 // we want to hide the tiptap node from API consumers and provide a simpler API surface instead
@@ -82,8 +82,8 @@ export function createReactBlockSpec<
   const node = createTipTapBlock<
     BType,
     {
-      editor: BlockNoteEditor<BSchema>;
-      domAttributes?: BlockNoteDOMAttributes;
+      editor: BlockNoteEditor<BSchema>
+      domAttributes?: BlockNoteDOMAttributes
     }
   >({
     name: blockConfig.type,
@@ -108,7 +108,7 @@ export function createReactBlockSpec<
 
         // Add custom HTML attributes
         const blockContentDOMAttributes =
-          this.options.domAttributes?.blockContent || {};
+          this.options.domAttributes?.blockContent || {}
 
         // Add props as HTML attributes in kebab-case with "data-" prefix
         const htmlAttributes: Record<string, string> = {}
@@ -123,8 +123,8 @@ export function createReactBlockSpec<
 
         // Gets BlockNote editor instance
         const editor = this.options.editor! as BlockNoteEditor<
-          BSchema & { [k in BType]: BlockSpec<BType, PSchema> }
-        >;
+          BSchema & {[k in BType]: BlockSpec<BType, PSchema>}
+        >
         // Gets position of the node
         const pos =
           typeof props.getPos === 'function' ? props.getPos() : undefined
@@ -144,19 +144,20 @@ export function createReactBlockSpec<
           <NodeViewWrapper
             {...Object.fromEntries(
               Object.entries(blockContentDOMAttributes).filter(
-                ([key]) => key !== "class"
-              )
+                ([key]) => key !== 'class',
+              ),
             )}
             className={mergeCSSClasses(
               // @ts-expect-error
               blockStyles.blockContent,
-              blockContentDOMAttributes.class
+              blockContentDOMAttributes.class,
             )}
             data-content-type={blockConfig.type}
             {...htmlAttributes}
           >
             <BlockNoteDOMAttributesContext.Provider
-              value={this.options.domAttributes || {}}>
+              value={this.options.domAttributes || {}}
+            >
               <Content block={block as any} editor={editor} />
             </BlockNoteDOMAttributesContext.Provider>
           </NodeViewWrapper>

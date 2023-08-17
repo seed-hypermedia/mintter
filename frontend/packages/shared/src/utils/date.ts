@@ -31,7 +31,6 @@ export function formattedDate(
   value?: string | Date | Timestamp | HDTimestamp | undefined,
   options?: {onlyRelative?: boolean},
 ) {
-
   if (!value) return ''
   let _value =
     typeof value == 'string' ||
@@ -39,7 +38,10 @@ export function formattedDate(
       ? value
       : (value as Timestamp).toDate()
 
-  if (typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat !== 'undefined') {
+  if (
+    typeof Intl !== 'undefined' &&
+    typeof Intl.RelativeTimeFormat !== 'undefined'
+  ) {
     // Intl.RelativeTimeFormat is supported
     return relativeFormattedDate(_value, options)
     // Use the rtf object for relative time formatting
@@ -47,8 +49,8 @@ export function formattedDate(
     let date = new Date(_value)
     return date.toLocaleDateString('en', {
       day: '2-digit',
-      month: '2-digit'
-    });
+      month: '2-digit',
+    })
   }
 }
 
