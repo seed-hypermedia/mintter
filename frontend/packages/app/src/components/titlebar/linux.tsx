@@ -72,7 +72,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
       </TitlebarWrapper>
     )
   }
-  
+
   return (
     <TitlebarWrapper data-has-focus={focus} className="window-drag">
       <TitlebarRow>

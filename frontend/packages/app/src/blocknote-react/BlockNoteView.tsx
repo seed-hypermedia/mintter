@@ -1,7 +1,11 @@
-import {BlockNoteEditor, BlockSchema, mergeCSSClasses} from "@mintter/app/src/blocknote-core";
-import {createStyles, MantineProvider} from "@mantine/core";
+import {
+  BlockNoteEditor,
+  BlockSchema,
+  mergeCSSClasses,
+} from '@mintter/app/src/blocknote-core'
+import {createStyles, MantineProvider} from '@mantine/core'
 import {EditorContent} from '@tiptap/react'
-import {HTMLAttributes, ReactNode, useMemo} from "react";
+import {HTMLAttributes, ReactNode, useMemo} from 'react'
 // import { blockNoteToMantineTheme, Theme } from "./BlockNoteTheme";
 // import { darkDefaultTheme, lightDefaultTheme } from "./defaultThemes";
 // import usePrefersColorScheme from "use-prefers-color-scheme";
@@ -10,29 +14,30 @@ import {HTMLAttributes, ReactNode, useMemo} from "react";
 // Renders the editor as well as all menus & toolbars using default styles.
 function BaseBlockNoteView<BSchema extends BlockSchema>(
   props: {
-    editor: BlockNoteEditor<BSchema>;
-    children?: ReactNode;
-  } & HTMLAttributes<HTMLDivElement>
+    editor: BlockNoteEditor<BSchema>
+    children?: ReactNode
+  } & HTMLAttributes<HTMLDivElement>,
 ) {
-  const { classes } = createStyles({ root: {} })(undefined, {
-    name: "Editor",
-  });
+  const {classes} = createStyles({root: {}})(undefined, {
+    name: 'Editor',
+  })
 
-  const { editor, children, className, ...rest } = props;
+  const {editor, children, className, ...rest} = props
 
   return (
     <EditorContent
       editor={props.editor?._tiptapEditor || null}
-      className={mergeCSSClasses(classes.root, props.className || "")}
-      {...rest}>
+      className={mergeCSSClasses(classes.root, props.className || '')}
+      {...rest}
+    >
       {props.children}
     </EditorContent>
-  );
+  )
 }
 
 export function BlockNoteView<BSchema extends BlockSchema>(
   props: {
-    editor: BlockNoteEditor<BSchema>;
+    editor: BlockNoteEditor<BSchema>
     // theme?:
     //   | "light"
     //   | "dark"
@@ -41,8 +46,8 @@ export function BlockNoteView<BSchema extends BlockSchema>(
     //       light: Theme;
     //       dark: Theme;
     //     };
-    children?: ReactNode;
-  } & HTMLAttributes<HTMLDivElement>
+    children?: ReactNode
+  } & HTMLAttributes<HTMLDivElement>,
 ) {
   // const {
   //   theme = { light: lightDefaultTheme, dark: darkDefaultTheme },
@@ -73,7 +78,7 @@ export function BlockNoteView<BSchema extends BlockSchema>(
   return (
     // TODO: Removed mantine because it conflicts with our styling
     // <MantineProvider theme={mantineTheme}>
-      <BaseBlockNoteView {...props} />
+    <BaseBlockNoteView {...props} />
     // </MantineProvider>
-  );
+  )
 }
