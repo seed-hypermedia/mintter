@@ -42,6 +42,23 @@ ipcMain.on('open_quick_switcher', (_event, info) => {
   getFocusedWindow()?.webContents.send('open_quick_switcher')
 })
 
+ipcMain.on('minimize_window', (_event, _info) => {
+  getFocusedWindow().minimize()
+})
+
+ipcMain.on('maximize_window', (_event, _info) => {
+  const window = getFocusedWindow()
+  if (window.isMaximized()) {
+    window.unmaximize()
+  } else {
+    window.maximize()
+  }
+})
+
+ipcMain.on('close_window', (_event, _info) => {
+  getFocusedWindow().close()
+})
+
 export const mainMenu = new Menu()
 
 type ReadyState = {t: 'ready'}
@@ -274,6 +291,7 @@ export const router = t.router({
       const browserWindow = new BrowserWindow({
         show: false,
         frame: false,
+        autoHideMenuBar: true,
         // width: 1200,
         // height: 800,
         ...bounds,
