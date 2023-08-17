@@ -168,16 +168,12 @@ function ImageComponent({
           e.stopPropagation()
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            let isImage = true
-            const files = Array.from(e.dataTransfer.files)
-            files.forEach((file) => {
-              if (!file.type.includes('image/')) {
-                toast.error(`The dragged file is not an image.`)
-                isImage = false
-                return
-              }
-            })
-            if (isImage) handleDragReplace(Array.from(files)[0])
+            const file = Array.from(e.dataTransfer.files)[0]
+            if (!file.type.includes('image/')) {
+              toast.error(`The dragged file is not an image.`)
+              return
+            }
+            handleDragReplace(file)
             return
           }
         }}

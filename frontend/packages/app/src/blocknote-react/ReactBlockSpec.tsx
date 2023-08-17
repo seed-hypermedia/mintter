@@ -115,7 +115,7 @@ export function createReactBlockSpec<
         for (const [attribute, value] of Object.entries(props.node.attrs)) {
           if (
             attribute in blockConfig.propSchema &&
-            !['url', 'name', 'size'].includes(attribute)
+            value !== blockConfig.propSchema[attribute].default
           ) {
             htmlAttributes[camelToDataKebab(attribute)] = value
           }

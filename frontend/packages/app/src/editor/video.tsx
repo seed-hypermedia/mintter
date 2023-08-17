@@ -172,16 +172,12 @@ function VideoComponent({
           e.stopPropagation()
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            let isVideo = true
-            const files = Array.from(e.dataTransfer.files)
-            files.forEach((file) => {
-              if (!file.type.includes('video/')) {
-                toast.error(`The dragged file is not a video.`)
-                isVideo = false
-                return
-              }
-            })
-            if (isVideo) handleDragReplace(Array.from(files)[0])
+            const file = Array.from(e.dataTransfer.files)[0]
+            if (!file.type.includes('video/')) {
+              toast.error(`The dragged file is not a video.`)
+              return
+            }
+            handleDragReplace(file)
             return
           }
         }}

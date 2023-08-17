@@ -3,10 +3,12 @@ import {toast} from '@mintter/app/src/toast'
 import {app, dialog, net} from 'electron'
 import fs from 'fs'
 
+const {debug, error} = console
+
 export async function saveCidAsFile(event, args) {
   const {cid, name} = args
   const request = net.request(`${BACKEND_HTTP_URL}/ipfs/${cid}`)
-  console.log(app.getPath('downloads'))
+  debug('Saving cid to ' + app.getPath('downloads'))
   request.on('response', (response) => {
     if (response.statusCode === 200) {
       const chunks: Buffer[] = []
@@ -20,7 +22,7 @@ export async function saveCidAsFile(event, args) {
         const options = {
           defaultPath: app.getPath('downloads') + '/' + name,
         }
-        console.log(options.defaultPath)
+        debug(options.defaultPath)
         const {filePath, canceled} = await dialog.showSaveDialog(options)
         if (!canceled && filePath) {
           try {
@@ -28,17 +30,17 @@ export async function saveCidAsFile(event, args) {
             toast.success(`Successfully downloaded file ${name}`)
           } catch (e) {
             toast.error(`Failed to download file ${name}`)
-            console.log(e)
+            error(e)
           }
         }
       })
     } else {
-      console.error('Error: Invalid status code', response.statusCode)
+      error('Error: Invalid status code', response.statusCode)
     }
   })
 
-  request.on('error', (error) => {
-    console.error('Error:', error.message)
+  request.on('error', (err) => {
+    error('Error:', err.message)
   })
 
   request.end()
