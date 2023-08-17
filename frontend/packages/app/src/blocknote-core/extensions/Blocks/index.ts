@@ -1,13 +1,9 @@
 import {Node} from '@tiptap/core'
-import {BlockContainer} from './nodes/BlockContainer'
-import {BlockGroup} from './nodes/BlockGroup'
+export {BlockContainer} from './nodes/BlockContainer'
+export {BlockGroup} from './nodes/BlockGroup'
 
-export const blocks: any[] = [
-  BlockContainer,
-  BlockGroup,
-  Node.create({
-    name: 'doc',
-    topNode: true,
-    content: 'blockGroup',
-  }),
-]
+export const Doc = Node.create({
+  name: 'doc',
+  topNode: true,
+  content: 'blockGroup',
+})

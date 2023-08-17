@@ -1,9 +1,9 @@
 // TODO: review directories
 export * from './BlockNoteView'
+export * from './BlockNoteTheme'
+export * from './defaultThemes'
 
 export * from './ReactBlockSpec'
-
-export * from './BlockNoteTheme'
 
 export * from './BlockSideMenu/BlockSideMenuFactory'
 export * from './BlockSideMenu/components/DragHandleMenu'

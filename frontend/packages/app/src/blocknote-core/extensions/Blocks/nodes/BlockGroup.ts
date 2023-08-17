@@ -1,16 +1,14 @@
 import {findParentNode, InputRule, mergeAttributes, Node} from '@tiptap/core'
 import styles from './Block.module.css'
+import {BlockNoteDOMAttributes} from '../api/blockTypes'
+import {mergeCSSClasses} from '../../../shared/utils'
 
-export const BlockGroup = Node.create({
+export const BlockGroup = Node.create<{
+  domAttributes?: BlockNoteDOMAttributes
+}>({
   name: 'blockGroup',
   group: 'blockGroup',
   content: 'blockContainer+',
-
-  addOptions() {
-    return {
-      HTMLAttributes: {},
-    }
-  },
 
   addAttributes() {
     return {
@@ -119,12 +117,21 @@ export const BlockGroup = Node.create({
   },
 
   renderHTML({node, HTMLAttributes}) {
+    const blockGroupDOMAttributes = this.options.domAttributes?.blockGroup || {}
+
     return [
       node.attrs.listType,
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: styles.blockGroup,
-        'data-node-type': 'blockGroup',
-      }),
+      mergeAttributes(
+        {
+          ...blockGroupDOMAttributes,
+          class: mergeCSSClasses(
+            styles.blockGroup,
+            blockGroupDOMAttributes.class,
+          ),
+          'data-node-type': 'blockGroup',
+        },
+        HTMLAttributes,
+      ),
       0,
     ]
   },

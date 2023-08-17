@@ -6,13 +6,14 @@ import {
 } from '@mintter/app/src/blocknote-core'
 import {HDBlockSchema} from '@mintter/app/src/client/schema'
 import {DependencyList, FC, useEffect, useState} from 'react'
-import {getBlockNoteTheme} from '../BlockNoteTheme'
+import {blockNoteToMantineTheme} from '../BlockNoteTheme'
 import {createReactBlockSideMenuFactory} from '../BlockSideMenu/BlockSideMenuFactory'
 import {DragHandleMenuProps} from '../BlockSideMenu/components/DragHandleMenu'
 import {createReactFormattingToolbarFactory} from '../FormattingToolbar/FormattingToolbarFactory'
 import {createReactHyperlinkToolbarFactory} from '../HyperlinkToolbar/HyperlinkToolbarFactory'
 import {defaultReactSlashMenuItems} from '../SlashMenu/defaultReactSlashMenuItems'
 import {createReactSlashMenuFactory} from '../SlashMenu/SlashMenuFactory'
+import {darkDefaultTheme, lightDefaultTheme} from '../defaultThemes'
 
 //based on https://github.com/ueberdosis/tiptap/blob/main/packages/react/src/useEditor.ts
 
@@ -40,6 +41,7 @@ export const useBlockNote = <BSchema extends HDBlockSchema>(
 ) => {
   const [editor, setEditor] = useState<BlockNoteEditor<BSchema> | null>(null)
   const forceUpdate = useForceUpdate()
+  const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
   useEffect(() => {
     let isMounted = true
@@ -59,17 +61,25 @@ export const useBlockNote = <BSchema extends HDBlockSchema>(
 
     let uiFactories = {
       formattingToolbarFactory: createReactFormattingToolbarFactory(
-        getBlockNoteTheme(newOptions.theme === 'dark'),
+        blockNoteToMantineTheme(
+          preferDark ? darkDefaultTheme : lightDefaultTheme,
+        ),
         newOptions.customElements?.formattingToolbar,
       ),
       hyperlinkToolbarFactory: createReactHyperlinkToolbarFactory(
-        getBlockNoteTheme(newOptions.theme === 'dark'),
+        blockNoteToMantineTheme(
+          preferDark ? darkDefaultTheme : lightDefaultTheme,
+        ),
       ),
       slashMenuFactory: createReactSlashMenuFactory(
-        getBlockNoteTheme(newOptions.theme === 'dark'),
+        blockNoteToMantineTheme(
+          preferDark ? darkDefaultTheme : lightDefaultTheme,
+        ),
       ),
       blockSideMenuFactory: createReactBlockSideMenuFactory(
-        getBlockNoteTheme(newOptions.theme === 'dark'),
+        blockNoteToMantineTheme(
+          preferDark ? darkDefaultTheme : lightDefaultTheme,
+        ),
         newOptions.customElements?.dragHandleMenu,
       ),
       ...newOptions.uiFactories,

@@ -19,7 +19,11 @@ import {BlockNoteEditor} from './BlockNoteEditor'
 import styles from './editor.module.css'
 import {BackgroundColorExtension} from './extensions/BackgroundColor/BackgroundColorExtension'
 import {BackgroundColorMark} from './extensions/BackgroundColor/BackgroundColorMark'
-import {blocks} from './extensions/Blocks'
+import {BlockContainer, BlockGroup, Doc} from './extensions/Blocks'
+import {
+  BlockNoteDOMAttributes,
+  BlockSchema,
+} from './extensions/Blocks/api/blockTypes'
 import {CustomBlockSerializerExtension} from './extensions/Blocks/api/serialization'
 import blockStyles from './extensions/Blocks/nodes/Block.module.css'
 import {BlockSideMenuFactory} from './extensions/DraggableBlocks/BlockSideMenuFactoryTypes'
@@ -55,6 +59,7 @@ export type UiFactories<BSchema extends HDBlockSchema> = Partial<{
 export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
   editable?: boolean
   editor: BlockNoteEditor<BSchema>
+  domAttributes: Partial<BlockNoteDOMAttributes>
   uiFactories: UiFactories<BSchema>
   slashCommands: BaseSlashMenuItem<any>[] // couldn't fix type, see https://github.com/TypeCellOS/BlockNote/pull/191#discussion_r1210708771
   blockSchema: BSchema
@@ -109,10 +114,19 @@ export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
     TextAlignmentExtension,
     SelectableBlocksExtension,
 
-    // custom blocks:
-    ...blocks,
+    // nodes
+    Doc,
+    BlockContainer.configure({
+      domAttributes: opts.domAttributes,
+    }),
+    BlockGroup.configure({
+      domAttributes: opts.domAttributes,
+    }),
     ...Object.values(opts.blockSchema).map((blockSpec) =>
-      blockSpec.node.configure({editor: opts.editor}),
+      blockSpec.node.configure({
+        editor: opts.editor,
+        domAttributes: opts.domAttributes,
+      }),
     ),
     CustomBlockSerializerExtension,
 
