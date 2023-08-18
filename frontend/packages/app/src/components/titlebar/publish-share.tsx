@@ -1,24 +1,33 @@
+import {Tooltip} from '@mintter/app/components/tooltip'
+import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {useMyAccount} from '@mintter/app/models/accounts'
 import {
   EditorDraftState,
   useDraft,
   usePublication,
   usePublishDraft,
   useWriteDraftWebUrl,
-} from '@mintter/app/src/models/documents'
+} from '@mintter/app/models/documents'
+import {
+  useGroup,
+  useGroups,
+  usePublishDocToGroup,
+} from '@mintter/app/models/groups'
 import {useDocWebPublications, useSiteList} from '@mintter/app/models/sites'
-import {useDaemonReady} from '@mintter/app/src/node-status-context'
-import {useNavigate, useNavRoute} from '@mintter/app/utils/navigation'
+import {useDaemonReady} from '@mintter/app/node-status-context'
+import {usePopoverState} from '@mintter/app/use-popover-state'
+import {getDocUrl} from '@mintter/app/utils/doc-url'
+import {
+  PublicationRouteContext,
+  useNavRoute,
+  useNavigate,
+} from '@mintter/app/utils/navigation'
 import {hostnameStripProtocol} from '@mintter/app/utils/site-hostname'
-import {AccessURLRow} from '@mintter/app/components/url'
-import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
   Check,
-  ChevronDown,
   Copy,
-  Dialog,
   DialogTitle,
-  ExternalLink,
   Fieldset,
   Form,
   Globe,
@@ -31,72 +40,62 @@ import {
   Text,
   YStack,
 } from '@mintter/ui'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {UseQueryResult} from '@tanstack/react-query'
+import {Folder, Upload} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import {usePublicationDialog} from './publication-dialog'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
-import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {Folder, Upload} from '@tamagui/lucide-icons'
-import DiscardDraftButton from './discard-draft-button'
-import {getDocUrl} from '@mintter/app/src/utils/doc-url'
-import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
-import {usePopoverState} from '../../use-popover-state'
 import {useAppDialog} from '../dialog'
-import {useGroup, useGroups, usePublishDocToGroup} from '../../models/groups'
-import {useMyAccount} from '../../models/accounts'
-import {PublicationRouteContext} from '../../utils/navigation'
+import DiscardDraftButton from './discard-draft-button'
+import {usePublicationDialog} from './publication-dialog'
 
-function DraftPublicationDialog({
-  draft,
-}: {
-  draft?: EditorDraftState | undefined
-}) {
-  const sites = useSiteList()
-  const sitesList = sites.data || []
-  const foundSiteHostname = sitesList.find(
-    (site) => site.hostname === draft?.webUrl,
-  )
-  const writeSiteUrl = useWriteDraftWebUrl(draft?.id)
+// function DraftPublicationDialog({
+//   draft,
+// }: {
+//   draft?: EditorDraftState | undefined
+// }) {
+//   const sites = useSiteList()
+//   const sitesList = sites.data || []
+//   const foundSiteHostname = sitesList.find(
+//     (site) => site.hostname === draft?.webUrl,
+//   )
+//   const writeSiteUrl = useWriteDraftWebUrl(draft?.id)
 
-  return (
-    <>
-      <SizableText size="$3" fontWeight="700" theme="mint">
-        Publish to:
-      </SizableText>
-      <Button
-        size="$4"
-        onPress={() => {
-          writeSiteUrl.mutate('')
-        }}
-        textProps={{flex: 1}}
-        icon={Globe}
-        iconAfter={foundSiteHostname == null ? Check : undefined}
-      >
-        Public Network
-      </Button>
-      {sitesList?.map((site) => {
-        return (
-          <Button
-            size="$4"
-            key={site.hostname}
-            onPress={() => {
-              writeSiteUrl.mutate(site.hostname)
-            }}
-            textProps={{flex: 1}}
-            icon={Globe}
-            iconAfter={
-              foundSiteHostname?.hostname === site.hostname ? Check : undefined
-            }
-          >
-            {hostnameStripProtocol(site.hostname)}
-          </Button>
-        )
-      })}
-    </>
-  )
-}
+//   return (
+//     <>
+//       <SizableText size="$3" fontWeight="700" theme="mint">
+//         Publish to:
+//       </SizableText>
+//       <Button
+//         size="$4"
+//         onPress={() => {
+//           writeSiteUrl.mutate('')
+//         }}
+//         textProps={{flex: 1}}
+//         icon={Globe}
+//         iconAfter={foundSiteHostname == null ? Check : undefined}
+//       >
+//         Public Network
+//       </Button>
+//       {sitesList?.map((site) => {
+//         return (
+//           <Button
+//             size="$4"
+//             key={site.hostname}
+//             onPress={() => {
+//               writeSiteUrl.mutate(site.hostname)
+//             }}
+//             textProps={{flex: 1}}
+//             icon={Globe}
+//             iconAfter={
+//               foundSiteHostname?.hostname === site.hostname ? Check : undefined
+//             }
+//           >
+//             {hostnameStripProtocol(site.hostname)}
+//           </Button>
+//         )
+//       })}
+//     </>
+//   )
+// }
 
 function GroupPublishDialog({
   input,
@@ -219,8 +218,7 @@ function PubDropdown({
             </Button>
             <Button
               onPress={() => {
-                dialogState.onOpenChange(true)
-                popoverState.onOpenChange(false)
+                groupPublish.open({docId, version})
               }}
               size="$2"
             >
@@ -229,26 +227,8 @@ function PubDropdown({
           </YStack>
         </Popover.Content>
       </Popover>
-      {dialogState.open ? (
-        <DemoDialog onOpenChange={() => dialogState.onOpenChange(false)} />
-      ) : null}
+      {groupPublish.content}
     </>
-  )
-}
-
-function DemoDialog(props) {
-  return (
-    <Dialog
-      onOpenChange={props.onOpenChange}
-      disableRemoveScroll
-      style={{position: 'absolute'}}
-    >
-      <Dialog.Trigger style={{display: 'none'}} />
-      <Dialog.Overlay key="overlay" style={{inset: 0, position: 'absolute'}} />
-      <Dialog.Content space>
-        <Dialog.Title>Demo dialog</Dialog.Title>
-      </Dialog.Content>
-    </Dialog>
   )
 }
 
