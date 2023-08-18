@@ -2,7 +2,7 @@ import {
   BACKEND_GRPC_PORT,
   BACKEND_HTTP_PORT,
   BACKEND_P2P_PORT,
-} from '@mintter/app/src/constants'
+} from '@mintter/app/constants'
 import {spawn} from 'child_process'
 import {app} from 'electron'
 import {join} from 'path'

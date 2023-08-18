@@ -1,17 +1,7 @@
 {
   "name": "@mintter/shared",
   "version": "0.1.0",
-  "exports": {
-    ".": "./dist",
-    "./*": "./dist/*"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/*"
-      ]
-    }
-  },
+  "main": "src/index.ts",
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc ",

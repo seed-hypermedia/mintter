@@ -5,7 +5,6 @@
     "*.css"
   ],
   "private": true,
-  "main": "index.ts",
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.2.0",

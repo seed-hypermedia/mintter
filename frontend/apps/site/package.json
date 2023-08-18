@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "TAMAGUI_TARGET=web next build",
-    "build:vercel": "TAMAGUI_TARGET=web cd ../../.. && yarn install && yarn build && cd frontend/apps/site && yarn build",
     "start": "next start",
     "serve": "NODE_ENV=production next start --port 8151",
     "lint": "next lint",

@@ -1,7 +1,5 @@
-import {Account} from '@mintter/shared'
 import {
   Avatar,
-  Header,
   Heading,
   PageSection,
   SizableText,

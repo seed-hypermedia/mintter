@@ -1,5 +1,6 @@
 import {defineConfig, loadEnv} from 'vite'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
+import tsConfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
@@ -21,6 +22,7 @@ export default defineConfig(({command, mode}) => {
     plugins:
       command == 'build'
         ? [
+            tsConfigPaths(),
             sentryVitePlugin({
               authToken: process.env.MINTTER_SENTRY_AUTH_TOKEN,
               org: 'mintter',
@@ -28,6 +30,6 @@ export default defineConfig(({command, mode}) => {
               telemetry: false,
             }),
           ]
-        : [],
+        : [tsConfigPaths()],
   }
 })

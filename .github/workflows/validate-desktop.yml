@@ -37,7 +37,6 @@ jobs:
 
       - name: Validate code
         run: |
-          yarn build
           yarn desktop:validate
           yarn desktop:lint
       

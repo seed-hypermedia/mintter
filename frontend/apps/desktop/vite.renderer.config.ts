@@ -2,6 +2,7 @@ import {defineConfig, loadEnv} from 'vite'
 import react from '@vitejs/plugin-react'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
+import tsConfigPaths from 'vite-tsconfig-paths'
 
 const tamaguiConfig = {
   components: ['@mintter/ui', 'tamagui'],
@@ -21,7 +22,7 @@ export default defineConfig(({command, mode}) => {
         external: ['@trpc/client'],
       },
     },
-    plugins: [react(), tamaguiPlugin(tamaguiConfig)],
+    plugins: [tsConfigPaths(), react(), tamaguiPlugin(tamaguiConfig)],
   }
 
   if (command == 'build') {

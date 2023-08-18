@@ -1,7 +1,7 @@
-import {publicationsClient} from 'client'
+import {publicationsClient} from '../client'
 
 // for some reason this cannot be imported from @mintter/shared without issues:
-import {Publication} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
+import {Publication} from '@mintter/shared'
 import {GetServerSidePropsContext} from 'next'
 import {setAllowAnyHostGetCORS} from './cors'
 

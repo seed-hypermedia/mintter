@@ -9,7 +9,7 @@
     "site": "yarn workspace @mintter/site dev",
     "site:format": "prettier --write ./frontend/apps/site ./frontend/packages",
     "site:validate": "prettier --check ./frontend/apps/site ./frontend/packages",
-    "site:prod": "yarn build && yarn workspace @mintter/site build",
+    "site:prod": "yarn workspace @mintter/site build",
     "site:serve": "yarn workspace @mintter/site serve",
     "site:test": "echo 'NO TESTS'",
     "site:lint": "echo 'NO LINT'",

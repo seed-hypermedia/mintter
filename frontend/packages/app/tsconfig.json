@@ -1,12 +1,13 @@
 {
   "extends": "../../../tsconfig.base",
-  "include": ["src"],
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
     "jsx": "preserve",
+    // "baseUrl": ".",
     "paths": {
-      "@mintter/app/src/*": ["src/*"]
+      "@mintter/app/*": ["frontend/packages/app/src/*"],
+      "@mintter/shared": ["frontend/packages/shared/src/index.ts"] 
     }
   },
   "references": []

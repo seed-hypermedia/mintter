@@ -80,7 +80,6 @@ export default function Main() {
   return (
     <YStack position="absolute" top={0} left={0} width="100%" height="100%">
       <TitleBar clean={isSettings} />
-
       <ErrorBoundary
         FallbackComponent={AppError}
         onReset={() => {

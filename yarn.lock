@@ -5151,6 +5151,7 @@ __metadata:
     react-hot-toast: 2.4.1
     superjson: 1.13.1
     update-electron-app: 2.0.1
+    vite-tsconfig-paths: ^4.2.0
     zod: 3.21.4
   languageName: unknown
   linkType: soft
@@ -6821,9 +6822,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugin-core@npm:2.6.2":
-  version: 2.6.2
-  resolution: "@sentry/bundler-plugin-core@npm:2.6.2"
+"@sentry/bundler-plugin-core@npm:2.7.0":
+  version: 2.7.0
+  resolution: "@sentry/bundler-plugin-core@npm:2.7.0"
   dependencies:
     "@sentry/cli": ^2.20.1
     "@sentry/node": ^7.60.0
@@ -6833,7 +6834,7 @@ __metadata:
     glob: 9.3.2
     magic-string: 0.27.0
     unplugin: 1.0.1
-  checksum: 7f79e94dfadc118bee441ba59b75834ee0287ff7c46ddca709fac1f2cfea2fae644e5e4612f96e9ee15a1207404d84830eed9d6254ea291032c7ce5c2abe6a67
+  checksum: 2dca62cf4d7b6047a747bad1fec284d1ff4583104175e52b67e912d03ee7e14863af0f5816f9c5d61de1fd54149c1df0712f5f634513097d2bcb617e3693c590
   languageName: node
   linkType: hard
 
@@ -7085,12 +7086,12 @@ __metadata:
   linkType: hard
 
 "@sentry/vite-plugin@npm:latest":
-  version: 2.6.2
-  resolution: "@sentry/vite-plugin@npm:2.6.2"
+  version: 2.7.0
+  resolution: "@sentry/vite-plugin@npm:2.7.0"
   dependencies:
-    "@sentry/bundler-plugin-core": 2.6.2
+    "@sentry/bundler-plugin-core": 2.7.0
     unplugin: 1.0.1
-  checksum: 9c49c2e9932448dc721048f2953de0a1bf00926363a7ae2a02f971bf7f38d3d46bf5a99ae58b54681f3d2109ee6e0279960b94a1ada2de38380715f3eef8a550
+  checksum: b661548164e065d8f8317691604ece6be17f6be67d9eb9c02ea5c78f74e52c763a9cdaaafc765614d4dc7ea1d9c607c567bc7595e3e042255e749eafc44cc241
   languageName: node
   linkType: hard
 
@@ -19576,11 +19577,11 @@ __metadata:
   linkType: hard
 
 "jiti@npm:^1.18.2":
-  version: 1.19.1
-  resolution: "jiti@npm:1.19.1"
+  version: 1.19.3
+  resolution: "jiti@npm:1.19.3"
   bin:
     jiti: bin/jiti.js
-  checksum: fdf55e315f9e81c04ae902416642062851d92c6cdcc17a59d5d1d35e1a0842e4e79be38da86613c5776fa18c579954542a441b93d1c347a50137dee2e558cbd0
+  checksum: de3dacdfe30948d96b69712b04cc28127c17f43d5233a5aa069933e04ac4c9aaf265bef4cdf2b0c2a6f5af236a58aea9bfea83e8e289e2490802bdff7f99bff7
   languageName: node
   linkType: hard
 
@@ -24501,11 +24502,11 @@ __metadata:
   linkType: hard
 
 "pvtsutils@npm:^1.3.2":
-  version: 1.3.4
-  resolution: "pvtsutils@npm:1.3.4"
+  version: 1.3.5
+  resolution: "pvtsutils@npm:1.3.5"
   dependencies:
     tslib: ^2.6.1
-  checksum: bfca98d891913edbbdc8aa3cf73213f220e223d5635c330d62a92556c4a699cc553a59a3e0a33f722ede8c34b063f9a8d55d8a073ecafb3f1ff9c91e41880eb0
+  checksum: e734516b3cb26086c18bd9c012fefe818928a5073178842ab7e62885a090f1dd7bda9c7bb8cd317167502cb8ec86c0b1b0ccd71dac7ab469382a4518157b0d12
   languageName: node
   linkType: hard
 
@@ -27292,9 +27293,9 @@ __metadata:
   linkType: hard
 
 "std-env@npm:^3.0.1, std-env@npm:^3.3.3":
-  version: 3.3.3
-  resolution: "std-env@npm:3.3.3"
-  checksum: 6665f6d8bd63aae432d3eb9abbd7322847ad0d902603e6dce1e8051b4f42ceeb4f7f96a4faf70bb05ce65ceee2dc982502b701575c8a58b1bfad29f3dbb19f81
+  version: 3.4.0
+  resolution: "std-env@npm:3.4.0"
+  checksum: 8017251c1e82f9b0bfd519a1e29cf3fce3ae4df821c1eb170da03926e12092f033b28ade984a771534d7cac3b2ed75795949aee2ce3ef2e10988cc46ef39b530
   languageName: node
   linkType: hard
 
@@ -29476,7 +29477,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-tsconfig-paths@npm:4.2.0":
+"vite-tsconfig-paths@npm:4.2.0, vite-tsconfig-paths@npm:^4.2.0":
   version: 4.2.0
   resolution: "vite-tsconfig-paths@npm:4.2.0"
   dependencies:

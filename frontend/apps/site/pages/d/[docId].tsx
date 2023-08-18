@@ -7,7 +7,7 @@ import {setAllowAnyHostGetCORS} from 'server/cors'
 import {impatiently} from 'server/impatiently'
 import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import PublicationPage from '../../publication-page'
+import PublicationPage from 'publication-page'
 
 function getDocSlugUrl(
   pathName: string | undefined,

@@ -12,10 +12,7 @@ import {
   serverBlockToEditorInline,
   SiteInfo,
 } from '@mintter/shared'
-import {
-  Block,
-  Publication,
-} from '@mintter/shared/client/.generated/documents/v1alpha/documents_pb'
+import {Block, Publication} from '@mintter/shared'
 import {
   Button,
   Copy,

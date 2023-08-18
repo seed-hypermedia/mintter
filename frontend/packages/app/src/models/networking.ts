@@ -1,8 +1,8 @@
 import appError from '@mintter/app/src/errors'
-import {useDaemonReady} from '@mintter/app/src/node-status-context'
+import {useDaemonReady} from '@mintter/app/node-status-context'
 import {ConnectError} from '@bufbuild/connect-web'
 import {GRPCClient, PeerInfo} from '@mintter/shared'
-import {ConnectionStatus} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
+import {ConnectionStatus} from '@mintter/shared'
 import {
   FetchQueryOptions,
   useQuery,

@@ -1,5 +1,5 @@
-import {BACKEND_HTTP_URL} from '@mintter/app/src/constants'
-import {toast} from '@mintter/app/src/toast'
+import {BACKEND_HTTP_URL} from '@mintter/app/constants'
+import {toast} from '@mintter/app/toast'
 import {app, dialog, net} from 'electron'
 import fs from 'fs'
 

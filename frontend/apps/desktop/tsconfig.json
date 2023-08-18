@@ -18,7 +18,15 @@
     //   "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*"],
+      "@mintter/ui": ["*", "../../packages/ui/src/index.tsx"],
+      "@mintter/shared": ["*", "../../packages/shared/src/index.ts"],
+      "@mintter/app/*": ["*", "../../packages/app/src/*"],
+      "react-native": ["react-native-web"]
+    }
   },
   "include": ["src", "env.d.ts"],
   "references": [{"path": "./tsconfig.node.json"}],

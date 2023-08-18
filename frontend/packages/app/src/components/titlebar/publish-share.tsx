@@ -1,4 +1,3 @@
-import {MINTTER_GATEWAY_URL} from '@mintter/app/src/constants'
 import {
   EditorDraftState,
   useDraft,
@@ -6,17 +5,18 @@ import {
   usePublishDraft,
   useWriteDraftWebUrl,
 } from '@mintter/app/src/models/documents'
-import {useDocWebPublications, useSiteList} from '@mintter/app/src/models/sites'
+import {useDocWebPublications, useSiteList} from '@mintter/app/models/sites'
 import {useDaemonReady} from '@mintter/app/src/node-status-context'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
-import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
-import {AccessURLRow} from '@mintter/app/src/components/url'
+import {useNavigate, useNavRoute} from '@mintter/app/utils/navigation'
+import {hostnameStripProtocol} from '@mintter/app/utils/site-hostname'
+import {AccessURLRow} from '@mintter/app/components/url'
 import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {
   Button,
   Check,
   ChevronDown,
   Copy,
+  Dialog,
   DialogTitle,
   ExternalLink,
   Fieldset,
@@ -219,7 +219,8 @@ function PubDropdown({
             </Button>
             <Button
               onPress={() => {
-                groupPublish.open({docId, version})
+                dialogState.onOpenChange(true)
+                popoverState.onOpenChange(false)
               }}
               size="$2"
             >
@@ -228,8 +229,26 @@ function PubDropdown({
           </YStack>
         </Popover.Content>
       </Popover>
-      {groupPublish.content}
+      {dialogState.open ? (
+        <DemoDialog onOpenChange={() => dialogState.onOpenChange(false)} />
+      ) : null}
     </>
+  )
+}
+
+function DemoDialog(props) {
+  return (
+    <Dialog
+      onOpenChange={props.onOpenChange}
+      disableRemoveScroll
+      style={{position: 'absolute'}}
+    >
+      <Dialog.Trigger style={{display: 'none'}} />
+      <Dialog.Overlay key="overlay" style={{inset: 0, position: 'absolute'}} />
+      <Dialog.Content space>
+        <Dialog.Title>Demo dialog</Dialog.Title>
+      </Dialog.Content>
+    </Dialog>
   )
 }
 

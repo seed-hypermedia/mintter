@@ -117,7 +117,6 @@ jobs:
           
       - name: Build App Package
         run: |
-          TAMAGUI_TARGET=web yarn build
           TAMAGUI_TARGET=web yarn electron:make
         env:
           APP_VERSION: '${{ needs.get-version.outputs.version }}'
