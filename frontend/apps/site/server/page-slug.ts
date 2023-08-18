@@ -1,6 +1,7 @@
 import {GetServerSidePropsContext} from 'next'
 import {setAllowAnyHostGetCORS} from './cors'
 import {getPageProps, serverHelpers} from './ssr-helpers'
+import {daemonClient, networkingClient} from 'client'
 
 export async function prepareSlugPage(
   context: GetServerSidePropsContext,
@@ -9,6 +10,14 @@ export async function prepareSlugPage(
   const helpers = serverHelpers({})
 
   setAllowAnyHostGetCORS(context.res)
+
+  const info = await daemonClient.getInfo({})
+  const peerInfo = await networkingClient.getPeerInfo({deviceId: info.deviceId})
+
+  context.res.setHeader(
+    'x-mintter-site-p2p-addresses',
+    peerInfo.addrs.join(','),
+  )
 
   const path = await helpers.publication.getPath.fetch({pathName})
 
