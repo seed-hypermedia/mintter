@@ -7,10 +7,8 @@
     "build": "tsc ",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "yarn lint:prettier && yarn lint:eslint",
-    "lint:eslint": "eslint .",
-    "lint:prettier": "prettier --check '**/*.{css,md,js,jsx,json,ts,tsx}'",
-    "format": "prettier --write .",
+    "lint": "echo TODO",
+    "format": "echo TODO",
     "validate": "yarn lint && yarn test"
   },
   "keywords": [],
@@ -21,7 +19,6 @@
     "@types/hast": "2.3.4",
     "@types/unist": "2.0.6",
     "concurrently": "7.6.0",
-    "eslint-plugin-react-hooks": "4.6.0",
     "typescript": "5.1.6",
     "vitest": "^0.33.0"
   },

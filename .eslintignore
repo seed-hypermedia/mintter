@@ -1,6 +1,0 @@
-dist
-out
-frontend/*.d.ts
-types/
-frontend/packages/shared/src/client/.generated
-frontend/packages/ui/dist
