@@ -50,7 +50,6 @@
     "@sentry/electron": "4.7.0",
     "@sentry/vite-plugin": "latest",
     "@trpc/client": "^10.37.1",
-    "@trpc/react": "9.27.4",
     "@trpc/react-query": "10.35.0",
     "@trpc/server": "10.35.0",
     "console-log-colors": "0.4.0",
