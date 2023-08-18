@@ -80,9 +80,6 @@ func GetSiteAddressFromHeaders(SiteHostname string) (peer.AddrInfo, error) {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return resp, fmt.Errorf("site info url [%s] not working. Status code: %d", SiteHostname, res.StatusCode)
-	}
 	addresses := res.Header.Get(P2PAddresses)
 	if addresses == "" {
 		return resp, fmt.Errorf("headers [%s] not present in http response", P2PAddresses)
