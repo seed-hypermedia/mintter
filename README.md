@@ -46,7 +46,7 @@ a server with at least 1GB RAM and 512MB free space in root partition. Run the
 folloging command in the server:
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/site_deployment.sh) --hostname https://example.com
+sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/group_deployment.sh) --hostname https://example.com
 ```
 
 replacing `https://example.com` by your <`hostname`> If everything went well,

@@ -44,7 +44,7 @@ services:
   minttersite:
     image: mintter/mintterd:latest
     restart: unless-stopped
-    container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-mintterd}
+    container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-minttersite}
     ports:
       - '56000:56000'
       - '56000:56000/udp'
