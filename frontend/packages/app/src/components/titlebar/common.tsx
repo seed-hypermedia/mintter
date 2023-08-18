@@ -107,7 +107,7 @@ export function GroupOptionsButton() {
               <>
                 <Dropdown.Item
                   onPress={() => {
-                    publish.open(groupId)
+                    publish.open({groupId})
                   }}
                   icon={Send}
                   title={`Publish Group to Site`}

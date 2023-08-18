@@ -73,6 +73,31 @@ export function useUpdateGroup(
   })
 }
 
+type PublishGroupToSiteMutationInput = {groupId: string; setupUrl: string}
+
+export function usePublishGroupToSite(
+  opts?: UseMutationOptions<void, unknown, PublishGroupToSiteMutationInput>,
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      setupUrl,
+    }: PublishGroupToSiteMutationInput) => {
+      await grpcClient.groups.convertToSite({
+        link: setupUrl,
+        groupId,
+      })
+    },
+    onSuccess: (result, input, context) => {
+      opts?.onSuccess?.(result, input, context)
+      invalidate([queryKeys.GET_GROUPS])
+      invalidate([queryKeys.GET_GROUP, input.groupId])
+    },
+  })
+}
+
 type PublishDocToGroupMutationInput = {
   groupId: string
   docId: string
