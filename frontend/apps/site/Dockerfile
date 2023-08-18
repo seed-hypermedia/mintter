@@ -12,6 +12,7 @@ RUN yarn install
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 ENV NEXT_PUBLIC_LN_HOST https://ln.mintter.com
+ENV NEXT_PUBLIC_GRPC_HOST http://minttersite:56001
 RUN yarn site:prod
 
 
