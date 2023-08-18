@@ -259,7 +259,7 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const route = useNavRoute()
   const context = route.key === 'publication' ? route.pubContext : undefined
   const {data: pub, isLoading} = useLatestPublication({
-    trustedVersionsOnly: context === 'trusted',
+    trustedVersionsOnly: context?.key === 'trusted',
     documentId: docId,
     enabled: !!docId,
   })

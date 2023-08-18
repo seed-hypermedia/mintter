@@ -60,6 +60,7 @@ import {useGRPCClient} from '@mintter/app/src/app-context'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {useEditGroupInfoDialog} from '../edit-group-info'
+import {useGroup} from '../../models/groups'
 
 function NewDocumentButton() {
   const route = useNavRoute()
@@ -89,32 +90,37 @@ export function GroupOptionsButton() {
   if (!groupId)
     throw new Error('GroupOptionsButton not supported in this route')
   const publish = usePublishGroupDialog()
+  const myAccount = useMyAccount()
+  const group = useGroup(groupId)
   const editInfo = useEditGroupInfoDialog()
+  const isGroupOwner =
+    myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
+  const dropdownPopover = usePopoverState()
+  if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
   return (
     <>
-      <Dropdown.Root {...usePopoverState()}>
+      <Dropdown.Root {...dropdownPopover}>
         <Dropdown.Trigger circular icon={MoreHorizontal} />
         <Dropdown.Portal>
           <Dropdown.Content align="start">
-            {/* <Dropdown.Item
-              onPress={() => {}}
-              icon={Trash}
-              title={`Delete Group`}
-            /> */}
-            <Dropdown.Item
-              onPress={() => {
-                publish.open(groupId)
-              }}
-              icon={Send}
-              title={`Publish Group to Site`}
-            />
-            <Dropdown.Item
-              onPress={() => {
-                editInfo.open(groupId)
-              }}
-              icon={Pencil}
-              title={`Edit Group Info`}
-            />
+            {isGroupOwner && (
+              <>
+                <Dropdown.Item
+                  onPress={() => {
+                    publish.open(groupId)
+                  }}
+                  icon={Send}
+                  title={`Publish Group to Site`}
+                />
+                <Dropdown.Item
+                  onPress={() => {
+                    editInfo.open(groupId)
+                  }}
+                  icon={Pencil}
+                  title={`Edit Group Info`}
+                />
+              </>
+            )}
           </Dropdown.Content>
         </Dropdown.Portal>
       </Dropdown.Root>

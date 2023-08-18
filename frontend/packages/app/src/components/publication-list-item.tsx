@@ -1,32 +1,13 @@
 import {prefetchPublication} from '@mintter/app/src/models/documents'
-import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {
-  PublicationRoute,
-  useNavigate,
-  useNavRoute,
-} from '@mintter/app/src/utils/navigation'
-import {Document, formattedDate, Publication} from '@mintter/shared'
-import {
-  Button,
-  ButtonText,
-  Delete,
-  ExternalLink,
-  MoreHorizontal,
-  Popover,
-  Separator,
-  Text,
-  XStack,
-  YGroup,
-} from '@mintter/ui'
-import {MouseEvent, useEffect, useState} from 'react'
+import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {Document, Publication} from '@mintter/shared'
+import {Button, ButtonText, ExternalLink, Text, XStack} from '@mintter/ui'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {MenuItem} from '@mintter/app/src/components/dropdown'
 import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
-import {useAppDialog} from './dialog'
-import {DeleteDocumentDialog} from './delete-dialog'
-import {ListItem} from './list-item'
+import {ListItem, MenuItem, TimeAccessory} from './list-item'
 import {GestureResponderEvent} from 'react-native'
+import {useClickNavigate} from '@mintter/app/src/utils/navigation'
 
 function unique(keys: string[]) {
   return Array.from(new Set(keys))
@@ -40,116 +21,98 @@ export function PublicationListItem({
   hasDraft,
   copy = copyTextToClipboard,
   pubContext,
+  menuItems,
+  label,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   pubContext: PublicationRouteContext
+  menuItems?: MenuItem[]
+  label?: string
 }) {
-  const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const route = useNavRoute()
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
 
   if (!docId) throw new Error('PublicationListItem requires id')
 
-  function goToItem(event: GestureResponderEvent) {
-    event.preventDefault()
-    const route: PublicationRoute = {
-      key: 'publication',
-      documentId: docId!,
-      versionId: publication.version,
-      pubContext,
-    }
-    // @ts-expect-error
-    console.debug('clicked with meta keys', event.shiftKey, event.metaKey)
+  const navigate = useClickNavigate()
 
-    // @ts-expect-error
-    if (event.metaKey || event.shiftKey) {
-      spawn(route)
-    } else {
-      navigate(route)
-    }
+  function goToItem(event: GestureResponderEvent) {
+    navigate(
+      {
+        key: 'publication',
+        documentId: docId!,
+        versionId: publication.version,
+        pubContext,
+      },
+      event,
+    )
   }
 
   return (
-    <>
-      <ListItem
-        onPress={goToItem}
-        title={title}
-        onPrefetch={() => {
-          if (publication.document)
-            prefetchPublication(publication.document.id, publication.version)
-        }}
-        accessory={
-          <>
-            {hasDraft && (
-              <Button
-                theme="yellow"
-                zIndex="$max"
-                onPress={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  navigate({
+    <ListItem
+      onPress={goToItem}
+      title={title}
+      onPrefetch={() => {
+        if (publication.document)
+          prefetchPublication(publication.document.id, publication.version)
+      }}
+      accessory={
+        <>
+          {hasDraft && (
+            <Button
+              theme="yellow"
+              zIndex="$max"
+              onPress={(e) => {
+                navigate(
+                  {
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
-                  })
-                }}
-                size="$1"
-              >
-                Resume Editing
-              </Button>
-            )}
-
-            <XStack>
-              {publication.document?.editors.length ? (
-                unique(publication.document?.editors).map((editor) => (
-                  <AccountLinkAvatar accountId={editor} key={editor} />
-                ))
-              ) : publication.document?.author ? (
-                <AccountLinkAvatar accountId={publication.document?.author} />
-              ) : null}
-            </XStack>
-            <Text
-              fontFamily="$body"
-              fontSize="$2"
-              data-testid="list-item-date"
-              minWidth="10ch"
-              textAlign="right"
+                  },
+                  e,
+                )
+              }}
+              size="$1"
             >
-              {publication.document?.updateTime
-                ? formattedDate(publication.document?.updateTime)
-                : '...'}
-            </Text>
-          </>
-        }
-        menuItems={[
-          {
-            key: 'spawn',
-            label: 'Open in new Window',
-            icon: ExternalLink,
-            onPress: () => {
-              spawn({
-                key: 'publication',
-                documentId: docId,
-                versionId: publication.version,
-              })
-            },
+              Resume Editing
+            </Button>
+          )}
+          {label && <ButtonText size="$2">{label}</ButtonText>}
+
+          <XStack>
+            {publication.document?.editors.length ? (
+              unique(publication.document?.editors).map((editor) => (
+                <AccountLinkAvatar accountId={editor} key={editor} />
+              ))
+            ) : publication.document?.author ? (
+              <AccountLinkAvatar accountId={publication.document?.author} />
+            ) : null}
+          </XStack>
+          <TimeAccessory
+            time={publication.document?.updateTime}
+            onPress={goToItem}
+          />
+        </>
+      }
+      menuItems={[
+        {
+          key: 'spawn',
+          label: 'Open in new Window',
+          icon: ExternalLink,
+          onPress: () => {
+            spawn({
+              key: 'publication',
+              documentId: docId,
+              versionId: publication.version,
+            })
           },
-          {
-            key: 'delete',
-            label: 'Delete Publication',
-            icon: Delete,
-            onPress: () => {
-              deleteDialog.open(docId)
-            },
-          },
-        ]}
-      />
-      {deleteDialog.content}
-    </>
+        },
+        ...(menuItems || []),
+      ]}
+    />
   )
 }

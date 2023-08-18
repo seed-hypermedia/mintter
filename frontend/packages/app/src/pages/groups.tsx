@@ -2,6 +2,7 @@ import Footer from '@mintter/app/src/components/footer'
 import {
   Button,
   Container,
+  ExternalLink,
   MainWrapper,
   Spinner,
   Text,
@@ -9,18 +10,39 @@ import {
 } from '@mintter/ui'
 import {useGroups} from '../models/groups'
 import {Group} from '@mintter/shared'
-import {useNavigate} from '../utils/navigation'
+import {GroupRoute, useClickNavigate, useNavigate} from '../utils/navigation'
+import {GestureResponderEvent} from 'react-native'
+import {ListItem, TimeAccessory} from '../components/list-item'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
 
 function GroupListItem({group}: {group: Group}) {
-  const navigate = useNavigate()
+  const navigate = useClickNavigate()
+  const spawn = useNavigate('spawn')
+  const groupRoute: GroupRoute = {key: 'group', groupId: group.id}
+  const goToItem = (e: GestureResponderEvent) => {
+    navigate(groupRoute, e)
+  }
   return (
-    <Button
-      onPress={() => {
-        navigate({key: 'group', groupId: group.id})
-      }}
-    >
-      {group.title}
-    </Button>
+    <ListItem
+      title={group.title}
+      accessory={
+        <>
+          <AccountLinkAvatar accountId={group.ownerAccountId} />
+          <TimeAccessory time={group.createTime} onPress={goToItem} />
+        </>
+      }
+      onPress={goToItem}
+      menuItems={[
+        {
+          label: 'Open in new Window',
+          key: 'spawn',
+          icon: ExternalLink,
+          onPress: () => {
+            spawn(groupRoute)
+          },
+        },
+      ]}
+    />
   )
 }
 

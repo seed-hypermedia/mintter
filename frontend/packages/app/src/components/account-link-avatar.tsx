@@ -49,6 +49,7 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
         hoverStyle={{backgroundColor: 'transparent'}}
         minWidth={20}
         minHeight={20}
+        padding={0}
         onPress={(e) => {
           e.preventDefault()
           e.stopPropagation()

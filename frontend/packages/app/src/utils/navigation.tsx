@@ -8,6 +8,7 @@ import {
 } from 'react'
 import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
 import {useIPC} from '@mintter/app/src/app-context'
+import {GestureResponderEvent} from 'react-native'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -22,7 +23,11 @@ type PublicationVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
 type PublicationCommentsAccessory = {key: 'comments'}
 
-export type PublicationRouteContext = 'trusted' | null
+export type PublicationRouteContext =
+  | null
+  | {key: 'trusted'}
+  | {key: 'group'; groupId: string; pathName: string}
+
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
@@ -290,6 +295,22 @@ export function useNavigate(mode: NavMode = 'push') {
       dispatch({type: 'replace', route})
     } else if (mode === 'backplace') {
       dispatch({type: 'backplace', route})
+    }
+  }
+}
+
+export function useClickNavigate() {
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
+
+  return (route: NavRoute, event: GestureResponderEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    // @ts-expect-error
+    if (event.metaKey || event.shiftKey) {
+      spawn(route)
+    } else {
+      navigate(route)
     }
   }
 }

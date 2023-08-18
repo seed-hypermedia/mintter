@@ -19,12 +19,16 @@ import {
   Copy,
   DialogTitle,
   ExternalLink,
+  Fieldset,
   Form,
   Globe,
+  Input,
+  Label,
   Popover,
   Select,
   SizableText,
   Spinner,
+  Text,
   YStack,
 } from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -34,14 +38,15 @@ import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {Upload} from '@tamagui/lucide-icons'
+import {Folder, Upload} from '@tamagui/lucide-icons'
 import DiscardDraftButton from './discard-draft-button'
 import {getDocUrl} from '@mintter/app/src/utils/doc-url'
 import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
 import {usePopoverState} from '../../use-popover-state'
 import {useAppDialog} from '../dialog'
-import {useGroups, usePublishDocToGroup} from '../../models/groups'
+import {useGroup, useGroups, usePublishDocToGroup} from '../../models/groups'
 import {useMyAccount} from '../../models/accounts'
+import {PublicationRouteContext} from '../../utils/navigation'
 
 function DraftPublicationDialog({
   draft,
@@ -111,6 +116,7 @@ function GroupPublishDialog({
     if (myGroups?.length && !selectedGroupId)
       setSelectedGroupId(myGroups[0]?.id)
   }, [myGroups, selectedGroupId])
+  const [pathName, setPathName] = useState(input.docId)
   const publishToGroup = usePublishDocToGroup()
   if (!myGroups) return <Spinner />
   return (
@@ -126,6 +132,7 @@ function GroupPublishDialog({
             groupId: selectedGroupId,
             docId: input.docId,
             version: input.version,
+            pathName,
           }),
           {
             loading: 'Publishing...',
@@ -136,6 +143,11 @@ function GroupPublishDialog({
       }}
     >
       <DialogTitle>Publish to Group</DialogTitle>
+      <Fieldset gap="$4" horizontal>
+        <Label htmlFor="path">Path / Shortname</Label>
+        <Input id="path" value={pathName} onChangeText={setPathName} />
+      </Fieldset>
+
       <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
         <Select.Trigger>
           <Select.Value placeholder="Select Group.." />
@@ -157,7 +169,15 @@ function GroupPublishDialog({
   )
 }
 
-function PubDropdown({docId, version}: {docId: string; version: string}) {
+function PubDropdown({
+  docId,
+  version,
+  pubContext,
+}: {
+  docId: string
+  version: string
+  pubContext: PublicationRouteContext
+}) {
   // const route = useNavRoute()
   // const documentId =
   //   route.key == 'publication'
@@ -177,14 +197,26 @@ function PubDropdown({docId, version}: {docId: string; version: string}) {
   //   : 'Public'
   const popoverState = usePopoverState()
   const groupPublish = useAppDialog(GroupPublishDialog)
+
+  const contextGroupId = pubContext?.key === 'group' ? pubContext.groupId : null
+  const group = useGroup(contextGroupId || undefined)
+  const groupTitle = group.data?.title
   return (
     <>
       <Popover {...popoverState} placement="bottom-end">
         <Popover.Trigger asChild>
-          <Button size="$2" icon={Globe} />
+          <Button size="$2" icon={contextGroupId ? Folder : Globe}>
+            {groupTitle}
+          </Button>
         </Popover.Trigger>
         <Popover.Content padding={0} elevation="$2">
           <YStack>
+            <Text color="orange" fontSize="$2">
+              Document Query coming soon
+            </Text>
+            <Button icon={Folder} iconAfter={Check} disabled>
+              {groupTitle}
+            </Button>
             <Button
               onPress={() => {
                 groupPublish.open({docId, version})
@@ -289,7 +321,13 @@ export function PublicationDropdown() {
     enabled: !!documentId,
   })
   if (!pub.data || !documentId) return null
-  return <PubDropdown version={pub.data.version} docId={documentId} />
+  return (
+    <PubDropdown
+      version={pub.data.version}
+      docId={documentId}
+      pubContext={route.key === 'publication' ? route.pubContext : null}
+    />
+  )
 }
 
 export function DraftPublicationButtons() {

@@ -22,7 +22,7 @@ export function UIAvatar({
 
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && <Avatar.Image source={{uri: url}} />}
+      {url && <Avatar.Image accessibilityLabel={alias} source={{uri: url}} />}
       <Avatar.Fallback
         backgroundColor={color || avatarColor}
         alignItems="center"

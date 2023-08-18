@@ -6,10 +6,12 @@ import {
   usePublicationList,
 } from '@mintter/app/src/models/documents'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
-import {Container, MainWrapper, Spinner, YStack} from '@mintter/ui'
+import {Container, Delete, MainWrapper, Spinner, YStack} from '@mintter/ui'
 import {useState} from 'react'
 
 import './publication-list-page.css'
+import {DeleteDocumentDialog} from '../components/delete-dialog'
+import {useAppDialog} from '../components/dialog'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let {data} = usePublicationList({trustedOnly})
@@ -18,58 +20,37 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   const pubs = data?.publications
   const [scrollHeight, setScrollHeight] = useState(800)
 
-  const RenderPublicationRow = ({
-    index,
-    style,
-  }: {
-    index: number
-    style: React.CSSProperties
-  }) => {
-    const publication = pubs?.[index]
-    if (!publication) return null
-    return (
-      <div style={style}>
-        <PublicationListItem
-          hasDraft={drafts.data?.documents.find(
-            (d) => d.id == publication.document?.id,
-          )}
-          publication={publication}
-          pubContext={trustedOnly ? 'trusted' : null}
-        />
-      </div>
-    )
-  }
-
   let content = (
     <YStack justifyContent="center" height={scrollHeight}>
       <Spinner />
     </YStack>
   )
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
   if (pubs) {
     if (pubs.length) {
-      // content = (
-      //   <List
-      //     className="publication-list-scroller"
-      //     height={scrollHeight}
-      //     width="100%"
-      //     itemSize={44}
-      //     overscanCount={100}
-      //     itemCount={pubs?.length || 0}
-      //   >
-      //     {RenderPublicationRow}
-      //   </List>
-      // )
       content = (
         <>
           {pubs.map((publication) => {
+            const docId = publication.document?.id
+            if (!docId) return null
             return (
               <PublicationListItem
-                pubContext={trustedOnly ? 'trusted' : null}
+                pubContext={trustedOnly ? {key: 'trusted'} : null}
                 key={publication.document?.id}
                 hasDraft={drafts.data?.documents.find(
                   (d) => d.id == publication.document?.id,
                 )}
                 publication={publication}
+                menuItems={[
+                  {
+                    key: 'delete',
+                    label: 'Delete Publication',
+                    icon: Delete,
+                    onPress: () => {
+                      deleteDialog.open(docId)
+                    },
+                  },
+                ]}
               />
             )
           })}
@@ -95,6 +76,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
         }}
       >
         <Container>{content}</Container>
+        {deleteDialog.content}
       </MainWrapper>
       <Footer />
     </>

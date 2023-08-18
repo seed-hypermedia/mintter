@@ -8,9 +8,17 @@ import {
   Separator,
   YGroup,
 } from '@mintter/ui'
-import {GestureResponderEvent} from 'react-native'
+import {GestureResponderEvent, GestureResponderHandlers} from 'react-native'
 import {MenuItem} from './dropdown'
-import {useNavigate} from '../utils/navigation'
+import {formattedDate} from '@mintter/shared'
+import {Timestamp} from '@bufbuild/protobuf'
+
+export type MenuItem = {
+  key: string
+  label: string
+  icon: FC
+  onPress: () => void
+}
 
 export function ListItem({
   accessory,
@@ -23,18 +31,18 @@ export function ListItem({
   title: string
   onPress: (e: GestureResponderEvent) => void
   onPrefetch?: () => void
-  menuItems?: {key: string; label: string; icon: FC; onPress: () => void}[]
+  menuItems?: MenuItem[]
 }) {
-  const [isHovering, setIsHovering] = useState(false)
+  // const [isHovering, setIsHovering] = useState(false)
   const popoverState = usePopoverState()
   return (
     <>
       <Button
         onPointerEnter={() => {
-          setIsHovering(true)
+          // setIsHovering(true)
           onPrefetch?.()
         }}
-        onPointerLeave={() => setIsHovering(false)}
+        // onPointerLeave={() => setIsHovering(false)}
         chromeless
         tag="li"
       >
@@ -65,5 +73,26 @@ export function ListItem({
         </Popover>
       </Button>
     </>
+  )
+}
+
+export function TimeAccessory({
+  time,
+  onPress,
+}: {
+  time: Timestamp | undefined
+  onPress: (e: GestureResponderEvent) => void
+}) {
+  return (
+    <ButtonText
+      fontFamily="$body"
+      fontSize="$2"
+      data-testid="list-item-date"
+      minWidth="10ch"
+      textAlign="right"
+      onPress={onPress}
+    >
+      {time ? formattedDate(time) : '...'}
+    </ButtonText>
   )
 }

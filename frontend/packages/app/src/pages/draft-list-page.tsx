@@ -20,6 +20,9 @@ import {
   YStack,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
+import {useClickNavigate} from '../utils/navigation'
+import {GestureResponderEvent} from 'react-native'
+import {ListItem} from '../components/list-item'
 
 export default function DraftList() {
   let {data, isInitialLoading} = useDraftList()
@@ -53,81 +56,34 @@ export default function DraftList() {
 }
 
 export function DraftListItem({draft}: {draft: Document}) {
-  const navigate = useNavigate()
-  const spawn = useNavigate('spawn')
   let title = draft.title || 'Untitled Document'
-  const popoverState = usePopoverState()
   const {deleteDialog, ...dialogState} = useDeleteDraftDialog({
     id: draft.id,
   })
-
-  function goToItem(event: React.MouseEvent) {
-    event.preventDefault()
-    const route: DraftRoute = {key: 'draft', draftId: draft.id}
-    if (event.metaKey || event.shiftKey) {
-      spawn(route)
-    } else {
-      navigate(route)
-    }
+  const navigate = useClickNavigate()
+  const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
+  const goToItem = (e: GestureResponderEvent) => {
+    navigate(draftRoute, e)
   }
 
   return (
-    <Button
-      chromeless
-      theme="gray"
-      tag="li"
-      // onPointerEnter={() => prefetchDraft(client, draft)}
-    >
-      <ButtonText
-        fontWeight="700"
-        // @ts-ignore
+    <>
+      <ListItem
+        title={title}
         onPress={goToItem}
-        flex={1}
-        data-testid="list-item-title"
-      >
-        {title}
-      </ButtonText>
-      <Text
-        fontFamily="$body"
-        fontSize="$2"
-        data-testid="list-item-date"
-        minWidth="10ch"
-        textAlign="right"
-      >
-        {draft.updateTime ? formattedDate(draft.updateTime) : '...'}
-      </Text>
-      <XStack>
-        <Dropdown.Root {...popoverState}>
-          <Dropdown.Trigger circular data-trigger icon={MoreHorizontal} />
-
-          <Dropdown.Portal>
-            <Dropdown.Content
-              align="end"
-              data-testid="library-item-dropdown-root"
-            >
-              <Dropdown.Item
-                data-testid="new-window-item"
-                onPress={() => {
-                  spawn({key: 'draft', draftId: draft.id})
-                }}
-                asChild
-                title="Open in new Window"
-                icon={ExternalLink}
-              />
-              <Separator />
-              <Dropdown.Item
-                title="Delete Draft"
-                icon={X}
-                onPress={() => {
-                  popoverState.onOpenChange(false)
-                  dialogState.onOpenChange(true)
-                }}
-              />
-            </Dropdown.Content>
-          </Dropdown.Portal>
-        </Dropdown.Root>
-        {deleteDialog}
-      </XStack>
-    </Button>
+        accessory={<></>}
+        menuItems={[
+          {
+            label: 'Delete Draft',
+            key: 'delete',
+            icon: X,
+            onPress: () => {
+              dialogState.onOpenChange(true)
+            },
+          },
+        ]}
+      />
+      {deleteDialog}
+    </>
   )
 }
