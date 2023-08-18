@@ -129,6 +129,8 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, status.Errorf(codes.Unimplemented, "TODO: updating members is not implemented yet")
 	}
 
+	// TODO(burdiyan): check if we are allowed to update the group.
+
 	me, err := srv.getMe()
 	if err != nil {
 		return nil, err
