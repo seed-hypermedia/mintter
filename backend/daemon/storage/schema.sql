@@ -257,9 +257,24 @@ CREATE UNIQUE INDEX idx_site_owner ON site_members (role) WHERE role = 1;
 -- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 CREATE TABLE web_publications (
     -- Entity ID of the published document.
-    eid TEXT PRIMARY KEY CHECK (eid != ''),
+    eid TEXT PRIMARY KEY CHECK (eid <> ''),
     -- doc version of the base document published. Not its references.
     version TEXT NOT NULL,
     -- Path this publication is published to. If NULL is not listed.
     path TEXT UNIQUE
+);
+
+-- Stores all the sites served locally. Sites are a a group + domain.
+-- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+CREATE TABLE served_sites (
+    -- the domain + protocol the site is served in.
+    hostname TEXT CHECK (hostname <> '') PRIMARY KEY,
+    -- entity ID of the group the site is associated with.
+    group_id INTEGER REFERENCES hd_entities (id) ON DELETE NO ACTION NOT NULL,
+    -- the version of the group the site is serving.
+    version TEXT NOT NULL,
+    -- account id of the owner of the group.
+    owner_id INTEGER REFERENCES public_keys (id) ON DELETE NO ACTION NOT NULL,
+    -- same version + groupid cannot be published in different histnames.
+    UNIQUE(group_id, version) ON CONFLICT REPLACE
 );

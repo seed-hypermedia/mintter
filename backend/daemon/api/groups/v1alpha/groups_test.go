@@ -9,6 +9,7 @@ import (
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
+	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"testing"
@@ -250,7 +251,9 @@ func newTestSrv(t *testing.T, name string) *Server {
 	require.NoError(t, fut.Resolve(u.Identity))
 
 	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
-	srv := NewServer(fut.ReadOnly, bs)
+
+	node := future.New[*mttnet.Node]()
+	srv := NewServer(fut.ReadOnly, bs, node.ReadOnly)
 
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)

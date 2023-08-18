@@ -26,6 +26,12 @@ service Groups {
 
   // Lists groups.
   rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+
+  // Converts a group to a site. P2P group will continue to work. 
+  rpc ConvertToSite(ConvertToSiteRequest) returns (ConvertToSiteResponse);
+
+  // Gets information about a site. 
+  rpc GetSiteInfo(GetSiteInfoRequest) returns (GetSiteInfoResponse);
 }
 
 // Request to create a group.
@@ -84,7 +90,7 @@ message UpdateGroupRequest {
   map<string, string> updated_content = 5;
 }
 
-// Response to list members.
+// Request to list members.
 message ListMembersRequest {
   // Required. ID of the group to list members of.
   string id = 1;
@@ -156,6 +162,53 @@ message ListGroupsResponse {
 
   // Token to continue listing groups from.
   string next_page_token = 2;
+}
+
+// Makes a site out of an existing group.
+message ConvertToSiteRequest {
+  // Required. Secret link provided by the site deployment script.
+  string link = 1;
+
+  // Required. Group ID to convert to a site
+  string group_id = 2;
+
+  // Optional. Version of the group to be converted. Latest
+  // version if not provided
+  string version = 3;
+}
+
+// Response to convert to site.
+message ConvertToSiteResponse {
+  // Account of the sites owner.
+  string owner_id = 1;
+
+  // Hostname of the site.
+  string hostname = 2;
+}
+
+// Request to get site info.
+message GetSiteInfoRequest {
+  // Required. hostname where the site is published.
+  string hostname = 1;
+
+  // Optional. Maximum number of members to return.
+  int32 page_size = 2;
+
+  // Optional. Page token to continue listing members from.
+  string page_token = 3;
+}
+
+// Response to get site info.
+message GetSiteInfoResponse {
+  // ID of the group the site is serving.
+  string group_id = 1;
+
+  // Current Version of the group that the site is serving.
+  // Empty means last version.
+  string version = 2;
+
+  // Owner's account of the site.
+  string owner_id = 3;
 }
 
 // Group represents the basic information about a group entity.

@@ -34,6 +34,10 @@ type GroupsClient interface {
 	ListContent(ctx context.Context, in *ListContentRequest, opts ...grpc.CallOption) (*ListContentResponse, error)
 	// Lists groups.
 	ListGroups(ctx context.Context, in *ListGroupsRequest, opts ...grpc.CallOption) (*ListGroupsResponse, error)
+	// Converts a group to a site. P2P group will continue to work.
+	ConvertToSite(ctx context.Context, in *ConvertToSiteRequest, opts ...grpc.CallOption) (*ConvertToSiteResponse, error)
+	// Gets information about a site.
+	GetSiteInfo(ctx context.Context, in *GetSiteInfoRequest, opts ...grpc.CallOption) (*GetSiteInfoResponse, error)
 }
 
 type groupsClient struct {
@@ -98,6 +102,24 @@ func (c *groupsClient) ListGroups(ctx context.Context, in *ListGroupsRequest, op
 	return out, nil
 }
 
+func (c *groupsClient) ConvertToSite(ctx context.Context, in *ConvertToSiteRequest, opts ...grpc.CallOption) (*ConvertToSiteResponse, error) {
+	out := new(ConvertToSiteResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/ConvertToSite", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) GetSiteInfo(ctx context.Context, in *GetSiteInfoRequest, opts ...grpc.CallOption) (*GetSiteInfoResponse, error) {
+	out := new(GetSiteInfoResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/GetSiteInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GroupsServer is the server API for Groups service.
 // All implementations should embed UnimplementedGroupsServer
 // for forward compatibility
@@ -114,6 +136,10 @@ type GroupsServer interface {
 	ListContent(context.Context, *ListContentRequest) (*ListContentResponse, error)
 	// Lists groups.
 	ListGroups(context.Context, *ListGroupsRequest) (*ListGroupsResponse, error)
+	// Converts a group to a site. P2P group will continue to work.
+	ConvertToSite(context.Context, *ConvertToSiteRequest) (*ConvertToSiteResponse, error)
+	// Gets information about a site.
+	GetSiteInfo(context.Context, *GetSiteInfoRequest) (*GetSiteInfoResponse, error)
 }
 
 // UnimplementedGroupsServer should be embedded to have forward compatible implementations.
@@ -137,6 +163,12 @@ func (UnimplementedGroupsServer) ListContent(context.Context, *ListContentReques
 }
 func (UnimplementedGroupsServer) ListGroups(context.Context, *ListGroupsRequest) (*ListGroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGroups not implemented")
+}
+func (UnimplementedGroupsServer) ConvertToSite(context.Context, *ConvertToSiteRequest) (*ConvertToSiteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConvertToSite not implemented")
+}
+func (UnimplementedGroupsServer) GetSiteInfo(context.Context, *GetSiteInfoRequest) (*GetSiteInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSiteInfo not implemented")
 }
 
 // UnsafeGroupsServer may be embedded to opt out of forward compatibility for this service.
@@ -258,6 +290,42 @@ func _Groups_ListGroups_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Groups_ConvertToSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConvertToSiteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).ConvertToSite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.groups.v1alpha.Groups/ConvertToSite",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).ConvertToSite(ctx, req.(*ConvertToSiteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_GetSiteInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSiteInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).GetSiteInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.groups.v1alpha.Groups/GetSiteInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).GetSiteInfo(ctx, req.(*GetSiteInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Groups_ServiceDesc is the grpc.ServiceDesc for Groups service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -288,6 +356,14 @@ var Groups_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListGroups",
 			Handler:    _Groups_ListGroups_Handler,
+		},
+		{
+			MethodName: "ConvertToSite",
+			Handler:    _Groups_ConvertToSite_Handler,
+		},
+		{
+			MethodName: "GetSiteInfo",
+			Handler:    _Groups_GetSiteInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

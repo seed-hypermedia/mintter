@@ -12,6 +12,67 @@ import (
 
 var _ = errors.New
 
+func RegisterSite(conn *sqlite.Conn, servedSitesHostname string, group_id string, servedSitesVersion string, publicKeysPrincipal []byte) error {
+	const query = `INSERT OR REPLACE INTO served_sites (hostname, group_id, version, owner_id)
+VALUES (:servedSitesHostname, (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.id = :group_id), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":servedSitesHostname", servedSitesHostname)
+		stmt.SetText(":group_id", group_id)
+		stmt.SetText(":servedSitesVersion", servedSitesVersion)
+		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: RegisterSite: %w", err)
+	}
+
+	return err
+}
+
+type GetSiteInfoResult struct {
+	HDEntitiesEID       string
+	ServedSitesVersion  string
+	PublicKeysPrincipal []byte
+}
+
+func GetSiteInfo(conn *sqlite.Conn, servedSitesHostname string) (GetSiteInfoResult, error) {
+	const query = `SELECT hd_entities.eid, served_sites.version, public_keys.principal
+FROM served_sites
+JOIN hd_entities ON hd_entities.id = served_sites.group_id
+JOIN public_keys ON public_keys.principal = served_sites.owner_id
+WHERE served_sites.hostname = :servedSitesHostname`
+
+	var out GetSiteInfoResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":servedSitesHostname", servedSitesHostname)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("GetSiteInfo: more than one result return for a single-kind query")
+		}
+
+		out.HDEntitiesEID = stmt.ColumnText(0)
+		out.ServedSitesVersion = stmt.ColumnText(1)
+		out.PublicKeysPrincipal = stmt.ColumnBytes(2)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: GetSiteInfo: %w", err)
+	}
+
+	return out, err
+}
+
 func AddSite(conn *sqlite.Conn, publicKeysPrincipal []byte, sitesAddresses string, sitesHostname string, sitesRole int64) error {
 	const query = `INSERT OR REPLACE INTO sites (account_id, addresses, hostname, role)
 VALUES ((SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal), :sitesAddresses, :sitesHostname, :sitesRole)`

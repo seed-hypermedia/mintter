@@ -69,7 +69,7 @@ func New(
 		Networking: networking.NewServer(node),
 		Site:       siteSrv,
 		Entities:   entities.NewServer(blobs),
-		Groups:     groups.NewServer(repo.Identity(), blobs),
+		Groups:     groups.NewServer(repo.Identity(), blobs, node),
 	}
 }
 

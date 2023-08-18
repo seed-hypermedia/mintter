@@ -73,7 +73,7 @@ var migrations = []migration{
 			ALTER TABLE web_publications RENAME TO old_web_publications;
 
 			CREATE TABLE web_publications (
-				eid TEXT PRIMARY KEY CHECK (eid != ''),
+				eid TEXT PRIMARY KEY CHECK (eid <> ''),
 				version TEXT NOT NULL,
 				path TEXT UNIQUE
 			);
@@ -128,6 +128,18 @@ var migrations = []migration{
 				id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
 			) WITHOUT ROWID;
 			INSERT OR REPLACE INTO trusted_accounts (id) VALUES (1);
+		`))
+	}},
+	// Adding a site registration table for sites to store what groups they serve.
+	{Version: "2023-08-17.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+		CREATE TABLE IF NOT EXISTS served_sites (
+			hostname TEXT CHECK (hostname <> '') PRIMARY KEY,
+			group_id INTEGER REFERENCES hd_entities (id) ON DELETE NO ACTION NOT NULL,
+			version TEXT NOT NULL,
+			owner_id INTEGER REFERENCES public_keys (id) ON DELETE NO ACTION NOT NULL,
+			UNIQUE(group_id, version) ON CONFLICT REPLACE
+		);
 		`))
 	}},
 }

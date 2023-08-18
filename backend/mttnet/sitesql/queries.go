@@ -22,6 +22,40 @@ const (
 //go:generate gorun -tags codegen generateQueries
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("sitesql",
+		qb.MakeQuery(s.Schema, "RegisterSite", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.ServedSites, qb.ListColShort(
+				s.ServedSitesHostname,
+				s.ServedSitesGroupID,
+				s.ServedSitesVersion,
+				s.ServedSitesOwnerID,
+			), '\n',
+			"VALUES", qb.List(
+				qb.VarCol(s.ServedSitesHostname),
+				qb.SubQuery(
+					"SELECT", s.HDEntitiesID,
+					"FROM", s.HDEntities,
+					"WHERE", s.HDEntitiesID, "=", qb.Var("group_id", sqlitegen.TypeText),
+				),
+				qb.VarCol(s.ServedSitesVersion),
+				qb.SubQuery(
+					"SELECT", s.PublicKeysID,
+					"FROM", s.PublicKeys,
+					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
+				),
+			),
+		),
+		qb.MakeQuery(s.Schema, "GetSiteInfo", sqlitegen.QueryKindSingle,
+			"SELECT",
+			qb.Results(
+				qb.ResultCol(s.HDEntitiesEID),
+				qb.ResultCol(s.ServedSitesVersion),
+				qb.ResultCol(s.PublicKeysPrincipal),
+			), '\n',
+			"FROM", s.ServedSites, '\n',
+			"JOIN", s.HDEntities, "ON", s.HDEntitiesID, "=", s.ServedSitesGroupID, '\n',
+			"JOIN", s.PublicKeys, "ON", s.PublicKeysPrincipal, "=", s.ServedSitesOwnerID, '\n',
+			"WHERE", s.ServedSitesHostname, "=", qb.VarCol(s.ServedSitesHostname),
+		),
 		qb.MakeQuery(s.Schema, "AddSite", sqlitegen.QueryKindExec,
 			"INSERT OR REPLACE INTO", s.Sites, qb.ListColShort(
 				s.SitesAccountID,
