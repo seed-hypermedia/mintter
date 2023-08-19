@@ -37,8 +37,7 @@ jobs:
 
       - name: Validate code
         run: |
-          yarn desktop:validate
-          yarn desktop:lint
+          yarn validate
       
       - name: Build Backend (Unix)
         run: |

@@ -46,8 +46,7 @@ jobs:
 
       - name: Validate Code
         run: |
-          yarn site:validate
-          yarn site:lint
+          yarn validate
 
       - name: Run Site tests
         run: yarn site:test

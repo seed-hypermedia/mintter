@@ -85,16 +85,6 @@ def main():
         run("yarn install")
         run("plz build //backend:mintterd //:yarn")
         run("yarn desktop:make")
-
-    @cmd(
-        cmds, "validate-desktop", "Formats, Validates and test the desktop app"
-    )
-    def validate_desktop(args):
-        run("yarn desktop:format")
-        run("yarn desktop:validate")
-        run("yarn desktop:lint")
-        run("yarn desktop:make")
-        run("yarn desktop:test")
     
     
     @cmd(cmds, "run-site", "Run sites app for development.")
@@ -121,13 +111,10 @@ def main():
         )
     
     @cmd(
-        cmds, "validate-site", "Formats, Validates and test the site app"
+        cmds, "validate", "Formats, Validates and test the site app"
     )
-    def validate_site(args):
-        run("yarn site:format")
-        run("yarn site:validate")
-        run("yarn site:lint")
-        run("yarn site:test")
+    def validate(args):
+        run("yarn validate")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
