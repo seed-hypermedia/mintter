@@ -8,7 +8,9 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const info = await daemonClient.getInfo({})
-  const peerInfo = await networkingClient.getPeerInfo({deviceId: info.deviceId})
+  const peerInfo = await networkingClient.getPeerInfo({
+    deviceId: info.deviceId,
+  })
   const wellKnown = new SiteDiscoveryConfig({
     accountId: info.accountId,
     peerId: info.deviceId,

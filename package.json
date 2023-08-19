@@ -2,9 +2,10 @@
   "name": "mintter",
   "private": true,
   "scripts": {
-    "format": "echo TODO",
     "lint": "turbo lint --continue -- --cache --cache-location 'node_modules/.cache/.eslintcache'",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location 'node_modules/.cache/.eslintcache'",
+    "format": "turbo format --continue -- --cache --cache-location='node_modules/.cache/.prettiercache'",
+    "format:fix": "turbo format --continue -- --write --cache --cache-location='node_modules/.cache/.prettiercache'",
     "test": "yarn workspaces foreach run test",
     "validate": "yarn format && yarn lint && yarn test",
     "site": "yarn workspace @mintter/site dev",

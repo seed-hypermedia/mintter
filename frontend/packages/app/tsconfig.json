@@ -7,7 +7,7 @@
     // "baseUrl": ".",
     "paths": {
       "@mintter/app/*": ["frontend/packages/app/src/*"],
-      "@mintter/shared": ["frontend/packages/shared/src/index.ts"] 
+      "@mintter/shared": ["frontend/packages/shared/src/index.ts"]
     }
   },
   "references": []

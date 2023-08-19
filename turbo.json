@@ -4,9 +4,13 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "out/**"]
     },
     "lint": {},
+    "format": {
+      "outputs": ["node_modules/.cache/.prettiercache"],
+      "outputMode": "new-only"
+    },
     "dev": {
       "cache": false,
       "persistent": true

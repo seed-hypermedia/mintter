@@ -13,7 +13,8 @@
     "dist"
   ],
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check"
   },
   "dependencies": {
     "@tamagui/animations-react-native": "1.52.5",
@@ -27,6 +28,7 @@
     "tamagui": "1.52.5"
   },
   "devDependencies": {
+    "@mintter/prettier": "workspace:*",
     "@tamagui/build": "1.52.5",
     "eslint-config-custom": "workspace:*"
   }

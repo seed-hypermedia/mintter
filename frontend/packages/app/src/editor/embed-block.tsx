@@ -163,7 +163,12 @@ function EmbedPresentation({
         onPress={() => {
           let [documentId, version, blockId] = getIdsfromUrl(block.props.ref)
           if (documentId) {
-            spawn({key: 'publication', documentId, versionId: version, blockId})
+            spawn({
+              key: 'publication',
+              documentId,
+              versionId: version,
+              blockId,
+            })
           }
         }}
         hoverStyle={{

@@ -131,9 +131,8 @@ export default function AccountPage() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
   const deviceCount = account.devices.length
-  const connectedCount = account.devices?.filter(
-    (device) => device.isConnected,
-  ).length
+  const connectedCount = account.devices?.filter((device) => device.isConnected)
+    .length
   const isConnected = !!connectedCount
   return (
     <>

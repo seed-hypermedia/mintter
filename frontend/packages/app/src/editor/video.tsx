@@ -71,7 +71,9 @@ const Render = (
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
   const assignFile = (newVideo: VideoType) => {
-    editor.updateBlock(block.id, {props: {...block.props, ...newVideo.props}})
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newVideo.props},
+    })
     editor.setTextCursorPosition(block.id, 'end')
   }
 

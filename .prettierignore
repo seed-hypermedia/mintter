@@ -1,0 +1,39 @@
+.yarn
+ node_modules
+
+ # build code
+ build
+ dist
+ public
+ out
+ plz-out
+ types
+ docs
+ .yarn/*
+ .github/*
+ .yarnrc.yml
+ .vscode/*
+
+ # Project files
+ docs
+ infra
+ scripts
+ tools
+
+ # Generated files
+ coverage
+ .generated
+ /target
+ exts/*
+ .vite
+ **/*.typegen.*
+
+ # Site
+ frontend/apps/site/.next
+ frontend/apps/site/.vercel
+ frontend/apps/site/.tamagui
+ frontend/apps/desktop/.tamagui
+ frotnend/apps/desktop/out
+
+ # Shared
+ frontend/packages/shared/src/client/.generated

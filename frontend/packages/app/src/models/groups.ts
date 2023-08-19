@@ -54,7 +54,11 @@ export function useCreateGroup(
   })
 }
 
-type UpdateGroupMutationInput = {id: string; title: string; description: string}
+type UpdateGroupMutationInput = {
+  id: string
+  title: string
+  description: string
+}
 
 export function useUpdateGroup(
   opts?: UseMutationOptions<void, unknown, UpdateGroupMutationInput>,

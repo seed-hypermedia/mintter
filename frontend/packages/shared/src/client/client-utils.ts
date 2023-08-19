@@ -13,6 +13,9 @@ export const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 export const prodInter: Interceptor = (next) => async (req) => {
-  const result = await next({...req, init: {...req.init, redirect: 'follow'}})
+  const result = await next({
+    ...req,
+    init: {...req.init, redirect: 'follow'},
+  })
   return result
 }

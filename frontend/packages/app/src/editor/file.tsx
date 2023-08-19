@@ -72,7 +72,9 @@ const Render = (
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
   const assignFile = (newFile: FileType) => {
-    editor.updateBlock(block.id, {props: {...block.props, ...newFile.props}})
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newFile.props},
+    })
     editor.setTextCursorPosition(block.id, 'end')
   }
 

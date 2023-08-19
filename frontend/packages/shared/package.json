@@ -8,13 +8,14 @@
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint .",
-    "format": "echo TODO",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check",
     "validate": "yarn lint && yarn test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@mintter/prettier": "workspace:*",
     "@types/extend": "3.0.1",
     "@types/hast": "2.3.4",
     "@types/unist": "2.0.6",

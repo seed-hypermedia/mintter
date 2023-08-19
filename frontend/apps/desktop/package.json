@@ -19,6 +19,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "6.2.1",
     "@electron-forge/plugin-electronegativity": "6.2.1",
     "@electron-forge/plugin-vite": "6.2.1",
+    "@mintter/prettier": "workspace:*",
     "@playwright/test": "1.37.0",
     "@reforged/maker-appimage": "3.3.1",
     "@tamagui/vite-plugin": "1.52.5",
@@ -38,6 +39,7 @@
     "dev": "electron-forge start",
     "e2e": "playwright test",
     "lint": "echo TODO",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check",
     "make": "electron-forge make",
     "package": "electron-forge package",
     "publish": "electron-forge publish"

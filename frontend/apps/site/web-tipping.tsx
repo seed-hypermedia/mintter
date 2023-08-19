@@ -226,7 +226,11 @@ function RadioGroupItemWithLabel({
 
 type InvoiceSplit = {id: string; percentage: number}[]
 
-type SplitAction = {type: 'incrementPercentage'; increment: number; id: string}
+type SplitAction = {
+  type: 'incrementPercentage'
+  increment: number
+  id: string
+}
 let editorsOverallPercentage = 0.99
 
 function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {

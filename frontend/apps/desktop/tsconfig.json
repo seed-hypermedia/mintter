@@ -29,6 +29,6 @@
     }
   },
   "include": ["src", "env.d.ts"],
-  "references": [{"path": "./tsconfig.node.json"}],
+  "references": [{ "path": "./tsconfig.node.json" }],
   "extends": "../../../tsconfig"
 }

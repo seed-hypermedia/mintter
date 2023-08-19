@@ -12,7 +12,9 @@ export async function prepareSlugPage(
   setAllowAnyHostGetCORS(context.res)
 
   const info = await daemonClient.getInfo({})
-  const peerInfo = await networkingClient.getPeerInfo({deviceId: info.deviceId})
+  const peerInfo = await networkingClient.getPeerInfo({
+    deviceId: info.deviceId,
+  })
 
   context.res.setHeader(
     'x-mintter-site-p2p-addresses',
