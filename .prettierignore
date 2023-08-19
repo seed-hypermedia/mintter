@@ -27,6 +27,7 @@
  exts/*
  .vite
  **/*.typegen.*
+ .next
 
  # Site
  frontend/apps/site/.next
