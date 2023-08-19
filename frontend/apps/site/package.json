@@ -21,7 +21,6 @@
     "@tamagui/lucide-icons": "1.52.5",
     "@tamagui/next-theme": "1.52.5",
     "@tanstack/react-query": "4.32.0",
-    "@trpc/client": "10.37.1",
     "@trpc/next": "10.37.1",
     "@trpc/react-query": "10.37.1",
     "@trpc/server": "10.37.1",
