@@ -1,9 +1,5 @@
-import {config} from '@mintter/ui'
+import {config} from "@mintter/ui";
 
-type Conf = typeof config
+type Conf = typeof config;
 
-declare module 'tamagui' {
-  interface TamaguiCustomConfig extends Conf {}
-}
-
-export default config
+export default config;

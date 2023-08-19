@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "format": "echo TODO",
-    "lint": "echo TODO",
+    "lint": "turbo lint --continue -- --cache --cache-location 'node_modules/.cache/.eslintcache'",
+    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location 'node_modules/.cache/.eslintcache'",
     "test": "yarn workspaces foreach run test",
     "validate": "yarn format && yarn lint && yarn test",
     "site": "yarn workspace @mintter/site dev",
@@ -52,5 +53,10 @@
     "sort-package-json": "^2.5.1",
     "ts-node": "10.9.1",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "eslint": "^8.47.0",
+    "prettier": "^3.0.2",
+    "turbo": "^1.10.12"
   }
 }
