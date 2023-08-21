@@ -159,6 +159,7 @@
     "happy-dom": "7.8.1",
     "is-hidden": "2.0.1",
     "jsdom": "^22.1.0",
+    "prettier": "^3.0.2",
     "prosemirror-dev-tools": "^4.0.0",
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",

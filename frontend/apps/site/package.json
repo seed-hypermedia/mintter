@@ -63,6 +63,7 @@
     "expo-modules-core": "0.6.5",
     "expo-screen-orientation": "4.3.0",
     "next-transpile-modules": "^10.0.0",
+    "prettier": "^3.0.2",
     "webpack": "5.80.0"
   },
   "peerDependencies": {

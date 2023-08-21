@@ -18,7 +18,7 @@ export function useGroup(groupId: string | undefined) {
   return useQuery({
     queryKey: [queryKeys.GET_GROUP, groupId],
     queryFn: async () => {
-      const group =  await grpcClient.groups.getGroup({id: groupId})
+      const group = await grpcClient.groups.getGroup({id: groupId})
       console.log('group', group)
       return group
     },
@@ -215,7 +215,6 @@ export function useGroupMembers(groupId: string) {
     },
   })
 }
-
 
 export function useGroupSite(groupId: string) {
   const grpcClient = useGRPCClient()
