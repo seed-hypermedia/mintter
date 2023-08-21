@@ -13,6 +13,7 @@
     "bazelbuild.vscode-bazel",
     "zxh404.vscode-proto3",
     "mkhl.direnv",
+    "FernandoTheRojo.nandorojo-tamagui"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": [
