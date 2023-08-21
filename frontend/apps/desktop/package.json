@@ -27,6 +27,7 @@
     "@bufbuild/connect-web": "0.7.0",
     "@electron-forge/publisher-github": "6.2.1",
     "@mintter/app": "workspace:*",
+    "@mintter/prettier": "workspace:*",
     "@mintter/shared": "workspace:*",
     "@mintter/ui": "workspace:*",
     "@sentry/electron": "4.7.0",
