@@ -61,6 +61,8 @@ import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {useEditGroupInfoDialog} from '../edit-group-info'
 import {useGroup} from '../../models/groups'
+import {getPublicDocUrl, getPublicEntityUrl} from '@mintter/app/utils/doc-url'
+import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 
 function NewDocumentButton() {
   const route = useNavRoute()
@@ -130,6 +132,47 @@ export function GroupOptionsButton() {
   )
 }
 
+function getReferenceUrlOfRoute(route: NavRoute) {
+  if (route.key === 'group') {
+    const url = getPublicEntityUrl(route.groupId) // we use this because group IDs are full URLs with hd://g/ prefix, so this more generic conversion is available.
+    if (!url) return null
+    return {
+      label: 'Group URL',
+      url,
+    }
+  }
+  if (route.key === 'publication') {
+    // docIds currently do not include this hd:// prefix so we use the specific doc url function
+    const url = getPublicDocUrl(route.documentId, route.versionId)
+    if (!url) return null
+    return {
+      label: 'Doc URL',
+      url,
+    }
+  }
+  return null
+}
+
+function CopyReferenceButton() {
+  const route = useNavRoute()
+  const reference = getReferenceUrlOfRoute(route)
+  if (!reference) return null
+  return (
+    <Tooltip content={`Copy ${reference.label}`}>
+      <Button
+        aria-label={`Copy ${reference.label}`}
+        chromeless
+        size="$2"
+        icon={Copy}
+        onPress={() => {
+          copyTextToClipboard(reference.url)
+          toast.success(`${reference.label} copied to clipboard`)
+        }}
+      ></Button>
+    </Tooltip>
+  )
+}
+
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
@@ -143,11 +186,13 @@ export function PageActionButtons(props: TitleBarProps) {
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
+      <CopyReferenceButton key="copyRef" />,
       <NewDocumentButton key="newDoc" />,
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
-      <WriteActions route={route} />,
+      <WriteActions key="writeActions" route={route} />,
+      <CopyReferenceButton key="copyRef" />,
       <NewDocumentButton key="newDoc" />,
     ]
   }
