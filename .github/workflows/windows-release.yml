@@ -109,7 +109,7 @@ jobs:
       - name: Build App Package (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
-          TAMAGUI_TARGET=web yarn electron:make
+          TAMAGUI_TARGET=web yarn desktop:make
         env:
           APP_VERSION: '${{ needs.get-version.outputs.version }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -122,7 +122,7 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: |
           $env:TAMAGUI_TARGET="web"
-          yarn electron:make
+          yarn desktop:make
         env:
           APP_VERSION: '${{ needs.get-version.outputs.version }}'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
