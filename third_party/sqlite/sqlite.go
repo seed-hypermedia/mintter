@@ -46,6 +46,7 @@ package sqlite
 // #include <stdlib.h>
 // #include <string.h>
 // #include "wrappers.h"
+// #include "./sha1.h"
 //
 // // Use a helper function here to avoid the cgo pointer detection
 // // logic treating SQLITE_TRANSIENT as a Go pointer.
@@ -63,7 +64,9 @@ package sqlite
 // }
 //
 // // Insert desired loadable SQLite extensions here.
-// static void load_extensions() {}
+// static void load_extensions() {
+//   sqlite3_auto_extension((void(*)(void))sqlite3_sha_init);
+// }
 import "C"
 import (
 	"bytes"
