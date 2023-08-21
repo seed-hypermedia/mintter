@@ -1,9 +1,13 @@
 // test page for groupsClient.getSiteInfo({ hostname: process.env.GW_NEXT_HOST }) so we can see if this works in production
-import {groupsClient} from '../../client'
+import {groupsClient} from 'client'
 import {NextApiRequest, NextApiResponse} from 'next'
 
+const gatewayHostWithProtocol = process.env.GW_NEXT_HOST
+const gatewayHost = new URL(gatewayHostWithProtocol || '').hostname
+
 console.log('ℹ️ site info! ', {
-  hostname: process.env.GW_NEXT_HOST,
+  gatewayHost,
+  gatewayHostWithProtocol,
   port: process.env.PORT,
   grpcHost: process.env.NEXT_PUBLIC_GRPC_HOST,
 })
@@ -13,7 +17,7 @@ export default async function siteTestHandler(
   res: NextApiResponse,
 ) {
   const info = await groupsClient.getSiteInfo({
-    hostname: process.env.GW_NEXT_HOST,
+    hostname: gatewayHost,
   })
 
   res

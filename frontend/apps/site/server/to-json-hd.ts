@@ -1,9 +1,10 @@
 import {
   Account,
   ChangeInfo,
-  ServerLink,
+  MttLink,
   Publication,
   SiteInfo,
+  Group,
 } from '@mintter/shared'
 import {
   HDAccount,
@@ -11,6 +12,7 @@ import {
   HDPublication,
   HDSiteInfo,
   HDLink,
+  HDGroup,
 } from './json-hd'
 
 export function hdPublication(input?: Publication | null) {
@@ -28,12 +30,17 @@ export function hdAccount(input?: Account | null) {
   return input.toJson() as HDAccount
 }
 
+export function hdGroup(input?: Group | null) {
+  if (!input) return null
+  return input.toJson() as HDGroup
+}
+
 export function hdChangeInfo(input?: ChangeInfo | null) {
   if (!input) return null
   return input.toJson() as HDChangeInfo
 }
 
-export function hdLink(input?: ServerLink) {
+export function hdLink(input?: MttLink) {
   if (!input) return null
   return input.toJson() as HDLink
 }

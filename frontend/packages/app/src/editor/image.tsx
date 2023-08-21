@@ -425,7 +425,7 @@ function ImageForm({
                 setFileName({
                   name: 'Upload File',
                   color: 'black',
-                });
+                })
                 setTabState(value)
               }}
               orientation="horizontal"
@@ -634,7 +634,7 @@ function ImageForm({
                         </Form.Trigger>
                       </XStack>
                       {fileName.name != 'Upload File' && (
-                        <SizableText 
+                        <SizableText
                           size="$2"
                           color={fileName.color}
                           paddingTop="$2"

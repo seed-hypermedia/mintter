@@ -11,6 +11,7 @@ import type {
   HDTimestamp,
   ChangeInfo,
   MttLink,
+  Group,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
@@ -92,6 +93,16 @@ export type HDAccount = {
   id?: string
   profile?: HDProfile
   devices?: {[key: string]: HDDevice}
+}
+
+export type ServerGroup = Group
+export type HDGroup = {
+  id?: string
+  title?: string
+  description?: string
+  ownerAccountId?: string
+  createTime?: HDTimestamp
+  version?: string
 }
 
 export type ServerLink = MttLink

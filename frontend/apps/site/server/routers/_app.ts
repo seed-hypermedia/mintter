@@ -3,8 +3,10 @@ import {
   Accounts,
   Changes,
   ContentGraph,
+  Groups,
   Publications,
   WebPublishing,
+  getIdsfromUrl,
 } from '@mintter/shared'
 import {localWebsiteClient, transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
@@ -12,6 +14,7 @@ import {HDChangeInfo} from 'server/json-hd'
 import {
   hdAccount,
   hdChangeInfo,
+  hdGroup,
   hdLink,
   hdPublication,
   hdSiteInfo,
@@ -23,6 +26,7 @@ const contentGraphClient = createPromiseClient(ContentGraph, transport)
 const publicationsClient = createPromiseClient(Publications, transport)
 const webClient = createPromiseClient(WebPublishing, transport)
 const accountsClient = createPromiseClient(Accounts, transport)
+const groupsClient = createPromiseClient(Groups, transport)
 const changesClient = createPromiseClient(Changes, transport)
 
 const publicationRouter = router({
@@ -214,6 +218,106 @@ const publicationRouter = router({
     }),
 })
 
+const groupRouter = router({
+  getSitePath: procedure
+    .input(z.object({hostname: z.string()}))
+    .query(async ({input}) => {
+      // todo. get current group content and find the pathName, return the corresponding doc
+      console.log('getting site info')
+      const siteInfo = await groupsClient.getSiteInfo({
+        hostname: input.hostname,
+      })
+      return {
+        groupId: siteInfo.groupId,
+        ownerId: siteInfo.ownerId,
+        version: siteInfo.version,
+      }
+    }),
+  getGroupPath: procedure
+    .input(
+      z.object({
+        groupEid: z.string(),
+        pathName: z.string(),
+        version: z.string().optional(),
+      }),
+    )
+    .query(async ({input: {pathName, groupEid, version}}) => {
+      // todo. get current group content and find the pathName, return the corresponding doc
+      console.log('getting site info')
+      const groupId = `hd://g/${groupEid}`
+      const siteInfo = await groupsClient.listContent({
+        id: groupId,
+        version,
+      })
+      const group = await groupsClient.getGroup({
+        id: groupId,
+        version,
+      })
+      const item = siteInfo.content[pathName]
+      if (!item) return null
+      const [documentId, documentVersion] = getIdsfromUrl(item)
+      if (!documentId || !documentVersion) return null // version is required for group content
+      const pub = await publicationsClient.getPublication({
+        documentId,
+        version: documentVersion,
+      })
+      return {
+        publication: hdPublication(pub),
+        pathName,
+        documentId,
+        documentVersion,
+        groupVersion: version,
+        groupEid,
+        group: hdGroup(group),
+      }
+    }),
+  get: procedure
+    .input(
+      z.object({
+        groupEid: z.string(),
+      }),
+    )
+    .query(async ({input}) => {
+      console.log('will getGroup with id', input)
+      const group = await groupsClient.getGroup({
+        id: `hd://g/${input.groupEid}`,
+      })
+      console.log('did get group', hdGroup(group))
+      return {
+        group: hdGroup(group),
+      }
+    }),
+  listContent: procedure
+    .input(
+      z.object({
+        groupEid: z.string(),
+      }),
+    )
+    .query(async ({input}) => {
+      const list = await groupsClient.listContent({
+        id: `hd://g/${input.groupEid}`,
+      })
+      const listedDocs = await Promise.all(
+        Object.entries(list.content).map(async ([pathName, pubUrl]) => {
+          const [docId, version] = getIdsfromUrl(pubUrl)
+          if (!docId || !version) return null // version is required for group content
+
+          const pub = await publicationsClient.getPublication({
+            documentId: docId,
+            version,
+          })
+          return {
+            pathName,
+            docId,
+            version,
+            publication: hdPublication(pub),
+          }
+        }),
+      )
+      return listedDocs
+    }),
+})
+
 const accountRouter = router({
   get: procedure
     .input(
@@ -241,6 +345,7 @@ const siteInfoRouter = router({
 export const appRouter = router({
   publication: publicationRouter,
   account: accountRouter,
+  group: groupRouter,
   siteInfo: siteInfoRouter,
 })
 

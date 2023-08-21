@@ -18,7 +18,9 @@ export function useGroup(groupId: string | undefined) {
   return useQuery({
     queryKey: [queryKeys.GET_GROUP, groupId],
     queryFn: async () => {
-      return await grpcClient.groups.getGroup({id: groupId})
+      const group =  await grpcClient.groups.getGroup({id: groupId})
+      console.log('group', group)
+      return group
     },
     enabled: !!groupId,
   })
@@ -210,6 +212,17 @@ export function useGroupMembers(groupId: string) {
     queryKey: [queryKeys.GET_GROUP_MEMBERS, groupId],
     queryFn: async () => {
       return await grpcClient.groups.listMembers({id: groupId})
+    },
+  })
+}
+
+
+export function useGroupSite(groupId: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryKey: [queryKeys.GET_GROUP_SITE, groupId],
+    queryFn: async () => {
+      // return await grpcClient.groups.getSiteInfo({})
     },
   })
 }
