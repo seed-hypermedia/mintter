@@ -437,25 +437,6 @@ function FileForm({
                     Upload
                   </SizableText>
                 </Tabs.Tab>
-                {/* <Tabs.Tab
-                  unstyled
-                  value="embed"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'embed' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
-                  hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <SizableText size="$2" color="black">
-                    Embed Link
-                  </SizableText>
-                </Tabs.Tab> */}
               </Tabs.List>
 
               <Tabs.Content value="upload">
@@ -512,7 +493,7 @@ function FileForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
-                      size="$3"
+                      borderRadius="$3"
                       width={500}
                       justifyContent="center"
                       hoverStyle={{
@@ -548,47 +529,6 @@ function FileForm({
                   </XStack>
                 </XStack>
               </Tabs.Content>
-              {/* <Tabs.Content value="embed">
-                <XStack padding="$4" alignItems="center" backgroundColor="white">
-                  <Form
-                    alignItems="center"
-                    onSubmit={() => submitFile(url)}
-                    borderWidth={0}
-                  >
-                    <XStack>
-                      <Input
-                        width={380}
-                        size="$3"
-                        marginRight="$3"
-                        borderColor="lightgrey"
-                        borderWidth="$0.5"
-                        borderRadius="$0"
-                        color="black"
-                        placeholder="Add an File URL"
-                        focusStyle={{
-                          borderColor: 'lightgrey',
-                          outlineWidth: 0,
-                          cursor: 'pointer',
-                        }}
-                        onChange={(e) => setUrl(e.nativeEvent.text)} />
-                      <Form.Trigger asChild>
-                        <Button
-                          size="$3"
-                          flex={0}
-                          flexShrink={0}
-                          theme={fileName.color === 'red' ? 'gray' : 'green'}
-                          disabled={fileName.color === 'red' ? true : false}
-                          focusStyle={{
-                            outlineWidth: 0,
-                          }}
-                        >
-                          Save
-                        </Button>
-                      </Form.Trigger>
-                    </XStack>
-                  </Form>
-                </XStack>
-              </Tabs.Content> */}
             </Tabs>
           </Popover.Content>
         </Popover>

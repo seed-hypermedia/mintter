@@ -346,8 +346,8 @@ function VideoForm({
         } catch (error) {
           console.error(error)
         }
-      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
-    }
+      } else setFileName({name: 'The file size exceeds 60 MB.', color: 'red'})
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
   }
 
   const isValidUrl = (urlString: string) => {
@@ -378,7 +378,7 @@ function VideoForm({
         >
           <Popover.Trigger asChild>
             <Button
-              // icon={FileIcon}
+              icon={RiVideoAddFill}
               theme="gray"
               borderRadius={0}
               size="$5"
@@ -407,7 +407,13 @@ function VideoForm({
           >
             <Tabs
               value={tabState}
-              onValueChange={setTabState}
+              onValueChange={(value: string) => {
+                setFileName({
+                  name: 'Upload File',
+                  color: 'black',
+                });
+                setTabState(value)
+              }}
               orientation="horizontal"
               flexDirection="column"
               borderWidth="$1"
@@ -533,6 +539,7 @@ function VideoForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
+                      borderRadius="$3"
                       size="$3"
                       width={500}
                       justifyContent="center"
@@ -581,38 +588,48 @@ function VideoForm({
                     onSubmit={() => submitVideo(url)}
                     borderWidth={0}
                   >
-                    <XStack>
-                      <Input
-                        width={380}
-                        size="$3"
-                        marginRight="$3"
-                        borderColor="lightgrey"
-                        borderWidth="$0.5"
-                        borderRadius="$0"
-                        color="black"
-                        placeholder="Add a Video URL"
-                        focusStyle={{
-                          borderColor: 'lightgrey',
-                          outlineWidth: 0,
-                          cursor: 'pointer',
-                        }}
-                        onChange={(e) => setUrl(e.nativeEvent.text)}
-                      />
-                      <Form.Trigger asChild>
-                        <Button
-                          size="$3"
-                          flex={0}
-                          flexShrink={0}
-                          theme={fileName.color === 'red' ? 'gray' : 'green'}
-                          disabled={fileName.color === 'red' ? true : false}
+                    <YStack flex={1}>
+                      <XStack>
+                        <Input
+                          width={360}
+                          marginRight="$3"
+                          backgroundColor="white"
+                          color="black"
+                          borderColor="lightgrey"
+                          borderWidth="$0.5"
+                          borderRadius="$3"
+                          placeholder="Input video link..."
                           focusStyle={{
+                            borderColor: 'lightgrey',
                             outlineWidth: 0,
                           }}
+                          onChange={(e) => setUrl(e.nativeEvent.text)}
+                        />
+                        <Form.Trigger asChild>
+                          <Button
+                            flex={0}
+                            flexShrink={0}
+                            borderRadius="$3"
+                            theme={fileName.color === 'red' ? 'gray' : 'green'}
+                            disabled={fileName.color === 'red' ? true : false}
+                            focusStyle={{
+                              outlineWidth: 0,
+                            }}
+                          >
+                            Embed
+                          </Button>
+                        </Form.Trigger>
+                      </XStack>
+                      {fileName.name != 'Upload File' && (
+                        <SizableText 
+                          size="$2"
+                          color={fileName.color}
+                          paddingTop="$2"
                         >
-                          Save
-                        </Button>
-                      </Form.Trigger>
-                    </XStack>
+                          {fileName.name}
+                        </SizableText>
+                      )}
+                    </YStack>
                   </Form>
                 </XStack>
               </Tabs.Content>
