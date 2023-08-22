@@ -5,7 +5,6 @@
     "*.css"
   ],
   "private": true,
-  "types": "./types/index",
   "main": "src/index.tsx",
   "module:jsx": "src",
   "files": [

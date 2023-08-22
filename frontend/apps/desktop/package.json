@@ -1,45 +1,24 @@
 {
   "name": "@mintter/desktop",
-  "version": "0.1.0",
+  "version": "2023.08.85",
   "productName": "Mintter",
   "description": "Mintter: A Hyperdocs client",
   "keywords": [],
-  "author": {
-    "name": "Mintterteam",
-    "email": "horacio@mintter.com"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@electron-forge/cli": "6.2.1",
-    "@electron-forge/maker-deb": "6.2.1",
-    "@electron-forge/maker-dmg": "6.2.1",
-    "@electron-forge/maker-rpm": "6.2.1",
-    "@electron-forge/maker-squirrel": "6.2.1",
-    "@electron-forge/maker-zip": "6.2.1",
-    "@electron-forge/plugin-auto-unpack-natives": "6.2.1",
-    "@electron-forge/plugin-electronegativity": "6.2.1",
-    "@electron-forge/plugin-vite": "6.2.1",
-    "@mintter/prettier": "workspace:*",
-    "@playwright/test": "1.37.0",
-    "@reforged/maker-appimage": "3.3.1",
-    "@tamagui/vite-plugin": "1.52.5",
-    "@types/react": "18.0.37",
-    "@types/react-dom": "18.0.11",
-    "electron": "25.3.0",
-    "electron-playwright-helpers": "1.6.0",
-    "eslint-config-custom": "workspace:*",
-    "vite-tsconfig-paths": "^4.2.0"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mintterteam/mintter.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Mintterteam",
+    "email": "horacio@mintter.com"
   },
   "main": ".vite/build/main.js",
   "scripts": {
     "dev": "electron-forge start",
     "e2e": "playwright test",
-    "lint": "echo TODO",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check",
+    "lint": "echo TODO",
     "make": "electron-forge make",
     "package": "electron-forge package",
     "publish": "electron-forge publish"
@@ -65,5 +44,26 @@
     "superjson": "1.13.1",
     "update-electron-app": "2.0.1",
     "zod": "3.21.4"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "6.2.1",
+    "@electron-forge/maker-deb": "6.2.1",
+    "@electron-forge/maker-dmg": "6.2.1",
+    "@electron-forge/maker-rpm": "6.2.1",
+    "@electron-forge/maker-squirrel": "6.2.1",
+    "@electron-forge/maker-zip": "6.2.1",
+    "@electron-forge/plugin-auto-unpack-natives": "6.2.1",
+    "@electron-forge/plugin-electronegativity": "6.2.1",
+    "@electron-forge/plugin-vite": "6.2.1",
+    "@mintter/prettier": "workspace:*",
+    "@playwright/test": "1.37.0",
+    "@reforged/maker-appimage": "3.3.1",
+    "@tamagui/vite-plugin": "1.52.5",
+    "@types/react": "18.0.37",
+    "@types/react-dom": "18.0.11",
+    "electron": "25.3.0",
+    "electron-playwright-helpers": "1.6.0",
+    "eslint-config-custom": "workspace:*",
+    "vite-tsconfig-paths": "^4.2.0"
   }
 }

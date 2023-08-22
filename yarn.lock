@@ -5034,8 +5034,6 @@ __metadata:
     vite-tsconfig-paths: 4.2.0
     vitest: ^0.33.0
     ws: 8.13.0
-    y-prosemirror: ^1.2.1
-    y-protocols: ^1.0.5
     yjs: ^13.6.4
   languageName: unknown
   linkType: soft
@@ -19996,7 +19994,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lib0@npm:^0.2.42, lib0@npm:^0.2.74":
+"lib0@npm:^0.2.74":
   version: 0.2.82
   resolution: "lib0@npm:0.2.82"
   dependencies:
@@ -27255,9 +27253,9 @@ __metadata:
   linkType: hard
 
 "std-env@npm:^3.0.1, std-env@npm:^3.3.3":
-  version: 3.4.2
-  resolution: "std-env@npm:3.4.2"
-  checksum: e08794eff2498fa0bfcf997c22eac20b8711a865650f597f041be456aee854e8779816ee8fc701dc9bc040307d007df271b05e44ae7660e9a19ea27a5c78a876
+  version: 3.4.1
+  resolution: "std-env@npm:3.4.1"
+  checksum: 69ddc91bc78bb9c1d8e2d21129a0e9c0ecd44205e79d2350cfc0df0786f9eecebec3dd0da83f9c6b21d03282319811e1eae6891cf4b90b10b48a7fa126e78c02
   languageName: node
   linkType: hard
 
@@ -30467,30 +30465,6 @@ __metadata:
   version: 4.19.0
   resolution: "xterm@npm:4.19.0"
   checksum: 4385e08d6f1e26d0db295ba55f0ed9c304686a72c2cfdd32502cf59de23ae9c93434d469fc3735f44375602f209f767a1ba643a86be6f8e0f1cf7e5bfdccde87
-  languageName: node
-  linkType: hard
-
-"y-prosemirror@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "y-prosemirror@npm:1.2.1"
-  dependencies:
-    lib0: ^0.2.42
-  peerDependencies:
-    prosemirror-model: ^1.7.1
-    prosemirror-state: ^1.2.3
-    prosemirror-view: ^1.9.10
-    y-protocols: ^1.0.1
-    yjs: ^13.5.38
-  checksum: dcd28af9315d82d7007fa5ab0fe649bf639813dce89a683bc9a8f7667a3a25d6466ea68bd79cf1e191300b0f983336b526341ba8fd1ae313a05b4a1d9b7ab104
-  languageName: node
-  linkType: hard
-
-"y-protocols@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "y-protocols@npm:1.0.5"
-  dependencies:
-    lib0: ^0.2.42
-  checksum: d19404a4ebafcf3761c28b881abe8c32ab6e457db0e5ffc7dbb749cbc2c3bb98e003a43f3e8eba7f245b2698c76f2c4cdd1c2db869f8ec0c6ef94736d9a88652
   languageName: node
   linkType: hard
 
