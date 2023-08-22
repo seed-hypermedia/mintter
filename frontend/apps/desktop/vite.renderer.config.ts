@@ -1,17 +1,22 @@
-import { defineConfig, loadEnv } from "vite";
+import {defineConfig, loadEnv} from "vite";
 import react from "@vitejs/plugin-react";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { tamaguiPlugin } from "@tamagui/vite-plugin";
+import {sentryVitePlugin} from "@sentry/vite-plugin";
+import {tamaguiPlugin} from "@tamagui/vite-plugin";
 import tsConfigPaths from "vite-tsconfig-paths";
 
 const tamaguiConfig = {
+  target: "web",
   components: ["@mintter/ui", "tamagui"],
   config: "./tamagui.config.ts",
-  useReactNativeWebLite: false,
+  useReactNativeWebLite: true,
+  themeBuilder: {
+    input: "../../packages/ui/src/themes.ts",
+    output: "../../packages/ui/src/generated-themes.ts",
+  },
 };
 
 // https://vitejs.dev/config
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({command, mode}) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), "");
@@ -44,7 +49,7 @@ export default defineConfig(({ command, mode }) => {
         org: "mintter",
         project: "electron",
         telemetry: false,
-      }),
+      })
     );
   }
 

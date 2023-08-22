@@ -3,3 +3,4 @@ dist/
 THUMBS_DB
 node_modules/
 types/
+src/generated-themes.ts

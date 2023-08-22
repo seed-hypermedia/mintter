@@ -26,8 +26,7 @@
  * ```
  */
 import "./root.tsx";
-import * as Sentry from "@sentry/electron/renderer";
-import log from "electron-log/renderer";
+import * as Sentry from "@sentry/electron/renderer"
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -37,5 +36,3 @@ if (import.meta.env.PROD) {
 // setTimeout(() => {
 //   throw new Error('Some renderer error')
 // }, 500)
-
-log.info('👋 This message is being logged by "renderer.js", included via Vite');
