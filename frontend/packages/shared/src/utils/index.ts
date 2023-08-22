@@ -1,5 +1,6 @@
 export * from './abbreviate'
 export * from './date'
+export * from './doc-url'
 export * from './get-ids-from-url'
 export * from './language'
 export * from './ipfs-cid'

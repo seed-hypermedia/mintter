@@ -3,6 +3,7 @@ import {
   EmbedBlock,
   getCIDFromIPFSUrl,
   getIdsfromUrl,
+  extractEntityId,
   HeadingBlock,
   ImageBlock,
   InlineContent,
@@ -11,12 +12,16 @@ import {
   PresentationBlock,
   serverBlockToEditorInline,
   SiteInfo,
+  Block,
+  Publication,
+  entityIdToSitePath,
 } from '@mintter/shared'
-import {Block, Publication} from '@mintter/shared'
 import {
   Button,
+  Check,
   Copy,
   Footer,
+  Heading,
   PageSection,
   SizableText,
   Spinner,
@@ -29,11 +34,12 @@ import {cidURL} from 'ipfs'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
-import {HDBlock, HDBlockNode, HDPublication} from 'server/json-hd'
+import {HDBlock, HDBlockNode, HDGroup, HDPublication} from 'server/json-hd'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import Link from 'next/link'
 
 function hdLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
@@ -104,14 +110,93 @@ function getBlockNodeById(
   return res || null
 }
 
+function GroupSidebarContent({
+  group,
+  activePathName,
+  content,
+}: {
+  activePathName: string
+  group?: HDGroup
+  content?: Array<null | {
+    publication: null | HDPublication
+    pathName: string
+    version: string
+    docId: string
+  }>
+}) {
+  const groupLink = entityIdToSitePath(group?.id)
+  return (
+    <>
+      {groupLink && (
+        <Text
+          tag="a"
+          href={groupLink}
+          fontSize={16}
+          fontWeight={'bold'}
+          marginBottom="$4"
+          color={'$color10'}
+          textDecorationLine="none"
+          justifyContent="flex-start"
+          hoverStyle={{
+            textDecorationLine: 'underline',
+          }}
+        >
+          {group?.title}
+        </Text>
+      )}
+      {content?.map((item) => {
+        if (!item) return null
+        return (
+          <Button
+            key={item.pathName}
+            tag="a"
+            href={`${groupLink}/${item.pathName}`}
+            size="$2"
+            chromeless
+            justifyContent="flex-start"
+            theme={activePathName === item.pathName ? 'green' : undefined}
+          >
+            {item?.publication?.document?.title}
+          </Button>
+        )
+      })}
+    </>
+  )
+}
+
+function PublicationContextSidebar({
+  group,
+  activePathName,
+}: {
+  group?: HDGroup | null
+  activePathName: string
+}) {
+  const groupContent = trpc.group.listContent.useQuery(
+    {
+      groupEid: extractEntityId(group?.id || '')?.[1] || '',
+    },
+    {enabled: !!group?.id},
+  )
+  const groupSidebarContent = group ? (
+    <GroupSidebarContent
+      activePathName={activePathName}
+      group={group}
+      content={groupContent.data}
+    />
+  ) : null
+  return <PageSection.Side>{groupSidebarContent}</PageSection.Side>
+}
+
 export default function PublicationPage({
   pathName,
   documentId,
   version,
+  contextGroup,
 }: {
   pathName?: string
   documentId: string
   version?: string | null
+  contextGroup?: HDGroup | null
 }) {
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
@@ -136,7 +221,10 @@ export default function PublicationPage({
       </Head>
       <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
       <PageSection.Root flex={1}>
-        <PageSection.Side />
+        <PublicationContextSidebar
+          group={contextGroup}
+          activePathName={pathName || ''}
+        />
         <PageSection.Content>
           {pub ? (
             <PublicationContent publication={pub} />

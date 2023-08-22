@@ -1,4 +1,4 @@
-import {Publication, WebPublicationRecord} from '@mintter/shared'
+import {Publication, WebPublicationRecord} from '../client'
 
 const publicWebHost = 'https://mintter.com'
 
@@ -34,7 +34,18 @@ export function extractEntityId(id: string): [string, string] | null {
   // input is like hd://x/abcd. output is ['x', 'abcd']
   const m = id.match(/^hd:\/\/([^/]+)\/(.+)$/)
   if (!m) return null
-  return [m[1], m[2]]
+  const entityType = m[1]
+  const entityEId = m[2]
+  return [entityType, entityEId]
+}
+
+export function entityIdToSitePath(entityId?: string): string | null {
+  const [entityType, entityEId] = extractEntityId(entityId || '') || []
+  if (!entityType || !entityEId) return null
+  if (entityType === 'g') return `/g/${entityEId}`
+  if (entityType === 'a') return `/a/${entityEId}`
+  if (entityType === 'd') return `/d/${entityEId}`
+  return null
 }
 
 export function getPublicEntityUrl(

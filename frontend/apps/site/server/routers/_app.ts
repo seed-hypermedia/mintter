@@ -5,6 +5,7 @@ import {
   ContentGraph,
   Groups,
   Publications,
+  Role,
   WebPublishing,
   getIdsfromUrl,
 } from '@mintter/shared'
@@ -314,7 +315,28 @@ const groupRouter = router({
           }
         }),
       )
-      return listedDocs
+
+      return listedDocs.sort((a, b) => {
+        const aTitle = a?.publication?.document?.title
+        const bTitle = b?.publication?.document?.title
+        if (!aTitle || !bTitle) return 0
+        return aTitle.localeCompare(bTitle)
+      })
+    }),
+  listMembers: procedure
+    .input(
+      z.object({
+        groupEid: z.string(),
+      }),
+    )
+    .query(async ({input}) => {
+      const list = await groupsClient.listMembers({
+        id: `hd://g/${input.groupEid}`,
+      })
+      return Object.entries(list.members || {}).map(([account, role]) => ({
+        account,
+        role,
+      }))
     }),
 })
 

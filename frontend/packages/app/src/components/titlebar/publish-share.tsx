@@ -16,7 +16,7 @@ import {
 import {useDocWebPublications, useSiteList} from '@mintter/app/models/sites'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {usePopoverState} from '@mintter/app/use-popover-state'
-import {getDocUrl} from '@mintter/app/utils/doc-url'
+import {getDocUrl} from '@mintter/shared'
 import {
   PublicationRouteContext,
   useNavRoute,

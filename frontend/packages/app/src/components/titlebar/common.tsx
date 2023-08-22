@@ -61,7 +61,7 @@ import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {useEditGroupInfoDialog} from '../edit-group-info'
 import {useGroup} from '../../models/groups'
-import {getPublicDocUrl, getPublicEntityUrl} from '@mintter/app/utils/doc-url'
+import {getPublicDocUrl, getPublicEntityUrl} from '@mintter/shared'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 
 function NewDocumentButton() {

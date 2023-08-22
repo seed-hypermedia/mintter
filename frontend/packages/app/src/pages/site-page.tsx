@@ -5,7 +5,7 @@ import {
 } from '@mintter/app/src/models/documents'
 import {useSitePublications} from '@mintter/app/src/models/sites'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {getDocUrl} from '@mintter/app/src/utils/doc-url'
+import {getDocUrl} from '@mintter/shared'
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
