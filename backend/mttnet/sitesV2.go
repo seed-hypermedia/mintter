@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	sitesV2 "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet/sitesql"
 	"net/http"
 	"strings"
@@ -56,6 +57,12 @@ func (srv *Server) CreateSite(ctx context.Context, in *sitesV2.CreateSiteRequest
 	}
 
 	hostname := strings.Split(in.Link, "/secret-invite/")[0]
+
+	_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := sitesql.RegisterSite(conn, hostname, in.GroupId, in.Version, remoteAcc); err != nil {
 		return nil, err
 	}
@@ -66,7 +73,7 @@ func (srv *Server) CreateSite(ctx context.Context, in *sitesV2.CreateSiteRequest
 	}, nil
 }
 
-// GetSiteAddressFromHeaders gets peer information from site http response headers
+// GetSiteAddressFromHeaders gets peer information from site http response headers.
 func GetSiteAddressFromHeaders(SiteHostname string) (peer.AddrInfo, error) {
 	var resp peer.AddrInfo
 	req, err := http.NewRequest(http.MethodGet, SiteHostname, nil)

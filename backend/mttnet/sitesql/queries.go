@@ -34,7 +34,7 @@ func generateQueries() error {
 				qb.SubQuery(
 					"SELECT", s.HDEntitiesID,
 					"FROM", s.HDEntities,
-					"WHERE", s.HDEntitiesID, "=", qb.Var("group_id", sqlitegen.TypeText),
+					"WHERE", s.HDEntitiesEID, "=", qb.Var("group_eid", sqlitegen.TypeText),
 				),
 				qb.VarCol(s.ServedSitesVersion),
 				qb.SubQuery(

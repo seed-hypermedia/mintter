@@ -12,13 +12,13 @@ import (
 
 var _ = errors.New
 
-func RegisterSite(conn *sqlite.Conn, servedSitesHostname string, group_id string, servedSitesVersion string, publicKeysPrincipal []byte) error {
+func RegisterSite(conn *sqlite.Conn, servedSitesHostname string, group_eid string, servedSitesVersion string, publicKeysPrincipal []byte) error {
 	const query = `INSERT OR REPLACE INTO served_sites (hostname, group_id, version, owner_id)
-VALUES (:servedSitesHostname, (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.id = :group_id), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+VALUES (:servedSitesHostname, (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.eid = :group_eid), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":servedSitesHostname", servedSitesHostname)
-		stmt.SetText(":group_id", group_id)
+		stmt.SetText(":group_eid", group_eid)
 		stmt.SetText(":servedSitesVersion", servedSitesVersion)
 		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
 	}
