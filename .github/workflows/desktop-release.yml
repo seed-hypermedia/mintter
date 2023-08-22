@@ -3,7 +3,7 @@ name: Desktop Release
 on:
   push:
     tags:
-      - 'v*'  # This will trigger the workflow on tags starting with 'v'
+      - "v*" # This will trigger the workflow on tags starting with 'v'
     branches:
       - master
 
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.vars.outputs.version }}
-    steps: 
+    steps:
       - uses: actions/checkout@v3
 
       - name: Get Tag
@@ -60,9 +60,9 @@ jobs:
           - os: macos-latest
             goarch: amd64
             target: x86_64-apple-darwin
-          # - os: macos-latest
-          #   goarch: arm64
-          #   target: aarch64-apple-darwin
+          - os: macos-latest
+            goarch: arm64
+            target: aarch64-apple-darwin
           - os: ubuntu-latest
             goarch: amd64
             target: x86_64-unknown-linux-gnu
@@ -79,7 +79,6 @@ jobs:
           # matrix-target: ${{ matrix.config.target }}
           # matrix-goarch: ${{ matrix.config.goarch }}
 
-
       - name: Build Backend (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
@@ -88,7 +87,7 @@ jobs:
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
-      
+
       - name: Build Backend (Windows)
         if: matrix.config.os == 'windows-latest'
         run: |
@@ -115,19 +114,20 @@ jobs:
 
       # - name: Setup flatpak
       #   if: matrix.config.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
-      #   run: sudo apt install flatpak flatpak-builder elfutils 
-          
+      #   run: sudo apt install flatpak flatpak-builder elfutils
+
       - name: Build App Package (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
           TAMAGUI_TARGET=web yarn desktop:make
         env:
-          APP_VERSION: '${{ needs.get-version.outputs.version }}'
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          APP_TARGET: ${{ matrix.config.target }}
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: '${{ secrets.APPLE_ID_PASSWORD }}'
-          APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}'
+          APPLE_ID_PASSWORD: "${{ secrets.APPLE_ID_PASSWORD }}"
+          APPLE_TEAM_ID: "${{ secrets.APPLE_TEAM_ID }}"
 
       - name: Build App Package (Win32)
         if: matrix.config.os == 'windows-latest'
@@ -135,19 +135,19 @@ jobs:
           $env:TAMAGUI_TARGET="web"
           yarn desktop:make
         env:
-          APP_VERSION: '${{ needs.get-version.outputs.version }}'
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          
+
           # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
           # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'
-      
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.target }}
           path: frontend/apps/desktop/out/make/**/*
-  
+
   publish-to-github:
     needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
@@ -160,13 +160,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts
-          
-      - name: 'create release'
+
+      - name: "create release"
         uses: softprops/action-gh-release@master
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          tag_name: '${{ needs.get-version.outputs.version }}'
+          tag_name: "${{ needs.get-version.outputs.version }}"
           prerelease: false
           generate_release_notes: true
           files: ./artifacts/artifacts-*/**/*

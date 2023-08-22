@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "electron-forge start",
     "e2e": "playwright test",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check  --ignore-path ../../../.prettierignore",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check  --ignore-path ../../../.prettierignore",
     "lint": "echo TODO",
     "make": "electron-forge make",
     "package": "electron-forge package",

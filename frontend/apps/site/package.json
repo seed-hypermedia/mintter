@@ -8,7 +8,7 @@
     "start": "next start",
     "serve": "NODE_ENV=production next start --port 8151",
     "lint": "next lint",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "test": "echo 'SITE: NO TESTS';"
   },
   "dependencies": {

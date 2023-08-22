@@ -8,7 +8,7 @@
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint .",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "validate": "yarn lint && yarn test"
   },
   "keywords": [],

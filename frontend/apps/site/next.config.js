@@ -65,8 +65,8 @@ const plugins = [
     ],
     themeBuilder: {
       input: '../../packages/ui/src/themes.ts',
-      output: '../../packages/ui/src/generated-themes.ts'
-    }
+      output: '../../packages/ui/src/generated-themes.ts',
+    },
   }),
 ]
 

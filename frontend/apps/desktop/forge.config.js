@@ -13,6 +13,10 @@ const LLVM_TRIPLES = {
 }
 
 function getPlatformTriple() {
+  if (process.env.APP_TARGET == 'aarch64-apple-darwin') {
+    return process.env.APP_TARGET
+  }
+
   return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
 }
 

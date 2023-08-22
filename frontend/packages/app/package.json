@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore"
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore"
   },
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
