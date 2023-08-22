@@ -2,10 +2,9 @@ name: Desktop Release
 
 on:
   push:
-    tags:
-      - "v*" # This will trigger the workflow on tags starting with 'v'
+    
     branches:
-      - master
+      - windows-build
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
