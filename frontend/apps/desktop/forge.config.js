@@ -170,12 +170,13 @@ function notarizeMaybe() {
   }
 
   config.osxSign = {
-    entitlements: './entitlements.plist',
-    'entitlements-inherit': './entitlements.plist',
-    'gatekeeper-assess': false,
-    hardenedRuntime: true,
-    identity:
-      'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
+    // entitlements: './entitlements.plist',
+    // executableName: 'Mintter',
+    // 'entitlements-inherit': './entitlements.plist',
+    // 'gatekeeper-assess': false,
+    // 'hardened-runtime': true,
+    // identity:
+    //   'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
   }
 }
 
