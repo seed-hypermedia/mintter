@@ -1,11 +1,63 @@
 # Frontend Development Setup
+- [Frontend Development Setup](#frontend-development-setup)
+  - [TLDR;](#tldr)
+  - [Introduction](#introduction)
+  - [Prerequisites](#prerequisites)
+  - [./dev scripts](#dev-scripts)
+  - [Desktop app](#desktop-app)
+    - [Run the desktop app locally](#run-the-desktop-app-locally)
+    - [Build the desktop app locally](#build-the-desktop-app-locally)
+  - [Sites](#sites)
+    - [Run the Site app locally](#run-the-site-app-locally)
+    - [Build sites locally](#build-sites-locally)
+  - [Scoped package](#scoped-package)
+  - [Monorepo Architecrure](#monorepo-architecrure)
+    - [Inspirations and Special mentions](#inspirations-and-special-mentions)
 
-The Mintter Frontend architecture is based on a [yarn](https://yarnpkg.com) workspace. Currently we have this packages:
+## TLDR;
 
-1. App Package: for the desktop app code lives
-2. Gateway: for the gateway code
-3. Shared: for the shared API-related code
-4. UI (soon): for all the design system/common UI building blocks for all the Mintter applications
+⚠️ make sure you [setup the project tools](./dev-setup) ⚠️
+
+```bash
+git clone <repo>
+
+cd mintter
+yarn install
+
+# desktop app: for local development
+./dev run-desktop
+
+# desktop app: to build locally
+./dev build-desktop
+
+# site: for local development: TBD
+# site: for local build: TBD
+
+# validate frontend code
+./dev frontend-validate
+
+# test frontend code
+./dev frontend-test
+```
+
+## Introduction
+
+The Mintter Frontend architecture is based on a [yarn](https://yarnpkg.com) workspace. All the frontend code can be found inside the [`./frontend`](../../frontend) folder. The app is using a monorepo structure inspired by the [Create Tamagui App template](https://tamagui.dev/docs/guides/create-tamagui-app).
+
+- all the apps packages are inside the [`apps`](../../frontend/apps) folder.
+- all the scoped packages that are reused inside each app are in the [`packages`](../../frontend/packages) folder.
+- we are not required to build individual packages before building the apps. The apps are the ones in charge of building all the necesary codebase and pull the packages code from source (using [tsconfig paths](https://www.typescriptlang.org/tsconfig#paths)) We explained this in more detail in [#monorepo-architecture]
+
+Now let's describe each package and what it does
+
+1. [`apps/desktop`](../../frontend/packages/app): The Local-first Desktop app built with [Electron](https://electronjs.com)
+1. [`apps/site`](../../frontend/packages/app): The Self-hosted sites anyone can run on their own servers built using [NextJS](https://nextjs.org)
+1. [`packages/app`](../../frontend/packages/app): All the "screens" for the local-first apps (currently only `desktop`, soon others...)
+1. [`packages/ui`](../../frontend/packages/ui): All the individual UI components and the theme setup for all the apps.
+1. [`packages/shared`](../../frontend/packages/shared): All the code that interface with the local backend API and gRPC.
+1. [`packages/eslint-config-custom`](../../frontend/packages/eslint-config-custom): the base eslint config for all the frontend code
+1. [`packages/prettier-config`](../../frontend/packages/prettier-config): the base formatting config for all the frontend code.
+
 
 After you [setup the project](./dev-setup) on your local machine, you should have `yarn` available, so no need to install it globally.
 
@@ -13,11 +65,30 @@ After you [setup the project](./dev-setup) on your local machine, you should hav
 
 Please make sure that after you enter the repo root path, you see something similar to this showing the necessary Environment variables set:
 
-![dev-setup-root-terminal.png](./assets/dev-setup-root-terminal.png)
+[![dev setup showcase](https://img.youtube.com/vi/l5smHCf1AYA/0.jpg)](https://www.youtube.com/watch?v=l5smHCf1AYA)
 
-After this is correct, you should run `yarn install` (or `yarn`) to install all the frontend packages.
+After this is correct, you should run `yarn install` (or `yarn`) to start the dev setup. [Nix](./nix.md) is helping us installing all the necessary tools and setup we need to run every script and app inside the repo. Don't worry of having the exact version of yarn or any other tool, Nix got us covered!
 
-## Run the Desktop app locally
+## ./dev scripts
+
+Because Mintter uses multiple tools with multiple languages, we set a file with all the local scripts you can run to setup, build, validate and test the project.
+
+## Desktop app
+
+The desktop app is the main Application that users can have to interact and collaborate inside the Hyperdocs Protocol. Everything works locally and there's no need to servers or Internet connection.
+
+This application is built with this main tools and frameworks:
+
+- Electron (with electron-forge)
+- Vite
+- Tamagui
+- React
+- BlockNote (build with TipTap and Prosemirror)
+- Radix UI
+- Unified
+- TRPC
+
+### Run the desktop app locally
 
 because we are using [Nix](./nix), we are able to create custom orchestrated commands in order to setup everything properly for any situation. To run the desktop app locally, you just need to run:
 
@@ -27,42 +98,72 @@ because we are using [Nix](./nix), we are able to create custom orchestrated com
 
 This command should trigger a set of processes that eventually should launch the app in dev mode
 
-![Locally running the Desktop app](./assets/dev-setup-local-run.png)
+[![Running the desktop app locally](https://img.youtube.com/vi/EQDLgjfgp90/0.jpg)](https://www.youtube.com/watch?v=EQDLgjfgp90)
 
-> you can also run `./dev` to print the stript's readme and see all the possible commands/options. You can checkout all the commands [here](https://github.com/mintterteam/mintter/blob/master/dev)
+Keep in mind that `./dev run-desktop` runs both the desktop app **and the go backend**. This is setup this way for convenience and ease of use.
 
-Keep in mind that `./dev run-desktop` runs both the desktop app **and the go backend**. This is setup this way for convenience and ease of use. You are able to run _just_ the desktop frontend code by running:
+### Build the desktop app locally
 
-```bash
-./dev run-frontend
-```
-
-> You can also run _just_ the backend with `./dev run-backend`
-
-## Run the Gateway app locally
-
-The same way we can run the desktop app with a `./dev` command, you have access to gateway-specific commands:
+To build the desktop app locally you can simply run the next command:
 
 ```bash
-./dev run-gw-frontend 		# run the gateway frontend _only_ (dev mode)
-./dev run-gw-bacend			# run the gateway backend _only_ (dev mode)
+./dev build-desktop
 ```
 
-## Shared package
+This will build the Application based on the platform you are currently running. We support MacOS, Linux and Windows.
 
-The frontend shared package is wrapping all the API/Backend related code that is shared between both the desktop app and the web gateway. You don't have to manually run any command for this, but you can check the specific commands defined for this package in the [root `package.json`](../package.json).
+If you have any issues running the application or building the application locally, please [file an issue](https://github.com/mintterteam/mintter/issues/new/choose) with the platform you are running on and we will address it as fast as we can.
 
-## Per-package scripts overview
+## Sites
 
-For every frontend package, there's a set of required scripts in order to keep consistency inside all the project:
+TBD
+### Run the Site app locally
 
-1. `dev`: run the current package in dev mode.
-2. `build`: build the current package.
-3. `test`: run all the possible tests inside the current package.
-4. `lint`: run all the possible linters inside the current package.
-5. `format`: format the code for the current package.
-6. `validate`: lint + test the current package.
+TBD (we need to finish the groups setup to see how will be)
+### Build sites locally
 
-> if you are creating a new frontend package, please make sure you create this scripts properly and connect them with the appropiate `./dev` script.
+TBD (we need to finish the groups setup to see how will be)
 
+## Scoped package
+
+All the packages inside the [`packages` folder](../../frontend/packages) are used as source code inside both apps. There's no need to build them separately.
+
+This is possible in our case because we are not intended to publish this packages separate from the app. For us, there's no need to setup all the madness needed in order for publish individual packages and develop with then locally in a sensible way. Mayb ein the future, who knows!
+
+## Monorepo Architecrure
+
+Like I mentioned before, this monorepo does not follow some conventions other monorepos might do. This are the essential requirements we need at the moment that this setup fulfills:
+
+- we want to separate the code into its own scope
+- we use Typescript
+- we don't need to build individual packages, only the apps
+- we want to import files using the package name, but import from the source (the actual package)
+
+To achieve this, based on the code structure we adopted thanks to [Tamagui](https://tamagui.dev), we are mainly using [TSConfig paths](https://www.typescriptlang.org/tsconfig#paths) to make sure typescript understands from where it needs to pull the package's code.
+
+```json
+// ./frontend/apps/desktop/tsconfig.json
+{
+  "compilerOptions": {
+    // ...
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*"],
+      "@mintter/ui": ["*", "../../packages/ui/src/index.tsx"],
+      "@mintter/shared": ["*", "../../packages/shared/src/index.ts"],
+      "@mintter/app/*": ["*", "../../packages/app/src/*"],
+      "react-native": ["react-native-web"]
+    }
+  },
+  // ...
+}
+```
+
+Another change that we did is that in each scoped package's `package.json` file, we are not setting anything related to exports nor types. WE found that doing this makes it simple for `tsc` compiler to find the correct files based on the paths set.
+
+You can also see that on each scoped package there's only 2 or 3 scripts set: `lint`, `format` and `test`. While we don't want to build this packages individually, we do want to make sure the code structure and linting follows the project's rules.
+
+### Inspirations and Special mentions
+
+We took a lot of inspirations from tools like [Tamagui](https://tamagui.dev), [Turbo](https://turbo.build/repo) and tutorials like [Monorepo Maestros](https://www.shew.dev/monorepos).
 

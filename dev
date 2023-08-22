@@ -111,10 +111,17 @@ def main():
         )
     
     @cmd(
-        cmds, "validate", "Formats, Validates and test the site app"
+        cmds, "frontend-validate", "Formats, Validates"
     )
     def validate(args):
         run("yarn validate")
+
+
+    @cmd(
+        cmds, "frontend-test", "Tests frontend code"
+    )
+    def validate(args):
+        run("yarn test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
