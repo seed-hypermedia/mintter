@@ -1,6 +1,6 @@
-import { MaskOptions } from '@tamagui/create-theme'
+import {MaskOptions} from '@tamagui/create-theme'
 
-import { palettes } from './palettes'
+import {palettes} from './palettes'
 
 const templateColorsSpecific = {
   color1: 1,

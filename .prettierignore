@@ -1,40 +1,42 @@
 .yarn
- node_modules
+node_modules
 
- # build code
- build
- dist
- public
- out
- plz-out
- types
- docs
- .yarn/*
- .github/*
- .yarnrc.yml
- .vscode/*
+# build code
+build
+dist
+public
+out
+plz-out
+types
+docs
+.yarn/*
+.github/*
+.yarnrc.yml
+.vscode/*
 
- # Project files
- docs
- infra
- scripts
- tools
+# Project files
+docs
+infra
+scripts
+tools
 
- # Generated files
- coverage
- .generated
- /target
- exts/*
- .vite
- **/*.typegen.*
- .next
+# Generated files
+coverage
+.generated
+/target
+exts/*
+.vite
+**/*.typegen.*
+.next
+frontend/packages/ui/src/generated-themes.ts
 
- # Site
- frontend/apps/site/.next
- frontend/apps/site/.vercel
- frontend/apps/site/.tamagui
- frontend/apps/desktop/.tamagui
- frotnend/apps/desktop/out
 
- # Shared
- frontend/packages/shared/src/client/.generated
+# Site
+frontend/apps/site/.next
+frontend/apps/site/.vercel
+frontend/apps/site/.tamagui
+frontend/apps/desktop/.tamagui
+frotnend/apps/desktop/out
+
+# Shared
+frontend/packages/shared/src/client/.generated/

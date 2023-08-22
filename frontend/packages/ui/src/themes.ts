@@ -1,11 +1,11 @@
-import { createThemeBuilder } from '@tamagui/theme-builder'
+import {createThemeBuilder} from '@tamagui/theme-builder'
 
-import { overlayThemeDefinitions } from './component-theme-definitions'
-import { masks } from './masks'
-import { palettes } from './palettes'
-import { shadows } from './shadows'
-import { maskOptions, templates } from './templates'
-import { darkColors, lightColors } from './tokens'
+import {overlayThemeDefinitions} from './component-theme-definitions'
+import {masks} from './masks'
+import {palettes} from './palettes'
+import {shadows} from './shadows'
+import {maskOptions, templates} from './templates'
+import {darkColors, lightColors} from './tokens'
 
 const colorThemeDefinition = (colorName: string) => [
   {
@@ -178,7 +178,7 @@ const themesBuilder = createThemeBuilder()
     {
       // to save bundle size but make alt themes not work on components
       // avoidNestingWithin: ['alt1', 'alt2'],
-    }
+    },
   )
 
 const themesIn = themesBuilder.build()

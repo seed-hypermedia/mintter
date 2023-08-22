@@ -12,14 +12,17 @@ import {
 export const masks = {
   identity: createIdentityMask(),
   soften: createSoftenMask(),
-  soften2: createSoftenMask({ strength: 2 }),
-  soften3: createSoftenMask({ strength: 3 }),
+  soften2: createSoftenMask({strength: 2}),
+  soften3: createSoftenMask({strength: 3}),
   strengthen: createStrengthenMask(),
   inverse: createInverseMask(),
-  inverseSoften: combineMasks(createInverseMask(), createSoftenMask({ strength: 2 })),
+  inverseSoften: combineMasks(
+    createInverseMask(),
+    createSoftenMask({strength: 2}),
+  ),
   inverseStrengthen2: combineMasks(
     createInverseMask(),
-    createStrengthenMask({ strength: 2 })
+    createStrengthenMask({strength: 2}),
   ),
   strengthenButSoftenBorder: createMask((template, options) => {
     const stronger = createStrengthenMask().mask(template, options)
@@ -33,8 +36,8 @@ export const masks = {
     }
   }),
   soften2Border1: createMask((template, options) => {
-    const softer2 = createSoftenMask({ strength: 2 }).mask(template, options)
-    const softer1 = createSoftenMask({ strength: 1 }).mask(template, options)
+    const softer2 = createSoftenMask({strength: 2}).mask(template, options)
+    const softer1 = createSoftenMask({strength: 1}).mask(template, options)
     return {
       ...softer2,
       borderColor: softer1.borderColor,
@@ -44,8 +47,8 @@ export const masks = {
     }
   }),
   soften3FlatBorder: createMask((template, options) => {
-    const borderMask = createSoftenMask({ strength: 2 }).mask(template, options)
-    const softer3 = createSoftenMask({ strength: 3 }).mask(template, options)
+    const borderMask = createSoftenMask({strength: 2}).mask(template, options)
+    const softer3 = createSoftenMask({strength: 3}).mask(template, options)
     return {
       ...softer3,
       borderColor: borderMask.borderColor,
@@ -67,7 +70,7 @@ export const masks = {
   }),
   softenBorder2: createMask((template, options) => {
     const plain = skipMask.mask(template, options)
-    const softer = createSoftenMask({ strength: 2 }).mask(template, options)
+    const softer = createSoftenMask({strength: 2}).mask(template, options)
     return {
       ...plain,
       borderColor: softer.borderColor,

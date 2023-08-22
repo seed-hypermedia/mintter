@@ -1,5 +1,5 @@
-import { config } from "@mintter/ui";
+import {config} from '@mintter/ui'
 
-type Conf = typeof config;
+type Conf = typeof config
 
-export default config;
+export default config

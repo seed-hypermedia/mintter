@@ -15,7 +15,7 @@
     "generate": "tamagui generate-themes ./src/themes.ts ./src/generated-themes.ts",
     "lint": "eslint .",
     "build": "tamagui-build",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
     "clean:build": "tamagui-build clean:build"
   },

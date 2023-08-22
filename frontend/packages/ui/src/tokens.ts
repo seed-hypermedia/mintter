@@ -12,9 +12,9 @@ import {
   yellow,
   yellowDark,
   mint,
-  mintDark
+  mintDark,
 } from '@tamagui/colors'
-import { Variable, createTokens } from '@tamagui/web'
+import {Variable, createTokens} from '@tamagui/web'
 
 // should roughly map to button/input etc height at each level
 // fonts should match that height/lineHeight at each stop
@@ -149,16 +149,18 @@ export const color = {
 }
 
 function postfixObjKeys<
-  A extends { [key: string]: Variable<string> | string },
-  B extends string
+  A extends {[key: string]: Variable<string> | string},
+  B extends string,
 >(
   obj: A,
-  postfix: B
+  postfix: B,
 ): {
-  [Key in `${keyof A extends string ? keyof A : never}${B}`]: Variable<string> | string
+  [Key in `${keyof A extends string ? keyof A : never}${B}`]:
+    | Variable<string>
+    | string
 } {
   return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [`${k}${postfix}`, v])
+    Object.entries(obj).map(([k, v]) => [`${k}${postfix}`, v]),
   ) as any
 }
 

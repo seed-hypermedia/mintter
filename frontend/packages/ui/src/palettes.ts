@@ -1,5 +1,5 @@
-import { objectFromEntries, objectKeys } from './helpers'
-import { colorTokens } from './tokens'
+import {objectFromEntries, objectKeys} from './helpers'
+import {colorTokens} from './tokens'
 
 export const palettes = (() => {
   const lightTransparent = 'rgba(255,255,255,0)'
@@ -68,14 +68,21 @@ export const palettes = (() => {
   const lightPalettes = objectFromEntries(
     objectKeys(colorTokens.light).map(
       (key) =>
-        [`light_${key}`, getColorPalette(colorTokens.light[key], lightColor)] as const
-    )
+        [
+          `light_${key}`,
+          getColorPalette(colorTokens.light[key], lightColor),
+        ] as const,
+    ),
   )
 
   const darkPalettes = objectFromEntries(
     objectKeys(colorTokens.dark).map(
-      (key) => [`dark_${key}`, getColorPalette(colorTokens.dark[key], darkColor)] as const
-    )
+      (key) =>
+        [
+          `dark_${key}`,
+          getColorPalette(colorTokens.dark[key], darkColor),
+        ] as const,
+    ),
   )
 
   const colorPalettes = {
