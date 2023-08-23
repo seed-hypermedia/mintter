@@ -27,6 +27,8 @@ import {
   Button,
   Check,
   Copy,
+  Dialog,
+  DialogProps,
   DialogTitle,
   Fieldset,
   Form,
@@ -40,7 +42,7 @@ import {
   Text,
   YStack,
 } from '@mintter/ui'
-import {Folder, Upload} from '@tamagui/lucide-icons'
+import {ChevronDown, ChevronUp, Folder, Upload} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppDialog} from '../dialog'
@@ -99,8 +101,10 @@ import {usePublicationDialog} from './publication-dialog'
 
 function GroupPublishDialog({
   input,
+  dialogState,
 }: {
   input: {docId: string; version: string}
+  dialogState: DialogProps
 }) {
   const groupQuery = useGroups()
   const groups = groupQuery.data?.groups
@@ -126,41 +130,83 @@ function GroupPublishDialog({
           toast.error('Please select a group')
           return
         }
-        toast.promise(
-          publishToGroup.mutateAsync({
-            groupId: selectedGroupId,
-            docId: input.docId,
-            version: input.version,
-            pathName,
-          }),
-          {
-            loading: 'Publishing...',
-            success: 'Published to Group',
-            error: 'Failed to Publish!',
-          },
-        )
+        toast
+          .promise(
+            publishToGroup.mutateAsync({
+              groupId: selectedGroupId,
+              docId: input.docId,
+              version: input.version,
+              pathName,
+            }),
+            {
+              loading: 'Publishing...',
+              success: 'Published to Group',
+              error: 'Failed to Publish!',
+            },
+          )
+          .finally(() => {
+            dialogState.onOpenChange?.(false)
+          })
       }}
     >
       <DialogTitle>Publish to Group</DialogTitle>
-      <Fieldset gap="$4" horizontal>
+      <Fieldset gap="$4" horizontal borderColor="transparent">
         <Label htmlFor="path">Path / Shortname</Label>
         <Input id="path" value={pathName} onChangeText={setPathName} />
       </Fieldset>
 
-      <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-        <Select.Trigger>
-          <Select.Value placeholder="Select Group.." />
-        </Select.Trigger>
-        <Select.Content zIndex={1000}>
-          <Select.ScrollUpButton />
-          {myGroups?.map((group, index) => (
-            <Select.Item index={index} value={group.id} key={group.id}>
-              <Select.ItemText>{group.title}</Select.ItemText>
-            </Select.Item>
-          ))}
-          <Select.ScrollDownButton />
-        </Select.Content>
-      </Select>
+      <Fieldset gap="$4" horizontal borderColor="transparent">
+        <Label htmlFor="group">Group</Label>
+        <Select
+          id="group-id"
+          value={selectedGroupId}
+          onValueChange={setSelectedGroupId}
+        >
+          <Select.Trigger width={265}>
+            <Select.Value placeholder="Select Group.." />
+          </Select.Trigger>
+          <Select.Content zIndex={200000}>
+            <Select.ScrollUpButton
+              alignItems="center"
+              justifyContent="center"
+              position="relative"
+              width="100%"
+              height="$3"
+            >
+              <YStack zIndex={10}>
+                <ChevronUp size={20} />
+              </YStack>
+            </Select.ScrollUpButton>
+            <Select.Viewport
+              // to do animations:
+              animation="quick"
+              animateOnly={['transform', 'opacity']}
+              enterStyle={{opacity: 0, y: -10}}
+              exitStyle={{opacity: 0, y: 10}}
+              minWidth={200}
+            >
+              {myGroups?.map((group, index) => (
+                <Select.Item index={index} value={group.id} key={group.id}>
+                  <Select.ItemText>{group.title}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
+
+            <Select.ScrollDownButton
+              alignItems="center"
+              justifyContent="center"
+              position="relative"
+              width="100%"
+              height="$3"
+            >
+              <YStack zIndex={10}>
+                <ChevronDown size={20} />
+              </YStack>
+            </Select.ScrollDownButton>
+          </Select.Content>
+        </Select>
+      </Fieldset>
+
       <Form.Trigger asChild>
         <Button>Submit</Button>
       </Form.Trigger>
@@ -194,41 +240,113 @@ function PubDropdown({
   // const label = publication?.document?.webUrl
   //   ? hostnameStripProtocol(publication.document.webUrl)
   //   : 'Public'
-  const popoverState = usePopoverState()
-  const groupPublish = useAppDialog(GroupPublishDialog)
+  const popoverState = usePopoverState(false)
+  const dialogState = usePopoverState(false)
 
   const contextGroupId = pubContext?.key === 'group' ? pubContext.groupId : null
   const group = useGroup(contextGroupId || undefined)
   const groupTitle = group.data?.title
   return (
     <>
-      <Popover {...popoverState} placement="bottom-end">
+      <Popover
+        size="$5"
+        allowFlip
+        placement="bottom-start"
+        {...popoverState}
+        keepChildrenMounted
+      >
         <Popover.Trigger asChild>
           <Button size="$2" icon={contextGroupId ? Folder : Globe}>
             {groupTitle}
           </Button>
         </Popover.Trigger>
-        <Popover.Content padding={0} elevation="$2">
-          <YStack>
+        <Popover.Content
+          borderWidth={1}
+          borderColor="$borderColor"
+          enterStyle={{y: -10, opacity: 0}}
+          exitStyle={{y: -10, opacity: 0}}
+          elevate
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+        >
+          <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+          <YStack space="$3">
             <Text color="orange" fontSize="$2">
               Document Query coming soon
             </Text>
-            <Button icon={Folder} iconAfter={Check} disabled>
-              {groupTitle}
-            </Button>
-            <Button
-              onPress={() => {
-                groupPublish.open({docId, version})
-              }}
-              size="$2"
-            >
-              Publish to Group
-            </Button>
+            {group && (
+              <Button icon={Folder} iconAfter={Check} disabled>
+                {groupTitle}
+              </Button>
+            )}
+            <PublishDialogInstance
+              docId={docId}
+              version={version}
+              {...dialogState}
+              closePopover={() => popoverState.onOpenChange(false)}
+            />
           </YStack>
         </Popover.Content>
       </Popover>
-      {groupPublish.content}
     </>
+  )
+}
+
+function PublishDialogInstance({
+  closePopover,
+  docId,
+  version,
+  ...props
+}: DialogProps & {closePopover: () => void; docId: string; version: string}) {
+  return (
+    <Dialog
+      modal
+      {...props}
+      onOpenChange={(open) => {
+        props.onOpenChange?.(open)
+        if (open) {
+          closePopover()
+        }
+      }}
+    >
+      <Dialog.Trigger asChild>
+        <Button>Publish to Group</Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          key="overlay"
+          animation="quick"
+          opacity={0.5}
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
+        />
+        <Dialog.Content
+          bordered
+          elevate
+          key="content"
+          animateOnly={['transform', 'opacity']}
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+          exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+          gap
+        >
+          <GroupPublishDialog input={{docId, version}} dialogState={props} />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   )
 }
 
