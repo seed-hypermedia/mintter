@@ -259,7 +259,10 @@ function VideoForm({
   const [tabState, setTabState] = useState('upload')
   const background = useTheme().background.get()
   const actionColor = useTheme().color6.get()
-  const [fileName, setFileName] = useState<{name: string; color: string | undefined}>({
+  const [fileName, setFileName] = useState<{
+    name: string
+    color: string | undefined
+  }>({
     name: 'Upload File',
     color: undefined,
   })
@@ -399,8 +402,8 @@ function VideoForm({
             borderRadius="$5"
             shadowColor={actionColor}
             opacity={1}
-            enterStyle={{ x: 0, y: -10, opacity: 0 }}
-            exitStyle={{ x: 0, y: -10, opacity: 0 }}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
               'quick',
               {
@@ -444,9 +447,7 @@ function VideoForm({
                     cursor: 'pointer',
                   }}
                 >
-                  <SizableText size="$2">
-                    Upload
-                  </SizableText>
+                  <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
                 <Tabs.Tab
                   unstyled
@@ -461,9 +462,7 @@ function VideoForm({
                     cursor: 'pointer',
                   }}
                 >
-                  <SizableText size="$2">
-                    Embed Link
-                  </SizableText>
+                  <SizableText size="$2">Embed Link</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 

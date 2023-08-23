@@ -295,7 +295,10 @@ function FileForm({
   const [tabState, setTabState] = useState('upload')
   const background = useTheme().background.get()
   const actionColor = useTheme().color6.get()
-  const [fileName, setFileName] = useState<{name: string; color: string | undefined}>({
+  const [fileName, setFileName] = useState<{
+    name: string
+    color: string | undefined
+  }>({
     name: 'Upload File',
     color: undefined,
   })
@@ -394,8 +397,8 @@ function FileForm({
             borderRadius="$5"
             shadowColor={actionColor}
             opacity={1}
-            enterStyle={{ x: 0, y: -10, opacity: 0 }}
-            exitStyle={{ x: 0, y: -10, opacity: 0 }}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
               'quick',
               {
@@ -433,17 +436,12 @@ function FileForm({
                     cursor: 'pointer',
                   }}
                 >
-                  <SizableText size="$2">
-                    Upload
-                  </SizableText>
+                  <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 
               <Tabs.Content value="upload" backgroundColor={background}>
-                <XStack
-                  padding="$4"
-                  alignItems="center"
-                >
+                <XStack padding="$4" alignItems="center">
                   <XStack
                     flex={1}
                     // @ts-ignore

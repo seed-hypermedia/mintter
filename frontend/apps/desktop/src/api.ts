@@ -310,20 +310,22 @@ export const router = t.router({
 
       browserWindow.webContents.session.webRequest.onBeforeSendHeaders(
         (details, callback) => {
-          callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } });
+          callback({requestHeaders: {Origin: '*', ...details.requestHeaders}})
         },
-      );
-      
-      browserWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-        callback({
-          responseHeaders: {
-            'Access-Control-Allow-Origin': ['*'],
-            // We use this to bypass headers
-            'Access-Control-Allow-Headers': ['*'],
-            ...details.responseHeaders,
-          },
-        });
-      });
+      )
+
+      browserWindow.webContents.session.webRequest.onHeadersReceived(
+        (details, callback) => {
+          callback({
+            responseHeaders: {
+              'Access-Control-Allow-Origin': ['*'],
+              // We use this to bypass headers
+              'Access-Control-Allow-Headers': ['*'],
+              ...details.responseHeaders,
+            },
+          })
+        },
+      )
       const windowLogger = childLogger(windowId)
       browserWindow.webContents.on(
         'console-message',
