@@ -259,6 +259,7 @@ export function PubContextButton({}: {}) {
       ? route.draftId
       : undefined
   const routeVersion = route.key == 'publication' ? route.versionId : undefined
+  const pubRoute = route.key === 'publication' ? route : null
   const draftRoute = route.key === 'draft' ? route : null
   const pubContext =
     route.key == 'publication'
@@ -321,18 +322,29 @@ export function PubContextButton({}: {}) {
                 <Text>Will Publish on the Public Web</Text>
               </>
             ) : null}
+            {groupPubContext && groupPubContext ? (
+              <Text>Todo: show other group publications of this doc</Text>
+            ) : null}
             {groupPubContext ? (
               <>
-                <Button icon={Folder} iconAfter={Check} disabled>
-                  {groupTitle}
+                <Button
+                  icon={Folder}
+                  iconAfter={Check}
+                  disabled
+                  flexDirection="column"
+                  alignItems="flex-start"
+                >
+                  <Text fontSize="$3" paddingTop="$2">
+                    {groupTitle}
+                  </Text>
+                  <Text paddingBottom="$2" fontSize={12} color="$color9">
+                    /{groupPubContext.pathName || documentId}
+                  </Text>
                 </Button>
-                <Text fontSize="$1">
-                  Publish to {groupPubContext.pathName || documentId}
-                </Text>
               </>
             ) : null}
 
-            {documentId && !groupPubContext ? (
+            {documentId && (pubRoute || !groupPubContext) ? (
               <PublishDialogInstance
                 docId={documentId}
                 version={versionId}
@@ -441,6 +453,8 @@ export function DraftPublicationButtons() {
   if (route.key !== 'draft')
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.draftId
+  const groupRouteContext =
+    route.pubContext?.key === 'group' ? route.pubContext : null
   let navReplace = useNavigate('replace')
   const isDaemonReady = useDaemonReady()
   const publish = usePublishDraft({
@@ -469,7 +483,7 @@ export function DraftPublicationButtons() {
         theme="green"
         icon={Check}
       >
-        Save
+        {groupRouteContext ? 'Commit to Group' : 'Commit'}
       </Button>
       <DiscardDraftButton />
     </>
