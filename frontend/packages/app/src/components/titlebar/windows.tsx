@@ -1,69 +1,45 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useIPC, useWindowUtils} from '@mintter/app/src/app-context'
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
+import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 import {
   AddSquare,
   ButtonText,
   Close,
   CloseAll,
-  Code,
-  Copy,
-  Cut,
+  Container,
   Delete,
-  Emphasis,
-  HeadingIcon,
   Hide,
-  Info,
   ListItem,
   ListItemProps,
-  Paste,
-  Redo,
+  Reload,
   Search,
-  SelectAll,
   Settings,
+  SizableText,
   Stack,
-  Statement,
-  Strikethrough,
-  Strong,
-  Subscript,
-  Superscript,
   Text,
   TitlebarRow,
   TitlebarSection,
   TitlebarWrapper,
-  Underline,
-  Undo,
   XStack,
   YGroup,
-  BlockQuote,
-  CodeBlock,
-  UnorderedList,
-  OrderedList,
-  GroupIcon,
-  Reload,
-  Documentation,
-  ReleaseNotes,
-  Acknowledgements,
-  Container,
+  YStack,
 } from '@mintter/ui'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {useEffect, useMemo} from 'react'
-import {PageActionButtons, PageContextButtons} from './common'
 import {MintterIcon} from '../mintter-icon'
+import {PageActionButtons, PageContextButtons} from './common'
 import {Title} from './title'
 import {
   CloseButton,
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
-import {useWindowUtils} from '@mintter/app/src/app-context'
-import {useIPC} from '@mintter/app/src/app-context'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper>
+      <TitlebarWrapper className="window-drag">
         <TitlebarRow>
           <TitlebarSection>
             <MintterIcon />
@@ -73,7 +49,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
             alignItems="center"
             justifyContent="flex-end"
           >
-            <XStack>
+            <XStack className="no-window-drag">
               <CloseButton />
             </XStack>
           </TitlebarSection>
@@ -83,14 +59,15 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper>
+    <TitlebarWrapper className="window-drag">
       <TitlebarRow minHeight={28} backgroundColor="$color3">
-        <TitlebarSection flex={1}>
+        <TitlebarSection className="no-window-drag">
           <MintterIcon />
           <SystemMenu />
         </TitlebarSection>
+        <TitlebarSection flex={1} />
         <TitlebarSection gap={0}>
-          <XStack>
+          <XStack className="no-window-drag">
             <MinimizeButton />
             <MaximizeOrRestoreButton />
             <CloseButton />
@@ -109,7 +86,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
             paddingHorizontal={0}
             paddingVertical="$1"
           >
-            <XStack>
+            <XStack className="no-window-drag">
               <PageContextButtons {...props} />
             </XStack>
           </Container>
@@ -124,6 +101,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
           flexBasis={0}
           alignItems="center"
           backgroundColor="$color1"
+          className="no-window-drag"
         >
           <PageActionButtons {...props} />
         </XStack>
@@ -144,12 +122,12 @@ function SystemMenu() {
         id: 'mintter',
         title: 'Mintter',
         children: [
-          {
-            id: 'about',
-            title: 'About Mintter',
-            onSelect: () => invoke('open_about'),
-            icon: Info,
-          },
+          // {
+          //   id: 'about',
+          //   title: 'About Mintter',
+          //   onSelect: () => invoke('open_about'),
+          //   icon: Info,
+          // },
           {
             id: 'preferences',
             title: 'Preferences...',
@@ -199,194 +177,195 @@ function SystemMenu() {
           },
         ],
       },
-      {
-        title: 'Edit',
-        id: 'edit',
-        disabled: editingDisabled,
-        children: [
-          {
-            id: 'undo',
-            title: 'Undo',
-            accelerator: 'Ctrl+Z',
-            onSelect: () => {
-              // TODO: implement me
-            },
-            icon: Undo,
-            disabled: editingDisabled,
-          },
-          {
-            id: 'redo',
-            title: 'Redo',
-            accelerator: 'Ctrl+Shift+Z',
-            onSelect: () => {
-              // TODO: implement me
-            },
-            icon: Redo,
-            disabled: true,
-          },
-          {
-            id: 'copy',
-            title: 'Copy',
-            accelerator: 'Ctrl+C',
-            onSelect: () => {
-              // TODO: implement me
-            },
-            icon: Copy,
-            // TODO: send event when there's a selected text that the user can select
-            disabled: true,
-          },
-          {
-            id: 'cut',
-            title: 'Cut',
-            accelerator: 'Ctrl+X',
-            onSelect: () => {
-              // TODO: implement me
-            },
-            icon: Cut,
-            // TODO: send event when there's a selected text that the user can
-            disabled: true,
-          },
-          {
-            id: 'paste',
-            title: 'Paste',
-            accelerator: 'Ctrl+V',
-            onSelect: () => {
-              // TODO: implement me
-            },
-            icon: Paste,
-            // TODO: send event when the clipboard is not empty
-            disabled: true,
-          },
-          {
-            id: 'selectall',
-            title: 'Select All',
-            accelerator: 'Ctrl+A',
-            onSelect: () => {
-              // TODO: implement me: send an event to select all the text
-            },
-            icon: SelectAll,
-            disabled: editingDisabled,
-          },
-          // {
-          //   id: 'find',
-          //   title: 'Find...',
-          //   accelerator: 'Ctrl+F',
-          //   onSelect: () => {
-          //     // TODO: implement me
-          //   },
-          //   icon: Search,
-          // },
-        ],
-      },
-      {
-        id: 'format',
-        title: 'Format',
-        disabled: editingDisabled,
-        children: [
-          {
-            id: 'strong',
-            title: 'Strong',
-            accelerator: 'Ctrl+B',
-            onSelect: () => send('format_mark', 'strong'),
-            icon: Strong,
-            disabled: true,
-          },
-          {
-            id: 'emphasis',
-            title: 'Emphasis',
-            accelerator: 'Ctrl+I',
-            onSelect: () => send('format_mark', 'emphasis'),
-            icon: Emphasis,
-            disabled: true,
-          },
-          {
-            id: 'code',
-            title: 'Code',
-            accelerator: 'Ctrl+E',
-            onSelect: () => send('format_mark', 'code'),
-            icon: Code,
-            disabled: true,
-          },
-          {
-            id: 'underline',
-            title: 'Underline',
-            accelerator: 'Ctrl+U',
-            onSelect: () => send('format_mark', 'underline'),
-            icon: Underline,
-            disabled: true,
-          },
-          {
-            id: 'strikethrough',
-            title: 'Strikethrough',
-            onSelect: () => send('format_mark', 'strikethrough'),
-            icon: Strikethrough,
-            disabled: true,
-          },
-          {
-            id: 'subscript',
-            title: 'Subscript',
-            onSelect: () => send('format_mark', 'subscript'),
-            icon: Subscript,
-            disabled: true,
-          },
-          {
-            id: 'superscript',
-            title: 'Superscript',
-            onSelect: () => send('format_mark', 'superscript'),
-            icon: Superscript,
-            disabled: true,
-          },
-          {
-            id: 'heading',
-            title: 'Heading',
-            onSelect: () => send('format_block', 'heading'),
-            icon: HeadingIcon,
-            disabled: true,
-          },
-          {
-            id: 'statement',
-            title: 'Statement',
-            onSelect: () => send('format_block', 'heading'),
-            icon: Statement,
-            disabled: true,
-          },
-          {
-            id: 'blockquote',
-            title: 'Blockquote',
-            onSelect: () => send('format_block', 'blockquote'),
-            icon: BlockQuote,
-            disabled: true,
-          },
-          {
-            id: 'codeblock',
-            title: 'Code Block',
-            onSelect: () => send('format_block', 'codeblock'),
-            icon: CodeBlock,
-            disabled: true,
-          },
-          {
-            id: 'unorderedlist',
-            title: 'Unordered List',
-            onSelect: () => send('format_block', 'unordered_list'),
-            icon: UnorderedList,
-            disabled: true,
-          },
-          {
-            id: 'orderedlist',
-            title: 'Ordered List',
-            onSelect: () => send('format_block', 'ordered_list'),
-            icon: OrderedList,
-            disabled: true,
-          },
-          {
-            id: 'group',
-            title: 'Plain List',
-            onSelect: () => send('format_block', 'group'),
-            icon: GroupIcon,
-            disabled: true,
-          },
-        ],
-      },
+      // {
+      //   title: 'Edit',
+      //   id: 'edit',
+      //   disabled: editingDisabled,
+      //   children: [
+      //     {
+      //       id: 'undo',
+      //       title: 'Undo',
+      //       accelerator: 'Ctrl+Z',
+      //       onSelect: () => {
+      //         // TODO: implement me
+      //       },
+      //       icon: Undo,
+      //       // disabled: editingDisabled,
+      //       disabled: true
+      //     },
+      //     {
+      //       id: 'redo',
+      //       title: 'Redo',
+      //       accelerator: 'Ctrl+Shift+Z',
+      //       onSelect: () => {
+      //         // TODO: implement me
+      //       },
+      //       icon: Redo,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'copy',
+      //       title: 'Copy',
+      //       accelerator: 'Ctrl+C',
+      //       onSelect: () => {
+      //         // TODO: implement me
+      //       },
+      //       icon: Copy,
+      //       // TODO: send event when there's a selected text that the user can select
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'cut',
+      //       title: 'Cut',
+      //       accelerator: 'Ctrl+X',
+      //       onSelect: () => {
+      //         // TODO: implement me
+      //       },
+      //       icon: Cut,
+      //       // TODO: send event when there's a selected text that the user can
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'paste',
+      //       title: 'Paste',
+      //       accelerator: 'Ctrl+V',
+      //       onSelect: () => {
+      //         // TODO: implement me
+      //       },
+      //       icon: Paste,
+      //       // TODO: send event when the clipboard is not empty
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'selectall',
+      //       title: 'Select All',
+      //       accelerator: 'Ctrl+A',
+      //       onSelect: () => {
+      //         // TODO: implement me: send an event to select all the text
+      //       },
+      //       icon: SelectAll,
+      //       disabled: editingDisabled,
+      //     },
+      //     // {
+      //     //   id: 'find',
+      //     //   title: 'Find...',
+      //     //   accelerator: 'Ctrl+F',
+      //     //   onSelect: () => {
+      //     //     // TODO: implement me
+      //     //   },
+      //     //   icon: Search,
+      //     // },
+      //   ],
+      // },
+      // {
+      //   id: 'format',
+      //   title: 'Format',
+      //   disabled: editingDisabled,
+      //   children: [
+      //     {
+      //       id: 'strong',
+      //       title: 'Strong',
+      //       accelerator: 'Ctrl+B',
+      //       onSelect: () => send('format_mark', 'strong'),
+      //       icon: Strong,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'emphasis',
+      //       title: 'Emphasis',
+      //       accelerator: 'Ctrl+I',
+      //       onSelect: () => send('format_mark', 'emphasis'),
+      //       icon: Emphasis,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'code',
+      //       title: 'Code',
+      //       accelerator: 'Ctrl+E',
+      //       onSelect: () => send('format_mark', 'code'),
+      //       icon: Code,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'underline',
+      //       title: 'Underline',
+      //       accelerator: 'Ctrl+U',
+      //       onSelect: () => send('format_mark', 'underline'),
+      //       icon: Underline,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'strikethrough',
+      //       title: 'Strikethrough',
+      //       onSelect: () => send('format_mark', 'strikethrough'),
+      //       icon: Strikethrough,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'subscript',
+      //       title: 'Subscript',
+      //       onSelect: () => send('format_mark', 'subscript'),
+      //       icon: Subscript,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'superscript',
+      //       title: 'Superscript',
+      //       onSelect: () => send('format_mark', 'superscript'),
+      //       icon: Superscript,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'heading',
+      //       title: 'Heading',
+      //       onSelect: () => send('format_block', 'heading'),
+      //       icon: HeadingIcon,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'statement',
+      //       title: 'Statement',
+      //       onSelect: () => send('format_block', 'heading'),
+      //       icon: Statement,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'blockquote',
+      //       title: 'Blockquote',
+      //       onSelect: () => send('format_block', 'blockquote'),
+      //       icon: BlockQuote,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'codeblock',
+      //       title: 'Code Block',
+      //       onSelect: () => send('format_block', 'codeblock'),
+      //       icon: CodeBlock,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'unorderedlist',
+      //       title: 'Unordered List',
+      //       onSelect: () => send('format_block', 'unordered_list'),
+      //       icon: UnorderedList,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'orderedlist',
+      //       title: 'Ordered List',
+      //       onSelect: () => send('format_block', 'ordered_list'),
+      //       icon: OrderedList,
+      //       disabled: true,
+      //     },
+      //     {
+      //       id: 'group',
+      //       title: 'Plain List',
+      //       onSelect: () => send('format_block', 'group'),
+      //       icon: GroupIcon,
+      //       disabled: true,
+      //     },
+      //   ],
+      // },
       {
         id: 'view',
         title: 'View',
@@ -414,30 +393,30 @@ function SystemMenu() {
           },
         ],
       },
-      {
-        id: 'help',
-        title: 'Help',
-        children: [
-          {
-            id: 'documentation',
-            title: 'Documentation',
-            onSelect: () => invoke('open_documentation'),
-            icon: Documentation,
-          },
-          {
-            id: 'releasenotes',
-            title: 'Release Notes',
-            onSelect: () => invoke('open_release_notes'),
-            icon: ReleaseNotes,
-          },
-          {
-            id: 'acknowledgements',
-            title: 'Acknowledgements',
-            onSelect: () => invoke('open_acknowledgements'),
-            icon: Acknowledgements,
-          },
-        ],
-      },
+      // {
+      //   id: 'help',
+      //   title: 'Help',
+      //   children: [
+      //     {
+      //       id: 'documentation',
+      //       title: 'Documentation',
+      //       onSelect: () => invoke('open_documentation'),
+      //       icon: Documentation,
+      //     },
+      //     {
+      //       id: 'releasenotes',
+      //       title: 'Release Notes',
+      //       onSelect: () => invoke('open_release_notes'),
+      //       icon: ReleaseNotes,
+      //     },
+      //     {
+      //       id: 'acknowledgements',
+      //       title: 'Acknowledgements',
+      //       onSelect: () => invoke('open_acknowledgements'),
+      //       icon: Acknowledgements,
+      //     },
+      //   ],
+      // },
     ],
     [editingDisabled],
   )
@@ -449,29 +428,31 @@ function SystemMenu() {
           <XStack gap="$3">
             {menuItems.map((item) => (
               <NavigationMenu.Item key={item.id} asChild>
-                <Stack>
+                <YStack>
                   <NavigationMenu.Trigger asChild>
                     <ButtonText size="$1">{item.title}</ButtonText>
                   </NavigationMenu.Trigger>
                   {item.children.length ? (
-                    <NavigationMenu.Content>
-                      <NavigationMenu.Sub>
-                        <NavigationMenu.List asChild>
-                          <YGroup bordered position="absolute" minWidth={200}>
-                            {item.children.map((p) => (
-                              <MenuItem
-                                disabled={p.disabled}
-                                key={p.id}
-                                {...p}
-                                onSelect={p.onSelect}
-                              />
-                            ))}
-                          </YGroup>
-                        </NavigationMenu.List>
-                      </NavigationMenu.Sub>
+                    <NavigationMenu.Content asChild>
+                      <YStack>
+                        <NavigationMenu.Sub>
+                          <NavigationMenu.List asChild>
+                            <YGroup bordered position="absolute" minWidth={200}>
+                              {item.children.map((p) => (
+                                <MenuItem
+                                  disabled={p.disabled}
+                                  key={p.id}
+                                  {...p}
+                                  onSelect={p.onSelect}
+                                />
+                              ))}
+                            </YGroup>
+                          </NavigationMenu.List>
+                        </NavigationMenu.Sub>
+                      </YStack>
                     </NavigationMenu.Content>
                   ) : null}
-                </Stack>
+                </YStack>
               </NavigationMenu.Item>
             ))}
           </XStack>
@@ -522,13 +503,13 @@ function MenuItem(props: {
             props.onSelect()
           }}
         >
-          <Text fontFamily="$body" fontSize="$2" flex={1}>
+          <SizableText fontSize="$2" flex={1}>
             {props.title}
-          </Text>
+          </SizableText>
           {props.accelerator && (
-            <Text fontFamily="$body" fontSize="$2" opacity={0.5}>
+            <SizableText fontSize="$2" opacity={0.5}>
               {props.accelerator}
-            </Text>
+            </SizableText>
           )}
         </ListItem>
       </YGroup.Item>
