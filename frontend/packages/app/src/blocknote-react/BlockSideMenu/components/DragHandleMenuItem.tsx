@@ -10,10 +10,6 @@ export const DragHandleMenuItem = (props: DragHandleMenuItemProps) => {
   return (
     <Menu.Item
       {...propsToPassThrough}
-      onClick={(event) => {
-        closeMenu()
-        onClick?.(event)
-      }}
     >
       {props.children}
     </Menu.Item>
