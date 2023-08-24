@@ -24,7 +24,8 @@ jobs:
       - name: Get Tag
         id: vars
         run: |
-          echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "version=v2023.08.24" >> "$GITHUB_OUTPUT"
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
@@ -39,12 +40,12 @@ jobs:
           - os: macos-latest
             goarch: arm64
             daemon_name: aarch64-apple-darwin
-          - os: ubuntu-latest
-            goarch: amd64
-            daemon_name: x86_64-unknown-linux-gnu
-          - os: windows-latest
-            goarch: amd64
-            daemon_name: x86_64-pc-windows-msvc
+          # - os: ubuntu-latest
+          #   goarch: amd64
+          #   daemon_name: x86_64-unknown-linux-gnu
+          # - os: windows-latest
+          #   goarch: amd64
+          #   daemon_name: x86_64-pc-windows-msvc
     steps:
       - name: Checkout
         uses: actions/checkout@v1
