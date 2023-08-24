@@ -21,11 +21,10 @@ const LLVM_TRIPLES = {
 }
 
 const getPlatformTriple = (): string => {
-  if (process.env.APP_TARGET == 'aarch64-apple-darwin') {
-    return process.env.APP_TARGET
-  }
-
-  return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
+  return (
+    process.env.DAEMON_NAME ||
+    LLVM_TRIPLES[`${process.platform}/${process.arch}`]
+  )
 }
 
 const devProjectRoot = join(process.cwd(), '../../..')

@@ -58,16 +58,16 @@ jobs:
         config:
           - os: macos-latest
             goarch: amd64
-            target: x86_64-apple-darwin
+            daemon_name: x86_64-apple-darwin
           - os: macos-latest
             goarch: arm64
-            target: aarch64-apple-darwin
+            daemon_name: aarch64-apple-darwin
           - os: ubuntu-latest
             goarch: amd64
-            target: x86_64-unknown-linux-gnu
+            daemon_name: x86_64-unknown-linux-gnu
           - os: windows-latest
             goarch: amd64
-            target: x86_64-pc-windows-msvc
+            daemon_name: x86_64-pc-windows-msvc
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -75,14 +75,14 @@ jobs:
       - uses: ./.github/actions/ci-setup
         with:
           matrix-os: ${{ matrix.config.os }}
-          # matrix-target: ${{ matrix.config.target }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
           # matrix-goarch: ${{ matrix.config.goarch }}
 
       - name: Build Backend (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.target }} ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
@@ -91,7 +91,7 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.target }}.exe ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
@@ -120,7 +120,7 @@ jobs:
         run: |
           TAMAGUI_TARGET=web yarn desktop:make
         env:
-          APP_TARGET: ${{ matrix.config.target }}
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
           APP_VERSION: "${{ needs.get-version.outputs.version }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -134,6 +134,7 @@ jobs:
           $env:TAMAGUI_TARGET="web"
           yarn desktop:make
         env:
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
           APP_VERSION: "${{ needs.get-version.outputs.version }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -144,7 +145,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts-${{ matrix.config.target }}
+          name: artifacts-${{ matrix.config.daemon_name }}
           path: frontend/apps/desktop/out/make/**/*
 
   publish-to-github:
@@ -166,6 +167,6 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           tag_name: "${{ needs.get-version.outputs.version }}"
-          prerelease: false
+          prerelease: true
           generate_release_notes: true
           files: ./artifacts/artifacts-*/**/*
