@@ -17,7 +17,7 @@ export default async function siteTestHandler(
   res: NextApiResponse,
 ) {
   const info = await groupsClient.getSiteInfo({
-    hostname: gatewayHost,
+    hostname: gatewayHostWithProtocol,
   })
 
   res
