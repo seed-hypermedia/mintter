@@ -1,5 +1,6 @@
 const path = require('path')
 const packageJson = require('./package.json')
+const setLanguages = require('electron-packager-languages')
 
 const {version} = packageJson
 
@@ -52,6 +53,7 @@ const config = {
     appCategoryType: 'public.app-category.productivity',
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
+    beforeCopy: [setLanguages(['en', 'en_US'])],
   },
   makers: [
     {
@@ -161,21 +163,22 @@ function notarizeMaybe() {
     return
   }
 
-  config.packagerConfig.osxNotarize = {
-    tool: 'notarytool',
-    appleId: process.env.APPLE_ID,
-    appleIdPassword: process.env.APPLE_ID_PASSWORD,
-    teamId: process.env.APPLE_TEAM_ID,
-  }
+  // config.packagerConfig.osxNotarize = {
+  //   tool: 'notarytool',
+  //   appleId: process.env.APPLE_ID,
+  //   appleIdPassword: process.env.APPLE_ID_PASSWORD,
+  //   teamId: process.env.APPLE_TEAM_ID,
+  // }
 
   config.osxSign = {
-    // entitlements: './entitlements.plist',
-    // executableName: 'Mintter',
-    // 'entitlements-inherit': './entitlements.plist',
-    // 'gatekeeper-assess': false,
-    // 'hardened-runtime': true,
-    // identity:
-    //   'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
+    entitlements: './entitlements.plist',
+    executableName: 'Mintter',
+    'entitlements-inherit': './entitlements.plist',
+    'gatekeeper-assess': false,
+    'hardened-runtime': true,
+    identity:
+      'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
+    binaries: [daemonBinaryPath],
   }
 }
 

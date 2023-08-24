@@ -4334,21 +4334,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/environment@npm:^29.6.3":
-  version: 29.6.3
-  resolution: "@jest/environment@npm:29.6.3"
+"@jest/environment@npm:^29.6.4":
+  version: 29.6.4
+  resolution: "@jest/environment@npm:29.6.4"
   dependencies:
-    "@jest/fake-timers": ^29.6.3
+    "@jest/fake-timers": ^29.6.4
     "@jest/types": ^29.6.3
     "@types/node": "*"
     jest-mock: ^29.6.3
-  checksum: 96aaf9baaa58fbacbdfbde9591297f25f9d6f5566cf10cd07d744a4a25b1d82b6cfb89f217a45ccce2cc50ec6c7e3c9a0122908d6b827985a1679afb5e10b7b1
+  checksum: 810d8f1fc26d293acfc44927bcb78adc58ed4ea580a64c8d94aa6c67239dcb149186bf25b94ff28b79de15253e0c877ad8d330feac205f185f3517593168510c
   languageName: node
   linkType: hard
 
-"@jest/fake-timers@npm:^29.6.3":
-  version: 29.6.3
-  resolution: "@jest/fake-timers@npm:29.6.3"
+"@jest/fake-timers@npm:^29.6.4":
+  version: 29.6.4
+  resolution: "@jest/fake-timers@npm:29.6.4"
   dependencies:
     "@jest/types": ^29.6.3
     "@sinonjs/fake-timers": ^10.0.2
@@ -4356,7 +4356,7 @@ __metadata:
     jest-message-util: ^29.6.3
     jest-mock: ^29.6.3
     jest-util: ^29.6.3
-  checksum: 60be71159bb92c8b8da593fac2b2fff50c0760c26c3b17237561a2818382d3c797bd119a1707ec1d3e9b77e8e3d6513fe88f0c668d6ca26fb2c01ab475620888
+  checksum: 3f06d1090cbaaf781920fe59b10509ad86b587c401818a066ee1550101c6203e0718f0f83bbd2afa8bdf7b43eb280f89fb9f8c98886094e53ccabe5e64de9be1
   languageName: node
   linkType: hard
 
@@ -4913,6 +4913,7 @@ __metadata:
     console-log-colors: 0.4.0
     electron: 26.0.0
     electron-log: beta
+    electron-packager-languages: ^0.5.0
     electron-playwright-helpers: 1.6.0
     electron-store: 8.1.0
     electron-trpc: 0.5.2
@@ -9645,14 +9646,14 @@ __metadata:
   linkType: hard
 
 "@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^4.17.33":
-  version: 4.17.35
-  resolution: "@types/express-serve-static-core@npm:4.17.35"
+  version: 4.17.36
+  resolution: "@types/express-serve-static-core@npm:4.17.36"
   dependencies:
     "@types/node": "*"
     "@types/qs": "*"
     "@types/range-parser": "*"
     "@types/send": "*"
-  checksum: cc8995d10c6feda475ec1b3a0e69eb0f35f21ab6b49129ad5c6f279e0bc5de8175bc04ec51304cb79a43eec3ed2f5a1e01472eb6d5f827b8c35c6ca8ad24eb6e
+  checksum: 410b13cbd663f18c0f8729e7f2ff54d960d96de76ebbae7cadb612972f85cc66c54051e00d32f11aa230c0a683d81a6d6fc7f7e4e383a95c0801494c517f36e1
   languageName: node
   linkType: hard
 
@@ -9907,11 +9908,11 @@ __metadata:
   linkType: hard
 
 "@types/morgan@npm:^1.9.3":
-  version: 1.9.4
-  resolution: "@types/morgan@npm:1.9.4"
+  version: 1.9.5
+  resolution: "@types/morgan@npm:1.9.5"
   dependencies:
     "@types/node": "*"
-  checksum: d1e99c66a43501dcdf6e94e013dfff4e6c152cbb5f782d954bb722d230a9c1c0fe06fab6df3f3dfa3547735a7598f9471633cc6813d794e9562fd022e217c6ae
+  checksum: f98deb4c7f2ad6049ad34ed7b0f0d427546bdf2358011070af9d597de1b0a03b38cc10cfe65ef2e7673e569c384303d949e76df701acefe288d547f614142973
   languageName: node
   linkType: hard
 
@@ -9922,7 +9923,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.5.2":
+"@types/node@npm:*":
+  version: 20.5.4
+  resolution: "@types/node@npm:20.5.4"
+  checksum: 18de76c990e1c298183661cfc7cf16c9384531538c8090cc27bc3cab801e7c46b9f6943591ab0433955dd57961601684cc0fb19ba2deee9609e137c91afd2e25
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:20.5.2":
   version: 20.5.2
   resolution: "@types/node@npm:20.5.2"
   checksum: 46d032bb9a1db687693f6351702572d2f1e12face32caf8182323413918de27d4ac16cc2b15ff6b891651313e602da18edbdd095d16d2b5a26588c2edffca892
@@ -9944,9 +9952,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^18.11.18, @types/node@npm:^18.16.3":
-  version: 18.17.7
-  resolution: "@types/node@npm:18.17.7"
-  checksum: cb327da222eb9dc2a8e86c957bef58b16f20a2f6b109e43ff10267e83b342bcba5257e800438dd54deb2bd66bb7815539a759c6dcf91e1b0b08b3add1d5886c8
+  version: 18.17.9
+  resolution: "@types/node@npm:18.17.9"
+  checksum: 0d5835710e49a654a1ca34167e7cd504cc709c006006ebe9b23c360dac5637c6c4f1b4f3aff33df1b7f9debfb9ad8bd81da2fc4540970d2ad56eb479cda77613
   languageName: node
   linkType: hard
 
@@ -10099,7 +10107,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:18.2.20":
+"@types/react@npm:*":
+  version: 18.2.21
+  resolution: "@types/react@npm:18.2.21"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: ffed203bfe7aad772b8286f7953305c9181ac3a8f27d3f5400fbbc2a8e27ca8e5bbff818ee014f39ca0d19d2b3bb154e5bdbec7e232c6f80b59069375aa78349
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:18.2.20":
   version: 18.2.20
   resolution: "@types/react@npm:18.2.20"
   dependencies:
@@ -12477,8 +12496,8 @@ __metadata:
   linkType: hard
 
 "chai@npm:^4.3.7":
-  version: 4.3.7
-  resolution: "chai@npm:4.3.7"
+  version: 4.3.8
+  resolution: "chai@npm:4.3.8"
   dependencies:
     assertion-error: ^1.1.0
     check-error: ^1.0.2
@@ -12487,7 +12506,7 @@ __metadata:
     loupe: ^2.3.1
     pathval: ^1.1.1
     type-detect: ^4.0.5
-  checksum: 0bba7d267848015246a66995f044ce3f0ebc35e530da3cbdf171db744e14cbe301ab913a8d07caf7952b430257ccbb1a4a983c570a7c5748dc537897e5131f7c
+  checksum: 29e0984ed13308319cadc35437c8ef0a3e271544d226c991bf7e3b6d771bf89707321669e11d05e362bc0ad0bd26585079b989d1032f3c106e3bb95d7f079cce
   languageName: node
   linkType: hard
 
@@ -14815,6 +14834,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"electron-packager-languages@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "electron-packager-languages@npm:0.5.0"
+  dependencies:
+    rimraf: ^2.6.2
+  checksum: b88132bf2a729c8a9a1950c1f111cbc19f008566934cb9202103f1b382ff50ff6fe115508c1b48167dda2870df61cd569957b0a32fcf8a2a97060698eaeae841
+  languageName: node
+  linkType: hard
+
 "electron-packager@npm:^17.1.2":
   version: 17.1.2
   resolution: "electron-packager@npm:17.1.2"
@@ -14864,9 +14892,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.477":
-  version: 1.4.498
-  resolution: "electron-to-chromium@npm:1.4.498"
-  checksum: 01962ae42e9097c321cb6ff63ca97dfd36457050727893d1768e6eb1b7d5a48ece568b94b1128fd0211f7ce3a31aca0c17eb72b1292d9b5ef7b0664d90dfe3aa
+  version: 1.4.500
+  resolution: "electron-to-chromium@npm:1.4.500"
+  checksum: fdd56b7f27ccc0aba837614ba80741f20aaaf558dc4eceb1e9525bf5e6ca9010d02d5a9554adeed43506facc60602c1b162b66fbee93d52db3d279a4e1a135db
   languageName: node
   linkType: hard
 
@@ -16781,10 +16809,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flow-parser@npm:0.*, flow-parser@npm:^0.215.0":
-  version: 0.215.0
-  resolution: "flow-parser@npm:0.215.0"
-  checksum: f25c35ef7cd24e6d3441946d138d59e65f945c782cc2f587d1cac620c6a692f8a195f61f2153487cdac3005c8ecaf4094b22d310d096489e47a250766e8737a4
+"flow-parser@npm:0.*, flow-parser@npm:^0.215.1":
+  version: 0.215.1
+  resolution: "flow-parser@npm:0.215.1"
+  checksum: bc2bb20e49f81f6b1a60848de3be291eb2e9bf7b1cdc748d747b02985aa9ddcf5981bf6b9983062aaa058a1466c996afc539ce9e5637c68dce318524096a623e
   languageName: node
   linkType: hard
 
@@ -16796,16 +16824,16 @@ __metadata:
   linkType: hard
 
 "flow-remove-types@npm:^2.214.0":
-  version: 2.215.0
-  resolution: "flow-remove-types@npm:2.215.0"
+  version: 2.215.1
+  resolution: "flow-remove-types@npm:2.215.1"
   dependencies:
-    flow-parser: ^0.215.0
+    flow-parser: ^0.215.1
     pirates: ^3.0.2
     vlq: ^0.2.1
   bin:
     flow-node: flow-node
     flow-remove-types: flow-remove-types
-  checksum: 65f1232ada936a3b277102ac2eec8d97e0c786bbb0d2a6d6843114525f18752fa3bf890421f76aad8d20b4dd10036cdfb325d55d8a73655c0e20517eb8627d57
+  checksum: b8c4c470d757b2918820d056a489d8d3feb84f1a3e2176446cb965ee6c9553b5114373130cb09136c3d0bc69ac490533474a255d32779f0cd5d21067987e348d
   languageName: node
   linkType: hard
 
@@ -19921,16 +19949,16 @@ __metadata:
   linkType: hard
 
 "jest-environment-node@npm:^29.2.1":
-  version: 29.6.3
-  resolution: "jest-environment-node@npm:29.6.3"
+  version: 29.6.4
+  resolution: "jest-environment-node@npm:29.6.4"
   dependencies:
-    "@jest/environment": ^29.6.3
-    "@jest/fake-timers": ^29.6.3
+    "@jest/environment": ^29.6.4
+    "@jest/fake-timers": ^29.6.4
     "@jest/types": ^29.6.3
     "@types/node": "*"
     jest-mock: ^29.6.3
     jest-util: ^29.6.3
-  checksum: c215d8d94d95ba0353677c8b6c7c46d3f612bfd6becafa90e842ab99cb4ba2243c7f0309f1518ea2879820d39c0f3ec0d678e9ebb41055ed6eedbeb123f2897c
+  checksum: 518221505af4bd32c84f2af2c03f9d771de2711bd69fe7723b648fcc2e05d95b4e75f493afa9010209e26a4a3309ebee971f9b18c45b540891771d3b68c3a16e
   languageName: node
   linkType: hard
 
@@ -20040,14 +20068,14 @@ __metadata:
   linkType: hard
 
 "jest-worker@npm:^29.1.2":
-  version: 29.6.3
-  resolution: "jest-worker@npm:29.6.3"
+  version: 29.6.4
+  resolution: "jest-worker@npm:29.6.4"
   dependencies:
     "@types/node": "*"
     jest-util: ^29.6.3
     merge-stream: ^2.0.0
     supports-color: ^8.0.0
-  checksum: 8ffb24a2d4c70ed3032034a2601defccc19353d854d89459f58793c6c8f170f88038c6722073c8047c5734c8ec8d4902ebc955f4f7acb433c2499adf616388fc
+  checksum: 05d19a5759ebfeb964036065be55ad8d8e8ddffa85d9b3a4c0b95765695efb1d8226ec824a4d8e660c38cda3389bfeb98d819f47232acf9fb0e79f553b7c0a76
   languageName: node
   linkType: hard
 
@@ -23097,8 +23125,8 @@ __metadata:
   linkType: hard
 
 "node-fetch@npm:^2.2.0, node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.12, node-fetch@npm:^2.6.7, node-fetch@npm:^2.x.x":
-  version: 2.6.13
-  resolution: "node-fetch@npm:2.6.13"
+  version: 2.7.0
+  resolution: "node-fetch@npm:2.7.0"
   dependencies:
     whatwg-url: ^5.0.0
   peerDependencies:
@@ -23106,7 +23134,7 @@ __metadata:
   peerDependenciesMeta:
     encoding:
       optional: true
-  checksum: 055845ae5b4796c78c7053564745345025cf959563b3568b43c385f67d311779e6b00e5fef6ed1b79f86ba4048e4b4b722e1aa948305521b9353eb7e788912c9
+  checksum: d76d2f5edb451a3f05b15115ec89fc6be39de37c6089f1b6368df03b91e1633fd379a7e01b7ab05089a25034b2023d959b47e59759cb38d88341b2459e89d6e5
   languageName: node
   linkType: hard
 
@@ -26168,15 +26196,15 @@ __metadata:
   linkType: hard
 
 "react-textarea-autosize@npm:^8.3.2":
-  version: 8.5.2
-  resolution: "react-textarea-autosize@npm:8.5.2"
+  version: 8.5.3
+  resolution: "react-textarea-autosize@npm:8.5.3"
   dependencies:
     "@babel/runtime": ^7.20.13
     use-composed-ref: ^1.3.0
     use-latest: ^1.2.1
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 48504e1c7bea01ea9632a2f663271519693926bb4dbdba7f7353178078df95a877fb298ff56e8ba41a324b212da2b3df13524de54c6a32a2de8241e46dceba98
+  checksum: b317c3763f37a89621bbafd0e6e2d068e7876790a5ae77f497adfd6ba9334ceea138c8a0b7d907bae0f79c765cb24e8b2ca2b8033b4144c0bce28571a3658921
   languageName: node
   linkType: hard
 
@@ -27060,6 +27088,17 @@ __metadata:
   version: 1.3.0
   resolution: "rfdc@npm:1.3.0"
   checksum: fb2ba8512e43519983b4c61bd3fa77c0f410eff6bae68b08614437bc3f35f91362215f7b4a73cbda6f67330b5746ce07db5dd9850ad3edc91271ad6deea0df32
+  languageName: node
+  linkType: hard
+
+"rimraf@npm:^2.6.2":
+  version: 2.7.1
+  resolution: "rimraf@npm:2.7.1"
+  dependencies:
+    glob: ^7.1.3
+  bin:
+    rimraf: ./bin.js
+  checksum: cdc7f6eacb17927f2a075117a823e1c5951792c6498ebcce81ca8203454a811d4cf8900314154d3259bb8f0b42ab17f67396a8694a54cae3283326e57ad250cd
   languageName: node
   linkType: hard
 
@@ -28314,9 +28353,9 @@ __metadata:
   linkType: hard
 
 "std-env@npm:^3.0.1, std-env@npm:^3.3.3":
-  version: 3.4.2
-  resolution: "std-env@npm:3.4.2"
-  checksum: e08794eff2498fa0bfcf997c22eac20b8711a865650f597f041be456aee854e8779816ee8fc701dc9bc040307d007df271b05e44ae7660e9a19ea27a5c78a876
+  version: 3.4.3
+  resolution: "std-env@npm:3.4.3"
+  checksum: bef186fb2baddda31911234b1e58fa18f181eb6930616aaec3b54f6d5db65f2da5daaa5f3b326b98445a7d50ca81d6fe8809ab4ebab85ecbe4a802f1b40921bf
   languageName: node
   linkType: hard
 
