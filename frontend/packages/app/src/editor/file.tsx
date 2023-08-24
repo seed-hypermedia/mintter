@@ -106,11 +106,17 @@ const Render = (
 
   return (
     <YStack
-      className={selected ? "ProseMirror-selectednode" : ""}
+      className={selected ? 'ProseMirror-selectednode' : ''}
       borderWidth={0}
     >
       {block.props.url ? (
-        <FileComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+        <FileComponent
+          block={block}
+          editor={editor}
+          assign={assignFile}
+          selected
+          setSelected={setSelection}
+        />
       ) : editor.isEditable ? (
         <FileForm block={block} assign={assignFile} editor={editor} />
       ) : (
@@ -125,7 +131,7 @@ function FileComponent({
   editor,
   assign,
   selected,
-  setSelected
+  setSelected,
 }: {
   block: Block<HDBlockSchema>
   editor: BlockNoteEditor<HDBlockSchema>
@@ -408,7 +414,7 @@ function FileForm({
             enterStyle={{x: 0, y: -10, opacity: 0}}
             exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              "quick",
+              'quick',
               {
                 opacity: {
                   overshootClamping: true,
@@ -438,10 +444,10 @@ function FileForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
                   hoverStyle={{
-                    backgroundColor: "$borderColorHover",
-                    cursor: "pointer",
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
                   }}
                 >
                   <SizableText size="$2">Upload</SizableText>
@@ -500,10 +506,12 @@ function FileForm({
                       borderRadius="$4"
                       width={500}
                       justifyContent="center"
-                      backgroundColor={drag ? "$borderColorHover" : "$background"}
+                      backgroundColor={
+                        drag ? '$borderColorHover' : '$background'
+                      }
                       hoverStyle={{
-                        backgroundColor: "$borderColorHover",
-                        cursor: "pointer",
+                        backgroundColor: '$borderColorHover',
+                        cursor: 'pointer',
                       }}
                     >
                       <SizableText
@@ -521,9 +529,9 @@ function FileForm({
                       type="file"
                       multiple
                       style={{
-                        background: "white",
-                        padding: "0 2px",
-                        display: "none",
+                        background: 'white',
+                        padding: '0 2px',
+                        display: 'none',
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {

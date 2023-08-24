@@ -105,11 +105,17 @@ const Render = (
 
   return (
     <YStack
-      className={selected ? "ProseMirror-selectednode" : ""} 
+      className={selected ? 'ProseMirror-selectednode' : ''}
       borderWidth={0}
     >
       {block.props.url ? (
-        <VideoComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+        <VideoComponent
+          block={block}
+          editor={editor}
+          assign={assignFile}
+          selected
+          setSelected={setSelection}
+        />
       ) : editor.isEditable ? (
         <VideoForm block={block} editor={editor} assign={assignFile} />
       ) : (
@@ -412,7 +418,7 @@ function VideoForm({
             enterStyle={{x: 0, y: -10, opacity: 0}}
             exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              "quick",
+              'quick',
               {
                 opacity: {
                   overshootClamping: true,
@@ -424,7 +430,7 @@ function VideoForm({
               value={tabState}
               onValueChange={(value: string) => {
                 setFileName({
-                  name: "Upload File",
+                  name: 'Upload File',
                   color: undefined,
                 })
                 setTabState(value)
@@ -448,10 +454,10 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
                   hoverStyle={{
-                    backgroundColor: "$borderColorHover",
-                    cursor: "pointer",
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
                   }}
                 >
                   <SizableText size="$2">Upload</SizableText>
@@ -463,10 +469,10 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
+                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
                   hoverStyle={{
-                    backgroundColor: "$borderColorHover",
-                    cursor: "pointer",
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
                   }}
                 >
                   <SizableText size="$2">Embed Link</SizableText>
@@ -545,10 +551,12 @@ function VideoForm({
                       size="$3"
                       width={500}
                       justifyContent="center"
-                      backgroundColor={drag ? "$borderColorHover" : "$background"}
+                      backgroundColor={
+                        drag ? '$borderColorHover' : '$background'
+                      }
                       hoverStyle={{
-                        backgroundColor: "$borderColorHover",
-                        cursor: "pointer",
+                        backgroundColor: '$borderColorHover',
+                        cursor: 'pointer',
                       }}
                     >
                       <SizableText
@@ -567,9 +575,9 @@ function VideoForm({
                       accept="video/*"
                       multiple
                       style={{
-                        background: "white",
-                        padding: "0 2px",
-                        display: "none",
+                        background: 'white',
+                        padding: '0 2px',
+                        display: 'none',
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
@@ -602,7 +610,7 @@ function VideoForm({
                           size="$3.5"
                           placeholder="Input video link..."
                           focusStyle={{
-                            borderColor: "$colorFocus",
+                            borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
                           onChange={(e) => setUrl(e.nativeEvent.text)}
@@ -613,8 +621,8 @@ function VideoForm({
                             flexShrink={0}
                             borderRadius="$3"
                             size="$3.5"
-                            theme={fileName.color === "red" ? "gray" : "green"}
-                            disabled={fileName.color === "red" ? true : false}
+                            theme={fileName.color === 'red' ? 'gray' : 'green'}
+                            disabled={fileName.color === 'red' ? true : false}
                             focusStyle={{
                               outlineWidth: 0,
                             }}
@@ -623,7 +631,7 @@ function VideoForm({
                           </Button>
                         </Form.Trigger>
                       </XStack>
-                      {fileName.name != "Upload File" && (
+                      {fileName.name != 'Upload File' && (
                         <SizableText
                           size="$2"
                           color={fileName.color}
