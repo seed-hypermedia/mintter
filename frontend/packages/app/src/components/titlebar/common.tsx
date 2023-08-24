@@ -35,13 +35,8 @@ import {
 } from '@mintter/ui'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
+import {DraftPublicationButtons, PubContextButton} from './publish-share'
 import {
-  DraftPublicationButtons,
-  PublicationDropdown,
-  PublishShareButton,
-} from './publish-share'
-import {
-  CircleEllipsis,
   Copy,
   FilePlus2,
   Folder,
@@ -50,7 +45,6 @@ import {
   Pencil,
   Search,
   Send,
-  Trash,
 } from '@tamagui/lucide-icons'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
@@ -63,6 +57,18 @@ import {useEditGroupInfoDialog} from '../edit-group-info'
 import {useGroup} from '../../models/groups'
 import {getPublicDocUrl, getPublicEntityUrl} from '@mintter/shared'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {PublicationRouteContext} from '@mintter/app/utils/navigation'
+
+function getRoutePubContext(
+  route: NavRoute,
+): PublicationRouteContext | undefined {
+  if (route.key === 'publication') return route.pubContext
+  if (route.key === 'draft') return route.pubContext
+  if (route.key === 'group')
+    return {key: 'group', groupId: route.groupId, pathName: ''}
+
+  return null
+}
 
 function NewDocumentButton() {
   const route = useNavRoute()
@@ -77,9 +83,9 @@ function NewDocumentButton() {
         iconAfter={FilePlus2}
         onPress={(e) => {
           e.preventDefault()
-          const host = route.key === 'site' ? route.hostname : undefined
+          const pubContext = getRoutePubContext(route)
           // @ts-ignore
-          openDraft(!e.shiftKey, host)
+          openDraft(!e.shiftKey, pubContext)
         }}
       />
     </Tooltip>
@@ -226,7 +232,7 @@ export function PageContextButtons(props: TitleBarProps) {
           />
         </XGroup.Item>
       </XGroup>
-      <PublicationDropdown />
+      <PubContextButton />
     </XStack>
   )
 }

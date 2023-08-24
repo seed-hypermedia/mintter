@@ -51,6 +51,7 @@ import {queryKeys} from './query-keys'
 import {extractReferencedDocs} from './sites'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {useGRPCClient} from '../app-context'
+import {useNavRoute} from '../utils/navigation'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -259,16 +260,31 @@ export function usePublishDraft(
   >,
 ) {
   const grpcClient = useGRPCClient()
+  const route = useNavRoute()
+  const draftRoute = route.key === 'draft' ? route : undefined
+  const draftPubContext = draftRoute?.pubContext
+  const draftGroupContext =
+    draftPubContext?.key === 'group' ? draftPubContext : undefined
   const {client, invalidate} = useAppContext().queryClient
   return useMutation({
     ...opts,
     mutationFn: async ({draftId}: {draftId: string}) => {
-      console.log('hello mutationFn', draftId)
       const draft = await grpcClient.drafts.getDraft({documentId: draftId})
       if (!draft) throw new Error('no draft found')
-      console.log('huh', draftId)
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
-
+      const publishedId = pub.document?.id
+      if (draftGroupContext && publishedId) {
+        let publishPathName =
+          draftGroupContext.pathName === ''
+            ? publishedId
+            : draftGroupContext.pathName
+        await grpcClient.groups.updateGroup({
+          id: draftGroupContext.groupId,
+          updatedContent: {
+            [publishPathName]: `hd://d/${publishedId}?v=${pub.version}`,
+          },
+        })
+      }
       return pub
     },
     onSuccess: (pub: Publication, variables, context) => {
@@ -282,6 +298,9 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_DOC_SITE_PUBLICATIONS, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_SITE_PUBLICATIONS])
+      if (draftGroupContext) {
+        invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
+      }
       opts?.onSuccess?.(pub, variables, context)
 
       setTimeout(() => {
