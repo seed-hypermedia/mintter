@@ -71,36 +71,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newVideo: VideoType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newVideo.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <VideoComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <VideoForm block={block} editor={editor} assign={assignFile} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function VideoComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
@@ -121,6 +91,48 @@ function VideoComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newVideo: VideoType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newVideo.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""} 
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <VideoComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <VideoForm block={block} editor={editor} assign={assignFile} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function VideoComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected,
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
 
   const getSourceType = (name: string) => {
     const nameArray = name.split('.')
@@ -159,90 +171,88 @@ function VideoComponent({
   }
 
   return (
-    <div className={selected ? "ProseMirror-selectednode" : ""}>
-      <YStack
-        // @ts-ignore
-        contentEditable={false}
-        className={block.type}
-        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true)
-        }}
-        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false)
-        }}
-        onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (selected) setSelected(false)
-          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const file = Array.from(e.dataTransfer.files)[0]
-            if (!file.type.includes('video/')) {
-              toast.error(`The dragged file is not a video.`)
-              return
-            }
-            handleDragReplace(file)
+    <YStack
+      // @ts-ignore
+      contentEditable={false}
+      className={block.type}
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true)
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false)
+      }}
+      onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const file = Array.from(e.dataTransfer.files)[0]
+          if (!file.type.includes('video/')) {
+            toast.error(`The dragged file is not a video.`)
             return
           }
-        }}
-        onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-        onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true)
+          handleDragReplace(file)
+          return
+        }
+      }}
+      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(true)
+        }
+      }}
+      onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(false)
+        }
+      }}
+      borderWidth={0}
+      outlineWidth={0}
+      outlineColor="transparent"
+      borderColor="transparent"
+    >
+      {replace && editor.isEditable ? (
+        <Button
+          theme="gray"
+          position="absolute"
+          top="$1.5"
+          right="$1.5"
+          zIndex="$4"
+          size="$1"
+          width={60}
+          color="muted"
+          onPress={() =>
+            assign({
+              props: {
+                name: '',
+                url: '',
+              },
+              children: [],
+              content: [],
+              type: 'video',
+            } as VideoType)
           }
-        }}
-        onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false)
-          }
-        }}
-        borderWidth={0}
-        outlineWidth={0}
-        outlineColor="transparent"
-        borderColor="transparent"
-      >
-        {replace && editor.isEditable ? (
-          <Button
-            theme="gray"
-            position="absolute"
-            top="$1.5"
-            right="$1.5"
-            zIndex="$4"
-            size="$1"
-            width={60}
-            color="muted"
-            onPress={() =>
-              assign({
-                props: {
-                  name: '',
-                  url: '',
-                },
-                children: [],
-                content: [],
-                type: 'video',
-              } as VideoType)
-            }
-          >
-            replace
-          </Button>
-        ) : null}
-        <video contentEditable={false} playsInline controls preload="metadata">
-          <source
-            src={`${BACKEND_FILE_URL}/${block.props.url}`}
-            type={getSourceType(block.props.name)}
-          />
-          Something is wrong with the video file.
-        </video>
-      </YStack>
-    </div>
+        >
+          replace
+        </Button>
+      ) : null}
+      <video contentEditable={false} playsInline controls preload="metadata">
+        <source
+          src={`${BACKEND_FILE_URL}/${block.props.url}`}
+          type={getSourceType(block.props.name)}
+        />
+        Something is wrong with the video file.
+      </video>
+    </YStack>
   )
 }
 

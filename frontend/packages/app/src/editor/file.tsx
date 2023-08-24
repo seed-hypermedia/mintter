@@ -72,42 +72,10 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newFile: FileType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newFile.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <FileComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <FileForm block={block} assign={assignFile} editor={editor} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function FileComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
-  const theme = useTheme()
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
 
-  const {saveCidAsFile} = useAppContext()
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
@@ -124,6 +92,50 @@ function FileComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newFile: FileType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newFile.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""}
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <FileComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <FileForm block={block} assign={assignFile} editor={editor} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function FileComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
+  const {saveCidAsFile} = useAppContext()
+  const theme = useTheme()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
@@ -166,121 +178,119 @@ function FileComponent({
   }
 
   return (
-    <div className={selected ? "ProseMirror-selectednode" : ""}>
-      <YStack
-        // @ts-ignore
-        contentEditable={false}
-        className={block.type}
-        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true)
-        }}
-        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false)
-        }}
-        onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (selected) setSelected(false)
-          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const files = Array.from(e.dataTransfer.files)
-            handleDragReplace(Array.from(files)[0])
-            return
-          }
-        }}
-        onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-        onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true)
-          }
-        }}
-        onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false)
-          }
-        }}
-        borderWidth={0}
-        outlineWidth={0}
-        outlineColor="transparent"
-        borderColor="transparent"
-      >
-        {replace ? (
-          editor.isEditable ? (
-            <Button
-              theme="white"
-              position="absolute"
-              top="$1.5"
-              right="$1.5"
-              zIndex="$4"
-              size="$1"
-              width={60}
-              color="muted"
-              onPress={() =>
-                assign({
-                  props: {
-                    url: '',
-                    name: '',
-                    size: '0',
-                  },
-                  children: [],
-                  content: [],
-                  type: 'file',
-                } as FileType)
-              }
-            >
-              replace
-            </Button>
-          ) : (
-            <Button
-              theme="white"
-              position="absolute"
-              top="$1.5"
-              right="$2"
-              zIndex="$4"
-              size="$1"
-              width={50}
-              color="muted"
-              backgroundColor="lightgrey"
-              onPress={saveFile}
-            >
-              save
-            </Button>
-          )
-        ) : null}
-        <Button
-          theme="gray"
-          borderRadius={1}
-          size="$5"
-          fontSize="$4"
-          flex={1}
-          justifyContent="flex-start"
-          icon={<RiFile2Line fill={theme.color12.get()} />}
-          disabled
-        >
-          <SizableText
-            size="$5"
-            maxWidth="17em"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-            userSelect="text"
+    <YStack
+      // @ts-ignore
+      contentEditable={false}
+      className={block.type}
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true)
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false)
+      }}
+      onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const files = Array.from(e.dataTransfer.files)
+          handleDragReplace(Array.from(files)[0])
+          return
+        }
+      }}
+      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(true)
+        }
+      }}
+      onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(false)
+        }
+      }}
+      borderWidth={0}
+      outlineWidth={0}
+      outlineColor="transparent"
+      borderColor="transparent"
+    >
+      {replace ? (
+        editor.isEditable ? (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$1.5"
+            zIndex="$4"
+            size="$1"
+            width={60}
+            color="muted"
+            onPress={() =>
+              assign({
+                props: {
+                  url: '',
+                  name: '',
+                  size: '0',
+                },
+                children: [],
+                content: [],
+                type: 'file',
+              } as FileType)
+            }
           >
-            {block.props.name}
-          </SizableText>
-          <SizableText color="gray" size="$2" minWidth="4.5em">
-            {formatBytes(parseInt(block.props.size))}
-          </SizableText>
-        </Button>
-      </YStack>
-    </div>
+            replace
+          </Button>
+        ) : (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$2"
+            zIndex="$4"
+            size="$1"
+            width={50}
+            color="muted"
+            backgroundColor="lightgrey"
+            onPress={saveFile}
+          >
+            save
+          </Button>
+        )
+      ) : null}
+      <Button
+        theme="gray"
+        borderRadius={1}
+        size="$5"
+        fontSize="$4"
+        flex={1}
+        justifyContent="flex-start"
+        icon={<RiFile2Line fill={theme.color12.get()} />}
+        disabled
+      >
+        <SizableText
+          size="$5"
+          maxWidth="17em"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          userSelect="text"
+        >
+          {block.props.name}
+        </SizableText>
+        <SizableText color="gray" size="$2" minWidth="4.5em">
+          {formatBytes(parseInt(block.props.size))}
+        </SizableText>
+      </Button>
+    </YStack>
   )
 }
 

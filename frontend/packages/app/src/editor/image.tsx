@@ -73,36 +73,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newImage: ImageType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newImage.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <ImageComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <ImageForm block={block} assign={assignFile} editor={editor} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function ImageComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
@@ -123,6 +93,48 @@ function ImageComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newImage: ImageType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newImage.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""}
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <ImageComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <ImageForm block={block} assign={assignFile} editor={editor} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function ImageComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected,
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
 
   const {saveCidAsFile} = useAppContext()
   const saveImage = async () => {
@@ -153,7 +165,6 @@ function ImageComponent({
 
   return (
     <div
-      className={selected ? "ProseMirror-selectednode" : ""}
       style={{width: "100%"}}
     >
       <YStack

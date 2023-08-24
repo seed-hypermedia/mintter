@@ -499,7 +499,9 @@ export const BlockContainer = Node.create<{
               if (
                 ['file', 'embed', 'video'].includes(
                   prevBlockInfo.contentType.name,
-                )
+                ) ||
+                (prevBlockInfo.contentType.name === 'image' &&
+                  prevBlockInfo.contentNode.attrs.url.length === 0)
               ) {
                 let tr = state.tr
                 const selection = NodeSelection.create(
