@@ -25,29 +25,6 @@ jobs:
         id: vars
         run: |
           echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-  # check-release:
-  #   needs: [get-version]
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v3
-
-  #     - name: Check Release
-  #       id: check_release
-  #       run: |
-  #         RELEASE_NAME='${{ needs.get-version.outputs.version }}'
-
-  #         RELEASE_EXISTS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-  #           "https://api.github.com/repos/${{ github.repository }}/releases" | \
-  #           jq ".[] | select(.tag_name == \"$RELEASE_NAME\")")
-
-  #         if [ -z "$RELEASE_EXISTS" ]; then
-  #           echo "Release does not exist."
-  #         else
-  #           echo "Release already exists."
-  #           exit 1
-  #         fi
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
@@ -134,7 +111,7 @@ jobs:
           $env:TAMAGUI_TARGET="web"
           yarn desktop:make
         env:
-          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
           APP_VERSION: "${{ needs.get-version.outputs.version }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
