@@ -23,9 +23,10 @@ import {
   Tabs,
   XStack,
   YStack,
+  useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
-import {RiImage2Fill} from 'react-icons/ri'
+import {RiImage2Fill, RiImage2Line} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
 import {toast} from '../toast'
 
@@ -72,36 +73,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newImage: ImageType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newImage.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <ImageComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <ImageForm block={block} assign={assignFile} editor={editor} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function ImageComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
@@ -122,6 +93,48 @@ function ImageComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newImage: ImageType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newImage.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""}
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <ImageComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <ImageForm block={block} assign={assignFile} editor={editor} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function ImageComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected,
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
 
   const {saveCidAsFile} = useAppContext()
   const saveImage = async () => {
@@ -152,8 +165,7 @@ function ImageComponent({
 
   return (
     <div
-      className={selected ? 'ProseMirror-selectednode' : ''}
-      style={{width: '100%'}}
+      style={{width: "100%"}}
     >
       <YStack
         // @ts-ignore
@@ -270,11 +282,15 @@ function ImageForm({
 }) {
   const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
-  const [fileName, setFileName] = useState<{name: string; color: string}>({
+  const [fileName, setFileName] = useState<{
+    name: string
+    color: string | undefined
+  }>({
     name: 'Upload File',
-    color: 'black',
+    color: undefined,
   })
   const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
@@ -392,8 +408,7 @@ function ImageForm({
         >
           <Popover.Trigger asChild>
             <Button
-              icon={RiImage2Fill}
-              theme="gray"
+              icon={<RiImage2Line fill={theme.color12.get()} />}
               borderRadius={0}
               size="$5"
               justifyContent="flex-start"
@@ -403,15 +418,16 @@ function ImageForm({
           </Popover.Trigger>
           <Popover.Content
             padding={0}
-            elevation="$4"
+            elevation="$3"
+            overflow="hidden"
             size="$5"
-            x={0}
-            y={0}
+            borderRadius="$5"
+            shadowColor="$shadowColor"
             opacity={1}
-            enterStyle={{x: 0, y: -1, opacity: 0}}
-            exitStyle={{x: 0, y: -1, opacity: 0}}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              'quick',
+              "quick",
               {
                 opacity: {
                   overshootClamping: true,
@@ -423,21 +439,17 @@ function ImageForm({
               value={tabState}
               onValueChange={(value: string) => {
                 setFileName({
-                  name: 'Upload File',
-                  color: 'black',
+                  name: "Upload File",
+                  color: undefined,
                 })
                 setTabState(value)
               }}
               orientation="horizontal"
               flexDirection="column"
-              borderWidth="$1"
-              borderColor="transparent"
-              borderRadius="$5"
               width={500}
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                backgroundColor="white"
                 borderBottomColor="lightgrey"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
@@ -451,17 +463,13 @@ function ImageForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'upload' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
-                  <SizableText size="$2" color="black">
-                    Upload
-                  </SizableText>
+                  <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
                 <Tabs.Tab
                   unstyled
@@ -470,17 +478,13 @@ function ImageForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'embed' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
-                  <SizableText size="$2" color="black">
-                    Embed Link
-                  </SizableText>
+                  <SizableText size="$2">Embed Link</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 
@@ -488,11 +492,10 @@ function ImageForm({
                 <XStack
                   padding="$4"
                   alignItems="center"
-                  backgroundColor="white"
+                  backgroundColor="$background"
                 >
                   <XStack
                     flex={1}
-                    backgroundColor={drag ? 'lightgrey' : 'white'}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                       e.preventDefault()
@@ -553,12 +556,13 @@ function ImageForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
-                      borderRadius="$3"
+                      borderRadius="$4"
                       width={500}
                       justifyContent="center"
+                      backgroundColor={drag ? "$borderColorHover" : "$background"}
                       hoverStyle={{
-                        backgroundColor: 'lightgrey',
-                        cursor: 'pointer',
+                        backgroundColor: "$borderColorHover",
+                        cursor: "pointer",
                       }}
                     >
                       <SizableText
@@ -577,9 +581,9 @@ function ImageForm({
                       multiple
                       accept="image/*"
                       style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
+                        background: "white",
+                        padding: "0 2px",
+                        display: "none",
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
@@ -594,7 +598,7 @@ function ImageForm({
                 <XStack
                   padding="$4"
                   alignItems="center"
-                  backgroundColor="white"
+                  backgroundColor="$background"
                 >
                   <Form
                     alignItems="center"
@@ -606,14 +610,13 @@ function ImageForm({
                         <Input
                           width={360}
                           marginRight="$3"
-                          backgroundColor="white"
-                          color="black"
                           borderColor="lightgrey"
                           borderWidth="$0.5"
                           borderRadius="$3"
+                          size="$3.5"
                           placeholder="Input image link..."
                           focusStyle={{
-                            borderColor: 'gray',
+                            borderColor: "$colorFocus",
                             outlineWidth: 0,
                           }}
                           onChange={(e) => setUrl(e.nativeEvent.text)}
@@ -623,8 +626,9 @@ function ImageForm({
                             flex={0}
                             flexShrink={0}
                             borderRadius="$3"
-                            theme={fileName.color === 'red' ? 'gray' : 'green'}
-                            disabled={fileName.color === 'red' ? true : false}
+                            size="$3.5"
+                            theme={fileName.color === "red" ? "gray" : "green"}
+                            disabled={fileName.color === "red" ? true : false}
                             focusStyle={{
                               outlineWidth: 0,
                             }}
@@ -633,7 +637,7 @@ function ImageForm({
                           </Button>
                         </Form.Trigger>
                       </XStack>
-                      {fileName.name != 'Upload File' && (
+                      {fileName.name != "Upload File" && (
                         <SizableText
                           size="$2"
                           color={fileName.color}

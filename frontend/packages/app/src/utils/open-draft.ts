@@ -4,22 +4,23 @@ import {DocumentChange, GRPCClient} from '@mintter/shared'
 import {DraftRoute, useNavigate, useNavRoute} from './navigation'
 import {useQueryInvalidator} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '../app-context'
+import { PublicationRouteContext } from '@mintter/app/utils/navigation'
 
 async function createDraft(
   grpcClient: GRPCClient,
-  siteHostname: string | undefined,
+  pubContext: PublicationRouteContext | undefined,
 ): Promise<string> {
   const doc = await grpcClient.drafts.createDraft({})
-  if (siteHostname) {
-    await grpcClient.drafts.updateDraft({
-      documentId: doc.id,
-      changes: [
-        new DocumentChange({
-          op: {case: 'setWebUrl', value: siteHostname},
-        }),
-      ],
-    })
-  }
+  // if (siteHostname) {
+  //   await grpcClient.drafts.updateDraft({
+  //     documentId: doc.id,
+  //     changes: [
+  //       new DocumentChange({
+  //         op: {case: 'setWebUrl', value: siteHostname},
+  //       }),
+  //     ],
+  //   })
+  // }
   return doc.id
 }
 
@@ -29,12 +30,13 @@ export function useOpenDraft() {
   const spawn = useNavigate('spawn')
   const invalidate = useQueryInvalidator()
   const grpcClient = useGRPCClient()
-  function openNewDraft(newWindow = true, hostname?: string | undefined) {
-    createDraft(grpcClient, hostname)
+  function openNewDraft(newWindow = true, pubContext?: PublicationRouteContext | undefined) {
+    createDraft(grpcClient, pubContext)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
+          pubContext,
           contextRoute: route,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])

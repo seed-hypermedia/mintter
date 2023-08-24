@@ -78,10 +78,15 @@ export default function QuickSwitcher() {
                     })
                     setOpen(false)
                   } else {
-                    console.log('HELLO111 ==========', queryClient, search)
+                    console.log('Querying Web URL', search)
                     setActionPromise(
                       fetchWebLink(queryClient, search)
                         .then((result) => {
+                          console.log(
+                            '🌐 Queried Web URL Result',
+                            search,
+                            result,
+                          )
                           if (result && result?.documentId) {
                             setOpen(false)
                             navigate({
@@ -91,7 +96,12 @@ export default function QuickSwitcher() {
                             })
                           }
                         })
-                        .catch(() => {
+                        .catch((e) => {
+                          console.error(
+                            '🚨 Failed to fetch web link',
+                            search,
+                            e,
+                          )
                           toast.error('Failed to open link.')
                         })
                         .finally(() => {

@@ -4,6 +4,26 @@ import Link from 'next/link'
 import {Avatar, XStack, Text, SizableText} from '@mintter/ui'
 import {trpc} from '../trpc'
 
+export function AccountAvatarLink({account}: {account?: string}) {
+  const acct = trpc.account.get.useQuery({
+    accountId: account,
+  })
+  let profile = acct.data?.account?.profile
+  let label = '?'
+  if (profile && profile.alias) {
+    label = profile.alias
+  } else if (account) {
+    label = abbreviateCid(account)
+  }
+  const content = (
+    <Avatar circular size={20}>
+      {profile?.avatar ? <Avatar.Image src={cidURL(profile.avatar)} /> : null}
+      <Avatar.Fallback backgroundColor="$color7" />
+    </Avatar>
+  )
+  return <Link href={`/a/${account}`}>{content}</Link>
+}
+
 export function AccountRow({
   account,
   isMainAuthor,

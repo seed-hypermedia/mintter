@@ -108,33 +108,6 @@ export const defaultSlashMenuItems = [
   //   ['blockquote'],
   // ),
 
-  new BaseSlashMenuItem<HDBlockSchema>(
-    'Video / Audio',
-    (editor) =>
-      insertOrUpdateBlock(editor, {
-        type: 'paragraph',
-      }),
-    ['video'],
-  ),
-
-  // new BaseSlashMenuItem<HDBlockSchema>(
-  //   'File / Folder',
-  //   (editor) =>
-  //     insertOrUpdateBlock(editor, {
-  //       type: 'paragraph',
-  //     }),
-  //   ['file'],
-  // ),
-
-  new BaseSlashMenuItem<HDBlockSchema>(
-    'Embed',
-    (editor) =>
-      insertOrUpdateBlock(editor, {
-        type: 'paragraph',
-      }),
-    ['embed'],
-  ),
-
   //     replaceRangeWithNode(editor, range, node);
 
   //     return true;

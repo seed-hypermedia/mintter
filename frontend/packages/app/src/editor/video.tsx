@@ -21,9 +21,10 @@ import {
   Tabs,
   XStack,
   YStack,
+  useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
-import {RiVideoAddFill} from 'react-icons/ri'
+import {RiVideoAddFill, RiVideoAddLine} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '../constants'
 import {toast} from '../toast'
 
@@ -70,36 +71,6 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newVideo: VideoType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newVideo.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <VideoComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <VideoForm block={block} editor={editor} assign={assignFile} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function VideoComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
@@ -120,6 +91,48 @@ function VideoComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newVideo: VideoType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newVideo.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""} 
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <VideoComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <VideoForm block={block} editor={editor} assign={assignFile} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function VideoComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected,
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
 
   const getSourceType = (name: string) => {
     const nameArray = name.split('.')
@@ -158,90 +171,88 @@ function VideoComponent({
   }
 
   return (
-    <div className={selected ? 'ProseMirror-selectednode' : ''}>
-      <YStack
-        // @ts-ignore
-        contentEditable={false}
-        className={block.type}
-        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true)
-        }}
-        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false)
-        }}
-        onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (selected) setSelected(false)
-          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const file = Array.from(e.dataTransfer.files)[0]
-            if (!file.type.includes('video/')) {
-              toast.error(`The dragged file is not a video.`)
-              return
-            }
-            handleDragReplace(file)
+    <YStack
+      // @ts-ignore
+      contentEditable={false}
+      className={block.type}
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true)
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false)
+      }}
+      onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const file = Array.from(e.dataTransfer.files)[0]
+          if (!file.type.includes('video/')) {
+            toast.error(`The dragged file is not a video.`)
             return
           }
-        }}
-        onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-        onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true)
+          handleDragReplace(file)
+          return
+        }
+      }}
+      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(true)
+        }
+      }}
+      onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(false)
+        }
+      }}
+      borderWidth={0}
+      outlineWidth={0}
+      outlineColor="transparent"
+      borderColor="transparent"
+    >
+      {replace && editor.isEditable ? (
+        <Button
+          theme="gray"
+          position="absolute"
+          top="$1.5"
+          right="$1.5"
+          zIndex="$4"
+          size="$1"
+          width={60}
+          color="muted"
+          onPress={() =>
+            assign({
+              props: {
+                name: '',
+                url: '',
+              },
+              children: [],
+              content: [],
+              type: 'video',
+            } as VideoType)
           }
-        }}
-        onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false)
-          }
-        }}
-        borderWidth={0}
-        outlineWidth={0}
-        outlineColor="transparent"
-        borderColor="transparent"
-      >
-        {replace && editor.isEditable ? (
-          <Button
-            theme="gray"
-            position="absolute"
-            top="$1.5"
-            right="$1.5"
-            zIndex="$4"
-            size="$1"
-            width={60}
-            color="muted"
-            onPress={() =>
-              assign({
-                props: {
-                  name: '',
-                  url: '',
-                },
-                children: [],
-                content: [],
-                type: 'video',
-              } as VideoType)
-            }
-          >
-            replace
-          </Button>
-        ) : null}
-        <video contentEditable={false} playsInline controls preload="metadata">
-          <source
-            src={`${BACKEND_FILE_URL}/${block.props.url}`}
-            type={getSourceType(block.props.name)}
-          />
-          Something is wrong with the video file.
-        </video>
-      </YStack>
-    </div>
+        >
+          replace
+        </Button>
+      ) : null}
+      <video contentEditable={false} playsInline controls preload="metadata">
+        <source
+          src={`${BACKEND_FILE_URL}/${block.props.url}`}
+          type={getSourceType(block.props.name)}
+        />
+        Something is wrong with the video file.
+      </video>
+    </YStack>
   )
 }
 
@@ -256,11 +267,15 @@ function VideoForm({
 }) {
   const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
-  const [fileName, setFileName] = useState<{name: string; color: string}>({
+  const [fileName, setFileName] = useState<{
+    name: string
+    color: string | undefined
+  }>({
     name: 'Upload File',
-    color: 'black',
+    color: undefined,
   })
   const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
@@ -378,8 +393,7 @@ function VideoForm({
         >
           <Popover.Trigger asChild>
             <Button
-              icon={RiVideoAddFill}
-              theme="gray"
+              icon={<RiVideoAddLine fill={theme.color12.get()} />}
               borderRadius={0}
               size="$5"
               justifyContent="flex-start"
@@ -389,15 +403,16 @@ function VideoForm({
           </Popover.Trigger>
           <Popover.Content
             padding={0}
-            elevation="$4"
+            elevation="$3"
+            overflow="hidden"
             size="$5"
-            x={0}
-            y={0}
+            borderRadius="$5"
+            shadowColor="$shadowColor"
             opacity={1}
-            enterStyle={{x: 0, y: -1, opacity: 0}}
-            exitStyle={{x: 0, y: -1, opacity: 0}}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              'quick',
+              "quick",
               {
                 opacity: {
                   overshootClamping: true,
@@ -409,21 +424,17 @@ function VideoForm({
               value={tabState}
               onValueChange={(value: string) => {
                 setFileName({
-                  name: 'Upload File',
-                  color: 'black',
+                  name: "Upload File",
+                  color: undefined,
                 })
                 setTabState(value)
               }}
               orientation="horizontal"
               flexDirection="column"
-              borderWidth="$1"
-              borderColor="white"
-              borderRadius="$5"
               width={500}
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                backgroundColor="white"
                 borderBottomColor="lightgrey"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
@@ -437,17 +448,13 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'upload' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
-                  <SizableText size="$2" color="black">
-                    Upload
-                  </SizableText>
+                  <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
                 <Tabs.Tab
                   unstyled
@@ -456,17 +463,13 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'embed' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
-                  <SizableText size="$2" color="black">
-                    Embed Link
-                  </SizableText>
+                  <SizableText size="$2">Embed Link</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 
@@ -474,11 +477,10 @@ function VideoForm({
                 <XStack
                   padding="$4"
                   alignItems="center"
-                  backgroundColor="white"
+                  backgroundColor="$background"
                 >
                   <XStack
                     flex={1}
-                    backgroundColor={drag ? 'lightgrey' : 'white'}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                       e.preventDefault()
@@ -539,13 +541,14 @@ function VideoForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
-                      borderRadius="$3"
+                      borderRadius="$4"
                       size="$3"
                       width={500}
                       justifyContent="center"
+                      backgroundColor={drag ? "$borderColorHover" : "$background"}
                       hoverStyle={{
-                        backgroundColor: 'lightgrey',
-                        cursor: 'pointer',
+                        backgroundColor: "$borderColorHover",
+                        cursor: "pointer",
                       }}
                     >
                       <SizableText
@@ -564,9 +567,9 @@ function VideoForm({
                       accept="video/*"
                       multiple
                       style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
+                        background: "white",
+                        padding: "0 2px",
+                        display: "none",
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
@@ -581,7 +584,7 @@ function VideoForm({
                 <XStack
                   padding="$4"
                   alignItems="center"
-                  backgroundColor="white"
+                  backgroundColor="$background"
                 >
                   <Form
                     alignItems="center"
@@ -593,14 +596,13 @@ function VideoForm({
                         <Input
                           width={360}
                           marginRight="$3"
-                          backgroundColor="white"
-                          color="black"
                           borderColor="lightgrey"
                           borderWidth="$0.5"
                           borderRadius="$3"
+                          size="$3.5"
                           placeholder="Input video link..."
                           focusStyle={{
-                            borderColor: 'lightgrey',
+                            borderColor: "$colorFocus",
                             outlineWidth: 0,
                           }}
                           onChange={(e) => setUrl(e.nativeEvent.text)}
@@ -610,8 +612,9 @@ function VideoForm({
                             flex={0}
                             flexShrink={0}
                             borderRadius="$3"
-                            theme={fileName.color === 'red' ? 'gray' : 'green'}
-                            disabled={fileName.color === 'red' ? true : false}
+                            size="$3.5"
+                            theme={fileName.color === "red" ? "gray" : "green"}
+                            disabled={fileName.color === "red" ? true : false}
                             focusStyle={{
                               outlineWidth: 0,
                             }}
@@ -620,7 +623,7 @@ function VideoForm({
                           </Button>
                         </Form.Trigger>
                       </XStack>
-                      {fileName.name != 'Upload File' && (
+                      {fileName.name != "Upload File" && (
                         <SizableText
                           size="$2"
                           color={fileName.color}

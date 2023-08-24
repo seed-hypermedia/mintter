@@ -29,6 +29,7 @@ export default function GroupPublicationPage({
       pathName={pathName}
       documentId={groupPathQuery.data.documentId}
       version={versionQuery || groupPathQuery.data.documentVersion}
+      contextGroup={groupPathQuery.data.group}
     />
   )
 }

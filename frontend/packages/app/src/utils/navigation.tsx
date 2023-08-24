@@ -22,11 +22,15 @@ export type SiteRoute = {key: 'site'; hostname: string}
 type PublicationVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
 type PublicationCommentsAccessory = {key: 'comments'}
-
+export type GroupPublicationRouteContext = {
+  key: 'group'
+  groupId: string
+  pathName: string
+}
 export type PublicationRouteContext =
   | null
   | {key: 'trusted'}
-  | {key: 'group'; groupId: string; pathName: string}
+  | GroupPublicationRouteContext
 
 export type PublicationRoute = {
   key: 'publication'
@@ -44,6 +48,7 @@ export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
   draftId: string
+  pubContext?: PublicationRouteContext
   contextRoute?: NavRoute
 }
 export type SettingsRoute = {key: 'settings'}

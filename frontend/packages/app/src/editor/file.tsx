@@ -17,9 +17,10 @@ import {
   Tabs,
   XStack,
   YStack,
+  useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
-import {RiFile2Line} from 'react-icons/ri'
+import {RiFile2Fill, RiFile2Line} from 'react-icons/ri'
 import {BACKEND_FILE_UPLOAD_URL} from '../constants'
 import {toast} from '../toast'
 
@@ -71,41 +72,10 @@ const Render = (
   block: Block<HDBlockSchema>,
   editor: BlockNoteEditor<HDBlockSchema>,
 ) => {
-  const assignFile = (newFile: FileType) => {
-    editor.updateBlock(block.id, {
-      props: {...block.props, ...newFile.props},
-    })
-    editor.setTextCursorPosition(block.id, 'end')
-  }
-
-  return (
-    <YStack borderWidth={0} outlineWidth={0}>
-      {block.props.url ? (
-        <FileComponent block={block} editor={editor} assign={assignFile} />
-      ) : editor.isEditable ? (
-        <FileForm block={block} assign={assignFile} editor={editor} />
-      ) : (
-        <></>
-      )}
-    </YStack>
-  )
-}
-
-function FileComponent({
-  block,
-  editor,
-  assign,
-}: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
-  assign: any
-}) {
-  const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
 
-  const {saveCidAsFile} = useAppContext()
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
@@ -122,6 +92,50 @@ function FileComponent({
       }
     }
   }, [selection])
+
+  const assignFile = (newFile: FileType) => {
+    editor.updateBlock(block.id, {
+      props: {...block.props, ...newFile.props},
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
+
+  const setSelection = (isSelected: boolean) => {
+    setSelected(isSelected)
+  }
+
+  return (
+    <YStack
+      className={selected ? "ProseMirror-selectednode" : ""}
+      borderWidth={0}
+    >
+      {block.props.url ? (
+        <FileComponent block={block} editor={editor} assign={assignFile} selected setSelected={setSelection} />
+      ) : editor.isEditable ? (
+        <FileForm block={block} assign={assignFile} editor={editor} />
+      ) : (
+        <></>
+      )}
+    </YStack>
+  )
+}
+
+function FileComponent({
+  block,
+  editor,
+  assign,
+  selected,
+  setSelected
+}: {
+  block: Block<HDBlockSchema>
+  editor: BlockNoteEditor<HDBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
+}) {
+  const [replace, setReplace] = useState(false)
+  const {saveCidAsFile} = useAppContext()
+  const theme = useTheme()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
@@ -164,121 +178,119 @@ function FileComponent({
   }
 
   return (
-    <div className={selected ? 'ProseMirror-selectednode' : ''}>
-      <YStack
-        // @ts-ignore
-        contentEditable={false}
-        className={block.type}
-        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true)
-        }}
-        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false)
-        }}
-        onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (selected) setSelected(false)
-          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const files = Array.from(e.dataTransfer.files)
-            handleDragReplace(Array.from(files)[0])
-            return
-          }
-        }}
-        onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-        onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(true)
-          }
-        }}
-        onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement
-          e.preventDefault()
-          e.stopPropagation()
-          if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-            setSelected(false)
-          }
-        }}
-        borderWidth={0}
-        outlineWidth={0}
-        outlineColor="transparent"
-        borderColor="transparent"
-      >
-        {replace ? (
-          editor.isEditable ? (
-            <Button
-              theme="white"
-              position="absolute"
-              top="$1.5"
-              right="$1.5"
-              zIndex="$4"
-              size="$1"
-              width={60}
-              color="muted"
-              onPress={() =>
-                assign({
-                  props: {
-                    url: '',
-                    name: '',
-                    size: '0',
-                  },
-                  children: [],
-                  content: [],
-                  type: 'file',
-                } as FileType)
-              }
-            >
-              replace
-            </Button>
-          ) : (
-            <Button
-              theme="white"
-              position="absolute"
-              top="$1.5"
-              right="$2"
-              zIndex="$4"
-              size="$1"
-              width={50}
-              color="muted"
-              backgroundColor="lightgrey"
-              onPress={saveFile}
-            >
-              save
-            </Button>
-          )
-        ) : null}
-        <Button
-          theme="gray"
-          borderRadius={1}
-          size="$5"
-          fontSize="$4"
-          flex={1}
-          justifyContent="flex-start"
-          icon={RiFile2Line}
-          disabled
-        >
-          <SizableText
-            size="$5"
-            maxWidth="17em"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-            userSelect="text"
+    <YStack
+      // @ts-ignore
+      contentEditable={false}
+      className={block.type}
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true)
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false)
+      }}
+      onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const files = Array.from(e.dataTransfer.files)
+          handleDragReplace(Array.from(files)[0])
+          return
+        }
+      }}
+      onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+      onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(true)
+        }
+      }}
+      onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
+        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+          setSelected(false)
+        }
+      }}
+      borderWidth={0}
+      outlineWidth={0}
+      outlineColor="transparent"
+      borderColor="transparent"
+    >
+      {replace ? (
+        editor.isEditable ? (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$1.5"
+            zIndex="$4"
+            size="$1"
+            width={60}
+            color="muted"
+            onPress={() =>
+              assign({
+                props: {
+                  url: '',
+                  name: '',
+                  size: '0',
+                },
+                children: [],
+                content: [],
+                type: 'file',
+              } as FileType)
+            }
           >
-            {block.props.name}
-          </SizableText>
-          <SizableText color="gray" size="$2" minWidth="4.5em">
-            {formatBytes(parseInt(block.props.size))}
-          </SizableText>
-        </Button>
-      </YStack>
-    </div>
+            replace
+          </Button>
+        ) : (
+          <Button
+            theme="white"
+            position="absolute"
+            top="$1.5"
+            right="$2"
+            zIndex="$4"
+            size="$1"
+            width={50}
+            color="muted"
+            backgroundColor="lightgrey"
+            onPress={saveFile}
+          >
+            save
+          </Button>
+        )
+      ) : null}
+      <Button
+        theme="gray"
+        borderRadius={1}
+        size="$5"
+        fontSize="$4"
+        flex={1}
+        justifyContent="flex-start"
+        icon={<RiFile2Line fill={theme.color12.get()} />}
+        disabled
+      >
+        <SizableText
+          size="$5"
+          maxWidth="17em"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          userSelect="text"
+        >
+          {block.props.name}
+        </SizableText>
+        <SizableText color="gray" size="$2" minWidth="4.5em">
+          {formatBytes(parseInt(block.props.size))}
+        </SizableText>
+      </Button>
+    </YStack>
   )
 }
 
@@ -292,11 +304,15 @@ function FileForm({
   editor: BlockNoteEditor<HDBlockSchema>
 }) {
   const [tabState, setTabState] = useState('upload')
-  const [fileName, setFileName] = useState<{name: string; color: string}>({
+  const [fileName, setFileName] = useState<{
+    name: string
+    color: string | undefined
+  }>({
     name: 'Upload File',
-    color: 'black',
+    color: undefined,
   })
   const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
@@ -372,7 +388,7 @@ function FileForm({
         >
           <Popover.Trigger asChild>
             <Button
-              icon={RiFile2Line}
+              icon={<RiFile2Line fill={theme.color12.get()} />}
               theme="gray"
               borderRadius={0}
               size="$5"
@@ -383,15 +399,16 @@ function FileForm({
           </Popover.Trigger>
           <Popover.Content
             padding={0}
-            elevation="$4"
+            elevation="$3"
+            overflow="hidden"
             size="$5"
-            x={0}
-            y={0}
+            borderRadius="$5"
+            shadowColor="$shadowColor"
             opacity={1}
-            enterStyle={{x: 0, y: -1, opacity: 0}}
-            exitStyle={{x: 0, y: -1, opacity: 0}}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              'quick',
+              "quick",
               {
                 opacity: {
                   overshootClamping: true,
@@ -404,14 +421,10 @@ function FileForm({
               onValueChange={setTabState}
               orientation="horizontal"
               flexDirection="column"
-              borderWidth="$1"
-              borderColor="white"
-              borderRadius="$5"
               width={500}
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                backgroundColor="white"
                 borderBottomColor="lightgrey"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
@@ -425,29 +438,20 @@ function FileForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderRadius={0}
-                  borderBottomColor={tabState == 'upload' ? 'black' : ''}
-                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
-                  <SizableText size="$2" color="black">
-                    Upload
-                  </SizableText>
+                  <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 
-              <Tabs.Content value="upload">
-                <XStack
-                  padding="$4"
-                  alignItems="center"
-                  backgroundColor="white"
-                >
+              <Tabs.Content value="upload" backgroundColor="$background">
+                <XStack padding="$4" alignItems="center">
                   <XStack
                     flex={1}
-                    backgroundColor={drag ? 'lightgrey' : 'white'}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
                       e.preventDefault()
@@ -493,12 +497,13 @@ function FileForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
-                      borderRadius="$3"
+                      borderRadius="$4"
                       width={500}
                       justifyContent="center"
+                      backgroundColor={drag ? "$borderColorHover" : "$background"}
                       hoverStyle={{
-                        backgroundColor: 'lightgrey',
-                        cursor: 'pointer',
+                        backgroundColor: "$borderColorHover",
+                        cursor: "pointer",
                       }}
                     >
                       <SizableText
@@ -516,9 +521,9 @@ function FileForm({
                       type="file"
                       multiple
                       style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
+                        background: "white",
+                        padding: "0 2px",
+                        display: "none",
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
@@ -549,6 +554,6 @@ export const insertFile = new ReactSlashMenuItem<HDBlockSchema>(
   },
   ['file', 'folder'],
   'Media',
-  <RiFile2Line size={18} />,
+  <RiFile2Fill size={18} />,
   'Insert a file',
 )

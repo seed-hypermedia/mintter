@@ -12,7 +12,7 @@ import {useDocCitations} from '../models/content-graph'
 import {usePublication} from '../models/documents'
 import {toast} from '@mintter/app/src/toast'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {getDocUrl} from '@mintter/app/src/utils/doc-url'
+import {getDocUrl} from '@mintter/shared'
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
