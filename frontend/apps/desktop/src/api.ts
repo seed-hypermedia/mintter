@@ -19,7 +19,7 @@ const allWindows = new Map<string, BrowserWindow>()
 
 let focusedWindowKey: string | null = null
 
-function getFocusedWindow(): BrowserWindow | null {
+function getFocusedWindow(): BrowserWindow | null | undefined {
   return focusedWindowKey ? allWindows.get(focusedWindowKey) : null
 }
 
@@ -39,19 +39,23 @@ ipcMain.on('invalidate_queries', (_event, info) => {
 })
 
 ipcMain.on('open_quick_switcher', (_event, info) => {
-  getFocusedWindow()?.webContents.send('open_quick_switcher')
+  if (getFocusedWindow) {
+    getFocusedWindow()?.webContents.send('open_quick_switcher')
+  }
 })
 
 ipcMain.on('minimize_window', (_event, _info) => {
-  getFocusedWindow().minimize()
+  if (getFocusedWindow) {
+    getFocusedWindow()?.minimize()
+  }
 })
 
 ipcMain.on('maximize_window', (_event, _info) => {
   const window = getFocusedWindow()
-  if (window.isMaximized()) {
+  if (window?.isMaximized()) {
     window.unmaximize()
   } else {
-    window.maximize()
+    window?.maximize()
   }
 })
 

@@ -4,7 +4,7 @@ import {DocumentChange, GRPCClient} from '@mintter/shared'
 import {DraftRoute, useNavigate, useNavRoute} from './navigation'
 import {useQueryInvalidator} from '@mintter/app/src/app-context'
 import {useGRPCClient} from '../app-context'
-import { PublicationRouteContext } from '@mintter/app/utils/navigation'
+import {PublicationRouteContext} from '@mintter/app/utils/navigation'
 
 async function createDraft(
   grpcClient: GRPCClient,
@@ -30,7 +30,10 @@ export function useOpenDraft() {
   const spawn = useNavigate('spawn')
   const invalidate = useQueryInvalidator()
   const grpcClient = useGRPCClient()
-  function openNewDraft(newWindow = true, pubContext?: PublicationRouteContext | undefined) {
+  function openNewDraft(
+    newWindow = true,
+    pubContext?: PublicationRouteContext | undefined,
+  ) {
     createDraft(grpcClient, pubContext)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
