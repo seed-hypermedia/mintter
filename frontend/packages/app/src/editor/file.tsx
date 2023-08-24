@@ -103,6 +103,7 @@ function FileComponent({
 }) {
   const [replace, setReplace] = useState(false)
   const [selected, setSelected] = useState(false)
+  const theme = useTheme()
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
 
@@ -165,7 +166,7 @@ function FileComponent({
   }
 
   return (
-    <div className={selected ? 'ProseMirror-selectednode' : ''}>
+    <div className={selected ? "ProseMirror-selectednode" : ""}>
       <YStack
         // @ts-ignore
         contentEditable={false}
@@ -261,7 +262,7 @@ function FileComponent({
           fontSize="$4"
           flex={1}
           justifyContent="flex-start"
-          icon={RiFile2Line}
+          icon={<RiFile2Line fill={theme.color12.get()} />}
           disabled
         >
           <SizableText
@@ -293,8 +294,6 @@ function FileForm({
   editor: BlockNoteEditor<HDBlockSchema>
 }) {
   const [tabState, setTabState] = useState('upload')
-  const background = useTheme().background.get()
-  const actionColor = useTheme().color6.get()
   const [fileName, setFileName] = useState<{
     name: string
     color: string | undefined
@@ -303,6 +302,7 @@ function FileForm({
     color: undefined,
   })
   const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > 62914560)
@@ -378,7 +378,7 @@ function FileForm({
         >
           <Popover.Trigger asChild>
             <Button
-              icon={<RiFile2Line fill={useTheme().color12.get()} />}
+              icon={<RiFile2Line fill={theme.color12.get()} />}
               theme="gray"
               borderRadius={0}
               size="$5"
@@ -389,18 +389,16 @@ function FileForm({
           </Popover.Trigger>
           <Popover.Content
             padding={0}
-            elevate
+            elevation="$3"
+            overflow="hidden"
             size="$5"
-            backgroundColor="transparent"
-            borderWidth="$1"
-            borderColor="transparent"
             borderRadius="$5"
-            shadowColor={actionColor}
+            shadowColor="$shadowColor"
             opacity={1}
             enterStyle={{x: 0, y: -10, opacity: 0}}
             exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              'quick',
+              "quick",
               {
                 opacity: {
                   overshootClamping: true,
@@ -430,17 +428,17 @@ function FileForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
                   hoverStyle={{
-                    backgroundColor: actionColor,
-                    cursor: 'pointer',
+                    backgroundColor: "$borderColorHover",
+                    cursor: "pointer",
                   }}
                 >
                   <SizableText size="$2">Upload</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
 
-              <Tabs.Content value="upload" backgroundColor={background}>
+              <Tabs.Content value="upload" backgroundColor="$background">
                 <XStack padding="$4" alignItems="center">
                   <XStack
                     flex={1}
@@ -489,13 +487,13 @@ function FileForm({
                       htmlFor="file-upload"
                       borderColor="lightgrey"
                       borderWidth="$0.5"
-                      borderRadius="$3"
+                      borderRadius="$4"
                       width={500}
                       justifyContent="center"
-                      backgroundColor={drag ? actionColor : background}
+                      backgroundColor={drag ? "$borderColorHover" : "$background"}
                       hoverStyle={{
-                        backgroundColor: actionColor,
-                        cursor: 'pointer',
+                        backgroundColor: "$borderColorHover",
+                        cursor: "pointer",
                       }}
                     >
                       <SizableText
@@ -513,9 +511,9 @@ function FileForm({
                       type="file"
                       multiple
                       style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
+                        background: "white",
+                        padding: "0 2px",
+                        display: "none",
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
