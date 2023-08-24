@@ -35,6 +35,7 @@ import {
   MinimizeButton,
 } from './window-controls'
 import {useIPC} from '@mintter/app/src/app-context'
+import {usePopoverState} from '@mintter/app/use-popover-state'
 
 export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
@@ -112,6 +113,7 @@ function NavMenu() {
   const {send, invoke} = useIPC()
   const myAccount = useMyAccount()
   const editingEnabled = route.key == 'draft'
+  const menuState = usePopoverState(false)
   const spawn = useNavigate('spawn')
   const onRoute = (route: NavRoute) => {
     if (route.key === 'settings') spawn(route)
@@ -119,7 +121,7 @@ function NavMenu() {
   }
 
   return (
-    <Dropdown.Root>
+    <Dropdown.Root {...menuState}>
       <Dropdown.Trigger
         chromeless
         outlineColor="transparent"
@@ -170,7 +172,10 @@ function NavMenu() {
           <SitesNavDropdownItems sites={sites.data} onRoute={onRoute} />
           <Separator />
           <Dropdown.Item
-            onPress={() => send('open_quick_switcher')}
+            onPress={() => {
+              menuState.onOpenChange(false)
+              send('open_quick_switcher')
+            }}
             title="Quick Switcher"
             iconAfter={
               <SizableText size="$1" color="$mint5">
@@ -195,7 +200,7 @@ function NavMenu() {
             onPress={() => window.location.reload()}
           />
 
-          <Separator />
+          {/* <Separator /> */}
 
           {/* <Dropdown.Item
             title="Find..."
@@ -207,7 +212,7 @@ function NavMenu() {
             onPress={() => send('open_find')}
           /> */}
 
-          <Dropdown.Sub>
+          {/* <Dropdown.Sub>
             <Dropdown.SubTrigger disabled={!editingEnabled}>
               Format
             </Dropdown.SubTrigger>
@@ -300,7 +305,7 @@ function NavMenu() {
                 disabled={!editingEnabled}
               />
             </Dropdown.SubContent>
-          </Dropdown.Sub>
+          </Dropdown.Sub> */}
 
           <Separator />
 
@@ -310,7 +315,7 @@ function NavMenu() {
             onPress={() => spawn({key: 'settings'})}
           />
 
-          <MenuItem
+          {/* <MenuItem
             title="Documentation"
             onPress={() => invoke('open_documentation')}
           />
@@ -325,7 +330,7 @@ function NavMenu() {
           <MenuItem
             title="About Mintter"
             onPress={() => invoke('open_about')}
-          />
+          /> */}
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>
