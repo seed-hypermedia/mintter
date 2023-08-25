@@ -24,8 +24,11 @@ jobs:
       - name: Get Tag
         id: vars
         run: |
+          # echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
           # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          echo "version=v2023.08.24" >> "$GITHUB_OUTPUT"
+          echo "version=2023.08.24" >> "$GITHUB_OUTPUT"
+        env:
+          TAG_NAME: ${{ github.ref_name }}
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
@@ -34,9 +37,9 @@ jobs:
     strategy:
       matrix:
         config:
-          # - os: macos-latest
-          #   goarch: amd64
-          #   daemon_name: x86_64-apple-darwin
+          - os: macos-latest
+            goarch: amd64
+            daemon_name: x86_64-apple-darwin
           # - os: macos-latest
           #   goarch: arm64
           #   daemon_name: aarch64-apple-darwin
@@ -99,8 +102,8 @@ jobs:
           TAMAGUI_TARGET=web yarn desktop:make
         env:
           DAEMON_NAME: ${{ matrix.config.daemon_name }}
-          # APP_VERSION: "${{ needs.get-version.outputs.version }}"
-          APP_VERSION: "0.0.100"
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -114,8 +117,8 @@ jobs:
           yarn desktop:make
         env:
           DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
-          # APP_VERSION: "${{ needs.get-version.outputs.version }}"
-          APP_VERSION: "0.0.100"
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
