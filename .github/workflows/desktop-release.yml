@@ -24,9 +24,9 @@ jobs:
       - name: Get Tag
         id: vars
         run: |
-          # echo "version=v${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          echo "version=v${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          echo "version=2023.08.25" >> "$GITHUB_OUTPUT"
+          # echo "version=2023.08.25" >> "$GITHUB_OUTPUT"
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
