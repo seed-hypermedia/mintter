@@ -480,17 +480,6 @@ export function useDraftEditor(
         }),
       ]
 
-      deleted.forEach((blockId) => {
-        changes.push(
-          new DocumentChange({
-            op: {
-              case: 'deleteBlock',
-              value: blockId,
-            },
-          }),
-        )
-      })
-
       moves.forEach((move) => {
         changes.push(
           new DocumentChange({
@@ -501,6 +490,17 @@ export function useDraftEditor(
                 leftSibling: move.leftSibling,
                 parent: move.parent,
               },
+            },
+          }),
+        )
+      })
+
+      deleted.forEach((blockId) => {
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'deleteBlock',
+              value: blockId,
             },
           }),
         )
