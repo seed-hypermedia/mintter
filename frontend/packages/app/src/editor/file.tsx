@@ -195,6 +195,7 @@ function FileComponent({
         setReplace(false)
       }}
       onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        if (e.dataTransfer.effectAllowed === 'move') return
         e.preventDefault()
         e.stopPropagation()
         if (selected) setSelected(false)
@@ -212,7 +213,7 @@ function FileComponent({
         const relatedTarget = e.relatedTarget as HTMLElement
         e.preventDefault()
         e.stopPropagation()
-        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+        if ((!relatedTarget || !e.currentTarget.contains(relatedTarget)) && e.dataTransfer.effectAllowed !== 'move') {
           setSelected(true)
         }
       }}
@@ -220,7 +221,7 @@ function FileComponent({
         const relatedTarget = e.relatedTarget as HTMLElement
         e.preventDefault()
         e.stopPropagation()
-        if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+        if ((!relatedTarget || !e.currentTarget.contains(relatedTarget)) && e.dataTransfer.effectAllowed !== 'move') {
           setSelected(false)
         }
       }}
