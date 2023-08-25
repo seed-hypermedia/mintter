@@ -15,13 +15,16 @@ const logger = childLogger(color.cyan('Go Daemon'))
 const LLVM_TRIPLES = {
   'darwin/x64': 'x86_64-apple-darwin',
   'darwin/arm64': 'aarch64-apple-darwin',
-  'windows/x64': 'x86_64-pc-windows-msvc',
+  'win32/x64': 'x86_64-pc-windows-msvc',
   'linux/x64': 'x86_64-unknown-linux-gnu',
   'linux/arm64': 'aarch64-unknown-linux-gnu',
 }
 
 const getPlatformTriple = (): string => {
-  return LLVM_TRIPLES[`${process.platform}/${process.arch}`]
+  return (
+    process.env.DAEMON_NAME ||
+    LLVM_TRIPLES[`${process.platform}/${process.arch}`]
+  )
 }
 
 const devProjectRoot = join(process.cwd(), '../../..')

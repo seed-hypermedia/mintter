@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "lint": "eslint .",
-    "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore",
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "test": "echo TODO",
     "typecheck": "tsc --noEmit"
   },
@@ -19,7 +19,7 @@
     "concurrently": "7.6.0",
     "eslint-config-custom": "workspace:*",
     "typescript": "5.1.6",
-    "vitest": "^0.33.0"
+    "vitest": "0.34.2"
   },
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
@@ -43,7 +43,7 @@
     "rehype-sanitize": "5.0.1",
     "shiki": "0.14.1",
     "trim-trailing-lines": "2.1.0",
-    "unified": "^10.1.2",
+    "unified": "10.1.2",
     "unist-builder": "3.0.1",
     "unist-util-remove-position": "4.0.2",
     "unist-util-visit": "4.1.2"

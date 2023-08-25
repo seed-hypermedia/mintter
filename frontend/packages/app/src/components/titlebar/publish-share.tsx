@@ -285,7 +285,7 @@ export function PubContextButton({}: {}) {
   const group = useGroup(contextGroupId || undefined)
   if (route.key !== 'publication' && route.key !== 'draft') return null
   const groupTitle = group.data?.title
-  console.log('-- pub context', pubContext)
+
   return (
     <>
       <Popover

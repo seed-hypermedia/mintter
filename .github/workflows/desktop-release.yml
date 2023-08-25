@@ -2,8 +2,9 @@ name: Desktop Release
 
 on:
   push:
-    branches:
-      - release
+    
+    tags:        
+      - '*.*.*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,57 +17,36 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.version }}
-    steps: 
+      version: ${{ steps.vars.outputs.version }}
+    steps:
       - uses: actions/checkout@v3
 
-      - name: Run Version Script
-        id: get-version
+      - name: Get Tag
+        id: vars
         run: |
-          echo "version=$(node scripts/get-app-version.js)" >> "$GITHUB_OUTPUT"
-  check-release:
-    needs: [get-version]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Check Release
-        id: check_release
-        run: |
-          RELEASE_NAME='${{ needs.get-version.outputs.version }}'
-
-          RELEASE_EXISTS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases" | \
-            jq ".[] | select(.tag_name == \"$RELEASE_NAME\")")
-
-          if [ -z "$RELEASE_EXISTS" ]; then
-            echo "Release does not exist."
-          else
-            echo "Release already exists."
-            exit 1
-          fi
+          # echo "version=v${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "version=2023.08.25" >> "$GITHUB_OUTPUT"
   build-binaries:
     name: Build (${{ matrix.config.os }})
     runs-on: ${{ matrix.config.os }}
     # if: startsWith(github.ref, 'refs/tags/')
-    needs: [get-version, check-release]
+    needs: [get-version]
     strategy:
       matrix:
         config:
           - os: macos-latest
             goarch: amd64
-            target: x86_64-apple-darwin
+            daemon_name: x86_64-apple-darwin
           # - os: macos-latest
           #   goarch: arm64
-          #   target: aarch64-apple-darwin
+          #   daemon_name: aarch64-apple-darwin
           - os: ubuntu-latest
             goarch: amd64
-            target: x86_64-unknown-linux-gnu
-          # - os: windows-latest
-          #   goarch: amd64
-          #   target: x86_64-pc-windows-msvc
+            daemon_name: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            goarch: amd64
+            daemon_name: x86_64-pc-windows-msvc
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -74,24 +54,23 @@ jobs:
       - uses: ./.github/actions/ci-setup
         with:
           matrix-os: ${{ matrix.config.os }}
-          # matrix-target: ${{ matrix.config.target }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
           # matrix-goarch: ${{ matrix.config.goarch }}
-
 
       - name: Build Backend (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.target }} ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
-      
+
       - name: Build Backend (Windows)
         if: matrix.config.os == 'windows-latest'
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.target }}.exe ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
@@ -113,28 +92,43 @@ jobs:
 
       # - name: Setup flatpak
       #   if: matrix.config.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
-      #   run: sudo apt install flatpak flatpak-builder elfutils 
-          
-      - name: Build App Package
+      #   run: sudo apt install flatpak flatpak-builder elfutils
+
+      - name: Build App Package (Unix)
+        if: matrix.config.os != 'windows-latest'
         run: |
-          TAMAGUI_TARGET=web yarn electron:make
+          TAMAGUI_TARGET=web yarn desktop:make
         env:
-          APP_VERSION: '${{ needs.get-version.outputs.version }}'
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: '${{ secrets.APPLE_ID_PASSWORD }}'
-          APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}'
-          
+          APPLE_ID_PASSWORD: "${{ secrets.APPLE_ID_PASSWORD }}"
+          APPLE_TEAM_ID: "${{ secrets.APPLE_TEAM_ID }}"
+
+      - name: Build App Package (Win32)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          $env:TAMAGUI_TARGET="web"
+          yarn desktop:make
+        env:
+          DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
           # WINDOWS_PFX_FILE: '${{ steps.write_file.outputs.filePath }}'
           # WINDOWS_PFX_PASSWORD: '${{ secrets.WINDOWS_PFX_PASSWORD }}'
-      
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts-${{ matrix.config.target }}
+          name: artifacts-${{ matrix.config.daemon_name }}
           path: frontend/apps/desktop/out/make/**/*
-  
+
   publish-to-github:
     needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
@@ -147,13 +141,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts
-          
-      - name: 'create release'
+
+      - name: "create release"
         uses: softprops/action-gh-release@master
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          tag_name: '${{ needs.get-version.outputs.version }}'
-          prerelease: false
+          tag_name: "${{ needs.get-version.outputs.version }}"
+          prerelease: true
           generate_release_notes: true
           files: ./artifacts/artifacts-*/**/*
