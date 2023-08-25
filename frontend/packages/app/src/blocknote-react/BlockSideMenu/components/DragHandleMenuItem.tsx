@@ -7,11 +7,5 @@ export type DragHandleMenuItemProps = PolymorphicComponentProps<'button'> & {
 
 export const DragHandleMenuItem = (props: DragHandleMenuItemProps) => {
   const {closeMenu, onClick, ...propsToPassThrough} = props
-  return (
-    <Menu.Item
-      {...propsToPassThrough}
-    >
-      {props.children}
-    </Menu.Item>
-  )
+  return <Menu.Item {...propsToPassThrough}>{props.children}</Menu.Item>
 }

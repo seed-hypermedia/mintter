@@ -204,7 +204,10 @@ function ImageComponent({
           const relatedTarget = e.relatedTarget as HTMLElement
           e.preventDefault()
           e.stopPropagation()
-          if ((!relatedTarget || !e.currentTarget.contains(relatedTarget)) && e.dataTransfer.effectAllowed !== 'move') {
+          if (
+            (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
+            e.dataTransfer.effectAllowed !== 'move'
+          ) {
             setSelected(true)
           }
         }}
@@ -212,7 +215,10 @@ function ImageComponent({
           const relatedTarget = e.relatedTarget as HTMLElement
           e.preventDefault()
           e.stopPropagation()
-          if ((!relatedTarget || !e.currentTarget.contains(relatedTarget)) && e.dataTransfer.effectAllowed !== 'move') {
+          if (
+            (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
+            e.dataTransfer.effectAllowed !== 'move'
+          ) {
             setSelected(false)
           }
         }}
