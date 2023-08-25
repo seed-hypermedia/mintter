@@ -244,6 +244,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   fontSize={18}
                   fontWeight="700"
                   display="block"
+                  testID="mnemonics"
                 >
                   {mnemonics.data?.join(', ')}
                 </SizableText>
@@ -273,6 +274,7 @@ function Mnemonics(props: OnboardingStepProps) {
               <Button
                 size="$2"
                 theme="green"
+                testID="ownseed-btn"
                 onPress={() => {
                   if (useOwnSeed) {
                     // refetch here is so that user always sees new words when they click "generate a new seed"
@@ -346,11 +348,12 @@ function Profile(props: OnboardingStepProps) {
                   borderColor="transparent"
                   borderWidth={0}
                 >
-                  <Label size="$2" htmlFor="alias">
+                  <Label size="$2" htmlFor="alias" role="complementary">
                     Alias
                   </Label>
                   <Input
                     id="alias"
+                    testID="input-alias"
                     onChangeText={(val) => (submitValue.current.alias = val)}
                     placeholder="Readable alias or username. Doesn't have to be unique."
                   />
@@ -361,7 +364,7 @@ function Profile(props: OnboardingStepProps) {
                   borderColor="transparent"
                   borderWidth={0}
                 >
-                  <Label size="$2" htmlFor="bio">
+                  <Label size="$2" htmlFor="bio" role="complementary">
                     Bio
                   </Label>
                   <TextArea

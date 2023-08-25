@@ -38,6 +38,8 @@ const prodDaemonBinaryPath = join(
 
 const userDataDir = join(app.getPath('userData'), 'daemon')
 
+console.log(`== ~ userDataDir:`, userDataDir)
+
 let goDaemonExecutablePath =
   process.env.NODE_ENV == 'development'
     ? devDaemonBinaryPath

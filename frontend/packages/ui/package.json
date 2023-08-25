@@ -17,7 +17,9 @@
     "build": "tamagui-build",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
-    "clean:build": "tamagui-build clean:build"
+    "clean:build": "tamagui-build clean:build",
+    "test": "echo TODO",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tamagui/animations-react-native": "1.52.5",
