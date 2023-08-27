@@ -36,12 +36,15 @@ jobs:
         config:
           - os: macos-latest
             arch: amd64
+            goarch: amd64
             daemon_name: x86_64-apple-darwin
           - os: macos-latest
             arch: arm64
+            goarch: arm64
             daemon_name: aarch64-apple-darwin
           - os: ubuntu-latest
             arch: x64
+            goarch: amd64
             daemon_name: x86_64-unknown-linux-gnu
         #   - os: windows-latest
         #     arch: amd64
@@ -62,7 +65,7 @@ jobs:
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
         env:
-          GOARCH: ${{ matrix.config.arch }}
+          GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
 
       - name: Build Backend (Windows)
@@ -71,7 +74,7 @@ jobs:
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
         env:
-          GOARCH: ${{ matrix.config.arch }}
+          GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
 
       
