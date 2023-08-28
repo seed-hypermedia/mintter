@@ -120,7 +120,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          DAEMON_NAME: '${{ matrix.config.daemon_name }}.exe'
           APP_VERSION: "${{ needs.get-version.outputs.version }}"
           # APP_VERSION: "0.0.100"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
