@@ -94,7 +94,10 @@ jobs:
           rm -fr *.p12
           security set-keychain-settings -lut 1200 # prevent the keychain to get locked before codesign is done
       
-      - name: Build, package & make
+      - name: Build, package & make (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          TAMAGUI_TARGET=web DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
@@ -104,9 +107,24 @@ jobs:
           # APP_VERSION: "0.0.100"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          # working-directory: frontend/apps/desktop
           timeout-minutes: 10
-        run: TAMAGUI_TARGET=web DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
+
+      - name: Build, package and make (Win32)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          $env:TAMAGUI_TARGET="web"
+          $emv:DEBUG='electron-osx-sign*,electron-notarize*'
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
