@@ -34,10 +34,10 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: macos-latest
-            arch: x64
-            goarch: amd64
-            daemon_name: x86_64-apple-darwin
+          # - os: macos-latest
+          #   arch: x64
+          #   goarch: amd64
+          #   daemon_name: x86_64-apple-darwin
           # - os: macos-latest
           #   arch: arm64
           #   goarch: arm64
@@ -46,9 +46,9 @@ jobs:
           #   arch: x64
           #   goarch: amd64
           #   daemon_name: x86_64-unknown-linux-gnu
-        #   - os: windows-latest
-        #     arch: amd64
-        #     daemon_name: x86_64-pc-windows-msvc
+          - os: windows-latest
+            arch: amd64
+            daemon_name: x86_64-pc-windows-msvc
     steps:
       - name: Checkout
         uses: actions/checkout@v1
