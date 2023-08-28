@@ -106,7 +106,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           # working-directory: frontend/apps/desktop
           timeout-minutes: 10
-        run: TAMAGUI_TARGET=web yarn desktop:make --arch=${{ matrix.config.arch }}
+        run: TAMAGUI_TARGET=web DEBUG=electron-osx-sign* yarn desktop:make --arch=${{ matrix.config.arch }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
