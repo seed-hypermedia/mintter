@@ -173,9 +173,9 @@ function notarizeMaybe() {
   config.osxSign = {
     entitlements: './entitlements.plist',
     executableName: 'Mintter',
-    'entitlements-inherit': './entitlements.plist',
-    'gatekeeper-assess': false,
-    'hardened-runtime': true,
+    entitlementsInherit: './entitlements.plist',
+    gatekeeperAssess: false,
+    hardenedRuntime: true,
     identity:
       'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
     binaries: [daemonBinaryPath],
