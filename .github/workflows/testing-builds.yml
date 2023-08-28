@@ -25,9 +25,9 @@ jobs:
         run: |
           echo "version=v${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          echo "version=2023.08.01" >> "$GITHUB_OUTPUT"
+          # echo "version=2023.08.01" >> "$GITHUB_OUTPUT"
   build-binaries:
-    name: Build ${{ matrix.config.os }}/${{ matrix.config.arch }}
+    name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
     runs-on: ${{ matrix.config.os }}
     # if: startsWith(github.ref, 'refs/tags/')
     needs: [get-version]
@@ -113,7 +113,7 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: |
           $env:TAMAGUI_TARGET="web"
-          $emv:DEBUG='electron-osx-sign*,electron-notarize*'
+          $env:DEBUG='electron-osx-sign*,electron-notarize*'
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
