@@ -14,7 +14,7 @@ export function insertOrUpdateBlock<BSchema extends HDBlockSchema>(
       currentBlock.content[0].text === '/') ||
     currentBlock.content.length === 0
   ) {
-    editor.replaceBlocks([currentBlock.id], [block])
+    editor.updateBlock(currentBlock, block)
   } else {
     editor.insertBlocks([block], currentBlock, 'after')
     editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
