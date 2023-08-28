@@ -15,6 +15,7 @@ export function insertOrUpdateBlock<BSchema extends HDBlockSchema>(
     currentBlock.content.length === 0
   ) {
     editor.updateBlock(currentBlock, block)
+    editor.setTextCursorPosition(currentBlock.id, 'end')
   } else {
     editor.insertBlocks([block], currentBlock, 'after')
     editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
