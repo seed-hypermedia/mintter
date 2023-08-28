@@ -35,7 +35,7 @@ jobs:
       matrix:
         config:
           - os: macos-latest
-            arch: amd64
+            arch: x64
             goarch: amd64
             daemon_name: x86_64-apple-darwin
           - os: macos-latest
@@ -79,7 +79,7 @@ jobs:
 
       
       - name: Set MacOS signing certs
-        if: matrix.os == 'macOS-latest'
+        if: matrix.config.os == 'macos-latest'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
