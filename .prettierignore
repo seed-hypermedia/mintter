@@ -10,7 +10,6 @@ plz-out
 types
 docs
 .yarn/*
-.github/*
 .yarnrc.yml
 .vscode/*
 
