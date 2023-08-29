@@ -4,22 +4,21 @@ on:
   push:
     branches:
       - master
-      - electron-ci
     paths:
-      - '.github/workflows/validate-desktop.yml'
-      - 'frontend/apps/desktop/**'
-      - 'frotend/packages/**'
-      - 'package.json'
-      - 'frontend/apps/desktop/package.json'
+      - ".github/workflows/validate-desktop.yml"
+      - "frontend/apps/desktop/**"
+      - "frotend/packages/**"
+      - "package.json"
+      - "frontend/apps/desktop/package.json"
   pull_request:
     paths:
-      - '.github/workflows/validate-desktop.yml'
-      - 'frontend/apps/desktop/**'
-      - 'frotend/packages/**'
-      - 'package.json'
-      - 'frontend/apps/desktop/package.json'
+      - ".github/workflows/validate-desktop.yml"
+      - "frontend/apps/desktop/**"
+      - "frotend/packages/**"
+      - "package.json"
+      - "frontend/apps/desktop/package.json"
     branches-ignore:
-      - 'renovate/**'
+      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,12 +32,12 @@ jobs:
 
       - uses: ./.github/actions/ci-setup
         with:
-          matrix-os: 'ubuntu-latest'
+          matrix-os: "ubuntu-latest"
 
       - name: Validate code
         run: |
           yarn validate
-      
+
       - name: Build Backend (Unix)
         run: |
           mkdir -p plz-out/bin/backend
