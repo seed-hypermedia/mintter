@@ -4956,6 +4956,7 @@ __metadata:
     superjson: 1.13.1
     update-electron-app: 2.0.1
     vite-tsconfig-paths: 4.2.0
+    xvfb-maybe: ^0.2.1
     zod: 3.22.2
   languageName: unknown
   linkType: soft
@@ -31385,7 +31386,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which@npm:^1.2.14, which@npm:^1.2.9, which@npm:^1.3.1":
+"which@npm:^1.2.14, which@npm:^1.2.4, which@npm:^1.2.9, which@npm:^1.3.1":
   version: 1.3.1
   resolution: "which@npm:1.3.1"
   dependencies:
@@ -31708,6 +31709,18 @@ __metadata:
   version: 4.19.0
   resolution: "xterm@npm:4.19.0"
   checksum: 4385e08d6f1e26d0db295ba55f0ed9c304686a72c2cfdd32502cf59de23ae9c93434d469fc3735f44375602f209f767a1ba643a86be6f8e0f1cf7e5bfdccde87
+  languageName: node
+  linkType: hard
+
+"xvfb-maybe@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "xvfb-maybe@npm:0.2.1"
+  dependencies:
+    debug: ^2.2.0
+    which: ^1.2.4
+  bin:
+    xvfb-maybe: ./src/xvfb-maybe.js
+  checksum: b3a218991291c85232eb27ce74fbd0c8f22053e0b15e8492c772fa269f09b5448c01089f805146acc64cbe516356db3b5231a52d92fb990dc59df11e622dd6bd
   languageName: node
   linkType: hard
 

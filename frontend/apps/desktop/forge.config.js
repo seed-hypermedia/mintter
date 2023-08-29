@@ -54,6 +54,16 @@ const config = {
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
     beforeCopy: [setLanguages(['en', 'en_US'])],
+    osxSign: {
+      entitlements: './entitlements.plist',
+      executableName: 'Mintter',
+      entitlementsInherit: './entitlements.plist',
+      gatekeeperAssess: false,
+      hardenedRuntime: true,
+      identity:
+        'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
+      binaries: [daemonBinaryPath],
+    },
   },
   makers: [
     {
@@ -163,19 +173,19 @@ function notarizeMaybe() {
     return
   }
 
-  // config.packagerConfig.osxNotarize = {
-  //   tool: 'notarytool',
-  //   appleId: process.env.APPLE_ID,
-  //   appleIdPassword: process.env.APPLE_ID_PASSWORD,
-  //   teamId: process.env.APPLE_TEAM_ID,
-  // }
+  config.packagerConfig.osxNotarize = {
+    tool: 'notarytool',
+    appleId: process.env.APPLE_ID,
+    appleIdPassword: process.env.APPLE_ID_PASSWORD,
+    teamId: process.env.APPLE_TEAM_ID,
+  }
 
   config.osxSign = {
     entitlements: './entitlements.plist',
     executableName: 'Mintter',
-    'entitlements-inherit': './entitlements.plist',
-    'gatekeeper-assess': false,
-    'hardened-runtime': true,
+    entitlementsInherit: './entitlements.plist',
+    gatekeeperAssess: false,
+    hardenedRuntime: true,
     identity:
       'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
     binaries: [daemonBinaryPath],

@@ -16,7 +16,7 @@
     "desktop:make": "yarn workspace @mintter/desktop make",
     "desktop:package": "yarn workspace @mintter/desktop package",
     "desktop:publish": "yarn workspace @mintter/desktop publish",
-    "desktop:test": "echo 'NO TESTS'",
+    "desktop:test": "yarn workspace @mintter/desktop test",
     "fix": "manypkg fix",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/desktop --exclude @mintter/docs -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",

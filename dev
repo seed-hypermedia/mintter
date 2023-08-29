@@ -113,14 +113,14 @@ def main():
     @cmd(
         cmds, "frontend-validate", "Formats, Validates"
     )
-    def validate(args):
+    def frontend_validate(args):
         run("yarn validate")
 
 
     @cmd(
         cmds, "frontend-test", "Tests frontend code"
     )
-    def validate(args):
+    def frontend_test(args):
         run("yarn test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
@@ -138,6 +138,14 @@ def main():
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):
         return run("plz run //backend:pingp2p", args=args)
+    
+    @cmd(
+        cmds, "release", "Create a new Release. this will create a new tag and push it to the remote repository"
+    )
+    def release(args):
+        # run("yarn validate")
+        # run("yarn test")
+        run("node scripts/tag.mjs")
 
 
     if len(sys.argv) == 1:
