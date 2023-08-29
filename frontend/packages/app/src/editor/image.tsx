@@ -224,20 +224,16 @@ function ImageComponent({
         }}
         borderWidth={0}
         outlineWidth={0}
-        outlineColor="transparent"
-        borderColor="transparent"
       >
         {replace ? (
           editor.isEditable ? (
             <Button
-              theme="gray"
               position="absolute"
               top="$1.5"
               right="$1.5"
               zIndex="$4"
               size="$1"
               width={60}
-              color="muted"
               onPress={() =>
                 assign({
                   props: {
@@ -249,21 +245,24 @@ function ImageComponent({
                   type: 'image',
                 } as ImageType)
               }
+              hoverStyle={{
+                backgroundColor: "$backgroundTransparent"
+              }}
             >
               replace
             </Button>
           ) : (
             <Button
-              theme="white"
               position="absolute"
               top="$1.5"
               right="$2"
               zIndex="$4"
               size="$1"
               width={50}
-              color="muted"
-              backgroundColor="lightgrey"
               onPress={saveImage}
+              hoverStyle={{
+                backgroundColor: "$backgroundTransparent"
+              }}
             >
               save
             </Button>
@@ -406,8 +405,6 @@ function ImageForm({
         //@ts-ignore
         contentEditable={false}
         position="relative"
-        borderColor="transparent"
-        outlineColor="transparent"
         borderWidth={0}
         outlineWidth={0}
       >
@@ -461,7 +458,7 @@ function ImageForm({
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                borderBottomColor="lightgrey"
+                borderBottomColor="$color8"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
@@ -565,7 +562,7 @@ function ImageForm({
                   >
                     <Label
                       htmlFor="file-upload"
-                      borderColor="lightgrey"
+                      borderColor="$color8"
                       borderWidth="$0.5"
                       borderRadius="$4"
                       width={500}
@@ -623,12 +620,16 @@ function ImageForm({
                         <Input
                           width={360}
                           marginRight="$3"
-                          borderColor="lightgrey"
+                          borderColor="$color8"
                           borderWidth="$0.5"
                           borderRadius="$3"
                           size="$3.5"
                           placeholder="Input image link..."
                           focusStyle={{
+                            borderColor: '$colorFocus',
+                            outlineWidth: 0,
+                          }}
+                          hoverStyle={{
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}

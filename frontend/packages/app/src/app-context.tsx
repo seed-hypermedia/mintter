@@ -74,6 +74,7 @@ export function AppContextProvider({
   )
 }
 
+// TODO: OS theme change on linux
 export function StyleProvider({
   children,
   ...rest

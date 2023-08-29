@@ -230,19 +230,15 @@ function VideoComponent({
       }}
       borderWidth={0}
       outlineWidth={0}
-      outlineColor="transparent"
-      borderColor="transparent"
     >
       {replace && editor.isEditable ? (
         <Button
-          theme="gray"
           position="absolute"
           top="$1.5"
           right="$1.5"
           zIndex="$4"
           size="$1"
           width={60}
-          color="muted"
           onPress={() =>
             assign({
               props: {
@@ -254,6 +250,9 @@ function VideoComponent({
               type: 'video',
             } as VideoType)
           }
+          hoverStyle={{
+            backgroundColor: "$backgroundTransparent"
+          }}
         >
           replace
         </Button>
@@ -393,8 +392,6 @@ function VideoForm({
         //@ts-ignore
         contentEditable={false}
         position="relative"
-        borderColor="transparent"
-        outlineColor="transparent"
         borderWidth={0}
         outlineWidth={0}
       >
@@ -448,7 +445,7 @@ function VideoForm({
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                borderBottomColor="lightgrey"
+                borderBottomColor="$color8"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
@@ -552,7 +549,7 @@ function VideoForm({
                   >
                     <Label
                       htmlFor="file-upload"
-                      borderColor="lightgrey"
+                      borderColor="$color8"
                       borderWidth="$0.5"
                       borderRadius="$4"
                       size="$3"
@@ -611,12 +608,16 @@ function VideoForm({
                         <Input
                           width={360}
                           marginRight="$3"
-                          borderColor="lightgrey"
+                          borderColor="$color8"
                           borderWidth="$0.5"
                           borderRadius="$3"
                           size="$3.5"
                           placeholder="Input video link..."
                           focusStyle={{
+                            borderColor: '$colorFocus',
+                            outlineWidth: 0,
+                          }}
+                          hoverStyle={{
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}

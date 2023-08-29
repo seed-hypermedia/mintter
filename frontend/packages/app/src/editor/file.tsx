@@ -233,20 +233,16 @@ function FileComponent({
       }}
       borderWidth={0}
       outlineWidth={0}
-      outlineColor="transparent"
-      borderColor="transparent"
     >
       {replace ? (
         editor.isEditable ? (
           <Button
-            theme="white"
             position="absolute"
             top="$1.5"
             right="$1.5"
             zIndex="$4"
             size="$1"
             width={60}
-            color="muted"
             onPress={() =>
               assign({
                 props: {
@@ -259,28 +255,30 @@ function FileComponent({
                 type: 'file',
               } as FileType)
             }
+            hoverStyle={{
+              backgroundColor: "$backgroundTransparent"
+            }}
           >
             replace
           </Button>
         ) : (
           <Button
-            theme="white"
             position="absolute"
             top="$1.5"
             right="$2"
             zIndex="$4"
             size="$1"
             width={50}
-            color="muted"
-            backgroundColor="lightgrey"
             onPress={saveFile}
+            hoverStyle={{
+              backgroundColor: "$backgroundTransparent"
+            }}
           >
             save
           </Button>
         )
       ) : null}
       <Button
-        theme="gray"
         borderRadius={1}
         size="$5"
         fontSize="$4"
@@ -299,7 +297,7 @@ function FileComponent({
         >
           {block.props.name}
         </SizableText>
-        <SizableText color="gray" size="$2" minWidth="4.5em">
+        <SizableText paddingTop="$1" color="$color10" size="$2" minWidth="4.5em">
           {formatBytes(parseInt(block.props.size))}
         </SizableText>
       </Button>
@@ -388,8 +386,6 @@ function FileForm({
         //@ts-ignore
         contentEditable={false}
         position="relative"
-        borderColor="transparent"
-        outlineColor="transparent"
         borderWidth={0}
         outlineWidth={0}
       >
@@ -402,7 +398,6 @@ function FileForm({
           <Popover.Trigger asChild>
             <Button
               icon={<RiFile2Line fill={theme.color12.get()} />}
-              theme="gray"
               borderRadius={0}
               size="$5"
               justifyContent="flex-start"
@@ -438,7 +433,7 @@ function FileForm({
             >
               <Tabs.List
                 marginBottom="$-0.5"
-                borderBottomColor="lightgrey"
+                borderBottomColor="$color8"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
@@ -508,7 +503,7 @@ function FileForm({
                   >
                     <Label
                       htmlFor="file-upload"
-                      borderColor="lightgrey"
+                      borderColor="$color8"
                       borderWidth="$0.5"
                       borderRadius="$4"
                       width={500}
