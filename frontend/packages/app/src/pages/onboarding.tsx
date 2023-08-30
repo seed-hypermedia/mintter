@@ -130,22 +130,58 @@ function Mnemonics(props: OnboardingStepProps) {
   })
 
   const handleSubmit = useCallback(() => {
-    if (useOwnSeed && !ownSeed) {
-      setError('must provide mnemonics')
+    setError('')
+    let words: Array<string> = mnemonics.data || []
+    if (useOwnSeed) {
+      if (!ownSeed) {
+        setError(`must provide mnemonics (current: ${ownSeed})`)
+      }
+
+      let error = isInputValid(ownSeed)
+
+      if (typeof error == 'string') {
+        // this means is an error
+        setError(`Invalid mnemonics: ${error}`)
+        return
+      } else {
+        words = extractWords(ownSeed)
+      }
+    } else {
+      // check if the mnemonics.data has content
+      if (mnemonics.data) {
+        words = mnemonics.data
+      } else {
+        setError(`No mnemonics returned from the API. please `)
+        return
+      }
     }
-    const words = useOwnSeed
-      ? ownSeed
-          .split(' ')
-          .map((s) => s.split(','))
-          .flat(1)
-      : mnemonics.data
+
     if (!words) {
       setError('No mnemonics')
       return
     }
 
     register.mutate(words)
-  }, [mnemonics.data, ownSeed, useOwnSeed])
+
+    function isInputValid(input: string): string | boolean {
+      let res = extractWords(input)
+
+      console.log(`== ~ extractWords ~ res:`, res)
+
+      if (!res.length) {
+        return `Can't extract words from input. malformed input => ${input}`
+      }
+      if (res.length == 12) {
+        return false
+      } else {
+        return `input does not have a valid words amount, please add a 12 mnemonics word. current input is ${res.length}`
+      }
+    }
+
+    function extractWords(input: string): Array<string> {
+      return input.replace(/\s+/g, '').split(',').flat(1)
+    }
+  }, [mnemonics.data, ownSeed, useOwnSeed, register])
 
   function onCopy() {
     if (mnemonics.data) {
@@ -181,7 +217,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   <TextArea
                     fontSize={18}
                     flex={1}
-                    placeholder="food barrel buzz ..."
+                    placeholder="Add a 12-mnemonics word separated all by COMAS. No need for spaces in between (food, barrel, buzz, ...)"
                     minHeight={130}
                     onChangeText={setOwnSeed}
                     fontFamily="$mono"
@@ -276,6 +312,7 @@ function Mnemonics(props: OnboardingStepProps) {
                 theme="green"
                 testID="ownseed-btn"
                 onPress={() => {
+                  setOwnSeed('')
                   if (useOwnSeed) {
                     // refetch here is so that user always sees new words when they click "generate a new seed"
                     // so they feel like they're getting a secure fresh seed
