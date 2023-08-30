@@ -5,15 +5,5 @@ import {useMemo} from 'react'
 import {BACKEND_FILE_URL} from '../constants'
 
 export function Avatar({url: urlProp, ...props}: GetProps<typeof UIAvatar>) {
-  const {data: account} = useAccount(props.accountId)
-  let isDaemonReady = useDaemonReady()
-  let url = useMemo(() => {
-    if (urlProp) return urlProp
-    if (!isDaemonReady) return
-    if (account?.profile?.avatar) {
-      return `${BACKEND_FILE_URL}/${account?.profile?.avatar}`
-    }
-  }, [account, props.accountId, urlProp, isDaemonReady])
-
-  return <UIAvatar url={url} {...props} />
+  return <UIAvatar url={urlProp} {...props} />
 }

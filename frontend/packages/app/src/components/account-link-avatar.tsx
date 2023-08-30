@@ -29,14 +29,10 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
   const navigate = useNavigate()
   const account = useAccount(accountId)
   let content = account.data?.profile ? (
-    <Avatar
-      size="$1"
-      alias={account.data.profile.alias}
-      accountId={account.data.id}
-    />
+    <Avatar size="$1" label={account.data.profile.alias} id={account.data.id} />
   ) : (
     <>
-      <Avatar size="$1" alias={'?'} accountId={accountId} />
+      <Avatar size="$1" label={'?'} id={accountId!} />
       {account.error ? <ErrorDot /> : null}
     </>
   )

@@ -63,8 +63,8 @@ export function AvatarForm({
           }}
         />
         <Avatar
-          alias={account.data?.profile?.alias || ''}
-          accountId={account.data?.id}
+          label={account.data?.profile?.alias}
+          id={account.data?.id}
           size={size}
           url={url}
           color="$blue12"

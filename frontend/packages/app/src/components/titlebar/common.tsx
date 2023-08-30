@@ -280,11 +280,7 @@ export function AccountDropdownItem({
         onRoute({key: 'account', accountId: account?.id})
       }}
       icon={
-        <Avatar
-          size="$1"
-          alias={account?.profile?.alias || '.'}
-          accountId={account?.id}
-        />
+        <Avatar size="$1" label={account?.profile?.alias} id={account?.id} />
       }
       title={account?.profile?.alias || '<me>'}
     />

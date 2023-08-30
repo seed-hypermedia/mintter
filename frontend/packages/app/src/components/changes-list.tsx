@@ -70,10 +70,7 @@ function ChangeItem({
         justifyContent="flex-start"
       >
         <XStack onPress={openAccount}>
-          <Avatar
-            accountId={change.author}
-            alias={author?.data?.profile?.alias || 'A'}
-          />
+          <Avatar id={change.author} label={author?.data?.profile?.alias} />
         </XStack>
 
         <Button onPress={openAccount}>

@@ -140,11 +140,7 @@ export default function AccountPage() {
         <Container>
           <XStack gap="$4" alignItems="center" justifyContent="space-between">
             <XStack gap="$4" alignItems="center">
-              <Avatar
-                accountId={accountId}
-                size="$6"
-                alias={account.profile?.alias || ''}
-              />
+              <Avatar id={accountId} size="$6" label={account.profile?.alias} />
 
               <SizableText
                 whiteSpace="nowrap"

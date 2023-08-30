@@ -3,42 +3,39 @@ import {useMemo} from 'react'
 
 export function UIAvatar({
   url,
-  accountId,
-  alias,
+  id,
+  label,
   size = '$3',
   color,
 }: {
   url?: string
-  accountId?: string
   size?: FontSizeTokens
   color?: string
-  alias: string
+  label?: string
+  id?: string
 }) {
-  let initials = useMemo(() => alias[0], [alias])
   let avatarColor = useMemo(
-    () => (accountId ? getRandomColor(accountId) : '$blue8'),
-    [accountId],
+    () => (id ? getRandomColor(id) : color ? color : '$blue8'),
+    [id, color],
   )
 
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && <Avatar.Image accessibilityLabel={alias} source={{uri: url}} />}
+      {url && <Avatar.Image accessibilityLabel={label} source={{uri: url}} />}
       <Avatar.Fallback
         backgroundColor={color || avatarColor}
         alignItems="center"
         justifyContent="center"
       >
-        {initials ? (
-          <Text
-            fontFamily="$body"
-            textTransform="capitalize"
-            fontWeight="700"
-            fontSize={size}
-            color="black"
-          >
-            {initials}
-          </Text>
-        ) : null}
+        <Text
+          fontFamily="$body"
+          textTransform="capitalize"
+          fontWeight="700"
+          fontSize={size}
+          color="black"
+        >
+          {label ? label[0] : id ? id[0] : '?'}
+        </Text>
       </Avatar.Fallback>
     </Avatar>
   )

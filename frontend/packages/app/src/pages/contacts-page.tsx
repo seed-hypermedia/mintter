@@ -49,11 +49,7 @@ function ContactItem({
       }}
     >
       <XStack alignItems="center" gap="$4" flex={1}>
-        <Avatar
-          size="$2"
-          accountId={account.id}
-          alias={account.profile?.alias || ''}
-        />
+        <Avatar size="$2" id={account.id} label={account.profile?.alias} />
         {alias ? (
           <Text fontWeight="700" fontFamily="$body">
             {alias}
