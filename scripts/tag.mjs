@@ -1,4 +1,5 @@
 import {execSync} from 'child_process'
+let isDry = process.argv[2] == '--dry'
 
 // Get the current year and month
 const currentDate = new Date()
@@ -16,7 +17,12 @@ const commitCount = execSync(
 // Construct the new version string
 const newVersion = `${year}.${month}.${commitCount}`
 
-pushTag(newVersion)
+if (isDry) {
+  console.log(`the new version will be: ${newVersion}`)
+} else {
+  pushTag(newVersion)
+}
+
 
 function pushTag(tagName) {
   try {
