@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
+const fsExtra = require('fs-extra')
 
 let appDataPath = {
   darwin: `${os.homedir()}/Library/Application Support`,
@@ -20,18 +21,15 @@ if (!process.env.CI) {
 
 function cleanup() {
   console.error('[DESKTOP TEST]: Start cleanup')
-  if (fs.existsSync(daemonPath)) {
-    console.log('[DESKTOP TEST]: remove daemon test folder generated')
-    fs.rm(daemonPath, {recursive: true}, () => {})
-  }
+  console.log('[DESKTOP TEST]: remove daemon test folder generated')
+  fs.rm(daemonPath, {recursive: true, force: true}, () => {})
 
   if (fs.existsSync(daemonTempPath)) {
-    if (!fs.existsSync(daemonPath)) {
-      console.log(`[DESKTOP TEST]: restore previous daemon folder back`)
-      // Rename the '_temp' folder back to 'daemon'
-      fs.renameSync(daemonTempPath, daemonPath)
-    } else {
-      console.log(`[DESKTOP TEST]: test daemon folder exists. ERROr`)
-    }
+    console.log(`[DESKTOP TEST]: restore previous daemon folder back`)
+    // Rename the '_temp' folder back to 'daemon'
+    fsExtra.copySync(daemonTempPath, daemonPath)
+    fs.rm(daemonTempPath, {recursive: true, force: true}, () => {})
   }
+
+  console.error('[DESKTOP TEST]: Finish cleanup')
 }
