@@ -16,6 +16,7 @@
 package sqlitex // import "crawshaw.io/sqlite/sqlitex"
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -81,6 +82,132 @@ func Exec(conn *sqlite.Conn, query string, resultFn func(stmt *sqlite.Stmt) erro
 		err = resetErr
 	}
 	return err
+}
+
+// Row is a single row of a query.
+type Row struct {
+	stmt        *sqlite.Stmt
+	isTransient bool
+}
+
+// Scan scans the row into dest and releases the statement.
+func (r *Row) Scan(dest ...interface{}) (err error) {
+	defer func() {
+		if r.isTransient {
+			err = errors.Join(err, r.stmt.Finalize())
+		} else {
+			err = errors.Join(err, r.stmt.Reset())
+		}
+	}()
+
+	row, err := r.stmt.Step()
+	if err != nil {
+		return err
+	}
+	if !row {
+		return nil
+	}
+
+	r.stmt.Scan(dest...)
+
+	return nil
+}
+
+// QueryRow queries a single row. Caller must call Scan() an the returned Row,
+// otherwise the prepared statement will leak.
+func QueryRow(conn *sqlite.Conn, query string, transient bool, args ...interface{}) (*Row, error) {
+	var stmt *sqlite.Stmt
+	if transient {
+		s, trailingBytes, err := conn.PrepareTransient(query)
+		if err != nil {
+			return nil, err
+		}
+		if trailingBytes != 0 {
+			return nil, fmt.Errorf("sqlitex.QueryRow: query %q has trailing bytes", query)
+		}
+		stmt = s
+	} else {
+		s, err := conn.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+		stmt = s
+	}
+
+	return &Row{stmt: stmt, isTransient: transient}, nil
+}
+
+// Rows is a cursor of a result set from a query.
+type Rows struct {
+	stmt        *sqlite.Stmt
+	isTransient bool
+	err         error
+	done        bool
+}
+
+// Next advances the cursor to the next row.
+func (r *Rows) Next() bool {
+	if r.err != nil {
+		return false
+	}
+	row, err := r.stmt.Step()
+	if err != nil {
+		r.err = err
+		return false
+	}
+
+	return row
+}
+
+// Scan scans the current row into dest.
+func (r *Rows) Scan(dest ...interface{}) {
+	r.stmt.Scan(dest...)
+}
+
+// Close closes the rows.
+func (r *Rows) Close() error {
+	return r.releaseStmt()
+}
+
+// Err returns the error, if any, that was encountered during iteration.
+func (r *Rows) Err() error {
+	return errors.Join(r.err, r.releaseStmt())
+}
+
+func (r *Rows) releaseStmt() error {
+	if r.done {
+		return nil
+	}
+
+	r.done = true
+	if r.isTransient {
+		return r.stmt.Finalize()
+	}
+
+	return r.stmt.Reset()
+}
+
+// Query queries a set of rows.
+func Query(conn *sqlite.Conn, query string, transient bool, args ...interface{}) (*Rows, error) {
+	var stmt *sqlite.Stmt
+	if transient {
+		s, trailingBytes, err := conn.PrepareTransient(query)
+		if err != nil {
+			return nil, err
+		}
+		if trailingBytes != 0 {
+			return nil, fmt.Errorf("sqlitex.QueryRow: query %q has trailing bytes", query)
+		}
+		stmt = s
+	} else {
+		s, err := conn.Prepare(query)
+		if err != nil {
+			return nil, err
+		}
+		stmt = s
+	}
+
+	return &Rows{stmt: stmt, isTransient: transient}, nil
 }
 
 // ExecTransient executes an SQLite query without caching the

@@ -7,17 +7,15 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/must"
-	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	"github.com/jaevor/go-nanoid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -101,7 +99,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return nil, err
 		}
 
-		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{})
+		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{}, hyper.WithAction("Update"))
 		if err != nil {
 			return nil, err
 		}
@@ -113,10 +111,14 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.ExistingDocumentId})
 	}
 
-	docid := newDocumentID()
+	clock := hlc.NewClock()
+	ts := clock.Now()
+	now := ts.Time().Unix()
+
+	docid, nonce := hyper.NewUnforgeableID(me.Account().Principal(), nil, now)
 	eid := hyper.EntityID("hd://d/" + docid)
 
-	entity := hyper.NewEntity(eid)
+	entity := hyper.NewEntityWithClock(eid, clock)
 
 	del, err := api.getDelegation(ctx)
 	if err != nil {
@@ -128,15 +130,10 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-
-	now := time.Now()
-	if err := dm.SetCreateTime(now); err != nil {
-		return nil, err
-	}
-	if err := dm.SetAuthor(me.Account().Principal()); err != nil {
-		return nil, err
-	}
+	dm.nextHLC = ts
+	dm.patch["nonce"] = nonce
+	dm.patch["createTime"] = int(now)
+	dm.patch["owner"] = []byte(me.Account().Principal())
 
 	_, err = dm.Commit(ctx, api.blobs)
 	if err != nil {
@@ -503,13 +500,4 @@ func (api *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
-}
-
-// Almost same as standard nanoid, but removing non-alphanumeric chars, to get a bit nicer selectable string.
-// Using a bit larger length to compensate.
-// See https://zelark.github.io/nano-id-cc for playing around with collision resistance.
-var nanogen = must.Do2(nanoid.CustomASCII("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 22))
-
-func newDocumentID() string {
-	return nanogen()
 }

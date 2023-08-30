@@ -35,7 +35,7 @@ yarn_binary(
 )
 
 yarn_binary(
-    name = "protoc-gen-connect-web",
+    name = "protoc-gen-connect-es",
     yarn_deps = "//:yarn",
 )
 

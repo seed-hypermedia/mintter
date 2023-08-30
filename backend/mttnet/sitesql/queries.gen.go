@@ -14,7 +14,7 @@ var _ = errors.New
 
 func RegisterSite(conn *sqlite.Conn, servedSitesHostname string, group_eid string, servedSitesVersion string, publicKeysPrincipal []byte) error {
 	const query = `INSERT OR REPLACE INTO served_sites (hostname, group_id, version, owner_id)
-VALUES (:servedSitesHostname, (SELECT hd_entities.id FROM hd_entities WHERE hd_entities.eid = :group_eid), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+VALUES (:servedSitesHostname, (SELECT entities.id FROM entities WHERE entities.eid = :group_eid), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":servedSitesHostname", servedSitesHostname)
@@ -36,15 +36,15 @@ VALUES (:servedSitesHostname, (SELECT hd_entities.id FROM hd_entities WHERE hd_e
 }
 
 type GetSiteInfoResult struct {
-	HDEntitiesEID       string
+	EntitiesEID         string
 	ServedSitesVersion  string
 	PublicKeysPrincipal []byte
 }
 
 func GetSiteInfo(conn *sqlite.Conn, servedSitesHostname string) (GetSiteInfoResult, error) {
-	const query = `SELECT hd_entities.eid, served_sites.version, public_keys.principal
+	const query = `SELECT entities.eid, served_sites.version, public_keys.principal
 FROM served_sites
-JOIN hd_entities ON hd_entities.id = served_sites.group_id
+JOIN entities ON entities.id = served_sites.group_id
 JOIN public_keys ON public_keys.principal = served_sites.owner_id
 WHERE served_sites.hostname = :servedSitesHostname`
 
@@ -59,7 +59,7 @@ WHERE served_sites.hostname = :servedSitesHostname`
 			return errors.New("GetSiteInfo: more than one result return for a single-kind query")
 		}
 
-		out.HDEntitiesEID = stmt.ColumnText(0)
+		out.EntitiesEID = stmt.ColumnText(0)
 		out.ServedSitesVersion = stmt.ColumnText(1)
 		out.PublicKeysPrincipal = stmt.ColumnBytes(2)
 		return nil
@@ -191,7 +191,7 @@ JOIN public_keys ON public_keys.id = sites.account_id`
 }
 
 func SetSiteRegistrationLink(conn *sqlite.Conn, link string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+	const query = `INSERT OR REPLACE INTO kv (key, value)
 VALUES ('site_registration_link', :link)`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -211,11 +211,11 @@ VALUES ('site_registration_link', :link)`
 }
 
 type GetSiteRegistrationLinkResult struct {
-	GlobalMetaValue string
+	KVValue string
 }
 
 func GetSiteRegistrationLink(conn *sqlite.Conn) (GetSiteRegistrationLinkResult, error) {
-	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_registration_link'`
+	const query = `SELECT kv.value FROM kv WHERE kv.key ='site_registration_link'`
 
 	var out GetSiteRegistrationLinkResult
 
@@ -227,7 +227,7 @@ func GetSiteRegistrationLink(conn *sqlite.Conn) (GetSiteRegistrationLinkResult, 
 			return errors.New("GetSiteRegistrationLink: more than one result return for a single-kind query")
 		}
 
-		out.GlobalMetaValue = stmt.ColumnText(0)
+		out.KVValue = stmt.ColumnText(0)
 		return nil
 	}
 
@@ -240,7 +240,7 @@ func GetSiteRegistrationLink(conn *sqlite.Conn) (GetSiteRegistrationLinkResult, 
 }
 
 func SetSiteTitle(conn *sqlite.Conn, title string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+	const query = `INSERT OR REPLACE INTO kv (key, value)
 VALUES ('site_title', :title)`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -260,11 +260,11 @@ VALUES ('site_title', :title)`
 }
 
 type GetSiteTitleResult struct {
-	GlobalMetaValue string
+	KVValue string
 }
 
 func GetSiteTitle(conn *sqlite.Conn) (GetSiteTitleResult, error) {
-	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_title'`
+	const query = `SELECT kv.value FROM kv WHERE kv.key ='site_title'`
 
 	var out GetSiteTitleResult
 
@@ -276,7 +276,7 @@ func GetSiteTitle(conn *sqlite.Conn) (GetSiteTitleResult, error) {
 			return errors.New("GetSiteTitle: more than one result return for a single-kind query")
 		}
 
-		out.GlobalMetaValue = stmt.ColumnText(0)
+		out.KVValue = stmt.ColumnText(0)
 		return nil
 	}
 
@@ -289,7 +289,7 @@ func GetSiteTitle(conn *sqlite.Conn) (GetSiteTitleResult, error) {
 }
 
 func SetSiteDescription(conn *sqlite.Conn, description string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+	const query = `INSERT OR REPLACE INTO kv (key, value)
 VALUES ('site_description', :description)`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -309,11 +309,11 @@ VALUES ('site_description', :description)`
 }
 
 type GetSiteDescriptionResult struct {
-	GlobalMetaValue string
+	KVValue string
 }
 
 func GetSiteDescription(conn *sqlite.Conn) (GetSiteDescriptionResult, error) {
-	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_description'`
+	const query = `SELECT kv.value FROM kv WHERE kv.key ='site_description'`
 
 	var out GetSiteDescriptionResult
 
@@ -325,7 +325,7 @@ func GetSiteDescription(conn *sqlite.Conn) (GetSiteDescriptionResult, error) {
 			return errors.New("GetSiteDescription: more than one result return for a single-kind query")
 		}
 
-		out.GlobalMetaValue = stmt.ColumnText(0)
+		out.KVValue = stmt.ColumnText(0)
 		return nil
 	}
 
@@ -567,11 +567,11 @@ VALUES (:webPublicationsEID, :webPublicationsVersion, :webPublicationsPath)`
 	return err
 }
 
-func RemoveWebPublicationRecord(conn *sqlite.Conn, hdEntitiesEID string, webPublicationsVersion string) error {
-	const query = `DELETE FROM web_publications WHERE web_publications.eid = :hdEntitiesEID AND web_publications.version = :webPublicationsVersion`
+func RemoveWebPublicationRecord(conn *sqlite.Conn, entitiesEID string, webPublicationsVersion string) error {
+	const query = `DELETE FROM web_publications WHERE web_publications.eid = :entitiesEID AND web_publications.version = :webPublicationsVersion`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
+		stmt.SetText(":entitiesEID", entitiesEID)
 		stmt.SetText(":webPublicationsVersion", webPublicationsVersion)
 	}
 
@@ -588,16 +588,16 @@ func RemoveWebPublicationRecord(conn *sqlite.Conn, hdEntitiesEID string, webPubl
 }
 
 type ListWebPublicationsResult struct {
-	HDEntitiesID           int64
-	HDEntitiesEID          string
+	EntitiesID             int64
+	EntitiesEID            string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
 func ListWebPublications(conn *sqlite.Conn) ([]ListWebPublicationsResult, error) {
-	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
+	const query = `SELECT entities.id, entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.eid = hd_entities.eid`
+JOIN entities ON web_publications.eid = entities.eid`
 
 	var out []ListWebPublicationsResult
 
@@ -606,8 +606,8 @@ JOIN hd_entities ON web_publications.eid = hd_entities.eid`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ListWebPublicationsResult{
-			HDEntitiesID:           stmt.ColumnInt64(0),
-			HDEntitiesEID:          stmt.ColumnText(1),
+			EntitiesID:             stmt.ColumnInt64(0),
+			EntitiesEID:            stmt.ColumnText(1),
 			WebPublicationsVersion: stmt.ColumnText(2),
 			WebPublicationsPath:    stmt.ColumnText(3),
 		})
@@ -624,16 +624,16 @@ JOIN hd_entities ON web_publications.eid = hd_entities.eid`
 }
 
 type GetWebPublicationRecordByPathResult struct {
-	HDEntitiesID           int64
-	HDEntitiesEID          string
+	EntitiesID             int64
+	EntitiesEID            string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
 func GetWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationsPath string) (GetWebPublicationRecordByPathResult, error) {
-	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
+	const query = `SELECT entities.id, entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE web_publications.path = :webPublicationsPath`
+JOIN entities ON web_publications.eid = entities.eid WHERE web_publications.path = :webPublicationsPath`
 
 	var out GetWebPublicationRecordByPathResult
 
@@ -646,8 +646,8 @@ JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE web_publication
 			return errors.New("GetWebPublicationRecordByPath: more than one result return for a single-kind query")
 		}
 
-		out.HDEntitiesID = stmt.ColumnInt64(0)
-		out.HDEntitiesEID = stmt.ColumnText(1)
+		out.EntitiesID = stmt.ColumnInt64(0)
+		out.EntitiesEID = stmt.ColumnText(1)
 		out.WebPublicationsVersion = stmt.ColumnText(2)
 		out.WebPublicationsPath = stmt.ColumnText(3)
 		return nil
@@ -662,27 +662,27 @@ JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE web_publication
 }
 
 type GetWebPublicationsByIDResult struct {
-	HDEntitiesID           int64
-	HDEntitiesEID          string
+	EntitiesID             int64
+	EntitiesEID            string
 	WebPublicationsVersion string
 	WebPublicationsPath    string
 }
 
-func GetWebPublicationsByID(conn *sqlite.Conn, hdEntitiesEID string) ([]GetWebPublicationsByIDResult, error) {
-	const query = `SELECT hd_entities.id, hd_entities.eid, web_publications.version, web_publications.path
+func GetWebPublicationsByID(conn *sqlite.Conn, entitiesEID string) ([]GetWebPublicationsByIDResult, error) {
+	const query = `SELECT entities.id, entities.eid, web_publications.version, web_publications.path
 FROM web_publications
-JOIN hd_entities ON web_publications.eid = hd_entities.eid WHERE hd_entities.eid = :hdEntitiesEID`
+JOIN entities ON web_publications.eid = entities.eid WHERE entities.eid = :entitiesEID`
 
 	var out []GetWebPublicationsByIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
+		stmt.SetText(":entitiesEID", entitiesEID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, GetWebPublicationsByIDResult{
-			HDEntitiesID:           stmt.ColumnInt64(0),
-			HDEntitiesEID:          stmt.ColumnText(1),
+			EntitiesID:             stmt.ColumnInt64(0),
+			EntitiesEID:            stmt.ColumnText(1),
 			WebPublicationsVersion: stmt.ColumnText(2),
 			WebPublicationsPath:    stmt.ColumnText(3),
 		})

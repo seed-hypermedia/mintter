@@ -2,10 +2,12 @@ package documents
 
 import (
 	"context"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/must"
@@ -21,25 +23,16 @@ func TestDocument_LoadingDrafts(t *testing.T) {
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
-	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
-	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
-	dm, err := newDocModel(entity, alice.Device, delegation)
-	require.NoError(t, err)
 
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-
-	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
-	require.NoError(t, dm.SetCreateTime(time.Now()))
-
-	_, err = dm.Commit(ctx, blobs)
+	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
+	_, err := dm.Commit(ctx, blobs)
 	require.NoError(t, err)
 
-	entity, err = blobs.LoadEntity(ctx, "hd://d/doc-1")
+	entity, err := blobs.LoadEntity(ctx, dm.e.ID())
 	require.NoError(t, err)
 	require.Nil(t, entity)
 
-	entity, err = blobs.LoadDraftEntity(ctx, "hd://d/doc-1")
+	entity, err = blobs.LoadDraftEntity(ctx, dm.e.ID())
 	require.NoError(t, err)
 	require.NotNil(t, entity)
 }
@@ -48,16 +41,7 @@ func TestDocument_DeleteTurnaround(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
-	ctx := context.Background()
-	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
-	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
-	dm, err := newDocModel(entity, alice.Device, delegation)
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-	require.NoError(t, err)
-
-	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
-	require.NoError(t, dm.SetCreateTime(time.Now()))
+	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 
 	require.NoError(t, dm.MoveBlock("b1", "", ""))
 	require.NoError(t, dm.ReplaceBlock(&documents.Block{
@@ -105,16 +89,7 @@ func TestDocument_Cleanup(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
-	ctx := context.Background()
-	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
-	require.NoError(t, err)
-	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + "doc-1"))
-	dm, err := newDocModel(entity, alice.Device, delegation)
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-	require.NoError(t, err)
-
-	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
-	require.NoError(t, dm.SetCreateTime(time.Now()))
+	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 
 	require.NoError(t, dm.MoveBlock("b1", "", ""))
 	require.NoError(t, dm.ReplaceBlock(&documents.Block{
@@ -202,31 +177,23 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	ctx := context.Background()
-	delegation, err := daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now())
-	require.NoError(t, err)
-	eid := hyper.EntityID("hd://d/" + "doc-1")
-	entity := hyper.NewEntity(eid)
-	dm, err := newDocModel(entity, alice.Device, delegation)
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-	require.NoError(t, err)
+	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
 
-	require.NoError(t, dm.SetAuthor(alice.Account.Principal()))
-	require.NoError(t, dm.SetCreateTime(time.Now()))
 	require.NoError(t, dm.SetTitle("My document"))
 
 	hb, err := dm.Commit(ctx, blobs)
 	require.NoError(t, err)
 
-	_, err = blobs.PublishDraft(ctx, eid)
+	_, err = blobs.PublishDraft(ctx, dm.e.ID())
 	require.NoError(t, err)
 
-	entity, err = blobs.LoadEntity(ctx, eid)
+	entity, err := blobs.LoadEntity(ctx, dm.e.ID())
 	require.NoError(t, err)
 
 	_, ok := entity.Heads()[hb.CID]
 	require.True(t, ok, "entity must have last published change as heads")
 
-	hb2, err := entity.CreateChange(entity.NextTimestamp(), alice.Device, delegation, map[string]any{})
+	hb2, err := entity.CreateChange(entity.NextTimestamp(), alice.Device, dm.delegation, map[string]any{}, hyper.WithAction("Update"))
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{hb.CID}, hb2.Decoded.(hyper.Change).Deps, "new change must have old one in deps")
 
@@ -370,4 +337,25 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	}
 
 	require.Equal(t, hyper.SortCIDs([]cid.Cid{c2.CID, c3.CID}), draft.Decoded.(hyper.Change).Deps, "draft must have concurrent changes as deps")
+}
+
+func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.KeyPair) *docModel {
+	clock := hlc.NewClock()
+	ts := clock.Now()
+	now := ts.Time().Unix()
+
+	id, nonce := hyper.NewUnforgeableID(account.Principal(), nil, now)
+	delegation, err := daemon.Register(context.Background(), blobs, account, device.PublicKey, time.Now())
+	require.NoError(t, err)
+
+	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + id))
+	dm, err := newDocModel(entity, device, delegation)
+	require.NoError(t, err)
+
+	dm.patch["nonce"] = nonce
+	dm.patch["createTime"] = int(now)
+	dm.patch["owner"] = []byte(account.Principal())
+	dm.nextHLC = ts
+
+	return dm
 }

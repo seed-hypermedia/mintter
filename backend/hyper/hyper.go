@@ -18,7 +18,6 @@ import (
 	"github.com/multiformats/go-multicodec"
 	"github.com/multiformats/go-multihash"
 	"github.com/sanity-io/litter"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -49,12 +48,17 @@ func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) 
 	}
 	defer release()
 
-	if err := sqlitex.ExecTransient(conn, "PRAGMA query_only = on;", nil); err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Combine(err, sqlitex.ExecTransient(conn, "PRAGMA query_only = off;", nil))
-	}()
+	// TODO(burdiyan): make the main database read-only.
+	// This is commented because we want to allow writing into an attached in-memory database
+	// while keeping the main database read-only. Apparently this is not possible in SQLite.
+	// There're a bunch of other ways to achieve this but there's currently no time for implementing them.
+	//
+	// if err := sqlitex.ExecTransient(conn, "PRAGMA query_only = on;", nil); err != nil {
+	// 	return err
+	// }
+	// defer func() {
+	// 	err = multierr.Combine(err, sqlitex.ExecTransient(conn, "PRAGMA query_only = off;", nil))
+	// }()
 
 	return fn(conn)
 }
@@ -138,11 +142,11 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 		if err != nil {
 			return err
 		}
-		if resp.HDEntitiesID == 0 {
+		if resp.EntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HDEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
 	})
 }
 
@@ -160,7 +164,7 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 
 	out := make([]EntityID, len(resp))
 	for i, r := range resp {
-		out[i] = EntityID(r.HDEntitiesEID)
+		out[i] = EntityID(r.EntitiesEID)
 	}
 
 	return out, nil
@@ -179,15 +183,15 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 		if err != nil {
 			return err
 		}
-		if res.HDDraftsViewBlobID == 0 {
+		if res.DraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HDDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.DraftsViewBlobID); err != nil {
 			return err
 		}
 
-		out = cid.NewCidV1(uint64(res.HDDraftsViewCodec), res.HDDraftsViewMultihash)
+		out = cid.NewCidV1(uint64(res.DraftsViewCodec), res.DraftsViewMultihash)
 
 		return nil
 	}); err != nil {
@@ -213,15 +217,15 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 		if err != nil {
 			return err
 		}
-		if res.HDDraftsViewBlobID == 0 {
+		if res.DraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HDDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.DraftsViewBlobID); err != nil {
 			return err
 		}
 
-		_, err = hypersql.BlobsDelete(conn, res.HDDraftsViewMultihash)
+		_, err = hypersql.BlobsDelete(conn, res.DraftsViewMultihash)
 		if err != nil {
 			return err
 		}
@@ -247,11 +251,11 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 		if err != nil {
 			return err
 		}
-		if edb.HDEntitiesID == 0 {
+		if edb.EntitiesID == 0 {
 			return fmt.Errorf("no such entity: %s", eid)
 		}
 
-		if err := hypersql.ChangesDeleteForEntity(conn, edb.HDEntitiesID); err != nil {
+		if err := hypersql.ChangesDeleteForEntity(conn, edb.EntitiesID); err != nil {
 			return err
 		}
 
@@ -298,11 +302,11 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 		if err != nil {
 			return err
 		}
-		if resp.HDEntitiesID == 0 {
+		if resp.EntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HDEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
 	})
 }
 

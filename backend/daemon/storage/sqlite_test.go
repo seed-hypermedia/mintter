@@ -15,4 +15,5 @@ func TestSQLite(t *testing.T) {
 	defer pool.Close()
 
 	sqlitedbg.ExecPool(pool, os.Stdout, "select sha1('hello')")
+	sqlitedbg.ExecPool(pool, os.Stdout, "select mycount() from (values (1), (2));")
 }

@@ -52,7 +52,7 @@ func (srv *Server) CreateSite(ctx context.Context, in *sitesV2.CreateSiteRequest
 		return nil, err
 	}
 
-	if link.GlobalMetaValue != in.Link {
+	if link.KVValue != in.Link {
 		return nil, fmt.Errorf("Provided link not valid")
 	}
 

@@ -4,12 +4,12 @@ package groups
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
@@ -18,10 +18,11 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
 	"strings"
+	"time"
 
 	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-multibase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -54,29 +55,33 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	id, nonce := newID(me.Account().Principal())
+	clock := hlc.NewClock()
+	ts := clock.Now()
+	createTime := ts.Time().Unix()
+
+	id, nonce := hyper.NewUnforgeableID(me.Account().Principal(), nil, createTime)
 	eid := hyper.EntityID("hd://g/" + id)
+	e := hyper.NewEntityWithClock(eid, clock)
 
 	patch := map[string]any{
-		"nonce": nonce,
-		"title": in.Title,
-		"owner": me.Account().Principal(),
+		"nonce":      nonce,
+		"title":      in.Title,
+		"createTime": int(createTime),
+		"owner":      []byte(me.Account().Principal()),
 	}
 	if in.Description != "" {
 		patch["description"] = in.Description
 	}
 
 	if in.Members != nil {
-		// TODO(burdiyan): validate members are valid account IDs.
-		patch["members"] = in.Members
+		return nil, status.Errorf(codes.Unimplemented, "adding members when creating a group is not implemented yet")
 	}
 
 	del, err := srv.getDelegation(ctx)
 	if err != nil {
 		return nil, err
 	}
-	e := hyper.NewEntity(eid)
-	hb, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch)
+	hb, err := e.CreateChange(ts, me.DeviceKey(), del, patch, hyper.WithAction("Create"))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +90,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(e, true)
+	return groupToProto(srv.blobs, e)
 }
 
 // GetGroup gets a group.
@@ -116,7 +121,7 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 		e = v
 	}
 
-	return groupToProto(e, true)
+	return groupToProto(srv.blobs, e)
 }
 
 // UpdateGroup updates a group.
@@ -124,12 +129,6 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	if in.Id == "" {
 		return nil, errutil.MissingArgument("id")
 	}
-
-	if in.UpdatedMembers != nil {
-		return nil, status.Errorf(codes.Unimplemented, "TODO: updating members is not implemented yet")
-	}
-
-	// TODO(burdiyan): check if we are allowed to update the group.
 
 	me, err := srv.getMe()
 	if err != nil {
@@ -169,12 +168,19 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		}
 	}
 
+	for k, v := range in.UpdatedMembers {
+		if v == groups.Role_ROLE_UNSPECIFIED {
+			return nil, status.Errorf(codes.Unimplemented, "removing members is not implemented yet")
+		}
+		maputil.Set(patch, []string{"members", k}, int64(v))
+	}
+
 	del, err := srv.getDelegation(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	hb, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch)
+	hb, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch, hyper.WithAction("Update"))
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +189,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(e, true)
+	return groupToProto(srv.blobs, e)
 }
 
 // ListGroups lists groups.
@@ -262,36 +268,52 @@ func (srv *Server) ListMembers(ctx context.Context, in *groups.ListMembersReques
 		return nil, errutil.MissingArgument("id")
 	}
 
-	eid := hyper.EntityID(in.Id)
-
-	var e *hyper.Entity
-	if in.Version == "" {
-		v, err := srv.blobs.LoadEntity(ctx, eid)
-		if err != nil {
-			return nil, err
-		}
-		e = v
-	} else {
-		heads, err := hyper.Version(in.Version).Parse()
-		if err != nil {
-			return nil, err
-		}
-
-		v, err := srv.blobs.LoadEntityFromHeads(ctx, eid, heads...)
-		if err != nil {
-			return nil, err
-		}
-		e = v
+	if in.Version != "" {
+		return nil, status.Errorf(codes.Unimplemented, "listing members for groups at a specific version is not implemented yet")
 	}
 
-	o, ok := e.Get("owner")
-	if !ok {
-		return nil, fmt.Errorf("group entity must have owner")
+	resp := &groups.ListMembersResponse{}
+
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		edb, err := hypersql.EntitiesLookupID(conn, in.Id)
+		if err != nil {
+			return err
+		}
+		if edb.EntitiesID == 0 {
+			return fmt.Errorf("group %q not found", in.Id)
+		}
+
+		owner, err := hypersql.ResourceGetOwner(conn, edb.EntitiesID)
+		if err != nil {
+			return err
+		}
+
+		ownerPub, err := hypersql.PublicKeysLookupPrincipal(conn, owner)
+		if err != nil {
+			return err
+		}
+
+		resp.OwnerAccountId = core.Principal(ownerPub.PublicKeysPrincipal).String()
+
+		return hypersql.GroupListMembers(conn, edb.EntitiesID, owner, func(principal []byte, role int64) error {
+			if resp.Members == nil {
+				resp.Members = make(map[string]groups.Role)
+			}
+
+			p, r := core.Principal(principal).String(), groups.Role(role)
+			if r == groups.Role_ROLE_UNSPECIFIED {
+				delete(resp.Members, p)
+			} else {
+				resp.Members[p] = r
+			}
+
+			return nil
+		})
+	}); err != nil {
+		return nil, err
 	}
 
-	return &groups.ListMembersResponse{
-		OwnerAccountId: core.Principal(o.([]byte)).String(),
-	}, nil
+	return resp, nil
 }
 
 // GetSiteInfo gets information of a local site.
@@ -302,13 +324,13 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		if err != nil {
 			return fmt.Errorf("No site info available: %w", err)
 		}
-		ret.GroupId = res.HDEntitiesEID
+		ret.GroupId = res.EntitiesEID
 		if res.ServedSitesVersion != "" {
 			ret.Version = res.ServedSitesVersion
 		} else {
-			entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID(res.HDEntitiesEID))
+			entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID(res.EntitiesEID))
 			if err != nil {
-				return fmt.Errorf("could not get entity [%s]: %w", res.HDEntitiesEID, err)
+				return fmt.Errorf("could not get entity [%s]: %w", res.EntitiesEID, err)
 			}
 			ret.Version = entity.Version().String()
 		}
@@ -355,29 +377,187 @@ func (srv *Server) ConvertToSite(ctx context.Context, in *groups.ConvertToSiteRe
 		OwnerId:  res.OwnerId,
 		Hostname: remoteHostname,
 	}, nil
-
 }
-func groupToProto(e *hyper.Entity, isLatest bool) (*groups.Group, error) {
-	createTime := e.AppliedChanges()[0].Data.HLCTime.Time()
 
-	gpb := &groups.Group{
-		Id:         string(e.ID()),
-		CreateTime: timestamppb.New(createTime),
-		Version:    e.Version().String(),
+// ListDocumentGroups lists groups that a document belongs to.
+func (srv *Server) ListDocumentGroups(ctx context.Context, in *groups.ListDocumentGroupsRequest) (*groups.ListDocumentGroupsResponse, error) {
+	if in.DocumentId == "" {
+		return nil, errutil.MissingArgument("documentId")
 	}
 
-	{
-		v, ok := e.Get("owner")
-		if !ok {
-			return nil, fmt.Errorf("group entity must have owner")
+	resp := &groups.ListDocumentGroupsResponse{}
+
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		const q = `
+			SELECT
+				lookup.value AS entity,
+				blobs.codec AS codec,
+				blobs.multihash AS hash,
+				blob_attrs.anchor AS anchor,
+				blob_attrs.extra AS extra,
+				blob_attrs.ts AS ts
+			FROM blob_attrs
+			JOIN changes ON changes.blob = blob_attrs.blob
+			JOIN lookup ON lookup.id = changes.entity
+			JOIN blobs ON blob_attrs.blob = blobs.id
+			WHERE blob_attrs.key = 'group/content'
+			AND blob_attrs.value_ptr IS NOT NULL
+			AND blob_attrs.value_ptr = :document
+		`
+
+		edb, err := hypersql.EntitiesLookupID(conn, in.DocumentId)
+		if err != nil {
+			return err
+		}
+		if edb.EntitiesID == 0 {
+			return fmt.Errorf("document %q not found: make sure to specify fully-qualified entity ID", in.DocumentId)
 		}
 
-		switch v := v.(type) {
-		case core.Principal:
-			gpb.OwnerAccountId = v.String()
-		case []byte:
-			gpb.OwnerAccountId = core.Principal(v).String()
+		if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+			var (
+				entity string
+				codec  int64
+				hash   []byte
+				anchor string
+				extra  []byte
+				ts     int64
+			)
+			stmt.Scan(&entity, &codec, &hash, &anchor, &extra, &ts)
+
+			var ld hyper.LinkData
+			if err := json.Unmarshal(extra, &ld); err != nil {
+				return err
+			}
+
+			var sb strings.Builder
+			sb.WriteString(in.DocumentId)
+
+			if ld.TargetVersion != "" {
+				sb.WriteString("?v=")
+				sb.WriteString(ld.TargetVersion)
+			}
+
+			if ld.TargetFragment != "" {
+				sb.WriteString("#")
+				sb.WriteString(ld.TargetFragment)
+			}
+
+			rawURL := sb.String()
+
+			item := &groups.ListDocumentGroupsResponse_Item{
+				GroupId:     entity,
+				GroupChange: cid.NewCidV1(uint64(codec), hash).String(),
+				ChangeTime:  timestamppb.New(time.UnixMicro(ts)),
+				Path:        anchor,
+				RawUrl:      rawURL,
+			}
+
+			resp.Items = append(resp.Items, item)
+			return nil
+		}, edb.EntitiesID); err != nil {
+			return err
 		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// ListAccountGroups lists groups that an account belongs to.
+func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccountGroupsRequest) (*groups.ListAccountGroupsResponse, error) {
+	if in.AccountId == "" {
+		return nil, errutil.MissingArgument("accountId")
+	}
+
+	acc, err := core.DecodePrincipal(in.AccountId)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &groups.ListAccountGroupsResponse{}
+
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		accdb, err := hypersql.PublicKeysLookupID(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		if accdb.PublicKeysID == 0 {
+			return fmt.Errorf("account %q not found", in.AccountId)
+		}
+
+		// This query assumes that we've indexed only valid changes,
+		// i.e. group members are only mutated by the owner.
+		// TODO(burdiyan): support member removals and make sure to query
+		// only valid changes.
+		const q = `
+			SELECT
+				lookup.value AS entity,
+				blob_attrs.extra AS role,
+				MAX(blob_attrs.ts) AS ts
+			FROM blob_attrs
+			JOIN changes ON changes.blob = blob_attrs.blob
+			JOIN lookup ON lookup.id = changes.entity
+			WHERE blob_attrs.key = 'group/member'
+			AND blob_attrs.value_ptr IS NOT NULL
+			AND blob_attrs.value_ptr = :member
+			GROUP BY changes.entity
+		`
+
+		if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+			var (
+				group string
+				role  int64
+			)
+
+			stmt.Scan(&group, &role)
+
+			// TODO(burdiyan): this is really bad. Just use the database to get this info.
+			g, err := srv.GetGroup(ctx, &groups.GetGroupRequest{
+				Id: group,
+			})
+			if err != nil {
+				return err
+			}
+
+			resp.Items = append(resp.Items, &groups.ListAccountGroupsResponse_Item{
+				Group: g,
+				Role:  groups.Role(role),
+			})
+
+			return nil
+		}, accdb.PublicKeysID); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func groupToProto(blobs *hyper.Storage, e *hyper.Entity) (*groups.Group, error) {
+	createTime, ok := e.AppliedChanges()[0].Data.Patch["createTime"].(int)
+	if !ok {
+		return nil, fmt.Errorf("group entity doesn't have createTime field")
+	}
+
+	owner, ok := e.AppliedChanges()[0].Data.Patch["owner"].([]byte)
+	if !ok {
+		return nil, fmt.Errorf("group entity doesn't have owner field")
+	}
+
+	gpb := &groups.Group{
+		Id:             string(e.ID()),
+		CreateTime:     timestamppb.New(time.Unix(int64(createTime), 0)),
+		OwnerAccountId: core.Principal(owner).String(),
+		Version:        e.Version().String(),
+		UpdateTime:     timestamppb.New(e.LastChangeTime().Time()),
 	}
 
 	{
@@ -441,31 +621,4 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
-}
-
-func newID(me core.Principal) (id string, nonce []byte) {
-	nonce = make([]byte, 16)
-	_, err := rand.Read(nonce)
-	if err != nil {
-		panic(err)
-	}
-
-	h := sha256.New()
-	if _, err := h.Write(me); err != nil {
-		panic(err)
-	}
-	if _, err := h.Write(nonce); err != nil {
-		panic(err)
-	}
-
-	dig := h.Sum(nil)
-	base, err := multibase.Encode(multibase.Base58BTC, dig)
-	if err != nil {
-		panic(err)
-	}
-
-	// Using last 22 characters to avoid multibase prefix.
-	// We don't use full hash digest here, to make our IDs shorter.
-	// But it should have enough collision resistance for our purpose.
-	return base[len(base)-22:], nonce
 }

@@ -27,11 +27,17 @@ service Groups {
   // Lists groups.
   rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
 
-  // Converts a group to a site. P2P group will continue to work. 
+  // Converts a group to a site. P2P group will continue to work.
   rpc ConvertToSite(ConvertToSiteRequest) returns (ConvertToSiteResponse);
 
-  // Gets information about a site. 
+  // Gets information about a site.
   rpc GetSiteInfo(GetSiteInfoRequest) returns (GetSiteInfoResponse);
+
+  // Lists groups that a document is published to.
+  rpc ListDocumentGroups(ListDocumentGroupsRequest) returns (ListDocumentGroupsResponse);
+
+  // Lists groups that an account is a member of.
+  rpc ListAccountGroups(ListAccountGroupsRequest) returns (ListAccountGroupsResponse);
 }
 
 // Request to create a group.
@@ -112,7 +118,7 @@ message ListMembersResponse {
   // ID of the group owner.
   string owner_account_id = 1;
 
-  // List of members of the group.
+  // List of members of the group, including the owner.
   map<string, Role> members = 2;
 
   // Token to continue listing members from.
@@ -211,6 +217,73 @@ message GetSiteInfoResponse {
   string owner_id = 3;
 }
 
+// Request to list groups for a document.
+message ListDocumentGroupsRequest {
+  // Required. ID of the document to list groups for.
+  // Must be fully-qualified Entity ID.
+  string document_id = 1;
+
+  // Optional. Maximum number of groups to return.
+  int32 page_size = 2;
+
+  // Optional. Page token to continue listing groups from.
+  string page_token = 3;
+}
+
+// Response to list groups for a document.
+message ListDocumentGroupsResponse {
+  message Item {
+    // ID of the group that the document is published to.
+    string group_id = 1;
+
+    // ID of the group change that published the document to the group.
+    string group_change = 2;
+
+    // Timestamp of the change that published the document to the group.
+    google.protobuf.Timestamp change_time = 3;
+
+    // Path at which document is published.
+    string path = 4;
+
+    // Raw URL that is published to the group.
+    string raw_url = 5;
+  }
+
+  // List of document publications in groups.
+  repeated Item items = 1;
+
+  // Token to continue listing groups from.
+  string next_page_token = 2;
+}
+
+// Request to list groups for an account.
+message ListAccountGroupsRequest {
+  // Required. ID of the account to list groups for.
+  // Must be Account ID, not the ID of the Account Entity.
+  string account_id = 1;
+
+  // Optional. Maximum number of groups to return.
+  int32 page_size = 2;
+
+  // Optional. Page token to continue listing groups from.
+  string page_token = 3;
+}
+
+// Response to list groups for an account.
+message ListAccountGroupsResponse {
+  message Item {
+    Group group = 1;
+
+    Role role = 2;
+  }
+
+  // List of groups that the account is a member of with their role.
+  repeated Item items = 1;
+
+  // Token to continue listing groups from.
+  string next_page_token = 2;
+}
+
 // Group represents the basic information about a group entity.
 message Group {
   // ID of the group.
@@ -231,6 +304,9 @@ message Group {
   // Version of the group entity that is being returned by the server.
   // When latest version is requested, this is the same as latest_version.
   string version = 6;
+
+  // Timestamp of the version of the group.
+  google.protobuf.Timestamp update_time = 7;
 }
 
 // Role of a group member.
@@ -239,6 +315,9 @@ enum Role {
   // and serves as a tombstone, because in our CRDT there's no way to truly delete something.
   ROLE_UNSPECIFIED = 0;
 
+  // Output only. Role for an owner. Cannot be used in updates, can only be returned in queries.
+  OWNER = 1;
+
   // Editor role which allows members to manage content of the group.
-  EDITOR = 1;
+  EDITOR = 2;
 }

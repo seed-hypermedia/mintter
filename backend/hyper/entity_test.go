@@ -264,10 +264,9 @@ func TestTrustedEntity(t *testing.T) {
 	require.NoError(t, err)
 
 	// Alice now receives Carol changes
-	require.NoError(t, aliceBlobs.SaveBlob(ctx, chF))
-	_, err = aliceBlobs.LoadEntity(ctx, "foo")
-	require.Error(t, err, "missing dependency for change C")
+	require.Error(t, aliceBlobs.SaveBlob(ctx, chF), "must fail because missing dependency")
 	require.NoError(t, aliceBlobs.SaveBlob(ctx, chC))
+	require.NoError(t, aliceBlobs.SaveBlob(ctx, chF))
 	aliceView, err := aliceBlobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 	require.Equal(t, carolLatestChanges.heads, aliceView.heads)

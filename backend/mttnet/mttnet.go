@@ -47,7 +47,7 @@ import (
 // Protocol values.
 const (
 	protocolPrefix  = "/hyperdocs/"
-	protocolVersion = "0.0.6"
+	protocolVersion = "0.1.0"
 
 	ProtocolID protocol.ID = protocolPrefix + protocolVersion
 
@@ -194,7 +194,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				if err != nil {
 					return err
 				}
-				link := currentLink.GlobalMetaValue
+				link := currentLink.KVValue
 				if link == "" || siteCfg.Hostname != strings.Split(link, "/secret-invite/")[0] {
 					link = siteCfg.Hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
 					if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
@@ -210,7 +210,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 						return err
 					}
 
-					if title.GlobalMetaValue != siteCfg.Title {
+					if title.KVValue != siteCfg.Title {
 						if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
 							return err
 						}

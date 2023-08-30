@@ -6,6 +6,48 @@ import (
 	"mintter/backend/pkg/sqlitegen"
 )
 
+// Table blob_attrs.
+const (
+	BlobAttrs         sqlitegen.Table  = "blob_attrs"
+	BlobAttrsAnchor   sqlitegen.Column = "blob_attrs.anchor"
+	BlobAttrsBlob     sqlitegen.Column = "blob_attrs.blob"
+	BlobAttrsExtra    sqlitegen.Column = "blob_attrs.extra"
+	BlobAttrsIsLookup sqlitegen.Column = "blob_attrs.is_lookup"
+	BlobAttrsKey      sqlitegen.Column = "blob_attrs.key"
+	BlobAttrsTs       sqlitegen.Column = "blob_attrs.ts"
+	BlobAttrsValue    sqlitegen.Column = "blob_attrs.value"
+	BlobAttrsValuePtr sqlitegen.Column = "blob_attrs.value_ptr"
+)
+
+// Table blob_attrs. Plain strings.
+const (
+	T_BlobAttrs         = "blob_attrs"
+	C_BlobAttrsAnchor   = "blob_attrs.anchor"
+	C_BlobAttrsBlob     = "blob_attrs.blob"
+	C_BlobAttrsExtra    = "blob_attrs.extra"
+	C_BlobAttrsIsLookup = "blob_attrs.is_lookup"
+	C_BlobAttrsKey      = "blob_attrs.key"
+	C_BlobAttrsTs       = "blob_attrs.ts"
+	C_BlobAttrsValue    = "blob_attrs.value"
+	C_BlobAttrsValuePtr = "blob_attrs.value_ptr"
+)
+
+// Table blob_links.
+const (
+	BlobLinks       sqlitegen.Table  = "blob_links"
+	BlobLinksRel    sqlitegen.Column = "blob_links.rel"
+	BlobLinksSource sqlitegen.Column = "blob_links.source"
+	BlobLinksTarget sqlitegen.Column = "blob_links.target"
+)
+
+// Table blob_links. Plain strings.
+const (
+	T_BlobLinks       = "blob_links"
+	C_BlobLinksRel    = "blob_links.rel"
+	C_BlobLinksSource = "blob_links.source"
+	C_BlobLinksTarget = "blob_links.target"
+)
+
 // Table blobs.
 const (
 	Blobs           sqlitegen.Table  = "blobs"
@@ -28,172 +70,126 @@ const (
 	C_BlobsSize       = "blobs.size"
 )
 
-// Table content_links_view.
+// Table change_deps.
 const (
-	ContentLinksView                    sqlitegen.Table  = "content_links_view"
-	ContentLinksViewData                sqlitegen.Column = "content_links_view.data"
-	ContentLinksViewRel                 sqlitegen.Column = "content_links_view.rel"
-	ContentLinksViewSourceBlob          sqlitegen.Column = "content_links_view.source_blob"
-	ContentLinksViewSourceBlobCodec     sqlitegen.Column = "content_links_view.source_blob_codec"
-	ContentLinksViewSourceBlobMultihash sqlitegen.Column = "content_links_view.source_blob_multihash"
-	ContentLinksViewSourceEID           sqlitegen.Column = "content_links_view.source_eid"
-	ContentLinksViewSourceEntity        sqlitegen.Column = "content_links_view.source_entity"
-	ContentLinksViewTargetEID           sqlitegen.Column = "content_links_view.target_eid"
-	ContentLinksViewTargetEntity        sqlitegen.Column = "content_links_view.target_entity"
+	ChangeDeps       sqlitegen.Table  = "change_deps"
+	ChangeDepsChild  sqlitegen.Column = "change_deps.child"
+	ChangeDepsParent sqlitegen.Column = "change_deps.parent"
 )
 
-// Table content_links_view. Plain strings.
+// Table change_deps. Plain strings.
 const (
-	T_ContentLinksView                    = "content_links_view"
-	C_ContentLinksViewData                = "content_links_view.data"
-	C_ContentLinksViewRel                 = "content_links_view.rel"
-	C_ContentLinksViewSourceBlob          = "content_links_view.source_blob"
-	C_ContentLinksViewSourceBlobCodec     = "content_links_view.source_blob_codec"
-	C_ContentLinksViewSourceBlobMultihash = "content_links_view.source_blob_multihash"
-	C_ContentLinksViewSourceEID           = "content_links_view.source_eid"
-	C_ContentLinksViewSourceEntity        = "content_links_view.source_entity"
-	C_ContentLinksViewTargetEID           = "content_links_view.target_eid"
-	C_ContentLinksViewTargetEntity        = "content_links_view.target_entity"
+	T_ChangeDeps       = "change_deps"
+	C_ChangeDepsChild  = "change_deps.child"
+	C_ChangeDepsParent = "change_deps.parent"
 )
 
-// Table global_meta.
+// Table changes.
 const (
-	GlobalMeta      sqlitegen.Table  = "global_meta"
-	GlobalMetaKey   sqlitegen.Column = "global_meta.key"
-	GlobalMetaValue sqlitegen.Column = "global_meta.value"
+	Changes        sqlitegen.Table  = "changes"
+	ChangesAuthor  sqlitegen.Column = "changes.author"
+	ChangesBlob    sqlitegen.Column = "changes.blob"
+	ChangesEntity  sqlitegen.Column = "changes.entity"
+	ChangesHLCTime sqlitegen.Column = "changes.hlc_time"
 )
 
-// Table global_meta. Plain strings.
+// Table changes. Plain strings.
 const (
-	T_GlobalMeta      = "global_meta"
-	C_GlobalMetaKey   = "global_meta.key"
-	C_GlobalMetaValue = "global_meta.value"
+	T_Changes        = "changes"
+	C_ChangesAuthor  = "changes.author"
+	C_ChangesBlob    = "changes.blob"
+	C_ChangesEntity  = "changes.entity"
+	C_ChangesHLCTime = "changes.hlc_time"
 )
 
-// Table hd_change_deps.
+// Table changes_view.
 const (
-	HDChangeDeps       sqlitegen.Table  = "hd_change_deps"
-	HDChangeDepsChild  sqlitegen.Column = "hd_change_deps.child"
-	HDChangeDepsParent sqlitegen.Column = "hd_change_deps.parent"
+	ChangesView          sqlitegen.Table  = "changes_view"
+	ChangesViewBlobID    sqlitegen.Column = "changes_view.blob_id"
+	ChangesViewCodec     sqlitegen.Column = "changes_view.codec"
+	ChangesViewData      sqlitegen.Column = "changes_view.data"
+	ChangesViewEntity    sqlitegen.Column = "changes_view.entity"
+	ChangesViewEntityID  sqlitegen.Column = "changes_view.entity_id"
+	ChangesViewHLCTime   sqlitegen.Column = "changes_view.hlc_time"
+	ChangesViewMultihash sqlitegen.Column = "changes_view.multihash"
+	ChangesViewSize      sqlitegen.Column = "changes_view.size"
 )
 
-// Table hd_change_deps. Plain strings.
+// Table changes_view. Plain strings.
 const (
-	T_HDChangeDeps       = "hd_change_deps"
-	C_HDChangeDepsChild  = "hd_change_deps.child"
-	C_HDChangeDepsParent = "hd_change_deps.parent"
+	T_ChangesView          = "changes_view"
+	C_ChangesViewBlobID    = "changes_view.blob_id"
+	C_ChangesViewCodec     = "changes_view.codec"
+	C_ChangesViewData      = "changes_view.data"
+	C_ChangesViewEntity    = "changes_view.entity"
+	C_ChangesViewEntityID  = "changes_view.entity_id"
+	C_ChangesViewHLCTime   = "changes_view.hlc_time"
+	C_ChangesViewMultihash = "changes_view.multihash"
+	C_ChangesViewSize      = "changes_view.size"
 )
 
-// Table hd_changes.
+// Table drafts.
 const (
-	HDChanges        sqlitegen.Table  = "hd_changes"
-	HDChangesAuthor  sqlitegen.Column = "hd_changes.author"
-	HDChangesBlob    sqlitegen.Column = "hd_changes.blob"
-	HDChangesEntity  sqlitegen.Column = "hd_changes.entity"
-	HDChangesHlcTime sqlitegen.Column = "hd_changes.hlc_time"
+	Drafts       sqlitegen.Table  = "drafts"
+	DraftsBlob   sqlitegen.Column = "drafts.blob"
+	DraftsEntity sqlitegen.Column = "drafts.entity"
 )
 
-// Table hd_changes. Plain strings.
+// Table drafts. Plain strings.
 const (
-	T_HDChanges        = "hd_changes"
-	C_HDChangesAuthor  = "hd_changes.author"
-	C_HDChangesBlob    = "hd_changes.blob"
-	C_HDChangesEntity  = "hd_changes.entity"
-	C_HDChangesHlcTime = "hd_changes.hlc_time"
+	T_Drafts       = "drafts"
+	C_DraftsBlob   = "drafts.blob"
+	C_DraftsEntity = "drafts.entity"
 )
 
-// Table hd_changes_view.
+// Table drafts_view.
 const (
-	HDChangesView          sqlitegen.Table  = "hd_changes_view"
-	HDChangesViewBlobID    sqlitegen.Column = "hd_changes_view.blob_id"
-	HDChangesViewCodec     sqlitegen.Column = "hd_changes_view.codec"
-	HDChangesViewData      sqlitegen.Column = "hd_changes_view.data"
-	HDChangesViewEntity    sqlitegen.Column = "hd_changes_view.entity"
-	HDChangesViewEntityID  sqlitegen.Column = "hd_changes_view.entity_id"
-	HDChangesViewHlcTime   sqlitegen.Column = "hd_changes_view.hlc_time"
-	HDChangesViewMultihash sqlitegen.Column = "hd_changes_view.multihash"
-	HDChangesViewSize      sqlitegen.Column = "hd_changes_view.size"
+	DraftsView          sqlitegen.Table  = "drafts_view"
+	DraftsViewBlobID    sqlitegen.Column = "drafts_view.blob_id"
+	DraftsViewCodec     sqlitegen.Column = "drafts_view.codec"
+	DraftsViewEntity    sqlitegen.Column = "drafts_view.entity"
+	DraftsViewEntityID  sqlitegen.Column = "drafts_view.entity_id"
+	DraftsViewMultihash sqlitegen.Column = "drafts_view.multihash"
 )
 
-// Table hd_changes_view. Plain strings.
+// Table drafts_view. Plain strings.
 const (
-	T_HDChangesView          = "hd_changes_view"
-	C_HDChangesViewBlobID    = "hd_changes_view.blob_id"
-	C_HDChangesViewCodec     = "hd_changes_view.codec"
-	C_HDChangesViewData      = "hd_changes_view.data"
-	C_HDChangesViewEntity    = "hd_changes_view.entity"
-	C_HDChangesViewEntityID  = "hd_changes_view.entity_id"
-	C_HDChangesViewHlcTime   = "hd_changes_view.hlc_time"
-	C_HDChangesViewMultihash = "hd_changes_view.multihash"
-	C_HDChangesViewSize      = "hd_changes_view.size"
+	T_DraftsView          = "drafts_view"
+	C_DraftsViewBlobID    = "drafts_view.blob_id"
+	C_DraftsViewCodec     = "drafts_view.codec"
+	C_DraftsViewEntity    = "drafts_view.entity"
+	C_DraftsViewEntityID  = "drafts_view.entity_id"
+	C_DraftsViewMultihash = "drafts_view.multihash"
 )
 
-// Table hd_drafts.
+// Table entities.
 const (
-	HDDrafts       sqlitegen.Table  = "hd_drafts"
-	HDDraftsBlob   sqlitegen.Column = "hd_drafts.blob"
-	HDDraftsEntity sqlitegen.Column = "hd_drafts.entity"
+	Entities    sqlitegen.Table  = "entities"
+	EntitiesEID sqlitegen.Column = "entities.eid"
+	EntitiesID  sqlitegen.Column = "entities.id"
 )
 
-// Table hd_drafts. Plain strings.
+// Table entities. Plain strings.
 const (
-	T_HDDrafts       = "hd_drafts"
-	C_HDDraftsBlob   = "hd_drafts.blob"
-	C_HDDraftsEntity = "hd_drafts.entity"
+	T_Entities    = "entities"
+	C_EntitiesEID = "entities.eid"
+	C_EntitiesID  = "entities.id"
 )
 
-// Table hd_drafts_view.
+// Table heads.
 const (
-	HDDraftsView          sqlitegen.Table  = "hd_drafts_view"
-	HDDraftsViewBlobID    sqlitegen.Column = "hd_drafts_view.blob_id"
-	HDDraftsViewCodec     sqlitegen.Column = "hd_drafts_view.codec"
-	HDDraftsViewEntity    sqlitegen.Column = "hd_drafts_view.entity"
-	HDDraftsViewEntityID  sqlitegen.Column = "hd_drafts_view.entity_id"
-	HDDraftsViewMultihash sqlitegen.Column = "hd_drafts_view.multihash"
+	Heads         sqlitegen.Table  = "heads"
+	HeadsBlob     sqlitegen.Column = "heads.blob"
+	HeadsName     sqlitegen.Column = "heads.name"
+	HeadsResource sqlitegen.Column = "heads.resource"
 )
 
-// Table hd_drafts_view. Plain strings.
+// Table heads. Plain strings.
 const (
-	T_HDDraftsView          = "hd_drafts_view"
-	C_HDDraftsViewBlobID    = "hd_drafts_view.blob_id"
-	C_HDDraftsViewCodec     = "hd_drafts_view.codec"
-	C_HDDraftsViewEntity    = "hd_drafts_view.entity"
-	C_HDDraftsViewEntityID  = "hd_drafts_view.entity_id"
-	C_HDDraftsViewMultihash = "hd_drafts_view.multihash"
-)
-
-// Table hd_entities.
-const (
-	HDEntities    sqlitegen.Table  = "hd_entities"
-	HDEntitiesEID sqlitegen.Column = "hd_entities.eid"
-	HDEntitiesID  sqlitegen.Column = "hd_entities.id"
-)
-
-// Table hd_entities. Plain strings.
-const (
-	T_HDEntities    = "hd_entities"
-	C_HDEntitiesEID = "hd_entities.eid"
-	C_HDEntitiesID  = "hd_entities.id"
-)
-
-// Table hd_links.
-const (
-	HDLinks             sqlitegen.Table  = "hd_links"
-	HDLinksData         sqlitegen.Column = "hd_links.data"
-	HDLinksRel          sqlitegen.Column = "hd_links.rel"
-	HDLinksSourceBlob   sqlitegen.Column = "hd_links.source_blob"
-	HDLinksTargetBlob   sqlitegen.Column = "hd_links.target_blob"
-	HDLinksTargetEntity sqlitegen.Column = "hd_links.target_entity"
-)
-
-// Table hd_links. Plain strings.
-const (
-	T_HDLinks             = "hd_links"
-	C_HDLinksData         = "hd_links.data"
-	C_HDLinksRel          = "hd_links.rel"
-	C_HDLinksSourceBlob   = "hd_links.source_blob"
-	C_HDLinksTargetBlob   = "hd_links.target_blob"
-	C_HDLinksTargetEntity = "hd_links.target_entity"
+	T_Heads         = "heads"
+	C_HeadsBlob     = "heads.blob"
+	C_HeadsName     = "heads.name"
+	C_HeadsResource = "heads.resource"
 )
 
 // Table invite_tokens.
@@ -214,20 +210,18 @@ const (
 
 // Table key_delegations.
 const (
-	KeyDelegations          sqlitegen.Table  = "key_delegations"
-	KeyDelegationsBlob      sqlitegen.Column = "key_delegations.blob"
-	KeyDelegationsDelegate  sqlitegen.Column = "key_delegations.delegate"
-	KeyDelegationsIssueTime sqlitegen.Column = "key_delegations.issue_time"
-	KeyDelegationsIssuer    sqlitegen.Column = "key_delegations.issuer"
+	KeyDelegations         sqlitegen.Table  = "key_delegations"
+	KeyDelegationsBlob     sqlitegen.Column = "key_delegations.blob"
+	KeyDelegationsDelegate sqlitegen.Column = "key_delegations.delegate"
+	KeyDelegationsIssuer   sqlitegen.Column = "key_delegations.issuer"
 )
 
 // Table key_delegations. Plain strings.
 const (
-	T_KeyDelegations          = "key_delegations"
-	C_KeyDelegationsBlob      = "key_delegations.blob"
-	C_KeyDelegationsDelegate  = "key_delegations.delegate"
-	C_KeyDelegationsIssueTime = "key_delegations.issue_time"
-	C_KeyDelegationsIssuer    = "key_delegations.issuer"
+	T_KeyDelegations         = "key_delegations"
+	C_KeyDelegationsBlob     = "key_delegations.blob"
+	C_KeyDelegationsDelegate = "key_delegations.delegate"
+	C_KeyDelegationsIssuer   = "key_delegations.issuer"
 )
 
 // Table key_delegations_view.
@@ -237,7 +231,6 @@ const (
 	KeyDelegationsViewBlobCodec     sqlitegen.Column = "key_delegations_view.blob_codec"
 	KeyDelegationsViewBlobMultihash sqlitegen.Column = "key_delegations_view.blob_multihash"
 	KeyDelegationsViewDelegate      sqlitegen.Column = "key_delegations_view.delegate"
-	KeyDelegationsViewIssueTime     sqlitegen.Column = "key_delegations_view.issue_time"
 	KeyDelegationsViewIssuer        sqlitegen.Column = "key_delegations_view.issuer"
 )
 
@@ -248,8 +241,37 @@ const (
 	C_KeyDelegationsViewBlobCodec     = "key_delegations_view.blob_codec"
 	C_KeyDelegationsViewBlobMultihash = "key_delegations_view.blob_multihash"
 	C_KeyDelegationsViewDelegate      = "key_delegations_view.delegate"
-	C_KeyDelegationsViewIssueTime     = "key_delegations_view.issue_time"
 	C_KeyDelegationsViewIssuer        = "key_delegations_view.issuer"
+)
+
+// Table kv.
+const (
+	KV      sqlitegen.Table  = "kv"
+	KVKey   sqlitegen.Column = "kv.key"
+	KVValue sqlitegen.Column = "kv.value"
+)
+
+// Table kv. Plain strings.
+const (
+	T_KV      = "kv"
+	C_KVKey   = "kv.key"
+	C_KVValue = "kv.value"
+)
+
+// Table lookup.
+const (
+	Lookup      sqlitegen.Table  = "lookup"
+	LookupID    sqlitegen.Column = "lookup.id"
+	LookupType  sqlitegen.Column = "lookup.type"
+	LookupValue sqlitegen.Column = "lookup.value"
+)
+
+// Table lookup. Plain strings.
+const (
+	T_Lookup      = "lookup"
+	C_LookupID    = "lookup.id"
+	C_LookupType  = "lookup.type"
+	C_LookupValue = "lookup.value"
 )
 
 // Table public_blobs_view.
@@ -334,16 +356,16 @@ const (
 
 // Table sqlite_sequence.
 const (
-	SQLITESequence     sqlitegen.Table  = "sqlite_sequence"
-	SQLITESequenceName sqlitegen.Column = "sqlite_sequence.name"
-	SQLITESequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
+	SQLiteSequence     sqlitegen.Table  = "sqlite_sequence"
+	SQLiteSequenceName sqlitegen.Column = "sqlite_sequence.name"
+	SQLiteSequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
 )
 
 // Table sqlite_sequence. Plain strings.
 const (
-	T_SQLITESequence     = "sqlite_sequence"
-	C_SQLITESequenceName = "sqlite_sequence.name"
-	C_SQLITESequenceSeq  = "sqlite_sequence.seq"
+	T_SQLiteSequence     = "sqlite_sequence"
+	C_SQLiteSequenceName = "sqlite_sequence.name"
+	C_SQLiteSequenceSeq  = "sqlite_sequence.seq"
 )
 
 // Table trusted_accounts.
@@ -403,92 +425,93 @@ const (
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
-		BlobsCodec:                          {Table: Blobs, SQLType: "INTEGER"},
-		BlobsData:                           {Table: Blobs, SQLType: "BLOB"},
-		BlobsID:                             {Table: Blobs, SQLType: "INTEGER"},
-		BlobsInsertTime:                     {Table: Blobs, SQLType: "INTEGER"},
-		BlobsMultihash:                      {Table: Blobs, SQLType: "BLOB"},
-		BlobsSize:                           {Table: Blobs, SQLType: "INTEGER"},
-		ContentLinksViewData:                {Table: ContentLinksView, SQLType: "BLOB"},
-		ContentLinksViewRel:                 {Table: ContentLinksView, SQLType: "TEXT"},
-		ContentLinksViewSourceBlob:          {Table: ContentLinksView, SQLType: "INTEGER"},
-		ContentLinksViewSourceBlobCodec:     {Table: ContentLinksView, SQLType: "INTEGER"},
-		ContentLinksViewSourceBlobMultihash: {Table: ContentLinksView, SQLType: "BLOB"},
-		ContentLinksViewSourceEID:           {Table: ContentLinksView, SQLType: "TEXT"},
-		ContentLinksViewSourceEntity:        {Table: ContentLinksView, SQLType: "INTEGER"},
-		ContentLinksViewTargetEID:           {Table: ContentLinksView, SQLType: "TEXT"},
-		ContentLinksViewTargetEntity:        {Table: ContentLinksView, SQLType: "INTEGER"},
-		GlobalMetaKey:                       {Table: GlobalMeta, SQLType: "TEXT"},
-		GlobalMetaValue:                     {Table: GlobalMeta, SQLType: "TEXT"},
-		HDChangeDepsChild:                   {Table: HDChangeDeps, SQLType: "INTEGER"},
-		HDChangeDepsParent:                  {Table: HDChangeDeps, SQLType: "INTEGER"},
-		HDChangesAuthor:                     {Table: HDChanges, SQLType: "INTEGER"},
-		HDChangesBlob:                       {Table: HDChanges, SQLType: "INTEGER"},
-		HDChangesEntity:                     {Table: HDChanges, SQLType: "INTEGER"},
-		HDChangesHlcTime:                    {Table: HDChanges, SQLType: "INTEGER"},
-		HDChangesViewBlobID:                 {Table: HDChangesView, SQLType: "INTEGER"},
-		HDChangesViewCodec:                  {Table: HDChangesView, SQLType: "INTEGER"},
-		HDChangesViewData:                   {Table: HDChangesView, SQLType: "BLOB"},
-		HDChangesViewEntity:                 {Table: HDChangesView, SQLType: "TEXT"},
-		HDChangesViewEntityID:               {Table: HDChangesView, SQLType: "INTEGER"},
-		HDChangesViewHlcTime:                {Table: HDChangesView, SQLType: "INTEGER"},
-		HDChangesViewMultihash:              {Table: HDChangesView, SQLType: "BLOB"},
-		HDChangesViewSize:                   {Table: HDChangesView, SQLType: "INTEGER"},
-		HDDraftsBlob:                        {Table: HDDrafts, SQLType: "INTEGER"},
-		HDDraftsEntity:                      {Table: HDDrafts, SQLType: "INTEGER"},
-		HDDraftsViewBlobID:                  {Table: HDDraftsView, SQLType: "INTEGER"},
-		HDDraftsViewCodec:                   {Table: HDDraftsView, SQLType: "INTEGER"},
-		HDDraftsViewEntity:                  {Table: HDDraftsView, SQLType: "TEXT"},
-		HDDraftsViewEntityID:                {Table: HDDraftsView, SQLType: "INTEGER"},
-		HDDraftsViewMultihash:               {Table: HDDraftsView, SQLType: "BLOB"},
-		HDEntitiesEID:                       {Table: HDEntities, SQLType: "TEXT"},
-		HDEntitiesID:                        {Table: HDEntities, SQLType: "INTEGER"},
-		HDLinksData:                         {Table: HDLinks, SQLType: "BLOB"},
-		HDLinksRel:                          {Table: HDLinks, SQLType: "TEXT"},
-		HDLinksSourceBlob:                   {Table: HDLinks, SQLType: "INTEGER"},
-		HDLinksTargetBlob:                   {Table: HDLinks, SQLType: "INTEGER"},
-		HDLinksTargetEntity:                 {Table: HDLinks, SQLType: "INTEGER"},
-		InviteTokensExpireTime:              {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensRole:                    {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensToken:                   {Table: InviteTokens, SQLType: "TEXT"},
-		KeyDelegationsBlob:                  {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsDelegate:              {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsIssueTime:             {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsIssuer:                {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsViewBlob:              {Table: KeyDelegationsView, SQLType: "INTEGER"},
-		KeyDelegationsViewBlobCodec:         {Table: KeyDelegationsView, SQLType: "INTEGER"},
-		KeyDelegationsViewBlobMultihash:     {Table: KeyDelegationsView, SQLType: "BLOB"},
-		KeyDelegationsViewDelegate:          {Table: KeyDelegationsView, SQLType: "BLOB"},
-		KeyDelegationsViewIssueTime:         {Table: KeyDelegationsView, SQLType: "INTEGER"},
-		KeyDelegationsViewIssuer:            {Table: KeyDelegationsView, SQLType: "BLOB"},
-		PublicBlobsViewCodec:                {Table: PublicBlobsView, SQLType: "INTEGER"},
-		PublicBlobsViewID:                   {Table: PublicBlobsView, SQLType: "INTEGER"},
-		PublicBlobsViewMultihash:            {Table: PublicBlobsView, SQLType: "BLOB"},
-		PublicKeysID:                        {Table: PublicKeys, SQLType: "INTEGER"},
-		PublicKeysPrincipal:                 {Table: PublicKeys, SQLType: "BLOB"},
-		ServedSitesGroupID:                  {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesHostname:                 {Table: ServedSites, SQLType: "TEXT"},
-		ServedSitesOwnerID:                  {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesVersion:                  {Table: ServedSites, SQLType: "TEXT"},
-		SiteMembersAccountID:                {Table: SiteMembers, SQLType: "INTEGER"},
-		SiteMembersRole:                     {Table: SiteMembers, SQLType: "INTEGER"},
-		SitesAccountID:                      {Table: Sites, SQLType: "INTEGER"},
-		SitesAddresses:                      {Table: Sites, SQLType: "TEXT"},
-		SitesHostname:                       {Table: Sites, SQLType: "TEXT"},
-		SitesRole:                           {Table: Sites, SQLType: "INTEGER"},
-		SQLITESequenceName:                  {Table: SQLITESequence, SQLType: ""},
-		SQLITESequenceSeq:                   {Table: SQLITESequence, SQLType: ""},
-		TrustedAccountsID:                   {Table: TrustedAccounts, SQLType: "INTEGER"},
-		WalletsAddress:                      {Table: Wallets, SQLType: "TEXT"},
-		WalletsBalance:                      {Table: Wallets, SQLType: "INTEGER"},
-		WalletsID:                           {Table: Wallets, SQLType: "TEXT"},
-		WalletsLogin:                        {Table: Wallets, SQLType: "BLOB"},
-		WalletsName:                         {Table: Wallets, SQLType: "TEXT"},
-		WalletsPassword:                     {Table: Wallets, SQLType: "BLOB"},
-		WalletsToken:                        {Table: Wallets, SQLType: "BLOB"},
-		WalletsType:                         {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationsEID:                  {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsPath:                 {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsVersion:              {Table: WebPublications, SQLType: "TEXT"},
+		BlobAttrsAnchor:                 {Table: BlobAttrs, SQLType: "TEXT"},
+		BlobAttrsBlob:                   {Table: BlobAttrs, SQLType: "INTEGER"},
+		BlobAttrsExtra:                  {Table: BlobAttrs, SQLType: ""},
+		BlobAttrsIsLookup:               {Table: BlobAttrs, SQLType: "INTEGER"},
+		BlobAttrsKey:                    {Table: BlobAttrs, SQLType: "TEXT"},
+		BlobAttrsTs:                     {Table: BlobAttrs, SQLType: "INTEGER"},
+		BlobAttrsValue:                  {Table: BlobAttrs, SQLType: ""},
+		BlobAttrsValuePtr:               {Table: BlobAttrs, SQLType: "INTEGER"},
+		BlobLinksRel:                    {Table: BlobLinks, SQLType: "TEXT"},
+		BlobLinksSource:                 {Table: BlobLinks, SQLType: "INTEGER"},
+		BlobLinksTarget:                 {Table: BlobLinks, SQLType: "INTEGER"},
+		BlobsCodec:                      {Table: Blobs, SQLType: "INTEGER"},
+		BlobsData:                       {Table: Blobs, SQLType: "BLOB"},
+		BlobsID:                         {Table: Blobs, SQLType: "INTEGER"},
+		BlobsInsertTime:                 {Table: Blobs, SQLType: "INTEGER"},
+		BlobsMultihash:                  {Table: Blobs, SQLType: "BLOB"},
+		BlobsSize:                       {Table: Blobs, SQLType: "INTEGER"},
+		ChangeDepsChild:                 {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangeDepsParent:                {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangesAuthor:                   {Table: Changes, SQLType: "INTEGER"},
+		ChangesBlob:                     {Table: Changes, SQLType: "INTEGER"},
+		ChangesEntity:                   {Table: Changes, SQLType: "INTEGER"},
+		ChangesHLCTime:                  {Table: Changes, SQLType: "INTEGER"},
+		ChangesViewBlobID:               {Table: ChangesView, SQLType: "INTEGER"},
+		ChangesViewCodec:                {Table: ChangesView, SQLType: "INTEGER"},
+		ChangesViewData:                 {Table: ChangesView, SQLType: "BLOB"},
+		ChangesViewEntity:               {Table: ChangesView, SQLType: "BLOB"},
+		ChangesViewEntityID:             {Table: ChangesView, SQLType: "INTEGER"},
+		ChangesViewHLCTime:              {Table: ChangesView, SQLType: "INTEGER"},
+		ChangesViewMultihash:            {Table: ChangesView, SQLType: "BLOB"},
+		ChangesViewSize:                 {Table: ChangesView, SQLType: "INTEGER"},
+		DraftsBlob:                      {Table: Drafts, SQLType: "INTEGER"},
+		DraftsEntity:                    {Table: Drafts, SQLType: "INTEGER"},
+		DraftsViewBlobID:                {Table: DraftsView, SQLType: "INTEGER"},
+		DraftsViewCodec:                 {Table: DraftsView, SQLType: "INTEGER"},
+		DraftsViewEntity:                {Table: DraftsView, SQLType: "BLOB"},
+		DraftsViewEntityID:              {Table: DraftsView, SQLType: "INTEGER"},
+		DraftsViewMultihash:             {Table: DraftsView, SQLType: "BLOB"},
+		EntitiesEID:                     {Table: Entities, SQLType: "BLOB"},
+		EntitiesID:                      {Table: Entities, SQLType: "INTEGER"},
+		HeadsBlob:                       {Table: Heads, SQLType: "INTEGER"},
+		HeadsName:                       {Table: Heads, SQLType: "TEXT"},
+		HeadsResource:                   {Table: Heads, SQLType: "INTEGER"},
+		InviteTokensExpireTime:          {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensRole:                {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensToken:               {Table: InviteTokens, SQLType: "TEXT"},
+		KeyDelegationsBlob:              {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsDelegate:          {Table: KeyDelegations, SQLType: ""},
+		KeyDelegationsIssuer:            {Table: KeyDelegations, SQLType: ""},
+		KeyDelegationsViewBlob:          {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewBlobCodec:     {Table: KeyDelegationsView, SQLType: "INTEGER"},
+		KeyDelegationsViewBlobMultihash: {Table: KeyDelegationsView, SQLType: "BLOB"},
+		KeyDelegationsViewDelegate:      {Table: KeyDelegationsView, SQLType: "BLOB"},
+		KeyDelegationsViewIssuer:        {Table: KeyDelegationsView, SQLType: "BLOB"},
+		KVKey:                           {Table: KV, SQLType: "TEXT"},
+		KVValue:                         {Table: KV, SQLType: "TEXT"},
+		LookupID:                        {Table: Lookup, SQLType: "INTEGER"},
+		LookupType:                      {Table: Lookup, SQLType: "INTEGER"},
+		LookupValue:                     {Table: Lookup, SQLType: ""},
+		PublicBlobsViewCodec:            {Table: PublicBlobsView, SQLType: "INTEGER"},
+		PublicBlobsViewID:               {Table: PublicBlobsView, SQLType: "INTEGER"},
+		PublicBlobsViewMultihash:        {Table: PublicBlobsView, SQLType: "BLOB"},
+		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
+		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
+		ServedSitesGroupID:              {Table: ServedSites, SQLType: "INTEGER"},
+		ServedSitesHostname:             {Table: ServedSites, SQLType: "TEXT"},
+		ServedSitesOwnerID:              {Table: ServedSites, SQLType: "INTEGER"},
+		ServedSitesVersion:              {Table: ServedSites, SQLType: "TEXT"},
+		SiteMembersAccountID:            {Table: SiteMembers, SQLType: "INTEGER"},
+		SiteMembersRole:                 {Table: SiteMembers, SQLType: "INTEGER"},
+		SitesAccountID:                  {Table: Sites, SQLType: "INTEGER"},
+		SitesAddresses:                  {Table: Sites, SQLType: "TEXT"},
+		SitesHostname:                   {Table: Sites, SQLType: "TEXT"},
+		SitesRole:                       {Table: Sites, SQLType: "INTEGER"},
+		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
+		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
+		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
+		WalletsAddress:                  {Table: Wallets, SQLType: "TEXT"},
+		WalletsBalance:                  {Table: Wallets, SQLType: "INTEGER"},
+		WalletsID:                       {Table: Wallets, SQLType: "TEXT"},
+		WalletsLogin:                    {Table: Wallets, SQLType: "BLOB"},
+		WalletsName:                     {Table: Wallets, SQLType: "TEXT"},
+		WalletsPassword:                 {Table: Wallets, SQLType: "BLOB"},
+		WalletsToken:                    {Table: Wallets, SQLType: "BLOB"},
+		WalletsType:                     {Table: Wallets, SQLType: "TEXT"},
+		WebPublicationsEID:              {Table: WebPublications, SQLType: "TEXT"},
+		WebPublicationsPath:             {Table: WebPublications, SQLType: "TEXT"},
+		WebPublicationsVersion:          {Table: WebPublications, SQLType: "TEXT"},
 	},
 }

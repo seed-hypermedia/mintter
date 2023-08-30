@@ -28,6 +28,7 @@ type docModel struct {
 	tree       *Tree
 	patch      map[string]any
 	oldDraft   cid.Cid
+	oldChange  hyper.Change
 	done       bool
 	nextHLC    hlc.Time
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
@@ -64,6 +65,7 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 		panic("BUG: restoring draft when patch is not empty")
 	}
 	dm.oldDraft = c
+	dm.oldChange = ch
 
 	if len(dm.e.Heads()) != len(ch.Deps) {
 		return fmt.Errorf("failed to restore draft: state has %d heads while draft change has %d deps", len(dm.e.Heads()), len(ch.Deps))
@@ -81,6 +83,7 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	}
 
 	dm.nextHLC = dm.e.NextTimestamp()
+
 	moves := dm.patch["moves"]
 	delete(dm.patch, "moves")
 
@@ -138,18 +141,18 @@ func (dm *docModel) SetCreateTime(ct time.Time) error {
 		return fmt.Errorf("create time is already set")
 	}
 
-	dm.patch["createTime"] = ct.Unix()
+	dm.patch["createTime"] = int(ct.Unix())
 
 	return nil
 }
 
 func (dm *docModel) SetAuthor(author core.Principal) error {
-	_, ok := dm.e.Get("author")
+	_, ok := dm.e.Get("owner")
 	if ok {
 		return fmt.Errorf("author is already set")
 	}
 
-	dm.patch["author"] = []byte(author)
+	dm.patch["owner"] = []byte(author)
 
 	return nil
 }
@@ -212,7 +215,12 @@ func (dm *docModel) Change() (hb hyper.Blob, err error) {
 
 	dm.cleanupPatch()
 
-	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch)
+	action := dm.oldChange.Action
+	if action == "" {
+		action = "Create"
+	}
+
+	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch, hyper.WithAction(action))
 }
 
 func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
@@ -305,43 +313,27 @@ func (dm *docModel) cleanupPatch() {
 
 func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
 	e := dm.e
-	docpb := &documents.Document{
-		Id:  e.ID().TrimPrefix("hd://d/"),
-		Eid: string(e.ID()),
+
+	first := e.AppliedChanges()[0]
+
+	createTime, ok := first.Data.Patch["createTime"].(int)
+	if !ok {
+		return nil, fmt.Errorf("document must have createTime field")
 	}
 
-	{
-		v, ok := e.Get("createTime")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have create time")
-		}
-		switch vv := v.(type) {
-		case time.Time:
-			docpb.CreateTime = timestamppb.New(vv)
-		case int:
-			docpb.CreateTime = timestamppb.New(time.Unix(int64(vv), 0).UTC())
-		default:
-			return nil, fmt.Errorf("unknown type %T for createTime field", v)
-		}
+	owner, ok := first.Data.Patch["owner"].([]byte)
+	if !ok {
+		return nil, fmt.Errorf("document must have owner field")
+	}
+
+	docpb := &documents.Document{
+		Id:         e.ID().TrimPrefix("hd://d/"),
+		Eid:        string(e.ID()),
+		CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
+		Author:     core.Principal(owner).String(),
 	}
 
 	docpb.UpdateTime = timestamppb.New(e.LastChangeTime().Time())
-
-	{
-		v, ok := e.Get("author")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have author")
-		}
-
-		switch vv := v.(type) {
-		case core.Principal:
-			docpb.Author = vv.String()
-		case []byte:
-			docpb.Author = core.Principal(vv).String()
-		default:
-			return nil, fmt.Errorf("unknown type %T for document author", v)
-		}
-	}
 
 	{
 		v, ok := e.Get("title")

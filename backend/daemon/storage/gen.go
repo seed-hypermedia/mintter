@@ -4,12 +4,9 @@
 package storage
 
 import (
+	"context"
 	"io/ioutil"
 	"mintter/backend/pkg/sqlitegen"
-	"os"
-	"path/filepath"
-
-	"crawshaw.io/sqlite"
 )
 
 func init() {
@@ -20,26 +17,28 @@ func init() {
 		"IPLD",
 		"EID",
 		"JSON",
-		"HD",
+		"KV",
+		"HLC",
+		"URL",
 	)
 }
 
 func generateSchema() error {
-	dir, err := ioutil.TempDir("", "mintter-storage-")
+	db, err := OpenSQLite("file::memory:?mode=memory&cache=shared", 0, 1)
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(dir)
+	defer db.Close()
 
-	conn, err := sqlite.OpenConn(filepath.Join(dir, "db.sqlite"))
+	if err := InitSQLiteSchema(db); err != nil {
+		return err
+	}
+
+	conn, release, err := db.Conn(context.Background())
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-
-	if err := initSQLite(conn); err != nil {
-		return err
-	}
+	defer release()
 
 	schema, err := sqlitegen.IntrospectSchema(conn)
 	if err != nil {

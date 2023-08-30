@@ -1,16 +1,12 @@
 package walletsql
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	"context"
+	"mintter/backend/daemon/storage"
 	"strings"
 	"testing"
 
-	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/multierr"
 )
 
 const (
@@ -39,9 +35,11 @@ var (
 )
 
 func TestQueries(t *testing.T) {
-	conn, closer, err := makeConn()
+	pool := storage.MakeTestDB(t)
+
+	conn, release, err := pool.Conn(context.Background())
 	require.NoError(t, err)
-	defer func() { require.NoError(t, closer()) }()
+	defer release()
 
 	{
 		err = InsertWallet(conn, Wallet{
@@ -129,66 +127,4 @@ func TestQueries(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, int64(2), nwallets.Count)
 	}
-}
-
-func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
-	dir, err := ioutil.TempDir("", "sqlitegen-")
-	if err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if err != nil {
-			os.RemoveAll(dir)
-		}
-	}()
-
-	conn, err = sqlite.OpenConn(filepath.Join(dir, "db.sqlite"))
-	if err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if err != nil {
-			conn.Close()
-		}
-	}()
-
-	err = sqlitex.ExecScript(conn, `
-	CREATE TABLE wallets (
-        -- Wallet unique ID. Is the connection uri hash.
-        id TEXT PRIMARY KEY,
-        -- The type of the wallet.
-        type TEXT CHECK( type IN ('lnd','lndhub.go','lndhub') ) NOT NULL DEFAULT 'lndhub.go',
-        -- Address of the LND node backing up this wallet. In case lndhub, this will be the 
-        -- URL to connect via rest api. In case LND wallet, this will be the gRPC address.
-        address TEXT NOT NULL,
-        -- The login to access the wallet. Login in case lndhub and the macaroon 
-        -- bytes in case lnd.
-        login BLOB NOT NULL,
-        -- The password to access the wallet. Passphrase in case of lndhub and the encrytion 
-		-- key to unlock the internal wallet in case of LND.
-        password BLOB NOT NULL,
-        -- The Authentication token of the wallet. api token in case of lndhub
-        token BLOB,
-        -- Human readable name to help the user identify each wallet
-        name TEXT NOT NULL,
-        -- The balance in satoshis
-        balance INTEGER DEFAULT 0
-    );
-	-- Stores global metadata/configuration about any other table
-	CREATE TABLE global_meta (
-		key TEXT PRIMARY KEY,
-		value TEXT
-	) WITHOUT ROWID;
-
-`)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return conn, func() error {
-		return multierr.Combine(
-			os.RemoveAll(dir),
-			conn.Close(),
-		)
-	}, nil
 }

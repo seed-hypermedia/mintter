@@ -244,6 +244,28 @@ WHERE blobs.size >= 0`
 	return out, err
 }
 
+func BlobLinksInsertOrIgnore(conn *sqlite.Conn, blobLinksSource int64, blobLinksRel string, blobLinksTarget int64) error {
+	const query = `INSERT OR IGNORE INTO blob_links (source, rel, target)
+VALUES (:blobLinksSource, :blobLinksRel, :blobLinksTarget)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":blobLinksSource", blobLinksSource)
+		stmt.SetText(":blobLinksRel", blobLinksRel)
+		stmt.SetInt64(":blobLinksTarget", blobLinksTarget)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BlobLinksInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
 type PublicKeysLookupIDResult struct {
 	PublicKeysID int64
 }
@@ -314,15 +336,15 @@ type PublicKeysInsertResult struct {
 	PublicKeysID int64
 }
 
-func PublicKeysInsert(conn *sqlite.Conn, publicKeysPrincipal []byte) (PublicKeysInsertResult, error) {
-	const query = `INSERT INTO public_keys (principal)
-VALUES (:publicKeysPrincipal)
-RETURNING public_keys.id`
+func PublicKeysInsert(conn *sqlite.Conn, principal []byte) (PublicKeysInsertResult, error) {
+	const query = `INSERT INTO lookup (type, value)
+VALUES (112, :principal)
+RETURNING lookup.id AS public_keys_id`
 
 	var out PublicKeysInsertResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+		stmt.SetBytes(":principal", principal)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -414,52 +436,16 @@ WHERE trusted_accounts.id IN (SELECT public_keys.id FROM public_keys WHERE publi
 	return out, err
 }
 
-type KeyDelegationsInsertOrIgnoreResult struct {
-	KeyDelegationsBlob int64
-}
-
-func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, keyDelegationsBlob int64, keyDelegationsIssuer int64, keyDelegationsDelegate int64, keyDelegationsIssueTime int64) (KeyDelegationsInsertOrIgnoreResult, error) {
-	const query = `INSERT OR IGNORE INTO key_delegations (blob, issuer, delegate, issue_time)
-VALUES (:keyDelegationsBlob, :keyDelegationsIssuer, :keyDelegationsDelegate, :keyDelegationsIssueTime)
-RETURNING key_delegations.blob`
-
-	var out KeyDelegationsInsertOrIgnoreResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":keyDelegationsBlob", keyDelegationsBlob)
-		stmt.SetInt64(":keyDelegationsIssuer", keyDelegationsIssuer)
-		stmt.SetInt64(":keyDelegationsDelegate", keyDelegationsDelegate)
-		stmt.SetInt64(":keyDelegationsIssueTime", keyDelegationsIssueTime)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("KeyDelegationsInsertOrIgnore: more than one result return for a single-kind query")
-		}
-
-		out.KeyDelegationsBlob = stmt.ColumnInt64(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: KeyDelegationsInsertOrIgnore: %w", err)
-	}
-
-	return out, err
-}
-
 type KeyDelegationsListResult struct {
 	KeyDelegationsViewBlob          int64
 	KeyDelegationsViewBlobCodec     int64
 	KeyDelegationsViewBlobMultihash []byte
 	KeyDelegationsViewIssuer        []byte
 	KeyDelegationsViewDelegate      []byte
-	KeyDelegationsViewIssueTime     int64
 }
 
 func KeyDelegationsList(conn *sqlite.Conn, keyDelegationsViewIssuer []byte) ([]KeyDelegationsListResult, error) {
-	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate
 FROM key_delegations_view
 WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 
@@ -476,7 +462,6 @@ WHERE key_delegations_view.issuer = :keyDelegationsViewIssuer`
 			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
 			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
 			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
-			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
 		})
 
 		return nil
@@ -496,11 +481,10 @@ type KeyDelegationsListAllResult struct {
 	KeyDelegationsViewBlobMultihash []byte
 	KeyDelegationsViewIssuer        []byte
 	KeyDelegationsViewDelegate      []byte
-	KeyDelegationsViewIssueTime     int64
 }
 
 func KeyDelegationsListAll(conn *sqlite.Conn) ([]KeyDelegationsListAllResult, error) {
-	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate
 FROM key_delegations_view`
 
 	var out []KeyDelegationsListAllResult
@@ -515,7 +499,6 @@ FROM key_delegations_view`
 			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
 			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
 			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
-			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
 		})
 
 		return nil
@@ -535,11 +518,10 @@ type KeyDelegationsListByDelegateResult struct {
 	KeyDelegationsViewBlobMultihash []byte
 	KeyDelegationsViewIssuer        []byte
 	KeyDelegationsViewDelegate      []byte
-	KeyDelegationsViewIssueTime     int64
 }
 
 func KeyDelegationsListByDelegate(conn *sqlite.Conn, keyDelegationsViewDelegate []byte) ([]KeyDelegationsListByDelegateResult, error) {
-	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate, key_delegations_view.issue_time
+	const query = `SELECT key_delegations_view.blob, key_delegations_view.blob_codec, key_delegations_view.blob_multihash, key_delegations_view.issuer, key_delegations_view.delegate
 FROM key_delegations_view
 WHERE key_delegations_view.delegate = :keyDelegationsViewDelegate`
 
@@ -556,7 +538,6 @@ WHERE key_delegations_view.delegate = :keyDelegationsViewDelegate`
 			KeyDelegationsViewBlobMultihash: stmt.ColumnBytes(2),
 			KeyDelegationsViewIssuer:        stmt.ColumnBytes(3),
 			KeyDelegationsViewDelegate:      stmt.ColumnBytes(4),
-			KeyDelegationsViewIssueTime:     stmt.ColumnInt64(5),
 		})
 
 		return nil
@@ -605,18 +586,18 @@ LIMIT 1`
 }
 
 type EntitiesInsertOrIgnoreResult struct {
-	HDEntitiesID int64
+	EntitiesID int64
 }
 
-func EntitiesInsertOrIgnore(conn *sqlite.Conn, hdEntitiesEID string) (EntitiesInsertOrIgnoreResult, error) {
-	const query = `INSERT OR IGNORE INTO hd_entities (eid)
-VALUES (:hdEntitiesEID)
-RETURNING hd_entities.id`
+func EntitiesInsertOrIgnore(conn *sqlite.Conn, entity_id string) (EntitiesInsertOrIgnoreResult, error) {
+	const query = `INSERT OR IGNORE INTO lookup (type, value)
+VALUES (114, :entity_id)
+RETURNING lookup.id AS entities_id`
 
 	var out EntitiesInsertOrIgnoreResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
+		stmt.SetText(":entity_id", entity_id)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -624,7 +605,7 @@ RETURNING hd_entities.id`
 			return errors.New("EntitiesInsertOrIgnore: more than one result return for a single-kind query")
 		}
 
-		out.HDEntitiesID = stmt.ColumnInt64(0)
+		out.EntitiesID = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -637,19 +618,19 @@ RETURNING hd_entities.id`
 }
 
 type EntitiesLookupIDResult struct {
-	HDEntitiesID int64
+	EntitiesID int64
 }
 
-func EntitiesLookupID(conn *sqlite.Conn, hdEntitiesEID string) (EntitiesLookupIDResult, error) {
-	const query = `SELECT hd_entities.id
-FROM hd_entities
-WHERE hd_entities.eid = :hdEntitiesEID
+func EntitiesLookupID(conn *sqlite.Conn, entities_eid string) (EntitiesLookupIDResult, error) {
+	const query = `SELECT entities.id
+FROM entities
+WHERE entities.eid = :entities_eid
 LIMIT 1`
 
 	var out EntitiesLookupIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
+		stmt.SetText(":entities_eid", entities_eid)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -657,7 +638,7 @@ LIMIT 1`
 			return errors.New("EntitiesLookupID: more than one result return for a single-kind query")
 		}
 
-		out.HDEntitiesID = stmt.ColumnInt64(0)
+		out.EntitiesID = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -670,15 +651,15 @@ LIMIT 1`
 }
 
 type EntitiesListByPrefixResult struct {
-	HDEntitiesID  int64
-	HDEntitiesEID string
+	EntitiesID  int64
+	EntitiesEID string
 }
 
 func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
-	const query = `SELECT hd_entities.id, hd_entities.eid
-FROM hd_entities
-WHERE hd_entities.eid GLOB :prefix
-ORDER BY hd_entities.id`
+	const query = `SELECT entities.id, entities.eid
+FROM entities
+WHERE entities.eid GLOB :prefix
+ORDER BY entities.id`
 
 	var out []EntitiesListByPrefixResult
 
@@ -688,8 +669,8 @@ ORDER BY hd_entities.id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, EntitiesListByPrefixResult{
-			HDEntitiesID:  stmt.ColumnInt64(0),
-			HDEntitiesEID: stmt.ColumnText(1),
+			EntitiesID:  stmt.ColumnInt64(0),
+			EntitiesEID: stmt.ColumnText(1),
 		})
 
 		return nil
@@ -703,12 +684,13 @@ ORDER BY hd_entities.id`
 	return out, err
 }
 
-func EntitiesDelete(conn *sqlite.Conn, hdEntitiesEID string) error {
-	const query = `DELETE FROM hd_entities
-WHERE hd_entities.eid = :hdEntitiesEID`
+func EntitiesDelete(conn *sqlite.Conn, entities_eid string) error {
+	const query = `DELETE FROM lookup
+WHERE lookup.type = 114
+AND lookup.value = :entities_eid`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdEntitiesEID", hdEntitiesEID)
+		stmt.SetText(":entities_eid", entities_eid)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -723,15 +705,15 @@ WHERE hd_entities.eid = :hdEntitiesEID`
 	return err
 }
 
-func ChangesInsertOrIgnore(conn *sqlite.Conn, hdChangesBlob int64, hdChangesEntity int64, hdChangesHlcTime int64, hdChangesAuthor int64) error {
-	const query = `INSERT OR IGNORE INTO hd_changes (blob, entity, hlc_time, author)
-VALUES (:hdChangesBlob, :hdChangesEntity, :hdChangesHlcTime, :hdChangesAuthor)`
+func ChangesInsertOrIgnore(conn *sqlite.Conn, changesBlob int64, changesEntity int64, changesHLCTime int64, changesAuthor int64) error {
+	const query = `INSERT OR IGNORE INTO changes (blob, entity, hlc_time, author)
+VALUES (:changesBlob, :changesEntity, :changesHLCTime, :changesAuthor)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangesBlob", hdChangesBlob)
-		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
-		stmt.SetInt64(":hdChangesHlcTime", hdChangesHlcTime)
-		stmt.SetInt64(":hdChangesAuthor", hdChangesAuthor)
+		stmt.SetInt64(":changesBlob", changesBlob)
+		stmt.SetInt64(":changesEntity", changesEntity)
+		stmt.SetInt64(":changesHLCTime", changesHLCTime)
+		stmt.SetInt64(":changesAuthor", changesAuthor)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -747,38 +729,38 @@ VALUES (:hdChangesBlob, :hdChangesEntity, :hdChangesHlcTime, :hdChangesAuthor)`
 }
 
 type ChangesListFromChangeSetResult struct {
-	HDChangesViewBlobID    int64
-	HDChangesViewCodec     int64
-	HDChangesViewData      []byte
-	HDChangesViewEntityID  int64
-	HDChangesViewHlcTime   int64
-	HDChangesViewMultihash []byte
-	HDChangesViewSize      int64
+	ChangesViewBlobID    int64
+	ChangesViewCodec     int64
+	ChangesViewData      []byte
+	ChangesViewEntityID  int64
+	ChangesViewHLCTime   int64
+	ChangesViewMultihash []byte
+	ChangesViewSize      int64
 }
 
-func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, hdChangesViewEntity string) ([]ChangesListFromChangeSetResult, error) {
-	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.data, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size
-FROM hd_changes_view, json_each(:cset) AS cset
-WHERE hd_changes_view.entity = :hdChangesViewEntity
-AND hd_changes_view.blob_id = cset.value
-ORDER BY hd_changes_view.hlc_time`
+func ChangesListFromChangeSet(conn *sqlite.Conn, cset []byte, changesViewEntity string) ([]ChangesListFromChangeSetResult, error) {
+	const query = `SELECT changes_view.blob_id, changes_view.codec, changes_view.data, changes_view.entity_id, changes_view.hlc_time, changes_view.multihash, changes_view.size
+FROM changes_view, json_each(:cset) AS cset
+WHERE changes_view.entity = :changesViewEntity
+AND changes_view.blob_id = cset.value
+ORDER BY changes_view.hlc_time`
 
 	var out []ChangesListFromChangeSetResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":cset", cset)
-		stmt.SetText(":hdChangesViewEntity", hdChangesViewEntity)
+		stmt.SetText(":changesViewEntity", changesViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListFromChangeSetResult{
-			HDChangesViewBlobID:    stmt.ColumnInt64(0),
-			HDChangesViewCodec:     stmt.ColumnInt64(1),
-			HDChangesViewData:      stmt.ColumnBytes(2),
-			HDChangesViewEntityID:  stmt.ColumnInt64(3),
-			HDChangesViewHlcTime:   stmt.ColumnInt64(4),
-			HDChangesViewMultihash: stmt.ColumnBytes(5),
-			HDChangesViewSize:      stmt.ColumnInt64(6),
+			ChangesViewBlobID:    stmt.ColumnInt64(0),
+			ChangesViewCodec:     stmt.ColumnInt64(1),
+			ChangesViewData:      stmt.ColumnBytes(2),
+			ChangesViewEntityID:  stmt.ColumnInt64(3),
+			ChangesViewHLCTime:   stmt.ColumnInt64(4),
+			ChangesViewMultihash: stmt.ColumnBytes(5),
+			ChangesViewSize:      stmt.ColumnInt64(6),
 		})
 
 		return nil
@@ -793,36 +775,36 @@ ORDER BY hd_changes_view.hlc_time`
 }
 
 type ChangesListForEntityResult struct {
-	HDChangesViewBlobID    int64
-	HDChangesViewCodec     int64
-	HDChangesViewData      []byte
-	HDChangesViewEntityID  int64
-	HDChangesViewHlcTime   int64
-	HDChangesViewMultihash []byte
-	HDChangesViewSize      int64
+	ChangesViewBlobID    int64
+	ChangesViewCodec     int64
+	ChangesViewData      []byte
+	ChangesViewEntityID  int64
+	ChangesViewHLCTime   int64
+	ChangesViewMultihash []byte
+	ChangesViewSize      int64
 }
 
-func ChangesListForEntity(conn *sqlite.Conn, hdChangesViewEntity string) ([]ChangesListForEntityResult, error) {
-	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.data, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size
-FROM hd_changes_view
-WHERE hd_changes_view.entity = :hdChangesViewEntity
-ORDER BY hd_changes_view.hlc_time`
+func ChangesListForEntity(conn *sqlite.Conn, changesViewEntity string) ([]ChangesListForEntityResult, error) {
+	const query = `SELECT changes_view.blob_id, changes_view.codec, changes_view.data, changes_view.entity_id, changes_view.hlc_time, changes_view.multihash, changes_view.size
+FROM changes_view
+WHERE changes_view.entity = :changesViewEntity
+ORDER BY changes_view.hlc_time`
 
 	var out []ChangesListForEntityResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdChangesViewEntity", hdChangesViewEntity)
+		stmt.SetText(":changesViewEntity", changesViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListForEntityResult{
-			HDChangesViewBlobID:    stmt.ColumnInt64(0),
-			HDChangesViewCodec:     stmt.ColumnInt64(1),
-			HDChangesViewData:      stmt.ColumnBytes(2),
-			HDChangesViewEntityID:  stmt.ColumnInt64(3),
-			HDChangesViewHlcTime:   stmt.ColumnInt64(4),
-			HDChangesViewMultihash: stmt.ColumnBytes(5),
-			HDChangesViewSize:      stmt.ColumnInt64(6),
+			ChangesViewBlobID:    stmt.ColumnInt64(0),
+			ChangesViewCodec:     stmt.ColumnInt64(1),
+			ChangesViewData:      stmt.ColumnBytes(2),
+			ChangesViewEntityID:  stmt.ColumnInt64(3),
+			ChangesViewHLCTime:   stmt.ColumnInt64(4),
+			ChangesViewMultihash: stmt.ColumnBytes(5),
+			ChangesViewSize:      stmt.ColumnInt64(6),
 		})
 
 		return nil
@@ -837,22 +819,22 @@ ORDER BY hd_changes_view.hlc_time`
 }
 
 type ChangesListPublicNoDataResult struct {
-	HDChangesViewBlobID    int64
-	HDChangesViewCodec     int64
-	HDChangesViewEntityID  int64
-	HDChangesViewHlcTime   int64
-	HDChangesViewMultihash []byte
-	HDChangesViewSize      int64
-	HDChangesViewEntity    string
-	HDDraftsBlob           int64
+	ChangesViewBlobID    int64
+	ChangesViewCodec     int64
+	ChangesViewEntityID  int64
+	ChangesViewHLCTime   int64
+	ChangesViewMultihash []byte
+	ChangesViewSize      int64
+	ChangesViewEntity    []byte
+	DraftsBlob           int64
 }
 
 func ChangesListPublicNoData(conn *sqlite.Conn) ([]ChangesListPublicNoDataResult, error) {
-	const query = `SELECT hd_changes_view.blob_id, hd_changes_view.codec, hd_changes_view.entity_id, hd_changes_view.hlc_time, hd_changes_view.multihash, hd_changes_view.size, hd_changes_view.entity, hd_drafts.blob
-FROM hd_changes_view
-LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes_view.entity_id
-WHERE hd_drafts.blob IS NULL
-ORDER BY hd_changes_view.entity, hd_changes_view.hlc_time`
+	const query = `SELECT changes_view.blob_id, changes_view.codec, changes_view.entity_id, changes_view.hlc_time, changes_view.multihash, changes_view.size, changes_view.entity, drafts.blob
+FROM changes_view
+LEFT JOIN drafts ON drafts.entity = changes_view.entity_id
+WHERE drafts.blob IS NULL
+ORDER BY changes_view.entity, changes_view.hlc_time`
 
 	var out []ChangesListPublicNoDataResult
 
@@ -861,14 +843,14 @@ ORDER BY hd_changes_view.entity, hd_changes_view.hlc_time`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesListPublicNoDataResult{
-			HDChangesViewBlobID:    stmt.ColumnInt64(0),
-			HDChangesViewCodec:     stmt.ColumnInt64(1),
-			HDChangesViewEntityID:  stmt.ColumnInt64(2),
-			HDChangesViewHlcTime:   stmt.ColumnInt64(3),
-			HDChangesViewMultihash: stmt.ColumnBytes(4),
-			HDChangesViewSize:      stmt.ColumnInt64(5),
-			HDChangesViewEntity:    stmt.ColumnText(6),
-			HDDraftsBlob:           stmt.ColumnInt64(7),
+			ChangesViewBlobID:    stmt.ColumnInt64(0),
+			ChangesViewCodec:     stmt.ColumnInt64(1),
+			ChangesViewEntityID:  stmt.ColumnInt64(2),
+			ChangesViewHLCTime:   stmt.ColumnInt64(3),
+			ChangesViewMultihash: stmt.ColumnBytes(4),
+			ChangesViewSize:      stmt.ColumnInt64(5),
+			ChangesViewEntity:    stmt.ColumnBytes(6),
+			DraftsBlob:           stmt.ColumnInt64(7),
 		})
 
 		return nil
@@ -887,7 +869,7 @@ type ChangesResolveHeadsResult struct {
 }
 
 func ChangesResolveHeads(conn *sqlite.Conn, heads []byte) (ChangesResolveHeadsResult, error) {
-	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT hd_change_deps.parent FROM hd_change_deps JOIN changeset ON changeset.change = hd_change_deps.child)
+	const query = `WITH RECURSIVE changeset (change) AS (SELECT value FROM json_each(:heads) UNION SELECT change_deps.parent FROM change_deps JOIN changeset ON changeset.change = change_deps.child)
 SELECT json_group_array(change) AS resolved_json
 FROM changeset
 LIMIT 1`
@@ -922,16 +904,16 @@ type ChangesGetPublicHeadsJSONResult struct {
 func ChangesGetPublicHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetPublicHeadsJSONResult, error) {
 	const query = `WITH
 non_drafts (blob) AS (
-	SELECT hd_changes.blob
-	FROM hd_changes
-	LEFT JOIN hd_drafts ON hd_drafts.entity = hd_changes.entity AND hd_changes.blob = hd_drafts.blob
-	WHERE hd_changes.entity = :entity
-	AND hd_drafts.blob IS NULL
+	SELECT changes.blob
+	FROM changes
+	LEFT JOIN drafts ON drafts.entity = changes.entity AND changes.blob = drafts.blob
+	WHERE changes.entity = :entity
+	AND drafts.blob IS NULL
 ),
 deps (blob) AS (
-	SELECT DISTINCT hd_change_deps.parent
-	FROM hd_change_deps
-	JOIN non_drafts ON non_drafts.blob = hd_change_deps.child
+	SELECT DISTINCT change_deps.parent
+	FROM change_deps
+	JOIN non_drafts ON non_drafts.blob = change_deps.child
 )
 SELECT json_group_array(blob) AS heads
 FROM non_drafts
@@ -965,10 +947,10 @@ type ChangesGetTrustedHeadsJSONResult struct {
 }
 
 func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetTrustedHeadsJSONResult, error) {
-	const query = `SELECT json_group_array(hd_changes.blob) AS heads
-FROM hd_changes
-JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
-WHERE hd_changes.entity = :entity`
+	const query = `SELECT json_group_array(changes.blob) AS heads
+FROM changes
+JOIN trusted_accounts ON trusted_accounts.id = changes.author
+WHERE changes.entity = :entity`
 
 	var out ChangesGetTrustedHeadsJSONResult
 
@@ -993,12 +975,12 @@ WHERE hd_changes.entity = :entity`
 	return out, err
 }
 
-func ChangesDeleteForEntity(conn *sqlite.Conn, hdChangesEntity int64) error {
+func ChangesDeleteForEntity(conn *sqlite.Conn, changesEntity int64) error {
 	const query = `DELETE FROM blobs
-WHERE blobs.id IN (SELECT hd_changes.blob FROM hd_changes WHERE hd_changes.entity = :hdChangesEntity)`
+WHERE blobs.id IN (SELECT changes.blob FROM changes WHERE changes.entity = :changesEntity)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
+		stmt.SetInt64(":changesEntity", changesEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1014,24 +996,24 @@ WHERE blobs.id IN (SELECT hd_changes.blob FROM hd_changes WHERE hd_changes.entit
 }
 
 type ChangesGetInfoResult struct {
-	HDChangesBlob       int64
-	HDChangesHlcTime    int64
+	ChangesBlob         int64
+	ChangesHLCTime      int64
 	PublicKeysPrincipal []byte
 	IsTrusted           int64
 }
 
-func ChangesGetInfo(conn *sqlite.Conn, hdChangesBlob int64) (ChangesGetInfoResult, error) {
-	const query = `SELECT hd_changes.blob, hd_changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
-FROM hd_changes
-JOIN public_keys ON public_keys.id = hd_changes.author
-LEFT JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
-WHERE hd_changes.blob = :hdChangesBlob
+func ChangesGetInfo(conn *sqlite.Conn, changesBlob int64) (ChangesGetInfoResult, error) {
+	const query = `SELECT changes.blob, changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
+FROM changes
+JOIN public_keys ON public_keys.id = changes.author
+LEFT JOIN trusted_accounts ON trusted_accounts.id = changes.author
+WHERE changes.blob = :changesBlob
 LIMIT 1`
 
 	var out ChangesGetInfoResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangesBlob", hdChangesBlob)
+		stmt.SetInt64(":changesBlob", changesBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1039,8 +1021,8 @@ LIMIT 1`
 			return errors.New("ChangesGetInfo: more than one result return for a single-kind query")
 		}
 
-		out.HDChangesBlob = stmt.ColumnInt64(0)
-		out.HDChangesHlcTime = stmt.ColumnInt64(1)
+		out.ChangesBlob = stmt.ColumnInt64(0)
+		out.ChangesHLCTime = stmt.ColumnInt64(1)
 		out.PublicKeysPrincipal = stmt.ColumnBytes(2)
 		out.IsTrusted = stmt.ColumnInt64(3)
 		return nil
@@ -1059,16 +1041,16 @@ type ChangesGetDepsResult struct {
 	BlobsMultihash []byte
 }
 
-func ChangesGetDeps(conn *sqlite.Conn, hdChangeDepsChild int64) ([]ChangesGetDepsResult, error) {
+func ChangesGetDeps(conn *sqlite.Conn, changeDepsChild int64) ([]ChangesGetDepsResult, error) {
 	const query = `SELECT blobs.codec, blobs.multihash
-FROM hd_change_deps
-JOIN blobs ON blobs.id = hd_change_deps.parent
-WHERE hd_change_deps.child = :hdChangeDepsChild`
+FROM change_deps
+JOIN blobs ON blobs.id = change_deps.parent
+WHERE change_deps.child = :changeDepsChild`
 
 	var out []ChangesGetDepsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangeDepsChild", hdChangeDepsChild)
+		stmt.SetInt64(":changeDepsChild", changeDepsChild)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1091,32 +1073,32 @@ WHERE hd_change_deps.child = :hdChangeDepsChild`
 type ChangesInfoForEntityResult struct {
 	BlobsCodec          int64
 	BlobsMultihash      []byte
-	HDChangesBlob       int64
-	HDChangesHlcTime    int64
+	ChangesBlob         int64
+	ChangesHLCTime      int64
 	PublicKeysPrincipal []byte
 	IsTrusted           int64
 }
 
-func ChangesInfoForEntity(conn *sqlite.Conn, hdChangesEntity int64) ([]ChangesInfoForEntityResult, error) {
-	const query = `SELECT blobs.codec, blobs.multihash, hd_changes.blob, hd_changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
-FROM hd_changes
-JOIN blobs ON blobs.id = hd_changes.blob
-JOIN public_keys ON public_keys.id = hd_changes.author
-LEFT JOIN trusted_accounts ON trusted_accounts.id = hd_changes.author
-WHERE hd_changes.entity = :hdChangesEntity`
+func ChangesInfoForEntity(conn *sqlite.Conn, changesEntity int64) ([]ChangesInfoForEntityResult, error) {
+	const query = `SELECT blobs.codec, blobs.multihash, changes.blob, changes.hlc_time, public_keys.principal, trusted_accounts.id > 0 AS is_trusted
+FROM changes
+JOIN blobs ON blobs.id = changes.blob
+JOIN public_keys ON public_keys.id = changes.author
+LEFT JOIN trusted_accounts ON trusted_accounts.id = changes.author
+WHERE changes.entity = :changesEntity`
 
 	var out []ChangesInfoForEntityResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdChangesEntity", hdChangesEntity)
+		stmt.SetInt64(":changesEntity", changesEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesInfoForEntityResult{
 			BlobsCodec:          stmt.ColumnInt64(0),
 			BlobsMultihash:      stmt.ColumnBytes(1),
-			HDChangesBlob:       stmt.ColumnInt64(2),
-			HDChangesHlcTime:    stmt.ColumnInt64(3),
+			ChangesBlob:         stmt.ColumnInt64(2),
+			ChangesHLCTime:      stmt.ColumnInt64(3),
 			PublicKeysPrincipal: stmt.ColumnBytes(4),
 			IsTrusted:           stmt.ColumnInt64(5),
 		})
@@ -1132,64 +1114,43 @@ WHERE hd_changes.entity = :hdChangesEntity`
 	return out, err
 }
 
-func LinksInsert(conn *sqlite.Conn, hdLinksSourceBlob int64, hdLinksRel string, hdLinksTargetBlob int64, hdLinksTargetEntity int64, hdLinksData []byte) error {
-	const query = `INSERT OR IGNORE INTO hd_links (source_blob, rel, target_blob, target_entity, data)
-VALUES (:hdLinksSourceBlob, :hdLinksRel, NULLIF(:hdLinksTargetBlob, 0), NULLIF(:hdLinksTargetEntity, 0), :hdLinksData)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdLinksSourceBlob", hdLinksSourceBlob)
-		stmt.SetText(":hdLinksRel", hdLinksRel)
-		stmt.SetInt64(":hdLinksTargetBlob", hdLinksTargetBlob)
-		stmt.SetInt64(":hdLinksTargetEntity", hdLinksTargetEntity)
-		stmt.SetBytes(":hdLinksData", hdLinksData)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: LinksInsert: %w", err)
-	}
-
-	return err
-}
-
 type BacklinksForEntityResult struct {
-	ContentLinksViewData                []byte
-	ContentLinksViewRel                 string
-	ContentLinksViewSourceBlob          int64
-	ContentLinksViewSourceBlobCodec     int64
-	ContentLinksViewSourceBlobMultihash []byte
-	ContentLinksViewSourceEID           string
-	ContentLinksViewSourceEntity        int64
-	ContentLinksViewTargetEID           string
-	ContentLinksViewTargetEntity        int64
+	EntitiesID      int64
+	EntitiesEID     string
+	BlobsCodec      int64
+	BlobsMultihash  []byte
+	BlobAttrsBlob   int64
+	BlobAttrsKey    string
+	BlobAttrsAnchor string
+	BlobAttrsExtra  []byte
 }
 
-func BacklinksForEntity(conn *sqlite.Conn, contentLinksViewTargetEID string) ([]BacklinksForEntityResult, error) {
-	const query = `SELECT content_links_view.data, content_links_view.rel, content_links_view.source_blob, content_links_view.source_blob_codec, content_links_view.source_blob_multihash, content_links_view.source_eid, content_links_view.source_entity, content_links_view.target_eid, content_links_view.target_entity
-FROM content_links_view
-WHERE content_links_view.target_eid = :contentLinksViewTargetEID`
+func BacklinksForEntity(conn *sqlite.Conn, blobAttrsValuePtr int64) ([]BacklinksForEntityResult, error) {
+	const query = `SELECT entities.id, entities.eid, blobs.codec, blobs.multihash, blob_attrs.blob, blob_attrs.key, blob_attrs.anchor, blob_attrs.extra
+FROM blob_attrs
+JOIN changes ON changes.blob = blob_attrs.blob
+JOIN entities ON entities.id = changes.entity
+JOIN blobs ON blobs.id = blob_attrs.blob
+WHERE blob_attrs.key GLOB 'href/*'
+AND blob_attrs.value_ptr IS NOT NULL
+AND blob_attrs.value_ptr = :blobAttrsValuePtr`
 
 	var out []BacklinksForEntityResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":contentLinksViewTargetEID", contentLinksViewTargetEID)
+		stmt.SetInt64(":blobAttrsValuePtr", blobAttrsValuePtr)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, BacklinksForEntityResult{
-			ContentLinksViewData:                stmt.ColumnBytes(0),
-			ContentLinksViewRel:                 stmt.ColumnText(1),
-			ContentLinksViewSourceBlob:          stmt.ColumnInt64(2),
-			ContentLinksViewSourceBlobCodec:     stmt.ColumnInt64(3),
-			ContentLinksViewSourceBlobMultihash: stmt.ColumnBytes(4),
-			ContentLinksViewSourceEID:           stmt.ColumnText(5),
-			ContentLinksViewSourceEntity:        stmt.ColumnInt64(6),
-			ContentLinksViewTargetEID:           stmt.ColumnText(7),
-			ContentLinksViewTargetEntity:        stmt.ColumnInt64(8),
+			EntitiesID:      stmt.ColumnInt64(0),
+			EntitiesEID:     stmt.ColumnText(1),
+			BlobsCodec:      stmt.ColumnInt64(2),
+			BlobsMultihash:  stmt.ColumnBytes(3),
+			BlobAttrsBlob:   stmt.ColumnInt64(4),
+			BlobAttrsKey:    stmt.ColumnText(5),
+			BlobAttrsAnchor: stmt.ColumnText(6),
+			BlobAttrsExtra:  stmt.ColumnBytes(7),
 		})
 
 		return nil
@@ -1203,13 +1164,13 @@ WHERE content_links_view.target_eid = :contentLinksViewTargetEID`
 	return out, err
 }
 
-func DraftsInsert(conn *sqlite.Conn, hdDraftsEntity int64, hdDraftsBlob int64) error {
-	const query = `INSERT INTO hd_drafts (entity, blob)
-VALUES (:hdDraftsEntity, :hdDraftsBlob)`
+func DraftsInsert(conn *sqlite.Conn, draftsEntity int64, draftsBlob int64) error {
+	const query = `INSERT INTO drafts (entity, blob)
+VALUES (:draftsEntity, :draftsBlob)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdDraftsEntity", hdDraftsEntity)
-		stmt.SetInt64(":hdDraftsBlob", hdDraftsBlob)
+		stmt.SetInt64(":draftsEntity", draftsEntity)
+		stmt.SetInt64(":draftsBlob", draftsBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1225,22 +1186,23 @@ VALUES (:hdDraftsEntity, :hdDraftsBlob)`
 }
 
 type DraftsGetResult struct {
-	HDDraftsViewBlobID    int64
-	HDDraftsViewCodec     int64
-	HDDraftsViewEntity    string
-	HDDraftsViewEntityID  int64
-	HDDraftsViewMultihash []byte
+	DraftsViewBlobID    int64
+	DraftsViewCodec     int64
+	DraftsViewEntity    []byte
+	DraftsViewEntityID  int64
+	DraftsViewMultihash []byte
 }
 
-func DraftsGet(conn *sqlite.Conn, hdDraftsViewEntity string) (DraftsGetResult, error) {
-	const query = `SELECT hd_drafts_view.blob_id, hd_drafts_view.codec, hd_drafts_view.entity, hd_drafts_view.entity_id, hd_drafts_view.multihash
-FROM hd_drafts_view
-WHERE hd_drafts_view.entity = :hdDraftsViewEntity LIMIT 1`
+func DraftsGet(conn *sqlite.Conn, draftsViewEntity string) (DraftsGetResult, error) {
+	const query = `SELECT drafts_view.blob_id, drafts_view.codec, drafts_view.entity, drafts_view.entity_id, drafts_view.multihash
+FROM drafts_view
+WHERE drafts_view.entity = :draftsViewEntity
+LIMIT 1`
 
 	var out DraftsGetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":hdDraftsViewEntity", hdDraftsViewEntity)
+		stmt.SetText(":draftsViewEntity", draftsViewEntity)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1248,11 +1210,11 @@ WHERE hd_drafts_view.entity = :hdDraftsViewEntity LIMIT 1`
 			return errors.New("DraftsGet: more than one result return for a single-kind query")
 		}
 
-		out.HDDraftsViewBlobID = stmt.ColumnInt64(0)
-		out.HDDraftsViewCodec = stmt.ColumnInt64(1)
-		out.HDDraftsViewEntity = stmt.ColumnText(2)
-		out.HDDraftsViewEntityID = stmt.ColumnInt64(3)
-		out.HDDraftsViewMultihash = stmt.ColumnBytes(4)
+		out.DraftsViewBlobID = stmt.ColumnInt64(0)
+		out.DraftsViewCodec = stmt.ColumnInt64(1)
+		out.DraftsViewEntity = stmt.ColumnBytes(2)
+		out.DraftsViewEntityID = stmt.ColumnInt64(3)
+		out.DraftsViewMultihash = stmt.ColumnBytes(4)
 		return nil
 	}
 
@@ -1264,12 +1226,12 @@ WHERE hd_drafts_view.entity = :hdDraftsViewEntity LIMIT 1`
 	return out, err
 }
 
-func DraftsDelete(conn *sqlite.Conn, hdDraftsBlob int64) error {
-	const query = `DELETE FROM hd_drafts
-WHERE hd_drafts.blob = :hdDraftsBlob`
+func DraftsDelete(conn *sqlite.Conn, draftsBlob int64) error {
+	const query = `DELETE FROM drafts
+WHERE drafts.blob = :draftsBlob`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":hdDraftsBlob", hdDraftsBlob)
+		stmt.SetInt64(":draftsBlob", draftsBlob)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1284,13 +1246,13 @@ WHERE hd_drafts.blob = :hdDraftsBlob`
 	return err
 }
 
-func SetReindexTime(conn *sqlite.Conn, globalMetaValue string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
-VALUES ('last_reindex_time', :globalMetaValue)
+func SetReindexTime(conn *sqlite.Conn, kvValue string) error {
+	const query = `INSERT OR REPLACE INTO kv (key, value)
+VALUES ('last_reindex_time', :kvValue)
 `
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":globalMetaValue", globalMetaValue)
+		stmt.SetText(":kvValue", kvValue)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1306,13 +1268,13 @@ VALUES ('last_reindex_time', :globalMetaValue)
 }
 
 type GetReindexTimeResult struct {
-	GlobalMetaValue string
+	KVValue string
 }
 
 func GetReindexTime(conn *sqlite.Conn) (GetReindexTimeResult, error) {
-	const query = `SELECT global_meta.value
-FROM global_meta
-WHERE global_meta.key = 'last_reindex_time'
+	const query = `SELECT kv.value
+FROM kv
+WHERE kv.key = 'last_reindex_time'
 LIMIT 1`
 
 	var out GetReindexTimeResult
@@ -1325,7 +1287,7 @@ LIMIT 1`
 			return errors.New("GetReindexTime: more than one result return for a single-kind query")
 		}
 
-		out.GlobalMetaValue = stmt.ColumnText(0)
+		out.KVValue = stmt.ColumnText(0)
 		return nil
 	}
 

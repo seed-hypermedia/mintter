@@ -73,11 +73,11 @@ func getChange(conn *sqlite.Conn, c cid.Cid, id int64) (*entities.Change, error)
 	out = &entities.Change{
 		Id:         c.String(),
 		Author:     core.Principal(info.PublicKeysPrincipal).String(),
-		CreateTime: timestamppb.New(hlc.Unpack(info.HDChangesHlcTime).Time()),
+		CreateTime: timestamppb.New(hlc.Unpack(info.ChangesHLCTime).Time()),
 		IsTrusted:  info.IsTrusted > 0,
 	}
 
-	deps, err := hypersql.ChangesGetDeps(conn, info.HDChangesBlob)
+	deps, err := hypersql.ChangesGetDeps(conn, info.ChangesBlob)
 	if err != nil {
 		return nil, err
 	}
@@ -106,11 +106,11 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 		if err != nil {
 			return err
 		}
-		if eid.HDEntitiesID == 0 {
+		if eid.EntitiesID == 0 {
 			return errutil.NotFound("no such entity %s", in.Id)
 		}
 
-		changes, err := hypersql.ChangesInfoForEntity(conn, eid.HDEntitiesID)
+		changes, err := hypersql.ChangesInfoForEntity(conn, eid.EntitiesID)
 		if err != nil {
 			return err
 		}
@@ -127,13 +127,13 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 			chpb := &entities.Change{
 				Id:         cs,
 				Author:     core.Principal(ch.PublicKeysPrincipal).String(),
-				CreateTime: timestamppb.New(hlc.Unpack(ch.HDChangesHlcTime).Time()),
+				CreateTime: timestamppb.New(hlc.Unpack(ch.ChangesHLCTime).Time()),
 				IsTrusted:  ch.IsTrusted > 0,
 			}
 			heads[cs] = struct{}{}
 			out.ChangesByTime = append(out.ChangesByTime, cs)
 
-			deps, err := hypersql.ChangesGetDeps(conn, ch.HDChangesBlob)
+			deps, err := hypersql.ChangesGetDeps(conn, ch.ChangesBlob)
 			if err != nil {
 				return err
 			}

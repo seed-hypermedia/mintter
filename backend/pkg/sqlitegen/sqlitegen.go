@@ -11,24 +11,24 @@ import (
 	"golang.org/x/text/language"
 )
 
-var initialisms = map[string]struct{}{
-	"ip":   {},
-	"id":   {},
-	"http": {},
+var initialisms = map[string]string{
+	"ip":   "IP",
+	"id":   "ID",
+	"http": "HTTP",
 }
 
 // AddInitialism allows to add a custom initialism so that generated code knows about them.
 func AddInitialism(ss ...string) {
 	for _, s := range ss {
-		s = strings.ToLower(s)
-		initialisms[s] = struct{}{}
+		low := strings.ToLower(s)
+		initialisms[low] = s
 	}
 }
 
-func isInitialism(s string) bool {
+func getInitialism(s string) (out string, ok bool) {
 	s = strings.ToLower(s)
-	_, ok := initialisms[s]
-	return ok
+	out, ok = initialisms[s]
+	return out, ok
 }
 
 // QueryKind defines kinds of queries.
@@ -74,8 +74,8 @@ func GoNameFromSQLName(s string, exported bool) string {
 			continue
 		}
 
-		if isInitialism(p) {
-			parts[i] = strings.ToUpper(p)
+		if s, ok := getInitialism(p); ok {
+			parts[i] = s
 			continue
 		}
 

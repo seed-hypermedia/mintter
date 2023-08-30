@@ -2003,6 +2003,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:1.3.1, @bufbuild/protobuf@npm:^1.2.1":
+  version: 1.3.1
+  resolution: "@bufbuild/protobuf@npm:1.3.1"
+  checksum: 5ee96282a6259a222ccd0daf56bcab587918253750dda34c1bf2caad0d89bc3796970f7b55b1c7e25bae5d033c8e9dd687638675fe15cac7d9d6558ebfd4dfa8
+  languageName: node
+  linkType: hard
+
+"@bufbuild/protoc-gen-connect-es@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@bufbuild/protoc-gen-connect-es@npm:0.13.0"
+  dependencies:
+    "@bufbuild/protobuf": ^1.2.1
+    "@bufbuild/protoplugin": ^1.2.1
+  peerDependencies:
+    "@bufbuild/connect": 0.13.0
+    "@bufbuild/protoc-gen-es": ^1.2.1
+  peerDependenciesMeta:
+    "@bufbuild/connect":
+      optional: true
+    "@bufbuild/protoc-gen-es":
+      optional: true
+  bin:
+    protoc-gen-connect-es: bin/protoc-gen-connect-es
+  checksum: bd3acfdc6a0c13968998540f871e1d33375055f184669ca2f24654344394935837bf7943ae0872ee9cb79c2982402391c62a3bc0ae6505c3255eec5a214e3c82
+  languageName: node
+  linkType: hard
+
+"@bufbuild/protoc-gen-es@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "@bufbuild/protoc-gen-es@npm:1.3.1"
+  dependencies:
+    "@bufbuild/protoplugin": 1.3.1
+  peerDependencies:
+    "@bufbuild/protobuf": 1.3.1
+  peerDependenciesMeta:
+    "@bufbuild/protobuf":
+      optional: true
+  bin:
+    protoc-gen-es: bin/protoc-gen-es
+  checksum: 4f5a6afdfc926a160a017cd872a320eb9266c4f820cb6c8f066b79fe8a5b6eee67a82acd07de6702044d9ff1997c747d78e819d44faa190d1bdabe02f212c7ea
+  languageName: node
+  linkType: hard
+
+"@bufbuild/protoplugin@npm:1.3.1, @bufbuild/protoplugin@npm:^1.2.1":
+  version: 1.3.1
+  resolution: "@bufbuild/protoplugin@npm:1.3.1"
+  dependencies:
+    "@bufbuild/protobuf": 1.3.1
+    "@typescript/vfs": ^1.4.0
+    typescript: 4.5.2
+  checksum: a312943e89fdd90c13630f0e47e720ebe3e0c52fd11b7a414c83f2a21102ebdd98414a67314351fb86cda42f5674f030106a855147003ddb35b2741e82ade7da
+  languageName: node
+  linkType: hard
+
 "@callstack/repack-debugger-app@npm:^1.0.0":
   version: 1.0.2
   resolution: "@callstack/repack-debugger-app@npm:1.0.2"
@@ -10467,6 +10521,15 @@ __metadata:
     "@typescript-eslint/types": 6.4.1
     eslint-visitor-keys: ^3.4.1
   checksum: bd9cd56fc793e1d880c24193f939c4992b2653f330baece41cd461d1fb48edb2c53696987cba0e29074bbb452dd181fd009db92dd19060fdcc417ad76768f18a
+  languageName: node
+  linkType: hard
+
+"@typescript/vfs@npm:^1.4.0":
+  version: 1.5.0
+  resolution: "@typescript/vfs@npm:1.5.0"
+  dependencies:
+    debug: ^4.1.1
+  checksum: 09916e2fc567fe993fd81a34a48f72183b4c84d73a6bfdd8d4ca60ecd28de80fbb509b050f30513913b86270dc2abc759cffb4c0fd1068f7dd53104a1b0b7e27
   languageName: node
   linkType: hard
 
@@ -23004,6 +23067,8 @@ __metadata:
   resolution: "mintter@workspace:."
   dependencies:
     "@babel/runtime": 7.22.10
+    "@bufbuild/protoc-gen-connect-es": ^0.13.0
+    "@bufbuild/protoc-gen-es": ^1.3.1
     "@manypkg/cli": 0.19.2
     cross-env: 7.0.3
     eslint: 8.47.0
@@ -30128,6 +30193,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:4.5.2":
+  version: 4.5.2
+  resolution: "typescript@npm:4.5.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 74f9ce65d532bdf5d0214b3f60cf37992180023388c87a11ee6f838a803067ef0b63c600fa501b0deb07f989257dce1e244c9635ed79feca40bbccf6e0aa1ebc
+  languageName: node
+  linkType: hard
+
 "typescript@npm:5.1.6":
   version: 5.1.6
   resolution: "typescript@npm:5.1.6"
@@ -30158,23 +30233,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.1.6#~builtin<compat/typescript>":
-  version: 5.1.6
-  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=5da071"
+"typescript@patch:typescript@4.5.2#~builtin<compat/typescript>":
+  version: 4.5.2
+  resolution: "typescript@patch:typescript@npm%3A4.5.2#~builtin<compat/typescript>::version=4.5.2&hash=bcec9a"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: f53bfe97f7c8b2b6d23cf572750d4e7d1e0c5fff1c36d859d0ec84556a827b8785077bc27676bf7e71fae538e517c3ecc0f37e7f593be913d884805d931bc8be
+  checksum: e25e689eba64f7da7cfc43f8ea76cac7176b56caba42655f0a4cb29c0b7c36e67ca54f33df95902859f56108464245d8b45bcdfe21e3d66d9560feb8db780246
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@5.1.6#~builtin<compat/typescript>":
+  version: 5.1.6
+  resolution: "typescript@patch:typescript@npm%3A5.1.6#~builtin<compat/typescript>::version=5.1.6&hash=77c9e2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 21e88b0a0c0226f9cb9fd25b9626fb05b4c0f3fddac521844a13e1f30beb8f14e90bd409a9ac43c812c5946d714d6e0dee12d5d02dfc1c562c5aacfa1f49b606
   languageName: node
   linkType: hard
 
 "typescript@patch:typescript@^5.1.3#~builtin<compat/typescript>":
   version: 5.2.2
-  resolution: "typescript@patch:typescript@npm%3A5.2.2#~builtin<compat/typescript>::version=5.2.2&hash=f3b441"
+  resolution: "typescript@patch:typescript@npm%3A5.2.2#~builtin<compat/typescript>::version=5.2.2&hash=77c9e2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 0f4da2f15e6f1245e49db15801dbee52f2bbfb267e1c39225afdab5afee1a72839cd86000e65ee9d7e4dfaff12239d28beaf5ee431357fcced15fb08583d72ca
+  checksum: 07106822b4305de3f22835cbba949a2b35451cad50888759b6818421290ff95d522b38ef7919e70fb381c5fe9c1c643d7dea22c8b31652a717ddbd57b7f4d554
   languageName: node
   linkType: hard
 

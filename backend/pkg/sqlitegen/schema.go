@@ -33,7 +33,13 @@ func (s *Schema) GetColumnTable(c Column) Table {
 // It panics if column is unknown.
 func (s *Schema) GetColumnType(c Column) Type {
 	info := s.columnInfo(c)
-	return typeFromSQLType(info.SQLType)
+
+	t, ok := sqlTypes[info.SQLType]
+	if !ok {
+		panic(fmt.Errorf("unsupported SQL type %q for column %q", info.SQLType, c.String()))
+	}
+
+	return t
 }
 
 func (s *Schema) columnInfo(c Column) ColumnInfo {
@@ -129,15 +135,6 @@ var sqlTypes = map[string]Type{
 	"BLOB":    TypeBytes,
 }
 
-func typeFromSQLType(sqlType string) Type {
-	t, ok := sqlTypes[sqlType]
-	if !ok {
-		panic("unsupported SQL type " + sqlType)
-	}
-
-	return t
-}
-
 // IntrospectSchema attempt to infer the Schema from existing SQLite tables.
 // We only support base SQLite data types.
 func IntrospectSchema[T *sqlite.Conn | *sqlitex.Pool](db T) (Schema, error) {
@@ -161,7 +158,7 @@ SELECT
 	p.name AS column_name,
 	p.type AS column_type
 FROM sqlite_master AS m
-JOIN pragma_table_info(m.name) AS p
+JOIN pragma_table_xinfo(m.name) AS p
 ORDER BY m.name, p.cid
 `
 	var s Schema

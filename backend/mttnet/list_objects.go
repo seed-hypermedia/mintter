@@ -62,7 +62,7 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 		}
 
 		for _, l := range list {
-			eid := hyper.EntityID(l.HDChangesViewEntity)
+			eid := hyper.EntityID(l.ChangesViewEntity)
 			obj, ok := objs[eid]
 			if !ok {
 				obj = &p2p.Object{
@@ -71,7 +71,7 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 				objs[eid] = obj
 			}
 
-			c := cid.NewCidV1(uint64(l.HDChangesViewCodec), l.HDChangesViewMultihash)
+			c := cid.NewCidV1(uint64(l.ChangesViewCodec), l.ChangesViewMultihash)
 			obj.ChangeIds = append(obj.ChangeIds, c.String())
 		}
 
