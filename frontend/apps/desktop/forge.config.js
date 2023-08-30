@@ -54,16 +54,6 @@ const config = {
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
     beforeCopy: [setLanguages(['en', 'en_US'])],
-    osxSign: {
-      entitlements: './entitlements.plist',
-      executableName: 'Mintter',
-      entitlementsInherit: './entitlements.plist',
-      gatekeeperAssess: false,
-      hardenedRuntime: true,
-      identity:
-        'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
-      binaries: [daemonBinaryPath],
-    },
   },
   makers: [
     {
