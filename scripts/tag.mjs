@@ -26,7 +26,7 @@ function pushTag(tagName) {
     console.log('Tag created:', tagName);
   
     // Step 2: Push the tag to remote
-    // execSync(`git push origin ${tagName}`);
+    execSync(`git push origin ${tagName}`);
   
     console.log('Tag pushed:', tagName);
   } catch (error) {
