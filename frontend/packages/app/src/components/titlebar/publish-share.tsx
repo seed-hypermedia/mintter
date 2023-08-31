@@ -1,35 +1,23 @@
-import {Tooltip} from '@mintter/app/components/tooltip'
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
+import {usePublication, usePublishDraft} from '@mintter/app/models/documents'
 import {
-  EditorDraftState,
-  useDraft,
-  usePublication,
-  usePublishDraft,
-  useWriteDraftWebUrl,
-} from '@mintter/app/models/documents'
-import {
+  useDocumentGroups,
   useGroup,
   useGroups,
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
-import {useDocWebPublications, useSiteList} from '@mintter/app/models/sites'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {usePopoverState} from '@mintter/app/use-popover-state'
-import {getDocUrl} from '@mintter/shared'
 import {
   GroupPublicationRouteContext,
   NavContextProvider,
-  PublicationRouteContext,
   useNavRoute,
   useNavigate,
   useNavigation,
 } from '@mintter/app/utils/navigation'
-import {hostnameStripProtocol} from '@mintter/app/utils/site-hostname'
 import {
   Button,
   Check,
-  Copy,
   Dialog,
   DialogProps,
   DialogTitle,
@@ -42,15 +30,12 @@ import {
   Select,
   SizableText,
   Spinner,
-  Text,
   YStack,
 } from '@mintter/ui'
-import {ChevronDown, ChevronUp, Folder, Upload, X} from '@tamagui/lucide-icons'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {ChevronDown, ChevronUp, Folder, X} from '@tamagui/lucide-icons'
+import {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useAppDialog} from '../dialog'
 import DiscardDraftButton from './discard-draft-button'
-import {usePublicationDialog} from './publication-dialog'
 
 // function DraftPublicationDialog({
 //   draft,
@@ -191,7 +176,7 @@ function GroupPublishDialog({
         <Input id="path" value={pathName} onChangeText={setPathName} />
       </Fieldset>
 
-      <Fieldset gap="$4" horizontal borderColor="transparent">
+      <Fieldset gap="$2" horizontal borderColor="transparent">
         <Label htmlFor="group">Group</Label>
         <Select
           id="group-id"
@@ -252,6 +237,7 @@ function GroupPublishDialog({
 
 export function PubContextButton({}: {}) {
   const route = useNavRoute()
+  const nav = useNavigate('spawn')
   const documentId =
     route.key == 'publication'
       ? route.documentId
@@ -279,6 +265,7 @@ export function PubContextButton({}: {}) {
   //   : 'Public'
   const popoverState = usePopoverState(false)
   const dialogState = usePopoverState(false)
+  const {data: publishedGroups} = useDocumentGroups(documentId)
 
   const groupPubContext = pubContext?.key === 'group' ? pubContext : null
   const contextGroupId = groupPubContext?.groupId
@@ -319,11 +306,26 @@ export function PubContextButton({}: {}) {
           <YStack space="$3">
             {draftRoute && !groupPubContext ? (
               <>
-                <Text>Will Publish on the Public Web</Text>
+                <SizableText size="$2">
+                  Will Publish on the Public Web
+                </SizableText>
               </>
             ) : null}
-            {groupPubContext && groupPubContext ? (
-              <Text>Todo: show other group publications of this doc</Text>
+            {publishedGroups?.items.length ? (
+              <YStack>
+                <SizableText size="$1" fontWeight="bold">
+                  Published to:
+                </SizableText>
+                {publishedGroups.items.map((g) => (
+                  <Button
+                    key={g.groupId}
+                    size="$2"
+                    onPress={() => nav({key: 'group', groupId: g.groupId})}
+                  >
+                    {g.groupId}
+                  </Button>
+                ))}
+              </YStack>
             ) : null}
             {groupPubContext ? (
               <>
@@ -334,12 +336,12 @@ export function PubContextButton({}: {}) {
                   flexDirection="column"
                   alignItems="flex-start"
                 >
-                  <Text fontSize="$3" paddingTop="$2">
+                  <SizableText size="$3" lineHeight="$1" fontWeight="500">
                     {groupTitle}
-                  </Text>
-                  <Text paddingBottom="$2" fontSize={12} color="$color9">
+                  </SizableText>
+                  <SizableText size="$1" color="$color9" lineHeight={0}>
                     /{groupPubContext.pathName || documentId}
-                  </Text>
+                  </SizableText>
                 </Button>
               </>
             ) : null}
@@ -409,7 +411,7 @@ function PublishDialogInstance({
       }}
     >
       <Dialog.Trigger asChild>
-        <Button>Publish to Group</Button>
+        <Button size="$2">Publish to Group</Button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay

@@ -1,4 +1,6 @@
-export const HYPERDOCS_LINK_PREFIX = 'hd://d/'
+export const HYPERDOCS_DOCUMENT_PREFIX = 'hd://d/'
+export const HYPERDOCS_ACCOUNT_PREFIX = 'hd://a/'
+export const HYPERDOCS_GROUP_PREFIX = 'hd://g/'
 
 export function getIdsfromUrl(
   entry: string,
@@ -18,11 +20,11 @@ export function getIdsfromUrl(
     }
   }
 
-  if (!entry.startsWith(HYPERDOCS_LINK_PREFIX)) {
+  if (!entry.startsWith(HYPERDOCS_DOCUMENT_PREFIX)) {
     return [undefined, undefined, undefined]
   }
 
-  const [, restUrl] = entry.split(HYPERDOCS_LINK_PREFIX)
+  const [, restUrl] = entry.split(HYPERDOCS_DOCUMENT_PREFIX)
 
   if (restUrl.length <= 3) {
     return [undefined, undefined, undefined]

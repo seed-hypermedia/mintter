@@ -1,14 +1,16 @@
-import {useAccountPublicationList} from '@mintter/app/src/models/changes'
-import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
-import {toast} from '@mintter/app/src/toast'
-import {getAccountUrl} from '@mintter/app/src/utils/account-url'
-import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useAccountGroups} from '@mintter/app/models/groups'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import Footer from '@mintter/app/src/components/footer'
 import {OnlineIndicator} from '@mintter/app/src/components/indicator'
 import {PublicationListItem} from '@mintter/app/src/components/publication-list-item'
 import {Tooltip} from '@mintter/app/src/components/tooltip'
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
+import {useAccountPublicationList} from '@mintter/app/src/models/changes'
+import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
+import {toast} from '@mintter/app/src/toast'
+import {getAccountUrl} from '@mintter/app/src/utils/account-url'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/utils/navigation'
 import {abbreviateCid, pluralizer} from '@mintter/shared'
 import {
   Button,
@@ -18,7 +20,6 @@ import {
   MainWrapper,
   Popover,
   SizableText,
-  Text,
   XStack,
   YGroup,
   YStack,
@@ -57,6 +58,7 @@ function Section({children}: {children: ReactNode}) {
       borderBottomColor="black"
       borderColor="$gray6"
       paddingVertical="$4"
+      space
     >
       {children}
     </YStack>
@@ -127,9 +129,11 @@ function AccountTrustButton({
 
 export default function AccountPage() {
   const route = useNavRoute()
+  const nav = useNavigate('push')
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
+  const {data: groups} = useAccountGroups(accountId)
   const deviceCount = account.devices.length
   const connectedCount = account.devices?.filter((device) => device.isConnected)
     .length
@@ -182,7 +186,6 @@ export default function AccountPage() {
                           title={pluralizer(account.devices.length, 'Device')}
                           size="$1"
                           fontWeight="700"
-                          theme="mint"
                         />
                       </XStack>
                     </YGroup.Item>
@@ -208,8 +211,30 @@ export default function AccountPage() {
           {account.profile?.bio && (
             <Section>
               <SizableText size="$4">{account.profile?.bio}</SizableText>
+              {groups?.items.length ? (
+                <XStack alignItems="center" space>
+                  <SizableText size="$2" fontWeight="bold">
+                    Groups
+                  </SizableText>
+                  {groups.items.map((item) => (
+                    <Button
+                      size="$2"
+                      key={item.group?.id}
+                      theme="blue"
+                      onPress={() =>
+                        item.group
+                          ? nav({key: 'group', groupId: item.group.id})
+                          : null
+                      }
+                    >
+                      {item.group?.title}
+                    </Button>
+                  ))}
+                </XStack>
+              ) : null}
             </Section>
           )}
+
           <AccountDocuments
             isTrusted={account.isTrusted}
             accountId={accountId}

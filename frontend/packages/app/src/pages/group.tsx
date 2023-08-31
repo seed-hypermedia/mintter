@@ -1,4 +1,5 @@
 import Footer from '@mintter/app/src/components/footer'
+import {Document, getIdsfromUrl} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -13,6 +14,14 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Pencil, PlusCircle, Trash} from '@tamagui/lucide-icons'
+import {useState} from 'react'
+import {toast} from 'react-hot-toast'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {useAppDialog} from '../components/dialog'
+import {PublicationListItem} from '../components/publication-list-item'
+import {useMyAccount} from '../models/accounts'
+import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
   useGroup,
@@ -22,15 +31,6 @@ import {
   useRenameGroupDoc,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
-import {PublicationListItem} from '../components/publication-list-item'
-import {useDraftList, usePublication} from '../models/documents'
-import {Document, getIdsfromUrl} from '@mintter/shared'
-import {Pencil, PlusCircle, Trash} from '@tamagui/lucide-icons'
-import {AppDialog, useAppDialog} from '../components/dialog'
-import {useState} from 'react'
-import {toast} from 'react-hot-toast'
-import {useMyAccount} from '../models/accounts'
 
 function RenamePubDialog({
   input: {groupId, pathName},

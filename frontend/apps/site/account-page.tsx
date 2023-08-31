@@ -1,3 +1,4 @@
+import {HYPERDOCS_ACCOUNT_PREFIX} from '@mintter/shared'
 import {
   Avatar,
   Heading,
@@ -51,7 +52,10 @@ export default function AccountPage({accountId}: {accountId: string}) {
   return (
     <YStack flex={1}>
       <Head>
-        <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
+        <meta
+          name="hyperdocs-entity-id"
+          content={`${HYPERDOCS_ACCOUNT_PREFIX}${accountId}`}
+        />
       </Head>
       <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
       <PageSection.Root flex={1}>

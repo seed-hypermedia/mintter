@@ -1,7 +1,7 @@
+import {HYPERDOCS_DOCUMENT_PREFIX, Role} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
-import {Role} from '@mintter/shared'
 
 export function useGroups() {
   const grpcClient = useGRPCClient()
@@ -212,6 +212,32 @@ export function useGroupMembers(groupId: string) {
     queryKey: [queryKeys.GET_GROUP_MEMBERS, groupId],
     queryFn: async () => {
       return await grpcClient.groups.listMembers({id: groupId})
+    },
+  })
+}
+
+export function useDocumentGroups(documentId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    enabled: !!documentId,
+    queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
+    queryFn: () => {
+      return grpcClient.groups.listDocumentGroups({
+        documentId: `${HYPERDOCS_DOCUMENT_PREFIX}${documentId}`,
+      })
+    },
+  })
+}
+
+export function useAccountGroups(accountId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    enabled: !!accountId,
+    queryKey: [queryKeys.GET_GROUPS_FOR_ACCOUNT, accountId],
+    queryFn: () => {
+      return grpcClient.groups.listAccountGroups({
+        accountId,
+      })
     },
   })
 }
