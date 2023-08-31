@@ -129,20 +129,17 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           return false
         }
 
-        if (selection.empty && link && nativeHyperLink) {
+        if (selection.empty && nativeHyperLink) {
           let tr = view.state.tr
           let pos = tr.selection.from
           view.dispatch(
-            tr
-              .insertText(link.href, pos)
-              .addMark(
-                pos,
-                pos + link.href.length,
-                options.editor.schema.mark('link', {
-                  href: nativeHyperLink,
-                }),
-              )
-              .setMeta('link-placeholder', {remove: {link}}),
+            tr.insertText(nativeHyperLink, pos).addMark(
+              pos,
+              pos + nativeHyperLink.length,
+              options.editor.schema.mark('link', {
+                href: nativeHyperLink,
+              }),
+            ),
           )
           return true
         }
@@ -188,6 +185,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
 
         //   return true
         // }
+
         if (link && selection.empty) {
           // TODO: insert a link placeholder here
           let tr = view.state.tr
