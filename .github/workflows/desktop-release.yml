@@ -26,6 +26,7 @@ jobs:
           echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           # echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           # echo "version=0.0.100" >> "$GITHUB_OUTPUT"
+
   build-binaries:
     name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
     runs-on: ${{ matrix.config.os }}
@@ -94,6 +95,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k $APPLE_KEYCHAIN_PASSWORD build.keychain
           rm -fr *.p12
           security set-keychain-settings -lut 1200 # prevent the keychain to get locked before codesign is done
+
+      - name: Set temporal version in package.json
+        run: |
+          node scripts/set-desktop-version.mjs
+        env:
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
 
       - name: Build, package & make (Unix)
         if: matrix.config.os != 'windows-latest'
