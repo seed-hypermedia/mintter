@@ -291,7 +291,7 @@ describe('Editor: ', () => {
       const result = serverChildrenToEditorChildren([
         new BlockNode({
           block: new Block({
-            id: 'a',
+            id: 'ab',
             type: 'image',
             text: 'new alt image',
             annotations: [],
@@ -300,9 +300,10 @@ describe('Editor: ', () => {
           }),
         }),
       ])
+
       expect(result).toEqual([
         {
-          id: 'a',
+          id: 'ab',
           type: 'image',
           props: {
             url: 'ABC',
@@ -312,6 +313,7 @@ describe('Editor: ', () => {
             textAlignment: 'left',
             textColor: 'default',
           },
+          children: [],
           content: [{type: 'text', text: 'new alt image', styles: {}}],
         },
       ])
@@ -343,6 +345,7 @@ describe('Editor: ', () => {
             textAlignment: 'left',
             textColor: 'default',
           },
+          children: [],
         },
       ])
     })

@@ -6,21 +6,21 @@ on:
       - master
       - electron-ci
     paths:
-      - '.github/workflows/validate-site.yml'
-      - 'frontend/apps/site/**'
-      - 'frotend/packages/shared/**'
-      - 'frotend/packages/ui/**'
-      - 'package.json'
-      - 'frontend/apps/site/package.json'
+      - ".github/workflows/validate-site.yml"
+      - "frontend/apps/site/**"
+      - "frotend/packages/shared/**"
+      - "frotend/packages/ui/**"
+      - "package.json"
+      - "frontend/apps/site/package.json"
   pull_request:
     paths:
-      - '.github/workflows/validate-site.yml'
-      - 'frontend/apps/site/**'
-      - 'frotend/packages/**'
-      - 'package.json'
-      - 'frontend/apps/site/package.json'
+      - ".github/workflows/validate-site.yml"
+      - "frontend/apps/site/**"
+      - "frotend/packages/**"
+      - "package.json"
+      - "frontend/apps/site/package.json"
     branches-ignore:
-      - 'renovate/**'
+      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,7 +36,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install Frontend Dependencies
         env:

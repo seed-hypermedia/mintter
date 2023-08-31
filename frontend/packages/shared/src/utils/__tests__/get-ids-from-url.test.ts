@@ -62,7 +62,7 @@ describe('getIdsfromUrl', () => {
   })
 
   it('should handle Fully Qualified IDs', () => {
-    const result = getIdsfromUrl('hd://d/abc123')
+    const result = getIdsfromUrl('hm://d/abc123')
     expect(result).toEqual(['abc123', undefined, undefined])
     // Add more test cases here
   })

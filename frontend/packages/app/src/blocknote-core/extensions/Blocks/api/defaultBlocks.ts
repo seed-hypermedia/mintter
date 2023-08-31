@@ -1,5 +1,4 @@
-import {HDHeadingBlockContent} from '@mintter/app/src/editor/heading-component-plugin'
-import {HeadingBlockContent} from '../nodes/BlockContent/HeadingBlockContent/HeadingBlockContent'
+import {HDHeadingBlockContent} from '../../../../editor/heading-component-plugin'
 import {BulletListItemBlockContent} from '../nodes/BlockContent/ListItemBlockContent/BulletListItemBlockContent/BulletListItemBlockContent'
 import {NumberedListItemBlockContent} from '../nodes/BlockContent/ListItemBlockContent/NumberedListItemBlockContent/NumberedListItemBlockContent'
 import {ParagraphBlockContent} from '../nodes/BlockContent/ParagraphBlockContent/ParagraphBlockContent'
