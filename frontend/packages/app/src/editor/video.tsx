@@ -257,13 +257,22 @@ function VideoComponent({
           replace
         </Button>
       ) : null}
-      <video contentEditable={false} playsInline controls preload="metadata">
-        <source
-          src={`${BACKEND_FILE_URL}/${block.props.url}`}
-          type={getSourceType(block.props.name)}
-        />
-        Something is wrong with the video file.
-      </video>
+      {['.', '/', ':', 'http', 'https'].some((value) => block.props.url.includes(value)) ?
+        <div className='VideoContainer' >
+          <iframe
+            src={block.props.url}
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+        </div> : 
+        <video contentEditable={false} playsInline controls preload="metadata">
+          <source
+            src={`${BACKEND_FILE_URL}/${block.props.url}`}
+            type={getSourceType(block.props.name)}
+          />
+          Something is wrong with the video file.
+        </video>
+      }
     </YStack>
   )
 }
@@ -354,26 +363,21 @@ function VideoForm({
 
   const submitVideo = async (url: string) => {
     if (isValidUrl(url)) {
-      const blob = await fetch(url).then((res) => res.blob())
-      const webFile = new File(
-        [blob],
-        `mintterVideo.${blob.type.split('/').pop()}`,
-      )
-      if (webFile && webFile.size <= 62914560) {
-        const formData = new FormData()
-        formData.append('file', webFile)
-
-        try {
-          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-            method: 'POST',
-            body: formData,
-          })
-          const data = await response.text()
-          assign({props: {url: data, name: webFile.name}} as VideoType)
-        } catch (error) {
-          console.error(error)
-        }
-      } else setFileName({name: 'The file size exceeds 60 MB.', color: 'red'})
+      let embedUrl = ''
+      "https://www.youtube.com/embed"
+      if (url.includes('youtu.be')) {
+        const urlArray = url.split('/')
+        embedUrl = "https://www.youtube.com/embed/" + urlArray[urlArray.length - 1]
+      } else if (url.includes('youtube')) {
+        embedUrl = "https://www.youtube.com/embed/" + url.split('=')[1]
+      } else if (url.includes('vimeo')) {
+        const urlArray = url.split('/')
+        embedUrl = "https://player.vimeo.com/video/" + urlArray[urlArray.length - 1]
+      } else {
+        setFileName({name: 'Unsupported video source.', color: 'red'})
+        return
+      }
+      assign({props: {url: embedUrl}})
     } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
   }
 
