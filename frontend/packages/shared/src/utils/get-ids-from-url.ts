@@ -8,7 +8,7 @@ export function getIdsfromUrl(
     entry.startsWith('https://www.mintter.com/d/')
   ) {
     const urlPattern =
-      /^https:\/\/(www\.)?mintter\.com\/d\/(\w+)(\?v=(\w+))?(#([\w,:]+))?$/
+      /^https:\/\/(www\.)?mintter\.com\/d\/(\w+)(\?v=(\w+))?(#([\w,:-]+))?$/
     const match = entry.match(urlPattern)
     if (match) {
       const docId: string = match[2]
