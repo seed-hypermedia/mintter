@@ -54,16 +54,6 @@ const config = {
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
     beforeCopy: [setLanguages(['en', 'en_US'])],
-    osxSign: {
-      entitlements: './entitlements.plist',
-      executableName: 'Mintter',
-      entitlementsInherit: './entitlements.plist',
-      gatekeeperAssess: false,
-      hardenedRuntime: true,
-      identity:
-      'Developer ID Application: Mintter Technologies S.L. (XSKC6RJDD8)',
-      binaries: [daemonBinaryPath],
-    }
   },
   makers: [
     {
@@ -158,20 +148,27 @@ const config = {
 
 function notarizeMaybe() {
   if (process.platform !== 'darwin') {
+    console.log(
+      `[FORGE CONFIG]: 🍎 The platform we are building is not 'darwin'. skipping (platform: ${process.platform})`,
+    )
     return
   }
 
   if (!process.env.CI) {
-    // Not in CI, skipping notarization
+    console.log(`[FORGE CONFIG]: 🤖 Not in CI, skipping sign and notarization`)
     return
   }
 
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
     console.warn(
-      'Should be notarizing, but environment variables APPLE_ID or APPLE_ID_PASSWORD are missing!',
+      `[FORGE CONFIG]: ❌ Should be notarizing, but environment variables APPLE_ID or APPLE_ID_PASSWORD are missing!`,
     )
     return
   }
+
+  console.log(
+    `[FORGE CONFIG]: 🎉 adding 'osxNotarize' and 'osxSign' values to the config. Proceed to Sign and Notarize`,
+  )
 
   config.packagerConfig.osxNotarize = {
     tool: 'notarytool',
@@ -180,7 +177,7 @@ function notarizeMaybe() {
     teamId: process.env.APPLE_TEAM_ID,
   }
 
-  config.osxSign = {
+  config.packagerConfig.osxSign = {
     entitlements: './entitlements.plist',
     executableName: 'Mintter',
     entitlementsInherit: './entitlements.plist',
