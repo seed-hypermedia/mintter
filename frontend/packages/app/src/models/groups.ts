@@ -1,4 +1,4 @@
-import {HYPERDOCS_DOCUMENT_PREFIX, Role} from '@mintter/shared'
+import {HYPERMEDIA_DOCUMENT_PREFIX, Role} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
@@ -124,7 +124,9 @@ export function usePublishDocToGroup(
     }: PublishDocToGroupMutationInput) => {
       await grpcClient.groups.updateGroup({
         id: groupId,
-        updatedContent: {[pathName]: `hd://d/${docId}?v=${version}`},
+        updatedContent: {
+          [pathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${docId}?v=${version}`,
+        },
       })
     },
     onSuccess: (result, input, context) => {
@@ -223,7 +225,7 @@ export function useDocumentGroups(documentId?: string) {
     queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
     queryFn: () => {
       return grpcClient.groups.listDocumentGroups({
-        documentId: `${HYPERDOCS_DOCUMENT_PREFIX}${documentId}`,
+        documentId: `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`,
       })
     },
   })

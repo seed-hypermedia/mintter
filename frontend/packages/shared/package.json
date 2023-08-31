@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
-    "test": "echo TODO",
+    "test": "vitest --run",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

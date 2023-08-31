@@ -15,6 +15,7 @@ import {
   Block,
   Publication,
   entityIdToSitePath,
+  HYPERMEDIA_DOCUMENT_PREFIX,
 } from '@mintter/shared'
 import {
   Button,
@@ -210,7 +211,7 @@ export default function PublicationPage({
       <Head>
         <meta
           name="hyperdocs-entity-id"
-          content={`hd://d/${pub?.document?.id}`}
+          content={`${HYPERMEDIA_DOCUMENT_PREFIX}${pub?.document?.id}`}
         />
         <meta name="hyperdocs-entity-version" content={pub?.version} />
         <meta name="hyperdocs-entity-title" content={pub?.document?.title} />

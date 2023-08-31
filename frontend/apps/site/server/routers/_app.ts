@@ -4,6 +4,7 @@ import {
   Changes,
   ContentGraph,
   Groups,
+  HYPERMEDIA_GROUP_PREFIX,
   Publications,
   Role,
   WebPublishing,
@@ -245,7 +246,7 @@ const groupRouter = router({
     .query(async ({input: {pathName, groupEid, version}}) => {
       // todo. get current group content and find the pathName, return the corresponding doc
       console.log('getting site info')
-      const groupId = `hd://g/${groupEid}`
+      const groupId = `${HYPERMEDIA_GROUP_PREFIX}${groupEid}`
       const siteInfo = await groupsClient.listContent({
         id: groupId,
         version,
@@ -281,7 +282,7 @@ const groupRouter = router({
     .query(async ({input}) => {
       console.log('will getGroup with id', input)
       const group = await groupsClient.getGroup({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
       console.log('did get group', hdGroup(group))
       return {
@@ -296,7 +297,7 @@ const groupRouter = router({
     )
     .query(async ({input}) => {
       const list = await groupsClient.listContent({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
       const listedDocs = await Promise.all(
         Object.entries(list.content).map(async ([pathName, pubUrl]) => {
@@ -331,7 +332,7 @@ const groupRouter = router({
     )
     .query(async ({input}) => {
       const list = await groupsClient.listMembers({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
       return Object.entries(list.members || {}).map(([account, role]) => ({
         account,

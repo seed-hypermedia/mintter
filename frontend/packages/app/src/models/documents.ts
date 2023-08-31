@@ -29,6 +29,7 @@ import {
   Document,
   DocumentChange,
   GRPCClient,
+  HYPERMEDIA_DOCUMENT_PREFIX,
   ListPublicationsResponse,
   Publication,
   isHyperdocsScheme,
@@ -281,7 +282,7 @@ export function usePublishDraft(
         await grpcClient.groups.updateGroup({
           id: draftGroupContext.groupId,
           updatedContent: {
-            [publishPathName]: `hd://d/${publishedId}?v=${pub.version}`,
+            [publishPathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${publishedId}?v=${pub.version}`,
           },
         })
       }

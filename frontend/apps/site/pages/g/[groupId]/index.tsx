@@ -25,7 +25,11 @@ import {HDGroup, HDPublication} from 'server/json-hd'
 import {ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {Timestamp} from '@bufbuild/protobuf'
-import {entityIdToSitePath, formattedDate} from '@mintter/shared'
+import {
+  HYPERMEDIA_GROUP_PREFIX,
+  entityIdToSitePath,
+  formattedDate,
+} from '@mintter/shared'
 import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
 import {Paragraph} from 'tamagui'
@@ -179,7 +183,7 @@ export default function GroupPage({
           <>
             <meta
               name="hyperdocs-entity-id"
-              content={`hd://g/${loadedGroup.id}`}
+              content={`${HYPERMEDIA_GROUP_PREFIX}${loadedGroup.id}`}
             />
             <meta
               name="hyperdocs-entity-version"

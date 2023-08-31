@@ -1,6 +1,6 @@
 import {useAppContext} from '@mintter/app/src/app-context'
 import {NavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {getIdsfromUrl, HYPERDOCS_DOCUMENT_PREFIX} from '@mintter/shared'
+import {getIdsfromUrl, HYPERMEDIA_DOCUMENT_PREFIX} from '@mintter/shared'
 import {useMemo} from 'react'
 
 export function useOpenUrl() {
@@ -11,7 +11,7 @@ export function useOpenUrl() {
     return (url?: string, newWindow?: boolean) => {
       if (!url) return
 
-      if (url.startsWith(HYPERDOCS_DOCUMENT_PREFIX)) {
+      if (url.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
         const hdIds = getIdsfromUrl(url)
         if (!hdIds[0]) {
           throw new Error('Cannot parse Hyperdocs URL without document ID')

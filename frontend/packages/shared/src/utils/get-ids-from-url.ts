@@ -1,41 +1,80 @@
-export const HYPERDOCS_DOCUMENT_PREFIX = 'hd://d/'
-export const HYPERDOCS_ACCOUNT_PREFIX = 'hd://a/'
-export const HYPERDOCS_GROUP_PREFIX = 'hd://g/'
+export const HYPERMEDIA_DOCUMENT_PREFIX = 'hm://d/'
+export const HYPERMEDIA_ACCOUNT_PREFIX = 'hm://a/'
+export const HYPERMEDIA_GROUP_PREFIX = 'hm://g/'
+export const HYPERMEDIA_SITES_PATTERN =
+  /^https:\/\/(www\.)?([^/]+)\/(d|a|g)\/([^/?#]+)(\?.+)?(#.+)?$/
+
+export function matchesHypermediaPattern(url: string): boolean {
+  return HYPERMEDIA_SITES_PATTERN.test(url)
+
+  // Test cases
+  // const testCases = [
+  //   "https://mintter.com/d/foo",
+  //   "https://mintter.com/d/foo?v=bar",
+  //   "https://mintter.com/d/foo?v=bar#block",
+  //   "https://www.mintter.com/d/foo?v=bar#block",
+  //   "https://gabo.es/d/anotherpath",
+  //   "https://gabo.es/d/anotherpath?v=versionhere",
+  //   "https://gabo.es/d/anotherpath?v=bar#block",
+  //   "https://www.hhg.link/g/somegroupid",
+  //   "https://juligasa.es/a/accountid"
+  // ];
+}
+
+export function extractHypermediaWebsiteValues(url: string) {
+  const match = url.match(HYPERMEDIA_SITES_PATTERN)
+
+  if (!match) {
+    return null
+  }
+
+  const [, , hostname, pathType, docId, queryAndFragment] = match
+  const [query, fragment] = queryAndFragment ? queryAndFragment.split('#') : []
+
+  const versionMatch = query && query.match(/[?&]v=([^&]+)/)
+  const version = versionMatch ? versionMatch[1] : undefined
+
+  return {
+    hostname,
+    pathType,
+    docId,
+    version,
+    blockId: fragment || undefined,
+  }
+}
 
 export function getIdsfromUrl(
   entry: string,
 ): [docId: string | undefined, version?: string, blockId?: string] {
-  if (
-    entry.startsWith('https://mintter.com/d/') ||
-    entry.startsWith('https://www.mintter.com/d/')
-  ) {
-    const urlPattern =
-      /^https:\/\/(www\.)?mintter\.com\/d\/(\w+)(\?v=(\w+))?(#([\w,:-]+))?$/
-    const match = entry.match(urlPattern)
-    if (match) {
-      const docId: string = match[2]
-      const versionId: string | undefined = match[4]
-      const blockRef: string | undefined = match[5]
-      return [docId, versionId, blockRef]
+  console.log(`[getIdsfromUrl]: START -> ${entry}`)
+  if (matchesHypermediaPattern(entry)) {
+    const values = extractHypermediaWebsiteValues(entry)
+    if (values) {
+      let {docId, version, blockId} = values
+
+      console.log(
+        `[getIdsfromUrl]: entry match web sites pattern: ${entry} -> ${JSON.stringify(
+          values,
+        )}`,
+      )
+      return [docId, version, blockId]
     }
   }
 
-  if (!entry.startsWith(HYPERDOCS_DOCUMENT_PREFIX)) {
-    return [undefined, undefined, undefined]
+  if (entry.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
+    const [, restUrl] = entry.split(HYPERMEDIA_DOCUMENT_PREFIX)
+    if (restUrl.length > 3) {
+      const [docId, version, blockId] = restUrl.split('?v=')[0].split('#')
+      console.log(`[getIdsfromUrl]: entry match Fully Qualified ID: ${entry}`)
+      return [docId, version, blockId]
+    } else {
+      console.warn(
+        `[getIdsfromUrl]: entry match Fully Qualified ID, but does not satisfy the correct length: ${entry}`,
+      )
+    }
   }
 
-  const [, restUrl] = entry.split(HYPERDOCS_DOCUMENT_PREFIX)
+  console.warn(`[getIdsfromUrl]: entry does not match any pattern: ${entry}`)
 
-  if (restUrl.length <= 3) {
-    return [undefined, undefined, undefined]
-  }
-
-  const ids = restUrl.split('?')[0]
-  const [docId, oldVersion, oldBlockId] = ids.split('/')
-  const newVersion = entry.match(/\?v=([^#]*)/)?.[1]
-  const newBlockId = entry.match(/#(.*)$/)?.[1]
-  const version = oldVersion ?? newVersion // support old format for a while
-  const blockId = oldBlockId ?? newBlockId
-
-  return [docId, version, blockId]
+  return [undefined, undefined, undefined]
 }

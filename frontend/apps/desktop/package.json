@@ -50,7 +50,6 @@
     "zod": "3.22.2"
   },
   "devDependencies": {
-    "@sentry-internal/tracing": "^7.66.0",
     "@electron-forge/cli": "6.4.1",
     "@electron-forge/maker-deb": "6.4.1",
     "@electron-forge/maker-dmg": "6.4.1",
@@ -63,6 +62,7 @@
     "@mintter/prettier": "workspace:*",
     "@playwright/test": "1.37.1",
     "@reforged/maker-appimage": "3.3.1",
+    "@sentry-internal/tracing": "^7.66.0",
     "@tamagui/vite-plugin": "1.53.1",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
