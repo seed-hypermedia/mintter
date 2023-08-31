@@ -50,6 +50,7 @@
     "zod": "3.22.2"
   },
   "devDependencies": {
+    "@sentry-internal/tracing": "^7.66.0",
     "@electron-forge/cli": "6.4.1",
     "@electron-forge/maker-deb": "6.4.1",
     "@electron-forge/maker-dmg": "6.4.1",
