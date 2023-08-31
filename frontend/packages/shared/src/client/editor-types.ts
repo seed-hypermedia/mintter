@@ -1,4 +1,4 @@
-import {HDBlockChildrenType} from './hyperdocs-presentation'
+import {HMBlockChildrenType} from './hyperdocs-presentation'
 
 export type Styles = {
   bold?: true
@@ -37,7 +37,7 @@ export type PartialLink = Omit<Link, 'content'> & {
 export type InlineContent = StyledText | Link
 export type PartialInlineContent = StyledText | PartialLink
 export type EditorBlockProps<T = unknown> = {
-  childrenType?: HDBlockChildrenType
+  childrenType?: HMBlockChildrenType
   start?: string
   backgroundColor?: string
   textColor?: string

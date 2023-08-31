@@ -208,8 +208,8 @@ export default function GroupPage() {
           </YStack>
           <YStack paddingVertical="$2" gap="$2">
             {Object.entries(groupContent.data?.content || {}).map(
-              ([pathName, hdUrl]) => {
-                const [docId, version] = getIdsfromUrl(hdUrl)
+              ([pathName, hmUrl]) => {
+                const [docId, version] = getIdsfromUrl(hmUrl)
                 if (!docId || !version) return null
                 return (
                   <GroupContentItem

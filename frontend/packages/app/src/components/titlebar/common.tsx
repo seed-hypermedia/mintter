@@ -140,7 +140,7 @@ export function GroupOptionsButton() {
 
 function getReferenceUrlOfRoute(route: NavRoute) {
   if (route.key === 'group') {
-    const url = getPublicEntityUrl(route.groupId) // we use this because group IDs are full URLs with hd://g/ prefix, so this more generic conversion is available.
+    const url = getPublicEntityUrl(route.groupId) // we use this because group IDs are full URLs with hm://g/ prefix, so this more generic conversion is available.
     if (!url) return null
     return {
       label: 'Group URL',
@@ -148,7 +148,7 @@ function getReferenceUrlOfRoute(route: NavRoute) {
     }
   }
   if (route.key === 'publication') {
-    // docIds currently do not include this hd:// prefix so we use the specific doc url function
+    // docIds currently do not include this hm:// prefix so we use the specific doc url function
     const url = getPublicDocUrl(route.documentId, route.versionId)
     if (!url) return null
     return {

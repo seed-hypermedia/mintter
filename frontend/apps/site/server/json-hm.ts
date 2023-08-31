@@ -8,23 +8,23 @@ import type {
   Profile,
   Publication,
   SiteInfo,
-  HDTimestamp,
+  HMTimestamp,
   ChangeInfo,
   MttLink,
   Group,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
-export type HDChangeInfo = {
+export type HMChangeInfo = {
   id?: string
   author?: string
-  createTime?: HDTimestamp
+  createTime?: HMTimestamp
   version?: string
   deps?: string[]
 }
 
 export type ServerAnnotation = Annotation
-export type HDAnnotation = {
+export type HMAnnotation = {
   type?: string
   ref?: string
   attributes?: {[key: string]: string}
@@ -33,43 +33,43 @@ export type HDAnnotation = {
 }
 
 export type ServerBlock = Block
-export type HDBlock = {
+export type HMBlock = {
   id?: string
   type?: string
   text?: string
   ref?: string
   attributes?: {[key: string]: string}
-  annotations?: HDAnnotation[]
+  annotations?: HMAnnotation[]
   revision?: string
 }
 
 export type ServerBlockNode = BlockNode
-export type HDBlockNode = {
-  block?: HDBlock
-  children?: HDBlockNode[]
+export type HMBlockNode = {
+  block?: HMBlock
+  children?: HMBlockNode[]
 }
 
 export type ServerDocument = Document
-export type HDDocument = {
+export type HMDocument = {
   title?: string
   id?: string
   author?: string
   webUrl?: string
   editors?: string[]
-  children?: HDBlockNode[]
-  createTime?: HDTimestamp
-  updateTime?: HDTimestamp
-  publishTime?: HDTimestamp
+  children?: HMBlockNode[]
+  createTime?: HMTimestamp
+  updateTime?: HMTimestamp
+  publishTime?: HMTimestamp
 }
 
 export type ServerPublication = Publication
-export type HDPublication = {
-  document?: HDDocument
+export type HMPublication = {
+  document?: HMDocument
   version?: string
 }
 
 export type ServerSiteInfo = SiteInfo
-export type HDSiteInfo = {
+export type HMSiteInfo = {
   hostname?: string
   title?: string
   description?: string
@@ -77,36 +77,36 @@ export type HDSiteInfo = {
 }
 
 export type ServerDevice = Device
-export type HDDevice = {
+export type HMDevice = {
   deviceId?: string
 }
 
 export type ServerProfile = Profile
-export type HDProfile = {
+export type HMProfile = {
   alias?: string
   bio?: string
   avatar?: string
 }
 
 export type ServerAccount = Account
-export type HDAccount = {
+export type HMAccount = {
   id?: string
-  profile?: HDProfile
-  devices?: {[key: string]: HDDevice}
+  profile?: HMProfile
+  devices?: {[key: string]: HMDevice}
 }
 
 export type ServerGroup = Group
-export type HDGroup = {
+export type HMGroup = {
   id?: string
   title?: string
   description?: string
   ownerAccountId?: string
-  createTime?: HDTimestamp
+  createTime?: HMTimestamp
   version?: string
 }
 
 export type ServerLink = MttLink
-export type HDLink = {
+export type HMLink = {
   target?: {
     documentId?: string
     version?: string

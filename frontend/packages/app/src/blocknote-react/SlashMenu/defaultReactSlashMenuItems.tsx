@@ -3,7 +3,7 @@ import {
   DefaultBlockSchema,
   defaultSlashMenuItems,
 } from '@mintter/app/src/blocknote-core'
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {MdPreview} from 'react-icons/md'
 import {
   RiChatQuoteLine,
@@ -96,7 +96,7 @@ export const defaultReactSlashMenuItems = defaultSlashMenuItems
     if (!extraFields[item.name]) {
       return false
     }
-    return new ReactSlashMenuItem<HDBlockSchema>(
+    return new ReactSlashMenuItem<HMBlockSchema>(
       item.name,
       item.execute,
       item.aliases,

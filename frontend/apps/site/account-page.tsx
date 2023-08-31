@@ -10,12 +10,12 @@ import {
 } from '@mintter/ui'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
-import {HDAccount} from 'server/json-hd'
+import {HMAccount} from 'server/json-hm'
 import {SiteHead} from 'site-head'
 import {trpc} from 'trpc'
 import Footer from './footer'
 
-function AccountContent({account}: {account: HDAccount | null | undefined}) {
+function AccountContent({account}: {account: HMAccount | null | undefined}) {
   if (isEmptyObject(account?.profile)) {
     return <AccountNotFound account={account} />
   }

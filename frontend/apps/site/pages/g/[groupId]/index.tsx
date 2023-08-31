@@ -21,7 +21,7 @@ import {
   View,
   SimpleTooltip,
 } from '@mintter/ui'
-import {HDGroup, HDPublication} from 'server/json-hd'
+import {HMGroup, HMPublication} from '@mintter/ui'
 import {ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -79,7 +79,7 @@ function GroupMetadata({
   group,
   groupEid,
 }: {
-  group?: null | HDGroup
+  group?: null | HMGroup
   groupEid: string
 }) {
   if (!group) return null
@@ -140,8 +140,8 @@ function GroupContentItem({
   item,
   group,
 }: {
-  item: {pathName: string; publication: null | HDPublication}
-  group?: null | HDGroup
+  item: {pathName: string; publication: null | HMPublication}
+  group?: null | HMGroup
 }) {
   return (
     <ContentListItem

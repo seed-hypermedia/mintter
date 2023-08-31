@@ -16,7 +16,7 @@ import {
   useBlockNote,
 } from '@mintter/app/src/blocknote-react'
 import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
-import {HDBlockSchema, hdBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema, hmBlockSchema} from '@mintter/app/src/client/schema'
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {RightsideWidget} from '@mintter/app/src/components/rightside-block-widget'
 import {insertFile} from '@mintter/app/src/editor/file'
@@ -53,8 +53,8 @@ import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {useNavRoute} from '../utils/navigation'
 import {queryKeys} from './query-keys'
 
-export type HDBlock = Block<typeof hdBlockSchema>
-export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
+export type HMBlock = Block<typeof hmBlockSchema>
+export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
 
 function createEmptyChanges(): DraftChangesState {
   return {
@@ -314,7 +314,7 @@ export function usePublishDraft(
 
 export type EditorDraftState = {
   id: string
-  children: PartialBlock<typeof hdBlockSchema>[]
+  children: PartialBlock<typeof hmBlockSchema>[]
   title: string
   changes: DraftChangesState
   webUrl: string
@@ -340,7 +340,7 @@ function getTitleFromInline(children: InlineContent[]): string {
     .join('')
 }
 
-export function getTitleFromContent(children: HDBlock[]): string {
+export function getTitleFromContent(children: HMBlock[]): string {
   const topChild = children[0]
   if (!topChild) return ''
   return getTitleFromInline(topChild.content)
@@ -549,13 +549,13 @@ export function useDraftEditor(
     },
   })
 
-  let lastBlocks = useRef<Record<string, HDBlock>>({})
+  let lastBlocks = useRef<Record<string, HMBlock>>({})
   let lastBlockParent = useRef<Record<string, string>>({})
   let lastBlockLeftSibling = useRef<Record<string, string>>({})
   let isReady = useRef<boolean>(false)
 
   function prepareBlockObservations(
-    blocks: Block<typeof hdBlockSchema>[],
+    blocks: Block<typeof hmBlockSchema>[],
     parentId: string,
   ) {
     if (isReady.current) {
@@ -632,8 +632,8 @@ export function useDraftEditor(
     handleAfterReady()
   }
 
-  const editor = useBlockNote<typeof hdBlockSchema>({
-    onEditorContentChange(editor: BlockNoteEditor<typeof hdBlockSchema>) {
+  const editor = useBlockNote<typeof hmBlockSchema>({
+    onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
       if (!readyThings.current[0] || !readyThings.current[1]) return
 
@@ -645,7 +645,7 @@ export function useDraftEditor(
       //     (!['image', 'file'].includes(block.type) ||
       //       !block.props.url ||
       //       block.type !== 'embed' ||
-      //       block.props.ref !== 'hd://d/undefined')
+      //       block.props.ref !== 'hm://d/undefined')
       //     ? acc
       //     : [block].concat(acc)
       // }, [])
@@ -654,10 +654,10 @@ export function useDraftEditor(
       let possiblyRemovedBlockIds = new Set<string>(
         Object.keys(lastBlocks.current),
       )
-      const nextBlocks: Record<string, HDBlock> = {}
+      const nextBlocks: Record<string, HMBlock> = {}
       const moves: MoveBlockAction[] = []
       function observeBlocks(
-        blocks: Block<typeof hdBlockSchema>[],
+        blocks: Block<typeof hmBlockSchema>[],
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
@@ -753,7 +753,7 @@ export function useDraftEditor(
     uiFactories: {
       formattingToolbarFactory,
     },
-    blockSchema: hdBlockSchema,
+    blockSchema: hmBlockSchema,
     // @ts-expect-error
     slashCommands: [
       ...defaultReactSlashMenuItems.slice(0, 2),
@@ -963,13 +963,13 @@ export function usePublicationEditor(documentId: string, versionId?: string) {
   const openUrl = useOpenUrl()
 
   // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
-  const editor: HyperDocsEditor | null = useBlockNote<HDBlockSchema>({
+  const editor: HyperDocsEditor | null = useBlockNote<HMBlockSchema>({
     linkExtensionOptions: {
       queryClient,
       openUrl,
     },
     editable: false,
-    blockSchema: hdBlockSchema,
+    blockSchema: hmBlockSchema,
     onEditorReady: (e) => {
       readyThings.current[0] = e
       const readyPub = readyThings.current[1]
@@ -997,10 +997,10 @@ function extractEmbedRefOfLink(block: any): false | string {
     let leaf = block.content[0]
     if (leaf.type == 'link') {
       if (isMintterGatewayLink(leaf.href) || isHyperdocsScheme(leaf.href)) {
-        const hdLink = normalizeHyperdocsLink(leaf.href)
+        const hmLink = normalizeHyperdocsLink(leaf.href)
 
-        console.log(`== ~ extractEmbedRefOfLink ~ hdLink:`, hdLink)
-        if (hdLink) return hdLink
+        console.log(`== ~ extractEmbedRefOfLink ~ hmLink:`, hmLink)
+        if (hmLink) return hmLink
       }
     }
   }
@@ -1009,9 +1009,9 @@ function extractEmbedRefOfLink(block: any): false | string {
 
 function setGroupTypes(
   tiptap: Editor,
-  blocks: PartialBlock<typeof hdBlockSchema>[],
+  blocks: PartialBlock<typeof hmBlockSchema>[],
 ) {
-  blocks.forEach((block: PartialBlock<typeof hdBlockSchema>) => {
+  blocks.forEach((block: PartialBlock<typeof hmBlockSchema>) => {
     tiptap.state.doc.descendants((node: Node, pos: number) => {
       if (
         node.attrs.id === block.id &&

@@ -26,8 +26,8 @@ import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {
-  HDEditorContainer,
   HyperMediaEditorView,
+  HMEditorContainer,
 } from '@mintter/app/src/editor/editor'
 import {useLatestPublication} from '../models/documents'
 import {useDocumentGroups} from '../models/groups'
@@ -82,10 +82,10 @@ export default function PublicationPage() {
               <YStack height="100%">
                 <MainWrapper>
                   {publication.editor && (
-                    <HDEditorContainer>
+                    <HMEditorContainer>
                       <HyperMediaEditorView editor={publication.editor} />
                       <DebugData data={publication.data} />
-                    </HDEditorContainer>
+                    </HMEditorContainer>
                   )}
 
                   {versionId && (

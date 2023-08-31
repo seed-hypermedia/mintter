@@ -9,7 +9,7 @@ import {
   InlineContent,
   Styles,
 } from '@mintter/app/src/blocknote-core'
-import {hdBlockSchema} from './schema'
+import {hmBlockSchema} from './schema'
 import {TextAnnotation} from '@mintter/shared'
 
 function styleMarkToAnnotationType(
@@ -113,7 +113,7 @@ export function extractContent(content: InlineContent[]): {
 }
 
 export function editorBlockToServerBlock(
-  editorBlock: EditorBlock<typeof hdBlockSchema>,
+  editorBlock: EditorBlock<typeof hmBlockSchema>,
 ): ServerBlock {
   if (!editorBlock.id) throw new Error('this block has no id')
 
@@ -195,7 +195,7 @@ export function editorBlockToServerBlock(
 
 function extractChildrenType(
   block: ServerBlock,
-  editorBlock: EditorBlock<typeof hdBlockSchema>,
+  editorBlock: EditorBlock<typeof hmBlockSchema>,
 ): ServerBlock {
   if (editorBlock.props.childrenType) {
     block.attributes.childrenType = editorBlock.props.childrenType

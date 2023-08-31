@@ -8,7 +8,7 @@ import {FileBlock} from '@mintter/app/src/editor/file'
 import {ImageBlock} from '@mintter/app/src/editor/image'
 import {VideoBlock} from '@mintter/app/src/editor/video'
 
-export const hdBlockSchema: BlockSchema = {
+export const hmBlockSchema: BlockSchema = {
   paragraph: defaultBlockSchema.paragraph,
   heading: defaultBlockSchema.heading,
   image: ImageBlock,
@@ -17,4 +17,4 @@ export const hdBlockSchema: BlockSchema = {
   file: FileBlock,
 }
 
-export type HDBlockSchema = TypesMatch<typeof hdBlockSchema>
+export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>

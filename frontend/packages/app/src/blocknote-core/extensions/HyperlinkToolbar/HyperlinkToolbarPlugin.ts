@@ -228,7 +228,7 @@ class HyperlinkToolbarView {
           this.hyperlinkMarkRange!.from,
           this.hyperlinkMarkRange!.from + text.length,
           this.editor.schema.mark('link', {href: url, id}),
-        ).setMeta('hdPlugin:uncheckedLink', id)
+        ).setMeta('hmPlugin:uncheckedLink', id)
         this.editor.view.dispatch(tr)
         this.editor.view.focus()
 

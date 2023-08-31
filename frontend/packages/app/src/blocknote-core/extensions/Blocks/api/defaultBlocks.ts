@@ -1,4 +1,4 @@
-import {HDHeadingBlockContent} from '../../../../editor/heading-component-plugin'
+import {HMHeadingBlockContent} from '../../../../editor/heading-component-plugin'
 import {BulletListItemBlockContent} from '../nodes/BlockContent/ListItemBlockContent/BulletListItemBlockContent/BulletListItemBlockContent'
 import {NumberedListItemBlockContent} from '../nodes/BlockContent/ListItemBlockContent/NumberedListItemBlockContent/NumberedListItemBlockContent'
 import {ParagraphBlockContent} from '../nodes/BlockContent/ParagraphBlockContent/ParagraphBlockContent'
@@ -32,7 +32,7 @@ export const defaultBlockSchema = {
       ...defaultProps,
       level: {default: '2', values: ['1', '2', '3'] as const},
     },
-    node: HDHeadingBlockContent,
+    node: HMHeadingBlockContent,
   },
   bulletListItem: {
     propSchema: defaultProps,

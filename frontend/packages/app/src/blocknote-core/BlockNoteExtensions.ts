@@ -1,4 +1,4 @@
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {createRightsideBlockWidgetExtension} from '@mintter/app/src/components/rightside-block-widget'
 import {WidgetDecorationFactory} from '@prosemirror-adapter/core'
 import {Extensions, extensions} from '@tiptap/core'
@@ -45,7 +45,7 @@ import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
 import {SuggestionsMenuFactory} from './shared/plugins/suggestion/SuggestionsMenuFactoryTypes'
 
-export type UiFactories<BSchema extends HDBlockSchema> = Partial<{
+export type UiFactories<BSchema extends HMBlockSchema> = Partial<{
   formattingToolbarFactory: FormattingToolbarFactory<BSchema>
   hyperlinkToolbarFactory: HyperlinkToolbarFactory
   slashMenuFactory: SuggestionsMenuFactory<BaseSlashMenuItem<BSchema>>
@@ -56,7 +56,7 @@ export type UiFactories<BSchema extends HDBlockSchema> = Partial<{
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
  */
-export const getBlockNoteExtensions = <BSchema extends HDBlockSchema>(opts: {
+export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   editable?: boolean
   editor: BlockNoteEditor<BSchema>
   domAttributes: Partial<BlockNoteDOMAttributes>

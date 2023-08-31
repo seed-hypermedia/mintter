@@ -162,7 +162,7 @@ export function autolink(options: AutolinkOptions): Plugin {
                 return
               }
               let id = nanoid(8)
-              tr.setMeta('hdPlugin:uncheckedLink', id)
+              tr.setMeta('hmPlugin:uncheckedLink', id)
               tr.addMark(
                 link.from,
                 link.to,

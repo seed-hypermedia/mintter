@@ -132,12 +132,12 @@ export const Link = Mark.create<LinkOptions>({
 
   renderHTML({HTMLAttributes, mark}) {
     const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)
-    const isHD = isHyperdocsScheme(HTMLAttributes.href)
+    const isHM = isHyperdocsScheme(HTMLAttributes.href)
     return [
       'span',
       {
         ...attrs,
-        class: `${attrs.class} ${isHD ? 'hd-link' : ''}`,
+        class: `${attrs.class} ${isHM ? 'hm-link' : ''}`,
       },
       0,
     ]

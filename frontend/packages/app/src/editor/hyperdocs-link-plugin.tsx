@@ -29,19 +29,19 @@ export function createHyperdocsDocLinkPlugin(queryClient: AppQueryClient) {
         return new Map()
       },
       apply(tr, map, oldState, newState) {
-        let removeKey: string = tr.getMeta('hdPlugin:removeId')
+        let removeKey: string = tr.getMeta('hmPlugin:removeId')
         if (removeKey) {
           map.delete(removeKey)
         }
         if (!tr.docChanged) return map
-        let linkId = tr.getMeta('hdPlugin:uncheckedLink')
+        let linkId = tr.getMeta('hmPlugin:uncheckedLink')
         if (!linkId) return map
         let markStep = tr.steps.find((step) => {
           // @ts-expect-error
           if (step.jsonID == 'addMark') {
             let mark = step.toJSON().mark
             if (mark.type == 'link' && mark.attrs.id == linkId) {
-              console.log('== ~ hdlink is link mark: ', step.toJSON().mark)
+              console.log('== ~ hmlink is link mark: ', step.toJSON().mark)
               return true
             }
           }
@@ -75,7 +75,7 @@ async function checkHyperLink(
 > {
   let [id, entryUrl] = entry
   if (!entryUrl) return
-  view.dispatch(view.state.tr.setMeta('hdPlugin:removeId', id))
+  view.dispatch(view.state.tr.setMeta('hmPlugin:removeId', id))
   try {
     let res = await fetchWebLink(queryClient, entryUrl)
     if (res && res.documentId) {
@@ -93,16 +93,16 @@ async function checkHyperLink(
               ),
             }),
           )
-          tr.setMeta('hdPlugin:removeId', id)
+          tr.setMeta('hmPlugin:removeId', id)
 
           view.dispatch(tr)
         }
       })
     } else {
-      console.log('== ~ hdlink ~ CHECK LINK RESOLVE NO LINK:', res)
+      console.log('== ~ hmlink ~ CHECK LINK RESOLVE NO LINK:', res)
     }
   } catch (error) {
-    console.log('== ~ hdlink ~ CHECK LINK ERROR:', error)
+    console.log('== ~ hmlink ~ CHECK LINK ERROR:', error)
   }
 
   return

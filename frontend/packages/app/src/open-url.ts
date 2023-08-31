@@ -12,15 +12,15 @@ export function useOpenUrl() {
       if (!url) return
 
       if (url.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
-        const hdIds = getIdsfromUrl(url)
-        if (!hdIds[0]) {
+        const hmIds = getIdsfromUrl(url)
+        if (!hmIds[0]) {
           throw new Error('Cannot parse Hyperdocs URL without document ID')
         }
         const pubRoute: NavRoute = {
           key: 'publication',
-          documentId: hdIds[0],
-          versionId: hdIds[1],
-          blockId: hdIds[2],
+          documentId: hmIds[0],
+          versionId: hmIds[1],
+          blockId: hmIds[2],
         }
         if (newWindow) {
           spawn(pubRoute)

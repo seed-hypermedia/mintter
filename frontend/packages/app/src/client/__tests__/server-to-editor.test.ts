@@ -330,7 +330,7 @@ describe('Editor: ', () => {
             text: '',
             annotations: [],
             attributes: {},
-            ref: 'hd://foobar',
+            ref: 'hm://foobar',
           }),
         }),
       ])
@@ -339,7 +339,7 @@ describe('Editor: ', () => {
           id: 'a',
           type: 'embed',
           props: {
-            ref: 'hd://foobar',
+            ref: 'hm://foobar',
             // junk:
             backgroundColor: 'default',
             textAlignment: 'left',
@@ -359,14 +359,14 @@ describe('Editor: ', () => {
   //         annotations: [
   //           {
   //             type: 'embed',
-  //             ref: 'hd://foobar',
+  //             ref: 'hm://foobar',
   //             starts: [0],
   //             ends: [1],
   //           },
   //         ],
   //       }),
   //     )
-  //     expect(result).toEqual([{type: 'embed', ref: 'hd://foobar'}])
+  //     expect(result).toEqual([{type: 'embed', ref: 'hm://foobar'}])
   //   })
 
   //   test('overlapping annotations + embed', () => {
@@ -381,7 +381,7 @@ describe('Editor: ', () => {
   //           },
   //           {
   //             type: 'embed',
-  //             ref: 'hd://foobar',
+  //             ref: 'hm://foobar',
   //             starts: [3],
   //             ends: [4],
   //           },
@@ -396,7 +396,7 @@ describe('Editor: ', () => {
   //     expect(result).toEqual([
   //       {text: 'A', type: 'text', styles: {}},
   //       {text: 'BC', type: 'text', styles: {bold: true}},
-  //       {type: 'embed', ref: 'hd://foobar'},
+  //       {type: 'embed', ref: 'hm://foobar'},
   //       {text: 'DE', type: 'text', styles: {italic: true}},
   //     ])
   //   })

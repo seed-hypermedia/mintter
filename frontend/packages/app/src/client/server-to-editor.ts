@@ -4,7 +4,7 @@ import {
   EditorChildrenType,
   ServerToEditorRecursiveOpts,
 } from '@mintter/shared'
-import {hdBlockSchema} from './schema'
+import {hmBlockSchema} from './schema'
 import {
   serverBlockNodeToEditorParagraph as _serverBlockNodeToEditorParagraph,
   serverBlockToHeading as _serverBlockToHeading,
@@ -14,14 +14,14 @@ import {
 export function serverBlockNodeToEditorParagraph(
   serverBlock: BlockNode,
   opts: ServerToEditorRecursiveOpts,
-): PartialBlock<typeof hdBlockSchema> {
+): PartialBlock<typeof hmBlockSchema> {
   return _serverBlockNodeToEditorParagraph(serverBlock, opts)
 }
 
 export function serverBlockToHeading(
   serverBlock: BlockNode,
   opts?: ServerToEditorRecursiveOpts,
-): PartialBlock<typeof hdBlockSchema> {
+): PartialBlock<typeof hmBlockSchema> {
   return _serverBlockToHeading(serverBlock, opts)
 }
 
@@ -30,6 +30,6 @@ export function serverChildrenToEditorChildren(
   opts?: ServerToEditorRecursiveOpts & {
     childrenType?: EditorChildrenType
   },
-): PartialBlock<typeof hdBlockSchema>[] {
+): PartialBlock<typeof hmBlockSchema>[] {
   return _serverChildrenToEditorChildren(children, opts)
 }
