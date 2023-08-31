@@ -129,6 +129,24 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           return false
         }
 
+        if (selection.empty && link && nativeHyperLink) {
+          let tr = view.state.tr
+          let pos = tr.selection.from
+          view.dispatch(
+            tr
+              .insertText(link.href, pos)
+              .addMark(
+                pos,
+                pos + link.href.length,
+                options.editor.schema.mark('link', {
+                  href: nativeHyperLink,
+                }),
+              )
+              .setMeta('link-placeholder', {remove: {link}}),
+          )
+          return true
+        }
+
         // if (nativeHyperLink && selection.empty) {
         //   const placeholder = '...'
         //   options.editor.commands.insertContent(
@@ -170,7 +188,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
 
         //   return true
         // }
-
         if (link && selection.empty) {
           // TODO: insert a link placeholder here
           let tr = view.state.tr
@@ -227,7 +244,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   .setMeta('link-placeholder', {remove: {link}}),
               )
             })
-
           return true
         }
 
@@ -289,7 +305,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
   function findPlaceholder(state: EditorState, url: string) {
     let decos = pastePlugin.getState(state)
     if (!decos) return null
-    // @ts-expect-error
     let found = decos.find(null, null, (spec) => spec.link.href == url)
     return found.length ? found[0].from : null
   }

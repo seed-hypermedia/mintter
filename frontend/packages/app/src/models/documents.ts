@@ -675,6 +675,9 @@ export function useDraftEditor(
                 ref: embedRef,
               },
             })
+            editor.setTextCursorPosition(
+              editor.getTextCursorPosition().nextBlock!,
+            )
           }
           possiblyRemovedBlockIds.delete(block.id)
           const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
