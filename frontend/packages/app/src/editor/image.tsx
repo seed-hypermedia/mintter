@@ -246,7 +246,7 @@ function ImageComponent({
                 } as ImageType)
               }
               hoverStyle={{
-                backgroundColor: "$backgroundTransparent"
+                backgroundColor: '$backgroundTransparent',
               }}
             >
               replace
@@ -261,7 +261,7 @@ function ImageComponent({
               width={50}
               onPress={saveImage}
               hoverStyle={{
-                backgroundColor: "$backgroundTransparent"
+                backgroundColor: '$backgroundTransparent',
               }}
             >
               save

@@ -256,7 +256,7 @@ function FileComponent({
               } as FileType)
             }
             hoverStyle={{
-              backgroundColor: "$backgroundTransparent"
+              backgroundColor: '$backgroundTransparent',
             }}
           >
             replace
@@ -271,7 +271,7 @@ function FileComponent({
             width={50}
             onPress={saveFile}
             hoverStyle={{
-              backgroundColor: "$backgroundTransparent"
+              backgroundColor: '$backgroundTransparent',
             }}
           >
             save
@@ -297,7 +297,12 @@ function FileComponent({
         >
           {block.props.name}
         </SizableText>
-        <SizableText paddingTop="$1" color="$color10" size="$2" minWidth="4.5em">
+        <SizableText
+          paddingTop="$1"
+          color="$color10"
+          size="$2"
+          minWidth="4.5em"
+        >
           {formatBytes(parseInt(block.props.size))}
         </SizableText>
       </Button>
