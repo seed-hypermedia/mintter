@@ -2,7 +2,7 @@ import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
 import '@mintter/app/src/blocknote-core/style.css'
 import {
   HDEditorContainer,
-  HyperDocsEditorView,
+  HyperMediaEditorView,
 } from '@mintter/app/src/editor/editor'
 import {useDraftEditor} from '@mintter/app/src/models/documents'
 import {useDaemonReady} from '@mintter/app/src/node-status-context'
@@ -33,9 +33,9 @@ export default function DraftPage() {
       onReset={() => window.location.reload()}
     >
       <MainWrapper>
+        {!isDaemonReady ? <NotSavingBanner /> : null}
         <HDEditorContainer>
-          {!isDaemonReady ? <NotSavingBanner /> : null}
-          {editor && <HyperDocsEditorView editor={editor} />}
+          {editor && <HyperMediaEditorView editor={editor} />}
           {debugValue && <DebugData data={debugValue} />}
         </HDEditorContainer>
       </MainWrapper>
