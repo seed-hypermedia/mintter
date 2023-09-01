@@ -64,15 +64,15 @@ export function CitationsAccessory({
   const {data: citations} = useDocCitations(docId)
   if (!docId) return null
   const count = citations?.links?.length || 0
-  
-  const citationSet = new Set();
-  const distinctCitations = citations?.links.filter(item => {
-  if (!citationSet.has(item?.source?.documentId)) {
-    citationSet.add(item?.source?.documentId);
-    return true;
-  }
-    return false;
-  });
+
+  const citationSet = new Set()
+  const distinctCitations = citations?.links.filter((item) => {
+    if (!citationSet.has(item?.source?.documentId)) {
+      citationSet.add(item?.source?.documentId)
+      return true
+    }
+    return false
+  })
 
   // TODO: This code also filters citations based on version of document where citation is used and on blockId, which was cited.
   // The current code will show only distinct documents, but if the first citation was in old version, it will point to the old version, which I feel is not good.
@@ -80,15 +80,15 @@ export function CitationsAccessory({
   // const distinctCitations = citations?.links?.map(item => {
   //   const { source, target } = item;
   //   const combination = `${source?.documentId}-${source?.version}-${target?.blockId}`;
-  
+
   //   if (!citationSet.has(combination)) {
   //     citationSet.add(combination);
   //     return item
   //   }
-  
+
   //   return null;
   // }).filter(item => item !== null);
-  
+
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
       {distinctCitations?.map((link) => (
