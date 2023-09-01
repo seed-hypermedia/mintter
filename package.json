@@ -21,9 +21,6 @@
     "fix": "manypkg fix",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/desktop --exclude @mintter/docs -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
-    "tauri": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run dev",
-    "tauri:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
-    "tauri:prod": "yarn workspace @mintter/desktop build",
     "docs": "yarn workspace @mintter/docs start"
   },
   "repository": "github:mintterteam/mintter",
