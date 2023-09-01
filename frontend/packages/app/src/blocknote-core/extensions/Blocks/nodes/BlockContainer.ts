@@ -383,10 +383,12 @@ export const BlockContainer = Node.create<{
           if (posInBlock < 0) posInBlock = state.selection.from
           const $pos = state.doc.resolve(posInBlock)
           const maxDepth = $pos.depth
+          // Set group to first node found at position
           let group = $pos.node(maxDepth)
           let container
           let depth = maxDepth
 
+          // Find block group, block container and depth it is at
           while (true) {
             if (depth < 0) {
               break
@@ -404,25 +406,33 @@ export const BlockContainer = Node.create<{
             group = $pos.node(depth)
           }
 
-          if ($pos.node(depth - 1).type.name === 'doc') {
-            if (
-              group.firstChild &&
-              container &&
-              group.firstChild.attrs.id !== container.attrs.id
-            ) {
-              setTimeout(() => {
-                this.editor
-                  .chain()
-                  .sinkListItem('blockContainer')
-                  .UpdateGroup(-1, listType, start)
-                  .run()
+          // If block is first block in the document do nothing
+          if (
+            $pos.node(depth - 1).type.name === 'doc' &&
+            group.firstChild?.attrs.id === container.attrs.id
+          )
+            return false
 
-                return true
-              })
-            }
+          // If block is not the first in its' group, sink list item and then update group
+          if (
+            group.firstChild &&
+            container &&
+            group.firstChild.attrs.id !== container.attrs.id
+          ) {
+            setTimeout(() => {
+              this.editor
+                .chain()
+                .sinkListItem('blockContainer')
+                .UpdateGroup(-1, listType, start)
+                .run()
+
+              return true
+            })
+
             return false
           }
 
+          // If inserting other list type in another list, sink list item and then update group
           if (
             group.attrs.listType !== 'div' &&
             group.attrs.listType !== listType &&
