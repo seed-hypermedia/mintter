@@ -4,7 +4,7 @@ import {
 } from '@mintter/app/src/models/content-graph'
 import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {pluralS} from '@mintter/shared'
+import {LinkNode, pluralS} from '@mintter/shared'
 import {Button, SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {AccessoryContainer} from './accessory-sidebar'
@@ -64,9 +64,34 @@ export function CitationsAccessory({
   const {data: citations} = useDocCitations(docId)
   if (!docId) return null
   const count = citations?.links?.length || 0
+  
+  const citationSet = new Set();
+  const distinctCitations = citations?.links.filter(item => {
+  if (!citationSet.has(item?.source?.documentId)) {
+    citationSet.add(item?.source?.documentId);
+    return true;
+  }
+    return false;
+  });
+
+  // TODO: This code also filters citations based on version of document where citation is used and on blockId, which was cited.
+  // The current code will show only distinct documents, but if the first citation was in old version, it will point to the old version, which I feel is not good.
+  // Maybe we could display version with document title, and/or blockId, which was cited.
+  // const distinctCitations = citations?.links?.map(item => {
+  //   const { source, target } = item;
+  //   const combination = `${source?.documentId}-${source?.version}-${target?.blockId}`;
+  
+  //   if (!citationSet.has(combination)) {
+  //     citationSet.add(combination);
+  //     return item
+  //   }
+  
+  //   return null;
+  // }).filter(item => item !== null);
+  
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
-      {citations?.links.map((link) => (
+      {distinctCitations?.map((link) => (
         <CitationItem
           docId={docId}
           key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
