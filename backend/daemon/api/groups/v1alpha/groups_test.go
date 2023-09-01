@@ -130,7 +130,7 @@ func TestListContent(t *testing.T) {
 	group, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group.Id,
 		UpdatedContent: map[string]string{
-			"/": "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+			"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 		},
 	})
 	require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestListContent(t *testing.T) {
 
 		want := &groups.ListContentResponse{
 			Content: map[string]string{
-				"/": "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+				"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 		}
 
@@ -196,7 +196,7 @@ func TestListContent(t *testing.T) {
 
 		want := &groups.ListContentResponse{
 			Content: map[string]string{
-				"/": "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+				"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 		}
 
@@ -308,7 +308,7 @@ func TestDocumentGroupBacklinks(t *testing.T) {
 	group1, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group1.Id,
 		UpdatedContent: map[string]string{
-			"/": "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+			"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 		},
 	})
 	require.NoError(t, err)
@@ -321,13 +321,13 @@ func TestDocumentGroupBacklinks(t *testing.T) {
 	group2, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group2.Id,
 		UpdatedContent: map[string]string{
-			"/fragmented-document": "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
+			"/fragmented-document": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
 		},
 	})
 	require.NoError(t, err)
 
 	list, err := srv.ListDocumentGroups(ctx, &groups.ListDocumentGroupsRequest{
-		DocumentId: "hd://d/my-index-page",
+		DocumentId: "hm://d/my-index-page",
 	})
 	require.NoError(t, err)
 
@@ -338,14 +338,14 @@ func TestDocumentGroupBacklinks(t *testing.T) {
 				GroupChange: group1.Version,
 				ChangeTime:  group1.UpdateTime,
 				Path:        "/",
-				RawUrl:      "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 			{
 				GroupId:     group2.Id,
 				GroupChange: group2.Version,
 				ChangeTime:  group2.UpdateTime,
 				Path:        "/fragmented-document",
-				RawUrl:      "hd://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
+				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
 			},
 		},
 	}

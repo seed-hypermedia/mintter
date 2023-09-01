@@ -215,7 +215,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	// Create draft.
 	var c1 hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
@@ -226,7 +226,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 
 	// Update draft in place.
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		must.Do(model.restoreDraft(c1.CID, c1.Decoded.(hyper.Change)))
 		must.Do(model.MoveBlock("b1", "", ""))
@@ -245,7 +245,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	// Create a new change on top of the previous.
 	var c2 hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
@@ -262,7 +262,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	}
 
 	// Try to apply changes one by one.
-	entity := hyper.NewEntity("hd://d/foo")
+	entity := hyper.NewEntity("hm://d/foo")
 	must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 	must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 	model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
@@ -276,7 +276,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	// Create document.
 	var c1 hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
@@ -288,7 +288,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	// Create two concurrent changes.
 	var c2 hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
@@ -298,7 +298,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 
 	var c3 hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
@@ -309,7 +309,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	// Create draft from the all the changes.
 	var draft hyper.Blob
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
@@ -323,7 +323,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 
 	// Update the draft in place.
 	{
-		entity := hyper.NewEntity("hd://d/foo")
+		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
@@ -348,7 +348,7 @@ func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.Ke
 	delegation, err := daemon.Register(context.Background(), blobs, account, device.PublicKey, time.Now())
 	require.NoError(t, err)
 
-	entity := hyper.NewEntity(hyper.EntityID("hd://d/" + id))
+	entity := hyper.NewEntity(hyper.EntityID("hm://d/" + id))
 	dm, err := newDocModel(entity, device, delegation)
 	require.NoError(t, err)
 

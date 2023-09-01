@@ -197,7 +197,7 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
   /**
    * Optional. List of content to be updated in the Group.
    * Key is a pretty path on which the content is published,
-   * value is a Hyperdocs URL of the content.
+   * value is a Hypermedia URL of the content.
    * To unpublish content set the value to an empty string for a given pretty path.
    * Only updated records have to be sent, not all the content of the group.
    *
@@ -436,7 +436,7 @@ export class ListContentRequest extends Message<ListContentRequest> {
 export class ListContentResponse extends Message<ListContentResponse> {
   /**
    * List of content of the group.
-   * Key is the path and value is a Hyperdocs URL to the content.
+   * Key is the path and value is a Hypermedia URL to the content.
    *
    * @generated from field: map<string, string> content = 1;
    */

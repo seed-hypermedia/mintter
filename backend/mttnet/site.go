@@ -447,12 +447,12 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, fmt.Errorf("can't proxy: local p2p node is not ready yet: %w", err)
 	}
 
-	docEntity := hyper.EntityID("hd://d/" + in.DocumentId)
+	docEntity := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	toSync := []hyper.EntityID{docEntity}
 
 	for _, ref := range in.ReferencedDocuments {
-		toSync = append(toSync, hyper.EntityID("hd://d/"+ref.DocumentId))
+		toSync = append(toSync, hyper.EntityID("hm://d/"+ref.DocumentId))
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(7*time.Second))
@@ -483,7 +483,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 		if record.EntitiesID != 0 {
 			recordEntity := hyper.EntityID(record.EntitiesEID)
-			if !recordEntity.HasPrefix("hd://d/") {
+			if !recordEntity.HasPrefix("hm://d/") {
 				return fmt.Errorf("invalid entity ID for mintter document: %s", record.EntitiesEID)
 			}
 
@@ -533,7 +533,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	}
 	defer cancel()
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	records, err := sitesql.GetWebPublicationsByID(conn, string(eid))
 	if err != nil {
@@ -589,7 +589,7 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 	}
 
 	for _, record := range records {
-		docid := hyper.EntityID(record.EntitiesEID).TrimPrefix("hd://d/")
+		docid := hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/")
 		if docid == record.EntitiesEID {
 			return nil, fmt.Errorf("BUG: invalid entity ID %q for a document in web publications", record.EntitiesEID)
 		}
@@ -638,7 +638,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		return nil, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-		DocumentId: hyper.EntityID(record.EntitiesEID).TrimPrefix("hd://d/"),
+		DocumentId: hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/"),
 		Version:    record.WebPublicationsVersion,
 		LocalOnly:  true,
 	})

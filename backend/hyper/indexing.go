@@ -150,7 +150,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 		}
 
 		// We know issuer is an account when delegation purpose is registration.
-		accEntity := EntityID("hd://a/" + v.Issuer.String())
+		accEntity := EntityID("hm://a/" + v.Issuer.String())
 		if _, err := hypersql.LookupEnsure(conn, storage.LookupResource, accEntity); err != nil {
 			return err
 		}
@@ -242,11 +242,11 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			return err
 		}
 
-		if v.Entity.HasPrefix("hd://d/") {
+		if v.Entity.HasPrefix("hm://d/") {
 			return bs.indexDocumentChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
 		}
 
-		if v.Entity.HasPrefix("hd://g/") {
+		if v.Entity.HasPrefix("hm://g/") {
 			return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
 		}
 	}
@@ -341,7 +341,7 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 			}
 
 			id, _ := NewUnforgeableID(ownerField, nonce, int64(ct))
-			if ch.Entity.TrimPrefix("hd://g/") != id {
+			if ch.Entity.TrimPrefix("hm://g/") != id {
 				return fmt.Errorf("failed to verify group ID %s with a nonce", ch.Entity)
 			}
 
@@ -501,7 +501,7 @@ func (bs *Storage) indexDocumentChange(conn *sqlite.Conn, blobID int64, author c
 			}
 
 			id, _ := NewUnforgeableID(ownerField, nonce, int64(ct))
-			if ch.Entity.TrimPrefix("hd://d/") != id {
+			if ch.Entity.TrimPrefix("hm://d/") != id {
 				return fmt.Errorf("failed to verify document ID %s with a nonce", ch.Entity)
 			}
 
@@ -591,13 +591,13 @@ func (bs *Storage) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL
 	}
 
 	switch u.Scheme {
-	case "hd":
+	case "hm":
 		ld := LinkData{
 			TargetFragment: u.Fragment,
 			TargetVersion:  u.Query().Get("v"),
 		}
 
-		target := EntityID("hd://" + u.Host + u.Path)
+		target := EntityID("hm://" + u.Host + u.Path)
 
 		targetID, err := bs.ensureEntity(conn, target)
 		if err != nil {

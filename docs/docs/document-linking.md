@@ -1,17 +1,17 @@
 # Linking
 
 
-HyperDocs links, prefixed with `hd://`, take the following form:
+HyperDocs links, prefixed with `hm://`, take the following form:
 
 ```
-hd://d/DOCUMENT_ID?v=VERSION_REF#BLOCK_REF
+hm://d/DOCUMENT_ID?v=VERSION_REF#BLOCK_REF
 ```
 
 ### Entity References
 
 The following portion is required:
 
-- `hd://` - the HyperDocs URL scheme
+- `hm://` - the HyperDocs URL scheme
 - `d/` - the Entity Type ID
 - `DOCUMENT_ID` - the ID of the Document to reference
 
@@ -26,7 +26,7 @@ Additional types and conventions are reserved for future use
 
 ### Version References
 
-A link with only `hd://d/DOCUMENT_ID` is valid, but the entity may change over time. To link to the **exact version** of an Entity, include:
+A link with only `hm://d/DOCUMENT_ID` is valid, but the entity may change over time. To link to the **exact version** of an Entity, include:
 
 - `?v=` - optional query parameter designating the version ref
 - `VERSION_REF` - the CID(s) of the EntityChange that represent an exact version of the Entity, separated by periods (`.`)
@@ -37,8 +37,8 @@ When you link to [Document Entities](./document-entity), you may deep-link to a 
 
 A block reference points to a specific block within a Entity Reference or a Version Reference.
 
-- `hd://d/DOCUMENT_ID#BLOCK_REF` - Block of Entity Ref
-- `hd://d/DOCUMENT_ID?v=VERSION_REF#BLOCK_REF` - Block of Version Ref
+- `hm://d/DOCUMENT_ID#BLOCK_REF` - Block of Entity Ref
+- `hm://d/DOCUMENT_ID?v=VERSION_REF#BLOCK_REF` - Block of Version Ref
 
 A simple `BLOCK_ID` is a valid Block Ref, but it may also include a character range, pointing to a string within a block. This is a Block Range Ref:
 
@@ -59,4 +59,4 @@ The following are real example links:
 
 ## Web Links
 
-> Note: The Mintter application uses the emerging ["Aer" protocol](./hyperdocs-aer) to convert HTTPS URLs to `hd://` links automatically under the hood
+> Note: The Mintter application uses the emerging ["Aer" protocol](./hyperdocs-aer) to convert HTTPS URLs to `hm://` links automatically under the hood

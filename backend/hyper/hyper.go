@@ -17,7 +17,6 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multicodec"
 	"github.com/multiformats/go-multihash"
-	"github.com/sanity-io/litter"
 	"go.uber.org/zap"
 )
 
@@ -392,7 +391,6 @@ func DecodeBlob(c cid.Cid, data []byte) (hb Blob, err error) {
 		if err := cbornode.DecodeInto(data, &vv); err != nil {
 			panic(err)
 		}
-		litter.Dump(vv)
 
 		return hb, fmt.Errorf("failed to infer hyper blob %s: %w", c, err)
 	}

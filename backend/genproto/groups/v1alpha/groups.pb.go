@@ -229,7 +229,7 @@ type UpdateGroupRequest struct {
 	UpdatedMembers map[string]Role `protobuf:"bytes,4,rep,name=updated_members,json=updatedMembers,proto3" json:"updated_members,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3,enum=com.mintter.groups.v1alpha.Role"`
 	// Optional. List of content to be updated in the Group.
 	// Key is a pretty path on which the content is published,
-	// value is a Hyperdocs URL of the content.
+	// value is a Hypermedia URL of the content.
 	// To unpublish content set the value to an empty string for a given pretty path.
 	// Only updated records have to be sent, not all the content of the group.
 	UpdatedContent map[string]string `protobuf:"bytes,5,rep,name=updated_content,json=updatedContent,proto3" json:"updated_content,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -532,7 +532,7 @@ type ListContentResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	// List of content of the group.
-	// Key is the path and value is a Hyperdocs URL to the content.
+	// Key is the path and value is a Hypermedia URL to the content.
 	Content map[string]string `protobuf:"bytes,1,rep,name=content,proto3" json:"content,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Token to continue listing content from.
 	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`

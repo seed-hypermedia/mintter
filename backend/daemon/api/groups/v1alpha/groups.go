@@ -60,7 +60,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	createTime := ts.Time().Unix()
 
 	id, nonce := hyper.NewUnforgeableID(me.Account().Principal(), nil, createTime)
-	eid := hyper.EntityID("hd://g/" + id)
+	eid := hyper.EntityID("hm://g/" + id)
 	e := hyper.NewEntityWithClock(eid, clock)
 
 	patch := map[string]any{
@@ -194,7 +194,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 
 // ListGroups lists groups.
 func (srv *Server) ListGroups(ctx context.Context, in *groups.ListGroupsRequest) (*groups.ListGroupsResponse, error) {
-	entities, err := srv.blobs.ListEntities(ctx, "hd://g/")
+	entities, err := srv.blobs.ListEntities(ctx, "hm://g/")
 	if err != nil {
 		return nil, err
 	}

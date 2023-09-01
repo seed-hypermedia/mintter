@@ -7,7 +7,7 @@ import { Change, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest } fr
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
- * Provides functionality to query information about Hyperdocs Entities.
+ * Provides functionality to query information about Hypermedia Entities.
  *
  * @generated from service com.mintter.entities.v1alpha.Entities
  */

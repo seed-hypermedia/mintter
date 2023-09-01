@@ -90,7 +90,7 @@ message UpdateGroupRequest {
 
   // Optional. List of content to be updated in the Group.
   // Key is a pretty path on which the content is published,
-  // value is a Hyperdocs URL of the content.
+  // value is a Hypermedia URL of the content.
   // To unpublish content set the value to an empty string for a given pretty path.
   // Only updated records have to be sent, not all the content of the group.
   map<string, string> updated_content = 5;
@@ -145,7 +145,7 @@ message ListContentRequest {
 // Response to list content.
 message ListContentResponse {
   // List of content of the group.
-  // Key is the path and value is a Hyperdocs URL to the content.
+  // Key is the path and value is a Hypermedia URL to the content.
   map<string, string> content = 1;
 
   // Token to continue listing content from.

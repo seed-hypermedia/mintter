@@ -46,7 +46,7 @@ import (
 
 // Protocol values.
 const (
-	protocolPrefix  = "/hyperdocs/"
+	protocolPrefix  = "/hypermedia/"
 	protocolVersion = "0.1.0"
 
 	ProtocolID protocol.ID = protocolPrefix + protocolVersion
