@@ -1,18 +1,16 @@
-import {app, BrowserWindow, session, ipcMain, nativeTheme, Menu} from 'electron'
-import path from 'path'
 import * as Sentry from '@sentry/electron/main'
-import os from 'os'
+import {BrowserWindow, Menu, app, ipcMain, nativeTheme} from 'electron'
+import log from 'electron-log/main'
+import updater from 'update-electron-app'
 import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
-import updater from 'update-electron-app'
-import log from 'electron-log/main'
 
 mainDaemon
 
 Menu.setApplicationMenu(mainMenu)
 
-// check for updates Powered by the free and open-source update.electronjs.org service.
+// check for updates Powered by the free and open-source
 updater({
   updateInterval: '1 hour',
   repo: 'mintterteam/mintter',
@@ -46,25 +44,8 @@ if (import.meta.env.PROD) {
       // beforeSend: (request) => (isOnline() ? 'send' : 'queue'),
     },
   })
-} else {
-  // on macOS
-  if (os.platform() == 'darwin') {
-    const reactDevToolsPath = path.join(
-      os.homedir(),
-      '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoieni',
-    )
-
-    app.whenReady().then(async () => {
-      try {
-        await session.defaultSession.loadExtension(reactDevToolsPath)
-      } catch (error) {
-        console.error(
-          '[REACT-DEVTOOLS]: error. no react devtools extension found',
-        )
-      }
-    })
-  }
 }
+
 app.on('did-become-active', () => {
   console.log('App active')
 })

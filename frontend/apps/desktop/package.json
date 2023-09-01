@@ -16,6 +16,7 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "dev": "electron-forge start",
+    "devtools": "react-devtools",
     "test": "node test/pre-test.js && yarn e2e && node test/post-test.js",
     "e2e": "xvfb-maybe -- playwright test",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check  --ignore-path ../../../.prettierignore",
@@ -68,6 +69,7 @@
     "electron-packager-languages": "^0.5.0",
     "electron-playwright-helpers": "1.6.0",
     "eslint-config-custom": "workspace:*",
+    "react-devtools": "^4.28.0",
     "vite-tsconfig-paths": "4.2.0",
     "xvfb-maybe": "^0.2.1"
   }
