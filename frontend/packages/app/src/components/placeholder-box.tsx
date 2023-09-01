@@ -12,7 +12,7 @@ export const Placeholder = ({
     <XStack
       width={width}
       height={height}
-      backgroundColor="$color4"
+      backgroundColor="$color5"
       borderRadius="$1"
     />
   )

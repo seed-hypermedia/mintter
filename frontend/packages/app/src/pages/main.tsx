@@ -10,10 +10,11 @@ import {
 } from '@mintter/app/src/utils/navigation'
 import {YStack} from '@mintter/ui'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
-import {lazy, useMemo} from 'react'
+import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
+import {DocumentPlaceholder} from './document-placeholder'
 
 var PublicationList = lazy(
   () => import('@mintter/app/src/pages/publication-list-page'),
@@ -34,32 +35,72 @@ var QuickSwitcher = lazy(
   () => import('@mintter/app/src/components/quick-switcher'),
 )
 
+function BaseLoading() {
+  return <span>Loading...</span>
+}
+
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
     case 'home':
-      return PublicationList
+      return {
+        PageComponent: PublicationList,
+        Fallback: BaseLoading,
+      }
     case 'groups':
-      return Groups
+      return {
+        PageComponent: Groups,
+        Fallback: BaseLoading,
+      }
     case 'group':
-      return Group
+      return {
+        PageComponent: Group,
+        Fallback: BaseLoading,
+      }
     case 'drafts':
-      return DraftList
+      return {
+        PageComponent: DraftList,
+        Fallback: BaseLoading,
+      }
     case 'site':
-      return Site
+      return {
+        PageComponent: Site,
+        Fallback: BaseLoading,
+      }
     case 'contacts':
-      return Contacts
+      return {
+        PageComponent: Contacts,
+        Fallback: BaseLoading,
+      }
     case 'account':
-      return Account
+      return {
+        PageComponent: Account,
+        Fallback: BaseLoading,
+      }
     case 'publication':
-      return Publication
+      return {
+        PageComponent: Publication,
+        Fallback: DocumentPlaceholder,
+      }
     case 'draft':
-      return Draft
+      return {
+        PageComponent: Draft,
+        Fallback: DocumentPlaceholder,
+      }
     case 'settings':
-      return Settings
+      return {
+        PageComponent: Settings,
+        Fallback: BaseLoading,
+      }
     case 'global-publications':
-      return GlobalPublicationList
+      return {
+        PageComponent: GlobalPublicationList,
+        Fallback: BaseLoading,
+      }
     default:
-      return NotFoundPage
+      return {
+        PageComponent: NotFoundPage,
+        Fallback: BaseLoading,
+      }
   }
 }
 
@@ -67,7 +108,10 @@ export default function Main() {
   const navR = useNavRoute()
   const isSettings = navR.key == 'settings'
   const navigate = useNavigate()
-  const PageComponent = useMemo(() => getPageComponent(navR), [navR.key])
+  const {PageComponent, Fallback} = useMemo(
+    () => getPageComponent(navR),
+    [navR.key],
+  )
   const routeKey = useMemo(() => getRouteKey(navR), [navR])
   useListen<NavRoute>(
     'open_route',
@@ -78,20 +122,22 @@ export default function Main() {
     [navigate],
   )
   return (
-    <YStack position="absolute" top={0} left={0} width="100%" height="100%">
+    <YStack fullscreen>
       <TitleBar clean={isSettings} />
-      <ErrorBoundary
-        FallbackComponent={AppError}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
-        <ProsemirrorAdapterProvider>
-          <PageComponent key={routeKey} />
-        </ProsemirrorAdapterProvider>
-        {!isSettings ? <QuickSwitcher /> : null}
-        {/* <ReactQueryDevtools /> */}
-      </ErrorBoundary>
+      <Suspense fallback={<Fallback />}>
+        <ErrorBoundary
+          FallbackComponent={AppError}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
+          <ProsemirrorAdapterProvider>
+            <PageComponent key={routeKey} />
+          </ProsemirrorAdapterProvider>
+          {!isSettings ? <QuickSwitcher /> : null}
+          {/* <ReactQueryDevtools /> */}
+        </ErrorBoundary>
+      </Suspense>
     </YStack>
   )
 }
