@@ -70,9 +70,9 @@ FROM ` + storage.T_PublicBlobsView + `;`
 			}
 
 			for _, e := range entities {
-				c, err := hyper.EntityID(e.HDEntitiesEID).CID()
+				c, err := hyper.EntityID(e.EntitiesEID).CID()
 				if err != nil {
-					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HDEntitiesEID))
+					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.EntitiesEID))
 					return
 				}
 

@@ -15,6 +15,7 @@ import {
   Block,
   Publication,
   entityIdToSitePath,
+  HYPERMEDIA_DOCUMENT_PREFIX,
 } from '@mintter/shared'
 import {
   Button,
@@ -34,14 +35,14 @@ import {cidURL} from 'ipfs'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
-import {HDBlock, HDBlockNode, HDGroup, HDPublication} from 'server/json-hd'
+import {HMBlock, HMBlockNode, HMGroup, HMPublication} from '@mintter/ui'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
 import Link from 'next/link'
 
-function hdLinkToSitePath(link: string) {
+function hmLinkToSitePath(link: string) {
   const [docId, version, block] = getIdsfromUrl(link)
   if (!docId) return link
   let path = `/d/${docId}`
@@ -69,7 +70,7 @@ export type PublicationPageData = {
 function PublicationContent({
   publication,
 }: {
-  publication: HDPublication | undefined
+  publication: HMPublication | undefined
 }) {
   return (
     <YStack>
@@ -88,12 +89,12 @@ function PublicationContent({
 }
 
 function getBlockNodeById(
-  blocks: Array<HDBlockNode>,
+  blocks: Array<HMBlockNode>,
   blockId: string,
-): HDBlockNode | null {
+): HMBlockNode | null {
   if (!blockId) return null
 
-  let res: HDBlockNode | undefined
+  let res: HMBlockNode | undefined
   blocks.find((bn) => {
     if (bn.block?.id == blockId) {
       res = bn
@@ -116,9 +117,9 @@ function GroupSidebarContent({
   content,
 }: {
   activePathName: string
-  group?: HDGroup
+  group?: HMGroup
   content?: Array<null | {
-    publication: null | HDPublication
+    publication: null | HMPublication
     pathName: string
     version: string
     docId: string
@@ -168,7 +169,7 @@ function PublicationContextSidebar({
   group,
   activePathName,
 }: {
-  group?: HDGroup | null
+  group?: HMGroup | null
   activePathName: string
 }) {
   const groupContent = trpc.group.listContent.useQuery(
@@ -196,7 +197,7 @@ export default function PublicationPage({
   pathName?: string
   documentId: string
   version?: string | null
-  contextGroup?: HDGroup | null
+  contextGroup?: HMGroup | null
 }) {
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
@@ -210,7 +211,7 @@ export default function PublicationPage({
       <Head>
         <meta
           name="hyperdocs-entity-id"
-          content={`hd://d/${pub?.document?.id}`}
+          content={`${HYPERMEDIA_DOCUMENT_PREFIX}${pub?.document?.id}`}
         />
         <meta name="hyperdocs-entity-version" content={pub?.version} />
         <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
@@ -308,13 +309,13 @@ function InlineContentView({
         }
         if (content.type === 'link') {
           const href = isHyperdocsScheme(content.href)
-            ? hdLinkToSitePath(content.href)
+            ? hmLinkToSitePath(content.href)
             : content.href
           return (
             <a
               href={href}
               key={index}
-              className={isHyperdocsScheme(content.href) ? 'hd-link' : 'link'}
+              className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
               style={{cursor: 'pointer'}}
             >
               <InlineContentView inline={content.content} />
@@ -371,8 +372,8 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
 }
 
-function stripHDLinkPrefix(link: string) {
-  return link.replace(/^hd:\//, '')
+function stripHMLinkPrefix(link: string) {
+  return link.replace(/^hm:\//, '')
 }
 
 function StaticEmbedBlock({block}: {block: EmbedBlock}) {
@@ -425,10 +426,10 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
           cursor: 'pointer',
         }}
         onPress={() => {
-          const ref = stripHDLinkPrefix(block.ref)
+          const ref = stripHMLinkPrefix(block.ref)
           router.push(ref)
         }}
-        href={stripHDLinkPrefix(block.ref)}
+        href={stripHMLinkPrefix(block.ref)}
       >
         {content}
         {/* <EmbedMetadata embed={embed} /> */}
@@ -437,7 +438,7 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   )
 }
 
-function StaticBlock({block}: {block: HDBlock}) {
+function StaticBlock({block}: {block: HMBlock}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
@@ -491,7 +492,7 @@ function StaticBlockNode({
   block,
   ctx,
 }: {
-  block: HDBlockNode
+  block: HMBlockNode
   ctx?: PublicationViewContext
 }) {
   const [isHovering, setIsHovering] = useState(false)

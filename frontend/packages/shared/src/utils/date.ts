@@ -25,10 +25,10 @@ var months = [
   'Dec',
 ]
 
-export type HDTimestamp = string
+export type HMTimestamp = string
 
 export function formattedDate(
-  value?: string | Date | Timestamp | HDTimestamp | undefined,
+  value?: string | Date | Timestamp | HMTimestamp | undefined,
   options?: {onlyRelative?: boolean},
 ) {
   if (!value) return ''

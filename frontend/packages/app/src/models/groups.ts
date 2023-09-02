@@ -1,7 +1,7 @@
+import {HYPERMEDIA_DOCUMENT_PREFIX, Role} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
-import {Role} from '@mintter/shared'
 
 export function useGroups() {
   const grpcClient = useGRPCClient()
@@ -124,7 +124,9 @@ export function usePublishDocToGroup(
     }: PublishDocToGroupMutationInput) => {
       await grpcClient.groups.updateGroup({
         id: groupId,
-        updatedContent: {[pathName]: `hd://d/${docId}?v=${version}`},
+        updatedContent: {
+          [pathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${docId}?v=${version}`,
+        },
       })
     },
     onSuccess: (result, input, context) => {
@@ -212,6 +214,32 @@ export function useGroupMembers(groupId: string) {
     queryKey: [queryKeys.GET_GROUP_MEMBERS, groupId],
     queryFn: async () => {
       return await grpcClient.groups.listMembers({id: groupId})
+    },
+  })
+}
+
+export function useDocumentGroups(documentId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    enabled: !!documentId,
+    queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
+    queryFn: () => {
+      return grpcClient.groups.listDocumentGroups({
+        documentId: `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`,
+      })
+    },
+  })
+}
+
+export function useAccountGroups(accountId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    enabled: !!accountId,
+    queryKey: [queryKeys.GET_GROUPS_FOR_ACCOUNT, accountId],
+    queryFn: () => {
+      return grpcClient.groups.listAccountGroups({
+        accountId,
+      })
     },
   })
 }

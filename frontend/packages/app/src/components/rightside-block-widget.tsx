@@ -6,7 +6,7 @@ import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet, EditorView} from '@tiptap/pm/view'
 import {useMemo} from 'react'
 import {BlockNoteEditor} from '../blocknote-core'
-import {HDBlockSchema} from '../client/schema'
+import {HMBlockSchema} from '../client/schema'
 import appError from '../errors'
 import {useDocCitations} from '../models/content-graph'
 import {usePublication} from '../models/documents'
@@ -20,7 +20,7 @@ export function createRightsideBlockWidgetExtension({
   editor,
 }: {
   getWidget: WidgetDecorationFactory
-  editor: BlockNoteEditor<HDBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
   return Extension.create({
     name: 'rightside-block',
@@ -44,7 +44,7 @@ export function createRightsideBlockWidgetPlugin({
   ttEditor,
 }: {
   getWidget: WidgetDecorationFactory
-  editor: BlockNoteEditor<HDBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
   ttEditor: Editor
 }) {
   return new Plugin({
@@ -186,7 +186,7 @@ function useBlockCitation() {
 }
 
 class MouseMoveView {
-  editor: BlockNoteEditor<HDBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
   ttEditor: Editor
 
   hoveredBlock: HTMLElement | undefined
@@ -195,7 +195,7 @@ class MouseMoveView {
     editor,
     ttEditor,
   }: {
-    editor: BlockNoteEditor<HDBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
     ttEditor: Editor
   }) {
     this.editor = editor

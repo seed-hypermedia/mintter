@@ -7,7 +7,7 @@ import {getBlockInfoFromPos} from '@mintter/app/src/blocknote-core/extensions/Bl
 import {insertOrUpdateBlock} from '@mintter/app/src/blocknote-core/extensions/SlashMenu/defaultSlashMenuItems'
 import {createReactBlockSpec} from '@mintter/app/src/blocknote-react/ReactBlockSpec'
 import {ReactSlashMenuItem} from '@mintter/app/src/blocknote-react/SlashMenu/ReactSlashMenuItem'
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {useAppContext} from '@mintter/app/src/app-context'
 import {
   Button,
@@ -49,8 +49,8 @@ export const FileBlock = createReactBlockSpec({
     block,
     editor,
   }: {
-    block: Block<HDBlockSchema>
-    editor: BlockNoteEditor<HDBlockSchema>
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
 })
 
@@ -69,8 +69,8 @@ type FileType = {
 const boolRegex = new RegExp('true')
 
 const Render = (
-  block: Block<HDBlockSchema>,
-  editor: BlockNoteEditor<HDBlockSchema>,
+  block: Block<HMBlockSchema>,
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
@@ -133,8 +133,8 @@ function FileComponent({
   selected,
   setSelected,
 }: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
   assign: any
   selected: boolean
   setSelected: any
@@ -315,9 +315,9 @@ function FileForm({
   assign,
   editor,
 }: {
-  block: Block<HDBlockSchema>
+  block: Block<HMBlockSchema>
   assign: any
-  editor: BlockNoteEditor<HDBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
@@ -557,9 +557,9 @@ function FileForm({
   )
 }
 
-export const insertFile = new ReactSlashMenuItem<HDBlockSchema>(
+export const insertFile = new ReactSlashMenuItem<HMBlockSchema>(
   'File',
-  (editor: BlockNoteEditor<HDBlockSchema>) => {
+  (editor: BlockNoteEditor<HMBlockSchema>) => {
     insertOrUpdateBlock(editor, {
       type: 'file',
       props: {

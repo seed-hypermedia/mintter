@@ -26,10 +26,11 @@ import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {
-  HDEditorContainer,
   HyperMediaEditorView,
+  HMEditorContainer,
 } from '@mintter/app/src/editor/editor'
 import {useLatestPublication} from '../models/documents'
+import {useDocumentGroups} from '../models/groups'
 import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
@@ -48,6 +49,10 @@ export default function PublicationPage() {
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
   const publication = usePublicationEditor(docId, versionId)
+
+  const res = useDocumentGroups(docId)
+
+  console.log(`== ~ useDocumentGroups ~ res:`, res.data)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)
@@ -77,10 +82,10 @@ export default function PublicationPage() {
               <YStack height="100%">
                 <MainWrapper>
                   {publication.editor && (
-                    <HDEditorContainer>
+                    <HMEditorContainer>
                       <HyperMediaEditorView editor={publication.editor} />
                       <DebugData data={publication.data} />
-                    </HDEditorContainer>
+                    </HMEditorContainer>
                   )}
 
                   {versionId && (

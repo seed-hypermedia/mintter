@@ -12,7 +12,7 @@ import {
   ReactSlashMenuItem,
   createReactBlockSpec,
 } from '@mintter/app/src/blocknote-react'
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {
   Button,
   Form,
@@ -51,8 +51,8 @@ export const ImageBlock = createReactBlockSpec({
     block,
     editor,
   }: {
-    block: Block<HDBlockSchema>
-    editor: BlockNoteEditor<HDBlockSchema>
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
 })
 
@@ -70,8 +70,8 @@ type ImageType = {
 const boolRegex = new RegExp('true')
 
 const Render = (
-  block: Block<HDBlockSchema>,
-  editor: BlockNoteEditor<HDBlockSchema>,
+  block: Block<HMBlockSchema>,
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [selected, setSelected] = useState(false)
   const tiptapEditor = editor._tiptapEditor
@@ -134,8 +134,8 @@ function ImageComponent({
   selected,
   setSelected,
 }: {
-  block: Block<HDBlockSchema>
-  editor: BlockNoteEditor<HDBlockSchema>
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
   assign: any
   selected: boolean
   setSelected: any
@@ -286,9 +286,9 @@ function ImageForm({
   assign,
   editor,
 }: {
-  block: Block<HDBlockSchema>
+  block: Block<HMBlockSchema>
   assign: any
-  editor: BlockNoteEditor<HDBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
   const [url, setUrl] = useState('')
   const [tabState, setTabState] = useState('upload')
@@ -677,7 +677,7 @@ export const insertImage = new ReactSlashMenuItem<
 >(
   'Image',
   // @ts-ignore
-  (editor: BlockNoteEditor<HDBlockSchema>) => {
+  (editor: BlockNoteEditor<HMBlockSchema>) => {
     insertOrUpdateBlock(editor, {
       type: 'image',
       props: {

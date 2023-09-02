@@ -8,6 +8,6 @@ export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
   return <BlockNoteView editor={editor} />
 }
 
-export function HDEditorContainer({children}: {children: React.ReactNode}) {
+export function HMEditorContainer({children}: {children: React.ReactNode}) {
   return <YStack className="editor">{children}</YStack>
 }

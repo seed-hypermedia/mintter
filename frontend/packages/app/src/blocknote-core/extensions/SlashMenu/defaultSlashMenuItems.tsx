@@ -1,9 +1,9 @@
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {PartialBlock} from '../Blocks/api/blockTypes'
 import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 
-export function insertOrUpdateBlock<BSchema extends HDBlockSchema>(
+export function insertOrUpdateBlock<BSchema extends HMBlockSchema>(
   editor: BlockNoteEditor<BSchema>,
   block: PartialBlock<BSchema>,
 ) {
@@ -27,7 +27,7 @@ export function insertOrUpdateBlock<BSchema extends HDBlockSchema>(
  */
 export const defaultSlashMenuItems = [
   // Command for creating a level 1 heading
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Heading',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -38,7 +38,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a level 2 heading
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Heading 2',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -49,7 +49,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a level 3 heading
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Heading 3',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -60,7 +60,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating an ordered list
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Numbered List',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -70,7 +70,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a bullet list
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Bullet List',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -80,7 +80,7 @@ export const defaultSlashMenuItems = [
   ),
 
   // Command for creating a paragraph (pretty useless)
-  new BaseSlashMenuItem<HDBlockSchema>(
+  new BaseSlashMenuItem<HMBlockSchema>(
     'Paragraph',
     (editor) =>
       insertOrUpdateBlock(editor, {
@@ -89,7 +89,7 @@ export const defaultSlashMenuItems = [
     ['paragraph', 'p'],
   ),
 
-  // new BaseSlashMenuItem<HDBlockSchema>(
+  // new BaseSlashMenuItem<HMBlockSchema>(
   //   'Code',
   //   (editor) =>
   //     insertOrUpdateBlock(editor, {
@@ -99,7 +99,7 @@ export const defaultSlashMenuItems = [
   //   ['code']
   // ),
 
-  // new BaseSlashMenuItem<HDBlockSchema>(
+  // new BaseSlashMenuItem<HMBlockSchema>(
   //   'Blockquote',
   //   (editor) =>
   //     insertOrUpdateBlock(editor, {

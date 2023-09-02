@@ -33,6 +33,8 @@ export const queryKeys = {
   GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string
   GET_GROUP_MEMBERS: 'GET_GROUP_MEMBERS', // , groupId: string
   GET_GROUP_SITE: 'GET_GROUP_SITE', // , groupId: string
+  GET_GROUPS_FOR_DOCUMENT: 'GET_GROUPS_FOR_DOCUMENT', // , documentId: string
+  GET_GROUPS_FOR_ACCOUNT: 'GET_GROUPS_FOR_ACCOUNT', // , accountId: string
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //

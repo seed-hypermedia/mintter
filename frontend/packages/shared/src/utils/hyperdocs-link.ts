@@ -1,7 +1,7 @@
-import {getIdsfromUrl, HYPERDOCS_LINK_PREFIX} from './get-ids-from-url'
+import {getIdsfromUrl, HYPERMEDIA_DOCUMENT_PREFIX} from './get-ids-from-url'
 
 export function isHyperdocsScheme(url?: string) {
-  return !!url?.startsWith(HYPERDOCS_LINK_PREFIX)
+  return !!url?.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)
 }
 
 export function isMintterGatewayLink(text: string) {
@@ -40,7 +40,7 @@ export function createHyperdocsDocLink(
   version?: string | null,
   blockRef?: string | null,
 ): string {
-  return `${HYPERDOCS_LINK_PREFIX}${createLinkParams(
+  return `${HYPERMEDIA_DOCUMENT_PREFIX}${createLinkParams(
     documentId,
     version,
     blockRef,

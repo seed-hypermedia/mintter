@@ -47,5 +47,7 @@ func sqlfmt(text string) string {
 		text = regexp.MustCompile("(?m)^"+margin).ReplaceAllString(text, "")
 	}
 
-	return strings.Replace(text, "\t", "    ", -1)
+	return removeSQLComments(
+		strings.Replace(text, "\t", "    ", -1),
+	)
 }

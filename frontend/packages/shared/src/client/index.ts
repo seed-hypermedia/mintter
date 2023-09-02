@@ -1,15 +1,15 @@
-import {Accounts} from './.generated/accounts/v1alpha/accounts_connectweb'
-import {Daemon} from './.generated/daemon/v1alpha/daemon_connectweb'
-import {Changes} from './.generated/documents/v1alpha/changes_connectweb'
-import {Groups} from './.generated/groups/v1alpha/groups_connectweb'
-import {Comments} from './.generated/documents/v1alpha/comments_connectweb'
-import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
+import {Accounts} from './.generated/accounts/v1alpha/accounts_connect'
+import {Daemon} from './.generated/daemon/v1alpha/daemon_connect'
+import {Changes} from './.generated/documents/v1alpha/changes_connect'
+import {Groups} from './.generated/groups/v1alpha/groups_connect'
+import {Comments} from './.generated/documents/v1alpha/comments_connect'
+import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connect'
 
 import {PartialMessage} from '@bufbuild/protobuf'
 import {
   Drafts,
   Publications,
-} from './.generated/documents/v1alpha/documents_connectweb'
+} from './.generated/documents/v1alpha/documents_connect'
 import {
   Publication as APIPublication,
   Document,
@@ -17,8 +17,8 @@ import {
 import {
   WebPublishing,
   WebSite,
-} from './.generated/documents/v1alpha/web_publishing_connectweb'
-import {Networking} from './.generated/networking/v1alpha/networking_connectweb'
+} from './.generated/documents/v1alpha/web_publishing_connect'
+import {Networking} from './.generated/networking/v1alpha/networking_connect'
 
 export {
   Account,

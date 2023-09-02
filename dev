@@ -52,11 +52,16 @@ def main():
         "Check all the generated code is up to date. Otherwise run the code generation process to fix it.",
     )
     def gen(args):
-        out = run(
-            "plz run parallel $(plz query filter -i 'generated:check') "
-            + str.join(" ", args),
-            capture_output=True,
+        targets_to_check = (
+            run(
+                f"plz query filter -i 'generated:check' {str.join(' ', args)}",
+                capture_output=True,
+            )
+            .stdout.decode("utf-8")
+            .split("\n")
         )
+
+        out = run(f"plz run parallel {' '.join(targets_to_check)}", capture_output=True)
 
         targets_to_gen = []
         for line in out.stdout.decode("utf-8").split("\n"):
@@ -68,25 +73,22 @@ def main():
         if len(targets_to_gen) == 0:
             return
         return run("plz run parallel " + " ".join(targets_to_gen))
-    
+
     @cmd(cmds, "run-desktop", "Run frontend desktop app for development.")
     def run_desktop(args):
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
         run("plz build //backend:mintterd //:yarn")
         return run("yarn desktop", args=args)
-    
-    @cmd(
-        cmds, "build-desktop", "Builds the desktop app for the current platform."
-    )
+
+    @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):
         run("./scripts/cleanup-frontend.sh")
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
         run("plz build //backend:mintterd //:yarn")
         run("yarn desktop:make")
-    
-    
+
     @cmd(cmds, "run-site", "Run sites app for development.")
     def run_site(args):
         run("./scripts/cleanup-site.sh")
@@ -97,7 +99,7 @@ def main():
             args=args,
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
-    
+
     @cmd(cmds, "build-site", "Build site app for production.")
     def build_site(args):
         run("./scripts/cleanup-frontend.sh")
@@ -109,24 +111,19 @@ def main():
             args=args,
             # env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
-    
-    @cmd(
-        cmds, "frontend-validate", "Formats, Validates"
-    )
+
+    @cmd(cmds, "frontend-validate", "Formats, Validates")
     def frontend_validate(args):
         run("yarn validate")
 
-
-    @cmd(
-        cmds, "frontend-test", "Tests frontend code"
-    )
+    @cmd(cmds, "frontend-test", "Tests frontend code")
     def frontend_test(args):
         run("yarn test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
         return run("plz run //backend:mintterd", args=args)
-    
+
     @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
     def build_backend(args):
         return run("plz build //backend:mintterd")
@@ -138,15 +135,16 @@ def main():
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
     def ping_p2p(args):
         return run("plz run //backend:pingp2p", args=args)
-    
+
     @cmd(
-        cmds, "release", "Create a new Release. this will create a new tag and push it to the remote repository"
+        cmds,
+        "release",
+        "Create a new Release. this will create a new tag and push it to the remote repository",
     )
     def release(args):
         # run("yarn validate")
         # run("yarn test")
         run("node scripts/tag.mjs")
-
 
     if len(sys.argv) == 1:
         cli.print_help()

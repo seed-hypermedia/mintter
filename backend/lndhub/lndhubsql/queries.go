@@ -53,21 +53,21 @@ func generateQueries() error {
 			") WHERE", storage.WalletsID, "=", qb.VarCol(storage.WalletsID),
 		),
 		qb.MakeQuery(storage.Schema, "setLoginSignature", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", storage.GlobalMeta, qb.ListColShort(
-				storage.GlobalMetaKey,
-				storage.GlobalMetaValue,
+			"INSERT OR REPLACE INTO", storage.KV, qb.ListColShort(
+				storage.KVKey,
+				storage.KVValue,
 			), qb.Line,
 			"VALUES", qb.List(
-				qb.VarCol(storage.GlobalMetaKey),
-				qb.VarCol(storage.GlobalMetaValue),
+				qb.VarCol(storage.KVKey),
+				qb.VarCol(storage.KVValue),
 			),
 		),
 		qb.MakeQuery(storage.Schema, "getLoginSignature", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(storage.GlobalMetaValue),
+				qb.ResultCol(storage.KVValue),
 			),
-			"FROM", storage.GlobalMeta,
-			"WHERE", storage.GlobalMetaKey, "=", qb.VarCol(storage.GlobalMetaKey),
+			"FROM", storage.KV,
+			"WHERE", storage.KVKey, "=", qb.VarCol(storage.KVKey),
 		),
 	)
 	if err != nil {

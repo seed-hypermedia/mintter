@@ -1,7 +1,7 @@
 import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
 import '@mintter/app/src/blocknote-core/style.css'
 import {
-  HDEditorContainer,
+  HMEditorContainer,
   HyperMediaEditorView,
 } from '@mintter/app/src/editor/editor'
 import {useDraftEditor} from '@mintter/app/src/models/documents'
@@ -44,10 +44,10 @@ export default function DraftPage() {
       >
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-          <HDEditorContainer>
+          <HMEditorContainer>
             {editor && <HyperMediaEditorView editor={editor} />}
             {debugValue && <DebugData data={debugValue} />}
-          </HDEditorContainer>
+          </HMEditorContainer>
         </MainWrapper>
         <Footer />
       </ErrorBoundary>

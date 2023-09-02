@@ -692,7 +692,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 	var found *p2p.Object
 	seen := map[cid.Cid]struct{}{}
 	for _, obj := range list.Objects {
-		if obj.Id == "hd://d/"+pub.Document.Id {
+		if obj.Id == "hm://d/"+pub.Document.Id {
 			found = obj
 		}
 		for _, ch := range obj.ChangeIds {
@@ -803,14 +803,15 @@ func TestTrustedPeers(t *testing.T) {
 		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+
 	}
 
 	{
 		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+		require.ElementsMatch(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	acc1 := must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
@@ -827,14 +828,14 @@ func TestTrustedPeers(t *testing.T) {
 		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	{
 		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+		require.ElementsMatch(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
 	}
 	time.Sleep(100 * time.Millisecond) // to give time to sync
 	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))

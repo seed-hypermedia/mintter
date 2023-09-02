@@ -5,9 +5,9 @@ import {
   BlockNode,
 } from './.generated/documents/v1alpha/documents_pb'
 import {EditorBlock, InlineContent, StyledText} from './editor-types'
-import {HDBlockChildrenType, TextAnnotation} from './hyperdocs-presentation'
+import {HMBlockChildrenType, TextAnnotation} from './hyperdocs-presentation'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
-// import {hdBlockSchema} from './schema'
+// import {hmBlockSchema} from './schema'
 
 function areStylesEqual(
   styles1: InternalAnnotation | null,
@@ -167,7 +167,7 @@ export function partialBlockToStyledText({
   return inlines
 }
 
-export type EditorChildrenType = HDBlockChildrenType
+export type EditorChildrenType = HMBlockChildrenType
 
 export type ServerToEditorRecursiveOpts = {
   headingLevel: number
@@ -201,7 +201,7 @@ export function serverBlockNodeToEditorParagraph(
     children: serverChildrenToEditorChildren(children, {
       ...opts,
       // childrenType: extractChildrenType(block.attributes.childrenType),
-      childrenType: block.attributes.childrenType as HDBlockChildrenType,
+      childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
     props: {
       type: serverBlock.block.attributes.type as 'p',

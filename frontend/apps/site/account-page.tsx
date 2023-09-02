@@ -1,3 +1,4 @@
+import {HYPERMEDIA_ACCOUNT_PREFIX} from '@mintter/shared'
 import {
   Avatar,
   Heading,
@@ -9,12 +10,12 @@ import {
 } from '@mintter/ui'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
-import {HDAccount} from 'server/json-hd'
+import {HMAccount} from 'server/json-hm'
 import {SiteHead} from 'site-head'
 import {trpc} from 'trpc'
 import Footer from './footer'
 
-function AccountContent({account}: {account: HDAccount | null | undefined}) {
+function AccountContent({account}: {account: HMAccount | null | undefined}) {
   if (isEmptyObject(account?.profile)) {
     return <AccountNotFound account={account} />
   }
@@ -51,7 +52,10 @@ export default function AccountPage({accountId}: {accountId: string}) {
   return (
     <YStack flex={1}>
       <Head>
-        <meta name="hyperdocs-entity-id" content={`hd://a/${accountId}`} />
+        <meta
+          name="hyperdocs-entity-id"
+          content={`${HYPERMEDIA_ACCOUNT_PREFIX}${accountId}`}
+        />
       </Head>
       <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
       <PageSection.Root flex={1}>

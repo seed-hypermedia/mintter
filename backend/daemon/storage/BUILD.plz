@@ -26,6 +26,9 @@ $TOOLS_GORUN -tags codegen generateSchema
 
 filegroup(
     name = "go_library",
-    srcs = glob(["*.go"]) + ["schema.sql"],
+    srcs = glob([
+        "*.go",
+        "litext/*",
+    ]) + ["schema.sql"],
     visibility = ["//backend/..."],
 )

@@ -252,8 +252,8 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 	}
 	return &site.SiteInfo{
 		Hostname:    srv.hostname,
-		Title:       title.GlobalMetaValue,
-		Description: description.GlobalMetaValue,
+		Title:       title.KVValue,
+		Description: description.KVValue,
 		Owner:       srv.owner.String(),
 	}, nil
 }
@@ -447,12 +447,12 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, fmt.Errorf("can't proxy: local p2p node is not ready yet: %w", err)
 	}
 
-	docEntity := hyper.EntityID("hd://d/" + in.DocumentId)
+	docEntity := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	toSync := []hyper.EntityID{docEntity}
 
 	for _, ref := range in.ReferencedDocuments {
-		toSync = append(toSync, hyper.EntityID("hd://d/"+ref.DocumentId))
+		toSync = append(toSync, hyper.EntityID("hm://d/"+ref.DocumentId))
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(7*time.Second))
@@ -481,10 +481,10 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 			return err
 		}
 
-		if record.HDEntitiesID != 0 {
-			recordEntity := hyper.EntityID(record.HDEntitiesEID)
-			if !recordEntity.HasPrefix("hd://d/") {
-				return fmt.Errorf("invalid entity ID for mintter document: %s", record.HDEntitiesEID)
+		if record.EntitiesID != 0 {
+			recordEntity := hyper.EntityID(record.EntitiesEID)
+			if !recordEntity.HasPrefix("hm://d/") {
+				return fmt.Errorf("invalid entity ID for mintter document: %s", record.EntitiesEID)
 			}
 
 			if recordEntity == docEntity && record.WebPublicationsVersion == in.Version {
@@ -493,7 +493,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 			if recordEntity != docEntity {
 				return fmt.Errorf("path %q is already taken by a different entity %q, can't use it for document %q", in.Path, recordEntity, in.DocumentId)
 			}
-			if err = sitesql.RemoveWebPublicationRecord(conn, record.HDEntitiesEID, record.WebPublicationsVersion); err != nil {
+			if err = sitesql.RemoveWebPublicationRecord(conn, record.EntitiesEID, record.WebPublicationsVersion); err != nil {
 				return fmt.Errorf("could not remove previous version [%s] in the same path: %w", record.WebPublicationsVersion, err)
 			}
 		}
@@ -533,7 +533,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	}
 	defer cancel()
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	records, err := sitesql.GetWebPublicationsByID(conn, string(eid))
 	if err != nil {
@@ -589,9 +589,9 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 	}
 
 	for _, record := range records {
-		docid := hyper.EntityID(record.HDEntitiesEID).TrimPrefix("hd://d/")
-		if docid == record.HDEntitiesEID {
-			return nil, fmt.Errorf("BUG: invalid entity ID %q for a document in web publications", record.HDEntitiesEID)
+		docid := hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/")
+		if docid == record.EntitiesEID {
+			return nil, fmt.Errorf("BUG: invalid entity ID %q for a document in web publications", record.EntitiesEID)
 		}
 
 		if in.DocumentId != "" && in.DocumentId != docid {
@@ -638,7 +638,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		return nil, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-		DocumentId: hyper.EntityID(record.HDEntitiesEID).TrimPrefix("hd://d/"),
+		DocumentId: hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/"),
 		Version:    record.WebPublicationsVersion,
 		LocalOnly:  true,
 	})

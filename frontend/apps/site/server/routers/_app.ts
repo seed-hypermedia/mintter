@@ -4,6 +4,7 @@ import {
   Changes,
   ContentGraph,
   Groups,
+  HYPERMEDIA_GROUP_PREFIX,
   Publications,
   Role,
   WebPublishing,
@@ -11,15 +12,15 @@ import {
 } from '@mintter/shared'
 import {localWebsiteClient, transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
-import {HDChangeInfo} from 'server/json-hd'
+import {HMChangeInfo} from '@mintter/ui'
 import {
-  hdAccount,
-  hdChangeInfo,
-  hdGroup,
-  hdLink,
-  hdPublication,
-  hdSiteInfo,
-} from 'server/to-json-hd'
+  hmAccount,
+  hmChangeInfo,
+  hmGroup,
+  hmLink,
+  hmPublication,
+  hmSiteInfo,
+} from 'server/to-json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
@@ -102,7 +103,7 @@ const publicationRouter = router({
         version: input.versionId || '',
       })
       return {
-        publication: hdPublication(pub),
+        publication: hmPublication(pub),
       }
     }),
   getEmbedMeta: procedure
@@ -122,7 +123,7 @@ const publicationRouter = router({
       })
       return {
         embeds: [],
-        // publication: hdPublication(pub),
+        // publication: hmPublication(pub),
       }
     }),
   getCitations: procedure
@@ -139,7 +140,7 @@ const publicationRouter = router({
         documentId: input.documentId,
       })
       return {
-        citationLinks: citationList.links.map(hdLink),
+        citationLinks: citationList.links.map(hmLink),
       }
     }),
 
@@ -160,15 +161,15 @@ const publicationRouter = router({
       if (!docId) throw new Error('docId not retreived from getPublication')
       const version = pub.version
       if (!version) throw new Error('version not retrieved from getPublication')
-      const changesIndex: Map<string, HDChangeInfo> = new Map()
+      const changesIndex: Map<string, HMChangeInfo> = new Map()
       const changeDeps: Map<string, Set<string>> = new Map()
       const downstreamChanges: Map<string, Set<string>> = new Map()
       // pub.changes = pub.changes || []
       const {documentId} = input
       const {changes} = await changesClient.listChanges({documentId})
       changes.forEach((change) => {
-        const hdChange = hdChangeInfo(change)
-        hdChange && changesIndex.set(change.id, hdChange)
+        const hmChange = hmChangeInfo(change)
+        hmChange && changesIndex.set(change.id, hmChange)
         if (!changeDeps.has(change.id)) changeDeps.set(change.id, new Set())
         change.deps.forEach((dep) => {
           changeDeps.get(change.id)!.add(dep)
@@ -214,7 +215,7 @@ const publicationRouter = router({
           ),
         ),
         allDeps: changeIdsToChanges(allDeps),
-        pub: hdPublication(pub),
+        pub: hmPublication(pub),
       }
     }),
 })
@@ -245,7 +246,7 @@ const groupRouter = router({
     .query(async ({input: {pathName, groupEid, version}}) => {
       // todo. get current group content and find the pathName, return the corresponding doc
       console.log('getting site info')
-      const groupId = `hd://g/${groupEid}`
+      const groupId = `${HYPERMEDIA_GROUP_PREFIX}${groupEid}`
       const siteInfo = await groupsClient.listContent({
         id: groupId,
         version,
@@ -263,13 +264,13 @@ const groupRouter = router({
         version: documentVersion,
       })
       return {
-        publication: hdPublication(pub),
+        publication: hmPublication(pub),
         pathName,
         documentId,
         documentVersion,
         groupVersion: version,
         groupEid,
-        group: hdGroup(group),
+        group: hmGroup(group),
       }
     }),
   get: procedure
@@ -281,11 +282,11 @@ const groupRouter = router({
     .query(async ({input}) => {
       console.log('will getGroup with id', input)
       const group = await groupsClient.getGroup({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
-      console.log('did get group', hdGroup(group))
+      console.log('did get group', hmGroup(group))
       return {
-        group: hdGroup(group),
+        group: hmGroup(group),
       }
     }),
   listContent: procedure
@@ -296,7 +297,7 @@ const groupRouter = router({
     )
     .query(async ({input}) => {
       const list = await groupsClient.listContent({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
       const listedDocs = await Promise.all(
         Object.entries(list.content).map(async ([pathName, pubUrl]) => {
@@ -311,7 +312,7 @@ const groupRouter = router({
             pathName,
             docId,
             version,
-            publication: hdPublication(pub),
+            publication: hmPublication(pub),
           }
         }),
       )
@@ -331,7 +332,7 @@ const groupRouter = router({
     )
     .query(async ({input}) => {
       const list = await groupsClient.listMembers({
-        id: `hd://g/${input.groupEid}`,
+        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
       })
       return Object.entries(list.members || {}).map(([account, role]) => ({
         account,
@@ -352,7 +353,7 @@ const accountRouter = router({
         id: input.accountId,
       })
       return {
-        account: hdAccount(account),
+        account: hmAccount(account),
       }
     }),
 })
@@ -360,7 +361,7 @@ const accountRouter = router({
 const siteInfoRouter = router({
   get: procedure.query(async () => {
     const siteInfo = await getSiteInfo()
-    return hdSiteInfo(siteInfo)
+    return hmSiteInfo(siteInfo)
   }),
 })
 

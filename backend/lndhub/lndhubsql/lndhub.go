@@ -81,8 +81,8 @@ func SetLoginSignature(conn *sqlite.Conn, signature string) error {
 // signed login message to access to account settings in lndhub.go.
 func GetLoginSignature(conn *sqlite.Conn) (string, error) {
 	res, err := getLoginSignature(conn, LoginSignatureKey)
-	if err == nil && res.GlobalMetaValue == "" {
+	if err == nil && res.KVValue == "" {
 		return "", fmt.Errorf("Could not find any signature associated with self node: %w", ErrEmptyResult)
 	}
-	return res.GlobalMetaValue, err
+	return res.KVValue, err
 }

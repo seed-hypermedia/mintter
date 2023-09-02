@@ -38,8 +38,8 @@ func init() {
 
 // Available types.
 const (
-	TypeKeyDelegation BlobType = "hyperdocs:KeyDelegation"
-	TypeChange        BlobType = "hyperdocs:Change"
+	TypeKeyDelegation BlobType = "KeyDelegation"
+	TypeChange        BlobType = "Change"
 )
 
 // Delegation purposes.
@@ -131,6 +131,9 @@ type Change struct {
 	// Delegation points to the blob where we can get the Account ID
 	// on which behalf this blob is signed.
 	Delegation cid.Cid `refmt:"delegation,omitempty"` // points to the delegation where we can get the account id
+
+	// Action is an option machine-readable description of an action that Change describes.
+	Action string `refmt:"action,omitempty"`
 
 	// Message is an optional human readable message.
 	Message string `refmt:"message,omitempty"`

@@ -58,26 +58,26 @@ func generateQueries() error {
 			), qb.Line,
 			"FROM", storage.Wallets, qb.Line,
 			"WHERE", storage.WalletsID, "IN (SELECT", qb.Results(
-				qb.ResultCol(storage.GlobalMetaValue),
+				qb.ResultCol(storage.KVValue),
 			), qb.Line,
-			"FROM", storage.GlobalMeta, qb.Line,
-			"WHERE", storage.GlobalMetaKey, "=", qb.Var("key", sqlitegen.TypeText), ")",
+			"FROM", storage.KV, qb.Line,
+			"WHERE", storage.KVKey, "=", qb.Var("key", sqlitegen.TypeText), ")",
 		),
 
 		qb.MakeQuery(storage.Schema, "setDefaultWallet", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", storage.GlobalMeta, qb.ListColShort(
-				storage.GlobalMetaKey,
-				storage.GlobalMetaValue,
+			"INSERT OR REPLACE INTO", storage.KV, qb.ListColShort(
+				storage.KVKey,
+				storage.KVValue,
 			), qb.Line,
 			"VALUES", qb.List(
-				qb.VarCol(storage.GlobalMetaKey),
-				qb.VarCol(storage.GlobalMetaValue),
+				qb.VarCol(storage.KVKey),
+				qb.VarCol(storage.KVValue),
 			),
 		),
 
 		qb.MakeQuery(storage.Schema, "removeDefaultWallet", sqlitegen.QueryKindExec,
-			"DELETE FROM", storage.GlobalMeta,
-			"WHERE", storage.GlobalMetaKey, "=", qb.Var("key", sqlitegen.TypeText), "",
+			"DELETE FROM", storage.KV,
+			"WHERE", storage.KVKey, "=", qb.Var("key", sqlitegen.TypeText), "",
 		),
 
 		qb.MakeQuery(storage.Schema, "updateWalletName", sqlitegen.QueryKindExec,

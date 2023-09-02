@@ -26,7 +26,7 @@ function queryWebLink(url: string, enabled: boolean) {
 
         // // for some reason the headers aren't coming through?!
         // return {
-        //   documentId: webResponse.headers.get('x-hd-document-id'),
+        //   documentId: webResponse.headers.get('x-hm-document-id'),
         //   documentVersion: webResponse.headers.get(
         //     'x-mintter-document-version',
         //   ),
@@ -47,19 +47,19 @@ function queryWebLink(url: string, enabled: boolean) {
           url
 
         // new aer meta tags
-        const hdEntityId = extractMetaTagValue(doc, 'hyperdocs-entity-id')
-        const hdIdMatch = hdEntityId ? hdEntityId.match(/hd:\/\/d\/(.*)/) : null
-        const hdDocId = hdIdMatch?.[1]
-        const hdEntityVersion = extractMetaTagValue(
+        const hmEntityId = extractMetaTagValue(doc, 'hyperdocs-entity-id')
+        const hmIdMatch = hmEntityId ? hmEntityId.match(/hm:\/\/d\/(.*)/) : null
+        const hmDocId = hmIdMatch?.[1]
+        const hmEntityVersion = extractMetaTagValue(
           doc,
           'hyperdocs-entity-version',
         )
-        const hdEntityTitle = extractMetaTagValue(doc, 'hyperdocs-entity-title')
+        const hmEntityTitle = extractMetaTagValue(doc, 'hyperdocs-entity-title')
 
         return {
-          documentId: hdDocId || fallbackDocumentId,
-          documentVersion: hdEntityVersion || fallbackDocumentVersion,
-          documentTitle: hdEntityTitle || fallbackDocumentTitle,
+          documentId: hmDocId || fallbackDocumentId,
+          documentVersion: hmEntityVersion || fallbackDocumentVersion,
+          documentTitle: hmEntityTitle || fallbackDocumentTitle,
           blockId: url.match(/#(.*)$/)?.[1] || undefined,
         }
       } catch (e) {

@@ -7,17 +7,15 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/must"
-	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	"github.com/jaevor/go-nanoid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -71,7 +69,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}
 
 	if in.ExistingDocumentId != "" {
-		eid := hyper.EntityID("hd://d/" + in.ExistingDocumentId)
+		eid := hyper.EntityID("hm://d/" + in.ExistingDocumentId)
 
 		_, err := api.blobs.FindDraft(ctx, eid)
 		if err == nil {
@@ -101,7 +99,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return nil, err
 		}
 
-		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{})
+		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{}, hyper.WithAction("Update"))
 		if err != nil {
 			return nil, err
 		}
@@ -113,10 +111,14 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.ExistingDocumentId})
 	}
 
-	docid := newDocumentID()
-	eid := hyper.EntityID("hd://d/" + docid)
+	clock := hlc.NewClock()
+	ts := clock.Now()
+	now := ts.Time().Unix()
 
-	entity := hyper.NewEntity(eid)
+	docid, nonce := hyper.NewUnforgeableID(me.Account().Principal(), nil, now)
+	eid := hyper.EntityID("hm://d/" + docid)
+
+	entity := hyper.NewEntityWithClock(eid, clock)
 
 	del, err := api.getDelegation(ctx)
 	if err != nil {
@@ -128,15 +130,10 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	dm.nextHLC = dm.e.NextTimestamp() // TODO(burdiyan): this is a workaround that should not be necessary.
-
-	now := time.Now()
-	if err := dm.SetCreateTime(now); err != nil {
-		return nil, err
-	}
-	if err := dm.SetAuthor(me.Account().Principal()); err != nil {
-		return nil, err
-	}
+	dm.nextHLC = ts
+	dm.patch["nonce"] = nonce
+	dm.patch["createTime"] = int(now)
+	dm.patch["owner"] = []byte(me.Account().Principal())
 
 	_, err = dm.Commit(ctx, api.blobs)
 	if err != nil {
@@ -163,7 +160,7 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 		return nil, err
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	draft, err := api.blobs.LoadDraft(ctx, eid)
 	if err != nil {
@@ -235,7 +232,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, err
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	entity, err := api.blobs.LoadDraftEntity(ctx, eid)
 	if err != nil {
@@ -260,7 +257,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 // ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "hd://d/")
+	entities, err := api.blobs.ListEntities(ctx, "hm://d/")
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +267,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 	}
 
 	for _, e := range entities {
-		docid := e.TrimPrefix("hd://d/")
+		docid := e.TrimPrefix("hm://d/")
 		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
 			DocumentId: docid,
 		})
@@ -289,7 +286,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	oid, err := eid.CID()
 	if err != nil {
@@ -320,7 +317,7 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 		return nil, status.Errorf(codes.InvalidArgument, "must specify draft ID to delete")
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	if err := api.blobs.DeleteDraft(ctx, eid); err != nil {
 		return nil, err
@@ -335,7 +332,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, status.Errorf(codes.InvalidArgument, "must specify document ID to get the draft")
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 	version := hyper.Version(in.Version)
 
 	pub, err := api.loadPublication(ctx, eid, version, in.TrustedOnly)
@@ -424,7 +421,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID to delete")
 	}
 
-	eid := hyper.EntityID("hd://d/" + in.DocumentId)
+	eid := hyper.EntityID("hm://d/" + in.DocumentId)
 
 	if err := api.blobs.DeleteEntity(ctx, eid); err != nil {
 		return nil, err
@@ -435,7 +432,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	entities, err := api.blobs.ListEntities(ctx, "hd://d/")
+	entities, err := api.blobs.ListEntities(ctx, "hm://d/")
 	if err != nil {
 		return nil, err
 	}
@@ -445,7 +442,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 
 	for _, e := range entities {
-		docid := e.TrimPrefix("hd://d/")
+		docid := e.TrimPrefix("hm://d/")
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId:  docid,
 			LocalOnly:   true,
@@ -503,13 +500,4 @@ func (api *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
-}
-
-// Almost same as standard nanoid, but removing non-alphanumeric chars, to get a bit nicer selectable string.
-// Using a bit larger length to compensate.
-// See https://zelark.github.io/nano-id-cc for playing around with collision resistance.
-var nanogen = must.Do2(nanoid.CustomASCII("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 22))
-
-func newDocumentID() string {
-	return nanogen()
 }

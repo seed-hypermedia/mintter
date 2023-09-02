@@ -7,6 +7,7 @@ package qb
 import (
 	"fmt"
 	"mintter/backend/pkg/sqlitegen"
+	"strconv"
 	"strings"
 )
 
@@ -75,6 +76,8 @@ func newSegment(s sqlitegen.Schema, v interface{}) (writeFunc func(*queryBuilder
 		if opt == "\n" {
 			isNewLine = true
 		}
+	case int:
+		writeFunc = func(qb *queryBuilder) { qb.WriteString(strconv.Itoa(opt)) }
 	case rune:
 		writeFunc = func(qb *queryBuilder) { qb.WriteRune(opt) }
 		if opt == '\n' {
@@ -232,6 +235,33 @@ func Insert(cols ...sqlitegen.Column) Opt {
 	}
 }
 
+// InsertOrIgnore generates a complete insert or ignore statement.
+func InsertOrIgnore(cols ...sqlitegen.Column) Opt {
+	if len(cols) == 0 {
+		panic("INSERT OR IGNORE statement must have columns to insert")
+	}
+	return func(qb *queryBuilder) {
+		var table sqlitegen.Table
+
+		varCols := make([]interface{}, len(cols))
+		for i, c := range cols {
+			if i == 0 {
+				table = qb.schema.GetColumnTable(c)
+			} else {
+				if table != qb.schema.GetColumnTable(c) {
+					panic("BUG: inserting columns from unrelated tables")
+				}
+			}
+			varCols[i] = VarCol(c)
+		}
+
+		qb.writeSegments(
+			"INSERT OR IGNORE INTO", table, ListColShort(cols...), Line,
+			"VALUES", List(varCols...),
+		)
+	}
+}
+
 // Results annotates SQL expressions or concrete columns to become outputs of a SQL query.
 // The argument must be ResultOpt or Column.
 func Results(rr ...any) Opt {
@@ -365,6 +395,18 @@ func VarCol(col sqlitegen.Column) Opt {
 		sym := sqlitegen.GoSymbol{
 			Name: sqlitegen.GoNameFromSQLName(col.String(), false),
 			Type: qb.schema.GetColumnType(col),
+		}
+		qb.AddInput(sym)
+		qb.WriteString(":" + sym.Name)
+	}
+}
+
+// VarColType is the same as VarCol but forces the type.
+func VarColType(col sqlitegen.Column, t sqlitegen.Type) Opt {
+	return func(qb *queryBuilder) {
+		sym := sqlitegen.GoSymbol{
+			Name: sqlitegen.GoNameFromSQLName(col.String(), false),
+			Type: t,
 		}
 		qb.AddInput(sym)
 		qb.WriteString(":" + sym.Name)

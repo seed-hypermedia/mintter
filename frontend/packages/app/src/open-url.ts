@@ -1,7 +1,7 @@
-import {getIdsfromUrl, HYPERDOCS_LINK_PREFIX} from '@mintter/shared'
-import {NavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {useMemo} from 'react'
 import {useAppContext} from '@mintter/app/src/app-context'
+import {NavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
+import {getIdsfromUrl, HYPERMEDIA_DOCUMENT_PREFIX} from '@mintter/shared'
+import {useMemo} from 'react'
 
 export function useOpenUrl() {
   const {externalOpen} = useAppContext()
@@ -11,16 +11,16 @@ export function useOpenUrl() {
     return (url?: string, newWindow?: boolean) => {
       if (!url) return
 
-      if (url.startsWith(HYPERDOCS_LINK_PREFIX)) {
-        const hdIds = getIdsfromUrl(url)
-        if (!hdIds[0]) {
+      if (url.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
+        const hmIds = getIdsfromUrl(url)
+        if (!hmIds[0]) {
           throw new Error('Cannot parse Hyperdocs URL without document ID')
         }
         const pubRoute: NavRoute = {
           key: 'publication',
-          documentId: hdIds[0],
-          versionId: hdIds[1],
-          blockId: hdIds[2],
+          documentId: hmIds[0],
+          versionId: hmIds[1],
+          blockId: hmIds[2],
         }
         if (newWindow) {
           spawn(pubRoute)

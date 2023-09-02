@@ -1,15 +1,32 @@
--- Stores global metadata/configuration about any other table
-CREATE TABLE global_meta (
+-- Stores arbitrary key/value data that didn't deserve its own table.
+CREATE TABLE kv (
     key TEXT PRIMARY KEY,
     value TEXT
 ) WITHOUT ROWID;
 
+-- Lookup values that are used in other tables
+-- as integers to reduce the database size.
+-- Using a single table for different types of values,
+-- to allow polymorphic foreign keys in other tables.
+-- TODO(burdiyan): eventually this table would need periodic cleanup,
+-- because when values get unreferenced they will remain in the table anyway.
+CREATE TABLE lookup (
+    id INTEGER PRIMARY KEY,
+    -- Type of the value.
+    -- See Lookup* constants in schema.go file for possible options.
+    -- We use unicode code points to make it easier to write queries.
+    type INTEGER NOT NULL,
+    value NOT NULL
+);
+
+-- Using hash of the value to reduce the size of the index.
+-- We additionally have a covering index by type and value.
+CREATE UNIQUE INDEX lookup_value_unique ON lookup (sha1(value));
+
+CREATE INDEX lookup_by_type ON lookup (type, value);
+
 -- Stores the content of IPFS blobs.
 CREATE TABLE blobs (
-    -- Short numerical ID to be used internally.
-    -- The same ID is used for table 'changes'
-    -- to avoid unnecessary joins.
-    -- Using AUTOINCREMENT here to use monotonically increasing IDs as a cursor for syncing.
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     -- Original multihash of the IPFS blob.
     -- We don't store CIDs, this is what most blockstore
@@ -31,165 +48,158 @@ CREATE TABLE blobs (
     insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 );
 
--- Stores known public keys and maps them to local short integer IDs.
-CREATE TABLE public_keys (
-    id INTEGER PRIMARY KEY,
-    -- Principal is multicodec prefixed public key bytes.
-    -- See https://github.com/multiformats/multicodec/blob/master/table.csv for possible values.
-    principal BLOB UNIQUE NOT NULL
-);
+CREATE VIEW public_keys AS
+SELECT
+    id,
+    value AS principal
+FROM lookup
+WHERE type = unicode('p');
 
 -- Stores the accounts that used marked as trusted.
 CREATE TABLE trusted_accounts (
-    -- Account that we trust
-    id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
+    -- Account that we trust. Lookup value must be of type public key.
+    id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (id)
 ) WITHOUT ROWID;
 
--- Stores derived information from Key Delegation blobs.
-CREATE TABLE key_delegations (
-    -- Issuer key.
-    issuer INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
-    -- Delegate key.
-    delegate INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
-    -- Key delegation blob ID.
-    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    -- Issue time.
-    issue_time INTEGER NOT NULL,
-    PRIMARY KEY (issuer, delegate, blob)
-) WITHOUT ROWID;
-
-CREATE INDEX idx_key_delegations_by_delegate ON key_delegations (delegate, issuer, blob);
-
-CREATE INDEX idx_key_delegations_by_blob ON key_delegations (blob, issuer, delegate);
-
--- View of key delegations dereferencing foreign keys.
-CREATE VIEW key_delegations_view AS
-    SELECT
-        kd.blob AS blob,
-        blobs.codec AS blob_codec,
-        blobs.multihash AS blob_multihash,
-        iss.principal AS issuer,
-        del.principal AS delegate,
-        kd.issue_time AS issue_time
-    FROM key_delegations kd
-    JOIN blobs ON blobs.id = kd.blob
-    JOIN public_keys iss ON iss.id = kd.issuer
-    JOIN public_keys del ON del.id = kd.delegate
-;
-
--- Stores IDs of Hypermedia Entities.
-CREATE TABLE hd_entities (
-    -- Local shorthand ID.
-    id INTEGER PRIMARY KEY,
-    -- Entity ID.
-    eid TEXT UNIQUE NOT NULL CHECK (eid != '')
-);
+CREATE VIEW entities AS
+SELECT
+    id,
+    value AS eid
+FROM lookup
+WHERE type = unicode('r');
 
 -- Changes to the Hypermedia Entities.
-CREATE TABLE hd_changes (
+CREATE TABLE changes (
     -- Entity being changed.
-    entity INTEGER REFERENCES hd_entities (id) NOT NULL,
+    entity INTEGER REFERENCES lookup (id) NOT NULL,
     -- Blob ID of the change.
     blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
     -- HLC timestamp of the change.
     hlc_time INTEGER NOT NULL,
     -- Author of the change.
-    author INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+    author INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (entity, blob)
 ) WITHOUT ROWID;
 
-CREATE INDEX idx_hd_changes_to_entity ON hd_changes (blob, entity);
+CREATE INDEX changes_by_entity ON changes (blob, entity);
+CREATE INDEX changes_by_author ON changes (author);
 
 -- View of changes with dereferences foreign keys.
-CREATE VIEW hd_changes_view AS
-    SELECT
-        hd_changes.blob AS blob_id,
-        hd_changes.entity AS entity_id,
-        hd_changes.hlc_time AS hlc_time,
-        hd_entities.eid AS entity,
-        blobs.codec AS codec,
-        blobs.multihash AS multihash,
-        blobs.data AS data,
-        blobs.size AS size
-    FROM hd_changes
-    JOIN blobs ON blobs.id = hd_changes.blob
-    JOIN hd_entities ON hd_changes.entity = hd_entities.id
-;
+CREATE VIEW changes_view AS
+SELECT
+    changes.blob AS blob_id,
+    changes.entity AS entity_id,
+    changes.hlc_time AS hlc_time,
+    entities.eid AS entity,
+    blobs.codec AS codec,
+    blobs.multihash AS multihash,
+    blobs.data AS data,
+    blobs.size AS size
+FROM changes
+JOIN blobs ON blobs.id = changes.blob
+JOIN entities ON changes.entity = entities.id;
 
 -- Draft changes. Only one draft is allowed for now.
-CREATE TABLE hd_drafts (
-    entity INTEGER PRIMARY KEY REFERENCES hd_entities (id) ON DELETE CASCADE NOT NULL,
-    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL
-);
+CREATE TABLE drafts (
+    entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (entity, blob)
+) WITHOUT ROWID;
+
+CREATE INDEX drafts_by_blob ON drafts (blob);
+
+-- Index to ensure only one draft is allowed. Defining it separately,
+-- so it's easier to drop eventually without a complex migration.
+CREATE UNIQUE INDEX drafts_unique ON drafts (entity);
 
 CREATE VIEW public_blobs_view AS
-    SELECT
-        blobs.id,
-        blobs.codec,
-        blobs.multihash
-    FROM blobs
-    LEFT OUTER JOIN hd_drafts ON hd_drafts.blob = blobs.id
-    WHERE hd_drafts.blob IS NULL
-;
+SELECT
+    blobs.id,
+    blobs.codec,
+    blobs.multihash
+FROM blobs
+LEFT OUTER JOIN drafts ON drafts.blob = blobs.id
+WHERE drafts.blob IS NULL;
 
 -- View of drafts with dereferenced foreign keys.
-CREATE VIEW hd_drafts_view AS
-    SELECT
-        hd_drafts.entity AS entity_id,
-        hd_drafts.blob AS blob_id,
-        hd_entities.eid AS entity,
-        blobs.codec AS codec,
-        blobs.multihash AS multihash
-    FROM hd_drafts
-    JOIN hd_entities ON hd_entities.id = hd_drafts.entity
-    JOIN blobs ON blobs.id = hd_drafts.blob
-;
+CREATE VIEW drafts_view AS
+SELECT
+    drafts.entity AS entity_id,
+    drafts.blob AS blob_id,
+    entities.eid AS entity,
+    blobs.codec AS codec,
+    blobs.multihash AS multihash
+FROM drafts
+JOIN entities ON entities.id = drafts.entity
+JOIN blobs ON blobs.id = drafts.blob;
 
--- Stores links between blobs.
-CREATE TABLE hd_links (
-    source_blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    -- TODO(burdiyan): normalize this to reduce disk usage.
+CREATE TABLE blob_links (
+    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    target INTEGER REFERENCES blobs (id) NOT NULL,
     rel TEXT NOT NULL,
-    target_entity INTEGER REFERENCES hd_entities (id),
-    target_blob INTEGER REFERENCES blobs (id),
-    data BLOB,
-    CHECK ((target_entity, target_blob) IS NOT (null, null))
+    PRIMARY KEY (source, rel, target)
+) WITHOUT ROWID;
+
+CREATE UNIQUE INDEX blob_links_by_rel ON blob_links (rel, source, target);
+CREATE UNIQUE INDEX blob_links_by_target ON blob_links (target, rel, source);
+
+CREATE TABLE blob_attrs (
+    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    key TEXT NOT NULL,
+    anchor TEXT NOT NULL DEFAULT (''),
+    is_lookup INTEGER NOT NULL DEFAULT (0),
+    value,
+    extra,
+    ts INTEGER NOT NULL,
+    value_ptr INTEGER REFERENCES lookup (id) GENERATED ALWAYS AS (IIF(is_lookup = 1, value, NULL)) VIRTUAL
 );
 
--- These are probably not the most optimal indices.
-CREATE INDEX idx_hd_links_blobs ON hd_links (source_blob, target_blob) WHERE target_blob IS NOT NULL;
-CREATE INDEX idx_hd_links_blobs_rev ON hd_links (target_blob, source_blob) WHERE target_blob IS NOT NULL;
-CREATE INDEX idx_hd_links_by_target_entity ON hd_links (target_entity) WHERE target_entity IS NOT NULL;
+CREATE INDEX blob_attrs_by_key ON blob_attrs (key, blob);
+CREATE INDEX blob_attrs_by_blob ON blob_attrs (blob, key);
+CREATE INDEX blob_attrs_by_value ON blob_attrs (value_ptr, key) WHERE value_ptr IS NOT NULL;
+
+CREATE VIEW key_delegations AS
+SELECT
+    blob AS blob,
+    MAX(IIF(key = 'kd/issuer', value_ptr, NULL)) AS issuer,
+    MAX(IIF(key = 'kd/delegate', value_ptr, NULL)) AS delegate
+FROM blob_attrs
+WHERE key IN ('kd/issuer', 'kd/delegate')
+GROUP BY blob;
+
+-- View of key delegations dereferencing foreign keys.
+CREATE VIEW key_delegations_view AS
+SELECT
+    kd.blob AS blob,
+    blobs.codec AS blob_codec,
+    blobs.multihash AS blob_multihash,
+    iss.principal AS issuer,
+    del.principal AS delegate
+FROM key_delegations kd
+JOIN blobs ON blobs.id = kd.blob
+JOIN public_keys iss ON iss.id = kd.issuer
+JOIN public_keys del ON del.id = kd.delegate;
+
+-- Stores head blobs for each resource.
+-- Each named head can have more than one blob,
+-- so there can be multiple rows for each resource and name.
+CREATE TABLE heads (
+    resource INTEGER REFERENCES lookup (id) NOT NULL,
+    name TEXT NOT NULL,
+    blob INTEGER REFERENCES blobs (id) NOT NULL,
+    PRIMARY KEY (resource, name, blob)
+) WITHOUT ROWID;
+
+CREATE INDEX heads_by_blob ON heads (blob);
 
 -- View for dependency links between changes.
-CREATE VIEW hd_change_deps AS
-    SELECT
-        source_blob AS child,
-        target_blob AS parent
-    FROM hd_links
-    WHERE rel = 'change:depends'
-    AND target_blob IS NOT NULL
-;
-
-CREATE VIEW content_links_view AS
-    SELECT
-        hd_changes.entity AS source_entity,
-        sources.eid AS source_eid,
-        hd_links.source_blob AS source_blob,
-        blobs.codec AS source_blob_codec,
-        blobs.multihash AS source_blob_multihash,
-        hd_links.rel AS rel,
-        hd_links.target_entity AS target_entity,
-        targets.eid AS target_eid,
-        hd_links.data AS data
-    FROM hd_links
-    JOIN hd_changes ON hd_changes.blob = hd_links.source_blob
-    JOIN blobs ON blobs.id = hd_links.source_blob
-    JOIN hd_entities sources ON sources.id = hd_changes.entity
-    JOIN hd_entities targets ON targets.id = hd_links.target_entity
-    WHERE rel GLOB 'href*'
-    AND target_entity IS NOT NULL
-;
+CREATE VIEW change_deps AS
+SELECT
+    source AS child,
+    target AS parent
+FROM blob_links
+WHERE rel = 'change/dep';
 
 -- Stores Lightning wallets both externals (imported wallets like bluewallet
 -- based on lndhub) and internals (based on the LND embedded node).
@@ -225,8 +235,10 @@ CREATE TABLE sites (
     addresses TEXT NOT NULL CHECK(addresses <> ''),
     -- The account ID of the site. We need a previous connection to the site so the 
     -- actual account is inserted in the accounts table when handshake.
-    account_id INTEGER REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL
+    account_id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL
 ) WITHOUT ROWID;
+
+CREATE INDEX sites_by_account ON sites (account_id);
 
 -- Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
 -- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
@@ -244,11 +256,12 @@ CREATE TABLE invite_tokens (
 -- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 CREATE TABLE site_members (
     -- The account id that has been linked to a role on this site
-    account_id INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+    account_id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
     -- The role of the site member.
     -- OWNER = 1 | EDITOR = 2.
-    role INTEGER NOT NULL CHECK (role != 0)
-);
+    role INTEGER NOT NULL CHECK (role != 0),
+    PRIMARY KEY (account_id)
+) WITHOUT ROWID;
 
 -- We currently only allow one owner per site.
 CREATE UNIQUE INDEX idx_site_owner ON site_members (role) WHERE role = 1;
@@ -270,11 +283,13 @@ CREATE TABLE served_sites (
     -- the domain + protocol the site is served in.
     hostname TEXT CHECK (hostname <> '') PRIMARY KEY,
     -- entity ID of the group the site is associated with.
-    group_id INTEGER REFERENCES hd_entities (id) ON DELETE NO ACTION NOT NULL,
+    group_id INTEGER REFERENCES lookup (id) NOT NULL,
     -- the version of the group the site is serving.
     version TEXT NOT NULL,
     -- account id of the owner of the group.
-    owner_id INTEGER REFERENCES public_keys (id) ON DELETE NO ACTION NOT NULL,
+    owner_id INTEGER REFERENCES lookup (id) NOT NULL,
     -- same version + groupid cannot be published in different histnames.
     UNIQUE(group_id, version) ON CONFLICT REPLACE
 );
+
+CREATE INDEX served_sites_by_owner ON served_sites (owner_id);

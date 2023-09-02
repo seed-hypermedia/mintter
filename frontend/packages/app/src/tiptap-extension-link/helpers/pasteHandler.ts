@@ -106,7 +106,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               options.editor
                 .chain()
                 .command(({tr}) => {
-                  tr.setMeta('hdPlugin:uncheckedLink', id)
+                  tr.setMeta('hmPlugin:uncheckedLink', id)
                   return true
                 })
                 .setMark(options.type, {
@@ -280,7 +280,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   linkStart,
                   linkEnd,
                   options.type.create({href: fragmentLink.href, id}),
-                ).setMeta('hdPlugin:uncheckedLink', id)
+                ).setMeta('hmPlugin:uncheckedLink', id)
               }
             })
           }

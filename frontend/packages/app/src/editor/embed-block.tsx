@@ -24,7 +24,7 @@ import {Spinner, Text, XStack, YStack} from '@mintter/ui'
 import {useEffect, useMemo, useState} from 'react'
 import {getBlockInfoFromPos} from '../blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 import {createReactBlockSpec} from '../blocknote-react'
-import {HDBlockSchema, hdBlockSchema} from '../client/schema'
+import {HMBlockSchema, hmBlockSchema} from '../client/schema'
 import {usePublication} from '../models/documents'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {useOpenUrl} from '../open-url'
@@ -69,7 +69,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
         if (content.type === 'link') {
           return (
             <span
-              className={isHyperdocsScheme(content.href) ? 'hd-link' : 'link'}
+              className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
               onClick={() => {
                 openUrl(content.href, true)
               }}
@@ -129,8 +129,8 @@ function EmbedPresentation({
   block,
   editor,
 }: {
-  block: BlockNoteBlock<typeof hdBlockSchema>
-  editor?: BlockNoteEditor<typeof hdBlockSchema>
+  block: BlockNoteBlock<typeof hmBlockSchema>
+  editor?: BlockNoteEditor<typeof hmBlockSchema>
 }) {
   let spawn = useNavigate('spawn')
   let embed = useEmbed(block.props.ref)
@@ -217,8 +217,8 @@ function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
 }
 
 function useSelected(
-  block: BlockNoteBlock<HDBlockSchema>,
-  editor?: BlockNoteEditor<HDBlockSchema>,
+  block: BlockNoteBlock<HMBlockSchema>,
+  editor?: BlockNoteEditor<HMBlockSchema>,
 ) {
   const [selected, setSelected] = useState(false)
 

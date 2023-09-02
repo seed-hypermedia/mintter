@@ -102,7 +102,7 @@ describe('Editor to Server: ', () => {
   //   test('single embed', () => {
   //     const extracted = extractContent([
   //       {type: 'text', text: 'Hello', styles: {}},
-  //       {type: 'embed', ref: 'hd://foobar'},
+  //       {type: 'embed', ref: 'hm://foobar'},
   //     ])
 
   //     expect(extracted).toEqual({
@@ -110,7 +110,7 @@ describe('Editor to Server: ', () => {
   //       annotations: [
   //         {
   //           type: 'embed',
-  //           ref: 'hd://foobar',
+  //           ref: 'hm://foobar',
   //           starts: [5],
   //           ends: [6],
   //           attributes: {},
@@ -162,7 +162,7 @@ describe('editorBlockToServerBlock', () => {
           children: [],
           content: [],
           props: {
-            ref: 'hd://foo',
+            ref: 'hm://foo',
             // why is this garbage required for embed props??:
             backgroundColor: 'default',
             textColor: 'default',
@@ -174,7 +174,7 @@ describe('editorBlockToServerBlock', () => {
             id: 'abc',
             type: 'embed',
             attributes: {},
-            ref: 'hd://foo',
+            ref: 'hm://foo',
           }),
         )
       })
@@ -189,7 +189,7 @@ describe('editorBlockToServerBlock', () => {
   //       children: [],
   //       content: [],
   //       props: {
-  //         ref: 'hd://foobar',
+  //         ref: 'hm://foobar',
   //         // TODO: remove this garbage for image props
   //         backgroundColor: 'default',
   //         textColor: 'default',
@@ -201,7 +201,7 @@ describe('editorBlockToServerBlock', () => {
   //         id: 'abc',
   //         type: 'embed',
   //         attributes: {},
-  //         ref: 'hd://foobar',
+  //         ref: 'hm://foobar',
   //       }),
   //     )
   //   })

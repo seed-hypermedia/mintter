@@ -4,7 +4,7 @@ import {
   BlockSchema,
   DefaultBlockSchema,
 } from '@mintter/app/src/blocknote-core'
-import {HDBlockSchema} from '@mintter/app/src/client/schema'
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {DependencyList, FC, useEffect, useState} from 'react'
 import {blockNoteToMantineTheme} from '../BlockNoteTheme'
 import {createReactBlockSideMenuFactory} from '../BlockSideMenu/BlockSideMenuFactory'
@@ -31,7 +31,7 @@ function useForceUpdate() {
 /**
  * Main hook for importing a BlockNote editor into a React project
  */
-export const useBlockNote = <BSchema extends HDBlockSchema>(
+export const useBlockNote = <BSchema extends HMBlockSchema>(
   options: Partial<
     BlockNoteEditorOptions<BSchema> & {
       customElements: CustomElements<BSchema>

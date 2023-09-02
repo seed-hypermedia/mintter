@@ -2,7 +2,7 @@ import {
   abbreviateCid,
   formattedDate,
   getIdsfromUrl,
-  HDTimestamp,
+  HMTimestamp,
   pluralS,
 } from '@mintter/shared'
 import {
@@ -22,7 +22,7 @@ import {format} from 'date-fns'
 import {NextLink} from 'next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {HDBlockNode, HDChangeInfo, HDLink, HDPublication} from 'server/json-hd'
+import {HMBlockNode, HMChangeInfo, HMLink, HMPublication} from '@mintter/ui'
 import {trpc} from './trpc'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
@@ -62,7 +62,7 @@ function useInterval(ms: number) {
 }
 
 function useFormattedTime(
-  time: string | Date | HDTimestamp | null | undefined,
+  time: string | Date | HMTimestamp | null | undefined,
   onlyRelative?: boolean,
 ) {
   const updateInterval = useInterval(10_000) // update the time every 10 seconds
@@ -78,7 +78,7 @@ function useFormattedTime(
 export function AuthorsMeta({
   publication,
 }: {
-  publication?: HDPublication | null
+  publication?: HMPublication | null
 }) {
   if (!publication) return null
   const editors = publication?.document?.editors
@@ -119,8 +119,8 @@ function DepPreview({
   displayAuthor = false,
   pathName,
 }: {
-  dep: HDChangeInfo | null
-  publication?: HDPublication | null
+  dep: HMChangeInfo | null
+  publication?: HMPublication | null
   displayAuthor?: boolean
   pathName?: string
 }) {
@@ -148,7 +148,7 @@ function NextVersionsMeta({
   publication,
   pathName,
 }: {
-  publication?: HDPublication | null
+  publication?: HMPublication | null
   pathName?: string
 }) {
   const docChanges = trpc.publication.getChanges.useQuery(
@@ -184,7 +184,7 @@ function VersionsMeta({
   publication,
   pathName,
 }: {
-  publication?: HDPublication | null
+  publication?: HMPublication | null
   pathName?: string
 }) {
   const docChanges = trpc.publication.getChanges.useQuery(
@@ -289,7 +289,7 @@ function VersionsMeta({
 
 type EmbedRef = {ref: string; blockId: string}
 
-function surfaceEmbedRefs(children?: HDBlockNode[]): EmbedRef[] {
+function surfaceEmbedRefs(children?: HMBlockNode[]): EmbedRef[] {
   if (!children) return []
   let refs: EmbedRef[] = []
   for (let child of children) {
@@ -349,7 +349,7 @@ function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
   )
 }
 
-function EmbedMeta({publication}: {publication?: HDPublication | null}) {
+function EmbedMeta({publication}: {publication?: HMPublication | null}) {
   const embedRefs = useMemo(() => {
     return surfaceEmbedRefs(publication?.document?.children)
   }, [publication?.document?.children])
@@ -370,7 +370,7 @@ function EmbedMeta({publication}: {publication?: HDPublication | null}) {
   )
 }
 
-function CitationPreview({citationLink}: {citationLink: HDLink}) {
+function CitationPreview({citationLink}: {citationLink: HMLink}) {
   const {source, target} = citationLink
   const sourcePub = trpc.publication.get.useQuery(
     {
@@ -392,7 +392,7 @@ function CitationPreview({citationLink}: {citationLink: HDLink}) {
 }
 function CitationsMeta({
   publication,
-}: {publication?: HDPublication | null} = {}) {
+}: {publication?: HMPublication | null} = {}) {
   const citations = trpc.publication.getCitations.useQuery(
     {
       documentId: publication?.document?.id,
@@ -448,7 +448,7 @@ function TOCHeading({heading}: {heading: SectionHeading}) {
   )
 }
 
-function getToc(blockNodes?: HDBlockNode[] | null): SectionHeading[] {
+function getToc(blockNodes?: HMBlockNode[] | null): SectionHeading[] {
   if (!blockNodes) return []
   let headings: SectionHeading[] = []
   for (let blockNode of blockNodes) {
@@ -470,7 +470,7 @@ function getToc(blockNodes?: HDBlockNode[] | null): SectionHeading[] {
 
 export function TableOfContents({
   publication,
-}: {publication?: HDPublication | null} = {}) {
+}: {publication?: HMPublication | null} = {}) {
   const toc = useMemo(
     () => getToc(publication?.document?.children),
     [publication],
@@ -490,7 +490,7 @@ export function PublicationMetadata({
   publication,
   pathName,
 }: {
-  publication?: HDPublication | null
+  publication?: HMPublication | null
   pathName?: string
 }) {
   if (!publication) return null
@@ -570,7 +570,7 @@ export function PublishedMeta({
   publication,
   pathName,
 }: {
-  publication?: HDPublication | null
+  publication?: HMPublication | null
   pathName?: string
 }) {
   const pathRecord = trpc.publication.getPath.useQuery(

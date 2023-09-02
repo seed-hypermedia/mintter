@@ -1,7 +1,7 @@
-export type HDBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
+export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
 
-export type HDBlockAttributes = {
-  childrenType?: HDBlockChildrenType // default is "group"
+export type HMBlockAttributes = {
+  childrenType?: HMBlockChildrenType // default is "group"
   start?: string // interpret as a number
   showContent?: string // interpret as a bool
 }
@@ -10,7 +10,7 @@ export type ParagraphBlock = {
   id: string
   type: 'paragraph'
   text: string
-  attributes: HDBlockAttributes
+  attributes: HMBlockAttributes
   annotations: TextAnnotation[]
 }
 
@@ -18,7 +18,7 @@ export type HeadingBlock = {
   id: string
   type: 'heading'
   text: string
-  attributes: HDBlockAttributes
+  attributes: HMBlockAttributes
   annotations: TextAnnotation[]
 }
 
@@ -38,7 +38,7 @@ export type ImageBlock = {
   content: ''
   annotations: []
   ref: string // ipfs://..., https://...
-  attributes: HDBlockAttributes & {
+  attributes: HMBlockAttributes & {
     alt?: string
   }
 }
@@ -48,7 +48,7 @@ export type EmbedBlock = {
   type: 'embed'
   content: ''
   ref: string // ipfs://..., https://...
-  attributes: HDBlockAttributes
+  attributes: HMBlockAttributes
 }
 
 export type PresentationBlock =
@@ -62,7 +62,7 @@ export type InlineEmbedAnnotation = {
   type: 'embed'
   starts: number[]
   ends: number[]
-  ref: string // 'hd://... with #BlockRef
+  ref: string // 'hm://... with #BlockRef
   attributes: {}
 }
 

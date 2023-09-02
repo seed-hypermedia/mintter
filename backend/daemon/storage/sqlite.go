@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"mintter/backend/daemon/storage/litext"
 	"mintter/backend/testutil"
 	"path/filepath"
 	"testing"
@@ -11,18 +12,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+import "C"
+
 // OpenSQLite opens a connection pool for SQLite, enabling some needed functionality for our schema
 // like foreign keys.
 func OpenSQLite(uri string, flags sqlite.OpenFlags, poolSize int) (*sqlitex.Pool, error) {
 	return openSQLite(uri, flags, poolSize,
-		"PRAGMA encoding = \"UTF-8\";",
 		"PRAGMA foreign_keys = ON;",
 		"PRAGMA synchronous = NORMAL;",
 		"PRAGMA journal_mode = WAL;",
+
+		// Setting up some in-memory tables for materializing some query results temporarily.
+		"ATTACH DATABASE ':memory:' AS mem;",
+		"CREATE TABLE mem.changes (id INTEGER PRIMARY KEY);",
+		"CREATE TABLE mem.change_deps (child INTEGER, parent INTEGER, PRIMARY KEY (child, parent), UNIQUE (parent, child)) WITHOUT ROWID;",
 	)
 }
 
 func openSQLite(uri string, flags sqlite.OpenFlags, poolSize int, prelude ...string) (*sqlitex.Pool, error) {
+	if err := litext.LoadExtensions(); err != nil {
+		return nil, err
+	}
+
 	pool, err := sqlitex.Open(uri, flags, poolSize)
 	if err != nil {
 		return nil, err

@@ -130,7 +130,7 @@ func TestListContent(t *testing.T) {
 	group, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group.Id,
 		UpdatedContent: map[string]string{
-			"/": "hd://d/my-index-page?v=deadbeef",
+			"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 		},
 	})
 	require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestListContent(t *testing.T) {
 
 		want := &groups.ListContentResponse{
 			Content: map[string]string{
-				"/": "hd://d/my-index-page?v=deadbeef",
+				"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 		}
 
@@ -156,8 +156,8 @@ func TestListContent(t *testing.T) {
 		group, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 			Id: group.Id,
 			UpdatedContent: map[string]string{
-				"/":   "",
-				"foo": "bar",
+				"/":    "",
+				"/foo": "bar",
 			},
 		})
 		require.NoError(t, err)
@@ -169,8 +169,8 @@ func TestListContent(t *testing.T) {
 
 		want := &groups.ListContentResponse{
 			Content: map[string]string{
-				"/":   "",
-				"foo": "bar",
+				"/":    "",
+				"/foo": "bar",
 			},
 		}
 
@@ -182,8 +182,8 @@ func TestListContent(t *testing.T) {
 		group, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 			Id: group.Id,
 			UpdatedContent: map[string]string{
-				"/":   "",
-				"foo": "bar",
+				"/":    "",
+				"/foo": "bar",
 			},
 		})
 		require.NoError(t, err)
@@ -196,12 +196,63 @@ func TestListContent(t *testing.T) {
 
 		want := &groups.ListContentResponse{
 			Content: map[string]string{
-				"/": "hd://d/my-index-page?v=deadbeef",
+				"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 		}
 
 		testutil.ProtoEqual(t, want, content, "list content response must match")
 	}
+}
+
+func TestMembers(t *testing.T) {
+	t.Parallel()
+
+	srv := newTestSrv(t, "alice")
+	bob := coretest.NewTester("bob")
+	// carol := coretest.NewTester("carol")
+	ctx := context.Background()
+
+	group, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My Group",
+	})
+	require.NoError(t, err)
+
+	_, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group.Id,
+		UpdatedMembers: map[string]groups.Role{
+			bob.Account.Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	list, err := srv.ListMembers(ctx, &groups.ListMembersRequest{Id: group.Id})
+	require.NoError(t, err)
+	want := &groups.ListMembersResponse{
+		OwnerAccountId: srv.me.MustGet().Account().Principal().String(),
+		Members: map[string]groups.Role{
+			srv.me.MustGet().Account().Principal().String(): groups.Role_OWNER,
+			bob.Account.Principal().String():                groups.Role_EDITOR,
+		},
+	}
+	testutil.ProtoEqual(t, want, list, "list members response must match")
+
+	// TODO(burdiyan): uncomment this when removing members is implemented.
+	// _, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+	// 	Id: group.Id,
+	// 	UpdatedMembers: map[string]groups.Role{
+	// 		bob.Account.Principal().String():   groups.Role_ROLE_UNSPECIFIED,
+	// 		carol.Account.Principal().String(): groups.Role_EDITOR,
+	// 	},
+	// })
+	// require.NoError(t, err)
+
+	// list, err = srv.ListMembers(ctx, &groups.ListMembersRequest{Id: group.Id})
+	// require.NoError(t, err)
+	// want = &groups.ListMembersResponse{
+	// 	OwnerAccountId: srv.me.MustGet().Account().Principal().String(),
+	// 	Members:        map[string]groups.Role{carol.Account.Principal().String(): groups.Role_EDITOR},
+	// }
+	// testutil.ProtoEqual(t, want, list, "list members response must match")
 }
 
 func TestListGroups(t *testing.T) {
@@ -240,6 +291,130 @@ func TestListGroups(t *testing.T) {
 	}
 
 	testutil.ProtoEqual(t, want, list, "list groups response must match")
+}
+
+func TestDocumentGroupBacklinks(t *testing.T) {
+	t.Parallel()
+
+	srv := newTestSrv(t, "alice")
+	ctx := context.Background()
+
+	group1, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title:       "My Group",
+		Description: "Description of my group",
+	})
+	require.NoError(t, err)
+
+	group1, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group1.Id,
+		UpdatedContent: map[string]string{
+			"/": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+		},
+	})
+	require.NoError(t, err)
+
+	group2, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My another Group",
+	})
+	require.NoError(t, err)
+
+	group2, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group2.Id,
+		UpdatedContent: map[string]string{
+			"/fragmented-document": "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
+		},
+	})
+	require.NoError(t, err)
+
+	list, err := srv.ListDocumentGroups(ctx, &groups.ListDocumentGroupsRequest{
+		DocumentId: "hm://d/my-index-page",
+	})
+	require.NoError(t, err)
+
+	want := &groups.ListDocumentGroupsResponse{
+		Items: []*groups.ListDocumentGroupsResponse_Item{
+			{
+				GroupId:     group1.Id,
+				GroupChange: group1.Version,
+				ChangeTime:  group1.UpdateTime,
+				Path:        "/",
+				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+			},
+			{
+				GroupId:     group2.Id,
+				GroupChange: group2.Version,
+				ChangeTime:  group2.UpdateTime,
+				Path:        "/fragmented-document",
+				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
+			},
+		},
+	}
+
+	testutil.ProtoEqual(t, want, list, "list groups for document response must match")
+}
+
+func TestListAccountGroups(t *testing.T) {
+	t.Parallel()
+
+	srv := newTestSrv(t, "alice")
+	alice := srv.me.MustGet()
+	bob := coretest.NewTester("bob")
+	carol := coretest.NewTester("carol")
+	ctx := context.Background()
+
+	group1, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My Group",
+	})
+	require.NoError(t, err)
+
+	group1, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group1.Id,
+		UpdatedMembers: map[string]groups.Role{
+			bob.Account.Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	group2, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My Group 2",
+	})
+	require.NoError(t, err)
+
+	group2, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group2.Id,
+		UpdatedMembers: map[string]groups.Role{
+			carol.Account.Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	wants := map[string]*groups.ListAccountGroupsResponse{
+		alice.Account().String(): {
+			Items: []*groups.ListAccountGroupsResponse_Item{
+				{Group: group1, Role: groups.Role_OWNER},
+				{Group: group2, Role: groups.Role_OWNER},
+			},
+		},
+		bob.Account.String(): {
+			Items: []*groups.ListAccountGroupsResponse_Item{
+				{Group: group1, Role: groups.Role_EDITOR},
+			},
+		},
+		carol.Account.String(): {
+			Items: []*groups.ListAccountGroupsResponse_Item{
+				{Group: group2, Role: groups.Role_EDITOR},
+			},
+		},
+	}
+
+	for acc, want := range wants {
+		list, err := srv.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+			AccountId: acc,
+		})
+		require.NoError(t, err)
+
+		testutil.ProtoEqual(t, want, list, "list groups for account response must match")
+	}
 }
 
 func newTestSrv(t *testing.T, name string) *Server {

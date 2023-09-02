@@ -31,8 +31,8 @@ export function getPublicDocUrl(docId: string, version?: string | undefined) {
 }
 
 export function extractEntityId(id: string): [string, string] | null {
-  // input is like hd://x/abcd. output is ['x', 'abcd']
-  const m = id.match(/^hd:\/\/([^/]+)\/(.+)$/)
+  // input is like hm://x/abcd. output is ['x', 'abcd']
+  const m = id.match(/^hm:\/\/([^/]+)\/(.+)$/)
   if (!m) return null
   const entityType = m[1]
   const entityEId = m[2]

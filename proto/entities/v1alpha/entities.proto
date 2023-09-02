@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "mintter/backend/genproto/entities/v1alpha;entities";
 
-// Provides functionality to query information about Hyperdocs Entities.
+// Provides functionality to query information about Hypermedia Entities.
 service Entities {
   // Gets a change by ID.
   rpc GetChange(GetChangeRequest) returns (Change);
