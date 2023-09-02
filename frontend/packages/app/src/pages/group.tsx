@@ -72,7 +72,7 @@ function GroupContentItem({
   pathName,
 }: {
   docId: string
-  version: string
+  version?: string
   hasDraft: undefined | Document
   groupId: string
   pathName: string
@@ -213,7 +213,6 @@ export default function GroupPage() {
               ([pathName, hmUrl]) => {
                 const [docId, version] = getIdsfromUrl(hmUrl)
 
-                console.log(`== ~ GroupPage ~ hmUrl:`, hmUrl)
                 if (!docId) return null
                 return (
                   <GroupContentItem
