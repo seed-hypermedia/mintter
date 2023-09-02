@@ -9,9 +9,18 @@ import {useDaemonReady} from '@mintter/app/src/node-status-context'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import Footer from '@mintter/app/src/components/footer'
-import {Button, Container, MainWrapper, Text, YStack} from '@mintter/ui'
+import {
+  Button,
+  Container,
+  MainWrapper,
+  SizableText,
+  Text,
+  Theme,
+  YStack,
+} from '@mintter/ui'
 import {useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -21,27 +30,45 @@ export default function DraftPage() {
   const [debugValue, setDebugValue] = useState(false)
   const documentId = route.draftId // TODO, clean this up when draftId != docId
 
-  const {editor} = useDraftEditor(documentId, {
+  const {editor, query} = useDraftEditor(documentId, {
     onEditorState: setDebugValue,
   })
 
   let isDaemonReady = useDaemonReady()
 
-  return (
-    <ErrorBoundary
-      FallbackComponent={DraftError}
-      onReset={() => window.location.reload()}
-    >
+  if (editor && query.data) {
+    return (
+      <ErrorBoundary
+        FallbackComponent={DraftError}
+        onReset={() => window.location.reload()}
+      >
+        <MainWrapper>
+          {!isDaemonReady ? <NotSavingBanner /> : null}
+          <HDEditorContainer>
+            {editor && <HyperMediaEditorView editor={editor} />}
+            {debugValue && <DebugData data={debugValue} />}
+          </HDEditorContainer>
+        </MainWrapper>
+        <Footer />
+      </ErrorBoundary>
+    )
+  }
+
+  if (editor && query.error) {
+    return (
       <MainWrapper>
-        {!isDaemonReady ? <NotSavingBanner /> : null}
-        <HDEditorContainer>
-          {editor && <HyperMediaEditorView editor={editor} />}
-          {debugValue && <DebugData data={debugValue} />}
-        </HDEditorContainer>
+        <Container>
+          <DraftError
+            documentId={documentId}
+            error={query.error}
+            resetErrorBoundary={() => query.refetch()}
+          />
+        </Container>
       </MainWrapper>
-      <Footer />
-    </ErrorBoundary>
-  )
+    )
+  }
+
+  return <DocumentPlaceholder />
 }
 
 function NotSavingBanner() {
@@ -52,14 +79,33 @@ function NotSavingBanner() {
   )
 }
 
-function DraftError({error, resetErrorBoundary}: FallbackProps) {
+function DraftError({
+  documentId,
+  error,
+  resetErrorBoundary,
+}: FallbackProps & {documentId: string}) {
   return (
-    <Container>
-      <YStack role="alert" space>
-        <Text fontWeight="800">Draft Error:</Text>
-        <Text tag="pre">{error.message}</Text>
-        <Button onPress={resetErrorBoundary}>Try again</Button>
+    <Theme name="red">
+      <YStack
+        marginVertical="$8"
+        padding="$4"
+        borderRadius="$5"
+        borderColor="$color5"
+        borderWidth={1}
+        backgroundColor="$color3"
+        gap="$3"
+        alignItems="center"
+      >
+        <SizableText size="$4" textAlign="center" color="$color9">
+          Error loading Draft (Document Id: {documentId})
+        </SizableText>
+        <SizableText color="$color8" size="$2" fontFamily="$mono">
+          {JSON.stringify(error)}
+        </SizableText>
+        <Button size="$3" onPress={() => resetErrorBoundary()}>
+          Retry
+        </Button>
       </YStack>
-    </Container>
+    </Theme>
   )
 }

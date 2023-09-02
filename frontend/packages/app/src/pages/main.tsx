@@ -8,7 +8,7 @@ import {
   useNavigate,
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
-import {YStack} from '@mintter/ui'
+import {Spinner, YStack} from '@mintter/ui'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -36,7 +36,11 @@ var QuickSwitcher = lazy(
 )
 
 function BaseLoading() {
-  return <span>Loading...</span>
+  return (
+    <YStack padding="$6">
+      <Spinner />
+    </YStack>
+  )
 }
 
 function getPageComponent(navRoute: NavRoute) {
@@ -106,13 +110,16 @@ function getPageComponent(navRoute: NavRoute) {
 
 export default function Main() {
   const navR = useNavRoute()
-  const isSettings = navR.key == 'settings'
+
+  console.log(`== ~ Main ~ navR:`, navR)
+  const isSettings = navR?.key == 'settings'
   const navigate = useNavigate()
   const {PageComponent, Fallback} = useMemo(
     () => getPageComponent(navR),
-    [navR.key],
+    [navR],
   )
   const routeKey = useMemo(() => getRouteKey(navR), [navR])
+
   useListen<NavRoute>(
     'open_route',
     (event) => {

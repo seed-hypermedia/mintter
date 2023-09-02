@@ -12,71 +12,94 @@ import {useState} from 'react'
 import './publication-list-page.css'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
+import {queryPublication} from '../models/documents'
+import {useAppContext} from '../app-context'
+import {queryKeys} from '../models/query-keys'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
-  let {data} = usePublicationList({trustedOnly})
+  let publications = usePublicationList({trustedOnly})
   let drafts = useDraftList()
+  let {queryClient, grpcClient} = useAppContext()
   let openDraft = useOpenDraft()
-  const pubs = data?.publications
-  const [scrollHeight, setScrollHeight] = useState(800)
-
-  let content = (
-    <YStack justifyContent="center" height={scrollHeight}>
-      <Spinner />
-    </YStack>
-  )
+  const pubs = publications.data?.publications
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+
   if (pubs) {
     if (pubs.length) {
-      content = (
+      return (
         <>
-          {pubs.map((publication) => {
-            const docId = publication.document?.id
-            if (!docId) return null
-            return (
-              <PublicationListItem
-                pubContext={trustedOnly ? {key: 'trusted'} : null}
-                key={publication.document?.id}
-                hasDraft={drafts.data?.documents.find(
-                  (d) => d.id == publication.document?.id,
-                )}
-                publication={publication}
-                menuItems={[
-                  {
-                    key: 'delete',
-                    label: 'Delete Publication',
-                    icon: Delete,
-                    onPress: () => {
-                      deleteDialog.open(docId)
-                    },
-                  },
-                ]}
-              />
-            )
-          })}
+          <MainWrapper>
+            <Container>
+              <YStack paddingVertical="$6">
+                {pubs.map((publication) => {
+                  const docId = publication.document?.id
+                  if (!docId) return null
+                  return (
+                    <PublicationListItem
+                      pubContext={trustedOnly ? {key: 'trusted'} : null}
+                      key={publication.document?.id}
+                      hasDraft={drafts.data?.documents.find(
+                        (d) => d.id == publication.document?.id,
+                      )}
+                      onPointerEnter={() => {
+                        if (publication.document?.id) {
+                          queryClient.client.prefetchQuery(
+                            queryPublication(
+                              grpcClient,
+                              publication.document.id,
+                              publication.version,
+                            ),
+                          )
+                        }
+                      }}
+                      publication={publication}
+                      menuItems={[
+                        {
+                          key: 'delete',
+                          label: 'Delete Publication',
+                          icon: Delete,
+                          onPress: () => {
+                            deleteDialog.open(docId)
+                          },
+                        },
+                      ]}
+                    />
+                  )
+                })}
+              </YStack>
+            </Container>
+            {deleteDialog.content}
+          </MainWrapper>
+          <Footer />
         </>
       )
     } else {
-      content = (
-        <EmptyList
-          description="You have no Publications yet."
-          action={() => {
-            openDraft(false)
-          }}
-        />
+      return (
+        <>
+          <MainWrapper>
+            <Container>
+              <EmptyList
+                description="You have no Publications yet."
+                action={() => {
+                  openDraft(false)
+                }}
+              />
+            </Container>
+          </MainWrapper>
+          <Footer />
+        </>
       )
     }
   }
+
   return (
     <>
-      <MainWrapper
-        onLayout={(e) => {
-          // console.log('layout height!', e.nativeEvent.layout.height)
-          // setScrollHeight(() => e.nativeEvent.layout.height)
-        }}
-      >
-        <Container>{content}</Container>
-        {deleteDialog.content}
+      <MainWrapper>
+        <Container>
+          <YStack padding="$6">
+            <Spinner />
+          </YStack>
+        </Container>
       </MainWrapper>
       <Footer />
     </>

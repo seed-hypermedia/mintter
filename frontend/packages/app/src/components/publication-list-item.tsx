@@ -1,4 +1,3 @@
-import {prefetchPublication} from '@mintter/app/src/models/documents'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 import {Document, Publication} from '@mintter/shared'
@@ -22,6 +21,7 @@ export function PublicationListItem({
   copy = copyTextToClipboard,
   pubContext,
   menuItems,
+  onPointerEnter,
   label,
 }: {
   publication: Publication
@@ -30,6 +30,7 @@ export function PublicationListItem({
   pubContext: PublicationRouteContext
   menuItems?: MenuItem[]
   label?: string
+  onPointerEnter?: () => void
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
@@ -56,10 +57,7 @@ export function PublicationListItem({
     <ListItem
       onPress={goToItem}
       title={title}
-      onPrefetch={() => {
-        if (publication.document)
-          prefetchPublication(publication.document.id, publication.version)
-      }}
+      onPointerEnter={onPointerEnter}
       accessory={
         <>
           {hasDraft && (

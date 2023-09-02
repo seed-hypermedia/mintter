@@ -48,6 +48,7 @@ export function AppContextProvider({
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
 }) {
+  console.log('== RENDERING APP CONTEXT PROVIDER')
   if (!queryClient)
     throw new Error('queryClient is required for AppContextProvider')
   return (
@@ -63,11 +64,7 @@ export function AppContextProvider({
       }}
     >
       <QueryClientProvider client={queryClient.client}>
-        <Suspense>
-          <ErrorBoundary FallbackComponent={AppError}>
-            <StyleProvider>{children}</StyleProvider>
-          </ErrorBoundary>
-        </Suspense>
+        <StyleProvider>{children}</StyleProvider>
         <ReactQueryDevtools />
       </QueryClientProvider>
     </AppContext.Provider>

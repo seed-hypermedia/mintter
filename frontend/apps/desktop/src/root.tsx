@@ -1,7 +1,9 @@
+import {ErrorBoundary} from 'react-error-boundary'
+import {Suspense} from 'react'
 import {Interceptor, createGrpcWebTransport} from '@bufbuild/connect-web'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
-import {AppErrorPage} from '@mintter/app/components/app-error'
+import {AppError, AppErrorPage} from '@mintter/app/components/app-error'
 import {BACKEND_HTTP_URL} from '@mintter/app/constants'
 import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
@@ -143,6 +145,7 @@ function MainApp({
   queryClient: AppQueryClient
   ipc: AppIPC
 }) {
+  console.log('== RENDERING MAINAPP')
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
@@ -155,7 +158,35 @@ function MainApp({
       lastAction: null,
     }
   }, [initRoute])
-  if (!daemonState) return null
+
+  if (daemonState?.t == 'ready') {
+    return (
+      <AppContextProvider
+        grpcClient={grpcClient}
+        platform={appInfo.platform()}
+        queryClient={queryClient}
+        ipc={ipc}
+        externalOpen={async (url: string) => {
+          toast.error('Not implemented open: ' + url)
+        }}
+        saveCidAsFile={async (cid: string, name: string) => {
+          ipc.send?.('save-file', {cid, name})
+        }}
+        windowUtils={windowUtils}
+      >
+        <NavigationProvider initialNav={initialNav}>
+          <DaemonStatusProvider>
+            <Main />
+          </DaemonStatusProvider>
+        </NavigationProvider>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{className: 'toaster'}}
+        />
+      </AppContextProvider>
+    )
+  }
+
   if (daemonState?.t === 'error') {
     return (
       <StyleProvider>
@@ -163,43 +194,8 @@ function MainApp({
       </StyleProvider>
     )
   }
-  if (daemonState?.t !== 'ready') {
-    return (
-      <StyleProvider>
-        <XStack
-          flex={1}
-          minWidth={'100vw'}
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Spinner />
-        </XStack>
-      </StyleProvider>
-    )
-  }
 
-  return (
-    <AppContextProvider
-      grpcClient={grpcClient}
-      platform={appInfo.platform()}
-      queryClient={queryClient}
-      ipc={ipc}
-      externalOpen={async (url: string) => {
-        toast.error('Not implemented open: ' + url)
-      }}
-      saveCidAsFile={async (cid: string, name: string) => {
-        ipc.send?.('save-file', {cid, name})
-      }}
-      windowUtils={windowUtils}
-    >
-      <NavigationProvider initialNav={initialNav}>
-        <DaemonStatusProvider>
-          <Main />
-        </DaemonStatusProvider>
-      </NavigationProvider>
-      <Toaster position="bottom-right" toastOptions={{className: 'toaster'}} />
-    </AppContextProvider>
-  )
+  return null
 }
 
 function ElectronApp() {

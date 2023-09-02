@@ -2,14 +2,10 @@ import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
 import {VersionsAccessory} from '@mintter/app/src/components/changes-list'
 import {CitationsAccessory} from '@mintter/app/src/components/citations'
 import Footer, {FooterButton} from '@mintter/app/src/components/footer'
-import {Placeholder} from '@mintter/app/src/components/placeholder-box'
 import {features} from '@mintter/app/src/constants'
 import {useDocChanges} from '@mintter/app/src/models/changes'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
-import {
-  usePublication,
-  usePublicationEditor,
-} from '@mintter/app/src/models/documents'
+import {usePublicationEditor} from '@mintter/app/src/models/documents'
 import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
 import {MttLink, pluralS} from '@mintter/shared'
 import {
@@ -31,9 +27,10 @@ import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {
   HDEditorContainer,
-  HyperDocsEditorView,
+  HyperMediaEditorView,
 } from '@mintter/app/src/editor/editor'
 import {useLatestPublication} from '../models/documents'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -50,10 +47,7 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const {editor, data, status, error, refetch} = usePublicationEditor(
-    docId,
-    versionId,
-  )
+  const publication = usePublicationEditor(docId, versionId)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)
@@ -62,32 +56,14 @@ export default function PublicationPage() {
 
   const {data: changes} = useDocChanges(status == 'success' ? docId : undefined)
   const {data: citations} = useDocCitations(
-    status == 'success' ? docId : undefined,
+    publication.status == 'success' ? docId : undefined,
   )
 
-  if (status == 'error') {
-    return (
-      <YStack>
-        <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
-          <Text fontFamily="$body" fontWeight="700" fontSize="$6">
-            Publication ERROR
-          </Text>
-          <Text fontFamily="$body" fontSize="$4">
-            {JSON.stringify(error)}
-          </Text>
-          <Button theme="yellow" onPress={() => refetch()}>
-            try again
-          </Button>
-        </YStack>
-      </YStack>
-    )
-  }
-
-  if (status == 'success') {
+  if (publication.data) {
     return (
       <ErrorBoundary
         FallbackComponent={AppError}
-        onReset={() => window.location.reload()}
+        onReset={() => publication.refetch()}
       >
         <CitationsProvider
           documentId={docId}
@@ -100,10 +76,10 @@ export default function PublicationPage() {
             <Allotment.Pane>
               <YStack height="100%">
                 <MainWrapper>
-                  {editor && (
+                  {publication.editor && (
                     <HDEditorContainer>
-                      <HyperDocsEditorView editor={editor} />
-                      <DebugData data={data} />
+                      <HyperMediaEditorView editor={publication.editor} />
+                      <DebugData data={publication.data} />
                     </HDEditorContainer>
                   )}
 
@@ -167,49 +143,25 @@ export default function PublicationPage() {
     )
   }
 
-  return (
-    <>
-      <PublicationShell />
+  if (publication.error) {
+    return (
+      <YStack>
+        <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
+          <Text fontFamily="$body" fontWeight="700" fontSize="$6">
+            Publication ERROR
+          </Text>
+          <Text fontFamily="$body" fontSize="$4">
+            {JSON.stringify(publication.error)}
+          </Text>
+          <Button theme="yellow" onPress={() => publication.refetch()}>
+            try again
+          </Button>
+        </YStack>
+      </YStack>
+    )
+  }
 
-      {/* <p
-        className={classnames('publication-fetching-message', {
-          visible: state.matches('fetching.extended'),
-        })}
-      >
-        Searching the network...
-      </p> */}
-    </>
-  )
-}
-
-function PublicationShell() {
-  // TODO: update shell
-  return (
-    <YStack
-      marginTop="$7"
-      width="100%"
-      maxWidth="600px"
-      gap="$6"
-      marginHorizontal="auto"
-    >
-      <BlockPlaceholder />
-      <BlockPlaceholder />
-      <BlockPlaceholder />
-      <BlockPlaceholder />
-      <BlockPlaceholder />
-    </YStack>
-  )
-}
-
-function BlockPlaceholder() {
-  return (
-    <YStack width="600px" gap="$2">
-      <Placeholder width="100%" />
-      <Placeholder width="92%" />
-      <Placeholder width="84%" />
-      <Placeholder width="90%" />
-    </YStack>
-  )
+  return <DocumentPlaceholder />
 }
 
 type ActivePanel = 'conversations' | 'citations' | 'changes' | undefined

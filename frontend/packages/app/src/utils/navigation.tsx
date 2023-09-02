@@ -4,6 +4,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
 } from 'react'
 import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
@@ -204,19 +205,19 @@ export function NavigationProvider({
   const activeRoute = routes[routeIndex]
   useEffect(() => {
     send('windowRoute', activeRoute)
-  }, [activeRoute, lastAction])
+  }, [activeRoute, lastAction, send])
 
-  useEffect(() => {
-    console.log(
-      `${routes.map((r, i) => {
-        const {key, ...rest} = r
-        return `${i === routeIndex ? '✅' : '⏺️'} ${key} :: ${simpleStringy(
-          rest,
-        )}`
-      }).join(`
-`)}`,
-    )
-  }, [routes, routeIndex])
+  //   useEffect(() => {
+  //     console.log(
+  //       `${routes.map((r, i) => {
+  //         const {key, ...rest} = r
+  //         return `${i === routeIndex ? '✅' : '⏺️'} ${key} :: ${simpleStringy(
+  //           rest,
+  //         )}`
+  //       }).join(`
+  // `)}`,
+  //     )
+  //   }, [routes, routeIndex])
 
   useEffect(() => {
     appNavDispatch = dispatch
@@ -233,16 +234,17 @@ export function NavigationProvider({
   // start editing pub, add content
   // second time resume editing, doesnt work
 
-  return (
-    <NavContext.Provider
-      value={{
-        state: navState,
-        dispatch,
-      }}
-    >
-      {children}
-    </NavContext.Provider>
+  console.log('== RENDERING NAV CONTEXT')
+
+  let value = useMemo(
+    () => ({
+      state: navState,
+      dispatch,
+    }),
+    [navState],
   )
+
+  return <NavContext.Provider value={value}>{children}</NavContext.Provider>
 }
 
 export function dispatchAppNavigation(action: NavAction) {
@@ -265,7 +267,7 @@ export function useNavRoute() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavRoute must be used within a NavigationProvider')
-  return nav.state.routes[nav.state.routeIndex]
+  return nav.state.routes[nav.state.routeIndex] || {key: 'home'}
 }
 
 export function useNavigationState() {

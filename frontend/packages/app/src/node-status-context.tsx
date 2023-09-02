@@ -61,8 +61,6 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     [peerInfoQuery.data, netStatus],
   )
 
-  // return <Onboarding />
-
   if (infoQuery.data === null) {
     return <Onboarding />
   }

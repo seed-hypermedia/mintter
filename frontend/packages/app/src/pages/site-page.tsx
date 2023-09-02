@@ -1,8 +1,5 @@
 import {useAccount} from '@mintter/app/src/models/accounts'
-import {
-  prefetchPublication,
-  usePublication,
-} from '@mintter/app/src/models/documents'
+import {usePublication} from '@mintter/app/src/models/documents'
 import {useSitePublications} from '@mintter/app/src/models/sites'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {getDocUrl} from '@mintter/shared'
@@ -115,18 +112,9 @@ function WebPublicationListItem({
     : null
   const {data: author} = useAccount(publication?.document?.author)
   return (
-    <Button
-      chromeless
-      theme="gray"
-      tag="li"
-      onMouseEnter={() =>
-        publication?.document
-          ? prefetchPublication(publication.document?.id, publication.version)
-          : null
-      }
-    >
+    <Button chromeless tag="li">
       {webPub.path == '' ? (
-        <ButtonText onPress={goToItem} theme="gray" fontWeight="700" flex={1}>
+        <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
           {publication?.document?.title}
         </ButtonText>
       ) : webPub.path == '/' ? (
@@ -148,7 +136,6 @@ function WebPublicationListItem({
       )}
       <Button
         size="$1"
-        theme="$color5"
         onPress={goToItem}
         data-testid="list-item-author"
         className={`item-author`}

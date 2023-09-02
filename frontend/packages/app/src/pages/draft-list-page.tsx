@@ -15,6 +15,7 @@ import {
   MainWrapper,
   MoreHorizontal,
   Separator,
+  Spinner,
   Text,
   XStack,
   YStack,
@@ -23,35 +24,68 @@ import {X} from '@tamagui/lucide-icons'
 import {useClickNavigate} from '../utils/navigation'
 import {GestureResponderEvent} from 'react-native'
 import {ListItem} from '../components/list-item'
+import {useAppContext} from '../app-context'
+import {queryDraft} from '../models/documents'
 
 export default function DraftList() {
-  let {data, isInitialLoading} = useDraftList()
+  let drafts = useDraftList()
   // TODO: add a `isFetching` indicator
   const openDraft = useOpenDraft()
-  return (
-    <>
+
+  if (drafts.data) {
+    return (
+      <>
+        <MainWrapper>
+          <Container>
+            {drafts.isInitialLoading ? (
+              <YStack padding="$6">
+                <Spinner />
+              </YStack>
+            ) : drafts.data.documents.length ? (
+              <YStack paddingVertical="$6">
+                {drafts.data.documents.map((draft) => (
+                  <DraftListItem key={draft.id} draft={draft} />
+                ))}
+              </YStack>
+            ) : (
+              <EmptyList
+                description="You have no Drafts yet."
+                action={() => {
+                  openDraft(false)
+                }}
+              />
+            )}
+          </Container>
+        </MainWrapper>
+        <Footer />
+      </>
+    )
+  }
+
+  if (drafts.error) {
+    return (
       <MainWrapper>
         <Container>
-          {isInitialLoading ? (
-            <p>loading...</p>
-          ) : data && data.documents.length ? (
-            <YStack tag="ul" padding={0}>
-              {data.documents.map((draft) => (
-                <DraftListItem key={draft.id} draft={draft} />
-              ))}
-            </YStack>
-          ) : (
-            <EmptyList
-              description="You have no Drafts yet."
-              action={() => {
-                openDraft(false)
-              }}
-            />
-          )}
+          <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
+            <Text fontFamily="$body" fontWeight="700" fontSize="$6">
+              Drafts List Error
+            </Text>
+            <Text fontFamily="$body" fontSize="$4">
+              {JSON.stringify(drafts.error)}
+            </Text>
+            <Button theme="yellow" onPress={() => drafts.refetch()}>
+              try again
+            </Button>
+          </YStack>
         </Container>
       </MainWrapper>
-      <Footer />
-    </>
+    )
+  }
+
+  return (
+    <YStack padding="$6">
+      <Spinner />
+    </YStack>
   )
 }
 
@@ -61,6 +95,7 @@ export function DraftListItem({draft}: {draft: Document}) {
     id: draft.id,
   })
   const navigate = useClickNavigate()
+  const {queryClient, grpcClient} = useAppContext()
   const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
   const goToItem = (e: GestureResponderEvent) => {
     navigate(draftRoute, e)
@@ -70,6 +105,9 @@ export function DraftListItem({draft}: {draft: Document}) {
     <>
       <ListItem
         title={title}
+        onPointerEnter={() => {
+          queryClient.client.prefetchQuery(queryDraft(grpcClient, draft.id))
+        }}
         onPress={goToItem}
         accessory={<></>}
         menuItems={[

@@ -1,3 +1,9 @@
+import {Timestamp} from '@bufbuild/protobuf'
+import {
+  useAppContext,
+  useListen,
+  useQueryInvalidator,
+} from '@mintter/app/src/app-context'
 import {
   Block,
   BlockIdentifier,
@@ -12,46 +18,39 @@ import {
 import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
 import {HDBlockSchema, hdBlockSchema} from '@mintter/app/src/client/schema'
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
-import {createHyperdocsDocLinkPlugin} from '@mintter/app/src/editor/hyperdocs-link-plugin'
-import {useListen} from '@mintter/app/src/app-context'
 import {RightsideWidget} from '@mintter/app/src/components/rightside-block-widget'
-import {toast} from '@mintter/app/src/toast'
-import {useAppContext, useQueryInvalidator} from '@mintter/app/src/app-context'
 import {insertFile} from '@mintter/app/src/editor/file'
+import {createHyperdocsDocLinkPlugin} from '@mintter/app/src/editor/hyperdocs-link-plugin'
 import {insertImage} from '@mintter/app/src/editor/image'
 import {insertVideo} from '@mintter/app/src/editor/video'
-import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
-import {Timestamp} from '@bufbuild/protobuf'
+import {useOpenUrl} from '@mintter/app/src/open-url'
+import {toast} from '@mintter/app/src/toast'
 import {
   Document,
   DocumentChange,
   GRPCClient,
+  ListPublicationsResponse,
+  Publication,
   isHyperdocsScheme,
   isMintterGatewayLink,
-  ListPublicationsResponse,
   normalizeHyperdocsLink,
-  Publication,
-  WebPublicationRecord,
 } from '@mintter/shared'
 import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
   FetchQueryOptions,
-  useMutation,
   UseMutationOptions,
+  UseQueryOptions,
+  useMutation,
   useQueries,
   useQuery,
-  useQueryClient,
-  UseQueryOptions,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {useEffect, useRef, useState} from 'react'
-import {formattingToolbarFactory} from '../editor/formatting-toolbar'
-import {queryKeys} from './query-keys'
-import {extractReferencedDocs} from './sites'
-import {useOpenUrl} from '@mintter/app/src/open-url'
+import {useEffect, useRef} from 'react'
 import {useGRPCClient} from '../app-context'
+import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {useNavRoute} from '../utils/navigation'
+import {queryKeys} from './query-keys'
 
 export type HDBlock = Block<typeof hdBlockSchema>
 export type HDPartialBlock = PartialBlock<typeof hdBlockSchema>
@@ -160,7 +159,7 @@ export function useDraft({
   documentId?: string
 }) {
   const grpcClient = useGRPCClient()
-  return useQuery(getDraftQuery(grpcClient, documentId, options))
+  return useQuery(queryDraft(grpcClient, documentId, options))
 }
 
 function queryLatestPublication(
@@ -181,7 +180,7 @@ function queryLatestPublication(
       }),
   }
 }
-function queryPublication(
+export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
@@ -225,10 +224,11 @@ export function useLatestPublication({
   })
 }
 
-export function prefetchPublication(documentId: string, versionId?: string) {
-  // todo, bring this back
-  // appQueryClient.prefetchQuery(queryPublication(documentId, versionId))
-}
+export function prefetchPublication(
+  grpcClient: GRPCClient,
+  documentId: string,
+  versionId?: string,
+) {}
 
 export function useDocumentVersions(
   documentId: string | undefined,
@@ -398,10 +398,10 @@ type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
 // }
 
 var defaultOnError = (err: any) => {
-  console.log('== getDraftQuery ERROR', err)
+  console.log('== queryDraft ERROR', err)
 }
 
-function getDraftQuery(
+export function queryDraft(
   grpcClient: GRPCClient,
   documentId: string | undefined,
   opts?: UseQueryOptions<EditorDraftState | null>,
@@ -787,7 +787,7 @@ export function useDraftEditor(
   )
 
   const draft = useQuery(
-    getDraftQuery(grpcClient, documentId, {
+    queryDraft(grpcClient, documentId, {
       enabled: !!editor,
       onSuccess: (draft: EditorDraftState | null) => {
         readyThings.current[1] = draft

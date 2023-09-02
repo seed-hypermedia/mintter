@@ -39,6 +39,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -664,15 +665,18 @@ export function OnboardingProvider({
     console.log(`=== onboarding state:
 			${JSON.stringify(state)}
 		`)
-  }, [stepIndex, key])
+  }, [state])
+
+  let value = useMemo(
+    () => ({
+      state,
+      dispatch,
+    }),
+    [state],
+  )
 
   return (
-    <OnboardingContext.Provider
-      value={{
-        state,
-        dispatch,
-      }}
-    >
+    <OnboardingContext.Provider value={value}>
       {children}
     </OnboardingContext.Provider>
   )

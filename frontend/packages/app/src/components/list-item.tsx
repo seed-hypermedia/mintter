@@ -1,5 +1,5 @@
-import {FC, ReactElement, useState} from 'react'
-import {usePopoverState} from '../use-popover-state'
+import {Timestamp} from '@bufbuild/protobuf'
+import {formattedDate} from '@mintter/shared'
 import {
   Button,
   ButtonText,
@@ -8,10 +8,10 @@ import {
   Separator,
   YGroup,
 } from '@mintter/ui'
-import {GestureResponderEvent, GestureResponderHandlers} from 'react-native'
+import {FC, ReactElement} from 'react'
+import {GestureResponderEvent} from 'react-native'
+import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
-import {formattedDate} from '@mintter/shared'
-import {Timestamp} from '@bufbuild/protobuf'
 
 export type MenuItem = {
   key: string
@@ -24,24 +24,22 @@ export function ListItem({
   accessory,
   title,
   onPress,
-  onPrefetch,
+  onPointerEnter,
   menuItems = [],
 }: {
   accessory: ReactElement
   title: string
   onPress: (e: GestureResponderEvent) => void
-  onPrefetch?: () => void
+  onPointerEnter?: () => void
   menuItems?: MenuItem[]
 }) {
   // const [isHovering, setIsHovering] = useState(false)
   const popoverState = usePopoverState()
+
   return (
     <>
       <Button
-        onPointerEnter={() => {
-          // setIsHovering(true)
-          onPrefetch?.()
-        }}
+        onPointerEnter={onPointerEnter}
         // onPointerLeave={() => setIsHovering(false)}
         chromeless
         tag="li"

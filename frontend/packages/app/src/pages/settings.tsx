@@ -691,7 +691,9 @@ function SiteSettings({
       </XStack>
 
       {isLoading ? (
-        <Spinner />
+        <YStack padding="$6">
+          <Spinner />
+        </YStack>
       ) : (
         <YStack gap="$5">
           <SiteInfoSection hostname={hostname} isOwner={isOwner} />

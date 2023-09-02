@@ -1,7 +1,7 @@
 import '@mintter/app/src/blocknote-core/style.css'
-import { BlockNoteView } from '@mintter/app/src/blocknote-react'
-import { HyperDocsEditor } from '@mintter/app/src/models/documents'
-import { YStack } from '@mintter/ui'
+import {BlockNoteView} from '@mintter/app/src/blocknote-react'
+import {HyperDocsEditor} from '@mintter/app/src/models/documents'
+import {YStack} from '@mintter/ui'
 import './editor.css'
 
 export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
