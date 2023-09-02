@@ -163,6 +163,8 @@ export default function GroupPage() {
   const {groupId} = route
   const group = useGroup(groupId)
   const groupContent = useGroupContent(groupId)
+
+  console.log(`== ~ GroupPage ~ groupContent:`, groupContent.data)
   const groupMembers = useGroupMembers(groupId)
   const drafts = useDraftList()
   const myAccount = useMyAccount()
@@ -210,7 +212,9 @@ export default function GroupPage() {
             {Object.entries(groupContent.data?.content || {}).map(
               ([pathName, hmUrl]) => {
                 const [docId, version] = getIdsfromUrl(hmUrl)
-                if (!docId || !version) return null
+
+                console.log(`== ~ GroupPage ~ hmUrl:`, hmUrl)
+                if (!docId) return null
                 return (
                   <GroupContentItem
                     key={docId}

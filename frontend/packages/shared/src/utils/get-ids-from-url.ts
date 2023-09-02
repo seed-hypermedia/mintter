@@ -63,9 +63,17 @@ export function getIdsfromUrl(
 
   if (entry.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
     const [, restUrl] = entry.split(HYPERMEDIA_DOCUMENT_PREFIX)
+
     if (restUrl.length > 3) {
-      const [docId, version, blockId] = restUrl.split('?v=')[0].split('#')
-      console.log(`[getIdsfromUrl]: entry match Fully Qualified ID: ${entry}`)
+      let firstSplit = restUrl.split('?v=')
+      const [docId] = firstSplit
+      const [version, blockId] =
+        firstSplit.length > 1
+          ? restUrl.split('?v=')[1].split('#')
+          : [undefined, undefined]
+      console.log(
+        `[getIdsfromUrl]: entry match Fully Qualified ID: ${entry}, docId = ${docId}, version = ${version}, blockId = ${blockId}`,
+      )
       return [docId, version, blockId]
     } else {
       console.warn(
