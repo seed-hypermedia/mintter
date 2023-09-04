@@ -7,7 +7,12 @@ export default function Footer() {
   return null
   return (
     <TFooter>
-      <Container tag="nav" aria-label="social" marginVertical="$7">
+      <Container
+        clearVerticalSpace
+        tag="nav"
+        aria-label="social"
+        marginVertical="$7"
+      >
         <XStack space="$3" alignItems="center">
           <MenuItem
             href="https://github.com/mintterteam/mintter"

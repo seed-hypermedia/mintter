@@ -7,13 +7,18 @@ const variants = {
       opacity: 0,
     },
   },
+  clearVerticalSpace: {
+    true: {
+      paddingVertical: 0,
+    },
+  },
 } as const
 
 export const ContainerDefault = styled(YStack, {
   marginHorizontal: 'auto',
   paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
-
   $gtSm: {
     maxWidth: 700,
     paddingRight: '$2',
@@ -35,9 +40,10 @@ export const ContainerDefault = styled(YStack, {
 export const ContainerLarge = styled(YStack, {
   marginHorizontal: 'auto',
   paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
   maxWidth: 760,
-  $gtXxl: {
+  $gtLg: {
     maxWidth: 940,
   },
   variants,
@@ -46,6 +52,7 @@ export const ContainerLarge = styled(YStack, {
 export const ContainerXL = styled(YStack, {
   marginHorizontal: 'auto',
   paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
   $gtSm: {
     maxWidth: 980,

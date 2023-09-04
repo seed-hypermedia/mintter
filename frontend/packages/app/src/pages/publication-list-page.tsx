@@ -30,7 +30,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
         <>
           <MainWrapper>
             <Container>
-              <YStack paddingVertical="$6">
+              <YStack>
                 {pubs.map((publication) => {
                   const docId = publication.document?.id
                   if (!docId) return null
@@ -96,9 +96,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
     <>
       <MainWrapper>
         <Container>
-          <YStack padding="$6">
-            <Spinner />
-          </YStack>
+          <Spinner />
         </Container>
       </MainWrapper>
       <Footer />

@@ -122,7 +122,7 @@ export default function ContactsPage() {
   return (
     <>
       <MainWrapper>
-        <Container marginVertical="$4">
+        <Container>
           {trustedAccounts.length ? (
             <>
               <PageHeading>Trusted Contacts</PageHeading>

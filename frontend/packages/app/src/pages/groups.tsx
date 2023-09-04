@@ -66,9 +66,7 @@ export default function GroupsPage() {
     <>
       <MainWrapper>
         <Container>
-          <YStack tag="ul" padding={0} gap="$2">
-            {content}
-          </YStack>
+          <YStack gap="$2">{content}</YStack>
         </Container>
       </MainWrapper>
       <Footer />

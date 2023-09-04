@@ -81,7 +81,8 @@ export default function TitleBarWindows(props: TitleBarProps) {
           flexBasis={0}
           alignItems="center"
         >
-          <Container
+          <XStack
+            flex={1}
             alignItems="flex-start"
             paddingHorizontal={0}
             paddingVertical="$1"
@@ -89,7 +90,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
             <XStack className="no-window-drag">
               <PageContextButtons {...props} />
             </XStack>
-          </Container>
+          </XStack>
         </XStack>
         <XStack flex={1} alignItems="center">
           <Title size="$2" />

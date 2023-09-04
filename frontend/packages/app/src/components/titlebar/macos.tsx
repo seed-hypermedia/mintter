@@ -1,12 +1,7 @@
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
-import {
-  PageActionButtons,
-  GroupOptionsButton,
-  NavMenu,
-  PageContextButtons,
-} from './common'
+import {PageActionButtons, NavMenu, PageContextButtons} from './common'
 import {Title} from './title'
-import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
+import {TitlebarWrapper, XStack} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
@@ -27,7 +22,9 @@ export default function TitleBarMacos(props: TitleBarProps) {
           alignItems="center"
           className="window-drag"
         >
-          <Container
+          {/* TODO: not sure why we are using Container here */}
+          <XStack
+            flex={1}
             paddingLeft={72}
             alignItems="flex-start"
             className="window-drag"
@@ -36,7 +33,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
               <NavMenu />
               <PageContextButtons {...props} />
             </XStack>
-          </Container>
+          </XStack>
         </XStack>
         <XStack flex={1} alignItems="center">
           <Title />

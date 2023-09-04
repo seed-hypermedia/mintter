@@ -8,7 +8,7 @@ export function EmptyList({
   action: () => void
 }) {
   return (
-    <YStack gap="$5" paddingVertical="$8">
+    <YStack gap="$5" paddingVertical="$4">
       <Text fontFamily="$body" fontSize="$3">
         {description}
       </Text>

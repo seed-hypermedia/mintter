@@ -38,11 +38,9 @@ export default function DraftList() {
         <MainWrapper>
           <Container>
             {drafts.isInitialLoading ? (
-              <YStack padding="$6">
-                <Spinner />
-              </YStack>
+              <Spinner />
             ) : drafts.data.documents.length ? (
-              <YStack paddingVertical="$6">
+              <YStack>
                 {drafts.data.documents.map((draft) => (
                   <DraftListItem key={draft.id} draft={draft} />
                 ))}
@@ -82,11 +80,7 @@ export default function DraftList() {
     )
   }
 
-  return (
-    <YStack padding="$6">
-      <Spinner />
-    </YStack>
-  )
+  return <Spinner />
 }
 
 export function DraftListItem({draft}: {draft: Document}) {
