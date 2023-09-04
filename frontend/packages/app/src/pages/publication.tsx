@@ -26,11 +26,10 @@ import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {
-  HyperMediaEditorView,
   HMEditorContainer,
+  HyperMediaEditorView,
 } from '@mintter/app/src/editor/editor'
 import {useLatestPublication} from '../models/documents'
-import {useDocumentGroups} from '../models/groups'
 import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
@@ -50,16 +49,14 @@ export default function PublicationPage() {
     )
   const publication = usePublicationEditor(docId, versionId)
 
-  const res = useDocumentGroups(docId)
-
-  console.log(`== ~ useDocumentGroups ~ res:`, res.data)
-
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)
 
   // useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const {data: changes} = useDocChanges(publication.status == 'success' ? docId : undefined)
+  const {data: changes} = useDocChanges(
+    publication.status == 'success' ? docId : undefined,
+  )
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )

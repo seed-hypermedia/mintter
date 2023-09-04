@@ -7,14 +7,12 @@ import {
 } from '@mintter/app/src/models/documents'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {Container, Delete, MainWrapper, Spinner, YStack} from '@mintter/ui'
-import {useState} from 'react'
 
 import './publication-list-page.css'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {queryPublication} from '../models/documents'
 import {useAppContext} from '../app-context'
-import {queryKeys} from '../models/query-keys'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let publications = usePublicationList({trustedOnly})
