@@ -2,7 +2,7 @@ name: Weekly Release Tag
 
 on:
   schedule:
-    - cron: '0 6 * * 2'  # Runs every Tuesday at 6am
+    - cron: "0 6 * * 2" # Runs every Tuesday at 6am
 
 jobs:
   build:
@@ -17,20 +17,15 @@ jobs:
         with:
           node-version: 20
 
-      - name: Get new version
-        run: |
-          node scripts/get-app-version.mjs > version.txt
-
-      - name: Read version from file
+      - name: Set new version
         id: version
-        run: echo "version=$(cat version.txt)" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(node scripts/tag.mjs --dry)" >> "$GITHUB_OUTPUT"
 
       - name: Create and push tag
         env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git tag ${{ steps.version.outputs.version }}
           git push origin ${{ steps.version.outputs.version }}
-

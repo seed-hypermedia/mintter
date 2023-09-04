@@ -18,7 +18,7 @@ const commitCount = execSync(
 const newVersion = `${year}.${month}.${commitCount}`
 
 if (isDry) {
-  console.log(`the new version will be: ${newVersion}`)
+  console.log(newVersion)
 } else {
   pushTag(newVersion)
 }
