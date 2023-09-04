@@ -59,7 +59,7 @@ export default function PublicationPage() {
 
   // useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const {data: changes} = useDocChanges(status == 'success' ? docId : undefined)
+  const {data: changes} = useDocChanges(publication.status == 'success' ? docId : undefined)
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
