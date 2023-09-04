@@ -42,9 +42,13 @@ export function ListItem({
         onPointerEnter={onPointerEnter}
         // onPointerLeave={() => setIsHovering(false)}
         chromeless
-        tag="li"
       >
-        <ButtonText onPress={onPress} fontWeight="700" flex={1}>
+        <ButtonText
+          onPress={onPress}
+          fontWeight="700"
+          flex={1}
+          textAlign="left"
+        >
           {title}
         </ButtonText>
         {accessory}
@@ -52,7 +56,21 @@ export function ListItem({
           <Popover.Trigger asChild>
             <Button size="$1" circular data-trigger icon={MoreHorizontal} />
           </Popover.Trigger>
-          <Popover.Content padding={0} elevation="$2">
+          <Popover.Content
+            padding={0}
+            elevation="$2"
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+            elevate
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+          >
             <YGroup separator={<Separator />}>
               {menuItems.map((item) => (
                 <YGroup.Item key={item.key}>

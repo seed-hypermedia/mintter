@@ -1,9 +1,10 @@
+import {Avatar} from '@mintter/app/src/components/avatar'
 import {useAccount} from '@mintter/app/src/models/accounts'
 import {SmartChangeInfo, useSmartChanges} from '@mintter/app/src/models/changes'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
-import {Avatar} from '@mintter/app/src/components/avatar'
+import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
 import {formattedDate, pluralS} from '@mintter/shared'
 import {Button, SizableText, XStack} from '@mintter/ui'
+import {getAvatarUrl} from '../utils/account-url'
 import {AccessoryContainer} from './accessory-sidebar'
 
 function ChangeItem({
@@ -22,6 +23,7 @@ function ChangeItem({
   const openAccount = () => {
     navigate({key: 'account', accountId: change.author})
   }
+
   return (
     <Button
       key={change.id}
@@ -70,7 +72,11 @@ function ChangeItem({
         justifyContent="flex-start"
       >
         <XStack onPress={openAccount}>
-          <Avatar id={change.author} label={author?.data?.profile?.alias} />
+          <Avatar
+            id={change.author}
+            label={author?.data?.profile?.alias}
+            url={getAvatarUrl(author?.data?.profile?.avatar)}
+          />
         </XStack>
 
         <Button onPress={openAccount}>

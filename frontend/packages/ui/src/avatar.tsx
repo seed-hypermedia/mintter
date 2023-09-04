@@ -1,5 +1,5 @@
-import {Avatar, FontSizeTokens, Text} from 'tamagui'
 import {useMemo} from 'react'
+import {Avatar, FontSizeTokens, Text} from 'tamagui'
 
 export function UIAvatar({
   url,
@@ -21,7 +21,7 @@ export function UIAvatar({
 
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && <Avatar.Image accessibilityLabel={label} source={{uri: url}} />}
+      {url && <Avatar.Image accessibilityLabel={label} src={url} />}
       <Avatar.Fallback
         backgroundColor={color || avatarColor}
         alignItems="center"

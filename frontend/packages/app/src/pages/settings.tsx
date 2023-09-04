@@ -1,3 +1,7 @@
+import {AvatarForm} from '@mintter/app/src/components/avatar-form'
+import {TableList} from '@mintter/app/src/components/table-list'
+import {Tooltip} from '@mintter/app/src/components/tooltip'
+import {AccessURLRow} from '@mintter/app/src/components/url'
 import {
   useAccount,
   useMyAccount,
@@ -16,12 +20,8 @@ import {
   useSiteMembers,
   useWriteSiteInfo,
 } from '@mintter/app/src/models/sites'
-import {TableList} from '@mintter/app/src/components/table-list'
 import {ObjectKeys} from '@mintter/app/src/utils/object-keys'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
-import {AvatarForm} from '@mintter/app/src/components/avatar-form'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
-import {AccessURLRow} from '@mintter/app/src/components/url'
 import {
   LightningWallet,
   Member,
@@ -68,9 +68,9 @@ import {ComponentProps, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {TextInput} from 'react-native'
 import {useGRPCClient} from '../app-context'
-import {BACKEND_FILE_URL} from '../constants'
+import {getAvatarUrl} from '../utils/account-url'
 
-export default function Settings({}: {}) {
+export default function Settings() {
   return (
     <Tabs
       flex={1}
@@ -163,11 +163,7 @@ export function ProfileForm({
             await setProfile.mutateAsync(new Profile({avatar}))
             toast.success('Avatar changed')
           }}
-          url={
-            profile?.avatar
-              ? `${BACKEND_FILE_URL}/${profile.avatar}`
-              : undefined
-          }
+          url={getAvatarUrl(profile?.avatar)}
         />
       </YStack>
       <YStack flex={1}>

@@ -290,6 +290,7 @@ export function PubContextButton({}: {}) {
         <Popover.Content
           borderWidth={1}
           borderColor="$borderColor"
+          elevation="$2"
           enterStyle={{y: -10, opacity: 0}}
           exitStyle={{y: -10, opacity: 0}}
           elevate

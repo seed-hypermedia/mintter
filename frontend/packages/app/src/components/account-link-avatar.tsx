@@ -4,6 +4,7 @@ import {useAccount} from '@mintter/app/src/models/accounts'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {Button, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
+import {getAvatarUrl} from '../utils/account-url'
 import {Tooltip} from './tooltip'
 
 export function ErrorDot() {
@@ -28,8 +29,14 @@ export function ErrorDot() {
 export function AccountLinkAvatar({accountId}: {accountId?: string}) {
   const navigate = useNavigate()
   const account = useAccount(accountId)
+
   let content = account.data?.profile ? (
-    <Avatar size="$1" label={account.data.profile.alias} id={account.data.id} />
+    <Avatar
+      size="$1"
+      label={account.data.profile.alias}
+      id={account.data.id}
+      url={getAvatarUrl(account.data?.profile?.avatar)}
+    />
   ) : (
     <>
       <Avatar size="$1" label={'?'} id={accountId!} />

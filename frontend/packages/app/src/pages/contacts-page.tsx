@@ -1,11 +1,11 @@
+import {Avatar} from '@mintter/app/src/components/avatar'
+import Footer from '@mintter/app/src/components/footer'
+import {OnlineIndicator} from '@mintter/app/src/components/indicator'
 import {
   useAccountIsConnected,
   useAllAccounts,
 } from '@mintter/app/src/models/accounts'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {Avatar} from '@mintter/app/src/components/avatar'
-import Footer from '@mintter/app/src/components/footer'
-import {OnlineIndicator} from '@mintter/app/src/components/indicator'
 import {Account} from '@mintter/shared'
 import {
   Button,
@@ -18,8 +18,9 @@ import {
   YStack,
   styled,
 } from '@mintter/ui'
-import {useSetTrusted} from '../models/accounts'
 import {PlusCircle} from '@tamagui/lucide-icons'
+import {useSetTrusted} from '../models/accounts'
+import {getAvatarUrl} from '../utils/account-url'
 
 const PageHeading = styled(Heading, {
   color: '$gray10',
@@ -49,7 +50,12 @@ function ContactItem({
       }}
     >
       <XStack alignItems="center" gap="$4" flex={1}>
-        <Avatar size="$2" id={account.id} label={account.profile?.alias} />
+        <Avatar
+          size="$2"
+          id={account.id}
+          label={account.profile?.alias}
+          url={getAvatarUrl(account.profile?.avatar)}
+        />
         {alias ? (
           <Text fontWeight="700" fontFamily="$body">
             {alias}

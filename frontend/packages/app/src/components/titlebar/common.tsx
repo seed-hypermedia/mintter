@@ -1,22 +1,34 @@
+import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {useGRPCClient, useIPC} from '@mintter/app/src/app-context'
+import {Avatar} from '@mintter/app/src/components/avatar'
+import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
 import {Dropdown, MenuItem} from '@mintter/app/src/components/dropdown'
+import {Tooltip} from '@mintter/app/src/components/tooltip'
 import appError from '@mintter/app/src/errors'
 import {useMyAccount} from '@mintter/app/src/models/accounts'
 import {useDraftList} from '@mintter/app/src/models/documents'
 import {useSiteList} from '@mintter/app/src/models/sites'
 import {useDaemonReady} from '@mintter/app/src/node-status-context'
+import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {
+  NavRoute,
   PublicationRoute,
+  useNavRoute,
   useNavigate,
   useNavigationDispatch,
   useNavigationState,
-  useNavRoute,
-  NavRoute,
 } from '@mintter/app/src/utils/navigation'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
-import {Avatar} from '@mintter/app/src/components/avatar'
-import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
-import {Account, DocumentChange, SiteConfig} from '@mintter/shared'
+import {getAvatarUrl} from '@mintter/app/utils/account-url'
+import {PublicationRouteContext} from '@mintter/app/utils/navigation'
+import {
+  Account,
+  DocumentChange,
+  SiteConfig,
+  getPublicDocUrl,
+  getPublicEntityUrl,
+} from '@mintter/shared'
 import {
   Back,
   Button,
@@ -33,9 +45,6 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import toast from 'react-hot-toast'
-import {TitleBarProps} from '.'
-import {DraftPublicationButtons, PubContextButton} from './publish-share'
 import {
   Copy,
   FilePlus2,
@@ -46,18 +55,14 @@ import {
   Search,
   Send,
 } from '@tamagui/lucide-icons'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {memo} from 'react'
-import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {useIPC} from '@mintter/app/src/app-context'
-import {useGRPCClient} from '@mintter/app/src/app-context'
+import toast from 'react-hot-toast'
+import {TitleBarProps} from '.'
+import {useGroup} from '../../models/groups'
+import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
-import {useEditGroupInfoDialog} from '../edit-group-info'
-import {useGroup} from '../../models/groups'
-import {getPublicDocUrl, getPublicEntityUrl} from '@mintter/shared'
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
-import {PublicationRouteContext} from '@mintter/app/utils/navigation'
+import {DraftPublicationButtons, PubContextButton} from './publish-share'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -280,7 +285,12 @@ export function AccountDropdownItem({
         onRoute({key: 'account', accountId: account?.id})
       }}
       icon={
-        <Avatar size="$1" label={account?.profile?.alias} id={account?.id} />
+        <Avatar
+          size="$1"
+          label={account?.profile?.alias}
+          id={account?.id}
+          url={getAvatarUrl(account?.profile?.avatar)}
+        />
       }
       title={account?.profile?.alias || '<me>'}
     />
@@ -301,7 +311,21 @@ function NavMenuContentUnpure({
   const {data: account} = useMyAccount()
 
   return (
-    <Popover.Content padding={0} elevation="$2">
+    <Popover.Content
+      padding={0}
+      elevation="$2"
+      enterStyle={{y: -10, opacity: 0}}
+      exitStyle={{y: -10, opacity: 0}}
+      elevate
+      animation={[
+        'quick',
+        {
+          opacity: {
+            overshootClamping: true,
+          },
+        },
+      ]}
+    >
       <YGroup separator={<Separator />} elevation="$4">
         <YGroup.Item>
           <AccountDropdownItem account={account} onRoute={onRoute} />

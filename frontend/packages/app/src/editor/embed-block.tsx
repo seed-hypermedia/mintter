@@ -1,16 +1,17 @@
+import {PartialMessage} from '@bufbuild/protobuf'
 import {
   Block as BlockNoteBlock,
   BlockNoteEditor,
   InlineContent,
 } from '@mintter/app/src/blocknote-core'
-import {PartialMessage} from '@bufbuild/protobuf'
+import {useNavigate} from '@mintter/app/src/utils/navigation'
 import type {
-  Block as ServerBlock,
   BlockNode,
   HeadingBlock,
   ImageBlock,
   ParagraphBlock,
   PresentationBlock,
+  Block as ServerBlock,
 } from '@mintter/shared'
 import {
   Block,
@@ -21,16 +22,15 @@ import {
   serverBlockToEditorInline,
 } from '@mintter/shared'
 import {Spinner, Text, XStack, YStack} from '@mintter/ui'
+import {AlertCircle} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import {getBlockInfoFromPos} from '../blocknote-core/extensions/Blocks/helpers/getBlockInfoFromPos'
 import {createReactBlockSpec} from '../blocknote-react'
 import {HMBlockSchema, hmBlockSchema} from '../client/schema'
-import {usePublication} from '../models/documents'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {useOpenUrl} from '../open-url'
 import {BACKEND_FILE_URL} from '../constants'
-import {ErrorBoundary} from 'react-error-boundary'
-import {AlertCircle} from '@tamagui/lucide-icons'
+import {usePublication} from '../models/documents'
+import {useOpenUrl} from '../open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -100,7 +100,9 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
 function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
-  return <img src={`${BACKEND_FILE_URL}/${cid}`} />
+  return (
+    <img src={`${BACKEND_FILE_URL}/${cid}`} alt={`image block: ${block.id}`} />
+  )
 }
 
 function StaticBlock({block}: {block: ServerBlock}) {

@@ -28,6 +28,7 @@ import {CheckCircle, Copy, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
 import {useSetTrusted} from '../models/accounts'
+import {getAvatarUrl} from '../utils/account-url'
 
 function DeviceRow({
   isOnline,
@@ -144,7 +145,12 @@ export default function AccountPage() {
         <Container>
           <XStack gap="$4" alignItems="center" justifyContent="space-between">
             <XStack gap="$4" alignItems="center">
-              <Avatar id={accountId} size="$6" label={account.profile?.alias} />
+              <Avatar
+                id={accountId}
+                size="$6"
+                label={account.profile?.alias}
+                url={getAvatarUrl(account.profile?.avatar)}
+              />
 
               <SizableText
                 whiteSpace="nowrap"
@@ -177,7 +183,21 @@ export default function AccountPage() {
                     {isConnected ? 'Connected' : 'Offline'}
                   </Button>
                 </Popover.Trigger>
-                <Popover.Content padding={0} elevation="$3">
+                <Popover.Content
+                  padding={0}
+                  elevation="$2"
+                  enterStyle={{y: -10, opacity: 0}}
+                  exitStyle={{y: -10, opacity: 0}}
+                  elevate
+                  animation={[
+                    'quick',
+                    {
+                      opacity: {
+                        overshootClamping: true,
+                      },
+                    },
+                  ]}
+                >
                   <YGroup>
                     <YGroup.Item>
                       <XStack paddingHorizontal="$4">
