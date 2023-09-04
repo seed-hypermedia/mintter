@@ -109,16 +109,17 @@ if [ -z "$hostname" ]; then
   exit 1
 fi
 
-install_docker
-
-curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose-groups.yml
+mkdir -p ${workspace}
 rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
+
+install_docker
+curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose-groups.yml
 docker stop nextjs minttersite proxy 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 docker rm nextjs minttersite proxy 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 
 dns=$(echo "MTT_SITE_HOSTNAME=${hostname}" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
-mkdir -p ${workspace}
+
 mkdir -p ${workspace}/proxy
 
 cat << BLOCK > ${workspace}/proxy/CaddyFile
