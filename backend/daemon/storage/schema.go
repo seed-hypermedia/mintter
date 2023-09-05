@@ -35,6 +35,10 @@ func init() {
 	col = Schema.Columns[KeyDelegationsDelegate]
 	col.SQLType = "INTEGER"
 	Schema.Columns[KeyDelegationsDelegate] = col
+
+	col = Schema.Columns[BlobAttrsExtra]
+	col.SQLType = "BLOB"
+	Schema.Columns[BlobAttrsExtra] = col
 }
 
 // removeSQLComments is written with the help of ChatGPT, but it seems to work.

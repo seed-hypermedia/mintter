@@ -9,6 +9,38 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func TestBug_DraftsInTrustedPublicationList(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.Error(t, err, "must fail asking for doc ID that only has a draft")
+	require.Nil(t, pub)
+
+	pub, err = api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id, TrustedOnly: true})
+	require.Error(t, err, "must fail asking for doc ID that only has a draft when requested trusted version")
+	require.Nil(t, pub)
+
+	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{TrustedOnly: false})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 0, "must have no publications")
+
+	pubs, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{TrustedOnly: true})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 0, "must have no publications in trusted list")
+}
+
 func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()

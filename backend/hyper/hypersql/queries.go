@@ -330,8 +330,10 @@ WHERE blob NOT IN deps`,
 			},
 			SQL: `SELECT json_group_array(` + s.C_ChangesBlob + `) AS heads
 FROM ` + s.T_Changes + `
+LEFT JOIN ` + s.T_Drafts + ` ON ` + s.C_DraftsEntity + ` = ` + s.C_ChangesEntity + ` AND ` + s.C_ChangesBlob + ` = ` + s.C_DraftsBlob + `
 JOIN ` + s.T_TrustedAccounts + ` ON ` + s.C_TrustedAccountsID + ` = ` + s.C_ChangesAuthor + `
-WHERE ` + s.C_ChangesEntity + ` = :entity`,
+WHERE ` + s.C_ChangesEntity + ` = :entity
+AND ` + s.C_DraftsBlob + ` IS NULL`,
 		},
 		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
 			"DELETE FROM", s.Blobs, '\n',

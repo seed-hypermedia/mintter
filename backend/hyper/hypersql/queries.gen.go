@@ -949,8 +949,10 @@ type ChangesGetTrustedHeadsJSONResult struct {
 func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetTrustedHeadsJSONResult, error) {
 	const query = `SELECT json_group_array(changes.blob) AS heads
 FROM changes
+LEFT JOIN drafts ON drafts.entity = changes.entity AND changes.blob = drafts.blob
 JOIN trusted_accounts ON trusted_accounts.id = changes.author
-WHERE changes.entity = :entity`
+WHERE changes.entity = :entity
+AND drafts.blob IS NULL`
 
 	var out ChangesGetTrustedHeadsJSONResult
 

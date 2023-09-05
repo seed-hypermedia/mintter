@@ -79,7 +79,7 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	start := time.Now().Add(-1 * time.Second).UTC().UnixMicro()
+	start := time.Now().Add(-4 * time.Second).UTC().UnixMicro()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
