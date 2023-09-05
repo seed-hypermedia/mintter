@@ -5,8 +5,9 @@ import updater from 'update-electron-app'
 import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
+import squirrelStartup from 'electron-squirrel-startup'
 
-if (require('electron-squirrel-startup')) app.quit()
+if (squirrelStartup) app.quit()
 
 mainDaemon
 
