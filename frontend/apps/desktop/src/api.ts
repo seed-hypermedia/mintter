@@ -109,7 +109,7 @@ export function openInitialWindows() {
       })
     })
   } catch (error) {
-    console.error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
+    error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
     trpc.createAppWindow({route: {key: 'home'}})
     return
   }
@@ -319,6 +319,8 @@ export const router = t.router({
           y: 12,
         },
       })
+
+      log('[MAIN:API]: window created')
 
       const windowLogger = childLogger(windowId)
       browserWindow.webContents.on(

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme} from 'electron'
 import log from 'electron-log/main'
-import updater from 'update-electron-app'
+// import updater from 'update-electron-app'
 import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
@@ -13,11 +13,11 @@ mainDaemon
 
 Menu.setApplicationMenu(mainMenu)
 
-// check for updates Powered by the free and open-source
-updater({
-  updateInterval: '1 hour',
-  repo: 'mintterteam/mintter',
-})
+// // check for updates Powered by the free and open-source
+// updater({
+//   updateInterval: '1 hour',
+//   repo: 'mintterteam/mintter',
+// })
 
 //Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
 log.initialize({
@@ -37,7 +37,7 @@ if (import.meta.env.PROD) {
       maxQueueCount: 30,
       // Called every time the number of requests in the queue changes.
       queuedLengthChanged: (length) => {
-        console.log('Sentry queue changed', length)
+        log.debug('[MAIN]: Sentry queue changed', length)
       },
       // Called before attempting to send an event to Sentry. Used to override queuing behavior.
       //
@@ -50,10 +50,10 @@ if (import.meta.env.PROD) {
 }
 
 app.on('did-become-active', () => {
-  console.log('App active')
+  log.debug('[MAIN]: App active')
 })
 app.on('did-resign-active', () => {
-  console.log('App no longer active')
+  log.debug('[MAIN]: App no longer active')
 })
 
 // dark mode support: https://www.electronjs.org/docs/latest/tutorial/dark-mode
@@ -78,12 +78,15 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    log.debug('[MAIN]: window-all-closed!!')
     app.quit()
   }
 })
 
 app.on('activate', () => {
+  log.debug('[MAIN]: APP Active')
   if (BrowserWindow.getAllWindows().length === 0) {
+    log.debug('[MAIN]: will open the home window')
     trpc.createAppWindow({
       route: {key: 'home'},
     })
