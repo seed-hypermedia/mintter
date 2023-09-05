@@ -1,6 +1,6 @@
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
+import {Tooltip} from '@mintter/ui'
 import {Button} from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 

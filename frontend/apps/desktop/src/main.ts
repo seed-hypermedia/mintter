@@ -6,6 +6,8 @@ import {mainMenu, openInitialWindows, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
 
+if (require('electron-squirrel-startup')) app.quit()
+
 mainDaemon
 
 Menu.setApplicationMenu(mainMenu)

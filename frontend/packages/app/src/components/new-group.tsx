@@ -1,5 +1,5 @@
 import {Button, Form, Input, Label} from '@mintter/ui'
-import {Tooltip} from './tooltip'
+import {Tooltip} from '@mintter/ui'
 import {FilePlus2} from '@tamagui/lucide-icons'
 import {AppDialog, DialogTitle} from './dialog'
 import {toast} from 'react-hot-toast'

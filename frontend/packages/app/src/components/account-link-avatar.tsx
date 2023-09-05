@@ -5,7 +5,7 @@ import {useNavigate} from '@mintter/app/src/utils/navigation'
 import {Button, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {getAvatarUrl} from '../utils/account-url'
-import {Tooltip} from './tooltip'
+import {Tooltip} from '@mintter/ui'
 
 export function ErrorDot() {
   return (

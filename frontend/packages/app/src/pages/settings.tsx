@@ -1,6 +1,5 @@
 import {AvatarForm} from '@mintter/app/src/components/avatar-form'
 import {TableList} from '@mintter/app/src/components/table-list'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {AccessURLRow} from '@mintter/app/src/components/url'
 import {
   useAccount,
@@ -58,6 +57,7 @@ import {
   Tabs,
   TabsContentProps,
   TextArea,
+  Tooltip,
   XGroup,
   XStack,
   YStack,
@@ -102,7 +102,7 @@ export default function Settings() {
             Web Sites
           </SizableText>
         </Tabs.Tab>
-        <Tabs.Tab value="wallets" data-testid="tab-wallets">
+        {/* <Tabs.Tab value="wallets" data-testid="tab-wallets">
           <SizableText flex={1} textAlign="left">
             Wallets
           </SizableText>
@@ -120,7 +120,7 @@ export default function Settings() {
           >
             NEW
           </SizableText>
-        </Tabs.Tab>
+        </Tabs.Tab> */}
       </Tabs.List>
       <Separator vertical />
       <TabsContent value="account">
@@ -133,9 +133,9 @@ export default function Settings() {
       <TabsContent value="sites">
         <SitesSettings />
       </TabsContent>
-      <TabsContent value="wallets">
+      {/* <TabsContent value="wallets">
         <WalletsSettings />
-      </TabsContent>
+      </TabsContent> */}
     </Tabs>
   )
 }
@@ -313,8 +313,9 @@ function DeviceItem({id}: {id: string}) {
         <SizableText size="$1" flex={0} width={80} flexShrink={0} flexGrow={0}>
           Addresses:
         </SizableText>
-        <YStack flex={1} position="relative">
+        <XStack flex={1} position="relative" space="$2">
           <SizableText
+            fontFamily="$mono"
             size="$1"
             width="100%"
             overflow="hidden"
@@ -323,7 +324,20 @@ function DeviceItem({id}: {id: string}) {
           >
             {status == 'success' ? data?.addrs.join(',') : '...'}
           </SizableText>
-        </YStack>
+          <Tooltip content="Copy Device Address">
+            {data?.addrs ? (
+              <Button
+                size="$2"
+                icon={Copy}
+                onPress={() => {
+                  // TODO: make sure this is true all the time.
+                  copyTextToClipboard(data?.addrs.join(',')!)
+                  toast.success('Device address copied!')
+                }}
+              />
+            ) : null}
+          </Tooltip>
+        </XStack>
       </TableList.Item>
     </TableList>
   )
@@ -360,7 +374,7 @@ function AppSettings() {
             textOverflow="ellipsis"
             userSelect="text"
           >
-            {import.meta.env.PACKAGE_VERSION}
+            {import.meta.env.APP_VERSION}
           </SizableText>
         </TableList.Item>
       </TableList>
@@ -809,7 +823,7 @@ function SitesSettings({}: {}) {
   if (activeSitePage === NewSitePage) {
     return <NewSite onDone={(s: string | null) => setActiveSitePage(s)} />
   }
-  if (typeof activeSitePage === 'string') {
+  if (typeof activeSitePage == 'string') {
     return (
       <SiteSettings
         hostname={activeSitePage}
@@ -819,26 +833,22 @@ function SitesSettings({}: {}) {
     )
   }
   return (
-    <>
-      <YStack gap="$5">
-        <XStack alignItems="center" gap="$4">
-          <Heading flex={1}>Sites</Heading>
-          <Button
-            size="$2"
-            icon={Add}
-            onPress={() => {
-              setActiveSitePage(NewSitePage)
-            }}
-          >
-            Add Site
-          </Button>
-        </XStack>
+    <YStack gap="$5">
+      <XStack alignItems="center" gap="$4">
+        <Heading flex={1}>Sites</Heading>
+        <Button
+          size="$2"
+          icon={Add}
+          onPress={() => {
+            setActiveSitePage(NewSitePage)
+          }}
+        >
+          Add Site
+        </Button>
+      </XStack>
 
-        <SitesList
-          onSelectSite={(siteId: string) => setActiveSitePage(siteId)}
-        />
-      </YStack>
-    </>
+      <SitesList onSelectSite={(siteId: string) => setActiveSitePage(siteId)} />
+    </YStack>
   )
 }
 

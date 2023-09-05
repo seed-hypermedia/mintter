@@ -63,7 +63,7 @@ export function PublicationListItem({
           {hasDraft && (
             <Button
               theme="yellow"
-              zIndex="$max"
+              zIndex="$zIndex.5"
               onPress={(e) => {
                 navigate(
                   {

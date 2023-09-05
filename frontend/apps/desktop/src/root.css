@@ -1,3 +1,10 @@
+*,
+a,
+button {
+  cursor: default;
+  user-select: none;
+}
+
 body {
   margin: 0;
   padding: 0;

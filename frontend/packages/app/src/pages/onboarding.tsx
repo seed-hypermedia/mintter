@@ -1,11 +1,10 @@
+import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
 import appError from '@mintter/app/src/errors'
 import {useSetProfile} from '@mintter/app/src/models/accounts'
 import {
   useAccountRegistration,
   useMnemonics,
 } from '@mintter/app/src/models/daemon'
-import {MintterIcon} from '@mintter/app/src/components/mintter-icon'
-import {Tooltip} from '@mintter/app/src/components/tooltip'
 import {Profile as ProfileType} from '@mintter/shared'
 import {
   AnimatePresence,
@@ -15,7 +14,6 @@ import {
   Fieldset,
   H1,
   H2,
-  H3,
   Input,
   Label,
   Next,
@@ -26,16 +24,16 @@ import {
   SizableText,
   StepWrapper as StyledStepWrapper,
   TextArea,
-  Twitter,
-  useTheme,
+  Tooltip,
   XStack,
   YStack,
+  useTheme,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {
-  createContext,
   PropsWithChildren,
   ReactNode,
+  createContext,
   useCallback,
   useContext,
   useEffect,

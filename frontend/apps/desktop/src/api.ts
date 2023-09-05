@@ -60,7 +60,7 @@ ipcMain.on('maximize_window', (_event, _info) => {
 })
 
 ipcMain.on('close_window', (_event, _info) => {
-  getFocusedWindow().close()
+  getFocusedWindow()?.close()
 })
 
 export const mainMenu = new Menu()
@@ -91,20 +91,28 @@ type AppWindow = {
 const userData = app.getPath('userData')
 log('App UserData: ', userData)
 
-let windowsState: Record<string, AppWindow> = store.get('WindowState') || {}
+let windowsState =
+  (store.get('WindowState') as Record<string, AppWindow>) ||
+  ({} as Record<string, AppWindow>)
 
 export function openInitialWindows() {
   if (!Object.keys(windowsState).length) {
     trpc.createAppWindow({route: {key: 'home'}})
     return
   }
-  Object.entries(windowsState).forEach(([windowId, window]) => {
-    trpc.createAppWindow({
-      route: window.route,
-      bounds: window.bounds,
-      id: windowId,
+  try {
+    Object.entries(windowsState).forEach(([windowId, window]) => {
+      trpc.createAppWindow({
+        route: window.route,
+        bounds: window.bounds,
+        id: windowId,
+      })
     })
-  })
+  } catch (error) {
+    console.error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
+    trpc.createAppWindow({route: {key: 'home'}})
+    return
+  }
 }
 
 let isExpectingQuit = false
@@ -202,15 +210,6 @@ mainMenu.append(
 )
 mainMenu.append(new MenuItem({role: 'editMenu'}))
 
-function openRoute(route: NavRoute) {
-  const focusedWindow = getFocusedWindow()
-  if (focusedWindow) {
-    focusedWindow.webContents.send('open_route', route)
-  } else {
-    trpc.createAppWindow({route})
-  }
-}
-
 mainMenu.append(
   new MenuItem({
     id: 'viewMenu',
@@ -267,6 +266,15 @@ mainMenu.append(
     ],
   }),
 )
+
+function openRoute(route: NavRoute) {
+  const focusedWindow = getFocusedWindow()
+  if (focusedWindow) {
+    focusedWindow.webContents.send('open_route', route)
+  } else {
+    trpc.createAppWindow({route})
+  }
+}
 
 export const router = t.router({
   createAppWindow: t.procedure

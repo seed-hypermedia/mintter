@@ -84,14 +84,16 @@ const config = {
       config: {
         name: 'Mintter',
         exe: 'mintter.exe',
+        authors: 'Mintter inc.',
+        description: 'Mintter: a hyper.media protocol client',
         // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
         iconUrl: `${iconsPath}.ico`,
         noMsi: true,
         setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
         // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${iconsPath}.ico`,
-        certificateFile: process.env.WINDOWS_PFX_FILE,
-        certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
+        // setupIcon: `${iconsPath}.ico`,
+        // certificateFile: process.env.WINDOWS_PFX_FILE,
+        // certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
       },
     },
   ],
@@ -131,19 +133,7 @@ const config = {
       },
     },
   ],
-  publishers: [
-    {
-      name: '@electron-forge/publisher-github',
-      config: {
-        repository: {
-          owner: 'mintterteam',
-          name: 'mintter',
-        },
-        draft: true,
-        prerelease: true,
-      },
-    },
-  ],
+  publishers: [],
 }
 
 function notarizeMaybe() {

@@ -1,11 +1,4 @@
-import {
-  YStack,
-  XStack,
-  SizableText,
-  ListItem,
-  XStackProps,
-  ListItemProps,
-} from '@mintter/ui'
+import {ListItem, ListItemProps, XStack, XStackProps, YStack} from '@mintter/ui'
 import {ComponentProps, PropsWithChildren, ReactNode} from 'react'
 
 TableList.Header = TableHeader
@@ -28,7 +21,7 @@ export function TableList({
       // aria-labelledby={ariaLabelledBy}
       br="$4"
       ov="hidden"
-      mx="$-4"
+      // mx="$-4"
       $sm={{
         //@ts-ignore
         mx: 0,

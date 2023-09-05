@@ -39,6 +39,7 @@
     "@trpc/server": "10.37.1",
     "console-log-colors": "0.4.0",
     "electron-log": "beta",
+    "electron-squirrel-startup": "^1.0.0",
     "electron-store": "8.1.0",
     "electron-trpc": "0.5.2",
     "fs-extra": "^11.1.1",
