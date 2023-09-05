@@ -27,8 +27,8 @@ const daemonBinaryPath = path.join(
 )
 
 let iconsPath = process.env.CI
-  ? path.resolve(__dirname, 'assets/icons-nightly/icon')
-  : path.resolve(__dirname, 'assets/icons/icon')
+  ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
+  : path.resolve(__dirname, 'assets', 'icons', 'icon')
 
 const commonLinuxConfig = {
   categories: ['Development', 'Utility'],
@@ -53,7 +53,11 @@ const config = {
     appCategoryType: 'public.app-category.productivity',
     packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
-    beforeCopy: [setLanguages(['en', 'en_US'])],
+    // beforeCopy: [setLanguages(['en', 'en_US'])],
+    win32metadata: {
+      CompanyName: 'Mintter Inc.',
+      OriginalFilename: 'Mintter',
+    },
   },
   makers: [
     {
@@ -83,12 +87,12 @@ const config = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'Mintter',
-        exe: 'mintter.exe',
         authors: 'Mintter inc.',
+        exe: 'mintter.exe',
         description: 'Mintter: a hyper.media protocol client',
         // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
         iconUrl: `${iconsPath}.ico`,
-        noMsi: false,
+        noMsi: true,
         setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
         // The ICO file to use as the icon for the generated Setup.exe
         setupIcon: `${iconsPath}.ico`,
