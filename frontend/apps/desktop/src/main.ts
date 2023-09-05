@@ -7,7 +7,9 @@ import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
 import squirrelStartup from 'electron-squirrel-startup'
 
-if (squirrelStartup) app.quit()
+if (squirrelStartup) {
+  app.quit()
+}
 
 mainDaemon
 
