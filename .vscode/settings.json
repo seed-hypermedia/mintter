@@ -23,7 +23,10 @@
     "plz-out/**": true,
     "**/.yarn": true,
     "**/.pnp.*": true,
-    ".git/**": true
+    ".git/**": true,
+    "**/node_modules/**": true,
+    "**/out/**": true,
+    "**/dist/**": true
   },
   "editor.formatOnPaste": false,
   // Please, don't set global editor tab size!
@@ -70,7 +73,6 @@
     ]
   },
   "go.lintTool": "golangci-lint",
-  "python.formatting.provider": "none",
   "prettier.bracketSpacing": false,
   "editor.formatOnSave": true,
   "[python]": {
