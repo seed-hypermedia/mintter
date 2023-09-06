@@ -1,0 +1,84 @@
+.NavigationMenuContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: red;
+  /* animation-duration: 250ms;
+  animation-timing-function: ease; */
+}
+
+.ViewportPosition {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  /* perspective: 2000px; */
+}
+
+.NavigationMenuViewport {
+  position: relative;
+  /* transform-origin: top center; */
+  margin-top: 10px;
+  width: 100%;
+  background-color: white;
+  border-radius: 6px;
+  overflow: hidden;
+  /* box-shadow:
+    hsl(206 22% 7% / 35%) 0px 10px 38px -10px,
+    hsl(206 22% 7% / 20%) 0px 10px 20px -15px; */
+  width: var(--radix-navigation-menu-viewport-width);
+  height: var(--radix-navigation-menu-viewport-height);
+  /* transition:
+    width,
+    height,
+    300ms ease; */
+}
+
+/* .NavigationMenuViewport[data-state='open'] {
+  animation: scaleIn 200ms ease;
+}
+.NavigationMenuViewport[data-state='closed'] {
+  animation: scaleOut 200ms ease;
+} */
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: rotateX(-30deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

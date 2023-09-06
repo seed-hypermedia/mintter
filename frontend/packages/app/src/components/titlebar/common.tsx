@@ -214,7 +214,7 @@ export function PageContextButtons(props: TitleBarProps) {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XStack>
+    <XStack className="no-window-drag">
       <XGroup backgroundColor="transparent">
         <XGroup.Item>
           <Button

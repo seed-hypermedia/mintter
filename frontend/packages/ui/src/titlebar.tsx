@@ -25,7 +25,7 @@ export const TitlebarRow = styled(XStack, {
 
 export const TitlebarSection = styled(XStack, {
   name: 'TitlebarSection',
-  alignItems: 'center',
+  ai: 'center',
   gap: '$2',
   userSelect: 'none',
 })
