@@ -1,8 +1,8 @@
 import type {ForgeConfig} from '@electron-forge/shared-types'
 import {MakerSquirrel} from '@electron-forge/maker-squirrel'
 import {MakerZIP} from '@electron-forge/maker-zip'
-import {MakerDeb} from '@electron-forge/maker-deb'
-import {MakerRpm} from '@electron-forge/maker-rpm'
+import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
+// import {MakerRpm} from '@electron-forge/maker-rpm'
 import {VitePlugin} from '@electron-forge/plugin-vite'
 import path from 'path'
 import packageJson from './package.json'
@@ -38,16 +38,15 @@ let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
   : path.resolve(__dirname, 'assets', 'icons', 'icon')
 
-// const commonLinuxConfig = {
-//   categories: ['Development', 'Utility'],
-//   icon: {
-//     '1024x1024': `${iconsPath}.ico`,
-//     // scalable: path.resolve(iconDir, 'fiddle.svg'),
-//   },
-//   mimeType: ['x-scheme-handler/mintter-app'],
-//   version,
-//   bin: 'Mintter',
-// }
+const commonLinuxConfig: MakerDebConfig = {
+  options: {
+    categories: ['Development', 'Utility'],
+    icon: `${iconsPath}.ico`,
+    mimeType: ['x-scheme-handler/mintter-app'],
+    version,
+    bin: 'Mintter',
+  },
+}
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -68,8 +67,7 @@ const config: ForgeConfig = {
     },
   },
   makers: [
-    new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerDeb(commonLinuxConfig),
     new MakerZIP({}, ['darwin']),
     new MakerSquirrel({
       name: 'Mintter',
