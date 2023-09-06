@@ -4,8 +4,8 @@ package com.mintter.groups.v1alpha;
 
 option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
 
-// Service exposed by the Mintter website.
-// It's exposed as a normal gRPC interface, and also over libp2p.
+// API service exposed by the website server.
+// It's exposed as gRPC over Libp2p.
 service Website {
   // Gets the public information about the website.
   // This information is also available as JSON over HTTP on `/.well-known/hypermedia-site`.
@@ -13,6 +13,9 @@ service Website {
 
   // Initializes the server to become a website for a specific group.
   rpc InitializeServer(InitializeServerRequest) returns (InitializeServerResponse);
+
+  // Publishes blobs to the website.
+  rpc PublishBlobs(PublishBlobsRequest) returns (PublishBlobsResponse);
 }
 
 // Request for getting the public site information.
@@ -35,6 +38,15 @@ message InitializeServerRequest {
 // Response for initializing the site.
 message InitializeServerResponse {}
 
+// Request for publishing blobs.
+message PublishBlobsRequest {
+  // List of blob CIDs that we expect to be available on the site.
+  repeated string blobs = 1;
+}
+
+// Response for publishing blobs.
+message PublishBlobsResponse {}
+
 // Publicly available information about the website.
 message PublicSiteInfo {
   // P2P information for the website.
@@ -43,6 +55,9 @@ message PublicSiteInfo {
   // Group ID being served on the site.
   // Can be empty if site is not initialized yet.
   string group_id = 2;
+
+  // Version of the group according to the website server.
+  string group_version = 3;
 }
 
 // Peer information for P2P network.

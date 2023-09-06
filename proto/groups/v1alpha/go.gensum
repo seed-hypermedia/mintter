@@ -1,7 +1,2 @@
-<<<<<<< HEAD
-srcs: e7826ebe0b1bf3d02b7576b6219fc4c9
-outs: b81567a4264f747915200e96a5003245
-=======
-srcs: bef308f86f1ef9e1e30f02550ff57875
-outs: fe83ecd9e8638e61aec2749329fbb2a5
->>>>>>> ff977ee4d (WIP define website API for groups)
+srcs: be6879c36688a3665d4e6e8c5a067d5d
+outs: 4158b8497c98190d6de5b869d659d639

@@ -27,6 +27,8 @@ type WebsiteClient interface {
 	GetSiteInfo(ctx context.Context, in *GetSiteInfoRequest, opts ...grpc.CallOption) (*PublicSiteInfo, error)
 	// Initializes the server to become a website for a specific group.
 	InitializeServer(ctx context.Context, in *InitializeServerRequest, opts ...grpc.CallOption) (*InitializeServerResponse, error)
+	// Publishes blobs to the website.
+	PublishBlobs(ctx context.Context, in *PublishBlobsRequest, opts ...grpc.CallOption) (*PublishBlobsResponse, error)
 }
 
 type websiteClient struct {
@@ -55,6 +57,15 @@ func (c *websiteClient) InitializeServer(ctx context.Context, in *InitializeServ
 	return out, nil
 }
 
+func (c *websiteClient) PublishBlobs(ctx context.Context, in *PublishBlobsRequest, opts ...grpc.CallOption) (*PublishBlobsResponse, error) {
+	out := new(PublishBlobsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Website/PublishBlobs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebsiteServer is the server API for Website service.
 // All implementations should embed UnimplementedWebsiteServer
 // for forward compatibility
@@ -64,6 +75,8 @@ type WebsiteServer interface {
 	GetSiteInfo(context.Context, *GetSiteInfoRequest) (*PublicSiteInfo, error)
 	// Initializes the server to become a website for a specific group.
 	InitializeServer(context.Context, *InitializeServerRequest) (*InitializeServerResponse, error)
+	// Publishes blobs to the website.
+	PublishBlobs(context.Context, *PublishBlobsRequest) (*PublishBlobsResponse, error)
 }
 
 // UnimplementedWebsiteServer should be embedded to have forward compatible implementations.
@@ -75,6 +88,9 @@ func (UnimplementedWebsiteServer) GetSiteInfo(context.Context, *GetSiteInfoReque
 }
 func (UnimplementedWebsiteServer) InitializeServer(context.Context, *InitializeServerRequest) (*InitializeServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InitializeServer not implemented")
+}
+func (UnimplementedWebsiteServer) PublishBlobs(context.Context, *PublishBlobsRequest) (*PublishBlobsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublishBlobs not implemented")
 }
 
 // UnsafeWebsiteServer may be embedded to opt out of forward compatibility for this service.
@@ -124,6 +140,24 @@ func _Website_InitializeServer_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Website_PublishBlobs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishBlobsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebsiteServer).PublishBlobs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.groups.v1alpha.Website/PublishBlobs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebsiteServer).PublishBlobs(ctx, req.(*PublishBlobsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Website_ServiceDesc is the grpc.ServiceDesc for Website service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,6 +172,10 @@ var Website_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InitializeServer",
 			Handler:    _Website_InitializeServer_Handler,
+		},
+		{
+			MethodName: "PublishBlobs",
+			Handler:    _Website_PublishBlobs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
