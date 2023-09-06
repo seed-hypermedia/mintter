@@ -26,7 +26,7 @@ const daemonBinaryPath = path.join(
   `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
 )
 
-console.log(`== ~ daemonBinaryPath:`, daemonBinaryPath)
+console.log(`===== ~ daemonBinaryPath:`, daemonBinaryPath)
 
 let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
