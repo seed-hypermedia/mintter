@@ -23,8 +23,10 @@ function getPlatformTriple() {
 const daemonBinaryPath = path.join(
   devProjectRoot,
   // TODO: parametrize this for each platform
-  `plz-out', 'bin', 'backend', 'mintterd-${getPlatformTriple()}`,
+  `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
 )
+
+console.log(`== ~ daemonBinaryPath:`, daemonBinaryPath)
 
 let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
