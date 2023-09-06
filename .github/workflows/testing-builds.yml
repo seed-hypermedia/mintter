@@ -1,0 +1,146 @@
+name: Desktop app release
+
+on:
+  push:
+    branches:
+      - testing-builds
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get Tag
+        id: vars
+        run: |
+          echo "version=0.0.100" >> "$GITHUB_OUTPUT"
+
+  build-binaries:
+    name: Build ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
+    runs-on: ${{ matrix.config.os }}
+    # if: startsWith(github.ref, 'refs/tags/')
+    needs: [get-version]
+    strategy:
+      matrix:
+        config:
+          - os: macos-latest
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-apple-darwin
+          - os: macos-latest
+            arch: arm64
+            goarch: arm64
+            daemon_name: aarch64-apple-darwin
+          - os: ubuntu-latest
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-pc-windows-msvc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - uses: ./.github/actions/ci-setup
+        with:
+          matrix-os: ${{ matrix.config.os }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
+          # matrix-arch: ${{ matrix.config.arch }}
+
+      - name: Build Backend (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
+        env:
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Build Backend (Windows)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
+        env:
+          GOOS: "windows"
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Set MacOS signing certs
+        if: matrix.config.os == 'macos-latest'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+        run: |
+          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p $APPLE_KEYCHAIN_PASSWORD build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p $APPLE_KEYCHAIN_PASSWORD build.keychain
+          security import certificate.p12 -k build.keychain -P $APPLE_CERTIFICATE_PASSWORD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k $APPLE_KEYCHAIN_PASSWORD build.keychain
+          rm -fr *.p12
+          security set-keychain-settings -lut 1200 # prevent the keychain to get locked before codesign is done
+
+      - name: Set temporal version in package.json
+        run: |
+          node scripts/set-desktop-version.mjs
+        env:
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+
+      - name: Build, package & make (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          TAMAGUI_TARGET=web DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # APP_VERSION: "0.0.100"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          timeout-minutes: 10
+
+      - name: Build, package and make (Win32)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          $env:TAMAGUI_TARGET="web"
+          $env:DEBUG='electron-osx-sign*,electron-notarize*'
+          yarn desktop:make --arch=${{ matrix.config.arch }}
+        env:
+          DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
+          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ matrix.config.daemon_name }}
+          path: frontend/apps/desktop/out/make/**/*
+  publish-to-github:
+    needs: [get-version, build-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download amd64 artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts

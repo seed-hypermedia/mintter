@@ -1,6 +1,12 @@
-const path = require('path')
-const packageJson = require('./package.json')
-const setLanguages = require('electron-packager-languages')
+import type {ForgeConfig} from '@electron-forge/shared-types'
+import {MakerSquirrel} from '@electron-forge/maker-squirrel'
+import {MakerZIP} from '@electron-forge/maker-zip'
+import {MakerDeb} from '@electron-forge/maker-deb'
+import {MakerRpm} from '@electron-forge/maker-rpm'
+import {VitePlugin} from '@electron-forge/plugin-vite'
+import path from 'path'
+import packageJson from './package.json'
+// import setLanguages from 'electron-packager-languages'
 
 const {version} = packageJson
 
@@ -32,28 +38,28 @@ let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
   : path.resolve(__dirname, 'assets', 'icons', 'icon')
 
-const commonLinuxConfig = {
-  categories: ['Development', 'Utility'],
-  icon: {
-    '1024x1024': `${iconsPath}.ico`,
-    // scalable: path.resolve(iconDir, 'fiddle.svg'),
-  },
-  mimeType: ['x-scheme-handler/mintter-app'],
-  version,
-  bin: 'Mintter',
-}
+// const commonLinuxConfig = {
+//   categories: ['Development', 'Utility'],
+//   icon: {
+//     '1024x1024': `${iconsPath}.ico`,
+//     // scalable: path.resolve(iconDir, 'fiddle.svg'),
+//   },
+//   mimeType: ['x-scheme-handler/mintter-app'],
+//   version,
+//   bin: 'Mintter',
+// }
 
-const config = {
+const config: ForgeConfig = {
   packagerConfig: {
     appVersion: process.env.APP_VERSION,
     asar: true,
-    darwinDarkModeSupport: 'true',
+    darwinDarkModeSupport: true,
     icon: iconsPath,
     name: 'Mintter',
     appBundleId: 'com.mintter.app',
     executableName: 'Mintter',
     appCategoryType: 'public.app-category.productivity',
-    packageManager: 'yarn',
+    // packageManager: 'yarn',
     extraResource: [daemonBinaryPath],
     // beforeCopy: [setLanguages(['en', 'en_US'])],
     win32metadata: {
@@ -62,46 +68,23 @@ const config = {
     },
   },
   makers: [
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
-    },
-    {
-      name: '@electron-forge/maker-deb',
-      platforms: ['linux'],
-      config: commonLinuxConfig,
-    },
-    // {
-    //   name: '@electron-forge/maker-rpm',
-    //   platforms: ['linux'],
-    //   config: commonLinuxConfig,
-    // },
-    // {
-    //   name: '@reforged/maker-appimage',
-    //   platforms: ['linux'],
-    //   config: {
-    //     options: {
-    //       categories: commonLinuxConfig.categories,
-    //     },
-    //   },
-    // },
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        name: 'Mintter',
-        authors: 'Mintter inc.',
-        exe: 'mintter.exe',
-        description: 'Mintter: a hyper.media protocol client',
-        // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
-        iconUrl: `${iconsPath}.ico`,
-        noMsi: true,
-        setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
-        // The ICO file to use as the icon for the generated Setup.exe
-        setupIcon: `${iconsPath}.ico`,
-        // certificateFile: process.env.WINDOWS_PFX_FILE,
-        // certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
-      },
-    },
+    new MakerRpm({}),
+    new MakerDeb({}),
+    new MakerZIP({}, ['darwin']),
+    new MakerSquirrel({
+      name: 'Mintter',
+      authors: 'Mintter inc.',
+      exe: 'mintter.exe',
+      description: 'Mintter: a hyper.media protocol client',
+      // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
+      iconUrl: `${iconsPath}.ico`,
+      noMsi: true,
+      setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
+      // The ICO file to use as the icon for the generated Setup.exe
+      setupIcon: `${iconsPath}.ico`,
+      // certificateFile: process.env.WINDOWS_PFX_FILE,
+      // certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
+    }),
   ],
   plugins: [
     // {
@@ -114,30 +97,27 @@ const config = {
     //   name: '@electron-forge/plugin-auto-unpack-natives',
     //   config: {},
     // },
-    {
-      name: '@electron-forge/plugin-vite',
-      config: {
-        // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
-        // If you are familiar with Vite configuration, it will look really familiar.
-        build: [
-          {
-            // `entry` is just an alias for `build.lib.entry` in the corresponding file of `config`.
-            entry: 'src/main.ts',
-            config: 'vite.main.config.ts',
-          },
-          {
-            entry: 'src/preload.ts',
-            config: 'vite.preload.config.ts',
-          },
-        ],
-        renderer: [
-          {
-            name: 'main_window',
-            config: 'vite.renderer.config.ts',
-          },
-        ],
-      },
-    },
+    new VitePlugin({
+      // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
+      // If you are familiar with Vite configuration, it will look really familiar.
+      build: [
+        {
+          // `entry` is just an alias for `build.lib.entry` in the corresponding file of `config`.
+          entry: 'src/main.ts',
+          config: 'vite.main.config.ts',
+        },
+        {
+          entry: 'src/preload.ts',
+          config: 'vite.preload.config.ts',
+        },
+      ],
+      renderer: [
+        {
+          name: 'main_window',
+          config: 'vite.renderer.config.ts',
+        },
+      ],
+    }),
   ],
   publishers: [],
 }
@@ -166,6 +146,7 @@ function notarizeMaybe() {
     `[FORGE CONFIG]: 🎉 adding 'osxNotarize' and 'osxSign' values to the config. Proceed to Sign and Notarize`,
   )
 
+  // @ts-expect-error
   config.packagerConfig.osxNotarize = {
     tool: 'notarytool',
     appleId: process.env.APPLE_ID,
@@ -173,7 +154,9 @@ function notarizeMaybe() {
     teamId: process.env.APPLE_TEAM_ID,
   }
 
+  // @ts-expect-error
   config.packagerConfig.osxSign = {
+    // @ts-expect-error
     entitlements: './entitlements.plist',
     executableName: 'Mintter',
     entitlementsInherit: './entitlements.plist',

@@ -42,6 +42,7 @@
     "@babel/runtime": "7.22.10",
     "@manypkg/cli": "0.19.2",
     "cross-env": "7.0.3",
+    "electron-squirrel-startup": "^1.0.0",
     "graphql-codegen": "0.4.0",
     "sort-package-json": "2.5.1",
     "tamagui": "1.53.1",

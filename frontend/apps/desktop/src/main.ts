@@ -2,10 +2,10 @@ import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme} from 'electron'
 import log from 'electron-log/main'
 // import updater from 'update-electron-app'
-import {mainMenu, openInitialWindows, trpc} from './api'
+import squirrelStartup from 'electron-squirrel-startup'
+import {mainMenu, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
-import squirrelStartup from 'electron-squirrel-startup'
 
 if (squirrelStartup) {
   app.quit()
@@ -75,11 +75,15 @@ ipcMain.handle('dark-mode:system', () => {
 ipcMain.on('save-file', saveCidAsFile)
 
 app.on('ready', () => {
-  openInitialWindows()
+  log.debug('[MAIN]: APP ready')
+  // openInitialWindows()
+  trpc.createAppWindow({
+    route: {key: 'home'},
+  })
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform != 'darwin') {
     log.debug('[MAIN]: window-all-closed!!')
     app.quit()
   }
