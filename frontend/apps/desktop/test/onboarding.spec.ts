@@ -34,7 +34,7 @@ test('Onboarding', async () => {
   // toggle own seed textarea
   await page.getByTestId('ownseed-btn').click()
   const textarea = await page.getByPlaceholder(
-    'Add a 12-mnemonics word separated all by COMAS. No need for spaces in between (food, barrel, buzz, ...)',
+    'Add your 12 mnemonics words \n(food, barrel, buzz, ...)',
   )
   expect(textarea).toBeVisible()
   await page.getByTestId('ownseed-btn').click({force: true})

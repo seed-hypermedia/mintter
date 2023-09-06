@@ -178,7 +178,13 @@ function Mnemonics(props: OnboardingStepProps) {
     }
 
     function extractWords(input: string): Array<string> {
-      return input.replace(/\s+/g, '').split(',').flat(1)
+      const delimiters = [',', ' ', '.', ';', ':', '\n', '\t']
+      let wordSplitting = [input]
+      delimiters.forEach((delimiter) => {
+        wordSplitting = wordSplitting.flatMap((word) => word.split(delimiter))
+      })
+      let words = wordSplitting.filter((word) => word.length > 0)
+      return words
     }
   }, [mnemonics.data, ownSeed, useOwnSeed, register])
 
@@ -216,7 +222,10 @@ function Mnemonics(props: OnboardingStepProps) {
                   <TextArea
                     fontSize={18}
                     flex={1}
-                    placeholder="Add a 12-mnemonics word separated all by COMAS. No need for spaces in between (food, barrel, buzz, ...)"
+                    id="mnemonic-input"
+                    placeholder={
+                      'Add your 12 mnemonics words \n(food, barrel, buzz, ...)'
+                    }
                     minHeight={130}
                     onChangeText={setOwnSeed}
                     fontFamily="$mono"
