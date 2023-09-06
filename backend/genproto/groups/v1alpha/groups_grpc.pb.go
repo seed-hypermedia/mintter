@@ -36,8 +36,6 @@ type GroupsClient interface {
 	ListGroups(ctx context.Context, in *ListGroupsRequest, opts ...grpc.CallOption) (*ListGroupsResponse, error)
 	// Converts a group to a site. P2P group will continue to work.
 	ConvertToSite(ctx context.Context, in *ConvertToSiteRequest, opts ...grpc.CallOption) (*ConvertToSiteResponse, error)
-	// Gets information about a site.
-	GetSiteInfo(ctx context.Context, in *GetSiteInfoRequest, opts ...grpc.CallOption) (*GetSiteInfoResponse, error)
 	// Lists groups that a document is published to.
 	ListDocumentGroups(ctx context.Context, in *ListDocumentGroupsRequest, opts ...grpc.CallOption) (*ListDocumentGroupsResponse, error)
 	// Lists groups that an account is a member of.
@@ -115,15 +113,6 @@ func (c *groupsClient) ConvertToSite(ctx context.Context, in *ConvertToSiteReque
 	return out, nil
 }
 
-func (c *groupsClient) GetSiteInfo(ctx context.Context, in *GetSiteInfoRequest, opts ...grpc.CallOption) (*GetSiteInfoResponse, error) {
-	out := new(GetSiteInfoResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/GetSiteInfo", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *groupsClient) ListDocumentGroups(ctx context.Context, in *ListDocumentGroupsRequest, opts ...grpc.CallOption) (*ListDocumentGroupsResponse, error) {
 	out := new(ListDocumentGroupsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/ListDocumentGroups", in, out, opts...)
@@ -160,8 +149,6 @@ type GroupsServer interface {
 	ListGroups(context.Context, *ListGroupsRequest) (*ListGroupsResponse, error)
 	// Converts a group to a site. P2P group will continue to work.
 	ConvertToSite(context.Context, *ConvertToSiteRequest) (*ConvertToSiteResponse, error)
-	// Gets information about a site.
-	GetSiteInfo(context.Context, *GetSiteInfoRequest) (*GetSiteInfoResponse, error)
 	// Lists groups that a document is published to.
 	ListDocumentGroups(context.Context, *ListDocumentGroupsRequest) (*ListDocumentGroupsResponse, error)
 	// Lists groups that an account is a member of.
@@ -192,9 +179,6 @@ func (UnimplementedGroupsServer) ListGroups(context.Context, *ListGroupsRequest)
 }
 func (UnimplementedGroupsServer) ConvertToSite(context.Context, *ConvertToSiteRequest) (*ConvertToSiteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertToSite not implemented")
-}
-func (UnimplementedGroupsServer) GetSiteInfo(context.Context, *GetSiteInfoRequest) (*GetSiteInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSiteInfo not implemented")
 }
 func (UnimplementedGroupsServer) ListDocumentGroups(context.Context, *ListDocumentGroupsRequest) (*ListDocumentGroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDocumentGroups not implemented")
@@ -340,24 +324,6 @@ func _Groups_ConvertToSite_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Groups_GetSiteInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSiteInfoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GroupsServer).GetSiteInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.groups.v1alpha.Groups/GetSiteInfo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GroupsServer).GetSiteInfo(ctx, req.(*GetSiteInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Groups_ListDocumentGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListDocumentGroupsRequest)
 	if err := dec(in); err != nil {
@@ -428,10 +394,6 @@ var Groups_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ConvertToSite",
 			Handler:    _Groups_ConvertToSite_Handler,
-		},
-		{
-			MethodName: "GetSiteInfo",
-			Handler:    _Groups_GetSiteInfo_Handler,
 		},
 		{
 			MethodName: "ListDocumentGroups",

@@ -172,7 +172,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 
 		// this is how we respond to remote RPCs over libp2p.
 		p2p.RegisterP2PServer(n.grpc, srv)
-		site.RegisterWebSiteServer(n.grpc, srv)
 
 		if siteCfg.Hostname != "" {
 			if srv.owner == nil {

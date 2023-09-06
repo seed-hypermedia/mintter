@@ -1,54 +1,60 @@
-def mtt_proto_codegen(srcs: list, languages: list):
-    subinclude("//build/rules/codegen:defs")
+subinclude("//build/rules/codegen:defs")
 
+def mtt_go_proto(name, srcs):
+    pbouts = [x.replace(".proto", ".pb.go") for x in srcs]
+    grpcouts = [x.replace(".proto", "_grpc.pb.go") for x in srcs]
+    generated(
+        name = name,
+        srcs = srcs,
+        outs = pbouts + grpcouts,
+        cmd = """
+$TOOLS_PROTOC -I proto \
+--plugin=protoc-gen-go=$TOOLS_PROTOC_GEN_GO \
+--plugin=protoc-gen-go-grpc=$TOOLS_PROTOC_GEN_GO_GRPC \
+--go_out=module=mintter:$WORKSPACE \
+--go-grpc_out=module=mintter,require_unimplemented_servers=false:$WORKSPACE \
+$SRCS
+""",
+        out_dir = "//" + package_name().replace("proto", "backend/genproto"),
+        tools = [
+            "//build/nix:protoc",
+            "//build/tools:protoc-gen-go",
+            "//build/tools:protoc-gen-go-grpc",
+        ],
+    )
+
+def mtt_js_proto(name, srcs):
+    generated(
+        name = "js",
+        srcs = srcs,
+        outs = [x.replace(".proto", "_pb.ts") for x in srcs] + [x.replace(".proto", "_connect.ts") for x in srcs],
+        cmd = """
+$TOOLS_PROTOC -I proto \
+--plugin=protoc-gen-es=$TOOLS_PROTOC_GEN_ES \
+--plugin=protoc-gen-connect-es=$TOOLS_PROTOC_GEN_CONNECT_ES \
+--es_opt=target=ts,import_extension=none \
+--connect-es_opt=target=ts,import_extension=none \
+--es_out=frontend/packages/shared/src/client/.generated/ \
+--connect-es_out=frontend/packages/shared/src/client/.generated/ \
+$SRCS
+""",
+        out_dir = "//" + package_name().replace("proto", "frontend/packages/shared/src/client/.generated"),
+        tools = [
+            "//build/nix:protoc",
+            "//build/tools:protoc-gen-es",
+            "//build/tools:protoc-gen-connect-es",
+        ],
+    )
+
+def mtt_proto_codegen(srcs: list, languages: list):
     for s in srcs:
         if "//" in s or ":" in s:
             log.fatal("proto srcs can only be files")
 
     for lang in languages:
         if lang == "go":
-            pbouts = [x.replace(".proto", ".pb.go") for x in srcs]
-            grpcouts = [x.replace(".proto", "_grpc.pb.go") for x in srcs]
-            generated(
-                name = "go",
-                srcs = srcs,
-                outs = pbouts + grpcouts,
-                cmd = """
-$TOOLS_PROTOC -I proto \
-    --plugin=protoc-gen-go=$TOOLS_PROTOC_GEN_GO \
-    --plugin=protoc-gen-go-grpc=$TOOLS_PROTOC_GEN_GO_GRPC \
-    --go_out=module=mintter:$WORKSPACE \
-    --go-grpc_out=module=mintter,require_unimplemented_servers=false:$WORKSPACE \
-    $SRCS
-""",
-                out_dir = "//" + package_name().replace("proto", "backend/genproto"),
-                tools = [
-                    "//build/nix:protoc",
-                    "//build/tools:protoc-gen-go",
-                    "//build/tools:protoc-gen-go-grpc",
-                ],
-            )
+            mtt_go_proto(name = "go", srcs = srcs)
         elif lang == "js":
-            generated(
-                name = "js",
-                srcs = srcs,
-                outs = [x.replace(".proto", "_pb.ts") for x in srcs] + [x.replace(".proto", "_connect.ts") for x in srcs],
-                cmd = """
-$TOOLS_PROTOC -I proto \
-    --plugin=protoc-gen-es=$TOOLS_PROTOC_GEN_ES \
-    --plugin=protoc-gen-connect-es=$TOOLS_PROTOC_GEN_CONNECT_ES \
-    --es_opt=target=ts,import_extension=none \
-    --connect-es_opt=target=ts,import_extension=none \
-    --es_out=frontend/packages/shared/src/client/.generated/ \
-    --connect-es_out=frontend/packages/shared/src/client/.generated/ \
-    $SRCS
-""",
-                out_dir = "//" + package_name().replace("proto", "frontend/packages/shared/src/client/.generated"),
-                tools = [
-                    "//build/nix:protoc",
-                    "//build/tools:protoc-gen-es",
-                    "//build/tools:protoc-gen-connect-es",
-                ],
-            )
+            mtt_js_proto(name = "js", srcs = srcs)
         else:
             log.fatal("unsupported proto lang " + lang)

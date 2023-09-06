@@ -2,37 +2,38 @@ syntax = "proto3";
 
 package com.mintter.groups.v1alpha;
 
-import "google/protobuf/timestamp.proto";
-
 option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
 
 // Service exposed by the Mintter website.
+// It's exposed as a normal gRPC interface, and also over libp2p.
 service Website {
   // Gets the public information about the website.
   // This information is also available as JSON over HTTP on `/.well-known/hypermedia-site`.
-  rpc GetSiteInfo(GetSiteInfoRequest) returns (PublicGetSiteInfo);
+  rpc GetSiteInfo(GetSiteInfoRequest) returns (PublicSiteInfo);
 
-  // Initializes the site to serve the provided group.
-  rpc InitializeSite(InitializeSiteRequest) returns (InitializeSiteResponse);
+  // Initializes the server to become a website for a specific group.
+  rpc InitializeServer(InitializeServerRequest) returns (InitializeServerResponse);
 }
 
 // Request for getting the public site information.
 message GetSiteInfoRequest {}
 
 // Request for initializing the site.
-message InitializeSiteRequest {
-  // The secret provided by during the site deployment process.
+message InitializeServerRequest {
+  // Required. The secret provided during the site deployment process.
+  // It's a trust-on-first-use, one-time-use secret that is used for the initial site setup,
+  // during which the site remembers the groups that it must serve, and who is the owner of the site.
   string secret = 1;
 
-  // Account ID of the owner of the site.
+  // Required. Account ID of the owner of the site.
   string owner_account_id = 2;
 
-  // ID of the group that should be served on this site.
+  // Required. ID of the group that should be served on this site.
   string group_id = 3;
 }
 
 // Response for initializing the site.
-message InitializeSiteResponse {}
+message InitializeServerResponse {}
 
 // Publicly available information about the website.
 message PublicSiteInfo {

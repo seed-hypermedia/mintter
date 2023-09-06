@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 srcs: e7826ebe0b1bf3d02b7576b6219fc4c9
 outs: 0d4a6037025e945b85d5e12532659d71
+=======
+srcs: 62126d6da335d7d63628c38b8993d7d5
+outs: 04e65bd407bd8e649f53b252410fc523
+>>>>>>> ff977ee4d (WIP define website API for groups)

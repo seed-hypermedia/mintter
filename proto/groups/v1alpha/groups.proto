@@ -30,9 +30,6 @@ service Groups {
   // Converts a group to a site. P2P group will continue to work.
   rpc ConvertToSite(ConvertToSiteRequest) returns (ConvertToSiteResponse);
 
-  // Gets information about a site.
-  rpc GetSiteInfo(GetSiteInfoRequest) returns (GetSiteInfoResponse);
-
   // Lists groups that a document is published to.
   rpc ListDocumentGroups(ListDocumentGroupsRequest) returns (ListDocumentGroupsResponse);
 
@@ -190,31 +187,6 @@ message ConvertToSiteResponse {
 
   // Hostname of the site.
   string hostname = 2;
-}
-
-// Request to get site info.
-message GetSiteInfoRequest {
-  // Required. hostname where the site is published.
-  string hostname = 1;
-
-  // Optional. Maximum number of members to return.
-  int32 page_size = 2;
-
-  // Optional. Page token to continue listing members from.
-  string page_token = 3;
-}
-
-// Response to get site info.
-message GetSiteInfoResponse {
-  // ID of the group the site is serving.
-  string group_id = 1;
-
-  // Current Version of the group that the site is serving.
-  // Empty means last version.
-  string version = 2;
-
-  // Owner's account of the site.
-  string owner_id = 3;
 }
 
 // Request to list groups for a document.
