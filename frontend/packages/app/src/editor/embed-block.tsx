@@ -21,7 +21,7 @@ import {
   isHyperdocsScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
-import {Spinner, Text, XStack, YStack} from '@mintter/ui'
+import {SizableText, Spinner, Text, XStack, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -54,30 +54,32 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
             textDecorationLine = 'line-through'
           }
           return (
-            <Text
+            <SizableText
               key={`${content.type}-${index}`}
-              fontWeight={content.styles.bold ? 'bold' : '100'}
+              fontWeight={content.styles.bold ? 'bold' : undefined}
               textDecorationLine={textDecorationLine || undefined}
-              fontStyle={content.styles.italic ? 'italic' : undefined}
-              // @ts-expect-error tamagui upgrade
-              fontFamily={content.styles.code ? 'monospace' : undefined}
+              // fontStyle={content.styles.italic ? 'italic' : undefined}
+              fontFamily={content.styles.code ? '$mono' : '$body'}
             >
               {content.text}
-            </Text>
+            </SizableText>
           )
         }
         if (content.type === 'link') {
           return (
-            <span
+            <SizableText
               className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
-              onClick={() => {
+              onPress={() => {
                 openUrl(content.href, true)
               }}
-              style={{cursor: 'pointer'}}
+              hoverStyle={{
+                color: '$colorHover',
+                cursor: 'pointer',
+              }}
             >
               <InlineContentView inline={content.content} />
-            </span>
+            </SizableText>
           )
         }
         return null
@@ -155,15 +157,18 @@ function EmbedPresentation({
       contentEditable={false}
       data-ref={block.props.ref}
       style={{userSelect: 'none'}}
-      className={selected ? 'ProseMirror-selectednode' : ''}
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$4"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
     >
       <YStack
-        backgroundColor="$color5"
-        borderColor="$color8"
-        borderWidth={1}
         padding="$4"
         paddingVertical="$2"
-        borderRadius="$4"
         onPress={() => {
           if (editor?.isEditable) {
             return
@@ -177,10 +182,6 @@ function EmbedPresentation({
               blockId,
             })
           }
-        }}
-        hoverStyle={{
-          cursor: 'pointer',
-          backgroundColor: '$color6',
         }}
       >
         {content}

@@ -104,16 +104,13 @@ const Render = (
   }
 
   return (
-    <YStack
-      className={selected ? 'ProseMirror-selectednode' : ''}
-      borderWidth={0}
-    >
+    <YStack overflow="hidden">
       {block.props.url ? (
         <VideoComponent
           block={block}
           editor={editor}
           assign={assignFile}
-          selected
+          selected={selected}
           setSelected={setSelection}
         />
       ) : editor.isEditable ? (
@@ -260,22 +257,58 @@ function VideoComponent({
       {['.', '/', ':', 'http', 'https'].some((value) =>
         block.props.url.includes(value),
       ) ? (
-        <div className="VideoContainer">
-          <iframe
+        <VideoWrapper selected={selected}>
+          <XStack
+            tag="iframe"
+            position="absolute"
+            className="video-iframe"
+            top="$2"
+            left="$2"
+            bottom="$2"
+            right="$2"
+            // @ts-expect-error
             src={block.props.url}
             frameBorder="0"
             allowFullScreen
-          ></iframe>
-        </div>
-      ) : (
-        <video contentEditable={false} playsInline controls preload="metadata">
-          <source
-            src={`${BACKEND_FILE_URL}/${block.props.url}`}
-            type={getSourceType(block.props.name)}
           />
-          Something is wrong with the video file.
-        </video>
+        </VideoWrapper>
+      ) : (
+        <VideoWrapper selected={selected}>
+          <video
+            contentEditable={false}
+            playsInline
+            controls
+            preload="metadata"
+          >
+            <source
+              src={`${BACKEND_FILE_URL}/${block.props.url}`}
+              type={getSourceType(block.props.name)}
+            />
+            Something is wrong with the video file.
+          </video>
+        </VideoWrapper>
       )}
+    </YStack>
+  )
+}
+
+function VideoWrapper({children, selected = false}) {
+  return (
+    <YStack
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$2"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+      padding="$2"
+      paddingBottom="56.25%"
+      position="relative"
+      height={0}
+    >
+      {children}
     </YStack>
   )
 }

@@ -106,16 +106,13 @@ const Render = (
   }
 
   return (
-    <YStack
-      className={selected ? 'ProseMirror-selectednode' : ''}
-      borderWidth={0}
-    >
+    <YStack>
       {block.props.url ? (
         <ImageComponent
           block={block}
           editor={editor}
           assign={assignFile}
-          selected
+          selected={selected}
           setSelected={setSelection}
         />
       ) : editor.isEditable ? (
@@ -169,9 +166,20 @@ function ImageComponent({
     editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
+  console.log('== image selected', selected)
+
   return (
-    <div style={{width: '100%'}}>
+    <YStack gap="$2">
       <YStack
+        backgroundColor={selected ? '$color4' : '$color3'}
+        borderColor={selected ? '$color8' : 'transparent'}
+        borderWidth={2}
+        borderRadius="$2"
+        overflow="hidden"
+        hoverStyle={{
+          backgroundColor: '$color4',
+        }}
+        padding="$2"
         // @ts-ignore
         contentEditable={false}
         className={block.type}
@@ -268,6 +276,7 @@ function ImageComponent({
             </Button>
           )
         ) : null}
+
         <img
           src={`${BACKEND_FILE_URL}/${block.props.url}`}
           contentEditable={false}
@@ -277,7 +286,7 @@ function ImageComponent({
         className="image-caption"
         onClick={() => setSelected(false)}
       />
-    </div>
+    </YStack>
   )
 }
 
@@ -400,275 +409,276 @@ function ImageForm({
   }
 
   return (
-    <div>
-      <YStack
-        //@ts-ignore
-        contentEditable={false}
-        position="relative"
-        borderWidth={0}
-        outlineWidth={0}
+    <YStack
+      //@ts-ignore
+      contentEditable={false}
+      position="relative"
+      borderWidth={0}
+      outlineWidth={0}
+    >
+      <Popover
+        placement="bottom"
+        size="$5"
+        defaultOpen={boolRegex.test(block.props.defaultOpen)}
+        stayInFrame
       >
-        <Popover
-          placement="bottom"
-          size="$5"
-          defaultOpen={boolRegex.test(block.props.defaultOpen)}
-          stayInFrame
-        >
-          <Popover.Trigger asChild>
-            <Button
-              icon={<RiImage2Line fill={theme.color12.get()} />}
-              borderRadius={0}
-              size="$5"
-              justifyContent="flex-start"
-            >
-              Add an Image
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content
-            padding={0}
-            elevation="$3"
-            overflow="hidden"
+        <Popover.Trigger asChild>
+          <Button
+            icon={<RiImage2Line fill={theme.color12.get()} />}
+            borderRadius={0}
             size="$5"
-            borderRadius="$5"
-            shadowColor="$shadowColor"
-            opacity={1}
-            enterStyle={{x: 0, y: -10, opacity: 0}}
-            exitStyle={{x: 0, y: -10, opacity: 0}}
-            animation={[
-              'quick',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
+            justifyContent="flex-start"
+            backgroundColor="$color3"
+            hoverStyle={{
+              bg: '$color4',
+            }}
           >
-            <Tabs
-              value={tabState}
-              onValueChange={(value: string) => {
-                setFileName({
-                  name: 'Upload File',
-                  color: undefined,
-                })
-                setTabState(value)
-              }}
-              orientation="horizontal"
-              flexDirection="column"
-              width={500}
+            Add an Image
+          </Button>
+        </Popover.Trigger>
+        <Popover.Content
+          padding={0}
+          elevation="$3"
+          overflow="hidden"
+          size="$5"
+          borderRadius="$5"
+          // shadowColor="$shadowColor"
+          opacity={1}
+          enterStyle={{x: 0, y: -20, opacity: 0}}
+          exitStyle={{x: 0, y: -20, opacity: 0}}
+          y={-10}
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+        >
+          <Tabs
+            value={tabState}
+            onValueChange={(value: string) => {
+              setFileName({
+                name: 'Upload File',
+                color: undefined,
+              })
+              setTabState(value)
+            }}
+            orientation="horizontal"
+            flexDirection="column"
+            width={500}
+          >
+            <Tabs.List
+              marginBottom="$-0.5"
+              borderBottomColor="$color8"
+              borderBottomWidth="$1"
+              borderBottomLeftRadius={0}
+              borderBottomRightRadius={0}
+              borderRadius={0}
             >
-              <Tabs.List
-                marginBottom="$-0.5"
-                borderBottomColor="$color8"
-                borderBottomWidth="$1"
+              <Tabs.Tab
+                unstyled
+                value="upload"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
-                borderRadius={0}
+                borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                hoverStyle={{
+                  backgroundColor: '$borderColorHover',
+                  cursor: 'pointer',
+                }}
               >
-                <Tabs.Tab
-                  unstyled
-                  value="upload"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
-                  hoverStyle={{
-                    backgroundColor: '$borderColorHover',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <SizableText size="$2">Upload</SizableText>
-                </Tabs.Tab>
-                <Tabs.Tab
-                  unstyled
-                  value="embed"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
-                  hoverStyle={{
-                    backgroundColor: '$borderColorHover',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <SizableText size="$2">Embed Link</SizableText>
-                </Tabs.Tab>
-              </Tabs.List>
+                <SizableText size="$2">Upload</SizableText>
+              </Tabs.Tab>
+              <Tabs.Tab
+                unstyled
+                value="embed"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+                borderBottomLeftRadius={0}
+                borderBottomRightRadius={0}
+                borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+                hoverStyle={{
+                  backgroundColor: '$borderColorHover',
+                  cursor: 'pointer',
+                }}
+              >
+                <SizableText size="$2">Embed Link</SizableText>
+              </Tabs.Tab>
+            </Tabs.List>
 
-              <Tabs.Content value="upload">
+            <Tabs.Content value="upload">
+              <XStack
+                padding="$4"
+                alignItems="center"
+                backgroundColor="$background"
+              >
                 <XStack
-                  padding="$4"
-                  alignItems="center"
-                  backgroundColor="$background"
+                  flex={1}
+                  // @ts-ignore
+                  onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (drag) setDrag(false)
+                    if (
+                      e.dataTransfer.files &&
+                      e.dataTransfer.files.length > 0
+                    ) {
+                      let isImage = true
+                      const files = Array.from(e.dataTransfer.files)
+                      files.forEach((file) => {
+                        if (!file.type.includes('image/')) {
+                          setFileName({
+                            name: `File ${
+                              file.name.length < 36
+                                ? file.name
+                                : file.name.slice(0, 32) + '...'
+                            } is not an image.`,
+                            color: 'red',
+                          })
+                          isImage = false
+                          return
+                        }
+                      })
+                      if (isImage) handleUpload(Array.from(files))
+                      return
+                    }
+                  }}
+                  onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
+                  onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (
+                      !relatedTarget ||
+                      !e.currentTarget.contains(relatedTarget)
+                    ) {
+                      setDrag(true)
+                    }
+                  }}
+                  onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (
+                      !relatedTarget ||
+                      !e.currentTarget.contains(relatedTarget)
+                    ) {
+                      setDrag(false)
+                    }
+                  }}
                 >
-                  <XStack
-                    flex={1}
-                    // @ts-ignore
-                    onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (drag) setDrag(false)
-                      if (
-                        e.dataTransfer.files &&
-                        e.dataTransfer.files.length > 0
-                      ) {
-                        let isImage = true
-                        const files = Array.from(e.dataTransfer.files)
-                        files.forEach((file) => {
-                          if (!file.type.includes('image/')) {
-                            setFileName({
-                              name: `File ${
-                                file.name.length < 36
-                                  ? file.name
-                                  : file.name.slice(0, 32) + '...'
-                              } is not an image.`,
-                              color: 'red',
-                            })
-                            isImage = false
-                            return
-                          }
-                        })
-                        if (isImage) handleUpload(Array.from(files))
-                        return
-                      }
-                    }}
-                    onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                    }}
-                    onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (
-                        !relatedTarget ||
-                        !e.currentTarget.contains(relatedTarget)
-                      ) {
-                        setDrag(true)
-                      }
-                    }}
-                    onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (
-                        !relatedTarget ||
-                        !e.currentTarget.contains(relatedTarget)
-                      ) {
-                        setDrag(false)
-                      }
+                  <Label
+                    htmlFor="file-upload"
+                    borderColor="$color8"
+                    borderWidth="$0.5"
+                    borderRadius="$4"
+                    width={500}
+                    justifyContent="center"
+                    backgroundColor={drag ? '$borderColorHover' : '$background'}
+                    hoverStyle={{
+                      backgroundColor: '$borderColorHover',
+                      cursor: 'pointer',
                     }}
                   >
-                    <Label
-                      htmlFor="file-upload"
-                      borderColor="$color8"
-                      borderWidth="$0.5"
-                      borderRadius="$4"
-                      width={500}
-                      justifyContent="center"
-                      backgroundColor={
-                        drag ? '$borderColorHover' : '$background'
-                      }
-                      hoverStyle={{
-                        backgroundColor: '$borderColorHover',
-                        cursor: 'pointer',
-                      }}
+                    <SizableText
+                      padding="$2"
+                      overflow="hidden"
+                      whiteSpace="nowrap"
+                      textOverflow="ellipsis"
+                      color={fileName.color}
                     >
+                      {fileName.name}
+                    </SizableText>
+                  </Label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    style={{
+                      background: 'white',
+                      padding: '0 2px',
+                      display: 'none',
+                    }}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      if (event.target.files) {
+                        handleUpload(Array.from(event.target.files))
+                      }
+                    }}
+                  />
+                </XStack>
+              </XStack>
+            </Tabs.Content>
+            <Tabs.Content value="embed">
+              <XStack
+                padding="$4"
+                alignItems="center"
+                backgroundColor="$background"
+              >
+                <Form
+                  alignItems="center"
+                  onSubmit={() => submitImage(url)}
+                  borderWidth={0}
+                >
+                  <YStack flex={1}>
+                    <XStack>
+                      <Input
+                        width={360}
+                        marginRight="$3"
+                        borderColor="$color8"
+                        borderWidth="$0.5"
+                        borderRadius="$3"
+                        size="$3.5"
+                        placeholder="Input image link..."
+                        focusStyle={{
+                          borderColor: '$colorFocus',
+                          outlineWidth: 0,
+                        }}
+                        hoverStyle={{
+                          borderColor: '$colorFocus',
+                          outlineWidth: 0,
+                        }}
+                        onChange={(e) => setUrl(e.nativeEvent.text)}
+                      />
+                      <Form.Trigger asChild>
+                        <Button
+                          flex={0}
+                          flexShrink={0}
+                          borderRadius="$3"
+                          size="$3.5"
+                          theme={fileName.color === 'red' ? 'gray' : 'green'}
+                          disabled={fileName.color === 'red' ? true : false}
+                          focusStyle={{
+                            outlineWidth: 0,
+                          }}
+                        >
+                          Embed
+                        </Button>
+                      </Form.Trigger>
+                    </XStack>
+                    {fileName.name != 'Upload File' && (
                       <SizableText
-                        padding="$2"
-                        overflow="hidden"
-                        whiteSpace="nowrap"
-                        textOverflow="ellipsis"
+                        size="$2"
                         color={fileName.color}
+                        paddingTop="$2"
                       >
                         {fileName.name}
                       </SizableText>
-                    </Label>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
-                      }}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        if (event.target.files) {
-                          handleUpload(Array.from(event.target.files))
-                        }
-                      }}
-                    />
-                  </XStack>
-                </XStack>
-              </Tabs.Content>
-              <Tabs.Content value="embed">
-                <XStack
-                  padding="$4"
-                  alignItems="center"
-                  backgroundColor="$background"
-                >
-                  <Form
-                    alignItems="center"
-                    onSubmit={() => submitImage(url)}
-                    borderWidth={0}
-                  >
-                    <YStack flex={1}>
-                      <XStack>
-                        <Input
-                          width={360}
-                          marginRight="$3"
-                          borderColor="$color8"
-                          borderWidth="$0.5"
-                          borderRadius="$3"
-                          size="$3.5"
-                          placeholder="Input image link..."
-                          focusStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          hoverStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          onChange={(e) => setUrl(e.nativeEvent.text)}
-                        />
-                        <Form.Trigger asChild>
-                          <Button
-                            flex={0}
-                            flexShrink={0}
-                            borderRadius="$3"
-                            size="$3.5"
-                            theme={fileName.color === 'red' ? 'gray' : 'green'}
-                            disabled={fileName.color === 'red' ? true : false}
-                            focusStyle={{
-                              outlineWidth: 0,
-                            }}
-                          >
-                            Embed
-                          </Button>
-                        </Form.Trigger>
-                      </XStack>
-                      {fileName.name != 'Upload File' && (
-                        <SizableText
-                          size="$2"
-                          color={fileName.color}
-                          paddingTop="$2"
-                        >
-                          {fileName.name}
-                        </SizableText>
-                      )}
-                    </YStack>
-                  </Form>
-                </XStack>
-              </Tabs.Content>
-            </Tabs>
-          </Popover.Content>
-        </Popover>
-      </YStack>
-    </div>
+                    )}
+                  </YStack>
+                </Form>
+              </XStack>
+            </Tabs.Content>
+          </Tabs>
+        </Popover.Content>
+      </Popover>
+    </YStack>
   )
 }
 
