@@ -167,7 +167,7 @@ function MainApp({
         queryClient={queryClient}
         ipc={ipc}
         externalOpen={async (url: string) => {
-          toast.error('Not implemented open: ' + url)
+          ipc.send?.('open-external-link', url)
         }}
         saveCidAsFile={async (cid: string, name: string) => {
           ipc.send?.('save-file', {cid, name})

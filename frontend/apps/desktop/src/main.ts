@@ -1,11 +1,12 @@
 import * as Sentry from '@sentry/electron/main'
-import {BrowserWindow, Menu, app, ipcMain, nativeTheme} from 'electron'
+import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
 // import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
 import {mainMenu, trpc} from './api'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
+import {openLink} from './open-link'
 
 if (squirrelStartup) {
   app.quit()
@@ -73,6 +74,9 @@ ipcMain.handle('dark-mode:system', () => {
 })
 
 ipcMain.on('save-file', saveCidAsFile)
+ipcMain.on('open-external-link', (_event, linkUrl) => {
+  shell.openExternal(linkUrl)
+})
 
 app.on('ready', () => {
   log.debug('[MAIN]: APP ready')
