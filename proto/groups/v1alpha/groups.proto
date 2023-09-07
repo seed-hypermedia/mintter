@@ -27,9 +27,6 @@ service Groups {
   // Lists groups.
   rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
 
-  // Converts a group to a site. P2P group will continue to work.
-  rpc ConvertToSite(ConvertToSiteRequest) returns (ConvertToSiteResponse);
-
   // Lists groups that a document is published to.
   rpc ListDocumentGroups(ListDocumentGroupsRequest) returns (ListDocumentGroupsResponse);
 
@@ -48,6 +45,10 @@ message CreateGroupRequest {
   // Optional. List of initial members for the new group.
   // Members can also be managed with separate requests after group is already created.
   map<string, Role> members = 3;
+
+  // Optional. Secret setup URL that is provided during site server deployment.
+  // I.e. a place on the Web where this group has to be published.
+  string site_setup_url = 4;
 }
 
 // Request to get a group.
@@ -91,6 +92,10 @@ message UpdateGroupRequest {
   // To unpublish content set the value to an empty string for a given pretty path.
   // Only updated records have to be sent, not all the content of the group.
   map<string, string> updated_content = 5;
+
+  // Optional. Secret setup URL that is provided during site server deployment.
+  // I.e. a place on the Web where this group has to be published.
+  string site_setup_url = 6;
 }
 
 // Request to list members.
@@ -165,28 +170,6 @@ message ListGroupsResponse {
 
   // Token to continue listing groups from.
   string next_page_token = 2;
-}
-
-// Makes a site out of an existing group.
-message ConvertToSiteRequest {
-  // Required. Secret link provided by the site deployment script.
-  string link = 1;
-
-  // Required. Group ID to convert to a site
-  string group_id = 2;
-
-  // Optional. Version of the group to be converted. Latest
-  // version if not provided
-  string version = 3;
-}
-
-// Response to convert to site.
-message ConvertToSiteResponse {
-  // Account of the sites owner.
-  string owner_id = 1;
-
-  // Hostname of the site.
-  string hostname = 2;
 }
 
 // Request to list groups for a document.

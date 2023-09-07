@@ -69,6 +69,14 @@ export class CreateGroupRequest extends Message<CreateGroupRequest> {
    */
   members: { [key: string]: Role } = {};
 
+  /**
+   * Optional. Secret setup URL that is provided during site server deployment.
+   * I.e. a place on the Web where this group has to be published.
+   *
+   * @generated from field: string site_setup_url = 4;
+   */
+  siteSetupUrl = "";
+
   constructor(data?: PartialMessage<CreateGroupRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -80,6 +88,7 @@ export class CreateGroupRequest extends Message<CreateGroupRequest> {
     { no: 1, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "members", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "enum", T: proto3.getEnumType(Role)} },
+    { no: 4, name: "site_setup_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateGroupRequest {
@@ -205,6 +214,14 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
    */
   updatedContent: { [key: string]: string } = {};
 
+  /**
+   * Optional. Secret setup URL that is provided during site server deployment.
+   * I.e. a place on the Web where this group has to be published.
+   *
+   * @generated from field: string site_setup_url = 6;
+   */
+  siteSetupUrl = "";
+
   constructor(data?: PartialMessage<UpdateGroupRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -218,6 +235,7 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
     { no: 3, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "updated_members", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "enum", T: proto3.getEnumType(Role)} },
     { no: 5, name: "updated_content", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+    { no: 6, name: "site_setup_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateGroupRequest {
@@ -573,113 +591,6 @@ export class ListGroupsResponse extends Message<ListGroupsResponse> {
 
   static equals(a: ListGroupsResponse | PlainMessage<ListGroupsResponse> | undefined, b: ListGroupsResponse | PlainMessage<ListGroupsResponse> | undefined): boolean {
     return proto3.util.equals(ListGroupsResponse, a, b);
-  }
-}
-
-/**
- * Makes a site out of an existing group.
- *
- * @generated from message com.mintter.groups.v1alpha.ConvertToSiteRequest
- */
-export class ConvertToSiteRequest extends Message<ConvertToSiteRequest> {
-  /**
-   * Required. Secret link provided by the site deployment script.
-   *
-   * @generated from field: string link = 1;
-   */
-  link = "";
-
-  /**
-   * Required. Group ID to convert to a site
-   *
-   * @generated from field: string group_id = 2;
-   */
-  groupId = "";
-
-  /**
-   * Optional. Version of the group to be converted. Latest
-   * version if not provided
-   *
-   * @generated from field: string version = 3;
-   */
-  version = "";
-
-  constructor(data?: PartialMessage<ConvertToSiteRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.groups.v1alpha.ConvertToSiteRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "link", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "group_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ConvertToSiteRequest {
-    return new ConvertToSiteRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ConvertToSiteRequest {
-    return new ConvertToSiteRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ConvertToSiteRequest {
-    return new ConvertToSiteRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: ConvertToSiteRequest | PlainMessage<ConvertToSiteRequest> | undefined, b: ConvertToSiteRequest | PlainMessage<ConvertToSiteRequest> | undefined): boolean {
-    return proto3.util.equals(ConvertToSiteRequest, a, b);
-  }
-}
-
-/**
- * Response to convert to site.
- *
- * @generated from message com.mintter.groups.v1alpha.ConvertToSiteResponse
- */
-export class ConvertToSiteResponse extends Message<ConvertToSiteResponse> {
-  /**
-   * Account of the sites owner.
-   *
-   * @generated from field: string owner_id = 1;
-   */
-  ownerId = "";
-
-  /**
-   * Hostname of the site.
-   *
-   * @generated from field: string hostname = 2;
-   */
-  hostname = "";
-
-  constructor(data?: PartialMessage<ConvertToSiteResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "com.mintter.groups.v1alpha.ConvertToSiteResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "owner_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "hostname", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ConvertToSiteResponse {
-    return new ConvertToSiteResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ConvertToSiteResponse {
-    return new ConvertToSiteResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ConvertToSiteResponse {
-    return new ConvertToSiteResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: ConvertToSiteResponse | PlainMessage<ConvertToSiteResponse> | undefined, b: ConvertToSiteResponse | PlainMessage<ConvertToSiteResponse> | undefined): boolean {
-    return proto3.util.equals(ConvertToSiteResponse, a, b);
   }
 }
 
