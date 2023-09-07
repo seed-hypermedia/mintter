@@ -242,6 +242,18 @@ message ListAccountGroupsResponse {
 
 // Group represents the basic information about a group entity.
 message Group {
+  // Extra metadata about Site Groups.
+  message SiteInfo {
+    // Base Web URL of the Site where the Group is being published to.
+    string base_url = 1;
+
+    // Timestamp of the last sync of the Group's content with the Site.
+    google.protobuf.Timestamp last_sync_time = 2;
+
+    // Version of the Group as per the Site.
+    string version = 3;
+  }
+
   // ID of the group.
   string id = 1;
 
@@ -263,6 +275,9 @@ message Group {
 
   // Timestamp of the version of the group.
   google.protobuf.Timestamp update_time = 7;
+
+  // Optional. Site-related information for groups that are published to sites.
+  SiteInfo site_info = 8;
 }
 
 // Role of a group member.

@@ -979,6 +979,13 @@ export class Group extends Message<Group> {
    */
   updateTime?: Timestamp;
 
+  /**
+   * Optional. Site-related information for groups that are published to sites.
+   *
+   * @generated from field: com.mintter.groups.v1alpha.Group.SiteInfo site_info = 8;
+   */
+  siteInfo?: Group_SiteInfo;
+
   constructor(data?: PartialMessage<Group>) {
     super();
     proto3.util.initPartial(data, this);
@@ -994,6 +1001,7 @@ export class Group extends Message<Group> {
     { no: 5, name: "create_time", kind: "message", T: Timestamp },
     { no: 6, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "update_time", kind: "message", T: Timestamp },
+    { no: 8, name: "site_info", kind: "message", T: Group_SiteInfo },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Group {
@@ -1010,6 +1018,63 @@ export class Group extends Message<Group> {
 
   static equals(a: Group | PlainMessage<Group> | undefined, b: Group | PlainMessage<Group> | undefined): boolean {
     return proto3.util.equals(Group, a, b);
+  }
+}
+
+/**
+ * Extra metadata about Site Groups.
+ *
+ * @generated from message com.mintter.groups.v1alpha.Group.SiteInfo
+ */
+export class Group_SiteInfo extends Message<Group_SiteInfo> {
+  /**
+   * Base Web URL of the Site where the Group is being published to.
+   *
+   * @generated from field: string base_url = 1;
+   */
+  baseUrl = "";
+
+  /**
+   * Timestamp of the last sync of the Group's content with the Site.
+   *
+   * @generated from field: google.protobuf.Timestamp last_sync_time = 2;
+   */
+  lastSyncTime?: Timestamp;
+
+  /**
+   * Version of the Group as per the Site.
+   *
+   * @generated from field: string version = 3;
+   */
+  version = "";
+
+  constructor(data?: PartialMessage<Group_SiteInfo>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.groups.v1alpha.Group.SiteInfo";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "base_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "last_sync_time", kind: "message", T: Timestamp },
+    { no: 3, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Group_SiteInfo {
+    return new Group_SiteInfo().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Group_SiteInfo {
+    return new Group_SiteInfo().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Group_SiteInfo {
+    return new Group_SiteInfo().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Group_SiteInfo | PlainMessage<Group_SiteInfo> | undefined, b: Group_SiteInfo | PlainMessage<Group_SiteInfo> | undefined): boolean {
+    return proto3.util.equals(Group_SiteInfo, a, b);
   }
 }
 
