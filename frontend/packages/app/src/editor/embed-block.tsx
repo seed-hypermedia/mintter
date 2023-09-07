@@ -70,6 +70,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           return (
             <span
               className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
+              key={index}
               onClick={() => {
                 openUrl(content.href, true)
               }}
@@ -132,12 +133,13 @@ function EmbedPresentation({
   editor,
 }: {
   block: BlockNoteBlock<typeof hmBlockSchema>
-  editor?: BlockNoteEditor<typeof hmBlockSchema>
+  editor: BlockNoteEditor<typeof hmBlockSchema>
 }) {
   let spawn = useNavigate('spawn')
   let embed = useEmbed(block.props.ref)
   let content = <Spinner />
   const selected = useSelected(block, editor)
+
   if (embed.content) {
     content = (
       <>
@@ -163,6 +165,9 @@ function EmbedPresentation({
         paddingVertical="$2"
         borderRadius="$4"
         onPress={() => {
+          if (editor?.isEditable) {
+            return
+          }
           let [documentId, version, blockId] = getIdsfromUrl(block.props.ref)
           if (documentId) {
             spawn({
@@ -220,14 +225,14 @@ function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
 
 function useSelected(
   block: BlockNoteBlock<HMBlockSchema>,
-  editor?: BlockNoteEditor<HMBlockSchema>,
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) {
   const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
 
   useEffect(() => {
     if (editor) {
-      const tiptapEditor = editor?._tiptapEditor
-      const selection = tiptapEditor?.state.selection
       const selectedNode = getBlockInfoFromPos(
         tiptapEditor.state.doc,
         tiptapEditor.state.selection.from,
@@ -243,7 +248,7 @@ function useSelected(
         }
       }
     }
-  }, [editor?._tiptapEditor])
+  }, [selection])
 
   return selected
 }
