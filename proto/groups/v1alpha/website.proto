@@ -28,11 +28,8 @@ message InitializeServerRequest {
   // during which the site remembers the groups that it must serve, and who is the owner of the site.
   string secret = 1;
 
-  // Required. Account ID of the owner of the site.
-  string owner_account_id = 2;
-
   // Required. ID of the group that should be served on this site.
-  string group_id = 3;
+  string group_id = 2;
 }
 
 // Response for initializing the site.
