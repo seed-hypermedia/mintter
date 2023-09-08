@@ -1,18 +1,19 @@
-import {getIdsfromUrl, HYPERMEDIA_DOCUMENT_PREFIX} from './get-ids-from-url'
+import {
+  extractHypermediaWebsiteValues,
+  getIdsfromUrl,
+  HYPERMEDIA_DOCUMENT_PREFIX,
+} from './get-ids-from-url'
 
-export function isHyperdocsScheme(url?: string) {
+export function isHypermediaScheme(url?: string) {
   return !!url?.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)
 }
 
 export function isMintterGatewayLink(text: string) {
-  return (
-    text.startsWith('https://mintter.com/d/') ||
-    text.startsWith('https://www.mintter.com/d/')
-  )
+  return extractHypermediaWebsiteValues(text)
 }
 
-export function normalizeHyperdocsLink(urlMaybe: string): string | undefined {
-  if (isHyperdocsScheme(urlMaybe)) return urlMaybe
+export function normalizeHypermediaLink(urlMaybe: string): string | undefined {
+  if (isHypermediaScheme(urlMaybe)) return urlMaybe
   if (isMintterGatewayLink(urlMaybe)) {
     const [docId, version, blockRef] = getIdsfromUrl(urlMaybe)
 

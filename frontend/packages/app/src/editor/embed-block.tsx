@@ -18,7 +18,7 @@ import {
   EmbedBlock as EmbedBlockType,
   getCIDFromIPFSUrl,
   getIdsfromUrl,
-  isHyperdocsScheme,
+  isHypermediaScheme,
   serverBlockToEditorInline,
 } from '@mintter/shared'
 import {SizableText, Spinner, Text, XStack, YStack} from '@mintter/ui'
@@ -68,7 +68,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
         if (content.type === 'link') {
           return (
             <SizableText
-              className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
+              className={isHypermediaScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
               onPress={() => {
                 openUrl(content.href, true)

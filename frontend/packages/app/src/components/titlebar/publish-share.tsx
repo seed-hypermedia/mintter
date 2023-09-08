@@ -268,8 +268,10 @@ export function PubContextButton({}: {}) {
   //   : 'Public'
   const popoverState = usePopoverState(false)
   const dialogState = usePopoverState(false)
+
   const {data: publishedGroups} = useDocumentGroups(documentId)
 
+  console.log(`== ~ useDocumentGroups entry:`, documentId)
   const groupPubContext = pubContext?.key === 'group' ? pubContext : null
   const contextGroupId = groupPubContext?.groupId
   const group = useGroup(contextGroupId || undefined)

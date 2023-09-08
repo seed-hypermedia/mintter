@@ -1,4 +1,4 @@
-import {isHyperdocsScheme} from '@mintter/shared'
+import {isHypermediaScheme} from '@mintter/shared'
 import {Mark, mergeAttributes} from '@tiptap/core'
 import {Plugin} from '@tiptap/pm/state'
 import {registerCustomProtocol, reset} from 'linkifyjs'
@@ -132,7 +132,7 @@ export const Link = Mark.create<LinkOptions>({
 
   renderHTML({HTMLAttributes, mark}) {
     const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)
-    const isHM = isHyperdocsScheme(HTMLAttributes.href)
+    const isHM = isHypermediaScheme(HTMLAttributes.href)
     return [
       'span',
       {

@@ -4,7 +4,11 @@ import {
 } from '@mintter/app/src/models/documents'
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {getIdsfromUrl, isHyperdocsScheme} from '@mintter/shared'
+import {
+  getIdsfromUrl,
+  isHypermediaScheme,
+  matchesHypermediaPattern,
+} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
@@ -53,34 +57,30 @@ export default function QuickSwitcher() {
       ) : (
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {(isHyperdocsScheme(search) ||
+          {(matchesHypermediaPattern(search) ||
+            isHypermediaScheme(search) ||
             search.startsWith('http://') ||
             search.startsWith('https://')) && (
             <Command.Item
               key="mtt-link"
               value={search}
               onSelect={() => {
-                let [docId, version, block] = getIdsfromUrl(search)
-                if (docId && isHyperdocsScheme(search)) {
-                  setOpen(false)
-                  navigate({
-                    key: 'publication',
-                    documentId: docId,
-                    versionId: version,
-                    blockId: block,
-                  })
-                } else {
+                if (
+                  isHypermediaScheme(search) ||
+                  matchesHypermediaPattern(search)
+                ) {
                   let [docId, version, block] = getIdsfromUrl(search)
+
                   if (docId) {
+                    setOpen(false)
                     navigate({
                       key: 'publication',
                       documentId: docId,
                       versionId: version,
                       blockId: block,
                     })
-                    setOpen(false)
                   } else {
-                    console.log('Querying Web URL', search)
+                    console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
                     setActionPromise(
                       fetchWebLink(queryClient, search)
                         .then((result) => {
@@ -114,7 +114,8 @@ export default function QuickSwitcher() {
                 }
               }}
             >
-              Query {search}
+              Query{' '}
+              {`${search.length > 28 ? search.substring(0, 25) : search}...`}
             </Command.Item>
           )}
 

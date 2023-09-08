@@ -220,12 +220,14 @@ export function useGroupMembers(groupId: string) {
 
 export function useDocumentGroups(documentId?: string) {
   const grpcClient = useGRPCClient()
+  let _documentId = `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`
+  console.log(`== ~ useDocumentGroups ~ _documentId:`, _documentId)
   return useQuery({
     enabled: !!documentId,
     queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
     queryFn: () => {
       return grpcClient.groups.listDocumentGroups({
-        documentId: `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`,
+        documentId: _documentId,
       })
     },
   })

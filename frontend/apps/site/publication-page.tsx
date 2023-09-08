@@ -7,7 +7,6 @@ import {
   HeadingBlock,
   ImageBlock,
   InlineContent,
-  isHyperdocsScheme,
   ParagraphBlock,
   PresentationBlock,
   serverBlockToEditorInline,
@@ -16,6 +15,7 @@ import {
   Publication,
   entityIdToSitePath,
   HYPERMEDIA_DOCUMENT_PREFIX,
+  matchesHypermediaPattern,
 } from '@mintter/shared'
 import {
   Button,
@@ -308,14 +308,15 @@ function InlineContentView({
           )
         }
         if (content.type === 'link') {
-          const href = isHyperdocsScheme(content.href)
+          let matchesPattern = matchesHypermediaPattern(content.href)
+          const href = matchesPattern
             ? hmLinkToSitePath(content.href)
             : content.href
           return (
             <a
               href={href}
               key={index}
-              className={isHyperdocsScheme(content.href) ? 'hm-link' : 'link'}
+              className={matchesPattern ? 'hm-link' : 'link'}
               style={{cursor: 'pointer'}}
             >
               <InlineContentView inline={content.content} />

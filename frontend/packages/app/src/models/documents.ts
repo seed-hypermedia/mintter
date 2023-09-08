@@ -32,9 +32,9 @@ import {
   HYPERMEDIA_DOCUMENT_PREFIX,
   ListPublicationsResponse,
   Publication,
-  isHyperdocsScheme,
+  isHypermediaScheme,
   isMintterGatewayLink,
-  normalizeHyperdocsLink,
+  normalizeHypermediaLink,
 } from '@mintter/shared'
 import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
@@ -996,8 +996,8 @@ function extractEmbedRefOfLink(block: any): false | string {
   if (block.content.length == 1) {
     let leaf = block.content[0]
     if (leaf.type == 'link') {
-      if (isMintterGatewayLink(leaf.href) || isHyperdocsScheme(leaf.href)) {
-        const hmLink = normalizeHyperdocsLink(leaf.href)
+      if (isMintterGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
+        const hmLink = normalizeHypermediaLink(leaf.href)
 
         console.log(`== ~ extractEmbedRefOfLink ~ hmLink:`, hmLink)
         if (hmLink) return hmLink
