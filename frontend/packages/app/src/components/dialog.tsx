@@ -127,12 +127,7 @@ export function useAppDialog<DialogInput>(
       >
         <Component.Portal>
           <NavContextProvider value={nav}>
-            <Component.Overlay
-              backgroundColor={'#00000044'}
-              height="100vh"
-              width="100vw"
-              onPress={close}
-            />
+            <Component.Overlay height="100vh" width="100vw" onPress={close} />
             <Component.Content backgroundColor={'$background'}>
               {openState && (
                 <DialogContentComponent

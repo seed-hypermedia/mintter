@@ -117,122 +117,125 @@ function GroupPublishDialog({
   const draftRoute = route.key === 'draft' ? route : null
   const pubRoute = route.key === 'publication' ? route : null
   const publishToGroup = usePublishDocToGroup()
-  if (!myGroups) return <Spinner />
-  return (
-    <Form
-      onSubmit={() => {
-        console.log('submit ' + selectedGroupId)
-        if (!selectedGroupId) {
-          toast.error('Please select a group')
-          return
-        }
-        if (pubRoute && input.version && !input.editDraftId) {
-          // we are in a publication and we are expected to immediately put this in the group
-          toast
-            .promise(
-              publishToGroup
-                .mutateAsync({
-                  groupId: selectedGroupId,
-                  docId: input.docId,
-                  version: input.version,
-                  pathName,
-                })
-                .then(() => {
-                  navigate({
-                    ...pubRoute,
-                    pubContext: {
-                      key: 'group',
-                      groupId: selectedGroupId,
-                      pathName,
-                    },
+  if (myGroups) {
+    return (
+      <Form
+        onSubmit={() => {
+          console.log('submit ' + selectedGroupId)
+          if (!selectedGroupId) {
+            toast.error('Please select a group')
+            return
+          }
+          if (pubRoute && input.version && !input.editDraftId) {
+            // we are in a publication and we are expected to immediately put this in the group
+            toast
+              .promise(
+                publishToGroup
+                  .mutateAsync({
+                    groupId: selectedGroupId,
+                    docId: input.docId,
+                    version: input.version,
+                    pathName,
                   })
-                }),
-              {
-                loading: 'Publishing...',
-                success: 'Published to Group',
-                error: 'Failed to Publish!',
+                  .then(() => {
+                    navigate({
+                      ...pubRoute,
+                      pubContext: {
+                        key: 'group',
+                        groupId: selectedGroupId,
+                        pathName,
+                      },
+                    })
+                  }),
+                {
+                  loading: 'Publishing...',
+                  success: 'Published to Group',
+                  error: 'Failed to Publish!',
+                },
+              )
+              .finally(() => {
+                dialogState.onOpenChange?.(false)
+              })
+          } else if (draftRoute) {
+            // we are in a draft and we are only setting the group ID and pathName in the route
+            navigate({
+              ...draftRoute,
+              pubContext: {
+                key: 'group',
+                groupId: selectedGroupId,
+                pathName,
               },
-            )
-            .finally(() => {
-              dialogState.onOpenChange?.(false)
             })
-        } else if (draftRoute) {
-          // we are in a draft and we are only setting the group ID and pathName in the route
-          navigate({
-            ...draftRoute,
-            pubContext: {
-              key: 'group',
-              groupId: selectedGroupId,
-              pathName,
-            },
-          })
-          dialogState.onOpenChange?.(false)
-        }
-      }}
-    >
-      <DialogTitle>Publish to Group</DialogTitle>
-      <Fieldset gap="$4" horizontal borderColor="transparent">
-        <Label htmlFor="path">Path / Shortname</Label>
-        <Input id="path" value={pathName} onChangeText={setPathName} />
-      </Fieldset>
+            dialogState.onOpenChange?.(false)
+          }
+        }}
+      >
+        <DialogTitle>Publish to Group</DialogTitle>
+        <Fieldset gap="$4" horizontal borderColor="transparent">
+          <Label htmlFor="path">Path / Shortname</Label>
+          <Input id="path" value={pathName} onChangeText={setPathName} />
+        </Fieldset>
 
-      <Fieldset gap="$2" horizontal borderColor="transparent">
-        <Label htmlFor="group">Group</Label>
-        <Select
-          id="group-id"
-          value={selectedGroupId}
-          onValueChange={setSelectedGroupId}
-        >
-          <Select.Trigger width={265}>
-            <Select.Value placeholder="Select Group.." />
-          </Select.Trigger>
-          <Select.Content zIndex={200000}>
-            <Select.ScrollUpButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height="$3"
-            >
-              <YStack zIndex={10}>
-                <ChevronUp size={20} />
-              </YStack>
-            </Select.ScrollUpButton>
-            <Select.Viewport
-              // to do animations:
-              animation="quick"
-              animateOnly={['transform', 'opacity']}
-              enterStyle={{opacity: 0, y: -10}}
-              exitStyle={{opacity: 0, y: 10}}
-              minWidth={200}
-            >
-              {myGroups?.map((group, index) => (
-                <Select.Item index={index} value={group.id} key={group.id}>
-                  <Select.ItemText>{group.title}</Select.ItemText>
-                </Select.Item>
-              ))}
-            </Select.Viewport>
+        <Fieldset gap="$2" horizontal borderColor="transparent">
+          <Label htmlFor="group">Group</Label>
+          <Select
+            id="group-id"
+            value={selectedGroupId}
+            onValueChange={setSelectedGroupId}
+          >
+            <Select.Trigger width={265}>
+              <Select.Value placeholder="Select Group.." />
+            </Select.Trigger>
+            <Select.Content zIndex={200000}>
+              <Select.ScrollUpButton
+                alignItems="center"
+                justifyContent="center"
+                position="relative"
+                width="100%"
+                height="$3"
+              >
+                <YStack zIndex={10}>
+                  <ChevronUp size={20} />
+                </YStack>
+              </Select.ScrollUpButton>
+              <Select.Viewport
+                // to do animations:
+                animation="quick"
+                animateOnly={['transform', 'opacity']}
+                enterStyle={{opacity: 0, y: -10}}
+                exitStyle={{opacity: 0, y: 10}}
+                minWidth={200}
+              >
+                {myGroups?.map((group, index) => (
+                  <Select.Item index={index} value={group.id} key={group.id}>
+                    <Select.ItemText>{group.title}</Select.ItemText>
+                  </Select.Item>
+                ))}
+              </Select.Viewport>
 
-            <Select.ScrollDownButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height="$3"
-            >
-              <YStack zIndex={10}>
-                <ChevronDown size={20} />
-              </YStack>
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select>
-      </Fieldset>
+              <Select.ScrollDownButton
+                alignItems="center"
+                justifyContent="center"
+                position="relative"
+                width="100%"
+                height="$3"
+              >
+                <YStack zIndex={10}>
+                  <ChevronDown size={20} />
+                </YStack>
+              </Select.ScrollDownButton>
+            </Select.Content>
+          </Select>
+        </Fieldset>
 
-      <Form.Trigger asChild>
-        <Button>Submit</Button>
-      </Form.Trigger>
-    </Form>
-  )
+        <Form.Trigger asChild>
+          <Button>Submit</Button>
+        </Form.Trigger>
+      </Form>
+    )
+  }
+
+  return <Spinner />
 }
 
 export function PubContextButton({}: {}) {
