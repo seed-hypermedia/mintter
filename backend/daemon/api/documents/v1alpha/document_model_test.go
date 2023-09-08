@@ -344,11 +344,11 @@ func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.Ke
 	ts := clock.Now()
 	now := ts.Time().Unix()
 
-	id, nonce := hyper.NewUnforgeableID(account.Principal(), nil, now)
+	id, nonce := hyper.NewUnforgeableID("", account.Principal(), nil, now)
 	delegation, err := daemon.Register(context.Background(), blobs, account, device.PublicKey, time.Now())
 	require.NoError(t, err)
 
-	entity := hyper.NewEntity(hyper.EntityID("hm://d/" + id))
+	entity := hyper.NewEntity(hyper.EntityID(id))
 	dm, err := newDocModel(entity, device, delegation)
 	require.NoError(t, err)
 

@@ -573,7 +573,9 @@ type ParsedBlob[T any] struct {
 // NewUnforgeableID creates a new random ID that is verifiable with the author's public key.
 // It return the ID and the nonce. The nonce argument can be nil in which case a new nonce will be created.
 // Otherwise the same nonce will be returned.
-func NewUnforgeableID(author core.Principal, nonce []byte, ts int64) (string, []byte) {
+func NewUnforgeableID(prefix string, author core.Principal, nonce []byte, ts int64) (string, []byte) {
+	const hashSize = 22
+
 	if nonce == nil {
 		nonce = make([]byte, 16)
 		_, err := rand.Read(nonce)
@@ -603,8 +605,9 @@ func NewUnforgeableID(author core.Principal, nonce []byte, ts int64) (string, []
 		panic(err)
 	}
 
-	// Using last 22 characters to avoid multibase prefix.
+	// Using last [hashSize] characters to avoid multibase prefix,
+	// and reduce the size of the resulting ID.
 	// We don't use full hash digest here, to make our IDs shorter.
 	// But it should have enough collision resistance for our purpose.
-	return base[len(base)-22:], nonce
+	return prefix + base[len(base)-hashSize:], nonce
 }

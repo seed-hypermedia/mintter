@@ -59,8 +59,8 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	ts := clock.Now()
 	createTime := ts.Time().Unix()
 
-	id, nonce := hyper.NewUnforgeableID(me.Account().Principal(), nil, createTime)
-	eid := hyper.EntityID("hm://g/" + id)
+	id, nonce := hyper.NewUnforgeableID("hm://g/", me.Account().Principal(), nil, createTime)
+	eid := hyper.EntityID(id)
 	e := hyper.NewEntityWithClock(eid, clock)
 
 	patch := map[string]any{

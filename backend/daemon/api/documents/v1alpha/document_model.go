@@ -327,8 +327,7 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 	}
 
 	docpb := &documents.Document{
-		Id:         e.ID().TrimPrefix("hm://d/"),
-		Eid:        string(e.ID()),
+		Id:         string(e.ID()),
 		CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
 		Author:     core.Principal(owner).String(),
 	}

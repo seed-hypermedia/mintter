@@ -316,7 +316,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Eid:        draft.Eid,
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
@@ -373,7 +372,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Eid:        draft.Eid,
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
@@ -424,7 +422,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Eid:        draft.Eid,
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
@@ -573,7 +570,6 @@ func TestAPIUpdateDraft_WithList(t *testing.T) {
 
 	want := &documents.Document{
 		Id:      draft.Id,
-		Eid:     draft.Eid,
 		Title:   "My new document title",
 		Author:  draft.Author,
 		Editors: []string{draft.Author},
