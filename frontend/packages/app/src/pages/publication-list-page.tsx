@@ -43,6 +43,12 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
                 return (
                   <PublicationListItem
                     pubContext={trustedOnly ? {key: 'trusted'} : null}
+                    openRoute={{
+                      key: 'publication',
+                      documentId: docId,
+                      versionId: publication.version,
+                      pubContext: trustedOnly ? {key: 'trusted'} : null,
+                    }}
                     key={publication.document?.id}
                     hasDraft={drafts.data?.documents.find(
                       (d) => d.id == publication.document?.id,

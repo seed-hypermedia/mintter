@@ -76,13 +76,19 @@ function AccountDocuments({
   const list = useAccountPublicationList(accountId)
   return (
     <Section>
-      {list.data?.map((doc) => {
+      {list.data?.map((pub) => {
         return (
           <PublicationListItem
-            pubContext={isTrusted ? 'trusted' : null}
-            key={doc.document?.id}
-            publication={doc}
+            pubContext={isTrusted ? {key: 'trusted'} : null}
+            key={pub.document?.id}
+            publication={pub}
             hasDraft={undefined}
+            openRoute={{
+              key: 'publication',
+              documentId: pub.document?.id!,
+              versionId: pub.version,
+              pubContext: isTrusted ? {key: 'trusted'} : null,
+            }}
           />
         )
       })}

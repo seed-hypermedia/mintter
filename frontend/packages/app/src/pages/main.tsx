@@ -19,8 +19,8 @@ import {DocumentPlaceholder} from './document-placeholder'
 var PublicationList = lazy(
   () => import('@mintter/app/src/pages/publication-list-page'),
 )
-const GlobalPublicationList = lazy(
-  () => import('@mintter/app/src/pages/global-publications'),
+const AllPublicationList = lazy(
+  () => import('@mintter/app/src/pages/all-publications'),
 )
 var DraftList = lazy(() => import('@mintter/app/src/pages/draft-list-page'))
 var Account = lazy(() => import('@mintter/app/src/pages/account-page'))
@@ -95,9 +95,9 @@ function getPageComponent(navRoute: NavRoute) {
         PageComponent: Settings,
         Fallback: BaseLoading,
       }
-    case 'global-publications':
+    case 'all-publications':
       return {
-        PageComponent: GlobalPublicationList,
+        PageComponent: AllPublicationList,
         Fallback: BaseLoading,
       }
     default:

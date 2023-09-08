@@ -20,7 +20,7 @@ import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useAppDialog} from '../components/dialog'
 import {PublicationListItem} from '../components/publication-list-item'
-import {useMyAccount} from '../models/accounts'
+import {useAccount, useMyAccount} from '../models/accounts'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -31,12 +31,13 @@ import {
   useRenameGroupDoc,
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
+import {AppLinkText} from '../components/link'
 
 function RenamePubDialog({
-  input: {groupId, pathName},
+  input: {groupId, pathName, docTitle},
   onClose,
 }: {
-  input: {groupId: string; pathName: string}
+  input: {groupId: string; pathName: string; docTitle: string}
   onClose: () => void
 }) {
   const [renamed, setRenamed] = useState(pathName)
@@ -55,7 +56,11 @@ function RenamePubDialog({
         )
       }}
     >
-      <DialogTitle>Rename Publication</DialogTitle>
+      <DialogTitle>Change short path</DialogTitle>
+      <DialogDescription>
+        Choose a new short name for &quot;{docTitle}&quot; in this group. Be
+        careful, as this will change web URLs.
+      </DialogDescription>
       <Input value={renamed} onChangeText={setRenamed} />
       <Form.Trigger asChild>
         <Button>Save</Button>
@@ -101,11 +106,20 @@ function GroupContentItem({
             label: 'Rename Short Path',
             icon: Pencil,
             onPress: () => {
-              renameDialog.open({pathName, groupId})
+              renameDialog.open({
+                pathName,
+                groupId,
+                docTitle: pub.data.document?.title || '',
+              })
             },
             key: 'rename',
           },
         ]}
+        openRoute={{
+          key: 'publication',
+          documentId: docId,
+          pubContext: {key: 'group', groupId, pathName},
+        }}
       />
       {renameDialog.content}
     </>
@@ -147,7 +161,7 @@ function InviteMemberDialog({
         <Label>Account Id</Label>
         <Input value={memberId} onChangeText={setMemberId} />
         <DialogDescription>
-          Search for member alias, or paste member ID
+          Search for xmember alias, or paste member ID
         </DialogDescription>
         <Form.Trigger asChild>
           <Button>Add Member</Button>
@@ -169,7 +183,10 @@ export default function GroupPage() {
   const drafts = useDraftList()
   const myAccount = useMyAccount()
   const isOwner = myAccount.data?.id === group.data?.ownerAccountId
+  // const owner = groupMembers.data?.members[group.data?.ownerAccountId || '']
+  const ownerAccount = useAccount(group.data?.ownerAccountId)
   const inviteMember = useAppDialog(InviteMemberDialog)
+  const ownerAccountId = group.data?.ownerAccountId
   return (
     <>
       <MainWrapper>
@@ -181,6 +198,19 @@ export default function GroupPage() {
             paddingVertical="$4"
             paddingHorizontal={0}
           >
+            <Heading size="$4" display="flex" gap="$1" alignItems="center">
+              {group.data?.title} -
+              {ownerAccountId ? (
+                <>
+                  Managed by <AccountLinkAvatar accountId={ownerAccountId} />
+                  <AppLinkText
+                    toRoute={{key: 'account', accountId: ownerAccountId}}
+                  >
+                    {ownerAccount.data?.profile?.alias}
+                  </AppLinkText>
+                </>
+              ) : null}
+            </Heading>
             <Text fontFamily="$body" fontSize="$3">
               {group.data?.description}
             </Text>
@@ -193,9 +223,8 @@ export default function GroupPage() {
             paddingVertical="$4"
             paddingHorizontal={0}
           >
-            <Heading size="$2">Group Editors</Heading>
+            <Heading size="$2">Group Members</Heading>
             <XStack gap="$2">
-              <AccountLinkAvatar accountId={group.data?.ownerAccountId} />
               {Object.keys(groupMembers.data?.members || {}).map((memberId) => (
                 <AccountLinkAvatar accountId={memberId} key={memberId} />
               ))}

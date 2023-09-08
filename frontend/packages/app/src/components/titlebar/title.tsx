@@ -16,11 +16,12 @@ import {
   User,
   XStack,
 } from '@mintter/ui'
-import {Folder} from '@tamagui/lucide-icons'
+import {Contact, Folder, Library} from '@tamagui/lucide-icons'
 import {getDocumentTitle} from '../publication-list-item'
 import {useEffect} from 'react'
 import {NavRoute} from '../../utils/navigation'
 import {useGroup} from '../../models/groups'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -44,17 +45,17 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       <>
         <Folder size={12} />
         <TitleText size={size} data-testid="titlebar-title">
-          Publications
+          Trusted Publications
         </TitleText>
       </>
     )
   }
-  if (route.key === 'global-publications') {
+  if (route.key === 'all-publications') {
     return (
       <>
         <Globe size={12} />
         <TitleText data-testid="titlebar-title" size={size}>
-          Global Publications
+          All Publications
         </TitleText>
       </>
     )
@@ -62,7 +63,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'contacts') {
     return (
       <>
-        <User size={12} />
+        <Contact size={12} />
         <TitleText data-testid="titlebar-title" size={size}>
           Contacts
         </TitleText>
@@ -72,18 +73,13 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'groups') {
     return (
       <>
-        <Folder size={12} />
+        <Library size={12} />
         <TitleText size={size}>Groups</TitleText>
       </>
     )
   }
   if (route.key === 'group') {
-    return (
-      <>
-        <Folder size={12} />
-        <GroupTitle groupId={route.groupId} size={size} />
-      </>
-    )
+    return null
   }
   if (route.key === 'drafts') {
     return (
@@ -134,12 +130,6 @@ export function Title({size}: {size?: FontSizeTokens}) {
   )
 }
 
-function GroupTitle({groupId, size}: {groupId: string; size?: FontSizeTokens}) {
-  const group = useGroup(groupId)
-  if (group.isLoading) return <Spinner />
-  return <TitleText size={size}>{group.data?.title}</TitleText>
-}
-
 function PublicationTitle({
   route,
   size = '$4',
@@ -147,9 +137,10 @@ function PublicationTitle({
   route: PublicationRoute
   size?: FontSizeTokens
 }) {
-  let {data: pub} = usePublication({
+  let {data: pub} = usePublicationInContext({
     documentId: route.documentId,
     versionId: route.versionId,
+    pubContext: route.pubContext,
     enabled: !!route.documentId,
   })
   return (

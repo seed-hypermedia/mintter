@@ -14,7 +14,7 @@ import {GestureResponderEvent} from 'react-native'
 global.Buffer = global.Buffer || Buffer
 
 export type HomeRoute = {key: 'home'}
-export type GlobalPublications = {key: 'global-publications'}
+export type GlobalPublications = {key: 'all-publications'}
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
@@ -233,8 +233,6 @@ export function NavigationProvider({
 
   // start editing pub, add content
   // second time resume editing, doesnt work
-
-  console.log('== RENDERING NAV CONTEXT')
 
   let value = useMemo(
     () => ({

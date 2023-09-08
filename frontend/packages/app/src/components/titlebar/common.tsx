@@ -46,10 +46,14 @@ import {
   YGroup,
 } from '@mintter/ui'
 import {
+  Archive,
+  Bookmark,
+  Contact,
   Copy,
   FilePlus2,
   Folder,
   Globe,
+  Library,
   MoreHorizontal,
   Pencil,
   Search,
@@ -62,7 +66,7 @@ import {useGroup} from '../../models/groups'
 import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
-import {DraftPublicationButtons, PubContextButton} from './publish-share'
+import {DraftPublicationButtons, PageContextButton} from './publish-share'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -214,7 +218,7 @@ export function PageContextButtons(props: TitleBarProps) {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XStack className="no-window-drag">
+    <XStack className="no-window-drag" gap="$2">
       <XGroup backgroundColor="transparent">
         <XGroup.Item>
           <Button
@@ -237,7 +241,7 @@ export function PageContextButtons(props: TitleBarProps) {
           />
         </XGroup.Item>
       </XGroup>
-      <PubContextButton />
+      <PageContextButton />
     </XStack>
   )
 }
@@ -337,8 +341,8 @@ function NavMenuContentUnpure({
             onPress={() => {
               onRoute({key: 'home'})
             }}
-            title="Publications"
-            icon={Folder}
+            title="Trusted Publications"
+            icon={Bookmark}
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 1
@@ -348,12 +352,12 @@ function NavMenuContentUnpure({
         </YGroup.Item>
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'global-publications'}
+            disabled={route.key == 'all-publications'}
             data-testid="menu-item-global"
             onPress={() => {
-              onRoute({key: 'global-publications'})
+              onRoute({key: 'all-publications'})
             }}
-            title="Global Publications"
+            title="All Publications"
             icon={Globe}
             iconAfter={
               <SizableText size="$1" color="$mint5">
@@ -368,7 +372,7 @@ function NavMenuContentUnpure({
               onRoute({key: 'groups'})
             }}
             title="Groups"
-            icon={Folder}
+            icon={Library}
             iconAfter={
               <SizableText size="$1" color="$mint5">
                 &#8984; 3
@@ -398,7 +402,7 @@ function NavMenuContentUnpure({
             onPress={() => {
               onRoute({key: 'contacts'})
             }}
-            icon={User}
+            icon={Contact}
             title="Contacts"
             iconAfter={
               <SizableText size="$1" color="$mint5">
@@ -495,6 +499,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
           key: 'draft',
           draftId: route.documentId,
           contextRoute: route,
+          pubContext: route.pubContext,
         })
         return
       }
@@ -525,6 +530,7 @@ function WriteActions({route}: {route: PublicationRoute}) {
         key: 'draft',
         draftId: draft.id,
         contextRoute: route,
+        pubContext: route.pubContext,
       })
     } catch (error: any) {
       toast.error(`Draft Error: ${error?.message}`)

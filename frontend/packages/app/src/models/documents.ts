@@ -50,8 +50,9 @@ import {Node} from 'prosemirror-model'
 import {useEffect, useRef} from 'react'
 import {useGRPCClient} from '../app-context'
 import {formattingToolbarFactory} from '../editor/formatting-toolbar'
-import {useNavRoute} from '../utils/navigation'
+import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {queryKeys} from './query-keys'
+import {usePublicationInContext} from './publication'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
@@ -185,12 +186,14 @@ export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
+  trustedOnly?: boolean,
 ): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
   return {
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId, trustedOnly],
     enabled: !!documentId,
     queryFn: () =>
       grpcClient.publications.getPublication({
+        trustedOnly,
         documentId,
         version: versionId,
       }),
@@ -210,6 +213,7 @@ export function usePublication({
     ...options,
   })
 }
+
 export function useLatestPublication({
   documentId,
   trustedVersionsOnly,
@@ -911,10 +915,15 @@ function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
   // editor._tiptapEditor.commands.setContent(editorBlocks)
 }
 
-export function usePublicationEditor(documentId: string, versionId?: string) {
-  const pub = usePublication({
+export function usePublicationEditor(
+  documentId: string,
+  versionId?: string,
+  pubContext?: PublicationRouteContext | undefined,
+) {
+  const pub = usePublicationInContext({
     documentId,
     versionId,
+    pubContext,
     enabled: !!documentId,
     onSuccess: (pub: Publication) => {
       readyThings.current[1] = pub

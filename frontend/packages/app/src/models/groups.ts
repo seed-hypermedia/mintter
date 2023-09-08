@@ -2,6 +2,8 @@ import {HYPERMEDIA_DOCUMENT_PREFIX, Role} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
+import {ListDocumentGroupsResponse} from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import {useMyAccount} from './accounts'
 
 export function useGroups() {
   const grpcClient = useGRPCClient()
@@ -19,7 +21,6 @@ export function useGroup(groupId: string | undefined) {
     queryKey: [queryKeys.GET_GROUP, groupId],
     queryFn: async () => {
       const group = await grpcClient.groups.getGroup({id: groupId})
-      console.log('group', group)
       return group
     },
     enabled: !!groupId,
@@ -198,13 +199,14 @@ export function useRenameGroupDoc(
   })
 }
 
-export function useGroupContent(groupId: string) {
+export function useGroupContent(groupId?: string | undefined) {
   const grpcClient = useGRPCClient()
   return useQuery({
     queryKey: [queryKeys.GET_GROUP_CONTENT, groupId],
     queryFn: async () => {
       return await grpcClient.groups.listContent({id: groupId})
     },
+    enabled: !!groupId,
   })
 }
 
@@ -220,15 +222,27 @@ export function useGroupMembers(groupId: string) {
 
 export function useDocumentGroups(documentId?: string) {
   const grpcClient = useGRPCClient()
-  let _documentId = `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`
-  console.log(`== ~ useDocumentGroups ~ _documentId:`, _documentId)
   return useQuery({
     enabled: !!documentId,
     queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
-    queryFn: () => {
-      return grpcClient.groups.listDocumentGroups({
-        documentId: _documentId,
+    queryFn: async () => {
+      const result = await grpcClient.groups.listDocumentGroups({
+        documentId: `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`,
       })
+      const resultMap = new Map<
+        string,
+        ListDocumentGroupsResponse['items'][number]
+      >()
+      for (const item of result.items) {
+        if (item.changeTime?.seconds === undefined) continue
+        if (resultMap.has(`${item.groupId}-${item.path}`)) {
+          const prevItem = resultMap.get(item.groupId)
+          if (!prevItem?.changeTime?.seconds) continue
+          if (prevItem?.changeTime?.seconds > item.changeTime?.seconds) continue
+        }
+        resultMap.set(`${item.groupId}-${item.path}`, item)
+      }
+      return Array.from(resultMap.values())
     },
   })
 }
@@ -244,6 +258,11 @@ export function useAccountGroups(accountId?: string) {
       })
     },
   })
+}
+export function useMyGroups() {
+  const account = useMyAccount()
+  const groups = useAccountGroups(account.data?.id)
+  return groups
 }
 
 export function useGroupSite(groupId: string) {

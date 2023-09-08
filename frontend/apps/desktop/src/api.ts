@@ -228,6 +228,30 @@ mainMenu.append(
         },
       },
       {
+        id: 'route_pubs',
+        label: 'Publications',
+        accelerator: 'CmdOrCtrl+1',
+        click: () => {
+          openRoute({key: 'home'})
+        },
+      },
+      {
+        id: 'route_pubs',
+        label: 'All Publications',
+        accelerator: 'CmdOrCtrl+2',
+        click: () => {
+          openRoute({key: 'all-publications'})
+        },
+      },
+      {
+        id: 'groups',
+        label: 'Groups',
+        accelerator: 'CmdOrCtrl+3',
+        click: () => {
+          openRoute({key: 'groups'})
+        },
+      },
+      {
         id: 'route_drafts',
         label: 'Drafts',
         accelerator: 'CmdOrCtrl+8',

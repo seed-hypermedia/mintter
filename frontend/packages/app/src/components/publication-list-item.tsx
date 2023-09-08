@@ -7,6 +7,7 @@ import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
 import {ListItem, MenuItem, TimeAccessory} from './list-item'
 import {GestureResponderEvent} from 'react-native'
 import {useClickNavigate} from '@mintter/app/src/utils/navigation'
+import {NavRoute} from '../utils/navigation'
 
 function unique(keys: string[]) {
   return Array.from(new Set(keys))
@@ -23,6 +24,7 @@ export function PublicationListItem({
   menuItems,
   onPointerEnter,
   label,
+  openRoute,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
@@ -31,6 +33,7 @@ export function PublicationListItem({
   menuItems?: MenuItem[]
   label?: string
   onPointerEnter?: () => void
+  openRoute: NavRoute
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
@@ -42,15 +45,7 @@ export function PublicationListItem({
   const navigate = useClickNavigate()
 
   function goToItem(event: GestureResponderEvent) {
-    navigate(
-      {
-        key: 'publication',
-        documentId: docId!,
-        versionId: publication.version,
-        pubContext,
-      },
-      event,
-    )
+    navigate(openRoute, event)
   }
 
   return (
@@ -59,7 +54,7 @@ export function PublicationListItem({
       title={title}
       onPointerEnter={onPointerEnter}
       accessory={
-        <>
+        <XStack gap="$3">
           {hasDraft && (
             <Button
               theme="yellow"
@@ -79,7 +74,11 @@ export function PublicationListItem({
               Resume Editing
             </Button>
           )}
-          {label && <ButtonText size="$2">{label}</ButtonText>}
+          {label && (
+            <ButtonText size="$2" color="$color9">
+              {label}
+            </ButtonText>
+          )}
 
           <XStack>
             {publication.document?.editors.length ? (
@@ -94,7 +93,7 @@ export function PublicationListItem({
             time={publication.document?.updateTime}
             onPress={goToItem}
           />
-        </>
+        </XStack>
       }
       menuItems={[
         {
@@ -102,11 +101,7 @@ export function PublicationListItem({
           label: 'Open in new Window',
           icon: ExternalLink,
           onPress: () => {
-            spawn({
-              key: 'publication',
-              documentId: docId,
-              versionId: publication.version,
-            })
+            spawn(openRoute)
           },
         },
         ...(menuItems || []),

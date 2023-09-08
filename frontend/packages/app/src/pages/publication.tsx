@@ -47,7 +47,7 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const publication = usePublicationEditor(docId, versionId)
+  const publication = usePublicationEditor(docId, versionId, route.pubContext)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock] = useState(() => blockId)

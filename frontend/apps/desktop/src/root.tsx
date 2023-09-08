@@ -145,7 +145,6 @@ function MainApp({
   queryClient: AppQueryClient
   ipc: AppIPC
 }) {
-  console.log('== RENDERING MAINAPP')
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
