@@ -447,12 +447,12 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, fmt.Errorf("can't proxy: local p2p node is not ready yet: %w", err)
 	}
 
-	docEntity := hyper.EntityID("hm://d/" + in.DocumentId)
+	docEntity := hyper.EntityID(in.DocumentId)
 
 	toSync := []hyper.EntityID{docEntity}
 
 	for _, ref := range in.ReferencedDocuments {
-		toSync = append(toSync, hyper.EntityID("hm://d/"+ref.DocumentId))
+		toSync = append(toSync, hyper.EntityID(ref.DocumentId))
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(7*time.Second))
@@ -533,7 +533,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	}
 	defer cancel()
 
-	eid := hyper.EntityID("hm://d/" + in.DocumentId)
+	eid := hyper.EntityID(in.DocumentId)
 
 	records, err := sitesql.GetWebPublicationsByID(conn, string(eid))
 	if err != nil {
@@ -589,17 +589,17 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 	}
 
 	for _, record := range records {
-		docid := hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/")
-		if docid == record.EntitiesEID {
+		docid := hyper.EntityID(record.EntitiesEID)
+		if !docid.HasPrefix("hm://d/") {
 			return nil, fmt.Errorf("BUG: invalid entity ID %q for a document in web publications", record.EntitiesEID)
 		}
 
-		if in.DocumentId != "" && in.DocumentId != docid {
+		if in.DocumentId != "" && in.DocumentId != string(docid) {
 			continue
 		}
 
 		publications = append(publications, &site.WebPublicationRecord{
-			DocumentId: docid,
+			DocumentId: string(docid),
 			Version:    record.WebPublicationsVersion,
 			Hostname:   srv.hostname,
 			Path:       record.WebPublicationsPath,
@@ -638,7 +638,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		return nil, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-		DocumentId: hyper.EntityID(record.EntitiesEID).TrimPrefix("hm://d/"),
+		DocumentId: record.EntitiesEID,
 		Version:    record.WebPublicationsVersion,
 		LocalOnly:  true,
 	})

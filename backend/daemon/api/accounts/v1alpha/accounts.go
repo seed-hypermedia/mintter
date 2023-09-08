@@ -284,20 +284,20 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 		return nil, err
 	}
 
-	mine := me.Account().String()
+	mine := hyper.EntityID("hm://a/" + me.Account().String())
 
 	resp := &accounts.ListAccountsResponse{
 		Accounts: make([]*accounts.Account, 0, len(entities)-1), // all except our own account.
 	}
 
 	for _, e := range entities {
-		aid := e.TrimPrefix("hm://a/")
+		aid := e
 		if aid == mine {
 			continue
 		}
 
 		draft, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
-			Id: aid,
+			Id: aid.TrimPrefix("hm://a/"),
 		})
 		if err != nil {
 			continue

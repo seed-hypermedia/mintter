@@ -540,7 +540,7 @@ export class GetPublicationRequest extends Message<GetPublicationRequest> {
   localOnly = false;
 
   /**
-   * Optional. If true, the returned publication version will be the last change made by a 
+   * Optional. If true, the returned publication version will be the last change made by a
    * trusted contact. If false (default) then the returned version will be de latest available.
    *
    * @generated from field: bool trusted_only = 4;
@@ -802,13 +802,6 @@ export class Document extends Message<Document> {
   id = "";
 
   /**
-   * Entity ID of the document.
-   *
-   * @generated from field: string eid = 12;
-   */
-  eid = "";
-
-  /**
    * Title of the document.
    *
    * @generated from field: string title = 2;
@@ -874,7 +867,6 @@ export class Document extends Message<Document> {
   static readonly typeName = "com.mintter.documents.v1alpha.Document";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 12, name: "eid", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 10, name: "web_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },

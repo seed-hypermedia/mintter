@@ -340,8 +340,8 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 				return fmt.Errorf("owner field in the create change must correspond with the author of the change")
 			}
 
-			id, _ := NewUnforgeableID(ownerField, nonce, int64(ct))
-			if ch.Entity.TrimPrefix("hm://g/") != id {
+			id, _ := NewUnforgeableID("hm://g/", ownerField, nonce, int64(ct))
+			if ch.Entity != EntityID(id) {
 				return fmt.Errorf("failed to verify group ID %s with a nonce", ch.Entity)
 			}
 
@@ -500,8 +500,8 @@ func (bs *Storage) indexDocumentChange(conn *sqlite.Conn, blobID int64, author c
 				return fmt.Errorf("owner field in the create change must correspond with the author of the change")
 			}
 
-			id, _ := NewUnforgeableID(ownerField, nonce, int64(ct))
-			if ch.Entity.TrimPrefix("hm://d/") != id {
+			id, _ := NewUnforgeableID("hm://d/", ownerField, nonce, int64(ct))
+			if ch.Entity != EntityID(id) {
 				return fmt.Errorf("failed to verify document ID %s with a nonce", ch.Entity)
 			}
 

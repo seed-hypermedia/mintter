@@ -692,7 +692,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 	var found *p2p.Object
 	seen := map[cid.Cid]struct{}{}
 	for _, obj := range list.Objects {
-		if obj.Id == "hm://d/"+pub.Document.Id {
+		if obj.Id == pub.Document.Id {
 			found = obj
 		}
 		for _, ch := range obj.ChangeIds {
