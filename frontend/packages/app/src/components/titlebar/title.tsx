@@ -16,7 +16,7 @@ import {
   User,
   XStack,
 } from '@mintter/ui'
-import {Contact, Folder, Library} from '@tamagui/lucide-icons'
+import {Bookmark, Contact, Folder, Library} from '@tamagui/lucide-icons'
 import {getDocumentTitle} from '../publication-list-item'
 import {useEffect} from 'react'
 import {NavRoute} from '../../utils/navigation'
@@ -43,9 +43,9 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'home') {
     return (
       <>
-        <Folder size={12} />
+        <Bookmark size={12} />
         <TitleText size={size} data-testid="titlebar-title">
-          Trusted Publications
+          Publications
         </TitleText>
       </>
     )

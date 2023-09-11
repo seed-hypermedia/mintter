@@ -1,4 +1,4 @@
-import {HYPERMEDIA_DOCUMENT_PREFIX, Role} from '@mintter/shared'
+import {HYPERMEDIA_DOCUMENT_PREFIX, Role, getIdsfromUrl} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
@@ -171,7 +171,7 @@ type RenameGroupDocMutationInput = {
 }
 
 export function useRenameGroupDoc(
-  opts?: UseMutationOptions<void, unknown, RenameGroupDocMutationInput>,
+  opts?: UseMutationOptions<string, unknown, RenameGroupDocMutationInput>,
 ) {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
@@ -184,6 +184,13 @@ export function useRenameGroupDoc(
       const listed = await grpcClient.groups.listContent({
         id: groupId,
       })
+      console.log(
+        'huh RENAME?!',
+        groupId,
+        pathName,
+        newPathName,
+        listed.content,
+      )
       const prevPathValue = listed.content[pathName]
       if (!prevPathValue)
         throw new Error('Could not find previous path at ' + pathName)
@@ -191,20 +198,26 @@ export function useRenameGroupDoc(
         id: groupId,
         updatedContent: {[pathName]: '', [newPathName]: prevPathValue},
       })
+      return prevPathValue
     },
     onSuccess: (result, input, context) => {
+      const [docId] = getIdsfromUrl(result)
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, docId])
     },
   })
 }
 
-export function useGroupContent(groupId?: string | undefined) {
+export function useGroupContent(
+  groupId?: string | undefined,
+  version?: string,
+) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_GROUP_CONTENT, groupId],
+    queryKey: [queryKeys.GET_GROUP_CONTENT, groupId, version],
     queryFn: async () => {
-      return await grpcClient.groups.listContent({id: groupId})
+      return await grpcClient.groups.listContent({id: groupId, version})
     },
     enabled: !!groupId,
   })

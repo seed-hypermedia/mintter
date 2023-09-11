@@ -4307,6 +4307,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hookform/resolvers@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "@hookform/resolvers@npm:3.3.1"
+  peerDependencies:
+    react-hook-form: ^7.0.0
+  checksum: 1ddc250a8d6769fb11b03110b586677b03463276dda1cdfd0225ab94f46d422868f74b01bef85f785010cc3d836f0669d6b6c0ed752cae532d2badf3537b1e72
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.11.10":
   version: 0.11.11
   resolution: "@humanwhocodes/config-array@npm:0.11.11"
@@ -4691,6 +4700,7 @@ __metadata:
     "@graphql-codegen/cli": 2.16.5
     "@graphql-codegen/typescript": 2.8.5
     "@happy-dom/global-registrator": 7.8.1
+    "@hookform/resolvers": ^3.3.1
     "@juggle/resize-observer": 3.4.0
     "@mantine/core": 6.0.13
     "@mantine/hooks": 6.0.13
@@ -4799,6 +4809,7 @@ __metadata:
     react-dom: 18.2.0
     react-error-boundary: 4.0.11
     react-highlight-words: 0.20.0
+    react-hook-form: ^7.46.1
     react-hot-toast: 2.4.1
     react-icons: 4.9.0
     react-native: 0.71.7
@@ -4834,6 +4845,7 @@ __metadata:
     y-prosemirror: 1.2.1
     y-protocols: 1.0.5
     yjs: 13.6.4
+    zod: ^3.22.2
   languageName: unknown
   linkType: soft
 
@@ -25731,6 +25743,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:^7.46.1":
+  version: 7.46.1
+  resolution: "react-hook-form@npm:7.46.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18
+  checksum: 9c11ba454ce5b2a16e7499f2ca710e0c0cff227f39689b8e7985902f27f99bfc7a2c49f145ef228528764cf8286bf6101fc8a0f5094ce652eb31cab1684518d1
+  languageName: node
+  linkType: hard
+
 "react-hot-toast@npm:2.4.1":
   version: 2.4.1
   resolution: "react-hot-toast@npm:2.4.1"
@@ -31918,7 +31939,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.22.2":
+"zod@npm:3.22.2, zod@npm:^3.22.2":
   version: 3.22.2
   resolution: "zod@npm:3.22.2"
   checksum: 231e2180c8eabb56e88680d80baff5cf6cbe6d64df3c44c50ebe52f73081ecd0229b1c7215b9552537f537a36d9e36afac2737ddd86dc14e3519bdbc777e82b9

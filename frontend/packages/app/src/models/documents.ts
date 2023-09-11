@@ -53,6 +53,7 @@ import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {queryKeys} from './query-keys'
 import {usePublicationInContext} from './publication'
+import {pathNameify} from '../utils/path'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
@@ -264,6 +265,7 @@ export function usePublishDraft(
     }
   >,
 ) {
+  const queryClient = useAppContext().queryClient
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
@@ -279,16 +281,26 @@ export function usePublishDraft(
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
-        let publishPathName =
-          draftGroupContext.pathName === ''
-            ? publishedId
-            : draftGroupContext.pathName
-        await grpcClient.groups.updateGroup({
-          id: draftGroupContext.groupId,
-          updatedContent: {
-            [publishPathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${publishedId}?v=${pub.version}`,
-          },
-        })
+        console.log('=== ayyho')
+        let docTitle: string | undefined = (
+          queryClient.client.getQueryData([
+            queryKeys.EDITOR_DRAFT,
+            draftId,
+          ]) as any
+        )?.title
+        console.log('=== ayyho')
+        let fallbackTitle = docTitle ? docTitle : publishedId.slice(0, 5)
+        let publishPathName = draftGroupContext.pathName
+          ? fallbackTitle
+          : draftGroupContext.pathName
+        if (publishPathName) {
+          await grpcClient.groups.updateGroup({
+            id: draftGroupContext.groupId,
+            updatedContent: {
+              [publishPathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${publishedId}?v=${pub.version}`,
+            },
+          })
+        }
       }
       return pub
     },

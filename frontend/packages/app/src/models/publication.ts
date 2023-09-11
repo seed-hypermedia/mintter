@@ -16,9 +16,12 @@ export function usePublicationInContext({
 }) {
   const groupContext = pubContext?.key === 'group' ? pubContext : undefined
   const groupContextId = groupContext ? groupContext.groupId : undefined
-  console.log('sooo useGroupContent', groupContextId)
-  const groupContent = useGroupContent(groupContextId)
+  const groupContextVersion = groupContext
+    ? groupContext.groupVersion
+    : undefined
+  const groupContent = useGroupContent(groupContextId, groupContextVersion)
   let queryVersionId = versionId
+  let queryDocumentId = documentId
   const groupContextContent = groupContent.data?.content
   if (
     !queryVersionId &&
@@ -28,10 +31,10 @@ export function usePublicationInContext({
   ) {
     const contentURL = groupContextContent[groupContext.pathName]
     if (!contentURL) {
-      console.error(groupContextContent)
-      throw new Error(
-        `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
-      )
+      // throw new Error(
+      //   `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
+      // )
+      queryDocumentId = undefined
     }
     const [groupContentDocId, groupContentVersion] = getIdsfromUrl(contentURL)
     if (groupContentDocId !== documentId)
@@ -44,7 +47,7 @@ export function usePublicationInContext({
   const pubQueryReady = !!queryVersionId || pubContext?.key !== 'group'
   return usePublication({
     ...options,
-    documentId,
+    documentId: queryDocumentId,
     versionId: queryVersionId,
     enabled: options.enabled !== false && pubQueryReady,
   })

@@ -32,8 +32,9 @@ import {
 } from '../models/groups'
 import {useNavRoute} from '../utils/navigation'
 import {AppLinkText} from '../components/link'
+import {pathNameify} from '../utils/path'
 
-function RenamePubDialog({
+export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
   onClose,
 }: {
@@ -47,7 +48,11 @@ function RenamePubDialog({
       onSubmit={() => {
         onClose()
         toast.promise(
-          renameDoc.mutateAsync({pathName, groupId, newPathName: renamed}),
+          renameDoc.mutateAsync({
+            pathName,
+            groupId,
+            newPathName: pathNameify(renamed),
+          }),
           {
             success: 'Renamed',
             loading: 'Renaming..',
@@ -61,7 +66,18 @@ function RenamePubDialog({
         Choose a new short name for &quot;{docTitle}&quot; in this group. Be
         careful, as this will change web URLs.
       </DialogDescription>
-      <Input value={renamed} onChangeText={setRenamed} />
+      <Input
+        value={renamed}
+        onChangeText={(value) => {
+          setRenamed(
+            value
+              .toLocaleLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-z0-9-_]/g, '')
+              .replace(/-{2,}/g, '-'),
+          )
+        }}
+      />
       <Form.Trigger asChild>
         <Button>Save</Button>
       </Form.Trigger>
@@ -92,6 +108,13 @@ function GroupContentItem({
         publication={pub.data}
         hasDraft={hasDraft}
         label={pathName}
+        onLabelPress={() => {
+          renameDialog.open({
+            pathName,
+            groupId,
+            docTitle: pub.data.document?.title || '',
+          })
+        }}
         pubContext={{key: 'group', groupId, pathName}}
         menuItems={[
           {

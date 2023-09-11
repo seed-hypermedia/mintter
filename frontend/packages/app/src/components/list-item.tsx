@@ -42,6 +42,7 @@ export function ListItem({
         onPointerEnter={onPointerEnter}
         // onPointerLeave={() => setIsHovering(false)}
         chromeless
+        onPress={onPress}
       >
         <ButtonText
           onPress={onPress}
@@ -54,7 +55,16 @@ export function ListItem({
         {accessory}
         <Popover {...popoverState} placement="bottom-end">
           <Popover.Trigger asChild>
-            <Button size="$1" circular data-trigger icon={MoreHorizontal} />
+            <Button
+              size="$1"
+              circular
+              data-trigger
+              onPress={(e) => {
+                // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
+                e.stopPropagation()
+              }}
+              icon={MoreHorizontal}
+            />
           </Popover.Trigger>
           <Popover.Content
             padding={0}
@@ -75,7 +85,8 @@ export function ListItem({
               {menuItems.map((item) => (
                 <YGroup.Item key={item.key}>
                   <MenuItem
-                    onPress={() => {
+                    onPress={(e) => {
+                      e.stopPropagation()
                       popoverState.onOpenChange(false)
                       item.onPress()
                     }}

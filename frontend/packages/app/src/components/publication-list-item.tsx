@@ -25,6 +25,7 @@ export function PublicationListItem({
   onPointerEnter,
   label,
   openRoute,
+  onLabelPress,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
@@ -34,6 +35,7 @@ export function PublicationListItem({
   label?: string
   onPointerEnter?: () => void
   openRoute: NavRoute
+  onLabelPress?: () => void
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
@@ -75,7 +77,23 @@ export function PublicationListItem({
             </Button>
           )}
           {label && (
-            <ButtonText size="$2" color="$color9">
+            <ButtonText
+              size="$2"
+              color="$color9"
+              onPress={(e) => {
+                if (onLabelPress) {
+                  e.stopPropagation()
+                  onLabelPress()
+                }
+              }}
+              hoverStyle={
+                onLabelPress
+                  ? {
+                      textDecorationLine: 'underline',
+                    }
+                  : undefined
+              }
+            >
               {label}
             </ButtonText>
           )}

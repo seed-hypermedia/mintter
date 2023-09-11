@@ -34,12 +34,19 @@ export function useOpenDraft() {
     newWindow = true,
     pubContext?: PublicationRouteContext | undefined,
   ) {
+    const destPubContext: PublicationRouteContext =
+      pubContext?.key === 'group'
+        ? {
+            ...pubContext,
+            pathName: null,
+          }
+        : pubContext || null
     createDraft(grpcClient, pubContext)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
-          pubContext,
+          pubContext: destPubContext,
           contextRoute: route,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])

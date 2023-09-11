@@ -64,7 +64,7 @@ export function AppDialog({
   isAlert,
 }: {
   TriggerComponent: React.FC
-  ContentComponent: React.FC<{onClose?: () => void}>
+  ContentComponent: React.FC<{onClose?: () => void; isOpen?: boolean}>
   isAlert?: boolean
 }) {
   const Component = getComponent(isAlert)
@@ -85,6 +85,7 @@ export function AppDialog({
           />
           <Component.Content backgroundColor={'$background'}>
             <ContentComponent
+              isOpen={isOpen}
               onClose={() => {
                 setIsOpen(false)
               }}

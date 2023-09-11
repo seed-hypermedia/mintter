@@ -1,5 +1,9 @@
 import {useMyAccount} from '@mintter/app/models/accounts'
-import {usePublication, usePublishDraft} from '@mintter/app/models/documents'
+import {
+  useDraftTitle,
+  usePublication,
+  usePublishDraft,
+} from '@mintter/app/models/documents'
 import {
   useAccountGroups,
   useDocumentGroups,
@@ -39,7 +43,6 @@ import {
   SizableText,
   Spinner,
   Text,
-  View,
   XStack,
   YStack,
   styled,
@@ -48,17 +51,18 @@ import {
   Album,
   Book,
   CheckCheck,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
-  Folder,
   Pencil,
   X,
 } from '@tamagui/lucide-icons'
-import {ReactNode, useEffect, useMemo, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import DiscardDraftButton from './discard-draft-button'
-import {ListDocumentGroupsResponse_Item} from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import {pathNameify} from '@mintter/app/utils/path'
+import {useAppDialog} from '../dialog'
+import {RenamePubDialog} from '@mintter/app/pages/group'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 
 // function DraftPublicationDialog({
 //   draft,
@@ -118,6 +122,7 @@ function GroupPublishDialog({
     docId: string
     version: string | undefined
     editDraftId?: string | undefined
+    docTitle: string | undefined
   }
   dialogState: DialogProps
 }) {
@@ -134,7 +139,8 @@ function GroupPublishDialog({
     if (myGroups?.length && !selectedGroupId)
       setSelectedGroupId(myGroups[0]?.id)
   }, [myGroups, selectedGroupId])
-  const [pathName, setPathName] = useState(input.docId)
+  const defaultPathName = pathNameify(input.docTitle || '')
+  const [pathName, setPathName] = useState(defaultPathName)
   const route = useNavRoute()
   const navigate = useNavigate('replace')
   const draftRoute = route.key === 'draft' ? route : null
@@ -194,10 +200,6 @@ function GroupPublishDialog({
       }}
     >
       <DialogTitle>Publish to Group</DialogTitle>
-      <Fieldset gap="$4" horizontal borderColor="transparent">
-        <Label htmlFor="path">Path / Shortname</Label>
-        <Input id="path" value={pathName} onChangeText={setPathName} />
-      </Fieldset>
 
       <Fieldset gap="$2" horizontal borderColor="transparent">
         <Label htmlFor="group">Group</Label>
@@ -251,6 +253,11 @@ function GroupPublishDialog({
         </Select>
       </Fieldset>
 
+      <Fieldset gap="$4" horizontal borderColor="transparent">
+        <Label htmlFor="path">Path / Shortname</Label>
+        <Input id="path" value={pathName} onChangeText={setPathName} />
+      </Fieldset>
+
       <Form.Trigger asChild>
         <Button>Submit</Button>
       </Form.Trigger>
@@ -291,73 +298,6 @@ const ContextPopoverArrow = styled(Popover.Arrow, {
   borderColor: '$borderColor',
 })
 
-// function ContextDropdown({dropdown, trigger}: {dropdown :ReactNode, trigger: ReactNode}) {
-// return <ContextPopover
-// >
-// <Popover.Trigger asChild>
-//   <Button size="$2" icon={contextGroupId ? Folder : Globe}>
-//     {groupTitle}
-//   </Button>
-// </Popover.Trigger>
-// <ContextPopoverContent>
-//   <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
-//   <YStack space="$3">
-//     {draftRoute && !groupPubContext ? (
-//       <>
-//         <SizableText size="$2">
-//           Will Publish on the Public Web
-//         </SizableText>
-//       </>
-//     ) : null}
-//     {publishedGroups?.items.length ? (
-//       <YStack>
-//         <SizableText size="$1" fontWeight="bold">
-//           Published to:
-//         </SizableText>
-//         {publishedGroups.items.map((g) => (
-//           <Button
-//             key={g}
-//             size="$2"
-//             onPress={() => nav({key: 'group', groupId: g.groupId})}
-//           >
-//             {g.groupId}
-//           </Button>
-//         ))}
-//       </YStack>
-//     ) : null}
-//     {groupPubContext ? (
-//       <>
-//         <Button
-//           icon={Folder}
-//           iconAfter={Check}
-//           disabled
-//           flexDirection="column"
-//           alignItems="flex-start"
-//         >
-//           <SizableText size="$3" lineHeight="$1" fontWeight="500">
-//             {groupTitle}
-//           </SizableText>
-//           <SizableText size="$1" color="$color9" lineHeight={0}>
-//             /{groupPubContext.pathName || documentId}
-//           </SizableText>
-//         </Button>
-//       </>
-//     ) : null}
-//     {documentId && (pubRoute || !groupPubContext) ? (
-//       <PublishDialogInstance
-//         docId={documentId}
-//         version={versionId}
-//         groupPubContext={groupPubContext}
-//         editDraftId={route.key === 'draft' ? route.draftId : undefined}
-//         {...dialogState}
-//         closePopover={() => popoverState.onOpenChange(false)}
-//       />
-//     ) : null}
-//   </YStack>
-// </Popover.Content>
-// </Popover>
-// }
-
 function GroupContextButton({route}: {route: GroupRoute}) {
   const group = useGroup(route.groupId)
   if (!group.data) return null
@@ -373,6 +313,7 @@ function DraftContextButton({route}: {route: DraftRoute}) {
   const account = useMyAccount()
   const nav = useNavigate('replace')
   const groups = useAccountGroups(account?.data?.id)
+  const draftTitle = useDraftTitle({documentId: route.draftId})
   const groupPubContext =
     route.pubContext?.key === 'group' ? route.pubContext : null
   const selectedGroup = groupPubContext
@@ -389,6 +330,11 @@ function DraftContextButton({route}: {route: DraftRoute}) {
     title = selectedGroup.group?.title || ''
   }
   const [isListingGroups, setIsListingGroups] = useState(false)
+  let displayPathName =
+    route.pubContext?.key === 'group' ? route.pubContext?.pathName : undefined
+  if (!displayPathName && draftTitle) {
+    displayPathName = pathNameify(draftTitle)
+  }
   return (
     <ContextPopover>
       <PopoverTrigger asChild>
@@ -403,10 +349,9 @@ function DraftContextButton({route}: {route: DraftRoute}) {
             <>
               <SizableText size="$2">Committing to Group:</SizableText>
               <GroupContextItem
-                docGroup={{
-                  groupId: route.pubContext.groupId,
-                  path: route.pubContext.pathName,
-                }}
+                groupId={route.pubContext.groupId}
+                path={displayPathName || null}
+                onPathPress={() => {}}
                 route={route}
               />
             </>
@@ -470,22 +415,29 @@ function DraftContextButton({route}: {route: DraftRoute}) {
 }
 
 function GroupContextItem({
-  docGroup,
+  groupId,
+  groupVersion,
+  path,
   route,
+  onPathPress,
 }: {
-  docGroup: ListDocumentGroupsResponse_Item
-  route: PublicationRoute
+  groupId: string
+  groupVersion?: string | undefined
+  path: string | null
+  route: PublicationRoute | DraftRoute
+  onPathPress?: (() => void) | undefined
 }) {
   const replaceRoute = useNavigate('replace')
-  const group = useGroup(docGroup.groupId)
+  const group = useGroup(groupId)
   const isActive =
     route.pubContext?.key === 'group' &&
-    docGroup.groupId === route.pubContext.groupId &&
-    docGroup.path === route.pubContext.pathName
+    groupId === route.pubContext.groupId &&
+    path === route.pubContext.pathName
   const myGroups = useMyGroups()
   const isGroupMember = myGroups.data?.items?.find((groupAccount) => {
-    return groupAccount.group?.id === docGroup.groupId
+    return groupAccount.group?.id === groupId
   })
+  const isPathPressable = isActive && isGroupMember && onPathPress
   return (
     <XStack alignItems="center" gap="$2">
       <Button
@@ -497,11 +449,16 @@ function GroupContextItem({
         onPress={() => {
           replaceRoute({
             ...route,
-            versionId: undefined,
+            ...(route.key === 'publication'
+              ? {
+                  versionId: undefined,
+                }
+              : {}),
             pubContext: {
               key: 'group',
-              groupId: docGroup.groupId,
-              pathName: docGroup.path,
+              groupId: groupId,
+              groupVersion,
+              pathName: path,
             },
           })
         }}
@@ -510,14 +467,31 @@ function GroupContextItem({
           <Text fontSize={10} color={isActive ? undefined : '$color9'}>
             {group.data?.title}
           </Text>
-          <Text fontSize={10} color="$color9">
-            {docGroup.path}
-          </Text>
+          <ButtonText
+            fontSize={10}
+            color="$color9"
+            marginVertical={0}
+            disabled={!isPathPressable}
+            onPress={
+              isPathPressable
+                ? (e) => {
+                    e.stopPropagation()
+                    onPathPress()
+                  }
+                : undefined
+            }
+            hoverStyle={
+              isPathPressable
+                ? {
+                    textDecorationLine: 'underline',
+                  }
+                : {}
+            }
+          >
+            {path}
+          </ButtonText>
         </YStack>
       </Button>
-      {isGroupMember ? (
-        <Button size="$2" icon={Pencil} onPress={() => {}} chromeless />
-      ) : null}
     </XStack>
   )
 }
@@ -552,9 +526,10 @@ function ContextButton({
 }
 
 function PublicationContextButton({route}: {route: PublicationRoute}) {
-  const publication = usePublication({
+  const publication = usePublicationInContext({
     documentId: route.documentId,
     versionId: route.versionId,
+    pubContext: route.pubContext,
   })
   const {pubContext} = route
   const contextGroup = useGroup(
@@ -572,59 +547,73 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
   const docVersion = route.versionId || publication.data?.version
   const docGroups = useDocumentGroups(route.documentId)
   const popoverState = usePopoverState(false)
-  const dialogState = usePopoverState(false, (isOpen) => {
+  const publishDialogState = usePopoverState(false, (isOpen) => {
     isOpen && popoverState.onOpenChange(false)
   })
+  const renameDialog = useAppDialog(RenamePubDialog)
 
   return (
-    <ContextPopover {...popoverState}>
-      <PopoverTrigger asChild>
-        <Button size="$2" icon={icon}>
-          {title}
-        </Button>
-      </PopoverTrigger>
-      <ContextPopoverContent>
-        <ContextPopoverArrow />
-        <YStack space="$2">
-          <ContextButton
-            icon={Globe}
-            name="All Authors"
-            route={{...route, pubContext: null}}
-            isActive={!route.pubContext?.key}
-          />
-          <ContextButton
-            icon={Album}
-            name="Trusted Authors"
-            route={{...route, pubContext: {key: 'trusted'}}}
-            isActive={route.pubContext?.key === 'trusted'}
-          />
-          {docGroups.data?.length ? (
-            <>
-              <SizableText size="$2">Appears in:</SizableText>
-              <YStack gap="$2">
-                {docGroups.data?.map((docGroup) => {
-                  return (
-                    <GroupContextItem
-                      docGroup={docGroup}
-                      route={route}
-                      key={`${docGroup.groupId}-${docGroup.path}`}
-                    />
-                  )
-                })}
-              </YStack>
-            </>
-          ) : null}
-          <PublishDialogInstance
-            docId={docId}
-            version={docVersion}
-            groupPubContext={
-              route.pubContext?.key === 'group' ? route.pubContext : null
-            }
-            {...dialogState}
-          />
-        </YStack>
-      </ContextPopoverContent>
-    </ContextPopover>
+    <>
+      <ContextPopover {...popoverState}>
+        <PopoverTrigger asChild>
+          <Button size="$2" icon={icon}>
+            {title}
+          </Button>
+        </PopoverTrigger>
+        <ContextPopoverContent>
+          <ContextPopoverArrow />
+          <YStack space="$2">
+            <ContextButton
+              icon={Globe}
+              name="All Authors"
+              route={{...route, pubContext: null}}
+              isActive={!route.pubContext?.key}
+            />
+            <ContextButton
+              icon={Album}
+              name="Trusted Authors"
+              route={{...route, pubContext: {key: 'trusted'}}}
+              isActive={route.pubContext?.key === 'trusted'}
+            />
+            {docGroups.data?.length ? (
+              <>
+                <SizableText size="$2">Appears in:</SizableText>
+                <YStack gap="$2">
+                  {docGroups.data?.map((docGroup) => {
+                    return (
+                      <GroupContextItem
+                        groupId={docGroup.groupId}
+                        groupVersion={docGroup.groupChange}
+                        path={docGroup.path}
+                        route={route}
+                        onPathPress={() => {
+                          renameDialog.open({
+                            groupId: docGroup.groupId,
+                            pathName: docGroup.path,
+                            docTitle: publication.data?.document?.title || '',
+                          })
+                        }}
+                        key={`${docGroup.groupId}-${docGroup.path}`}
+                      />
+                    )
+                  })}
+                </YStack>
+              </>
+            ) : null}
+            <PublishDialogInstance
+              docId={docId}
+              version={docVersion}
+              docTitle={publication.data?.document?.title}
+              groupPubContext={
+                route.pubContext?.key === 'group' ? route.pubContext : null
+              }
+              {...publishDialogState}
+            />
+          </YStack>
+        </ContextPopoverContent>
+      </ContextPopover>
+      {renameDialog.content}
+    </>
   )
 }
 
@@ -648,12 +637,14 @@ function PublishDialogInstance({
   version,
   editDraftId,
   groupPubContext,
+  docTitle,
   ...props
 }: DialogProps & {
   closePopover?: () => void
   docId: string
   version: string | undefined
   editDraftId?: string | undefined
+  docTitle?: string | undefined
   groupPubContext: GroupPublicationRouteContext | null
 }) {
   const nav = useNavigation()
@@ -700,7 +691,7 @@ function PublishDialogInstance({
         >
           <NavContextProvider value={nav}>
             <GroupPublishDialog
-              input={{docId, version, editDraftId}}
+              input={{docId, version, editDraftId, docTitle}}
               dialogState={props}
             />
           </NavContextProvider>
