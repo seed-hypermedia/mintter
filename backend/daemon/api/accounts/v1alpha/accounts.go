@@ -194,12 +194,12 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	patch := map[string]any{}
 
 	v, ok := e.Get("alias")
-	if !ok || v.(string) != in.Alias {
+	if (ok && v.(string) != in.Alias) || (!ok && in.Alias != "") {
 		patch["alias"] = in.Alias
 	}
 
 	v, ok = e.Get("bio")
-	if !ok || v.(string) != in.Bio {
+	if (ok && v.(string) != in.Bio) || (!ok && in.Bio != "") {
 		patch["bio"] = in.Bio
 	}
 
@@ -210,7 +210,7 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		}
 
 		v, ok := e.Get("avatar")
-		if !ok || !v.(cid.Cid).Equals(avatar) {
+		if (ok && !v.(cid.Cid).Equals(avatar)) || (!ok && in.Avatar != "") {
 			patch["avatar"] = avatar
 		}
 	}
