@@ -173,7 +173,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 
 		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, a.RPC.Site, fileManager)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, fileManager)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +407,6 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	cfg config.Site,
 	opts ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
@@ -417,7 +416,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opts...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, cfg)
+	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet)
 	rpc.Register(srv)
 	reflection.Register(srv)
 
@@ -517,7 +516,6 @@ func initHTTP(
 	node *future.ReadOnly[*mttnet.Node],
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
-	wellKnownHandler http.Handler,
 	ipfsHandler ipfs.HTTPHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
@@ -534,7 +532,6 @@ func initHTTP(
 		router.Handle("/debug/buildinfo", buildInfoHandler(), routeNav)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
-		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler, routeNav)
 		router.Handle(ipfs.IPFSRootRoute+ipfs.UploadRoute, http.HandlerFunc(ipfsHandler.UploadFile), 0)
 		router.Handle(ipfs.IPFSRootRoute+ipfs.GetRoute, http.HandlerFunc(ipfsHandler.GetFile), 0)
 

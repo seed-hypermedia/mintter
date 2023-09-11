@@ -5,15 +5,14 @@ import (
 	"context"
 	"fmt"
 	"io"
-	documents "mintter/backend/genproto/documents/v1alpha"
+	groups "mintter/backend/genproto/groups/v1alpha"
 	"net/http"
 	"time"
-
-	"mintter/backend/mttnet"
 
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ping "github.com/libp2p/go-libp2p/p2p/protocol/ping"
+	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -62,18 +61,32 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
 	resp, err := s.getSiteInfoHTTP(ctx, hostname)
 	if err != nil {
-		return
-	}
-	info, err = mttnet.AddrInfoFromStrings(resp.Addresses[0]) // only TCP which is the first one
-	if err != nil {
-		return
+		return info, err
 	}
 
-	return
+	if resp.PeerInfo == nil {
+		return info, fmt.Errorf("no peer info got from site")
+	}
+
+	pid, err := peer.Decode(resp.PeerInfo.PeerId)
+	if err != nil {
+		return info, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+	}
+
+	info.ID = pid
+	info.Addrs = make([]multiaddr.Multiaddr, len(resp.PeerInfo.Addrs))
+	for i, as := range resp.PeerInfo.Addrs {
+		info.Addrs[i], err = multiaddr.NewMultiaddr(as)
+		if err != nil {
+			return info, err
+		}
+	}
+
+	return info, nil
 }
 
-func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*documents.SiteDiscoveryConfig, error) {
-	requestURL := fmt.Sprintf("%s/%s", SiteHostname, mttnet.WellKnownPath)
+func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*groups.PublicSiteInfo, error) {
+	requestURL := fmt.Sprintf("%s/%s", SiteHostname, ".well-known/hypermedia-site")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -94,10 +107,9 @@ func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*docume
 		return nil, fmt.Errorf("failed to read json body: %w", err)
 	}
 
-	var resp documents.SiteDiscoveryConfig
-
-	if err := protojson.Unmarshal(data, &resp); err != nil {
+	resp := &groups.PublicSiteInfo{}
+	if err := protojson.Unmarshal(data, resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
 	}
-	return &resp, nil
+	return resp, nil
 }

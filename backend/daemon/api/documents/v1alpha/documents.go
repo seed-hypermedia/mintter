@@ -32,30 +32,21 @@ type Discoverer interface {
 	Connect(context.Context, peer.AddrInfo) error
 }
 
-// RemoteCaller is an interface for not having to pass a full-fledged sites service,
-// just the remote functions that need to be called from the local server.
-type RemoteCaller interface {
-	RedeemInviteToken(context.Context, *documents.RedeemInviteTokenRequest) (*documents.RedeemInviteTokenResponse, error)
-	ListWebPublications(ctx context.Context, in *documents.ListWebPublicationsRequest) (*documents.ListWebPublicationsResponse, error)
-}
-
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db           *sqlitex.Pool
-	me           *future.ReadOnly[core.Identity]
-	disc         Discoverer
-	RemoteCaller RemoteCaller
-	blobs        *hyper.Storage
+	db    *sqlitex.Pool
+	me    *future.ReadOnly[core.Identity]
+	disc  Discoverer
+	blobs *hyper.Storage
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
 	srv := &Server{
-		db:           db,
-		me:           me,
-		disc:         disc,
-		RemoteCaller: remoteCaller,
-		blobs:        hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
+		db:    db,
+		me:    me,
+		disc:  disc,
+		blobs: hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
 	}
 
 	return srv

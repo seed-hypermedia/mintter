@@ -25,7 +25,6 @@ type Config struct {
 	Identity Identity
 	Lndhub   Lndhub
 	P2P      P2P
-	Site     Site
 	Syncing  Syncing
 }
 
@@ -49,9 +48,6 @@ func Default() Config {
 			BootstrapPeers: ipfs.DefaultBootstrapPeers(),
 			Port:           55000,
 			RelayBackoff:   time.Minute * 3,
-		},
-		Site: Site{
-			InviteTokenExpirationDelay: time.Hour * 24 * 7,
 		},
 		Syncing: Syncing{
 			WarmupDuration: time.Second * 20,
@@ -133,12 +129,6 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 
-	fs.BoolVar(&cfg.Site.NoAuth, "site.no-auth", cfg.Site.NoAuth, "Disable site authentication")
-	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
-	fs.StringVar(&cfg.Site.Title, "site.title", cfg.Site.Title, "Title of the site. Something brief and human readable to help understand the site")
-	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
-	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
-
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
@@ -177,16 +167,6 @@ type Syncing struct {
 	// NoInbound disables syncing content to the remote peer from our peer.
 	// If false, then documents get synced in both directions.
 	NoInbound bool
-}
-
-// Site configuration. In case the daemon is deployed in a site.
-// For field descriptions see SetupFlags().
-type Site struct {
-	Hostname                   string
-	InviteTokenExpirationDelay time.Duration
-	OwnerID                    string
-	Title                      string
-	NoAuth                     bool
 }
 
 // P2P configuration. For field descriptions see SetupFlags().

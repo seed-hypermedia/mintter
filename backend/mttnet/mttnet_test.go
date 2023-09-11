@@ -19,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ p2p.P2PServer = (*Server)(nil)
+var _ p2p.P2PServer = (*rpcMux)(nil)
 
 func TestAddrs(t *testing.T) {
 	addrs := []string{
@@ -38,7 +38,7 @@ func TestAddrs(t *testing.T) {
 	require.Equal(t, addrs, AddrInfoToStrings(info))
 }
 
-func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, context.CancelFunc) {
+func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
 	db := storage.MakeTestDB(t)
@@ -67,7 +67,7 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
 	f := future.New[*Node]()
-	NewServer(ctx, config.Default().Site, f.ReadOnly, nil, nil)
+
 	require.NoError(t, f.Resolve(n))
 
 	go func() {

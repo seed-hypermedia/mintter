@@ -175,7 +175,7 @@ func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, co
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
 	f := future.New[*mttnet.Node]()
-	_ = mttnet.NewServer(ctx, config.Default().Site, f.ReadOnly, nil, nil)
+
 	require.NoError(t, f.Resolve(n))
 	go func() {
 		errc <- n.Start(ctx)
