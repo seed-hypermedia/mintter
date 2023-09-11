@@ -8,12 +8,10 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
-	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
@@ -48,6 +46,10 @@ func NewServer(me *future.ReadOnly[core.Identity], blobs *hyper.Storage, node *f
 func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupRequest) (*groups.Group, error) {
 	if in.Title == "" {
 		return nil, errutil.MissingArgument("title")
+	}
+
+	if in.SiteSetupUrl != "" {
+		return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
 	}
 
 	me, err := srv.getMe()
@@ -128,6 +130,10 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupRequest) (*groups.Group, error) {
 	if in.Id == "" {
 		return nil, errutil.MissingArgument("id")
+	}
+
+	if in.SiteSetupUrl != "" {
+		return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
 	}
 
 	me, err := srv.getMe()
@@ -314,69 +320,6 @@ func (srv *Server) ListMembers(ctx context.Context, in *groups.ListMembersReques
 	}
 
 	return resp, nil
-}
-
-// GetSiteInfo gets information of a local site.
-func (srv *Server) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.GetSiteInfoResponse, error) {
-	ret := &groups.GetSiteInfoResponse{}
-	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		res, err := sitesql.GetSiteInfo(conn, in.Hostname)
-		if err != nil {
-			return fmt.Errorf("No site info available: %w", err)
-		}
-		ret.GroupId = res.EntitiesEID
-		if res.ServedSitesVersion != "" {
-			ret.Version = res.ServedSitesVersion
-		} else {
-			entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID(res.EntitiesEID))
-			if err != nil {
-				return fmt.Errorf("could not get entity [%s]: %w", res.EntitiesEID, err)
-			}
-			ret.Version = entity.Version().String()
-		}
-
-		ret.OwnerId = core.Principal(res.PublicKeysPrincipal).String()
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-// ConvertToSite converts a group into a site. P2P group will still work as usual after this call.
-func (srv *Server) ConvertToSite(ctx context.Context, in *groups.ConvertToSiteRequest) (*groups.ConvertToSiteResponse, error) {
-	n, ok := srv.node.Get()
-	if !ok {
-		return nil, fmt.Errorf("node not ready yet")
-	}
-
-	remoteHostname := strings.Split(in.Link, "/secret-invite/")[0]
-
-	info, err := mttnet.GetSiteAddressFromHeaders(remoteHostname)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get site [%s] info via http: %w", remoteHostname, err)
-	}
-
-	if err := n.Connect(ctx, info); err != nil {
-		return nil, fmt.Errorf("failed to connect to site [%s] with peer info [%s]: %w", remoteHostname, info.String(), err)
-	}
-	client, err := n.Client(ctx, info.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get a p2p client with node [%s]: %w", info.ID.String(), err)
-	}
-	res, err := client.CreateSite(ctx, &p2p.CreateSiteRequest{
-		Link:    in.Link,
-		GroupId: in.GroupId,
-		Version: in.Version,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create a remote site: %w", err)
-	}
-
-	return &groups.ConvertToSiteResponse{
-		OwnerId:  res.OwnerId,
-		Hostname: remoteHostname,
-	}, nil
 }
 
 // ListDocumentGroups lists groups that a document belongs to.
