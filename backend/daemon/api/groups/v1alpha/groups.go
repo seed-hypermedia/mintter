@@ -445,11 +445,11 @@ func (srv *Server) ListDocumentGroups(ctx context.Context, in *groups.ListDocume
 			rawURL := sb.String()
 
 			item := &groups.ListDocumentGroupsResponse_Item{
-				GroupId:     entity,
-				GroupChange: cid.NewCidV1(uint64(codec), hash).String(),
-				ChangeTime:  timestamppb.New(time.UnixMicro(ts)),
-				Path:        anchor,
-				RawUrl:      rawURL,
+				GroupId:    entity,
+				ChangeId:   cid.NewCidV1(uint64(codec), hash).String(),
+				ChangeTime: timestamppb.New(time.UnixMicro(ts)),
+				Path:       anchor,
+				RawUrl:     rawURL,
 			}
 
 			resp.Items = append(resp.Items, item)

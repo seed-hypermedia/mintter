@@ -918,10 +918,11 @@ export class ListDocumentGroupsResponse_Item extends Message<ListDocumentGroupsR
 
   /**
    * ID of the group change that published the document to the group.
+   * I.e. the version of the group that introduced the document to the group.
    *
-   * @generated from field: string group_change = 2;
+   * @generated from field: string change_id = 2;
    */
-  groupChange = "";
+  changeId = "";
 
   /**
    * Timestamp of the change that published the document to the group.
@@ -953,7 +954,7 @@ export class ListDocumentGroupsResponse_Item extends Message<ListDocumentGroupsR
   static readonly typeName = "com.mintter.groups.v1alpha.ListDocumentGroupsResponse.Item";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "group_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "group_change", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "change_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "change_time", kind: "message", T: Timestamp },
     { no: 4, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "raw_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },

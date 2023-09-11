@@ -237,7 +237,8 @@ message ListDocumentGroupsResponse {
     string group_id = 1;
 
     // ID of the group change that published the document to the group.
-    string group_change = 2;
+    // I.e. the version of the group that introduced the document to the group.
+    string change_id = 2;
 
     // Timestamp of the change that published the document to the group.
     google.protobuf.Timestamp change_time = 3;

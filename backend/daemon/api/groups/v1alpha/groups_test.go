@@ -334,18 +334,18 @@ func TestDocumentGroupBacklinks(t *testing.T) {
 	want := &groups.ListDocumentGroupsResponse{
 		Items: []*groups.ListDocumentGroupsResponse_Item{
 			{
-				GroupId:     group1.Id,
-				GroupChange: group1.Version,
-				ChangeTime:  group1.UpdateTime,
-				Path:        "/",
-				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
+				GroupId:    group1.Id,
+				ChangeId:   group1.Version,
+				ChangeTime: group1.UpdateTime,
+				Path:       "/",
+				RawUrl:     "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw",
 			},
 			{
-				GroupId:     group2.Id,
-				GroupChange: group2.Version,
-				ChangeTime:  group2.UpdateTime,
-				Path:        "/fragmented-document",
-				RawUrl:      "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
+				GroupId:    group2.Id,
+				ChangeId:   group2.Version,
+				ChangeTime: group2.UpdateTime,
+				Path:       "/fragmented-document",
+				RawUrl:     "hm://d/my-index-page?v=bafy2bzacectq4c4akk6bmlrdem6hzf5blrmnnj2sptedtd5t5hp6ggkky3tlw#some-fragment",
 			},
 		},
 	}
