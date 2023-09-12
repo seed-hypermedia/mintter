@@ -93,16 +93,16 @@ test('Onboarding: New Account', async () => {
   // expect(await page.locator('#btn-prev')).not.toBeDisabled()
 
   // // continue to next step
-  // await page.click('#btn-next')
+  await page.click('#btn-next')
   // // await page.waitForTimeout(10000)
 
   // // check finish step
-  // await page.waitForSelector('#complete-title-section')
-  // // check Analytics step title
-  // const finishTitles = await page
-  //   .locator('#complete-title-section')
-  //   .allTextContents()
-  // expect(finishTitles).toEqual(['You are Ready!'])
+  await page.waitForSelector('#complete-title-section')
+  // check Analytics step title
+  const finishTitles = await page
+    .locator('#complete-title-section')
+    .allTextContents()
+  expect(finishTitles).toEqual(['You are Ready!'])
 
   // await page.getByRole('button', {name: 'Open Mintter App'}).click()
 })
