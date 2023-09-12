@@ -63,7 +63,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper>
+    <TitlebarWrapper className="window-drag">
       <TitlebarRow minHeight={28} backgroundColor="$color3">
         <TitlebarSection>
           <MintterIcon size="$1" />
