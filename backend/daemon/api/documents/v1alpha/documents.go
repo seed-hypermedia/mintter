@@ -193,10 +193,6 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 			if err := mut.ReplaceBlock(o.ReplaceBlock); err != nil {
 				return nil, err
 			}
-		case *documents.DocumentChange_SetWebUrl:
-			if err := mut.SetWebURL(o.SetWebUrl); err != nil {
-				return nil, err
-			}
 		default:
 			panic("BUG: unhandled document change")
 		}

@@ -167,16 +167,6 @@ func (dm *docModel) SetTitle(title string) error {
 	return nil
 }
 
-func (dm *docModel) SetWebURL(url string) error {
-	v, ok := dm.e.Get("webURL")
-	if ok && v.(string) == url {
-		return nil
-	}
-
-	dm.patch["webURL"] = url
-	return nil
-}
-
 func (dm *docModel) DeleteBlock(block string) error {
 	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
 	return err
@@ -338,13 +328,6 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 		v, ok := e.Get("title")
 		if ok {
 			docpb.Title = v.(string)
-		}
-	}
-
-	{
-		v, ok := e.Get("webURL")
-		if ok {
-			docpb.WebUrl = v.(string)
 		}
 	}
 
