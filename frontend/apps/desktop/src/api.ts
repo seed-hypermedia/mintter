@@ -10,6 +10,7 @@ import path from 'path'
 import Store from 'electron-store'
 import {NavRoute} from '@mintter/app/src/utils/navigation'
 import {childLogger, error, log} from './logger'
+import {APP_USER_DATA_PATH} from './app-paths'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -81,6 +82,7 @@ export function updateGoDaemonState(state: GoDaemonState) {
 
 const store = new Store({
   name: 'AppStore',
+  cwd: APP_USER_DATA_PATH,
 })
 
 type AppWindow = {

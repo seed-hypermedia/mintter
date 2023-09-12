@@ -4,13 +4,15 @@ import log from 'electron-log/main'
 // import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
 import {mainMenu, trpc} from './api'
+import {initPaths} from './app-paths'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
-import {openLink} from './open-link'
 
 if (squirrelStartup) {
   app.quit()
 }
+
+initPaths()
 
 mainDaemon
 

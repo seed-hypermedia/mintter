@@ -9,6 +9,7 @@ import {join} from 'path'
 import {updateGoDaemonState} from './api'
 import {childLogger, log} from './logger'
 import {color} from 'console-log-colors'
+import {APP_USER_DATA_PATH} from './app-paths'
 
 const logger = childLogger(color.cyan('Go Daemon'))
 
@@ -39,14 +40,14 @@ const prodDaemonBinaryPath = join(
   `mintterd-${getPlatformTriple()}`,
 )
 
-const userDataDir = join(app.getPath('userData'), 'daemon')
-
-console.log(`== ~ userDataDir:`, userDataDir)
+const userDataDir = join(APP_USER_DATA_PATH, 'daemon')
 
 let goDaemonExecutablePath =
   process.env.NODE_ENV == 'development'
     ? devDaemonBinaryPath
     : prodDaemonBinaryPath
+
+console.log(`== ~ goDaemonExecutablePath:`, goDaemonExecutablePath)
 
 const daemonArguments = [
   '-http-port',

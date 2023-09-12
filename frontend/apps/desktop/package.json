@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "electron-forge start",
     "devtools": "react-devtools",
-    "test": "node test/pre-test.js && yarn e2e && node test/post-test.js",
+    "test": "yarn e2e",
     "e2e": "xvfb-maybe -- playwright test",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json}\" --check  --ignore-path ../../../.prettierignore",
     "lint": "echo TODO",

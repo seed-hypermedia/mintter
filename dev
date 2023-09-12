@@ -118,7 +118,7 @@ def main():
 
     @cmd(cmds, "frontend-test", "Tests frontend code")
     def frontend_test(args):
-        run("yarn test")
+        run("APP_FOLDER_NAME=Mintter.test && yarn test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
