@@ -4,7 +4,6 @@ package config
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"mintter/backend/ipfs"
 	"os"
 	"path/filepath"
@@ -206,7 +205,7 @@ func EnsureConfigFile(repoPath string) (filename string, err error) {
 	}
 
 	if os.IsNotExist(err) {
-		if err := ioutil.WriteFile(filename, []byte(`# Config file for the mintterd program.
+		if err := os.WriteFile(filename, []byte(`# Config file for the mintterd program.
 # You can set any CLI flags here, one per line with a space between key and value.
 `), 0600); err != nil {
 			return "", err

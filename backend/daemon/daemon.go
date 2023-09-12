@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -92,7 +91,7 @@ func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) 
 	var deviceKey crypto.PrivKey
 	if cfg.Identity.DeviceKeyPath != "" {
 		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
-			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
+			bytes, err := os.ReadFile(cfg.Identity.DeviceKeyPath)
 			if err != nil {
 				return nil, err
 			}
