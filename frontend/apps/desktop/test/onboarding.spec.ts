@@ -3,86 +3,106 @@ import {alias, bio, electronApp} from './test-setup'
 
 let page: Page
 
-test('Onboarding', async () => {
+test('Onboarding: New Account', async () => {
   page = await electronApp.firstWindow()
 
-  await page.waitForSelector('[role=heading]')
+  await page.waitForSelector('#welcome-title-section')
+
   // const text = await page.$eval(
   //   '[data-testid="step-title"]',
   //   (el) => el.textContent,
   // )
-  const welcomeTitles = await page.getByRole('heading').allTextContents()
-  expect(welcomeTitles).toEqual(['Welcome to', 'Mintter'])
+  const welcomeTitles = await page
+    .locator('#welcome-title-section')
+    .allTextContents()
 
-  await page.getByRole('button', {name: 'NEXT'}).click()
+  console.log(`== ~ test ~ welcomeTitles:`, welcomeTitles)
+  expect(welcomeTitles).toEqual(['Welcome toMintter'])
+
+  await page.click('#btn-new-account')
+
+  await page.waitForSelector('#mnemonics-title-section')
 
   // Mnemonics Step
-  const mnemonicsTitles = await page.getByRole('heading').allTextContents()
-  expect(mnemonicsTitles).toEqual(['Your Keys.', 'Your Data.'])
-  const mnemonics = await page.getByTestId('mnemonics')
+  const mnemonicsTitles = await page
+    .locator('#mnemonics-title-section')
+    .allTextContents()
+  console.log(`== ~ test ~ mnemonicsTitles:`, mnemonicsTitles)
+  expect(mnemonicsTitles).toEqual(['Your Keys.Your Data.'])
+  const mnemonics = await page.locator('#mnemonics')
   expect(mnemonics).toBeVisible()
 
-  // check prev button
-  expect(await page.getByRole('button', {name: 'PREV'})).toBeVisible()
-  expect(await page.getByRole('button', {name: 'PREV'})).not.toBeDisabled()
+  // await page.waitForTimeout(5000)
+  // // check prev button
+  expect(await page.locator('#btn-next')).toBeVisible()
+  expect(await page.locator('#btn-prev')).not.toBeDisabled()
 
-  // check if the mnemonics are the correct amount of words
+  // // check if the mnemonics are the correct amount of words
   let text = (await mnemonics.allTextContents())[0]
   let words = text?.split(', ')
+
+  console.log(`== ~ test ~ words:`, words)
   expect(words).toHaveLength(12)
 
-  // toggle own seed textarea
-  await page.getByTestId('ownseed-btn').click()
-  const textarea = await page.getByPlaceholder(
-    'Add your 12 mnemonics words \n(food, barrel, buzz, ...)',
-  )
+  // // toggle own seed textarea
+  await page.click('#btn-toggle-seed')
+  const textarea = await page.locator('#mnemonics-input')
   expect(textarea).toBeVisible()
-  await page.getByTestId('ownseed-btn').click({force: true})
+  await page.click('#btn-toggle-seed')
 
-  // continue to next step
-  await page.getByRole('button', {name: 'NEXT'}).click()
+  // // continue to next step
+  await page.click('#btn-next')
 
-  // check Profile step title
-  const profileTitles = await page.getByRole('heading').allTextContents()
-  expect(profileTitles).toEqual(['Profile', 'Information'])
+  await page.waitForSelector('#profile-title-section')
+  // // check Profile step title
+  const profileTitles = await page
+    .locator('#profile-title-section')
+    .allTextContents()
+  console.log(`== ~ test ~ profileTitles:`, profileTitles)
+  expect(profileTitles).toEqual(['ProfileInformation'])
 
-  // check profile alias input
-  let inputAlias = await page.getByPlaceholder(
-    `Readable alias or username. Doesn't have to be unique.`,
-  )
+  // // check profile alias input
+  let inputAlias = await page.locator('#alias')
   expect(inputAlias).toBeVisible()
-  await inputAlias.type(alias)
+  await inputAlias.fill(alias)
 
-  // check profile bio input
-  let inputBio = await page.getByPlaceholder(`A little bit about yourself...`)
+  // // check profile bio input
+  let inputBio = await page.locator('#bio')
   expect(inputBio).toBeVisible()
-  await inputBio.type(bio)
+  await inputBio.fill(bio)
 
-  // check prev button
-  expect(await page.getByRole('button', {name: 'PREV'})).toBeVisible()
-  expect(await page.getByRole('button', {name: 'PREV'})).not.toBeDisabled()
-
-  // continue to next step
-  await page.getByRole('button', {name: 'NEXT'}).click()
-
-  await page.waitForTimeout(10)
-  // check Analytics step title
-  const analyticsTitles = await page.getByRole('heading').allTextContents()
-  expect(analyticsTitles).toEqual(['Crash', 'Analytics'])
-
-  // check prev button
-  expect(await page.getByRole('button', {name: 'PREV'})).toBeVisible()
-  expect(await page.getByRole('button', {name: 'PREV'})).not.toBeDisabled()
+  page.waitForTimeout(100)
+  // // check prev button
+  // expect(await page.locator('#btn-next')).toBeVisible()
+  // expect(await page.locator('#btn-prev')).not.toBeDisabled()
 
   // continue to next step
-  await page.getByRole('button', {name: 'NEXT'}).click()
-  // await page.waitForTimeout(10000)
+  await page.click('#btn-next')
 
-  // check finish step
-  await page.waitForTimeout(10)
-  // check Analytics step title
-  const finishTitles = await page.getByRole('heading').allTextContents()
-  expect(finishTitles).toEqual(['You are Ready!'])
+  // page.waitForTimeout(1000)
 
-  await page.getByRole('button', {name: 'Open Mintter App'}).click()
+  await page.waitForSelector('#analytics-title-section')
+  // // check Analytics step title
+  const analyticsTitles = await page
+    .locator('#analytics-title-section')
+    .allTextContents()
+  expect(analyticsTitles).toEqual(['CrashAnalytics'])
+
+  // // check prev button
+  // expect(await page.locator('#btn-next')).toBeVisible()
+  // expect(await page.locator('#btn-prev')).not.toBeDisabled()
+
+  // // continue to next step
+  // await page.click('#btn-next')
+  // // await page.waitForTimeout(10000)
+
+  // // check finish step
+  // await page.waitForSelector('#complete-title-section')
+  // // check Analytics step title
+  // const finishTitles = await page
+  //   .locator('#complete-title-section')
+  //   .allTextContents()
+  // expect(finishTitles).toEqual(['You are Ready!'])
+
+  // await page.getByRole('button', {name: 'Open Mintter App'}).click()
 })

@@ -9,6 +9,7 @@ import {Profile as ProfileType} from '@mintter/shared'
 import {
   AnimatePresence,
   Button,
+  ButtonProps,
   Copy,
   ErrorIcon,
   Fieldset,
@@ -36,7 +37,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useReducer,
   useRef,
@@ -56,15 +56,19 @@ export function Onboarding() {
 
 export function OnboardingSteps() {
   let obValue = useOnboarding()
+
   let direction = obValue.state.direction
-  const enterVariant = direction == 1 || direction == 0 ? 'isRight' : 'isLeft'
+  const enterVariant = direction == 1 ? 'isRight' : 'isLeft'
   const exitVariant = direction === 1 ? 'isLeft' : 'isRight'
   return (
     <AnimatePresence enterVariant={enterVariant} exitVariant={exitVariant}>
       {obValue.state.key == 'welcome' && (
         <Welcome key={obValue.state.key} {...obValue} />
       )}
-      {obValue.state.key == 'mnemonics' && (
+      {obValue.state.key == 'add new device' && (
+        <NewDevice key={obValue.state.key} {...obValue} />
+      )}
+      {obValue.state.key == 'create new account' && (
         <Mnemonics key={obValue.state.key} {...obValue} />
       )}
       {obValue.state.key == 'profile' && (
@@ -73,7 +77,12 @@ export function OnboardingSteps() {
       {obValue.state.key == 'analytics' && (
         <Analytics key={obValue.state.key} {...obValue} />
       )}
-      {obValue.state.key == 'complete' && <Complete key={obValue.state.key} />}
+      {obValue.state.key == 'account created' && (
+        <Complete key={obValue.state.key} />
+      )}
+      {obValue.state.key == 'device complete' && (
+        <Complete key={obValue.state.key} />
+      )}
     </AnimatePresence>
   )
 }
@@ -84,7 +93,7 @@ function Welcome(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection>
+        <StepTitleSection step="welcome">
           <H2>Welcome to</H2>
           <H1>Mintter</H1>
         </StepTitleSection>
@@ -98,23 +107,33 @@ function Welcome(props: OnboardingStepProps) {
             Join us today to create and join communities, share knowledge, and
             connect with experts and peers around the world.
           </StepParagraph>
+          <YStack flex={1} />
+          <YStack alignItems="flex-start" justifyContent="center" space="$2">
+            <Button
+              size="$5"
+              onPress={() => props.send('NEW_ACCOUNT')}
+              id="btn-new-account"
+            >
+              Create a new Account
+            </Button>
+            <Button
+              id="btn-new-device"
+              size="$3"
+              bg="transparent"
+              flex={1}
+              onPress={() => props.send('NEW_DEVICE')}
+            >
+              or add a new device to your current account
+            </Button>
+          </YStack>
         </YStack>
-      </XStack>
-
-      <XStack alignItems="center" justifyContent="flex-start">
-        <Button
-          iconAfter={Next}
-          size="$4"
-          onPress={() => props.dispatch({type: 'next'})}
-        >
-          NEXT
-        </Button>
       </XStack>
     </StepWrapper>
   )
 }
 
 function Mnemonics(props: OnboardingStepProps) {
+  console.log('== ~ OnboardingSteps ~ obValue MNEMONICS')
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
   const [error, setError] = useState('')
@@ -125,7 +144,7 @@ function Mnemonics(props: OnboardingStepProps) {
       setError('Failed to register your words.')
       appError('Failed to register your words.')
     },
-    onSuccess: () => props.dispatch({type: 'next'}),
+    onSuccess: () => props.send('NEXT'),
   })
 
   const handleSubmit = useCallback(() => {
@@ -202,7 +221,7 @@ function Mnemonics(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection>
+        <StepTitleSection step="mnemonics">
           <H2>Your Keys.</H2>
           <H1>Your Data.</H1>
         </StepTitleSection>
@@ -220,9 +239,10 @@ function Mnemonics(props: OnboardingStepProps) {
                   elevation="$3"
                 >
                   <TextArea
+                    autoFocus
                     fontSize={18}
                     flex={1}
-                    id="mnemonic-input"
+                    id="mnemonics-input"
                     placeholder={
                       'Add your 12 mnemonics words \n(food, barrel, buzz, ...)'
                     }
@@ -288,13 +308,14 @@ function Mnemonics(props: OnboardingStepProps) {
                   fontSize={18}
                   fontWeight="700"
                   display="block"
-                  testID="mnemonics"
+                  id="mnemonics"
                 >
                   {mnemonics.data?.join(', ')}
                 </SizableText>
                 <XStack>
                   <Tooltip content="regenerate words">
                     <Button
+                      id="btn-reload-mnemonics"
                       flex={0}
                       flexShrink={0}
                       icon={Reload}
@@ -304,6 +325,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   </Tooltip>
                   <Tooltip content="Copy words to clipboard">
                     <Button
+                      id="btn-copy-mnemonics"
                       flex={0}
                       flexShrink={0}
                       icon={Copy}
@@ -318,7 +340,7 @@ function Mnemonics(props: OnboardingStepProps) {
               <Button
                 size="$2"
                 theme="green"
-                testID="ownseed-btn"
+                id="btn-toggle-seed"
                 onPress={() => {
                   setOwnSeed('')
                   if (useOwnSeed) {
@@ -338,23 +360,130 @@ function Mnemonics(props: OnboardingStepProps) {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <Button
-          chromeless
-          icon={Prev}
-          size="$2"
-          opacity={0.5}
-          onPress={() => props.dispatch({type: 'prev'})}
-        >
-          PREV
-        </Button>
-        <Button
-          iconAfter={Next}
-          size="$4"
-          onPress={handleSubmit}
-          disabled={register.isLoading}
-        >
-          NEXT
-        </Button>
+        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
+        <NextButton onPress={handleSubmit}>NEXT</NextButton>
+      </XStack>
+    </StepWrapper>
+  )
+}
+
+function NewDevice(props: OnboardingStepProps) {
+  const [ownSeed, setOwnSeed] = useState<string>('')
+  const [error, setError] = useState('')
+
+  const register = useAccountRegistration({
+    onError: () => {
+      setError('Failed to register your words.')
+      appError('Failed to register your words.')
+    },
+    onSuccess: () => props.send('NEXT'),
+  })
+
+  const handleSubmit = useCallback(() => {
+    setError('')
+    let words: Array<string> = []
+    if (!ownSeed) {
+      setError(`must provide mnemonics (current: ${ownSeed})`)
+    }
+
+    let error = isInputValid(ownSeed)
+
+    if (typeof error == 'string') {
+      // this means is an error
+      setError(`Invalid mnemonics: ${error}`)
+      return
+    } else {
+      words = extractWords(ownSeed)
+    }
+
+    if (!words) {
+      setError('No mnemonics')
+      return
+    }
+
+    register.mutate(words)
+
+    function isInputValid(input: string): string | boolean {
+      let res = extractWords(input)
+
+      if (!res.length) {
+        return `Can't extract words from input. malformed input => ${input}`
+      }
+      if (res.length == 12) {
+        return false
+      } else {
+        return `input does not have a valid words amount, please add a 12 mnemonics word. current input is ${res.length}`
+      }
+    }
+
+    function extractWords(input: string): Array<string> {
+      const delimiters = [',', ' ', '.', ';', ':', '\n', '\t']
+      let wordSplitting = [input]
+      delimiters.forEach((delimiter) => {
+        wordSplitting = wordSplitting.flatMap((word) => word.split(delimiter))
+      })
+      let words = wordSplitting.filter((word) => word.length > 0)
+      return words
+    }
+  }, [ownSeed, register])
+
+  return (
+    <StepWrapper>
+      <XStack flex={1} gap="$10">
+        <StepTitleSection step="new-device">
+          <H2>Setup</H2>
+          <H1>New device</H1>
+        </StepTitleSection>
+        <YStack flex={2}>
+          <YStack gap="$5" maxWidth={500}>
+            <StepParagraph>
+              Add your account&apos;s mnemonics in the input below separated by
+              commas.
+            </StepParagraph>
+            <YStack gap="$2">
+              <XStack
+                backgroundColor="$backgroundHover"
+                borderRadius="$5"
+                elevation="$3"
+              >
+                <TextArea
+                  autoFocus
+                  fontSize={18}
+                  flex={1}
+                  id="mnemonic-input"
+                  placeholder={
+                    'Add your 12 mnemonics words \n(food, barrel, buzz, ...)'
+                  }
+                  minHeight={130}
+                  onChangeText={setOwnSeed}
+                  fontFamily="$mono"
+                  fontWeight="500"
+                  borderColor="$backgroundHover"
+                  borderWidth="$0.5"
+                />
+              </XStack>
+              {error || register.status == 'error' ? (
+                <XStack
+                  alignItems="center"
+                  gap="$2"
+                  backgroundColor="$red10"
+                  borderRadius="$1"
+                  paddingHorizontal="$4"
+                  paddingVertical={0}
+                >
+                  <ErrorIcon size={12} color="$red1" />
+                  <SizableText size="$1" fontWeight="600" color="$red1">
+                    {error}
+                  </SizableText>
+                </XStack>
+              ) : null}
+            </YStack>
+          </YStack>
+        </YStack>
+      </XStack>
+      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
+        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
+        <NextButton onPress={handleSubmit}>NEXT</NextButton>
       </XStack>
     </StepWrapper>
   )
@@ -363,18 +492,22 @@ function Mnemonics(props: OnboardingStepProps) {
 function Profile(props: OnboardingStepProps) {
   const setProfile = useSetProfile({
     onError: (e) => appError('Failed to set your profile', e),
-    onSuccess: () => props.dispatch({type: 'next'}),
+    onSuccess: () => props.send('NEXT'),
   })
 
   const submitValue = useRef({alias: '', bio: ''} as ProfileType)
   function onSubmit() {
-    setProfile.mutate(submitValue.current)
+    if (submitValue.current.alias == '' && submitValue.current.bio == '') {
+      props.send('NEXT')
+    } else {
+      setProfile.mutate(submitValue.current)
+    }
   }
 
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection>
+        <StepTitleSection step="profile">
           <H2>Profile</H2>
           <H1>Information</H1>
         </StepTitleSection>
@@ -413,6 +546,7 @@ function Profile(props: OnboardingStepProps) {
                     Bio
                   </Label>
                   <TextArea
+                    autoFocus
                     id="bio"
                     multiline
                     minHeight={100}
@@ -429,23 +563,8 @@ function Profile(props: OnboardingStepProps) {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <Button
-          chromeless
-          icon={Prev}
-          size="$2"
-          opacity={0.5}
-          onPress={() => props.dispatch({type: 'prev'})}
-        >
-          PREV
-        </Button>
-        <Button
-          iconAfter={Next}
-          size="$4"
-          onPress={onSubmit}
-          disabled={setProfile.isLoading}
-        >
-          NEXT
-        </Button>
+        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
+        <NextButton onPress={onSubmit}>NEXT</NextButton>
       </XStack>
     </StepWrapper>
   )
@@ -455,7 +574,7 @@ function Analytics(props: OnboardingStepProps) {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection>
+        <StepTitleSection step="analytics">
           <H2>Crash</H2>
           <H1>Analytics</H1>
         </StepTitleSection>
@@ -475,22 +594,8 @@ function Analytics(props: OnboardingStepProps) {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <Button
-          chromeless
-          icon={Prev}
-          size="$2"
-          opacity={0.5}
-          onPress={() => props.dispatch({type: 'prev'})}
-        >
-          PREV
-        </Button>
-        <Button
-          iconAfter={Next}
-          size="$4"
-          onPress={() => props.dispatch({type: 'next'})}
-        >
-          NEXT
-        </Button>
+        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
+        <NextButton onPress={() => props.send('NEXT')}>NEXT</NextButton>
       </XStack>
     </StepWrapper>
   )
@@ -500,7 +605,7 @@ function Complete() {
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection>
+        <StepTitleSection step="complete">
           <H1>You are Ready!</H1>
         </StepTitleSection>
 
@@ -514,14 +619,9 @@ function Complete() {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <Button
-          iconAfter={Next}
-          size="$4"
-          theme="green"
-          onPress={() => window.location.reload()}
-        >
+        <NextButton size="$4" onPress={() => window.location.reload()}>
           Open Mintter App
-        </Button>
+        </NextButton>
       </XStack>
     </StepWrapper>
   )
@@ -534,17 +634,28 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
       fullscreen
       x={0}
       opacity={1}
-      animation={[
-        'lazy',
-        {
-          opacity: {
-            overshootClamping: true,
-          },
-        },
-      ]}
+      animation={
+        import.meta.env.VITE_NO_ANIMS
+          ? undefined
+          : [
+              'lazy',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]
+      }
+      {...props}
     >
-      <YStack flex={1} alignItems="center" justifyContent="center">
+      <YStack
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        className="window-drag"
+      >
         <YStack
+          className="no-window-drag"
           borderRadius="$7"
           elevation="$12"
           backgroundColor="$background1"
@@ -568,21 +679,6 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
   )
 }
 
-function CurrentStep() {
-  let stepIndex = useOBStepIndex()
-  return (
-    <SizableText
-      fontWeight="700"
-      size="$1"
-      opacity={0.7}
-      position="absolute"
-      top={-24}
-    >
-      step {stepIndex + 1} of {obSteps.length}
-    </SizableText>
-  )
-}
-
 function StepParagraph({children, ...props}: ParagraphProps) {
   return (
     <Paragraph size="$5" maxWidth={CONTENT_MAX_WIDTH}>
@@ -591,93 +687,140 @@ function StepParagraph({children, ...props}: ParagraphProps) {
   )
 }
 
-function StepTitleSection({children}: {children: ReactNode}) {
+function NextButton(props: ButtonProps) {
+  return <Button id="btn-next" iconAfter={Next} size="$4" {...props} />
+}
+
+function PrevButton(props: ButtonProps) {
   return (
-    <YStack flex={0} flexShrink={0} width={240}>
-      <CurrentStep />
+    <Button
+      id="btn-prev"
+      chromeless
+      icon={Prev}
+      size="$2"
+      opacity={0.5}
+      {...props}
+    />
+  )
+}
+
+function StepTitleSection({
+  children,
+  step,
+}: {
+  children: ReactNode
+  step: string
+}) {
+  return (
+    <YStack id={`${step}-title-section`} flex={0} flexShrink={0} width={240}>
       {children}
     </YStack>
   )
 }
 
-// ==== context
-
-export let obSteps = [
-  'welcome',
-  'mnemonics',
-  'profile',
-  'analytics',
-  'complete',
-] as const
-
-type OBState = {
-  stepIndex: number
-  key: (typeof obSteps)[number]
-  direction: 0 | 1 | -1
+let machine = {
+  id: 'Onboarding',
+  initial: 'welcome',
+  states: {
+    welcome: {
+      on: {
+        NEW_DEVICE: {
+          target: 'add new device',
+        },
+        NEW_ACCOUNT: {
+          target: 'create new account',
+        },
+      },
+    },
+    'add new device': {
+      on: {
+        NEXT: {
+          target: 'device complete',
+        },
+        PREV: {
+          target: 'welcome',
+        },
+      },
+    },
+    'create new account': {
+      on: {
+        PREV: {
+          target: 'welcome',
+        },
+        NEXT: {
+          target: 'profile',
+        },
+      },
+    },
+    'device complete': {
+      final: true,
+    },
+    profile: {
+      on: {
+        NEXT: {
+          target: 'analytics',
+        },
+        PREV: {
+          target: 'create new account',
+        },
+      },
+    },
+    analytics: {
+      on: {
+        NEXT: {
+          target: 'account created',
+        },
+        PREV: {
+          target: 'profile',
+        },
+      },
+    },
+    'account created': {},
+  },
 }
 
-type OBAction = {type: 'next'} | {type: 'prev'}
+function transition(state: OBState, event: OBAction): OBState {
+  const nextState: {target: keyof typeof machine.states} | {} =
+    // @ts-expect-error
+    machine.states[state.key].on?.[event]?.target || state
+
+  return {
+    // @ts-expect-error
+    key: nextState,
+    direction: event == 'PREV' ? -1 : 1,
+  }
+}
+
+type OBState = {
+  key: keyof typeof machine.states
+  direction: 1 | -1
+}
+
+type OBAction = 'NEXT' | 'PREV' | 'NEW_DEVICE' | 'NEW_ACCOUNT'
 
 type OBContext = {
   state: OBState
-  dispatch: (action: OBAction) => void
+  send: (action: OBAction) => void
 }
 
 let OnboardingContext = createContext<null | OBContext>(null)
 
-function obStateReducer(state: OBState, action: OBAction): OBState {
-  let stepIndex = state.stepIndex
-  let key = state.key
-  switch (action.type) {
-    case 'next':
-      if (obSteps.length - 1 == stepIndex) return state
-      stepIndex = state.stepIndex + 1
-      key = obSteps[stepIndex]
-      return {
-        ...state,
-        stepIndex,
-        key,
-        direction: 1,
-      }
-    case 'prev':
-      if (state.stepIndex == 0) return state
-      stepIndex = state.stepIndex - 1
-      key = obSteps[stepIndex]
-      return {
-        ...state,
-        stepIndex,
-        key,
-        direction: -1,
-      }
-    default:
-      return state
-  }
-}
-
 export function OnboardingProvider({
   children,
   initialStep = {
-    stepIndex: 0,
-    key: obSteps[0],
-    direction: 0,
+    key: 'welcome',
+    direction: 1,
   },
 }: {
   children: ReactNode
   initialStep?: OBState
 }) {
-  let [state, dispatch] = useReducer(obStateReducer, initialStep)
-  let {key, stepIndex} = state
-
-  useEffect(() => {
-    console.log(`=== onboarding state:
-			${JSON.stringify(state)}
-		`)
-  }, [state])
+  let [state, send] = useReducer(transition, initialStep)
 
   let value = useMemo(
     () => ({
       state,
-      dispatch,
+      send,
     }),
     [state],
   )
@@ -694,32 +837,4 @@ export function useOnboarding() {
   if (!ob)
     throw new Error('useOnboarding must be used within a OnboardingProvider')
   return ob
-}
-
-export function useOBKey() {
-  const ob = useContext(OnboardingContext)
-  if (!ob)
-    throw new Error('useOBState must be used within a OnboardingProvider')
-  return ob.state.key
-}
-
-export function useOBStepIndex() {
-  const ob = useContext(OnboardingContext)
-  if (!ob)
-    throw new Error('useOBStepIndex must be used within a OnboardingProvider')
-  return ob.state.stepIndex
-}
-
-export function useOBDirection() {
-  const ob = useContext(OnboardingContext)
-  if (!ob)
-    throw new Error('useOBStepIndex must be used within a OnboardingProvider')
-  return ob.state.direction
-}
-
-export function useOBDispatch() {
-  const ob = useContext(OnboardingContext)
-  if (!ob)
-    throw new Error('useOBDispatch must be used within a OnboardingProvider')
-  return ob.dispatch
 }

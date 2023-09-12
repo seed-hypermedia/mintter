@@ -144,6 +144,7 @@ const publicationRouter = router({
       }
     }),
 
+  // TODO: this is the versions logic we need to implement in the desktop app
   getChanges: procedure
     .input(
       z.object({
@@ -207,14 +208,19 @@ const publicationRouter = router({
 
       versionChanges.forEach(lookForDeps)
       return {
+        // versionChanges: the changes you are currently looking at (usually one but can be multiple versions)
         versionChanges: changeIdsToChanges(versionChanges),
+        // deps: direct dependencies of the current version (going back in time)
         deps: changeIdsToChanges(Array.from(deps)),
+        // downstreamChanges: changes after the current thing you are looking at (future changes)
         downstreamChanges: changeIdsToChanges(
           Array.from(downstreamChanges.get(version) || []).filter(
             (changeId) => !versionChangesSet.has(changeId),
           ),
         ),
+        // allDeps: the full change that its forming the current version
         allDeps: changeIdsToChanges(allDeps),
+        // the publication
         pub: hmPublication(pub),
       }
     }),
