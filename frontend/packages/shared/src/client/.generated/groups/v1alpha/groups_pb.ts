@@ -1036,15 +1036,23 @@ export class Group_SiteInfo extends Message<Group_SiteInfo> {
 
   /**
    * Timestamp of the last sync of the Group's content with the Site.
+   * This field will be updated regardless of whether we were able to sync or not.
    *
    * @generated from field: google.protobuf.Timestamp last_sync_time = 2;
    */
   lastSyncTime?: Timestamp;
 
   /**
+   * Timestamp of the last successful sync of the Group's content with the Site.
+   *
+   * @generated from field: google.protobuf.Timestamp last_ok_sync_time = 3;
+   */
+  lastOkSyncTime?: Timestamp;
+
+  /**
    * Version of the Group as per the Site.
    *
-   * @generated from field: string version = 3;
+   * @generated from field: string version = 4;
    */
   version = "";
 
@@ -1058,7 +1066,8 @@ export class Group_SiteInfo extends Message<Group_SiteInfo> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "base_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "last_sync_time", kind: "message", T: Timestamp },
-    { no: 3, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "last_ok_sync_time", kind: "message", T: Timestamp },
+    { no: 4, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Group_SiteInfo {
