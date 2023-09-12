@@ -537,10 +537,10 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 
 	u := coretest.NewTester(name)
 
-	repo, err := initRepo(cfg, u.Device.Wrapped())
+	repo, err := InitRepo(cfg, u.Device.Wrapped())
 	require.NoError(t, err)
 
-	app, err := loadApp(ctx, cfg, repo)
+	app, err := LoadWithStorage(ctx, cfg, repo)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()

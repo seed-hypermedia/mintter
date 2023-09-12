@@ -104,15 +104,17 @@ func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) 
 			return nil, err
 		}
 	}
-	r, err := initRepo(cfg, deviceKey)
+	r, err := InitRepo(cfg, deviceKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return loadApp(ctx, cfg, r, grpcOpt...)
+	return LoadWithStorage(ctx, cfg, r, grpcOpt...)
 }
 
-func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+// LoadWithStorage is the same as Load, but allows to pass a custom storage.
+// The storage must be created using the [InitRepo] function.
+func LoadWithStorage(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	a = &App{
 		log:     logging.New("mintter/daemon", "debug"),
 		Storage: r,
@@ -257,7 +259,9 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err error) {
+// InitRepo initializes the storage directory.
+// Device can be nil in which case a random new device key will be generated.
+func InitRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err error) {
 	log := logging.New("mintter/repo", "debug")
 	if device == nil {
 		r, err = storage.New(cfg.RepoPath, log)

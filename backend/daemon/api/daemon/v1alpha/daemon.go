@@ -92,11 +92,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 
 // RegisterAccount performs registration given an existing account key pair.
 func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error {
-	if err := srv.repo.CommitAccount(acc.PublicKey); err != nil {
-		return err
-	}
-
-	_, err := Register(ctx, srv.blobs, acc, srv.repo.Device().PublicKey, time.Now().UTC())
+	_, err := RegisterWithRepo(ctx, srv.repo, srv.blobs, acc, srv.repo.Device().PublicKey, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -106,6 +102,15 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 	}
 
 	return nil
+}
+
+// RegisterWithRepo creates key delegation from account to device and stores the keys in files.
+func RegisterWithRepo(ctx context.Context, repo Repo, bs *hyper.Storage, acc core.KeyPair, device core.PublicKey, at time.Time) (cid.Cid, error) {
+	if err := repo.CommitAccount(acc.PublicKey); err != nil {
+		return cid.Undef, err
+	}
+
+	return Register(ctx, bs, acc, device, at)
 }
 
 // Register creates key delegation from account to device.

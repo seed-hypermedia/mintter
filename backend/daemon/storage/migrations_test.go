@@ -17,19 +17,6 @@ import (
 )
 
 func TestMigrateMatchesFreshSchema(t *testing.T) {
-	// We made a new breaking change so we have no migrations now.
-	// We can skip this test until we add at least one new migration,
-	// in which case we need to generate the initial data dir snapshot,
-	// and store it in testdata. Then we should apply migrations
-	// on top of this snapshot and verify that it has the same structure
-	// as new freshly created data dir.
-
-	if len(migrations) == 1 {
-		t.SkipNow()
-	}
-
-	t.Fatalf("We now have some migrations. Fix this text!")
-
 	// We have manually snapshot the data dir from before the migration framework was implemented.
 	// It's stored in ./testdata/initial-data-dir.
 	// We want to test that the data dir with all applied migrations matches the data dir created from scratch.
@@ -37,7 +24,7 @@ func TestMigrateMatchesFreshSchema(t *testing.T) {
 	// and then compare it with a fresh directory.
 
 	tmpDir := t.TempDir()
-	err := copyDir("./testdata/initial-data-dir", tmpDir)
+	err := copyDir("./testdata/mintter-test-db-snapshot", tmpDir)
 	require.NoError(t, err)
 
 	oldDir, err := New(tmpDir, zap.NewNop())

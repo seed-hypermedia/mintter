@@ -51,6 +51,14 @@ var migrations = []migration{
 	{Version: "2023-08-30.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return nil
 	}},
+	{Version: "2023-09-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
+			DROP TABLE sites;
+			DROP TABLE invite_tokens;
+			DROP TABLE site_members;
+			DROP TABLE web_publications;
+		`)
+	}},
 }
 
 const (
