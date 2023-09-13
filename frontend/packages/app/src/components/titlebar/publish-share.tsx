@@ -1,5 +1,6 @@
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {
+  getDefaultShortname,
   useDraftTitle,
   usePublication,
   usePublishDraft,
@@ -30,6 +31,7 @@ import {
   ButtonText,
   Check,
   Dialog,
+  DialogDescription,
   DialogProps,
   DialogTitle,
   Fieldset,
@@ -63,6 +65,63 @@ import {pathNameify} from '@mintter/app/utils/path'
 import {useAppDialog} from '../dialog'
 import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePublicationInContext} from '@mintter/app/models/publication'
+
+export function RenameShortnameDialog({
+  input: {groupId, pathName, docTitle, draftId},
+  onClose,
+}: {
+  input: {groupId: string; pathName: string; docTitle: string; draftId: string}
+  onClose: () => void
+}) {
+  const [renamed, setRenamed] = useState(
+    pathName || getDefaultShortname(docTitle, draftId),
+  )
+  const replace = useNavigate('replace')
+  const route = useNavRoute()
+  const draftRoute = route.key === 'draft' ? route : null
+  const group = useGroup(groupId)
+  if (!draftRoute) return null
+  const groupRouteContext =
+    draftRoute.pubContext?.key === 'group' ? draftRoute.pubContext : null
+  if (!groupRouteContext?.groupId) return null
+  return (
+    <Form
+      onSubmit={() => {
+        onClose()
+        toast(pathNameify(renamed))
+        replace({
+          ...draftRoute,
+          pubContext: {
+            key: 'group',
+            groupId: groupRouteContext.groupId,
+            pathName: renamed,
+          },
+        })
+      }}
+    >
+      <DialogTitle>Publishing Short Path</DialogTitle>
+      <DialogDescription>
+        Draft will publish in the group <b>{group.data?.title}</b> with the
+        following path name:
+      </DialogDescription>
+      <Input
+        value={renamed}
+        onChangeText={(value) => {
+          setRenamed(
+            value
+              .toLocaleLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-z0-9-_]/g, '')
+              .replace(/-{2,}/g, '-'),
+          )
+        }}
+      />
+      <Form.Trigger asChild>
+        <Button>Save</Button>
+      </Form.Trigger>
+    </Form>
+  )
+}
 
 // function DraftPublicationDialog({
 //   draft,
@@ -332,85 +391,95 @@ function DraftContextButton({route}: {route: DraftRoute}) {
   const [isListingGroups, setIsListingGroups] = useState(false)
   let displayPathName =
     route.pubContext?.key === 'group' ? route.pubContext?.pathName : undefined
-  if (!displayPathName && draftTitle) {
-    displayPathName = pathNameify(draftTitle)
+  if (!displayPathName) {
+    displayPathName = getDefaultShortname(draftTitle, route.draftId)
   }
+  const shortRename = useAppDialog(RenameShortnameDialog)
   return (
-    <ContextPopover>
-      <PopoverTrigger asChild>
-        <Button size="$2" icon={icon}>
-          {title}
-        </Button>
-      </PopoverTrigger>
-      <ContextPopoverContent>
-        <ContextPopoverArrow />
-        <YStack space="$2">
-          {route.pubContext?.key === 'group' ? (
-            <>
-              <SizableText size="$2">Committing to Group:</SizableText>
-              <GroupContextItem
-                groupId={route.pubContext.groupId}
-                path={displayPathName || null}
-                onPathPress={() => {}}
-                route={route}
-              />
-            </>
-          ) : null}
-
-          <ContextButton
-            icon={Globe}
-            name="Publish Independently"
-            route={{...route, pubContext: null}}
-            isActive={route.pubContext?.key !== 'group'}
-          />
-          <Button
-            size="$3"
-            icon={Book}
-            onPress={() => {
-              nav({...route, pubContext: null})
-              setIsListingGroups((is) => !is)
-            }}
-            justifyContent="flex-start"
-            color={'$color11'}
-            chromeless
-            iconAfter={isListingGroups ? ChevronUp : ChevronDown}
-          >
-            Publish to Group...
+    <>
+      <ContextPopover>
+        <PopoverTrigger asChild>
+          <Button size="$2" icon={icon}>
+            {title}
           </Button>
-          {isListingGroups &&
-            (groups.data?.items?.length === 0 ? (
-              <Text>You have no groups yet</Text>
-            ) : (
-              groups.data?.items?.map((item) => {
-                const groupId = item.group?.id
-                if (!groupId) return null
-                const isActive =
-                  groupPubContext?.key === 'group' &&
-                  groupId === groupPubContext.groupId
-                return (
-                  <Button
-                    key={groupId}
-                    size="$2"
-                    marginHorizontal="$2"
-                    justifyContent="flex-start"
-                    icon={Book}
-                    onPress={() => {
-                      setIsListingGroups(false)
-                      nav({
-                        ...route,
-                        pubContext: {key: 'group', groupId, pathName: ''},
-                      })
-                    }}
-                    iconAfter={isActive ? CheckCheck : undefined}
-                  >
-                    {item.group?.title}
-                  </Button>
-                )
-              })
-            ))}
-        </YStack>
-      </ContextPopoverContent>
-    </ContextPopover>
+        </PopoverTrigger>
+        <ContextPopoverContent>
+          <ContextPopoverArrow />
+          <YStack space="$2">
+            {groupPubContext ? (
+              <>
+                <SizableText size="$2">Committing to Group:</SizableText>
+                <GroupContextItem
+                  groupId={groupPubContext.groupId}
+                  path={displayPathName || null}
+                  onPathPress={() => {
+                    shortRename.open({
+                      groupId: groupPubContext.groupId,
+                      pathName: groupPubContext.pathName,
+                      docTitle: draftTitle,
+                    })
+                  }}
+                  route={route}
+                />
+              </>
+            ) : null}
+
+            <ContextButton
+              icon={Globe}
+              name="Publish Independently"
+              route={{...route, pubContext: null}}
+              isActive={route.pubContext?.key !== 'group'}
+            />
+            <Button
+              size="$3"
+              icon={Book}
+              onPress={() => {
+                nav({...route, pubContext: null})
+                setIsListingGroups((is) => !is)
+              }}
+              justifyContent="flex-start"
+              color={'$color11'}
+              chromeless
+              iconAfter={isListingGroups ? ChevronUp : ChevronDown}
+            >
+              Publish to Group...
+            </Button>
+            {isListingGroups &&
+              (groups.data?.items?.length === 0 ? (
+                <Text>You have no groups yet</Text>
+              ) : (
+                groups.data?.items?.map((item) => {
+                  const groupId = item.group?.id
+                  if (!groupId) return null
+                  const isActive =
+                    groupPubContext?.key === 'group' &&
+                    groupId === groupPubContext.groupId
+                  return (
+                    <Button
+                      key={groupId}
+                      size="$2"
+                      marginHorizontal="$2"
+                      justifyContent="flex-start"
+                      icon={Book}
+                      onPress={() => {
+                        setIsListingGroups(false)
+                        nav({
+                          ...route,
+                          pubContext: {key: 'group', groupId, pathName: ''},
+                        })
+                      }}
+                      iconAfter={isActive ? CheckCheck : undefined}
+                    >
+                      {item.group?.title}
+                    </Button>
+                  )
+                })
+              ))}
+          </YStack>
+        </ContextPopoverContent>
+      </ContextPopover>
+      {shortRename.content}
+    </>
   )
 }
 
@@ -711,13 +780,13 @@ export function DraftPublicationButtons() {
   let navReplace = useNavigate('replace')
   const isDaemonReady = useDaemonReady()
   const publish = usePublishDraft({
-    onSuccess: (publishedDoc) => {
+    onSuccess: ({pub: publishedDoc, pubContext}) => {
       if (!publishedDoc || !draftId) return
       navReplace({
         key: 'publication',
         documentId: draftId,
         versionId: publishedDoc.version,
-        pubContext: route.pubContext,
+        pubContext: pubContext,
       })
       toast.success('Document saved and set to public')
     },
