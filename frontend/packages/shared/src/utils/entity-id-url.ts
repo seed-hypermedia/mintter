@@ -13,22 +13,6 @@ export function getPublicDocUrl(docId: string, version?: string | undefined) {
   return webUrl
 }
 
-export function extractEntityId(id: string): [string, string] | null {
-  // input is like hm://x/abcd. output is ['x', 'abcd']
-  const m = id.match(/^hm:\/\/([^/]+)\/(.+)$/)
-  if (!m) return null
-  const entityType = m[1]
-  const entityEId = m[2]
-  return [entityType, entityEId]
-}
-
-export function isValidSiteEntity(entityType: string) {
-  if (entityType === 'a') return true
-  if (entityType === 'd') return true
-  if (entityType === 'g') return true
-  return false
-}
-
 export function createPublicWebHmUrl(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   eid: string,
@@ -102,12 +86,22 @@ function inKeys<V extends string>(
   return null
 }
 
-export function unpackHmId(hypermediaId: string) {
+export type UnpackedHypermediaId = {
+  type: keyof typeof HYPERMEDIA_ENTITY_TYPES
+  eid: string
+  version?: string
+  blockRef?: string
+  hostname?: string
+  scheme?: string
+}
+
+export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
   const parsed = parseCustomURL(hypermediaId)
   if (parsed?.scheme === HYPERMEDIA_SCHEME) {
     const type = inKeys(parsed?.path[0], HYPERMEDIA_ENTITY_TYPES)
     const eid = parsed?.path[1]
     const version = parsed?.query.v
+    if (!type) return null
     return {
       type,
       eid,
@@ -122,6 +116,7 @@ export function unpackHmId(hypermediaId: string) {
     const eid = parsed?.path[2]
     const version = parsed?.query.v
     let hostname = parsed?.path[0]
+    if (!type) return null
     return {
       type,
       eid,
@@ -134,7 +129,9 @@ export function unpackHmId(hypermediaId: string) {
   return null
 }
 
-export function unpackDocId(inputUrl: string) {
+export function unpackDocId(
+  inputUrl: string,
+): (UnpackedHypermediaId & {docId: string}) | null {
   const unpackedHm = unpackHmId(inputUrl)
   if (!unpackedHm?.eid) return null
   if (unpackedHm.type !== 'd') {
@@ -157,7 +154,6 @@ export function isHypermediaScheme(url?: string) {
 
 export function isPublicGatewayLink(text: string) {
   const matchesGateway = text.indexOf(HYPERMEDIA_PUBLIC_WEB_GATEWAY) === 0
-  console.log('PATH', text.split(HYPERMEDIA_PUBLIC_WEB_GATEWAY)[1])
   return !!matchesGateway
 }
 

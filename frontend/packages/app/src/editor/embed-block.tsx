@@ -21,6 +21,7 @@ import {
   isHypermediaScheme,
   serverBlockToEditorInline,
   unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {SizableText, Spinner, Text, XStack, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
@@ -31,7 +32,7 @@ import {createReactBlockSpec} from '../blocknote-react'
 import {HMBlockSchema, hmBlockSchema} from '../client/schema'
 import {BACKEND_FILE_URL} from '../constants'
 import {usePublication} from '../models/documents'
-import {hmIdToAppRoute, useOpenUrl} from '../open-url'
+import {unpackHmIdWithAppRoute, useOpenUrl} from '../open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -174,9 +175,9 @@ function EmbedPresentation({
           if (editor?.isEditable) {
             return
           }
-          const route = hmIdToAppRoute(block.props.ref)
-          if (route) {
-            spawn(route)
+          const unpacked = unpackHmIdWithAppRoute(block.props.ref)
+          if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
+            spawn(unpacked?.navRoute)
           }
         }}
       >

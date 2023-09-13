@@ -4,7 +4,11 @@ import {
 } from '@mintter/app/src/models/documents'
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {isHypermediaScheme} from '@mintter/shared'
+import {
+  HYPERMEDIA_SCHEME,
+  isHypermediaScheme,
+  unpackHmId,
+} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
@@ -12,7 +16,7 @@ import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
-import {hmIdToAppRoute} from '../open-url'
+import {unpackHmIdWithAppRoute} from '../open-url'
 
 export default function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -61,12 +65,15 @@ export default function QuickSwitcher() {
               key="mtt-link"
               value={search}
               onSelect={() => {
-                if (isHypermediaScheme(search)) {
-                  const navRoute = hmIdToAppRoute(search)
-
-                  if (navRoute) {
+                const searched = unpackHmIdWithAppRoute(search)
+                console.log('== ~ QuickSwitcher ~ searched', searched)
+                if (
+                  searched?.scheme === HYPERMEDIA_SCHEME ||
+                  searched?.hostname === 'hyper.media'
+                ) {
+                  if (searched?.navRoute) {
                     setOpen(false)
-                    navigate(navRoute)
+                    navigate(searched?.navRoute)
                   } else {
                     console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
                     setActionPromise(

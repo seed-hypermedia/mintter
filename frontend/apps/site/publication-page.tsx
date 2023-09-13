@@ -2,7 +2,6 @@ import {
   Account,
   EmbedBlock,
   getCIDFromIPFSUrl,
-  extractEntityId,
   HeadingBlock,
   ImageBlock,
   InlineContent,
@@ -168,7 +167,7 @@ function PublicationContextSidebar({
 }) {
   const groupContent = trpc.group.listContent.useQuery(
     {
-      groupEid: extractEntityId(group?.id || '')?.[1] || '',
+      groupId: group?.id || '',
     },
     {enabled: !!group?.id},
   )
