@@ -1,4 +1,4 @@
-// Package main implements main script to run mintter-gateway daemon.
+// Program mintter-site implements the Hypermedia Site server.
 package main
 
 import (
@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	const envVarPrefix = "MINTTER-SITE"
+	const envVarPrefix = "MINTTER_SITE"
 
 	mainutil.Run(func() error {
 		ctx := mainutil.TrapSignals()
