@@ -432,7 +432,7 @@ function NewDevice(props: OnboardingStepProps) {
       <XStack flex={1} gap="$10">
         <StepTitleSection step="new-device">
           <H2>Setup</H2>
-          <H1>New device</H1>
+          <H1>New device.</H1>
         </StepTitleSection>
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>

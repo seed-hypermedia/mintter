@@ -1,7 +1,21 @@
 import {Page, test, expect} from '@playwright/test'
 import {alias, bio, electronApp} from './test-setup'
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
 
 let page: Page
+
+test.beforeEach(() => {
+  // remove the app data:
+  fs.rm(
+    path.join(os.homedir(), 'Library', 'Application Support', 'Mintter.test'),
+    {recursive: true},
+    (...args) => {
+      console.log('== DELETE??', args)
+    },
+  )
+})
 
 test('Onboarding: New Account', async () => {
   page = await electronApp.firstWindow()
@@ -105,4 +119,49 @@ test('Onboarding: New Account', async () => {
   expect(finishTitles).toEqual(['You are Ready!'])
 
   // await page.getByRole('button', {name: 'Open Mintter App'}).click()
+})
+
+test.skip('Onboarding: Add new Device', async () => {
+  page = await electronApp.firstWindow()
+
+  await page.waitForSelector('#welcome-title-section')
+
+  // const text = await page.$eval(
+  //   '[data-testid="step-title"]',
+  //   (el) => el.textContent,
+  // )
+  const welcomeTitles = await page
+    .locator('#welcome-title-section')
+    .allTextContents()
+
+  console.log(`== ~ test ~ welcomeTitles:`, welcomeTitles)
+  expect(welcomeTitles).toEqual(['Welcome toMintter'])
+
+  await page.click('#btn-new-device')
+
+  await page.waitForSelector('#new-device-title-section')
+
+  // Mnemonics Step
+  const newDeviceTitles = await page
+    .locator('#new-device-title-section')
+    .allTextContents()
+  console.log(`== ~ test ~ newDeviceTitles:`, newDeviceTitles)
+  expect(newDeviceTitles).toEqual(['SetupNew device.'])
+  const mnemonics = await page.locator('#mnemonic-input')
+  expect(mnemonics).toBeVisible()
+
+  mnemonics.fill(
+    'banana, ridge, galaxy, melt, tobacco, bid, rhythm, spread, tiny, loop, kite, emerge',
+  )
+
+  // continue to next step
+  await page.click('#btn-next')
+
+  // check finish step
+  await page.waitForSelector('#complete-title-section')
+  // check Analytics step title
+  const finishTitles = await page
+    .locator('#complete-title-section')
+    .allTextContents()
+  expect(finishTitles).toEqual(['You are Ready!'])
 })

@@ -3,23 +3,11 @@ import {
   _electron as electron,
   test,
 } from '@playwright/test'
-import os from 'os'
-
-import fs from 'fs'
-import path from 'path'
 import {findLatestBuild, parseElectronApp} from 'electron-playwright-helpers'
 
 let electronApp: ElectronApplication
 
 test.beforeAll(async () => {
-  // remove the app data:
-  fs.rm(
-    path.join(os.homedir(), 'Library', 'Application Support', 'Mintter.test'),
-    {recursive: true},
-    (...args) => {
-      console.log('== DELETE??', args)
-    },
-  )
   // find the latest build in the out directory
   const latestBuild = findLatestBuild()
 
