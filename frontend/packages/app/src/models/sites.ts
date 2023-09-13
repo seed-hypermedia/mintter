@@ -1,13 +1,13 @@
 import {
   Block,
   Document,
-  getIdsfromUrl,
   GRPCClient,
   Member,
   Member_Role,
   ReferencedDocument,
   SiteConfig,
   SiteInfo,
+  unpackDocId,
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
@@ -22,14 +22,10 @@ function blockExtractReferencedDocs(
   const docIds: Array<any> = []
   block.annotations.forEach((annotation) => {
     if (annotation.type === 'embed' || annotation.type === 'link') {
-      let ids
-      try {
-        ids = getIdsfromUrl(annotation.attributes.url)
-      } catch (e) {
-        // not the best fix for now, but regular URLS are coming through here and we can just skip over them
-      }
-      if (ids?.[0]) {
-        docIds.push({documentId: ids[0], version: ids[1]})
+      const ids = unpackDocId(annotation.attributes.url)
+
+      if (ids?.scheme === 'hm') {
+        docIds.push({documentId: ids?.docId, version: ids?.version})
       }
     }
   })

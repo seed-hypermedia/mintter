@@ -583,7 +583,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
                     return (
                       <GroupContextItem
                         groupId={docGroup.groupId}
-                        groupVersion={docGroup.groupChange}
+                        groupVersion={docGroup.changeId}
                         path={docGroup.path}
                         route={route}
                         onPathPress={() => {
@@ -731,7 +731,6 @@ export function DraftPublicationButtons() {
         size="$2"
         disabled={!isDaemonReady}
         onPress={() => {
-          console.log('did start publish', draftId, isDaemonReady)
           publish.mutate({draftId})
         }}
         theme="green"

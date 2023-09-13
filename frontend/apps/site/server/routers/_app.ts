@@ -4,11 +4,11 @@ import {
   Changes,
   ContentGraph,
   Groups,
-  HYPERMEDIA_GROUP_PREFIX,
   Publications,
   Role,
   WebPublishing,
-  getIdsfromUrl,
+  unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {localWebsiteClient, transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
@@ -244,15 +244,14 @@ const groupRouter = router({
   getGroupPath: procedure
     .input(
       z.object({
-        groupEid: z.string(),
+        groupId: z.string(),
         pathName: z.string(),
         version: z.string().optional(),
       }),
     )
-    .query(async ({input: {pathName, groupEid, version}}) => {
+    .query(async ({input: {pathName, groupId, version}}) => {
       // todo. get current group content and find the pathName, return the corresponding doc
       console.log('getting site info')
-      const groupId = `${HYPERMEDIA_GROUP_PREFIX}${groupEid}`
       const siteInfo = await groupsClient.listContent({
         id: groupId,
         version,
@@ -263,32 +262,31 @@ const groupRouter = router({
       })
       const item = siteInfo.content[pathName]
       if (!item) return null
-      const [documentId, documentVersion] = getIdsfromUrl(item)
-      if (!documentId || !documentVersion) return null // version is required for group content
+      const itemId = unpackDocId(item)
+      if (!itemId?.version) return null // version is required for group content
       const pub = await publicationsClient.getPublication({
-        documentId,
-        version: documentVersion,
+        documentId: itemId.docId,
+        version: itemId.version,
       })
       return {
         publication: hmPublication(pub),
         pathName,
-        documentId,
-        documentVersion,
+        documentId: itemId.docId,
+        documentVersion: itemId.version,
         groupVersion: version,
-        groupEid,
         group: hmGroup(group),
       }
     }),
   get: procedure
     .input(
       z.object({
-        groupEid: z.string(),
+        groupId: z.string(),
       }),
     )
     .query(async ({input}) => {
       console.log('will getGroup with id', input)
       const group = await groupsClient.getGroup({
-        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
+        id: input.groupId,
       })
       console.log('did get group', hmGroup(group))
       return {
@@ -298,26 +296,26 @@ const groupRouter = router({
   listContent: procedure
     .input(
       z.object({
-        groupEid: z.string(),
+        groupId: z.string(),
       }),
     )
     .query(async ({input}) => {
       const list = await groupsClient.listContent({
-        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
+        id: input.groupId,
       })
       const listedDocs = await Promise.all(
         Object.entries(list.content).map(async ([pathName, pubUrl]) => {
-          const [docId, version] = getIdsfromUrl(pubUrl)
-          if (!docId || !version) return null // version is required for group content
+          const docId = unpackDocId(pubUrl)
+          if (!docId?.version) return null // version is required for group content
 
           const pub = await publicationsClient.getPublication({
-            documentId: docId,
-            version,
+            documentId: docId.docId,
+            version: docId.version,
           })
           return {
             pathName,
             docId,
-            version,
+            version: docId.version,
             publication: hmPublication(pub),
           }
         }),
@@ -333,12 +331,12 @@ const groupRouter = router({
   listMembers: procedure
     .input(
       z.object({
-        groupEid: z.string(),
+        groupId: z.string(),
       }),
     )
     .query(async ({input}) => {
       const list = await groupsClient.listMembers({
-        id: `${HYPERMEDIA_GROUP_PREFIX}${input.groupEid}`,
+        id: input.groupId,
       })
       return Object.entries(list.members || {}).map(([account, role]) => ({
         account,

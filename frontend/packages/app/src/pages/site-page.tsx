@@ -2,7 +2,6 @@ import {useAccount} from '@mintter/app/src/models/accounts'
 import {usePublication} from '@mintter/app/src/models/documents'
 import {useSitePublications} from '@mintter/app/src/models/sites'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {getDocUrl} from '@mintter/shared'
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
@@ -161,22 +160,6 @@ function WebPublicationListItem({
               align="start"
               data-testid="library-item-dropdown-root"
             >
-              <Dropdown.Item
-                data-testid="copy-item"
-                onPress={() => {
-                  const docUrl = getDocUrl(publication, webPub)
-                  if (!docUrl) return
-                  copyTextToClipboard(docUrl)
-                  toast.success(
-                    `Copied ${hostnameStripProtocol(publishedWebHost)} URL`,
-                  )
-                }}
-                asChild
-                icon={Copy}
-                title={`Copy Document URL on ${hostnameStripProtocol(
-                  publishedWebHost,
-                )}`}
-              />
               <Separator />
               <Dropdown.Item
                 data-testid="delete-item"

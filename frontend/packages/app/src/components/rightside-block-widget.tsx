@@ -12,7 +12,7 @@ import {useDocCitations} from '../models/content-graph'
 import {usePublication} from '../models/documents'
 import {toast} from '@mintter/app/src/toast'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {getDocUrl} from '@mintter/shared'
+import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
@@ -105,9 +105,17 @@ export function RightsideWidget() {
   })
 
   function onCopy() {
-    let docUrl = getDocUrl(pub.data)
-    if (docUrl && spec && spec.id) {
-      copyTextToClipboard(`${docUrl}#${spec.id}`)
+    const docId = pub.data?.document?.id
+      ? unpackHmId(pub.data?.document?.id)
+      : null
+    const docVersion = pub.data?.version
+    if (docId && docId.type === 'd' && docVersion && spec && spec.id) {
+      copyTextToClipboard(
+        createPublicWebHmUrl('d', docId.eid, {
+          version: docVersion,
+          blockRef: spec.id,
+        }),
+      )
       toast.success('Block reference copied!')
     } else {
       appError('Block reference copy failed', {docUrl, spec})

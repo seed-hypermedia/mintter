@@ -2,7 +2,6 @@ import {
   Account,
   EmbedBlock,
   getCIDFromIPFSUrl,
-  getIdsfromUrl,
   extractEntityId,
   HeadingBlock,
   ImageBlock,
@@ -13,9 +12,11 @@ import {
   SiteInfo,
   Block,
   Publication,
-  entityIdToSitePath,
-  HYPERMEDIA_DOCUMENT_PREFIX,
-  matchesHypermediaPattern,
+  isHypermediaScheme,
+  createPublicWebHmUrl,
+  unpackHmId,
+  idToUrl,
+  unpackDocId,
 } from '@mintter/shared'
 import {
   Button,
@@ -35,21 +36,12 @@ import {cidURL} from 'ipfs'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
-import {HMBlock, HMBlockNode, HMGroup, HMPublication} from '@mintter/ui'
+import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {WebTipping} from 'web-tipping'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
 import Link from 'next/link'
-
-function hmLinkToSitePath(link: string) {
-  const [docId, version, block] = getIdsfromUrl(link)
-  if (!docId) return link
-  let path = `/d/${docId}`
-  if (version) path += `?v=${version}`
-  if (block) path += `#${block}`
-  return path
-}
 
 export type PublicationPageProps = {
   // documentId: string
@@ -125,7 +117,9 @@ function GroupSidebarContent({
     docId: string
   }>
 }) {
-  const groupLink = entityIdToSitePath(group?.id)
+  const groupId = group?.id ? unpackHmId(group?.id) : null
+  const groupLink =
+    groupId?.eid && createPublicWebHmUrl('g', groupId.eid, {hostname: null})
   return (
     <>
       {groupLink && (
@@ -209,10 +203,7 @@ export default function PublicationPage({
   return (
     <YStack flex={1}>
       <Head>
-        <meta
-          name="hyperdocs-entity-id"
-          content={`${HYPERMEDIA_DOCUMENT_PREFIX}${pub?.document?.id}`}
-        />
+        <meta name="hyperdocs-entity-id" content={pub?.document?.id} />
         <meta name="hyperdocs-entity-version" content={pub?.version} />
         <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
         {/* legacy mintter metadata */}
@@ -308,19 +299,20 @@ function InlineContentView({
           )
         }
         if (content.type === 'link') {
-          let matchesPattern = matchesHypermediaPattern(content.href)
-          const href = matchesPattern
-            ? hmLinkToSitePath(content.href)
-            : content.href
+          const href = idToUrl(content.href, null)
           return (
-            <a
-              href={href}
-              key={index}
-              className={matchesPattern ? 'hm-link' : 'link'}
-              style={{cursor: 'pointer'}}
-            >
-              <InlineContentView inline={content.content} />
-            </a>
+            href && (
+              <a
+                href={href}
+                key={index}
+                className={
+                  isHypermediaScheme(content.href) ? 'hm-link' : 'link'
+                }
+                style={{cursor: 'pointer'}}
+              >
+                <InlineContentView inline={content.content} />
+              </a>
+            )
           )
         }
         return null
@@ -379,21 +371,21 @@ function stripHMLinkPrefix(link: string) {
 
 function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   const reference = block.ref
-  const [documentId, versionId, blockId] = getIdsfromUrl(reference)
+  const docId = unpackDocId(reference)
   const router = useRouter()
   let embed = trpc.publication.get.useQuery(
     {
-      documentId,
-      versionId,
+      documentId: docId?.docId,
+      versionId: docId?.version,
     },
-    {enabled: !!documentId},
+    {enabled: !!docId},
   )
   let content = <Spinner />
   if (embed.data?.publication?.document?.children) {
-    if (blockId) {
+    if (docId?.blockRef) {
       const blockNode = getBlockNodeById(
         embed.data?.publication?.document?.children,
-        blockId,
+        docId.blockRef,
       )
       content = blockNode ? (
         <StaticBlockNode block={blockNode} />

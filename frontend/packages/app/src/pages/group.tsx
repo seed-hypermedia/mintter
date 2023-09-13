@@ -1,5 +1,5 @@
 import Footer from '@mintter/app/src/components/footer'
-import {Document, getIdsfromUrl} from '@mintter/shared'
+import {Document, unpackDocId} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -263,16 +263,18 @@ export default function GroupPage() {
           <YStack paddingVertical="$2" gap="$2">
             {Object.entries(groupContent.data?.content || {}).map(
               ([pathName, hmUrl]) => {
-                const [docId, version] = getIdsfromUrl(hmUrl)
+                const docId = unpackDocId(hmUrl)
 
                 if (!docId) return null
                 return (
                   <GroupContentItem
-                    key={docId}
-                    docId={docId}
+                    key={docId.docId}
+                    docId={docId?.docId}
                     groupId={groupId}
-                    version={version}
-                    hasDraft={drafts.data?.documents.find((d) => d.id == docId)}
+                    version={docId?.version}
+                    hasDraft={drafts.data?.documents.find(
+                      (d) => d.id == docId.docId,
+                    )}
                     pathName={pathName}
                   />
                 )

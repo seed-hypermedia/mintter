@@ -1,10 +1,10 @@
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {AppQueryClient} from '@mintter/app/src/query-client'
 import {
-  createHyperdocsDocLink,
+  createHmDocLink,
   isHypermediaScheme,
-  isMintterGatewayLink,
-  normalizeHypermediaLink,
+  isPublicGatewayLink,
+  normlizeHmId,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
@@ -85,8 +85,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         )
 
         const nativeHyperLink =
-          isHypermediaScheme(textContent) || isMintterGatewayLink(textContent)
-            ? normalizeHypermediaLink(textContent)
+          isHypermediaScheme(textContent) || isPublicGatewayLink(textContent)
+            ? normlizeHmId(textContent)
             : null
 
         if (!selection.empty && options.linkOnPaste) {
@@ -205,7 +205,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               if (!pos) return null
               let href =
                 res && res.documentId
-                  ? createHyperdocsDocLink(
+                  ? createHmDocLink(
                       res.documentId,
                       res.documentVersion,
                       res.blockId,

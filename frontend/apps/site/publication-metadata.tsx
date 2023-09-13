@@ -1,16 +1,16 @@
 import {
   abbreviateCid,
+  createPublicWebHmUrl,
   formattedDate,
-  getIdsfromUrl,
   HMTimestamp,
   pluralS,
+  unpackDocId,
 } from '@mintter/shared'
 import {
   Button,
   Paragraph,
   SideSection,
   SideSectionTitle,
-  SimpleTooltip,
   SizableText,
   Text,
   XStack,
@@ -22,7 +22,7 @@ import {format} from 'date-fns'
 import {NextLink} from 'next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {HMBlockNode, HMChangeInfo, HMLink, HMPublication} from '@mintter/ui'
+import {HMBlockNode, HMChangeInfo, HMLink, HMPublication} from 'server/json-hm'
 import {trpc} from './trpc'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
@@ -308,20 +308,20 @@ function surfaceEmbedRefs(children?: HMBlockNode[]): EmbedRef[] {
 }
 
 function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
-  const [docId, versionId, refBlockId] = getIdsfromUrl(url)
+  const urlId = unpackDocId(url)
   const pub = trpc.publication.get.useQuery(
     {
-      documentId: docId,
-      versionId,
+      documentId: urlId?.docId,
+      versionId: urlId?.version,
     },
     {
-      enabled: !!docId,
+      enabled: !!urlId,
     },
   )
-  if (!docId) return null
+  if (!urlId?.eid) return null
   return (
     <NextLink
-      href={getDocUrl(docId, versionId, refBlockId)}
+      href={createPublicWebHmUrl('d', urlId.eid, urlId)}
       style={{textDecoration: 'none'}}
     >
       <XStack

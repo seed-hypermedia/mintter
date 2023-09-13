@@ -1,4 +1,4 @@
-import {HYPERMEDIA_DOCUMENT_PREFIX, Role, getIdsfromUrl} from '@mintter/shared'
+import {Role, unpackDocId} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
@@ -126,7 +126,7 @@ export function usePublishDocToGroup(
       await grpcClient.groups.updateGroup({
         id: groupId,
         updatedContent: {
-          [pathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${docId}?v=${version}`,
+          [pathName]: `${docId}?v=${version}`,
         },
       })
     },
@@ -184,13 +184,6 @@ export function useRenameGroupDoc(
       const listed = await grpcClient.groups.listContent({
         id: groupId,
       })
-      console.log(
-        'huh RENAME?!',
-        groupId,
-        pathName,
-        newPathName,
-        listed.content,
-      )
       const prevPathValue = listed.content[pathName]
       if (!prevPathValue)
         throw new Error('Could not find previous path at ' + pathName)
@@ -201,10 +194,10 @@ export function useRenameGroupDoc(
       return prevPathValue
     },
     onSuccess: (result, input, context) => {
-      const [docId] = getIdsfromUrl(result)
+      const docId = unpackDocId(result)
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
-      invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, docId])
+      invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, docId?.docId])
     },
   })
 }
@@ -240,7 +233,7 @@ export function useDocumentGroups(documentId?: string) {
     queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
     queryFn: async () => {
       const result = await grpcClient.groups.listDocumentGroups({
-        documentId: `${HYPERMEDIA_DOCUMENT_PREFIX}${documentId}`,
+        documentId,
       })
       const resultMap = new Map<
         string,
