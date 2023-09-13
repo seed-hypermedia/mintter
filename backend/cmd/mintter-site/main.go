@@ -6,38 +6,68 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
-	protodaemon "mintter/backend/genproto/daemon/v1alpha"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/peterbourgon/ff/v3"
 )
 
 func main() {
-	const envVarPrefix = "MINTTER_SITE"
+	const envVarPrefix = "MINTTER"
 
 	mainutil.Run(func() error {
 		ctx := mainutil.TrapSignals()
 
 		fs := flag.NewFlagSet("mintter-site", flag.ExitOnError)
+		fs.Usage = func() {
+			fmt.Fprintf(fs.Output(), `Usage: %s ADDRESS [flags]
 
+This program is similar to our main mintterd program in a lot of ways, but has more suitable defaults for running on a server as site.
+
+It requires one positional argument ADDRESS, which has to be a Web network address this site is supposed to be available at.
+The address can be a DNS name, or an IP address, and it has to be a URL with a scheme and port (if applicable).
+Examples:
+  - http://127.0.0.1:42542
+  - https://mintter.com
+  - http://example.com
+
+Flags:
+`, fs.Name())
+			fs.PrintDefaults()
+		}
+
+		// TODO(burdiyan): ignore http.port flag because it collides with the ADDRESS positional argument.
 		cfg := config.Default()
-		cfg.P2P.NoListing = true
+		cfg.DataDir = "~/.mintter-site"
+		cfg.BindFlags(fs)
 
-		// We parse flags twice here, once without the config file setting, and then with it.
-		// This is because we want the config file to be in the repo path, which can be changed
-		// with flags or env vars. We don't allow setting a config file explicitly, but the repo path
-		// can change. We need to know the requested repo path in the first place, and then figure out the config file.
+		if len(os.Args) < 2 {
+			fs.Usage()
+			fmt.Fprintln(fs.Output(), "Error: Positional argument ADDRESS is missing.")
+			os.Exit(2)
+		}
 
-		if err := ff.Parse(fs, os.Args[1:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
+		rawURL := os.Args[1]
+		u, err := url.Parse(rawURL)
+		if err != nil {
+			return fmt.Errorf("failed to parse address: %w", err)
+		}
+
+		if u.Path != "" {
+			return fmt.Errorf("address URL must not have a path: %s", rawURL)
+		}
+
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return fmt.Errorf("address URL only supports http or https, got = %s", rawURL)
+		}
+
+		if err := ff.Parse(fs, os.Args[2:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
 			return err
 		}
 
@@ -45,56 +75,33 @@ func main() {
 			return err
 		}
 
-		cfgFile, err := config.EnsureConfigFile(cfg.DataDir)
+		dir, err := daemon.InitRepo(cfg.Base.DataDir, nil)
 		if err != nil {
 			return err
 		}
 
-		if err := ff.Parse(fs, os.Args[1:],
-			ff.WithEnvVarPrefix(envVarPrefix),
-			ff.WithConfigFileParser(ff.PlainParser),
-			ff.WithConfigFile(cfgFile),
-			ff.WithAllowMissingConfigFile(false),
-		); err != nil {
-			return err
-		}
-
-		app, err := daemon.Load(ctx, cfg)
+		app, err := daemon.LoadWithStorage(ctx, cfg, dir)
 		if err != nil {
 			return err
 		}
 
-		const mnemonicWords = 12
-		mnemonic, err := core.NewBIP39Mnemonic(mnemonicWords)
-		if err != nil {
-			return err
+		if _, ok := dir.Identity().Get(); !ok {
+			account, err := core.NewKeyPairRandom()
+			if err != nil {
+				return fmt.Errorf("failed to generate random account key pair: %w", err)
+			}
+
+			if err := app.RPC.Daemon.RegisterAccount(ctx, account); err != nil {
+				return fmt.Errorf("failed to create registration: %w", err)
+			}
 		}
 
-		_, err = app.RPC.Daemon.Register(ctx, &protodaemon.RegisterRequest{
-			Mnemonic:   mnemonic,
-			Passphrase: "",
-		})
-		stat, ok := status.FromError(err)
-		if !ok && stat.Code() != codes.AlreadyExists {
-			return err
+		if _, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
+			Alias: rawURL + " Hypermedia Site",
+		}); err != nil {
+			return fmt.Errorf("failed to update profile: %w", err)
 		}
 
-		_, err = app.Storage.Identity().Await(ctx)
-		if err != nil {
-			return err
-		}
-		const alias = "Web gateway"
-		const bio = "Find me at https://www.mintter.com"
-		acc, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
-			Alias: alias,
-			Bio:   bio,
-		})
-		if err != nil {
-			return err
-		}
-		if acc.Profile.Alias != alias || acc.Profile.Bio != bio {
-			return fmt.Errorf("unexpected alias/bio. %s", acc.Profile.Alias+". "+acc.Profile.Bio)
-		}
 		err = app.Wait()
 		if errors.Is(err, context.Canceled) {
 			return nil

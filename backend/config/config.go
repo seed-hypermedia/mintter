@@ -203,8 +203,8 @@ type P2P struct {
 func (p2p *P2P) BindFlags(fs *flag.FlagSet) {
 	fs.IntVar(&p2p.Port, "p2p.port", p2p.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&p2p.NoRelay, "p2p.no-relay", p2p.NoRelay, "Disable libp2p circuit relay")
-	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
-	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Addresses will be announced for this node to be reachable at (comma separated multiaddresses format). overrides no-private-ips")
+	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Multiaddrs for bootstrap nodes (comma separated)")
+	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Multiaddrs this node will announce as being reachable at (comma separated). When set, -p2p.no-private-ips flag is ignored.")
 	fs.BoolVar(&p2p.PublicReachability, "p2p.public-reachability", p2p.PublicReachability, "Force Reachability to public.")
 	fs.Var(newAddrsFlag(p2p.ListenAddrs, &p2p.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
 	fs.BoolVar(&p2p.NoPrivateIps, "p2p.no-private-ips", p2p.NoPrivateIps, "Not announce local IPs.")

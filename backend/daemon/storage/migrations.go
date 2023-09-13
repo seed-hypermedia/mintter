@@ -99,7 +99,7 @@ func (d *Dir) init() (currentVersion string, err error) {
 	}
 
 	if d.device.Wrapped() == nil {
-		kp, err := core.NewKeyPairRandom(core.CodecDeviceKey)
+		kp, err := core.NewKeyPairRandom()
 		if err != nil {
 			return "", fmt.Errorf("failed to generate random device key: %w", err)
 		}
@@ -212,7 +212,7 @@ func (d *Dir) maybeLoadAccountKey() error {
 		return err
 	}
 
-	account, err := core.NewPublicKey(core.CodecAccountKey, pub)
+	account, err := core.NewPublicKey(pub)
 	if err != nil {
 		return err
 	}
@@ -283,5 +283,5 @@ func loadDeviceKeyFromFile(dir string) (kp core.KeyPair, err error) {
 		return kp, fmt.Errorf("failed to unmarshal private key for device: %w", err)
 	}
 
-	return core.NewKeyPair(core.CodecDeviceKey, pk)
+	return core.NewKeyPair(pk)
 }

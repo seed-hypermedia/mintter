@@ -41,7 +41,7 @@ func NewWithDeviceKey(path string, log *zap.Logger, pk crypto.PrivKey) (*Dir, er
 		return nil, err
 	}
 
-	kp, err := core.NewKeyPair(core.CodecDeviceKey, pk)
+	kp, err := core.NewKeyPair(pk)
 	if err != nil {
 		return nil, err
 	}

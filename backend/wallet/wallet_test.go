@@ -60,7 +60,7 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	ctx := context.Background()
 
 	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 5*time.Second, 1*time.Second)
-	cid := bob.net.MustGet().ID().Account().CID()
+	cid := bob.net.MustGet().ID().Account().Principal()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
@@ -100,7 +100,7 @@ func TestRequestP2PInvoice(t *testing.T) {
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 3*time.Second, 1*time.Second)
-	cid := bob.net.MustGet().ID().Account().CID()
+	cid := bob.net.MustGet().ID().Account().Principal()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
