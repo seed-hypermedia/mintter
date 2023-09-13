@@ -28,17 +28,17 @@ func run() error {
 	cfg := config.Default()
 	cfg.P2P.NoRelay = true
 	cfg.P2P.BootstrapPeers = nil
-	cfg.RepoPath = "/tmp/mintter-test-db-snapshot"
+	cfg.Base.DataDir = "/tmp/mintter-test-db-snapshot"
 
-	if err := os.RemoveAll(cfg.RepoPath); err != nil {
+	if err := os.RemoveAll(cfg.Base.DataDir); err != nil {
 		return err
 	}
 
-	if err := os.MkdirAll(cfg.RepoPath, 0750); err != nil {
+	if err := os.MkdirAll(cfg.Base.DataDir, 0750); err != nil {
 		return err
 	}
 
-	dir, err := daemon.InitRepo(cfg, alice.Device.Wrapped())
+	dir, err := daemon.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped())
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func run() error {
 	cancel()
 
 	err = app.Wait()
-	fmt.Println("Database has been saved in:", cfg.RepoPath)
+	fmt.Println("Database has been saved in:", cfg.Base.DataDir)
 	if errors.Is(err, context.Canceled) {
 		return nil
 	}

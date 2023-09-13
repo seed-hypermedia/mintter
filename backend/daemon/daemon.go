@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -18,7 +17,6 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/daemon/api"
 	"mintter/backend/daemon/storage"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
 	"mintter/backend/hyper"
 	"mintter/backend/ipfs"
@@ -44,9 +42,7 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func init() {
@@ -88,22 +84,7 @@ type App struct {
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
 func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
-	var deviceKey crypto.PrivKey
-	if cfg.Identity.DeviceKeyPath != "" {
-		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
-			bytes, err := os.ReadFile(cfg.Identity.DeviceKeyPath)
-			if err != nil {
-				return nil, err
-			}
-			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-	r, err := InitRepo(cfg, deviceKey)
+	r, err := InitRepo(cfg.Base.DataDir, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -174,22 +155,9 @@ func LoadWithStorage(ctx context.Context, cfg config.Config, r *storage.Dir, grp
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, grpcOpt...)
 	if err != nil {
 		return nil, err
-	}
-
-	if cfg.Identity.NoAccountWait {
-		res, err := a.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 12})
-		if err != nil {
-			return nil, fmt.Errorf("Cannot create automatic mnemonics: %w", err)
-		}
-		_, err = a.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{Mnemonic: res.Mnemonic, Passphrase: ""})
-		stat, ok := status.FromError(err)
-
-		if !ok && stat.Code() != codes.AlreadyExists {
-			return nil, fmt.Errorf("Cannot register automatic account: %w", err)
-		}
 	}
 
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
@@ -206,7 +174,7 @@ func LoadWithStorage(ctx context.Context, cfg config.Config, r *storage.Dir, grp
 
 		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, fileManager)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, fileManager)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +190,7 @@ func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
 			zap.String("httpListener", a.HTTPListener.Addr().String()),
-			zap.String("repoPath", cfg.RepoPath),
+			zap.String("dataDir", cfg.DataDir),
 		)
 
 		n, err := a.Net.Await(ctx)
@@ -260,12 +228,12 @@ func (a *App) Wait() error {
 
 // InitRepo initializes the storage directory.
 // Device can be nil in which case a random new device key will be generated.
-func InitRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err error) {
+func InitRepo(dataDir string, device crypto.PrivKey) (r *storage.Dir, err error) {
 	log := logging.New("mintter/repo", "debug")
 	if device == nil {
-		r, err = storage.New(cfg.RepoPath, log)
+		r, err = storage.New(dataDir, log)
 	} else {
-		r, err = storage.NewWithDeviceKey(cfg.RepoPath, log, device)
+		r, err = storage.NewWithDeviceKey(dataDir, log, device)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to init storage: %w", err)

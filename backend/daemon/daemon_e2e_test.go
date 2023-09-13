@@ -537,7 +537,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 
 	u := coretest.NewTester(name)
 
-	repo, err := InitRepo(cfg, u.Device.Wrapped())
+	repo, err := InitRepo(cfg.Base.DataDir, u.Device.Wrapped())
 	require.NoError(t, err)
 
 	app, err := LoadWithStorage(ctx, cfg, repo)
@@ -640,9 +640,9 @@ func updateDocumenTitle(t *testing.T, ctx context.Context, publisher *App, docID
 func makeTestConfig(t *testing.T) config.Config {
 	cfg := config.Default()
 
-	cfg.HTTPPort = 0
-	cfg.GRPCPort = 0
-	cfg.RepoPath = testutil.MakeRepoPath(t)
+	cfg.HTTP.Port = 0
+	cfg.GRPC.Port = 0
+	cfg.Base.DataDir = testutil.MakeRepoPath(t)
 	cfg.P2P.Port = 0
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true

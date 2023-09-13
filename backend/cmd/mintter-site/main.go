@@ -31,7 +31,6 @@ func main() {
 
 		cfg := config.Default()
 		cfg.P2P.NoListing = true
-		config.SetupSiteFlags(fs, &cfg)
 
 		// We parse flags twice here, once without the config file setting, and then with it.
 		// This is because we want the config file to be in the repo path, which can be changed
@@ -42,11 +41,11 @@ func main() {
 			return err
 		}
 
-		if err := cfg.ExpandRepoPath(); err != nil {
+		if err := cfg.Base.ExpandDataDir(); err != nil {
 			return err
 		}
 
-		cfgFile, err := config.EnsureConfigFile(cfg.RepoPath)
+		cfgFile, err := config.EnsureConfigFile(cfg.DataDir)
 		if err != nil {
 			return err
 		}
