@@ -1,4 +1,4 @@
-import {createHyperdocsDocLink} from '@mintter/shared'
+import {createHmDocLink} from '@mintter/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {fetchWebLink} from '../models/web-links'
@@ -86,7 +86,7 @@ async function checkHyperLink(
             pos,
             pos + node.textContent.length,
             view.state.schema.mark('link', {
-              href: createHyperdocsDocLink(
+              href: createHmDocLink(
                 res!.documentId!,
                 res?.documentVersion,
                 res?.blockId,

@@ -1,4 +1,4 @@
-import {Publication, getIdsfromUrl} from '@mintter/shared'
+import {Publication, unpackDocId} from '@mintter/shared'
 import {UseQueryOptions} from '@tanstack/react-query'
 import {usePublication} from './documents'
 import {PublicationRouteContext} from '../utils/navigation'
@@ -36,12 +36,12 @@ export function usePublicationInContext({
       // )
       queryDocumentId = undefined
     }
-    const [groupContentDocId, groupContentVersion] = getIdsfromUrl(contentURL)
-    if (groupContentDocId !== documentId)
+    const groupItem = unpackDocId(contentURL)
+    if (groupItem?.docId !== documentId)
       throw new Error(
-        `Group ${groupContextId} content for "${groupContext.pathName}" not match route document id "${documentId}", instead has "${groupContentDocId}"`,
+        `Group ${groupContextId} content for "${groupContext.pathName}" not match route document id "${documentId}", instead has "${groupItem?.docId}"`,
       )
-    queryVersionId = groupContentVersion
+    queryVersionId = groupItem?.version
   }
   // this avoids querying usePublication if we are in a group context and the group content is not yet loaded, or if it has an error. if the route specifies the version directly we are also ready to query
   const pubQueryReady = !!queryVersionId || pubContext?.key !== 'group'

@@ -21,15 +21,11 @@ import {
   View,
   SimpleTooltip,
 } from '@mintter/ui'
-import {HMGroup, HMPublication} from '@mintter/ui'
+import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {Timestamp} from '@bufbuild/protobuf'
-import {
-  HYPERMEDIA_GROUP_PREFIX,
-  entityIdToSitePath,
-  formattedDate,
-} from '@mintter/shared'
+import {formattedDate, unpackHmId, createPublicWebHmUrl} from '@mintter/shared'
 import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
 import {Paragraph} from 'tamagui'
@@ -43,9 +39,9 @@ function GroupOwnerSection({owner}: {owner: string}) {
   )
 }
 
-function GroupEditorsSection({groupEid}: {groupEid: string}) {
+function GroupEditorsSection({groupId}: {groupId: string}) {
   const groupMembers = trpc.group.listMembers.useQuery({
-    groupEid,
+    groupId,
   })
   if (!groupMembers.data) return null
 
@@ -143,6 +139,9 @@ function GroupContentItem({
   item: {pathName: string; publication: null | HMPublication}
   group?: null | HMGroup
 }) {
+  const groupId = group?.id ? unpackHmId(group?.id) : null
+  const groupEid = groupId?.eid
+  if (!groupEid) return null
   return (
     <ContentListItem
       title={item.pathName}
@@ -157,7 +156,9 @@ function GroupContentItem({
           />
         </>
       }
-      href={`${entityIdToSitePath(group?.id)}/${item.pathName}`}
+      href={`${createPublicWebHmUrl('g', groupEid, {hostname: null})}/${
+        item.pathName
+      }`}
     />
   )
 }
@@ -181,10 +182,7 @@ export default function GroupPage({
       <Head>
         {loadedGroup ? (
           <>
-            <meta
-              name="hyperdocs-entity-id"
-              content={`${HYPERMEDIA_GROUP_PREFIX}${loadedGroup.id}`}
-            />
+            <meta name="hyperdocs-entity-id" content={loadedGroup.id} />
             <meta
               name="hyperdocs-entity-version"
               content={loadedGroup.version}

@@ -26,8 +26,9 @@ import {
   Account,
   DocumentChange,
   SiteConfig,
-  getPublicDocUrl,
-  getPublicEntityUrl,
+  createPublicWebHmUrl,
+  unpackHmId,
+  createHmId,
 } from '@mintter/shared'
 import {
   Back,
@@ -149,19 +150,29 @@ export function GroupOptionsButton() {
 
 function getReferenceUrlOfRoute(route: NavRoute) {
   if (route.key === 'group') {
-    const url = getPublicEntityUrl(route.groupId) // we use this because group IDs are full URLs with hm://g/ prefix, so this more generic conversion is available.
-    if (!url) return null
+    const groupId = unpackHmId(route.groupId)
+    if (!groupId || groupId.type !== 'g') return null
+    const url = createPublicWebHmUrl('g', groupId.eid)
     return {
       label: 'Group URL',
       url,
     }
   }
   if (route.key === 'publication') {
-    // docIds currently do not include this hm:// prefix so we use the specific doc url function
-    const url = getPublicDocUrl(route.documentId, route.versionId)
+    const docId = unpackHmId(route.documentId)
+    if (!docId || docId.type !== 'd') return null
+    const url = createPublicWebHmUrl('d', docId.eid, {version: route.versionId})
     if (!url) return null
     return {
       label: 'Doc URL',
+      url,
+    }
+  }
+  if (route.key === 'account') {
+    const url = createHmId('a', route.accountId)
+    if (!url) return null
+    return {
+      label: 'Account URL',
       url,
     }
   }
@@ -210,6 +221,8 @@ export function PageActionButtons(props: TitleBarProps) {
       <CopyReferenceButton key="copyRef" />,
       <NewDocumentButton key="newDoc" />,
     ]
+  } else if (route.key === 'account') {
+    buttonGroup = [<CopyReferenceButton key="copyRef" />]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }

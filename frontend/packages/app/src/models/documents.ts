@@ -29,12 +29,11 @@ import {
   Document,
   DocumentChange,
   GRPCClient,
-  HYPERMEDIA_DOCUMENT_PREFIX,
   ListPublicationsResponse,
   Publication,
   isHypermediaScheme,
-  isMintterGatewayLink,
-  normalizeHypermediaLink,
+  isPublicGatewayLink,
+  normlizeHmId,
 } from '@mintter/shared'
 import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
@@ -297,7 +296,7 @@ export function usePublishDraft(
           await grpcClient.groups.updateGroup({
             id: draftGroupContext.groupId,
             updatedContent: {
-              [publishPathName]: `${HYPERMEDIA_DOCUMENT_PREFIX}${publishedId}?v=${pub.version}`,
+              [publishPathName]: `${publishedId}?v=${pub.version}`,
             },
           })
         }
@@ -1017,8 +1016,8 @@ function extractEmbedRefOfLink(block: any): false | string {
   if (block.content.length == 1) {
     let leaf = block.content[0]
     if (leaf.type == 'link') {
-      if (isMintterGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
-        const hmLink = normalizeHypermediaLink(leaf.href)
+      if (isPublicGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
+        const hmLink = normlizeHmId(leaf.href)
 
         console.log(`== ~ extractEmbedRefOfLink ~ hmLink:`, hmLink)
         if (hmLink) return hmLink

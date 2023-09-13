@@ -4,11 +4,7 @@ import {
 } from '@mintter/app/src/models/documents'
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {
-  getIdsfromUrl,
-  isHypermediaScheme,
-  matchesHypermediaPattern,
-} from '@mintter/shared'
+import {isHypermediaScheme} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
@@ -16,6 +12,7 @@ import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
+import {hmIdToAppRoute} from '../open-url'
 
 export default function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -57,28 +54,19 @@ export default function QuickSwitcher() {
       ) : (
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
-          {(matchesHypermediaPattern(search) ||
-            isHypermediaScheme(search) ||
+          {(isHypermediaScheme(search) ||
             search.startsWith('http://') ||
             search.startsWith('https://')) && (
             <Command.Item
               key="mtt-link"
               value={search}
               onSelect={() => {
-                if (
-                  isHypermediaScheme(search) ||
-                  matchesHypermediaPattern(search)
-                ) {
-                  let [docId, version, block] = getIdsfromUrl(search)
+                if (isHypermediaScheme(search)) {
+                  const navRoute = hmIdToAppRoute(search)
 
-                  if (docId) {
+                  if (navRoute) {
                     setOpen(false)
-                    navigate({
-                      key: 'publication',
-                      documentId: docId,
-                      versionId: version,
-                      blockId: block,
-                    })
+                    navigate(navRoute)
                   } else {
                     console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
                     setActionPromise(

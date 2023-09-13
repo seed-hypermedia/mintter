@@ -1,7 +1,34 @@
 import {useAppContext} from '@mintter/app/src/app-context'
 import {NavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {getIdsfromUrl, HYPERMEDIA_DOCUMENT_PREFIX} from '@mintter/shared'
+import {createHmId, isHypermediaScheme, unpackHmId} from '@mintter/shared'
 import {useMemo} from 'react'
+
+export function hmIdToAppRoute(hmId: string): NavRoute | undefined {
+  const hmIds = unpackHmId(hmId)
+
+  let pubRoute: NavRoute | undefined = undefined
+  if (hmIds?.scheme === 'hm') {
+    if (hmIds?.type === 'd') {
+      pubRoute = {
+        key: 'publication',
+        documentId: createHmId('d', hmIds.eid),
+        versionId: hmIds.version,
+        blockId: hmIds.blockRef,
+      }
+    } else if (hmIds?.type === 'g') {
+      pubRoute = {
+        key: 'group',
+        groupId: createHmId('g', hmIds.eid),
+      }
+    } else if (hmIds?.type === 'a') {
+      pubRoute = {
+        key: 'account',
+        accountId: hmIds.eid,
+      }
+    }
+  }
+  return pubRoute
+}
 
 export function useOpenUrl() {
   const {externalOpen} = useAppContext()
@@ -11,17 +38,8 @@ export function useOpenUrl() {
     return (url?: string, newWindow?: boolean) => {
       if (!url) return
 
-      if (url.startsWith(HYPERMEDIA_DOCUMENT_PREFIX)) {
-        const hmIds = getIdsfromUrl(url)
-        if (!hmIds[0]) {
-          throw new Error('Cannot parse Hyperdocs URL without document ID')
-        }
-        const pubRoute: NavRoute = {
-          key: 'publication',
-          documentId: hmIds[0],
-          versionId: hmIds[1],
-          blockId: hmIds[2],
-        }
+      const pubRoute = hmIdToAppRoute(url)
+      if (pubRoute) {
         if (newWindow) {
           spawn(pubRoute)
         } else {

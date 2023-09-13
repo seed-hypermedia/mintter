@@ -16,10 +16,11 @@ import type {
 import {
   Block,
   EmbedBlock as EmbedBlockType,
+  createHmId,
   getCIDFromIPFSUrl,
-  getIdsfromUrl,
   isHypermediaScheme,
   serverBlockToEditorInline,
+  unpackDocId,
 } from '@mintter/shared'
 import {SizableText, Spinner, Text, XStack, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
@@ -30,7 +31,7 @@ import {createReactBlockSpec} from '../blocknote-react'
 import {HMBlockSchema, hmBlockSchema} from '../client/schema'
 import {BACKEND_FILE_URL} from '../constants'
 import {usePublication} from '../models/documents'
-import {useOpenUrl} from '../open-url'
+import {hmIdToAppRoute, useOpenUrl} from '../open-url'
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -173,14 +174,9 @@ function EmbedPresentation({
           if (editor?.isEditable) {
             return
           }
-          let [documentId, version, blockId] = getIdsfromUrl(block.props.ref)
-          if (documentId) {
-            spawn({
-              key: 'publication',
-              documentId,
-              versionId: version,
-              blockId,
-            })
+          const route = hmIdToAppRoute(block.props.ref)
+          if (route) {
+            spawn(route)
           }
         }}
       >
@@ -308,25 +304,24 @@ export const EmbedBlock = createReactBlockSpec({
 function useEmbed(ref: string): ReturnType<typeof usePublication> & {
   content?: BlockNode[] & PartialMessage<BlockNode>[]
 } {
-  let [documentId, versionId, blockId] = getIdsfromUrl(ref)
-
+  const pubId = unpackDocId(ref)
   let pubQuery = usePublication({
-    documentId,
-    versionId,
-    enabled: !!documentId,
+    documentId: pubId?.docId,
+    versionId: pubId?.version,
+    enabled: !!pubId?.docId,
   })
 
   return useMemo(() => {
     const data = pubQuery.data
     if (!data || !data.document) return pubQuery
 
-    const selectedBlock = blockId
-      ? getBlockNodeById(data.document.children, blockId)
+    const selectedBlock = pubId?.blockRef
+      ? getBlockNodeById(data.document.children, pubId?.blockRef)
       : null
 
     const embedBlocks = selectedBlock ? [selectedBlock] : data.document.children
     return {...pubQuery, content: embedBlocks}
-  }, [pubQuery.data, blockId])
+  }, [pubQuery.data, pubId?.blockRef])
 }
 
 function getBlockNodeById(
