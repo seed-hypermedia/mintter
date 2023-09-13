@@ -1,33 +1,33 @@
 import {useAppContext} from '@mintter/app/src/app-context'
 import {NavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {createHmId, isHypermediaScheme, unpackHmId} from '@mintter/shared'
+import {UnpackedHypermediaId, createHmId, unpackHmId} from '@mintter/shared'
 import {useMemo} from 'react'
 
-export function hmIdToAppRoute(hmId: string): NavRoute | undefined {
+export function unpackHmIdWithAppRoute(
+  hmId: string,
+): (UnpackedHypermediaId & {navRoute?: NavRoute}) | null {
   const hmIds = unpackHmId(hmId)
-
-  let pubRoute: NavRoute | undefined = undefined
-  if (hmIds?.scheme === 'hm') {
-    if (hmIds?.type === 'd') {
-      pubRoute = {
-        key: 'publication',
-        documentId: createHmId('d', hmIds.eid),
-        versionId: hmIds.version,
-        blockId: hmIds.blockRef,
-      }
-    } else if (hmIds?.type === 'g') {
-      pubRoute = {
-        key: 'group',
-        groupId: createHmId('g', hmIds.eid),
-      }
-    } else if (hmIds?.type === 'a') {
-      pubRoute = {
-        key: 'account',
-        accountId: hmIds.eid,
-      }
+  if (!hmIds) return null
+  let navRoute: NavRoute | undefined = undefined
+  if (hmIds?.type === 'd') {
+    navRoute = {
+      key: 'publication',
+      documentId: createHmId('d', hmIds.eid),
+      versionId: hmIds.version,
+      blockId: hmIds.blockRef,
+    }
+  } else if (hmIds?.type === 'g') {
+    navRoute = {
+      key: 'group',
+      groupId: createHmId('g', hmIds.eid),
+    }
+  } else if (hmIds?.type === 'a') {
+    navRoute = {
+      key: 'account',
+      accountId: hmIds.eid,
     }
   }
-  return pubRoute
+  return {...hmIds, navRoute}
 }
 
 export function useOpenUrl() {
@@ -37,13 +37,12 @@ export function useOpenUrl() {
   return useMemo(() => {
     return (url?: string, newWindow?: boolean) => {
       if (!url) return
-
-      const pubRoute = hmIdToAppRoute(url)
-      if (pubRoute) {
+      const dest = unpackHmIdWithAppRoute(url)
+      if (dest?.navRoute) {
         if (newWindow) {
-          spawn(pubRoute)
+          spawn(dest?.navRoute)
         } else {
-          push(pubRoute)
+          push(dest?.navRoute)
         }
         return
       } else {
