@@ -34,6 +34,7 @@ import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
+  unpackDocId,
 } from '@mintter/shared'
 import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
@@ -255,9 +256,19 @@ function sortDocuments(a?: Timestamp, b?: Timestamp) {
   return dateB - dateA
 }
 
+export function getDefaultShortname(
+  docTitle: string | undefined,
+  docId: string,
+) {
+  const unpackedId = unpackDocId(docId)
+  const idShortname = unpackedId ? unpackedId.eid.slice(0, 5).toLowerCase() : ''
+  const shortname = docTitle ? pathNameify(docTitle) : idShortname
+  return shortname
+}
+
 export function usePublishDraft(
   opts?: UseMutationOptions<
-    Publication,
+    {pub: Publication; pubContext: PublicationRouteContext},
     unknown,
     {
       draftId: string
@@ -280,18 +291,15 @@ export function usePublishDraft(
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
-        console.log('=== ayyho')
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([
             queryKeys.EDITOR_DRAFT,
             draftId,
           ]) as any
         )?.title
-        console.log('=== ayyho')
-        let fallbackTitle = docTitle ? docTitle : publishedId.slice(0, 5)
-        let publishPathName = draftGroupContext.pathName
-          ? fallbackTitle
-          : draftGroupContext.pathName
+        const publishPathName = draftGroupContext.pathName
+          ? draftGroupContext.pathName
+          : getDefaultShortname(docTitle, publishedId)
         if (publishPathName) {
           await grpcClient.groups.updateGroup({
             id: draftGroupContext.groupId,
@@ -299,12 +307,24 @@ export function usePublishDraft(
               [publishPathName]: `${publishedId}?v=${pub.version}`,
             },
           })
+          return {
+            pub,
+            pubContext: {
+              key: 'group',
+              groupId: draftGroupContext.groupId,
+              pathName: publishPathName,
+            },
+          }
         }
       }
-      return pub
+      return {pub, pubContext: draftPubContext}
     },
-    onSuccess: (pub: Publication, variables, context) => {
-      const documentId = pub.document?.id
+    onSuccess: (
+      result: {pub: Publication; pubContext: PublicationRouteContext},
+      variables,
+      context,
+    ) => {
+      const documentId = result.pub.document?.id
       client.setQueryData([queryKeys.EDITOR_DRAFT, documentId], () => null)
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
@@ -316,11 +336,12 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_SITE_PUBLICATIONS])
       if (draftGroupContext) {
         invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
+        invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }
-      opts?.onSuccess?.(pub, variables, context)
+      opts?.onSuccess?.(result, variables, context)
 
       setTimeout(() => {
-        client.removeQueries([queryKeys.EDITOR_DRAFT, pub.document?.id])
+        client.removeQueries([queryKeys.EDITOR_DRAFT, result.pub.document?.id])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },

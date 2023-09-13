@@ -309,7 +309,7 @@ export function AccountDropdownItem({
           url={getAvatarUrl(account?.profile?.avatar)}
         />
       }
-      title={account?.profile?.alias || '<me>'}
+      title={account?.profile?.alias || 'My Profile'}
     />
   )
 }
