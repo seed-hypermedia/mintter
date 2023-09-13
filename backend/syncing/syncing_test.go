@@ -28,27 +28,8 @@ import (
 func TestSync(t *testing.T) {
 	t.Parallel()
 
-	type Node struct {
-		*mttnet.Node
-
-		Syncer *Service
-	}
-
-	newNode := func(name string) Node {
-		var n Node
-
-		db := storage.MakeTestDB(t)
-		peer, stop := makeTestPeer(t, db, name)
-		t.Cleanup(stop)
-		n.Node = peer
-
-		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client, false)
-
-		return n
-	}
-
-	alice := newNode("alice")
-	bob := newNode("bob")
+	alice := makeTestNode(t, "alice")
+	bob := makeTestNode(t, "bob")
 	ctx := context.Background()
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
@@ -73,89 +54,42 @@ func TestSync(t *testing.T) {
 	}
 }
 
-// TODO(burdiyan): fix the test
-// func TestSyncWithList(t *testing.T) {
-// 	t.Parallel()
+func TestSyncWithList(t *testing.T) {
+	t.Parallel()
 
-// 	type Node struct {
-// 		*mttnet.Node
+	alice := makeTestNode(t, "alice")
+	bob := makeTestNode(t, "bob")
+	ctx := context.Background()
 
-// 		Syncer *Service
-// 	}
+	entityID := hyper.EntityID("alice-test-entity")
+	{
+		e := hyper.NewEntity(entityID)
+		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+			"title": "This is a title of a fake test entity",
+		})
+		require.NoError(t, err)
+		require.NoError(t, alice.Blobs().SaveBlob(ctx, hb))
+	}
+	// Create another entity for alice to make sure we only sync one entity.
+	{
+		e := hyper.NewEntity("another-entity")
+		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+			"title": "This is a title of another fake test entity",
+		})
+		require.NoError(t, err)
+		require.NoError(t, alice.Blobs().SaveBlob(ctx, hb))
+	}
 
-// 	newNode := func(name string, inDisable bool) Node {
-// 		var n Node
+	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
-// 		peer, stop := makeTestPeer(t, name)
-// 		t.Cleanup(stop)
-// 		n.Node = peer
+	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().PeerID(), entityID))
 
-// 		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client, inDisable)
+	list, err := bob.Blobs().ListEntities(ctx, "")
+	require.NoError(t, err)
 
-// 		return n
-// 	}
-// 	alice := newNode("alice", false)
-// 	bob := newNode("bob", true)
-// 	ctx := context.Background()
-
-// 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
-
-// 	var alicePerma vcs.EncodedPermanode
-// 	var wantDatoms []sqlitevcs.Datom
-// 	var publicVersion string
-// 	{
-// 		conn, release, err := alice.VCS().Conn(ctx)
-// 		require.NoError(t, err)
-
-// 		err = conn.WithTx(true, func() error {
-// 			clock := hlc.NewClock()
-// 			perma, err := vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
-// 			alicePerma = perma
-// 			require.NoError(t, err)
-// 			obj := conn.NewObject(perma)
-// 			idLocal := conn.EnsureIdentity(alice.ID())
-// 			change := conn.NewChange(obj, idLocal, nil, clock)
-
-// 			wantDatoms = []sqlitevcs.Datom{
-// 				vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), 123),
-// 			}
-
-// 			conn.AddDatoms(obj, change, wantDatoms...)
-// 			conn.SaveVersion(obj, "main", idLocal, sqlitevcs.LocalVersion{change})
-// 			conn.EncodeChange(change, alice.ID().DeviceKey())
-// 			version := conn.GetVersion(obj, "main", idLocal)
-// 			publicVersion = conn.LocalVersionToPublic(version).String()
-// 			return nil
-// 		})
-// 		release()
-// 		require.NoError(t, err)
-// 	}
-
-// 	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().CID(), alicePerma.ID...))
-
-// 	{
-// 		conn, release, err := bob.VCS().Conn(ctx)
-// 		require.NoError(t, err)
-
-// 		err = conn.WithTx(false, func() error {
-// 			obj := conn.LookupPermanode(alicePerma.ID)
-// 			idLocal := conn.LookupIdentity(bob.ID())
-// 			version := conn.GetVersion(obj, "main", idLocal)
-// 			cs := conn.ResolveChangeSet(obj, version)
-
-// 			var i int
-// 			it := conn.QueryObjectDatoms(obj, cs)
-// 			for it.Next() {
-// 				i++
-// 			}
-// 			require.Equal(t, len(wantDatoms), i, "must get the same number of datoms as in the original object")
-
-// 			return nil
-// 		})
-// 		release()
-// 		require.NoError(t, err)
-// 	}
-// }
+	require.Len(t, list, 3, "bob must have synced only one entity from alice") // 3 = bob's account + alice's account + alice's entity
+	require.Equal(t, entityID, list[2], "bob must have synced alice's entity")
+}
 
 func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
@@ -224,4 +158,23 @@ func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) 
 	}
 
 	return out
+}
+
+type testNode struct {
+	*mttnet.Node
+
+	Syncer *Service
+}
+
+func makeTestNode(t *testing.T, name string) testNode {
+	var n testNode
+
+	db := storage.MakeTestDB(t)
+	peer, stop := makeTestPeer(t, db, name)
+	t.Cleanup(stop)
+	n.Node = peer
+
+	n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client, false)
+
+	return n
 }

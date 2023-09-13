@@ -342,6 +342,14 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
+	// TODO(burdiyan): if we are doing the discovery without a version,
+	// we'll wait until timeout because we don't know when to stop looking.
+	// Ideally we should only be discovering docs with specific version,
+	// but sometimes we don't want the latest version we can possibly find.
+	// In those cases, we could at least optimize the UI, and maybe display
+	// the document dynamically as we're finding it. Although that would require
+	// a lot of trickery between frontend and backend, it would optimize
+	// time to the first (more or less) meaningful result.
 	if err := api.disc.DiscoverObject(ctx, eid, version); err != nil {
 		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
 	}

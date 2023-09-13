@@ -23,11 +23,18 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 	ctx, cancel := context.WithTimeout(ctx, defaultDiscoveryTimeout)
 	defer cancel()
 
-	const maxProviders = 3
-
 	c, err := obj.CID()
 	if err != nil {
 		return err
+	}
+
+	// Arbitrary number of maximum providers
+	maxProviders := 5
+
+	// If we are looking for a specific version, we don't need to limit the number of providers,
+	// because we will short-circuit as soon as we found the desired version.
+	if ver != "" {
+		maxProviders = 0
 	}
 
 	peers := s.bitswap.FindProvidersAsync(ctx, c, maxProviders)
