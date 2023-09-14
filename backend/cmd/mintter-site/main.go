@@ -97,7 +97,8 @@ Flags:
 		}
 
 		if _, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
-			Alias: rawURL + " Hypermedia Site",
+			Alias: rawURL,
+			Bio:   "Hypermedia Site. Powered by Mintter.",
 		}); err != nil {
 			return fmt.Errorf("failed to update profile: %w", err)
 		}
