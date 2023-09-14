@@ -110,8 +110,6 @@ function getPageComponent(navRoute: NavRoute) {
 
 export default function Main() {
   const navR = useNavRoute()
-
-  console.log(`== ~ Main ~ navR:`, navR)
   const isSettings = navR?.key == 'settings'
   const navigate = useNavigate()
   const {PageComponent, Fallback} = useMemo(

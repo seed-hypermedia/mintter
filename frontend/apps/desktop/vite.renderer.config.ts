@@ -3,17 +3,7 @@ import react from '@vitejs/plugin-react'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
 import tsConfigPaths from 'vite-tsconfig-paths'
-
-const tamaguiConfig = {
-  target: 'web',
-  components: ['@mintter/ui', 'tamagui'],
-  config: './tamagui.config.ts',
-  useReactNativeWebLite: true,
-  themeBuilder: {
-    input: '../../packages/ui/src/themes.ts',
-    output: '../../packages/ui/src/generated-themes.ts',
-  },
-}
+import {TamaguiConfig} from 'tamagui'
 
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
@@ -39,7 +29,20 @@ export default defineConfig(({command, mode}) => {
         },
       },
     },
-    plugins: [tsConfigPaths(), react(), tamaguiPlugin(tamaguiConfig)],
+    plugins: [
+      tsConfigPaths(),
+      react(),
+      tamaguiPlugin({
+        target: 'web',
+        components: ['@mintter/ui', 'tamagui'],
+        config: './tamagui.config.ts',
+        useReactNativeWebLite: true,
+        themeBuilder: {
+          input: '../../packages/ui/src/themes.ts',
+          output: '../../packages/ui/src/generated-themes.ts',
+        },
+      }),
+    ],
   }
 
   if (command == 'build') {

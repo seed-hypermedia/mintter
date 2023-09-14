@@ -5045,7 +5045,9 @@ __metadata:
     "@tamagui/themes": 1.61.1
     "@tamagui/toast": 1.61.1
     "@tamagui/web": 1.61.1
+    "@types/react": 18.2.20
     eslint-config-custom: "workspace:*"
+    react: 18.2.0
     tamagui: 1.61.1
   languageName: unknown
   linkType: soft

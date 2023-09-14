@@ -81,7 +81,7 @@ export default function PublicationPage() {
                   {publication.editor && (
                     <HMEditorContainer>
                       <HyperMediaEditorView editor={publication.editor} />
-                      <DebugData data={publication.data} />
+                      <DebugData data={publication.editor.topLevelBlocks} />
                     </HMEditorContainer>
                   )}
 
