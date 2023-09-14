@@ -540,7 +540,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 	repo, err := InitRepo(cfg.Base.DataDir, u.Device.Wrapped())
 	require.NoError(t, err)
 
-	app, err := LoadWithStorage(ctx, cfg, repo)
+	app, err := Load(ctx, cfg, repo)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()

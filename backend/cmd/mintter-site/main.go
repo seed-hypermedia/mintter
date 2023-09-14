@@ -87,7 +87,7 @@ Flags:
 			return err
 		}
 
-		app, err := daemon.LoadWithStorage(ctx, cfg, dir)
+		app, err := daemon.Load(ctx, cfg, dir)
 		if err != nil {
 			return err
 		}

@@ -67,7 +67,12 @@ func main() {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		app, err := daemon.Load(ctx, cfg,
+		dir, err := daemon.InitRepo(cfg.Base.DataDir, nil)
+		if err != nil {
+			return err
+		}
+
+		app, err := daemon.Load(ctx, cfg, dir,
 			grpc.ChainUnaryInterceptor(
 				otelgrpc.UnaryServerInterceptor(),
 				daemon.GRPCDebugLoggingInterceptor(),

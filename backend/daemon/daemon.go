@@ -76,18 +76,7 @@ type App struct {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
-	r, err := InitRepo(cfg.Base.DataDir, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return LoadWithStorage(ctx, cfg, r, grpcOpt...)
-}
-
-// LoadWithStorage is the same as Load, but allows to pass a custom storage.
-// The storage must be created using the [InitRepo] function.
-func LoadWithStorage(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	a = &App{
 		log:     logging.New("mintter/daemon", "debug"),
 		Storage: r,
