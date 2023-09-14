@@ -21,7 +21,7 @@ import {
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
-import {PublicationRouteContext} from '@mintter/app/utils/navigation'
+import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'
 import {
   Account,
   DocumentChange,
@@ -218,7 +218,13 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
-      <WriteActions key="writeActions" route={route} />,
+      <EditDocActions
+        key="editActions"
+        contextRoute={route}
+        pubContext={route.pubContext || null}
+        docId={route.documentId}
+        baseVersion={route.versionId}
+      />,
       <CopyReferenceButton key="copyRef" />,
       ...commonButtons,
     ]
@@ -496,12 +502,24 @@ export function NavMenu() {
   )
 }
 
-function WriteActions({route}: {route: PublicationRoute}) {
+export function EditDocActions({
+  docId,
+  contextRoute,
+  navMode = 'replace',
+  pubContext,
+  baseVersion,
+}: {
+  docId: string
+  navMode?: NavMode
+  contextRoute: NavRoute
+  pubContext: PublicationRouteContext
+  baseVersion?: string
+}) {
   const draftList = useDraftList()
-  const navigateReplace = useNavigate('replace')
+  const navigate = useNavigate(navMode)
 
   const hasExistingDraft = draftList.data?.documents.some(
-    (draft) => draft.id == route.documentId,
+    (draft) => draft.id == docId,
   )
   const grpcClient = useGRPCClient()
 
@@ -509,42 +527,23 @@ function WriteActions({route}: {route: PublicationRoute}) {
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
-        navigateReplace({
+        navigate({
           key: 'draft',
-          draftId: route.documentId,
-          contextRoute: route,
-          pubContext: route.pubContext,
+          draftId: docId,
+          contextRoute,
+          pubContext,
         })
         return
       }
       let draft = await grpcClient.drafts.createDraft({
-        existingDocumentId: route.documentId,
-        version: route.versionId,
+        existingDocumentId: docId,
+        version: baseVersion,
       })
-      if (draft.webUrl) {
-        // the previous version had a webUrl set.
-        // we should check if the user has the site added. if not, set the webUrl to empty
-        const sites = await grpcClient.webPublishing.listSites({})
-        const foundPublishingSite = sites.sites.find(
-          (site) => site.hostname === draft.webUrl,
-        )
-        if (!foundPublishingSite) {
-          await grpcClient.drafts.updateDraft({
-            documentId: draft.id,
-            changes: [
-              new DocumentChange({
-                op: {case: 'setWebUrl', value: ''},
-              }),
-            ],
-          })
-        }
-      }
-
-      navigateReplace({
+      navigate({
         key: 'draft',
         draftId: draft.id,
-        contextRoute: route,
-        pubContext: route.pubContext,
+        contextRoute,
+        pubContext,
       })
     } catch (error: any) {
       toast.error(`Draft Error: ${error?.message}`)
@@ -553,19 +552,14 @@ function WriteActions({route}: {route: PublicationRoute}) {
 
   return (
     <>
-      {route.key == 'publication' && (
-        <Tooltip
-          content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}
-        >
-          <Button
-            // chromeless
-            size="$2"
-            theme={hasExistingDraft ? 'yellow' : undefined}
-            onPress={() => handleEdit()}
-            iconAfter={Pencil}
-          />
-        </Tooltip>
-      )}
+      <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
+        <Button
+          size="$2"
+          theme={hasExistingDraft ? 'yellow' : undefined}
+          onPress={() => handleEdit()}
+          iconAfter={Pencil}
+        />
+      </Tooltip>
     </>
   )
 }

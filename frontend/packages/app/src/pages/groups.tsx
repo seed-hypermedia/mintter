@@ -8,16 +8,35 @@ import {
   Text,
   YStack,
 } from '@mintter/ui'
-import {useGroups} from '../models/groups'
-import {Group} from '@mintter/shared'
+import {useGroupMembers, useGroups} from '../models/groups'
+import {Group, Role} from '@mintter/shared'
 import {GroupRoute, useClickNavigate, useNavigate} from '../utils/navigation'
 import {GestureResponderEvent} from 'react-native'
 import {ListItem, TimeAccessory} from '../components/list-item'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 
+function MemberAvatarLinks({
+  ownerAccountId,
+  groupMembers,
+}: {
+  groupMembers: Record<string, Role>
+  ownerAccountId: string
+}) {
+  return (
+    <>
+      <AccountLinkAvatar accountId={ownerAccountId} />
+      {Object.keys(groupMembers).map((accountId) => {
+        if (accountId == ownerAccountId) return null
+        return <AccountLinkAvatar accountId={accountId} key={accountId} />
+      })}
+    </>
+  )
+}
+
 function GroupListItem({group}: {group: Group}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
+  const groupMembers = useGroupMembers(group.id)
   const groupRoute: GroupRoute = {key: 'group', groupId: group.id}
   const goToItem = (e: GestureResponderEvent) => {
     navigate(groupRoute, e)
@@ -27,7 +46,14 @@ function GroupListItem({group}: {group: Group}) {
       title={group.title}
       accessory={
         <>
-          <AccountLinkAvatar accountId={group.ownerAccountId} />
+          {groupMembers.data?.members ? (
+            <MemberAvatarLinks
+              ownerAccountId={group.ownerAccountId}
+              groupMembers={groupMembers.data?.members}
+            />
+          ) : (
+            <AccountLinkAvatar accountId={group.ownerAccountId} />
+          )}
           <TimeAccessory time={group.createTime} onPress={goToItem} />
         </>
       }

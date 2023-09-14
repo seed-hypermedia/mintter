@@ -33,12 +33,13 @@ export function useOpenDraft() {
   function openNewDraft(
     newWindow = true,
     pubContext?: PublicationRouteContext | undefined,
+    opts?: {pathName?: string | null},
   ) {
     const destPubContext: PublicationRouteContext =
       pubContext?.key === 'group'
         ? {
             ...pubContext,
-            pathName: null,
+            pathName: opts?.pathName || null,
           }
         : pubContext || null
     createDraft(grpcClient, pubContext)

@@ -8,10 +8,9 @@ import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {useAccountPublicationList} from '@mintter/app/src/models/changes'
 import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
 import {toast} from '@mintter/app/src/toast'
-import {getAccountUrl} from '@mintter/app/src/utils/account-url'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/navigation'
-import {abbreviateCid, pluralizer} from '@mintter/shared'
+import {abbreviateCid, createPublicWebHmUrl, pluralizer} from '@mintter/shared'
 import {
   Button,
   ChevronDown,
@@ -175,7 +174,7 @@ export default function AccountPage() {
                   icon={Copy}
                   size="$2"
                   onPress={() => {
-                    copyTextToClipboard(getAccountUrl(accountId))
+                    copyTextToClipboard(createPublicWebHmUrl('a', accountId))
                   }}
                 />
               </Tooltip>

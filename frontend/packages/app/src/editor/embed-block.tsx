@@ -251,7 +251,7 @@ function useSelected(
   return selected
 }
 
-function StaticBlockNode({block}: {block: BlockNode}) {
+export function StaticBlockNode({block}: {block: BlockNode}) {
   const children =
     block.children.length > 0 ? (
       <YStack paddingLeft="$5">

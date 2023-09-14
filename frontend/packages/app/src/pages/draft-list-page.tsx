@@ -47,7 +47,7 @@ export default function DraftList() {
               </YStack>
             ) : (
               <EmptyList
-                description="You have no Drafts yet."
+                description="You have no current Drafts."
                 action={() => {
                   openDraft(false)
                 }}

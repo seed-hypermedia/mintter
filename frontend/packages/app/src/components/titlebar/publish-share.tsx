@@ -55,7 +55,9 @@ import {
   CheckCheck,
   ChevronDown,
   ChevronUp,
+  Home,
   Pencil,
+  Store,
   X,
 } from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
@@ -532,34 +534,42 @@ function GroupContextItem({
           })
         }}
       >
-        <YStack alignItems="flex-start">
-          <Text fontSize={10} color={isActive ? undefined : '$color9'}>
-            {group.data?.title}
-          </Text>
-          <ButtonText
-            fontSize={10}
-            color="$color9"
-            marginVertical={0}
-            disabled={!isPathPressable}
-            onPress={
-              isPathPressable
-                ? (e) => {
-                    e.stopPropagation()
-                    onPathPress()
-                  }
-                : undefined
-            }
-            hoverStyle={
-              isPathPressable
-                ? {
-                    textDecorationLine: 'underline',
-                  }
-                : {}
-            }
-          >
-            {path}
-          </ButtonText>
-        </YStack>
+        <XStack gap="$2">
+          <YStack alignItems="flex-start">
+            <Text
+              fontSize={path === '/' ? 12 : 10}
+              color={isActive ? undefined : '$color9'}
+            >
+              {group.data?.title}
+            </Text>
+            {path === '/' ? null : (
+              <ButtonText
+                fontSize={10}
+                color="$color9"
+                marginVertical={0}
+                disabled={!isPathPressable}
+                onPress={
+                  isPathPressable
+                    ? (e) => {
+                        e.stopPropagation()
+                        onPathPress()
+                      }
+                    : undefined
+                }
+                hoverStyle={
+                  isPathPressable
+                    ? {
+                        textDecorationLine: 'underline',
+                      }
+                    : {}
+                }
+              >
+                {path}
+              </ButtonText>
+            )}
+          </YStack>
+          {path === '/' ? <Store size={16} /> : null}
+        </XStack>
       </Button>
     </XStack>
   )
@@ -601,9 +611,8 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
     pubContext: route.pubContext,
   })
   const {pubContext} = route
-  const contextGroup = useGroup(
-    pubContext?.key === 'group' ? pubContext.groupId : undefined,
-  )
+  const groupPubContext = pubContext?.key === 'group' ? pubContext : null
+  const contextGroup = useGroup(groupPubContext?.groupId)
   let icon = Globe
   let title = ''
   if (pubContext?.key === 'trusted') {
@@ -616,17 +625,41 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
   const docVersion = route.versionId || publication.data?.version
   const docGroups = useDocumentGroups(route.documentId)
   const popoverState = usePopoverState(false)
+  const navigate = useNavigate()
   const publishDialogState = usePopoverState(false, (isOpen) => {
     isOpen && popoverState.onOpenChange(false)
   })
   const renameDialog = useAppDialog(RenamePubDialog)
+  const contextDestRoute: NavRoute | null = groupPubContext?.groupId
+    ? {
+        key: 'group',
+        groupId: groupPubContext.groupId,
+        // version: groupPubContext.groupVersion,
+      }
+    : null
 
   return (
     <>
       <ContextPopover {...popoverState}>
         <PopoverTrigger asChild>
           <Button size="$2" icon={icon}>
-            {title}
+            {contextDestRoute ? (
+              <ButtonText
+                hoverStyle={
+                  popoverState.open ? {textDecorationLine: 'underline'} : {}
+                }
+                fontSize="$2"
+                onPress={(e) => {
+                  if (!popoverState.open) return
+                  e.stopPropagation()
+                  navigate(contextDestRoute)
+                }}
+              >
+                {title}
+              </ButtonText>
+            ) : (
+              title
+            )}
           </Button>
         </PopoverTrigger>
         <ContextPopoverContent>
@@ -777,18 +810,28 @@ export function DraftPublicationButtons() {
   const draftId = route.draftId
   const groupRouteContext =
     route.pubContext?.key === 'group' ? route.pubContext : null
-  let navReplace = useNavigate('replace')
+  const navReplace = useNavigate('replace')
+  const navBack = useNavigate('backplace')
+
   const isDaemonReady = useDaemonReady()
   const publish = usePublishDraft({
     onSuccess: ({pub: publishedDoc, pubContext}) => {
       if (!publishedDoc || !draftId) return
-      navReplace({
-        key: 'publication',
-        documentId: draftId,
-        versionId: publishedDoc.version,
-        pubContext: pubContext,
-      })
-      toast.success('Document saved and set to public')
+      if (
+        route.contextRoute?.key === 'group' &&
+        pubContext?.key === 'group' &&
+        pubContext.pathName === '/'
+      ) {
+        navBack(route.contextRoute)
+      } else {
+        navReplace({
+          key: 'publication',
+          documentId: draftId,
+          versionId: publishedDoc.version,
+          pubContext: pubContext,
+        })
+      }
+      toast.success('Document Committed.')
     },
     onError: (e: any) => {
       toast.error('Failed to publish: ' + e.message)

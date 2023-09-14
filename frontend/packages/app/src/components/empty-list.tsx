@@ -13,7 +13,7 @@ export function EmptyList({
         {description}
       </Text>
       <Button size="$4" onPress={() => action()} alignSelf="flex-start">
-        Start a new Draft
+        Create a new Document
       </Button>
     </YStack>
   )
