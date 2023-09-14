@@ -202,27 +202,28 @@ function CopyReferenceButton() {
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
-  let buttonGroup = [<NewDocumentButton key="newDoc" />]
+  const commonButtons = [<NewDocumentButton key="newDoc" />]
+  let buttonGroup = commonButtons
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'contacts') {
-    buttonGroup = [<ContactsPrompt key="addContact" />]
+    buttonGroup = [<ContactsPrompt key="addContact" />, ...commonButtons]
   } else if (route.key === 'groups') {
-    buttonGroup = [<AddGroupButton key="addGroup" />]
+    buttonGroup = [<AddGroupButton key="addGroup" />, ...commonButtons]
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
       <CopyReferenceButton key="copyRef" />,
-      <NewDocumentButton key="newDoc" />,
+      ...commonButtons,
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
       <WriteActions key="writeActions" route={route} />,
       <CopyReferenceButton key="copyRef" />,
-      <NewDocumentButton key="newDoc" />,
+      ...commonButtons,
     ]
   } else if (route.key === 'account') {
-    buttonGroup = [<CopyReferenceButton key="copyRef" />]
+    buttonGroup = [<CopyReferenceButton key="copyRef" />, ...commonButtons]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }
