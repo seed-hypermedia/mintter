@@ -345,16 +345,20 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client, cfg.NoInbound)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
 
-		g.Go(func() error {
-			err := svc.Start(ctx)
+		if cfg.Disabled {
 			close(done)
-			return err
-		})
+		} else {
+			g.Go(func() error {
+				err := svc.Start(ctx)
+				close(done)
+				return err
+			})
+		}
 
 		if err := f.Resolve(svc); err != nil {
 			return err

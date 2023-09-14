@@ -90,7 +90,6 @@ func Default() Config {
 			WarmupDuration: time.Second * 20,
 			Interval:       time.Minute,
 			TimeoutPerPeer: time.Minute * 2,
-			NoInbound:      false,
 		},
 	}
 }
@@ -172,9 +171,7 @@ type Syncing struct {
 	WarmupDuration time.Duration
 	Interval       time.Duration
 	TimeoutPerPeer time.Duration
-	// NoInbound disables syncing content to the remote peer from our peer.
-	// If false, then documents get synced in both directions.
-	NoInbound bool
+	Disabled       bool
 }
 
 // BindFlags binds the flags to the given FlagSet.
@@ -182,7 +179,7 @@ func (c *Syncing) BindFlags(fs *flag.FlagSet) {
 	fs.DurationVar(&c.WarmupDuration, "syncing.warmup-duration", c.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&c.Interval, "syncing.interval", c.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&c.TimeoutPerPeer, "syncing.timeout-per-peer", c.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
-	fs.BoolVar(&c.NoInbound, "syncing.disable-inbound", c.NoInbound, "Not syncing inbound content via P2P, only syncs to remote peers. IF this is a site, however still admits content when published")
+	fs.BoolVar(&c.Disabled, "syncing.disabled", c.Disabled, "Disables periodic syncing")
 }
 
 // P2P configuration. For field descriptions see SetupFlags().
@@ -192,7 +189,6 @@ type P2P struct {
 	BootstrapPeers     []multiaddr.Multiaddr
 	PublicReachability bool
 	NoPrivateIps       bool
-	NoListing          bool
 	NoMetrics          bool
 	RelayBackoff       time.Duration
 	AnnounceAddrs      []multiaddr.Multiaddr
@@ -204,11 +200,10 @@ func (p2p *P2P) BindFlags(fs *flag.FlagSet) {
 	fs.IntVar(&p2p.Port, "p2p.port", p2p.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&p2p.NoRelay, "p2p.no-relay", p2p.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Multiaddrs for bootstrap nodes (comma separated)")
-	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Multiaddrs this node will announce as being reachable at (comma separated). When set, -p2p.no-private-ips flag is ignored.")
-	fs.BoolVar(&p2p.PublicReachability, "p2p.public-reachability", p2p.PublicReachability, "Force Reachability to public.")
+	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Multiaddrs this node will announce as being reachable at (comma separated)")
+	fs.BoolVar(&p2p.PublicReachability, "p2p.public-reachability", p2p.PublicReachability, "Force the node into thinking it's publicly reachable")
 	fs.Var(newAddrsFlag(p2p.ListenAddrs, &p2p.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
-	fs.BoolVar(&p2p.NoPrivateIps, "p2p.no-private-ips", p2p.NoPrivateIps, "Not announce local IPs.")
-	fs.BoolVar(&p2p.NoListing, "p2p.disable-listing", p2p.NoListing, "Disable listing documents when requested (stealth mode)")
+	fs.BoolVar(&p2p.NoPrivateIps, "p2p.no-private-ips", p2p.NoPrivateIps, "Avoid announcing private IP addresses (ignored when using -p2p.announce-addrs)")
 	fs.BoolVar(&p2p.NoMetrics, "p2p.no-metrics", p2p.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&p2p.RelayBackoff, "p2p.relay-backoff", p2p.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 }

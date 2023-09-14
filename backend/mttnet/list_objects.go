@@ -15,10 +15,6 @@ import (
 func (srv *rpcMux) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
 	n := srv.Node
 
-	if n.cfg.NoListing {
-		return &p2p.ListObjectsResponse{}, nil
-	}
-
 	objs := map[hyper.EntityID]*p2p.Object{}
 
 	if err := n.blobs.Query(ctx, func(conn *sqlite.Conn) error {

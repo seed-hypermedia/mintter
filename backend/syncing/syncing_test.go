@@ -174,7 +174,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 	t.Cleanup(stop)
 	n.Node = peer
 
-	n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client, false)
+	n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client)
 
 	return n
 }

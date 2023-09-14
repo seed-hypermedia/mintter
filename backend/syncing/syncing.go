@@ -49,10 +49,7 @@ type Service struct {
 	bitswap Bitswap
 	client  NetDialFunc
 
-	// NoInbound disables syncing content from the remote peer to our peer.
-	// If false, then documents get synced in both directions.
-	NoInbound bool
-	mu        sync.Mutex // Ensures only one sync loop is running at a time.
+	mu sync.Mutex // Ensures only one sync loop is running at a time.
 }
 
 const (
@@ -61,20 +58,19 @@ const (
 	defaultPeerSyncTimeout = time.Minute * 5
 )
 
-// NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, bitswap Bitswap, client NetDialFunc, inDisable bool) *Service {
+// NewService creates a new syncing service. Users should call Start() to start the periodic syncing.
+func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, blobs *hyper.Storage, bitswap Bitswap, client NetDialFunc) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
 		peerSyncTimeout: defaultPeerSyncTimeout,
 
-		log:       log,
-		db:        db,
-		blobs:     blobs,
-		me:        me,
-		bitswap:   bitswap,
-		client:    client,
-		NoInbound: inDisable,
+		log:     log,
+		db:      db,
+		blobs:   blobs,
+		me:      me,
+		bitswap: bitswap,
+		client:  client,
 	}
 
 	return svc
@@ -354,12 +350,6 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error {
 	// Can't sync with self.
 	if s.me.DeviceKey().PeerID() == device {
-		return nil
-	}
-
-	// Nodes such web sites can be configured to avoid automatic syncing with remote peers,
-	// unless explicitly asked to sync some specific object IDs.
-	if s.NoInbound && len(initialObjects) == 0 {
 		return nil
 	}
 

@@ -42,9 +42,9 @@ Flags:
 			fs.PrintDefaults()
 		}
 
-		// TODO(burdiyan): ignore http.port flag because it collides with the ADDRESS positional argument.
 		cfg := config.Default()
 		cfg.DataDir = "~/.mintter-site"
+		cfg.Syncing.Disabled = true
 		cfg.BindFlags(fs)
 
 		if len(os.Args) < 2 {
