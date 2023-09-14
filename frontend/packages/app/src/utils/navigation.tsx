@@ -2,6 +2,7 @@ import {Buffer} from 'buffer'
 import {
   createContext,
   ReactNode,
+  startTransition,
   useContext,
   useEffect,
   useMemo,
@@ -204,6 +205,7 @@ export function NavigationProvider({
   const {send} = useIPC()
   const {lastAction, routes, routeIndex} = navState
   const activeRoute = routes[routeIndex]
+
   useEffect(() => {
     send('windowRoute', activeRoute)
   }, [activeRoute, lastAction, send])
@@ -293,15 +295,18 @@ export function useNavigate(mode: NavMode = 'push') {
     invoke('plugin:window|open', {path})
   }
   return (route: NavRoute) => {
-    if (mode === 'spawn') {
-      openRouteWindow(route)
-    } else if (mode === 'push') {
-      dispatch({type: 'push', route})
-    } else if (mode === 'replace') {
-      dispatch({type: 'replace', route})
-    } else if (mode === 'backplace') {
-      dispatch({type: 'backplace', route})
-    }
+    startTransition(() => {
+      if (mode === 'spawn') {
+        openRouteWindow(route)
+      } else if (mode === 'push') {
+        dispatch({type: 'push', route})
+      } else if (mode === 'replace') {
+        dispatch({type: 'replace', route})
+      } else if (mode === 'backplace') {
+        dispatch({type: 'backplace', route})
+      }
+    })
+    
   }
 }
 

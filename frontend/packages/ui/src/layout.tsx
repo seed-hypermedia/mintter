@@ -22,3 +22,6 @@ export const MainWrapper = ({
     {noScroll ? children : <ScrollView>{children}</ScrollView>}
   </YStack>
 )
+
+export const YDebug = (props) => <YStack {...props} />
+YDebug.displayName = 'YMintterDebug'

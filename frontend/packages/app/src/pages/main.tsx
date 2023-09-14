@@ -13,8 +13,8 @@ import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
-import './polyfills'
 import {DocumentPlaceholder} from './document-placeholder'
+import './polyfills'
 
 var PublicationList = lazy(
   () => import('@mintter/app/src/pages/publication-list-page'),

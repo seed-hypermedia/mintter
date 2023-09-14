@@ -2,12 +2,11 @@ import {YStack} from '@mintter/ui'
 import {Placeholder} from '../components/placeholder-box'
 
 export function DocumentPlaceholder() {
-  // TODO: update shell
   return (
     <YStack
       marginTop="$7"
       width="100%"
-      maxWidth="600px"
+      maxWidth={600}
       gap="$6"
       marginHorizontal="auto"
     >
@@ -22,7 +21,7 @@ export function DocumentPlaceholder() {
 
 function BlockPlaceholder() {
   return (
-    <YStack width="600px" gap="$2">
+    <YStack width={600} gap="$2">
       <Placeholder width="100%" />
       <Placeholder width="92%" />
       <Placeholder width="84%" />
