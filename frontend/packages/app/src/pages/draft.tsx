@@ -1,20 +1,15 @@
 import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
-import '@mintter/app/src/blocknote-core/style.css'
-import {
-  HMEditorContainer,
-  HyperMediaEditorView,
-} from '@mintter/app/src/editor/editor'
+import {DebugData} from '@mintter/app/src/components/debug-data'
+import Footer from '@mintter/app/src/components/footer'
 import {useDraftEditor} from '@mintter/app/src/models/documents'
 import {useDaemonReady} from '@mintter/app/src/node-status-context'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {DebugData} from '@mintter/app/src/components/debug-data'
-import Footer from '@mintter/app/src/components/footer'
+import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   Button,
   Container,
   MainWrapper,
   SizableText,
-  Text,
   Theme,
   YStack,
 } from '@mintter/ui'

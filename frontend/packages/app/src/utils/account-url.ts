@@ -1,4 +1,4 @@
-import {BACKEND_FILE_URL} from '../constants'
+import {BACKEND_FILE_URL} from '@mintter/shared'
 
 export function getAvatarUrl(avatarCID?: string) {
   if (avatarCID) {

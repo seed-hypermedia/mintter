@@ -2,10 +2,10 @@ import {
   BlockNoteEditor,
   DefaultBlockSchema,
   defaultBlockSchema,
-} from '@mintter/app/src/blocknote-core'
-import '@mintter/app/src/blocknote-core/style.css'
-import {BlockNoteView, useBlockNote} from '@mintter/app/src/blocknote-react'
-import {Container, MainWrapper, YStack} from '@mintter/ui'
+} from '@mintter/editor'
+// import '@mintter/editor/style.css'
+import {BlockNoteView, useBlockNote} from '@mintter/editor'
+import {MainWrapper, YStack} from '@mintter/ui'
 
 type HyperdocsBlockSchema = Omit<
   DefaultBlockSchema,

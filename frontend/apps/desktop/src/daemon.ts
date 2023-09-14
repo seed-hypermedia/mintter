@@ -2,14 +2,14 @@ import {
   BACKEND_GRPC_PORT,
   BACKEND_HTTP_PORT,
   BACKEND_P2P_PORT,
-} from '@mintter/app/constants'
+} from '@mintter/shared'
 import {spawn} from 'child_process'
+import {color} from 'console-log-colors'
 import {app} from 'electron'
 import {join} from 'path'
 import {updateGoDaemonState} from './api'
-import {childLogger, log} from './logger'
-import {color} from 'console-log-colors'
 import {APP_USER_DATA_PATH} from './app-paths'
+import {childLogger, log} from './logger'
 
 const logger = childLogger(color.cyan('Go Daemon'))
 

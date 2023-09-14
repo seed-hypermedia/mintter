@@ -1,11 +1,15 @@
-import {LightningWallet, Payments, Query} from '@mintter/shared'
+import {
+  BACKEND_GRAPHQL_ENDPOINT,
+  LightningWallet,
+  Payments,
+  Query,
+} from '@mintter/shared'
 import {
   FetchQueryOptions,
-  useQuery,
   UseQueryOptions,
+  useQuery,
 } from '@tanstack/react-query'
-import {request, gql} from 'graphql-request'
-import {BACKEND_GRAPHQL_ENDPOINT} from '../constants'
+import {gql, request} from 'graphql-request'
 
 const getWalletsQuery = gql`
   query getWallets {

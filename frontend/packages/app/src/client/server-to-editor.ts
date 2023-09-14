@@ -1,10 +1,9 @@
-import {PartialBlock} from '@mintter/app/src/blocknote-core'
+import {PartialBlock, hmBlockSchema} from '@mintter/editor'
 import {
   BlockNode,
   EditorChildrenType,
   ServerToEditorRecursiveOpts,
 } from '@mintter/shared'
-import {hmBlockSchema} from './schema'
 import {
   serverBlockNodeToEditorParagraph as _serverBlockNodeToEditorParagraph,
   serverBlockToHeading as _serverBlockToHeading,

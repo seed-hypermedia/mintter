@@ -1,4 +1,5 @@
 export * from './client'
-export * from './utils'
 export * from './client/hyperdocs-presentation'
+export * from './constants'
 export * from './grpc-client'
+export * from './utils'

@@ -1,10 +1,9 @@
-import {useMyAccount} from '@mintter/app/src/models/accounts'
 import {Avatar} from '@mintter/app/src/components/avatar'
-import {Tooltip} from '@mintter/ui'
-import {FontSizeTokens, Stack} from '@mintter/ui'
+import {useMyAccount} from '@mintter/app/src/models/accounts'
+import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
+import {FontSizeTokens, Stack, Tooltip} from '@mintter/ui'
 import {ChangeEvent} from 'react'
 import toast from 'react-hot-toast'
-import {BACKEND_FILE_UPLOAD_URL} from '../constants'
 
 export function AvatarForm({
   size = '$12',

@@ -2,12 +2,11 @@ import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
 import {VersionsAccessory} from '@mintter/app/src/components/changes-list'
 import {CitationsAccessory} from '@mintter/app/src/components/citations'
 import Footer, {FooterButton} from '@mintter/app/src/components/footer'
-import {features} from '@mintter/app/src/constants'
 import {useDocChanges} from '@mintter/app/src/models/changes'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/src/models/documents'
 import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {MttLink, pluralS} from '@mintter/shared'
+import {MttLink, features, pluralS} from '@mintter/shared'
 import {
   Button,
   Comment,
@@ -25,10 +24,7 @@ import {ErrorBoundary} from 'react-error-boundary'
 import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
-import {
-  HMEditorContainer,
-  HyperMediaEditorView,
-} from '@mintter/app/src/editor/editor'
+import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {useLatestPublication} from '../models/documents'
 import {DocumentPlaceholder} from './document-placeholder'
 

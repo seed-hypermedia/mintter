@@ -8,8 +8,9 @@ import {
   Block as EditorBlock,
   InlineContent,
   Styles,
-} from '@mintter/app/src/blocknote-core'
-import {hmBlockSchema} from './schema'
+  hmBlockSchema,
+} from '@mintter/editor'
+
 import {TextAnnotation} from '@mintter/shared'
 
 function styleMarkToAnnotationType(

@@ -4,27 +4,28 @@ import {
   useListen,
   useQueryInvalidator,
 } from '@mintter/app/src/app-context'
+import {fetchWebLink} from './web-links'
+import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
+import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
+import {useOpenUrl} from '@mintter/app/src/open-url'
+import {toast} from '@mintter/app/src/toast'
 import {
   Block,
   BlockIdentifier,
   BlockNoteEditor,
+  HMBlockSchema,
   InlineContent,
   PartialBlock,
-} from '@mintter/app/src/blocknote-core'
-import {
+  RightsideWidget,
+  createHyperdocsDocLinkPlugin,
   defaultReactSlashMenuItems,
+  formattingToolbarFactory,
+  hmBlockSchema,
+  insertFile,
+  insertImage,
+  insertVideo,
   useBlockNote,
-} from '@mintter/app/src/blocknote-react'
-import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
-import {HMBlockSchema, hmBlockSchema} from '@mintter/app/src/client/schema'
-import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
-import {RightsideWidget} from '@mintter/app/src/components/rightside-block-widget'
-import {insertFile} from '@mintter/app/src/editor/file'
-import {createHyperdocsDocLinkPlugin} from '@mintter/app/src/editor/hyperdocs-link-plugin'
-import {insertImage} from '@mintter/app/src/editor/image'
-import {insertVideo} from '@mintter/app/src/editor/video'
-import {useOpenUrl} from '@mintter/app/src/open-url'
-import {toast} from '@mintter/app/src/toast'
+} from '@mintter/editor'
 import {
   Document,
   DocumentChange,
@@ -49,11 +50,9 @@ import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
 import {useEffect, useRef} from 'react'
 import {useGRPCClient} from '../app-context'
-import {formattingToolbarFactory} from '../editor/formatting-toolbar'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
-import {queryKeys} from './query-keys'
 import {usePublicationInContext} from './publication'
-import {pathNameify} from '../utils/path'
+import {queryKeys} from './query-keys'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
@@ -803,7 +802,12 @@ export function useDraftEditor(
         Extension.create({
           name: 'hyperdocs-link',
           addProseMirrorPlugins() {
-            return [createHyperdocsDocLinkPlugin(queryClient).plugin]
+            return [
+              createHyperdocsDocLinkPlugin({
+                queryClient,
+                fetchWebLink,
+              }).plugin,
+            ]
           },
         }),
       ],

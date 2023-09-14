@@ -43,7 +43,7 @@ import {useNavRoute, useNavigate} from '../utils/navigation'
 import {AppLinkText} from '../components/link'
 import {pathNameify} from '../utils/path'
 import {useOpenDraft} from '../utils/open-draft'
-import {StaticBlockNode} from '../editor/embed-block'
+import {StaticBlockNode} from '@mintter/editor'
 import {EditDocActions} from '../components/titlebar/common'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 
