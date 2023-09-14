@@ -12,7 +12,7 @@ import {toast} from '@mintter/app/toast'
 import {NavRoute, NavigationProvider} from '@mintter/app/utils/navigation'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {createGRPCClient} from '@mintter/shared'
-import {Spinner, XStack} from '@mintter/ui'
+import {Spinner, XStack, YStack} from '@mintter/ui'
 import {createTRPCReact} from '@trpc/react-query'
 import {ipcLink} from 'electron-trpc/renderer'
 import React, {useEffect, useMemo, useState} from 'react'
@@ -173,15 +173,25 @@ function MainApp({
         }}
         windowUtils={windowUtils}
       >
-        <NavigationProvider initialNav={initialNav}>
-          <DaemonStatusProvider>
-            <Main />
-          </DaemonStatusProvider>
-        </NavigationProvider>
-        <Toaster
-          position="bottom-right"
-          toastOptions={{className: 'toaster'}}
-        />
+        <Suspense
+          fallback={
+            <YStack fullscreen ai="center" jc="center">
+              <Spinner />
+            </YStack>
+          }
+        >
+          <ErrorBoundary FallbackComponent={AppError}>
+            <NavigationProvider initialNav={initialNav}>
+              <DaemonStatusProvider>
+                <Main />
+              </DaemonStatusProvider>
+            </NavigationProvider>
+            <Toaster
+              position="bottom-right"
+              toastOptions={{className: 'toaster'}}
+            />
+          </ErrorBoundary>
+        </Suspense>
       </AppContextProvider>
     )
   }

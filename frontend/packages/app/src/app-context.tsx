@@ -1,19 +1,16 @@
 import {GRPCClient} from '@mintter/shared'
-import {createContext, ReactNode, Suspense, useContext} from 'react'
-import {QueryClientProvider} from '@tanstack/react-query'
 import {
+  config as tamaguiConfig,
   TamaguiProvider,
   TamaguiProviderProps,
   Theme,
-  config as tamaguiConfig,
 } from '@mintter/ui'
+import {QueryClientProvider} from '@tanstack/react-query'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import {createContext, ReactNode, useContext, useEffect} from 'react'
 import {AppIPC, Event, EventCallback} from './app-ipc'
 import {AppQueryClient} from './query-client'
-import {useEffect} from 'react'
 import {WindowUtils} from './window-utils'
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {ErrorBoundary} from 'react-error-boundary'
-import {AppError} from './components/app-error'
 
 export type AppPlatform = typeof process.platform
 
