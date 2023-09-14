@@ -184,15 +184,15 @@ func (c *Syncing) BindFlags(fs *flag.FlagSet) {
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port               int
-	NoRelay            bool
-	BootstrapPeers     []multiaddr.Multiaddr
-	PublicReachability bool
-	NoPrivateIps       bool
-	NoMetrics          bool
-	RelayBackoff       time.Duration
-	AnnounceAddrs      []multiaddr.Multiaddr
-	ListenAddrs        []multiaddr.Multiaddr
+	Port                    int
+	NoRelay                 bool
+	BootstrapPeers          []multiaddr.Multiaddr
+	ForceReachabilityPublic bool
+	NoPrivateIps            bool
+	NoMetrics               bool
+	RelayBackoff            time.Duration
+	AnnounceAddrs           []multiaddr.Multiaddr
+	ListenAddrs             []multiaddr.Multiaddr
 }
 
 // BindFlags binds the flags to the given FlagSet.
@@ -201,7 +201,7 @@ func (p2p *P2P) BindFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&p2p.NoRelay, "p2p.no-relay", p2p.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Multiaddrs for bootstrap nodes (comma separated)")
 	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Multiaddrs this node will announce as being reachable at (comma separated)")
-	fs.BoolVar(&p2p.PublicReachability, "p2p.public-reachability", p2p.PublicReachability, "Force the node into thinking it's publicly reachable")
+	fs.BoolVar(&p2p.ForceReachabilityPublic, "p2p.force-reachability-public", p2p.ForceReachabilityPublic, "Force the node into thinking it's publicly reachable")
 	fs.Var(newAddrsFlag(p2p.ListenAddrs, &p2p.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
 	fs.BoolVar(&p2p.NoPrivateIps, "p2p.no-private-ips", p2p.NoPrivateIps, "Avoid announcing private IP addresses (ignored when using -p2p.announce-addrs)")
 	fs.BoolVar(&p2p.NoMetrics, "p2p.no-metrics", p2p.NoMetrics, "Disable Prometheus metrics collection")

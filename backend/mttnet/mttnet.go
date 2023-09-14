@@ -436,7 +436,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			}),
 		)
 	}
-	if !cfg.PublicReachability && !cfg.NoRelay {
+	if !cfg.ForceReachabilityPublic && !cfg.NoRelay {
 		opts = append(opts, libp2p.ForceReachabilityPrivate())
 	}
 

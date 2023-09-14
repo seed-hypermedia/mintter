@@ -13,6 +13,8 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/daemon"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	"mintter/backend/ipfs"
+	"mintter/backend/pkg/must"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/peterbourgon/ff/v3"
@@ -45,6 +47,7 @@ Flags:
 		cfg := config.Default()
 		cfg.DataDir = "~/.mintter-site"
 		cfg.Syncing.Disabled = true
+		cfg.P2P.ForceReachabilityPublic = true
 		cfg.BindFlags(fs)
 
 		if len(os.Args) < 2 {
@@ -66,6 +69,10 @@ Flags:
 		if u.Scheme != "http" && u.Scheme != "https" {
 			return fmt.Errorf("address URL only supports http or https, got = %s", rawURL)
 		}
+
+		cfg.P2P.AnnounceAddrs = must.Do2(
+			ipfs.ParseMultiaddrs(
+				ipfs.DefaultListenAddrsDNS(u.Hostname(), cfg.P2P.Port)))
 
 		if err := ff.Parse(fs, os.Args[2:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
 			return err

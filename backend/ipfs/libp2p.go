@@ -301,3 +301,14 @@ func DefaultListenAddrs(port int) []string {
 		"/ip6/::/udp/" + portstr + "/quic-v1/webtransport",
 	}
 }
+
+// DefaultListenAddrsDNS creates the default listening addresses for a DNS name and port.
+func DefaultListenAddrsDNS(hostname string, port int) []string {
+	portstr := strconv.Itoa(port)
+	return []string{
+		"/dns4/" + hostname + "/tcp/" + portstr,
+		"/dns4/" + hostname + "/udp/" + portstr + "/quic",
+		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1",
+		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1/webtransport",
+	}
+}
