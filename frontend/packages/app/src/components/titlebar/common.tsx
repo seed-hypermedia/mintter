@@ -169,7 +169,7 @@ function getReferenceUrlOfRoute(route: NavRoute) {
     }
   }
   if (route.key === 'account') {
-    const url = createHmId('a', route.accountId)
+    const url = createPublicWebHmUrl('a', route.accountId)
     if (!url) return null
     return {
       label: 'Account URL',

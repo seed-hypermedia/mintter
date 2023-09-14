@@ -169,15 +169,6 @@ export default function AccountPage() {
             </XStack>
 
             <XStack space="$2">
-              <Tooltip content="Copy Account Link to clipboard">
-                <Button
-                  icon={Copy}
-                  size="$2"
-                  onPress={() => {
-                    copyTextToClipboard(createPublicWebHmUrl('a', accountId))
-                  }}
-                />
-              </Tooltip>
               <Popover placement="bottom-end">
                 <Popover.Trigger asChild>
                   <Button
