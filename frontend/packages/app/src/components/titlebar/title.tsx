@@ -1,27 +1,17 @@
-import {useDraftTitle, usePublication} from '@mintter/app/src/models/documents'
+import {usePublicationInContext} from '@mintter/app/models/publication'
+import {AccountLinkAvatar} from '@mintter/app/src/components/account-link-avatar'
+import {useDraftTitle} from '@mintter/app/src/models/documents'
 import {
   DraftRoute,
   PublicationRoute,
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
 import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
-import {AccountLinkAvatar} from '@mintter/app/src/components/account-link-avatar'
-import {
-  File,
-  FontSizeTokens,
-  Globe,
-  Pencil,
-  Spinner,
-  TitleText,
-  User,
-  XStack,
-} from '@mintter/ui'
-import {Bookmark, Contact, Folder, Library} from '@tamagui/lucide-icons'
-import {getDocumentTitle} from '../publication-list-item'
+import {FontSizeTokens, Globe, Pencil, TitleText, XStack} from '@mintter/ui'
+import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {NavRoute} from '../../utils/navigation'
-import {useGroup} from '../../models/groups'
-import {usePublicationInContext} from '@mintter/app/models/publication'
+import {getDocumentTitle} from '../publication-list-item'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()

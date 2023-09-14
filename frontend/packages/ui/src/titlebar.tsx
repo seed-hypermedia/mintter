@@ -1,4 +1,4 @@
-import {H1, styled, XStack, YStack} from 'tamagui'
+import {H1, SizableText, styled, XStack, YStack} from 'tamagui'
 
 export const TitlebarWrapper = styled(YStack, {
   name: 'TitlebarWrapper',
@@ -30,7 +30,7 @@ export const TitlebarSection = styled(XStack, {
   userSelect: 'none',
 })
 
-export const TitleText = styled(H1, {
+export const TitleText = styled(SizableText, {
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -43,6 +43,4 @@ export const TitleText = styled(H1, {
   margin: 0,
   textTransform: 'none',
   fontWeight: '700',
-  // @ts-expect-error
-  letterSpacing: '0',
 })
