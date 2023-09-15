@@ -192,22 +192,6 @@ const (
 	C_HeadsResource = "heads.resource"
 )
 
-// Table invite_tokens.
-const (
-	InviteTokens           sqlitegen.Table  = "invite_tokens"
-	InviteTokensExpireTime sqlitegen.Column = "invite_tokens.expire_time"
-	InviteTokensRole       sqlitegen.Column = "invite_tokens.role"
-	InviteTokensToken      sqlitegen.Column = "invite_tokens.token"
-)
-
-// Table invite_tokens. Plain strings.
-const (
-	T_InviteTokens           = "invite_tokens"
-	C_InviteTokensExpireTime = "invite_tokens.expire_time"
-	C_InviteTokensRole       = "invite_tokens.role"
-	C_InviteTokensToken      = "invite_tokens.token"
-)
-
 // Table key_delegations.
 const (
 	KeyDelegations         sqlitegen.Table  = "key_delegations"
@@ -322,38 +306,6 @@ const (
 	C_ServedSitesVersion  = "served_sites.version"
 )
 
-// Table site_members.
-const (
-	SiteMembers          sqlitegen.Table  = "site_members"
-	SiteMembersAccountID sqlitegen.Column = "site_members.account_id"
-	SiteMembersRole      sqlitegen.Column = "site_members.role"
-)
-
-// Table site_members. Plain strings.
-const (
-	T_SiteMembers          = "site_members"
-	C_SiteMembersAccountID = "site_members.account_id"
-	C_SiteMembersRole      = "site_members.role"
-)
-
-// Table sites.
-const (
-	Sites          sqlitegen.Table  = "sites"
-	SitesAccountID sqlitegen.Column = "sites.account_id"
-	SitesAddresses sqlitegen.Column = "sites.addresses"
-	SitesHostname  sqlitegen.Column = "sites.hostname"
-	SitesRole      sqlitegen.Column = "sites.role"
-)
-
-// Table sites. Plain strings.
-const (
-	T_Sites          = "sites"
-	C_SitesAccountID = "sites.account_id"
-	C_SitesAddresses = "sites.addresses"
-	C_SitesHostname  = "sites.hostname"
-	C_SitesRole      = "sites.role"
-)
-
 // Table sqlite_sequence.
 const (
 	SQLiteSequence     sqlitegen.Table  = "sqlite_sequence"
@@ -406,22 +358,6 @@ const (
 	C_WalletsType     = "wallets.type"
 )
 
-// Table web_publications.
-const (
-	WebPublications        sqlitegen.Table  = "web_publications"
-	WebPublicationsEID     sqlitegen.Column = "web_publications.eid"
-	WebPublicationsPath    sqlitegen.Column = "web_publications.path"
-	WebPublicationsVersion sqlitegen.Column = "web_publications.version"
-)
-
-// Table web_publications. Plain strings.
-const (
-	T_WebPublications        = "web_publications"
-	C_WebPublicationsEID     = "web_publications.eid"
-	C_WebPublicationsPath    = "web_publications.path"
-	C_WebPublicationsVersion = "web_publications.version"
-)
-
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
@@ -468,9 +404,6 @@ var Schema = sqlitegen.Schema{
 		HeadsBlob:                       {Table: Heads, SQLType: "INTEGER"},
 		HeadsName:                       {Table: Heads, SQLType: "TEXT"},
 		HeadsResource:                   {Table: Heads, SQLType: "INTEGER"},
-		InviteTokensExpireTime:          {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensRole:                {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensToken:               {Table: InviteTokens, SQLType: "TEXT"},
 		KeyDelegationsBlob:              {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsDelegate:          {Table: KeyDelegations, SQLType: ""},
 		KeyDelegationsIssuer:            {Table: KeyDelegations, SQLType: ""},
@@ -493,12 +426,6 @@ var Schema = sqlitegen.Schema{
 		ServedSitesHostname:             {Table: ServedSites, SQLType: "TEXT"},
 		ServedSitesOwnerID:              {Table: ServedSites, SQLType: "INTEGER"},
 		ServedSitesVersion:              {Table: ServedSites, SQLType: "TEXT"},
-		SiteMembersAccountID:            {Table: SiteMembers, SQLType: "INTEGER"},
-		SiteMembersRole:                 {Table: SiteMembers, SQLType: "INTEGER"},
-		SitesAccountID:                  {Table: Sites, SQLType: "INTEGER"},
-		SitesAddresses:                  {Table: Sites, SQLType: "TEXT"},
-		SitesHostname:                   {Table: Sites, SQLType: "TEXT"},
-		SitesRole:                       {Table: Sites, SQLType: "INTEGER"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
@@ -510,8 +437,5 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                    {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                     {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationsEID:              {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsPath:             {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsVersion:          {Table: WebPublications, SQLType: "TEXT"},
 	},
 }
