@@ -23,10 +23,21 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GenericHandler is to be called bay anyone wanting to register a
+// new http handler.
+type GenericHandler struct {
+	// Path where the endpoint will be hosted.
+	Path string
+	// HTTP handler.
+	Handler http.Handler
+	// RoutePrefix | RouteNav.
+	Mode int
+}
+
 // setupGraphQLHandlers sets up the GraphQL endpoints.
 func setupGraphQLHandlers(r *Router, wallet *wallet.Service) {
 	r.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
-	r.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
+	r.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), RouteNav)
 }
 
 // setupIPFSFileHandlers sets up the IPFS file endpoints for uploading and getting files.
@@ -37,11 +48,11 @@ func setupIPFSFileHandlers(r *Router, h ipfs.HTTPHandler) {
 
 // setupDebugHandlers sets up the debug endpoints.
 func setupDebugHandlers(r *Router) {
-	r.Handle("/debug/metrics", promhttp.Handler(), routeNav)
-	r.Handle("/debug/pprof", http.DefaultServeMux, routePrefix|routeNav)
-	r.Handle("/debug/vars", http.DefaultServeMux, routePrefix|routeNav)
-	r.Handle("/debug/grpc", grpcLogsHandler(), routeNav)
-	r.Handle("/debug/buildinfo", buildInfoHandler(), routeNav)
+	r.Handle("/debug/metrics", promhttp.Handler(), RouteNav)
+	r.Handle("/debug/pprof", http.DefaultServeMux, RoutePrefix|RouteNav)
+	r.Handle("/debug/vars", http.DefaultServeMux, RoutePrefix|RouteNav)
+	r.Handle("/debug/grpc", grpcLogsHandler(), RouteNav)
+	r.Handle("/debug/buildinfo", buildInfoHandler(), RouteNav)
 }
 
 // setupGRPCWebHandler sets up the gRPC-Web handler.
@@ -62,6 +73,7 @@ func initHTTP(
 	g *errgroup.Group,
 	wallet *wallet.Service,
 	ipfsHandler ipfs.HTTPHandler,
+	extraHandlers ...GenericHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	router := &Router{r: mux.NewRouter()}
 
@@ -69,7 +81,9 @@ func initHTTP(
 	setupGraphQLHandlers(router, wallet)
 	setupIPFSFileHandlers(router, ipfsHandler)
 	setupGRPCWebHandler(router, rpc)
-
+	for _, handler := range extraHandlers {
+		router.Handle(handler.Path, handler.Handler, handler.Mode)
+	}
 	router.Handle("/", http.HandlerFunc(router.Index), 0)
 
 	srv = &http.Server{

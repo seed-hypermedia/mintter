@@ -3,9 +3,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 
@@ -14,9 +16,12 @@ import (
 	"mintter/backend/daemon"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/mttnet"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 
 	"github.com/burdiyan/go/mainutil"
+	"github.com/multiformats/go-multiaddr"
 	"github.com/peterbourgon/ff/v3"
 )
 
@@ -86,12 +91,21 @@ Flags:
 		if err != nil {
 			return err
 		}
+		f := future.New[*mttnet.Node]()
+		httpHandler := wellKnownHandler{
+			net: f.ReadOnly,
+		}
+		app, err := daemon.Load(ctx, cfg, dir, daemon.GenericHandler{
+			Path:    "/.well-known/hypermedia-site",
+			Handler: &httpHandler,
+			Mode:    daemon.RouteNav,
+		})
 
-		app, err := daemon.Load(ctx, cfg, dir)
 		if err != nil {
 			return err
 		}
 
+		httpHandler.net = app.Net
 		if _, ok := dir.Identity().Get(); !ok {
 			account, err := core.NewKeyPairRandom()
 			if err != nil {
@@ -117,4 +131,44 @@ Flags:
 
 		return err
 	})
+}
+
+type wellKnownHandler struct {
+	net *future.ReadOnly[*mttnet.Node]
+}
+
+func (wk *wellKnownHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
+
+	n, ok := wk.net.Get()
+	if !ok {
+		w.Header().Set("Retry-After", "30")
+		http.Error(w, "P2P node is not ready yet", http.StatusServiceUnavailable)
+		return
+	}
+	type publicInfo struct {
+		// The PeerID of this P2P node.
+		PeerID string `json:"peerId,omitempty"`
+
+		// The addresses of this site node in multiaddr format.
+		Addresses []multiaddr.Multiaddr `addresses:"peerId,omitempty"`
+	}
+	var info publicInfo
+	info.Addresses = n.AddrInfo().Addrs
+	info.PeerID = n.ID().DeviceKey().PeerID().String()
+
+	data, err := json.Marshal(info)
+	if err != nil {
+		http.Error(w, "Failed to marshal site info: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(data)
+	if err != nil {
+		return
+	}
 }

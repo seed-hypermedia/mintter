@@ -76,7 +76,7 @@ type App struct {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...interface{}) (a *App, err error) {
 	a = &App{
 		log:     logging.New("mintter/daemon", "debug"),
 		Storage: r,
@@ -137,7 +137,22 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grp
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, grpcOpt...)
+	extraGRPCOpts := []grpc.ServerOption{}
+	extraHTTPHandlers := []GenericHandler{}
+	for _, extra := range extraOpts {
+		grpcOpt, ok := extra.(grpc.ServerOption)
+		if ok {
+			extraGRPCOpts = append(extraGRPCOpts, grpcOpt)
+			continue
+		}
+		httpHandler, ok := extra.(GenericHandler)
+		if ok {
+			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
+			continue
+		}
+		return nil, fmt.Errorf("option %v not supported", extra)
+	}
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraGRPCOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +171,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grp
 
 		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fileManager)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fileManager, extraHTTPHandlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -435,8 +450,10 @@ func setRoute(m *mux.Router, path string, isPrefix bool, h http.Handler) {
 }
 
 const (
-	routePrefix = 1 << 1
-	routeNav    = 1 << 2
+	// RoutePrefix exposes path prefix.
+	RoutePrefix = 1 << 1
+	// RouteNav adds the path to a route nav.
+	RouteNav = 1 << 2
 )
 
 // Router is a wrapper around mux that can build the navigation menu.
@@ -445,16 +462,17 @@ type Router struct {
 	nav []string
 }
 
+// Handle a route.
 func (r *Router) Handle(path string, h http.Handler, mode int) {
 	h = instrumentHTTPHandler(h, path)
 
-	if mode&routePrefix != 0 {
+	if mode&RouteNav != 0 {
 		r.r.PathPrefix(path).Handler(h)
 	} else {
 		r.r.Handle(path, h)
 	}
 
-	if mode&routeNav != 0 {
+	if mode&RouteNav != 0 {
 		r.nav = append(r.nav, path)
 	}
 }
