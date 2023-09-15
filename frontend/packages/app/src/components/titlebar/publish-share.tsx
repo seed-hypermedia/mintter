@@ -50,15 +50,12 @@ import {
   styled,
 } from '@mintter/ui'
 import {
-  Album,
+  Bookmark,
   Book,
   CheckCheck,
   ChevronDown,
   ChevronUp,
-  Home,
-  Pencil,
   Store,
-  X,
 } from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -385,7 +382,7 @@ function DraftContextButton({route}: {route: DraftRoute}) {
   let icon = Globe
   let title = ''
   if (route.pubContext?.key === 'trusted') {
-    icon = Album
+    icon = Bookmark
   } else if (route.pubContext?.key === 'group' && selectedGroup) {
     icon = Book
     title = selectedGroup.group?.title || ''
@@ -568,7 +565,9 @@ function GroupContextItem({
               </ButtonText>
             )}
           </YStack>
-          {path === '/' ? <Store size={16} /> : null}
+          {path === '/' ? (
+            <Store color={isActive ? undefined : '$color9'} size={14} />
+          ) : null}
         </XStack>
       </Button>
     </XStack>
@@ -616,7 +615,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
   let icon = Globe
   let title = ''
   if (pubContext?.key === 'trusted') {
-    icon = Album
+    icon = Bookmark
   } else if (pubContext?.key === 'group') {
     icon = Book
     title = contextGroup.data?.title || ''
@@ -672,7 +671,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
               isActive={!route.pubContext?.key}
             />
             <ContextButton
-              icon={Album}
+              icon={Bookmark}
               name="Trusted Authors"
               route={{...route, pubContext: {key: 'trusted'}}}
               isActive={route.pubContext?.key === 'trusted'}

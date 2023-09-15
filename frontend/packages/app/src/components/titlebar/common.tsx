@@ -24,11 +24,9 @@ import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'
 import {
   Account,
-  DocumentChange,
   SiteConfig,
   createPublicWebHmUrl,
   unpackHmId,
-  createHmId,
 } from '@mintter/shared'
 import {
   Back,
@@ -41,18 +39,15 @@ import {
   Settings,
   SizableText,
   TitlebarSection,
-  User,
   XGroup,
   XStack,
   YGroup,
 } from '@mintter/ui'
 import {
-  Archive,
   Bookmark,
   Contact,
   Copy,
   FilePlus2,
-  Folder,
   Globe,
   Library,
   MoreHorizontal,
