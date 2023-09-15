@@ -18,6 +18,7 @@ import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
 import {unpackHmIdWithAppRoute} from '../open-url'
 import {useGroups} from '../models/groups'
+import {useContactsList} from '../models/contacts'
 
 export default function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -29,7 +30,7 @@ export default function QuickSwitcher() {
   const {data: groups} = useGroups({
     enabled: open,
   })
-
+  const {data: contacts} = useContactsList()
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 
@@ -154,6 +155,25 @@ export default function QuickSwitcher() {
               >
                 <span className="cmdk-mtt-text">{group.title}</span>
                 <span className="cmdk-mtt-type">Group</span>
+              </Command.Item>
+            )
+          })}
+
+          {contacts?.accounts.map((account) => {
+            return (
+              <Command.Item
+                key={account.id}
+                value={account.profile?.alias + account.id}
+                onSelect={() => {
+                  setOpen(false)
+                  navigate({
+                    key: 'account',
+                    accountId: account.id,
+                  })
+                }}
+              >
+                <span className="cmdk-mtt-text">{account.profile?.alias}</span>
+                <span className="cmdk-mtt-type">Account</span>
               </Command.Item>
             )
           })}
