@@ -19,7 +19,7 @@ import {useEffect} from 'react'
 
 const newGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),
-  description: z.string(),
+  description: z.string().optional(),
 })
 type NewGroupFields = z.infer<typeof newGroupSchema>
 
