@@ -9,6 +9,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"strings"
+	"time"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -34,6 +35,8 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	}
 
 	log := n.log.With(zap.String("peer", info.ID.String()))
+	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
+	defer cancel()
 
 	log.Debug("ConnectStarted")
 	defer func() {
@@ -86,7 +89,9 @@ func (n *Node) checkMintterProtocolVersion(pid peer.ID, desiredVersion string) (
 	}
 
 	var isMintter bool
-
+	if len(protos) == 0 {
+		n.log.Warn("peer does not support any protocol", zap.String("PeerID", pid.String()))
+	}
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
 	for _, p := range protos {
 		version := strings.TrimPrefix(string(p), protocolPrefix)

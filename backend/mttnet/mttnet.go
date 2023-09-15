@@ -3,6 +3,8 @@ package mttnet
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"mintter/backend/config"
@@ -16,7 +18,7 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"strconv"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -25,6 +27,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
+	manet "github.com/multiformats/go-multiaddr/net"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 
@@ -35,7 +38,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
-	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -44,8 +46,8 @@ import (
 
 // Protocol values.
 const (
-	protocolPrefix  = "/mintter/"
-	protocolVersion = "0.0.4"
+	protocolPrefix  = "/hypermedia/"
+	protocolVersion = "0.1.0"
 
 	ProtocolID protocol.ID = protocolPrefix + protocolVersion
 
@@ -62,7 +64,7 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				//must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
 			},
 		},
 		// Mintter test server
@@ -70,15 +72,10 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				//must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
 			},
 		},
 	}
-}
-
-type wellKnownInfo struct {
-	Addresses []string `json:"addresses,omitempty"`
-	AccountID string   `json:"account_id,omitempty"`
 }
 
 type docInfo struct {
@@ -105,8 +102,9 @@ type Site struct {
 type Server struct {
 	Node *future.ReadOnly[*Node]
 	*Site
-	localFunctions LocalFunctions
+	localFunctions DocumentsAPI
 	synchronizer   Synchronizer
+	NoAuth         bool
 }
 
 // Node is a Mintter P2P node.
@@ -129,9 +127,9 @@ type Node struct {
 	ctx        context.Context // will be set after calling Start()
 }
 
-// LocalFunctions is an interface for not having to pass a full-fledged documents service,
+// DocumentsAPI is an interface for not having to pass a full-fledged documents service,
 // just the getPublication that is what we need to call in getPath.
-type LocalFunctions interface {
+type DocumentsAPI interface {
 	// GetPublication gets a local publication.
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
 }
@@ -143,7 +141,7 @@ type Synchronizer interface {
 }
 
 // NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions, sync Synchronizer) *Server {
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], docSrv DocumentsAPI, sync Synchronizer) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 
 	srv := &Server{
@@ -152,8 +150,9 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			InviteTokenExpirationDelay: expirationDelay,
 		},
 		Node:           node,
-		localFunctions: localFunctions,
+		localFunctions: docSrv,
 		synchronizer:   sync,
+		NoAuth:         siteCfg.NoAuth,
 	}
 
 	if siteCfg.OwnerID != "" {
@@ -185,15 +184,33 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				panic(err)
 			}
 			defer release()
-
 			if err := func() error {
+				randomBytes := make([]byte, 16)
+				_, err := rand.Read(randomBytes)
+				if err != nil {
+					return err
+				}
+				currentLink, err := sitesql.GetSiteRegistrationLink(conn)
+				if err != nil {
+					return err
+				}
+				link := currentLink.KVValue
+				if link == "" || siteCfg.Hostname != strings.Split(link, "/secret-invite/")[0] {
+					link = siteCfg.Hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
+					if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
+						return err
+					}
+				}
+
+				// Print it to stdout so its visible from the command line.
+				fmt.Println("Site Invitation secret token: " + link)
 				if siteCfg.Title != "" {
 					title, err := sitesql.GetSiteTitle(conn)
 					if err != nil {
-						panic(err)
+						return err
 					}
 
-					if title.GlobalMetaValue != siteCfg.Title {
+					if title.KVValue != siteCfg.Title {
 						if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
 							return err
 						}
@@ -287,7 +304,14 @@ func (n *Node) Provider() provider.System {
 
 // ProvideCID notifies the providing system to provide the given CID on the DHT.
 func (n *Node) ProvideCID(c cid.Cid) error {
-	return n.providing.Provide(c)
+	n.log.Debug("Providing to the DHT", zap.String("CID", c.String()))
+	err := n.providing.Provide(c)
+	if err != nil {
+		n.log.Warn("Provided Failed", zap.String("CID", c.String()), zap.Error(err))
+		return err
+	}
+	n.log.Debug("Provided Succeeded!", zap.String("CID", c.String()))
+	return nil
 }
 
 // Bitswap returns the underlying Bitswap service.
@@ -302,6 +326,11 @@ func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	}
 
 	return n.client.Dial(ctx, pid)
+}
+
+// ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
+func (n *Node) ArePrivateIPsAllowed() bool {
+	return !n.cfg.NoPrivateIps
 }
 
 // AccountForDevice returns the linked AccountID of a given device.
@@ -358,8 +387,6 @@ func (n *Node) Start(ctx context.Context) (err error) {
 		return err
 	}
 
-	n.providing.Run()
-
 	lis, err := gostream.Listen(n.p2p.Host, ProtocolID)
 	if err != nil {
 		return fmt.Errorf("failed to start listener: %w", err)
@@ -409,14 +436,18 @@ func (n *Node) Ready() <-chan struct{} {
 }
 
 func (n *Node) startLibp2p(ctx context.Context) error {
-	port := strconv.Itoa(n.cfg.Port)
-
-	addrs := []multiaddr.Multiaddr{
-		must.Do2(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
-		must.Do2(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
-		// TODO(burdiyan): uncomment this when quic is known to work. Find other places for `quic-support`.
-		// must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")),
-		// must.Two(multiaddr.NewMultiaddr("/ip6/::/udp/" + port + "/quic")),
+	var addrs []multiaddr.Multiaddr
+	if n.cfg.ListenAddrs != nil {
+		addrs = append(addrs, n.cfg.ListenAddrs...)
+	} else {
+		lis := ipfs.DefaultListenAddrs(n.cfg.Port)
+		for _, l := range lis {
+			addr, err := multiaddr.NewMultiaddr(l)
+			if err != nil {
+				return err
+			}
+			addrs = append(addrs, addr)
+		}
 	}
 
 	if err := n.p2p.Network().Listen(addrs...); err != nil {
@@ -435,6 +466,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),
 			zap.Int("failedConnectionsTotal", int(res.NumFailedConnections)),
+			zap.Any("ConnectErrs", res.ConnectErrs),
 		)
 
 		if res.NumFailedConnections > 0 {
@@ -509,25 +541,38 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
 		libp2p.EnableNATService(),
-		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
-		libp2p.Transport(tcp.NewTCPTransport),
-		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-			if cfg.ExtraAddrs == nil {
-				return addrs
-			}
-			out := make([]multiaddr.Multiaddr, 0, len(addrs)+len(cfg.ExtraAddrs))
-			out = append(out, addrs...)
-			out = append(out, cfg.ExtraAddrs...)
-			return out
-		}),
 	}
 
-	libp2p.ListenAddrStrings()
+	if cfg.AnnounceAddrs != nil {
+		opts = append(opts,
+			libp2p.AddrsFactory(func([]multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				return cfg.AnnounceAddrs
+			}),
+		)
+	} else {
+		opts = append(opts,
+			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				announce := make([]multiaddr.Multiaddr, 0, len(addrs))
+				if cfg.NoPrivateIps {
+					for _, a := range addrs {
+						if manet.IsPublicAddr(a) {
+							announce = append(announce, a)
+						}
+					}
+					return announce
+				}
+				return addrs
+			}),
+		)
+	}
+	if !cfg.PublicReachability && !cfg.NoRelay {
+		opts = append(opts, libp2p.ForceReachabilityPrivate())
+	}
+
 	if !cfg.NoRelay {
 		opts = append(opts,
-			libp2p.ForceReachabilityPrivate(),
 			libp2p.EnableHolePunching(),
-			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+			libp2p.EnableAutoRelayWithStaticRelays(DefaultRelays(),
 				autorelay.WithBootDelay(time.Second*10),
 				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),

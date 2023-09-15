@@ -34,6 +34,8 @@ type P2PClient interface {
 	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(ctx context.Context, in *RequestInvoiceRequest, opts ...grpc.CallOption) (*RequestInvoiceResponse, error)
+	// CreateSite tells a server which group it should serve.
+	CreateSite(ctx context.Context, in *CreateSiteRequest, opts ...grpc.CallOption) (*CreateSiteResponse, error)
 }
 
 type p2PClient struct {
@@ -71,6 +73,15 @@ func (c *p2PClient) RequestInvoice(ctx context.Context, in *RequestInvoiceReques
 	return out, nil
 }
 
+func (c *p2PClient) CreateSite(ctx context.Context, in *CreateSiteRequest, opts ...grpc.CallOption) (*CreateSiteResponse, error) {
+	out := new(CreateSiteResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/CreateSite", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // P2PServer is the server API for P2P service.
 // All implementations should embed UnimplementedP2PServer
 // for forward compatibility
@@ -87,6 +98,8 @@ type P2PServer interface {
 	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error)
+	// CreateSite tells a server which group it should serve.
+	CreateSite(context.Context, *CreateSiteRequest) (*CreateSiteResponse, error)
 }
 
 // UnimplementedP2PServer should be embedded to have forward compatible implementations.
@@ -101,6 +114,9 @@ func (UnimplementedP2PServer) ListObjects(context.Context, *ListObjectsRequest) 
 }
 func (UnimplementedP2PServer) RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not implemented")
+}
+func (UnimplementedP2PServer) CreateSite(context.Context, *CreateSiteRequest) (*CreateSiteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSite not implemented")
 }
 
 // UnsafeP2PServer may be embedded to opt out of forward compatibility for this service.
@@ -168,6 +184,24 @@ func _P2P_RequestInvoice_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _P2P_CreateSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSiteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(P2PServer).CreateSite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/CreateSite",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(P2PServer).CreateSite(ctx, req.(*CreateSiteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // P2P_ServiceDesc is the grpc.ServiceDesc for P2P service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -186,6 +220,10 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RequestInvoice",
 			Handler:    _P2P_RequestInvoice_Handler,
+		},
+		{
+			MethodName: "CreateSite",
+			Handler:    _P2P_CreateSite_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

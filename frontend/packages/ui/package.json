@@ -1,11 +1,10 @@
 {
   "name": "@mintter/ui",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "sideEffects": [
     "*.css"
   ],
   "private": true,
-  "types": "./types/index",
   "main": "src/index.tsx",
   "module:jsx": "src",
   "files": [
@@ -13,22 +12,29 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tamagui-build --watch",
+    "generate": "tamagui generate-themes ./src/themes.ts ./src/generated-themes.ts",
+    "lint": "eslint .",
     "build": "tamagui-build",
-    "test": "echo 'UI: NO TESTS'"
+    "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
+    "clean": "tamagui-build clean",
+    "clean:build": "tamagui-build clean:build",
+    "test": "echo TODO",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tamagui/animations-react-native": "1.30.21",
-    "@tamagui/colors": "^1.30.21",
-    "@tamagui/font-inter": "1.30.21",
-    "@tamagui/lucide-icons": "1.30.21",
-    "@tamagui/react-native-media-driver": "1.30.21",
-    "@tamagui/shorthands": "1.30.21",
-    "@tamagui/themes": "1.30.21",
-    "@tamagui/web": "^1.30.21",
-    "tamagui": "1.30.21"
+    "@tamagui/animations-react-native": "1.61.1",
+    "@tamagui/config": "1.61.1",
+    "@tamagui/create-theme": "1.61.1",
+    "@tamagui/lucide-icons": "1.61.1",
+    "@tamagui/theme-builder": "1.61.1",
+    "@tamagui/web": "1.61.1",
+    "tamagui": "1.61.1"
   },
   "devDependencies": {
-    "@tamagui/build": "1.30.21"
+    "@mintter/prettier": "workspace:*",
+    "@tamagui/build": "1.61.1",
+    "@tamagui/cli": "1.61.1",
+    "@tamagui/generate-themes": "1.61.1",
+    "eslint-config-custom": "workspace:*"
   }
 }

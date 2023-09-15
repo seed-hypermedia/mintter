@@ -1,5 +1,4 @@
-import {ReactNode} from 'react'
-import {ScrollView, styled, YStack, Text, ScrollViewProps} from 'tamagui'
+import {ScrollView, ScrollViewProps, YStack, YStackProps, styled} from 'tamagui'
 
 export const AppMain = styled(YStack, {
   flexDirection: 'column',
@@ -16,14 +15,13 @@ export const MainWrapper = ({
   children,
   noScroll = false,
   ...props
-}: ScrollViewProps & {
+}: YStackProps & {
   noScroll?: boolean
 }) => (
-  <MainStyled>
-    {noScroll ? (
-      <>{children}</>
-    ) : (
-      <ScrollView {...props}>{children}</ScrollView>
-    )}
-  </MainStyled>
+  <YStack flex={1} className="content-wrapper" {...props}>
+    {noScroll ? children : <ScrollView>{children}</ScrollView>}
+  </YStack>
 )
+
+export const YDebug = (props) => <YStack {...props} />
+YDebug.displayName = 'YMintterDebug'

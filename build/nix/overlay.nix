@@ -16,14 +16,4 @@ self: super: {
     buildGoModule = self.buildGo120Module;
   };
   mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
-  rust-stable = (super.rust-bin.stable.latest.default.overrideAttrs (oldAttrs: {
-    propagatedBuildInputs = [];
-    depsHostHostPropagated = [];
-    depsTargetTargetPropagated = [];
-  }));
-  tauri-cli = (super.callPackage ./tauri-cli {}).override {
-    extraNativeBuildInputs = [
-      self.rust-stable
-    ];
-  };
 }

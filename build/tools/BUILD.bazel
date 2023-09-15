@@ -1,0 +1,14 @@
+alias(
+    name = "go",
+    actual = "@go//:go",
+)
+
+alias(
+    name = "node",
+    actual = "@node//:node",
+)
+
+alias(
+    name = "yarn",
+    actual = "@yarn//:yarn",
+)

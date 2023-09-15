@@ -21,7 +21,7 @@ service Drafts {
   rpc GetDraft(GetDraftRequest) returns (Document);
 
   // Updates a draft using granular update operations.
-  rpc UpdateDraftV2(UpdateDraftRequestV2) returns (google.protobuf.Empty);
+  rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse);
 
   // List currently stored drafts.
   rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
@@ -36,6 +36,10 @@ message CreateDraftRequest {
   // previously published document. A draft will be created
   // with the content of the most recent known version.
   string existing_document_id = 1;
+
+  // Optional. Version of the existing document to create draft from.
+  // If version is specified existing_document_id must also be specified.
+  string version = 2;
 }
 
 // Request to delete an existing draft.
@@ -51,12 +55,18 @@ message GetDraftRequest {
 }
 
 // Request to update an existing draft using granular operations.
-message UpdateDraftRequestV2 {
+message UpdateDraftRequest {
   // ID of the document to be updated.
   string document_id = 3;
 
   // List of document changes that must be applied to the existing document.
   repeated DocumentChange changes = 4;
+}
+
+// Response after draft is updated.
+message UpdateDraftResponse {
+  // The ID of the change representing the draft version after the update is processed.
+  string change_id = 1;
 }
 
 // Granular document change.
@@ -142,6 +152,10 @@ message GetPublicationRequest {
 
   // Optional. If true, only local publications will be found. False by default.
   bool local_only = 3;
+
+  // Optional. If true, the returned publication version will be the last change made by a
+  // trusted contact. If false (default) then the returned version will be de latest available.
+  bool trusted_only = 4;
 }
 
 // Request for deleting a publication.
@@ -158,6 +172,11 @@ message ListPublicationsRequest {
 
   // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
+
+  // Optional. Whether to return trusted publications only
+  // or including all publications regardless of the trusted state
+  // By default, it returns all publications (trusted_only = false)
+  bool trusted_only = 3;
 }
 
 // Response with list of publications.
@@ -242,6 +261,10 @@ message Block {
   // Text of the content block.
   string text = 3;
 
+  // Optional. The hyperlink to an external resource.
+  // Must be a valid URL.
+  string ref = 7;
+
   // Arbitrary attributes of the block.
   map<string, string> attributes = 4;
 
@@ -264,6 +287,10 @@ message Block {
 message Annotation {
   // Type of the annotation.
   string type = 1;
+
+  // Optional. A hyperlink to an external resource.
+  // Must be a valid URL.
+  string ref = 5;
 
   // Arbitrary key-value attributes of the annotation.
   map<string, string> attributes = 2;

@@ -8,15 +8,13 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"mintter/backend/testutil"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -39,7 +37,7 @@ func TestSync(t *testing.T) {
 	newNode := func(name string) Node {
 		var n Node
 
-		db := makeTestSQLite(t)
+		db := storage.MakeTestDB(t)
 		peer, stop := makeTestPeer(t, db, name)
 		t.Cleanup(stop)
 		n.Node = peer
@@ -194,20 +192,6 @@ func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, co
 	}
 
 	return n, cancel
-}
-
-func makeTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }
 
 func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) cid.Cid {

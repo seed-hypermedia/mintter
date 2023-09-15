@@ -2,6 +2,9 @@ package hyper
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
@@ -27,14 +30,9 @@ import (
 // EntityID is a type for IDs of mutable entities.
 type EntityID string
 
-// NewEntityID creates a new ID for an entity.
-func NewEntityID(namespace string, id string) EntityID {
-	return EntityID(namespace + ":" + id)
-}
-
 // CID representation of the entity ID. Used for announcing on the DHT.
 func (eid EntityID) CID() (cid.Cid, error) {
-	c, err := ipfs.NewCID(uint64(multicodec.Raw), uint64(multicodec.Identity), []byte("/mintter/entity/"+string(eid)))
+	c, err := ipfs.NewCID(uint64(multicodec.Raw), uint64(multicodec.Identity), []byte(eid))
 	if err != nil {
 		return c, fmt.Errorf("failed to convert entity ID %s into CID: %w", eid, err)
 	}
@@ -56,20 +54,29 @@ func (eid EntityID) TrimPrefix(prefix string) string {
 // Entity is our CRDT mutable object.
 type Entity struct {
 	id      EntityID
-	applied map[cid.Cid]Change
+	changes []ParsedBlob[Change]
+	applied map[cid.Cid]int
 	heads   map[cid.Cid]struct{}
 	state   *crdt2.Map
-	clock   hlc.Clock
+	clock   *hlc.Clock
 }
 
 // NewEntity creates a new entity with a given ID.
 func NewEntity(id EntityID) *Entity {
 	return &Entity{
 		id:      id,
-		applied: make(map[cid.Cid]Change),
+		applied: make(map[cid.Cid]int),
 		heads:   make(map[cid.Cid]struct{}),
 		state:   crdt2.NewMap(),
+		clock:   hlc.NewClock(),
 	}
+}
+
+// NewEntityWithClock creates a new entity with a provided clock.
+func NewEntityWithClock(id EntityID, clock *hlc.Clock) *Entity {
+	e := NewEntity(id)
+	e.clock = clock
+	return e
 }
 
 // ID returns the ID of the entity.
@@ -87,8 +94,8 @@ func (e *Entity) LastChangeTime() hlc.Time {
 
 // AppliedChanges returns the map of applied changes.
 // This must be read-only. Not safe for concurrency.
-func (e *Entity) AppliedChanges() map[cid.Cid]Change {
-	return e.applied
+func (e *Entity) AppliedChanges() []ParsedBlob[Change] {
+	return e.changes
 }
 
 func (e *Entity) State() *crdt2.Map {
@@ -169,7 +176,8 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 
 	e.state.ApplyPatch(ch.HLCTime.Pack(), OriginFromCID(c), ch.Patch)
 	e.clock.Track(ch.HLCTime)
-	e.applied[c] = ch
+	e.changes = append(e.changes, ParsedBlob[Change]{c, ch})
+	e.applied[c] = len(e.changes) - 1
 	e.heads[c] = struct{}{}
 
 	return nil
@@ -194,9 +202,26 @@ func (e *Entity) NextTimestamp() hlc.Time {
 	return e.clock.Now()
 }
 
+// ChangeOption is a functional option for creating Changes.
+type ChangeOption func(*Change)
+
+// WithAction sets the action field of the change.
+func WithAction(action string) ChangeOption {
+	return func(c *Change) {
+		c.Action = action
+	}
+}
+
+// WithMessage sets the message field of the change.
+func WithMessage(msg string) ChangeOption {
+	return func(c *Change) {
+		c.Message = msg
+	}
+}
+
 // CreateChange entity creating a change blob, and applying it to the internal state.
-func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
-	hb, err = NewChange(e.id, maps.Keys(e.heads), ts, signer, delegation, patch)
+func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
+	hb, err = NewChange(e.id, maps.Keys(e.heads), ts, signer, delegation, patch, opts...)
 	if err != nil {
 		return hb, err
 	}
@@ -209,7 +234,7 @@ func (e *Entity) CreateChange(ts hlc.Time, signer core.KeyPair, delegation cid.C
 }
 
 // ReplaceChange creates a new change instead of an existing one. The change to replace must be the current head.
-func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
+func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
 	if len(e.heads) != 1 {
 		return hb, fmt.Errorf("must only have one head change to replace")
 	}
@@ -218,16 +243,20 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 		return hb, fmt.Errorf("change to replace must be the current head")
 	}
 
-	prev, ok := e.applied[old]
-	if !ok {
-		return hb, fmt.Errorf("change to be replaced must be applied")
+	var prev Change
+	{
+		idx, ok := e.applied[old]
+		if !ok {
+			return hb, fmt.Errorf("change to be replaced must be applied")
+		}
+		prev = e.changes[idx].Data
 	}
 
 	e.state.ForgetState(prev.HLCTime.Pack(), OriginFromCID(old))
 	delete(e.applied, old)
 	delete(e.heads, old)
 
-	hb, err = NewChange(e.id, prev.Deps, ts, signer, delegation, patch)
+	hb, err = NewChange(e.id, prev.Deps, ts, signer, delegation, patch, opts...)
 	if err != nil {
 		return hb, err
 	}
@@ -239,13 +268,21 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 	return hb, nil
 }
 
+// SortCIDs sorts the multiple CIDs when determinism is needed.
+// The sorting is done in place, and the same slice is returned for convenience.
+func SortCIDs(cids []cid.Cid) []cid.Cid {
+	slices.SortFunc(cids, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+	return cids
+}
+
 // NewChange creates a new Change blob.
-func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any) (hb Blob, err error) {
+func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
 	// Make sure deps field is not present in the patch if there're no deps.
 	if len(deps) == 0 {
 		deps = nil
 	}
-	slices.SortFunc(deps, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+
+	SortCIDs(deps)
 
 	ch := Change{
 		Type:       TypeChange,
@@ -255,6 +292,9 @@ func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, d
 		HLCTime:    ts,
 		Patch:      patch,
 		Signer:     signer.Principal(),
+	}
+	for _, o := range opts {
+		o(&ch)
 	}
 
 	sigdata, err := cbornode.DumpObject(ch)
@@ -288,7 +328,7 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 	if err != nil {
 		return err
 	}
-	if edb.HyperEntitiesID == 0 {
+	if edb.EntitiesID == 0 {
 		return status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
@@ -299,12 +339,12 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.HyperChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.ChangesViewData, buf)
 		if err != nil {
 			return err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.HyperChangesViewCodec), change.HyperChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.ChangesViewCodec), change.ChangesViewMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
@@ -321,6 +361,8 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 }
 
 // LoadEntity from the database. If not found returns nil result and nil error.
+// If trustedOnly true, then it will returnl the lastest version changed by a trusted peer.
+// It will return the latest version available otherwhise, regardles on who made the change.
 func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
@@ -334,11 +376,37 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	if err != nil {
 		return nil, err
 	}
-	if edb.HyperEntitiesID == 0 {
+	if edb.EntitiesID == 0 {
 		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
-	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.HyperEntitiesID)
+	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.EntitiesID)
+	if err != nil {
+		return nil, err
+	}
+
+	return bs.loadFromHeads(conn, eid, heads.Heads)
+}
+
+// LoadTrustedEntity will return the latest entity version changed by a trusted peer.
+func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return nil, err
+	}
+	if edb.EntitiesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
+	}
+
+	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, edb.EntitiesID)
 	if err != nil {
 		return nil, err
 	}
@@ -410,11 +478,11 @@ func (bs *Storage) FindDraft(ctx context.Context, eid EntityID) (cid.Cid, error)
 	if err != nil {
 		return cid.Undef, err
 	}
-	if res.HyperDraftsViewBlobID == 0 {
+	if res.DraftsViewBlobID == 0 {
 		return cid.Undef, fmt.Errorf("no draft for entity %s", eid)
 	}
 
-	return cid.NewCidV1(uint64(res.HyperDraftsViewCodec), res.HyperDraftsViewMultihash), nil
+	return cid.NewCidV1(uint64(res.DraftsViewCodec), res.DraftsViewMultihash), nil
 }
 
 // LoadEntityFromHeads returns the loaded entity at a given "version" corresponding to the provided HEAD changes.
@@ -473,24 +541,73 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 	}
 
 	entity := NewEntity(eid)
-
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.HyperChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.ChangesViewData, buf)
 		if err != nil {
 			return nil, err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.HyperChangesViewCodec), change.HyperChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.ChangesViewCodec), change.ChangesViewMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
 			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
+
 		if err := entity.ApplyChange(chcid, ch); err != nil {
 			return nil, err
 		}
+
 		buf = buf[:0] // reset the slice reusing the backing array
 	}
 
 	return entity, nil
+}
+
+// ParsedBlob is a decoded IPLD blob.
+type ParsedBlob[T any] struct {
+	CID  cid.Cid
+	Data T
+}
+
+// NewUnforgeableID creates a new random ID that is verifiable with the author's public key.
+// It return the ID and the nonce. The nonce argument can be nil in which case a new nonce will be created.
+// Otherwise the same nonce will be returned.
+func NewUnforgeableID(prefix string, author core.Principal, nonce []byte, ts int64) (string, []byte) {
+	const hashSize = 22
+
+	if nonce == nil {
+		nonce = make([]byte, 16)
+		_, err := rand.Read(nonce)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	h := sha256.New()
+	if _, err := h.Write(author); err != nil {
+		panic(err)
+	}
+	if _, err := h.Write(nonce); err != nil {
+		panic(err)
+	}
+
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], uint64(ts))
+
+	if _, err := h.Write(buf[:]); err != nil {
+		panic(err)
+	}
+
+	dig := h.Sum(nil)
+	base, err := multibase.Encode(multibase.Base58BTC, dig)
+	if err != nil {
+		panic(err)
+	}
+
+	// Using last [hashSize] characters to avoid multibase prefix,
+	// and reduce the size of the resulting ID.
+	// We don't use full hash digest here, to make our IDs shorter.
+	// But it should have enough collision resistance for our purpose.
+	return prefix + base[len(base)-hashSize:], nonce
 }

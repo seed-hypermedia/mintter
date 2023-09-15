@@ -1,5 +1,5 @@
 # Build from the root with `docker build . -f ./backend/cmd/minttergw/Dockerfile`.
-FROM golang:1.19-alpine AS builder
+FROM golang:1.20-alpine AS builder
 WORKDIR /code
 COPY go.mod go.sum ./
 COPY third_party ./third_party

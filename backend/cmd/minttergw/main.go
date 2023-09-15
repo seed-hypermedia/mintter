@@ -82,7 +82,7 @@ func main() {
 			return err
 		}
 
-		_, err = app.Me.Await(ctx)
+		_, err = app.Storage.Identity().Await(ctx)
 		if err != nil {
 			return err
 		}

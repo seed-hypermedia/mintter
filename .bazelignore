@@ -1,0 +1,5 @@
+# Add every folder below which Bazel should not descend into.
+# This is important for patterns like //... which might find extra files.
+node_modules
+.bazel
+build/rules_impure

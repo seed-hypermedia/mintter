@@ -2,7 +2,7 @@ package daemontest
 
 import (
 	"mintter/backend/core/coretest"
-	"mintter/backend/daemon/ondisk"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/testutil"
 	"os"
 	"testing"
@@ -12,7 +12,7 @@ import (
 )
 
 // MakeTestRepo creates a new testing repository.
-func MakeTestRepo(t *testing.T, tt coretest.Tester) *ondisk.OnDisk {
+func MakeTestRepo(t *testing.T, tt coretest.Tester) *storage.Dir {
 	t.Helper()
 
 	dir := testutil.MakeRepoPath(t)
@@ -20,13 +20,15 @@ func MakeTestRepo(t *testing.T, tt coretest.Tester) *ondisk.OnDisk {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	require.NoError(t, err)
 
-	repo, err := ondisk.NewOnDiskWithDeviceKey(dir, log, tt.Device.Wrapped(), nil)
+	repo, err := storage.NewWithDeviceKey(dir, log, tt.Device.Wrapped())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(dir))
 		err := log.Sync()
 		_ = err
 	})
+
+	require.NoError(t, repo.Migrate())
 
 	return repo
 }

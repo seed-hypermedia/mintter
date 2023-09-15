@@ -1,3 +1,4 @@
+import 'raf/polyfill'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
@@ -10,12 +11,12 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import '@tamagui/core/reset.css'
-import '@tamagui/font-inter/css/400.css'
-import '@tamagui/font-inter/css/700.css'
-import 'raf/polyfill'
-
-import {Hydrate, QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {
+  DehydratedState,
+  Hydrate,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
 
@@ -24,7 +25,7 @@ import React, {startTransition} from 'react'
 import type {AppProps} from 'next/app'
 import {useMemo, useState} from 'react'
 import {trpc} from '../trpc'
-import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
+import {TamaguiProvider, Theme} from '@mintter/ui'
 import tamaguiConfig from '../tamagui.config'
 import {Toaster} from 'react-hot-toast'
 
@@ -33,7 +34,11 @@ export default trpc.withTRPC(App)
 const isMintterSite = process.env.GW_NEXT_HOST === 'https://mintter.com'
 const hostIconPrefix = isMintterSite ? '/mintter-icon' : '/generic-icon'
 
-function App({Component, pageProps}: AppProps) {
+export type EveryPageProps = {
+  trpcState?: DehydratedState
+}
+
+function App({Component, pageProps}: AppProps<EveryPageProps>) {
   let [client] = useState(() => new QueryClient())
 
   // memo to avoid re-render on dark/light change
@@ -76,9 +81,9 @@ function App({Component, pageProps}: AppProps) {
           }}
         />
       </Head>
-      <Hydrate state={pageProps.dehydratedState}>
+      <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
-          {contents}
+          <Theme name="mint">{contents}</Theme>
           <Toaster position="bottom-right" />
         </ThemeProvider>
       </Hydrate>
@@ -94,7 +99,8 @@ function ThemeProvider({children}: {children: React.ReactNode}) {
     <NextThemeProvider
       onChangeTheme={(next) => {
         startTransition(() => {
-          setTheme(next)
+          if (next === 'dark') setTheme('dark')
+          else if (next === 'light') setTheme('light')
         })
       }}
     >

@@ -2,19 +2,19 @@ package mttnet
 
 import (
 	"context"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
 )
 
-func makeProvidingStrategy(db *sqlitex.Pool) ipfs.ReprovidingStrategy {
+func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
 	// except those which are marked as draft changes.
 	// TODO(burdiyan): this is a temporary solution during the braking change.
@@ -22,9 +22,9 @@ func makeProvidingStrategy(db *sqlitex.Pool) ipfs.ReprovidingStrategy {
 	log := logging.New("mintter/reprovider", "debug")
 	const q = `
 SELECT
-	` + sqliteschema.C_PublicBlobsViewCodec + `,
-	` + sqliteschema.C_PublicBlobsViewMultihash + `
-FROM ` + sqliteschema.T_PublicBlobsView + `;`
+	` + storage.C_PublicBlobsViewCodec + `,
+	` + storage.C_PublicBlobsViewMultihash + `
+FROM ` + storage.T_PublicBlobsView + `;`
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer
@@ -70,9 +70,9 @@ FROM ` + sqliteschema.T_PublicBlobsView + `;`
 			}
 
 			for _, e := range entities {
-				c, err := hyper.EntityID(e.HyperEntitiesEID).CID()
+				c, err := hyper.EntityID(e.EntitiesEID).CID()
 				if err != nil {
-					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.HyperEntitiesEID))
+					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.EntitiesEID))
 					return
 				}
 

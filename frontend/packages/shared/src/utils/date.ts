@@ -1,5 +1,5 @@
-import type {Document} from '../client'
 import {Timestamp} from '@bufbuild/protobuf'
+import type {Document} from '../client'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never
@@ -25,38 +25,67 @@ var months = [
   'Dec',
 ]
 
-export function formattedDate(value: string | Date | Timestamp) {
+export type HMTimestamp = string
+
+export function formattedDate(
+  value?: string | Date | Timestamp | HMTimestamp | undefined,
+  options?: {onlyRelative?: boolean},
+) {
+  if (!value) return ''
   let _value =
     typeof value == 'string' ||
     (value instanceof Date && !isNaN(value.valueOf()))
       ? value
       : (value as Timestamp).toDate()
 
+  if (
+    typeof Intl !== 'undefined' &&
+    typeof Intl.RelativeTimeFormat !== 'undefined'
+  ) {
+    // Intl.RelativeTimeFormat is supported
+    return relativeFormattedDate(_value, options)
+    // Use the rtf object for relative time formatting
+  } else {
+    let date = new Date(_value)
+    return date.toLocaleDateString('en', {
+      day: '2-digit',
+      month: '2-digit',
+    })
+  }
+}
+
+export function relativeFormattedDate(
+  value: string | Date,
+  options?: {onlyRelative?: boolean},
+) {
+  const onlyRelative = !!options?.onlyRelative
   var now = new Date()
-  var date = new Date(_value)
+  var date = new Date(value)
+  let formatter = new Intl.RelativeTimeFormat('en-US', {
+    style: 'short',
+  })
 
   var result = difference(date, now)
 
+  let relative = 'just now'
   if (result.year < -1) {
-    // after one year: Nov 22, 2021
+    relative = formatter.format(Math.floor(result.year), 'year')
+  } else if (result.day < -30) {
+    relative = formatter.format(Math.floor(result.day / 30), 'month')
+  } else if (result.day < -1) {
+    relative = formatter.format(Math.floor(result.day), 'day')
+  } else if (result.hour < -1) {
+    relative = formatter.format(Math.floor(result.hour), 'hour')
+  } else if (result.minute < -2) {
+    relative = formatter.format(Math.floor(result.minute), 'minute')
+  }
+
+  if (onlyRelative) {
+    return relative
+  } else if (result.year < -1) {
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
   } else if (result.day > -1) {
-    // TODO: avoid showing 24hrs ago
-    let formatter = new Intl.RelativeTimeFormat('en-US', {
-      style: 'short',
-    })
-
-    if (result.minute > -2) {
-      return 'just now'
-    }
-
-    if (result.minute > -60) {
-      return formatter.format(Math.floor(result.minute), 'minute')
-    }
-
-    // within 24hrs: 2h
-
-    return formatter.format(Math.floor(result.hour), 'hour')
+    return relative
   } else {
     return `${date.getDate()} ${months[date.getMonth()]}`
     // within the same year: 9 Sep (day + short month)

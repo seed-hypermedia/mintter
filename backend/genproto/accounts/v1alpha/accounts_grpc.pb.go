@@ -31,6 +31,9 @@ type AccountsClient interface {
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
+	// Set or unset the trustness of an account. An account is untrusted by default except for our own.
+	// Returns the modified account.
+	SetAccountTrust(ctx context.Context, in *SetAccountTrustRequest, opts ...grpc.CallOption) (*Account, error)
 }
 
 type accountsClient struct {
@@ -68,6 +71,15 @@ func (c *accountsClient) ListAccounts(ctx context.Context, in *ListAccountsReque
 	return out, nil
 }
 
+func (c *accountsClient) SetAccountTrust(ctx context.Context, in *SetAccountTrustRequest, opts ...grpc.CallOption) (*Account, error) {
+	out := new(Account)
+	err := c.cc.Invoke(ctx, "/com.mintter.accounts.v1alpha.Accounts/SetAccountTrust", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountsServer is the server API for Accounts service.
 // All implementations should embed UnimplementedAccountsServer
 // for forward compatibility
@@ -81,6 +93,9 @@ type AccountsServer interface {
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
+	// Set or unset the trustness of an account. An account is untrusted by default except for our own.
+	// Returns the modified account.
+	SetAccountTrust(context.Context, *SetAccountTrustRequest) (*Account, error)
 }
 
 // UnimplementedAccountsServer should be embedded to have forward compatible implementations.
@@ -95,6 +110,9 @@ func (UnimplementedAccountsServer) UpdateProfile(context.Context, *Profile) (*Ac
 }
 func (UnimplementedAccountsServer) ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
+}
+func (UnimplementedAccountsServer) SetAccountTrust(context.Context, *SetAccountTrustRequest) (*Account, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetAccountTrust not implemented")
 }
 
 // UnsafeAccountsServer may be embedded to opt out of forward compatibility for this service.
@@ -162,6 +180,24 @@ func _Accounts_ListAccounts_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Accounts_SetAccountTrust_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetAccountTrustRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountsServer).SetAccountTrust(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.accounts.v1alpha.Accounts/SetAccountTrust",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountsServer).SetAccountTrust(ctx, req.(*SetAccountTrustRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Accounts_ServiceDesc is the grpc.ServiceDesc for Accounts service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -180,6 +216,10 @@ var Accounts_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAccounts",
 			Handler:    _Accounts_ListAccounts_Handler,
+		},
+		{
+			MethodName: "SetAccountTrust",
+			Handler:    _Accounts_SetAccountTrust_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

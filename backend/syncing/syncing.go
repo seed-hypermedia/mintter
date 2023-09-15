@@ -56,7 +56,7 @@ type Service struct {
 }
 
 const (
-	defaultWarmupDuration  = time.Minute
+	defaultWarmupDuration  = time.Second * 20
 	defaultSyncInterval    = time.Minute
 	defaultPeerSyncTimeout = time.Minute * 5
 )
@@ -370,6 +370,9 @@ func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjec
 			filter[o] = struct{}{}
 		}
 	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
 
 	c, err := s.client(ctx, device)
 	if err != nil {

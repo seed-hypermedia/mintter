@@ -134,23 +134,30 @@ func PrincipalFromPubKey(k crypto.PubKey) Principal {
 }
 
 // DecodePrincipal decodes the principal from its string representation.
-func DecodePrincipal(s string) (Principal, error) {
-	enc, data, err := multibase.Decode(s)
-	if err != nil {
-		return nil, err
+func DecodePrincipal[T string | []byte](s T) (Principal, error) {
+	var sb []byte
+
+	switch s := any(s).(type) {
+	case string:
+		if s == "" {
+			return nil, fmt.Errorf("must specify principal to decode")
+		}
+
+		enc, data, err := multibase.Decode(s)
+		if err != nil {
+			return nil, err
+		}
+
+		if enc != multibase.Base58BTC {
+			return nil, fmt.Errorf("unsupported principal multibase: %s", multicodec.Code(enc).String())
+		}
+		sb = data
+	case []byte:
+		sb = s
 	}
 
-	if enc != multibase.Base58BTC {
-		return nil, fmt.Errorf("unsupported principal multibase: %s", multicodec.Code(enc).String())
-	}
-
-	return Principal(data), nil
-}
-
-// ValidatePrincipalBytes ensures principal is the correct key.
-func ValidatePrincipalBytes(data []byte) (Principal, error) {
-	codec, n := binary.Uvarint(data)
-	key := data[n:]
+	codec, n := binary.Uvarint(sb)
+	key := sb[n:]
 
 	if multicodec.Code(codec) != multicodec.Ed25519Pub {
 		return nil, fmt.Errorf("invalid principal key type")
@@ -159,5 +166,5 @@ func ValidatePrincipalBytes(data []byte) (Principal, error) {
 	// TODO(burdiyan): should we validate the key bytes here?
 	_ = key
 
-	return Principal(data), nil
+	return Principal(sb), nil
 }

@@ -1,3 +1,5 @@
+// Package daemon assembles everything to boot the mintterd program. It's like main, but made a separate package
+// to be importable and testable by other packages, because package main can't be imported.
 package daemon
 
 import (
@@ -6,6 +8,7 @@ import (
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/pkg/future"
 	sync "sync"
 	"time"
 
@@ -19,7 +22,7 @@ import (
 // Repo is a subset of the [ondisk.OnDisk] used by this server.
 type Repo interface {
 	Device() core.KeyPair
-	Account() (core.PublicKey, error)
+	Identity() *future.ReadOnly[core.Identity]
 	CommitAccount(core.PublicKey) error
 }
 
@@ -68,8 +71,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 
 	// Check if account already exist
 	{
-		_, err := srv.repo.Account()
-		if err == nil {
+		if _, ok := srv.repo.Identity().Get(); ok {
 			return nil, status.Errorf(codes.AlreadyExists, "account is already registered")
 		}
 	}
@@ -119,18 +121,21 @@ func Register(ctx context.Context, bs *hyper.Storage, account core.KeyPair, devi
 		return cid.Undef, err
 	}
 
+	if err = bs.SetAccountTrust(ctx, account.Principal()); err != nil {
+		return blob.CID, fmt.Errorf("Could not set own account to trusted: " + err.Error())
+	}
 	return blob.CID, nil
 }
 
 // GetInfo implements the corresponding gRPC method.
 func (srv *Server) GetInfo(context.Context, *daemon.GetInfoRequest) (*daemon.Info, error) {
-	pk, err := srv.repo.Account()
-	if err != nil {
-		return nil, status.Error(codes.FailedPrecondition, err.Error())
+	me, ok := srv.repo.Identity().Get()
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
 	}
 
 	resp := &daemon.Info{
-		AccountId: pk.Principal().String(),
+		AccountId: me.Account().Principal().String(),
 		DeviceId:  srv.repo.Device().PeerID().String(),
 		StartTime: timestamppb.New(srv.startTime),
 	}

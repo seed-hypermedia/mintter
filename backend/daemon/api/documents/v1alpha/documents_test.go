@@ -5,17 +5,15 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"path/filepath"
 	"testing"
 	"time"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sanity-io/litter"
@@ -81,7 +79,7 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	start := time.Now().Add(-1 * time.Second).UTC().UnixMicro()
+	start := time.Now().Add(-4 * time.Second).UTC().UnixMicro()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -185,7 +183,7 @@ func TestUpdateDraftSmoke(t *testing.T) {
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	resp, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	resp, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -283,7 +281,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Add some content to the draft ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_SetTitle{SetTitle: "Hello Drafts V2"}},
@@ -355,7 +353,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now reparent b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_MoveBlock_{
@@ -409,7 +407,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now delete b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{Op: &documents.DocumentChange_DeleteBlock{
@@ -792,7 +790,7 @@ func TestPublisherAndEditors(t *testing.T) {
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	_, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
@@ -850,7 +848,7 @@ func TestGetPreviousVersions(t *testing.T) {
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {
-	_, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	_, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: id,
 		Changes:    updates,
 	})
@@ -865,7 +863,7 @@ func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, upda
 func newTestDocsAPI(t *testing.T, name string) *Server {
 	u := coretest.NewTester("alice")
 
-	db := newTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
@@ -879,18 +877,4 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	require.NoError(t, err)
 
 	return srv
-}
-
-func newTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }

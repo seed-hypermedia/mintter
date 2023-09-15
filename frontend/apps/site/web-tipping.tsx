@@ -1,49 +1,25 @@
-import {Account, Publication} from '@mintter/shared'
 import {
   Button,
   Dialog,
-  Info,
   Input,
   Label,
-  ListItem,
-  Help,
   RadioGroup,
   Separator,
+  SideSection,
   SizableText,
   SizeTokens,
-  Slider,
-  SliderProps,
-  User,
-  XStack,
-  YGroup,
-  YStack,
-  Card,
-  ErrorIcon,
-  Container,
   Text,
   XGroup,
-  DialogClose,
+  XStack,
+  YStack,
 } from '@mintter/ui'
-import {
-  Check,
-  MinusCircle,
-  Plus,
-  PlusCircle,
-  X,
-  Zap,
-} from '@tamagui/lucide-icons'
-import {LoadedAccountId} from 'author'
+import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
+import {AccountRow} from 'components/account-row'
 import Link from 'next/link'
-import React, {
-  ReactNode,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
+import React, {useEffect, useMemo, useReducer, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
+import {HMAccount} from '@mintter/ui'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},
@@ -72,19 +48,21 @@ export function WebTipping({
   docId,
   editors = [],
 }: {
-  docId: string
-  editors: Array<Account | string | null>
+  docId?: string
+  editors: Array<HMAccount | string | null>
 }) {
   const [open, onOpenChange] = useState<boolean>(false)
 
   return (
-    <>
-      <DontationDialog
-        open={open}
-        onOpenChange={onOpenChange}
-        docId={docId}
-        editors={editors}
-      />
+    <SideSection>
+      {docId && (
+        <DontationDialog
+          open={open}
+          onOpenChange={onOpenChange}
+          docId={docId}
+          editors={editors}
+        />
+      )}
       <Button
         icon={Zap}
         theme="green"
@@ -94,7 +72,7 @@ export function WebTipping({
       >
         Donate Bitcoin
       </Button>
-    </>
+    </SideSection>
   )
 }
 
@@ -180,40 +158,45 @@ function SplitRow({
       overflow="hidden"
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
+      justifyContent="space-between"
     >
-      <LoadedAccountId account={id} />
-      <Text width={100} color="$gray10">
-        {Math.round(percentage * 1000) / 10}%
-      </Text>
-      {dispatchSplit ? (
-        <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
-          <XGroup.Item>
-            <Button
-              size="$2"
-              icon={PlusCircle}
-              onPress={() => {
-                dispatchSplit({type: 'incrementPercentage', id, increment: 0.1})
-              }}
-            />
-          </XGroup.Item>
-          <XGroup.Item>
-            <Button
-              size="$2"
-              icon={MinusCircle}
-              onPress={() => {
-                dispatchSplit({
-                  type: 'incrementPercentage',
-                  id,
-                  increment: -0.1,
-                })
-              }}
-            />
-          </XGroup.Item>
-        </XGroup>
-      ) : null}
-      <Container>
+      <XStack gap="$2">
+        <AccountRow account={id} />
+        <Text color="$gray10">– {Math.round(percentage * 1000) / 10}%</Text>
+      </XStack>
+      <XStack gap="$2">
+        {dispatchSplit ? (
+          <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
+            <XGroup.Item>
+              <Button
+                size="$2"
+                icon={MinusCircle}
+                onPress={() => {
+                  dispatchSplit({
+                    type: 'incrementPercentage',
+                    id,
+                    increment: -0.1,
+                  })
+                }}
+              />
+            </XGroup.Item>
+            <XGroup.Item>
+              <Button
+                size="$2"
+                icon={PlusCircle}
+                onPress={() => {
+                  dispatchSplit({
+                    type: 'incrementPercentage',
+                    id,
+                    increment: 0.1,
+                  })
+                }}
+              />
+            </XGroup.Item>
+          </XGroup>
+        ) : null}
         <Text>{sats} Sats</Text>
-      </Container>
+      </XStack>
     </XStack>
   )
 }
@@ -243,7 +226,11 @@ function RadioGroupItemWithLabel({
 
 type InvoiceSplit = {id: string; percentage: number}[]
 
-type SplitAction = {type: 'incrementPercentage'; increment: number; id: string}
+type SplitAction = {
+  type: 'incrementPercentage'
+  increment: number
+  id: string
+}
 let editorsOverallPercentage = 0.99
 
 function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
@@ -265,7 +252,10 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
         return {id: s.id, percentage: nextPercentage}
       }
       // these split the remainder based on their ratio from the previous remainder
-      const prevRatioExcludingTarget = s.percentage / prevRemainderPercentage
+      const prevRatioExcludingTarget =
+        prevRemainderPercentage === 0
+          ? 0
+          : s.percentage / prevRemainderPercentage
       const percentage = prevRatioExcludingTarget * nextRemainderPercentage
 
       return {id: s.id, percentage}
@@ -282,7 +272,7 @@ function CreateInvoiceStep({
 }: {
   onInvoice: (invoice: InternalInvoice) => void
   onComplete: (complete: boolean) => void
-  editors: Array<Account | string | null>
+  editors: Array<HMAccount | string | null>
   docId: string
 }) {
   let [amount, setAmount] = useState(100)
@@ -408,23 +398,23 @@ function CreateInvoiceStep({
           })}
 
           <XStack overflow="hidden">
-            <Container width={600}>
+            <YStack width={600}>
               <Text flex={1}>Transaction Fee</Text>
-            </Container>
-            <Container>
+            </YStack>
+            <YStack>
               <Text>{computed.serviceFeeSats} Sats</Text>
-            </Container>
+            </YStack>
           </XStack>
           <Separator />
           <XStack overflow="hidden">
-            <Container width={600}>
+            <YStack width={600}>
               <Text color="$green11" flex={1}>
                 Payment Total
               </Text>
-            </Container>
-            <Container>
+            </YStack>
+            <YStack>
               <Text color="$green11">{computed.total} Sats</Text>
-            </Container>
+            </YStack>
           </XStack>
         </YStack>
         <XStack justifyContent="center">
@@ -557,7 +547,7 @@ function DontationDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
   docId: string
-  editors: Array<Account | string | null>
+  editors: Array<HMAccount | string | null>
 }) {
   let [invoice, setInvoice] = useState<InternalInvoice | null>(null)
   let [completion, setCompletion] = useState<boolean>(false)

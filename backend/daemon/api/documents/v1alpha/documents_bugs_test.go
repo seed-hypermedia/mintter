@@ -9,6 +9,38 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func TestBug_DraftsInTrustedPublicationList(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.Error(t, err, "must fail asking for doc ID that only has a draft")
+	require.Nil(t, pub)
+
+	pub, err = api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id, TrustedOnly: true})
+	require.Error(t, err, "must fail asking for doc ID that only has a draft when requested trusted version")
+	require.Nil(t, pub)
+
+	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{TrustedOnly: false})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 0, "must have no publications")
+
+	pubs, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{TrustedOnly: true})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 0, "must have no publications in trusted list")
+}
+
 func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()
@@ -158,7 +190,7 @@ func TestBug_HandleRedundantMoveOperations(t *testing.T) {
 
 	docid := draft.Id
 
-	calls := []*documents.UpdateDraftRequestV2{
+	calls := []*documents.UpdateDraftRequest{
 		{
 			DocumentId: docid,
 			Changes: []*documents.DocumentChange{
@@ -282,7 +314,7 @@ func TestBug_HandleRedundantMoveOperations(t *testing.T) {
 	}
 
 	for i, call := range calls {
-		_, err = api.UpdateDraftV2(ctx, call)
+		_, err = api.UpdateDraft(ctx, call)
 		require.NoError(t, err, "failed call %d", i)
 	}
 }
@@ -293,11 +325,11 @@ func TestBug_FailToUpdatePublication(t *testing.T) {
 
 	log := [][2]string{
 		{"CreateDraft", `{}`},
-		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"setTitle":"This is hello world!"}]}`},
+		{"UpdateDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!"}},{"setTitle":"This is hello world!"}]}`},
 		{"PublishDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
 		{"CreateDraft", `{"existingDocumentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
-		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"setTitle":"This is hello world!"}]}`},
-		{"UpdateDraftV2", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"setTitle":"This is hello world!"}]}`},
+		{"UpdateDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement"}},{"setTitle":"This is hello world!"}]}`},
+		{"UpdateDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh","changes":[{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"gSB6m9UT"}},{"replaceBlock":{"id":"gSB6m9UT","type":"statement","text":"This is hello world!","revision":"bafy2bzacecxc5joirohqlchyk5u4y6we433ifnxyn74xpmsxyfleoonnbl432"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"moveBlock":{"blockId":"uMtOJmx_","leftSibling":"gSB6m9UT"}},{"replaceBlock":{"id":"uMtOJmx_","type":"statement","text":"Edited hello world!"}},{"setTitle":"This is hello world!"}]}`},
 		{"GetDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
 		{"PublishDraft", `{"documentId":"Igyet4ZbVaawKw4ucLuAgh"}`},
 	}
@@ -319,11 +351,11 @@ func TestBug_FailToUpdatePublication(t *testing.T) {
 			resp, err := api.CreateDraft(ctx, req)
 			require.NoError(t, err)
 			docid = resp.Id
-		case "UpdateDraftV2":
-			req := &documents.UpdateDraftRequestV2{}
+		case "UpdateDraft":
+			req := &documents.UpdateDraftRequest{}
 			require.NoError(t, protojson.Unmarshal([]byte(call[1]), req))
 			req.DocumentId = docid
-			_, err := api.UpdateDraftV2(ctx, req)
+			_, err := api.UpdateDraft(ctx, req)
 			require.NoError(t, err)
 		case "PublishDraft":
 			req := &documents.PublishDraftRequest{}
@@ -341,4 +373,58 @@ func TestBug_FailToUpdatePublication(t *testing.T) {
 			panic("BUG: unhandled method " + method)
 		}
 	}
+}
+
+func TestBug_MissingPublicationListItemWithActiveDraft(t *testing.T) {
+	// See: https://www.notion.so/mintter/When-I-edit-a-publication-it-becomes-a-draft-and-disappears-from-the-All-Documents-5997095f6e264b01830b0d78ae9bb6f0.
+	// When a publication has an active draft it's now shown in the list of publications.
+
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: published.Document.Id,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, pub)
+	require.Equal(t, published.Version, pub.Version)
+
+	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1, "publication must be in the list even with an active draft")
+
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 1, "draft must be in the list")
+
+	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, draft)
 }

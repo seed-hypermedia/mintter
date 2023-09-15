@@ -61,13 +61,13 @@ func TestDaemonSmoke(t *testing.T) {
 	_, err = core.DecodePrincipal(reg.AccountId)
 	require.NoError(t, err, "account must have principal encoding")
 
-	_, err = dmn.Me.Await(ctx)
+	_, err = dmn.Storage.Identity().Await(ctx)
 	require.NoError(t, err)
 
 	_, err = dmn.Net.Await(ctx)
 	require.NoError(t, err)
 
-	me := dmn.Me.MustGet()
+	me := dmn.Storage.Identity().MustGet()
 	require.Equal(t, me.Account().String(), reg.AccountId)
 
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
@@ -153,9 +153,11 @@ func TestSite(t *testing.T) {
 	siteCfg := makeTestConfig(t)
 	siteCfg.Site.Hostname = "http://127.0.0.1:59011"
 	siteCfg.HTTPPort = 59011
+	siteCfg.GRPCPort = mttnet.GRPCPort
 	siteCfg.Identity.NoAccountWait = true
+	siteCfg.Site.NoAuth = false
 	siteCfg.Site.Title = "initial Site Title"
-	siteCfg.Site.OwnerID = owner.Me.MustGet().Account().String()
+	siteCfg.Site.OwnerID = owner.Storage.Identity().MustGet().Account().String()
 	siteCfg.P2P.NoListing = true
 	siteCfg.Syncing.NoInbound = true
 
@@ -183,9 +185,13 @@ func TestSite(t *testing.T) {
 	require.Error(t, err)
 
 	// Generate a token for the editor.
-	header := metadata.New(map[string]string{string(mttnet.TargetSiteHeader): siteCfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(mttnet.TargetSiteHostnameHeader): siteCfg.Site.Hostname})
 	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().Account().String())
+	address := ""
+	for _, ma := range site.Net.MustGet().AddrInfo().Addrs {
+		address += " " + ma.String()
+	}
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.TargetSiteHostnameHeader, site.Storage.Identity().MustGet().Account().String())
 	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
 	require.NoError(t, err)
 
@@ -201,7 +207,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, "", siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
+	require.Equal(t, owner.Storage.Identity().MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, siteCfg.Site.Title, siteInfo.Title)
 	siteAcc, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -212,7 +218,11 @@ func TestSite(t *testing.T) {
 	const newTitle = "new title"
 	const newDescription = " new brief description"
 	_, err = editor.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
-	require.Error(t, err)
+	if siteCfg.Site.NoAuth {
+		require.NoError(t, err)
+	} else {
+		require.Error(t, err)
+	}
 
 	// Change site info by the owner shouldn't fail
 	siteInfo, err = owner.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
@@ -220,7 +230,7 @@ func TestSite(t *testing.T) {
 	require.Equal(t, newDescription, siteInfo.Description)
 	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
-	require.Equal(t, owner.Me.MustGet().Account().String(), siteInfo.Owner)
+	require.Equal(t, owner.Storage.Identity().MustGet().Account().String(), siteInfo.Owner)
 	require.Equal(t, newTitle, siteInfo.Title)
 	siteAcc, err = site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
@@ -411,6 +421,84 @@ func TestSite(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestTrustedChanges(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	t.Cleanup(func() {
+		cancel()
+	})
+
+	trusted := makeTestApp(t, "alice", makeTestConfig(t), true)
+	untrusted := makeTestApp(t, "bob", makeTestConfig(t), true)
+
+	// Both peers connect connect to each other, to exchange documents. Does not mean they trust each other.
+	_, err := trusted.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, untrusted)})
+	require.NoError(t, err)
+
+	// Create a document.
+	sharedDocument := publishDocument(t, ctx, trusted)
+
+	// Sync the document with the untusted peer so it can modify it.
+	_, err = untrusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	var publicationList *documents.ListPublicationsResponse
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the received version is the one the initial author created.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Add an untrusted change
+	const anotherTitle = "New Document title leading to a new version"
+	newVersion := updateDocumenTitle(t, ctx, untrusted, sharedDocument.Document.Id, anotherTitle)
+	require.Equal(t, sharedDocument.Document.Id, newVersion.Document.Id)
+
+	// Send the document back to the creator which the new untrusted changes.
+	_, err = trusted.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		// List all documents which by default includes untrusted changes.
+		publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		return len(publicationList.Publications) == 1
+	}, 1*time.Second, 100*time.Millisecond, "peer should have synced the document")
+
+	// Check that the version is the latest one (untrusted).
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// Now ask for trusted changes only.
+	publicationList, err = trusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+
+	// Check that the version is the initial one, without any untrusted changes.
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// But the untrusted peer (last editor) should get the latest version since it was him
+	// the one who wrote the latest changes and he trusts himself by default.
+	publicationList, err = untrusted.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{
+		TrustedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1, "same document, different version")
+	require.Equal(t, newVersion.Version, publicationList.Publications[0].Version)
+	require.Equal(t, newVersion.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, newVersion.Document.Id, publicationList.Publications[0].Document.Id)
+}
+
 func TestGateway(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -450,7 +538,7 @@ func TestGateway(t *testing.T) {
 	_, err = gw.Net.Await(ctx)
 	require.NoError(t, err)
 
-	_, err = gw.Me.Await(ctx)
+	_, err = gw.Storage.Identity().Await(ctx)
 	require.NoError(t, err)
 	// Create new document so the gateway owns at least 1. This one must not be transferred to the requester, since the
 	// gateway only syncs in one direction (in order not to flood requesters with documents from everybody)
@@ -523,7 +611,7 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 		draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 		require.NoError(t, err)
 
-		_, err = alice.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = alice.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 			DocumentId: draft.Id,
 			Changes: []*documents.DocumentChange{
 				{
@@ -593,7 +681,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 
 	pub := publishDocument(t, ctx, alice)
 
-	cc, err := bob.Net.MustGet().Client(ctx, alice.Repo.Device().PeerID())
+	cc, err := bob.Net.MustGet().Client(ctx, alice.Storage.Device().PeerID())
 	require.NoError(t, err)
 
 	list, err := cc.ListObjects(ctx, &p2p.ListObjectsRequest{})
@@ -604,7 +692,7 @@ func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 	var found *p2p.Object
 	seen := map[cid.Cid]struct{}{}
 	for _, obj := range list.Objects {
-		if obj.Id == "mintter:document:"+pub.Document.Id {
+		if obj.Id == pub.Document.Id {
 			found = obj
 		}
 		for _, ch := range obj.ChangeIds {
@@ -655,6 +743,7 @@ func TestPeriodicSync(t *testing.T) {
 		bacc := must.Do2(b.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
 		require.Len(t, accs.Accounts, 1, msg)
+		bacc.IsTrusted = accs.Accounts[0].IsTrusted // just bc they synced they dont trust each other
 		testutil.ProtoEqual(t, bacc, accs.Accounts[0], "a must fetch b's account fully")
 	}
 
@@ -673,30 +762,99 @@ func TestMultiDevice(t *testing.T) {
 		Addrs: getAddrs(t, alice2),
 	})
 	require.NoError(t, err)
-
 	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+
 	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
 
 	{
 		sr := must.Do2(alice1.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice1.Repo.Device().PeerID(), alice2.Repo.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice1.Storage.Device().PeerID(), alice2.Storage.Device().PeerID()}, sr.Peers)
 	}
 
 	{
 		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
-		require.Equal(t, []peer.ID{alice2.Repo.Device().PeerID(), alice1.Repo.Device().PeerID()}, sr.Peers)
+		require.Equal(t, []peer.ID{alice2.Storage.Device().PeerID(), alice1.Storage.Device().PeerID()}, sr.Peers)
 	}
-
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
 
 	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
+}
+
+func TestTrustedPeers(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, bob),
+	})
+	require.NoError(t, err)
+
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.ElementsMatch(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	acc1 := must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 := must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc1.IsTrusted)
+
+	//Just because they sync the should not be trusted
+	{
+		sr := must.Do2(alice.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
+	}
+
+	{
+		sr := must.Do2(bob.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.ElementsMatch(t, []peer.ID{bob.Storage.Device().PeerID(), alice.Storage.Device().PeerID()}, sr.Peers)
+	}
+	time.Sleep(100 * time.Millisecond) // to give time to sync
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc2.IsTrusted)
+
+	acc1, err = alice.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: bob.Net.MustGet().ID().Account().Principal().String(), IsTrusted: false})
+	require.NoError(t, err)
+	require.False(t, acc1.IsTrusted)
+	acc2, err = bob.RPC.Accounts.SetAccountTrust(ctx, &accounts.SetAccountTrustRequest{Id: alice.Net.MustGet().ID().Account().Principal().String(), IsTrusted: true})
+	require.NoError(t, err)
+	require.True(t, acc2.IsTrusted)
+
+	//Double check
+	acc1 = must.Do2(alice.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: bob.Net.MustGet().ID().Account().Principal().String()}))
+	require.False(t, acc1.IsTrusted)
+	acc2 = must.Do2(bob.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{Id: alice.Net.MustGet().ID().Account().Principal().String()}))
+	require.True(t, acc2.IsTrusted)
 }
 
 func TestNetworkingListPeers(t *testing.T) {
@@ -711,8 +869,8 @@ func TestNetworkingListPeers(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	pid := bob.Me.MustGet().DeviceKey().PeerID()
-	acc := bob.Me.MustGet().Account().Principal()
+	pid := bob.Storage.Identity().MustGet().DeviceKey().PeerID()
+	acc := bob.Storage.Identity().MustGet().Account().Principal()
 	pList, err := alice.RPC.Networking.ListPeers(ctx, &networking.ListPeersRequest{})
 	require.NoError(t, err)
 	require.Len(t, pList.Peers, 1)
@@ -749,7 +907,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		_, err = app.Net.Await(ctx)
 		require.NoError(t, err)
 
-		_, err = app.Me.Await(ctx)
+		_, err = app.Storage.Identity().Await(ctx)
 		require.NoError(t, err)
 
 		prof := &accounts.Profile{
@@ -780,8 +938,8 @@ func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) 
 	}
 
 	// Make sure bob does't know anything about publisher.
-	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Repo.Device().ID()))
-	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Repo.Device().ID())
+	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Storage.Device().ID()))
+	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Storage.Device().ID())
 
 	publishedDocument := publishDocument(t, ctx, publisher)
 
@@ -794,7 +952,7 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documen
 	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -819,7 +977,7 @@ func updateDocumenTitle(t *testing.T, ctx context.Context, publisher *App, docID
 	})
 	require.NoError(t, err)
 
-	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	updated, err := publisher.RPC.Documents.UpdateDraft(ctx, &documents.UpdateDraftRequest{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: newTitle}},

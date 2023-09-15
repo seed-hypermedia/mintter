@@ -1,0 +1,12 @@
+{
+  "name": "@mintter/prettier",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "index.js"
+  ],
+  "devDependencies": {
+    "prettier": "3.0.2",
+    "prettier-plugin-packagejson": "2.4.5"
+  }
+}

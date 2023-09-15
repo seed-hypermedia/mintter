@@ -3,19 +3,20 @@ package hyper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/boxo/blockstore"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multicodec"
 	"github.com/multiformats/go-multihash"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -32,8 +33,9 @@ type Storage struct {
 // NewStorage creates a new blob storage.
 func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
 	return &Storage{
-		db: db,
-		bs: newBlockstore(db),
+		db:  db,
+		bs:  newBlockstore(db),
+		log: log,
 	}
 }
 
@@ -45,12 +47,17 @@ func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) 
 	}
 	defer release()
 
-	if err := sqlitex.ExecScript(conn, "PRAGMA query_only = on;"); err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Combine(err, sqlitex.ExecScript(conn, "PRAGMA query_only = off;"))
-	}()
+	// TODO(burdiyan): make the main database read-only.
+	// This is commented because we want to allow writing into an attached in-memory database
+	// while keeping the main database read-only. Apparently this is not possible in SQLite.
+	// There're a bunch of other ways to achieve this but there's currently no time for implementing them.
+	//
+	// if err := sqlitex.ExecTransient(conn, "PRAGMA query_only = on;", nil); err != nil {
+	// 	return err
+	// }
+	// defer func() {
+	// 	err = multierr.Combine(err, sqlitex.ExecTransient(conn, "PRAGMA query_only = off;", nil))
+	// }()
 
 	return fn(conn)
 }
@@ -63,7 +70,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
@@ -82,6 +89,32 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	})
 }
 
+// SetAccountTrust sets an account to trusted.
+func (bs *Storage) SetAccountTrust(ctx context.Context, acc []byte) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		return hypersql.SetAccountTrust(conn, acc)
+	})
+}
+
+// UnsetAccountTrust untrust the provided account.
+func (bs *Storage) UnsetAccountTrust(ctx context.Context, acc []byte) error {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		return hypersql.UnsetAccountTrust(conn, acc)
+	})
+}
+
 func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
@@ -89,7 +122,7 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
 		if err != nil {
 			return err
@@ -108,11 +141,11 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 		if err != nil {
 			return err
 		}
-		if resp.HyperEntitiesID == 0 {
+		if resp.EntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
 	})
 }
 
@@ -130,34 +163,45 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 
 	out := make([]EntityID, len(resp))
 	for i, r := range resp {
-		out[i] = EntityID(r.HyperEntitiesEID)
+		out[i] = EntityID(r.EntitiesEID)
 	}
 
 	return out, nil
 }
 
-func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) error {
+func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
-		return err
+		return cid.Undef, err
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	var out cid.Cid
+	if err := sqlitex.WithTx(conn, func() error {
 		res, err := hypersql.DraftsGet(conn, string(eid))
 		if err != nil {
 			return err
 		}
-		if res.HyperDraftsViewBlobID == 0 {
+		if res.DraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.DraftsViewBlobID); err != nil {
 			return err
 		}
 
+		out = cid.NewCidV1(uint64(res.DraftsViewCodec), res.DraftsViewMultihash)
+
 		return nil
-	})
+	}); err != nil {
+		return cid.Undef, err
+	}
+
+	if !out.Defined() {
+		return cid.Undef, fmt.Errorf("BUG: got draft without CID")
+	}
+
+	return out, nil
 }
 
 func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
@@ -167,20 +211,20 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		res, err := hypersql.DraftsGet(conn, string(eid))
 		if err != nil {
 			return err
 		}
-		if res.HyperDraftsViewBlobID == 0 {
+		if res.DraftsViewBlobID == 0 {
 			return fmt.Errorf("no draft to publish for entity %s", eid)
 		}
 
-		if err := hypersql.DraftsDelete(conn, res.HyperDraftsViewBlobID); err != nil {
+		if err := hypersql.DraftsDelete(conn, res.DraftsViewBlobID); err != nil {
 			return err
 		}
 
-		_, err = hypersql.BlobsDelete(conn, res.HyperDraftsViewMultihash)
+		_, err = hypersql.BlobsDelete(conn, res.DraftsViewMultihash)
 		if err != nil {
 			return err
 		}
@@ -201,16 +245,16 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		edb, err := hypersql.EntitiesLookupID(conn, string(eid))
 		if err != nil {
 			return err
 		}
-		if edb.HyperEntitiesID == 0 {
+		if edb.EntitiesID == 0 {
 			return fmt.Errorf("no such entity: %s", eid)
 		}
 
-		if err := hypersql.ChangesDeleteForEntity(conn, edb.HyperEntitiesID); err != nil {
+		if err := hypersql.ChangesDeleteForEntity(conn, edb.EntitiesID); err != nil {
 			return err
 		}
 
@@ -233,7 +277,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 	}
 	defer release()
 
-	return sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+	return sqlitex.WithTx(conn, func() error {
 		oldid, err := bs.bs.deleteBlock(conn, old)
 		if err != nil {
 			return err
@@ -257,11 +301,11 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 		if err != nil {
 			return err
 		}
-		if resp.HyperEntitiesID == 0 {
+		if resp.EntitiesID == 0 {
 			panic("BUG: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.HyperEntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
 	})
 }
 
@@ -307,6 +351,7 @@ type Blob struct {
 	Decoded any
 }
 
+// EncodeBlob produces a Blob from any object.
 func EncodeBlob(t BlobType, v any) (hb Blob, err error) {
 	data, err := cbornode.DumpObject(v)
 	if err != nil {
@@ -326,4 +371,52 @@ func EncodeBlob(t BlobType, v any) (hb Blob, err error) {
 		Data:    data,
 		Decoded: v,
 	}, nil
+}
+
+var errNotHyperBlob = errors.New("not a hyper blob")
+
+// DecodeBlob attempts to infer hyper Blob information from arbitrary IPFS block.
+func DecodeBlob(c cid.Cid, data []byte) (hb Blob, err error) {
+	codec := c.Prefix().Codec
+
+	if codec != uint64(multicodec.DagCbor) {
+		return hb, fmt.Errorf("%s: %w", c, errNotHyperBlob)
+	}
+
+	var v struct {
+		Type string `cbor:"@type"`
+	}
+	if err := cbor.Unmarshal(data, &v); err != nil {
+		var vv any
+		if err := cbornode.DecodeInto(data, &vv); err != nil {
+			panic(err)
+		}
+
+		return hb, fmt.Errorf("failed to infer hyper blob %s: %w", c, err)
+	}
+
+	switch BlobType(v.Type) {
+	case TypeKeyDelegation:
+		var v KeyDelegation
+		if err := cbornode.DecodeInto(data, &v); err != nil {
+			return hb, err
+		}
+		hb.Decoded = v
+	case TypeChange:
+		var v Change
+		if err := cbornode.DecodeInto(data, &v); err != nil {
+			return hb, err
+		}
+		hb.Decoded = v
+	default:
+		return hb, fmt.Errorf("unknown hyper blob type: '%s'", v.Type)
+	}
+
+	hb.Type = BlobType(v.Type)
+	hb.CID = c
+	hb.Codec = multicodec.Code(codec)
+	hb.Hash = c.Hash()
+	hb.Data = data
+
+	return hb, nil
 }

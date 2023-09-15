@@ -4,14 +4,12 @@ node_modules
 # build code
 build
 dist
-src-tauri
 public
 out
 plz-out
 types
 docs
 .yarn/*
-.github/*
 .yarnrc.yml
 .vscode/*
 
@@ -28,12 +26,16 @@ coverage
 exts/*
 .vite
 **/*.typegen.*
+.next
+frontend/packages/ui/src/generated-themes.ts
+
 
 # Site
 frontend/apps/site/.next
 frontend/apps/site/.vercel
 frontend/apps/site/.tamagui
+frontend/apps/desktop/.tamagui
+frotnend/apps/desktop/out
 
 # Shared
-frontend/packages/shared/src/client/.generated
-
+frontend/packages/shared/src/client/.generated/

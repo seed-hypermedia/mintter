@@ -29,7 +29,12 @@ type Client struct {
 	me    core.Identity
 	host  host.Host
 	mu    sync.Mutex
-	conns map[peer.ID]*grpc.ClientConn
+	conns map[peer.ID]*singleConn
+}
+
+type singleConn struct {
+	mu   sync.Mutex
+	conn *grpc.ClientConn
 }
 
 // NewClient creates a new Client using the provided libp2p host.
@@ -81,15 +86,17 @@ func (c *Client) Close() (err error) {
 		return nil
 	}
 
-	for _, conn := range c.conns {
-		err = multierr.Append(err, conn.Close())
+	for _, sc := range c.conns {
+		sc.mu.Lock()
+		err = multierr.Append(err, sc.conn.Close())
+		sc.mu.Unlock()
 	}
 
 	return err
 }
 
 func (c *Client) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, error) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
 	defer cancel()
 
 	if c.me.DeviceKey().ID() == pid {
@@ -101,34 +108,41 @@ func (c *Client) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, e
 		sw.Backoff().Clear(pid)
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	// We do lock sharding here. We don't want to hold the main lock for too long,
+	// because then dialing one peer for too long will block other peers from being dialed.
+	// Instead we hold the main lock very briefly, and then each connection has a separate lock,
+	// so that we can make sure there's only one connection open for any given peer.
 
-	if c.conns == nil {
-		c.conns = make(map[peer.ID]*grpc.ClientConn)
-	}
-
-	if conn := c.conns[pid]; conn != nil {
-		if conn.GetState() != connectivity.Shutdown {
-			return conn, nil
+	var sc *singleConn
+	{
+		c.mu.Lock()
+		if c.conns == nil {
+			c.conns = make(map[peer.ID]*singleConn)
 		}
+		sc = c.conns[pid]
+		if sc == nil {
+			sc = &singleConn{}
+			c.conns[pid] = sc
+		}
+		c.mu.Unlock()
+	}
 
+	sc.mu.Lock()
+	defer sc.mu.Unlock()
+
+	if sc.conn != nil && sc.conn.GetState() == connectivity.Shutdown {
 		// Best effort closing connection.
-		go conn.Close()
-
-		delete(c.conns, pid)
+		go sc.conn.Close()
+		sc.conn = nil
 	}
 
-	conn, err := grpc.DialContext(ctx, pid.String(), c.opts...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to establish connection to device %s: %w", peer.ToCid(pid), err)
+	if sc.conn == nil {
+		conn, err := grpc.DialContext(ctx, pid.String(), c.opts...)
+		if err != nil {
+			return nil, fmt.Errorf("grpc-p2p: failed to dial peer %s: %w", pid, err)
+		}
+		sc.conn = conn
 	}
 
-	if c.conns[pid] != nil {
-		panic("BUG: adding connection while there's another open")
-	}
-
-	c.conns[pid] = conn
-
-	return conn, nil
+	return sc.conn, nil
 }

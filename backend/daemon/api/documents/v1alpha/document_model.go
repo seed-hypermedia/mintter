@@ -27,7 +27,8 @@ type docModel struct {
 	delegation cid.Cid
 	tree       *Tree
 	patch      map[string]any
-	oldCID     cid.Cid
+	oldDraft   cid.Cid
+	oldChange  hyper.Change
 	done       bool
 	nextHLC    hlc.Time
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
@@ -47,9 +48,9 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 		origins:    make(map[string]cid.Cid),
 	}
 
-	for c := range e.AppliedChanges() {
-		o := hyper.OriginFromCID(c)
-		dm.origins[o] = c
+	for _, c := range e.AppliedChanges() {
+		o := hyper.OriginFromCID(c.CID)
+		dm.origins[o] = c.CID
 	}
 
 	if err := dm.replayMoves(); err != nil {
@@ -63,13 +64,26 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	if len(dm.patch) != 0 {
 		panic("BUG: restoring draft when patch is not empty")
 	}
-	dm.oldCID = c
+	dm.oldDraft = c
+	dm.oldChange = ch
+
+	if len(dm.e.Heads()) != len(ch.Deps) {
+		return fmt.Errorf("failed to restore draft: state has %d heads while draft change has %d deps", len(dm.e.Heads()), len(ch.Deps))
+	}
+
+	for _, dep := range ch.Deps {
+		_, ok := dm.e.Heads()[dep]
+		if !ok {
+			return fmt.Errorf("failed to restore draft: state doesn't have draft's dependency %s in its heads", dep)
+		}
+	}
 
 	if ch.Patch != nil {
 		dm.patch = ch.Patch
 	}
 
 	dm.nextHLC = dm.e.NextTimestamp()
+
 	moves := dm.patch["moves"]
 	delete(dm.patch, "moves")
 
@@ -91,12 +105,6 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 				return fmt.Errorf("failed to replay local moves: %w", err)
 			}
 		}
-	}
-
-	delete(dm.e.Heads(), dm.oldCID)
-
-	if len(dm.e.Heads()) > 1 {
-		panic("BUG: more than one draft head")
 	}
 
 	return nil
@@ -133,18 +141,18 @@ func (dm *docModel) SetCreateTime(ct time.Time) error {
 		return fmt.Errorf("create time is already set")
 	}
 
-	dm.patch["createTime"] = ct.Unix()
+	dm.patch["createTime"] = int(ct.Unix())
 
 	return nil
 }
 
 func (dm *docModel) SetAuthor(author core.Principal) error {
-	_, ok := dm.e.Get("author")
+	_, ok := dm.e.Get("owner")
 	if ok {
 		return fmt.Errorf("author is already set")
 	}
 
-	dm.patch["author"] = []byte(author)
+	dm.patch["owner"] = []byte(author)
 
 	return nil
 }
@@ -207,7 +215,12 @@ func (dm *docModel) Change() (hb hyper.Blob, err error) {
 
 	dm.cleanupPatch()
 
-	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch)
+	action := dm.oldChange.Action
+	if action == "" {
+		action = "Create"
+	}
+
+	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch, hyper.WithAction(action))
 }
 
 func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
@@ -216,8 +229,8 @@ func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blo
 		return hb, err
 	}
 
-	if dm.oldCID.Defined() {
-		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.oldCID, hb)
+	if dm.oldDraft.Defined() {
+		return hb, bs.ReplaceDraftBlob(ctx, dm.e.ID(), dm.oldDraft, hb)
 	}
 
 	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
@@ -300,42 +313,26 @@ func (dm *docModel) cleanupPatch() {
 
 func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
 	e := dm.e
-	docpb := &documents.Document{
-		Id: e.ID().TrimPrefix("mintter:document:"),
+
+	first := e.AppliedChanges()[0]
+
+	createTime, ok := first.Data.Patch["createTime"].(int)
+	if !ok {
+		return nil, fmt.Errorf("document must have createTime field")
 	}
 
-	{
-		v, ok := e.Get("createTime")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have create time")
-		}
-		switch vv := v.(type) {
-		case time.Time:
-			docpb.CreateTime = timestamppb.New(vv)
-		case int:
-			docpb.CreateTime = timestamppb.New(time.Unix(int64(vv), 0).UTC())
-		default:
-			return nil, fmt.Errorf("unknown type %T for createTime field", v)
-		}
+	owner, ok := first.Data.Patch["owner"].([]byte)
+	if !ok {
+		return nil, fmt.Errorf("document must have owner field")
+	}
+
+	docpb := &documents.Document{
+		Id:         string(e.ID()),
+		CreateTime: timestamppb.New(time.Unix(int64(createTime), 0)),
+		Author:     core.Principal(owner).String(),
 	}
 
 	docpb.UpdateTime = timestamppb.New(e.LastChangeTime().Time())
-
-	{
-		v, ok := e.Get("author")
-		if !ok {
-			return nil, fmt.Errorf("all documents must have author")
-		}
-
-		switch vv := v.(type) {
-		case core.Principal:
-			docpb.Author = vv.String()
-		case []byte:
-			docpb.Author = core.Principal(vv).String()
-		default:
-			return nil, fmt.Errorf("unknown type %T for document author", v)
-		}
-	}
 
 	{
 		v, ok := e.Get("title")
@@ -353,13 +350,15 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 
 	// Loading editors is a bit cumbersome because we need to go over key delegations.
 	{
-		seenEditors := map[cid.Cid]struct{}{}
-		for _, ch := range e.AppliedChanges() {
+		seenAccounts := map[string]struct{}{}
+		seenDelegations := map[cid.Cid]struct{}{}
+		for _, blob := range e.AppliedChanges() {
+			ch := blob.Data
 			del := ch.Delegation
 			if !del.Defined() {
 				return nil, fmt.Errorf("all document changes must have delegations")
 			}
-			if _, ok := seenEditors[del]; ok {
+			if _, ok := seenDelegations[del]; ok {
 				continue
 			}
 
@@ -368,8 +367,14 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 				return nil, fmt.Errorf("failed to load key delegation: %w", err)
 			}
 
+			acc := kd.Issuer.String()
+			if _, ok := seenAccounts[acc]; ok {
+				continue
+			}
+
 			docpb.Editors = append(docpb.Editors, kd.Issuer.String())
-			seenEditors[del] = struct{}{}
+			seenDelegations[del] = struct{}{}
+			seenAccounts[acc] = struct{}{}
 		}
 		sort.Strings(docpb.Editors)
 	}
@@ -403,7 +408,7 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 
 		oo := dm.origins[origin]
 		if !oo.Defined() {
-			oo = dm.oldCID
+			oo = dm.oldDraft
 		}
 
 		blk, err := blockFromMap(id, oo.String(), mm.(map[string]any))

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"crawshaw.io/sqlite"
-	"mintter/backend/db/sqlitegen"
+	"mintter/backend/pkg/sqlitegen"
 )
 
 var _ = errors.New
@@ -117,20 +117,20 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int64) ([]listWalletsRe
 }
 
 type getDefaultWalletResult struct {
-	WalletsID       string
-	WalletsAddress  string
-	WalletsName     string
-	WalletsBalance  int64
-	WalletsType     string
-	GlobalMetaValue string
+	WalletsID      string
+	WalletsAddress string
+	WalletsName    string
+	WalletsBalance int64
+	WalletsType    string
+	KVValue        string
 }
 
 func getDefaultWallet(conn *sqlite.Conn, key string) (getDefaultWalletResult, error) {
 	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.balance, wallets.type
 FROM wallets
-WHERE wallets.id IN (SELECT global_meta.value
-FROM global_meta
-WHERE global_meta.key = :key )`
+WHERE wallets.id IN (SELECT kv.value
+FROM kv
+WHERE kv.key = :key )`
 
 	var out getDefaultWalletResult
 
@@ -148,7 +148,7 @@ WHERE global_meta.key = :key )`
 		out.WalletsName = stmt.ColumnText(2)
 		out.WalletsBalance = stmt.ColumnInt64(3)
 		out.WalletsType = stmt.ColumnText(4)
-		out.GlobalMetaValue = stmt.ColumnText(5)
+		out.KVValue = stmt.ColumnText(5)
 		return nil
 	}
 
@@ -160,13 +160,13 @@ WHERE global_meta.key = :key )`
 	return out, err
 }
 
-func setDefaultWallet(conn *sqlite.Conn, globalMetaKey string, globalMetaValue string) error {
-	const query = `INSERT OR REPLACE INTO global_meta (key, value)
-VALUES (:globalMetaKey, :globalMetaValue)`
+func setDefaultWallet(conn *sqlite.Conn, kvKey string, kvValue string) error {
+	const query = `INSERT OR REPLACE INTO kv (key, value)
+VALUES (:kvKey, :kvValue)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":globalMetaKey", globalMetaKey)
-		stmt.SetText(":globalMetaValue", globalMetaValue)
+		stmt.SetText(":kvKey", kvKey)
+		stmt.SetText(":kvValue", kvValue)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -182,7 +182,7 @@ VALUES (:globalMetaKey, :globalMetaValue)`
 }
 
 func removeDefaultWallet(conn *sqlite.Conn, key string) error {
-	const query = `DELETE FROM global_meta WHERE global_meta.key = :key `
+	const query = `DELETE FROM kv WHERE kv.key = :key `
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":key", key)

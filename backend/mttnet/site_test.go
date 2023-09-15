@@ -5,12 +5,14 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
+	"mintter/backend/daemon/storage"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	siteproto "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
+	"net/http"
 	"testing"
 	"time"
 
@@ -30,7 +32,6 @@ func TestLocalPublish(t *testing.T) {
 }
 
 func TestMembers(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
@@ -47,9 +48,9 @@ func TestMembers(t *testing.T) {
 	defer stopreader()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 	cfg.Site.OwnerID = owner.me.Account().String()
-
+	cfg.Site.NoAuth = false
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
 	site, ok := siteSrv.Node.Get()
 	require.True(t, ok)
@@ -58,10 +59,22 @@ func TestMembers(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+	site.p2p.ID().String()
+
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
@@ -109,7 +122,6 @@ func TestMembers(t *testing.T) {
 }
 
 func TestCreateTokens(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
@@ -125,7 +137,7 @@ func TestCreateTokens(t *testing.T) {
 	defer stopeditor()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 
 	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
@@ -136,6 +148,13 @@ func TestCreateTokens(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
 	tsFuture := time.Now().Add(48 * time.Hour).Unix()
 	_, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
@@ -149,9 +168,13 @@ func TestCreateTokens(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
@@ -190,18 +213,17 @@ func TestCreateTokens(t *testing.T) {
 		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
 	})
 
-	require.Error(t, err)
+	require.NoError(t, err)
 }
 
 func TestSiteInfo(t *testing.T) {
-	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
 	require.True(t, ok)
 	defer stopowner()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "127.0.0.1:55001"
+	cfg.Site.Hostname = "http://127.0.0.1:55001"
 	cfg.Site.Title = "My title"
 	cfg.Site.OwnerID = owner.me.Account().String()
 	siteSrv, _, stopSite := makeTestSrv(t, "bob", cfg.Site)
@@ -212,15 +234,26 @@ func TestSiteInfo(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.Account().String())
 
 	ctx := context.Background()
+
+	s := &http.Server{
+		Addr:    ":55001",
+		Handler: siteSrv,
+	}
+	defer s.Shutdown(ctx)
+	go s.ListenAndServe()
+	time.Sleep(500 * time.Millisecond)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{string(TargetSiteHeader): cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(TargetSiteHostnameHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.Account().String())
+	addresses := []string{}
+	for _, ma := range site.AddrInfo().Addrs {
+		addresses = append(addresses, ma.String()+"/p2p/"+site.p2p.ID().String())
+	}
+
 	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
 	require.NoError(t, err)
 	require.Equal(t, documents.Member_OWNER, res.Role)
 
-	//time.Sleep(100 * time.Millisecond)
 	siteInfo, err := ownerSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
@@ -249,7 +282,7 @@ func TestSiteInfo(t *testing.T) {
 func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *simulatedDocs, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
-	db := makeTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
@@ -266,7 +299,7 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
-
+	cfg.GRPCPort = GRPCPort
 	n, err := New(cfg.P2P, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 

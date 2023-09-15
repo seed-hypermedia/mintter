@@ -1,23 +1,25 @@
-import {Accounts} from './.generated/accounts/v1alpha/accounts_connectweb'
-import {Daemon} from './.generated/daemon/v1alpha/daemon_connectweb'
-import {Changes} from './.generated/documents/v1alpha/changes_connectweb'
-import {Comments} from './.generated/documents/v1alpha/comments_connectweb'
-import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
+import {Accounts} from './.generated/accounts/v1alpha/accounts_connect'
+import {Daemon} from './.generated/daemon/v1alpha/daemon_connect'
+import {Changes} from './.generated/documents/v1alpha/changes_connect'
+import {Groups} from './.generated/groups/v1alpha/groups_connect'
+import {Comments} from './.generated/documents/v1alpha/comments_connect'
+import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connect'
 
+import {PartialMessage} from '@bufbuild/protobuf'
 import {
   Drafts,
   Publications,
-} from './.generated/documents/v1alpha/documents_connectweb'
+} from './.generated/documents/v1alpha/documents_connect'
+import {
+  Publication as APIPublication,
+  Document,
+} from './.generated/documents/v1alpha/documents_pb'
 import {
   WebPublishing,
   WebSite,
-} from './.generated/documents/v1alpha/web_publishing_connectweb'
-import {Networking} from './.generated/networking/v1alpha/networking_connectweb'
-import {PartialMessage} from '@bufbuild/protobuf'
-import {
-  Document,
-  Publication as APIPublication,
-} from './.generated/documents/v1alpha/documents_pb'
+} from './.generated/documents/v1alpha/web_publishing_connect'
+import {Networking} from './.generated/networking/v1alpha/networking_connect'
+
 export {
   Account,
   Device,
@@ -35,6 +37,11 @@ export type {
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
 export {
+  Group,
+  Role,
+  ListGroupsRequest,
+} from './.generated/groups/v1alpha/groups_pb'
+export {
   ChangeInfo,
   GetChangeInfoRequest,
 } from './.generated/documents/v1alpha/changes_pb'
@@ -46,9 +53,9 @@ export {
   Selector,
 } from './.generated/documents/v1alpha/comments_pb'
 export {
-  Link as MttLink,
   LinkNode,
   ListCitationsResponse,
+  Link as MttLink,
 } from './.generated/documents/v1alpha/content_graph_pb'
 export {
   Annotation,
@@ -75,24 +82,24 @@ export type {
   PeerInfo,
 } from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
-export * from './block-to-api'
-export * from './block-to-slate'
-export * from './change-creators'
 export * from './client-utils'
-export {Document}
+export * from './hyperdocs-presentation'
+export * from './editor-types'
+export * from './server-to-editor'
 export {
   Accounts,
-  ContentGraph,
-  Comments,
   Changes,
-  Drafts,
-  Publications,
+  Comments,
+  ContentGraph,
   Daemon,
+  Document,
+  Drafts,
+  Groups,
   Networking,
+  Publications,
   WebPublishing,
   WebSite,
 }
-
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
 }

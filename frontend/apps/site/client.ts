@@ -1,6 +1,3 @@
-if (typeof globalThis.EdgeRuntime !== 'string') {
-  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
-}
 if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   global.setImmediate = setTimeout
@@ -19,6 +16,7 @@ import {
   WebSite,
   Daemon,
   Networking,
+  Groups,
 } from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
@@ -38,7 +36,10 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 const prodInter: Interceptor = (next) => async (req) => {
-  const result = await next({...req, init: {...req.init, redirect: 'follow'}})
+  const result = await next({
+    ...req,
+    init: {...req.init, redirect: 'follow'},
+  })
   return result
 }
 
@@ -77,8 +78,35 @@ export const transport = createGrpcWebTransport({
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
 
+function augmentWebsiteClient(
+  client: ReturnType<typeof createPromiseClient<typeof WebSite>>,
+) {
+  return {
+    ...client,
+    getPath: async (req: {path: string}) => {
+      const result = await client.getPath(req).catch((error) => {
+        if (error.rawMessage?.match('Could not get record for path')) {
+          return null
+        }
+        if (
+          error.rawMessage?.match(
+            'Could not get local document although was found',
+          )
+        ) {
+          return null
+        }
+        throw error
+      })
+      return result
+    },
+  }
+}
+
 export const publicationsClient = createPromiseClient(Publications, transport)
-export const localWebsiteClient = createPromiseClient(WebSite, transport)
+export const localWebsiteClient = augmentWebsiteClient(
+  createPromiseClient(WebSite, transport),
+)
 export const accountsClient = createPromiseClient(Accounts, transport)
+export const groupsClient = createPromiseClient(Groups, transport)
 export const daemonClient = createPromiseClient(Daemon, transport)
 export const networkingClient = createPromiseClient(Networking, transport)

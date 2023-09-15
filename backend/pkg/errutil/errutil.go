@@ -35,3 +35,8 @@ func Greater[T comparable](name string, a, b T) error {
 func Equal[T comparable](name string, v T) error {
 	return status.Errorf(codes.InvalidArgument, "%s: must equal '%v'", name, v)
 }
+
+// NotFound returns a gRPC error with a not found error code.
+func NotFound(msg string, args ...any) error {
+	return status.Errorf(codes.NotFound, msg, args...)
+}

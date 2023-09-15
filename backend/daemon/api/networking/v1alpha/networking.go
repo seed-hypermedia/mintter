@@ -9,6 +9,8 @@ import (
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	"net/netip"
+	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -30,6 +32,14 @@ func NewServer(node *future.ReadOnly[*mttnet.Node]) *Server {
 
 // Connect implements the Connect RPC method.
 func (srv *Server) Connect(ctx context.Context, in *networking.ConnectRequest) (*networking.ConnectResponse, error) {
+	// We want to support connecting to plain peer IDs, so we need to convert it into multiaddr.
+	if len(in.Addrs) == 1 {
+		addr := in.Addrs[0]
+		if !strings.Contains(addr, "/") {
+			in.Addrs[0] = "/p2p/" + addr
+		}
+	}
+
 	info, err := mttnet.AddrInfoFromStrings(in.Addrs...)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad addrs: %v", err)
@@ -119,7 +129,24 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device addrs: %w", err)
 	}
+	addrs := []string{}
+	for _, addr := range ipfs.StringAddrs(mas) {
+		if !net.ArePrivateIPsAllowed() {
+			ipStr := strings.Split(addr, "/")
+			if len(ipStr) < 3 {
+				continue
+			}
+			ip, err := netip.ParseAddr(ipStr[2])
+			if err != nil {
+				continue
+			}
+			if ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+				continue
+			}
+		}
 
+		addrs = append(addrs, addr)
+	}
 	connectedness := net.Libp2p().Network().Connectedness(pid)
 
 	aid, err := net.AccountForDevice(ctx, pid)
@@ -130,7 +157,7 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 	resp := &networking.PeerInfo{
 		Id:               in.DeviceId,
 		AccountId:        aid.String(),
-		Addrs:            ipfs.StringAddrs(mas),
+		Addrs:            addrs,
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 	}
 

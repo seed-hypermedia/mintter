@@ -20,6 +20,7 @@ type Config struct {
 	HTTPPort int
 	GRPCPort int
 	RepoPath string
+	LogLevel string
 
 	Identity Identity
 	Lndhub   Lndhub
@@ -34,7 +35,7 @@ func Default() Config {
 		HTTPPort: 55001,
 		GRPCPort: 55002,
 		RepoPath: "~/.mtt",
-
+		LogLevel: "debug",
 		Lndhub: Lndhub{
 			Mainnet: false,
 		},
@@ -53,7 +54,7 @@ func Default() Config {
 			InviteTokenExpirationDelay: time.Hour * 24 * 7,
 		},
 		Syncing: Syncing{
-			WarmupDuration: time.Minute,
+			WarmupDuration: time.Second * 20,
 			Interval:       time.Minute,
 			TimeoutPerPeer: time.Minute * 2,
 			NoInbound:      false,
@@ -114,6 +115,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.HTTPPort, "http-port", cfg.HTTPPort, "Port to expose HTTP Server (including grpc-web)")
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
+	fs.StringVar(&cfg.LogLevel, "log-level", cfg.LogLevel, "Log verbosity debug | info | warning | error")
 
 	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity.devicekey-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
 	fs.BoolVar(&cfg.Identity.NoAccountWait, "identity.no-account-wait", cfg.Identity.NoAccountWait, "If set, the daemon auto generates a random Account ID (if not found any in the database) and starts right away")
@@ -123,16 +125,20 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
-	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
+	fs.Var(newAddrsFlag(cfg.P2P.AnnounceAddrs, &cfg.P2P.AnnounceAddrs), "p2p.announce-addrs", "Addresses will be announced for this node to be reachable at (comma separated multiaddresses format). overrides no-private-ips")
+	fs.BoolVar(&cfg.P2P.PublicReachability, "p2p.public-reachability", cfg.P2P.PublicReachability, "Force Reachability to public.")
+	fs.Var(newAddrsFlag(cfg.P2P.ListenAddrs, &cfg.P2P.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
+	fs.BoolVar(&cfg.P2P.NoPrivateIps, "p2p.no-private-ips", cfg.P2P.NoPrivateIps, "Not announce local IPs.")
+	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
+	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
+	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 
+	fs.BoolVar(&cfg.Site.NoAuth, "site.no-auth", cfg.Site.NoAuth, "Disable site authentication")
 	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
 	fs.StringVar(&cfg.Site.Title, "site.title", cfg.Site.Title, "Title of the site. Something brief and human readable to help understand the site")
 	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
 	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
 
-	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
-	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
-	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
@@ -180,17 +186,21 @@ type Site struct {
 	InviteTokenExpirationDelay time.Duration
 	OwnerID                    string
 	Title                      string
+	NoAuth                     bool
 }
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port           int
-	NoRelay        bool
-	BootstrapPeers []multiaddr.Multiaddr
-	NoListing      bool
-	NoMetrics      bool
-	RelayBackoff   time.Duration
-	ExtraAddrs     []multiaddr.Multiaddr
+	Port               int
+	NoRelay            bool
+	BootstrapPeers     []multiaddr.Multiaddr
+	PublicReachability bool
+	NoPrivateIps       bool
+	NoListing          bool
+	NoMetrics          bool
+	RelayBackoff       time.Duration
+	AnnounceAddrs      []multiaddr.Multiaddr
+	ListenAddrs        []multiaddr.Multiaddr
 }
 
 // NoBootstrap indicates whether bootstrap nodes are configured.

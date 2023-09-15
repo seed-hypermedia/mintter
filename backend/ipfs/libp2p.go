@@ -2,6 +2,7 @@ package ipfs
 
 import (
 	"context"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,18 +13,19 @@ import (
 	"github.com/ipfs/boxo/ipns"
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	"github.com/libp2p/go-libp2p-kad-dht/providers"
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
+	routing "github.com/libp2p/go-libp2p/core/routing"
+	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
+	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
+	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
-
-	dht "github.com/libp2p/go-libp2p-kad-dht"
-	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
-	"github.com/libp2p/go-libp2p-kad-dht/providers"
-	routing "github.com/libp2p/go-libp2p/core/routing"
-	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 )
 
 // DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
@@ -72,10 +74,27 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 	for i, pinfo := range peers {
 		go func(i int, pinfo peer.AddrInfo) {
 			defer wg.Done()
-			err := h.Connect(ctx, pinfo)
-			res.ConnectErrs[i] = err
-			if err != nil {
+			// Since we're explicitly connecting to a peer, we want to clear any backoffs
+			// that the network might have at the moment.
+			{
+				sw, ok := h.Network().(*swarm.Swarm)
+				if ok {
+					sw.Backoff().Clear(pinfo.ID)
+				}
+			}
+			toCtx, cancelFcn := context.WithTimeout(ctx, 8*time.Second)
+			defer cancelFcn()
+			err := h.Connect(toCtx, pinfo)
+			ctxErr := toCtx.Err()
+
+			if err != nil || ctxErr != nil {
 				atomic.AddUint32(&res.NumFailedConnections, 1)
+				if err != nil {
+					res.ConnectErrs[i] = err
+				} else {
+					res.ConnectErrs[i] = ctxErr
+				}
+
 			}
 		}(i, pinfo)
 	}
@@ -134,6 +153,35 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		return nil
 	})
 
+	// Start with the default scaling limits.
+	scalingLimits := rcmgr.DefaultLimits
+
+	// Add limits around included libp2p protocols
+	libp2p.SetDefaultServiceLimits(&scalingLimits)
+
+	// Turn the scaling limits into a concrete set of limits using `.AutoScale`. This
+	// scales the limits proportional to your system memory.
+	scaledDefaultLimits := scalingLimits.AutoScale()
+
+	// Tweak certain settings
+	cfg := rcmgr.PartialLimitConfig{
+		System: rcmgr.ResourceLimits{
+			Streams: rcmgr.Unlimited,
+			Conns:   rcmgr.Unlimited,
+		},
+		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
+	}
+
+	// Create our limits by using our cfg and replacing the default values with values from `scaledDefaultLimits`
+	limits := cfg.Build(scaledDefaultLimits)
+
+	// The resource manager expects a limiter, so we create one from our limits.
+	limiter := rcmgr.NewFixedLimiter(limits)
+
+	rm, err := rcmgr.NewResourceManager(limiter)
+	if err != nil {
+		panic(err)
+	}
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs,      // Users must explicitly start listening.
@@ -142,6 +190,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
+		libp2p.ResourceManager(rm),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			if ds == nil {
 				panic("BUG: must provide datastore for DHT")
@@ -152,11 +201,11 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 			// manager wants to flush records into the database, we would have closed the database
 			// already. Because of this we always have an annoying error during our shutdown.
 			// Here we manually ensure all the goroutines started by provider manager are closed.
-			provStore, err := providers.NewProviderManager(ctx, h.ID(), h.Peerstore(), ds)
+			provStore, err := providers.NewProviderManager(h.ID(), h.Peerstore(), ds)
 			if err != nil {
 				return nil, err
 			}
-			n.clean.Add(provStore.Process())
+			n.clean.Add(provStore)
 
 			r, err := dualdht.New(
 				ctx, h,
@@ -235,4 +284,20 @@ func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers []peer.AddrInfo) B
 // Close the node and all the underlying systems.
 func (n *Libp2p) Close() error {
 	return n.clean.Close()
+}
+
+// DefaultListenAddrs creates the default listening addresses for a given port,
+// including all the default transport. This is borrowed from Kubo.
+func DefaultListenAddrs(port int) []string {
+	portstr := strconv.Itoa(port)
+	return []string{
+		"/ip4/0.0.0.0/tcp/" + portstr,
+		"/ip6/::/tcp/" + portstr,
+		"/ip4/0.0.0.0/udp/" + portstr + "/quic",
+		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1",
+		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1/webtransport",
+		"/ip6/::/udp/" + portstr + "/quic",
+		"/ip6/::/udp/" + portstr + "/quic-v1",
+		"/ip6/::/udp/" + portstr + "/quic-v1/webtransport",
+	}
 }

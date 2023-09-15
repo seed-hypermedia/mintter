@@ -52,10 +52,16 @@ def main():
         "Check all the generated code is up to date. Otherwise run the code generation process to fix it.",
     )
     def gen(args):
-        out = run(
-            "plz run parallel $(plz query filter -i 'generated:check')",
-            capture_output=True,
+        targets_to_check = (
+            run(
+                f"plz query filter -i 'generated:check' {str.join(' ', args)}",
+                capture_output=True,
+            )
+            .stdout.decode("utf-8")
+            .split("\n")
         )
+
+        out = run(f"plz run parallel {' '.join(targets_to_check)}", capture_output=True)
 
         targets_to_gen = []
         for line in out.stdout.decode("utf-8").split("\n"):
@@ -68,41 +74,25 @@ def main():
             return
         return run("plz run parallel " + " ".join(targets_to_gen))
 
-    @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
-    def build_backend(args):
-        return run("plz build //backend:mintterd")
-
-    @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
-    def build_frontend(args):
-        run("plz build //:yarn") 
-        return run("yarn desktop:prod")
-
-    @cmd(
-        cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
-    )
-    def build_desktop(args):
+    @cmd(cmds, "run-desktop", "Run frontend desktop app for development.")
+    def run_desktop(args):
+        run("./scripts/cleanup-desktop.sh")
+        run("yarn install")
         run("plz build //backend:mintterd //:yarn")
-        run("cargo tauri build --debug")
-
-    @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
-    def ping_p2p(args):
-        return run("plz run //backend:pingp2p", args=args)
-
-    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
-    def run_gateway(args):
-        return run("plz run //backend:minttergw", args=args)
-
-    @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
-    def run_backend(args):
-        return run("plz run //backend:mintterd", args=args)
-
-    @cmd(cmds, "run-frontend", "Run frontend web app for development.")
-    def run_frontend(args):
-        run("plz build //:yarn")
         return run("yarn desktop", args=args)
 
-    @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
-    def run_frontend(args):
+    @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
+    def build_desktop(args):
+        run("./scripts/cleanup-frontend.sh")
+        run("./scripts/cleanup-desktop.sh")
+        run("yarn install")
+        run("plz build //backend:mintterd //:yarn")
+        run("yarn desktop:make")
+
+    @cmd(cmds, "run-site", "Run sites app for development.")
+    def run_site(args):
+        run("./scripts/cleanup-site.sh")
+        run("yarn install")
         run("plz build //:yarn")
         return run(
             "yarn site",
@@ -110,77 +100,51 @@ def main():
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
 
-    @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
-    def run_desktop(args):
-        run("plz build //backend:mintterd //:yarn")
-        return run("yarn tauri:dev", args=args)
+    @cmd(cmds, "build-site", "Build site app for production.")
+    def build_site(args):
+        run("./scripts/cleanup-frontend.sh")
+        run("./scripts/cleanup-site.sh")
+        run("yarn install")
+        run("plz build //:yarn")
+        return run(
+            "yarn site:prod",
+            args=args,
+            # env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
+        )
 
-    @cmd(cmds, "release", "Cut a new release.")
+    @cmd(cmds, "frontend-validate", "Formats, Validates")
+    def frontend_validate(args):
+        run("yarn validate")
+
+    @cmd(cmds, "frontend-test", "Tests frontend code")
+    def frontend_test(args):
+        run("APP_FOLDER_NAME=Mintter.test && yarn test")
+
+    @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
+    def run_backend(args):
+        return run("plz run //backend:mintterd", args=args)
+
+    @cmd(cmds, "build-backend", "Build mintterd binary for the current platform.")
+    def build_backend(args):
+        return run("plz build //backend:mintterd")
+
+    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
+    def run_gateway(args):
+        return run("plz run //backend:minttergw", args=args)
+
+    @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
+    def ping_p2p(args):
+        return run("plz run //backend:pingp2p", args=args)
+
+    @cmd(
+        cmds,
+        "release",
+        "Create a new Release. this will create a new tag and push it to the remote repository",
+    )
     def release(args):
-        allowed_components = ["desktop", "relay"]
-        want_branch = "master"
-
-        if len(args) != 1:
-            raise ValueError(
-                "Must specify a component name to release. One of %s."
-                % allowed_components
-            )
-
-        component = args[0]
-
-        if component not in allowed_components:
-            raise ValueError(
-                "Unknown component name to release. Must be one of %s."
-                % allowed_components
-            )
-
-        branch = (
-            run("git branch --show-current", capture_output=True)
-            .stdout.decode()
-            .strip()
-        )
-        if branch != want_branch:
-            raise ValueError("Must only release on the '%s' branch!" % want_branch)
-
-        print("Checking if we're up to date with remote...")
-
-        run("git fetch origin %s" % want_branch)
-        diff = (
-            run("git diff-index origin/%s" % want_branch, capture_output=True)
-            .stdout.decode()
-            .strip()
-        )
-        if diff:
-            raise ValueError("Local repository is not up to date with remote!")
-
-        prev_tag = (
-            run(
-                "git describe --tags --abbrev=0 --match '%s/*'" % component,
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-        )
-
-        prev_version = prev_tag.removeprefix(component + "/")
-
-        new_version = input(
-            "Last version was %s. Specify the new version: " % prev_version
-        )
-
-        if not new_version:
-            raise ValueError("Must specify version.")
-
-        parts = new_version.split(".")
-        if len(parts) != 3:
-            raise ValueError(
-                "Invalid version number %s. Version must be 3 numbers separated by dots."
-                % new_version
-            )
-
-        print("Tagging release...")
-        run("git tag -a %s" % component + "/" + new_version)
-        run("git push --follow-tags")
+        # run("yarn validate")
+        # run("yarn test")
+        run("node scripts/tag.mjs")
 
     if len(sys.argv) == 1:
         cli.print_help()

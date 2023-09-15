@@ -12,10 +12,6 @@
       "labels": ["languages::JavaScript"]
     },
     {
-      "languages": ["rust"],
-      "labels": ["languages::Rust"]
-    },
-    {
       "languages": ["golang"],
       "labels": ["languages::Go"],
       "postUpdateOptions": ["gomodTidy"]

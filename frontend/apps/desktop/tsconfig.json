@@ -2,26 +2,34 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vitest/globals"],
-    "allowJs": false,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "commonjs",
     "skipLibCheck": true,
-    "esModuleInterop": false,
+
+    /* Bundler mode */
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Linting */
+    //   "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
     "paths": {
-      "@components/*": ["./src/components/*"],
-      "@app/*": ["./src/*"]
+      "*": ["*"],
+      "@mintter/ui": ["*", "../../packages/ui/src/index.tsx"],
+      "@mintter/shared": ["*", "../../packages/shared/src/index.ts"],
+      "@mintter/app/*": ["*", "../../packages/app/src/*"],
+      "react-native": ["react-native-web"]
     }
   },
-  "include": ["src"],
-  "exclude": ["**/*.test.tsx", "**/*._test.tsx"],
-  "references": [{"path": "./tsconfig.node.json"}]
+  "include": ["src", "env.d.ts"],
+  "references": [{"path": "./tsconfig.node.json"}],
+  "extends": "../../../tsconfig"
 }

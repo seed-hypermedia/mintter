@@ -1,42 +1,43 @@
-import {Avatar as StyledAvatar, SizeTokens, styled, Text} from 'tamagui'
 import {useMemo} from 'react'
+import {Avatar, FontSizeTokens, Text} from 'tamagui'
 
 export function UIAvatar({
   url,
-  accountId,
-  alias,
+  id,
+  label,
   size = '$3',
   color,
 }: {
   url?: string
-  accountId?: string
-  size?: SizeTokens
+  size?: FontSizeTokens
   color?: string
-  alias: string
+  label?: string
+  id?: string
 }) {
-  let initials = useMemo(() => alias[0], [alias])
   let avatarColor = useMemo(
-    () => (accountId ? getRandomColor(accountId) : '$blue8'),
-    [accountId],
+    () => (id ? getRandomColor(id) : color ? color : '$blue8'),
+    [id, color],
   )
 
   return (
-    <StyledAvatar circular size={size}>
-      <StyledAvatar.Image src={url} />
-      <AvatarFallback backgroundColor={color || avatarColor}>
-        {initials ? (
-          <Text
-            fontFamily="$body"
-            textTransform="capitalize"
-            fontWeight="700"
-            fontSize={size}
-            color="black"
-          >
-            {initials}
-          </Text>
-        ) : null}
-      </AvatarFallback>
-    </StyledAvatar>
+    <Avatar circular size={size} alignItems="center" justifyContent="center">
+      {url && <Avatar.Image accessibilityLabel={label} src={url} />}
+      <Avatar.Fallback
+        backgroundColor={color || avatarColor}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text
+          fontFamily="$body"
+          textTransform="capitalize"
+          fontWeight="700"
+          fontSize={size}
+          color="black"
+        >
+          {label ? label[0] : id ? id[0] : '?'}
+        </Text>
+      </Avatar.Fallback>
+    </Avatar>
   )
 }
 
@@ -49,11 +50,3 @@ export function getRandomColor(id: string) {
   const shortened = hash % 360
   return `hsl(${shortened},60%,80%)`
 }
-
-const AvatarFallback = styled(StyledAvatar.Fallback, {
-  alignItems: 'center',
-  justifyContent: 'center',
-  enterStyle: {
-    opacity: 0,
-  },
-})

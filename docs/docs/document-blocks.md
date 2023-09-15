@@ -27,11 +27,7 @@ May have PhrasingContent blocks as children
 
 ## PhrasingContent
 
-`Link | Embed | StaticPhrasingContent`
-
-## StaticPhrasingContent
-
-> Note: What is the purpose of StaticPhrasingContent? Shouldn't these be FlowContent?
+`Link | Embed`
 
 ### Text
 

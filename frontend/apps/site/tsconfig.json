@@ -3,10 +3,6 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "baseUrl": ".",
-    "paths": {
-      "react-native": ["react-native-web"]
-    },
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,7 +14,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mintter/ui": ["*", "../../packages/ui/src/index.tsx"],
+      "@mintter/shared": ["*", "../../packages/shared/src/index.ts"],
+      "react-native": ["react-native-web"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

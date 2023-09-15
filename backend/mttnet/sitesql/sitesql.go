@@ -35,32 +35,7 @@ func AddMember(conn *sqlite.Conn, publicKeysPrincipal []byte, siteMembersRole in
 
 // AddWebPublicationRecord ensuring entity ID exists.
 func AddWebPublicationRecord(conn *sqlite.Conn, hyperEntitiesEID string, webPublicationRecordsDocumentVersion string, webPublicationRecordsPath string) error {
-	eid, err := ensureEntity(conn, hyperEntitiesEID)
-	if err != nil {
-		return err
-	}
-
-	return InsertWebPublicationRecord(conn, eid, webPublicationRecordsDocumentVersion, webPublicationRecordsPath)
-}
-
-func ensureEntity(conn *sqlite.Conn, entity string) (int64, error) {
-	look, err := hypersql.EntitiesLookupID(conn, entity)
-	if err != nil {
-		return 0, err
-	}
-	if look.HyperEntitiesID != 0 {
-		return look.HyperEntitiesID, nil
-	}
-
-	ins, err := hypersql.EntitiesInsertOrIgnore(conn, entity)
-	if err != nil {
-		return 0, err
-	}
-	if ins.HyperEntitiesID == 0 {
-		return 0, fmt.Errorf("failed to insert entity %q for some reason", entity)
-	}
-
-	return ins.HyperEntitiesID, nil
+	return InsertWebPublicationRecord(conn, hyperEntitiesEID, webPublicationRecordsDocumentVersion, webPublicationRecordsPath)
 }
 
 func ensurePublicKey(conn *sqlite.Conn, key []byte) (int64, error) {

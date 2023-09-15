@@ -1,147 +1,237 @@
-// we can't uncomment this until we remove all the styles from the other systems :(
-// import '@tamagui/web/reset.css'
-import '@tamagui/polyfill-dev'
-
-import {store} from '@app/app-store'
-import Main from '@app/pages/main'
-import {themeMachine, ThemeProvider} from '@app/theme'
+import {Interceptor, createGrpcWebTransport} from '@bufbuild/connect-web'
+import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
+import {AppIPC} from '@mintter/app/app-ipc'
+import {AppError, AppErrorPage} from '@mintter/app/components/app-error'
+import {DaemonStatusProvider} from '@mintter/app/node-status-context'
+import Main from '@mintter/app/pages/main'
+import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
+import {toast} from '@mintter/app/toast'
 import {
-  Button,
-  TamaguiProvider,
-  TamaguiProviderProps,
-  Text,
-  Theme,
-  YStack,
-} from '@mintter/ui'
-import {dehydrate, Hydrate, QueryClientProvider} from '@tanstack/react-query'
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {onUpdaterEvent} from '@tauri-apps/api/updater'
-import {useInterpret} from '@xstate/react'
-import {Suspense, useEffect} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+  NavRoute,
+  NavState,
+  NavigationProvider,
+} from '@mintter/app/utils/navigation'
+import {WindowUtils} from '@mintter/app/window-utils'
+import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
+import {Spinner, YStack} from '@mintter/ui'
+import {createTRPCReact} from '@trpc/react-query'
+import {ipcLink} from 'electron-trpc/renderer'
+import React, {Suspense, useEffect, useMemo, useState} from 'react'
+import ReactDOM from 'react-dom/client'
+import {ErrorBoundary} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
-import {attachConsole, debug} from 'tauri-plugin-log-api'
-import {globalStyles} from './stitches.config'
+import superjson from 'superjson'
+import type {AppInfo, GoDaemonState} from './api'
+import {AppRouter} from './api'
+import {createIPC} from './ipc'
+import './root.css'
+import type {StateStream} from './stream'
+import {client} from './trpc'
 
-import {DaemonStatusProvider} from '@app/node-status-context'
-import tamaguiConfig from '../tamagui.config'
-import {appQueryClient} from './query-client'
-import './styles/root.css'
-import './styles/root.scss'
-import './styles/toaster.scss'
-import {NavigationProvider} from './utils/navigation'
-import {listen, useListen} from '@app/ipc'
+const logger = {
+  log: wrapLogger(console.log),
+  error: wrapLogger(console.error),
+}
 
-import('./updater')
+function wrapLogger(logFn: (...args: any[]) => void) {
+  return (...input: any[]) => {
+    logFn(
+      ...input.map((item) => {
+        if (typeof item === 'string') return item
+        try {
+          return JSON.stringify(item, null, 2)
+        } catch {}
+        return item // on main thread this will likely be rendered as [object Object]
+      }),
+    )
+  }
+}
+const trpcReact = createTRPCReact<AppRouter>()
 
-// TauriSentry.init({
-//   integrations: [new BrowserTracing()],
+const loggingInterceptor: Interceptor = (next) => async (req) => {
+  try {
+    const result = await next(req)
+    // @ts-ignore
+    logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    return result
+  } catch (e) {
+    let error = e
+    if (e.message.match('stream.getReader is not a function')) {
+      error = new Error('RPC broken, try running yarn and ./dev gen')
+    }
+    logger.error(`🚨 to ${req.method.name} `, req.message, error)
+    throw error
+  }
+}
 
-//   // Set tracesSampleRate to 1.0 to capture 100%
-//   // of transactions for performance monitoring.
-//   // We recommend adjusting this value in production
-//   tracesSampleRate: 1.0,
-// })
-
-attachConsole()
-
-onUpdaterEvent(({error, status}) => {
-  debug(`Updater event. error: ${error} status: ${status}`)
+const transport = createGrpcWebTransport({
+  baseUrl: BACKEND_HTTP_URL,
+  interceptors: import.meta.env.PROD ? undefined : [loggingInterceptor],
 })
 
-export function Root() {
-  const themeService = useInterpret(themeMachine)
-
-  globalStyles()
-
-  return (
-    <StyleProvider>
-      <ThemeProvider value={themeService}>
-        <QueryClientProvider client={appQueryClient}>
-          <Suspense>
-            <Hydrate state={dehydrateState}>
-              <ErrorBoundary FallbackComponent={AppError}>
-                <NavigationProvider>
-                  <App />
-                </NavigationProvider>
-                <Toaster
-                  position="bottom-right"
-                  toastOptions={{className: 'toaster'}}
-                />
-              </ErrorBoundary>
-            </Hydrate>
-          </Suspense>
-          <ReactQueryDevtools />
-        </QueryClientProvider>
-      </ThemeProvider>
-    </StyleProvider>
-  )
+function useWindowUtils(ipc: AppIPC): WindowUtils {
+  // const win = getCurrent()
+  const [isMaximized, setIsMaximized] = useState<boolean | undefined>(false)
+  const windowUtils = {
+    maximize: () => {
+      // toast.error('Not implemented maximize')
+      setIsMaximized(true)
+      ipc.send('maximize_window')
+      // win.maximize()
+    },
+    unmaximize: () => {
+      // toast.error('Not implemented')
+      setIsMaximized(false)
+      ipc.send('maximize_window')
+      // win.unmaximize()
+    },
+    close: () => {
+      // toast.error('Not implemented')
+      ipc.send('close_window')
+      // win.close()
+    },
+    minimize: () => {
+      // toast.error('Not implemented')
+      ipc.send('minimize_window')
+      // win.minimize()
+    },
+    hide: () => {
+      toast.error('Not implemented')
+      // win.hide()
+    },
+    isMaximized,
+  }
+  return windowUtils
 }
 
-function App() {
-  usePageZoom()
+// @ts-expect-error
+const daemonState: StateStream<GoDaemonState> = window.daemonState
+// @ts-expect-error
+const appInfo: AppInfo = window.appInfo
 
-  return (
-    <DaemonStatusProvider>
-      <Main />
-    </DaemonStatusProvider>
+function useGoDaemonState(): GoDaemonState | undefined {
+  const [state, setState] = useState<GoDaemonState | undefined>(
+    daemonState.get(),
   )
-}
 
-var dehydrateState = dehydrate(appQueryClient)
-
-export function AppError({error, resetErrorBoundary}: FallbackProps) {
-  return (
-    <YStack role="alert" space>
-      <Text>Something went wrong loading the App:</Text>
-      <Text tag="pre">{error.message}</Text>
-      <Button onPress={resetErrorBoundary}>Try again</Button>
-    </YStack>
-  )
-}
-
-function usePageZoom() {
   useEffect(() => {
-    store.get<number>('zoom').then((value) => {
-      let val = value ?? 1
-      // @ts-ignore
-      document.body.style = `zoom: ${val};`
-    })
+    const updateHandler = (value: GoDaemonState) => {
+      setState(value)
+    }
+    if (daemonState.get() !== state) {
+      // this is hacky and shouldn't be needed but this fixes some race where daemonState has changed already
+      setState(daemonState.get())
+    }
+    const sub = daemonState.subscribe(updateHandler)
+
+    return () => {
+      sub()
+    }
   }, [])
+
+  return state
 }
 
-export function StyleProvider({
-  children,
-  ...rest
-}: Omit<TamaguiProviderProps, 'config'>) {
+function useStream<V>(stream: StateStream<V>): V {
+  const [state, setState] = useState<V>(stream.get())
+  useEffect(() => {
+    return stream.subscribe(setState)
+  }, [stream])
+  return state
+}
+
+function MainApp({
+  queryClient,
+  ipc,
+}: {
+  queryClient: AppQueryClient
+  ipc: AppIPC
+}) {
+  const daemonState = useGoDaemonState()
+  const grpcClient = useMemo(() => createGRPCClient(transport), [])
+  const windowUtils = useWindowUtils(ipc)
+  // @ts-expect-error
+  const initNavState = useStream<NavState | null>(window.initNavState)
+
+  if (daemonState?.t == 'ready' && initNavState) {
+    return (
+      <AppContextProvider
+        grpcClient={grpcClient}
+        platform={appInfo.platform()}
+        queryClient={queryClient}
+        ipc={ipc}
+        externalOpen={async (url: string) => {
+          ipc.send?.('open-external-link', url)
+        }}
+        saveCidAsFile={async (cid: string, name: string) => {
+          ipc.send?.('save-file', {cid, name})
+        }}
+        windowUtils={windowUtils}
+      >
+        <Suspense
+          fallback={
+            <YStack fullscreen ai="center" jc="center">
+              <Spinner />
+            </YStack>
+          }
+        >
+          <ErrorBoundary FallbackComponent={AppError}>
+            <NavigationProvider initialNav={initNavState}>
+              <DaemonStatusProvider>
+                <Main />
+              </DaemonStatusProvider>
+            </NavigationProvider>
+            <Toaster
+              position="bottom-right"
+              toastOptions={{className: 'toaster'}}
+            />
+          </ErrorBoundary>
+        </Suspense>
+      </AppContextProvider>
+    )
+  }
+
+  if (daemonState?.t === 'error') {
+    return (
+      <StyleProvider>
+        <AppErrorPage message={daemonState?.message} />
+      </StyleProvider>
+    )
+  }
+
+  return null
+}
+
+function ElectronApp() {
+  const ipc = useMemo(() => createIPC(), [])
+  const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
+  useEffect(() => {
+    const sub = client.queryInvalidation.subscribe(undefined, {
+      onData: (queryKey) => {
+        queryClient.client.invalidateQueries(queryKey)
+      },
+    })
+    return () => {
+      sub.unsubscribe()
+    }
+  }, [queryClient])
+  const trpcClient = useMemo(
+    () =>
+      trpcReact.createClient({
+        links: [ipcLink()],
+        transformer: superjson,
+      }),
+    [],
+  )
   return (
-    <TamaguiProvider
-      config={tamaguiConfig}
-      defaultTheme="light"
-      disableRootThemeClass
-      {...rest}
-    >
-      <Theme name="mint">{children}</Theme>
-    </TamaguiProvider>
+    <trpcReact.Provider queryClient={queryClient.client} client={trpcClient}>
+      <MainApp queryClient={queryClient} ipc={ipc} />
+    </trpcReact.Provider>
   )
 }
 
-listen<string>('reset_zoom', (event) => {
-  console.log('RESET ZOOM!', event)
-  // @ts-ignore
-  document.body.style = `zoom: 1;`
-  store.set('zoom', 1)
-}).then((unlisten) => {
-  // noop
-})
-
-listen<'zoomIn' | 'zoomOut'>('change_zoom', async (event) => {
-  let currentZoom = (await store.get<number>('zoom')) || 1
-  let newVal =
-    event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
-  // @ts-ignore
-  document.body.style = `zoom: ${newVal};`
-  store.set('zoom', currentZoom)
-}).then((unlisten) => {
-  // noop
-})
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ElectronApp />
+  </React.StrictMode>,
+)

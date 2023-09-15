@@ -32,22 +32,22 @@ $TOOLS_PROTOC -I proto \
             generated(
                 name = "js",
                 srcs = srcs,
-                outs = [x.replace(".proto", "_pb.ts") for x in srcs] + [x.replace(".proto", "_connectweb.ts") for x in srcs],
+                outs = [x.replace(".proto", "_pb.ts") for x in srcs] + [x.replace(".proto", "_connect.ts") for x in srcs],
                 cmd = """
 $TOOLS_PROTOC -I proto \
     --plugin=protoc-gen-es=$TOOLS_PROTOC_GEN_ES \
-    --plugin=protoc-gen-connect-web=$TOOLS_PROTOC_GEN_CONNECT_WEB \
+    --plugin=protoc-gen-connect-es=$TOOLS_PROTOC_GEN_CONNECT_ES \
     --es_opt=target=ts,import_extension=none \
-    --connect-web_opt=target=ts,import_extension=none \
+    --connect-es_opt=target=ts,import_extension=none \
     --es_out=frontend/packages/shared/src/client/.generated/ \
-    --connect-web_out=frontend/packages/shared/src/client/.generated/ \
+    --connect-es_out=frontend/packages/shared/src/client/.generated/ \
     $SRCS
 """,
                 out_dir = "//" + package_name().replace("proto", "frontend/packages/shared/src/client/.generated"),
                 tools = [
                     "//build/nix:protoc",
                     "//build/tools:protoc-gen-es",
-                    "//build/tools:protoc-gen-connect-web",
+                    "//build/tools:protoc-gen-connect-es",
                 ],
             )
         else:

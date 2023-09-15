@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    <center>
+        <table style="border:1px solid black;margin-left:auto;margin-right:auto;">
+            <tr>
+                <th rowspan="2" style="border:1px dashed black;">Hostname</th>
+                <th rowspan="2" style="border:1px dashed black;">Checked at (UTC)</th>
+                <th colspan="2" style="border:1px dashed black;">DNS</th>
+                <th colspan="2" style="border:1px dashed black;">P2P</th>
+            </tr>
+            <tr>
+                <th style="border:1px dashed black;">Current Status</th>
+                <th style="border:1px dashed black;">Last error</th>
+                <th style="border:1px dashed black;">Current Status</th>
+                <th style="border:1px dashed black;">Last error</th>
+            </tr>
+            {{ range $hostname, $info := .}}
+            <tr>
+                <td style="text-align: left;">{{ $hostname }}</td>
+                <td style="text-align: left;">{{ $info.LastCheck }}</td>
+                <td style="text-align: left;">{{ $info.StatusDNS }}</td>
+                <td style="text-align: left;">{{ $info.LastDNSError }}</td>
+                <td style="text-align: left;">{{ $info.StatusP2P }}</td>
+                <td style="text-align: left;">{{ $info.LastP2PError }}</td>
+            </tr>
+            {{ end }}
+        </table>
+    </center>
+</body>
+
+</html>

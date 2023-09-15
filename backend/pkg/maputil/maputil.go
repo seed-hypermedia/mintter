@@ -27,3 +27,23 @@ func Delete(v map[string]any, path []string) {
 
 	delete(v, path[len(path)-1])
 }
+
+func Get(v map[string]any, path []string) (value any, ok bool) {
+	if v == nil {
+		return nil, false
+	}
+
+	for i := 0; i < len(path)-1; i++ {
+		key := path[i]
+
+		vv, ok := v[key].(map[string]any)
+		if !ok {
+			return nil, false
+		}
+
+		v = vv
+	}
+
+	value, ok = v[path[len(path)-1]]
+	return value, ok
+}

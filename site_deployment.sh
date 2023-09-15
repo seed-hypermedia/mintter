@@ -105,8 +105,11 @@ do
     while read -r line
     do
         echo "  - $line"
+        if echo "$line" | grep -qE '^MTT_SITE_HOSTNAME='; then
+            dns=$(echo "$line" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
+        fi
     done < "${workspace}/.env"
-    read -p "Do you want to use(u) those those params or edit(e) them before update(u/e)?" response
+    read -p "Do you want to use(u) those params or edit(e) them before update(u/e)?" response
     if [ "$response" = "u" ]; then
         mkdir -p ${workspace}/proxy
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
@@ -122,7 +125,7 @@ reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
-        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
         rm mttsite.yml
         exit 0
     fi
@@ -199,6 +202,7 @@ BLOCK
   read -p "Confirm (y/n)?" confirmation
   if [ "$confirmation" = "y" ]; then
     mkdir -p ${workspace}
+    dns=$(echo "MTT_SITE_HOSTNAME=${hostname}" | sed -n 's/.*MTT_SITE_HOSTNAME=http[s]*:\/\/\([^/]*\).*/\1/p')
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
     mkdir -p ${workspace}/proxy
@@ -227,10 +231,11 @@ BLOCK
 	docker compose -f mttsite.yml down || true
     if [ -z "$owner" ]; then
       if [ "$listing" != "y" ]; then
-        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       else
-        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+        MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       fi
+	  
       rm mttsite.yml
       payload="["
       index=0
@@ -263,7 +268,7 @@ BLOCK
         exit 1
       fi
     else
-      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
+      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait MTT_SITE_DNS="$dns" docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       rm mttsite.yml
     fi
     exit 0

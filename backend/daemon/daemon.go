@@ -4,12 +4,13 @@ package daemon
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -17,8 +18,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api"
-	"mintter/backend/daemon/ondisk"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
 	"mintter/backend/hyper"
@@ -38,8 +38,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -59,7 +62,7 @@ type App struct {
 
 	log *zap.Logger
 
-	Repo         *ondisk.OnDisk
+	Storage      *storage.Dir
 	DB           *sqlitex.Pool
 	HTTPListener net.Listener
 	HTTPServer   *http.Server
@@ -67,7 +70,6 @@ type App struct {
 	GRPCServer   *grpc.Server
 	RPC          api.Server
 	Net          *future.ReadOnly[*mttnet.Node]
-	Me           *future.ReadOnly[core.Identity]
 	Syncing      *future.ReadOnly[*syncing.Service]
 	Blobs        *hyper.Storage
 	Wallet       *wallet.Service
@@ -110,10 +112,10 @@ func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) 
 	return loadApp(ctx, cfg, r, grpcOpt...)
 }
 
-func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	a = &App{
-		log:  logging.New("mintter/daemon", "debug"),
-		Repo: r,
+		log:     logging.New("mintter/daemon", "debug"),
+		Storage: r,
 	}
 	a.g, ctx = errgroup.WithContext(ctx)
 
@@ -136,31 +138,42 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		}
 	}(a)
 
-	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
+	tp := trace.NewTracerProvider(
+		trace.WithSampler(trace.AlwaysSample()),
+	)
+	a.clean.AddErrFunc(func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		return tp.Shutdown(ctx)
+	})
+
+	otel.SetTracerProvider(tp)
+
+	a.DB, err = initSQLite(ctx, &a.clean, a.Storage.SQLitePath())
 	if err != nil {
 		return nil, err
 	}
 
 	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", "debug"))
+	if err := a.Blobs.MaybeReindex(ctx); err != nil {
+		return nil, fmt.Errorf("failed to reindex database: %w", err)
+	}
 
-	a.Me, err = initRegistration(ctx, a.g, a.Repo)
+	me := a.Storage.Identity()
+
+	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.DB, a.Blobs)
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, me, a.Net)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, a.Me, a.Net)
-	if err != nil {
-		return nil, err
-	}
+	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
-
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +194,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
 
 	// We can't use futures in ipfs.NewManager since we will incur in a
-	// cyclic dependency loop between ifps and mttnet packages. This is why
+	// cyclic dependency loop between ipfs and mttnet packages. This is why
 	// we need a separate Start function to be called when the necessary
 	// resources (bitswap, blockstore, porvider, etc, ...) are available.
 	a.g.Go(func() error {
@@ -192,7 +205,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 
 		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {
 		return nil, err
 	}
@@ -204,8 +217,6 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 	logging.SetLogLevel("autorelay", "info")
-	logging.SetLogLevel("provider.simple", "debug")
-	logging.SetLogLevel("reprovider.simple", "debug")
 	a.g.Go(func() error {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
@@ -246,66 +257,33 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
+func initRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err error) {
 	log := logging.New("mintter/repo", "debug")
 	if device == nil {
-		r, err = ondisk.NewOnDisk(cfg.RepoPath, log, makeMigrations(cfg.RepoPath))
+		r, err = storage.New(cfg.RepoPath, log)
 	} else {
-		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device, makeMigrations(cfg.RepoPath))
+		r, err = storage.NewWithDeviceKey(cfg.RepoPath, log, device)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to init storage: %w", err)
 	}
 
-	if err == nil {
-		return r, nil
+	if err := r.Migrate(); err != nil {
+		return nil, err
 	}
 
-	if errors.Is(err, ondisk.ErrRepoMigrate) {
-		fmt.Fprintf(os.Stderr, `This version of the software has a backward-incompatible database change!
-Please remove data inside %s or use a different repo path.
-
-`, cfg.RepoPath)
-	}
-
-	return nil, err
+	return r, nil
 }
 
 func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
-	pool, err := sqliteschema.Open(path, 0, 16)
+	pool, err := storage.OpenSQLite(path, 0, 16)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := sqliteschema.MigratePool(ctx, pool); err != nil {
-		return nil, err
-	}
 	clean.Add(pool)
 
 	return pool, nil
-}
-
-func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDisk) (*future.ReadOnly[core.Identity], error) {
-	f := future.New[core.Identity]()
-
-	g.Go(func() error {
-		select {
-		case <-repo.Ready():
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-
-		acc, err := repo.Account()
-		if err != nil {
-			panic(err)
-		}
-
-		id := core.NewIdentity(acc, repo.Device())
-		if err := f.Resolve(id); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return f.ReadOnly, nil
 }
 
 func initNetwork(
@@ -423,7 +401,7 @@ func initGRPC(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	id *future.ReadOnly[core.Identity],
-	repo *ondisk.OnDisk,
+	repo *storage.Dir,
 	pool *sqlitex.Pool,
 	blobs *hyper.Storage,
 	node *future.ReadOnly[*mttnet.Node],
@@ -439,7 +417,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opts...)
 
-	rpc = api.New(ctx, id, repo, pool, blobs, node, sync, wallet, cfg)
+	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, cfg)
 	rpc.Register(srv)
 	reflection.Register(srv)
 
@@ -553,6 +531,7 @@ func initHTTP(
 		router.Handle("/debug/pprof", http.DefaultServeMux, routePrefix|routeNav)
 		router.Handle("/debug/vars", http.DefaultServeMux, routePrefix|routeNav)
 		router.Handle("/debug/grpc", grpcLogsHandler(), routeNav)
+		router.Handle("/debug/buildinfo", buildInfoHandler(), routeNav)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
 		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler, routeNav)
@@ -627,4 +606,35 @@ func GwEssentials(ctx context.Context,
 	h, err := handler(ctx, req)
 
 	return h, err
+}
+
+func buildInfoHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		info, ok := debug.ReadBuildInfo()
+		if !ok {
+			http.Error(w, "doesn't support build info", http.StatusExpectationFailed)
+			return
+		}
+
+		// Don't want to show information about all the dependencies.
+		info.Deps = nil
+
+		// Want to support text and json.
+		wantJSON := slices.Contains(r.Header.Values("Accept"), "application/json") ||
+			r.URL.Query().Get("format") == "json"
+
+		if wantJSON {
+			w.Header().Set("Content-Type", "application/json")
+
+			enc := json.NewEncoder(w)
+			enc.SetIndent("", "  ")
+
+			if err := enc.Encode(info); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			fmt.Fprint(w, info.String())
+		}
+	})
 }

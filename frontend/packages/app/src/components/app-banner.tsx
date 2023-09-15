@@ -1,0 +1,42 @@
+import {getVariable, SizableText, useTheme, XStack} from '@mintter/ui'
+import {MouseEventHandler, ReactNode} from 'react'
+
+export function AppBanner({
+  children,
+  ...props
+}: {
+  children: ReactNode
+  onPress?: () => void
+}) {
+  return (
+    <XStack
+      backgroundColor="$yellow1"
+      width="100%"
+      position="absolute"
+      top={0}
+      left={0}
+      enterStyle={{
+        opacity: 0,
+        transform: [{translateY: -32}],
+      }}
+      exitStyle={{
+        opacity: 0,
+        transform: [{translateY: -32}],
+      }}
+      transform={[{translateY: 0}]}
+      opacity={1}
+      padding="$1"
+      cursor="pointer"
+      borderColor={'$gray4'}
+      borderBottomWidth={1}
+      paddingHorizontal="$3"
+      {...props}
+    >
+      {children}
+    </XStack>
+  )
+}
+
+export function BannerText(props: any) {
+  return <SizableText {...props} size="$1" textAlign="center" />
+}

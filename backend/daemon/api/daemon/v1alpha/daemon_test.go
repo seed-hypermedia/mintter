@@ -5,15 +5,13 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	"mintter/backend/daemon/daemontest"
-	"mintter/backend/daemon/ondisk"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/testutil"
 	"testing"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -84,8 +82,7 @@ func TestGetInfo_Ready(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, srv.repo.Device().PeerID().String(), info.DeviceId)
 
-	acc, err := srv.repo.Account()
-	require.NoError(t, err)
+	acc := srv.repo.Identity().MustGet().Account()
 	require.Equal(t, acc.Principal().String(), info.AccountId)
 	testutil.ProtoEqual(t, timestamppb.New(srv.startTime), info.StartTime, "start time doesn't match")
 }
@@ -93,23 +90,11 @@ func TestGetInfo_Ready(t *testing.T) {
 func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 	repo := daemontest.MakeTestRepo(t, u)
-	db := newTestSQLite(t, repo)
+	db := storage.MakeTestDB(t)
 	wallet := new(mockedWallet)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 
 	return NewServer(repo, blobs, wallet, nil)
-}
-
-func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
-	pool, err := sqliteschema.Open(r.SQLitePath(), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }
 
 type mockedWallet struct {

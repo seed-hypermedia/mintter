@@ -1,8 +1,0 @@
-/// This interface defines all the functions that a guest must expose to be a valid Mintter extension.
-/// Currently this is only a `start` function that's the main entrypoint of an extension. 
-
-/// The main entrypoint of an extension. It will be invoked when the extension get's loaded and it returning means the extension quits successfully.
-/// If you want to have long-lived extensions, you must go into a loop here (for example polling for a set of events repeatedly).
-///
-/// This is basically the guests `main` function, but some programming languages don't let you overload the `main` function so it has a separate name.
-start: func()

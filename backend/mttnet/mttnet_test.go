@@ -6,18 +6,15 @@ import (
 	"mintter/backend/core/coretest"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"mintter/backend/testutil"
-	"path/filepath"
 	"testing"
 	"time"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -44,7 +41,7 @@ func TestAddrs(t *testing.T) {
 func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
-	db := makeTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
@@ -88,18 +85,4 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 	}
 
 	return n, cancel
-}
-
-func makeTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }

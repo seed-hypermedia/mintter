@@ -39,7 +39,7 @@ func (api *Server) ListChanges(ctx context.Context, in *documents.ListChangesReq
 		return nil, status.Errorf(codes.InvalidArgument, "must provide document id")
 	}
 
-	eid := hyper.NewEntityID("mintter:document", in.DocumentId)
+	eid := hyper.EntityID(in.DocumentId)
 
 	out := &documents.ListChangesResponse{}
 

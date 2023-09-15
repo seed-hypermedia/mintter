@@ -1,10 +1,10 @@
+// Package accounts implements account functions.
 package accounts
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
@@ -81,7 +81,13 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 				DeviceId: pids,
 			}
 		}
-
+		istrusted, err := hypersql.IsTrustedAccount(conn, aid)
+		if err != nil {
+			return err
+		}
+		if istrusted.TrustedAccountsID != 0 {
+			acc.IsTrusted = true
+		}
 		return nil
 	}); err != nil {
 		return nil, err
@@ -91,7 +97,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		return nil, status.Errorf(codes.NotFound, "account %s not found", aids)
 	}
 
-	entity, err := srv.blobs.LoadEntity(ctx, hyper.NewEntityID("mintter:account", aids))
+	entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID("hm://a/"+aids))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +178,9 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	return srv.GetAccount(ctx, &accounts.GetAccountRequest{})
 }
 
+// UpdateProfile is public so it can be called from sites.
 func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, in *accounts.Profile) error {
-	eid := hyper.NewEntityID("mintter:account", me.Account().Principal().String())
+	eid := hyper.EntityID("hm://a/" + me.Account().Principal().String())
 
 	e, err := blobs.LoadEntity(ctx, eid)
 	if err != nil {
@@ -187,12 +194,12 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	patch := map[string]any{}
 
 	v, ok := e.Get("alias")
-	if !ok || v.(string) != in.Alias {
+	if (ok && v.(string) != in.Alias) || (!ok && in.Alias != "") {
 		patch["alias"] = in.Alias
 	}
 
 	v, ok = e.Get("bio")
-	if !ok || v.(string) != in.Bio {
+	if (ok && v.(string) != in.Bio) || (!ok && in.Bio != "") {
 		patch["bio"] = in.Bio
 	}
 
@@ -203,7 +210,7 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 		}
 
 		v, ok := e.Get("avatar")
-		if !ok || !v.(cid.Cid).Equals(avatar) {
+		if (ok && !v.(cid.Cid).Equals(avatar)) || (!ok && in.Avatar != "") {
 			patch["avatar"] = avatar
 		}
 	}
@@ -229,6 +236,42 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	return nil
 }
 
+// SetAccountTrust implements the corresponding gRPC method.
+func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountTrustRequest) (*accounts.Account, error) {
+	acc, err := core.DecodePrincipal(in.Id)
+	if err != nil {
+		return nil, err
+	}
+	if in.IsTrusted {
+		err = srv.blobs.SetAccountTrust(ctx, acc)
+	} else {
+		me, ok := srv.me.Get()
+		if !ok {
+			return nil, fmt.Errorf("account not initialized yet")
+		}
+		if acc.String() == me.Account().Principal().String() {
+			return nil, fmt.Errorf("cannot untrust self")
+		}
+		err = srv.blobs.UnsetAccountTrust(ctx, acc)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAcc, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: acc.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if updatedAcc.IsTrusted != in.IsTrusted {
+		return nil, fmt.Errorf("Expected trusted %t but got %t", in.IsTrusted, updatedAcc.IsTrusted)
+	}
+
+	return updatedAcc, nil
+}
+
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
 	me, err := srv.me.Await(ctx)
@@ -236,25 +279,25 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 		return nil, err
 	}
 
-	entities, err := srv.blobs.ListEntities(ctx, "mintter:account:")
+	entities, err := srv.blobs.ListEntities(ctx, "hm://a/")
 	if err != nil {
 		return nil, err
 	}
 
-	mine := me.Account().String()
+	mine := hyper.EntityID("hm://a/" + me.Account().String())
 
 	resp := &accounts.ListAccountsResponse{
 		Accounts: make([]*accounts.Account, 0, len(entities)-1), // all except our own account.
 	}
 
 	for _, e := range entities {
-		aid := e.TrimPrefix("mintter:account:")
+		aid := e
 		if aid == mine {
 			continue
 		}
 
 		draft, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
-			Id: aid,
+			Id: aid.TrimPrefix("hm://a/"),
 		})
 		if err != nil {
 			continue

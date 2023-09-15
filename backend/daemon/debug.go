@@ -18,9 +18,9 @@ var streams = struct {
 	streams: map[chan<- []byte]struct{}{},
 }
 
-// WithGRPCDebugLogging allows recording incoming gRPC requests for debugging and replaying.
-func WithGRPCDebugLogging() grpc.ServerOption {
-	return grpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+// GRPCDebugLoggingInterceptor allows recording incoming gRPC requests for debugging and replaying.
+func GRPCDebugLoggingInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		err = func() error {
 			streams.mu.Lock()
 			defer streams.mu.Unlock()
@@ -50,7 +50,7 @@ func WithGRPCDebugLogging() grpc.ServerOption {
 		}
 
 		return handler(ctx, req)
-	})
+	}
 }
 
 func grpcLogsHandler() http.Handler {

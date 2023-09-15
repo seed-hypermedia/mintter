@@ -7,16 +7,14 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/lndhub"
 	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"mintter/backend/testutil"
 	"mintter/backend/wallet/walletsql"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -125,7 +123,7 @@ func TestRequestP2PInvoice(t *testing.T) {
 func makeTestService(t *testing.T, name string) *Service {
 	u := coretest.NewTester(name)
 
-	db := makeTestSQLite(t)
+	db := storage.MakeTestDB(t)
 
 	node, closenode := makeTestPeer(t, u, db)
 	t.Cleanup(closenode)
@@ -187,18 +185,4 @@ func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.No
 	}
 
 	return n, cancel
-}
-
-func makeTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	require.NoError(t, sqliteschema.MigratePool(context.Background(), pool))
-
-	return pool
 }

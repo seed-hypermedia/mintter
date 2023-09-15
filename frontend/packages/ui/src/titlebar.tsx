@@ -1,4 +1,4 @@
-import {H1, styled, XStack, YStack} from 'tamagui'
+import {H1, SizableText, styled, XStack, YStack} from 'tamagui'
 
 export const TitlebarWrapper = styled(YStack, {
   name: 'TitlebarWrapper',
@@ -25,23 +25,22 @@ export const TitlebarRow = styled(XStack, {
 
 export const TitlebarSection = styled(XStack, {
   name: 'TitlebarSection',
-  alignItems: 'center',
+  ai: 'center',
   gap: '$2',
   userSelect: 'none',
 })
 
-export const TitleTextH1 = styled(H1, {
+export const TitleText = styled(SizableText, {
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   name: 'TitlebarH1',
   color: '$color12',
-  size: '$4',
+  fontSize: '$4',
   userSelect: 'none',
   cursor: 'default',
   padding: 0,
   margin: 0,
-  letterSpacing: 'auto',
   textTransform: 'none',
   fontWeight: '700',
 })
-export function TitleText(props) {
-  return <TitleTextH1 {...props} />
-}

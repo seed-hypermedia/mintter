@@ -1,4 +1,4 @@
-import {YStack, styled} from 'tamagui'
+import {styled, YStack} from 'tamagui'
 
 const variants = {
   hide: {
@@ -7,46 +7,52 @@ const variants = {
       opacity: 0,
     },
   },
+  clearVerticalSpace: {
+    true: {
+      paddingVertical: 0,
+    },
+  },
 } as const
 
 export const ContainerDefault = styled(YStack, {
-  mx: 'auto',
-  px: '$4',
+  marginHorizontal: 'auto',
+  paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
-
   $gtSm: {
     maxWidth: 700,
-    pr: '$2',
+    paddingRight: '$2',
   },
 
   $gtMd: {
     maxWidth: 740,
-    pr: '$2',
+    paddingRight: '$2',
   },
 
   $gtLg: {
     maxWidth: 800,
-    pr: '$10',
+    paddingRight: '$10',
   },
 
   variants,
 })
 
 export const ContainerLarge = styled(YStack, {
-  mx: 'auto',
-  px: '$4',
+  marginHorizontal: 'auto',
+  paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
-  maxWidth: 980,
-  $gtMd: {
-    maxWidth: 1140,
+  maxWidth: 760,
+  $gtLg: {
+    maxWidth: 940,
   },
-
   variants,
 })
 
 export const ContainerXL = styled(YStack, {
-  mx: 'auto',
-  px: '$4',
+  marginHorizontal: 'auto',
+  paddingHorizontal: '$4',
+  paddingVertical: '$6',
   width: '100%',
   $gtSm: {
     maxWidth: 980,
@@ -63,5 +69,5 @@ export const ContainerXL = styled(YStack, {
   variants,
 })
 
-export const Container = ContainerLarge
 export const AppContainer = ContainerLarge
+export const Container = ContainerLarge

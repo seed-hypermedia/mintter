@@ -3,7 +3,7 @@ package hyper
 import (
 	"context"
 	"fmt"
-	"mintter/backend/db/sqliteschema"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
 	"testing"
@@ -299,5 +299,5 @@ func collect(ch <-chan cid.Cid) []cid.Cid {
 }
 
 func newTestSQLite(t testing.TB) *sqlitex.Pool {
-	return sqliteschema.MakeTestDB(t)
+	return storage.MakeTestDB(t)
 }

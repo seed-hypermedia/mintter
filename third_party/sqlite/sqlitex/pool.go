@@ -16,6 +16,7 @@ package sqlitex
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime/trace"
 	"sync"
@@ -127,9 +128,11 @@ func (p *Pool) ForEach(fn func(conn *sqlite.Conn) error) error {
 //
 // ```
 // conn, release, err := pool.Conn(ctx)
-// if err != nil {
-//   // Handle error.
-// }
+//
+//	if err != nil {
+//	  // Handle error.
+//	}
+//
 // defer release()
 // // Use conn normally.
 // ```
@@ -137,7 +140,7 @@ func (p *Pool) Conn(ctx context.Context) (*sqlite.Conn, context.CancelFunc, erro
 	conn := p.Get(ctx)
 	if conn == nil {
 		err := ctx.Err()
-		if err == context.Canceled {
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return nil, nil, err
 		}
 

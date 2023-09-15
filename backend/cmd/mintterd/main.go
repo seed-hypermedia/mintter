@@ -17,7 +17,9 @@ import (
 	"github.com/burdiyan/go/mainutil"
 	"github.com/getsentry/sentry-go"
 	"github.com/peterbourgon/ff/v3"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -58,14 +60,22 @@ func main() {
 			return err
 		}
 
-		log := logging.New("mintterd", "debug")
+		log := logging.New("mintterd", cfg.LogLevel)
 		if err := sentry.Init(sentry.ClientOptions{}); err != nil {
 			log.Debug("SentryInitError", zap.Error(err))
 		} else {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		app, err := daemon.Load(ctx, cfg, daemon.WithGRPCDebugLogging())
+		app, err := daemon.Load(ctx, cfg,
+			grpc.ChainUnaryInterceptor(
+				otelgrpc.UnaryServerInterceptor(),
+				daemon.GRPCDebugLoggingInterceptor(),
+			),
+			grpc.ChainStreamInterceptor(
+				otelgrpc.StreamServerInterceptor(),
+			),
+		)
 		if err != nil {
 			return err
 		}

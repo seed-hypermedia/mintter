@@ -47,6 +47,8 @@ services:
     container_name: minttersite
     ports:
       - '56000:56000'
+      - '56000:56000/udp'
+      - '56002:56002'
     networks:
       - internal_network
     volumes:
@@ -58,8 +60,10 @@ services:
       - '-p2p.port=56000'
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
+      - '-p2p.public-reachability'
+      - '-p2p.no-relay'
+      - '-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - '-site.title=${MTT_SITE_TITLE:-NewSite}'
       - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
       - '${MTT_SITE_NOWAIT_FLAG}'
       - '${MTT_SITE_ADDITIONAL_FLAGS}'

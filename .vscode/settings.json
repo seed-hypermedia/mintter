@@ -23,7 +23,10 @@
     "plz-out/**": true,
     "**/.yarn": true,
     "**/.pnp.*": true,
-    ".git/**": true
+    ".git/**": true,
+    "**/node_modules/**": true,
+    "**/out/**": true,
+    "**/dist/**": true
   },
   "editor.formatOnPaste": false,
   // Please, don't set global editor tab size!
@@ -40,9 +43,20 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "xstate.showVisualEditorWarnings": false,
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform"
+  },
+  "[markdown]": {
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 80,
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
   },
   "[shellscript]": {
     "editor.detectIndentation": false,
@@ -59,7 +73,10 @@
     ]
   },
   "go.lintTool": "golangci-lint",
-  "python.formatting.provider": "black",
   "prettier.bracketSpacing": false,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "nandorojo-tamagui.configPath": "./frontend/packages/ui/src/tamagui.config.ts"
 }

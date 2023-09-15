@@ -3,13 +3,11 @@ package documents
 
 import (
 	context "context"
-	"encoding/json"
 	"fmt"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/mttnet/sitesql"
-	"net/http"
 	"strings"
 
 	"google.golang.org/grpc/metadata"
@@ -28,58 +26,16 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		return nil, fmt.Errorf("add site: site " + in.Hostname + " already taken")
 	}
 
-	requestURL := fmt.Sprintf("%s/%s", in.Hostname, mttnet.WellKnownPath)
-
-	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	resp, err := mttnet.GetSiteInfoHttp(in.Hostname)
 	if err != nil {
-		return nil, fmt.Errorf("add site: could not create request to well-known site: %w ", err)
+		return nil, fmt.Errorf("add site: Could not get site [%s] info via http: %w", in.Hostname, err)
 	}
-
-	res, err := http.DefaultClient.Do(req)
+	account, err := core.DecodePrincipal(resp.AccountId)
 	if err != nil {
-		return nil, fmt.Errorf("add site: could not contact to provided site [%s]: %w ", requestURL, err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("add site: site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
-	}
-	var response map[string]interface{}
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("add site: unrecognized response format %w", err)
-	}
-	addressesRes, ok := response["addresses"]
-	if !ok {
-		return nil, fmt.Errorf("add site: address not found in payload")
+		return nil, fmt.Errorf("add site: got an invalid accountID [%s]: %w", resp.AccountId, err)
 	}
 
-	var addresses []string
-	addressesList, ok := addressesRes.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("add site: error getting p2p addresses from site, wrong format: addresses must be a list of multiaddresses even if only one provided")
-	}
-	for _, addrs := range addressesList {
-		addr, ok := addrs.(string)
-		if !ok {
-			return nil, fmt.Errorf("add site: error getting p2p addresses from site, wrong format: individual multiaddresses must be a string")
-		}
-		addresses = append(addresses, addr)
-	}
-
-	accountRes, ok := response["account_id"]
-	if !ok {
-		return nil, fmt.Errorf("add site: account_id not found in payload")
-	}
-
-	accountID, ok := accountRes.(string)
-	if !ok {
-		return nil, fmt.Errorf("add site: error getting account_id from remote site, wrong format: account id must me a string")
-	}
-	account, err := core.DecodePrincipal(accountID)
-	if err != nil {
-		return nil, fmt.Errorf("add site: got an invalid accountID [%s]: %w", accountID, err)
-	}
-	info, err := mttnet.AddrInfoFromStrings(addresses...)
+	info, err := mttnet.AddrInfoFromStrings(resp.Addresses...)
 	if err != nil {
 		return nil, fmt.Errorf("add site: couldn't parse multiaddress: %w", err)
 	}
@@ -103,10 +59,9 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	}
 
 	// make it a proxy call since we want to talk with the site by attaching headers
-	header := metadata.New(map[string]string{mttnet.TargetSiteHeader: in.Hostname})
+	header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: in.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, accountID)
-
+	ctx = context.WithValue(ctx, mttnet.GRPCOriginAcc, resp.AccountId)
 	var role documents.Member_Role
 	if in.InviteToken != "" {
 		res, err := api.RemoteCaller.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
@@ -126,7 +81,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		role = res.Role
 	}
 
-	if err = sitesql.AddSite(conn, account, strings.Join(addresses, " "), in.Hostname, int64(role)); err != nil {
+	if err = sitesql.AddSite(conn, account, strings.Join(resp.Addresses, ","), in.Hostname, int64(role)); err != nil {
 		return nil, fmt.Errorf("add site: could not insert site in the database: %w", err)
 	}
 
@@ -187,9 +142,9 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 		return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Could not list sites: %w", err)
 	}
 	for _, siteInfo := range sites {
-		header := metadata.New(map[string]string{mttnet.TargetSiteHeader: siteInfo.SitesHostname})
+		header := metadata.New(map[string]string{mttnet.TargetSiteHostnameHeader: siteInfo.SitesHostname})
 		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-		ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, core.Principal(siteInfo.PublicKeysPrincipal).String())
+
 		docs, err := api.RemoteCaller.ListWebPublications(ctx, &documents.ListWebPublicationsRequest{})
 		if err != nil {
 			continue

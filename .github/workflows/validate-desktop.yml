@@ -1,0 +1,54 @@
+name: Validate + Test Desktop code
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/validate-desktop.yml"
+      - "frontend/apps/desktop/**"
+      - "frotend/packages/**"
+      - "package.json"
+      - "frontend/apps/desktop/package.json"
+  pull_request:
+    paths:
+      - ".github/workflows/validate-desktop.yml"
+      - "frontend/apps/desktop/**"
+      - "frotend/packages/**"
+      - "package.json"
+      - "frontend/apps/desktop/package.json"
+    branches-ignore:
+      - "renovate/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-test-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/ci-setup
+        with:
+          matrix-os: "ubuntu-latest"
+
+      - name: Validate code
+        run: |
+          yarn validate
+
+      - name: Build Backend (Unix)
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-x86_64-unknown-linux-gnu ./backend/cmd/mintterd
+        env:
+          GOARCH: amd64
+          CGO_ENABLED: 1
+
+      - name: Package desktop app
+        run: |
+          yarn desktop:package
+
+      - name: Run desktop app tests
+        run: yarn desktop:test
