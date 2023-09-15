@@ -2,6 +2,7 @@
 import {Node, NodeConfig} from '@tiptap/core'
 import {BlockNoteEditor} from '../../../BlockNoteEditor'
 import {InlineContent, PartialInlineContent} from './inlineContentTypes'
+import {DefaultBlockSchema} from './defaultBlocks'
 
 export type BlockNoteDOMElement =
   | 'editor'
@@ -162,7 +163,7 @@ type BlocksWithoutChildren<BSchema extends BlockSchema> = {
 
 // Converts each block spec into a Block object without children, merges them
 // into a union type, and adds a children property
-export type Block<BSchema extends BlockSchema> =
+export type Block<BSchema extends BlockSchema = DefaultBlockSchema> =
   BlocksWithoutChildren<BSchema>[keyof BlocksWithoutChildren<BSchema>] & {
     children: Block<BSchema>[]
   }
@@ -187,7 +188,7 @@ type PartialBlocksWithoutChildren<BSchema extends BlockSchema> = {
 
 // Same as Block, but as a partial type with some changes to make it easier to
 // create/update blocks in the editor.
-export type PartialBlock<BSchema extends BlockSchema> =
+export type PartialBlock<BSchema extends BlockSchema = DefaultBlockSchema> =
   PartialBlocksWithoutChildren<BSchema>[keyof PartialBlocksWithoutChildren<BSchema>] &
     Partial<{
       children: PartialBlock<BSchema>[]

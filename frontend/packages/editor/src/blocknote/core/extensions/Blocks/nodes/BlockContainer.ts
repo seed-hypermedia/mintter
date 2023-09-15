@@ -6,15 +6,15 @@ import {
   inlineContentToNodes,
 } from '../../../api/nodeConversions/nodeConversions'
 
-import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
-import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
-import styles from './Block.module.css'
-import BlockAttributes from './BlockAttributes'
 import {
   BlockNoteDOMAttributes,
   BlockSchema,
   PartialBlock,
 } from '../api/blockTypes'
+import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
+import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
+import styles from './Block.module.css'
+import BlockAttributes from './BlockAttributes'
 import {mergeCSSClasses} from '../../../shared/utils'
 
 declare module '@tiptap/core' {
@@ -58,14 +58,14 @@ export const BlockContainer = Node.create<{
   parseHTML() {
     return [
       {
-        tag: 'li',
+        tag: 'div',
         getAttrs: (element) => {
           if (typeof element === 'string') {
             return false
           }
 
           const attrs: Record<string, string> = {}
-          for (let [nodeAttr, HTMLAttr] of Object.entries(BlockAttributes)) {
+          for (const [nodeAttr, HTMLAttr] of Object.entries(BlockAttributes)) {
             if (element.getAttribute(HTMLAttr)) {
               attrs[nodeAttr] = element.getAttribute(HTMLAttr)!
             }
@@ -85,7 +85,7 @@ export const BlockContainer = Node.create<{
     const domAttributes = this.options.domAttributes?.blockContainer || {}
 
     return [
-      'li',
+      'div',
       mergeAttributes(HTMLAttributes, {
         class: styles.blockOuter,
         'data-node-type': 'block-outer',
@@ -154,7 +154,6 @@ export const BlockContainer = Node.create<{
 
               // Creates ProseMirror nodes for each child block, including their descendants.
               for (const child of block.children) {
-                // @ts-ignore
                 childNodes.push(blockToNode(child, state.schema))
               }
 
@@ -286,6 +285,7 @@ export const BlockContainer = Node.create<{
           }
 
           // Deletes next block and adds its text content to the nearest previous block.
+
           if (dispatch) {
             dispatch(
               state.tr
@@ -302,6 +302,7 @@ export const BlockContainer = Node.create<{
               new TextSelection(state.doc.resolve(prevBlockEndPos - 1)),
             )
           }
+
           return true
         },
       // Splits a block at a given position. Content after the position is moved to a new block below, at the same
@@ -528,15 +529,15 @@ export const BlockContainer = Node.create<{
           }),
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
-          commands.command(({state, view}) => {
-            const blockInfo = getBlockInfoFromPos(
+          commands.command(({state}) => {
+            const {contentType} = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
             )!
 
             const selectionAtBlockStart =
               state.selection.$anchor.parentOffset === 0
-            const isParagraph = blockInfo.contentType.name === 'paragraph'
+            const isParagraph = contentType.name === 'paragraph'
 
             if (selectionAtBlockStart && !isParagraph) {
               return commands.BNUpdateBlock(state.selection.from, {

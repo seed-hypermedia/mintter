@@ -11,7 +11,6 @@ BASIC STYLES
 .block {
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 /*Ensures block content inside React node views spans editor width*/
@@ -21,11 +20,9 @@ BASIC STYLES
 }
 
 .blockContent {
-  padding: 12px 0 3px 0;
+  padding: 3px 0;
   flex-grow: 1;
   transition: font-size 0.2s;
-  max-width: 100%;
-  max-height: 100%;
   /*
   because the content elements are display: block
   we use flex to position them next to list markers
@@ -59,42 +56,19 @@ NESTED BLOCKS
   transition: all 0.2s 0.1s;
 }
 
-.blockGroup[data-list-type='ul'],
-.blockGroup[data-list-type='ol'] {
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 0;
-}
-
-.blockGroup[data-list-type='ul'] {
-  margin-left: 1.5em;
-}
-
-.blockGroup[data-list-type='ol'] {
-  margin-left: 1.5em;
-}
-
-.blockGroup[data-list-type='ul'] > .blockOuter {
-  display: list-item !important;
-}
-
-.blockGroup[data-list-type='ol'] > .blockOuter {
-  display: list-item !important;
-}
-
-/* [data-theme='light']
+[data-theme='light']
   .blockGroup
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
-  border-left: 1px solid #cccccc;
+  border-left: 1px solid #afafaf;
 }
 
 [data-theme='dark']
   .blockGroup
   .blockGroup
   > .blockOuter:not([data-prev-depth-changed])::before {
-  border-left: 1px solid #999999;
-} */
+  border-left: 1px solid #7f7f7f;
+}
 
 .blockGroup .blockGroup > .blockOuter[data-prev-depth-change='-2']::before {
   height: 0;
@@ -143,12 +117,24 @@ NESTED BLOCKS
 }
 
 /* HEADINGS*/
-[data-level] {
+[data-level='1'] {
+  --level: 2.5em;
+}
+[data-level='2'] {
   --level: 1.8em;
 }
+[data-level='3'] {
+  --level: 1.2em;
+}
 
-[data-prev-level] {
+[data-prev-level='1'] {
+  --prev-level: 2.5em;
+}
+[data-prev-level='2'] {
   --prev-level: 1.8em;
+}
+[data-prev-level='3'] {
+  --prev-level: 1.2em;
 }
 
 .blockOuter[data-prev-type='heading'] > .block > .blockContent {
@@ -265,15 +251,15 @@ NESTED BLOCKS
   font-style: italic;
 }
 
-.isEmpty .inlineContent:before,
+[data-theme='light'] .isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
-  opacity: 0.5;
+  color: #cfcfcf;
 }
 
-/* [data-theme='dark'] .isEmpty .inlineContent:before,
+[data-theme='dark'] .isEmpty .inlineContent:before,
 .isFilter .inlineContent:before {
-  color: #999999;
-} */
+  color: #7f7f7f;
+}
 
 /* TODO: would be nicer if defined from code */
 
@@ -285,15 +271,14 @@ NESTED BLOCKS
   content: 'Type to filter';
 }
 
-.blockContent[data-content-type='heading'].isEmpty.hasAnchor
-  .inlineContent:before {
+.blockContent[data-content-type='heading'].isEmpty .inlineContent:before {
   content: 'Heading';
 }
 
-.isEmpty.hasAnchor
-  .blockContent[data-content-type='image']
+.blockContent[data-content-type='bulletListItem'].isEmpty .inlineContent:before,
+.blockContent[data-content-type='numberedListItem'].isEmpty
   .inlineContent:before {
-  content: 'Image caption';
+  content: 'List';
 }
 
 /* TEXT COLORS */
