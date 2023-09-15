@@ -92,6 +92,7 @@ Flags:
 		f := future.New[*mttnet.Node]()
 		site := sites.Website{
 			Net: f.ReadOnly,
+			URL: rawURL,
 		}
 		app, err := daemon.Load(ctx, cfg, dir, daemon.GenericHandler{
 			Path:    "/.well-known/hypermedia-site",

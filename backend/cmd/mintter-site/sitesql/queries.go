@@ -75,44 +75,6 @@ func generateQueries() error {
 			"FROM", s.KV,
 			"WHERE", s.KVKey, "='"+SiteRegistrationLinkKey+"'",
 		),
-
-		qb.MakeQuery(s.Schema, "SetSiteGroupID", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
-				s.KVKey,
-				s.KVValue,
-			), '\n',
-			"VALUES", qb.List(
-				"'"+SiteGroupIDKey+"'",
-				qb.Var("eid", sqlitegen.TypeText),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "GetSiteGroupID", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.KVValue),
-			),
-			"FROM", s.KV,
-			"WHERE", s.KVKey, "='"+SiteGroupIDKey+"'",
-		),
-
-		qb.MakeQuery(s.Schema, "SetSiteGroupVersion", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
-				s.KVKey,
-				s.KVValue,
-			), '\n',
-			"VALUES", qb.List(
-				"'"+SiteGroupVersionKey+"'",
-				qb.Var("eid", sqlitegen.TypeText),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "GetSiteGroupVersion", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.KVValue),
-			),
-			"FROM", s.KV,
-			"WHERE", s.KVKey, "='"+SiteGroupVersionKey+"'",
-		),
 	)
 	if err != nil {
 		return err

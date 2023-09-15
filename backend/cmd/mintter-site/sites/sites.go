@@ -20,8 +20,10 @@ import (
 type Website struct {
 	// Network of the node.
 	Net *future.ReadOnly[*mttnet.Node]
-	// DB access to the node
+	// DB access to the node.
 	DB *sqlitex.Pool
+	// URL is the protocol + hostname the group is being served at.
+	URL string
 }
 
 func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -57,19 +59,13 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer release()
 
-	eid, err := sitesql.GetSiteGroupID(conn)
+	siteInfo, err := sitesql.GetSiteInfo(conn, ws.URL)
 	if err != nil {
 		http.Error(w, "Failed to get group id from the db: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	resp.GroupId = eid.KVValue
-
-	version, err := sitesql.GetSiteGroupVersion(conn)
-	if err != nil {
-		http.Error(w, "Failed to get group version from the db: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	resp.GroupVersion = version.KVValue
+	resp.GroupId = siteInfo.EntitiesEID
+	resp.GroupVersion = siteInfo.ServedSitesVersion
 
 	data, err := protojson.Marshal(resp)
 	if err != nil {
