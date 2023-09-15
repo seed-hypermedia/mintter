@@ -32,6 +32,14 @@ func NewServer(node *future.ReadOnly[*mttnet.Node]) *Server {
 
 // Connect implements the Connect RPC method.
 func (srv *Server) Connect(ctx context.Context, in *networking.ConnectRequest) (*networking.ConnectResponse, error) {
+	// We want to support connecting to plain peer IDs, so we need to convert it into multiaddr.
+	if len(in.Addrs) == 1 {
+		addr := in.Addrs[0]
+		if !strings.Contains(addr, "/") {
+			in.Addrs[0] = "/p2p/" + addr
+		}
+	}
+
 	info, err := mttnet.AddrInfoFromStrings(in.Addrs...)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad addrs: %v", err)
