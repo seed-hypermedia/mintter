@@ -13,6 +13,9 @@ service Entities {
 
   // Gets the DAG of changes for an entity.
   rpc GetEntityTimeline(GetEntityTimelineRequest) returns (EntityTimeline);
+
+  // Triggers a best-effort discovery of an entity.
+  rpc DiscoverEntity(DiscoverEntityRequest) returns (DiscoverEntityResponse);
 }
 
 // Request to get a change by ID.
@@ -25,6 +28,21 @@ message GetChangeRequest {
 message GetEntityTimelineRequest {
   // The entity ID to get the timeline for.
   string id = 1;
+}
+
+// Request to discover an entity.
+message DiscoverEntityRequest {
+  // Required. The entity ID to discover.
+  string id = 1;
+
+  // Optional. Version of the entity to discover.
+  string version = 2;
+}
+
+// Response to discover an entity.
+message DiscoverEntityResponse {
+  // TODO(burdiyan): add summary of the discovery process.
+  // Or maybe even make this call streaming?
 }
 
 // A change to an entity.

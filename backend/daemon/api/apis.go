@@ -68,7 +68,7 @@ func New(
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
 		Site:       siteSrv,
-		Entities:   entities.NewServer(blobs),
+		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
 		Groups:     groups.NewServer(repo.Identity(), blobs, node),
 	}
 }

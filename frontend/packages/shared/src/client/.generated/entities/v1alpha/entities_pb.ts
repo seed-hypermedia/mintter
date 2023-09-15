@@ -89,6 +89,91 @@ export class GetEntityTimelineRequest extends Message<GetEntityTimelineRequest> 
 }
 
 /**
+ * Request to discover an entity.
+ *
+ * @generated from message com.mintter.entities.v1alpha.DiscoverEntityRequest
+ */
+export class DiscoverEntityRequest extends Message<DiscoverEntityRequest> {
+  /**
+   * Required. The entity ID to discover.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Optional. Version of the entity to discover.
+   *
+   * @generated from field: string version = 2;
+   */
+  version = "";
+
+  constructor(data?: PartialMessage<DiscoverEntityRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.DiscoverEntityRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DiscoverEntityRequest {
+    return new DiscoverEntityRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DiscoverEntityRequest {
+    return new DiscoverEntityRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DiscoverEntityRequest {
+    return new DiscoverEntityRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DiscoverEntityRequest | PlainMessage<DiscoverEntityRequest> | undefined, b: DiscoverEntityRequest | PlainMessage<DiscoverEntityRequest> | undefined): boolean {
+    return proto3.util.equals(DiscoverEntityRequest, a, b);
+  }
+}
+
+/**
+ * Response to discover an entity.
+ *
+ * TODO(burdiyan): add summary of the discovery process.
+ * Or maybe even make this call streaming?
+ *
+ * @generated from message com.mintter.entities.v1alpha.DiscoverEntityResponse
+ */
+export class DiscoverEntityResponse extends Message<DiscoverEntityResponse> {
+  constructor(data?: PartialMessage<DiscoverEntityResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.DiscoverEntityResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DiscoverEntityResponse {
+    return new DiscoverEntityResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DiscoverEntityResponse {
+    return new DiscoverEntityResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DiscoverEntityResponse {
+    return new DiscoverEntityResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DiscoverEntityResponse | PlainMessage<DiscoverEntityResponse> | undefined, b: DiscoverEntityResponse | PlainMessage<DiscoverEntityResponse> | undefined): boolean {
+    return proto3.util.equals(DiscoverEntityResponse, a, b);
+  }
+}
+
+/**
  * A change to an entity.
  *
  * @generated from message com.mintter.entities.v1alpha.Change

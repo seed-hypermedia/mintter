@@ -26,6 +26,8 @@ type EntitiesClient interface {
 	GetChange(ctx context.Context, in *GetChangeRequest, opts ...grpc.CallOption) (*Change, error)
 	// Gets the DAG of changes for an entity.
 	GetEntityTimeline(ctx context.Context, in *GetEntityTimelineRequest, opts ...grpc.CallOption) (*EntityTimeline, error)
+	// Triggers a best-effort discovery of an entity.
+	DiscoverEntity(ctx context.Context, in *DiscoverEntityRequest, opts ...grpc.CallOption) (*DiscoverEntityResponse, error)
 }
 
 type entitiesClient struct {
@@ -54,6 +56,15 @@ func (c *entitiesClient) GetEntityTimeline(ctx context.Context, in *GetEntityTim
 	return out, nil
 }
 
+func (c *entitiesClient) DiscoverEntity(ctx context.Context, in *DiscoverEntityRequest, opts ...grpc.CallOption) (*DiscoverEntityResponse, error) {
+	out := new(DiscoverEntityResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.entities.v1alpha.Entities/DiscoverEntity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EntitiesServer is the server API for Entities service.
 // All implementations should embed UnimplementedEntitiesServer
 // for forward compatibility
@@ -62,6 +73,8 @@ type EntitiesServer interface {
 	GetChange(context.Context, *GetChangeRequest) (*Change, error)
 	// Gets the DAG of changes for an entity.
 	GetEntityTimeline(context.Context, *GetEntityTimelineRequest) (*EntityTimeline, error)
+	// Triggers a best-effort discovery of an entity.
+	DiscoverEntity(context.Context, *DiscoverEntityRequest) (*DiscoverEntityResponse, error)
 }
 
 // UnimplementedEntitiesServer should be embedded to have forward compatible implementations.
@@ -73,6 +86,9 @@ func (UnimplementedEntitiesServer) GetChange(context.Context, *GetChangeRequest)
 }
 func (UnimplementedEntitiesServer) GetEntityTimeline(context.Context, *GetEntityTimelineRequest) (*EntityTimeline, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEntityTimeline not implemented")
+}
+func (UnimplementedEntitiesServer) DiscoverEntity(context.Context, *DiscoverEntityRequest) (*DiscoverEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DiscoverEntity not implemented")
 }
 
 // UnsafeEntitiesServer may be embedded to opt out of forward compatibility for this service.
@@ -122,6 +138,24 @@ func _Entities_GetEntityTimeline_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Entities_DiscoverEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DiscoverEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntitiesServer).DiscoverEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.entities.v1alpha.Entities/DiscoverEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntitiesServer).DiscoverEntity(ctx, req.(*DiscoverEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Entities_ServiceDesc is the grpc.ServiceDesc for Entities service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,6 +170,10 @@ var Entities_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEntityTimeline",
 			Handler:    _Entities_GetEntityTimeline_Handler,
+		},
+		{
+			MethodName: "DiscoverEntity",
+			Handler:    _Entities_DiscoverEntity_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

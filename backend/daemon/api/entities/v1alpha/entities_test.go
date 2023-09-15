@@ -25,7 +25,7 @@ func TestEntityTimeline(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, zap.NewNop())
-	api := NewServer(blobs)
+	api := NewServer(blobs, nil)
 	ctx := context.Background()
 	del := must.Do2(daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now()))
 

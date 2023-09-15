@@ -3,6 +3,7 @@ package entities
 
 import (
 	"context"
+	"fmt"
 	"mintter/backend/core"
 	entities "mintter/backend/genproto/entities/v1alpha"
 	"mintter/backend/hlc"
@@ -16,18 +17,27 @@ import (
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/exp/slices"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// Discoverer is an interface for discovering objects.
+type Discoverer interface {
+	DiscoverObject(context.Context, hyper.EntityID, hyper.Version) error
+}
 
 // Server implements Entities API.
 type Server struct {
 	blobs *hyper.Storage
+	disc  Discoverer
 }
 
 // NewServer creates a new entities server.
-func NewServer(blobs *hyper.Storage) *Server {
+func NewServer(blobs *hyper.Storage, disc Discoverer) *Server {
 	return &Server{
 		blobs: blobs,
+		disc:  disc,
 	}
 }
 
@@ -181,4 +191,38 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 	}
 
 	return out, nil
+}
+
+// DiscoverEntity implements the Entities server.
+func (api *Server) DiscoverEntity(ctx context.Context, in *entities.DiscoverEntityRequest) (*entities.DiscoverEntityResponse, error) {
+	if api.disc == nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "discovery is not enabled")
+	}
+
+	if in.Id == "" {
+		return nil, errutil.MissingArgument("id")
+	}
+
+	ver := hyper.Version(in.Version)
+
+	heads, err := ver.Parse()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid version %q: %v", in.Version, err)
+	}
+
+	if err := api.disc.DiscoverObject(ctx, hyper.EntityID(in.Id), ver); err != nil {
+		return nil, err
+	}
+
+	for _, h := range heads {
+		ok, err := api.blobs.IPFSBlockstore().Has(ctx, h)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check if block %s exists: %w", h, err)
+		}
+		if !ok {
+			return nil, status.Errorf(codes.Unavailable, "discovery attempt failed: couldn't find the desired version %q", in.Version)
+		}
+	}
+
+	return &entities.DiscoverEntityResponse{}, nil
 }

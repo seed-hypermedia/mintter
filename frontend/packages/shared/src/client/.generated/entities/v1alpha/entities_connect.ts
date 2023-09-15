@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest } from "./entities_pb";
+import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest } from "./entities_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -34,6 +34,17 @@ export const Entities = {
       name: "GetEntityTimeline",
       I: GetEntityTimelineRequest,
       O: EntityTimeline,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Triggers a best-effort discovery of an entity.
+     *
+     * @generated from rpc com.mintter.entities.v1alpha.Entities.DiscoverEntity
+     */
+    discoverEntity: {
+      name: "DiscoverEntity",
+      I: DiscoverEntityRequest,
+      O: DiscoverEntityResponse,
       kind: MethodKind.Unary,
     },
   }
