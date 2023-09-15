@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -356,18 +357,18 @@ func TestDocumentGroupBacklinks(t *testing.T) {
 func TestListAccountGroups(t *testing.T) {
 	t.Parallel()
 
-	srv := newTestSrv(t, "alice")
-	alice := srv.me.MustGet()
+	alicesrv := newTestSrv(t, "alice")
+	alice := alicesrv.me.MustGet()
 	bob := coretest.NewTester("bob")
 	carol := coretest.NewTester("carol")
 	ctx := context.Background()
 
-	group1, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+	group1, err := alicesrv.CreateGroup(ctx, &groups.CreateGroupRequest{
 		Title: "My Group",
 	})
 	require.NoError(t, err)
 
-	group1, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+	group1, err = alicesrv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group1.Id,
 		UpdatedMembers: map[string]groups.Role{
 			bob.Account.Principal().String(): groups.Role_EDITOR,
@@ -375,12 +376,12 @@ func TestListAccountGroups(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	group2, err := srv.CreateGroup(ctx, &groups.CreateGroupRequest{
+	group2, err := alicesrv.CreateGroup(ctx, &groups.CreateGroupRequest{
 		Title: "My Group 2",
 	})
 	require.NoError(t, err)
 
-	group2, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+	group2, err = alicesrv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id: group2.Id,
 		UpdatedMembers: map[string]groups.Role{
 			carol.Account.Principal().String(): groups.Role_EDITOR,
@@ -408,13 +409,76 @@ func TestListAccountGroups(t *testing.T) {
 	}
 
 	for acc, want := range wants {
-		list, err := srv.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+		list, err := alicesrv.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
 			AccountId: acc,
 		})
 		require.NoError(t, err)
 
 		testutil.ProtoEqual(t, want, list, "list groups for account response must match")
 	}
+}
+
+func TestGroupMembersAfterSync(t *testing.T) {
+	// Alice creates a group, adds bob, then syncs with bob.
+	// Bob should be able to edit the group and use it as a member.
+
+	t.Parallel()
+
+	alice := newTestSrv(t, "alice")
+	bob := newTestSrv(t, "bob")
+	ctx := context.Background()
+
+	group, err := alice.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My Group",
+	})
+	require.NoError(t, err)
+
+	group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id:          group.Id,
+		Title:       "Alice from the Wonderland",
+		Description: "Just a test group",
+	})
+	require.NoError(t, err)
+
+	group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id:          group.Id,
+		Title:       group.Title,
+		Description: group.Description,
+		UpdatedMembers: map[string]groups.Role{
+			bob.me.MustGet().Account().Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	err = alice.blobs.ForEachChange(ctx, hyper.EntityID(group.Id), func(c cid.Cid, ch hyper.Change) error {
+		hb, err := hyper.EncodeBlob(ch.Type, ch)
+		if err != nil {
+			return err
+		}
+		require.True(t, c.Equals(hb.CID), "change cid must match blob cid")
+
+		return bob.blobs.SaveBlob(ctx, hb)
+	})
+	require.NoError(t, err)
+
+	groupList, err := bob.ListGroups(ctx, &groups.ListGroupsRequest{})
+	require.NoError(t, err)
+	require.Len(t, groupList.Groups, 1, "bob must have alice's group")
+
+	bobGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+		AccountId: bob.me.MustGet().Account().Principal().String(),
+	})
+	require.NoError(t, err)
+	require.Len(t, bobGroups.Items, 1, "bob must be an editor of alice's group")
+	testutil.ProtoEqual(t, group, bobGroups.Items[0].Group, "bob's group must match alice's group")
+	require.Equal(t, bobGroups.Items[0].Role, groups.Role_EDITOR, "bob must be an editor of alice's group")
+
+	_, err = bob.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id:          group.Id,
+		Title:       "Bob, Not Bob",
+		Description: group.Description,
+	})
+	require.NoError(t, err)
 }
 
 func newTestSrv(t *testing.T, name string) *Server {
