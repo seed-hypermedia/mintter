@@ -136,11 +136,8 @@ export default function Main() {
             window.location.reload()
           }}
         >
-          <ProsemirrorAdapterProvider>
-            <PageComponent key={routeKey} />
-          </ProsemirrorAdapterProvider>
+          <PageComponent key={routeKey} />
           {!isSettings ? <QuickSwitcher /> : null}
-          {/* <ReactQueryDevtools /> */}
         </ErrorBoundary>
       </Suspense>
     </YStack>

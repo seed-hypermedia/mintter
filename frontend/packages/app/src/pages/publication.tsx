@@ -7,6 +7,7 @@ import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/src/models/documents'
 import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
 import {MttLink, features, pluralS} from '@mintter/shared'
+import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {
   Button,
   Comment,
@@ -29,6 +30,14 @@ import {useLatestPublication} from '../models/documents'
 import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
+  return (
+    <ProsemirrorAdapterProvider>
+      <PublicationPageEditor />
+    </ProsemirrorAdapterProvider>
+  )
+}
+
+export function PublicationPageEditor() {
   const route = useNavRoute()
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
