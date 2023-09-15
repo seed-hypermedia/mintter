@@ -129,6 +129,14 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 	method GET HEAD OPTIONS
 	path /ipfs/*
 }
+
+@wellknown {
+	method GET HEAD OPTIONS
+	path /.well-known/*
+}
+
+reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+
 reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
