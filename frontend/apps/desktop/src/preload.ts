@@ -1,7 +1,9 @@
 import {exposeElectronTRPC} from 'electron-trpc/main'
 import {contextBridge, ipcRenderer} from 'electron'
 import type {GoDaemonState} from './api'
-import {writeableStateStream} from './stream'
+import {writeableStateStream, eventStream} from './stream'
+import {NavState} from '@mintter/app/src/utils/navigation'
+import {AppWindowEvent} from '@mintter/app/src/utils/navigation'
 
 process.once('loaded', async () => {
   exposeElectronTRPC()
@@ -10,10 +12,14 @@ process.once('loaded', async () => {
 const [updateDaemonState, daemonState] =
   writeableStateStream<GoDaemonState | null>(null)
 
-const [updateInitRoute, initRoute] = writeableStateStream<string | null>(null)
+const [updateInitNavState, initNavState] =
+  writeableStateStream<NavState | null>(null)
+
+const [dispatchAppWindow, appWindowEvents] = eventStream<AppWindowEvent>()
 
 contextBridge.exposeInMainWorld('daemonState', daemonState)
-contextBridge.exposeInMainWorld('initRoute', initRoute)
+contextBridge.exposeInMainWorld('initNavState', initNavState)
+contextBridge.exposeInMainWorld('appWindowEvents', appWindowEvents)
 contextBridge.exposeInMainWorld('appInfo', {
   platform: () => process.platform,
   arch: () => process.arch,
@@ -22,7 +28,11 @@ contextBridge.exposeInMainWorld('appInfo', {
 //@ts-expect-error
 ipcRenderer.addListener('initWindow', (info, event) => {
   console.log('💡 Init Window', event)
-  updateInitRoute(event.route)
+  updateInitNavState({
+    routes: event.routes,
+    routeIndex: event.routeIndex,
+    lastAction: 'replace',
+  })
   updateDaemonState(event.daemonState)
 })
 
@@ -36,6 +46,10 @@ ipcRenderer.addListener('openRoute', (info, route) => {
 
 ipcRenderer.addListener('goDaemonState', (info, state) => {
   updateDaemonState(state)
+})
+
+ipcRenderer.addListener('appWindowEvent', (info, event) => {
+  dispatchAppWindow(event)
 })
 
 contextBridge.exposeInMainWorld('ipc', {

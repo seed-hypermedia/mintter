@@ -6,7 +6,11 @@ import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
 import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
 import {toast} from '@mintter/app/toast'
-import {NavRoute, NavigationProvider} from '@mintter/app/utils/navigation'
+import {
+  NavRoute,
+  NavState,
+  NavigationProvider,
+} from '@mintter/app/utils/navigation'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
@@ -147,16 +151,9 @@ function MainApp({
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
   // @ts-expect-error
-  const initRoute = useStream<NavRoute>(window.initRoute)
-  const initialNav = useMemo(() => {
-    return {
-      routes: [initRoute],
-      routeIndex: 0,
-      lastAction: null,
-    }
-  }, [initRoute])
+  const initNavState = useStream<NavState | null>(window.initNavState)
 
-  if (daemonState?.t == 'ready') {
+  if (daemonState?.t == 'ready' && initNavState) {
     return (
       <AppContextProvider
         grpcClient={grpcClient}
@@ -179,7 +176,7 @@ function MainApp({
           }
         >
           <ErrorBoundary FallbackComponent={AppError}>
-            <NavigationProvider initialNav={initialNav}>
+            <NavigationProvider initialNav={initNavState}>
               <DaemonStatusProvider>
                 <Main />
               </DaemonStatusProvider>

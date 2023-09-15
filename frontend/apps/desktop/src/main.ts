@@ -3,7 +3,7 @@ import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
 // import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
-import {mainMenu, trpc} from './api'
+import {mainMenu, openInitialWindows, trpc} from './api'
 import {initPaths} from './app-paths'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
@@ -82,10 +82,7 @@ ipcMain.on('open-external-link', (_event, linkUrl) => {
 
 app.on('ready', () => {
   log.debug('[MAIN]: APP ready')
-  // openInitialWindows()
-  trpc.createAppWindow({
-    route: {key: 'home'},
-  })
+  openInitialWindows()
 })
 
 app.on('window-all-closed', () => {
@@ -100,7 +97,7 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     log.debug('[MAIN]: will open the home window')
     trpc.createAppWindow({
-      route: {key: 'home'},
+      routes: [{key: 'home'}],
     })
   }
 })

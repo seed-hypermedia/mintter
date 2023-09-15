@@ -11,7 +11,7 @@ export function createIPC(): AppIPC {
         const path = (args?.path as string) || ''
         const route = decodeRouteFromPath(path.slice(1))
         await client.createAppWindow.mutate({
-          route,
+          routes: [route],
         })
       } else {
         console.debug('IPC Invoke', cmd, args)

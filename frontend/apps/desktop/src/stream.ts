@@ -5,7 +5,7 @@ export type StateStream<V> = {
 
 export type Updater<S> = (prevState: S) => S
 
-export function writeableStateStream<S extends Object>(
+export function writeableStateStream<S extends Object | null>(
   initState: S,
 ): [(newState: S | Updater<S>) => void, StateStream<S>] {
   let state: S = initState
@@ -29,4 +29,30 @@ export function writeableStateStream<S extends Object>(
     },
   }
   return [writeState, stream]
+}
+
+export type EventStream<V> = {
+  subscribe: (handler: (value: V) => void) => () => void
+}
+
+export function eventStream<EventValue>(): readonly [
+  (value: EventValue) => void,
+  EventStream<EventValue>,
+] {
+  const handlers = new Set<(event: EventValue) => void>()
+
+  function dispatch(event: EventValue) {
+    handlers.forEach((handle) => handle(event))
+  }
+
+  const stream = {
+    subscribe(handler: (event: EventValue) => void) {
+      handlers.add(handler)
+      return () => {
+        handlers.delete(handler)
+      }
+    },
+  }
+
+  return [dispatch, stream] as const
 }

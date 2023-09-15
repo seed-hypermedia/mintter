@@ -190,6 +190,8 @@ function simpleStringy(obj: any): string {
 
 let appNavDispatch: null | React.Dispatch<NavAction> = null
 
+export type AppWindowEvent = 'back' | 'forward'
+
 export function NavigationProvider({
   children,
   initialNav = {
@@ -203,13 +205,21 @@ export function NavigationProvider({
 }) {
   const [navState, dispatch] = useReducer(navStateReducer, initialNav)
   const {send} = useIPC()
-  const {lastAction, routes, routeIndex} = navState
-  const activeRoute = routes[routeIndex]
 
   useEffect(() => {
-    send('windowRoute', activeRoute)
-  }, [activeRoute, lastAction, send])
+    send('windowNavState', navState)
+  }, [navState, send])
 
+  useEffect(() => {
+    return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
+      if (event === 'back') {
+        dispatch({type: 'pop'})
+      }
+      if (event === 'forward') {
+        dispatch({type: 'forward'})
+      }
+    })
+  }, [])
   //   useEffect(() => {
   //     console.log(
   //       `${routes.map((r, i) => {

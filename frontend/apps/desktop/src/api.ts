@@ -8,9 +8,10 @@ import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 import Store from 'electron-store'
-import {NavRoute} from '@mintter/app/src/utils/navigation'
+import {NavRoute, NavState} from '@mintter/app/src/utils/navigation'
 import {childLogger, error, log} from './logger'
 import {APP_USER_DATA_PATH} from './app-paths'
+import {AppWindowEvent} from './preload'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -86,7 +87,8 @@ const store = new Store({
 })
 
 type AppWindow = {
-  route: NavRoute
+  routes: NavRoute[]
+  routeIndex: number
   bounds: any
 }
 
@@ -94,25 +96,26 @@ const userData = app.getPath('userData')
 log('App UserData: ', userData)
 
 let windowsState =
-  (store.get('WindowState') as Record<string, AppWindow>) ||
+  (store.get('WindowState-v002') as Record<string, AppWindow>) ||
   ({} as Record<string, AppWindow>)
 
 export function openInitialWindows() {
   if (!Object.keys(windowsState).length) {
-    trpc.createAppWindow({route: {key: 'home'}})
+    trpc.createAppWindow({routes: [{key: 'home'}]})
     return
   }
   try {
     Object.entries(windowsState).forEach(([windowId, window]) => {
       trpc.createAppWindow({
-        route: window.route,
+        routes: window.routes,
+        routeIndex: window.routeIndex,
         bounds: window.bounds,
         id: windowId,
       })
     })
   } catch (error) {
     error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
-    trpc.createAppWindow({route: {key: 'home'}})
+    trpc.createAppWindow({routes: [{key: 'home'}]})
     return
   }
 }
@@ -146,6 +149,13 @@ function updateWindowState(
   setWindowsState(newWindows)
 }
 
+function dispatchFocusedWindowAppEvent(event: AppWindowEvent) {
+  const focusedWindow = getFocusedWindow()
+  if (focusedWindow) {
+    focusedWindow.webContents.send('appWindowEvent', event)
+  }
+}
+
 mainMenu.append(
   new MenuItem({
     role: 'appMenu',
@@ -157,7 +167,7 @@ mainMenu.append(
         label: 'Settings',
         accelerator: 'CmdOrCtrl+,',
         click: () => {
-          trpc.createAppWindow({route: {key: 'settings'}})
+          trpc.createAppWindow({routes: [{key: 'settings'}]})
         },
       },
       {
@@ -202,7 +212,7 @@ mainMenu.append(
         label: 'New Window',
         accelerator: 'CmdOrCtrl+Shift+n',
         click: () => {
-          trpc.createAppWindow({route: {key: 'home'}})
+          trpc.createAppWindow({routes: [{key: 'home'}]})
         },
       },
       {type: 'separator'},
@@ -220,6 +230,23 @@ mainMenu.append(
       {role: 'reload'},
       {role: 'forceReload'},
       {role: 'toggleDevTools'},
+      {type: 'separator'},
+      {
+        id: 'back',
+        label: 'Back',
+        accelerator: 'CmdOrCtrl+Left',
+        click: () => {
+          dispatchFocusedWindowAppEvent('back')
+        },
+      },
+      {
+        id: 'forward',
+        label: 'Forward',
+        accelerator: 'CmdOrCtrl+Right',
+        click: () => {
+          dispatchFocusedWindowAppEvent('forward')
+        },
+      },
       {type: 'separator'},
       {
         id: 'route_pubs',
@@ -258,16 +285,16 @@ mainMenu.append(
         label: 'Drafts',
         accelerator: 'CmdOrCtrl+8',
         click: () => {
-          getFocusedWindow()?.webContents.send('open_route', {key: 'drafts'})
+          openRoute({key: 'drafts'})
         },
       },
       {
-        id: 'route_connections',
-        label: 'Connections',
+        id: 'route_contacts',
+        label: 'Contacts',
         accelerator: 'CmdOrCtrl+9',
         click: () => {
-          getFocusedWindow()?.webContents.send('open_route', {
-            key: 'connections',
+          openRoute({
+            key: 'contacts',
           })
         },
       },
@@ -298,7 +325,7 @@ function openRoute(route: NavRoute) {
   if (focusedWindow) {
     focusedWindow.webContents.send('open_route', route)
   } else {
-    trpc.createAppWindow({route})
+    trpc.createAppWindow({routes: [route], routeIndex: 0})
   }
 }
 
@@ -306,7 +333,8 @@ export const router = t.router({
   createAppWindow: t.procedure
     .input(
       z.object({
-        route: z.any(),
+        routes: z.array(z.any()), // todo, zodify NavRoute type
+        routeIndex: z.number().default(0),
         id: z.string().optional(),
         bounds: z
           .object({
@@ -383,26 +411,36 @@ export const router = t.router({
       allWindows.set(windowId, browserWindow)
       trpcHandlers.attachWindow(browserWindow)
 
-      const initRoute = input?.route || {key: 'home'}
-      setWindowState(windowId, {route: initRoute, bounds: null})
+      const initRoutes = input?.routes || [{key: 'home'}]
+      setWindowState(windowId, {
+        routes: initRoutes,
+        routeIndex: input.routeIndex,
+        bounds: null,
+      })
 
       browserWindow.webContents.send('initWindow', {
-        route: initRoute,
-
+        routes: initRoutes,
+        routeIndex: input.routeIndex,
         daemonState: goDaemonState,
         windowId,
       })
       browserWindow.webContents.ipc.addListener(
-        'windowRoute',
-        (info, route) => {
-          updateWindowState(windowId, (window) => ({...window, route}))
+        'windowNavState',
+        (info, {routes, routeIndex}: NavState) => {
+          updateWindowState(windowId, (window) => ({
+            ...window,
+            routes,
+            routeIndex,
+          }))
         },
       )
 
       browserWindow.webContents.on('did-finish-load', () => {
-        const route = windowsState[windowId].route
+        const routes = windowsState[windowId]?.routes
+        const routeIndex = windowsState[windowId]?.routeIndex
         browserWindow.webContents.send('initWindow', {
-          route,
+          routes,
+          routeIndex,
           daemonState: goDaemonState,
           windowId,
         })
