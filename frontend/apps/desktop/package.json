@@ -2,7 +2,7 @@
   "name": "@mintter/desktop",
   "version": "0.0.0",
   "productName": "Mintter",
-  "description": "Mintter: A Hyperdocs client",
+  "description": "Mintter: A Hypermedia client",
   "keywords": [],
   "repository": {
     "type": "git",
