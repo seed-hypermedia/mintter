@@ -13,10 +13,10 @@ var _ = generateQueries
 const (
 	// SiteRegistrationLinkKey is the column name of the meta table where we store the registration link.
 	SiteRegistrationLinkKey = "site_registration_link"
-	// SiteTitleKey is the column name of the meta table where the site title (in case this node is a site) is stored.
-	SiteTitleKey = "site_title"
-	// SiteDescriptionKey is the column name of the meta table where the site description (in case this node is a site) is stored.
-	SiteDescriptionKey = "site_description"
+	// SiteGroupIDKey is the group ID this site is serving. This is populated once the site is remotely initialized with the secret link.
+	SiteGroupIDKey = "site_group_id"
+	// SiteGroupVersionKey is the specific versiont of the group this site is serving. This may change through the life of the site as editors update it.
+	SiteGroupVersionKey = "site_group_version"
 )
 
 //go:generate gorun -tags codegen generateQueries
@@ -74,6 +74,44 @@ func generateQueries() error {
 			),
 			"FROM", s.KV,
 			"WHERE", s.KVKey, "='"+SiteRegistrationLinkKey+"'",
+		),
+
+		qb.MakeQuery(s.Schema, "SetSiteGroupID", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
+				s.KVKey,
+				s.KVValue,
+			), '\n',
+			"VALUES", qb.List(
+				"'"+SiteGroupIDKey+"'",
+				qb.Var("eid", sqlitegen.TypeText),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "GetSiteGroupID", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.KVValue),
+			),
+			"FROM", s.KV,
+			"WHERE", s.KVKey, "='"+SiteGroupIDKey+"'",
+		),
+
+		qb.MakeQuery(s.Schema, "SetSiteGroupVersion", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
+				s.KVKey,
+				s.KVValue,
+			), '\n',
+			"VALUES", qb.List(
+				"'"+SiteGroupVersionKey+"'",
+				qb.Var("eid", sqlitegen.TypeText),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "GetSiteGroupVersion", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.KVValue),
+			),
+			"FROM", s.KV,
+			"WHERE", s.KVKey, "='"+SiteGroupVersionKey+"'",
 		),
 	)
 	if err != nil {

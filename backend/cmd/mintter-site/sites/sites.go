@@ -37,6 +37,7 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO(juligasa): get GroupID and version from DB, include new keys in db meta and store that value whenever
 	// we update the site and the initial InitializeServer (to be done as well)
+
 	resp := &groups.PublicSiteInfo{
 		PeerInfo:     &groups.PeerInfo{},
 		GroupId:      "",
@@ -48,6 +49,28 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	resp.PeerInfo.PeerId = n.ID().DeviceKey().PeerID().String()
 	resp.PeerInfo.AccountId = n.ID().Account().ID().String()
+
+	conn, release, err := ws.DB.Conn(context.Background())
+	if err != nil {
+		http.Error(w, "Failed to get db connection: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer release()
+
+	eid, err := sitesql.GetSiteGroupID(conn)
+	if err != nil {
+		http.Error(w, "Failed to get group id from the db: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	resp.GroupId = eid.KVValue
+
+	version, err := sitesql.GetSiteGroupVersion(conn)
+	if err != nil {
+		http.Error(w, "Failed to get group version from the db: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	resp.GroupVersion = version.KVValue
+
 	data, err := protojson.Marshal(resp)
 	if err != nil {
 		http.Error(w, "Failed to marshal site info: "+err.Error(), http.StatusInternalServerError)
@@ -67,7 +90,7 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link string, err error) {
 	conn, release, err := ws.DB.Conn(ctx)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer release()
 	if err = func() error {
