@@ -17,6 +17,7 @@ import {toast} from 'react-hot-toast'
 import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
 import {unpackHmIdWithAppRoute} from '../open-url'
+import {useGroups} from '../models/groups'
 
 export default function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -24,6 +25,9 @@ export default function QuickSwitcher() {
   const {data: publications} = usePublicationList({
     enabled: open,
     trustedOnly: false,
+  })
+  const {data: groups} = useGroups({
+    enabled: open,
   })
 
   const [search, setSearch] = useState('')
@@ -131,6 +135,25 @@ export default function QuickSwitcher() {
                   {draft.title || 'Untitled Draft'}
                 </span>
                 <span className="cmdk-mtt-type">Draft</span>
+              </Command.Item>
+            )
+          })}
+
+          {groups?.groups.map((group) => {
+            return (
+              <Command.Item
+                key={group.id}
+                value={group.title + group.id}
+                onSelect={() => {
+                  setOpen(false)
+                  navigate({
+                    key: 'group',
+                    groupId: group.id,
+                  })
+                }}
+              >
+                <span className="cmdk-mtt-text">{group.title}</span>
+                <span className="cmdk-mtt-type">Group</span>
               </Command.Item>
             )
           })}

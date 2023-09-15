@@ -1,13 +1,22 @@
 import {Role, unpackDocId} from '@mintter/shared'
-import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
+import {
+  UseMutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {queryKeys} from './query-keys'
-import {ListDocumentGroupsResponse} from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import {
+  ListDocumentGroupsResponse,
+  ListGroupsResponse,
+} from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {useMyAccount} from './accounts'
 
-export function useGroups() {
+export function useGroups(opts: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
   return useQuery({
+    ...opts,
     queryKey: [queryKeys.GET_GROUPS],
     queryFn: async () => {
       return await grpcClient.groups.listGroups({})
@@ -133,6 +142,7 @@ export function usePublishDocToGroup(
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, input.docId])
     },
   })
 }
