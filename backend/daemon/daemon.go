@@ -23,6 +23,8 @@ import (
 	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
+	groups "mintter/backend/genproto/groups/v1alpha"
+
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/gorilla/mux"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -137,22 +139,13 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	extraGRPCOpts := []grpc.ServerOption{}
 	extraHTTPHandlers := []GenericHandler{}
 	for _, extra := range extraOpts {
-		grpcOpt, ok := extra.(grpc.ServerOption)
-		if ok {
-			extraGRPCOpts = append(extraGRPCOpts, grpcOpt)
-			continue
-		}
-		httpHandler, ok := extra.(GenericHandler)
-		if ok {
+		if httpHandler, ok := extra.(GenericHandler); ok {
 			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
-			continue
 		}
-		return nil, fmt.Errorf("option %v not supported", extra)
 	}
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraGRPCOpts...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -379,18 +372,30 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	opts ...grpc.ServerOption,
+	extras ...interface{},
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
-
+	opts := []grpc.ServerOption{}
+	for _, extra := range extras {
+		if opt, ok := extra.(grpc.ServerOption); ok {
+			opts = append(opts, opt)
+		}
+	}
 	srv = grpc.NewServer(opts...)
 
 	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet)
 	rpc.Register(srv)
 	reflection.Register(srv)
+
+	for _, extra := range extras {
+		if extraServer, ok := extra.(groups.WebsiteServer); ok {
+			groups.RegisterWebsiteServer(srv, extraServer)
+			break
+		}
+	}
 
 	g.Go(func() error {
 		return srv.Serve(lis)

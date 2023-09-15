@@ -94,7 +94,7 @@ Flags:
 			Net: f.ReadOnly,
 			URL: rawURL,
 		}
-		app, err := daemon.Load(ctx, cfg, dir, daemon.GenericHandler{
+		app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
 			Path:    "/.well-known/hypermedia-site",
 			Handler: &site,
 			Mode:    daemon.RouteNav,
@@ -106,6 +106,8 @@ Flags:
 
 		site.Net = app.Net
 		site.DB = app.DB
+		site.Blobs = app.Blobs
+
 		if _, ok := dir.Identity().Get(); !ok {
 			account, err := core.NewKeyPairRandom()
 			if err != nil {
