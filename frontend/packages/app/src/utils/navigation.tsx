@@ -50,7 +50,7 @@ export type PublicationRoute = {
 export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
-  draftId: string
+  draftId?: string
   pubContext?: PublicationRouteContext
   contextRoute?: NavRoute
 }

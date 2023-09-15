@@ -89,8 +89,7 @@ function NewDocumentButton() {
         onPress={(e) => {
           e.preventDefault()
           const pubContext = getRoutePubContext(route)
-          // @ts-ignore
-          openDraft(!e.shiftKey, pubContext)
+          openDraft(pubContext)
         }}
       />
     </Tooltip>

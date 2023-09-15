@@ -26,7 +26,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let publications = usePublicationList({trustedOnly})
   let drafts = useDraftList()
   let {queryClient, grpcClient} = useAppContext()
-  let openDraft = useOpenDraft()
+  let openDraft = useOpenDraft('push')
   const pubs = publications.data?.publications
 
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
@@ -92,7 +92,7 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
               <EmptyList
                 description="You have no Publications yet."
                 action={() => {
-                  openDraft(false)
+                  openDraft()
                 }}
               />
             </Container>

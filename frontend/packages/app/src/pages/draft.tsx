@@ -13,18 +13,24 @@ import {
   Theme,
   YStack,
 } from '@mintter/ui'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {DocumentPlaceholder} from './document-placeholder'
+import {useOpenDraft} from '../utils/open-draft'
 
 export default function DraftPage() {
   let route = useNavRoute()
   if (route.key != 'draft')
     throw new Error('Draft actor must be passed to DraftPage')
 
+  const openDraft = useOpenDraft('replace')
   const [debugValue, setDebugValue] = useState(false)
   const documentId = route.draftId // TODO, clean this up when draftId != docId
-
+  useEffect(() => {
+    if (route.key === 'draft' && route.draftId === undefined) {
+      openDraft()
+    }
+  }, [route])
   const {editor, query} = useDraftEditor(documentId, {
     onEditorState: setDebugValue,
   })

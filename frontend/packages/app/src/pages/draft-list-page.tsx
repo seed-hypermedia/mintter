@@ -30,7 +30,7 @@ import {queryDraft} from '../models/documents'
 export default function DraftList() {
   let drafts = useDraftList()
   // TODO: add a `isFetching` indicator
-  const openDraft = useOpenDraft()
+  const openDraft = useOpenDraft('push')
 
   if (drafts.data) {
     return (
@@ -49,7 +49,7 @@ export default function DraftList() {
               <EmptyList
                 description="You have no current Drafts."
                 action={() => {
-                  openDraft(false)
+                  openDraft()
                 }}
               />
             )}

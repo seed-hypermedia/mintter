@@ -189,10 +189,15 @@ function InviteMemberDialog({
     <>
       <Form
         onSubmit={() => {
+          const normalized = normalizeAccountId(memberId)
+          if (!normalized) {
+            toast.error('Invalid account ID')
+            return
+          }
           addMember
             .mutateAsync({
               groupId: input.groupId,
-              newMemberAccount: normalizeAccountId(memberId),
+              newMemberAccount: normalized,
             })
             .then(() => {
               onClose()
@@ -203,7 +208,7 @@ function InviteMemberDialog({
         <Label>Account Id</Label>
         <Input value={memberId} onChangeText={setMemberId} />
         <DialogDescription>
-          Search for xmember alias, or paste member ID
+          Search for member alias, or paste member ID
         </DialogDescription>
         <Form.Trigger asChild>
           <Button>Add Member</Button>
@@ -284,7 +289,6 @@ export default function GroupPage() {
                     size="$2"
                     onPress={() => {
                       openDraft(
-                        false,
                         {groupId, pathName: '/', key: 'group'},
                         {pathName: '/'},
                       )

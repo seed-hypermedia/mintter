@@ -201,13 +201,13 @@ mainMenu.append(
   new MenuItem({
     role: 'fileMenu',
     submenu: [
-      // {
-      //   label: 'New Document',
-      //   accelerator: 'CmdOrCtrl+n',
-      //   click: () => {
-      //     // todo
-      //   },
-      // },
+      {
+        label: 'New Document',
+        accelerator: 'CmdOrCtrl+n',
+        click: () => {
+          trpc.createAppWindow({routes: [{key: 'draft'}]})
+        },
+      },
       {
         label: 'New Window',
         accelerator: 'CmdOrCtrl+Shift+n',

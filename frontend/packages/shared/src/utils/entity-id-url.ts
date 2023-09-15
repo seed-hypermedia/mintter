@@ -58,6 +58,7 @@ type ParsedURL = {
 }
 
 export function parseCustomURL(url: string): ParsedURL | null {
+  if (!url) return null
   const [scheme, rest] = url.split('://')
   if (!rest) return null
   const [pathAndQuery, fragment] = rest.split('#')

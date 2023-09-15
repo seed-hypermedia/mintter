@@ -46,7 +46,7 @@ export default function SitePage() {
       return 0
     })
   }, [data])
-  const openDraft = useOpenDraft()
+  const openDraft = useOpenDraft('push')
   if (!host) throw new Error('Hostname not found for SitePage')
 
   return (
@@ -69,7 +69,7 @@ export default function SitePage() {
             <EmptyList
               description={`Nothing published on ${host} yet.`}
               action={() => {
-                openDraft(false)
+                openDraft()
               }}
             />
           ) : null}

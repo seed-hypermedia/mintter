@@ -53,6 +53,7 @@ import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
+import {pathNameify} from '../utils/path'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
