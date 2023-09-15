@@ -12,20 +12,20 @@ import {
   blockNoteToMantineTheme,
   darkDefaultTheme,
   lightDefaultTheme,
-} from "./blocknote";
+} from './blocknote'
 
 export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
-  editor: BlockNoteEditor<BSchema>;
+  editor: BlockNoteEditor<BSchema>
 }) => {
   return (
     <Toolbar>
       <BlockTypeDropdown {...props} />
 
-      <ToggledStyleButton editor={props.editor} toggledStyle={"bold"} />
-      <ToggledStyleButton editor={props.editor} toggledStyle={"italic"} />
-      <ToggledStyleButton editor={props.editor} toggledStyle={"underline"} />
-      <ToggledStyleButton editor={props.editor} toggledStyle={"strike"} />
-      <ToggledStyleButton editor={props.editor} toggledStyle={"code"} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'bold'} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'italic'} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'underline'} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'strike'} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'code'} />
 
       {/* <ColorStyleButton editor={props.editor} /> */}
 
@@ -34,21 +34,21 @@ export const FormattingToolbar = <BSchema extends BlockSchema>(props: {
 
       <CreateLinkButton editor={props.editor} />
     </Toolbar>
-  );
-};
+  )
+}
 
 export const formattingToolbarFactory = (
-  staticParams: RequiredStaticParams
+  staticParams: RequiredStaticParams,
 ) => {
-  const preferDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
   return ReactElementFactory<any, any>(
     staticParams,
     FormattingToolbar,
     blockNoteToMantineTheme(preferDark ? darkDefaultTheme : lightDefaultTheme),
     {
-      animation: "fade",
-      placement: "top-start",
-    }
-  );
-};
+      animation: 'fade',
+      placement: 'top-start',
+    },
+  )
+}

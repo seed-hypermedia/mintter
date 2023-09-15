@@ -1,5 +1,5 @@
-import {HMBlockSchema} from "@mintter/app/src/client/schema";
-import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from "@mintter/shared";
+import {HMBlockSchema} from '@mintter/app/src/client/schema'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -11,9 +11,9 @@ import {
   XStack,
   YStack,
   useTheme,
-} from "@mintter/ui";
-import {ChangeEvent, useEffect, useState} from "react";
-import {RiVideoAddFill, RiVideoAddLine} from "react-icons/ri";
+} from '@mintter/ui'
+import {ChangeEvent, useEffect, useState} from 'react'
+import {RiVideoAddFill, RiVideoAddLine} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -23,21 +23,21 @@ import {
   defaultProps,
   getBlockInfoFromPos,
   insertOrUpdateBlock,
-} from "./blocknote";
+} from './blocknote'
 
 export const VideoBlock = createReactBlockSpec({
-  type: "video",
+  type: 'video',
   propSchema: {
     ...defaultProps,
     url: {
-      default: "",
+      default: '',
     },
     name: {
-      default: "",
+      default: '',
     },
     defaultOpen: {
-      values: ["false", "true"],
-      default: "true",
+      values: ['false', 'true'],
+      default: 'true',
     },
   },
   containsInlineContent: true,
@@ -46,59 +46,59 @@ export const VideoBlock = createReactBlockSpec({
     block,
     editor,
   }: {
-    block: Block<HMBlockSchema>;
-    editor: BlockNoteEditor<HMBlockSchema>;
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
-});
+})
 
 type VideoType = {
-  id: string;
+  id: string
   props: {
-    url: string;
-    name: string;
-  };
-  children: [];
-  content: [];
-  type: string;
-};
+    url: string
+    name: string
+  }
+  children: []
+  content: []
+  type: string
+}
 
-const boolRegex = new RegExp("true");
+const boolRegex = new RegExp('true')
 
 const Render = (
   block: Block<HMBlockSchema>,
-  editor: BlockNoteEditor<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
-  const [selected, setSelected] = useState(false);
-  const tiptapEditor = editor._tiptapEditor;
-  const selection = tiptapEditor.state.selection;
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
-      tiptapEditor.state.selection.from
-    );
+      tiptapEditor.state.selection.from,
+    )
     if (selectedNode && selectedNode.id) {
       if (
         selectedNode.id === block.id &&
         selectedNode.startPos === selection.$anchor.pos
       ) {
-        setSelected(true);
+        setSelected(true)
       } else if (selectedNode.id !== block.id) {
-        setSelected(false);
+        setSelected(false)
       }
     }
-  }, [selection]);
+  }, [selection])
 
   const assignFile = (newVideo: VideoType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newVideo.props},
-    });
-    editor.setTextCursorPosition(block.id, "end");
-  };
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
 
   const setSelection = (isSelected: boolean) => {
-    setSelected(isSelected);
-  };
+    setSelected(isSelected)
+  }
 
   return (
     <YStack overflow="hidden">
@@ -116,8 +116,8 @@ const Render = (
         <></>
       )}
     </YStack>
-  );
-};
+  )
+}
 
 function VideoComponent({
   block,
@@ -126,49 +126,49 @@ function VideoComponent({
   selected,
   setSelected,
 }: {
-  block: Block<HMBlockSchema>;
-  editor: BlockNoteEditor<HMBlockSchema>;
-  assign: any;
-  selected: boolean;
-  setSelected: any;
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
 }) {
-  const [replace, setReplace] = useState(false);
+  const [replace, setReplace] = useState(false)
 
   const getSourceType = (name: string) => {
-    const nameArray = name.split(".");
-    return `video/${nameArray[nameArray.length - 1]}`;
-  };
+    const nameArray = name.split('.')
+    return `video/${nameArray[nameArray.length - 1]}`
+  }
 
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
-      console.error(`The size of ${file.name} exceeds 60 MB.`);
-      return;
+      console.error(`The size of ${file.name} exceeds 60 MB.`)
+      return
     }
     assign({
       props: {
-        name: "",
-        url: "",
+        name: '',
+        url: '',
       },
       children: [],
       content: [],
-      type: "video",
-    } as VideoType);
+      type: 'video',
+    } as VideoType)
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const formData = new FormData()
+    formData.append('file', file)
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
-      assign({props: {url: data, name: file.name}} as VideoType);
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: file.name}} as VideoType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
   return (
     <YStack
@@ -176,50 +176,50 @@ function VideoComponent({
       contentEditable={false}
       className={block.type}
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(true);
+        setReplace(true)
       }}
       onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(false);
+        setReplace(false)
       }}
       onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-        if (e.dataTransfer.effectAllowed === "move") return;
-        e.preventDefault();
-        e.stopPropagation();
-        if (selected) setSelected(false);
+        if (e.dataTransfer.effectAllowed === 'move') return
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          const file = Array.from(e.dataTransfer.files)[0];
-          if (!file.type.includes("video/")) {
-            console.error(`The dragged file is not a video.`);
-            return;
+          const file = Array.from(e.dataTransfer.files)[0]
+          if (!file.type.includes('video/')) {
+            console.error(`The dragged file is not a video.`)
+            return
           }
-          handleDragReplace(file);
-          return;
+          handleDragReplace(file)
+          return
         }
       }}
       onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault()
+        e.stopPropagation()
       }}
       onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        e.preventDefault();
-        e.stopPropagation();
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
         if (
           (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-          e.dataTransfer.effectAllowed !== "move"
+          e.dataTransfer.effectAllowed !== 'move'
         ) {
-          setSelected(true);
+          setSelected(true)
         }
       }}
       onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        e.preventDefault();
-        e.stopPropagation();
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
         if (
           (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-          e.dataTransfer.effectAllowed !== "move"
+          e.dataTransfer.effectAllowed !== 'move'
         ) {
-          setSelected(false);
+          setSelected(false)
         }
       }}
       borderWidth={0}
@@ -236,23 +236,23 @@ function VideoComponent({
           onPress={() =>
             assign({
               props: {
-                name: "",
-                url: "",
+                name: '',
+                url: '',
               },
               children: [],
               content: [],
-              type: "video",
+              type: 'video',
             } as VideoType)
           }
           hoverStyle={{
-            backgroundColor: "$backgroundTransparent",
+            backgroundColor: '$backgroundTransparent',
           }}
         >
           replace
         </Button>
       ) : null}
-      {[".", "/", ":", "http", "https"].some((value) =>
-        block.props.url.includes(value)
+      {['.', '/', ':', 'http', 'https'].some((value) =>
+        block.props.url.includes(value),
       ) ? (
         <VideoWrapper selected={selected}>
           <XStack
@@ -286,19 +286,19 @@ function VideoComponent({
         </VideoWrapper>
       )}
     </YStack>
-  );
+  )
 }
 
 function VideoWrapper({children, selected = false}) {
   return (
     <YStack
-      backgroundColor={selected ? "$color4" : "$color3"}
-      borderColor={selected ? "$color8" : "transparent"}
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
       borderWidth={2}
       borderRadius="$2"
       overflow="hidden"
       hoverStyle={{
-        backgroundColor: "$color4",
+        backgroundColor: '$color4',
       }}
       padding="$2"
       paddingBottom="56.25%"
@@ -307,7 +307,7 @@ function VideoWrapper({children, selected = false}) {
     >
       {children}
     </YStack>
-  );
+  )
 }
 
 function VideoForm({
@@ -315,69 +315,69 @@ function VideoForm({
   assign,
   editor,
 }: {
-  block: Block<HMBlockSchema>;
-  assign: any;
-  editor: BlockNoteEditor<HMBlockSchema>;
+  block: Block<HMBlockSchema>
+  assign: any
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
-  const [url, setUrl] = useState("");
-  const [tabState, setTabState] = useState("upload");
+  const [url, setUrl] = useState('')
+  const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
-    name: string;
-    color: string | undefined;
+    name: string
+    color: string | undefined
   }>({
-    name: "Upload File",
+    name: 'Upload File',
     color: undefined,
-  });
-  const [drag, setDrag] = useState(false);
-  const theme = useTheme();
+  })
+  const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560);
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
     if (largeFileIndex > -1) {
-      const largeFile = files[largeFileIndex];
+      const largeFile = files[largeFileIndex]
       setFileName({
         name:
           largeFileIndex > 0
             ? `The size of ${
                 largeFile.name.length < 36
                   ? largeFile.name
-                  : largeFile.name.slice(0, 32) + "..."
+                  : largeFile.name.slice(0, 32) + '...'
               } exceeds 60 MB.`
-            : "The video size exceeds 60 MB.",
-        color: "red",
-      });
-      return;
+            : 'The video size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
     }
 
-    const {name} = files[0];
-    const formData = new FormData();
-    formData.append("file", files[0]);
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
-      assign({props: {url: data, name: name}} as VideoType);
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: name}} as VideoType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
     for (let i = files.length - 1; i > 0; i--) {
-      const {name} = files[i];
-      const formData = new FormData();
-      formData.append("file", files[i]);
+      const {name} = files[i]
+      const formData = new FormData()
+      formData.append('file', files[i])
 
       try {
         const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        });
-        const data = await response.text();
+        })
+        const data = await response.text()
         editor.insertBlocks(
           [
             {
-              type: "video",
+              type: 'video',
               props: {
                 url: data,
                 name: name,
@@ -385,45 +385,45 @@ function VideoForm({
             },
           ],
           block.id,
-          "after"
-        );
+          'after',
+        )
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
   const submitVideo = async (url: string) => {
     if (isValidUrl(url)) {
-      let embedUrl = "";
-      ("https://www.youtube.com/embed");
-      if (url.includes("youtu.be")) {
-        const urlArray = url.split("/");
+      let embedUrl = ''
+      ;('https://www.youtube.com/embed')
+      if (url.includes('youtu.be')) {
+        const urlArray = url.split('/')
         embedUrl =
-          "https://www.youtube.com/embed/" + urlArray[urlArray.length - 1];
-      } else if (url.includes("youtube")) {
-        embedUrl = "https://www.youtube.com/embed/" + url.split("=")[1];
-      } else if (url.includes("vimeo")) {
-        const urlArray = url.split("/");
+          'https://www.youtube.com/embed/' + urlArray[urlArray.length - 1]
+      } else if (url.includes('youtube')) {
+        embedUrl = 'https://www.youtube.com/embed/' + url.split('=')[1]
+      } else if (url.includes('vimeo')) {
+        const urlArray = url.split('/')
         embedUrl =
-          "https://player.vimeo.com/video/" + urlArray[urlArray.length - 1];
+          'https://player.vimeo.com/video/' + urlArray[urlArray.length - 1]
       } else {
-        setFileName({name: "Unsupported video source.", color: "red"});
-        return;
+        setFileName({name: 'Unsupported video source.', color: 'red'})
+        return
       }
-      assign({props: {url: embedUrl}});
-    } else setFileName({name: "The provided URL is invalid.", color: "red"});
-  };
+      assign({props: {url: embedUrl}})
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
+  }
 
   const isValidUrl = (urlString: string) => {
     try {
-      return Boolean(new URL(urlString));
+      return Boolean(new URL(urlString))
     } catch (e) {
-      console.log(e);
-      return false;
+      console.log(e)
+      return false
     }
-  };
+  }
 
   return (
     <div>
@@ -461,7 +461,7 @@ function VideoForm({
             enterStyle={{x: 0, y: -10, opacity: 0}}
             exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              "quick",
+              'quick',
               {
                 opacity: {
                   overshootClamping: true,
@@ -473,10 +473,10 @@ function VideoForm({
               value={tabState}
               onValueChange={(value: string) => {
                 setFileName({
-                  name: "Upload File",
+                  name: 'Upload File',
                   color: undefined,
-                });
-                setTabState(value);
+                })
+                setTabState(value)
               }}
               orientation="horizontal"
               flexDirection="column"
@@ -497,10 +497,10 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+                  borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
                   hoverStyle={{
-                    backgroundColor: "$borderColorHover",
-                    cursor: "pointer",
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
                   }}
                 >
                   <SizableText size="$2">Upload</SizableText>
@@ -512,10 +512,10 @@ function VideoForm({
                   paddingVertical="$2"
                   borderBottomLeftRadius={0}
                   borderBottomRightRadius={0}
-                  borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
+                  borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
                   hoverStyle={{
-                    backgroundColor: "$borderColorHover",
-                    cursor: "pointer",
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
                   }}
                 >
                   <SizableText size="$2">Embed Link</SizableText>
@@ -532,57 +532,57 @@ function VideoForm({
                     flex={1}
                     // @ts-ignore
                     onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (drag) setDrag(false);
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (drag) setDrag(false)
                       if (
                         e.dataTransfer.files &&
                         e.dataTransfer.files.length > 0
                       ) {
-                        let isVideo = true;
-                        const files = Array.from(e.dataTransfer.files);
+                        let isVideo = true
+                        const files = Array.from(e.dataTransfer.files)
                         files.forEach((file) => {
-                          if (!file.type.includes("video/")) {
+                          if (!file.type.includes('video/')) {
                             setFileName({
                               name: `File ${
                                 file.name.length < 36
                                   ? file.name
-                                  : file.name.slice(0, 32) + "..."
+                                  : file.name.slice(0, 32) + '...'
                               } is not a video.`,
-                              color: "red",
-                            });
-                            isVideo = false;
-                            return;
+                              color: 'red',
+                            })
+                            isVideo = false
+                            return
                           }
-                        });
-                        if (isVideo) handleUpload(Array.from(files));
-                        return;
+                        })
+                        if (isVideo) handleUpload(Array.from(files))
+                        return
                       }
                     }}
                     onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                      e.preventDefault()
+                      e.stopPropagation()
                     }}
                     onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
                       if (
                         !relatedTarget ||
                         !e.currentTarget.contains(relatedTarget)
                       ) {
-                        setDrag(true);
+                        setDrag(true)
                       }
                     }}
                     onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      e.preventDefault();
-                      e.stopPropagation();
+                      const relatedTarget = e.relatedTarget as HTMLElement
+                      e.preventDefault()
+                      e.stopPropagation()
                       if (
                         !relatedTarget ||
                         !e.currentTarget.contains(relatedTarget)
                       ) {
-                        setDrag(false);
+                        setDrag(false)
                       }
                     }}
                   >
@@ -595,11 +595,11 @@ function VideoForm({
                       width={500}
                       justifyContent="center"
                       backgroundColor={
-                        drag ? "$borderColorHover" : "$background"
+                        drag ? '$borderColorHover' : '$background'
                       }
                       hoverStyle={{
-                        backgroundColor: "$borderColorHover",
-                        cursor: "pointer",
+                        backgroundColor: '$borderColorHover',
+                        cursor: 'pointer',
                       }}
                     >
                       <SizableText
@@ -618,13 +618,13 @@ function VideoForm({
                       accept="video/*"
                       multiple
                       style={{
-                        background: "white",
-                        padding: "0 2px",
-                        display: "none",
+                        background: 'white',
+                        padding: '0 2px',
+                        display: 'none',
                       }}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => {
                         if (event.target.files) {
-                          handleUpload(Array.from(event.target.files));
+                          handleUpload(Array.from(event.target.files))
                         }
                       }}
                     />
@@ -653,11 +653,11 @@ function VideoForm({
                           size="$3.5"
                           placeholder="Input video link..."
                           focusStyle={{
-                            borderColor: "$colorFocus",
+                            borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
                           hoverStyle={{
-                            borderColor: "$colorFocus",
+                            borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
                           onChange={(e) => setUrl(e.nativeEvent.text)}
@@ -668,8 +668,8 @@ function VideoForm({
                             flexShrink={0}
                             borderRadius="$3"
                             size="$3.5"
-                            theme={fileName.color === "red" ? "gray" : "green"}
-                            disabled={fileName.color === "red" ? true : false}
+                            theme={fileName.color === 'red' ? 'gray' : 'green'}
+                            disabled={fileName.color === 'red' ? true : false}
                             focusStyle={{
                               outlineWidth: 0,
                             }}
@@ -678,7 +678,7 @@ function VideoForm({
                           </Button>
                         </Form.Trigger>
                       </XStack>
-                      {fileName.name != "Upload File" && (
+                      {fileName.name != 'Upload File' && (
                         <SizableText
                           size="$2"
                           color={fileName.color}
@@ -696,24 +696,24 @@ function VideoForm({
         </Popover>
       </YStack>
     </div>
-  );
+  )
 }
 
 export const insertVideo = new ReactSlashMenuItem<
   DefaultBlockSchema & {video: typeof VideoBlock}
 >(
-  "Video",
+  'Video',
   // @ts-ignore
   (editor: BlockNoteEditor<HMBlockSchema>) => {
     insertOrUpdateBlock(editor, {
-      type: "video",
+      type: 'video',
       props: {
-        url: "",
+        url: '',
       },
-    });
+    })
   },
-  ["video", "vid", "media"],
-  "Media",
+  ['video', 'vid', 'media'],
+  'Media',
   <RiVideoAddFill size={18} />,
-  "Insert a video"
-);
+  'Insert a video',
+)

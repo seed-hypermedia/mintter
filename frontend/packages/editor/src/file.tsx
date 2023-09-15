@@ -1,6 +1,6 @@
-import {useAppContext} from "@mintter/app/src/app-context";
-import {HMBlockSchema} from "./schema";
-import {BACKEND_FILE_UPLOAD_URL} from "@mintter/shared";
+import {useAppContext} from '@mintter/app/src/app-context'
+import {HMBlockSchema} from './schema'
+import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
 import {
   Button,
   Label,
@@ -10,9 +10,9 @@ import {
   XStack,
   YStack,
   useTheme,
-} from "@mintter/ui";
-import {ChangeEvent, useEffect, useState} from "react";
-import {RiFile2Fill, RiFile2Line} from "react-icons/ri";
+} from '@mintter/ui'
+import {ChangeEvent, useEffect, useState} from 'react'
+import {RiFile2Fill, RiFile2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -21,25 +21,25 @@ import {
   defaultProps,
   getBlockInfoFromPos,
   insertOrUpdateBlock,
-} from "./blocknote";
+} from './blocknote'
 
 export const FileBlock = createReactBlockSpec({
-  type: "file",
+  type: 'file',
   propSchema: {
     ...defaultProps,
 
     url: {
-      default: "",
+      default: '',
     },
     name: {
-      default: "",
+      default: '',
     },
     defaultOpen: {
-      values: ["false", "true"],
-      default: "true",
+      values: ['false', 'true'],
+      default: 'true',
     },
     size: {
-      default: "0",
+      default: '0',
     },
   },
   containsInlineContent: true,
@@ -48,70 +48,70 @@ export const FileBlock = createReactBlockSpec({
     block,
     editor,
   }: {
-    block: Block<HMBlockSchema>;
-    editor: BlockNoteEditor<HMBlockSchema>;
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
-});
+})
 
 type FileType = {
-  id: string;
+  id: string
   props: {
-    url: string;
-    name: string;
-    size: string;
-  };
-  children: [];
-  content: [];
-  type: string;
-};
+    url: string
+    name: string
+    size: string
+  }
+  children: []
+  content: []
+  type: string
+}
 
-const boolRegex = new RegExp("true");
+const boolRegex = new RegExp('true')
 
 const Render = (
   block: Block<HMBlockSchema>,
-  editor: BlockNoteEditor<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
-  const [selected, setSelected] = useState(false);
-  const tiptapEditor = editor._tiptapEditor;
-  const selection = tiptapEditor.state.selection;
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
-      tiptapEditor.state.selection.from
-    );
+      tiptapEditor.state.selection.from,
+    )
     if (selectedNode && selectedNode.id) {
       if (
         selectedNode.id === block.id &&
         selectedNode.startPos === selection.$anchor.pos
       ) {
-        setSelected(true);
+        setSelected(true)
       } else if (selectedNode.id !== block.id) {
-        setSelected(false);
+        setSelected(false)
       }
     }
-  }, [selection]);
+  }, [selection])
 
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newFile.props},
-    });
-    editor.setTextCursorPosition(block.id, "end");
-  };
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
 
   const setSelection = (isSelected: boolean) => {
-    setSelected(isSelected);
-  };
+    setSelected(isSelected)
+  }
 
   return (
     <YStack
-      backgroundColor={selected ? "$color4" : "$color3"}
-      borderColor={selected ? "$color8" : "transparent"}
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
       borderWidth={2}
       borderRadius="$4"
       overflow="hidden"
       hoverStyle={{
-        backgroundColor: "$color4",
+        backgroundColor: '$color4',
       }}
     >
       {block.props.url ? (
@@ -128,8 +128,8 @@ const Render = (
         <></>
       )}
     </YStack>
-  );
-};
+  )
+}
 
 function FileComponent({
   block,
@@ -138,55 +138,55 @@ function FileComponent({
   selected,
   setSelected,
 }: {
-  block: Block<HMBlockSchema>;
-  editor: BlockNoteEditor<HMBlockSchema>;
-  assign: any;
-  selected: boolean;
-  setSelected: any;
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
 }) {
-  const [replace, setReplace] = useState(false);
-  const {saveCidAsFile} = useAppContext();
-  const theme = useTheme();
+  const [replace, setReplace] = useState(false)
+  const {saveCidAsFile} = useAppContext()
+  const theme = useTheme()
 
   const saveFile = async () => {
-    await saveCidAsFile(block.props.url, block.props.name);
-  };
+    await saveCidAsFile(block.props.url, block.props.name)
+  }
 
   function formatBytes(bytes: number, decimals = 2) {
-    if (!+bytes) return "0 Bytes";
+    if (!+bytes) return '0 Bytes'
 
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
   }
 
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
-      toast.error(`The size of ${file.name} exceeds 60 MB.`);
-      return;
+      toast.error(`The size of ${file.name} exceeds 60 MB.`)
+      return
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const formData = new FormData()
+    formData.append('file', file)
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
+      })
+      const data = await response.text()
       assign({
         props: {url: data, name: file.name, size: file.size.toString()},
-      } as FileType);
+      } as FileType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
   return (
     <YStack
@@ -194,46 +194,46 @@ function FileComponent({
       contentEditable={false}
       className={block.type}
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(true);
+        setReplace(true)
       }}
       onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(false);
+        setReplace(false)
       }}
       onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-        if (e.dataTransfer.effectAllowed === "move") return;
-        e.preventDefault();
-        e.stopPropagation();
-        if (selected) setSelected(false);
+        if (e.dataTransfer.effectAllowed === 'move') return
+        e.preventDefault()
+        e.stopPropagation()
+        if (selected) setSelected(false)
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          const files = Array.from(e.dataTransfer.files);
-          handleDragReplace(Array.from(files)[0]);
-          return;
+          const files = Array.from(e.dataTransfer.files)
+          handleDragReplace(Array.from(files)[0])
+          return
         }
       }}
       onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault()
+        e.stopPropagation()
       }}
       onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        e.preventDefault();
-        e.stopPropagation();
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
         if (
           (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-          e.dataTransfer.effectAllowed !== "move"
+          e.dataTransfer.effectAllowed !== 'move'
         ) {
-          setSelected(true);
+          setSelected(true)
         }
       }}
       onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        e.preventDefault();
-        e.stopPropagation();
+        const relatedTarget = e.relatedTarget as HTMLElement
+        e.preventDefault()
+        e.stopPropagation()
         if (
           (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-          e.dataTransfer.effectAllowed !== "move"
+          e.dataTransfer.effectAllowed !== 'move'
         ) {
-          setSelected(false);
+          setSelected(false)
         }
       }}
       borderWidth={0}
@@ -251,17 +251,17 @@ function FileComponent({
             onPress={() =>
               assign({
                 props: {
-                  url: "",
-                  name: "",
-                  size: "0",
+                  url: '',
+                  name: '',
+                  size: '0',
                 },
                 children: [],
                 content: [],
-                type: "file",
+                type: 'file',
               } as FileType)
             }
             hoverStyle={{
-              backgroundColor: "$backgroundTransparent",
+              backgroundColor: '$backgroundTransparent',
             }}
           >
             replace
@@ -276,7 +276,7 @@ function FileComponent({
             width={50}
             onPress={saveFile}
             hoverStyle={{
-              backgroundColor: "$backgroundTransparent",
+              backgroundColor: '$backgroundTransparent',
             }}
           >
             save
@@ -312,7 +312,7 @@ function FileComponent({
         </SizableText>
       </Button>
     </YStack>
-  );
+  )
 }
 
 function FileForm({
@@ -320,75 +320,75 @@ function FileForm({
   assign,
   editor,
 }: {
-  block: Block<HMBlockSchema>;
-  assign: any;
-  editor: BlockNoteEditor<HMBlockSchema>;
+  block: Block<HMBlockSchema>
+  assign: any
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
-  const [tabState, setTabState] = useState("upload");
+  const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
-    name: string;
-    color: string | undefined;
+    name: string
+    color: string | undefined
   }>({
-    name: "Upload File",
+    name: 'Upload File',
     color: undefined,
-  });
-  const [drag, setDrag] = useState(false);
-  const theme = useTheme();
+  })
+  const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560);
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
     if (largeFileIndex > -1) {
-      const largeFile = files[largeFileIndex];
+      const largeFile = files[largeFileIndex]
       setFileName({
         name:
           largeFileIndex > 0
             ? `The size of ${
                 largeFile.name.length < 36
                   ? largeFile.name
-                  : largeFile.name.slice(0, 32) + "..."
+                  : largeFile.name.slice(0, 32) + '...'
               } exceeds 60 MB.`
-            : "The file size exceeds 60 MB.",
-        color: "red",
-      });
-      return;
+            : 'The file size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
     }
 
-    const {name} = files[0];
-    const formData = new FormData();
-    formData.append("file", files[0]);
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
+      })
+      const data = await response.text()
       assign({
         props: {url: data, name: name, size: files[0].size.toString()},
-      } as FileType);
+      } as FileType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
     for (let i = files.length - 1; i > 0; i--) {
-      const {name} = files[i];
-      const formData = new FormData();
-      formData.append("file", files[i]);
+      const {name} = files[i]
+      const formData = new FormData()
+      formData.append('file', files[i])
 
       try {
         const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        });
-        const data = await response.text();
+        })
+        const data = await response.text()
         assign({
           props: {url: data, name: name, size: files[0].size.toString()},
-        } as FileType);
+        } as FileType)
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
   return (
     <YStack
@@ -412,7 +412,7 @@ function FileForm({
             justifyContent="flex-start"
             backgroundColor="$color3"
             hoverStyle={{
-              bg: "$color4",
+              bg: '$color4',
             }}
           >
             Add a File
@@ -430,7 +430,7 @@ function FileForm({
           exitStyle={{x: 0, y: -20, opacity: 0}}
           y={-10}
           animation={[
-            "quick",
+            'quick',
             {
               opacity: {
                 overshootClamping: true,
@@ -461,10 +461,10 @@ function FileForm({
                 paddingVertical="$2"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
-                borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+                borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
                 hoverStyle={{
-                  backgroundColor: "$backgroundHover",
-                  cursor: "pointer",
+                  backgroundColor: '$backgroundHover',
+                  cursor: 'pointer',
                 }}
               >
                 <SizableText size="$2">Upload</SizableText>
@@ -481,42 +481,42 @@ function FileForm({
                   flex={1}
                   // @ts-ignore
                   onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (drag) setDrag(false);
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (drag) setDrag(false)
                     if (
                       e.dataTransfer.files &&
                       e.dataTransfer.files.length > 0
                     ) {
-                      const files = Array.from(e.dataTransfer.files);
-                      handleUpload(Array.from(files));
-                      return;
+                      const files = Array.from(e.dataTransfer.files)
+                      handleUpload(Array.from(files))
+                      return
                     }
                   }}
                   onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }}
                   onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                    const relatedTarget = e.relatedTarget as HTMLElement;
-                    e.preventDefault();
-                    e.stopPropagation();
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
                     if (
                       !relatedTarget ||
                       !e.currentTarget.contains(relatedTarget)
                     ) {
-                      setDrag(true);
+                      setDrag(true)
                     }
                   }}
                   onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                    const relatedTarget = e.relatedTarget as HTMLElement;
-                    e.preventDefault();
-                    e.stopPropagation();
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
                     if (
                       !relatedTarget ||
                       !e.currentTarget.contains(relatedTarget)
                     ) {
-                      setDrag(false);
+                      setDrag(false)
                     }
                   }}
                 >
@@ -527,10 +527,10 @@ function FileForm({
                     borderRadius="$4"
                     width={500}
                     justifyContent="center"
-                    backgroundColor={drag ? "$borderColorHover" : "$background"}
+                    backgroundColor={drag ? '$borderColorHover' : '$background'}
                     hoverStyle={{
-                      backgroundColor: "$borderColorHover",
-                      cursor: "pointer",
+                      backgroundColor: '$borderColorHover',
+                      cursor: 'pointer',
                     }}
                   >
                     <SizableText
@@ -548,13 +548,13 @@ function FileForm({
                     type="file"
                     multiple
                     style={{
-                      background: "white",
-                      padding: "0 2px",
-                      display: "none",
+                      background: 'white',
+                      padding: '0 2px',
+                      display: 'none',
                     }}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
                       if (event.target.files) {
-                        handleUpload(Array.from(event.target.files));
+                        handleUpload(Array.from(event.target.files))
                       }
                     }}
                   />
@@ -565,21 +565,21 @@ function FileForm({
         </Popover.Content>
       </Popover>
     </YStack>
-  );
+  )
 }
 
 export const insertFile = new ReactSlashMenuItem<HMBlockSchema>(
-  "File",
+  'File',
   (editor: BlockNoteEditor<HMBlockSchema>) => {
     insertOrUpdateBlock(editor, {
-      type: "file",
+      type: 'file',
       props: {
-        url: "",
+        url: '',
       },
-    });
+    })
   },
-  ["file", "folder"],
-  "Media",
+  ['file', 'folder'],
+  'Media',
   <RiFile2Fill size={18} />,
-  "Insert a file"
-);
+  'Insert a file',
+)

@@ -1,15 +1,15 @@
-import {Node, NodeType} from "prosemirror-model";
+import {Node, NodeType} from 'prosemirror-model'
 
 export type BlockInfo = {
-  id: string;
-  node: Node;
-  contentNode: Node;
-  contentType: NodeType;
-  numChildBlocks: number;
-  startPos: number;
-  endPos: number;
-  depth: number;
-};
+  id: string
+  node: Node
+  contentNode: Node
+  contentType: NodeType
+  numChildBlocks: number
+  startPos: number
+  endPos: number
+  depth: number
+}
 
 /**
  * Retrieves information regarding the most nested block node in a ProseMirror doc, that a given position lies in.
@@ -20,38 +20,38 @@ export type BlockInfo = {
  */
 export function getBlockInfoFromPos(
   doc: Node,
-  posInBlock: number
+  posInBlock: number,
 ): BlockInfo | undefined {
   if (posInBlock < 0 || posInBlock > doc.nodeSize) {
-    return undefined;
+    return undefined
   }
 
-  const $pos = doc.resolve(posInBlock);
+  const $pos = doc.resolve(posInBlock)
 
-  const maxDepth = $pos.depth;
-  let node = $pos.node(maxDepth);
-  let depth = maxDepth;
+  const maxDepth = $pos.depth
+  let node = $pos.node(maxDepth)
+  let depth = maxDepth
 
   while (true) {
     if (depth < 0) {
-      return undefined;
+      return undefined
     }
 
-    if (node.type.name === "blockContainer") {
-      break;
+    if (node.type.name === 'blockContainer') {
+      break
     }
 
-    depth -= 1;
-    node = $pos.node(depth);
+    depth -= 1
+    node = $pos.node(depth)
   }
 
-  const id = node.attrs["id"];
-  const contentNode = node.firstChild!;
-  const contentType = contentNode.type;
-  const numChildBlocks = node.childCount === 2 ? node.lastChild!.childCount : 0;
+  const id = node.attrs['id']
+  const contentNode = node.firstChild!
+  const contentType = contentNode.type
+  const numChildBlocks = node.childCount === 2 ? node.lastChild!.childCount : 0
 
-  const startPos = $pos.start(depth);
-  const endPos = $pos.end(depth);
+  const startPos = $pos.start(depth)
+  const endPos = $pos.end(depth)
 
   return {
     id,
@@ -62,5 +62,5 @@ export function getBlockInfoFromPos(
     startPos,
     endPos,
     depth,
-  };
+  }
 }

@@ -1,24 +1,24 @@
-import {HMBlockSchema} from "@/schema";
-import {BlockNoteEditor} from "../../BlockNoteEditor";
-import {PartialBlock} from "../Blocks/api/blockTypes";
-import {BaseSlashMenuItem} from "./BaseSlashMenuItem";
+import {HMBlockSchema} from '@/schema'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
+import {PartialBlock} from '../Blocks/api/blockTypes'
+import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 
 export function insertOrUpdateBlock<BSchema extends HMBlockSchema>(
   editor: BlockNoteEditor<BSchema>,
-  block: PartialBlock<BSchema>
+  block: PartialBlock<BSchema>,
 ) {
-  const currentBlock = editor.getTextCursorPosition().block;
+  const currentBlock = editor.getTextCursorPosition().block
   if (
     (currentBlock.content.length === 1 &&
-      currentBlock.content[0].type === "text" &&
-      currentBlock.content[0].text === "/") ||
+      currentBlock.content[0].type === 'text' &&
+      currentBlock.content[0].text === '/') ||
     currentBlock.content.length === 0
   ) {
-    editor.updateBlock(currentBlock, block);
-    editor.setTextCursorPosition(currentBlock.id, "end");
+    editor.updateBlock(currentBlock, block)
+    editor.setTextCursorPosition(currentBlock.id, 'end')
   } else {
-    editor.insertBlocks([block], currentBlock, "after");
-    editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!);
+    editor.insertBlocks([block], currentBlock, 'after')
+    editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
   }
 }
 
@@ -28,65 +28,65 @@ export function insertOrUpdateBlock<BSchema extends HMBlockSchema>(
 export const defaultSlashMenuItems = [
   // Command for creating a level 1 heading
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Heading",
+    'Heading',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "heading",
-        props: {level: "1"},
+        type: 'heading',
+        props: {level: '1'},
       }),
-    ["h", "heading1", "h1"]
+    ['h', 'heading1', 'h1'],
   ),
 
   // Command for creating a level 2 heading
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Heading 2",
+    'Heading 2',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "heading",
-        props: {level: "2"},
+        type: 'heading',
+        props: {level: '2'},
       }),
-    ["h2", "heading2", "subheading"]
+    ['h2', 'heading2', 'subheading'],
   ),
 
   // Command for creating a level 3 heading
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Heading 3",
+    'Heading 3',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "heading",
-        props: {level: "3"},
+        type: 'heading',
+        props: {level: '3'},
       }),
-    ["h3", "heading3", "subheading"]
+    ['h3', 'heading3', 'subheading'],
   ),
 
   // Command for creating an ordered list
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Numbered List",
+    'Numbered List',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "numberedListItem",
+        type: 'numberedListItem',
       }),
-    ["li", "list", "numberedlist", "numbered list"]
+    ['li', 'list', 'numberedlist', 'numbered list'],
   ),
 
   // Command for creating a bullet list
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Bullet List",
+    'Bullet List',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "bulletListItem",
+        type: 'bulletListItem',
       }),
-    ["ul", "list", "bulletlist", "bullet list"]
+    ['ul', 'list', 'bulletlist', 'bullet list'],
   ),
 
   // Command for creating a paragraph (pretty useless)
   new BaseSlashMenuItem<HMBlockSchema>(
-    "Paragraph",
+    'Paragraph',
     (editor) =>
       insertOrUpdateBlock(editor, {
-        type: "paragraph",
+        type: 'paragraph',
       }),
-    ["paragraph", "p"]
+    ['paragraph', 'p'],
   ),
 
   // new BaseSlashMenuItem<HMBlockSchema>(
@@ -212,4 +212,4 @@ export const defaultSlashMenuItems = [
   //   TableIcon,
   //   "Used to create a simple table"
   // ),
-];
+]

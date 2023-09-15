@@ -1,77 +1,77 @@
-import {InputRule, mergeAttributes} from "@tiptap/core";
+import {InputRule, mergeAttributes} from '@tiptap/core'
 
-import styles from "./blocknote/core/extensions/Blocks/nodes/Block.module.css";
-import {createTipTapBlock} from "./blocknote";
+import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
+import {createTipTapBlock} from './blocknote'
 
-export const HMHeadingBlockContent = createTipTapBlock<"heading">({
-  name: "heading",
-  content: "inline*",
+export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
+  name: 'heading',
+  content: 'inline*',
 
   addAttributes() {
     return {
       level: {
-        default: "2",
+        default: '2',
         // instead of "level" attributes, use "data-level"
-        parseHTML: (element) => element.getAttribute("data-level"),
+        parseHTML: (element) => element.getAttribute('data-level'),
         renderHTML: (attributes) => {
           return {
-            "data-level": attributes.level,
-          };
+            'data-level': attributes.level,
+          }
         },
       },
-    };
+    }
   },
 
   addInputRules() {
     return [
-      ...["1", "2", "3"].map((level) => {
+      ...['1', '2', '3'].map((level) => {
         // Creates a heading of appropriate level when starting with "#", "##", or "###".
         return new InputRule({
           find: new RegExp(`^(#{${parseInt(level)}})\\s$`),
           handler: ({state, chain, range}) => {
             chain()
               .BNUpdateBlock(state.selection.from, {
-                type: "heading",
+                type: 'heading',
                 props: {
-                  level: "2",
+                  level: '2',
                 },
               })
               // Removes the "#" character(s) used to set the heading.
-              .deleteRange({from: range.from, to: range.to});
+              .deleteRange({from: range.from, to: range.to})
           },
-        });
+        })
       }),
-    ];
+    ]
   },
 
   parseHTML() {
     return [
       {
-        tag: "h1",
+        tag: 'h1',
         attrs: {level: 2},
-        node: "heading",
+        node: 'heading',
       },
       {
-        tag: "h2",
+        tag: 'h2',
         attrs: {level: 2},
-        node: "heading",
+        node: 'heading',
       },
       {
-        tag: "h3",
+        tag: 'h3',
         attrs: {level: 2},
-        node: "heading",
+        node: 'heading',
       },
-    ];
+    ]
   },
 
   renderHTML({HTMLAttributes}) {
     return [
-      "div",
+      'div',
       mergeAttributes(HTMLAttributes, {
         class: styles.blockContent,
-        "data-content-type": this.name,
+        'data-content-type': this.name,
       }),
-      ["h2", {class: styles.inlineContent}, 0],
-    ];
+      ['h2', {class: styles.inlineContent}, 0],
+    ]
   },
-});
+})

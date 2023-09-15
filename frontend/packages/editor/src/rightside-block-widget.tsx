@@ -1,28 +1,28 @@
-import {Button, Copy, SizableText, XStack} from "@mintter/ui";
-import {WidgetDecorationFactory} from "@prosemirror-adapter/core";
-import {useWidgetViewContext} from "@prosemirror-adapter/react";
-import {Editor, Extension} from "@tiptap/core";
-import {EditorState, Plugin, PluginKey} from "@tiptap/pm/state";
-import {Decoration, DecorationSet, EditorView} from "@tiptap/pm/view";
-import {useMemo} from "react";
-import {BlockNoteEditor} from "./blocknote";
-import {HMBlockSchema} from "./schema";
-import {useDocCitations} from "@mintter/app/src/models/content-graph";
-import {usePublication} from "@mintter/app/src/models/documents";
-import {toast} from "@mintter/app/src/toast";
-import {copyTextToClipboard} from "@mintter/app/src/copy-to-clipboard";
-import {createPublicWebHmUrl, unpackHmId} from "@mintter/shared";
-import {useNavigate, useNavRoute} from "@mintter/app/src/utils/navigation";
+import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {WidgetDecorationFactory} from '@prosemirror-adapter/core'
+import {useWidgetViewContext} from '@prosemirror-adapter/react'
+import {Editor, Extension} from '@tiptap/core'
+import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
+import {Decoration, DecorationSet, EditorView} from '@tiptap/pm/view'
+import {useMemo} from 'react'
+import {BlockNoteEditor} from './blocknote'
+import {HMBlockSchema} from './schema'
+import {useDocCitations} from '@mintter/app/src/models/content-graph'
+import {usePublication} from '@mintter/app/src/models/documents'
+import {toast} from '@mintter/app/src/toast'
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
+import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
   getWidget,
   editor,
 }: {
-  getWidget: WidgetDecorationFactory;
-  editor: BlockNoteEditor<HMBlockSchema>;
+  getWidget: WidgetDecorationFactory
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
   return Extension.create({
-    name: "rightside-block",
+    name: 'rightside-block',
     addProseMirrorPlugins() {
       return [
         createRightsideBlockWidgetPlugin({
@@ -30,101 +30,101 @@ export function createRightsideBlockWidgetExtension({
           editor,
           ttEditor: this.editor,
         }),
-      ];
+      ]
     },
-  });
+  })
 }
 
-let RightSidePluginKey = new PluginKey("rightside-block");
+let RightSidePluginKey = new PluginKey('rightside-block')
 
 export function createRightsideBlockWidgetPlugin({
   getWidget,
   editor,
   ttEditor,
 }: {
-  getWidget: WidgetDecorationFactory;
-  editor: BlockNoteEditor<HMBlockSchema>;
-  ttEditor: Editor;
+  getWidget: WidgetDecorationFactory
+  editor: BlockNoteEditor<HMBlockSchema>
+  ttEditor: Editor
 }) {
   return new Plugin({
     key: RightSidePluginKey,
     view: () => new MouseMoveView({editor, ttEditor: ttEditor}),
     state: {
       init() {
-        return DecorationSet.empty;
+        return DecorationSet.empty
       },
       apply(tr, decos, oldState, newState) {
-        let hoveredBlockId = tr.getMeta(RightSidePluginKey);
+        let hoveredBlockId = tr.getMeta(RightSidePluginKey)
         if (hoveredBlockId) {
-          return updateDecorations(newState, getWidget, hoveredBlockId);
+          return updateDecorations(newState, getWidget, hoveredBlockId)
         }
-        if (oldState.doc.eq(newState.doc)) return decos;
+        if (oldState.doc.eq(newState.doc)) return decos
 
-        return updateDecorations(newState, getWidget);
+        return updateDecorations(newState, getWidget)
       },
     },
     props: {
       decorations(state) {
-        return this.getState(state);
+        return this.getState(state)
       },
     },
-  });
+  })
 }
 
 function updateDecorations(
   state: EditorState,
   getWidget: WidgetDecorationFactory,
-  activeId?: string
+  activeId?: string,
 ) {
-  const decorations: Decoration[] = [];
+  const decorations: Decoration[] = []
 
   state.doc.descendants((node, pos) => {
-    if (!node.attrs.id) return;
+    if (!node.attrs.id) return
 
     const widget = getWidget(pos + node.nodeSize - 1, {
       id: node.attrs.id,
       active: node.attrs.id == activeId,
       ignoreSelection: true,
-    });
-    decorations.push(widget);
-  });
+    })
+    decorations.push(widget)
+  })
 
-  return DecorationSet.create(state.doc, decorations);
+  return DecorationSet.create(state.doc, decorations)
 }
 
 export function RightsideWidget() {
-  let {citations, spec} = useBlockCitation();
+  let {citations, spec} = useBlockCitation()
 
-  let route = useNavRoute();
-  let replace = useNavigate("replace");
+  let route = useNavRoute()
+  let replace = useNavigate('replace')
   let pub = usePublication({
-    documentId: route.key == "publication" ? route.documentId : undefined,
-    versionId: route.key == "publication" ? route.versionId : undefined,
-    enabled: route.key == "publication" && !!route.documentId,
-  });
+    documentId: route.key == 'publication' ? route.documentId : undefined,
+    versionId: route.key == 'publication' ? route.versionId : undefined,
+    enabled: route.key == 'publication' && !!route.documentId,
+  })
 
   function onCopy() {
     const docId = pub.data?.document?.id
       ? unpackHmId(pub.data?.document?.id)
-      : null;
-    const docVersion = pub.data?.version;
-    if (docId && docId.type === "d" && docVersion && spec && spec.id) {
+      : null
+    const docVersion = pub.data?.version
+    if (docId && docId.type === 'd' && docVersion && spec && spec.id) {
       copyTextToClipboard(
-        createPublicWebHmUrl("d", docId.eid, {
+        createPublicWebHmUrl('d', docId.eid, {
           version: docVersion,
           blockRef: spec.id,
-        })
-      );
-      toast.success("Block reference copied!");
+        }),
+      )
+      toast.success('Block reference copied!')
     } else {
-      appError("Block reference copy failed", {docUrl, spec});
+      appError('Block reference copy failed', {docUrl, spec})
     }
   }
 
   function onCitation() {
-    if (route.key == "publication") {
+    if (route.key == 'publication') {
       // if (route.accessory) return replace({...route, accessory: null})
-      replace({...route, accessory: {key: "citations"}});
+      replace({...route, accessory: {key: 'citations'}})
     }
   }
 
@@ -165,49 +165,49 @@ export function RightsideWidget() {
         onPress={onCopy}
       />
     </XStack>
-  );
+  )
 }
 
 function useBlockCitation() {
-  const {spec} = useWidgetViewContext();
-  const route = useNavRoute();
+  const {spec} = useWidgetViewContext()
+  const route = useNavRoute()
 
   const _citations = useDocCitations(
-    route.key == "publication" ? route.documentId : undefined
-  );
+    route.key == 'publication' ? route.documentId : undefined,
+  )
 
   let citations = useMemo(() => {
     if (spec && _citations.data?.links.length) {
       return _citations.data?.links.filter((link) => {
-        return link.target?.blockId == spec.id;
-      });
+        return link.target?.blockId == spec.id
+      })
     }
 
-    return [];
-  }, []);
+    return []
+  }, [])
 
   return {
     citations,
     spec,
-  };
+  }
 }
 
 class MouseMoveView {
-  editor: BlockNoteEditor<HMBlockSchema>;
-  ttEditor: Editor;
+  editor: BlockNoteEditor<HMBlockSchema>
+  ttEditor: Editor
 
-  hoveredBlock: HTMLElement | undefined;
+  hoveredBlock: HTMLElement | undefined
 
   constructor({
     editor,
     ttEditor,
   }: {
-    editor: BlockNoteEditor<HMBlockSchema>;
-    ttEditor: Editor;
+    editor: BlockNoteEditor<HMBlockSchema>
+    ttEditor: Editor
   }) {
-    this.editor = editor;
-    this.ttEditor = ttEditor;
-    document.body.addEventListener("mousemove", this.onMouseMove, true);
+    this.editor = editor
+    this.ttEditor = ttEditor
+    document.body.addEventListener('mousemove', this.onMouseMove, true)
   }
 
   onMouseMove = (event: MouseEvent) => {
@@ -215,14 +215,14 @@ class MouseMoveView {
 
     const editorBoundingBox = (
       this.ttEditor.view.dom.firstChild! as HTMLElement
-    ).getBoundingClientRect();
+    ).getBoundingClientRect()
     const editorOuterBoundingBox =
-      this.ttEditor.view.dom.getBoundingClientRect();
+      this.ttEditor.view.dom.getBoundingClientRect()
     const cursorWithinEditor =
       event.clientX >= editorOuterBoundingBox.left &&
       event.clientX <= editorOuterBoundingBox.right &&
       event.clientY >= editorOuterBoundingBox.top &&
-      event.clientY <= editorOuterBoundingBox.bottom;
+      event.clientY <= editorOuterBoundingBox.bottom
 
     if (
       cursorWithinEditor &&
@@ -231,81 +231,81 @@ class MouseMoveView {
       this.ttEditor.view.dom !== event.target &&
       !this.ttEditor.view.dom.contains(event.target as HTMLElement)
     ) {
-      return;
+      return
     }
 
     const coords = {
       left: editorBoundingBox.left + editorBoundingBox.width / 2,
       top: event.clientY,
-    };
+    }
 
-    const block = getBlockFromCoords(coords, this.ttEditor.view);
+    const block = getBlockFromCoords(coords, this.ttEditor.view)
 
-    if (!block || this.editor.isEditable) return;
+    if (!block || this.editor.isEditable) return
     if (
-      this.hoveredBlock?.hasAttribute("data-id") &&
-      this.hoveredBlock?.getAttribute("data-id") == block.id
+      this.hoveredBlock?.hasAttribute('data-id') &&
+      this.hoveredBlock?.getAttribute('data-id') == block.id
     )
-      return;
+      return
 
-    this.hoveredBlock = block.node;
+    this.hoveredBlock = block.node
 
-    const blockContent = block.node.firstChild as HTMLElement;
+    const blockContent = block.node.firstChild as HTMLElement
 
-    if (!blockContent) return;
+    if (!blockContent) return
 
     this.ttEditor.view.dispatch(
-      this.ttEditor.state.tr.setMeta(RightSidePluginKey, block.id)
-    );
-  };
+      this.ttEditor.state.tr.setMeta(RightSidePluginKey, block.id),
+    )
+  }
 
   destroy() {
-    document.body.removeEventListener("mousemove", this.onMouseMove);
+    document.body.removeEventListener('mousemove', this.onMouseMove)
   }
 }
 
 function getBlockFromCoords(
   coords: {left: number; top: number},
-  view: EditorView
+  view: EditorView,
 ) {
   if (!view.dom.isConnected) {
     // view is not connected to the DOM, this can cause posAtCoords to fail
     // (Cannot read properties of null (reading 'nearestDesc'), https://github.com/TypeCellOS/BlockNote/issues/123)
-    return undefined;
+    return undefined
   }
 
-  let pos = view.posAtCoords(coords);
+  let pos = view.posAtCoords(coords)
 
   if (!pos) {
-    return undefined;
+    return undefined
   }
   // this is the text node from the block content
-  let node = view.domAtPos(pos.pos).node as HTMLElement;
+  let node = view.domAtPos(pos.pos).node as HTMLElement
 
   if (node === view.dom) {
     // mouse over root
-    return undefined;
+    return undefined
   }
 
   if (node.parentNode === null) {
-    let parentNode = view.domAtPos(pos.inside).node as HTMLElement;
+    let parentNode = view.domAtPos(pos.inside).node as HTMLElement
 
-    if (parentNode.getAttribute("data-id") !== null) {
-      node = parentNode;
-    } else return undefined;
+    if (parentNode.getAttribute('data-id') !== null) {
+      node = parentNode
+    } else return undefined
   }
 
   while (
     node &&
     node.parentNode &&
     node.parentNode !== view.dom &&
-    !node.hasAttribute?.("data-id")
+    !node.hasAttribute?.('data-id')
   ) {
-    node = node.parentNode as HTMLElement;
+    node = node.parentNode as HTMLElement
   }
 
   if (!node) {
-    return undefined;
+    return undefined
   }
-  return {node, id: node.getAttribute("data-id")!};
+  return {node, id: node.getAttribute('data-id')!}
 }

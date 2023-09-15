@@ -306,7 +306,6 @@ export function useNavigate(mode: NavMode = 'push') {
         dispatch({type: 'backplace', route})
       }
     })
-    
   }
 }
 

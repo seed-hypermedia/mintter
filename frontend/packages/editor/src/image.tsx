@@ -1,5 +1,5 @@
-import {useAppContext} from "@mintter/app/src/app-context";
-import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from "@mintter/shared";
+import {useAppContext} from '@mintter/app/src/app-context'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -11,9 +11,9 @@ import {
   XStack,
   YStack,
   useTheme,
-} from "@mintter/ui";
-import {ChangeEvent, useEffect, useState} from "react";
-import {RiImage2Fill, RiImage2Line} from "react-icons/ri";
+} from '@mintter/ui'
+import {ChangeEvent, useEffect, useState} from 'react'
+import {RiImage2Fill, RiImage2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -23,22 +23,22 @@ import {
   defaultProps,
   getBlockInfoFromPos,
   insertOrUpdateBlock,
-} from "./blocknote";
-import {HMBlockSchema} from "./schema";
+} from './blocknote'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
-  type: "image",
+  type: 'image',
   propSchema: {
     ...defaultProps,
     url: {
-      default: "",
+      default: '',
     },
     name: {
-      default: "",
+      default: '',
     },
     defaultOpen: {
-      values: ["false", "true"],
-      default: "true",
+      values: ['false', 'true'],
+      default: 'true',
     },
   },
   containsInlineContent: true,
@@ -47,59 +47,59 @@ export const ImageBlock = createReactBlockSpec({
     block,
     editor,
   }: {
-    block: Block<HMBlockSchema>;
-    editor: BlockNoteEditor<HMBlockSchema>;
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
   }) => Render(block, editor),
-});
+})
 
 type ImageType = {
-  id: string;
+  id: string
   props: {
-    url: string;
-    name: string;
-  };
-  children: [];
-  content: [];
-  type: string;
-};
+    url: string
+    name: string
+  }
+  children: []
+  content: []
+  type: string
+}
 
-const boolRegex = new RegExp("true");
+const boolRegex = new RegExp('true')
 
 const Render = (
   block: Block<HMBlockSchema>,
-  editor: BlockNoteEditor<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
-  const [selected, setSelected] = useState(false);
-  const tiptapEditor = editor._tiptapEditor;
-  const selection = tiptapEditor.state.selection;
+  const [selected, setSelected] = useState(false)
+  const tiptapEditor = editor._tiptapEditor
+  const selection = tiptapEditor.state.selection
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
       tiptapEditor.state.doc,
-      tiptapEditor.state.selection.from
-    );
+      tiptapEditor.state.selection.from,
+    )
     if (selectedNode && selectedNode.id) {
       if (
         selectedNode.id === block.id &&
         selectedNode.startPos === selection.$anchor.pos
       ) {
-        setSelected(true);
+        setSelected(true)
       } else if (selectedNode.id !== block.id) {
-        setSelected(false);
+        setSelected(false)
       }
     }
-  }, [selection]);
+  }, [selection])
 
   const assignFile = (newImage: ImageType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newImage.props},
-    });
-    editor.setTextCursorPosition(block.id, "end");
-  };
+    })
+    editor.setTextCursorPosition(block.id, 'end')
+  }
 
   const setSelection = (isSelected: boolean) => {
-    setSelected(isSelected);
-  };
+    setSelected(isSelected)
+  }
 
   return (
     <YStack>
@@ -117,8 +117,8 @@ const Render = (
         <></>
       )}
     </YStack>
-  );
-};
+  )
+}
 
 function ImageComponent({
   block,
@@ -127,103 +127,103 @@ function ImageComponent({
   selected,
   setSelected,
 }: {
-  block: Block<HMBlockSchema>;
-  editor: BlockNoteEditor<HMBlockSchema>;
-  assign: any;
-  selected: boolean;
-  setSelected: any;
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
+  assign: any
+  selected: boolean
+  setSelected: any
 }) {
-  const [replace, setReplace] = useState(false);
+  const [replace, setReplace] = useState(false)
 
-  const {saveCidAsFile} = useAppContext();
+  const {saveCidAsFile} = useAppContext()
   const saveImage = async () => {
-    await saveCidAsFile(block.props.url, block.props.name);
-  };
+    await saveCidAsFile(block.props.url, block.props.name)
+  }
 
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
-      toast.error(`The size of ${file.name} exceeds 60 MB.`);
-      return;
+      toast.error(`The size of ${file.name} exceeds 60 MB.`)
+      return
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const formData = new FormData()
+    formData.append('file', file)
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
-      assign({props: {url: data, name: file.name}} as ImageType);
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: file.name}} as ImageType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
-  console.log("== image selected", selected);
+  console.log('== image selected', selected)
 
   return (
     <YStack gap="$2">
       <YStack
-        backgroundColor={selected ? "$color4" : "$color3"}
-        borderColor={selected ? "$color8" : "transparent"}
+        backgroundColor={selected ? '$color4' : '$color3'}
+        borderColor={selected ? '$color8' : 'transparent'}
         borderWidth={2}
         borderRadius="$2"
         overflow="hidden"
         hoverStyle={{
-          backgroundColor: "$color4",
+          backgroundColor: '$color4',
         }}
         padding="$2"
         // @ts-ignore
         contentEditable={false}
         className={block.type}
         onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true);
+          setReplace(true)
         }}
         onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false);
+          setReplace(false)
         }}
         onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-          if (e.dataTransfer.effectAllowed === "move") return;
-          e.preventDefault();
-          e.stopPropagation();
-          if (selected) setSelected(false);
+          if (e.dataTransfer.effectAllowed === 'move') return
+          e.preventDefault()
+          e.stopPropagation()
+          if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const file = Array.from(e.dataTransfer.files)[0];
-            if (!file.type.includes("image/")) {
-              toast.error(`The dragged file is not an image.`);
-              return;
+            const file = Array.from(e.dataTransfer.files)[0]
+            if (!file.type.includes('image/')) {
+              toast.error(`The dragged file is not an image.`)
+              return
             }
-            handleDragReplace(file);
-            return;
+            handleDragReplace(file)
+            return
           }
         }}
         onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault()
+          e.stopPropagation()
         }}
         onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (
             (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-            e.dataTransfer.effectAllowed !== "move"
+            e.dataTransfer.effectAllowed !== 'move'
           ) {
-            setSelected(true);
+            setSelected(true)
           }
         }}
         onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          e.preventDefault();
-          e.stopPropagation();
+          const relatedTarget = e.relatedTarget as HTMLElement
+          e.preventDefault()
+          e.stopPropagation()
           if (
             (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
-            e.dataTransfer.effectAllowed !== "move"
+            e.dataTransfer.effectAllowed !== 'move'
           ) {
-            setSelected(false);
+            setSelected(false)
           }
         }}
         borderWidth={0}
@@ -241,16 +241,16 @@ function ImageComponent({
               onPress={() =>
                 assign({
                   props: {
-                    url: "",
-                    name: "",
+                    url: '',
+                    name: '',
                   },
                   children: [],
                   content: [],
-                  type: "image",
+                  type: 'image',
                 } as ImageType)
               }
               hoverStyle={{
-                backgroundColor: "$backgroundTransparent",
+                backgroundColor: '$backgroundTransparent',
               }}
             >
               replace
@@ -265,7 +265,7 @@ function ImageComponent({
               width={50}
               onPress={saveImage}
               hoverStyle={{
-                backgroundColor: "$backgroundTransparent",
+                backgroundColor: '$backgroundTransparent',
               }}
             >
               save
@@ -283,7 +283,7 @@ function ImageComponent({
         onClick={() => setSelected(false)}
       />
     </YStack>
-  );
+  )
 }
 
 function ImageForm({
@@ -291,69 +291,69 @@ function ImageForm({
   assign,
   editor,
 }: {
-  block: Block<HMBlockSchema>;
-  assign: any;
-  editor: BlockNoteEditor<HMBlockSchema>;
+  block: Block<HMBlockSchema>
+  assign: any
+  editor: BlockNoteEditor<HMBlockSchema>
 }) {
-  const [url, setUrl] = useState("");
-  const [tabState, setTabState] = useState("upload");
+  const [url, setUrl] = useState('')
+  const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
-    name: string;
-    color: string | undefined;
+    name: string
+    color: string | undefined
   }>({
-    name: "Upload File",
+    name: 'Upload File',
     color: undefined,
-  });
-  const [drag, setDrag] = useState(false);
-  const theme = useTheme();
+  })
+  const [drag, setDrag] = useState(false)
+  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560);
+    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
     if (largeFileIndex > -1) {
-      const largeFile = files[largeFileIndex];
+      const largeFile = files[largeFileIndex]
       setFileName({
         name:
           largeFileIndex > 0
             ? `The size of ${
                 largeFile.name.length < 36
                   ? largeFile.name
-                  : largeFile.name.slice(0, 32) + "..."
+                  : largeFile.name.slice(0, 32) + '...'
               } exceeds 60 MB.`
-            : "The image size exceeds 60 MB.",
-        color: "red",
-      });
-      return;
+            : 'The image size exceeds 60 MB.',
+        color: 'red',
+      })
+      return
     }
 
-    const {name} = files[0];
-    const formData = new FormData();
-    formData.append("file", files[0]);
+    const {name} = files[0]
+    const formData = new FormData()
+    formData.append('file', files[0])
 
     try {
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-      });
-      const data = await response.text();
-      assign({props: {url: data, name: name}} as ImageType);
+      })
+      const data = await response.text()
+      assign({props: {url: data, name: name}} as ImageType)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
     for (let i = files.length - 1; i > 0; i--) {
-      const {name} = files[i];
-      const formData = new FormData();
-      formData.append("file", files[i]);
+      const {name} = files[i]
+      const formData = new FormData()
+      formData.append('file', files[i])
 
       try {
         const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        });
-        const data = await response.text();
+        })
+        const data = await response.text()
         editor.insertBlocks(
           [
             {
-              type: "image",
+              type: 'image',
               props: {
                 url: data,
                 name: name,
@@ -361,48 +361,48 @@ function ImageForm({
             },
           ],
           block.id,
-          "after"
-        );
+          'after',
+        )
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], "end");
-  };
+    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+  }
 
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
-      const blob = await fetch(url).then((res) => res.blob());
+      const blob = await fetch(url).then((res) => res.blob())
       const webFile = new File(
         [blob],
-        `mintterImage.${blob.type.split("/").pop()}`
-      );
+        `mintterImage.${blob.type.split('/').pop()}`,
+      )
       if (webFile && webFile.size <= 62914560) {
-        const formData = new FormData();
-        formData.append("file", webFile);
+        const formData = new FormData()
+        formData.append('file', webFile)
 
         try {
           const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-            method: "POST",
+            method: 'POST',
             body: formData,
-          });
-          const data = await response.text();
-          assign({props: {url: data, name: webFile.name}} as ImageType);
+          })
+          const data = await response.text()
+          assign({props: {url: data, name: webFile.name}} as ImageType)
         } catch (error) {
-          console.error(error);
+          console.error(error)
         }
-      } else setFileName({name: "The file size exceeds 60 MB.", color: "red"});
-    } else setFileName({name: "The provided URL is invalid.", color: "red"});
-  };
+      } else setFileName({name: 'The file size exceeds 60 MB.', color: 'red'})
+    } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
+  }
 
   const isValidUrl = (urlString: string) => {
     try {
-      return Boolean(new URL(urlString));
+      return Boolean(new URL(urlString))
     } catch (e) {
-      console.log(e);
-      return false;
+      console.log(e)
+      return false
     }
-  };
+  }
 
   return (
     <YStack
@@ -426,7 +426,7 @@ function ImageForm({
             justifyContent="flex-start"
             backgroundColor="$color3"
             hoverStyle={{
-              bg: "$color4",
+              bg: '$color4',
             }}
           >
             Add an Image
@@ -444,7 +444,7 @@ function ImageForm({
           exitStyle={{x: 0, y: -20, opacity: 0}}
           y={-10}
           animation={[
-            "quick",
+            'quick',
             {
               opacity: {
                 overshootClamping: true,
@@ -456,10 +456,10 @@ function ImageForm({
             value={tabState}
             onValueChange={(value: string) => {
               setFileName({
-                name: "Upload File",
+                name: 'Upload File',
                 color: undefined,
-              });
-              setTabState(value);
+              })
+              setTabState(value)
             }}
             orientation="horizontal"
             flexDirection="column"
@@ -480,10 +480,10 @@ function ImageForm({
                 paddingVertical="$2"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
-                borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+                borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
                 hoverStyle={{
-                  backgroundColor: "$borderColorHover",
-                  cursor: "pointer",
+                  backgroundColor: '$borderColorHover',
+                  cursor: 'pointer',
                 }}
               >
                 <SizableText size="$2">Upload</SizableText>
@@ -495,10 +495,10 @@ function ImageForm({
                 paddingVertical="$2"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
-                borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
+                borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
                 hoverStyle={{
-                  backgroundColor: "$borderColorHover",
-                  cursor: "pointer",
+                  backgroundColor: '$borderColorHover',
+                  cursor: 'pointer',
                 }}
               >
                 <SizableText size="$2">Embed Link</SizableText>
@@ -515,57 +515,57 @@ function ImageForm({
                   flex={1}
                   // @ts-ignore
                   onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (drag) setDrag(false);
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (drag) setDrag(false)
                     if (
                       e.dataTransfer.files &&
                       e.dataTransfer.files.length > 0
                     ) {
-                      let isImage = true;
-                      const files = Array.from(e.dataTransfer.files);
+                      let isImage = true
+                      const files = Array.from(e.dataTransfer.files)
                       files.forEach((file) => {
-                        if (!file.type.includes("image/")) {
+                        if (!file.type.includes('image/')) {
                           setFileName({
                             name: `File ${
                               file.name.length < 36
                                 ? file.name
-                                : file.name.slice(0, 32) + "..."
+                                : file.name.slice(0, 32) + '...'
                             } is not an image.`,
-                            color: "red",
-                          });
-                          isImage = false;
-                          return;
+                            color: 'red',
+                          })
+                          isImage = false
+                          return
                         }
-                      });
-                      if (isImage) handleUpload(Array.from(files));
-                      return;
+                      })
+                      if (isImage) handleUpload(Array.from(files))
+                      return
                     }
                   }}
                   onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault()
+                    e.stopPropagation()
                   }}
                   onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
-                    const relatedTarget = e.relatedTarget as HTMLElement;
-                    e.preventDefault();
-                    e.stopPropagation();
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
                     if (
                       !relatedTarget ||
                       !e.currentTarget.contains(relatedTarget)
                     ) {
-                      setDrag(true);
+                      setDrag(true)
                     }
                   }}
                   onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
-                    const relatedTarget = e.relatedTarget as HTMLElement;
-                    e.preventDefault();
-                    e.stopPropagation();
+                    const relatedTarget = e.relatedTarget as HTMLElement
+                    e.preventDefault()
+                    e.stopPropagation()
                     if (
                       !relatedTarget ||
                       !e.currentTarget.contains(relatedTarget)
                     ) {
-                      setDrag(false);
+                      setDrag(false)
                     }
                   }}
                 >
@@ -576,10 +576,10 @@ function ImageForm({
                     borderRadius="$4"
                     width={500}
                     justifyContent="center"
-                    backgroundColor={drag ? "$borderColorHover" : "$background"}
+                    backgroundColor={drag ? '$borderColorHover' : '$background'}
                     hoverStyle={{
-                      backgroundColor: "$borderColorHover",
-                      cursor: "pointer",
+                      backgroundColor: '$borderColorHover',
+                      cursor: 'pointer',
                     }}
                   >
                     <SizableText
@@ -598,13 +598,13 @@ function ImageForm({
                     multiple
                     accept="image/*"
                     style={{
-                      background: "white",
-                      padding: "0 2px",
-                      display: "none",
+                      background: 'white',
+                      padding: '0 2px',
+                      display: 'none',
                     }}
                     onChange={(event: ChangeEvent<HTMLInputElement>) => {
                       if (event.target.files) {
-                        handleUpload(Array.from(event.target.files));
+                        handleUpload(Array.from(event.target.files))
                       }
                     }}
                   />
@@ -633,11 +633,11 @@ function ImageForm({
                         size="$3.5"
                         placeholder="Input image link..."
                         focusStyle={{
-                          borderColor: "$colorFocus",
+                          borderColor: '$colorFocus',
                           outlineWidth: 0,
                         }}
                         hoverStyle={{
-                          borderColor: "$colorFocus",
+                          borderColor: '$colorFocus',
                           outlineWidth: 0,
                         }}
                         onChange={(e) => setUrl(e.nativeEvent.text)}
@@ -648,8 +648,8 @@ function ImageForm({
                           flexShrink={0}
                           borderRadius="$3"
                           size="$3.5"
-                          theme={fileName.color === "red" ? "gray" : "green"}
-                          disabled={fileName.color === "red" ? true : false}
+                          theme={fileName.color === 'red' ? 'gray' : 'green'}
+                          disabled={fileName.color === 'red' ? true : false}
                           focusStyle={{
                             outlineWidth: 0,
                           }}
@@ -658,7 +658,7 @@ function ImageForm({
                         </Button>
                       </Form.Trigger>
                     </XStack>
-                    {fileName.name != "Upload File" && (
+                    {fileName.name != 'Upload File' && (
                       <SizableText
                         size="$2"
                         color={fileName.color}
@@ -675,24 +675,24 @@ function ImageForm({
         </Popover.Content>
       </Popover>
     </YStack>
-  );
+  )
 }
 
 export const insertImage = new ReactSlashMenuItem<
   DefaultBlockSchema & {image: typeof ImageBlock}
 >(
-  "Image",
+  'Image',
   // @ts-ignore
   (editor: BlockNoteEditor<HMBlockSchema>) => {
     insertOrUpdateBlock(editor, {
-      type: "image",
+      type: 'image',
       props: {
-        url: "",
+        url: '',
       },
-    });
+    })
   },
-  ["image", "img", "picture"],
-  "Media",
+  ['image', 'img', 'picture'],
+  'Media',
   <RiImage2Fill size={18} />,
-  "Insert an image"
-);
+  'Insert an image',
+)

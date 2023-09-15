@@ -1,8 +1,8 @@
-import Link, {LinkOptions} from "@/tiptap-extension-link";
+import Link, {LinkOptions} from '@/tiptap-extension-link'
 import {
   createHyperlinkToolbarPlugin,
   HyperlinkToolbarPluginProps,
-} from "./HyperlinkToolbarPlugin";
+} from './HyperlinkToolbarPlugin'
 
 /**
  * This custom link includes a special menu for editing/deleting/opening the link.
@@ -13,7 +13,7 @@ const Hyperlink = Link.extend<HyperlinkToolbarPluginProps & LinkOptions>({
   priority: 500,
   addProseMirrorPlugins() {
     if (!this.options.hyperlinkToolbarFactory) {
-      throw new Error("UI Element factory not defined for HyperlinkMark");
+      throw new Error('UI Element factory not defined for HyperlinkMark')
     }
 
     return [
@@ -21,8 +21,8 @@ const Hyperlink = Link.extend<HyperlinkToolbarPluginProps & LinkOptions>({
       createHyperlinkToolbarPlugin(this.editor, {
         hyperlinkToolbarFactory: this.options.hyperlinkToolbarFactory,
       }),
-    ];
+    ]
   },
-});
+})
 
-export default Hyperlink;
+export default Hyperlink
