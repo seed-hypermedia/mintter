@@ -152,7 +152,7 @@ func GroupGetRole(conn *sqlite.Conn, resource, owner, member int64) (int64, erro
 	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
 		role = stmt.ColumnInt64(0)
 		return nil
-	}); err != nil {
+	}, resource, owner, member); err != nil {
 		return 0, err
 	}
 

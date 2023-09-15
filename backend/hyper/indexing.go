@@ -194,7 +194,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 		}
 
 		// TODO(burdiyan): remove this when all the tests are fixed. Sometimes CBOR codec decodes into
-		// different types that what was encoded, and we might not have accounted for that during indexing.
+		// different types than what was encoded, and we might not have accounted for that during indexing.
 		// So we re-encode the patch here to make sure.
 		// This is of course very wasteful.
 		{

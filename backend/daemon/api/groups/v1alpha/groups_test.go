@@ -15,7 +15,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -433,43 +432,55 @@ func TestGroupMembersAfterSync(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
-		Id:          group.Id,
-		Title:       "Alice from the Wonderland",
-		Description: "Just a test group",
-	})
-	require.NoError(t, err)
-
-	group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
-		Id:          group.Id,
-		Title:       group.Title,
-		Description: group.Description,
-		UpdatedMembers: map[string]groups.Role{
-			bob.me.MustGet().Account().Principal().String(): groups.Role_EDITOR,
+	wantMembers := &groups.ListMembersResponse{
+		OwnerAccountId: alice.me.MustGet().Account().Principal().String(),
+		Members: map[string]groups.Role{
+			alice.me.MustGet().Account().Principal().String(): groups.Role_OWNER,
+			bob.me.MustGet().Account().Principal().String():   groups.Role_EDITOR,
 		},
-	})
-	require.NoError(t, err)
+	}
 
-	err = alice.blobs.ForEachChange(ctx, hyper.EntityID(group.Id), func(c cid.Cid, ch hyper.Change) error {
-		hb, err := hyper.EncodeBlob(ch.Type, ch)
-		if err != nil {
-			return err
-		}
-		require.True(t, c.Equals(hb.CID), "change cid must match blob cid")
+	// Make some updates and add bob as an editor.
+	{
+		group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+			Id:          group.Id,
+			Title:       "Alice from the Wonderland",
+			Description: "Just a test group",
+		})
+		require.NoError(t, err)
 
-		return bob.blobs.SaveBlob(ctx, hb)
-	})
-	require.NoError(t, err)
+		group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+			Id: group.Id,
+			UpdatedMembers: map[string]groups.Role{
+				bob.me.MustGet().Account().Principal().String(): groups.Role_EDITOR,
+			},
+		})
+		require.NoError(t, err)
+
+		members, err := alice.ListMembers(ctx, &groups.ListMembersRequest{
+			Id: group.Id,
+		})
+		require.NoError(t, err)
+		testutil.ProtoEqual(t, wantMembers, members, "list members response must match")
+		require.Len(t, members.Members, 2, "alice and bob must be members of alice's group")
+	}
+
+	syncBlobs(t, alice, bob)
 
 	groupList, err := bob.ListGroups(ctx, &groups.ListGroupsRequest{})
 	require.NoError(t, err)
 	require.Len(t, groupList.Groups, 1, "bob must have alice's group")
 
+	membersPerBob, err := bob.ListMembers(ctx, &groups.ListMembersRequest{Id: group.Id})
+	require.NoError(t, err)
+	require.Len(t, membersPerBob.Members, 2, "alice and bob must be members of alice's group")
+	testutil.ProtoEqual(t, wantMembers, membersPerBob, "list members response must match on bob")
+
 	bobGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
 		AccountId: bob.me.MustGet().Account().Principal().String(),
 	})
 	require.NoError(t, err)
-	require.Len(t, bobGroups.Items, 1, "bob must be an editor of alice's group")
+	require.Len(t, bobGroups.Items, 1, "bob must be a member of alice's group")
 	testutil.ProtoEqual(t, group, bobGroups.Items[0].Group, "bob's group must match alice's group")
 	require.Equal(t, bobGroups.Items[0].Role, groups.Role_EDITOR, "bob must be an editor of alice's group")
 
@@ -478,11 +489,60 @@ func TestGroupMembersAfterSync(t *testing.T) {
 		Title:       "Bob, Not Bob",
 		Description: group.Description,
 	})
+	require.NoError(t, err, "bob must be able to edit alice's group as an editor")
+}
+
+func TestGroupNonMembers(t *testing.T) {
+	// Alice creates a group, adds bob, then syncs with bob.
+	// Bob should be able to edit the group and use it as a member.
+
+	t.Parallel()
+
+	alice := newTestSrv(t, "alice")
+	bob := newTestSrv(t, "bob")
+	ctx := context.Background()
+
+	group, err := alice.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "Alice from the Wonderland",
+	})
 	require.NoError(t, err)
+
+	syncBlobs(t, alice, bob)
+
+	groupList, err := bob.ListGroups(ctx, &groups.ListGroupsRequest{})
+	require.NoError(t, err)
+	require.Len(t, groupList.Groups, 1, "bob must have alice's group")
+
+	aliceGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+		AccountId: alice.me.MustGet().Account().String(),
+	})
+	require.NoError(t, err)
+	require.Len(t, aliceGroups.Items, 1, "alice must be an owner of her group on bob's device")
+	testutil.ProtoEqual(t, group, aliceGroups.Items[0].Group, "alice's group must match alice's group")
+
+	bobGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+		AccountId: bob.me.MustGet().Account().String(),
+	})
+	require.NoError(t, err)
+	require.Len(t, bobGroups.Items, 0, "bob must not be member of any groups")
+}
+
+func syncBlobs(t *testing.T, src, target *Server) {
+	ctx := context.Background()
+	ch, err := src.blobs.IPFSBlockstore().AllKeysChan(ctx)
+	require.NoError(t, err)
+
+	for c := range ch {
+		blk, err := src.blobs.IPFSBlockstore().Get(ctx, c)
+		require.NoError(t, err)
+		hb, err := hyper.DecodeBlob(blk.Cid(), blk.RawData())
+		require.NoError(t, err)
+		require.NoError(t, target.blobs.SaveBlob(ctx, hb))
+	}
 }
 
 func newTestSrv(t *testing.T, name string) *Server {
-	u := coretest.NewTester("alice")
+	u := coretest.NewTester(name)
 
 	db := storage.MakeTestDB(t)
 
