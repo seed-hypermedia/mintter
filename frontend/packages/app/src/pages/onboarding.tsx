@@ -563,7 +563,6 @@ function Profile(props: OnboardingStepProps) {
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         <NextButton onPress={onSubmit}>NEXT</NextButton>
       </XStack>
     </StepWrapper>

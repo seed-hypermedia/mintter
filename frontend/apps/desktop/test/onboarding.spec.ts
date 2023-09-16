@@ -72,7 +72,6 @@ test('Onboarding: New Account', async () => {
   const profileTitles = await page
     .locator('#profile-title-section')
     .allTextContents()
-  console.log(`== ~ test ~ profileTitles:`, profileTitles)
   expect(profileTitles).toEqual(['ProfileInformation'])
 
   // // check profile alias input
