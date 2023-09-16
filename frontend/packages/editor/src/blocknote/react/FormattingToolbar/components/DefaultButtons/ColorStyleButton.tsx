@@ -1,12 +1,36 @@
-import {useCallback} from 'react'
-import {ColorPicker, Menu} from '@mantine/core'
-import {BlockNoteEditor, BlockSchema} from '@mintter/app/src/blocknote-core'
+import {useCallback, useState} from 'react'
+import {Menu} from '@mantine/core'
+import {BlockNoteEditor, BlockSchema} from '@/blocknote/core'
 import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
 import {ColorIcon} from '../../../SharedComponents/ColorPicker/components/ColorIcon'
+import {ColorPicker} from '../../../SharedComponents/ColorPicker/components/ColorPicker'
+import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
+import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 
 export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>
 }) => {
+  const [currentTextColor, setCurrentTextColor] = useState<string>(
+    props.editor.getActiveStyles().textColor || 'default',
+  )
+  const [currentBackgroundColor, setCurrentBackgroundColor] = useState<string>(
+    props.editor.getActiveStyles().backgroundColor || 'default',
+  )
+
+  useEditorContentChange(props.editor, () => {
+    setCurrentTextColor(props.editor.getActiveStyles().textColor || 'default')
+    setCurrentBackgroundColor(
+      props.editor.getActiveStyles().backgroundColor || 'default',
+    )
+  })
+
+  useEditorSelectionChange(props.editor, () => {
+    setCurrentTextColor(props.editor.getActiveStyles().textColor || 'default')
+    setCurrentBackgroundColor(
+      props.editor.getActiveStyles().backgroundColor || 'default',
+    )
+  })
+
   const setTextColor = useCallback(
     (color: string) => {
       props.editor.focus()
@@ -34,10 +58,8 @@ export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
           mainTooltip={'Colors'}
           icon={() => (
             <ColorIcon
-              textColor={props.editor.getActiveStyles().textColor || 'default'}
-              backgroundColor={
-                props.editor.getActiveStyles().backgroundColor || 'default'
-              }
+              textColor={currentTextColor}
+              backgroundColor={currentBackgroundColor}
               size={20}
             />
           )}
@@ -45,12 +67,9 @@ export const ColorStyleButton = <BSchema extends BlockSchema>(props: {
       </Menu.Target>
       <Menu.Dropdown>
         <ColorPicker
-          // @ts-expect-error
-          textColor={props.editor.getActiveStyles().textColor || 'default'}
+          textColor={currentTextColor}
           setTextColor={setTextColor}
-          backgroundColor={
-            props.editor.getActiveStyles().backgroundColor || 'default'
-          }
+          backgroundColor={currentBackgroundColor}
           setBackgroundColor={setBackgroundColor}
         />
       </Menu.Dropdown>

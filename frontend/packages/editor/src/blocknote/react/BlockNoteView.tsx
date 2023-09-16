@@ -1,11 +1,14 @@
 import {BlockNoteEditor, BlockSchema, mergeCSSClasses} from '@/blocknote/core'
-import {createStyles, MantineProvider} from '@mantine/core'
+import {MantineProvider, createStyles} from '@mantine/core'
 import {EditorContent} from '@tiptap/react'
 import {HTMLAttributes, ReactNode, useMemo} from 'react'
-// import { blockNoteToMantineTheme, Theme } from "./BlockNoteTheme";
-// import { darkDefaultTheme, lightDefaultTheme } from "./defaultThemes";
-// import usePrefersColorScheme from "use-prefers-color-scheme";
-// import { BlockNoteTheme } from "./BlockNoteTheme";
+import {usePrefersColorScheme} from 'use-prefers-color-scheme'
+import {Theme, blockNoteToMantineTheme} from './BlockNoteTheme'
+import {FormattingToolbarPositioner} from './FormattingToolbar/components/FormattingToolbarPositioner'
+import {HyperlinkToolbarPositioner} from './HyperlinkToolbar/components/HyperlinkToolbarPositioner'
+import {SideMenuPositioner} from './SideMenu/components/SideMenuPositioner'
+import {SlashMenuPositioner} from './SlashMenu/components/SlashMenuPositioner'
+import {darkDefaultTheme, lightDefaultTheme} from './defaultThemes'
 
 // Renders the editor as well as all menus & toolbars using default styles.
 function BaseBlockNoteView<BSchema extends BlockSchema>(
@@ -26,7 +29,14 @@ function BaseBlockNoteView<BSchema extends BlockSchema>(
       className={mergeCSSClasses(classes.root, props.className || '')}
       {...rest}
     >
-      {props.children}
+      {props.children || (
+        <>
+          <FormattingToolbarPositioner editor={props.editor} />
+          <HyperlinkToolbarPositioner editor={props.editor} />
+          <SlashMenuPositioner editor={props.editor} />
+          <SideMenuPositioner editor={props.editor} />
+        </>
+      )}
     </EditorContent>
   )
 }
@@ -34,47 +44,43 @@ function BaseBlockNoteView<BSchema extends BlockSchema>(
 export function BlockNoteView<BSchema extends BlockSchema>(
   props: {
     editor: BlockNoteEditor<BSchema>
-    // theme?:
-    //   | "light"
-    //   | "dark"
-    //   | Theme
-    //   | {
-    //       light: Theme;
-    //       dark: Theme;
-    //     };
+    theme?:
+      | 'light'
+      | 'dark'
+      | Theme
+      | {
+          light: Theme
+          dark: Theme
+        }
     children?: ReactNode
   } & HTMLAttributes<HTMLDivElement>,
 ) {
-  // const {
-  //   theme = { light: lightDefaultTheme, dark: darkDefaultTheme },
-  //   ...rest
-  // } = props;
+  const {theme = {light: lightDefaultTheme, dark: darkDefaultTheme}, ...rest} =
+    props
 
-  // const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)')
-  // .matches;
+  const preferredTheme = usePrefersColorScheme()
 
-  // const mantineTheme = useMemo(() => {
-  //   if (theme === "light") {
-  //     return blockNoteToMantineTheme(lightDefaultTheme);
-  //   }
+  const mantineTheme = useMemo(() => {
+    if (theme === 'light') {
+      return blockNoteToMantineTheme(lightDefaultTheme)
+    }
 
-  //   if (theme === "dark") {
-  //     return blockNoteToMantineTheme(darkDefaultTheme);
-  //   }
+    if (theme === 'dark') {
+      return blockNoteToMantineTheme(darkDefaultTheme)
+    }
 
-  //   if ("light" in theme && "dark" in theme) {
-  //     return blockNoteToMantineTheme(
-  //       theme[preferredTheme ? "dark" : "light"]
-  //     );
-  //   }
+    if ('light' in theme && 'dark' in theme) {
+      return blockNoteToMantineTheme(
+        theme[preferredTheme === 'dark' ? 'dark' : 'light'],
+      )
+    }
 
-  //   return blockNoteToMantineTheme(theme);
-  // }, [preferredTheme, theme]);
+    return blockNoteToMantineTheme(theme)
+  }, [preferredTheme, theme])
 
   return (
-    // TODO: Removed mantine because it conflicts with our styling
-    // <MantineProvider theme={mantineTheme}>
-    <BaseBlockNoteView {...props} />
-    // </MantineProvider>
+    <MantineProvider theme={mantineTheme}>
+      <BaseBlockNoteView {...rest} />
+    </MantineProvider>
   )
 }

@@ -9,6 +9,7 @@ import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {toast} from '@mintter/app/src/toast'
+import {pathNameify} from '../utils/path'
 import {
   Block,
   BlockIdentifier,
@@ -16,14 +17,11 @@ import {
   HMBlockSchema,
   InlineContent,
   PartialBlock,
-  RightsideWidget,
-  createHyperdocsDocLinkPlugin,
-  defaultReactSlashMenuItems,
-  formattingToolbarFactory,
+  createHypermediaDocLinkPlugin,
   hmBlockSchema,
-  insertFile,
-  insertImage,
-  insertVideo,
+  // insertFile,
+  // insertImage,
+  // insertVideo,
   useBlockNote,
 } from '@mintter/editor'
 import {
@@ -37,7 +35,6 @@ import {
   normlizeHmId,
   unpackDocId,
 } from '@mintter/shared'
-import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -784,25 +781,22 @@ export function useDraftEditor(
       readyThings.current[0] = e
       handleMaybeReady()
     },
-    uiFactories: {
-      formattingToolbarFactory,
-    },
     blockSchema: hmBlockSchema,
-    // @ts-expect-error
-    slashCommands: [
-      ...defaultReactSlashMenuItems.slice(0, 2),
-      insertImage,
-      insertFile,
-      insertVideo,
-      ...defaultReactSlashMenuItems.slice(2),
-    ],
+    // slashCommands: [
+    //   ...defaultReactSlashMenuItems.slice(0, 2),
+    //   insertImage,
+    //   insertFile,
+    //   insertVideo,
+    //   ...defaultReactSlashMenuItems.slice(2),
+    // ],
+
     _tiptapOptions: {
       extensions: [
         Extension.create({
-          name: 'hyperdocs-link',
+          name: 'hypermedia-link',
           addProseMirrorPlugins() {
             return [
-              createHyperdocsDocLinkPlugin({
+              createHypermediaDocLinkPlugin({
                 queryClient,
                 fetchWebLink,
               }).plugin,
@@ -970,8 +964,6 @@ export function usePublicationEditor(
     },
   })
 
-  const widgetViewFactory = useWidgetViewFactory()
-
   // both the publication data and the editor are asyncronously loaded
   // using a ref to avoid extra renders, and ensure the editor is available and ready
   const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
@@ -1020,12 +1012,6 @@ export function usePublicationEditor(
       if (readyPub) {
         applyPubToEditor(e, readyPub)
       }
-    },
-    uiFactories: {
-      rightsideFactory: widgetViewFactory({
-        component: RightsideWidget,
-        as: 'div',
-      }),
     },
   })
 

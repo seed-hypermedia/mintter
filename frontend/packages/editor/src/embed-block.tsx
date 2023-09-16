@@ -1,9 +1,6 @@
 import {PartialMessage} from '@bufbuild/protobuf'
-import {
-  Block as BlockNoteBlock,
-  BlockNoteEditor,
-  InlineContent,
-} from './blocknote'
+import {usePublication} from '@mintter/app/src/models/documents'
+import {useOpenUrl} from '@mintter/app/src/open-url'
 import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import type {
@@ -15,6 +12,7 @@ import type {
   Block as ServerBlock,
 } from '@mintter/shared'
 import {
+  BACKEND_FILE_URL,
   Block,
   EmbedBlock as EmbedBlockType,
   getCIDFromIPFSUrl,
@@ -26,12 +24,14 @@ import {Spinner, Text, View, XStack, YStack, styled} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {ComponentProps, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {getBlockInfoFromPos} from './blocknote'
-import {createReactBlockSpec} from './blocknote'
+import {
+  Block as BlockNoteBlock,
+  BlockNoteEditor,
+  InlineContent,
+} from './blocknote'
+import {getBlockInfoFromPos} from './blocknote/core'
+import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema, hmBlockSchema} from './schema'
-import {BACKEND_FILE_URL} from '@mintter/shared'
-import {usePublication} from '@mintter/app/src/models/documents'
-import {useOpenUrl} from '@mintter/app/src/open-url'
 
 const EditorText = styled(Text, {
   fontSize: '$5',

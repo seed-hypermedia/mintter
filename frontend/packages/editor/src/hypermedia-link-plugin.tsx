@@ -3,10 +3,10 @@ import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {AppQueryClient} from '@mintter/app/src/query-client'
 
-export const hyperdocsPluginKey = new PluginKey('hyperdocs-link')
+export const hypermediaPluginKey = new PluginKey('hypermedia-link')
 
 // TODO: use `createX` function instead of just exporting the plugin
-export function createHyperdocsDocLinkPlugin({
+export function createHypermediaDocLinkPlugin({
   queryClient,
   fetchWebLink,
 }: {
@@ -15,7 +15,7 @@ export function createHyperdocsDocLinkPlugin({
   fetchWebLink: any
 }) {
   let plugin = new Plugin({
-    key: hyperdocsPluginKey,
+    key: hypermediaPluginKey,
     view(editorView) {
       return {
         update(view, prevState) {

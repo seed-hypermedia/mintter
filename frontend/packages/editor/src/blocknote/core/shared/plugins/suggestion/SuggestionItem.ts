@@ -1,3 +1,3 @@
 export type SuggestionItem = {
-  name: string;
-};
+  name: string
+}

@@ -1,6 +1,4 @@
 import {Button, Copy, SizableText, XStack} from '@mintter/ui'
-import {WidgetDecorationFactory} from '@prosemirror-adapter/core'
-import {useWidgetViewContext} from '@prosemirror-adapter/react'
 import {Editor, Extension} from '@tiptap/core'
 import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet, EditorView} from '@tiptap/pm/view'

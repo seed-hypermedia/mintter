@@ -18,7 +18,6 @@ import {
   Block,
   BlockNoteEditor,
   DefaultBlockSchema,
-  ReactSlashMenuItem,
   createReactBlockSpec,
   defaultProps,
   getBlockInfoFromPos,
@@ -679,21 +678,21 @@ function ImageForm({
   )
 }
 
-export const insertImage = new ReactSlashMenuItem<
-  DefaultBlockSchema & {image: typeof ImageBlock}
->(
-  'Image',
-  // @ts-ignore
-  (editor: BlockNoteEditor<HMBlockSchema>) => {
-    insertOrUpdateBlock(editor, {
-      type: 'image',
-      props: {
-        url: '',
-      },
-    })
-  },
-  ['image', 'img', 'picture'],
-  'Media',
-  <RiImage2Fill size={18} />,
-  'Insert an image',
-)
+// export const insertImage = new ReactSlashMenuItem<
+//   DefaultBlockSchema & {image: typeof ImageBlock}
+// >(
+//   'Image',
+//   // @ts-ignore
+//   (editor: BlockNoteEditor<HMBlockSchema>) => {
+//     insertOrUpdateBlock(editor, {
+//       type: 'image',
+//       props: {
+//         url: '',
+//       },
+//     })
+//   },
+//   ['image', 'img', 'picture'],
+//   'Media',
+//   <RiImage2Fill size={18} />,
+//   'Insert an image',
+// )

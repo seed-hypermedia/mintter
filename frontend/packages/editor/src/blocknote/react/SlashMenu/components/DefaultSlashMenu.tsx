@@ -1,16 +1,11 @@
 import {createStyles, Menu} from '@mantine/core'
 import * as _ from 'lodash'
+
 import {SlashMenuItem} from './SlashMenuItem'
-import {ReactSlashMenuItem} from '../ReactSlashMenuItem'
-import {BlockSchema} from '@mintter/app/src/blocknote-core'
+import {SlashMenuProps} from './SlashMenuPositioner'
+import {BlockSchema} from '@/blocknote/core'
 
-export type SlashMenuProps<BSchema extends BlockSchema> = {
-  items: ReactSlashMenuItem<BSchema>[]
-  keyboardHoveredItemIndex: number
-  itemCallback: (item: ReactSlashMenuItem<BSchema>) => void
-}
-
-export function SlashMenu<BSchema extends BlockSchema>(
+export function DefaultSlashMenu<BSchema extends BlockSchema>(
   props: SlashMenuProps<BSchema>,
 ) {
   const {classes} = createStyles({root: {}})(undefined, {
@@ -19,12 +14,16 @@ export function SlashMenu<BSchema extends BlockSchema>(
   const renderedItems: any[] = []
   let index = 0
 
-  const groups = _.groupBy(props.items, (i) => i.group)
+  const groups = _.groupBy(props.filteredItems, (i) => i.group)
 
-  _.forEach(groups, (el) => {
-    renderedItems.push(<Menu.Label key={el[0].group}>{el[0].group}</Menu.Label>)
+  _.forEach(groups, (groupedItems) => {
+    renderedItems.push(
+      <Menu.Label key={groupedItems[0].group}>
+        {groupedItems[0].group}
+      </Menu.Label>,
+    )
 
-    for (const item of el) {
+    for (const item of groupedItems) {
       renderedItems.push(
         <SlashMenuItem
           key={item.name}
@@ -52,7 +51,11 @@ export function SlashMenu<BSchema extends BlockSchema>(
       trigger={'hover'}
       closeDelay={10000000}
     >
-      <Menu.Dropdown className={classes.root}>
+      <Menu.Dropdown
+        // TODO: This should go back in the plugin.
+        onMouseDown={(event) => event.preventDefault()}
+        className={classes.root}
+      >
         {renderedItems.length > 0 ? (
           renderedItems
         ) : (

@@ -16,12 +16,11 @@ import {RiFile2Fill, RiFile2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
-  ReactSlashMenuItem,
-  createReactBlockSpec,
   defaultProps,
   getBlockInfoFromPos,
   insertOrUpdateBlock,
-} from './blocknote'
+} from './blocknote/core'
+import {createReactBlockSpec} from './blocknote/react'
 
 export const FileBlock = createReactBlockSpec({
   type: 'file',
@@ -568,18 +567,18 @@ function FileForm({
   )
 }
 
-export const insertFile = new ReactSlashMenuItem<HMBlockSchema>(
-  'File',
-  (editor: BlockNoteEditor<HMBlockSchema>) => {
-    insertOrUpdateBlock(editor, {
-      type: 'file',
-      props: {
-        url: '',
-      },
-    })
-  },
-  ['file', 'folder'],
-  'Media',
-  <RiFile2Fill size={18} />,
-  'Insert a file',
-)
+// export const insertFile = new ReactSlashMenuItem<HMBlockSchema>(
+//   'File',
+//   (editor: BlockNoteEditor<HMBlockSchema>) => {
+//     insertOrUpdateBlock(editor, {
+//       type: 'file',
+//       props: {
+//         url: '',
+//       },
+//     })
+//   },
+//   ['file', 'folder'],
+//   'Media',
+//   <RiFile2Fill size={18} />,
+//   'Insert a file',
+// )

@@ -3,7 +3,7 @@ import {BlockSchema, PartialBlock} from '../Blocks/api/blockTypes'
 import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 import {defaultBlockSchema} from '../Blocks/api/defaultBlocks'
 
-function insertOrUpdateBlock<BSchema extends BlockSchema>(
+export function insertOrUpdateBlock<BSchema extends BlockSchema>(
   editor: BlockNoteEditor<BSchema>,
   block: PartialBlock<BSchema>,
 ) {
