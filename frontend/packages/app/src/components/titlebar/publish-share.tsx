@@ -45,6 +45,7 @@ import {
   SizableText,
   Spinner,
   Text,
+  Tooltip,
   XStack,
   YStack,
   styled,
@@ -64,6 +65,11 @@ import {pathNameify} from '@mintter/app/utils/path'
 import {useAppDialog} from '../dialog'
 import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePublicationInContext} from '@mintter/app/models/publication'
+import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
+import {
+  copyTextToClipboard,
+  copyToClipboardWithFeedback,
+} from '@mintter/app/copy-to-clipboard'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -620,6 +626,35 @@ function ContextButton({
   )
 }
 
+function VersionContext({route}: {route: PublicationRoute}) {
+  const docId = unpackDocId(route.documentId)
+  if (!route.versionId || !docId) return null
+  return (
+    <Tooltip
+      content={`You are viewing the exact version: @${route.versionId.slice(
+        -6,
+      )}. Click to Copy Version URL`}
+    >
+      <ButtonText
+        hoverStyle={{textDecorationLine: 'underline'}}
+        onPress={() => {
+          copyToClipboardWithFeedback(
+            createPublicWebHmUrl('d', docId.eid, {
+              version: route.versionId,
+            }),
+            'Exact Version URL',
+          )
+        }}
+        color={'$color10'}
+        fontFamily={'$mono'}
+        fontSize="$2"
+      >
+        @{route.versionId.slice(-6)}
+      </ButtonText>
+    </Tooltip>
+  )
+}
+
 function PublicationContextButton({route}: {route: PublicationRoute}) {
   const publication = usePublicationInContext({
     documentId: route.documentId,
@@ -731,6 +766,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
         </ContextPopoverContent>
       </ContextPopover>
       {renameDialog.content}
+      <VersionContext route={route} />
     </>
   )
 }

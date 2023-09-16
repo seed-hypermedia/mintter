@@ -53,6 +53,9 @@ export const queryKeys = {
 
   // web-links
   GET_URL: 'GET_URL',
+
+  // changes
+  CHANGE: 'CHANGE', //, changeId: string
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {

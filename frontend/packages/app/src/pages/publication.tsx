@@ -6,15 +6,24 @@ import {useDocChanges} from '@mintter/app/src/models/changes'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/src/models/documents'
 import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
-import {MttLink, features, pluralS} from '@mintter/shared'
+import {
+  MttLink,
+  features,
+  formattedDateMedium,
+  formattedDateLong,
+  pluralS,
+} from '@mintter/shared'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {
   Button,
+  ButtonText,
   Comment,
   Link,
   MainWrapper,
   Pencil,
   Text,
+  Tooltip,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import {Allotment} from 'allotment'
@@ -28,12 +37,100 @@ import {DebugData} from '@mintter/app/src/components/debug-data'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {useLatestPublication} from '../models/documents'
 import {DocumentPlaceholder} from './document-placeholder'
+import {getAvatarUrl} from '../utils/account-url'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {useAccount} from '../models/accounts'
+import {NavRoute} from '../utils/navigation'
+import {Timestamp} from '@bufbuild/protobuf'
+import {useChange} from '../models/changes'
 
 export default function PublicationPage() {
   return (
     <ProsemirrorAdapterProvider>
       <PublicationPageEditor />
     </ProsemirrorAdapterProvider>
+  )
+}
+
+function AuthorLink({author}: {author: string}) {
+  const navigate = useNavigate()
+  const account = useAccount(author)
+  return (
+    <ButtonText
+      fontSize="$1"
+      color="$color9"
+      hoverStyle={{
+        textDecorationLine: 'underline',
+      }}
+      onPress={() => {
+        navigate({key: 'account', accountId: author})
+      }}
+      gap="$1"
+      display="flex"
+    >
+      <AccountLinkAvatar size={16} accountId={author} />
+      {account.data?.profile?.alias || account.data?.id.slice(-10) || ''}
+    </ButtonText>
+  )
+}
+
+function PublishTimeItem({
+  publishTime,
+  destRoute,
+}: {
+  publishTime: Timestamp
+  destRoute?: NavRoute
+}) {
+  const navigate = useNavigate()
+  const enabled = !!destRoute
+  return (
+    <Tooltip content={`Version Published on ${formattedDateLong(publishTime)}`}>
+      <ButtonText
+        fontSize="$1"
+        color="$color9"
+        hoverStyle={
+          enabled
+            ? {
+                textDecorationLine: 'underline',
+              }
+            : undefined
+        }
+        disabled={!enabled}
+        onPress={() => {
+          if (destRoute) {
+            navigate(destRoute)
+          }
+        }}
+      >
+        {formattedDateMedium(publishTime)}
+      </ButtonText>
+    </Tooltip>
+  )
+}
+
+function VersionChangesInfo({version}: {version: string}) {
+  const changeIds = version.split('.')
+  return changeIds.map((changeId) => (
+    <ChangeInfo key={changeId} changeId={changeId} />
+  ))
+}
+function ChangeInfo({changeId}: {changeId: string}) {
+  const change = useChange(changeId)
+  const route = useNavRoute()
+  const pubRoute = route.key === 'publication' ? route : undefined
+  return (
+    <XStack gap="$2">
+      {change?.data?.author && <AuthorLink author={change?.data?.author} />}
+      {pubRoute && change.data?.createTime && change.data?.createTime ? (
+        <PublishTimeItem
+          publishTime={change.data?.createTime}
+          destRoute={{
+            ...pubRoute,
+            versionId: changeId,
+          }}
+        />
+      ) : null}
+    </XStack>
   )
 }
 
@@ -103,8 +200,11 @@ export function PublicationPageEditor() {
                 <CitationsAccessory docId={docId} version={versionId} />
               ))}
           </Allotment>
-
           <Footer>
+            {publication.data?.version && (
+              <VersionChangesInfo version={publication.data?.version} />
+            )}
+
             <FooterButton
               active={accessoryKey === 'versions'}
               label={`${changes?.changes?.length} ${pluralS(
@@ -117,6 +217,7 @@ export function PublicationPageEditor() {
                 replace({...route, accessory: {key: 'versions'}})
               }}
             />
+
             {citations?.links?.length ? (
               <FooterButton
                 active={accessoryKey === 'citations'}

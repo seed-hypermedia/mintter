@@ -1,4 +1,7 @@
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {
+  copyTextToClipboard,
+  copyToClipboardWithFeedback,
+} from '@mintter/app/copy-to-clipboard'
 import {useGRPCClient, useIPC} from '@mintter/app/src/app-context'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
@@ -185,8 +188,7 @@ function CopyReferenceButton() {
         size="$2"
         icon={Copy}
         onPress={() => {
-          copyTextToClipboard(reference.url)
-          toast.success(`${reference.label} copied to clipboard`)
+          copyToClipboardWithFeedback(reference.url, reference.label)
         }}
       ></Button>
     </Tooltip>
@@ -232,7 +234,7 @@ export function PageContextButtons(props: TitleBarProps) {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XStack className="no-window-drag" gap="$2">
+    <XStack className="no-window-drag" gap="$2" alignItems="center">
       <XGroup backgroundColor="transparent">
         <XGroup.Item>
           <Button

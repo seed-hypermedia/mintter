@@ -1,5 +1,6 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import type {Document} from '../client'
+import {format, intlFormat} from 'date-fns'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never
@@ -27,6 +28,9 @@ var months = [
 
 export type HMTimestamp = string
 
+const hasRelativeDate =
+  typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat !== 'undefined'
+
 export function formattedDate(
   value?: string | Date | Timestamp | HMTimestamp | undefined,
   options?: {onlyRelative?: boolean},
@@ -38,10 +42,7 @@ export function formattedDate(
       ? value
       : (value as Timestamp).toDate()
 
-  if (
-    typeof Intl !== 'undefined' &&
-    typeof Intl.RelativeTimeFormat !== 'undefined'
-  ) {
+  if (hasRelativeDate) {
     // Intl.RelativeTimeFormat is supported
     return relativeFormattedDate(_value, options)
     // Use the rtf object for relative time formatting
@@ -54,6 +55,25 @@ export function formattedDate(
   }
 }
 
+export function formattedDateLong(value?: Timestamp) {
+  if (!value) return ''
+  return format(value.toDate(), 'MMMM do yyyy, HH:mm:ss z')
+}
+export function formattedDateMedium(value?: Timestamp) {
+  const date = value?.toDate()
+  if (!date) return ''
+  // if (hasRelativeDate) {
+  //   return relativeFormattedDate(date, {onlyRelative: false})
+  // }
+  return intlFormat(date, {
+    hour: 'numeric',
+    minute: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    month: 'long',
+  })
+  // return `${format(date, 'EEEE, MMMM do, yyyy')}`
+}
 export function relativeFormattedDate(
   value: string | Date,
   options?: {onlyRelative?: boolean},

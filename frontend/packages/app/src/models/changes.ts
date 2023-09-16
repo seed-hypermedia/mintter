@@ -180,6 +180,18 @@ export function useSmartChanges(docId?: string, version?: string) {
   }
 }
 
+export function useChange(changeId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryFn: () =>
+      grpcClient.entities.getChange({
+        id: changeId || '',
+      }),
+    queryKey: [queryKeys.CHANGE, changeId],
+    enabled: !!changeId,
+  })
+}
+
 export function useAllPublicationChanges() {
   const allPublications = usePublicationList({trustedOnly: false})
   const pubs = allPublications?.data?.publications || []

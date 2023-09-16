@@ -19,7 +19,7 @@ import {
   WebSite,
 } from './.generated/documents/v1alpha/web_publishing_connect'
 import {Networking} from './.generated/networking/v1alpha/networking_connect'
-
+import {Entities} from './.generated/entities/v1alpha/entities_connect'
 export {
   Account,
   Device,
@@ -41,6 +41,14 @@ export {
   Role,
   ListGroupsRequest,
 } from './.generated/groups/v1alpha/groups_pb'
+export {
+  Change,
+  DiscoverEntityRequest,
+  DiscoverEntityResponse,
+  EntityTimeline,
+  GetChangeRequest,
+  GetEntityTimelineRequest,
+} from './.generated/entities/v1alpha/entities_pb'
 export {
   ChangeInfo,
   GetChangeInfoRequest,
@@ -94,6 +102,7 @@ export {
   Daemon,
   Document,
   Drafts,
+  Entities,
   Groups,
   Networking,
   Publications,

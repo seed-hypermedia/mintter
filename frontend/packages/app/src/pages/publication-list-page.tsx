@@ -46,7 +46,6 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
                     openRoute={{
                       key: 'publication',
                       documentId: docId,
-                      versionId: publication.version,
                       pubContext: trustedOnly ? {key: 'trusted'} : null,
                     }}
                     key={publication.document?.id}

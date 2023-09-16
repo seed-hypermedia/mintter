@@ -114,6 +114,7 @@ export default function Footer({children}: {children?: ReactNode}) {
         alignItems="center"
         justifyContent="flex-end"
         marginRight="$2"
+        gap="$2"
       >
         {children}
       </XStack>

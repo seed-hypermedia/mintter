@@ -1,4 +1,16 @@
 import {error} from './logger'
+import {toast} from './toast'
+
+export async function copyToClipboardWithFeedback(text: string, label: string) {
+  await copyTextToClipboard(text)
+    .then(() => {
+      toast.success(`${label} copied to clipboard`)
+    })
+    .catch((e) => {
+      console.error(e)
+      toast.error(`${label} failed to copy`)
+    })
+}
 
 export function copyTextToClipboard(text: string) {
   return new Promise((resolve, reject) => {
