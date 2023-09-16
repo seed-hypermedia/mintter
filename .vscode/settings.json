@@ -8,6 +8,12 @@
     "**/*.env": true,
     ".git/**": true
   },
+
+  "spellright.ignoreFiles": [
+    "**/.gitignore",
+    "**/.spellignore",
+    "whats-new.txt"
+  ],
   "files.watcherExclude": {
     ".bazel/**": true,
     "plz-out/**": true,

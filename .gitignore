@@ -85,3 +85,6 @@ thumbs.db
 .mtt-test
 
 _env.scss
+
+# changelog file
+whats-new.txt
