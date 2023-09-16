@@ -144,8 +144,8 @@ function GroupContentItem({
       <PublicationListItem
         publication={pub.data}
         hasDraft={hasDraft}
-        label={pathName}
-        onLabelPress={() => {
+        pathName={pathName}
+        onPathNamePress={() => {
           renameDialog.open({
             pathName,
             groupId,

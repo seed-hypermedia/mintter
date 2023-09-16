@@ -19,23 +19,22 @@ export function getDocumentTitle(document?: Document) {
 export function PublicationListItem({
   publication,
   hasDraft,
-  copy = copyTextToClipboard,
   pubContext,
   menuItems,
   onPointerEnter,
-  label,
+  pathName,
   openRoute,
-  onLabelPress,
+  onPathNamePress,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   pubContext: PublicationRouteContext
   menuItems?: MenuItem[]
-  label?: string
+  pathName?: string
   onPointerEnter?: () => void
   openRoute: NavRoute
-  onLabelPress?: () => void
+  onPathNamePress?: () => void
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
@@ -67,6 +66,7 @@ export function PublicationListItem({
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
+                    pubContext,
                   },
                   e,
                 )
@@ -76,25 +76,25 @@ export function PublicationListItem({
               Resume Editing
             </Button>
           )}
-          {label && (
+          {pathName && (
             <ButtonText
               size="$2"
               color="$color9"
               onPress={(e) => {
-                if (onLabelPress) {
+                if (onPathNamePress) {
                   e.stopPropagation()
-                  onLabelPress()
+                  onPathNamePress()
                 }
               }}
               hoverStyle={
-                onLabelPress
+                onPathNamePress
                   ? {
                       textDecorationLine: 'underline',
                     }
                   : undefined
               }
             >
-              {label}
+              {pathName}
             </ButtonText>
           )}
 

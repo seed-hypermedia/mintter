@@ -357,7 +357,7 @@ export type EditorDraftState = {
 }
 
 export function useDraftTitle(
-  input: UseQueryOptions<EditorDraftState> & {documentId: string},
+  input: UseQueryOptions<EditorDraftState> & {documentId?: string | undefined},
 ) {
   const draft = useDraft({documentId: input.documentId})
   return draft.data?.title || undefined
