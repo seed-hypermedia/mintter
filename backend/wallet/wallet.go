@@ -177,7 +177,6 @@ type InvoiceRequest struct {
 func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principal, request InvoiceRequest) (string, error) {
 	net, ok := srv.net.Get()
 	if !ok {
-		srv.log.Debug("Trying to get remote invoicebut networking not ready yet")
 		return "", fmt.Errorf("network is not ready yet")
 	}
 
