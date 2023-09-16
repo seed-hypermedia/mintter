@@ -30,6 +30,7 @@ export const SideMenuPositioner = <
 >(props: {
   editor: BlockNoteEditor<BSchema>
   sideMenu?: FC<SideMenuProps<BSchema>>
+  placement?: 'left' | 'right'
 }) => {
   const [show, setShow] = useState<boolean>(false)
   const [block, setBlock] = useState<Block<BSchema>>()
@@ -84,7 +85,7 @@ export const SideMenuPositioner = <
       visible={show}
       animation={'fade'}
       offset={offset}
-      placement={'left'}
+      placement={props.placement}
       popperOptions={popperOptions}
     />
   )

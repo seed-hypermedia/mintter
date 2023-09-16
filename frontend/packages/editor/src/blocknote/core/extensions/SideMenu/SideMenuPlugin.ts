@@ -402,7 +402,7 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     const block = getDraggableBlockFromCoords(coords, this.pmView)
 
     // Closes the menu if the mouse cursor is beyond the editor vertically.
-    if (!block || !this.editor.isEditable) {
+    if (!block) {
       if (this.sideMenuState?.show) {
         this.sideMenuState.show = false
         this.updateSideMenu(this.sideMenuState)
@@ -430,26 +430,24 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
     }
 
     // Shows or updates elements.
-    if (this.editor.isEditable) {
-      const blockContentBoundingBox = blockContent.getBoundingClientRect()
+    // if (this.editor.isEditable) {
+    const blockContentBoundingBox = blockContent.getBoundingClientRect()
 
-      this.sideMenuState = {
-        show: true,
-        referencePos: new DOMRect(
-          this.horizontalPosAnchoredAtRoot
-            ? this.horizontalPosAnchor
-            : blockContentBoundingBox.x,
-          blockContentBoundingBox.y,
-          blockContentBoundingBox.width,
-          blockContentBoundingBox.height,
-        ),
-        block: this.editor.getBlock(
-          this.hoveredBlock!.getAttribute('data-id')!,
-        )!,
-      }
-
-      this.updateSideMenu(this.sideMenuState)
+    this.sideMenuState = {
+      show: true,
+      referencePos: new DOMRect(
+        this.horizontalPosAnchoredAtRoot
+          ? this.horizontalPosAnchor
+          : blockContentBoundingBox.x,
+        blockContentBoundingBox.y,
+        blockContentBoundingBox.width,
+        blockContentBoundingBox.height,
+      ),
+      block: this.editor.getBlock(this.hoveredBlock!.getAttribute('data-id')!)!,
     }
+
+    this.updateSideMenu(this.sideMenuState)
+    // }
   }
 
   onScroll = () => {
