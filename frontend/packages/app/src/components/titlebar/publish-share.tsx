@@ -1,4 +1,4 @@
-import {useMyAccount} from '@mintter/app/models/accounts'
+import {useAccount, useMyAccount} from '@mintter/app/models/accounts'
 import {
   getDefaultShortname,
   useDraftTitle,
@@ -184,19 +184,14 @@ function GroupPublishDialog({
   }
   dialogState: DialogProps
 }) {
-  const groupQuery = useGroups()
-  const groups = groupQuery.data?.groups
   const account = useMyAccount()
   const accountId = account.data?.id
-  const myGroups = useMemo(() => {
-    if (!groups || !accountId) return undefined
-    return groups.filter((group) => group.ownerAccountId === accountId)
-  }, [groups, accountId])
+  const myGroups = useAccountGroups(accountId)
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>()
   useEffect(() => {
-    if (myGroups?.length && !selectedGroupId)
-      setSelectedGroupId(myGroups[0]?.id)
-  }, [myGroups, selectedGroupId])
+    if (myGroups?.data?.items?.length && !selectedGroupId)
+      setSelectedGroupId(myGroups.data?.items?.[0]?.group?.id)
+  }, [myGroups.data, selectedGroupId])
   const defaultPathName = pathNameify(input.docTitle || '')
   const [pathName, setPathName] = useState(defaultPathName)
   const route = useNavRoute()
@@ -289,11 +284,18 @@ function GroupPublishDialog({
               exitStyle={{opacity: 0, y: 10}}
               minWidth={200}
             >
-              {myGroups?.map((group, index) => (
-                <Select.Item index={index} value={group.id} key={group.id}>
-                  <Select.ItemText>{group.title}</Select.ItemText>
-                </Select.Item>
-              ))}
+              {myGroups?.data?.items?.map((item, index) => {
+                if (!item.group) return null
+                return (
+                  <Select.Item
+                    index={index}
+                    value={item.group?.id}
+                    key={item.group.id}
+                  >
+                    <Select.ItemText>{item.group.title}</Select.ItemText>
+                  </Select.Item>
+                )
+              })}
             </Select.Viewport>
 
             <Select.ScrollDownButton
