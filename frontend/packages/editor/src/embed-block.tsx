@@ -23,7 +23,15 @@ import {
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
-import {SizableText, Spinner, Text, XStack, YStack} from '@mintter/ui'
+import {
+  SizableText,
+  Spinner,
+  Text,
+  View,
+  XStack,
+  YStack,
+  styled,
+} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -33,6 +41,13 @@ import {HMBlockSchema, hmBlockSchema} from './schema'
 import {BACKEND_FILE_URL} from '@mintter/shared'
 import {usePublication} from '@mintter/app/src/models/documents'
 import {unpackHmIdWithAppRoute, useOpenUrl} from '@mintter/app/src/open-url'
+
+const EditorText = styled(Text, {
+  fontSize: '$5',
+  lineHeight: '1.5',
+  fontFamily:
+    "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont,'Open Sans', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell','Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+})
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
   const openUrl = useOpenUrl()
@@ -56,7 +71,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
             textDecorationLine = 'line-through'
           }
           return (
-            <SizableText
+            <EditorText
               key={`${content.type}-${index}`}
               fontWeight={content.styles.bold ? 'bold' : undefined}
               textDecorationLine={textDecorationLine || undefined}
@@ -64,12 +79,13 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
               fontFamily={content.styles.code ? '$mono' : '$body'}
             >
               {content.text}
-            </SizableText>
+            </EditorText>
           )
         }
         if (content.type === 'link') {
           return (
-            <SizableText
+            <EditorText
+              fontSize={'$4'}
               className={isHypermediaScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
               onPress={() => {
@@ -81,7 +97,7 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
               }}
             >
               <InlineContentView inline={content.content} />
-            </SizableText>
+            </EditorText>
           )
         }
         return null
@@ -96,9 +112,9 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
     [block],
   )
   return (
-    <span>
+    <View marginTop={12} marginBottom={3}>
       <InlineContentView inline={inline} />
-    </span>
+    </View>
   )
 }
 
@@ -129,7 +145,7 @@ function StaticBlock({block}: {block: ServerBlock}) {
   }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
-  return <span>mystery block 👻</span>
+  return <EditorText>mystery block 👻</EditorText>
 }
 
 function EmbedPresentation({

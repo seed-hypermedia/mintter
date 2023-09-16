@@ -359,7 +359,12 @@ export default function GroupPage() {
               paddingHorizontal={0}
               minHeight="$6"
             >
-              <YStack>
+              <YStack
+                paddingHorizontal={54}
+                maxWidth={664}
+                marginHorizontal="auto"
+                width="90%"
+              >
                 <PublicationDisplay urlWithVersion={frontDocumentUrl} />
               </YStack>
               <XStack gap="$2" position="absolute" right={0} top={'$4'}>
