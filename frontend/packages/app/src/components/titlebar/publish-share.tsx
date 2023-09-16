@@ -69,7 +69,7 @@ export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
   onClose,
 }: {
-  input: {groupId: string; pathName: string; docTitle: string; draftId: string}
+  input: {groupId: string; pathName: string; docTitle?: string; draftId: string}
   onClose: () => void
 }) {
   const [renamed, setRenamed] = useState(
@@ -376,8 +376,9 @@ function DraftContextButton({route}: {route: DraftRoute}) {
   const draftTitle = useDraftTitle({documentId: route.draftId})
   const groupPubContext =
     route.pubContext?.key === 'group' ? route.pubContext : null
+  const myPublishableGroups = groups.data?.items
   const selectedGroup = groupPubContext
-    ? groups.data?.items?.find(
+    ? myPublishableGroups?.find(
         (item) => item.group?.id === groupPubContext.groupId,
       )
     : undefined
@@ -392,13 +393,24 @@ function DraftContextButton({route}: {route: DraftRoute}) {
   const [isListingGroups, setIsListingGroups] = useState(false)
   let displayPathName =
     route.pubContext?.key === 'group' ? route.pubContext?.pathName : undefined
-  if (!displayPathName) {
+  if (!displayPathName && route.draftId) {
     displayPathName = getDefaultShortname(draftTitle, route.draftId)
   }
+  useEffect(() => {
+    if (
+      !selectedGroup &&
+      myPublishableGroups &&
+      route.pubContext?.key === 'group'
+    ) {
+      nav({...route, pubContext: null})
+    }
+  }, [selectedGroup, myPublishableGroups, route])
   const shortRename = useAppDialog(RenameShortnameDialog)
+  const draftId = route.draftId
+  if (!draftId) return null
   return (
     <>
-      <ContextPopover>
+      <ContextPopover {...dialogState}>
         <PopoverTrigger asChild>
           <Button size="$2" icon={icon}>
             {title}
@@ -414,7 +426,9 @@ function DraftContextButton({route}: {route: DraftRoute}) {
                   groupId={groupPubContext.groupId}
                   path={displayPathName || null}
                   onPathPress={() => {
+                    if (!groupPubContext.pathName) return
                     shortRename.open({
+                      draftId,
                       groupId: groupPubContext.groupId,
                       pathName: groupPubContext.pathName,
                       docTitle: draftTitle,
@@ -454,6 +468,7 @@ function DraftContextButton({route}: {route: DraftRoute}) {
                   if (!groupId) return null
                   const isActive =
                     groupPubContext?.key === 'group' &&
+                    selectedGroup?.group?.id === groupId &&
                     groupId === groupPubContext.groupId
                   return (
                     <Button
