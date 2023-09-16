@@ -104,17 +104,41 @@ function GroupContentItem({
   hasDraft,
   groupId,
   pathName,
+  userRole,
 }: {
   docId: string
   version?: string
   hasDraft: undefined | Document
   groupId: string
   pathName: string
+  userRole: Role
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const pub = usePublication({documentId: docId, versionId: version})
   const renameDialog = useAppDialog(RenamePubDialog)
   if (!pub.data) return null
+  const memberMenuItems = [
+    {
+      label: 'Remove from Group',
+      icon: Trash,
+      onPress: () => {
+        removeDoc.mutate({groupId, pathName})
+      },
+      key: 'remove',
+    },
+    {
+      label: 'Rename Short Path',
+      icon: Pencil,
+      onPress: () => {
+        renameDialog.open({
+          pathName,
+          groupId,
+          docTitle: pub.data.document?.title || '',
+        })
+      },
+      key: 'rename',
+    },
+  ]
   return (
     <>
       <PublicationListItem
@@ -129,28 +153,7 @@ function GroupContentItem({
           })
         }}
         pubContext={{key: 'group', groupId, pathName}}
-        menuItems={[
-          {
-            label: 'Remove from Group',
-            icon: Trash,
-            onPress: () => {
-              removeDoc.mutate({groupId, pathName})
-            },
-            key: 'remove',
-          },
-          {
-            label: 'Rename Short Path',
-            icon: Pencil,
-            onPress: () => {
-              renameDialog.open({
-                pathName,
-                groupId,
-                docTitle: pub.data.document?.title || '',
-              })
-            },
-            key: 'rename',
-          },
-        ]}
+        menuItems={userRole !== Role.ROLE_UNSPECIFIED ? memberMenuItems : []}
         openRoute={{
           key: 'publication',
           documentId: docId,
@@ -283,7 +286,7 @@ export default function GroupPage() {
                 ) : null}
               </Heading>
               <XStack gap="$2">
-                {!frontDocumentUrl && (
+                {!frontDocumentUrl && isMember && (
                   <Button
                     icon={Store}
                     size="$2"
@@ -299,13 +302,15 @@ export default function GroupPage() {
                 )}
                 <XGroup>
                   <XGroup.Item>
-                    <Button
-                      icon={Pencil}
-                      size="$2"
-                      onPress={() => {
-                        editGroupInfo.open(groupId)
-                      }}
-                    ></Button>
+                    {isMember && (
+                      <Button
+                        icon={Pencil}
+                        size="$2"
+                        onPress={() => {
+                          editGroupInfo.open(groupId)
+                        }}
+                      ></Button>
+                    )}
                   </XGroup.Item>
                 </XGroup>
               </XStack>
@@ -403,6 +408,7 @@ export default function GroupPage() {
                     hasDraft={drafts.data?.documents.find(
                       (d) => d.id == docId.docId,
                     )}
+                    userRole={myMemberRole}
                     pathName={pathName}
                   />
                 )

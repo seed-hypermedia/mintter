@@ -103,7 +103,10 @@ export default function Footer({children}: {children?: ReactNode}) {
             cursor: 'default',
           }}
           color="$color8"
-        >{`Alpha (App v.${import.meta.env.PACKAGE_VERSION})`}</SizableText>
+        >
+          {`Mintter Alpha`}
+          {/* To do: include release date of this version. when this is clicked, we should help the user upgrade  */}
+        </SizableText>
       </XStack>
 
       <XStack
