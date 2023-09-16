@@ -7,14 +7,19 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/cmd/mintter-site/sitesql"
+	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"net/http"
 	"strings"
 
+	rpcpeer "google.golang.org/grpc/peer"
+
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -143,11 +148,67 @@ func (ws Website) GetSiteInfo(ctx context.Context, _ *groups.GetSiteInfoRequest)
 
 // InitializeServer starts serving a group in this site.
 func (ws Website) InitializeServer(ctx context.Context, in *groups.InitializeServerRequest) (*groups.InitializeServerResponse, error) {
-	//TODO(juligasa): Store the groupID and Version in the DB. View old implementation here https://github.com/mintterteam/mintter/blob/4c8f1f73df5518c9abdd0e19ba370f303c225bc2/backend/daemon/api/groups/v1alpha/groups.go#L347
-	return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
+	n, ok := ws.Net.Get()
+	if !ok {
+		return nil, errNodeNotReadyYet
+	}
+
+	conn, release, err := ws.DB.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get db connection: %w", err)
+	}
+	defer release()
+	remoteDeviceID, err := getRemoteID(ctx)
+
+	var remoteAcc core.Principal
+	if err != nil {
+		return nil, fmt.Errorf("Only remote calls accepted: %w", err)
+	}
+
+	remoteAcc, err = n.AccountForDevice(ctx, remoteDeviceID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+	}
+
+	link, err := sitesql.GetSiteRegistrationLink(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	if link.KVValue != in.Secret {
+		return nil, fmt.Errorf("Provided secret link not valid")
+	}
+
+	hostname := strings.Split(in.Secret, "/secret-invite/")[0]
+
+	_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := sitesql.RegisterSite(conn, hostname, in.GroupId, "", remoteAcc); err != nil {
+		return nil, err
+	}
+
+	return &groups.InitializeServerResponse{}, nil
 }
 
 // PublishBlobs publish blobs to the website.
 func (ws Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
+}
+
+// getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.
+func getRemoteID(ctx context.Context) (peer.ID, error) {
+	info, ok := rpcpeer.FromContext(ctx)
+	if !ok {
+		return "", fmt.Errorf("BUG: no peer info in context for grpc")
+	}
+
+	pid, err := peer.Decode(info.Addr.String())
+	if err != nil {
+		return "", err
+	}
+
+	return pid, nil
 }
