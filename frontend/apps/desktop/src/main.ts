@@ -3,10 +3,29 @@ import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
 // import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
-import {mainMenu, openInitialWindows, trpc} from './api'
+import {
+  mainMenu,
+  openInitialWindows,
+  trpc,
+  handleSecondInstance,
+  handleUrlOpen,
+} from './api'
 import {initPaths} from './app-paths'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
+import path from 'node:path'
+
+const OS_REGISTER_SCHEME = 'hm'
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME, process.execPath, [
+      path.resolve(process.argv[1]!),
+    ])
+  }
+} else {
+  app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
+}
 
 if (squirrelStartup) {
   app.quit()
@@ -55,10 +74,10 @@ if (import.meta.env.PROD) {
 }
 
 app.on('did-become-active', () => {
-  log.debug('[MAIN]: App active')
+  log.debug('[MAIN]: Mintter active')
 })
 app.on('did-resign-active', () => {
-  log.debug('[MAIN]: App no longer active')
+  log.debug('[MAIN]: Mintter no longer active')
 })
 
 // dark mode support: https://www.electronjs.org/docs/latest/tutorial/dark-mode
@@ -80,24 +99,35 @@ ipcMain.on('open-external-link', (_event, linkUrl) => {
   shell.openExternal(linkUrl)
 })
 
-app.on('ready', () => {
-  log.debug('[MAIN]: APP ready')
-  openInitialWindows()
-})
+const gotTheLock = app.requestSingleInstanceLock()
 
-app.on('window-all-closed', () => {
-  if (process.platform != 'darwin') {
-    log.debug('[MAIN]: window-all-closed!!')
-    app.quit()
-  }
-})
+if (!gotTheLock) {
+  log.debug('[MAIN]: Another Mintter already running. Quitting..')
+  app.quit()
+} else {
+  app.on('ready', () => {
+    log.debug('[MAIN]: Mintter ready')
+    openInitialWindows()
+  })
+  app.on('second-instance', handleSecondInstance)
 
-app.on('activate', () => {
-  log.debug('[MAIN]: APP Active')
-  if (BrowserWindow.getAllWindows().length === 0) {
-    log.debug('[MAIN]: will open the home window')
-    trpc.createAppWindow({
-      routes: [{key: 'home'}],
-    })
-  }
-})
+  app.on('window-all-closed', () => {
+    log.debug('[MAIN]: window-all-closed')
+    if (process.platform != 'darwin') {
+      log.debug('[MAIN]: will quit the app')
+      app.quit()
+    }
+  })
+  app.on('open-url', (_event, url) => {
+    handleUrlOpen(url)
+  })
+  app.on('activate', () => {
+    log.debug('[MAIN]: Mintter Active')
+    if (BrowserWindow.getAllWindows().length === 0) {
+      log.debug('[MAIN]: will open the home window')
+      trpc.createAppWindow({
+        routes: [{key: 'home'}],
+      })
+    }
+  })
+}

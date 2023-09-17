@@ -3,7 +3,7 @@ import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
 // import {EventEmitter} from 'events'
 import superjson from 'superjson'
-import {app} from 'electron'
+import {app, dialog} from 'electron'
 import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
@@ -505,4 +505,25 @@ export type AppRouter = typeof router
 export type AppInfo = {
   platform: () => typeof process.platform
   arch: () => typeof process.arch
+}
+
+export function handleUrlOpen(url: string) {
+  console.log('will handle URL', url)
+  dialog.showErrorBox('Welcome', `You are opening: ${url}`)
+}
+
+export function handleSecondInstance(
+  _event: {defaultPrevented: boolean; preventDefault: () => void},
+  args: string[],
+  cwd: string,
+) {
+  log('handling second instance', args, cwd)
+  // from https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
+  const focusedWindow = getFocusedWindow()
+  if (focusedWindow) {
+    if (focusedWindow.isMinimized()) focusedWindow.restore()
+    focusedWindow.focus()
+  }
+  const linkUrl = args.pop()
+  linkUrl && handleUrlOpen(linkUrl)
 }
