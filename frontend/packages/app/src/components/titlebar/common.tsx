@@ -145,6 +145,29 @@ export function GroupOptionsButton() {
   )
 }
 
+export function useFullReferenceUrl(
+  route: NavRoute,
+): {label: string; url: string} | null {
+  const pubRoute = route.key === 'publication' ? route : null
+  const pub = usePublicationInContext({
+    documentId: pubRoute?.documentId,
+    versionId: pubRoute?.versionId,
+    pubContext: pubRoute?.pubContext,
+    enabled: !!pubRoute?.documentId,
+  })
+  if (!pubRoute) return getReferenceUrlOfRoute(route)
+  const docId = unpackHmId(pubRoute.documentId)
+  if (!docId) return null
+  if (pub.data?.version)
+    return {
+      url: createPublicWebHmUrl('d', docId.eid, {version: pub.data?.version}),
+      label: 'Doc Version URL',
+    }
+
+  const reference = getReferenceUrlOfRoute(route)
+  return reference
+}
+
 function getReferenceUrlOfRoute(route: NavRoute) {
   if (route.key === 'group') {
     const groupId = unpackHmId(route.groupId)
@@ -178,7 +201,7 @@ function getReferenceUrlOfRoute(route: NavRoute) {
 
 function CopyReferenceButton() {
   const route = useNavRoute()
-  const reference = getReferenceUrlOfRoute(route)
+  const reference = useFullReferenceUrl(route)
   if (!reference) return null
   return (
     <Tooltip content={`Copy ${reference.label}`}>
