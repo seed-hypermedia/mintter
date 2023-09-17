@@ -1,6 +1,8 @@
 import {useIPC, useWindowUtils} from '@mintter/app/src/app-context'
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+
 import {
   AddSquare,
   Button,

@@ -4,7 +4,8 @@ import {
   BlockNoteEditor,
   InlineContent,
 } from './blocknote'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
+import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import type {
   BlockNode,
   HeadingBlock,
@@ -16,22 +17,12 @@ import type {
 import {
   Block,
   EmbedBlock as EmbedBlockType,
-  createHmId,
   getCIDFromIPFSUrl,
   isHypermediaScheme,
   serverBlockToEditorInline,
   unpackDocId,
-  unpackHmId,
 } from '@mintter/shared'
-import {
-  SizableText,
-  Spinner,
-  Text,
-  View,
-  XStack,
-  YStack,
-  styled,
-} from '@mintter/ui'
+import {Spinner, Text, View, XStack, YStack, styled} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -40,13 +31,13 @@ import {createReactBlockSpec} from './blocknote'
 import {HMBlockSchema, hmBlockSchema} from './schema'
 import {BACKEND_FILE_URL} from '@mintter/shared'
 import {usePublication} from '@mintter/app/src/models/documents'
-import {unpackHmIdWithAppRoute, useOpenUrl} from '@mintter/app/src/open-url'
+import {useOpenUrl} from '@mintter/app/src/open-url'
 
 const EditorText = styled(Text, {
   fontSize: '$5',
-  lineHeight: '1.5',
-  fontFamily:
-    "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont,'Open Sans', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell','Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  lineHeight: 1.5,
+  fontFamily: '$body',
+  // "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont,'Open Sans', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell','Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
 })
 
 function InlineContentView({inline}: {inline: InlineContent[]}) {
@@ -311,7 +302,6 @@ export const EmbedBlock = createReactBlockSpec({
   render: ({block, editor}) => {
     return (
       <ErrorBoundary FallbackComponent={EmbedError}>
-        {/* @ts-expect-error */}
         <EmbedPresentation block={block} editor={editor} />
       </ErrorBoundary>
     )

@@ -3619,9 +3619,9 @@ __metadata:
   linkType: hard
 
 "@floating-ui/utils@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "@floating-ui/utils@npm:0.1.3"
-  checksum: bc426ad84647e71a845ee6c7e44996ee91620d3d1df058fecc4d4041ec588dc6bc767106167277ee46e3a919e4e0722b9f67a7b1363efca62f8c4f7cbaca0bb1
+  version: 0.1.4
+  resolution: "@floating-ui/utils@npm:0.1.4"
+  checksum: e6195ded5b3a6fd38411a833605184c31f24609b08feab2615e90ccc063bf4d3965383d817642fc7e8ca5ab6a54c29c71103e874f3afb0518595c8bd3390ba16
   languageName: node
   linkType: hard
 
@@ -16488,11 +16488,11 @@ __metadata:
   linkType: hard
 
 "fx@npm:*":
-  version: 28.0.1
-  resolution: "fx@npm:28.0.1"
+  version: 30.0.0
+  resolution: "fx@npm:30.0.0"
   bin:
     fx: index.js
-  checksum: dc145ae9ca0be2456432c6ce4dc938a8c2f196e30f74ddb6a80bacae80fd7c455d9d1d167d7151e72e919655eb6486b26e788e729369a53ddf97cc3385c771c0
+  checksum: 0984605e3980c7371c6cedc0ea3ea210188bc51c4cc4552e570921dc868ea12c854943cb5a46430f750fe4a2d3b8edb049719cd29005d22dac1c6e468a576c91
   languageName: node
   linkType: hard
 
@@ -19109,15 +19109,15 @@ __metadata:
   linkType: hard
 
 "joi@npm:^17.2.1, joi@npm:^17.6.0":
-  version: 17.10.1
-  resolution: "joi@npm:17.10.1"
+  version: 17.10.2
+  resolution: "joi@npm:17.10.2"
   dependencies:
     "@hapi/hoek": ^9.0.0
     "@hapi/topo": ^5.0.0
     "@sideway/address": ^4.1.3
     "@sideway/formula": ^3.0.1
     "@sideway/pinpoint": ^2.0.0
-  checksum: 7affbb27ae9283596d6471871352b85ebf73a1e782c0be1998bce1ecc86ba48bee834c8af9a44d7143bb470654d6ae1248a29009ee5463618675d655dbd69306
+  checksum: 2fac59e83b35465d04ffcd33a937c39795264bdd3d392bebee8034710f84631a400cd320a3bb0bb736e70ce930abb1ea551bc3ffbeca023b53417d864eb216a4
   languageName: node
   linkType: hard
 

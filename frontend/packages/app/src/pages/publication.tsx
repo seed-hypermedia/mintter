@@ -5,7 +5,8 @@ import Footer, {FooterButton} from '@mintter/app/src/components/footer'
 import {useDocChanges} from '@mintter/app/src/models/changes'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/src/models/documents'
-import {useNavRoute, useNavigate} from '@mintter/app/src/utils/navigation'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {
   MttLink,
   features,

@@ -39,7 +39,8 @@ import {
   useRemoveDocFromGroup,
   useRenameGroupDoc,
 } from '../models/groups'
-import {GroupRoute, useNavRoute, useNavigate} from '../utils/navigation'
+import {GroupRoute, useNavRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 import {AppLinkText} from '../components/link'
 import {pathNameify} from '../utils/path'
 import {useOpenDraft} from '../utils/open-draft'

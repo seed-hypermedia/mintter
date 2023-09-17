@@ -3,7 +3,8 @@ import {
   useDaemonOnline,
   useDaemonReady,
 } from '@mintter/app/src/node-status-context'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {
   Button,
   ButtonProps,

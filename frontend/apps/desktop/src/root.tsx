@@ -6,11 +6,8 @@ import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
 import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
 import {toast} from '@mintter/app/toast'
-import {
-  NavRoute,
-  NavState,
-  NavigationProvider,
-} from '@mintter/app/utils/navigation'
+import {NavRoute, NavState} from '@mintter/app/utils/navigation'
+import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
@@ -176,11 +173,11 @@ function MainApp({
           }
         >
           <ErrorBoundary FallbackComponent={AppError}>
-            <NavigationProvider initialNav={initNavState}>
+            <NavigationContainer initialNav={initNavState}>
               <DaemonStatusProvider>
                 <Main />
               </DaemonStatusProvider>
-            </NavigationProvider>
+            </NavigationContainer>
             <Toaster
               position="bottom-right"
               toastOptions={{className: 'toaster'}}

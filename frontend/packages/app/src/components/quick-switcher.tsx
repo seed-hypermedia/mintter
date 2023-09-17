@@ -3,12 +3,9 @@ import {
   usePublicationList,
 } from '@mintter/app/src/models/documents'
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
-import {
-  HYPERMEDIA_SCHEME,
-  isHypermediaScheme,
-  unpackHmId,
-} from '@mintter/shared'
+import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+import {HYPERMEDIA_SCHEME, isHypermediaScheme} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
@@ -16,7 +13,6 @@ import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import './quick-switcher.css'
 import {useAppContext} from '@mintter/app/src/app-context'
-import {unpackHmIdWithAppRoute} from '../open-url'
 import {useGroups} from '../models/groups'
 import {useContactsList} from '../models/contacts'
 

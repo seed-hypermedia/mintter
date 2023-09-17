@@ -42,7 +42,7 @@ const commonLinuxConfig: MakerDebConfig = {
   options: {
     categories: ['Development', 'Utility'],
     icon: `${iconsPath}.ico`,
-    mimeType: ['x-scheme-handler/mintter-app'],
+    mimeType: ['x-scheme-handler/hm'],
     version,
     bin: 'Mintter',
   },
@@ -65,6 +65,7 @@ const config: ForgeConfig = {
       CompanyName: 'Mintter Inc.',
       OriginalFilename: 'Mintter',
     },
+    protocols: [{name: 'Mintter Hypermedia', schemes: ['hm']}],
   },
   makers: [
     new MakerDeb(commonLinuxConfig),

@@ -1,4 +1,5 @@
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
 import {Tooltip} from '@mintter/ui'
 import {Button} from '@mintter/ui'

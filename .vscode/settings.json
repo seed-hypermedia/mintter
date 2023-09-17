@@ -24,6 +24,10 @@
     "*.plz": "starlark",
     "*.build_defs": "starlark"
   },
+  "files.readonlyInclude": {
+    "frontend/node_modules/**": true,
+    "node_modules/**": true,
+  },
   "search.exclude": {
     ".bazel/**": true,
     "plz-out/**": true,
@@ -31,6 +35,7 @@
     "**/.pnp.*": true,
     ".git/**": true,
     "**/node_modules/**": true,
+    "node_modules/**": true,
     "**/out/**": true,
     "**/dist/**": true
   },

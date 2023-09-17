@@ -1,16 +1,12 @@
 import {Buffer} from 'buffer'
+import {createContext, useContext} from 'react'
 import {
-  createContext,
-  ReactNode,
-  startTransition,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-} from 'react'
-import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
-import {useIPC} from '@mintter/app/src/app-context'
-import {GestureResponderEvent} from 'react-native'
+  createHmId,
+  UnpackedHypermediaId,
+  unpackHmId,
+} from '@mintter/shared/src/utils/entity-id-url'
+
+// import type {GestureResponderEvent} from 'react-native'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -102,7 +98,7 @@ export function getRouteKey(route: NavRoute): string {
 
 const NavContext = createContext<null | NavigationContext>(null)
 
-function navStateReducer(state: NavState, action: NavAction): NavState {
+export function navStateReducer(state: NavState, action: NavAction): NavState {
   switch (action.type) {
     case 'push':
       return {
@@ -154,21 +150,7 @@ function navStateReducer(state: NavState, action: NavAction): NavState {
   }
 }
 
-const initRouteEncoded = window.location.pathname.slice(1)
-const homeRoute: HomeRoute = {key: 'home'}
-let initRoute: NavRoute = homeRoute
-try {
-  if (initRouteEncoded === '') {
-    initRoute = homeRoute
-  } else {
-    initRoute = decodeRouteFromPath(initRouteEncoded)
-  }
-} catch (e) {
-  console.log(`Initial Route: "${initRouteEncoded}"`)
-  console.error('Error parsing initial route! ', e)
-}
-
-function simpleStringy(obj: any): string {
+export function simpleStringy(obj: any): string {
   if (Array.isArray(obj)) {
     return obj.map(simpleStringy).join(', ')
   }
@@ -186,73 +168,11 @@ function simpleStringy(obj: any): string {
 
 let appNavDispatch: null | React.Dispatch<NavAction> = null
 
-export type AppWindowEvent = 'back' | 'forward'
-
-export function NavigationProvider({
-  children,
-  initialNav = {
-    routes: [initRoute],
-    routeIndex: 0,
-    lastAction: 'replace',
-  },
-}: {
-  children: ReactNode
-  initialNav?: NavState
-}) {
-  const [navState, dispatch] = useReducer(navStateReducer, initialNav)
-  const {send} = useIPC()
-
-  useEffect(() => {
-    send('windowNavState', navState)
-  }, [navState, send])
-
-  useEffect(() => {
-    return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
-      if (event === 'back') {
-        dispatch({type: 'pop'})
-      }
-      if (event === 'forward') {
-        dispatch({type: 'forward'})
-      }
-    })
-  }, [])
-  //   useEffect(() => {
-  //     console.log(
-  //       `${routes.map((r, i) => {
-  //         const {key, ...rest} = r
-  //         return `${i === routeIndex ? '✅' : '⏺️'} ${key} :: ${simpleStringy(
-  //           rest,
-  //         )}`
-  //       }).join(`
-  // `)}`,
-  //     )
-  //   }, [routes, routeIndex])
-
-  useEffect(() => {
-    appNavDispatch = dispatch
-    return () => {
-      appNavDispatch = null
-    }
-  }, [])
-
-  // go to pub with pending edit
-  // resume editing
-  // press forward
-  // draft changes?!
-
-  // start editing pub, add content
-  // second time resume editing, doesnt work
-
-  let value = useMemo(
-    () => ({
-      state: navState,
-      dispatch,
-    }),
-    [navState],
-  )
-
-  return <NavContext.Provider value={value}>{children}</NavContext.Provider>
+export function setAppNavDispatch(v: null | React.Dispatch<NavAction>) {
+  appNavDispatch = v
 }
+
+export type AppWindowEvent = 'back' | 'forward'
 
 export function dispatchAppNavigation(action: NavAction) {
   if (!appNavDispatch) {
@@ -293,40 +213,29 @@ export function useNavigationDispatch() {
 
 export type NavMode = 'push' | 'replace' | 'spawn' | 'backplace'
 
-export function useNavigate(mode: NavMode = 'push') {
-  const dispatch = useNavigationDispatch()
-  const {invoke} = useIPC()
-  function openRouteWindow(route: NavRoute) {
-    const path = encodeRouteToPath(route)
-    invoke('plugin:window|open', {path})
-  }
-  return (route: NavRoute) => {
-    startTransition(() => {
-      if (mode === 'spawn') {
-        openRouteWindow(route)
-      } else if (mode === 'push') {
-        dispatch({type: 'push', route})
-      } else if (mode === 'replace') {
-        dispatch({type: 'replace', route})
-      } else if (mode === 'backplace') {
-        dispatch({type: 'backplace', route})
-      }
-    })
-  }
-}
-
-export function useClickNavigate() {
-  const navigate = useNavigate()
-  const spawn = useNavigate('spawn')
-
-  return (route: NavRoute, event: GestureResponderEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    // @ts-expect-error
-    if (event.metaKey || event.shiftKey) {
-      spawn(route)
-    } else {
-      navigate(route)
+export function unpackHmIdWithAppRoute(
+  hmId: string,
+): (UnpackedHypermediaId & {navRoute?: NavRoute}) | null {
+  const hmIds = unpackHmId(hmId)
+  if (!hmIds) return null
+  let navRoute: NavRoute | undefined = undefined
+  if (hmIds?.type === 'd') {
+    navRoute = {
+      key: 'publication',
+      documentId: createHmId('d', hmIds.eid),
+      versionId: hmIds.version,
+      blockId: hmIds.blockRef,
+    }
+  } else if (hmIds?.type === 'g') {
+    navRoute = {
+      key: 'group',
+      groupId: createHmId('g', hmIds.eid),
+    }
+  } else if (hmIds?.type === 'a') {
+    navRoute = {
+      key: 'account',
+      accountId: hmIds.eid,
     }
   }
+  return {...hmIds, navRoute}
 }

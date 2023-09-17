@@ -9,7 +9,7 @@ import {useAccountPublicationList} from '@mintter/app/src/models/changes'
 import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
 import {toast} from '@mintter/app/src/toast'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 import {abbreviateCid, createPublicWebHmUrl, pluralizer} from '@mintter/shared'
 import {
   Button,

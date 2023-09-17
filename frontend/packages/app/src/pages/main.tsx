@@ -5,9 +5,9 @@ import {TitleBar} from '@mintter/app/src/components/titlebar'
 import {
   getRouteKey,
   NavRoute,
-  useNavigate,
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {Spinner, YStack} from '@mintter/ui'
 import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'

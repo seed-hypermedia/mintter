@@ -12,10 +12,10 @@ import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {
   NavRoute,
   useNavRoute,
-  useNavigate,
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'

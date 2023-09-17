@@ -12,7 +12,8 @@ import {usePublication} from '@mintter/app/src/models/documents'
 import {toast} from '@mintter/app/src/toast'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
-import {useNavigate, useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
   getWidget,

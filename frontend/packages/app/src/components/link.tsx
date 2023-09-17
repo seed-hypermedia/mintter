@@ -1,6 +1,7 @@
 import {ButtonText} from '@mintter/ui'
 import {ComponentProps} from 'react'
-import {NavRoute, useNavigate} from '../utils/navigation'
+import {NavRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 
 export function AppLinkText(
   props: ComponentProps<typeof ButtonText> & {toRoute: NavRoute},

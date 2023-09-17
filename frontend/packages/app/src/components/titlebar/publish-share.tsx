@@ -23,9 +23,9 @@ import {
   NavRoute,
   PublicationRoute,
   useNavRoute,
-  useNavigate,
   useNavigation,
 } from '@mintter/app/utils/navigation'
+import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Button,
   ButtonText,

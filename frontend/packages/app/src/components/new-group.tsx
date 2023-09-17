@@ -4,7 +4,7 @@ import {BookPlus, FilePlus2} from '@tamagui/lucide-icons'
 import {AppDialog, DialogTitle} from './dialog'
 import {toast} from 'react-hot-toast'
 import {useCreateGroup} from '../models/groups'
-import {useNavigate} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 import {
   Control,
   FieldValues,

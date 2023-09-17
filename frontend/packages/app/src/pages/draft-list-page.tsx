@@ -1,6 +1,8 @@
 import {useDraftList} from '@mintter/app/src/models/documents'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {DraftRoute, useNavigate} from '@mintter/app/src/utils/navigation'
+import {DraftRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
 import {Dropdown} from '@mintter/app/src/components/dropdown'
@@ -21,7 +23,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
-import {useClickNavigate} from '../utils/navigation'
+import {useClickNavigate} from '../utils/useNavigate'
 import {GestureResponderEvent} from 'react-native'
 import {ListItem} from '../components/list-item'
 import {useAppContext} from '../app-context'

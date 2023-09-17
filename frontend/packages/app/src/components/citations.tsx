@@ -3,7 +3,7 @@ import {
   useDocCitations,
 } from '@mintter/app/src/models/content-graph'
 import {queryKeys} from '@mintter/app/src/models/query-keys'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {LinkNode, pluralS} from '@mintter/shared'
 import {Button, SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'

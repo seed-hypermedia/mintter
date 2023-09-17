@@ -1,7 +1,7 @@
 import {Avatar} from '@mintter/app/src/components/avatar'
 import appError from '@mintter/app/src/errors'
 import {useAccount} from '@mintter/app/src/models/accounts'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {Button, FontSizeTokens, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {getAvatarUrl} from '../utils/account-url'

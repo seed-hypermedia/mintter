@@ -5,7 +5,7 @@ import {
   useAccountIsConnected,
   useAllAccounts,
 } from '@mintter/app/src/models/accounts'
-import {useNavigate} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {Account} from '@mintter/shared'
 import {
   Button,

@@ -1,17 +1,20 @@
 import z from 'zod'
 import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
-// import {EventEmitter} from 'events'
 import superjson from 'superjson'
 import {app, dialog} from 'electron'
 import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 import Store from 'electron-store'
-import {NavRoute, NavState} from '@mintter/app/src/utils/navigation'
 import {childLogger, error, log} from './logger'
 import {APP_USER_DATA_PATH} from './app-paths'
-import {AppWindowEvent} from './preload'
+import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import type {
+  NavRoute,
+  NavState,
+  AppWindowEvent,
+} from '@mintter/app/src/utils/navigation'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -508,8 +511,15 @@ export type AppInfo = {
 }
 
 export function handleUrlOpen(url: string) {
-  console.log('will handle URL', url)
-  dialog.showErrorBox('Welcome', `You are opening: ${url}`)
+  log('[Deep Link Open]: ', url)
+  const hmId = unpackHmIdWithAppRoute(url)
+  if (!hmId?.navRoute) {
+    dialog.showErrorBox('Invalid URL', `We could not parse this URL: ${url}`)
+    return
+  }
+  trpc.createAppWindow({
+    routes: [hmId.navRoute],
+  })
 }
 
 export function handleSecondInstance(
@@ -519,11 +529,11 @@ export function handleSecondInstance(
 ) {
   log('handling second instance', args, cwd)
   // from https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
-  const focusedWindow = getFocusedWindow()
-  if (focusedWindow) {
-    if (focusedWindow.isMinimized()) focusedWindow.restore()
-    focusedWindow.focus()
-  }
+  // const focusedWindow = getFocusedWindow()
+  // if (focusedWindow) {
+  //   if (focusedWindow.isMinimized()) focusedWindow.restore()
+  //   focusedWindow.focus()
+  // }
   const linkUrl = args.pop()
   linkUrl && handleUrlOpen(linkUrl)
 }
