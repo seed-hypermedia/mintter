@@ -33,6 +33,7 @@ import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
 import Link from '@/tiptap-extension-link'
+import {createRightsideBlockWidgetExtension} from '@/rightside-block-widget'
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -41,6 +42,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   editor: BlockNoteEditor<BSchema>
   domAttributes: Partial<BlockNoteDOMAttributes>
   blockSchema: BSchema
+  rightsideMenu?: any
   collaboration?: {
     fragment: Y.XmlFragment
     user: {
@@ -112,6 +114,16 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     // should be handled before Enter handlers in other components like splitListItem
     TrailingNode,
   ]
+
+  // rightside menu
+  if (opts.rightsideMenu) {
+    ret.push(
+      createRightsideBlockWidgetExtension({
+        getWidget: opts.rightsideMenu,
+        editor: opts.editor,
+      }),
+    )
+  }
 
   if (opts.collaboration) {
     ret.push(

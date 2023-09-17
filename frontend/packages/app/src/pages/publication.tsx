@@ -10,8 +10,8 @@ import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {
   MttLink,
   features,
-  formattedDateMedium,
   formattedDateLong,
+  formattedDateMedium,
   pluralS,
 } from '@mintter/shared'
 import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
@@ -32,18 +32,17 @@ import 'allotment/dist/style.css'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 
+import {Timestamp} from '@bufbuild/protobuf'
 import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {useLatestPublication} from '../models/documents'
-import {DocumentPlaceholder} from './document-placeholder'
-import {getAvatarUrl} from '../utils/account-url'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useAccount} from '../models/accounts'
-import {NavRoute} from '../utils/navigation'
-import {Timestamp} from '@bufbuild/protobuf'
 import {useChange} from '../models/changes'
+import {useLatestPublication} from '../models/documents'
+import {NavRoute} from '../utils/navigation'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
   return (

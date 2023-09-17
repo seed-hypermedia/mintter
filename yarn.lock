@@ -4152,6 +4152,7 @@ __metadata:
     "@mintter/prettier": "workspace:*"
     "@mintter/shared": "workspace:*"
     "@mintter/ui": "workspace:*"
+    "@prosemirror-adapter/react": ^0.2.6
     "@radix-ui/colors": 0.1.9
     "@sentry/tracing": 7.49.0
     "@tamagui/lucide-icons": 1.61.1
@@ -4481,6 +4482,29 @@ __metadata:
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: e5c69fdebf52a4012f6a1f14817ca8e9599cb1be73dd1387e1785e2ed5e5f0862ff817f420a87c7fc532add1f88a12e25aeb010ffcbdc98eace3d55ce2139cf0
+  languageName: node
+  linkType: hard
+
+"@prosemirror-adapter/core@npm:0.2.6":
+  version: 0.2.6
+  resolution: "@prosemirror-adapter/core@npm:0.2.6"
+  dependencies:
+    tslib: ^2.5.0
+  checksum: 776c73a91d80b0ff190d229ecc1870c63a15e7defc4262b9b92918be424d53260b282e784cb0b617b0f0044bd438065149338d06be20f24bdb624e3ae5b5347a
+  languageName: node
+  linkType: hard
+
+"@prosemirror-adapter/react@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "@prosemirror-adapter/react@npm:0.2.6"
+  dependencies:
+    "@prosemirror-adapter/core": 0.2.6
+    nanoid: ^4.0.2
+    tslib: ^2.5.0
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: e98486b85b8a4f123ff13ba7f2498aa517c06c6d652df26175b031a6366d67f9f22c370ece6e8c02f5cc5727a9b514a6775115fdf05efc4a7750c5c1847d79e6
   languageName: node
   linkType: hard
 
@@ -21745,7 +21769,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:4.0.2":
+"nanoid@npm:4.0.2, nanoid@npm:^4.0.2":
   version: 4.0.2
   resolution: "nanoid@npm:4.0.2"
   bin:

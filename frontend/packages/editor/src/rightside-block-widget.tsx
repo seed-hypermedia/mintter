@@ -1,26 +1,23 @@
-import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {useDocCitations} from '@mintter/app/src/models/content-graph'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useWidgetViewContext} from '@prosemirror-adapter/react'
 import {Editor, Extension} from '@tiptap/core'
 import {EditorState, Plugin, PluginKey} from '@tiptap/pm/state'
 import {Decoration, DecorationSet, EditorView} from '@tiptap/pm/view'
 import {useMemo} from 'react'
-import {BlockNoteEditor} from './blocknote'
+import {BlockNoteEditor} from './blocknote/core'
 import {HMBlockSchema} from './schema'
-import {useDocCitations} from '@mintter/app/src/models/content-graph'
-import {usePublication} from '@mintter/app/src/models/documents'
-import {toast} from '@mintter/app/src/toast'
-import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
 
 export function createRightsideBlockWidgetExtension({
   getWidget,
   editor,
 }: {
-  getWidget: WidgetDecorationFactory
+  getWidget: any
   editor: BlockNoteEditor<HMBlockSchema>
 }) {
+  console.log('===== createRightsideBlockWidgetExtension', {getWidget, editor})
   return Extension.create({
+    priority: 1,
     name: 'rightside-block',
     addProseMirrorPlugins() {
       return [
@@ -41,10 +38,11 @@ export function createRightsideBlockWidgetPlugin({
   editor,
   ttEditor,
 }: {
-  getWidget: WidgetDecorationFactory
+  getWidget: any
   editor: BlockNoteEditor<HMBlockSchema>
   ttEditor: Editor
 }) {
+  let currentBlockId = null
   return new Plugin({
     key: RightSidePluginKey,
     view: () => new MouseMoveView({editor, ttEditor: ttEditor}),
@@ -53,10 +51,14 @@ export function createRightsideBlockWidgetPlugin({
         return DecorationSet.empty
       },
       apply(tr, decos, oldState, newState) {
+        // if (!tr.docChanged) return decos
+
         let hoveredBlockId = tr.getMeta(RightSidePluginKey)
-        if (hoveredBlockId) {
+        if (hoveredBlockId && hoveredBlockId != currentBlockId) {
+          currentBlockId = hoveredBlockId
           return updateDecorations(newState, getWidget, hoveredBlockId)
         }
+
         if (oldState.doc.eq(newState.doc)) return decos
 
         return updateDecorations(newState, getWidget)
@@ -72,7 +74,7 @@ export function createRightsideBlockWidgetPlugin({
 
 function updateDecorations(
   state: EditorState,
-  getWidget: WidgetDecorationFactory,
+  getWidget: any,
   activeId?: string,
 ) {
   const decorations: Decoration[] = []
@@ -87,88 +89,90 @@ function updateDecorations(
     })
     decorations.push(widget)
   })
-
+  console.log('===== updateDecorations', decorations)
   return DecorationSet.create(state.doc, decorations)
 }
 
 export function RightsideWidget() {
-  let {citations, spec} = useBlockCitation()
+  console.log('===== RightsideWidget')
+  // let {citations, spec} = useBlockCitation()
 
-  let route = useNavRoute()
-  let replace = useNavigate('replace')
-  let pub = usePublication({
-    documentId: route.key == 'publication' ? route.documentId : undefined,
-    versionId: route.key == 'publication' ? route.versionId : undefined,
-    enabled: route.key == 'publication' && !!route.documentId,
-  })
+  // let route = useNavRoute()
+  // let replace = useNavigate('replace')
+  // let pub = usePublication({
+  //   documentId: route.key == 'publication' ? route.documentId : undefined,
+  //   versionId: route.key == 'publication' ? route.versionId : undefined,
+  //   enabled: route.key == 'publication' && !!route.documentId,
+  // })
 
-  function onCopy() {
-    const docId = pub.data?.document?.id
-      ? unpackHmId(pub.data?.document?.id)
-      : null
-    const docVersion = pub.data?.version
-    if (docId && docId.type === 'd' && docVersion && spec && spec.id) {
-      copyTextToClipboard(
-        createPublicWebHmUrl('d', docId.eid, {
-          version: docVersion,
-          blockRef: spec.id,
-        }),
-      )
-      toast.success('Block reference copied!')
-    } else {
-      appError('Block reference copy failed', {docUrl, spec})
-    }
-  }
+  // function onCopy() {
+  //   const docId = pub.data?.document?.id
+  //     ? unpackHmId(pub.data?.document?.id)
+  //     : null
+  //   const docVersion = pub.data?.version
+  //   if (docId && docId.type === 'd' && docVersion && spec && spec.id) {
+  //     copyTextToClipboard(
+  //       createPublicWebHmUrl('d', docId.eid, {
+  //         version: docVersion,
+  //         blockRef: spec.id,
+  //       }),
+  //     )
+  //     toast.success('Block reference copied!')
+  //   } else {
+  //     console.log('Block reference copy failed')
+  //   }
+  // }
 
-  function onCitation() {
-    if (route.key == 'publication') {
-      // if (route.accessory) return replace({...route, accessory: null})
-      replace({...route, accessory: {key: 'citations'}})
-    }
-  }
+  // function onCitation() {
+  //   if (route.key == 'publication') {
+  //     // if (route.accessory) return replace({...route, accessory: null})
+  //     replace({...route, accessory: {key: 'citations'}})
+  //   }
+  // }
 
-  return (
-    <XStack
-      // @ts-expect-error
-      contentEditable={false}
-      height="100%"
-      position="absolute"
-      right={-100}
-      width={80}
-      top={16}
-    >
-      {citations?.length ? (
-        <Button
-          size="$1"
-          padding="$2"
-          borderRadius="$2"
-          chromeless
-          onPress={onCitation}
-        >
-          <SizableText color="$blue11" fontWeight="700" size="$1">
-            {citations.length}
-          </SizableText>
-        </Button>
-      ) : null}
+  // return (
+  //   <XStack
+  //     // @ts-expect-error
+  //     contentEditable={false}
+  //     height="100%"
+  //     position="absolute"
+  //     right={-100}
+  //     width={80}
+  //     top={16}
+  //   >
+  //     {citations?.length ? (
+  //       <Button
+  //         size="$1"
+  //         padding="$2"
+  //         borderRadius="$2"
+  //         chromeless
+  //         onPress={onCitation}
+  //       >
+  //         <SizableText color="$blue11" fontWeight="700" size="$1">
+  //           {citations.length}
+  //         </SizableText>
+  //       </Button>
+  //     ) : null}
 
-      <Button
-        size="$1"
-        chromeless
-        padding="$2"
-        borderRadius="$2"
-        color="$blue11"
-        fontWeight="700"
-        opacity={spec && spec.active ? 1 : 0}
-        zIndex={100}
-        icon={Copy}
-        onPress={onCopy}
-      />
-    </XStack>
-  )
+  //     <Button
+  //       size="$1"
+  //       chromeless
+  //       padding="$2"
+  //       borderRadius="$2"
+  //       color="$blue11"
+  //       fontWeight="700"
+  //       opacity={spec && spec.active ? 1 : 0}
+  //       zIndex={100}
+  //       icon={Copy}
+  //       onPress={onCopy}
+  //     />
+  //   </XStack>
+  // )
 }
 
 function useBlockCitation() {
   const {spec} = useWidgetViewContext()
+
   const route = useNavRoute()
 
   const _citations = useDocCitations(
@@ -185,10 +189,17 @@ function useBlockCitation() {
     return []
   }, [])
 
-  return {
-    citations,
-    spec,
-  }
+  let value = useMemo(
+    () => ({
+      citations,
+      spec,
+    }),
+    [citations],
+  )
+
+  console.log(`== ~ useBlockCitation ~ value:`, value)
+
+  return value
 }
 
 class MouseMoveView {

@@ -47,6 +47,7 @@ import {SlashMenuProsemirrorPlugin} from './extensions/SlashMenu/SlashMenuPlugin
 import {getDefaultSlashMenuItems} from './extensions/SlashMenu/defaultSlashMenuItems'
 import {UniqueID} from './extensions/UniqueID/UniqueID'
 import {mergeCSSClasses} from './shared/utils'
+import {createRightsideBlockWidgetExtension} from '@/rightside-block-widget'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
@@ -130,6 +131,9 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
 
   // tiptap options, undocumented
   _tiptapOptions: any
+
+  // rightside widget
+  rightsideWidget: any
 }
 
 const blockNoteTipTapOptions = {
@@ -181,6 +185,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       domAttributes: newOptions.domAttributes || {},
       blockSchema: newOptions.blockSchema,
       collaboration: newOptions.collaboration,
+      rightsideMenu: newOptions.rightsideWidget,
     })
 
     const blockNoteUIExtension = Extension.create({

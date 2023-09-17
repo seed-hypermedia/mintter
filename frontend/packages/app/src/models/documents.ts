@@ -4,12 +4,10 @@ import {
   useListen,
   useQueryInvalidator,
 } from '@mintter/app/src/app-context'
-import {fetchWebLink} from './web-links'
 import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {toast} from '@mintter/app/src/toast'
-import {pathNameify} from '../utils/path'
 import {
   Block,
   BlockIdentifier,
@@ -23,6 +21,7 @@ import {
   // insertImage,
   // insertVideo,
   useBlockNote,
+  RightsideWidget,
 } from '@mintter/editor'
 import {
   Document,
@@ -35,6 +34,7 @@ import {
   normlizeHmId,
   unpackDocId,
 } from '@mintter/shared'
+import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -45,12 +45,13 @@ import {
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {useEffect, useRef} from 'react'
+import {memo, useEffect, useRef} from 'react'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
+import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
-import {pathNameify} from '../utils/path'
+import {fetchWebLink} from './web-links'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
@@ -964,6 +965,8 @@ export function usePublicationEditor(
     },
   })
 
+  const widgetViewFactory = useWidgetViewFactory()
+
   // both the publication data and the editor are asyncronously loaded
   // using a ref to avoid extra renders, and ensure the editor is available and ready
   const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
@@ -1006,6 +1009,10 @@ export function usePublicationEditor(
     },
     editable: false,
     blockSchema: hmBlockSchema,
+    rightsideWidget: widgetViewFactory({
+      component: RightsideWidget,
+      as: 'div',
+    }),
     onEditorReady: (e) => {
       readyThings.current[0] = e
       const readyPub = readyThings.current[1]

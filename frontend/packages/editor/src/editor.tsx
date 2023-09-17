@@ -1,4 +1,5 @@
-import './blocknote/core/style.css'
+import {HyperDocsEditor} from '@mintter/app/src/models/documents'
+import {YStack} from '@mintter/ui'
 import {
   BlockNoteView,
   FormattingToolbarPositioner,
@@ -8,16 +9,16 @@ import {
   SideMenuProps,
   SlashMenuPositioner,
 } from './blocknote'
-import {HyperDocsEditor} from '@mintter/app/src/models/documents'
-import {YStack} from '@mintter/ui'
+import './blocknote/core/style.css'
 import './editor.css'
-import {XStack} from 'tamagui'
 
-const CustomSideMenu = (props: SideMenuProps) => (
-  <SideMenu>
-    <XStack width={40} height={40} backgroundColor="red" />
-  </SideMenu>
-)
+function RightsideMenu(props: SideMenuProps) {
+  return (
+    <SideMenu>
+      <span>hello</span>
+    </SideMenu>
+  )
+}
 
 export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
   if (editor.isEditable) {
@@ -35,7 +36,7 @@ export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
         <SideMenuPositioner
           editor={editor}
           placement="right"
-          sideMenu={CustomSideMenu}
+          sideMenu={RightsideMenu}
         />
       </BlockNoteView>
     )
