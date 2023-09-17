@@ -59,7 +59,6 @@ export function AccessURLRow({
             whiteSpace="nowrap"
             overflow="hidden"
             color="$color"
-            maxWidth={props.maxWidth ? props.maxWidth : 200}
           >
             {title || url}
           </SizableText>

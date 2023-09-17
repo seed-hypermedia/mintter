@@ -73,7 +73,7 @@ function NewDocumentButton() {
   const openDraft = useOpenDraft()
   const isDaemonReady = useDaemonReady()
   return (
-    <Tooltip content="New Document">
+    <Tooltip content="New Hypermedia Document – &#8984; N">
       <Button
         size="$2"
         chromeless

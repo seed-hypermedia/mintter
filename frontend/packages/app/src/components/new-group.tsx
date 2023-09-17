@@ -1,6 +1,6 @@
 import {Button, Form, Input, Label} from '@mintter/ui'
 import {Tooltip} from '@mintter/ui'
-import {FilePlus2} from '@tamagui/lucide-icons'
+import {BookPlus, FilePlus2} from '@tamagui/lucide-icons'
 import {AppDialog, DialogTitle} from './dialog'
 import {toast} from 'react-hot-toast'
 import {useCreateGroup} from '../models/groups'
@@ -90,7 +90,7 @@ function AddGroupForm({
           name="description"
         />
         <Form.Trigger asChild>
-          <Button>Create Group</Button>
+          <Button icon={BookPlus}>Create Group</Button>
         </Form.Trigger>
       </Form>
     </>
@@ -99,14 +99,14 @@ function AddGroupForm({
 
 function NewGroupButton(props: React.ComponentProps<typeof Button>) {
   return (
-    <Button size="$2" iconAfter={FilePlus2} {...props}>
+    <Button size="$2" iconAfter={BookPlus} {...props}>
       Create Group
     </Button>
   )
 }
 export function AddGroupButton() {
   return (
-    <Tooltip content="Create HyperMedia Group">
+    <Tooltip content="Create Hypermedia Group">
       <AppDialog
         TriggerComponent={NewGroupButton}
         ContentComponent={AddGroupForm}
