@@ -18,10 +18,8 @@ export type HomeRoute = {key: 'home'}
 export type GlobalPublications = {key: 'all-publications'}
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
-export type SitesRoute = {key: 'sites'}
-export type SiteRoute = {key: 'site'; hostname: string}
 
-type PublicationVersionsAccessory = {key: 'versions'}
+type EntityVersionsAccessory = {key: 'versions'}
 type PublicationCitationsAccessory = {key: 'citations'}
 type PublicationCommentsAccessory = {key: 'comments'}
 export type GroupPublicationRouteContext = {
@@ -43,7 +41,7 @@ export type PublicationRoute = {
   blockId?: string
   accessory?:
     | null
-    | PublicationVersionsAccessory
+    | EntityVersionsAccessory
     | PublicationCitationsAccessory
     | PublicationCommentsAccessory
 }
@@ -59,14 +57,13 @@ export type GroupsRoute = {key: 'groups'}
 export type GroupRoute = {
   key: 'group'
   groupId: string
+  accessory?: null | EntityVersionsAccessory
 }
 export type NavRoute =
   | HomeRoute
   | ContactsRoute
   | AccountRoute
   | SettingsRoute
-  | SitesRoute
-  | SiteRoute
   | GroupsRoute
   | GroupRoute
   | PublicationRoute
@@ -100,7 +97,6 @@ export function getRouteKey(route: NavRoute): string {
   if (route.key === 'account') return `account:${route.accountId}`
   if (route.key === 'draft') return `draft:${route.draftId}`
   if (route.key === 'publication') return `pub:${route.documentId}` // version changes and publication page remains mounted
-  if (route.key === 'site') return `site:${route.hostname}`
   return route.key
 }
 

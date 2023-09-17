@@ -1,7 +1,4 @@
-import {
-  copyTextToClipboard,
-  copyToClipboardWithFeedback,
-} from '@mintter/app/copy-to-clipboard'
+import {copyToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useGRPCClient, useIPC} from '@mintter/app/src/app-context'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
@@ -10,27 +7,19 @@ import {Tooltip} from '@mintter/ui'
 import appError from '@mintter/app/src/errors'
 import {useMyAccount} from '@mintter/app/src/models/accounts'
 import {useDraftList} from '@mintter/app/src/models/documents'
-import {useSiteList} from '@mintter/app/src/models/sites'
 import {useDaemonReady} from '@mintter/app/src/node-status-context'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {
   NavRoute,
-  PublicationRoute,
   useNavRoute,
   useNavigate,
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/src/utils/navigation'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
-import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'
-import {
-  Account,
-  SiteConfig,
-  createPublicWebHmUrl,
-  unpackHmId,
-} from '@mintter/shared'
+import {Account, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
   Back,
   Button,
@@ -66,6 +55,7 @@ import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -285,30 +275,6 @@ export function PageContextButtons(props: TitleBarProps) {
   )
 }
 
-export function SitesNavDropdownItems({
-  sites,
-  onRoute,
-}: {
-  sites?: SiteConfig[]
-  onRoute: (route: NavRoute) => void
-}) {
-  if (!sites) return null
-  if (sites.length == 0) return null
-  return (
-    <>
-      {sites.map((site) => (
-        <YGroup.Item key={site.hostname}>
-          <MenuItem
-            onPress={() => onRoute({key: 'site', hostname: site.hostname})}
-            icon={Globe}
-            title={hostnameStripProtocol(site.hostname)}
-          />
-        </YGroup.Item>
-      ))}
-    </>
-  )
-}
-
 export function AccountDropdownItem({
   account,
   onRoute,
@@ -342,11 +308,9 @@ export function AccountDropdownItem({
 
 function NavMenuContentUnpure({
   onClose,
-  sites,
   onRoute,
 }: {
   onClose: () => void
-  sites?: SiteConfig[]
   onRoute: (route: NavRoute) => void
 }) {
   const route = useNavRoute()
@@ -450,7 +414,6 @@ function NavMenuContentUnpure({
             }
           />
         </YGroup.Item>
-        <SitesNavDropdownItems sites={sites} onRoute={onRoute} />
         <YGroup.Item>
           <MenuItem
             onPress={() => {
@@ -487,7 +450,6 @@ function NavMenuContentUnpure({
 const NavMenuContent = memo(NavMenuContentUnpure)
 
 export function NavMenu() {
-  const sites = useSiteList()
   const popoverState = usePopoverState()
 
   const navigate = useNavigate()
@@ -500,7 +462,6 @@ export function NavMenu() {
         </Popover.Trigger>
 
         <NavMenuContent
-          sites={sites.data}
           onRoute={(route) => {
             popoverState.onOpenChange(false)
             setTimeout(() => {

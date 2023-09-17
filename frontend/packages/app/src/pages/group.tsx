@@ -1,5 +1,5 @@
 import Footer from '@mintter/app/src/components/footer'
-import {Document, Role, unpackDocId, unpackHmId} from '@mintter/shared'
+import {Document, Role, pluralS, unpackDocId, unpackHmId} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -24,7 +24,7 @@ import {
   Store,
   Trash,
 } from '@tamagui/lucide-icons'
-import {useState} from 'react'
+import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useAppDialog} from '../components/dialog'
@@ -39,13 +39,16 @@ import {
   useRemoveDocFromGroup,
   useRenameGroupDoc,
 } from '../models/groups'
-import {useNavRoute, useNavigate} from '../utils/navigation'
+import {GroupRoute, useNavRoute, useNavigate} from '../utils/navigation'
 import {AppLinkText} from '../components/link'
 import {pathNameify} from '../utils/path'
 import {useOpenDraft} from '../utils/open-draft'
 import {StaticBlockNode} from '@mintter/editor'
 import {EditDocActions} from '../components/titlebar/common'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
+import {Allotment} from 'allotment'
+import {FooterButton} from '../components/footer'
+import {useAllChanges} from '../models/changes'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -426,5 +429,26 @@ export default function GroupPage() {
       {inviteMember.content}
       {editGroupInfo.content}
     </>
+  )
+}
+
+function ChangesFooterItem({route}: {route: GroupRoute}) {
+  const changes = useAllChanges(route.groupId)
+  const count = useMemo(
+    () => Object.keys(changes?.data?.changes || {}).length || 0,
+    [changes.data],
+  )
+  const replace = useNavigate('replace')
+  // if (route.accessory?.key !== 'versions') return null
+  return (
+    <FooterButton
+      active={route.accessory?.key === 'versions'}
+      label={`${count} ${pluralS(count, 'Version')}`}
+      icon={Pencil}
+      onPress={() => {
+        if (route.accessory) return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'versions'}})
+      }}
+    />
   )
 }

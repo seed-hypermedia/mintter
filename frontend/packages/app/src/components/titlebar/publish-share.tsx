@@ -128,56 +128,6 @@ export function RenameShortnameDialog({
   )
 }
 
-// function DraftPublicationDialog({
-//   draft,
-// }: {
-//   draft?: EditorDraftState | undefined
-// }) {
-//   const sites = useSiteList()
-//   const sitesList = sites.data || []
-//   const foundSiteHostname = sitesList.find(
-//     (site) => site.hostname === draft?.webUrl,
-//   )
-//   const writeSiteUrl = useWriteDraftWebUrl(draft?.id)
-
-//   return (
-//     <>
-//       <SizableText size="$3" fontWeight="700" theme="mint">
-//         Publish to:
-//       </SizableText>
-//       <Button
-//         size="$4"
-//         onPress={() => {
-//           writeSiteUrl.mutate('')
-//         }}
-//         textProps={{flex: 1}}
-//         icon={Globe}
-//         iconAfter={foundSiteHostname == null ? Check : undefined}
-//       >
-//         Public Network
-//       </Button>
-//       {sitesList?.map((site) => {
-//         return (
-//           <Button
-//             size="$4"
-//             key={site.hostname}
-//             onPress={() => {
-//               writeSiteUrl.mutate(site.hostname)
-//             }}
-//             textProps={{flex: 1}}
-//             icon={Globe}
-//             iconAfter={
-//               foundSiteHostname?.hostname === site.hostname ? Check : undefined
-//             }
-//           >
-//             {hostnameStripProtocol(site.hostname)}
-//           </Button>
-//         )
-//       })}
-//     </>
-//   )
-// }
-
 function GroupPublishDialog({
   input,
   dialogState,

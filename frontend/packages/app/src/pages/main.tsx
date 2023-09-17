@@ -9,7 +9,6 @@ import {
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
 import {Spinner, YStack} from '@mintter/ui'
-import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
@@ -27,7 +26,6 @@ var Account = lazy(() => import('@mintter/app/src/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/src/pages/contacts-page'))
 var Group = lazy(() => import('@mintter/app/src/pages/group'))
 var Groups = lazy(() => import('@mintter/app/src/pages/groups'))
-var Site = lazy(() => import('@mintter/app/src/pages/site-page'))
 var Publication = lazy(() => import('@mintter/app/src/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/src/pages/draft'))
 var Settings = lazy(() => import('@mintter/app/src/pages/settings'))
@@ -63,11 +61,6 @@ function getPageComponent(navRoute: NavRoute) {
     case 'drafts':
       return {
         PageComponent: DraftList,
-        Fallback: BaseLoading,
-      }
-    case 'site':
-      return {
-        PageComponent: Site,
         Fallback: BaseLoading,
       }
     case 'contacts':

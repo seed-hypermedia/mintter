@@ -331,9 +331,7 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_DRAFT_LIST])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
       invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
-      invalidate([queryKeys.GET_DOC_SITE_PUBLICATIONS, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
-      invalidate([queryKeys.GET_SITE_PUBLICATIONS])
       if (draftGroupContext) {
         invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])

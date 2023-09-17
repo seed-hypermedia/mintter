@@ -9,7 +9,6 @@ import {useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useDocumentVersions, usePublicationList} from './documents'
 import {queryKeys} from './query-keys'
-import {useDocWebPublications} from './sites'
 import {useGRPCClient} from '../app-context'
 
 function createDocChangesQuery(
@@ -69,14 +68,12 @@ export function getTextOfBlock(block: BlockNode): string {
 // this involves loading every version of the doc, and using block revisions to see what changed
 export function useSmartChanges(docId?: string, version?: string) {
   const docChanges = useDocChanges(docId)
-  const docPubs = useDocWebPublications(docId)
   // const loadedDocs = useQueries()
   const changes = docChanges.data?.changes
   const versionPublications = useDocumentVersions(
     docId,
     changes?.map((change) => change.version) || [],
   )
-  const sitePublications = docPubs.data
   const versionPubData = versionPublications.map((pub) => pub.data)
   return {
     versionPublications,
@@ -166,17 +163,11 @@ export function useSmartChanges(docId?: string, version?: string) {
           return {
             ...change,
             summary,
-            webPubs: docPubs.data?.filter(
-              (webPub) =>
-                webPub.version === change.version &&
-                webPub.documentId === docId,
-            ),
           } as SmartChangeInfo
         }),
         rawChanges: changes,
-        sitePublications,
       } as const
-    }, [changes, sitePublications, ...versionPubData]),
+    }, [changes, ...versionPubData]),
   }
 }
 
@@ -189,6 +180,18 @@ export function useChange(changeId?: string) {
       }),
     queryKey: [queryKeys.CHANGE, changeId],
     enabled: !!changeId,
+  })
+}
+
+export function useAllChanges(entityId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryFn: () =>
+      grpcClient.entities.getEntityTimeline({
+        id: entityId || '',
+      }),
+    queryKey: [queryKeys.ALL_ENTITY_CHANGES, entityId],
+    enabled: !!entityId,
   })
 }
 

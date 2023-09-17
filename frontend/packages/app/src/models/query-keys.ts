@@ -20,21 +20,14 @@ export const queryKeys = {
   GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS',
   GET_ACCOUNT: 'GET_ACCOUNT', // , accountId: string
 
-  // sites
-  GET_SITES: 'GET_SITES',
-  GET_SITE_INFO: 'GET_SITE_INFO', // , hostname: string
-  GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , hostname: string
-  GET_SITE_PUBLICATIONS: 'GET_SITE_PUBLICATIONS', //, hostname: string
-  GET_DOC_SITE_PUBLICATIONS: 'GET_DOC_SITE_PUBLICATIONS', // , docId: string
-
   // groups
   GET_GROUPS: 'GET_GROUPS',
   GET_GROUP: 'GET_GROUP', // , groupId: string
   GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string
   GET_GROUP_MEMBERS: 'GET_GROUP_MEMBERS', // , groupId: string
-  GET_GROUP_SITE: 'GET_GROUP_SITE', // , groupId: string
   GET_GROUPS_FOR_DOCUMENT: 'GET_GROUPS_FOR_DOCUMENT', // , documentId: string
   GET_GROUPS_FOR_ACCOUNT: 'GET_GROUPS_FOR_ACCOUNT', // , accountId: string
+  GET_HOST_GROUP: 'GET_HOST_GROUP', // , hostname: string
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
@@ -56,6 +49,7 @@ export const queryKeys = {
 
   // changes
   CHANGE: 'CHANGE', //, changeId: string
+  ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {
@@ -77,18 +71,6 @@ export function labelOfQueryKey(key: QueryKey) {
       return 'All Accounts'
     case queryKeys.GET_ACCOUNT:
       return `Account ${abbreviateCid(arg1)}`
-
-    // sites
-    case queryKeys.GET_SITES:
-      return 'Sites'
-    case queryKeys.GET_SITE_INFO:
-      return `Site ${hostnameStripProtocol(arg1)}`
-    case queryKeys.GET_SITE_MEMBERS:
-      return `Site Members ${hostnameStripProtocol(arg1)}`
-    case queryKeys.GET_SITE_PUBLICATIONS:
-      return `Site Publications ${hostnameStripProtocol(arg1)}`
-    case queryKeys.GET_DOC_SITE_PUBLICATIONS:
-      return `Web Publication ${abbreviateCid(arg1)}`
 
     // documents
     case queryKeys.GET_DRAFT_LIST:

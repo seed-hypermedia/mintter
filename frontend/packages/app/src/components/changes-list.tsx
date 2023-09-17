@@ -6,16 +6,15 @@ import {formattedDate, pluralS} from '@mintter/shared'
 import {Button, SizableText, XStack} from '@mintter/ui'
 import {getAvatarUrl} from '../utils/account-url'
 import {AccessoryContainer} from './accessory-sidebar'
+import {useAllChanges} from '@mintter/app/models/changes'
 
 function ChangeItem({
   change,
-  docId,
-  activeVersion,
+  entityId,
   active,
 }: {
   change: SmartChangeInfo
-  docId: string
-  activeVersion?: string
+  entityId: string
   active?: boolean
 }) {
   const author = useAccount(change.author)
@@ -32,7 +31,7 @@ function ChangeItem({
       onPress={() => {
         navigate({
           key: 'publication',
-          documentId: docId,
+          documentId: entityId,
           versionId: change.version,
           accessory: {
             key: 'versions',
@@ -113,13 +112,44 @@ export function VersionsAccessory() {
     <AccessoryContainer title={`${count} Doc ${pluralS(count, 'Version')}`}>
       {data?.changes?.map((change) => (
         <ChangeItem
-          docId={docId}
+          entityId={docId}
           key={change.id}
           change={change}
-          activeVersion={version}
           active={change.version === version}
         />
       ))}
+    </AccessoryContainer>
+  )
+}
+
+export function EntityVersionsAccessory({
+  id,
+  activeVersion,
+}: {
+  id?: string
+  activeVersion?: string
+}) {
+  const route = useNavRoute()
+  // const version = route.key === 'publication' ? route.versionId : undefined
+  // const docId = route.key === 'publication' ? route.documentId : undefined
+  const {data} = useAllChanges(id)
+  if (!id) return null
+  const count = Object.keys(data?.changes || {})?.length || 0
+  return (
+    <AccessoryContainer title={`${count} Doc ${pluralS(count, 'Version')}`}>
+      {Object.entries(data?.changes || {}).map(([changeId, change]) => {
+        return (
+          <ChangeItem
+            entityId={id}
+            key={changeId}
+            change={change}
+            active={
+              !!activeVersion &&
+              !!activeVersion.split('.').find((chId) => change.id === chId)
+            }
+          />
+        )
+      })}
     </AccessoryContainer>
   )
 }

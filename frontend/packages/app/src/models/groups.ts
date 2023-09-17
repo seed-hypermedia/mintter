@@ -281,12 +281,14 @@ export function useMyGroups() {
   return groups
 }
 
-export function useGroupSite(groupId: string) {
+export function useHostGroup(hostname: string) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_GROUP_SITE, groupId],
+    queryKey: [queryKeys.GET_HOST_GROUP, hostname],
     queryFn: async () => {
-      // return await grpcClient.groups.getSiteInfo({})
+      return await grpcClient.groups.getSiteInfo({
+        hostname,
+      })
     },
   })
 }
