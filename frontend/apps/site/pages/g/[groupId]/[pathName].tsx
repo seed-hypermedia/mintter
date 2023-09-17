@@ -7,18 +7,19 @@ import {Heading, Spinner} from '@mintter/ui'
 import {useRouteQuery} from 'server/router-queries'
 import PublicationPage from 'publication-page'
 import {trpc} from 'trpc'
+import {createHmId} from '@mintter/shared'
 
 export type GroupPubPageProps = {
-  groupEid: string
+  groupId: string
   pathName: string
 }
 export default function GroupPublicationPage({
   pathName,
-  groupEid,
+  groupId,
 }: GroupPubPageProps) {
   const versionQuery = useRouteQuery('v')
   const groupPathQuery = trpc.group.getGroupPath.useQuery({
-    groupEid,
+    groupId,
     version: versionQuery,
     pathName,
   })
@@ -39,6 +40,7 @@ export const getServerSideProps: GetServerSideProps<
 > = async (context) => {
   const pathName = (context.params?.pathName as string) || ''
   const groupEid = (context.params?.groupId as string) || ''
+  const groupId = createHmId('g', groupEid)
   const helpers = serverHelpers({})
 
   setAllowAnyHostGetCORS(context.res)
@@ -51,10 +53,10 @@ export const getServerSideProps: GetServerSideProps<
     'x-mintter-site-p2p-addresses',
     peerInfo.addrs.join(','),
   )
-  const group = await helpers.group.get.fetch({groupEid})
-  const groupContent = await helpers.group.listContent.fetch({groupEid})
+  const group = await helpers.group.get.fetch({groupId})
+  const groupContent = await helpers.group.listContent.fetch({groupId})
 
   return {
-    props: await getPageProps(helpers, {pathName, groupEid}),
+    props: await getPageProps(helpers, {pathName, groupId}),
   }
 }

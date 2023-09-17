@@ -19,13 +19,17 @@ import {
   SideSectionTitle,
   SideSection,
   View,
-  SimpleTooltip,
 } from '@mintter/ui'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {Timestamp} from '@bufbuild/protobuf'
-import {formattedDate, unpackHmId, createPublicWebHmUrl} from '@mintter/shared'
+import {
+  formattedDate,
+  unpackHmId,
+  createPublicWebHmUrl,
+  createHmId,
+} from '@mintter/shared'
 import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
 import {Paragraph} from 'tamagui'
@@ -73,10 +77,10 @@ function LastUpdateSection({time}: {time: string}) {
 
 function GroupMetadata({
   group,
-  groupEid,
+  groupId,
 }: {
   group?: null | HMGroup
-  groupEid: string
+  groupId: string
 }) {
   if (!group) return null
   const time = group.createTime
@@ -85,7 +89,7 @@ function GroupMetadata({
       {group.ownerAccountId && (
         <GroupOwnerSection owner={group.ownerAccountId} />
       )}
-      {group.id && <GroupEditorsSection groupEid={groupEid} />}
+      {group.id && <GroupEditorsSection groupId={groupId} />}
       {time && <LastUpdateSection time={time} />}
     </>
   )
@@ -164,15 +168,15 @@ function GroupContentItem({
 }
 
 export default function GroupPage({
-  groupEid,
+  groupId,
   version,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const group = trpc.group.get.useQuery({
-    groupEid,
+    groupId,
     //version
   })
   const groupContent = trpc.group.listContent.useQuery({
-    groupEid,
+    groupId,
   })
 
   const loadedGroup = group.data?.group
@@ -247,7 +251,7 @@ export default function GroupPage({
         </PageSection.Content>
         <PageSection.Side>
           <YStack className="publication-sidenav-sticky">
-            <GroupMetadata group={group.data?.group} groupEid={groupEid} />
+            <GroupMetadata group={group.data?.group} groupId={groupId} />
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
@@ -260,24 +264,26 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   const {params, query} = context
-  let groupEid = params?.groupId ? String(params.groupId) : undefined
+  const groupEid = params?.groupId ? String(params.groupId) : undefined
+  const groupId = groupEid ? createHmId('g', groupEid) : undefined
+
   let version = query.v ? String(query.v) : null
 
   setAllowAnyHostGetCORS(context.res)
 
-  if (!groupEid) return {notFound: true} as const
+  if (!groupId) return {notFound: true} as const
 
   const helpers = serverHelpers({})
 
   const groupRecord = await helpers.group.get.fetch({
-    groupEid,
+    groupId,
   })
 
   await helpers.group.listContent.prefetch({
-    groupEid,
+    groupId,
   })
 
   return {
-    props: await getPageProps(helpers, {groupEid, version}),
+    props: await getPageProps(helpers, {groupId, version}),
   }
 }
