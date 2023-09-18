@@ -103,9 +103,9 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 }
 
 func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) error {
-	n, ok := srv.node.Get()
-	if !ok {
-		return fmt.Errorf("Node not ready yet")
+	n, err := srv.node.Await(ctx)
+	if err != nil {
+		return err
 	}
 
 	siteURL := strings.Split(setupURL, "/secret-invite/")[0]
