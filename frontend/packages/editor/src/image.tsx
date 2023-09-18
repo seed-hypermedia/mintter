@@ -25,6 +25,7 @@ import {
   insertOrUpdateBlock,
 } from './blocknote'
 import {HMBlockSchema} from './schema'
+import {InlineContent} from './blocknote/react'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
