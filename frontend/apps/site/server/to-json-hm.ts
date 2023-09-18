@@ -1,28 +1,15 @@
-import {
-  Account,
-  ChangeInfo,
-  Group,
-  MttLink,
-  Publication,
-  SiteInfo,
-} from '@mintter/shared'
+import {Account, ChangeInfo, Group, MttLink, Publication} from '@mintter/shared'
 import {
   HMAccount,
   HMChangeInfo,
   HMGroup,
   HMLink,
   HMPublication,
-  HMSiteInfo,
 } from './json-hm'
 
 export function hmPublication(input?: Publication | null) {
   if (!input) return null
   return input.toJson() as HMPublication
-}
-
-export function hmSiteInfo(input?: SiteInfo | null) {
-  if (!input) return null
-  return input.toJson() as HMSiteInfo
 }
 
 export function hmAccount(input?: Account | null) {

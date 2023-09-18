@@ -11,7 +11,6 @@ import type {
   MttLink,
   Profile,
   Publication,
-  SiteInfo,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
@@ -66,14 +65,6 @@ export type ServerPublication = Publication
 export type HMPublication = {
   document?: HMDocument
   version?: string
-}
-
-export type ServerSiteInfo = SiteInfo
-export type HMSiteInfo = {
-  hostname?: string
-  title?: string
-  description?: string
-  owner?: string
 }
 
 export type ServerDevice = Device

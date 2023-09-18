@@ -14,10 +14,6 @@ import {
   Publication as APIPublication,
   Document,
 } from './.generated/documents/v1alpha/documents_pb'
-import {
-  WebPublishing,
-  WebSite,
-} from './.generated/documents/v1alpha/web_publishing_connect'
 import {Entities} from './.generated/entities/v1alpha/entities_connect'
 import {Networking} from './.generated/networking/v1alpha/networking_connect'
 export {
@@ -68,7 +64,6 @@ export {
   ListPublicationsResponse,
   PublishDraftRequest,
 } from './.generated/documents/v1alpha/documents_pb'
-export * from './.generated/documents/v1alpha/web_publishing_pb'
 export {
   Change,
   DiscoverEntityRequest,
@@ -106,8 +101,6 @@ export {
   Groups,
   Networking,
   Publications,
-  WebPublishing,
-  WebSite,
 }
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
