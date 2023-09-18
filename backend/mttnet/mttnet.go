@@ -130,7 +130,7 @@ type Synchronizer interface {
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger, extraServers ...interface{}) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), db)
@@ -172,6 +172,13 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 
 	rpc := &rpcMux{Node: n}
 	p2p.RegisterP2PServer(n.grpc, rpc)
+
+	for _, extra := range extraServers {
+		if extraServer, ok := extra.(groups.WebsiteServer); ok {
+			groups.RegisterWebsiteServer(n.grpc, extraServer)
+			break
+		}
+	}
 
 	return n, nil
 }

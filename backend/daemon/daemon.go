@@ -127,7 +127,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	me := a.Storage.Identity()
 
-	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs)
+	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -254,6 +254,7 @@ func initNetwork(
 	cfg config.P2P,
 	db *sqlitex.Pool,
 	blobs *hyper.Storage,
+	extraServers ...interface{},
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -275,7 +276,7 @@ func initNetwork(
 			return err
 		}
 
-		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"))
+		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"), extraServers...)
 		if err != nil {
 			return err
 		}
