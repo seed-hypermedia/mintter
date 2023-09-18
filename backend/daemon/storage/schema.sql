@@ -224,3 +224,13 @@ CREATE TABLE wallets (
     -- The balance in satoshis
     balance INTEGER DEFAULT 0
 );
+
+-- Stores remote sites and their syncing status.
+CREATE TABLE remote_sites (
+    url TEXT UNIQUE NOT NULL,
+    peer_id TEXT NOT NULL,
+    group_id TEXT NOT NULL,
+    group_version TEXT NOT NULL,
+    last_sync_time INTEGER NOT NULL,
+    last_ok_sync_time INTEGER NOT NULL
+);

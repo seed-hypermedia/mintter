@@ -64,6 +64,18 @@ var migrations = []migration{
 			DROP TABLE served_sites;
 		`)
 	}},
+	{Version: "2023-09-18.02", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE remote_sites (
+				url TEXT UNIQUE NOT NULL,
+				peer_id TEXT NOT NULL,
+				group_id TEXT NOT NULL,
+				group_version TEXT NOT NULL,
+				last_sync_time INTEGER NOT NULL,
+				last_ok_sync_time INTEGER NOT NULL
+			);		
+		`))
+	}},
 }
 
 const (

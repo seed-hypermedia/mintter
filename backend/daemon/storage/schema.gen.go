@@ -288,6 +288,28 @@ const (
 	C_PublicKeysPrincipal = "public_keys.principal"
 )
 
+// Table remote_sites.
+const (
+	RemoteSites               sqlitegen.Table  = "remote_sites"
+	RemoteSitesGroupID        sqlitegen.Column = "remote_sites.group_id"
+	RemoteSitesGroupVersion   sqlitegen.Column = "remote_sites.group_version"
+	RemoteSitesLastOkSyncTime sqlitegen.Column = "remote_sites.last_ok_sync_time"
+	RemoteSitesLastSyncTime   sqlitegen.Column = "remote_sites.last_sync_time"
+	RemoteSitesPeerID         sqlitegen.Column = "remote_sites.peer_id"
+	RemoteSitesURL            sqlitegen.Column = "remote_sites.url"
+)
+
+// Table remote_sites. Plain strings.
+const (
+	T_RemoteSites               = "remote_sites"
+	C_RemoteSitesGroupID        = "remote_sites.group_id"
+	C_RemoteSitesGroupVersion   = "remote_sites.group_version"
+	C_RemoteSitesLastOkSyncTime = "remote_sites.last_ok_sync_time"
+	C_RemoteSitesLastSyncTime   = "remote_sites.last_sync_time"
+	C_RemoteSitesPeerID         = "remote_sites.peer_id"
+	C_RemoteSitesURL            = "remote_sites.url"
+)
+
 // Table sqlite_sequence.
 const (
 	SQLiteSequence     sqlitegen.Table  = "sqlite_sequence"
@@ -404,6 +426,12 @@ var Schema = sqlitegen.Schema{
 		PublicBlobsViewMultihash:        {Table: PublicBlobsView, SQLType: "BLOB"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
+		RemoteSitesGroupID:              {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesGroupVersion:         {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesLastOkSyncTime:       {Table: RemoteSites, SQLType: "INTEGER"},
+		RemoteSitesLastSyncTime:         {Table: RemoteSites, SQLType: "INTEGER"},
+		RemoteSitesPeerID:               {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesURL:                  {Table: RemoteSites, SQLType: "TEXT"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
