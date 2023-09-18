@@ -31,15 +31,7 @@ export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
       </BlockNoteView>
     )
   } else {
-    return (
-      <BlockNoteView editor={editor}>
-        <SideMenuPositioner
-          editor={editor}
-          placement="right"
-          sideMenu={RightsideMenu}
-        />
-      </BlockNoteView>
-    )
+    return <BlockNoteView editor={editor}></BlockNoteView>
   }
 }
 

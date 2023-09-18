@@ -14,7 +14,6 @@ import {
   formattedDateMedium,
   pluralS,
 } from '@mintter/shared'
-import {ProsemirrorAdapterProvider} from '@prosemirror-adapter/react'
 import {
   Button,
   ButtonText,
@@ -45,11 +44,7 @@ import {NavRoute} from '../utils/navigation'
 import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
-  return (
-    <ProsemirrorAdapterProvider>
-      <PublicationPageEditor />
-    </ProsemirrorAdapterProvider>
-  )
+  return <PublicationPageEditor />
 }
 
 function AuthorLink({author}: {author: string}) {

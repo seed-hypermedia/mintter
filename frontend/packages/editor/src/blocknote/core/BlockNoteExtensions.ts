@@ -3,6 +3,8 @@ import {Extensions, extensions} from '@tiptap/core'
 
 import {BlockNoteEditor} from './BlockNoteEditor'
 
+import {HMBlockContainer} from '@/hypermedia-block-container'
+import Link from '@/tiptap-extension-link'
 import {Bold} from '@tiptap/extension-bold'
 import {Code} from '@tiptap/extension-code'
 import Collaboration from '@tiptap/extension-collaboration'
@@ -20,10 +22,7 @@ import styles from './editor.module.css'
 import {BackgroundColorExtension} from './extensions/BackgroundColor/BackgroundColorExtension'
 import {BackgroundColorMark} from './extensions/BackgroundColor/BackgroundColorMark'
 import {BlockContainer, BlockGroup, Doc} from './extensions/Blocks'
-import {
-  BlockNoteDOMAttributes,
-  BlockSchema,
-} from './extensions/Blocks/api/blockTypes'
+import {BlockNoteDOMAttributes} from './extensions/Blocks/api/blockTypes'
 import {CustomBlockSerializerExtension} from './extensions/Blocks/api/serialization'
 import blockStyles from './extensions/Blocks/nodes/Block.module.css'
 import {Placeholder} from './extensions/Placeholder/PlaceholderExtension'
@@ -32,17 +31,15 @@ import {TextColorExtension} from './extensions/TextColor/TextColorExtension'
 import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
-import Link from '@/tiptap-extension-link'
-import {createRightsideBlockWidgetExtension} from '@/rightside-block-widget'
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
  */
 export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
+  editable?: boolean
   editor: BlockNoteEditor<BSchema>
   domAttributes: Partial<BlockNoteDOMAttributes>
   blockSchema: BSchema
-  rightsideMenu?: any
   collaboration?: {
     fragment: Y.XmlFragment
     user: {
@@ -95,9 +92,6 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
 
     // nodes
     Doc,
-    BlockContainer.configure({
-      domAttributes: opts.domAttributes,
-    }),
     BlockGroup.configure({
       domAttributes: opts.domAttributes,
     }),
@@ -115,12 +109,18 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     TrailingNode,
   ]
 
-  // rightside menu
-  if (opts.rightsideMenu) {
+  if (opts.editable) {
+    console.log('=== IS EDITABLE', opts.editable)
     ret.push(
-      createRightsideBlockWidgetExtension({
-        getWidget: opts.rightsideMenu,
-        editor: opts.editor,
+      BlockContainer.configure({
+        domAttributes: opts.domAttributes,
+      }),
+    )
+  } else {
+    console.log('=== IS NOT EDITABLE', opts.editable)
+    ret.push(
+      HMBlockContainer.configure({
+        domAttributes: opts.domAttributes,
       }),
     )
   }

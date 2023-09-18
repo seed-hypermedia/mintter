@@ -75,7 +75,6 @@ export const SideMenuPositioner = <
       />
     )
   }, [block, props.editor, props.sideMenu])
-  console.log('== RENDER SIDEMENU!')
 
   return (
     <Tippy
@@ -83,7 +82,7 @@ export const SideMenuPositioner = <
       content={sideMenuElement}
       getReferenceClientRect={getReferenceClientRect}
       interactive={true}
-      // visible={show}
+      visible={show}
       animation={'fade'}
       offset={offset}
       placement={props.placement}

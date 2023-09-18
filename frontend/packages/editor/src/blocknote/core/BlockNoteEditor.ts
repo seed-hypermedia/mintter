@@ -132,8 +132,8 @@ export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // tiptap options, undocumented
   _tiptapOptions: any
 
-  // rightside widget
-  rightsideWidget: any
+  // isEditable
+  isEditable: boolean
 }
 
 const blockNoteTipTapOptions = {
@@ -168,6 +168,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       //  be defined. Unfortunately, trying to implement these constraints seems
       //  to be a huge pain, hence the `as any` casts.
       blockSchema: options.blockSchema || (defaultBlockSchema as any),
+      editable: options.editable || true,
       ...options,
     }
 
@@ -185,7 +186,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       domAttributes: newOptions.domAttributes || {},
       blockSchema: newOptions.blockSchema,
       collaboration: newOptions.collaboration,
-      rightsideMenu: newOptions.rightsideWidget,
+      editable: newOptions.editable,
     })
 
     const blockNoteUIExtension = Extension.create({

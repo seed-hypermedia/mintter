@@ -34,7 +34,6 @@ export const useBlockNote = <
     if (editorRef.current) {
       editorRef.current._tiptapEditor.destroy()
     }
-
     editorRef.current = initEditor(options)
     return editorRef.current
   }, deps) //eslint-disable-line react-hooks/exhaustive-deps
