@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hlc"
@@ -15,14 +16,17 @@ import (
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
+	"net/http"
 	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -47,9 +51,13 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	if in.Title == "" {
 		return nil, errutil.MissingArgument("title")
 	}
-
+	var n *mttnet.Node
+	var ok bool
 	if in.SiteSetupUrl != "" {
-		return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
+		n, ok = srv.node.Get()
+		if !ok {
+			return nil, fmt.Errorf("Node not ready yet")
+		}
 	}
 
 	me, err := srv.getMe()
@@ -83,6 +91,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	if err != nil {
 		return nil, err
 	}
+
 	hb, err := e.CreateChange(ts, me.DeviceKey(), del, patch, hyper.WithAction("Create"))
 	if err != nil {
 		return nil, err
@@ -92,6 +101,27 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
+	if in.SiteSetupUrl != "" {
+		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
+		resp, err := GetSiteInfoHTTP(ctx, siteURL)
+		if err != nil {
+			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
+		}
+		pid, err := peer.Decode(resp.PeerInfo.PeerId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+		}
+		c, err := n.SiteClient(ctx, pid)
+		if err != nil {
+			return nil, fmt.Errorf("Could not contact site via P2P: %w", err)
+		}
+		if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
+			Secret:  in.SiteSetupUrl,
+			GroupId: id,
+		}); err != nil {
+			return nil, fmt.Errorf("Could not publish group to site. P2P group, however, was created successfully: %w", err)
+		}
+	}
 	return groupToProto(srv.blobs, e)
 }
 
@@ -132,8 +162,13 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, errutil.MissingArgument("id")
 	}
 
+	var n *mttnet.Node
+	var ok bool
 	if in.SiteSetupUrl != "" {
-		return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
+		n, ok = srv.node.Get()
+		if !ok {
+			return nil, fmt.Errorf("Node not ready yet")
+		}
 	}
 
 	me, err := srv.getMe()
@@ -195,6 +230,27 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
+	if in.SiteSetupUrl != "" {
+		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
+		resp, err := GetSiteInfoHTTP(ctx, siteURL)
+		if err != nil {
+			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
+		}
+		pid, err := peer.Decode(resp.PeerInfo.PeerId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+		}
+		c, err := n.SiteClient(ctx, pid)
+		if err != nil {
+			return nil, fmt.Errorf("Could not contact site via P2P: %w", err)
+		}
+		if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
+			Secret:  in.SiteSetupUrl,
+			GroupId: in.Id,
+		}); err != nil {
+			return nil, fmt.Errorf("Could not publish group to site. P2P group, however, was updated successfully: %w", err)
+		}
+	}
 	return groupToProto(srv.blobs, e)
 }
 
@@ -564,4 +620,34 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
+}
+
+// GetSiteInfoHTTP gets public information from a site.
+func GetSiteInfoHTTP(ctx context.Context, SiteUrl string) (*groups.PublicSiteInfo, error) {
+	requestURL := fmt.Sprintf("%s/%s", SiteUrl, ".well-known/hypermedia-site")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
+	}
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read json body: %w", err)
+	}
+
+	resp := &groups.PublicSiteInfo{}
+	if err := protojson.Unmarshal(data, resp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
+	}
+	return resp, nil
 }

@@ -4,16 +4,13 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
-	groups "mintter/backend/genproto/groups/v1alpha"
-	"net/http"
+	groups "mintter/backend/daemon/api/groups/v1alpha"
 	"time"
 
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ping "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"github.com/multiformats/go-multiaddr"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (time.Duration, error) {
@@ -59,7 +56,7 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 }
 
 func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
-	resp, err := s.getSiteInfoHTTP(ctx, hostname)
+	resp, err := groups.GetSiteInfoHTTP(ctx, hostname)
 	if err != nil {
 		return info, err
 	}
@@ -83,33 +80,4 @@ func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude strin
 	}
 
 	return info, nil
-}
-
-func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*groups.PublicSiteInfo, error) {
-	requestURL := fmt.Sprintf("%s/%s", SiteHostname, ".well-known/hypermedia-site")
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
-	}
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read json body: %w", err)
-	}
-
-	resp := &groups.PublicSiteInfo{}
-	if err := protojson.Unmarshal(data, resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
-	}
-	return resp, nil
 }

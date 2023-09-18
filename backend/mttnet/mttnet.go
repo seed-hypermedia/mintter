@@ -7,6 +7,7 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
+	groups "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
@@ -49,6 +50,18 @@ const (
 )
 
 var userAgent = "mintter/<dev>"
+
+// WebsiteClient is the bridge to talk to remote sites.
+type WebsiteClient interface {
+	// InitializeServer instruct the website that starts serving a given group.
+	InitializeServer(context.Context, *groups.InitializeServerRequest, ...grpc.CallOption) (*groups.InitializeServerResponse, error)
+
+	// GetSiteInfo gets public site information, to be also found in /.well-known/hypermedia-site
+	GetSiteInfo(context.Context, *groups.GetSiteInfoRequest, ...grpc.CallOption) (*groups.PublicSiteInfo, error)
+
+	// PublishBlobs pushes given blobs to the site.
+	PublishBlobs(context.Context, *groups.PublishBlobsRequest, ...grpc.CallOption) (*groups.PublishBlobsResponse, error)
+}
 
 // DefaultRelays bootstrap mintter-owned relays so they can reserve slots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
@@ -202,6 +215,19 @@ func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	}
 
 	return n.client.Dial(ctx, pid)
+}
+
+// SiteClient opens a connection with a remote website.
+func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, error) {
+	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+		return nil, err
+	}
+
+	conn, err := n.client.dialPeer(ctx, pid)
+	if err != nil {
+		return nil, err
+	}
+	return groups.NewWebsiteClient(conn), nil
 }
 
 // ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.

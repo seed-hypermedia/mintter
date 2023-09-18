@@ -107,7 +107,7 @@ func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link stri
 }
 
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
-func (ws Website) GetSiteInfo(ctx context.Context, _ *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
+func (ws Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
 	n, ok := ws.Net.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
