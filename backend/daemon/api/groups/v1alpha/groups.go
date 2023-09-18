@@ -51,14 +51,6 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	if in.Title == "" {
 		return nil, errutil.MissingArgument("title")
 	}
-	var n *mttnet.Node
-	var ok bool
-	if in.SiteSetupUrl != "" {
-		n, ok = srv.node.Get()
-		if !ok {
-			return nil, fmt.Errorf("Node not ready yet")
-		}
-	}
 
 	me, err := srv.getMe()
 	if err != nil {
@@ -72,6 +64,12 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	id, nonce := hyper.NewUnforgeableID("hm://g/", me.Account().Principal(), nil, createTime)
 	eid := hyper.EntityID(id)
 	e := hyper.NewEntityWithClock(eid, clock)
+
+	if in.SiteSetupUrl != "" {
+		if err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid); err != nil {
+			return nil, err
+		}
+	}
 
 	patch := map[string]any{
 		"nonce":      nonce,
@@ -101,28 +99,36 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	if in.SiteSetupUrl != "" {
-		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
-		resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
-		if err != nil {
-			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
-		}
-		pid, err := peer.Decode(resp.PeerInfo.PeerId)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
-		}
-		c, err := n.SiteClient(ctx, pid)
-		if err != nil {
-			return nil, fmt.Errorf("Could not contact site via P2P: %w", err)
-		}
-		if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
-			Secret:  in.SiteSetupUrl,
-			GroupId: id,
-		}); err != nil {
-			return nil, fmt.Errorf("Could not publish group to site. P2P group, however, was created successfully: %w", err)
-		}
-	}
 	return groupToProto(srv.blobs, e)
+}
+
+func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) error {
+	n, ok := srv.node.Get()
+	if !ok {
+		return fmt.Errorf("Node not ready yet")
+	}
+
+	siteURL := strings.Split(setupURL, "/secret-invite/")[0]
+	resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
+	if err != nil {
+		return fmt.Errorf("could not contact site at %s: %w", siteURL, err)
+	}
+	pid, err := peer.Decode(resp.PeerInfo.PeerId)
+	if err != nil {
+		return fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+	}
+	c, err := n.SiteClient(ctx, pid)
+	if err != nil {
+		return fmt.Errorf("could not contact site via P2P: %w", err)
+	}
+	if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
+		Secret:  setupURL,
+		GroupId: string(groupID),
+	}); err != nil {
+		return fmt.Errorf("could not publish group to site. P2P group, however, was created successfully: %w", err)
+	}
+
+	return nil
 }
 
 // GetGroup gets a group.
@@ -162,15 +168,6 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, errutil.MissingArgument("id")
 	}
 
-	var n *mttnet.Node
-	var ok bool
-	if in.SiteSetupUrl != "" {
-		n, ok = srv.node.Get()
-		if !ok {
-			return nil, fmt.Errorf("Node not ready yet")
-		}
-	}
-
 	me, err := srv.getMe()
 	if err != nil {
 		return nil, err
@@ -180,6 +177,12 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	e, err := srv.blobs.LoadEntity(ctx, eid)
 	if err != nil {
 		return nil, err
+	}
+
+	if in.SiteSetupUrl != "" {
+		if err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid); err != nil {
+			return nil, err
+		}
 	}
 
 	patch := map[string]any{}
@@ -230,27 +233,6 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	if in.SiteSetupUrl != "" {
-		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
-		resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
-		if err != nil {
-			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
-		}
-		pid, err := peer.Decode(resp.PeerInfo.PeerId)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
-		}
-		c, err := n.SiteClient(ctx, pid)
-		if err != nil {
-			return nil, fmt.Errorf("Could not contact site via P2P: %w", err)
-		}
-		if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
-			Secret:  in.SiteSetupUrl,
-			GroupId: in.Id,
-		}); err != nil {
-			return nil, fmt.Errorf("Could not publish group to site. P2P group, however, was updated successfully: %w", err)
-		}
-	}
 	return groupToProto(srv.blobs, e)
 }
 
