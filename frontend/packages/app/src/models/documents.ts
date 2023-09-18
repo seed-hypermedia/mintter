@@ -588,17 +588,15 @@ export function useDraftEditor(
     blocks: Block<typeof hmBlockSchema>[],
     parentId: string,
   ) {
-    if (isReady.current) {
-      blocks.forEach((block, index) => {
-        const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
-        lastBlockParent.current[block.id] = parentId
-        lastBlockLeftSibling.current[block.id] = leftSibling
-        lastBlocks.current[block.id] = block
-        if (block.children) {
-          prepareBlockObservations(block.children, block.id)
-        }
-      })
-    }
+    blocks.forEach((block, index) => {
+      const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
+      lastBlockParent.current[block.id] = parentId
+      lastBlockLeftSibling.current[block.id] = leftSibling
+      lastBlocks.current[block.id] = block
+      if (block.children) {
+        prepareBlockObservations(block.children, block.id)
+      }
+    })
   }
 
   function getBlockGroup(blockId: BlockIdentifier) {
@@ -657,6 +655,7 @@ export function useDraftEditor(
     ])
 
     // this is to populate the blocks we use to compare changes
+
     prepareBlockObservations(editor.topLevelBlocks, '')
     isReady.current = true
     handleAfterReady()
@@ -665,6 +664,7 @@ export function useDraftEditor(
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
+      if (!isReady.current) return
       if (!readyThings.current[0] || !readyThings.current[1]) return
 
       // trim empty blocks from the end of the document before treating them.
