@@ -72,8 +72,7 @@ func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 		if err := sqlitex.ExecTransient(conn, q, func(stmt *sqlite.Stmt) error {
 			codec := stmt.ColumnInt64(stmt.ColumnIndex(storage.BlobsCodec.ShortName()))
 
-			// We want to short-circuit if we don't know how to index the blob.
-			if codec != int64(multicodec.DagCbor) && codec != int64(multicodec.DagPb) {
+			if !isIndexable(multicodec.Code(codec)) {
 				return nil
 			}
 
@@ -777,4 +776,17 @@ func (bs *indexer) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL
 
 type indexData struct {
 	Blob cid.Cid
+}
+
+func isIndexable[T multicodec.Code | cid.Cid](v T) bool {
+	var code multicodec.Code
+
+	switch v := any(v).(type) {
+	case multicodec.Code:
+		code = v
+	case cid.Cid:
+		code = multicodec.Code(v.Prefix().Codec)
+	}
+
+	return code == multicodec.DagCbor || code == multicodec.DagPb
 }

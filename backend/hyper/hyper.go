@@ -436,51 +436,61 @@ type indexingBlockStore struct {
 }
 
 func (b *indexingBlockStore) Put(ctx context.Context, block blocks.Block) error {
-	// conn, release, err := b.db.Conn(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer release()
+	conn, release, err := b.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
-	// return sqlitex.WithTx(conn, func() error {
-	// 	codec, hash := ipfs.DecodeCID(block.Cid())
-	// 	id, exists, err := b.putBlock(conn, 0, codec, hash, block.RawData())
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	return sqlitex.WithTx(conn, func() error {
+		codec, hash := ipfs.DecodeCID(block.Cid())
+		id, exists, err := b.putBlock(conn, 0, codec, hash, block.RawData())
+		if err != nil {
+			return err
+		}
 
-	// 	if exists {
-	// 		return nil
-	// 	}
+		if exists || !isIndexable(multicodec.Code(codec)) {
+			return nil
+		}
 
-	// 	hb, err := DecodeBlob(block.Cid(), block.RawData())
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	return b.indexBlob(conn, id, hb.CID, hb.Decoded)
-	// })
-
-	return b.blockStore.Put(ctx, block)
+		hb, err := DecodeBlob(block.Cid(), block.RawData())
+		if err != nil {
+			return err
+		}
+		return b.indexBlob(conn, id, hb.CID, hb.Decoded)
+	})
 }
 
 // PutMany implements blockstore.Blockstore interface.
 func (b *indexingBlockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	// conn, release, err := b.db.Conn(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer release()
+	conn, release, err := b.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
-	// return sqlitex.WithTx(conn, func() error {
-	// 	for _, blk := range blocks {
-	// 		codec, hash := ipfs.DecodeCID(blk.Cid())
-	// 		if _, _, err := b.putBlock(conn, 0, codec, hash, blk.RawData()); err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// 	return nil
-	// })
+	return sqlitex.WithTx(conn, func() error {
+		for _, blk := range blocks {
+			codec, hash := ipfs.DecodeCID(blk.Cid())
+			id, exists, err := b.putBlock(conn, 0, codec, hash, blk.RawData())
+			if err != nil {
+				return err
+			}
 
-	return b.blockStore.PutMany(ctx, blocks)
+			if exists || !isIndexable(multicodec.Code(codec)) {
+				continue
+			}
+
+			hb, err := DecodeBlob(blk.Cid(), blk.RawData())
+			if err != nil {
+				return err
+			}
+
+			if err := b.indexBlob(conn, id, hb.CID, hb.Decoded); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
