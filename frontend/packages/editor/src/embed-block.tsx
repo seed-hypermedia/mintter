@@ -24,7 +24,7 @@ import {
 } from '@mintter/shared'
 import {Spinner, Text, View, XStack, YStack, styled} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
-import {useEffect, useMemo, useState} from 'react'
+import {ComponentProps, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {getBlockInfoFromPos} from './blocknote'
 import {createReactBlockSpec} from './blocknote'
@@ -40,7 +40,13 @@ const EditorText = styled(Text, {
   // "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont,'Open Sans', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell','Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
 })
 
-function InlineContentView({inline}: {inline: InlineContent[]}) {
+function InlineContentView({
+  inline,
+  style,
+}: {
+  inline: InlineContent[]
+  style?: ComponentProps<typeof EditorText>
+}) {
   const openUrl = useOpenUrl()
   return (
     <>
@@ -63,8 +69,9 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
           }
           return (
             <EditorText
+              {...style}
               key={`${content.type}-${index}`}
-              fontWeight={content.styles.bold ? 'bold' : undefined}
+              fontWeight={content.styles.bold ? 'bold' : style?.fontWeight}
               textDecorationLine={textDecorationLine || undefined}
               // fontStyle={content.styles.italic ? 'italic' : undefined}
               fontFamily={content.styles.code ? '$mono' : '$body'}
@@ -76,18 +83,19 @@ function InlineContentView({inline}: {inline: InlineContent[]}) {
         if (content.type === 'link') {
           return (
             <EditorText
-              fontSize={'$4'}
+              {...style}
               className={isHypermediaScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
               onPress={() => {
                 openUrl(content.href, true)
               }}
+              color="$blue10"
               hoverStyle={{
-                color: '$colorHover',
+                color: '$blue10',
                 cursor: 'pointer',
               }}
             >
-              <InlineContentView inline={content.content} />
+              <InlineContentView style={style} inline={content.content} />
             </EditorText>
           )
         }
@@ -102,9 +110,11 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
+  const style =
+    block.type === 'heading' ? {fontSize: '$7', fontWeight: 'bold'} : undefined
   return (
     <View marginTop={12} marginBottom={3}>
-      <InlineContentView inline={inline} />
+      <InlineContentView inline={inline} style={style} />
     </View>
   )
 }
