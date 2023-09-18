@@ -10,6 +10,7 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  ButtonText,
   Container,
   DialogDescription,
   DialogTitle,
@@ -57,6 +58,8 @@ import {GroupRoute, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
+import {Allotment} from 'allotment'
+import {useOpenUrl} from '../open-url'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -276,6 +279,7 @@ export default function GroupPage() {
     : undefined
   const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
+  const siteBaseUrl = group.data?.siteInfo?.baseUrl
   const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
   const frontDocMenuItems = [
@@ -298,6 +302,7 @@ export default function GroupPage() {
         }
       : null,
   ].filter(Boolean)
+  const openUrl = useOpenUrl()
   return (
     <>
       <MainWrapper>
@@ -323,7 +328,22 @@ export default function GroupPage() {
                   </>
                 ) : null}
               </Heading>
-              <XStack gap="$2">
+              <XStack gap="$3" alignItems="center">
+                {siteBaseUrl && (
+                  <Tooltip content={`Open ${group.data?.title} on the web.`}>
+                    <ButtonText
+                      fontFamily={'$mono'}
+                      fontSize={'$4'}
+                      hoverStyle={{textDecorationLine: 'underline'}}
+                      onPress={() => {
+                        openUrl(siteBaseUrl)
+                      }}
+                      color="$blue10"
+                    >
+                      {siteBaseUrl}
+                    </ButtonText>
+                  </Tooltip>
+                )}
                 {!frontDocumentUrl && isMember && (
                   <Button
                     icon={Store}
