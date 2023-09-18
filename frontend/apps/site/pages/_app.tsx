@@ -84,7 +84,7 @@ function App({Component, pageProps}: AppProps<EveryPageProps>) {
       <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
           <Theme name="mint">{contents}</Theme>
-          <Toaster position="bottom-right" />
+          <Toaster position="bottom-center" />
         </ThemeProvider>
       </Hydrate>
       <ReactQueryDevtools />
