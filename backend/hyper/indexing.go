@@ -24,8 +24,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+type indexer struct {
+	db  *sqlitex.Pool
+	log *zap.Logger
+	bs  *blockStore
+}
+
 // Reindex forces deletes all the information derived from the blobs and reindexes them.
-func (bs *Storage) Reindex(ctx context.Context) (err error) {
+func (bs *indexer) Reindex(ctx context.Context) (err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -35,7 +41,7 @@ func (bs *Storage) Reindex(ctx context.Context) (err error) {
 	return bs.reindex(conn)
 }
 
-func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
+func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 	start := time.Now()
 	bs.log.Debug("ReindexingStarted")
 	defer func() {
@@ -85,7 +91,7 @@ func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
 				return nil
 			}
 
-			return bs.indexBlob(conn, id, hb)
+			return bs.indexBlob(conn, id, hb.CID, hb.Decoded)
 		}); err != nil {
 			return err
 		}
@@ -99,7 +105,7 @@ func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
 }
 
 // MaybeReindex will trigger reindexing if it's needed.
-func (bs *Storage) MaybeReindex(ctx context.Context) error {
+func (bs *indexer) MaybeReindex(ctx context.Context) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -121,8 +127,8 @@ func (bs *Storage) MaybeReindex(ctx context.Context) error {
 // indexBlob is an uber-function that knows about all types of blobs we want to index.
 // This is probably a bad idea to put here, but for now it's easier to work with that way.
 // TODO(burdiyan): eventually we might want to make this package agnostic to blob types.
-func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
-	switch v := blob.Decoded.(type) {
+func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData any) error {
+	switch v := blobData.(type) {
 	case KeyDelegation:
 		// Validate key delegation.
 		{
@@ -180,7 +186,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 
 			var del KeyDelegation
 			if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
-				return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", blob.CID, err)
+				return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", c, err)
 			}
 
 			iss.KeyDelegationsIssuer, err = bs.ensurePublicKey(conn, del.Issuer)
@@ -189,7 +195,7 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 			}
 
 			if iss.KeyDelegationsIssuer == 0 {
-				return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, blob.CID)
+				return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, c)
 			}
 		}
 
@@ -230,11 +236,11 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 				return err
 			}
 			if res.BlobsSize < 0 || res.BlobsID == 0 {
-				return fmt.Errorf("missing causal dependency %s of change %s", dep, blob.CID)
+				return fmt.Errorf("missing causal dependency %s of change %s", dep, c)
 			}
 
 			if err := hypersql.BlobLinksInsertOrIgnore(conn, id, "change/dep", res.BlobsID); err != nil {
-				return fmt.Errorf("failed to link dependency %s of change %s: %w", dep, blob.CID, err)
+				return fmt.Errorf("failed to link dependency %s of change %s: %w", dep, c, err)
 			}
 		}
 
@@ -243,18 +249,18 @@ func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
 		}
 
 		if v.Entity.HasPrefix("hm://d/") {
-			return bs.indexDocumentChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
+			return bs.indexDocumentChange(conn, id, isspk.PublicKeysPrincipal, c, v)
 		}
 
 		if v.Entity.HasPrefix("hm://g/") {
-			return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
+			return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, c, v)
 		}
 	}
 
 	return nil
 }
 
-func (bs *Storage) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) {
+func (bs *indexer) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) {
 	look, err := hypersql.EntitiesLookupID(conn, string(eid))
 	if err != nil {
 		return 0, err
@@ -274,7 +280,7 @@ func (bs *Storage) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) 
 	return ins.EntitiesID, nil
 }
 
-func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64, error) {
+func (bs *indexer) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64, error) {
 	res, err := hypersql.PublicKeysLookupID(conn, key)
 	if err != nil {
 		return 0, err
@@ -296,7 +302,7 @@ func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64
 	return ins.PublicKeysID, nil
 }
 
-func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
 	hlc := ch.HLCTime.Pack()
 
 	// Validate group change.
@@ -461,7 +467,7 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 	return nil
 }
 
-func (bs *Storage) indexDocumentChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+func (bs *indexer) indexDocumentChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
 	hlc := ch.HLCTime.Pack()
 
 	// Validate document change.
@@ -579,7 +585,7 @@ type LinkData struct {
 	TargetVersion  string `json:"v,omitempty"`
 }
 
-func (bs *Storage) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL string, ts int64) error {
+func (bs *indexer) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL string, ts int64) error {
 	if rawURL == "" {
 		return nil
 	}

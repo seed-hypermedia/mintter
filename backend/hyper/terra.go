@@ -113,7 +113,7 @@ func (kd KeyDelegation) Verify() error {
 
 // Blob encodes the delegation into a blob.
 func (kd KeyDelegation) Blob() Blob {
-	hb, err := EncodeBlob(TypeKeyDelegation, kd)
+	hb, err := EncodeBlob(kd)
 	if err != nil {
 		panic(err)
 	}

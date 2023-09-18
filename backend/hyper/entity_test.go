@@ -27,7 +27,6 @@ func TestEntity(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, TypeChange, ch.Type)
 	require.Nil(t, ch.Decoded.(Change).Deps)
 
 	name, _ = e.Get("name")

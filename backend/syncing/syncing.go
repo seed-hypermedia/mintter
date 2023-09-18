@@ -300,7 +300,7 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 				if err := kd.Verify(); err != nil {
 					return fmt.Errorf("failed to verify key delegation: %w", err)
 				}
-				kdblob, err := hyper.EncodeBlob(hyper.TypeKeyDelegation, kd)
+				kdblob, err := hyper.EncodeBlob(kd)
 				if err != nil {
 					return err
 				}
@@ -327,7 +327,7 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 				}
 			}
 
-			changeBlob, err := hyper.EncodeBlob(hyper.TypeChange, vc.change)
+			changeBlob, err := hyper.EncodeBlob(vc.change)
 			if err != nil {
 				return err
 			}
