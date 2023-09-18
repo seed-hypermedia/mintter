@@ -14,23 +14,23 @@ import {
   PartialBlock,
 } from './blocknote'
 
+import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
+import {usePublication} from '@mintter/app/src/models/documents'
+import {toast} from '@mintter/app/src/toast'
+import {useNavRoute} from '@mintter/app/src/utils/navigation'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {Button, Copy, SizableText, XStack} from '@mintter/ui'
 import {
   NodeViewContent,
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
+import {useState} from 'react'
 import {mergeCSSClasses} from './blocknote'
+import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import BlockAttributes from './blocknote/core/extensions/Blocks/nodes/BlockAttributes'
 import {PreviousBlockTypePlugin} from './blocknote/core/extensions/Blocks/PreviousBlockTypePlugin'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {usePublication} from '@mintter/app/src/models/documents'
-import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
-import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {toast} from '@mintter/app/src/toast'
-import {Button, Copy, SizableText, XStack} from '@mintter/ui'
-import {useState} from 'react'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -105,7 +105,7 @@ function BlockHelper({
       position="absolute"
       right={-120}
       width={100}
-      top={16}
+      top={0}
     >
       <Button
         size="$1"
@@ -160,7 +160,10 @@ export const HMBlockContainer = Node.create<{
       return (
         <NodeViewWrapper
           data-id={blockId}
-          className={styles.blockOuter}
+          className={mergeCSSClasses(
+            styles.blockOuter,
+            hovered ? 'block-container-hovered' : '',
+          )}
           data-node-id="block-outer"
         >
           <div
