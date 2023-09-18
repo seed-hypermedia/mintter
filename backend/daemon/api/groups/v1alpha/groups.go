@@ -103,7 +103,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 
 	if in.SiteSetupUrl != "" {
 		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
-		resp, err := GetSiteInfoHTTP(ctx, siteURL)
+		resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
 		if err != nil {
 			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
 		}
@@ -232,7 +232,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 
 	if in.SiteSetupUrl != "" {
 		siteURL := strings.Split(in.SiteSetupUrl, "/secret-invite/")[0]
-		resp, err := GetSiteInfoHTTP(ctx, siteURL)
+		resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
 		if err != nil {
 			return nil, fmt.Errorf("Could not contact site at %s: %w", siteURL, err)
 		}
@@ -623,15 +623,24 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 }
 
 // GetSiteInfoHTTP gets public information from a site.
-func GetSiteInfoHTTP(ctx context.Context, SiteUrl string) (*groups.PublicSiteInfo, error) {
-	requestURL := fmt.Sprintf("%s/%s", SiteUrl, ".well-known/hypermedia-site")
+// Users can pass nil HTTP client in which case the default global one will be used.
+func GetSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (*groups.PublicSiteInfo, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	if siteURL[len(siteURL)-1] == '/' {
+		return nil, fmt.Errorf("site URL must not have trailing slash: %s", siteURL)
+	}
+
+	requestURL := siteURL + "/.well-known/hypermedia-site"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
 	}
@@ -649,5 +658,6 @@ func GetSiteInfoHTTP(ctx context.Context, SiteUrl string) (*groups.PublicSiteInf
 	if err := protojson.Unmarshal(data, resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
 	}
+
 	return resp, nil
 }

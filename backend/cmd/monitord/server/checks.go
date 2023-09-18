@@ -56,7 +56,7 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 }
 
 func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
-	resp, err := groups.GetSiteInfoHTTP(ctx, hostname)
+	resp, err := groups.GetSiteInfoHTTP(ctx, nil, hostname)
 	if err != nil {
 		return info, err
 	}
