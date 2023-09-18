@@ -52,3 +52,11 @@
     transform: rotate(360deg);
   }
 }
+
+.block-container {
+  position: relative;
+}
+
+.block-container-hovered {
+  background-color: var(--backgroundPress);
+}

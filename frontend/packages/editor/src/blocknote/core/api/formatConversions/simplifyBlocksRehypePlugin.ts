@@ -1,4 +1,4 @@
-import {Element as HASTElement, Parent as HASTParent} from 'rehype'
+import {Element as HASTElement, Parent as HASTParent} from 'hast'
 import {fromDom} from 'hast-util-from-dom'
 
 type SimplifyBlocksOptions = {

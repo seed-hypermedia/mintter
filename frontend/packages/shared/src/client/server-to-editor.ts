@@ -176,6 +176,7 @@ export type ServerToEditorRecursiveOpts = {
 function extractChildrenType(
   childrenType: string | undefined,
 ): EditorChildrenType {
+  console.log(`== ~ childrenType:`, childrenType)
   if (childrenType === 'ol') return 'ol'
   if (childrenType === 'ul') return 'ul'
   if (childrenType === 'blockquote') return 'blockquote'
@@ -217,6 +218,7 @@ export function serverBlockToHeading(
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
+  console.log(`== ~ block:`, block)
   return {
     type: 'heading',
     id: block.id,

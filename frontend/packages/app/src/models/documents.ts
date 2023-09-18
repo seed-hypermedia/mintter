@@ -4,7 +4,6 @@ import {
   useListen,
   useQueryInvalidator,
 } from '@mintter/app/src/app-context'
-import {fetchWebLink} from './web-links'
 import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server'
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {useOpenUrl} from '@mintter/app/src/open-url'
@@ -16,14 +15,11 @@ import {
   HMBlockSchema,
   InlineContent,
   PartialBlock,
-  RightsideWidget,
-  createHyperdocsDocLinkPlugin,
-  defaultReactSlashMenuItems,
-  formattingToolbarFactory,
+  createHypermediaDocLinkPlugin,
   hmBlockSchema,
-  insertFile,
-  insertImage,
-  insertVideo,
+  // insertFile,
+  // insertImage,
+  // insertVideo,
   useBlockNote,
 } from '@mintter/editor'
 import {
@@ -37,7 +33,6 @@ import {
   normlizeHmId,
   unpackDocId,
 } from '@mintter/shared'
-import {useWidgetViewFactory} from '@prosemirror-adapter/react'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -48,12 +43,13 @@ import {
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {useEffect, useRef} from 'react'
+import {memo, useEffect, useRef} from 'react'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
+import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
-import {pathNameify} from '../utils/path'
+import {fetchWebLink} from './web-links'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
@@ -592,17 +588,15 @@ export function useDraftEditor(
     blocks: Block<typeof hmBlockSchema>[],
     parentId: string,
   ) {
-    if (isReady.current) {
-      blocks.forEach((block, index) => {
-        const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
-        lastBlockParent.current[block.id] = parentId
-        lastBlockLeftSibling.current[block.id] = leftSibling
-        lastBlocks.current[block.id] = block
-        if (block.children) {
-          prepareBlockObservations(block.children, block.id)
-        }
-      })
-    }
+    blocks.forEach((block, index) => {
+      const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
+      lastBlockParent.current[block.id] = parentId
+      lastBlockLeftSibling.current[block.id] = leftSibling
+      lastBlocks.current[block.id] = block
+      if (block.children) {
+        prepareBlockObservations(block.children, block.id)
+      }
+    })
   }
 
   function getBlockGroup(blockId: BlockIdentifier) {
@@ -661,6 +655,7 @@ export function useDraftEditor(
     ])
 
     // this is to populate the blocks we use to compare changes
+
     prepareBlockObservations(editor.topLevelBlocks, '')
     isReady.current = true
     handleAfterReady()
@@ -669,6 +664,7 @@ export function useDraftEditor(
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
+      if (!isReady.current) return
       if (!readyThings.current[0] || !readyThings.current[1]) return
 
       // trim empty blocks from the end of the document before treating them.
@@ -784,25 +780,22 @@ export function useDraftEditor(
       readyThings.current[0] = e
       handleMaybeReady()
     },
-    uiFactories: {
-      formattingToolbarFactory,
-    },
     blockSchema: hmBlockSchema,
-    // @ts-expect-error
-    slashCommands: [
-      ...defaultReactSlashMenuItems.slice(0, 2),
-      insertImage,
-      insertFile,
-      insertVideo,
-      ...defaultReactSlashMenuItems.slice(2),
-    ],
+    // slashCommands: [
+    //   ...defaultReactSlashMenuItems.slice(0, 2),
+    //   insertImage,
+    //   insertFile,
+    //   insertVideo,
+    //   ...defaultReactSlashMenuItems.slice(2),
+    // ],
+
     _tiptapOptions: {
       extensions: [
         Extension.create({
-          name: 'hyperdocs-link',
+          name: 'hypermedia-link',
           addProseMirrorPlugins() {
             return [
-              createHyperdocsDocLinkPlugin({
+              createHypermediaDocLinkPlugin({
                 queryClient,
                 fetchWebLink,
               }).plugin,
@@ -970,8 +963,6 @@ export function usePublicationEditor(
     },
   })
 
-  const widgetViewFactory = useWidgetViewFactory()
-
   // both the publication data and the editor are asyncronously loaded
   // using a ref to avoid extra renders, and ensure the editor is available and ready
   const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
@@ -1020,12 +1011,6 @@ export function usePublicationEditor(
       if (readyPub) {
         applyPubToEditor(e, readyPub)
       }
-    },
-    uiFactories: {
-      rightsideFactory: widgetViewFactory({
-        component: RightsideWidget,
-        as: 'div',
-      }),
     },
   })
 

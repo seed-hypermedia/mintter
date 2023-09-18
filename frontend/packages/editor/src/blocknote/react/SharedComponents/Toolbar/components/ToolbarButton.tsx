@@ -1,6 +1,6 @@
 import {ActionIcon, Button} from '@mantine/core'
 import Tippy from '@tippyjs/react'
-import {ForwardedRef, forwardRef, MouseEvent} from 'react'
+import {ForwardedRef, MouseEvent, forwardRef} from 'react'
 import {IconType} from 'react-icons'
 import {TooltipContent} from '../../Tooltip/components/TooltipContent'
 

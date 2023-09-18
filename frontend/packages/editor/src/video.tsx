@@ -1,4 +1,3 @@
-import {HMBlockSchema} from '@mintter/app/src/client/schema'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
@@ -18,12 +17,12 @@ import {
   Block,
   BlockNoteEditor,
   DefaultBlockSchema,
-  ReactSlashMenuItem,
   createReactBlockSpec,
   defaultProps,
   getBlockInfoFromPos,
   insertOrUpdateBlock,
 } from './blocknote'
+import {HMBlockSchema} from './schema'
 
 export const VideoBlock = createReactBlockSpec({
   type: 'video',
@@ -699,21 +698,21 @@ function VideoForm({
   )
 }
 
-export const insertVideo = new ReactSlashMenuItem<
-  DefaultBlockSchema & {video: typeof VideoBlock}
->(
-  'Video',
-  // @ts-ignore
-  (editor: BlockNoteEditor<HMBlockSchema>) => {
-    insertOrUpdateBlock(editor, {
-      type: 'video',
-      props: {
-        url: '',
-      },
-    })
-  },
-  ['video', 'vid', 'media'],
-  'Media',
-  <RiVideoAddFill size={18} />,
-  'Insert a video',
-)
+// export const insertVideo = new ReactSlashMenuItem<
+//   DefaultBlockSchema & {video: typeof VideoBlock}
+// >(
+//   'Video',
+//   // @ts-ignore
+//   (editor: BlockNoteEditor<HMBlockSchema>) => {
+//     insertOrUpdateBlock(editor, {
+//       type: 'video',
+//       props: {
+//         url: '',
+//       },
+//     })
+//   },
+//   ['video', 'vid', 'media'],
+//   'Media',
+//   <RiVideoAddFill size={18} />,
+//   'Insert a video',
+// )

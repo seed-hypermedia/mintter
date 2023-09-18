@@ -1,3 +1,5 @@
+import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
+import {formatKeyboardShortcut} from '../../../utils'
 import {
   RiBold,
   RiCodeFill,
@@ -5,14 +7,11 @@ import {
   RiStrikethrough,
   RiUnderline,
 } from 'react-icons/ri'
-import {
-  BlockNoteEditor,
-  BlockSchema,
-  ToggledStyle,
-} from '@mintter/app/src/blocknote-core'
+import {BlockNoteEditor, BlockSchema, ToggledStyle} from '@/blocknote/core'
 import {IconType} from 'react-icons'
-import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
-import {formatKeyboardShortcut} from '../../../utils'
+import {useState} from 'react'
+import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
+import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 
 const shortcuts: Record<ToggledStyle, string> = {
   bold: 'Mod+B',
@@ -34,6 +33,18 @@ export const ToggledStyleButton = <BSchema extends BlockSchema>(props: {
   editor: BlockNoteEditor<BSchema>
   toggledStyle: ToggledStyle
 }) => {
+  const [active, setActive] = useState<boolean>(
+    props.toggledStyle in props.editor.getActiveStyles(),
+  )
+
+  useEditorContentChange(props.editor, () => {
+    setActive(props.toggledStyle in props.editor.getActiveStyles())
+  })
+
+  useEditorSelectionChange(props.editor, () => {
+    setActive(props.toggledStyle in props.editor.getActiveStyles())
+  })
+
   const toggleStyle = (style: ToggledStyle) => {
     props.editor.focus()
     props.editor.toggleStyles({[style]: true})
@@ -42,7 +53,7 @@ export const ToggledStyleButton = <BSchema extends BlockSchema>(props: {
   return (
     <ToolbarButton
       onClick={() => toggleStyle(props.toggledStyle)}
-      isSelected={props.toggledStyle in props.editor.getActiveStyles()}
+      isSelected={active}
       mainTooltip={
         props.toggledStyle.slice(0, 1).toUpperCase() +
         props.toggledStyle.slice(1)

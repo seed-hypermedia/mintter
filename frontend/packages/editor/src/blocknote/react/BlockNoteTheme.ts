@@ -203,7 +203,6 @@ export const blockNoteToMantineTheme = (theme: Theme): MantineThemeOverride => {
                 fontFamily: theme.fontFamily,
               },
               // Placeholders
-              // @ts-expect-error
               [`.${blockStyles.isEmpty} .${blockStyles.inlineContent}:before, .${blockStyles.isFilter} .${blockStyles.inlineContent}:before`]:
                 {
                   color: theme.colors.sideMenu,

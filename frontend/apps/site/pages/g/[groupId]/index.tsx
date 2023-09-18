@@ -3,36 +3,37 @@ import {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
+import Head from 'next/head'
 import {setAllowAnyHostGetCORS} from 'server/cors'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import Head from 'next/head'
 import {SiteHead} from '../../../site-head'
 
-import {trpc} from '../../../trpc'
-import {
-  PageSection,
-  Text,
-  YStack,
-  Footer,
-  ButtonText,
-  Button,
-  SideSectionTitle,
-  SideSection,
-  View,
-} from '@mintter/ui'
-import {HMGroup, HMPublication} from '../../../server/json-hm'
-import {ReactElement} from 'react'
-import {GestureResponderEvent} from 'react-native'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  createHmId,
+  createPublicWebHmUrl,
   formattedDate,
   unpackHmId,
-  createPublicWebHmUrl,
-  createHmId,
 } from '@mintter/shared'
+import {
+  Button,
+  ButtonText,
+  Footer,
+  PageSection,
+  SideSection,
+  SideSectionTitle,
+  Text,
+  Tooltip,
+  View,
+  YStack,
+} from '@mintter/ui'
 import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
+import {ReactElement} from 'react'
+import {GestureResponderEvent} from 'react-native'
 import {Paragraph} from 'tamagui'
+import {HMGroup, HMPublication} from '../../../server/json-hm'
+import {trpc} from '../../../trpc'
 
 function GroupOwnerSection({owner}: {owner: string}) {
   return (
@@ -64,13 +65,11 @@ function LastUpdateSection({time}: {time: string}) {
     <SideSection>
       <SideSectionTitle>Last Update:</SideSectionTitle>
 
-      <SimpleTooltip
-        content={format(new Date(time), 'MMMM do yyyy, HH:mm:ss z')}
-      >
+      <Tooltip content={format(new Date(time), 'MMMM do yyyy, HH:mm:ss z')}>
         <Paragraph color="$blue11">
           {format(new Date(time), 'EEEE, MMMM do, yyyy')}
         </Paragraph>
-      </SimpleTooltip>
+      </Tooltip>
     </SideSection>
   )
 }

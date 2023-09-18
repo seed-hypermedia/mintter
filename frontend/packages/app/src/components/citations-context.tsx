@@ -60,10 +60,10 @@ export function useCitationsForBlock(blockId: string) {
   let context = useContext(citationsContext)
   let citations = useMemo(() => {
     if (!context) return []
-    return context.citations.data?.links.filter((link) => {
+    return context.citations?.data?.links.filter((link) => {
       return link.target?.blockId == blockId
     })
-  }, [blockId, context.citations])
+  }, [blockId, context])
 
   return {
     citations,

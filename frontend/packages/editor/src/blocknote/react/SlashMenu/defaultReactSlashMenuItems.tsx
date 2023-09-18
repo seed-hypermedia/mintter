@@ -1,19 +1,26 @@
 import {
   BaseSlashMenuItem,
+  BlockSchema,
+  defaultBlockSchema,
   DefaultBlockSchema,
-  defaultSlashMenuItems,
+  getDefaultSlashMenuItems,
 } from '@/blocknote/core'
-import {HMBlockSchema} from '@/schema'
-import {MdPreview} from 'react-icons/md'
 import {
   RiChatQuoteLine,
   RiCodeLine,
   RiFolder2Line,
   RiH1,
+  RiH2,
+  RiH3,
+  RiListOrdered,
+  RiListUnordered,
   RiPlayCircleLine,
   RiText,
 } from 'react-icons/ri'
+import {formatKeyboardShortcut} from '../utils'
 import {ReactSlashMenuItem} from './ReactSlashMenuItem'
+import {MdPreview} from 'react-icons/md'
+
 const extraFields: Record<
   string,
   Omit<
@@ -57,7 +64,6 @@ const extraFields: Record<
     hint: 'Used for the body of your document',
     // shortcut: formatKeyboardShortcut('Mod-Alt-0'),
   },
-
   Code: {
     group: 'Text Content',
     icon: <RiCodeLine size={18} />,
@@ -91,19 +97,18 @@ const extraFields: Record<
   },
 }
 
-export const defaultReactSlashMenuItems = defaultSlashMenuItems
-  .map((item) => {
-    if (!extraFields[item.name]) {
-      return false
-    }
-    return new ReactSlashMenuItem<HMBlockSchema>(
-      item.name,
-      item.execute,
-      item.aliases,
-      extraFields[item.name].group,
-      extraFields[item.name].icon,
-      extraFields[item.name].hint,
-      extraFields[item.name].shortcut,
-    )
-  })
-  .filter(Boolean)
+export function getDefaultReactSlashMenuItems<BSchema extends BlockSchema>(
+  // This type casting is weird, but it's the best way of doing it, as it allows
+  // the schema type to be automatically inferred if it is defined, or be
+  // inferred as any if it is not defined. I don't think it's possible to make it
+  // infer to DefaultBlockSchema if it is not defined.
+  schema: BSchema = defaultBlockSchema as unknown as BSchema,
+): ReactSlashMenuItem<BSchema>[] {
+  const slashMenuItems: BaseSlashMenuItem<BSchema>[] =
+    getDefaultSlashMenuItems(schema)
+
+  return slashMenuItems.map((item) => ({
+    ...item,
+    ...extraFields[item.name],
+  }))
+}

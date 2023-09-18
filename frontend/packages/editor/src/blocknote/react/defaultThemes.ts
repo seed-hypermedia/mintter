@@ -16,8 +16,8 @@ export const defaultColorScheme = [
 export const lightDefaultTheme: Theme = {
   colors: {
     editor: {
-      text: defaultColorScheme[5],
-      background: defaultColorScheme[0],
+      text: 'inherit',
+      background: 'transparent',
     },
     menu: {
       text: defaultColorScheme[5],
@@ -89,8 +89,8 @@ export const lightDefaultTheme: Theme = {
 export const darkDefaultTheme: Theme = {
   colors: {
     editor: {
-      text: defaultColorScheme[2],
-      background: defaultColorScheme[6],
+      text: 'inherit',
+      background: 'transparent',
     },
     menu: {
       text: defaultColorScheme[2],

@@ -13,6 +13,7 @@ import {
   SideSectionTitle,
   SizableText,
   Text,
+  Tooltip,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -30,7 +31,7 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
   return (
     <XStack>
       <SizableText opacity={0.5}>{label}:&nbsp;</SizableText>
-      <SimpleTooltip
+      <Tooltip
         content={
           <>
             <Clipboard size={12} /> Copy: {id}
@@ -47,7 +48,7 @@ function IDLabelRow({id, label}: {id?: string; label: string}) {
         >
           {abbreviateCid(id)}
         </Button>
-      </SimpleTooltip>
+      </Tooltip>
     </XStack>
   )
 }
@@ -552,7 +553,7 @@ function LatestVersionBanner({
         {publishTimeRelative}
       </SizableText>
 
-      <SimpleTooltip
+      <Tooltip
         content={format(
           new Date(record.publishTime),
           'MMMM do yyyy, HH:mm:ss z',
@@ -561,7 +562,7 @@ function LatestVersionBanner({
         <Paragraph color="$blue11">
           {format(new Date(record.publishTime), 'EEEE, MMMM do, yyyy')}
         </Paragraph>
-      </SimpleTooltip>
+      </Tooltip>
     </NextLink>
   )
 }
