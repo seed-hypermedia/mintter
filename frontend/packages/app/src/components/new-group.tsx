@@ -90,7 +90,7 @@ function AddGroupForm({
           name="description"
         />
         <Form.Trigger asChild>
-          <Button icon={BookPlus}>Create Group</Button>
+          <Button>Create Group</Button>
         </Form.Trigger>
       </Form>
     </>

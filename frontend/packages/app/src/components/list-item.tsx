@@ -1,23 +1,39 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {formattedDate} from '@mintter/shared'
+import {formattedDate, formattedDateLong} from '@mintter/shared'
 import {
   Button,
   ButtonText,
+  Link,
   MoreHorizontal,
   Popover,
   Separator,
   YGroup,
+  Tooltip,
 } from '@mintter/ui'
 import {FC, ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
 export type MenuItem = {
   key: string
   label: string
   icon: FC
   onPress: () => void
+}
+
+export function copyLinkMenuItem(
+  url: string | undefined | null,
+  label: string,
+): MenuItem | null {
+  if (!url) return null
+  return {
+    onPress: () => url && copyUrlToClipboardWithFeedback(url, label),
+    key: 'copy-link',
+    label: `Copy Link to ${label}`,
+    icon: Link,
+  }
 }
 
 export function ListItem({
@@ -31,7 +47,7 @@ export function ListItem({
   title: string
   onPress: (e: GestureResponderEvent) => void
   onPointerEnter?: () => void
-  menuItems?: MenuItem[]
+  menuItems?: (MenuItem | null)[]
 }) {
   // const [isHovering, setIsHovering] = useState(false)
   const popoverState = usePopoverState()
@@ -82,19 +98,22 @@ export function ListItem({
             ]}
           >
             <YGroup separator={<Separator />}>
-              {menuItems.map((item) => (
-                <YGroup.Item key={item.key}>
-                  <MenuItem
-                    onPress={(e) => {
-                      e.stopPropagation()
-                      popoverState.onOpenChange(false)
-                      item.onPress()
-                    }}
-                    title={item.label}
-                    icon={item.icon}
-                  />
-                </YGroup.Item>
-              ))}
+              {menuItems.map(
+                (item) =>
+                  item && (
+                    <YGroup.Item key={item.key}>
+                      <MenuItem
+                        onPress={(e) => {
+                          e.stopPropagation()
+                          popoverState.onOpenChange(false)
+                          item.onPress()
+                        }}
+                        title={item.label}
+                        icon={item.icon}
+                      />
+                    </YGroup.Item>
+                  ),
+              )}
             </YGroup>
           </Popover.Content>
         </Popover>
@@ -111,15 +130,17 @@ export function TimeAccessory({
   onPress: (e: GestureResponderEvent) => void
 }) {
   return (
-    <ButtonText
-      fontFamily="$body"
-      fontSize="$2"
-      data-testid="list-item-date"
-      minWidth="10ch"
-      textAlign="right"
-      onPress={onPress}
-    >
-      {time ? formattedDate(time) : '...'}
-    </ButtonText>
+    <Tooltip content={formattedDateLong(time)}>
+      <ButtonText
+        fontFamily="$body"
+        fontSize="$2"
+        data-testid="list-item-date"
+        minWidth="10ch"
+        textAlign="right"
+        onPress={onPress}
+      >
+        {time ? formattedDate(time) : '...'}
+      </ButtonText>
+    </Tooltip>
   )
 }

@@ -1,5 +1,12 @@
 import Footer from '@mintter/app/src/components/footer'
-import {Document, Role, pluralS, unpackDocId, unpackHmId} from '@mintter/shared'
+import {
+  Document,
+  Role,
+  idToUrl,
+  pluralS,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -50,6 +57,7 @@ import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {Allotment} from 'allotment'
 import {FooterButton} from '../components/footer'
 import {useAllChanges} from '../models/changes'
+import {copyLinkMenuItem} from '../components/list-item'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -157,7 +165,13 @@ function GroupContentItem({
           })
         }}
         pubContext={{key: 'group', groupId, pathName}}
-        menuItems={userRole !== Role.ROLE_UNSPECIFIED ? memberMenuItems : []}
+        menuItems={[
+          copyLinkMenuItem(
+            idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
+            'Group Publication',
+          ),
+          ...(userRole !== Role.ROLE_UNSPECIFIED ? memberMenuItems : []),
+        ]}
         openRoute={{
           key: 'publication',
           documentId: docId,

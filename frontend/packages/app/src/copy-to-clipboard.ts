@@ -1,14 +1,17 @@
 import {error} from './logger'
 import {toast} from './toast'
 
-export async function copyToClipboardWithFeedback(text: string, label: string) {
+export async function copyUrlToClipboardWithFeedback(
+  text: string,
+  label: string,
+) {
   await copyTextToClipboard(text)
     .then(() => {
-      toast.success(`${label} copied to clipboard`)
+      toast.success(`${label} Link Copied to Clipboard`)
     })
     .catch((e) => {
       console.error(e)
-      toast.error(`${label} failed to copy`)
+      toast.error(`${label} Link Failed to Copy`)
     })
 }
 

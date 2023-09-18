@@ -44,7 +44,7 @@ function AddConnectionForm(props: {onClose: () => void}) {
   }
   return (
     <>
-      <DialogTitle>Add a Contact</DialogTitle>
+      <DialogTitle>Add Connection</DialogTitle>
       <DialogDescription>
         Share your device connection URL with your friends:
       </DialogDescription>
@@ -68,12 +68,16 @@ function AddConnectionForm(props: {onClose: () => void}) {
       </DialogDescription>
       <XStack>
         <Button onPress={handleConnect} disabled={!peer} icon={UserPlus}>
-          Add Connection
+          Connect
         </Button>
       </XStack>
     </>
   )
 }
+export function useAddConnection() {
+  return null
+}
+
 export function ContactsPrompt() {
   return (
     <AppDialog

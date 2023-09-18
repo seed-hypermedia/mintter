@@ -1,4 +1,4 @@
-import {copyToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
+import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useGRPCClient, useIPC} from '@mintter/app/src/app-context'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
@@ -42,6 +42,7 @@ import {
   FilePlus2,
   Globe,
   Library,
+  Link,
   MoreHorizontal,
   Pencil,
   Search,
@@ -151,7 +152,7 @@ export function useFullReferenceUrl(
   if (pub.data?.version)
     return {
       url: createPublicWebHmUrl('d', docId.eid, {version: pub.data?.version}),
-      label: 'Doc Version URL',
+      label: 'Doc Version',
     }
 
   const reference = getReferenceUrlOfRoute(route)
@@ -194,14 +195,14 @@ function CopyReferenceButton() {
   const reference = useFullReferenceUrl(route)
   if (!reference) return null
   return (
-    <Tooltip content={`Copy ${reference.label}`}>
+    <Tooltip content={`Copy ${reference.label} Link`}>
       <Button
-        aria-label={`Copy ${reference.label}`}
+        aria-label={`Copy ${reference.label} Link`}
         chromeless
         size="$2"
-        icon={Copy}
+        icon={Link}
         onPress={() => {
-          copyToClipboardWithFeedback(reference.url, reference.label)
+          copyUrlToClipboardWithFeedback(reference.url, reference.label)
         }}
       ></Button>
     </Tooltip>

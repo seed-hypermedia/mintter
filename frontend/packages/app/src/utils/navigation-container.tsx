@@ -10,6 +10,7 @@ import {
 } from './navigation'
 import {useIPC} from '../app-context'
 import {decodeRouteFromPath} from './route-encoding'
+import {toast} from '../toast'
 
 const initRouteEncoded = window.location.pathname.slice(1)
 
@@ -53,6 +54,11 @@ export function NavigationContainer({
       }
       if (event === 'forward') {
         dispatch({type: 'forward'})
+      }
+      if (typeof event === 'object' && event.key === 'connectPeer') {
+        // const route = decodeRouteFromPath(event.value)
+        // dispatch({type: 'replace', route})
+        toast.success('Connecting to peer ' + event.peer)
       }
     })
   }, [])

@@ -6,15 +6,20 @@ import {
   MainWrapper,
   Spinner,
   Text,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import {useGroupMembers, useGroups} from '../models/groups'
-import {Group, Role} from '@mintter/shared'
+import {Group, Role, createPublicWebHmUrl, idToUrl} from '@mintter/shared'
 import {GroupRoute} from '../utils/navigation'
 import {useClickNavigate} from '../utils/useNavigate'
 import {useNavigate} from '../utils/useNavigate'
 import {GestureResponderEvent} from 'react-native'
-import {ListItem, TimeAccessory} from '../components/list-item'
+import {
+  ListItem,
+  TimeAccessory,
+  copyLinkMenuItem,
+} from '../components/list-item'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 
 function MemberAvatarLinks({
@@ -25,13 +30,13 @@ function MemberAvatarLinks({
   ownerAccountId: string
 }) {
   return (
-    <>
+    <XStack>
       <AccountLinkAvatar accountId={ownerAccountId} />
       {Object.keys(groupMembers).map((accountId) => {
         if (accountId == ownerAccountId) return null
         return <AccountLinkAvatar accountId={accountId} key={accountId} />
       })}
-    </>
+    </XStack>
   )
 }
 
@@ -47,7 +52,7 @@ function GroupListItem({group}: {group: Group}) {
     <ListItem
       title={group.title}
       accessory={
-        <>
+        <XStack gap="$4">
           {groupMembers.data?.members ? (
             <MemberAvatarLinks
               ownerAccountId={group.ownerAccountId}
@@ -57,10 +62,11 @@ function GroupListItem({group}: {group: Group}) {
             <AccountLinkAvatar accountId={group.ownerAccountId} />
           )}
           <TimeAccessory time={group.createTime} onPress={goToItem} />
-        </>
+        </XStack>
       }
       onPress={goToItem}
       menuItems={[
+        copyLinkMenuItem(idToUrl(group.id), 'Group'),
         {
           label: 'Open in new Window',
           key: 'spawn',

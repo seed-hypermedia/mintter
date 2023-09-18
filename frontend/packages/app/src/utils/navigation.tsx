@@ -172,7 +172,10 @@ export function setAppNavDispatch(v: null | React.Dispatch<NavAction>) {
   appNavDispatch = v
 }
 
-export type AppWindowEvent = 'back' | 'forward'
+export type AppWindowEvent =
+  | 'back'
+  | 'forward'
+  | {key: 'connectPeer'; peer: string}
 
 export function dispatchAppNavigation(action: NavAction) {
   if (!appNavDispatch) {

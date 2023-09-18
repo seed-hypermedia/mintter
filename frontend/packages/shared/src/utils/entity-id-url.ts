@@ -7,12 +7,6 @@ export const HYPERMEDIA_ENTITY_TYPES = {
   g: 'Group',
 } as const
 
-export function getPublicDocUrl(docId: string, version?: string | undefined) {
-  let webUrl = `${HYPERMEDIA_PUBLIC_WEB_GATEWAY}/d/${docId}`
-  if (version) return `${webUrl}?v=${version}`
-  return webUrl
-}
-
 export function createPublicWebHmUrl(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   eid: string,
@@ -158,11 +152,15 @@ export function isPublicGatewayLink(text: string) {
   return !!matchesGateway
 }
 
-export function idToUrl(hmId: string, hostname?: string | null) {
+export function idToUrl(
+  hmId: string,
+  hostname?: string | null | undefined,
+  versionId?: string | null | undefined,
+) {
   const unpacked = unpackHmId(hmId)
   if (!unpacked?.type) return null
   return createPublicWebHmUrl(unpacked.type, unpacked.eid, {
-    version: unpacked.version,
+    version: versionId || unpacked.version,
     blockRef: unpacked.blockRef,
     hostname,
   })

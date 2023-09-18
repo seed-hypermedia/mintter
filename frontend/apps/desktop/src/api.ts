@@ -7,7 +7,7 @@ import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
 import Store from 'electron-store'
-import {childLogger, error, log} from './logger'
+import {childLogger, error, log, warn} from './logger'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import type {
@@ -34,6 +34,18 @@ function windowFocused(windowId: string) {
 function windowBlurred(windowId: string) {
   if (focusedWindowKey === windowId) {
     focusedWindowKey = null
+  }
+}
+
+function ensureFocusedWindowVisible() {
+  const focusedWindow = getFocusedWindow()
+  if (focusedWindow) {
+    if (focusedWindow.isMinimized()) focusedWindow.restore()
+    focusedWindow.focus()
+  } else {
+    console.error(
+      'did not have the focused window. we should create a window or refocus another window from allWindows',
+    )
   }
 }
 
@@ -148,8 +160,11 @@ function updateWindowState(
   updater: (window: AppWindow) => AppWindow,
 ) {
   const newWindows = {...windowsState}
-  newWindows[windowId] = updater(newWindows[windowId])
-  setWindowsState(newWindows)
+  const winState = newWindows[windowId]
+  if (winState) {
+    newWindows[windowId] = updater(winState)
+    setWindowsState(newWindows)
+  } else warn('updateWindowState: window not found: ' + windowId)
 }
 
 function dispatchFocusedWindowAppEvent(event: AppWindowEvent) {
@@ -509,11 +524,28 @@ export type AppInfo = {
   platform: () => typeof process.platform
   arch: () => typeof process.arch
 }
+setTimeout(() => {
+  handleUrlOpen(
+    'hm://connect-peer/12D3KooWBR9HQQFMiSy3DtFmumv6Jcm8sXwEB5bmpXMrFT6ENTck',
+  )
+}, 10000)
 
 export function handleUrlOpen(url: string) {
   log('[Deep Link Open]: ', url)
   const hmId = unpackHmIdWithAppRoute(url)
   if (!hmId?.navRoute) {
+    const connectionRegexp = /connect-peer\/([\w\d]+)/
+    const parsedConnectUrl = url.match(connectionRegexp)
+    const connectionDeviceId = parsedConnectUrl ? parsedConnectUrl[1] : null
+    if (connectionDeviceId) {
+      ensureFocusedWindowVisible()
+      dispatchFocusedWindowAppEvent({
+        key: 'connectPeer',
+        peer: connectionDeviceId,
+      })
+      return
+    }
+
     dialog.showErrorBox('Invalid URL', `We could not parse this URL: ${url}`)
     return
   }

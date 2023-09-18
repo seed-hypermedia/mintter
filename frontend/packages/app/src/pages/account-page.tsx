@@ -3,14 +3,13 @@ import {Avatar} from '@mintter/app/src/components/avatar'
 import Footer from '@mintter/app/src/components/footer'
 import {OnlineIndicator} from '@mintter/app/src/components/indicator'
 import {PublicationListItem} from '@mintter/app/src/components/publication-list-item'
-import {Tooltip} from '@mintter/ui'
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
 import {useAccountPublicationList} from '@mintter/app/src/models/changes'
 import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
 import {toast} from '@mintter/app/src/toast'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {abbreviateCid, createPublicWebHmUrl, pluralizer} from '@mintter/shared'
+import {abbreviateCid, pluralizer} from '@mintter/shared'
 import {
   Button,
   ChevronDown,
@@ -23,11 +22,13 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {CheckCircle, Copy, PlusCircle, XCircle} from '@tamagui/lucide-icons'
+import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
 import {useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
+import {copyLinkMenuItem} from '../components/list-item'
+import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 
 function DeviceRow({
   isOnline,
@@ -76,12 +77,20 @@ function AccountDocuments({
   return (
     <Section>
       {list.data?.map((pub) => {
+        const docId = pub.document?.id
+        if (!docId) return null
         return (
           <PublicationListItem
             pubContext={isTrusted ? {key: 'trusted'} : null}
-            key={pub.document?.id}
+            key={docId}
             publication={pub}
             hasDraft={undefined}
+            menuItems={[
+              copyLinkMenuItem(
+                idToUrl(docId, undefined, pub.version),
+                'Publication',
+              ),
+            ]}
             openRoute={{
               key: 'publication',
               documentId: pub.document?.id!,

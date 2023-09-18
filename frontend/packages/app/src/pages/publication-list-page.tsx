@@ -21,6 +21,8 @@ import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {queryPublication} from '../models/documents'
 import './publication-list-page.css'
+import {copyLinkMenuItem} from '../components/list-item'
+import {idToUrl} from '@mintter/shared'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let publications = usePublicationList({trustedOnly})
@@ -65,6 +67,10 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
                     }}
                     publication={publication}
                     menuItems={[
+                      copyLinkMenuItem(
+                        idToUrl(docId, undefined, publication.version),
+                        'Publication',
+                      ),
                       {
                         key: 'delete',
                         label: 'Delete Publication',

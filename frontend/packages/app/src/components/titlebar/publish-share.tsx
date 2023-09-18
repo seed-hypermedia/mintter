@@ -68,7 +68,7 @@ import {usePublicationInContext} from '@mintter/app/models/publication'
 import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
 import {
   copyTextToClipboard,
-  copyToClipboardWithFeedback,
+  copyUrlToClipboardWithFeedback,
 } from '@mintter/app/copy-to-clipboard'
 
 export function RenameShortnameDialog({
@@ -588,11 +588,11 @@ function VersionContext({route}: {route: PublicationRoute}) {
       <ButtonText
         hoverStyle={{textDecorationLine: 'underline'}}
         onPress={() => {
-          copyToClipboardWithFeedback(
+          copyUrlToClipboardWithFeedback(
             createPublicWebHmUrl('d', docId.eid, {
               version: route.versionId,
             }),
-            'Exact Version URL',
+            'Exact Doc Version',
           )
         }}
         color={'$color10'}
