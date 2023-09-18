@@ -15,8 +15,6 @@ import (
 	"mintter/backend/daemon"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/ipfs"
-	"mintter/backend/mttnet"
-	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 
 	"github.com/burdiyan/go/mainutil"
@@ -89,14 +87,14 @@ Flags:
 		if err != nil {
 			return err
 		}
-		f := future.New[*mttnet.Node]()
-		site := sites.Website{
-			Net: f.ReadOnly,
+		//f := future.New[*mttnet.Node]()
+		site := &sites.Website{
+			//Node: f.ReadOnly,
 			URL: rawURL,
 		}
 		app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
 			Path:    "/.well-known/hypermedia-site",
-			Handler: &site,
+			Handler: site,
 			Mode:    daemon.RouteNav,
 		})
 
@@ -104,9 +102,8 @@ Flags:
 			return err
 		}
 
-		site.Net = app.Net
+		site.Node = app.Net
 		site.DB = app.DB
-		site.Blobs = app.Blobs
 
 		if _, ok := dir.Identity().Get(); !ok {
 			account, err := core.NewKeyPairRandom()

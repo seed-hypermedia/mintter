@@ -28,17 +28,21 @@ import (
 // Website is the gate to manipulate internal node structures
 type Website struct {
 	// Network of the node.
-	Net *future.ReadOnly[*mttnet.Node]
+	Node *future.ReadOnly[*mttnet.Node]
 	// DB access to the node.
 	DB *sqlitex.Pool
-	// Blobs grants acces to hypermedia blobs.
-	Blobs *hyper.Storage
 	// URL is the protocol + hostname the group is being served at.
 	URL string
 }
 
 var errNodeNotReadyYet = errors.New("P2P node is not ready yet")
 
+func NewServer(n *future.ReadOnly[*mttnet.Node], db *sqlitex.Pool) *Website {
+	return &Website{
+		Node: n,
+		DB:   db,
+	}
+}
 func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
@@ -107,8 +111,9 @@ func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link stri
 }
 
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
-func (ws Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
-	n, ok := ws.Net.Get()
+func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
+	fmt.Println("INFO CALLED")
+	n, ok := ws.Node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
 	}
@@ -130,7 +135,8 @@ func (ws Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest
 		GroupVersion: siteInfo.ServedSitesVersion,
 	}
 	if siteInfo.ServedSitesVersion == "" && siteInfo.EntitiesEID != "" {
-		entity, err := ws.Blobs.LoadEntity(ctx, hyper.EntityID(siteInfo.EntitiesEID))
+
+		entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(siteInfo.EntitiesEID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get entity [%s]: %w", siteInfo.EntitiesEID, err)
 		}
@@ -147,8 +153,9 @@ func (ws Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest
 }
 
 // InitializeServer starts serving a group in this site.
-func (ws Website) InitializeServer(ctx context.Context, in *groups.InitializeServerRequest) (*groups.InitializeServerResponse, error) {
-	n, ok := ws.Net.Get()
+func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeServerRequest) (*groups.InitializeServerResponse, error) {
+	fmt.Println("INIT CALLED")
+	n, ok := ws.Node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
 	}
@@ -194,7 +201,7 @@ func (ws Website) InitializeServer(ctx context.Context, in *groups.InitializeSer
 }
 
 // PublishBlobs publish blobs to the website.
-func (ws Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
+func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
 }
 

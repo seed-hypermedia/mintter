@@ -10,7 +10,6 @@ import (
 	_ "expvar"
 	_ "net/http/pprof"
 
-	"mintter/backend/cmd/mintter-site/sites"
 	"mintter/backend/config"
 	"mintter/backend/daemon"
 	"mintter/backend/logging"
@@ -72,8 +71,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		site := sites.Website{}
-		app, err := daemon.Load(ctx, cfg, dir, site,
+		app, err := daemon.Load(ctx, cfg, dir,
 			grpc.ChainUnaryInterceptor(
 				otelgrpc.UnaryServerInterceptor(),
 				daemon.GRPCDebugLoggingInterceptor(),
