@@ -18,6 +18,10 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	dagpb "github.com/ipld/go-codec-dagpb"
+	"github.com/ipld/go-ipld-prime"
+	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
+	"github.com/ipld/go-ipld-prime/traversal"
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -67,8 +71,9 @@ func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 		buf := make([]byte, 0, 1024*1024) // 1MB preallocated slice to reuse for decompressing.
 		if err := sqlitex.ExecTransient(conn, q, func(stmt *sqlite.Stmt) error {
 			codec := stmt.ColumnInt64(stmt.ColumnIndex(storage.BlobsCodec.ShortName()))
-			// We only know how to index dag-cbor blobs.
-			if codec != int64(multicodec.DagCbor) {
+
+			// We want to short-circuit if we don't know how to index the blob.
+			if codec != int64(multicodec.DagCbor) && codec != int64(multicodec.DagPb) {
 				return nil
 			}
 
@@ -129,6 +134,30 @@ func (bs *indexer) MaybeReindex(ctx context.Context) error {
 // TODO(burdiyan): eventually we might want to make this package agnostic to blob types.
 func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData any) error {
 	switch v := blobData.(type) {
+	case ipld.Node:
+		return traversal.WalkLocal(v, func(prog traversal.Progress, n ipld.Node) error {
+			pblink, ok := n.(dagpb.PBLink)
+			if !ok {
+				return nil
+			}
+
+			c, ok := pblink.Hash.Link().(cidlink.Link)
+			if !ok {
+				return fmt.Errorf("link is not CID: %v", pblink.Hash)
+			}
+
+			rel := "dagpb/chunk"
+			if pblink.Name.Exists() {
+				rel = "dagpb/" + pblink.Name.Must().String()
+			}
+
+			target, err := bs.ensureBlob(conn, c.Cid)
+			if err != nil {
+				return err
+			}
+
+			return hypersql.BlobLinksInsertOrIgnore(conn, id, rel, target)
+		})
 	case KeyDelegation:
 		// Validate key delegation.
 		{
@@ -199,6 +228,18 @@ func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData an
 			}
 		}
 
+		delid, err := hypersql.BlobsGetSize(conn, v.Delegation.Hash())
+		if err != nil {
+			return err
+		}
+		if delid.BlobsID == 0 {
+			return fmt.Errorf("missing key delegation %s of change %s", v.Delegation, c)
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, id, "change/auth", delid.BlobsID); err != nil {
+			return fmt.Errorf("failed to link key delegation %s of change %s: %w", v.Delegation, c, err)
+		}
+
 		// TODO(burdiyan): remove this when all the tests are fixed. Sometimes CBOR codec decodes into
 		// different types than what was encoded, and we might not have accounted for that during indexing.
 		// So we re-encode the patch here to make sure.
@@ -258,6 +299,29 @@ func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData an
 	}
 
 	return nil
+}
+
+func (bs *indexer) ensureBlob(conn *sqlite.Conn, c cid.Cid) (int64, error) {
+	codec, hash := ipfs.DecodeCID(c)
+
+	size, err := hypersql.BlobsGetSize(conn, hash)
+	if err != nil {
+		return 0, err
+	}
+
+	if size.BlobsID != 0 {
+		return size.BlobsID, nil
+	}
+
+	ins, err := hypersql.BlobsInsert(conn, 0, hash, int64(codec), nil, -1)
+	if err != nil {
+		return 0, err
+	}
+	if ins.BlobsID == 0 {
+		return 0, fmt.Errorf("failed to ensure blob %s after insert", c)
+	}
+
+	return ins.BlobsID, nil
 }
 
 func (bs *indexer) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) {
@@ -651,8 +715,24 @@ func (bs *indexer) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL
 			}
 		}
 	case "ipfs":
-		// TODO: parse ipfs links
+		c, err := cid.Decode(u.Hostname())
+		if err != nil {
+			return fmt.Errorf("failed to parse IPFS URL %s: %w", rawURL, err)
+		}
+
+		target, err := bs.ensureBlob(conn, c)
+		if err != nil {
+			return err
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, blobID, key, target); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+type indexData struct {
+	Blob cid.Cid
 }
