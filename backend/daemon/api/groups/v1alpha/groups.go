@@ -17,6 +17,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -65,12 +66,6 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	eid := hyper.EntityID(id)
 	e := hyper.NewEntityWithClock(eid, clock)
 
-	if in.SiteSetupUrl != "" {
-		if err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid); err != nil {
-			return nil, err
-		}
-	}
-
 	patch := map[string]any{
 		"nonce":      nonce,
 		"title":      in.Title,
@@ -83,6 +78,15 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 
 	if in.Members != nil {
 		return nil, status.Errorf(codes.Unimplemented, "adding members when creating a group is not implemented yet")
+	}
+
+	if in.SiteSetupUrl != "" {
+		siteURL, err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid)
+		if err != nil {
+			return nil, err
+		}
+
+		patch["siteURL"] = siteURL
 	}
 
 	del, err := srv.getDelegation(ctx)
@@ -102,33 +106,44 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 	return groupToProto(srv.blobs, e)
 }
 
-func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) error {
+func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) (baseURL string, err error) {
 	n, err := srv.node.Await(ctx)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	siteURL := strings.Split(setupURL, "/secret-invite/")[0]
-	resp, err := GetSiteInfoHTTP(ctx, nil, siteURL)
+	{
+		u, err := url.Parse(setupURL)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse site setup URL %s: %w", setupURL, err)
+		}
+
+		baseURL = (&url.URL{
+			Scheme: u.Scheme,
+			Host:   u.Host,
+		}).String()
+	}
+
+	resp, err := GetSiteInfoHTTP(ctx, nil, baseURL)
 	if err != nil {
-		return fmt.Errorf("could not contact site at %s: %w", siteURL, err)
+		return "", fmt.Errorf("could not contact site at %s: %w", baseURL, err)
 	}
 	pid, err := peer.Decode(resp.PeerInfo.PeerId)
 	if err != nil {
-		return fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+		return "", fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
 	}
 	c, err := n.SiteClient(ctx, pid)
 	if err != nil {
-		return fmt.Errorf("could not contact site via P2P: %w", err)
+		return "", fmt.Errorf("could not contact site via P2P: %w", err)
 	}
 	if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
 		Secret:  setupURL,
 		GroupId: string(groupID),
 	}); err != nil {
-		return fmt.Errorf("could not publish group to site. P2P group, however, was created successfully: %w", err)
+		return "", fmt.Errorf("could not publish group to site. P2P group, however, was created successfully: %w", err)
 	}
 
-	return nil
+	return baseURL, nil
 }
 
 // GetGroup gets a group.
@@ -179,12 +194,6 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	if in.SiteSetupUrl != "" {
-		if err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid); err != nil {
-			return nil, err
-		}
-	}
-
 	patch := map[string]any{}
 
 	if in.Title != "" {
@@ -222,6 +231,15 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	del, err := srv.getDelegation(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if in.SiteSetupUrl != "" {
+		siteURL, err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid)
+		if err != nil {
+			return nil, err
+		}
+
+		patch["siteURL"] = siteURL
 	}
 
 	hb, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch, hyper.WithAction("Update"))
