@@ -12,15 +12,12 @@ import (
 
 var _ = errors.New
 
-func RegisterSite(conn *sqlite.Conn, servedSitesHostname string, group_eid string, servedSitesVersion string, publicKeysPrincipal []byte) error {
-	const query = `INSERT OR REPLACE INTO served_sites (hostname, group_id, version, owner_id)
-VALUES (:servedSitesHostname, (SELECT entities.id FROM entities WHERE entities.eid = :group_eid), :servedSitesVersion, (SELECT public_keys.id FROM public_keys WHERE public_keys.principal = :publicKeysPrincipal))`
+func SetServedGroupID(conn *sqlite.Conn, link string) error {
+	const query = `INSERT OR REPLACE INTO kv (key, value)
+VALUES ('site_group_id', :link)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":servedSitesHostname", servedSitesHostname)
-		stmt.SetText(":group_eid", group_eid)
-		stmt.SetText(":servedSitesVersion", servedSitesVersion)
-		stmt.SetBytes(":publicKeysPrincipal", publicKeysPrincipal)
+		stmt.SetText(":link", link)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -29,45 +26,36 @@ VALUES (:servedSitesHostname, (SELECT entities.id FROM entities WHERE entities.e
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: RegisterSite: %w", err)
+		err = fmt.Errorf("failed query: SetServedGroupID: %w", err)
 	}
 
 	return err
 }
 
-type GetSiteInfoResult struct {
-	EntitiesEID         string
-	ServedSitesVersion  string
-	PublicKeysPrincipal []byte
+type GetServedGroupIDResult struct {
+	KVValue string
 }
 
-func GetSiteInfo(conn *sqlite.Conn, servedSitesHostname string) (GetSiteInfoResult, error) {
-	const query = `SELECT entities.eid, served_sites.version, public_keys.principal
-FROM served_sites
-JOIN entities ON entities.id = served_sites.group_id
-JOIN public_keys ON public_keys.principal = served_sites.owner_id
-WHERE served_sites.hostname = :servedSitesHostname`
+func GetServedGroupID(conn *sqlite.Conn) (GetServedGroupIDResult, error) {
+	const query = `SELECT kv.value FROM kv WHERE kv.key ='site_group_id'`
 
-	var out GetSiteInfoResult
+	var out GetServedGroupIDResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":servedSitesHostname", servedSitesHostname)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("GetSiteInfo: more than one result return for a single-kind query")
+			return errors.New("GetServedGroupID: more than one result return for a single-kind query")
 		}
 
-		out.EntitiesEID = stmt.ColumnText(0)
-		out.ServedSitesVersion = stmt.ColumnText(1)
-		out.PublicKeysPrincipal = stmt.ColumnBytes(2)
+		out.KVValue = stmt.ColumnText(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: GetSiteInfo: %w", err)
+		err = fmt.Errorf("failed query: GetServedGroupID: %w", err)
 	}
 
 	return out, err

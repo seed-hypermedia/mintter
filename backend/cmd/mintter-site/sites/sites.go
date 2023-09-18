@@ -7,9 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/cmd/mintter-site/sitesql"
-	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
-	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
@@ -135,24 +133,17 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 	}
 	defer release()
 
-	siteInfo, err := sitesql.GetSiteInfo(conn, ws.url)
+	gid, err := sitesql.GetServedGroupID(conn)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get group id from the db: %w", err)
 	}
 
 	resp := &groups.PublicSiteInfo{
-		PeerInfo:     &groups.PeerInfo{},
-		GroupId:      siteInfo.EntitiesEID,
-		GroupVersion: siteInfo.ServedSitesVersion,
+		PeerInfo: &groups.PeerInfo{},
+		GroupId:  gid.KVValue,
 	}
-	if siteInfo.ServedSitesVersion == "" && siteInfo.EntitiesEID != "" {
 
-		entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(siteInfo.EntitiesEID))
-		if err != nil {
-			return nil, fmt.Errorf("could not get entity [%s]: %w", siteInfo.EntitiesEID, err)
-		}
-		resp.GroupVersion = entity.Version().String()
-	}
+	resp.GroupVersion = "" //TODO: get the version like in PublishBlobs
 
 	for _, address := range n.AddrInfo().Addrs {
 		resp.PeerInfo.Addrs = append(resp.PeerInfo.Addrs, address.String())
@@ -182,12 +173,7 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 	defer release()
 	remoteDeviceID, err := getRemoteID(ctx)
 
-	var remoteAcc core.Principal
-	if err != nil {
-		return nil, fmt.Errorf("Only remote calls accepted: %w", err)
-	}
-
-	remoteAcc, err = n.AccountForDevice(ctx, remoteDeviceID)
+	_, err = n.AccountForDevice(ctx, remoteDeviceID)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
 	}
@@ -201,14 +187,12 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 		return nil, fmt.Errorf("Provided secret link not valid")
 	}
 
-	hostname := strings.Split(in.Secret, "/secret-invite/")[0]
-
 	_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := sitesql.RegisterSite(conn, hostname, in.GroupId, "", remoteAcc); err != nil {
+	if err := sitesql.SetServedGroupID(conn, in.GroupId); err != nil {
 		return nil, err
 	}
 
@@ -218,6 +202,25 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 // PublishBlobs publish blobs to the website.
 func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
+	//TODO: Take all the owner's changes and see the list of editors, to see if the caller is in that list
+	/*
+		var role int64
+				if !isOwner {
+					role, err = hypersql.GroupGetRole(conn, edb, owner, pkdb)
+					if err != nil {
+						return err
+					}
+				}
+
+				if !isOwner && role == 0 {
+					return fmt.Errorf("group change author is not allowed to edit the group")
+				}
+
+				if ch.Patch["members"] != nil && !isOwner {
+					return fmt.Errorf("group members can only be updated by an owner")
+				}
+	*/
+	// then we ahould receive blobs, see which ones we don't have and get them bitswap them
 }
 
 // getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.

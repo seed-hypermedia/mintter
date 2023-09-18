@@ -22,41 +22,24 @@ const (
 //go:generate gorun -tags codegen generateQueries
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("sitesql",
-		qb.MakeQuery(s.Schema, "RegisterSite", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.ServedSites, qb.ListColShort(
-				s.ServedSitesHostname,
-				s.ServedSitesGroupID,
-				s.ServedSitesVersion,
-				s.ServedSitesOwnerID,
+		qb.MakeQuery(s.Schema, "SetServedGroupID", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
+				s.KVKey,
+				s.KVValue,
 			), '\n',
 			"VALUES", qb.List(
-				qb.VarCol(s.ServedSitesHostname),
-				qb.SubQuery(
-					"SELECT", s.EntitiesID,
-					"FROM", s.Entities,
-					"WHERE", s.EntitiesEID, "=", qb.Var("group_eid", sqlitegen.TypeText),
-				),
-				qb.VarCol(s.ServedSitesVersion),
-				qb.SubQuery(
-					"SELECT", s.PublicKeysID,
-					"FROM", s.PublicKeys,
-					"WHERE", s.PublicKeysPrincipal, "=", qb.VarCol(s.PublicKeysPrincipal),
-				),
+				"'"+SiteGroupIDKey+"'",
+				qb.Var("link", sqlitegen.TypeText),
 			),
 		),
-		qb.MakeQuery(s.Schema, "GetSiteInfo", sqlitegen.QueryKindSingle,
-			"SELECT",
-			qb.Results(
-				qb.ResultCol(s.EntitiesEID),
-				qb.ResultCol(s.ServedSitesVersion),
-				qb.ResultCol(s.PublicKeysPrincipal),
-			), '\n',
-			"FROM", s.ServedSites, '\n',
-			"JOIN", s.Entities, "ON", s.EntitiesID, "=", s.ServedSitesGroupID, '\n',
-			"JOIN", s.PublicKeys, "ON", s.PublicKeysPrincipal, "=", s.ServedSitesOwnerID, '\n',
-			"WHERE", s.ServedSitesHostname, "=", qb.VarCol(s.ServedSitesHostname),
-		),
 
+		qb.MakeQuery(s.Schema, "GetServedGroupID", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.KVValue),
+			),
+			"FROM", s.KV,
+			"WHERE", s.KVKey, "='"+SiteGroupIDKey+"'",
+		),
 		qb.MakeQuery(s.Schema, "SetSiteRegistrationLink", sqlitegen.QueryKindExec,
 			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
 				s.KVKey,

@@ -288,24 +288,6 @@ const (
 	C_PublicKeysPrincipal = "public_keys.principal"
 )
 
-// Table served_sites.
-const (
-	ServedSites         sqlitegen.Table  = "served_sites"
-	ServedSitesGroupID  sqlitegen.Column = "served_sites.group_id"
-	ServedSitesHostname sqlitegen.Column = "served_sites.hostname"
-	ServedSitesOwnerID  sqlitegen.Column = "served_sites.owner_id"
-	ServedSitesVersion  sqlitegen.Column = "served_sites.version"
-)
-
-// Table served_sites. Plain strings.
-const (
-	T_ServedSites         = "served_sites"
-	C_ServedSitesGroupID  = "served_sites.group_id"
-	C_ServedSitesHostname = "served_sites.hostname"
-	C_ServedSitesOwnerID  = "served_sites.owner_id"
-	C_ServedSitesVersion  = "served_sites.version"
-)
-
 // Table sqlite_sequence.
 const (
 	SQLiteSequence     sqlitegen.Table  = "sqlite_sequence"
@@ -422,10 +404,6 @@ var Schema = sqlitegen.Schema{
 		PublicBlobsViewMultihash:        {Table: PublicBlobsView, SQLType: "BLOB"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
-		ServedSitesGroupID:              {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesHostname:             {Table: ServedSites, SQLType: "TEXT"},
-		ServedSitesOwnerID:              {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesVersion:              {Table: ServedSites, SQLType: "TEXT"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},

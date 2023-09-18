@@ -224,20 +224,3 @@ CREATE TABLE wallets (
     -- The balance in satoshis
     balance INTEGER DEFAULT 0
 );
-
--- Stores all the sites served locally. Sites are a a group + domain.
--- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-CREATE TABLE served_sites (
-    -- the domain + protocol the site is served in.
-    hostname TEXT CHECK (hostname <> '') PRIMARY KEY,
-    -- entity ID of the group the site is associated with.
-    group_id INTEGER REFERENCES lookup (id) NOT NULL,
-    -- the version of the group the site is serving.
-    version TEXT NOT NULL,
-    -- account id of the owner of the group.
-    owner_id INTEGER REFERENCES lookup (id) NOT NULL,
-    -- same version + groupid cannot be published in different histnames.
-    UNIQUE(group_id, version) ON CONFLICT REPLACE
-);
-
-CREATE INDEX served_sites_by_owner ON served_sites (owner_id);
