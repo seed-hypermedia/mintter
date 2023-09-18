@@ -475,22 +475,30 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 		}
 	}
 
-	title, ok := ch.Patch["title"].(string)
-	if ok {
+	if title, ok := ch.Patch["title"].(string); ok {
 		if err := hypersql.BlobAttrsInsert(conn, blobID, "resource/title", "", false, title, nil, hlc); err != nil {
 			return err
 		}
 	}
 
-	desc, ok := ch.Patch["description"].(string)
-	if ok {
+	if desc, ok := ch.Patch["description"].(string); ok {
 		if err := hypersql.BlobAttrsInsert(conn, blobID, "resource/description", "", false, desc, nil, hlc); err != nil {
 			return err
 		}
 	}
 
-	content, ok := ch.Patch["content"].(map[string]any)
-	if ok {
+	if siteURL, ok := ch.Patch["siteURL"].(string); ok {
+		lookup, err := hypersql.LookupEnsure(conn, storage.LookupLiteral, siteURL)
+		if err != nil {
+			return err
+		}
+
+		if err := hypersql.BlobAttrsInsert(conn, blobID, "group/site-url", "", true, lookup, nil, hlc); err != nil {
+			return err
+		}
+	}
+
+	if content, ok := ch.Patch["content"].(map[string]any); ok {
 		for path, v := range content {
 			rawURL, ok := v.(string)
 			if !ok {
@@ -504,8 +512,7 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 		}
 	}
 
-	members, ok := ch.Patch["members"].(map[string]any)
-	if ok {
+	if members, ok := ch.Patch["members"].(map[string]any); ok {
 		for k, v := range members {
 			acc, err := core.DecodePrincipal(k)
 			if err != nil {
