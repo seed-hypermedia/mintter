@@ -296,6 +296,10 @@ func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData an
 		if v.Entity.HasPrefix("hm://g/") {
 			return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, c, v)
 		}
+
+		if v.Entity.HasPrefix("hm://a/") {
+			return bs.indexAccountChange(conn, id, isspk.PublicKeysPrincipal, c, v)
+		}
 	}
 
 	return nil
@@ -525,6 +529,37 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 			if err := hypersql.BlobAttrsInsert(conn, blobID, "group/member", "", true, accid, role, hlc); err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func (bs *indexer) indexAccountChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+	if "hm://a/"+author.String() != string(ch.Entity) {
+		return fmt.Errorf("author %s is not allowed to modify account entity %s", author.String(), ch.Entity)
+	}
+
+	if ch.Patch == nil {
+		return fmt.Errorf("account changes must have patches")
+	}
+
+	hlc := ch.HLCTime.Pack()
+
+	if v, ok := ch.Patch["avatar"].(cid.Cid); ok {
+		target, err := bs.ensureBlob(conn, v)
+		if err != nil {
+			return err
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, blobID, "resource/avatar", target); err != nil {
+			return err
+		}
+	}
+
+	if v, ok := ch.Patch["alias"].(string); ok {
+		if err := hypersql.BlobAttrsInsert(conn, blobID, "account/alias", "", false, v, nil, hlc); err != nil {
+			return err
 		}
 	}
 
