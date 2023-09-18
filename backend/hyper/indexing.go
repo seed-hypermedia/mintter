@@ -467,7 +467,11 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 			}
 
 			if ch.Patch["members"] != nil && !isOwner {
-				return fmt.Errorf("group members can only be updated by an owner")
+				return fmt.Errorf("group members can only be updated by the owner")
+			}
+
+			if ch.Patch["siteURL"] != nil && !isOwner {
+				return fmt.Errorf("group siteURL can only be updated by the owner")
 			}
 		default:
 			return fmt.Errorf("unknown group action %q", ch.Action)
@@ -487,6 +491,19 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 	}
 
 	if siteURL, ok := ch.Patch["siteURL"].(string); ok {
+		u, err := url.Parse(siteURL)
+		if err != nil {
+			return fmt.Errorf("failed to parse site URL %s: %w", siteURL, err)
+		}
+
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return fmt.Errorf("site URL must have http or https scheme, got %s", siteURL)
+		}
+
+		if siteURL != (&url.URL{Scheme: u.Scheme, Host: u.Host}).String() {
+			return fmt.Errorf("site URL must have only scheme and host, got %s", siteURL)
+		}
+
 		lookup, err := hypersql.LookupEnsure(conn, storage.LookupLiteral, siteURL)
 		if err != nil {
 			return err
