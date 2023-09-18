@@ -119,7 +119,6 @@ func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link stri
 
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
 func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
-	fmt.Println("INFO CALLED")
 	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
@@ -166,7 +165,6 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 
 // InitializeServer starts serving a group in this site.
 func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeServerRequest) (*groups.InitializeServerResponse, error) {
-	fmt.Println("INIT CALLED")
 	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
