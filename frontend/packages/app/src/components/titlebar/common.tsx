@@ -496,6 +496,13 @@ export function EditDocActions({
   pubContext: PublicationRouteContext
   baseVersion?: string
 }) {
+  const pub = usePublicationInContext({
+    documentId: docId,
+    versionId: baseVersion,
+    pubContext,
+    enabled: !!docId,
+  })
+  const pubVersion = pub.data?.version
   const draftList = useDraftList()
   const navigate = useNavigate(navMode)
 
@@ -518,7 +525,7 @@ export function EditDocActions({
       }
       let draft = await grpcClient.drafts.createDraft({
         existingDocumentId: docId,
-        version: baseVersion,
+        version: baseVersion || pubVersion,
       })
       navigate({
         key: 'draft',
