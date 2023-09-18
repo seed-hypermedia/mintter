@@ -15,8 +15,11 @@ import (
 	"mintter/backend/daemon"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/mttnet"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/burdiyan/go/mainutil"
 	"github.com/peterbourgon/ff/v3"
 )
@@ -87,23 +90,35 @@ Flags:
 		if err != nil {
 			return err
 		}
-		//f := future.New[*mttnet.Node]()
-		site := &sites.Website{
-			//Node: f.ReadOnly,
-			URL: rawURL,
-		}
+
+		nf := future.New[*mttnet.Node]()
+		ndb := future.New[*sqlitex.Pool]()
+		site := sites.NewServer(rawURL, nf.ReadOnly, ndb.ReadOnly)
+
 		app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
 			Path:    "/.well-known/hypermedia-site",
 			Handler: site,
 			Mode:    daemon.RouteNav,
 		})
-
 		if err != nil {
 			return err
 		}
 
-		site.Node = app.Net
-		site.DB = app.DB
+		// This is some ugly stuff. Site server needs some stuff that are passed from the daemon.
+		go func() {
+			if err := ndb.Resolve(app.DB); err != nil {
+				panic(err)
+			}
+
+			node, err := app.Net.Await(ctx)
+			if err != nil && !errors.Is(err, context.Canceled) {
+				panic(err)
+			}
+
+			if err := nf.Resolve(node); err != nil {
+				panic(err)
+			}
+		}()
 
 		if _, ok := dir.Identity().Get(); !ok {
 			account, err := core.NewKeyPairRandom()

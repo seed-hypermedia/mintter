@@ -28,19 +28,20 @@ import (
 // Website is the gate to manipulate internal node structures
 type Website struct {
 	// Network of the node.
-	Node *future.ReadOnly[*mttnet.Node]
-	// DB access to the node.
-	DB *sqlitex.Pool
-	// URL is the protocol + hostname the group is being served at.
-	URL string
+	node *future.ReadOnly[*mttnet.Node]
+	// db access to the node.
+	db *future.ReadOnly[*sqlitex.Pool]
+	// url is the protocol + hostname the group is being served at.
+	url string
 }
 
 var errNodeNotReadyYet = errors.New("P2P node is not ready yet")
 
-func NewServer(n *future.ReadOnly[*mttnet.Node], db *sqlitex.Pool) *Website {
+func NewServer(url string, n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool]) *Website {
 	return &Website{
-		Node: n,
-		DB:   db,
+		node: n,
+		db:   db,
+		url:  url,
 	}
 }
 func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -76,11 +77,17 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // stdout the secret configuration string for this site. We store the secret so
 // the same value is returned on subsequent calls with the same hostname.
 func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link string, err error) {
-	conn, release, err := ws.DB.Conn(ctx)
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	conn, release, err := db.Conn(ctx)
 	if err != nil {
 		return "", err
 	}
 	defer release()
+
 	if err = func() error {
 		randomBytes := make([]byte, 16)
 		_, err := rand.Read(randomBytes)
@@ -113,18 +120,23 @@ func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link stri
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
 func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
 	fmt.Println("INFO CALLED")
-	n, ok := ws.Node.Get()
+	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
 	}
 
-	conn, release, err := ws.DB.Conn(ctx)
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, release, err := db.Conn(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get db connection: %w", err)
 	}
 	defer release()
 
-	siteInfo, err := sitesql.GetSiteInfo(conn, ws.URL)
+	siteInfo, err := sitesql.GetSiteInfo(conn, ws.url)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get group id from the db: %w", err)
 	}
@@ -155,12 +167,17 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 // InitializeServer starts serving a group in this site.
 func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeServerRequest) (*groups.InitializeServerResponse, error) {
 	fmt.Println("INIT CALLED")
-	n, ok := ws.Node.Get()
+	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
 	}
 
-	conn, release, err := ws.DB.Conn(ctx)
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, release, err := db.Conn(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get db connection: %w", err)
 	}
