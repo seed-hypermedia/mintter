@@ -1,4 +1,5 @@
 import {useAppContext} from '@mintter/app/src/app-context'
+import {toast} from '@mintter/app/src/toast'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
@@ -13,18 +14,16 @@ import {
   useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
-import {RiImage2Fill, RiImage2Line} from 'react-icons/ri'
+import {RiImage2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
-  DefaultBlockSchema,
   createReactBlockSpec,
   defaultProps,
   getBlockInfoFromPos,
-  insertOrUpdateBlock,
 } from './blocknote'
-import {HMBlockSchema} from './schema'
 import {InlineContent} from './blocknote/react'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
