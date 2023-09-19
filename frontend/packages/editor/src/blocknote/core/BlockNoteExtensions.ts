@@ -110,14 +110,12 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   ]
 
   if (opts.editable) {
-    console.log('=== IS EDITABLE', opts.editable)
     ret.push(
       BlockContainer.configure({
         domAttributes: opts.domAttributes,
       }),
     )
   } else {
-    console.log('=== IS NOT EDITABLE', opts.editable)
     ret.push(
       HMBlockContainer.configure({
         domAttributes: opts.domAttributes,

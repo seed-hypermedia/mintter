@@ -162,8 +162,6 @@ function ImageComponent({
     editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
-  console.log('== image selected', selected)
-
   return (
     <YStack gap="$2">
       <YStack
