@@ -1,16 +1,16 @@
 import {ReactNode, useEffect, useMemo, useReducer} from 'react'
+import {useIPC} from '../app-context'
+import {toast} from '../toast'
 import {
   AppWindowEvent,
+  HomeRoute,
+  NavContextProvider,
+  NavRoute,
   NavState,
   navStateReducer,
-  NavContextProvider,
   setAppNavDispatch,
-  HomeRoute,
-  NavRoute,
 } from './navigation'
-import {useIPC} from '../app-context'
 import {decodeRouteFromPath} from './route-encoding'
-import {toast} from '../toast'
 
 const initRouteEncoded = window.location.pathname.slice(1)
 
@@ -58,7 +58,7 @@ export function NavigationContainer({
       if (typeof event === 'object' && event.key === 'connectPeer') {
         // const route = decodeRouteFromPath(event.value)
         // dispatch({type: 'replace', route})
-        toast.success('Connecting to peer ' + event.peer)
+        toast.success(`Connecting to peer ${event.peer.substring(0, 20)}...`)
       }
     })
   }, [])

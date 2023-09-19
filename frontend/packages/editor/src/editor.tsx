@@ -4,21 +4,10 @@ import {
   BlockNoteView,
   FormattingToolbarPositioner,
   HyperlinkToolbarPositioner,
-  SideMenu,
   SideMenuPositioner,
-  SideMenuProps,
-  SlashMenuPositioner,
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
-
-function RightsideMenu(props: SideMenuProps) {
-  return (
-    <SideMenu>
-      <span>hello</span>
-    </SideMenu>
-  )
-}
 
 export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
   if (editor.isEditable) {
