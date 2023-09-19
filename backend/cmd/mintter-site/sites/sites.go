@@ -7,19 +7,22 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/cmd/mintter-site/sitesql"
+	"mintter/backend/daemon/storage"
 	groups "mintter/backend/genproto/groups/v1alpha"
+	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"net/http"
 	"strings"
 
+	"google.golang.org/grpc/codes"
 	rpcpeer "google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -143,7 +146,19 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		GroupId:  gid.KVValue,
 	}
 
-	resp.GroupVersion = "" //TODO: get the version like in PublishBlobs
+	groupID, err := sitesql.GetServedGroupID(conn)
+	if err != nil || groupID.KVValue == "" {
+		return nil, fmt.Errorf("Error getting groupID on the site, is the site initialized?: %w", err)
+	}
+
+	entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(groupID.KVValue))
+	if err != nil {
+		return nil, fmt.Errorf("could not get entity [%s]: %w", groupID.KVValue, err)
+	}
+
+	if entity != nil {
+		resp.GroupVersion = entity.Version().String()
+	}
 
 	for _, address := range n.AddrInfo().Addrs {
 		resp.PeerInfo.Addrs = append(resp.PeerInfo.Addrs, address.String())
@@ -201,26 +216,100 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 
 // PublishBlobs publish blobs to the website.
 func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "site setup is not implemented yet")
-	//TODO: Take all the owner's changes and see the list of editors, to see if the caller is in that list
-	/*
-		var role int64
-				if !isOwner {
-					role, err = hypersql.GroupGetRole(conn, edb, owner, pkdb)
-					if err != nil {
-						return err
-					}
-				}
+	if len(in.Blobs) < 1 {
+		return nil, fmt.Errorf("Please, provide at least 1 blob to publish")
+	}
 
-				if !isOwner && role == 0 {
-					return fmt.Errorf("group change author is not allowed to edit the group")
-				}
+	n, ok := ws.node.Get()
+	if !ok {
+		return nil, errNodeNotReadyYet
+	}
 
-				if ch.Patch["members"] != nil && !isOwner {
-					return fmt.Errorf("group members can only be updated by an owner")
-				}
-	*/
-	// then we ahould receive blobs, see which ones we don't have and get them bitswap them
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn, release, err := db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get db connection: %w", err)
+	}
+	defer release()
+
+	// Get caller identity
+	info, ok := rpcpeer.FromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("no peer info in context for grpc")
+	}
+
+	pid, err := peer.Decode(info.Addr.String())
+	if err != nil {
+		return nil, err
+	}
+
+	authorAcc, err := n.AccountForDevice(ctx, pid)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", pid.String(), err)
+	}
+
+	// Get the owner's view of the list of members.
+	groupID, err := sitesql.GetServedGroupID(conn)
+	if err != nil || groupID.KVValue == "" {
+		return nil, fmt.Errorf("Error getting groupID on the site, is the site initialized?: %w", err)
+	}
+
+	edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, groupID.KVValue)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get group (%s) resource: %w", groupID.KVValue, err)
+	}
+
+	groupOwner, err := hypersql.ResourceGetOwner(conn, edb)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get the owner of the group %s: %w", groupID.KVValue, err)
+	}
+
+	pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, authorAcc)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get member entity for account [%s]: %w", authorAcc.String(), err)
+	}
+
+	// See if the caller is in the owner's group
+	role, err := hypersql.GroupGetRole(conn, edb, groupOwner, pkdb)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get role of member %s in group %s: %w", authorAcc.String(), groupID.KVValue, err)
+	}
+
+	if role == int64(groups.Role_ROLE_UNSPECIFIED) {
+		return nil, status.Errorf(codes.PermissionDenied, "Caller [%s] does not have enough permissions to publish to this site.", authorAcc.String())
+	}
+
+	want := []cid.Cid{}
+	for _, cIDStr := range in.Blobs {
+		c, err := cid.Parse(cIDStr)
+		if err != nil {
+			return nil, fmt.Errorf("Could not parse provided blob [%s]: %w", cIDStr, err)
+		}
+		res, err := hypersql.BlobsHave(conn, c.Hash())
+		if err != nil {
+			return nil, fmt.Errorf("Could not verify if we had blob [%s] or not: %w", c.String(), err)
+		}
+		if res.Have == 0 {
+			want = append(want, c)
+		}
+	}
+	ses := n.Bitswap().NewSession(ctx)
+	blkCh, err := ses.GetBlocks(ctx, want)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get bitswap channel: %w", err)
+	}
+	for {
+		blk, ok := <-blkCh
+		if !ok {
+			return &groups.PublishBlobsResponse{}, nil
+		}
+		if err := n.Blobs().IPFSBlockstore().Put(ctx, blk); err != nil {
+			return nil, fmt.Errorf("Could not store block %s", blk.Cid().String())
+		}
+	}
 }
 
 // getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.

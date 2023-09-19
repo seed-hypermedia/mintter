@@ -140,7 +140,7 @@ func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID 
 		Secret:  setupURL,
 		GroupId: string(groupID),
 	}); err != nil {
-		return "", fmt.Errorf("could not publish group to site. P2P group, however, was created successfully: %w", err)
+		return "", fmt.Errorf("could not publish group to site: %w", err)
 	}
 
 	return baseURL, nil
