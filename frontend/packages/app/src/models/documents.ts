@@ -17,9 +17,6 @@ import {
   PartialBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
-  // insertFile,
-  // insertImage,
-  // insertVideo,
   useBlockNote,
 } from '@mintter/editor'
 import {
@@ -511,6 +508,23 @@ export function useDraftEditor(
         }),
       ]
 
+      if (draft.data?.children.length == 0) {
+        // This means the draft is empty and we need to prepent a "move block" operation so it will not break
+        let firstBlock = editor.topLevelBlocks[0]
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: firstBlock.id,
+                leftSibling: '',
+                parent: '',
+              },
+            },
+          }),
+        )
+      }
+
       moves.forEach((move) => {
         changes.push(
           new DocumentChange({
@@ -661,24 +675,26 @@ export function useDraftEditor(
     handleAfterReady()
   }
 
+  const draft = useQuery(
+    queryDraft(grpcClient, documentId, {
+      // enabled: !!editor,
+      onSuccess: (draft: EditorDraftState | null) => {
+        readyThings.current[1] = draft
+        handleMaybeReady()
+      },
+      retry: false,
+      onError: (err) => {
+        console.log('== DRAFT FETCH ERROR', err)
+      },
+    }),
+  )
+
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       opts?.onEditorState?.(editor.topLevelBlocks)
+
       if (!isReady.current) return
       if (!readyThings.current[0] || !readyThings.current[1]) return
-
-      // trim empty blocks from the end of the document before treating them.
-      // TODO: Deal with deleting blocks
-      // let _blocks = editor.topLevelBlocks.reduceRight((acc, block) => {
-      //   return acc.length === 0 &&
-      //     block.content.length == 0 &&
-      //     (!['image', 'file'].includes(block.type) ||
-      //       !block.props.url ||
-      //       block.type !== 'embed' ||
-      //       block.props.ref !== 'hm://d/undefined')
-      //     ? acc
-      //     : [block].concat(acc)
-      // }, [])
 
       let changedBlockIds = new Set<string>()
       let possiblyRemovedBlockIds = new Set<string>(
@@ -750,13 +766,7 @@ export function useDraftEditor(
             console.warn('no editor state yet!')
             return
           }
-          // console.log('applying draft changes', {
-          //   changed: [...state.changes.changed].map(
-          //     (change) => lastBlocks.current[change],
-          //   ),
-          //   moves: state.changes.moves,
-          //   deleted: [...state.changes.deleted],
-          // })
+
           changedBlockIds.forEach((blockId) =>
             state.changes.changed.add(blockId),
           )
@@ -817,20 +827,6 @@ export function useDraftEditor(
       }
     },
     [editor],
-  )
-
-  const draft = useQuery(
-    queryDraft(grpcClient, documentId, {
-      enabled: !!editor,
-      onSuccess: (draft: EditorDraftState | null) => {
-        readyThings.current[1] = draft
-        handleMaybeReady()
-      },
-      retry: false,
-      onError: (err) => {
-        console.log('== DRAFT FETCH ERROR', err)
-      },
-    }),
   )
 
   // both the publication data and the editor are asyncronously loaded
