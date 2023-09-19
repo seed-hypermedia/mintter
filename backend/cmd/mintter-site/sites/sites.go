@@ -146,9 +146,19 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		GroupId:  gid.KVValue,
 	}
 
+	for _, address := range n.AddrInfo().Addrs {
+		resp.PeerInfo.Addrs = append(resp.PeerInfo.Addrs, address.String())
+	}
+	resp.PeerInfo.PeerId = n.ID().DeviceKey().PeerID().String()
+	resp.PeerInfo.AccountId = n.ID().Account().ID().String()
+
 	groupID, err := sitesql.GetServedGroupID(conn)
-	if err != nil || groupID.KVValue == "" {
-		return nil, fmt.Errorf("Error getting groupID on the site, is the site initialized?: %w", err)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get group ID: %w", err)
+	}
+	if groupID.KVValue == "" {
+		// The site is not initialized yet
+		return resp, nil
 	}
 
 	entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(groupID.KVValue))
@@ -159,12 +169,6 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 	if entity != nil {
 		resp.GroupVersion = entity.Version().String()
 	}
-
-	for _, address := range n.AddrInfo().Addrs {
-		resp.PeerInfo.Addrs = append(resp.PeerInfo.Addrs, address.String())
-	}
-	resp.PeerInfo.PeerId = n.ID().DeviceKey().PeerID().String()
-	resp.PeerInfo.AccountId = n.ID().Account().ID().String()
 
 	return resp, nil
 }
