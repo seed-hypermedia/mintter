@@ -1,7 +1,7 @@
 import {Publication, unpackDocId} from '@mintter/shared'
 import {UseQueryOptions} from '@tanstack/react-query'
-import {usePublication} from './documents'
 import {PublicationRouteContext} from '../utils/navigation'
+import {usePublication} from './documents'
 import {useGroupContent} from './groups'
 
 export function usePublicationInContext({

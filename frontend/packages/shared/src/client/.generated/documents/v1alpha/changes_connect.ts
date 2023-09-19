@@ -5,8 +5,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ChangeInfo, GetChangeInfoRequest, ListChangesRequest, ListChangesResponse } from "./changes_pb";
 import { MethodKind } from "@bufbuild/protobuf";
+import { ChangeInfo, GetChangeInfoRequest, ListChangesRequest, ListChangesResponse } from "./changes_pb";
 
 /**
  * Changes service provides information about the atomic version controlled changes of Mintter objects.

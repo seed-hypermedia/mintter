@@ -1,7 +1,7 @@
+import {daemonClient, networkingClient} from 'client'
 import {GetServerSidePropsContext} from 'next'
 import {setAllowAnyHostGetCORS} from './cors'
 import {getPageProps, serverHelpers} from './ssr-helpers'
-import {daemonClient, networkingClient} from 'client'
 
 export async function prepareSlugPage(
   context: GetServerSidePropsContext,

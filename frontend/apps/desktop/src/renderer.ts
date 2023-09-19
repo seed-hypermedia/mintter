@@ -25,8 +25,8 @@
  *  });
  * ```
  */
-import './root.tsx'
 import * as Sentry from '@sentry/electron/renderer'
+import './root.tsx'
 
 if (import.meta.env.PROD) {
   Sentry.init({

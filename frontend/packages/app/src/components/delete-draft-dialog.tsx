@@ -1,8 +1,7 @@
+import {DeleteDialog} from '@mintter/app/src/components/delete-dialog'
 import {useDeleteDraft} from '@mintter/app/src/models/documents'
 import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {DeleteDialog} from '@mintter/app/src/components/delete-dialog'
-import {Button, XStack} from '@mintter/ui'
-import {ReactNode} from 'react'
+import {Button} from '@mintter/ui'
 
 export function useDeleteDraftDialog({
   id = null,

@@ -1,15 +1,14 @@
-import appError from '@mintter/app/src/errors'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {ConnectError} from '@bufbuild/connect-web'
-import {GRPCClient, PeerInfo} from '@mintter/shared'
-import {ConnectionStatus} from '@mintter/shared'
+import {useDaemonReady} from '@mintter/app/node-status-context'
+import appError from '@mintter/app/src/errors'
+import {ConnectionStatus, GRPCClient, PeerInfo} from '@mintter/shared'
 import {
   FetchQueryOptions,
-  useQuery,
   UseQueryOptions,
+  useQuery,
 } from '@tanstack/react-query'
-import {queryKeys} from './query-keys'
 import {useGRPCClient} from '../app-context'
+import {queryKeys} from './query-keys'
 
 export function useConnectedPeers(
   options: UseQueryOptions<PeerInfo[], ConnectError> = {},

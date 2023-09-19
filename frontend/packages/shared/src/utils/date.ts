@@ -1,6 +1,6 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import type {Document} from '../client'
 import {format, intlFormat} from 'date-fns'
+import type {Document} from '../client'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never

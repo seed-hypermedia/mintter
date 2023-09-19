@@ -1,7 +1,7 @@
+import {Group} from '@mantine/core'
 import {IconType} from 'react-icons'
 import {EditHyperlinkMenuItemIcon} from './EditHyperlinkMenuItemIcon'
 import {EditHyperlinkMenuItemInput} from './EditHyperlinkMenuItemInput'
-import {Group} from '@mantine/core'
 
 export type EditHyperlinkMenuItemProps = {
   icon: IconType

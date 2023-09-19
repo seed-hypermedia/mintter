@@ -1,10 +1,10 @@
 import Tippy from '@tippyjs/react'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {EditHyperlinkMenu} from '../../HyperlinkToolbar/EditHyperlinkMenu/components/EditHyperlinkMenu'
 import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '../../SharedComponents/Toolbar/components/ToolbarButton'
-import {EditHyperlinkMenu} from '../../HyperlinkToolbar/EditHyperlinkMenu/components/EditHyperlinkMenu'
 
 type HyperlinkButtonProps = ToolbarButtonProps & {
   hyperlinkIsActive: boolean

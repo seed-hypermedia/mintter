@@ -1,4 +1,4 @@
-import {H1, SizableText, styled, XStack, YStack} from 'tamagui'
+import {SizableText, styled, XStack, YStack} from 'tamagui'
 
 export const TitlebarWrapper = styled(YStack, {
   name: 'TitlebarWrapper',

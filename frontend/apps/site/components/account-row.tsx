@@ -1,7 +1,7 @@
 import {abbreviateCid} from '@mintter/shared'
-import {cidURL} from '../ipfs'
+import {Avatar, SizableText, UIAvatar, XStack} from '@mintter/ui'
 import Link from 'next/link'
-import {Avatar, XStack, Text, SizableText, UIAvatar} from '@mintter/ui'
+import {cidURL} from '../ipfs'
 import {trpc} from '../trpc'
 
 export function AccountAvatarLink({account}: {account?: string}) {

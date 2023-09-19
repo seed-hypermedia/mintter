@@ -5,21 +5,16 @@ import {
   DefaultBlockSchema,
   getDefaultSlashMenuItems,
 } from '@/blocknote/core'
+import {MdPreview} from 'react-icons/md'
 import {
   RiChatQuoteLine,
   RiCodeLine,
   RiFolder2Line,
   RiH1,
-  RiH2,
-  RiH3,
-  RiListOrdered,
-  RiListUnordered,
   RiPlayCircleLine,
   RiText,
 } from 'react-icons/ri'
-import {formatKeyboardShortcut} from '../utils'
 import {ReactSlashMenuItem} from './ReactSlashMenuItem'
-import {MdPreview} from 'react-icons/md'
 
 const extraFields: Record<
   string,

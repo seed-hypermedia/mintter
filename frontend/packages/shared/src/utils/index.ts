@@ -1,5 +1,5 @@
 export * from './abbreviate'
 export * from './date'
 export * from './entity-id-url'
-export * from './language'
 export * from './ipfs-cid'
+export * from './language'

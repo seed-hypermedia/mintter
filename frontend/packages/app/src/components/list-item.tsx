@@ -7,14 +7,14 @@ import {
   MoreHorizontal,
   Popover,
   Separator,
-  YGroup,
   Tooltip,
+  YGroup,
 } from '@mintter/ui'
 import {FC, ReactElement} from 'react'
 import {GestureResponderEvent} from 'react-native'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
 export type MenuItem = {
   key: string

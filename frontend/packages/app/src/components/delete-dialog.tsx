@@ -1,4 +1,3 @@
-import {ReactNode} from 'react'
 import {
   AlertDialog,
   AlertDialogContentProps,
@@ -10,6 +9,7 @@ import {
   XStackProps,
   YStack,
 } from '@mintter/ui'
+import {ReactNode} from 'react'
 import {useDeletePublication} from '../models/documents'
 
 export type DeleteDialogProps = AlertDialogProps & {

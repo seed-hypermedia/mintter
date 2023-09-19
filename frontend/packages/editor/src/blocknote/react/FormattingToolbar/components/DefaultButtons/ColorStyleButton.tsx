@@ -1,9 +1,9 @@
-import {useCallback, useState} from 'react'
-import {Menu} from '@mantine/core'
 import {BlockNoteEditor, BlockSchema} from '@/blocknote/core'
-import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
+import {Menu} from '@mantine/core'
+import {useCallback, useState} from 'react'
 import {ColorIcon} from '../../../SharedComponents/ColorPicker/components/ColorIcon'
 import {ColorPicker} from '../../../SharedComponents/ColorPicker/components/ColorPicker'
+import {ToolbarButton} from '../../../SharedComponents/Toolbar/components/ToolbarButton'
 import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
 import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
 

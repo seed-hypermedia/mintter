@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ConvertToSiteRequest, ConvertToSiteResponse, CreateGroupRequest, GetGroupRequest, GetSiteInfoRequest, GetSiteInfoResponse, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
 import { MethodKind } from "@bufbuild/protobuf";
+import { ConvertToSiteRequest, ConvertToSiteResponse, CreateGroupRequest, GetGroupRequest, GetSiteInfoRequest, GetSiteInfoResponse, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
 
 /**
  * Groups service exposes the functionality for managing group entities.

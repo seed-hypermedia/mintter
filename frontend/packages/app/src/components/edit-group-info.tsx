@@ -1,10 +1,10 @@
-import {Button, Form, Input, Label, Spinner} from '@mintter/ui'
-import {DialogTitle, useAppDialog} from './dialog'
-import {toast} from 'react-hot-toast'
-import {useGroup, useUpdateGroup} from '../models/groups'
-import {useRef} from 'react'
-import {TextInput} from 'react-native'
 import {Group} from '@mintter/shared'
+import {Button, Form, Input, Label, Spinner} from '@mintter/ui'
+import {useRef} from 'react'
+import {toast} from 'react-hot-toast'
+import {TextInput} from 'react-native'
+import {useGroup, useUpdateGroup} from '../models/groups'
+import {DialogTitle, useAppDialog} from './dialog'
 
 function EditGroupInfoForm({
   initialGroup,

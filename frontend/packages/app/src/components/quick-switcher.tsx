@@ -1,3 +1,4 @@
+import {useAppContext, useListen} from '@mintter/app/src/app-context'
 import {
   useDraftList,
   usePublicationList,
@@ -7,14 +8,12 @@ import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {HYPERMEDIA_SCHEME, isHypermediaScheme} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
-import {useListen} from '@mintter/app/src/app-context'
 import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
-import './quick-switcher.css'
-import {useAppContext} from '@mintter/app/src/app-context'
-import {useGroups} from '../models/groups'
 import {useContactsList} from '../models/contacts'
+import {useGroups} from '../models/groups'
+import './quick-switcher.css'
 
 export default function QuickSwitcher() {
   const [open, setOpen] = useState(false)

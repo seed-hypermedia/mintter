@@ -2,8 +2,6 @@ import {publicationsClient} from '../client'
 
 // for some reason this cannot be imported from @mintter/shared without issues:
 import {Publication} from '@mintter/shared'
-import {GetServerSidePropsContext} from 'next'
-import {setAllowAnyHostGetCORS} from './cors'
 
 // publicationsClient.getPublication but bails with null on a 3 second timeout
 export async function impatientGetPublication(

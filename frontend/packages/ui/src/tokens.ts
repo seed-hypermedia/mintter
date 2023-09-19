@@ -5,14 +5,14 @@ import {
   grayDark,
   green,
   greenDark,
+  mint,
+  mintDark,
   orange,
   orangeDark,
   red,
   redDark,
   yellow,
   yellowDark,
-  mint,
-  mintDark,
 } from '@tamagui/colors'
 import {Variable, createTokens} from '@tamagui/web'
 

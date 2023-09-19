@@ -1,10 +1,7 @@
-import {Button, Form, Input, Label} from '@mintter/ui'
-import {Tooltip} from '@mintter/ui'
-import {BookPlus, FilePlus2} from '@tamagui/lucide-icons'
-import {AppDialog, DialogTitle} from './dialog'
-import {toast} from 'react-hot-toast'
-import {useCreateGroup} from '../models/groups'
-import {useNavigate} from '../utils/useNavigate'
+import {zodResolver} from '@hookform/resolvers/zod'
+import {Button, Form, Input, Label, Tooltip} from '@mintter/ui'
+import {BookPlus} from '@tamagui/lucide-icons'
+import {useEffect} from 'react'
 import {
   Control,
   FieldValues,
@@ -13,9 +10,11 @@ import {
   useController,
   useForm,
 } from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
+import {toast} from 'react-hot-toast'
 import * as z from 'zod'
-import {useEffect} from 'react'
+import {useCreateGroup} from '../models/groups'
+import {useNavigate} from '../utils/useNavigate'
+import {AppDialog, DialogTitle} from './dialog'
 
 const newGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),

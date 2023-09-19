@@ -1,7 +1,7 @@
 import {Menu} from '@mantine/core'
+import {MouseEvent} from 'react'
 import {IconType} from 'react-icons'
 import {TiTick} from 'react-icons/ti'
-import {MouseEvent} from 'react'
 
 export type ToolbarDropdownItemProps = {
   text: string

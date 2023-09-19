@@ -1,19 +1,20 @@
-import {useAccount, useMyAccount} from '@mintter/app/models/accounts'
+import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
+import {useMyAccount} from '@mintter/app/models/accounts'
 import {
   getDefaultShortname,
   useDraftTitle,
-  usePublication,
   usePublishDraft,
 } from '@mintter/app/models/documents'
 import {
   useAccountGroups,
   useDocumentGroups,
   useGroup,
-  useGroups,
   useMyGroups,
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 import {useDaemonReady} from '@mintter/app/node-status-context'
+import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   DraftRoute,
@@ -25,7 +26,9 @@ import {
   useNavRoute,
   useNavigation,
 } from '@mintter/app/utils/navigation'
+import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
 import {
   Button,
   ButtonText,
@@ -51,25 +54,17 @@ import {
   styled,
 } from '@mintter/ui'
 import {
-  Bookmark,
   Book,
+  Bookmark,
   CheckCheck,
   ChevronDown,
   ChevronUp,
   Store,
 } from '@tamagui/lucide-icons'
-import {useEffect, useMemo, useState} from 'react'
+import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
-import DiscardDraftButton from './discard-draft-button'
-import {pathNameify} from '@mintter/app/utils/path'
 import {useAppDialog} from '../dialog'
-import {RenamePubDialog} from '@mintter/app/pages/group'
-import {usePublicationInContext} from '@mintter/app/models/publication'
-import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
-import {
-  copyTextToClipboard,
-  copyUrlToClipboardWithFeedback,
-} from '@mintter/app/copy-to-clipboard'
+import DiscardDraftButton from './discard-draft-button'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},

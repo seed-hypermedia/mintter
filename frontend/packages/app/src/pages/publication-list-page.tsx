@@ -16,13 +16,13 @@ import {
   YStack,
 } from '@mintter/ui'
 
+import {idToUrl} from '@mintter/shared'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
+import {copyLinkMenuItem} from '../components/list-item'
 import {queryPublication} from '../models/documents'
 import './publication-list-page.css'
-import {copyLinkMenuItem} from '../components/list-item'
-import {idToUrl} from '@mintter/shared'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let publications = usePublicationList({trustedOnly})

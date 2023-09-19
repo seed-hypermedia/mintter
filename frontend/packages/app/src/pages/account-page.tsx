@@ -8,8 +8,8 @@ import {useAccountPublicationList} from '@mintter/app/src/models/changes'
 import {useAccountWithDevices} from '@mintter/app/src/models/contacts'
 import {toast} from '@mintter/app/src/toast'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
 import {abbreviateCid, pluralizer} from '@mintter/shared'
+import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
   ChevronDown,
@@ -25,10 +25,10 @@ import {
 import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
+import {copyLinkMenuItem} from '../components/list-item'
 import {useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
-import {copyLinkMenuItem} from '../components/list-item'
-import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
+import {useNavigate} from '../utils/useNavigate'
 
 function DeviceRow({
   isOnline,

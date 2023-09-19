@@ -1,20 +1,19 @@
-import z from 'zod'
-import {initTRPC} from '@trpc/server'
-import {observable} from '@trpc/server/observable'
-import superjson from 'superjson'
-import {app, dialog} from 'electron'
-import {BrowserWindow, Menu, MenuItem, ipcMain} from 'electron'
-import {createIPCHandler} from 'electron-trpc/main'
-import path from 'path'
-import Store from 'electron-store'
-import {childLogger, error, log, warn} from './logger'
-import {APP_USER_DATA_PATH} from './app-paths'
-import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import type {
+  AppWindowEvent,
   NavRoute,
   NavState,
-  AppWindowEvent,
 } from '@mintter/app/src/utils/navigation'
+import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import {initTRPC} from '@trpc/server'
+import {observable} from '@trpc/server/observable'
+import {BrowserWindow, Menu, MenuItem, app, dialog, ipcMain} from 'electron'
+import Store from 'electron-store'
+import {createIPCHandler} from 'electron-trpc/main'
+import path from 'path'
+import superjson from 'superjson'
+import z from 'zod'
+import {APP_USER_DATA_PATH} from './app-paths'
+import {childLogger, error, log, warn} from './logger'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 

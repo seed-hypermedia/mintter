@@ -1,9 +1,9 @@
 import {InputRule, mergeAttributes} from '@tiptap/core'
+import {mergeCSSClasses} from '../../../../../../shared/utils'
 import {createTipTapBlock} from '../../../../api/block'
+import styles from '../../../Block.module.css'
 import {handleEnter} from '../ListItemKeyboardShortcuts'
 import {NumberedListIndexingPlugin} from './NumberedListIndexingPlugin'
-import styles from '../../../Block.module.css'
-import {mergeCSSClasses} from '../../../../../../shared/utils'
 
 export const NumberedListItemBlockContent =
   createTipTapBlock<'numberedListItem'>({

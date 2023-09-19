@@ -1,6 +1,6 @@
+import {AppQueryClient} from '@mintter/app/src/query-client'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
-import {AppQueryClient} from '@mintter/app/src/query-client'
 
 function parseHTML(html: string): Document {
   const parser = new DOMParser()

@@ -1,8 +1,8 @@
 import {InputRule, mergeAttributes} from '@tiptap/core'
-import {createTipTapBlock} from '../../../../api/block'
-import {handleEnter} from '../ListItemKeyboardShortcuts'
-import styles from '../../../Block.module.css'
 import {mergeCSSClasses} from '../../../../../../shared/utils'
+import {createTipTapBlock} from '../../../../api/block'
+import styles from '../../../Block.module.css'
+import {handleEnter} from '../ListItemKeyboardShortcuts'
 
 export const BulletListItemBlockContent = createTipTapBlock<'bulletListItem'>({
   name: 'bulletListItem',

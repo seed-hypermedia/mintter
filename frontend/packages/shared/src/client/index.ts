@@ -1,9 +1,9 @@
 import {Accounts} from './.generated/accounts/v1alpha/accounts_connect'
 import {Daemon} from './.generated/daemon/v1alpha/daemon_connect'
 import {Changes} from './.generated/documents/v1alpha/changes_connect'
-import {Groups} from './.generated/groups/v1alpha/groups_connect'
 import {Comments} from './.generated/documents/v1alpha/comments_connect'
 import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connect'
+import {Groups} from './.generated/groups/v1alpha/groups_connect'
 
 import {PartialMessage} from '@bufbuild/protobuf'
 import {
@@ -18,8 +18,8 @@ import {
   WebPublishing,
   WebSite,
 } from './.generated/documents/v1alpha/web_publishing_connect'
-import {Networking} from './.generated/networking/v1alpha/networking_connect'
 import {Entities} from './.generated/entities/v1alpha/entities_connect'
+import {Networking} from './.generated/networking/v1alpha/networking_connect'
 export {
   Account,
   Device,
@@ -36,19 +36,6 @@ export type {
   RegisterRequest,
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
-export {
-  Group,
-  Role,
-  ListGroupsRequest,
-} from './.generated/groups/v1alpha/groups_pb'
-export {
-  Change,
-  DiscoverEntityRequest,
-  DiscoverEntityResponse,
-  EntityTimeline,
-  GetChangeRequest,
-  GetEntityTimelineRequest,
-} from './.generated/entities/v1alpha/entities_pb'
 export {
   ChangeInfo,
   GetChangeInfoRequest,
@@ -82,6 +69,19 @@ export {
   PublishDraftRequest,
 } from './.generated/documents/v1alpha/documents_pb'
 export * from './.generated/documents/v1alpha/web_publishing_pb'
+export {
+  Change,
+  DiscoverEntityRequest,
+  DiscoverEntityResponse,
+  EntityTimeline,
+  GetChangeRequest,
+  GetEntityTimelineRequest,
+} from './.generated/entities/v1alpha/entities_pb'
+export {
+  Group,
+  ListGroupsRequest,
+  Role,
+} from './.generated/groups/v1alpha/groups_pb'
 export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
@@ -91,8 +91,8 @@ export type {
 } from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
 export * from './client-utils'
-export * from './hyperdocs-presentation'
 export * from './editor-types'
+export * from './hyperdocs-presentation'
 export * from './server-to-editor'
 export {
   Accounts,

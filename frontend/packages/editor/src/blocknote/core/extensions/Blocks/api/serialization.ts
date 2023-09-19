@@ -1,6 +1,6 @@
 import {Extension} from '@tiptap/core'
-import {Plugin} from 'prosemirror-state'
 import {DOMSerializer, Schema} from 'prosemirror-model'
+import {Plugin} from 'prosemirror-state'
 
 const customBlockSerializer = (schema: Schema) => {
   const defaultSerializer = DOMSerializer.fromSchema(schema)

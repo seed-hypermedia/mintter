@@ -6,10 +6,8 @@ import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {
   AddSquare,
   Button,
-  ButtonText,
   Close,
   CloseAll,
-  Container,
   Delete,
   Hide,
   ListItem,
@@ -20,14 +18,11 @@ import {
   Separator,
   Settings,
   SizableText,
-  Stack,
-  Text,
   TitlebarRow,
   TitlebarSection,
   TitlebarWrapper,
   XStack,
   YGroup,
-  YStack,
 } from '@mintter/ui'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {useEffect, useMemo} from 'react'

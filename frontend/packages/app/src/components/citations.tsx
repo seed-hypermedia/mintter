@@ -4,11 +4,11 @@ import {
 } from '@mintter/app/src/models/content-graph'
 import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {LinkNode, pluralS} from '@mintter/shared'
+import {pluralS} from '@mintter/shared'
 import {Button, SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
-import {AccessoryContainer} from './accessory-sidebar'
 import {useGRPCClient} from '../app-context'
+import {AccessoryContainer} from './accessory-sidebar'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   if (!link.source?.documentId) throw 'Invalid citation'

@@ -9,7 +9,6 @@ import {
   Button,
   ButtonProps,
   Clock,
-  Delete,
   FooterWrapper,
   SizableText,
   User,
@@ -17,8 +16,6 @@ import {
 } from '@mintter/ui'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
-import {MdWarning, MdWarningAmber} from 'react-icons/md'
-import {X} from '@tamagui/lucide-icons'
 
 export function FooterButton({
   active,

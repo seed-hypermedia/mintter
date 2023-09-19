@@ -1,11 +1,4 @@
-import {
-  Container,
-  XStack,
-  H1,
-  Button,
-  MainContainer,
-  MainWrapper,
-} from '@mintter/ui'
+import {Button, H1, MainContainer, MainWrapper, XStack} from '@mintter/ui'
 import {SiteHead} from 'site-head'
 import Footer from '../footer'
 

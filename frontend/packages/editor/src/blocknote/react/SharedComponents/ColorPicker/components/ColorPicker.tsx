@@ -1,6 +1,6 @@
 import {Menu} from '@mantine/core'
-import {ColorIcon} from './ColorIcon'
 import {TiTick} from 'react-icons/ti'
+import {ColorIcon} from './ColorIcon'
 
 export const ColorPicker = (props: {
   onClick?: () => void

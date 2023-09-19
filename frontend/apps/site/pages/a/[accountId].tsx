@@ -1,10 +1,10 @@
+import AccountPage from 'account-page'
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import AccountPage from 'account-page'
 
 export default function Account(
   props: InferGetServerSidePropsType<typeof getServerSideProps>,

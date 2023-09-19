@@ -1,9 +1,9 @@
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 import {useGRPCClient, useIPC} from '@mintter/app/src/app-context'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {ContactsPrompt} from '@mintter/app/src/components/contacts-prompt'
 import {Dropdown, MenuItem} from '@mintter/app/src/components/dropdown'
-import {Tooltip} from '@mintter/ui'
 import appError from '@mintter/app/src/errors'
 import {useMyAccount} from '@mintter/app/src/models/accounts'
 import {useDraftList} from '@mintter/app/src/models/documents'
@@ -15,8 +15,8 @@ import {
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
+import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'
 import {Account, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
@@ -31,6 +31,7 @@ import {
   Settings,
   SizableText,
   TitlebarSection,
+  Tooltip,
   XGroup,
   XStack,
   YGroup,
@@ -38,7 +39,6 @@ import {
 import {
   Bookmark,
   Contact,
-  Copy,
   FilePlus2,
   Globe,
   Library,
@@ -56,7 +56,6 @@ import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
-import {usePublicationInContext} from '@mintter/app/models/publication'
 
 function getRoutePubContext(
   route: NavRoute,

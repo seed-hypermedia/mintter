@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest } from "./entities_pb";
 import { MethodKind } from "@bufbuild/protobuf";
+import { Change, DiscoverEntityRequest, DiscoverEntityResponse, EntityTimeline, GetChangeRequest, GetEntityTimelineRequest } from "./entities_pb";
 
 /**
  * Provides functionality to query information about Hypermedia Entities.

@@ -6,6 +6,7 @@ import {
   inlineContentToNodes,
 } from '../../../api/nodeConversions/nodeConversions'
 
+import {mergeCSSClasses} from '../../../shared/utils'
 import {
   BlockNoteDOMAttributes,
   BlockSchema,
@@ -15,7 +16,6 @@ import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
 import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
-import {mergeCSSClasses} from '../../../shared/utils'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

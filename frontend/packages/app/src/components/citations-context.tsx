@@ -1,7 +1,6 @@
-import {useState} from 'react'
 import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {MttLink as Link} from '@mintter/shared'
-import {createContext, ReactNode, useContext, useMemo} from 'react'
+import {createContext, ReactNode, useContext, useMemo, useState} from 'react'
 
 export type CitationsContext = {
   citations: ReturnType<typeof useDocCitations>

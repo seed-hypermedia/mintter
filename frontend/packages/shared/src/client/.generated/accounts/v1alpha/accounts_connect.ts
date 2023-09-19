@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse, Profile, SetAccountTrustRequest } from "./accounts_pb";
 import { MethodKind } from "@bufbuild/protobuf";
+import { Account, GetAccountRequest, ListAccountsRequest, ListAccountsResponse, Profile, SetAccountTrustRequest } from "./accounts_pb";
 
 /**
  * Accounts API service.

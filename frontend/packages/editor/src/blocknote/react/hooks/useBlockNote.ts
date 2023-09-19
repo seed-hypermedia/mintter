@@ -1,7 +1,6 @@
 import {
   BlockNoteEditor,
   BlockNoteEditorOptions,
-  BlockSchema,
   defaultBlockSchema,
   DefaultBlockSchema,
 } from '@/blocknote/core'

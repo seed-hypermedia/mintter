@@ -1,4 +1,4 @@
-import {styled, YStack, Main, Stack, SizableStack, SizableText} from 'tamagui'
+import {Main, SizableText, Stack, YStack, styled} from 'tamagui'
 import {Container} from './container'
 
 export function MainContainer({

@@ -1,33 +1,25 @@
 import {useDraftList} from '@mintter/app/src/models/documents'
-import {usePopoverState} from '@mintter/app/src/use-popover-state'
 import {DraftRoute} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 
-import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
 import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
-import {Dropdown} from '@mintter/app/src/components/dropdown'
 import {EmptyList} from '@mintter/app/src/components/empty-list'
 import Footer from '@mintter/app/src/components/footer'
-import {Document, formattedDate} from '@mintter/shared'
+import {useOpenDraft} from '@mintter/app/src/utils/open-draft'
+import {Document} from '@mintter/shared'
 import {
   Button,
-  ButtonText,
   Container,
-  ExternalLink,
   MainWrapper,
-  MoreHorizontal,
-  Separator,
   Spinner,
   Text,
-  XStack,
   YStack,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
-import {useClickNavigate} from '../utils/useNavigate'
 import {GestureResponderEvent} from 'react-native'
-import {ListItem} from '../components/list-item'
 import {useAppContext} from '../app-context'
+import {ListItem} from '../components/list-item'
 import {queryDraft} from '../models/documents'
+import {useClickNavigate} from '../utils/useNavigate'
 
 export default function DraftList() {
   let drafts = useDraftList()

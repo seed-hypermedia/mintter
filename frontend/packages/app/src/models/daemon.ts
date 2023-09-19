@@ -1,13 +1,13 @@
 import {GRPCClient, Info} from '@mintter/shared'
 import {
   FetchQueryOptions,
-  useMutation,
   UseMutationOptions,
-  useQuery,
   UseQueryOptions,
+  useMutation,
+  useQuery,
 } from '@tanstack/react-query'
-import {queryKeys} from './query-keys'
 import {useGRPCClient} from '../app-context'
+import {queryKeys} from './query-keys'
 
 function queryDaemonInfo(
   grpcClient: GRPCClient,

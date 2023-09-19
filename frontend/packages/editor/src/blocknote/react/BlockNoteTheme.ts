@@ -1,5 +1,5 @@
-import {CSSObject, MantineThemeOverride} from '@mantine/core'
 import {blockStyles} from '@/blocknote/core'
+import {CSSObject, MantineThemeOverride} from '@mantine/core'
 import _ from 'lodash'
 
 export type CombinedColor = {

@@ -15,8 +15,8 @@ import {
 } from '@mintter/ui'
 import {useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {DocumentPlaceholder} from './document-placeholder'
 import {useOpenDraft} from '../utils/open-draft'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function DraftPage() {
   let route = useNavRoute()

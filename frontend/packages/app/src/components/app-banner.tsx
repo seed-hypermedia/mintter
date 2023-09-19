@@ -1,5 +1,5 @@
-import {getVariable, SizableText, useTheme, XStack} from '@mintter/ui'
-import {MouseEventHandler, ReactNode} from 'react'
+import {SizableText, XStack} from '@mintter/ui'
+import {ReactNode} from 'react'
 
 export function AppBanner({
   children,

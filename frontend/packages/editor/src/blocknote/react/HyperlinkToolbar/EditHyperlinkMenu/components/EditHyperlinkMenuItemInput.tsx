@@ -1,5 +1,5 @@
-import {KeyboardEvent} from 'react'
 import {TextInput} from '@mantine/core'
+import {KeyboardEvent} from 'react'
 
 export type EditHyperlinkMenuItemInputProps = {
   autofocus?: boolean

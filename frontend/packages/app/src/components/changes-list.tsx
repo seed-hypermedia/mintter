@@ -1,3 +1,4 @@
+import {useAllChanges} from '@mintter/app/models/changes'
 import {Avatar} from '@mintter/app/src/components/avatar'
 import {useAccount} from '@mintter/app/src/models/accounts'
 import {SmartChangeInfo, useSmartChanges} from '@mintter/app/src/models/changes'
@@ -7,7 +8,6 @@ import {formattedDate, pluralS} from '@mintter/shared'
 import {Button, SizableText, XStack} from '@mintter/ui'
 import {getAvatarUrl} from '../utils/account-url'
 import {AccessoryContainer} from './accessory-sidebar'
-import {useAllChanges} from '@mintter/app/models/changes'
 
 function ChangeItem({
   change,

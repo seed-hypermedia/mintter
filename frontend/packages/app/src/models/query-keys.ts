@@ -1,6 +1,5 @@
 // this file exists so you know what may need to be invalidated from the cache when you make changes.
 
-import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
 import {abbreviateCid} from '@mintter/shared'
 import {QueryKey} from '@tanstack/react-query'
 

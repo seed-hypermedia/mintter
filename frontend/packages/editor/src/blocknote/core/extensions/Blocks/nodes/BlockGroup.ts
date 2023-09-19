@@ -1,7 +1,7 @@
-import {findParentNode, InputRule, mergeAttributes, Node} from '@tiptap/core'
-import styles from './Block.module.css'
-import {BlockNoteDOMAttributes} from '../api/blockTypes'
+import {InputRule, mergeAttributes, Node} from '@tiptap/core'
 import {mergeCSSClasses} from '../../../shared/utils'
+import {BlockNoteDOMAttributes} from '../api/blockTypes'
+import styles from './Block.module.css'
 
 export const BlockGroup = Node.create<{
   domAttributes?: BlockNoteDOMAttributes

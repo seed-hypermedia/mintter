@@ -1,7 +1,7 @@
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
-import {PageActionButtons, NavMenu, PageContextButtons} from './common'
-import {Title} from './title'
 import {TitlebarWrapper, XStack} from '@mintter/ui'
+import {NavMenu, PageActionButtons, PageContextButtons} from './common'
+import {Title} from './title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {

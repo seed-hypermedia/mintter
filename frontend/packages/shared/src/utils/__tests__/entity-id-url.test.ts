@@ -1,10 +1,10 @@
+import {describe, expect, it, test} from 'vitest'
 import {
   createHmId,
-  unpackDocId,
   parseCustomURL,
+  unpackDocId,
   unpackHmId,
 } from '../entity-id-url'
-import {describe, expect, it, test} from 'vitest'
 
 describe('unpackHmId', () => {
   test('unpacks hm://d/abc', () => {

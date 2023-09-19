@@ -1,7 +1,7 @@
 import {AppIPC} from '@mintter/app/app-ipc'
 
-import {client} from './trpc'
 import {decodeRouteFromPath} from '@mintter/app/utils/route-encoding'
+import {client} from './trpc'
 
 export function createIPC(): AppIPC {
   return {

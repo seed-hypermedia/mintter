@@ -1,8 +1,8 @@
 /** Define the main block types **/
 import {Node, NodeConfig} from '@tiptap/core'
 import {BlockNoteEditor} from '../../../BlockNoteEditor'
-import {InlineContent, PartialInlineContent} from './inlineContentTypes'
 import {DefaultBlockSchema} from './defaultBlocks'
+import {InlineContent, PartialInlineContent} from './inlineContentTypes'
 
 export type BlockNoteDOMElement =
   | 'editor'

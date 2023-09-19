@@ -1,13 +1,13 @@
+import {createHmId} from '@mintter/shared'
+import {Heading, Spinner} from '@mintter/ui'
+import {daemonClient, networkingClient} from 'client'
 import {GetServerSideProps} from 'next'
 import {EveryPageProps} from 'pages/_app'
-import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import {setAllowAnyHostGetCORS} from 'server/cors'
-import {daemonClient, networkingClient} from 'client'
-import {Heading, Spinner} from '@mintter/ui'
-import {useRouteQuery} from 'server/router-queries'
 import PublicationPage from 'publication-page'
+import {setAllowAnyHostGetCORS} from 'server/cors'
+import {useRouteQuery} from 'server/router-queries'
+import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {trpc} from 'trpc'
-import {createHmId} from '@mintter/shared'
 
 export type GroupPubPageProps = {
   groupId: string

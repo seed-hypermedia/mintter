@@ -1,7 +1,7 @@
-import {useQuery} from '@tanstack/react-query'
-import {queryKeys} from './query-keys'
-import {useGRPCClient} from '../app-context'
 import {GRPCClient} from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
+import {useGRPCClient} from '../app-context'
+import {queryKeys} from './query-keys'
 
 export type CitationLink = Awaited<
   ReturnType<GRPCClient['contentGraph']['listCitations']>

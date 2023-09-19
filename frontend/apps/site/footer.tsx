@@ -1,5 +1,5 @@
+import {Button, Container, Footer as TFooter, XStack} from '@mintter/ui'
 import {useRouter} from 'next/router'
-import {Container, Footer as TFooter, XStack, Button} from '@mintter/ui'
 import {MenuItem} from './menu-item'
 
 export default function Footer() {

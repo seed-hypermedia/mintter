@@ -1,4 +1,4 @@
-import {styled, Dialog, XStack, YStack, AlertDialog} from '@mintter/ui'
+import {AlertDialog, Dialog, XStack, YStack, styled} from '@mintter/ui'
 import {FC, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'
 

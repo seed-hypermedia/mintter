@@ -1,4 +1,5 @@
 import Footer from '@mintter/app/src/components/footer'
+import {StaticBlockNode} from '@mintter/editor'
 import {
   Document,
   Role,
@@ -35,8 +36,14 @@ import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useAppDialog} from '../components/dialog'
+import {useEditGroupInfoDialog} from '../components/edit-group-info'
+import {FooterButton} from '../components/footer'
+import {AppLinkText} from '../components/link'
+import {copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
+import {EditDocActions} from '../components/titlebar/common'
 import {useAccount, useMyAccount} from '../models/accounts'
+import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -47,17 +54,9 @@ import {
   useRenameGroupDoc,
 } from '../models/groups'
 import {GroupRoute, useNavRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {AppLinkText} from '../components/link'
-import {pathNameify} from '../utils/path'
 import {useOpenDraft} from '../utils/open-draft'
-import {StaticBlockNode} from '@mintter/editor'
-import {EditDocActions} from '../components/titlebar/common'
-import {useEditGroupInfoDialog} from '../components/edit-group-info'
-import {Allotment} from 'allotment'
-import {FooterButton} from '../components/footer'
-import {useAllChanges} from '../models/changes'
-import {copyLinkMenuItem} from '../components/list-item'
+import {pathNameify} from '../utils/path'
+import {useNavigate} from '../utils/useNavigate'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},

@@ -5,13 +5,13 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import {useGRPCClient, useQueryInvalidator} from '../app-context'
-import {queryKeys} from './query-keys'
 import {
   ListDocumentGroupsResponse,
   ListGroupsResponse,
 } from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
+import {queryKeys} from './query-keys'
 
 export function useGroups(opts: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()

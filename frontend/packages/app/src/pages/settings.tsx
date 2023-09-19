@@ -1,26 +1,12 @@
 import {AvatarForm} from '@mintter/app/src/components/avatar-form'
 import {TableList} from '@mintter/app/src/components/table-list'
-import {AccessURLRow} from '@mintter/app/src/components/url'
-import {
-  useAccount,
-  useMyAccount,
-  useSetProfile,
-} from '@mintter/app/src/models/accounts'
+import {useMyAccount, useSetProfile} from '@mintter/app/src/models/accounts'
 import {useDaemonInfo} from '@mintter/app/src/models/daemon'
 import {usePeerInfo} from '@mintter/app/src/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/src/models/payments'
 import {ObjectKeys} from '@mintter/app/src/utils/object-keys'
-import {hostnameStripProtocol} from '@mintter/app/src/utils/site-hostname'
+import {LightningWallet, Profile} from '@mintter/shared'
 import {
-  LightningWallet,
-  Member,
-  Member_Role,
-  Profile,
-  SiteConfig,
-  SiteInfo,
-} from '@mintter/shared'
-import {
-  Add,
   Back,
   Button,
   Card,
@@ -28,12 +14,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Close,
   Copy,
-  Dialog,
-  Fieldset,
   Form,
-  Forward,
   H3,
   Heading,
   Input,
@@ -42,7 +24,6 @@ import {
   Select,
   Separator,
   SizableText,
-  Spinner,
   Star,
   Tabs,
   TabsContentProps,
@@ -52,11 +33,10 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {ArrowDownRight, X} from '@tamagui/lucide-icons'
+import {ArrowDownRight} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, useEffect, useMemo, useRef, useState} from 'react'
+import {ComponentProps, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {TextInput} from 'react-native'
 import {useGRPCClient} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 

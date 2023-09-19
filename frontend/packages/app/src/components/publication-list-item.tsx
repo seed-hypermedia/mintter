@@ -1,14 +1,16 @@
 import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {Document, Publication} from '@mintter/shared'
-import {Button, ButtonText, ExternalLink, Text, XStack} from '@mintter/ui'
-import {AccountLinkAvatar} from './account-link-avatar'
-import {PublicationRouteContext} from '@mintter/app/src/utils/navigation'
-import {ListItem, MenuItem, TimeAccessory} from './list-item'
-import {GestureResponderEvent} from 'react-native'
+import {
+  PublicationRouteContext,
+  useNavRoute,
+} from '@mintter/app/src/utils/navigation'
 import {useClickNavigate} from '@mintter/app/src/utils/useNavigate'
+import {Document, Publication} from '@mintter/shared'
+import {Button, ButtonText, ExternalLink, XStack} from '@mintter/ui'
+import {GestureResponderEvent} from 'react-native'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import {AccountLinkAvatar} from './account-link-avatar'
+import {ListItem, MenuItem, TimeAccessory} from './list-item'
 
 function unique(keys: string[]) {
   return Array.from(new Set(keys))

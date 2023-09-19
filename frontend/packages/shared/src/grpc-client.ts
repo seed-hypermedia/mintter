@@ -6,12 +6,12 @@ import {
   ContentGraph,
   Daemon,
   Drafts,
+  Entities,
+  Groups,
   Networking,
   Publications,
   WebPublishing,
   WebSite,
-  Groups,
-  Entities,
 } from './client'
 
 export type GRPCClient = {

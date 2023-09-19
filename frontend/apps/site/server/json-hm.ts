@@ -3,15 +3,15 @@ import type {
   Annotation,
   Block,
   BlockNode,
+  ChangeInfo,
   Device,
   Document,
+  Group,
+  HMTimestamp,
+  MttLink,
   Profile,
   Publication,
   SiteInfo,
-  HMTimestamp,
-  ChangeInfo,
-  MttLink,
-  Group,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo

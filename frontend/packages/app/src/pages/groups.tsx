@@ -1,6 +1,6 @@
 import Footer from '@mintter/app/src/components/footer'
+import {Group, Role, idToUrl} from '@mintter/shared'
 import {
-  Button,
   Container,
   ExternalLink,
   MainWrapper,
@@ -9,18 +9,16 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useGroupMembers, useGroups} from '../models/groups'
-import {Group, Role, createPublicWebHmUrl, idToUrl} from '@mintter/shared'
-import {GroupRoute} from '../utils/navigation'
-import {useClickNavigate} from '../utils/useNavigate'
-import {useNavigate} from '../utils/useNavigate'
 import {GestureResponderEvent} from 'react-native'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {
   ListItem,
   TimeAccessory,
   copyLinkMenuItem,
 } from '../components/list-item'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {useGroupMembers, useGroups} from '../models/groups'
+import {GroupRoute} from '../utils/navigation'
+import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
 function MemberAvatarLinks({
   ownerAccountId,

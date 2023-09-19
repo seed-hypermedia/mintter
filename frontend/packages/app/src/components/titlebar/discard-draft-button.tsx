@@ -1,8 +1,7 @@
+import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {useDeleteDraftDialog} from '@mintter/app/src/components/delete-draft-dialog'
-import {Tooltip} from '@mintter/ui'
-import {Button} from '@mintter/ui'
+import {Button, Tooltip} from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 
 export default function DiscardDraftButton() {

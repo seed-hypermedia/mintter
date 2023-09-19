@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ConnectRequest, ConnectResponse, GetPeerInfoRequest, ListPeersRequest, ListPeersResponse, PeerInfo } from "./networking_pb";
 import { MethodKind } from "@bufbuild/protobuf";
+import { ConnectRequest, ConnectResponse, GetPeerInfoRequest, ListPeersRequest, ListPeersResponse, PeerInfo } from "./networking_pb";
 
 /**
  * Networking API service of the Mintter daemon.

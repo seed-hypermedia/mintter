@@ -1,9 +1,8 @@
-import {exposeElectronTRPC} from 'electron-trpc/main'
+import {AppWindowEvent, NavState} from '@mintter/app/src/utils/navigation'
 import {contextBridge, ipcRenderer} from 'electron'
+import {exposeElectronTRPC} from 'electron-trpc/main'
 import type {GoDaemonState} from './api'
-import {writeableStateStream, eventStream} from './stream'
-import {NavState} from '@mintter/app/src/utils/navigation'
-import {AppWindowEvent} from '@mintter/app/src/utils/navigation'
+import {eventStream, writeableStateStream} from './stream'
 
 process.once('loaded', async () => {
   exposeElectronTRPC()

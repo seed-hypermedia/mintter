@@ -3,17 +3,17 @@ import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
 // import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
+import path from 'node:path'
 import {
+  handleSecondInstance,
+  handleUrlOpen,
   mainMenu,
   openInitialWindows,
   trpc,
-  handleSecondInstance,
-  handleUrlOpen,
 } from './api'
 import {initPaths} from './app-paths'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
-import path from 'node:path'
 
 const OS_REGISTER_SCHEME = 'hm'
 

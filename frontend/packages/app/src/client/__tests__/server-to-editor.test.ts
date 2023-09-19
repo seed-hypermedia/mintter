@@ -1,8 +1,8 @@
-import {describe, expect, test} from 'vitest'
-import {Block, BlockNode, serverBlockToEditorInline} from '@mintter/shared'
-import {serverChildrenToEditorChildren} from '../server-to-editor'
-import {examples} from '../example-docs'
 import {InlineContent} from '@mintter/app/src/blocknote-core'
+import {Block, BlockNode, serverBlockToEditorInline} from '@mintter/shared'
+import {describe, expect, test} from 'vitest'
+import {examples} from '../example-docs'
+import {serverChildrenToEditorChildren} from '../server-to-editor'
 
 describe('Editor: ', () => {
   describe('Server to Editor: ', () => {

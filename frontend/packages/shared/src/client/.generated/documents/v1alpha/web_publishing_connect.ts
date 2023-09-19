@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddSiteRequest, CreateInviteTokenRequest, DeleteMemberRequest, GetMemberRequest, GetPathRequest, GetPathResponse, GetSiteInfoRequest, InviteToken, ListMembersRequest, ListMembersResponse, ListSitesRequest, ListSitesResponse, ListWebPublicationRecordsRequest, ListWebPublicationRecordsResponse, ListWebPublicationsRequest, ListWebPublicationsResponse, Member, PublishDocumentRequest, PublishDocumentResponse, RedeemInviteTokenRequest, RedeemInviteTokenResponse, RemoveSiteRequest, SiteConfig, SiteInfo, UnpublishDocumentRequest, UnpublishDocumentResponse, UpdateSiteInfoRequest } from "./web_publishing_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
+import { AddSiteRequest, CreateInviteTokenRequest, DeleteMemberRequest, GetMemberRequest, GetPathRequest, GetPathResponse, GetSiteInfoRequest, InviteToken, ListMembersRequest, ListMembersResponse, ListSitesRequest, ListSitesResponse, ListWebPublicationRecordsRequest, ListWebPublicationRecordsResponse, ListWebPublicationsRequest, ListWebPublicationsResponse, Member, PublishDocumentRequest, PublishDocumentResponse, RedeemInviteTokenRequest, RedeemInviteTokenResponse, RemoveSiteRequest, SiteConfig, SiteInfo, UnpublishDocumentRequest, UnpublishDocumentResponse, UpdateSiteInfoRequest } from "./web_publishing_pb";
 
 /**
  * Service exposed by the local application backend for
