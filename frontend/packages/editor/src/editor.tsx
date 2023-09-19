@@ -26,12 +26,17 @@ export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
       <BlockNoteView editor={editor}>
         <FormattingToolbarPositioner editor={editor} />
         <HyperlinkToolbarPositioner editor={editor} />
-        <SlashMenuPositioner editor={editor} />
+        {/* <SlashMenuPositioner editor={editor} /> */}
         <SideMenuPositioner editor={editor} placement="left" />
       </BlockNoteView>
     )
   } else {
-    return <BlockNoteView editor={editor}></BlockNoteView>
+    return (
+      <BlockNoteView editor={editor}>
+        {/* This is needed so no elements will be rendered for non-editable publications */}
+        <YStack opacity={0} pointerEvents="none" />
+      </BlockNoteView>
+    )
   }
 }
 
