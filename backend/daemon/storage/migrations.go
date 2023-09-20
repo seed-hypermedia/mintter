@@ -76,6 +76,17 @@ var migrations = []migration{
 			);		
 		`))
 	}},
+	{Version: "2023-09-19.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE accounts (
+				entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+				public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+				PRIMARY KEY (entity, public_key)
+			);
+
+			CREATE INDEX accounts_by_key ON accounts (public_key, entity);
+		`))
+	}},
 }
 
 const (

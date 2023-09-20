@@ -12,17 +12,21 @@ issues:
   exclude-rules:
     # Unused parameter warnings are annoying in tests.
     - path: _test\.go
-      linters: ['revive']
-      text: 'unused-parameter'
+      linters: ["revive"]
+      text: "unused-parameter"
     # For test helpers it's often convenient to pass *testing.T as the first parameter.
     # We don't care if context is not the first argument here.
     - path: _test\.go
-      text: 'context-as-argument'
-      linters: ['revive']
+      text: "context-as-argument"
+      linters: ["revive"]
     # In tests we can use math/rand instead of crypto/rand.
     - path: _test\.go
-      text: 'weak random number generator'
-      linters: ['gosec']
+      text: "weak random number generator"
+      linters: ["gosec"]
+    # Get rid of the annoying "if-return" rule.
+    # It gets in the way as soon as you decide to wrap the last error instead of returning it.
+    - text: "if-return"
+      linters: ["revive"]
   include:
     # Include revive rules that check comments on exported identifiers. These rules
     # are excluded by default, and IMHO this doesn't serve well the Go community.

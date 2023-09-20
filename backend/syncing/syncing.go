@@ -108,6 +108,7 @@ func (s *Service) Start(ctx context.Context) (err error) {
 	}()
 
 	t := time.NewTimer(s.warmupDuration)
+	defer t.Stop()
 
 	for {
 		select {

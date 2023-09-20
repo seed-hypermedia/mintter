@@ -227,10 +227,24 @@ CREATE TABLE wallets (
 
 -- Stores remote sites and their syncing status.
 CREATE TABLE remote_sites (
+    -- Values below are stable and are used to validate
+    -- whether site and group information correspond to each other.
     url TEXT UNIQUE NOT NULL,
     peer_id TEXT NOT NULL,
     group_id TEXT NOT NULL,
+    -- Values below are updated on each sync and used for caching.
     group_version TEXT NOT NULL,
     last_sync_time INTEGER NOT NULL,
     last_ok_sync_time INTEGER NOT NULL
 );
+
+-- Stores mapping between account public keys
+-- and their entity IDs.
+CREATE TABLE accounts (
+    entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (entity, public_key)
+);
+
+-- Index to query entity ID of an account public key.
+CREATE INDEX accounts_by_key ON accounts (public_key, entity);

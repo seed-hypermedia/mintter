@@ -13,6 +13,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
@@ -35,16 +36,123 @@ import (
 type Server struct {
 	me    *future.ReadOnly[core.Identity]
 	blobs *hyper.Storage
+	db    *DB
 	node  *future.ReadOnly[*mttnet.Node]
 }
 
 // NewServer creates a new groups server.
-func NewServer(me *future.ReadOnly[core.Identity], blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *DB, blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
 	return &Server{
 		me:    me,
+		db:    db,
 		blobs: blobs,
 		node:  node,
 	}
+}
+
+// StartPeriodicSync starts periodic sync of sites.
+// It will block until the provided context is canceled.
+func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration) error {
+	t := time.NewTimer(warmup)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-t.C:
+
+			t.Reset(interval)
+		}
+	}
+}
+
+var qGetSite = dqb.Str(`
+	SELECT
+		url,
+		peer_id,
+		group_id,
+		group_version,
+		last_sync_time,
+		last_ok_sync_time
+	FROM remote_sites
+	WHERE url = :url;
+`)
+
+func (srv *Server) syncSite(ctx context.Context, siteURL string, interval time.Duration) error {
+	var (
+		url            string
+		peerID         string
+		groupID        string
+		groupVersion   string
+		lastSyncTime   int64
+		lastSyncOkTime int64
+	)
+	if err := srv.db.QueryOne(ctx, qGetSite(),
+		[]any{siteURL},
+		[]any{&url, &peerID, &groupID, &groupVersion, &lastSyncTime, &lastSyncOkTime},
+	); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	lastSync := time.Unix(lastSyncTime, 0)
+
+	if now.Sub(lastSync) < interval {
+		return nil
+	}
+
+	info, err := GetSiteInfoHTTP(ctx, nil, siteURL)
+	if err != nil {
+		return fmt.Errorf("failed to get site info: %w", err)
+	}
+
+	if info.GroupId != groupID {
+		return fmt.Errorf("group ID mismatch: remote %s != local %s", info.GroupId, groupID)
+	}
+
+	if info.GroupVersion == groupVersion {
+		return nil
+	}
+
+	// otherwise do the sync
+	//   get remote info
+	//      check remote group id correspond with the local one
+	// 		get all blobs from site
+	//      push all blobs to site
+	//   get remote version and check if we have heads. If so => skip
+	//   sync with site
+	//
+
+	// TODO: record sync time in db
+	// if we don't have version heads - sync everything
+	//
+
+	// n, err := srv.node.Await(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// ai, err := addrInfoFromProto(info.PeerInfo)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to parse peer info: %w", err)
+	// }
+
+	// // Using libp2p connect instead of mttnet connect to skip the handshake.
+	// // This way we never actually exchange the site's key delegation, so we won't be
+	// // syncing with sites that we don't care about using the regular syncing process.
+	// //
+	// // TODO(burdiyan): BAD!
+	// if err := n.Libp2p().Connect(ctx, ai); err != nil {
+	// 	return err
+	// }
+
+	// // client, err := n.SiteClient(ctx, ai.ID)
+	// // if err != nil {
+	// // 	return err
+	// // }
+
+	return nil
 }
 
 // CreateGroup creates a new group.
@@ -103,7 +211,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
 }
 
 func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) (baseURL string, err error) {
@@ -174,7 +282,7 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 		e = v
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
 }
 
 // UpdateGroup updates a group.
@@ -251,7 +359,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
 }
 
 // ListGroups lists groups.
@@ -540,7 +648,7 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 	return resp, nil
 }
 
-func groupToProto(blobs *hyper.Storage, e *hyper.Entity) (*groups.Group, error) {
+func groupToProto(e *hyper.Entity) (*groups.Group, error) {
 	createTime, ok := e.AppliedChanges()[0].Data.Patch["createTime"].(int)
 	if !ok {
 		return nil, fmt.Errorf("group entity doesn't have createTime field")

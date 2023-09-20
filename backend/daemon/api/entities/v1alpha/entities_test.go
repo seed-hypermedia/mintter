@@ -2,6 +2,7 @@ package entities
 
 import (
 	"context"
+	"fmt"
 	"mintter/backend/core/coretest"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/daemon/storage"
@@ -9,6 +10,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,6 +20,53 @@ import (
 )
 
 var _ entities.EntitiesServer = (*Server)(nil)
+
+type cache struct {
+	funcs []onceFunc
+}
+
+type onceFunc struct {
+	once sync.Once
+	fn   func() string
+	val  string
+}
+
+func (o *onceFunc) Do() string {
+	o.once.Do(func() {
+		fmt.Println("doing")
+		o.val = o.fn()
+	})
+	return o.val
+}
+
+func (c *cache) Q(fn func() string) int {
+	idx := len(c.funcs)
+	c.funcs = append(c.funcs, onceFunc{fn: fn})
+	return idx
+}
+
+func (c *cache) Query(idx int) string {
+	return c.funcs[idx].Do()
+}
+
+var c cache
+
+var (
+	qSay = c.Q(func() string {
+		return "say" + "foo" + "bar"
+	})
+
+	qHey = c.Q(func() string {
+		return fmt.Sprintf("hey %s %s", "foo", "bar")
+	})
+)
+
+func BenchmarkCache(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = c.Query(qSay)
+		_ = c.Query(qHey)
+	}
+}
 
 func TestEntityTimeline(t *testing.T) {
 	t.Parallel()

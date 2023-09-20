@@ -6,6 +6,20 @@ import (
 	"mintter/backend/pkg/sqlitegen"
 )
 
+// Table accounts.
+const (
+	Accounts          sqlitegen.Table  = "accounts"
+	AccountsEntity    sqlitegen.Column = "accounts.entity"
+	AccountsPublicKey sqlitegen.Column = "accounts.public_key"
+)
+
+// Table accounts. Plain strings.
+const (
+	T_Accounts          = "accounts"
+	C_AccountsEntity    = "accounts.entity"
+	C_AccountsPublicKey = "accounts.public_key"
+)
+
 // Table blob_attrs.
 const (
 	BlobAttrs         sqlitegen.Table  = "blob_attrs"
@@ -365,6 +379,8 @@ const (
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
+		AccountsEntity:                  {Table: Accounts, SQLType: "INTEGER"},
+		AccountsPublicKey:               {Table: Accounts, SQLType: "INTEGER"},
 		BlobAttrsAnchor:                 {Table: BlobAttrs, SQLType: "TEXT"},
 		BlobAttrsBlob:                   {Table: BlobAttrs, SQLType: "INTEGER"},
 		BlobAttrsExtra:                  {Table: BlobAttrs, SQLType: ""},

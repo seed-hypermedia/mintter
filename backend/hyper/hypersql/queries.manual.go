@@ -3,6 +3,7 @@ package hypersql
 import (
 	"fmt"
 	"mintter/backend/daemon/storage"
+	"mintter/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -158,3 +159,21 @@ func GroupGetRole(conn *sqlite.Conn, resource, owner, member int64) (int64, erro
 
 	return role, nil
 }
+
+// SitesInsertOrIgnore inserts a site if it doesn't exist.
+func SitesInsertOrIgnore(conn *sqlite.Conn, baseURL, groupID string) error {
+	return sqlitex.Exec(conn, qSitesInsertOrIgnore(), nil, baseURL, groupID)
+}
+
+var qSitesInsertOrIgnore = dqb.Str(`
+	INSERT OR IGNORE INTO remote_sites (url, group_id) VALUES (?, ?);
+`)
+
+// AccountsInsertOrIgnore inserts an account if it doesn't exist.
+func AccountsInsertOrIgnore(conn *sqlite.Conn, entity, publicKey int64) error {
+	return sqlitex.Exec(conn, qAccountsInsertOrIgnore(), nil, entity, publicKey)
+}
+
+var qAccountsInsertOrIgnore = dqb.Str(`
+	INSERT OR IGNORE INTO accounts (entity, public_key) VALUES (?, ?);
+`)
