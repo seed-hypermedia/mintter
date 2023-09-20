@@ -52,6 +52,7 @@ Flags:
 		cfg.DataDir = "~/.mintter-site"
 		cfg.Syncing.Disabled = true
 		cfg.P2P.ForceReachabilityPublic = true
+		cfg.P2P.NoRelay = true
 		cfg.BindFlags(fs)
 
 		if len(os.Args) < 2 {

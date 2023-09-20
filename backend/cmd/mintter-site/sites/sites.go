@@ -61,7 +61,7 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := protojson.Marshal(siteInfo)
+	data, err := protojson.MarshalOptions{Indent: "  ", EmitUnpopulated: true}.Marshal(siteInfo)
 	if err != nil {
 		http.Error(w, "Failed to marshal site info: "+err.Error(), http.StatusInternalServerError)
 		return
