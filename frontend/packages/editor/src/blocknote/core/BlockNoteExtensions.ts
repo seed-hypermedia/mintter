@@ -31,6 +31,7 @@ import {TextColorExtension} from './extensions/TextColor/TextColorExtension'
 import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
+import {SelectableBlocksExtension} from './extensions/SelectableBlocks/SelectableBlocksExtension'
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -89,6 +90,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     BackgroundColorMark,
     BackgroundColorExtension,
     TextAlignmentExtension,
+    SelectableBlocksExtension,
 
     // nodes
     Doc,
