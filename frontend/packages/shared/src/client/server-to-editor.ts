@@ -218,7 +218,6 @@ export function serverBlockToHeading(
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
-  console.log(`== ~ block:`, block)
   return {
     type: 'heading',
     id: block.id,

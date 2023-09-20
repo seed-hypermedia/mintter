@@ -33,10 +33,16 @@ function getDraggableBlockFromCoords(
   }
 
   const pos = view.posAtCoords(coords)
+
   if (!pos) {
     return undefined
   }
-  let node = view.domAtPos(pos.pos).node as HTMLElement
+
+  let node =
+    view.nodeDOM(pos.inside) || (view.domAtPos(pos.pos).node as HTMLElement)
+  // let atomNode = view.nodeDOM(pos.inside) as HTMLElement
+
+  // console.log(`== ~ atomNode:`, {node, atomNode})
 
   if (node === view.dom) {
     // mouse over root
@@ -54,6 +60,7 @@ function getDraggableBlockFromCoords(
   if (!node) {
     return undefined
   }
+
   return {node, id: node.getAttribute('data-id')!}
 }
 
