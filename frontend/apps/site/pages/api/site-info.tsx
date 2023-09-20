@@ -1,8 +1,8 @@
-// test page for groupsClient.getSiteInfo({ hostname: process.env.GW_NEXT_HOST }) so we can see if this works in production
+// test page for groupsClient.getSiteInfo({ hostname: process.env.HM_BASE_URL }) so we can see if this works in production
 import {groupsClient} from 'client'
 import {NextApiRequest, NextApiResponse} from 'next'
 
-const gatewayHostWithProtocol = process.env.GW_NEXT_HOST
+const gatewayHostWithProtocol = process.env.HM_BASE_URL
 const gatewayHost = new URL(gatewayHostWithProtocol || '').hostname
 
 console.log('ℹ️ site info! ', {

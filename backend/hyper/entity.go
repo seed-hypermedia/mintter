@@ -307,7 +307,7 @@ func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, d
 		return hb, fmt.Errorf("failed to sign change: %w", err)
 	}
 
-	hb, err = EncodeBlob(ch.Type, ch)
+	hb, err = EncodeBlob(ch)
 	if err != nil {
 		return hb, err
 	}

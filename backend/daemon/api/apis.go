@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"mintter/backend/config"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	documents "mintter/backend/daemon/api/documents/v1alpha"
@@ -28,7 +27,6 @@ type Server struct {
 	Daemon     *daemon.Server
 	Documents  *documents.Server
 	Networking *networking.Server
-	Site       *mttnet.Server
 	Entities   *entities.Server
 	Groups     *groups.Server
 }
@@ -42,7 +40,6 @@ func New(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	cfg config.Site,
 ) Server {
 	doSync := func() error {
 		s, ok := sync.Get()
@@ -59,17 +56,14 @@ func New(
 		return nil
 	}
 
-	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, nil)
-	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv, &lazyDiscoverer{sync: sync})
-	documentsSrv.RemoteCaller = siteSrv
+	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node})
 	return Server{
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
-		Site:       siteSrv,
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
-		Groups:     groups.NewServer(repo.Identity(), blobs, node),
+		Groups:     groups.NewServer(repo.Identity(), groups.NewSQLiteDB(db), blobs, node),
 	}
 }
 

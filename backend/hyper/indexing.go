@@ -18,14 +18,24 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	dagpb "github.com/ipld/go-codec-dagpb"
+	"github.com/ipld/go-ipld-prime"
+	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
+	"github.com/ipld/go-ipld-prime/traversal"
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+type indexer struct {
+	db  *sqlitex.Pool
+	log *zap.Logger
+	bs  *blockStore
+}
+
 // Reindex forces deletes all the information derived from the blobs and reindexes them.
-func (bs *Storage) Reindex(ctx context.Context) (err error) {
+func (bs *indexer) Reindex(ctx context.Context) (err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -35,7 +45,7 @@ func (bs *Storage) Reindex(ctx context.Context) (err error) {
 	return bs.reindex(conn)
 }
 
-func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
+func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 	start := time.Now()
 	bs.log.Debug("ReindexingStarted")
 	defer func() {
@@ -61,8 +71,8 @@ func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
 		buf := make([]byte, 0, 1024*1024) // 1MB preallocated slice to reuse for decompressing.
 		if err := sqlitex.ExecTransient(conn, q, func(stmt *sqlite.Stmt) error {
 			codec := stmt.ColumnInt64(stmt.ColumnIndex(storage.BlobsCodec.ShortName()))
-			// We only know how to index dag-cbor blobs.
-			if codec != int64(multicodec.DagCbor) {
+
+			if !isIndexable(multicodec.Code(codec)) {
 				return nil
 			}
 
@@ -85,7 +95,7 @@ func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
 				return nil
 			}
 
-			return bs.indexBlob(conn, id, hb)
+			return bs.indexBlob(conn, id, hb.CID, hb.Decoded)
 		}); err != nil {
 			return err
 		}
@@ -99,7 +109,7 @@ func (bs *Storage) reindex(conn *sqlite.Conn) (err error) {
 }
 
 // MaybeReindex will trigger reindexing if it's needed.
-func (bs *Storage) MaybeReindex(ctx context.Context) error {
+func (bs *indexer) MaybeReindex(ctx context.Context) error {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -121,140 +131,224 @@ func (bs *Storage) MaybeReindex(ctx context.Context) error {
 // indexBlob is an uber-function that knows about all types of blobs we want to index.
 // This is probably a bad idea to put here, but for now it's easier to work with that way.
 // TODO(burdiyan): eventually we might want to make this package agnostic to blob types.
-func (bs *Storage) indexBlob(conn *sqlite.Conn, id int64, blob Blob) error {
-	switch v := blob.Decoded.(type) {
+func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData any) error {
+	switch v := blobData.(type) {
+	case ipld.Node:
+		return bs.indexDagPB(conn, id, c, v)
 	case KeyDelegation:
-		// Validate key delegation.
-		{
-			if v.Purpose != DelegationPurposeRegistration {
-				return fmt.Errorf("unknown key delegation purpose %q", v.Purpose)
-			}
-
-			if _, err := v.Issuer.Libp2pKey(); err != nil {
-				return fmt.Errorf("key delegation issuer is not a valid libp2p public key: %w", err)
-			}
-
-			if _, err := v.Delegate.Libp2pKey(); err != nil {
-				return fmt.Errorf("key delegation delegate is not a valid libp2p public key: %w", err)
-			}
-		}
-
-		iss, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, v.Issuer)
-		if err != nil {
-			return err
-		}
-
-		del, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, v.Delegate)
-		if err != nil {
-			return err
-		}
-
-		// We know issuer is an account when delegation purpose is registration.
-		accEntity := EntityID("hm://a/" + v.Issuer.String())
-		if _, err := hypersql.LookupEnsure(conn, storage.LookupResource, accEntity); err != nil {
-			return err
-		}
-
-		if err := hypersql.BlobAttrsInsert(conn, id, "kd/issuer", "", true, iss, nil, 0); err != nil {
-			return err
-		}
-
-		if err := hypersql.BlobAttrsInsert(conn, id, "kd/delegate", "", true, del, nil, 0); err != nil {
-			return err
-		}
+		return bs.indexKeyDelegation(conn, id, c, v)
 	case Change:
-		// TODO(burdiyan): ensure there's only one change that brings an entity into life.
-
-		iss, err := hypersql.KeyDelegationsGetIssuer(conn, v.Delegation.Hash())
-		if err != nil {
-			return err
-		}
-		if iss.KeyDelegationsIssuer == 0 {
-			// Try to get the issuer from the actual blob. This can happen when we are reindexing all the blobs,
-			// and we happen to index a change before the key delegation.
-
-			blk, err := bs.bs.get(conn, v.Delegation)
-			if err != nil {
-				return err
-			}
-
-			var del KeyDelegation
-			if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
-				return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", blob.CID, err)
-			}
-
-			iss.KeyDelegationsIssuer, err = bs.ensurePublicKey(conn, del.Issuer)
-			if err != nil {
-				return err
-			}
-
-			if iss.KeyDelegationsIssuer == 0 {
-				return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, blob.CID)
-			}
-		}
-
-		// TODO(burdiyan): remove this when all the tests are fixed. Sometimes CBOR codec decodes into
-		// different types than what was encoded, and we might not have accounted for that during indexing.
-		// So we re-encode the patch here to make sure.
-		// This is of course very wasteful.
-		{
-			data, err := cbornode.DumpObject(v.Patch)
-			if err != nil {
-				return err
-			}
-			v.Patch = nil
-
-			if err := cbornode.DecodeInto(data, &v.Patch); err != nil {
-				return err
-			}
-		}
-
-		isspk, err := hypersql.PublicKeysLookupPrincipal(conn, iss.KeyDelegationsIssuer)
-		if err != nil {
-			return err
-		}
-
-		// ensure entity
-		eid, err := bs.ensureEntity(conn, v.Entity)
-		if err != nil {
-			return err
-		}
-
-		if err := hypersql.BlobAttrsInsert(conn, id, "resource/id", "", true, eid, nil, v.HLCTime.Pack()); err != nil {
-			return err
-		}
-
-		for _, dep := range v.Deps {
-			res, err := hypersql.BlobsGetSize(conn, dep.Hash())
-			if err != nil {
-				return err
-			}
-			if res.BlobsSize < 0 || res.BlobsID == 0 {
-				return fmt.Errorf("missing causal dependency %s of change %s", dep, blob.CID)
-			}
-
-			if err := hypersql.BlobLinksInsertOrIgnore(conn, id, "change/dep", res.BlobsID); err != nil {
-				return fmt.Errorf("failed to link dependency %s of change %s: %w", dep, blob.CID, err)
-			}
-		}
-
-		if err := hypersql.ChangesInsertOrIgnore(conn, id, eid, v.HLCTime.Pack(), iss.KeyDelegationsIssuer); err != nil {
-			return err
-		}
-
-		if v.Entity.HasPrefix("hm://d/") {
-			return bs.indexDocumentChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
-		}
-
-		if v.Entity.HasPrefix("hm://g/") {
-			return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, blob.CID, v)
-		}
+		return bs.indexChange(conn, id, c, v)
 	}
 
 	return nil
 }
 
-func (bs *Storage) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) {
+func (bs *indexer) indexDagPB(conn *sqlite.Conn, id int64, c cid.Cid, v ipld.Node) error {
+	return traversal.WalkLocal(v, func(prog traversal.Progress, n ipld.Node) error {
+		pblink, ok := n.(dagpb.PBLink)
+		if !ok {
+			return nil
+		}
+
+		c, ok := pblink.Hash.Link().(cidlink.Link)
+		if !ok {
+			return fmt.Errorf("link is not CID: %v", pblink.Hash)
+		}
+
+		rel := "dagpb/chunk"
+		if pblink.Name.Exists() {
+			rel = "dagpb/" + pblink.Name.Must().String()
+		}
+
+		target, err := bs.ensureBlob(conn, c.Cid)
+		if err != nil {
+			return err
+		}
+
+		return hypersql.BlobLinksInsertOrIgnore(conn, id, rel, target)
+	})
+}
+
+func (bs *indexer) indexKeyDelegation(conn *sqlite.Conn, id int64, c cid.Cid, v KeyDelegation) error {
+	// Validate key delegation.
+	{
+		if v.Purpose != DelegationPurposeRegistration {
+			return fmt.Errorf("unknown key delegation purpose %q", v.Purpose)
+		}
+
+		if _, err := v.Issuer.Libp2pKey(); err != nil {
+			return fmt.Errorf("key delegation issuer is not a valid libp2p public key: %w", err)
+		}
+
+		if _, err := v.Delegate.Libp2pKey(); err != nil {
+			return fmt.Errorf("key delegation delegate is not a valid libp2p public key: %w", err)
+		}
+	}
+
+	iss, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, v.Issuer)
+	if err != nil {
+		return err
+	}
+
+	del, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, v.Delegate)
+	if err != nil {
+		return err
+	}
+
+	// We know issuer is an account when delegation purpose is registration.
+	accEntity := EntityID("hm://a/" + v.Issuer.String())
+	edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, accEntity)
+	if err != nil {
+		return err
+	}
+
+	if err := hypersql.AccountsInsertOrIgnore(conn, edb, iss); err != nil {
+		return err
+	}
+
+	if err := hypersql.BlobAttrsInsert(conn, id, "kd/issuer", "", true, iss, nil, 0); err != nil {
+		return err
+	}
+
+	if err := hypersql.BlobAttrsInsert(conn, id, "kd/delegate", "", true, del, nil, 0); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (bs *indexer) indexChange(conn *sqlite.Conn, id int64, c cid.Cid, v Change) error {
+	// TODO(burdiyan): ensure there's only one change that brings an entity into life.
+
+	iss, err := hypersql.KeyDelegationsGetIssuer(conn, v.Delegation.Hash())
+	if err != nil {
+		return err
+	}
+	if iss.KeyDelegationsIssuer == 0 {
+		// Try to get the issuer from the actual blob. This can happen when we are reindexing all the blobs,
+		// and we happen to index a change before the key delegation.
+
+		blk, err := bs.bs.get(conn, v.Delegation)
+		if err != nil {
+			return err
+		}
+
+		var del KeyDelegation
+		if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
+			return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", c, err)
+		}
+
+		iss.KeyDelegationsIssuer, err = bs.ensurePublicKey(conn, del.Issuer)
+		if err != nil {
+			return err
+		}
+
+		if iss.KeyDelegationsIssuer == 0 {
+			return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, c)
+		}
+	}
+
+	delid, err := hypersql.BlobsGetSize(conn, v.Delegation.Hash())
+	if err != nil {
+		return err
+	}
+	if delid.BlobsID == 0 {
+		return fmt.Errorf("missing key delegation %s of change %s", v.Delegation, c)
+	}
+
+	if err := hypersql.BlobLinksInsertOrIgnore(conn, id, "change/auth", delid.BlobsID); err != nil {
+		return fmt.Errorf("failed to link key delegation %s of change %s: %w", v.Delegation, c, err)
+	}
+
+	// TODO(burdiyan): remove this when all the tests are fixed. Sometimes CBOR codec decodes into
+	// different types than what was encoded, and we might not have accounted for that during indexing.
+	// So we re-encode the patch here to make sure.
+	// This is of course very wasteful.
+	{
+		data, err := cbornode.DumpObject(v.Patch)
+		if err != nil {
+			return err
+		}
+		v.Patch = nil
+
+		if err := cbornode.DecodeInto(data, &v.Patch); err != nil {
+			return err
+		}
+	}
+
+	isspk, err := hypersql.PublicKeysLookupPrincipal(conn, iss.KeyDelegationsIssuer)
+	if err != nil {
+		return err
+	}
+
+	// ensure entity
+	eid, err := bs.ensureEntity(conn, v.Entity)
+	if err != nil {
+		return err
+	}
+
+	if err := hypersql.BlobAttrsInsert(conn, id, "resource/id", "", true, eid, nil, v.HLCTime.Pack()); err != nil {
+		return err
+	}
+
+	for _, dep := range v.Deps {
+		res, err := hypersql.BlobsGetSize(conn, dep.Hash())
+		if err != nil {
+			return err
+		}
+		if res.BlobsSize < 0 || res.BlobsID == 0 {
+			return fmt.Errorf("missing causal dependency %s of change %s", dep, c)
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, id, "change/dep", res.BlobsID); err != nil {
+			return fmt.Errorf("failed to link dependency %s of change %s: %w", dep, c, err)
+		}
+	}
+
+	if err := hypersql.ChangesInsertOrIgnore(conn, id, eid, v.HLCTime.Pack(), iss.KeyDelegationsIssuer); err != nil {
+		return err
+	}
+
+	if v.Entity.HasPrefix("hm://d/") {
+		return bs.indexDocumentChange(conn, id, isspk.PublicKeysPrincipal, c, v)
+	}
+
+	if v.Entity.HasPrefix("hm://g/") {
+		return bs.indexGroupChange(conn, id, isspk.PublicKeysPrincipal, c, v)
+	}
+
+	if v.Entity.HasPrefix("hm://a/") {
+		return bs.indexAccountChange(conn, id, isspk.PublicKeysPrincipal, c, v)
+	}
+
+	return nil
+}
+
+func (bs *indexer) ensureBlob(conn *sqlite.Conn, c cid.Cid) (int64, error) {
+	codec, hash := ipfs.DecodeCID(c)
+
+	size, err := hypersql.BlobsGetSize(conn, hash)
+	if err != nil {
+		return 0, err
+	}
+
+	if size.BlobsID != 0 {
+		return size.BlobsID, nil
+	}
+
+	ins, err := hypersql.BlobsInsert(conn, 0, hash, int64(codec), nil, -1)
+	if err != nil {
+		return 0, err
+	}
+	if ins.BlobsID == 0 {
+		return 0, fmt.Errorf("failed to ensure blob %s after insert", c)
+	}
+
+	return ins.BlobsID, nil
+}
+
+func (bs *indexer) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) {
 	look, err := hypersql.EntitiesLookupID(conn, string(eid))
 	if err != nil {
 		return 0, err
@@ -274,7 +368,7 @@ func (bs *Storage) ensureEntity(conn *sqlite.Conn, eid EntityID) (int64, error) 
 	return ins.EntitiesID, nil
 }
 
-func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64, error) {
+func (bs *indexer) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64, error) {
 	res, err := hypersql.PublicKeysLookupID(conn, key)
 	if err != nil {
 		return 0, err
@@ -296,7 +390,7 @@ func (bs *Storage) ensurePublicKey(conn *sqlite.Conn, key core.Principal) (int64
 	return ins.PublicKeysID, nil
 }
 
-func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
 	hlc := ch.HLCTime.Pack()
 
 	// Validate group change.
@@ -394,29 +488,53 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 			}
 
 			if ch.Patch["members"] != nil && !isOwner {
-				return fmt.Errorf("group members can only be updated by an owner")
+				return fmt.Errorf("group members can only be updated by the owner")
+			}
+
+			if ch.Patch["siteURL"] != nil && !isOwner {
+				return fmt.Errorf("group siteURL can only be updated by the owner")
 			}
 		default:
 			return fmt.Errorf("unknown group action %q", ch.Action)
 		}
 	}
 
-	title, ok := ch.Patch["title"].(string)
-	if ok {
+	if title, ok := ch.Patch["title"].(string); ok {
 		if err := hypersql.BlobAttrsInsert(conn, blobID, "resource/title", "", false, title, nil, hlc); err != nil {
 			return err
 		}
 	}
 
-	desc, ok := ch.Patch["description"].(string)
-	if ok {
+	if desc, ok := ch.Patch["description"].(string); ok {
 		if err := hypersql.BlobAttrsInsert(conn, blobID, "resource/description", "", false, desc, nil, hlc); err != nil {
 			return err
 		}
 	}
 
-	content, ok := ch.Patch["content"].(map[string]any)
-	if ok {
+	if siteURL, ok := ch.Patch["siteURL"].(string); ok {
+		u, err := url.Parse(siteURL)
+		if err != nil {
+			return fmt.Errorf("failed to parse site URL %s: %w", siteURL, err)
+		}
+
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return fmt.Errorf("site URL must have http or https scheme, got %s", siteURL)
+		}
+
+		if siteURL != (&url.URL{Scheme: u.Scheme, Host: u.Host}).String() {
+			return fmt.Errorf("site URL must have only scheme and host, got %s", siteURL)
+		}
+
+		if err := hypersql.BlobAttrsInsert(conn, blobID, "group/site-url", "", false, siteURL, nil, hlc); err != nil {
+			return err
+		}
+
+		if err := hypersql.SitesInsertOrIgnore(conn, siteURL, string(ch.Entity)); err != nil {
+			return err
+		}
+	}
+
+	if content, ok := ch.Patch["content"].(map[string]any); ok {
 		for path, v := range content {
 			rawURL, ok := v.(string)
 			if !ok {
@@ -430,8 +548,7 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 		}
 	}
 
-	members, ok := ch.Patch["members"].(map[string]any)
-	if ok {
+	if members, ok := ch.Patch["members"].(map[string]any); ok {
 		for k, v := range members {
 			acc, err := core.DecodePrincipal(k)
 			if err != nil {
@@ -461,7 +578,52 @@ func (bs *Storage) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 	return nil
 }
 
-func (bs *Storage) indexDocumentChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+func (bs *indexer) indexAccountChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
+	if "hm://a/"+author.String() != string(ch.Entity) {
+		return fmt.Errorf("author %s is not allowed to modify account entity %s", author.String(), ch.Entity)
+	}
+
+	if ch.Patch == nil {
+		return fmt.Errorf("account changes must have patches")
+	}
+
+	pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, author)
+	if err != nil {
+		return err
+	}
+
+	edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, ch.Entity)
+	if err != nil {
+		return err
+	}
+
+	if err := hypersql.AccountsInsertOrIgnore(conn, edb, pkdb); err != nil {
+		return err
+	}
+
+	hlc := ch.HLCTime.Pack()
+
+	if v, ok := ch.Patch["avatar"].(cid.Cid); ok {
+		target, err := bs.ensureBlob(conn, v)
+		if err != nil {
+			return err
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, blobID, "href/avatar", target); err != nil {
+			return err
+		}
+	}
+
+	if v, ok := ch.Patch["alias"].(string); ok {
+		if err := hypersql.BlobAttrsInsert(conn, blobID, "account/alias", "", false, v, nil, hlc); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (bs *indexer) indexDocumentChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
 	hlc := ch.HLCTime.Pack()
 
 	// Validate document change.
@@ -579,7 +741,7 @@ type LinkData struct {
 	TargetVersion  string `json:"v,omitempty"`
 }
 
-func (bs *Storage) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL string, ts int64) error {
+func (bs *indexer) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL string, ts int64) error {
 	if rawURL == "" {
 		return nil
 	}
@@ -645,8 +807,37 @@ func (bs *Storage) indexURL(conn *sqlite.Conn, blobID int64, key, anchor, rawURL
 			}
 		}
 	case "ipfs":
-		// TODO: parse ipfs links
+		c, err := cid.Decode(u.Hostname())
+		if err != nil {
+			return fmt.Errorf("failed to parse IPFS URL %s: %w", rawURL, err)
+		}
+
+		target, err := bs.ensureBlob(conn, c)
+		if err != nil {
+			return err
+		}
+
+		if err := hypersql.BlobLinksInsertOrIgnore(conn, blobID, key, target); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+type indexData struct {
+	Blob cid.Cid
+}
+
+func isIndexable[T multicodec.Code | cid.Cid](v T) bool {
+	var code multicodec.Code
+
+	switch v := any(v).(type) {
+	case multicodec.Code:
+		code = v
+	case cid.Cid:
+		code = multicodec.Code(v.Prefix().Codec)
+	}
+
+	return code == multicodec.DagCbor || code == multicodec.DagPb
 }

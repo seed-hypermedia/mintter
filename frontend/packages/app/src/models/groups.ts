@@ -13,7 +13,7 @@ import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
 import {queryKeys} from './query-keys'
 
-export function useGroups(opts: UseQueryOptions<ListGroupsResponse>) {
+export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
   return useQuery({
     ...opts,
@@ -101,9 +101,9 @@ export function usePublishGroupToSite(
       groupId,
       setupUrl,
     }: PublishGroupToSiteMutationInput) => {
-      await grpcClient.groups.convertToSite({
-        link: setupUrl,
-        groupId,
+      await grpcClient.groups.updateGroup({
+        siteSetupUrl: setupUrl,
+        id: groupId,
       })
     },
     onSuccess: (result, input, context) => {
@@ -286,9 +286,9 @@ export function useHostGroup(hostname: string) {
   return useQuery({
     queryKey: [queryKeys.GET_HOST_GROUP, hostname],
     queryFn: async () => {
-      return await grpcClient.groups.getSiteInfo({
-        hostname,
-      })
+      // return await grpcClient.groups.({
+      //   hostname,
+      // })
     },
   })
 }

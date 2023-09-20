@@ -14,10 +14,6 @@ import {
   Publication as APIPublication,
   Document,
 } from './.generated/documents/v1alpha/documents_pb'
-import {
-  WebPublishing,
-  WebSite,
-} from './.generated/documents/v1alpha/web_publishing_connect'
 import {Entities} from './.generated/entities/v1alpha/entities_connect'
 import {Networking} from './.generated/networking/v1alpha/networking_connect'
 export {
@@ -36,6 +32,20 @@ export type {
   RegisterRequest,
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
+export {
+  Group,
+  Group_SiteInfo,
+  Role,
+  ListGroupsRequest,
+} from './.generated/groups/v1alpha/groups_pb'
+export {
+  Change,
+  DiscoverEntityRequest,
+  DiscoverEntityResponse,
+  EntityTimeline,
+  GetChangeRequest,
+  GetEntityTimelineRequest,
+} from './.generated/entities/v1alpha/entities_pb'
 export {
   ChangeInfo,
   GetChangeInfoRequest,
@@ -68,20 +78,6 @@ export {
   ListPublicationsResponse,
   PublishDraftRequest,
 } from './.generated/documents/v1alpha/documents_pb'
-export * from './.generated/documents/v1alpha/web_publishing_pb'
-export {
-  Change,
-  DiscoverEntityRequest,
-  DiscoverEntityResponse,
-  EntityTimeline,
-  GetChangeRequest,
-  GetEntityTimelineRequest,
-} from './.generated/entities/v1alpha/entities_pb'
-export {
-  Group,
-  ListGroupsRequest,
-  Role,
-} from './.generated/groups/v1alpha/groups_pb'
 export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
@@ -106,8 +102,6 @@ export {
   Groups,
   Networking,
   Publications,
-  WebPublishing,
-  WebSite,
 }
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>

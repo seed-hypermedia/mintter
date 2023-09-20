@@ -53,7 +53,7 @@ func NewTester(name string) Tester {
 		panic(err)
 	}
 
-	dev, err := core.NewKeyPair(core.CodecDeviceKey, dpriv.(*crypto.Ed25519PrivateKey))
+	dev, err := core.NewKeyPair(dpriv.(*crypto.Ed25519PrivateKey))
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +63,7 @@ func NewTester(name string) Tester {
 		panic(err)
 	}
 
-	acc, err := core.NewKeyPair(core.CodecAccountKey, apriv.(*crypto.Ed25519PrivateKey))
+	acc, err := core.NewKeyPair(apriv.(*crypto.Ed25519PrivateKey))
 	if err != nil {
 		panic(err)
 	}

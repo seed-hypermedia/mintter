@@ -20,9 +20,6 @@ service P2P {
 
   // Request a peer to issue a lightning BOLT-11 invoice
   rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
-
-  // CreateSite tells a server which group it should serve.
-  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse);
 }
 
 message HandshakeInfo {
@@ -71,26 +68,4 @@ message RequestInvoiceRequest {
 message RequestInvoiceResponse {
   // Text encoded BOLT-11 Invoice
   string pay_req = 1;
-}
-
-// Links a server and a group.
-message CreateSiteRequest {
-  // Secret link provided by the deployment script.
-  string link = 1;
-
-  // ID of the group to be served.
-  string group_id = 2;
-
-  // Optional version of the group to be served. 
-  // If empty, latest version is assumed.
-  string version = 3;
-}
-
-// Create site response
-message CreateSiteResponse {
-  // Owner of the site.
-  string owner_id = 1;
-
-  // ID of the site.
-  string group_id = 2;
 }

@@ -10,6 +10,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/future"
+	"strings"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
@@ -192,6 +193,14 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 	}
 
 	patch := map[string]any{}
+
+	if in.Alias != "" {
+		parts := strings.Fields(in.Alias)
+		if len(parts) != 1 {
+			return fmt.Errorf("alias must be a single word: got = %q", in.Alias)
+		}
+		in.Alias = parts[0]
+	}
 
 	v, ok := e.Get("alias")
 	if (ok && v.(string) != in.Alias) || (!ok && in.Alias != "") {

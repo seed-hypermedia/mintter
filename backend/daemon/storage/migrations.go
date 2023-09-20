@@ -51,6 +51,47 @@ var migrations = []migration{
 	{Version: "2023-08-30.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return nil
 	}},
+	{Version: "2023-09-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
+			DROP TABLE sites;
+			DROP TABLE invite_tokens;
+			DROP TABLE site_members;
+			DROP TABLE web_publications;
+		`)
+	}},
+	{Version: "2023-09-18.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
+			DROP TABLE served_sites;
+		`)
+	}},
+	{Version: "2023-09-18.02", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE remote_sites (
+				url TEXT UNIQUE NOT NULL,
+				peer_id TEXT NOT NULL,
+				group_id TEXT NOT NULL,
+				group_version TEXT NOT NULL,
+				last_sync_time INTEGER NOT NULL,
+				last_ok_sync_time INTEGER NOT NULL
+			);		
+		`))
+	}},
+	{Version: "2023-09-19.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE accounts (
+				entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+				public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+				PRIMARY KEY (entity, public_key)
+			);
+
+			CREATE INDEX accounts_by_key ON accounts (public_key, entity);
+		`))
+	}},
+	{Version: "2023-09-20.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DELETE FROM kv WHERE key = 'last_reindex_time';	
+		`))
+	}},
 }
 
 const (
@@ -91,7 +132,7 @@ func (d *Dir) init() (currentVersion string, err error) {
 	}
 
 	if d.device.Wrapped() == nil {
-		kp, err := core.NewKeyPairRandom(core.CodecDeviceKey)
+		kp, err := core.NewKeyPairRandom()
 		if err != nil {
 			return "", fmt.Errorf("failed to generate random device key: %w", err)
 		}
@@ -204,7 +245,7 @@ func (d *Dir) maybeLoadAccountKey() error {
 		return err
 	}
 
-	account, err := core.NewPublicKey(core.CodecAccountKey, pub)
+	account, err := core.NewPublicKey(pub)
 	if err != nil {
 		return err
 	}
@@ -275,5 +316,5 @@ func loadDeviceKeyFromFile(dir string) (kp core.KeyPair, err error) {
 		return kp, fmt.Errorf("failed to unmarshal private key for device: %w", err)
 	}
 
-	return core.NewKeyPair(core.CodecDeviceKey, pk)
+	return core.NewKeyPair(pk)
 }

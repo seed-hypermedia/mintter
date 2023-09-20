@@ -15,7 +15,6 @@ func TestKeys(t *testing.T) {
 	require.NoError(t, err)
 
 	require.True(t, alice.Device.ID() == pid)
-	require.True(t, alice.Device.CID().Equals(peer.ToCid(pid)))
 }
 
 func TestEncoding(t *testing.T) {
@@ -24,7 +23,7 @@ func TestEncoding(t *testing.T) {
 	data, err := alice.Account.MarshalBinary()
 	require.NoError(t, err)
 
-	pk, err := core.ParsePublicKey(core.CodecAccountKey, data)
+	pk, err := core.ParsePublicKey(data)
 	require.NoError(t, err)
 	require.Equal(t, alice.Account.String(), pk.String())
 }

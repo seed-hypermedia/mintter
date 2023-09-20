@@ -32,30 +32,21 @@ type Discoverer interface {
 	Connect(context.Context, peer.AddrInfo) error
 }
 
-// RemoteCaller is an interface for not having to pass a full-fledged sites service,
-// just the remote functions that need to be called from the local server.
-type RemoteCaller interface {
-	RedeemInviteToken(context.Context, *documents.RedeemInviteTokenRequest) (*documents.RedeemInviteTokenResponse, error)
-	ListWebPublications(ctx context.Context, in *documents.ListWebPublicationsRequest) (*documents.ListWebPublicationsResponse, error)
-}
-
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db           *sqlitex.Pool
-	me           *future.ReadOnly[core.Identity]
-	disc         Discoverer
-	RemoteCaller RemoteCaller
-	blobs        *hyper.Storage
+	db    *sqlitex.Pool
+	me    *future.ReadOnly[core.Identity]
+	disc  Discoverer
+	blobs *hyper.Storage
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
 	srv := &Server{
-		db:           db,
-		me:           me,
-		disc:         disc,
-		RemoteCaller: remoteCaller,
-		blobs:        hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
+		db:    db,
+		me:    me,
+		disc:  disc,
+		blobs: hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
 	}
 
 	return srv
@@ -200,10 +191,6 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 			}
 		case *documents.DocumentChange_ReplaceBlock:
 			if err := mut.ReplaceBlock(o.ReplaceBlock); err != nil {
-				return nil, err
-			}
-		case *documents.DocumentChange_SetWebUrl:
-			if err := mut.SetWebURL(o.SetWebUrl); err != nil {
 				return nil, err
 			}
 		default:
@@ -355,6 +342,14 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
+	// TODO(burdiyan): if we are doing the discovery without a version,
+	// we'll wait until timeout because we don't know when to stop looking.
+	// Ideally we should only be discovering docs with specific version,
+	// but sometimes we don't want the latest version we can possibly find.
+	// In those cases, we could at least optimize the UI, and maybe display
+	// the document dynamically as we're finding it. Although that would require
+	// a lot of trickery between frontend and backend, it would optimize
+	// time to the first (more or less) meaningful result.
 	if err := api.disc.DiscoverObject(ctx, eid, version); err != nil {
 		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
 	}

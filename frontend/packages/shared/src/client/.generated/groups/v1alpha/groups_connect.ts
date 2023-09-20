@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { MethodKind } from "@bufbuild/protobuf";
-import { ConvertToSiteRequest, ConvertToSiteResponse, CreateGroupRequest, GetGroupRequest, GetSiteInfoRequest, GetSiteInfoResponse, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
+import { CreateGroupRequest, GetGroupRequest, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
 
 /**
  * Groups service exposes the functionality for managing group entities.
@@ -79,28 +79,6 @@ export const Groups = {
       name: "ListGroups",
       I: ListGroupsRequest,
       O: ListGroupsResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * Converts a group to a site. P2P group will continue to work.
-     *
-     * @generated from rpc com.mintter.groups.v1alpha.Groups.ConvertToSite
-     */
-    convertToSite: {
-      name: "ConvertToSite",
-      I: ConvertToSiteRequest,
-      O: ConvertToSiteResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * Gets information about a site.
-     *
-     * @generated from rpc com.mintter.groups.v1alpha.Groups.GetSiteInfo
-     */
-    getSiteInfo: {
-      name: "GetSiteInfo",
-      I: GetSiteInfoRequest,
-      O: GetSiteInfoResponse,
       kind: MethodKind.Unary,
     },
     /**

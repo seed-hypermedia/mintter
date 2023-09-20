@@ -11,14 +11,6 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/multiformats/go-multihash"
-)
-
-// Multicodecs.
-const (
-	CodecDeviceKey = cid.Libp2pKey
-	// TODO: need to register this codec withing the multicodecs repo table.
-	CodecAccountKey = 1091161161
 )
 
 // Ensure interface implementations.
@@ -72,15 +64,14 @@ type KeyID = peer.ID
 
 // PublicKey is the public part of a KeyPair.
 type PublicKey struct {
-	k     crypto.PubKey
-	id    KeyID
-	codec uint64
+	k  crypto.PubKey
+	id KeyID
 
 	abbrev uint64
 }
 
 // NewPublicKey creates a new public key from an existing Ed25519 public key.
-func NewPublicKey(codec uint64, pub crypto.PubKey) (pk PublicKey, err error) {
+func NewPublicKey(pub crypto.PubKey) (pk PublicKey, err error) {
 	_, ok := pub.(*crypto.Ed25519PublicKey)
 	if !ok {
 		return pk, fmt.Errorf("only Ed25519 public keys are supported, but got %T", pub)
@@ -104,7 +95,6 @@ func NewPublicKey(codec uint64, pub crypto.PubKey) (pk PublicKey, err error) {
 	return PublicKey{
 		k:      pub,
 		id:     pid,
-		codec:  codec,
 		abbrev: *(*uint64)(unsafe.Pointer(&b)),
 	}, nil
 }
@@ -122,11 +112,11 @@ func PublicKeyFromCID(c cid.Cid) (pk PublicKey, err error) {
 		return pk, err
 	}
 
-	return NewPublicKey(c.Prefix().Codec, pub.(*crypto.Ed25519PublicKey))
+	return NewPublicKey(pub.(*crypto.Ed25519PublicKey))
 }
 
 // ParsePublicKey parses existing libp2p-encoded key material.
-func ParsePublicKey(codec uint64, data []byte) (pk PublicKey, err error) {
+func ParsePublicKey(data []byte) (pk PublicKey, err error) {
 	pub, err := crypto.UnmarshalPublicKey(data)
 	if err != nil {
 		return pk, err
@@ -136,7 +126,7 @@ func ParsePublicKey(codec uint64, data []byte) (pk PublicKey, err error) {
 		return pk, fmt.Errorf("only ed25519 keys are supported")
 	}
 
-	return NewPublicKey(codec, pub.(*crypto.Ed25519PublicKey))
+	return NewPublicKey(pub.(*crypto.Ed25519PublicKey))
 }
 
 // Abbrev returns the abbreviated form of the public key,
@@ -152,16 +142,6 @@ func (pk PublicKey) PeerID() peer.ID {
 	return pk.id
 }
 
-// CID returns CID representation of the public key.
-func (pk PublicKey) CID() cid.Cid {
-	mh, err := multihash.Cast([]byte(pk.id))
-	if err != nil {
-		panic(err)
-	}
-
-	return cid.NewCidV1(pk.codec, mh)
-}
-
 // String creates string representation of the public key.
 func (pk PublicKey) String() string {
 	return pk.Principal().String()
@@ -170,11 +150,6 @@ func (pk PublicKey) String() string {
 // Principal returns the principal representation of the public key.
 func (pk PublicKey) Principal() Principal {
 	return PrincipalFromPubKey(pk.k)
-}
-
-// Codec returns multicodec of the public key.
-func (pk PublicKey) Codec() uint64 {
-	return pk.codec
 }
 
 // Verify implements Verifier.
@@ -205,24 +180,24 @@ type KeyPair struct {
 }
 
 // NewKeyPairRandom creates a new random KeyPair with a given multicodec prefix.
-func NewKeyPairRandom(codec uint64) (kp KeyPair, err error) {
+func NewKeyPairRandom() (kp KeyPair, err error) {
 	priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
 	if err != nil {
 		return kp, fmt.Errorf("failed to generate device private key: %w", err)
 	}
 
-	return NewKeyPair(codec, priv.(*crypto.Ed25519PrivateKey))
+	return NewKeyPair(priv.(*crypto.Ed25519PrivateKey))
 }
 
 // NewKeyPair creates a new KeyPair with a given multicodec prefix from an existing instance
 // of the private key. At the moment only Ed25519 keys are supported.
-func NewKeyPair(codec uint64, priv crypto.PrivKey) (kp KeyPair, err error) {
+func NewKeyPair(priv crypto.PrivKey) (kp KeyPair, err error) {
 	_, ok := priv.(*crypto.Ed25519PrivateKey)
 	if !ok {
 		return kp, fmt.Errorf("only ed25519 keys are supported")
 	}
 
-	pub, err := NewPublicKey(codec, priv.GetPublic().(*crypto.Ed25519PublicKey))
+	pub, err := NewPublicKey(priv.GetPublic().(*crypto.Ed25519PublicKey))
 	if err != nil {
 		return kp, err
 	}

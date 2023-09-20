@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 networks:
   internal_network:
     driver: bridge # the default
@@ -9,15 +9,15 @@ services:
     depends_on:
       - minttersite
     ports:
-      - '80:80'
-      - '443:443'
-      - '443:443/udp'
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
     networks:
       - internal_network
     environment:
-      - 'MTT_SITE_HOSTNAME=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - 'MTT_SITE_BACKEND_GRPCWEB_PORT=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
-      - 'MTT_SITE_LOCAL_PORT=${MTT_SITE_LOCAL_PORT:-3000}'
+      - "MTT_SITE_HOSTNAME=${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - "MTT_SITE_BACKEND_GRPCWEB_PORT=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "MTT_SITE_LOCAL_PORT=${MTT_SITE_LOCAL_PORT:-3000}"
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
@@ -31,38 +31,36 @@ services:
     networks:
       - internal_network
     ports:
-      - '${MTT_SITE_LOCAL_PORT:-3000}:${MTT_SITE_LOCAL_PORT:-3000}'
+      - "${MTT_SITE_LOCAL_PORT:-3000}:${MTT_SITE_LOCAL_PORT:-3000}"
     restart: unless-stopped
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
 
     environment:
-      - 'GW_NEXT_HOST=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - 'NEXT_PUBLIC_GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
-      - 'NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}'
+      - "HM_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - "NEXT_PUBLIC_GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 
   minttersite:
-    image: mintter/mintterd:latest
+    image: mintter/mintter-site:latest
     restart: unless-stopped
     container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-minttersite}
     ports:
-      - '56000:56000'
-      - '56000:56000/udp'
-      - '56002:56002'
+      - "56000:56000"
+      - "56000:56000/udp"
+      - "56002:56002"
     networks:
       - internal_network
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mttsite:rw
     command:
-      - 'mintterd'
-      - '-repo-path=/.mttsite'
-      - '-lndhub.mainnet'
-      - '-p2p.port=56000'
-      - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
-      - '-grpc-port=56002'
-      - '-p2p.public-reachability'
-      - '-p2p.no-relay'
-      - '-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1'
-      - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - '-identity.no-account-wait'
-      - '${MTT_SITE_ADDITIONAL_FLAGS}'
+      - "mintter-site"
+      - "${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - "-data-dir=/.mttsite"
+      - "-lndhub.mainnet"
+      - "-p2p.port=56000"
+      - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "-grpc.port=56002"
+      - "-p2p.no-relay"
+      - "-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1"
+      - "${MTT_SITE_ADDITIONAL_FLAGS}"

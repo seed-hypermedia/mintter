@@ -50,16 +50,16 @@ let goDaemonExecutablePath =
 console.log(`== ~ goDaemonExecutablePath:`, goDaemonExecutablePath)
 
 const daemonArguments = [
-  '-http-port',
+  '-http.port',
   String(BACKEND_HTTP_PORT),
 
-  '-grpc-port',
+  '-grpc.port',
   String(BACKEND_GRPC_PORT),
 
   '-p2p.port',
   String(BACKEND_P2P_PORT),
 
-  '-repo-path',
+  '-data-dir',
   userDataDir,
 ]
 logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)

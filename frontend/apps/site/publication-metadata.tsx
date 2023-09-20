@@ -574,31 +574,31 @@ export function PublishedMeta({
   publication?: HMPublication | null
   pathName?: string
 }) {
-  const pathRecord = trpc.publication.getPath.useQuery(
-    {pathName},
-    {enabled: !!pathName},
-  )
+  // const pathRecord = trpc.publication.getPath.useQuery(
+  //   {pathName},
+  //   {enabled: !!pathName},
+  // )
   const publishTime = publication?.document?.publishTime
   const publishTimeRelative = useFormattedTime(publishTime, true)
 
   const publishTimeDate = publishTime && new Date(publishTime)
   let latestVersion: null | ReactElement = null
-  const {documentId: pathDocId, versionId: pathVersionId} =
-    pathRecord.data || {}
-  if (
-    pathName &&
-    pathRecord.data &&
-    pathRecord &&
-    publication &&
-    pathDocId &&
-    pathVersionId &&
-    (pathDocId !== publication.document?.id ||
-      pathVersionId !== publication.version)
-  ) {
-    latestVersion = (
-      <LatestVersionBanner pathName={pathName} record={pathRecord.data} />
-    )
-  }
+  // const {documentId: pathDocId, versionId: pathVersionId} =
+  //   pathRecord.data || {}
+  // if (
+  //   pathName &&
+  //   pathRecord.data &&
+  //   pathRecord &&
+  //   publication &&
+  //   pathDocId &&
+  //   pathVersionId &&
+  //   (pathDocId !== publication.document?.id ||
+  //     pathVersionId !== publication.version)
+  // ) {
+  //   latestVersion = (
+  //     <LatestVersionBanner pathName={pathName} record={pathRecord.data} />
+  //   )
+  // }
 
   return (
     <SideSection>

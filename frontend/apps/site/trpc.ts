@@ -7,7 +7,7 @@ function getBaseUrl() {
   if (typeof window !== 'undefined')
     // browser should use relative path
     return ''
-  if (process.env.GW_NEXT_HOST) return process.env.GW_NEXT_HOST
+  if (process.env.HM_BASE_URL) return process.env.HM_BASE_URL
   // assume localhost
   return `http://localhost:${process.env.PORT ?? 3000}`
 }

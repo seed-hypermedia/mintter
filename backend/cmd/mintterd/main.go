@@ -31,7 +31,7 @@ func main() {
 		fs := flag.NewFlagSet("mintterd", flag.ExitOnError)
 
 		cfg := config.Default()
-		config.SetupFlags(fs, &cfg)
+		cfg.BindFlags(fs)
 
 		// We parse flags twice here, once without the config file setting, and then with it.
 		// This is because we want the config file to be in the repo path, which can be changed
@@ -42,11 +42,11 @@ func main() {
 			return err
 		}
 
-		if err := cfg.ExpandRepoPath(); err != nil {
+		if err := cfg.Base.ExpandDataDir(); err != nil {
 			return err
 		}
 
-		cfgFile, err := config.EnsureConfigFile(cfg.RepoPath)
+		cfgFile, err := config.EnsureConfigFile(cfg.Base.DataDir)
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,11 @@ func main() {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		app, err := daemon.Load(ctx, cfg,
+		dir, err := daemon.InitRepo(cfg.Base.DataDir, nil)
+		if err != nil {
+			return err
+		}
+		app, err := daemon.Load(ctx, cfg, dir,
 			grpc.ChainUnaryInterceptor(
 				otelgrpc.UnaryServerInterceptor(),
 				daemon.GRPCDebugLoggingInterceptor(),

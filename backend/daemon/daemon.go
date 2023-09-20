@@ -4,23 +4,16 @@ package daemon
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
-	"runtime/debug"
 	"strconv"
-	"strings"
 	"time"
 
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api"
 	"mintter/backend/daemon/storage"
-	daemon "mintter/backend/genproto/daemon/v1alpha"
-	"mintter/backend/graphql"
 	"mintter/backend/hyper"
 	"mintter/backend/ipfs"
 	"mintter/backend/logging"
@@ -30,10 +23,10 @@ import (
 	"mintter/backend/syncing"
 	"mintter/backend/wallet"
 
+	groups "mintter/backend/genproto/groups/v1alpha"
+
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -42,12 +35,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func init() {
@@ -88,31 +78,7 @@ type App struct {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
-	var deviceKey crypto.PrivKey
-	if cfg.Identity.DeviceKeyPath != "" {
-		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
-			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
-			if err != nil {
-				return nil, err
-			}
-			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-	r, err := initRepo(cfg, deviceKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return loadApp(ctx, cfg, r, grpcOpt...)
-}
-
-func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...interface{}) (a *App, err error) {
 	a = &App{
 		log:     logging.New("mintter/daemon", "debug"),
 		Storage: r,
@@ -161,7 +127,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 
 	me := a.Storage.Identity()
 
-	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs)
+	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -173,22 +139,15 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
+	extraHTTPHandlers := []GenericHandler{}
+	for _, extra := range extraOpts {
+		if httpHandler, ok := extra.(GenericHandler); ok {
+			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
+		}
+	}
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraOpts...)
 	if err != nil {
 		return nil, err
-	}
-
-	if cfg.Identity.NoAccountWait {
-		res, err := a.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 12})
-		if err != nil {
-			return nil, fmt.Errorf("Cannot create automatic mnemonics: %w", err)
-		}
-		_, err = a.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{Mnemonic: res.Mnemonic, Passphrase: ""})
-		stat, ok := status.FromError(err)
-
-		if !ok && stat.Code() != codes.AlreadyExists {
-			return nil, fmt.Errorf("Cannot register automatic account: %w", err)
-		}
 	}
 
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
@@ -205,7 +164,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *storage.Dir, grpcOpt ...
 
 		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, me, a.Wallet, a.RPC.Site, fileManager)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fileManager, extraHTTPHandlers...)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +180,7 @@ func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
 			zap.String("httpListener", a.HTTPListener.Addr().String()),
-			zap.String("repoPath", cfg.RepoPath),
+			zap.String("dataDir", cfg.DataDir),
 		)
 
 		n, err := a.Net.Await(ctx)
@@ -257,12 +216,14 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initRepo(cfg config.Config, device crypto.PrivKey) (r *storage.Dir, err error) {
+// InitRepo initializes the storage directory.
+// Device can be nil in which case a random new device key will be generated.
+func InitRepo(dataDir string, device crypto.PrivKey) (r *storage.Dir, err error) {
 	log := logging.New("mintter/repo", "debug")
 	if device == nil {
-		r, err = storage.New(cfg.RepoPath, log)
+		r, err = storage.New(dataDir, log)
 	} else {
-		r, err = storage.NewWithDeviceKey(cfg.RepoPath, log, device)
+		r, err = storage.NewWithDeviceKey(dataDir, log, device)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to init storage: %w", err)
@@ -293,6 +254,7 @@ func initNetwork(
 	cfg config.P2P,
 	db *sqlitex.Pool,
 	blobs *hyper.Storage,
+	extraServers ...interface{},
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -314,7 +276,7 @@ func initNetwork(
 			return err
 		}
 
-		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"))
+		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"), extraServers...)
 		if err != nil {
 			return err
 		}
@@ -374,16 +336,20 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client, cfg.NoInbound)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
 
-		g.Go(func() error {
-			err := svc.Start(ctx)
+		if cfg.Disabled {
 			close(done)
-			return err
-		})
+		} else {
+			g.Go(func() error {
+				err := svc.Start(ctx)
+				close(done)
+				return err
+			})
+		}
 
 		if err := f.Resolve(svc); err != nil {
 			return err
@@ -407,19 +373,31 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	cfg config.Site,
-	opts ...grpc.ServerOption,
+	extras ...interface{},
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
+	opts := []grpc.ServerOption{}
+	for _, extra := range extras {
+		if opt, ok := extra.(grpc.ServerOption); ok {
+			opts = append(opts, opt)
+		}
+	}
 	srv = grpc.NewServer(opts...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, cfg)
+	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet)
 	rpc.Register(srv)
 	reflection.Register(srv)
+
+	for _, extra := range extras {
+		if extraServer, ok := extra.(groups.WebsiteServer); ok {
+			groups.RegisterWebsiteServer(srv, extraServer)
+			break
+		}
+	}
 
 	g.Go(func() error {
 		return srv.Serve(lis)
@@ -479,162 +457,40 @@ func setRoute(m *mux.Router, path string, isPrefix bool, h http.Handler) {
 }
 
 const (
-	routePrefix = 1 << 1
-	routeNav    = 1 << 2
+	// RoutePrefix exposes path prefix.
+	RoutePrefix = 1 << 1
+	// RouteNav adds the path to a route nav.
+	RouteNav = 1 << 2
 )
 
-type router struct {
+// Router is a wrapper around mux that can build the navigation menu.
+type Router struct {
 	r   *mux.Router
 	nav []string
 }
 
-func (r *router) Handle(path string, h http.Handler, mode int) {
+// Handle a route.
+func (r *Router) Handle(path string, h http.Handler, mode int) {
 	h = instrumentHTTPHandler(h, path)
 
-	if mode&routePrefix != 0 {
+	if mode&RouteNav != 0 {
 		r.r.PathPrefix(path).Handler(h)
 	} else {
 		r.r.Handle(path, h)
 	}
 
-	if mode&routeNav != 0 {
+	if mode&RouteNav != 0 {
 		r.nav = append(r.nav, path)
 	}
 }
 
-func (r *router) Index(w http.ResponseWriter, req *http.Request) {
+func (r *Router) Index(w http.ResponseWriter, req *http.Request) {
 	for _, route := range r.nav {
 		fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, route, route)
 	}
 }
 
-func initHTTP(
-	port int,
-	rpc *grpc.Server,
-	clean *cleanup.Stack,
-	g *errgroup.Group,
-	db *sqlitex.Pool,
-	node *future.ReadOnly[*mttnet.Node],
-	me *future.ReadOnly[core.Identity],
-	wallet *wallet.Service,
-	wellKnownHandler http.Handler,
-	ipfsHandler ipfs.HTTPHandler,
-) (srv *http.Server, lis net.Listener, err error) {
-	var h http.Handler
-	{
-		grpcWebHandler := grpcweb.WrapServer(rpc, grpcweb.WithOriginFunc(func(origin string) bool {
-			return true
-		}))
-
-		router := router{r: mux.NewRouter()}
-		router.Handle("/debug/metrics", promhttp.Handler(), routeNav)
-		router.Handle("/debug/pprof", http.DefaultServeMux, routePrefix|routeNav)
-		router.Handle("/debug/vars", http.DefaultServeMux, routePrefix|routeNav)
-		router.Handle("/debug/grpc", grpcLogsHandler(), routeNav)
-		router.Handle("/debug/buildinfo", buildInfoHandler(), routeNav)
-		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)), 0)
-		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"), routeNav)
-		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler, routeNav)
-		router.Handle(ipfs.IPFSRootRoute+ipfs.UploadRoute, http.HandlerFunc(ipfsHandler.UploadFile), 0)
-		router.Handle(ipfs.IPFSRootRoute+ipfs.GetRoute, http.HandlerFunc(ipfsHandler.GetFile), 0)
-
-		router.r.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
-			return grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r)
-		})).Handler(grpcWebHandler)
-
-		router.Handle("/", http.HandlerFunc(router.Index), 0)
-
-		h = router.r
-	}
-
-	srv = &http.Server{
-		Addr:              ":" + strconv.Itoa(port),
-		ReadHeaderTimeout: 5 * time.Second,
-		// WriteTimeout:      10 * time.Second,
-		IdleTimeout: 20 * time.Second,
-		Handler:     h,
-	}
-
-	lis, err = net.Listen("tcp", srv.Addr)
-	if err != nil {
-		return
-	}
-
-	g.Go(func() error {
-		err := srv.Serve(lis)
-		if err == http.ErrServerClosed {
-			return nil
-		}
-		return err
-	})
-
-	clean.AddErrFunc(func() error {
-		return srv.Shutdown(context.Background())
-	})
-
-	return
-}
-
-// corsMiddleware allows different host/origins.
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// allow cross domain AJAX requests
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		next.ServeHTTP(w, r)
-	})
-}
-
 // WithMiddleware generates an grpc option with the given middleware.
 func WithMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
 	return grpc.UnaryInterceptor(i)
-}
-
-// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work.
-func GwEssentials(ctx context.Context,
-	req interface{},
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler) (interface{}, error) {
-	methodSplitted := strings.Split(info.FullMethod, "/")
-	if len(methodSplitted) < 2 || (strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" &&
-		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "listcitations" &&
-		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getaccount") {
-		return nil, fmt.Errorf("method: %s not allowed", info.FullMethod)
-	}
-
-	// Calls the handler
-	h, err := handler(ctx, req)
-
-	return h, err
-}
-
-func buildInfoHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		info, ok := debug.ReadBuildInfo()
-		if !ok {
-			http.Error(w, "doesn't support build info", http.StatusExpectationFailed)
-			return
-		}
-
-		// Don't want to show information about all the dependencies.
-		info.Deps = nil
-
-		// Want to support text and json.
-		wantJSON := slices.Contains(r.Header.Values("Accept"), "application/json") ||
-			r.URL.Query().Get("format") == "json"
-
-		if wantJSON {
-			w.Header().Set("Content-Type", "application/json")
-
-			enc := json.NewEncoder(w)
-			enc.SetIndent("", "  ")
-
-			if err := enc.Encode(info); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-		} else {
-			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprint(w, info.String())
-		}
-	})
 }

@@ -13,7 +13,6 @@ import {
 import {
   Accounts,
   Publications,
-  WebSite,
   Daemon,
   Networking,
   Groups,
@@ -52,7 +51,7 @@ function getGRPCHost() {
     return 'http://127.0.0.1:56001'
   }
 
-  return 'https://gateway.mintter.com'
+  return 'https://hyper.media'
 }
 
 const IS_DEV = process.env.NODE_ENV == 'development'
@@ -78,34 +77,7 @@ export const transport = createGrpcWebTransport({
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
 
-function augmentWebsiteClient(
-  client: ReturnType<typeof createPromiseClient<typeof WebSite>>,
-) {
-  return {
-    ...client,
-    getPath: async (req: {path: string}) => {
-      const result = await client.getPath(req).catch((error) => {
-        if (error.rawMessage?.match('Could not get record for path')) {
-          return null
-        }
-        if (
-          error.rawMessage?.match(
-            'Could not get local document although was found',
-          )
-        ) {
-          return null
-        }
-        throw error
-      })
-      return result
-    },
-  }
-}
-
 export const publicationsClient = createPromiseClient(Publications, transport)
-export const localWebsiteClient = augmentWebsiteClient(
-  createPromiseClient(WebSite, transport),
-)
 export const accountsClient = createPromiseClient(Accounts, transport)
 export const groupsClient = createPromiseClient(Groups, transport)
 export const daemonClient = createPromiseClient(Daemon, transport)

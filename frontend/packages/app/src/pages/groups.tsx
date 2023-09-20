@@ -1,6 +1,7 @@
 import Footer from '@mintter/app/src/components/footer'
 import {Group, Role, idToUrl} from '@mintter/shared'
 import {
+  ButtonText,
   Container,
   ExternalLink,
   MainWrapper,
@@ -10,7 +11,6 @@ import {
   YStack,
 } from '@mintter/ui'
 import {GestureResponderEvent} from 'react-native'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {
   ListItem,
   TimeAccessory,
@@ -19,6 +19,8 @@ import {
 import {useGroupMembers, useGroups} from '../models/groups'
 import {GroupRoute} from '../utils/navigation'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {useOpenUrl} from '../open-url'
 
 function MemberAvatarLinks({
   ownerAccountId,
@@ -38,6 +40,24 @@ function MemberAvatarLinks({
   )
 }
 
+function SiteUrlButton({group}: {group: Group}) {
+  const siteBaseUrl = group.siteInfo?.baseUrl
+  const openUrl = useOpenUrl()
+  if (!siteBaseUrl) return null
+  return (
+    <ButtonText
+      color="$blue10"
+      hoverStyle={{textDecorationLine: 'underline'}}
+      fontFamily={'$mono'}
+      onPress={(e) => {
+        e.stopPropagation()
+        openUrl(siteBaseUrl)
+      }}
+    >
+      {siteBaseUrl}
+    </ButtonText>
+  )
+}
 function GroupListItem({group}: {group: Group}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
@@ -51,6 +71,7 @@ function GroupListItem({group}: {group: Group}) {
       title={group.title}
       accessory={
         <XStack gap="$4">
+          <SiteUrlButton group={group} />
           {groupMembers.data?.members ? (
             <MemberAvatarLinks
               ownerAccountId={group.ownerAccountId}

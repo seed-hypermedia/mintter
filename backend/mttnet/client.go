@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
-	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"net"
 	"sync"
@@ -65,16 +64,6 @@ func (c *Client) Dial(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	}
 
 	return p2p.NewP2PClient(conn), nil
-}
-
-// DialSite dials a remote site a remote peer and provide and RPC client instance.
-func (c *Client) DialSite(ctx context.Context, siteDeviceID peer.ID) (site.WebSiteClient, error) {
-	conn, err := c.dialPeer(ctx, siteDeviceID)
-	if err != nil {
-		return nil, err
-	}
-
-	return site.NewWebSiteClient(conn), nil
 }
 
 // Close the Client and all the open connections and streams gracefully.

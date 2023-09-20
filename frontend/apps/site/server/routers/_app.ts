@@ -3,13 +3,12 @@ import {
   Accounts,
   Changes,
   ContentGraph,
+  Entities,
   Groups,
   Publications,
-  WebPublishing,
   unpackDocId,
 } from '@mintter/shared'
-import {HMChangeInfo} from '@mintter/ui'
-import {localWebsiteClient, transport} from 'client'
+import {transport} from 'client'
 import {getSiteInfo} from 'get-site-info'
 import {
   hmAccount,
@@ -17,17 +16,17 @@ import {
   hmGroup,
   hmLink,
   hmPublication,
-  hmSiteInfo,
 } from 'server/to-json-hm'
+import {HMChangeInfo} from 'server/json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 
 const contentGraphClient = createPromiseClient(ContentGraph, transport)
 const publicationsClient = createPromiseClient(Publications, transport)
-const webClient = createPromiseClient(WebPublishing, transport)
 const accountsClient = createPromiseClient(Accounts, transport)
 const groupsClient = createPromiseClient(Groups, transport)
 const changesClient = createPromiseClient(Changes, transport)
+const entitiesClient = createPromiseClient(Entities, transport)
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -38,52 +37,14 @@ const publicationRouter = router({
       }),
     )
     .query(async ({input}) => {
-      const records = await webClient.listWebPublicationRecords({
-        documentId: input.documentId,
-        version: input.versionId,
-      })
-      return {
-        webPublications: records.publications,
-      }
-    }),
-  getPath: procedure
-    .input(
-      z.object({
-        pathName: z.string().optional(),
-      }),
-    )
-    .query(async ({input}) => {
-      if (!input.pathName) return null
-      const pathRecord = await localWebsiteClient.getPath({
-        path: input.pathName,
-      })
-      const publication = pathRecord?.publication
-      const documentId = publication?.document?.id
-      if (!publication || !documentId) return null
-      return {
-        versionId: publication.version,
-        documentId,
-        publishTime: publication.document?.publishTime?.toJson() as string,
-      }
-    }),
-  getDocRecord: procedure
-    .input(
-      z.object({
-        documentId: z.string().optional(),
-      }),
-    )
-    .query(async ({input}) => {
-      if (!input.documentId) return null
-      const webPubs = await localWebsiteClient.listWebPublications({})
-      const pub = webPubs.publications.find(
-        (pub) => pub.documentId === input.documentId,
-      )
-      if (!pub) return null
-      return {
-        path: pub.path,
-        versionId: pub.version,
-        documentId: pub.documentId,
-      }
+      // const records = await webClient.listWebPublicationRecords({
+      //   documentId: input.documentId,
+      //   version: input.versionId,
+      // })
+      // return {
+      //   webPublications: records.publications,
+      // }
+      return null
     }),
   get: procedure
     .input(
@@ -96,12 +57,32 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {publication: null}
       }
-      const pub = await publicationsClient.getPublication({
-        documentId: input.documentId,
-        version: input.versionId || '',
-      })
+      const alreadyPub = publicationsClient
+        .getPublication({
+          documentId: input.documentId,
+          version: input.versionId || '',
+        })
+        .catch((e) => undefined)
+      const remoteSync = entitiesClient
+        .discoverEntity({
+          id: input.documentId,
+          version: input.versionId || '',
+        })
+        .then(() => undefined)
+      let resolvedPub = await Promise.race([alreadyPub, remoteSync])
+      if (!resolvedPub) {
+        // the remote Sync may have just found it. so we want to re-fetch
+        resolvedPub = await publicationsClient.getPublication({
+          documentId: input.documentId,
+          version: input.versionId || '',
+        })
+      }
+      if (!resolvedPub) {
+        return {publication: null}
+      }
+      return {publication: null}
       return {
-        publication: hmPublication(pub),
+        publication: hmPublication(resolvedPub) || null,
       }
     }),
   getEmbedMeta: procedure
@@ -230,14 +211,14 @@ const groupRouter = router({
     .query(async ({input}) => {
       // todo. get current group content and find the pathName, return the corresponding doc
       console.log('getting site info')
-      const siteInfo = await groupsClient.getSiteInfo({
-        hostname: input.hostname,
-      })
-      return {
-        groupId: siteInfo.groupId,
-        ownerId: siteInfo.ownerId,
-        version: siteInfo.version,
-      }
+      // const siteInfo = await groupsClient.getGroup({
+      //   hostname: input.hostname,
+      // })
+      // return {
+      //   groupId: siteInfo.groupId,
+      //   ownerId: siteInfo.ownerId,
+      //   version: siteInfo.version,
+      // }
     }),
   getGroupPath: procedure
     .input(
@@ -362,8 +343,8 @@ const accountRouter = router({
 
 const siteInfoRouter = router({
   get: procedure.query(async () => {
-    const siteInfo = await getSiteInfo()
-    return hmSiteInfo(siteInfo)
+    // const siteInfo = await getSiteInfo()
+    return null
   }),
 })
 

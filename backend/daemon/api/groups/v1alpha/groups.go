@@ -6,25 +6,30 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
+	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
-	"mintter/backend/mttnet/sitesql"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -32,16 +37,123 @@ import (
 type Server struct {
 	me    *future.ReadOnly[core.Identity]
 	blobs *hyper.Storage
+	db    *DB
 	node  *future.ReadOnly[*mttnet.Node]
 }
 
 // NewServer creates a new groups server.
-func NewServer(me *future.ReadOnly[core.Identity], blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *DB, blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
 	return &Server{
 		me:    me,
+		db:    db,
 		blobs: blobs,
 		node:  node,
 	}
+}
+
+// StartPeriodicSync starts periodic sync of sites.
+// It will block until the provided context is canceled.
+func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration) error {
+	t := time.NewTimer(warmup)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-t.C:
+
+			t.Reset(interval)
+		}
+	}
+}
+
+var qGetSite = dqb.Str(`
+	SELECT
+		url,
+		peer_id,
+		group_id,
+		group_version,
+		last_sync_time,
+		last_ok_sync_time
+	FROM remote_sites
+	WHERE url = :url;
+`)
+
+func (srv *Server) syncSite(ctx context.Context, siteURL string, interval time.Duration) error {
+	var (
+		url            string
+		peerID         string
+		groupID        string
+		groupVersion   string
+		lastSyncTime   int64
+		lastSyncOkTime int64
+	)
+	if err := srv.db.QueryOne(ctx, qGetSite(),
+		[]any{siteURL},
+		[]any{&url, &peerID, &groupID, &groupVersion, &lastSyncTime, &lastSyncOkTime},
+	); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	lastSync := time.Unix(lastSyncTime, 0)
+
+	if now.Sub(lastSync) < interval {
+		return nil
+	}
+
+	info, err := GetSiteInfoHTTP(ctx, nil, siteURL)
+	if err != nil {
+		return fmt.Errorf("failed to get site info: %w", err)
+	}
+
+	if info.GroupId != groupID {
+		return fmt.Errorf("group ID mismatch: remote %s != local %s", info.GroupId, groupID)
+	}
+
+	if info.GroupVersion == groupVersion {
+		return nil
+	}
+
+	// otherwise do the sync
+	//   get remote info
+	//      check remote group id correspond with the local one
+	// 		get all blobs from site
+	//      push all blobs to site
+	//   get remote version and check if we have heads. If so => skip
+	//   sync with site
+	//
+
+	// TODO: record sync time in db
+	// if we don't have version heads - sync everything
+	//
+
+	// n, err := srv.node.Await(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// ai, err := addrInfoFromProto(info.PeerInfo)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to parse peer info: %w", err)
+	// }
+
+	// // Using libp2p connect instead of mttnet connect to skip the handshake.
+	// // This way we never actually exchange the site's key delegation, so we won't be
+	// // syncing with sites that we don't care about using the regular syncing process.
+	// //
+	// // TODO(burdiyan): BAD!
+	// if err := n.Libp2p().Connect(ctx, ai); err != nil {
+	// 	return err
+	// }
+
+	// // client, err := n.SiteClient(ctx, ai.ID)
+	// // if err != nil {
+	// // 	return err
+	// // }
+
+	return nil
 }
 
 // CreateGroup creates a new group.
@@ -77,10 +189,20 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, status.Errorf(codes.Unimplemented, "adding members when creating a group is not implemented yet")
 	}
 
+	if in.SiteSetupUrl != "" {
+		siteURL, err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid)
+		if err != nil {
+			return nil, err
+		}
+
+		patch["siteURL"] = siteURL
+	}
+
 	del, err := srv.getDelegation(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	hb, err := e.CreateChange(ts, me.DeviceKey(), del, patch, hyper.WithAction("Create"))
 	if err != nil {
 		return nil, err
@@ -90,7 +212,71 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
+}
+
+func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) (baseURL string, err error) {
+	n, err := srv.node.Await(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	{
+		u, err := url.Parse(setupURL)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse setup URL %s: %w", setupURL, err)
+		}
+
+		baseURL = (&url.URL{
+			Scheme: u.Scheme,
+			Host:   u.Host,
+		}).String()
+	}
+
+	resp, err := GetSiteInfoHTTP(ctx, nil, baseURL)
+	if err != nil {
+		return "", fmt.Errorf("could not contact site at %s: %w", baseURL, err)
+	}
+
+	ai, err := addrInfoFromProto(resp.PeerInfo)
+	if err != nil {
+		return "", err
+	}
+
+	if err := n.Connect(ctx, ai); err != nil {
+		return "", fmt.Errorf("failed to connect to site via P2P: %w", err)
+	}
+
+	c, err := n.SiteClient(ctx, ai.ID)
+	if err != nil {
+		return "", fmt.Errorf("could not get site rpc client: %w", err)
+	}
+
+	if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
+		Secret:  setupURL,
+		GroupId: string(groupID),
+	}); err != nil {
+		return "", fmt.Errorf("could not publish group to site: %w", err)
+	}
+
+	return baseURL, nil
+}
+
+func addrInfoFromProto(in *groups.PeerInfo) (ai peer.AddrInfo, err error) {
+	pid, err := peer.Decode(in.PeerId)
+	if err != nil {
+		return ai, err
+	}
+
+	addrs, err := ipfs.ParseMultiaddrs(in.Addrs)
+	if err != nil {
+		return ai, fmt.Errorf("failed to parse peer info addrs: %w", err)
+	}
+
+	return peer.AddrInfo{
+		ID:    pid,
+		Addrs: addrs,
+	}, nil
 }
 
 // GetGroup gets a group.
@@ -121,7 +307,7 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 		e = v
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
 }
 
 // UpdateGroup updates a group.
@@ -180,6 +366,15 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
+	if in.SiteSetupUrl != "" {
+		siteURL, err := srv.initSiteServer(ctx, in.SiteSetupUrl, eid)
+		if err != nil {
+			return nil, err
+		}
+
+		patch["siteURL"] = siteURL
+	}
+
 	hb, err := e.CreateChange(e.NextTimestamp(), me.DeviceKey(), del, patch, hyper.WithAction("Update"))
 	if err != nil {
 		return nil, err
@@ -189,7 +384,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(srv.blobs, e)
+	return groupToProto(e)
 }
 
 // ListGroups lists groups.
@@ -314,69 +509,6 @@ func (srv *Server) ListMembers(ctx context.Context, in *groups.ListMembersReques
 	}
 
 	return resp, nil
-}
-
-// GetSiteInfo gets information of a local site.
-func (srv *Server) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.GetSiteInfoResponse, error) {
-	ret := &groups.GetSiteInfoResponse{}
-	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		res, err := sitesql.GetSiteInfo(conn, in.Hostname)
-		if err != nil {
-			return fmt.Errorf("No site info available: %w", err)
-		}
-		ret.GroupId = res.EntitiesEID
-		if res.ServedSitesVersion != "" {
-			ret.Version = res.ServedSitesVersion
-		} else {
-			entity, err := srv.blobs.LoadEntity(ctx, hyper.EntityID(res.EntitiesEID))
-			if err != nil {
-				return fmt.Errorf("could not get entity [%s]: %w", res.EntitiesEID, err)
-			}
-			ret.Version = entity.Version().String()
-		}
-
-		ret.OwnerId = core.Principal(res.PublicKeysPrincipal).String()
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-// ConvertToSite converts a group into a site. P2P group will still work as usual after this call.
-func (srv *Server) ConvertToSite(ctx context.Context, in *groups.ConvertToSiteRequest) (*groups.ConvertToSiteResponse, error) {
-	n, ok := srv.node.Get()
-	if !ok {
-		return nil, fmt.Errorf("node not ready yet")
-	}
-
-	remoteHostname := strings.Split(in.Link, "/secret-invite/")[0]
-
-	info, err := mttnet.GetSiteAddressFromHeaders(remoteHostname)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get site [%s] info via http: %w", remoteHostname, err)
-	}
-
-	if err := n.Connect(ctx, info); err != nil {
-		return nil, fmt.Errorf("failed to connect to site [%s] with peer info [%s]: %w", remoteHostname, info.String(), err)
-	}
-	client, err := n.Client(ctx, info.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get a p2p client with node [%s]: %w", info.ID.String(), err)
-	}
-	res, err := client.CreateSite(ctx, &p2p.CreateSiteRequest{
-		Link:    in.Link,
-		GroupId: in.GroupId,
-		Version: in.Version,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create a remote site: %w", err)
-	}
-
-	return &groups.ConvertToSiteResponse{
-		OwnerId:  res.OwnerId,
-		Hostname: remoteHostname,
-	}, nil
 }
 
 // ListDocumentGroups lists groups that a document belongs to.
@@ -541,7 +673,7 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 	return resp, nil
 }
 
-func groupToProto(blobs *hyper.Storage, e *hyper.Entity) (*groups.Group, error) {
+func groupToProto(e *hyper.Entity) (*groups.Group, error) {
 	createTime, ok := e.AppliedChanges()[0].Data.Patch["createTime"].(int)
 	if !ok {
 		return nil, fmt.Errorf("group entity doesn't have createTime field")
@@ -558,6 +690,14 @@ func groupToProto(blobs *hyper.Storage, e *hyper.Entity) (*groups.Group, error) 
 		OwnerAccountId: core.Principal(owner).String(),
 		Version:        e.Version().String(),
 		UpdateTime:     timestamppb.New(e.LastChangeTime().Time()),
+	}
+	if v, ok := e.Get("siteURL"); ok {
+		vv, ok := v.(string)
+		if ok {
+			gpb.SiteInfo = &groups.Group_SiteInfo{
+				BaseUrl: vv,
+			}
+		}
 	}
 
 	{
@@ -621,4 +761,46 @@ func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
 	}
 
 	return out, nil
+}
+
+// GetSiteInfoHTTP gets public information from a site.
+// Users can pass nil HTTP client in which case the default global one will be used.
+func GetSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (*groups.PublicSiteInfo, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	fmt.Println(siteURL)
+
+	if siteURL[len(siteURL)-1] == '/' {
+		return nil, fmt.Errorf("site URL must not have trailing slash: %s", siteURL)
+	}
+
+	requestURL := siteURL + "/.well-known/hypermedia-site"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
+	}
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read json body: %w", err)
+	}
+
+	resp := &groups.PublicSiteInfo{}
+	if err := protojson.Unmarshal(data, resp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
+	}
+
+	return resp, nil
 }

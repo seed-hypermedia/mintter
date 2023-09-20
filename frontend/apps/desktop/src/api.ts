@@ -113,6 +113,14 @@ let windowsState =
   (store.get('WindowState-v002') as Record<string, AppWindow>) ||
   ({} as Record<string, AppWindow>)
 
+function getAWindow() {
+  const focused = getFocusedWindow()
+  if (focused) return focused
+  const allWins = Object.values(allWindows)
+  const window: BrowserWindow | undefined = allWins[allWins.length - 1]
+  return window
+}
+
 export function openInitialWindows() {
   if (!Object.keys(windowsState).length) {
     trpc.createAppWindow({routes: [{key: 'home'}]})
@@ -365,6 +373,8 @@ export const router = t.router({
     )
     .mutation(async ({input}) => {
       const windowId = input.id || `window.${windowIdCount++}.${Date.now()}`
+      const win = getAWindow()
+      const prevWindowBounds = win?.getBounds()
       const bounds = input.bounds
         ? input.bounds
         : {
@@ -523,11 +533,6 @@ export type AppInfo = {
   platform: () => typeof process.platform
   arch: () => typeof process.arch
 }
-setTimeout(() => {
-  handleUrlOpen(
-    'hm://connect-peer/12D3KooWBR9HQQFMiSy3DtFmumv6Jcm8sXwEB5bmpXMrFT6ENTck',
-  )
-}, 10000)
 
 export function handleUrlOpen(url: string) {
   log('[Deep Link Open]: ', url)

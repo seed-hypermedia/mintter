@@ -15,8 +15,8 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	dagpb "github.com/ipld/go-codec-dagpb"
 	"github.com/multiformats/go-multicodec"
-	"github.com/multiformats/go-multihash"
 	"go.uber.org/zap"
 )
 
@@ -26,16 +26,27 @@ type BlobType string
 // Storage is an indexing blob storage.
 type Storage struct {
 	db  *sqlitex.Pool
-	bs  *blockStore
+	bs  *indexingBlockStore
 	log *zap.Logger
+
+	*indexer
 }
 
 // NewStorage creates a new blob storage.
 func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
-	return &Storage{
+	bs := newBlockstore(db)
+
+	idx := &indexer{
 		db:  db,
-		bs:  newBlockstore(db),
 		log: log,
+		bs:  bs,
+	}
+
+	return &Storage{
+		db:      db,
+		bs:      &indexingBlockStore{blockStore: bs, indexBlob: idx.indexBlob},
+		log:     log,
+		indexer: idx,
 	}
 }
 
@@ -70,8 +81,10 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	}
 	defer release()
 
+	codec, hash := ipfs.DecodeCID(blob.CID)
+
 	return sqlitex.WithTx(conn, func() error {
-		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
+		id, exists, err := bs.bs.putBlock(conn, 0, uint64(codec), hash, blob.Data)
 		if err != nil {
 			return err
 		}
@@ -81,7 +94,7 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 			return nil
 		}
 
-		if err := bs.indexBlob(conn, id, blob); err != nil {
+		if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
 			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
 		}
 
@@ -122,8 +135,10 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	}
 	defer release()
 
+	codec, hash := ipfs.DecodeCID(blob.CID)
+
 	return sqlitex.WithTx(conn, func() error {
-		id, exists, err := bs.bs.putBlock(conn, 0, uint64(blob.Codec), blob.Hash, blob.Data)
+		id, exists, err := bs.bs.putBlock(conn, 0, uint64(codec), hash, blob.Data)
 		if err != nil {
 			return err
 		}
@@ -133,7 +148,7 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 			return nil
 		}
 
-		if err := bs.indexBlob(conn, id, blob); err != nil {
+		if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
 			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
 		}
 
@@ -283,7 +298,9 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 			return err
 		}
 
-		id, exists, err := bs.bs.putBlock(conn, oldid, uint64(blob.Codec), blob.Hash, blob.Data)
+		codec, hash := ipfs.DecodeCID(blob.CID)
+
+		id, exists, err := bs.bs.putBlock(conn, oldid, uint64(codec), hash, blob.Data)
 		if err != nil {
 			return fmt.Errorf("replace draft blob error when insert: %w", err)
 		}
@@ -293,7 +310,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 			return nil
 		}
 
-		if err := bs.indexBlob(conn, id, blob); err != nil {
+		if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
 			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
 		}
 
@@ -343,31 +360,23 @@ func (bs *Storage) IPFSBlockstore() blockstore.Blockstore {
 
 // Blob is a structural artifact.
 type Blob struct {
-	Type    BlobType
 	CID     cid.Cid
-	Codec   multicodec.Code
-	Hash    multihash.Multihash
 	Data    []byte
 	Decoded any
 }
 
 // EncodeBlob produces a Blob from any object.
-func EncodeBlob(t BlobType, v any) (hb Blob, err error) {
+func EncodeBlob(v any) (hb Blob, err error) {
 	data, err := cbornode.DumpObject(v)
 	if err != nil {
-		return hb, fmt.Errorf("failed to encode blob with type %s: %w", t, err)
+		return hb, fmt.Errorf("failed to encode blob %T: %w", v, err)
 	}
 
-	codec := multicodec.DagCbor
-
-	blk := ipfs.NewBlock(uint64(codec), data)
+	blk := ipfs.NewBlock(uint64(multicodec.DagCbor), data)
 	c := blk.Cid()
 
 	return Blob{
-		Type:    t,
 		CID:     c,
-		Codec:   codec,
-		Hash:    c.Hash(),
 		Data:    data,
 		Decoded: v,
 	}, nil
@@ -379,44 +388,109 @@ var errNotHyperBlob = errors.New("not a hyper blob")
 func DecodeBlob(c cid.Cid, data []byte) (hb Blob, err error) {
 	codec := c.Prefix().Codec
 
-	if codec != uint64(multicodec.DagCbor) {
+	switch multicodec.Code(codec) {
+	case multicodec.DagPb:
+		b := dagpb.Type.PBNode.NewBuilder()
+		if err := dagpb.DecodeBytes(b, data); err != nil {
+			return hb, fmt.Errorf("failed to decode dagpb node %s: %w", c, err)
+		}
+
+		hb.Decoded = b.Build()
+	case multicodec.DagCbor:
+		var v struct {
+			Type string `cbor:"@type"`
+		}
+		if err := cbor.Unmarshal(data, &v); err != nil {
+			return hb, fmt.Errorf("failed to infer hyper blob %s: %w", c, err)
+		}
+
+		switch BlobType(v.Type) {
+		case TypeKeyDelegation:
+			var v KeyDelegation
+			if err := cbornode.DecodeInto(data, &v); err != nil {
+				return hb, err
+			}
+			hb.Decoded = v
+		case TypeChange:
+			var v Change
+			if err := cbornode.DecodeInto(data, &v); err != nil {
+				return hb, err
+			}
+			hb.Decoded = v
+		default:
+			return hb, fmt.Errorf("unknown hyper blob type: '%s'", v.Type)
+		}
+	default:
 		return hb, fmt.Errorf("%s: %w", c, errNotHyperBlob)
 	}
 
-	var v struct {
-		Type string `cbor:"@type"`
-	}
-	if err := cbor.Unmarshal(data, &v); err != nil {
-		var vv any
-		if err := cbornode.DecodeInto(data, &vv); err != nil {
-			panic(err)
-		}
-
-		return hb, fmt.Errorf("failed to infer hyper blob %s: %w", c, err)
-	}
-
-	switch BlobType(v.Type) {
-	case TypeKeyDelegation:
-		var v KeyDelegation
-		if err := cbornode.DecodeInto(data, &v); err != nil {
-			return hb, err
-		}
-		hb.Decoded = v
-	case TypeChange:
-		var v Change
-		if err := cbornode.DecodeInto(data, &v); err != nil {
-			return hb, err
-		}
-		hb.Decoded = v
-	default:
-		return hb, fmt.Errorf("unknown hyper blob type: '%s'", v.Type)
-	}
-
-	hb.Type = BlobType(v.Type)
 	hb.CID = c
-	hb.Codec = multicodec.Code(codec)
-	hb.Hash = c.Hash()
 	hb.Data = data
 
 	return hb, nil
+}
+
+type indexingBlockStore struct {
+	*blockStore
+	indexBlob func(conn *sqlite.Conn, id int64, c cid.Cid, blob any) error
+}
+
+func (b *indexingBlockStore) Put(ctx context.Context, block blocks.Block) error {
+	conn, release, err := b.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		codec, hash := ipfs.DecodeCID(block.Cid())
+		id, exists, err := b.putBlock(conn, 0, codec, hash, block.RawData())
+		if err != nil {
+			return err
+		}
+
+		if exists || !isIndexable(multicodec.Code(codec)) {
+			return nil
+		}
+
+		hb, err := DecodeBlob(block.Cid(), block.RawData())
+		if err != nil {
+			return err
+		}
+		return b.indexBlob(conn, id, hb.CID, hb.Decoded)
+	})
+}
+
+// PutMany implements blockstore.Blockstore interface.
+func (b *indexingBlockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
+	conn, release, err := b.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.WithTx(conn, func() error {
+		for _, blk := range blocks {
+			codec, hash := ipfs.DecodeCID(blk.Cid())
+			id, exists, err := b.putBlock(conn, 0, codec, hash, blk.RawData())
+			if err != nil {
+				return err
+			}
+
+			if exists || !isIndexable(multicodec.Code(codec)) {
+				continue
+			}
+
+			hb, err := DecodeBlob(blk.Cid(), blk.RawData())
+			if err != nil {
+				return err
+			}
+
+			if err := b.indexBlob(conn, id, hb.CID, hb.Decoded); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }

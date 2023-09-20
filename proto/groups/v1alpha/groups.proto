@@ -27,12 +27,6 @@ service Groups {
   // Lists groups.
   rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
 
-  // Converts a group to a site. P2P group will continue to work.
-  rpc ConvertToSite(ConvertToSiteRequest) returns (ConvertToSiteResponse);
-
-  // Gets information about a site.
-  rpc GetSiteInfo(GetSiteInfoRequest) returns (GetSiteInfoResponse);
-
   // Lists groups that a document is published to.
   rpc ListDocumentGroups(ListDocumentGroupsRequest) returns (ListDocumentGroupsResponse);
 
@@ -51,6 +45,10 @@ message CreateGroupRequest {
   // Optional. List of initial members for the new group.
   // Members can also be managed with separate requests after group is already created.
   map<string, Role> members = 3;
+
+  // Optional. Secret setup URL that is provided during site server deployment.
+  // I.e. a place on the Web where this group has to be published.
+  string site_setup_url = 4;
 }
 
 // Request to get a group.
@@ -94,6 +92,10 @@ message UpdateGroupRequest {
   // To unpublish content set the value to an empty string for a given pretty path.
   // Only updated records have to be sent, not all the content of the group.
   map<string, string> updated_content = 5;
+
+  // Optional. Secret setup URL that is provided during site server deployment.
+  // I.e. a place on the Web where this group has to be published.
+  string site_setup_url = 6;
 }
 
 // Request to list members.
@@ -170,53 +172,6 @@ message ListGroupsResponse {
   string next_page_token = 2;
 }
 
-// Makes a site out of an existing group.
-message ConvertToSiteRequest {
-  // Required. Secret link provided by the site deployment script.
-  string link = 1;
-
-  // Required. Group ID to convert to a site
-  string group_id = 2;
-
-  // Optional. Version of the group to be converted. Latest
-  // version if not provided
-  string version = 3;
-}
-
-// Response to convert to site.
-message ConvertToSiteResponse {
-  // Account of the sites owner.
-  string owner_id = 1;
-
-  // Hostname of the site.
-  string hostname = 2;
-}
-
-// Request to get site info.
-message GetSiteInfoRequest {
-  // Required. hostname where the site is published.
-  string hostname = 1;
-
-  // Optional. Maximum number of members to return.
-  int32 page_size = 2;
-
-  // Optional. Page token to continue listing members from.
-  string page_token = 3;
-}
-
-// Response to get site info.
-message GetSiteInfoResponse {
-  // ID of the group the site is serving.
-  string group_id = 1;
-
-  // Current Version of the group that the site is serving.
-  // Empty means last version.
-  string version = 2;
-
-  // Owner's account of the site.
-  string owner_id = 3;
-}
-
 // Request to list groups for a document.
 message ListDocumentGroupsRequest {
   // Required. ID of the document to list groups for.
@@ -287,6 +242,22 @@ message ListAccountGroupsResponse {
 
 // Group represents the basic information about a group entity.
 message Group {
+  // Extra metadata about Site Groups.
+  message SiteInfo {
+    // Base Web URL of the Site where the Group is being published to.
+    string base_url = 1;
+
+    // Timestamp of the last sync of the Group's content with the Site.
+    // This field will be updated regardless of whether we were able to sync or not.
+    google.protobuf.Timestamp last_sync_time = 2;
+
+    // Timestamp of the last successful sync of the Group's content with the Site.
+    google.protobuf.Timestamp last_ok_sync_time = 3;
+
+    // Version of the Group as per the Site.
+    string version = 4;
+  }
+
   // ID of the group.
   string id = 1;
 
@@ -308,6 +279,9 @@ message Group {
 
   // Timestamp of the version of the group.
   google.protobuf.Timestamp update_time = 7;
+
+  // Optional. Site-related information for groups that are published to sites.
+  SiteInfo site_info = 8;
 }
 
 // Role of a group member.

@@ -16,14 +16,6 @@ type Identity struct {
 }
 
 func NewIdentity(account PublicKey, device KeyPair) Identity {
-	if account.Codec() != CodecAccountKey {
-		panic("not account key")
-	}
-
-	if device.Codec() != CodecDeviceKey {
-		panic("not device key")
-	}
-
 	return Identity{
 		account: account,
 		device:  device,
@@ -69,7 +61,7 @@ func AccountFromSeed(rand []byte) (KeyPair, error) {
 		return KeyPair{}, err
 	}
 
-	return NewKeyPair(CodecAccountKey, priv.(*crypto.Ed25519PrivateKey))
+	return NewKeyPair(priv.(*crypto.Ed25519PrivateKey))
 }
 
 // NewBIP39Mnemonic creates a new random BIP-39 compatible mnemonic words.

@@ -3,22 +3,17 @@ package mttnet
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
-	site "mintter/backend/genproto/documents/v1alpha"
+	groups "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
-	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/cleanup"
-	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
-	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -56,6 +51,18 @@ const (
 
 var userAgent = "mintter/<dev>"
 
+// WebsiteClient is the bridge to talk to remote sites.
+type WebsiteClient interface {
+	// InitializeServer instruct the website that starts serving a given group.
+	InitializeServer(context.Context, *groups.InitializeServerRequest, ...grpc.CallOption) (*groups.InitializeServerResponse, error)
+
+	// GetSiteInfo gets public site information, to be also found in /.well-known/hypermedia-site
+	GetSiteInfo(context.Context, *groups.GetSiteInfoRequest, ...grpc.CallOption) (*groups.PublicSiteInfo, error)
+
+	// PublishBlobs pushes given blobs to the site.
+	PublishBlobs(context.Context, *groups.PublishBlobsRequest, ...grpc.CallOption) (*groups.PublishBlobsResponse, error)
+}
+
 // DefaultRelays bootstrap mintter-owned relays so they can reserve slots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
@@ -91,20 +98,9 @@ type PublicationRecord struct {
 	References []docInfo
 }
 
-// Site is a hosted site.
-type Site struct {
-	hostname                   string
-	InviteTokenExpirationDelay time.Duration
-	owner                      core.Principal
-}
-
 // Server holds the p2p functionality to be accessed via gRPC.
-type Server struct {
-	Node *future.ReadOnly[*Node]
-	*Site
-	localFunctions DocumentsAPI
-	synchronizer   Synchronizer
-	NoAuth         bool
+type rpcMux struct {
+	Node *Node
 }
 
 // Node is a Mintter P2P node.
@@ -117,21 +113,13 @@ type Node struct {
 	invoicer Invoicer
 	client   *Client
 
-	p2p        *ipfs.Libp2p
-	bitswap    *ipfs.Bitswap
-	providing  provider.System
-	grpc       *grpc.Server
-	quit       io.Closer
-	ready      chan struct{}
-	registered chan struct{}
-	ctx        context.Context // will be set after calling Start()
-}
-
-// DocumentsAPI is an interface for not having to pass a full-fledged documents service,
-// just the getPublication that is what we need to call in getPath.
-type DocumentsAPI interface {
-	// GetPublication gets a local publication.
-	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
+	p2p       *ipfs.Libp2p
+	bitswap   *ipfs.Bitswap
+	providing provider.System
+	grpc      *grpc.Server
+	quit      io.Closer
+	ready     chan struct{}
+	ctx       context.Context // will be set after calling Start()
 }
 
 // Synchronizer is a subset of the syncing service that
@@ -140,110 +128,9 @@ type Synchronizer interface {
 	SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error
 }
 
-// NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], docSrv DocumentsAPI, sync Synchronizer) *Server {
-	expirationDelay := siteCfg.InviteTokenExpirationDelay
-
-	srv := &Server{
-		Site: &Site{
-			hostname:                   siteCfg.Hostname,
-			InviteTokenExpirationDelay: expirationDelay,
-		},
-		Node:           node,
-		localFunctions: docSrv,
-		synchronizer:   sync,
-		NoAuth:         siteCfg.NoAuth,
-	}
-
-	if siteCfg.OwnerID != "" {
-		owner, err := core.DecodePrincipal(siteCfg.OwnerID)
-		if err != nil {
-			panic(fmt.Errorf("BUG: failed to parse owner ID: %w", err))
-		}
-
-		srv.owner = owner
-	}
-
-	go func() {
-		n, err := node.Await(ctx)
-		if err != nil {
-			return
-		}
-
-		// this is how we respond to remote RPCs over libp2p.
-		p2p.RegisterP2PServer(n.grpc, srv)
-		site.RegisterWebSiteServer(n.grpc, srv)
-
-		if siteCfg.Hostname != "" {
-			if srv.owner == nil {
-				srv.owner = n.me.Account().Principal()
-			}
-
-			conn, release, err := n.db.Conn(ctx)
-			if err != nil {
-				panic(err)
-			}
-			defer release()
-			if err := func() error {
-				randomBytes := make([]byte, 16)
-				_, err := rand.Read(randomBytes)
-				if err != nil {
-					return err
-				}
-				currentLink, err := sitesql.GetSiteRegistrationLink(conn)
-				if err != nil {
-					return err
-				}
-				link := currentLink.KVValue
-				if link == "" || siteCfg.Hostname != strings.Split(link, "/secret-invite/")[0] {
-					link = siteCfg.Hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
-					if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
-						return err
-					}
-				}
-
-				// Print it to stdout so its visible from the command line.
-				fmt.Println("Site Invitation secret token: " + link)
-				if siteCfg.Title != "" {
-					title, err := sitesql.GetSiteTitle(conn)
-					if err != nil {
-						return err
-					}
-
-					if title.KVValue != siteCfg.Title {
-						if err := sitesql.SetSiteTitle(conn, siteCfg.Title); err != nil {
-							return err
-						}
-					}
-				}
-
-				if err := srv.updateSiteBio(ctx, siteCfg.Title, "Mintter Site"); err != nil {
-					return err
-				}
-
-				if _, err := sitesql.AddMember(conn, srv.owner, int64(site.Member_OWNER)); err != nil {
-					// This is equivalent of INSERT OR IGNORE, but we don't use it because in other places where
-					// we call this function we do care about the errors.
-					if sqlite.ErrCode(err) != sqlite.SQLITE_CONSTRAINT_PRIMARYKEY {
-						return err
-					}
-				}
-
-				return nil
-			}(); err != nil {
-				panic(err)
-			}
-		}
-
-		// Indicate we can now serve the already registered endpoints.
-		close(n.registered)
-	}()
-	return srv
-}
-
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger, extraServers ...interface{}) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), db)
@@ -269,19 +156,28 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 	clean.Add(client)
 
 	n := &Node{
-		log:        log,
-		blobs:      blobs,
-		db:         db,
-		me:         me,
-		cfg:        cfg,
-		client:     client,
-		p2p:        host,
-		bitswap:    bitswap,
-		providing:  providing,
-		grpc:       grpc.NewServer(),
-		quit:       &clean,
-		ready:      make(chan struct{}),
-		registered: make(chan struct{}),
+		log:       log,
+		blobs:     blobs,
+		db:        db,
+		me:        me,
+		cfg:       cfg,
+		client:    client,
+		p2p:       host,
+		bitswap:   bitswap,
+		providing: providing,
+		grpc:      grpc.NewServer(),
+		quit:      &clean,
+		ready:     make(chan struct{}),
+	}
+
+	rpc := &rpcMux{Node: n}
+	p2p.RegisterP2PServer(n.grpc, rpc)
+
+	for _, extra := range extraServers {
+		if extraServer, ok := extra.(groups.WebsiteServer); ok {
+			groups.RegisterWebsiteServer(n.grpc, extraServer)
+			break
+		}
 	}
 
 	return n, nil
@@ -326,6 +222,19 @@ func (n *Node) Client(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	}
 
 	return n.client.Dial(ctx, pid)
+}
+
+// SiteClient opens a connection with a remote website.
+func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, error) {
+	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+		return nil, err
+	}
+
+	conn, err := n.client.dialPeer(ctx, pid)
+	if err != nil {
+		return nil, err
+	}
+	return groups.NewWebsiteClient(conn), nil
 }
 
 // ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
@@ -397,12 +306,7 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	// Start Mintter protocol listener over libp2p.
 	{
 		g.Go(func() error {
-			select {
-			case <-n.registered:
-				return n.grpc.Serve(lis)
-			case <-ctx.Done():
-				return nil
-			}
+			return n.grpc.Serve(lis)
 		})
 
 		g.Go(func() error {
@@ -565,7 +469,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			}),
 		)
 	}
-	if !cfg.PublicReachability && !cfg.NoRelay {
+	if !cfg.ForceReachabilityPublic && !cfg.NoRelay {
 		opts = append(opts, libp2p.ForceReachabilityPrivate())
 	}
 

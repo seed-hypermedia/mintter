@@ -31,7 +31,7 @@ import {Toaster} from 'react-hot-toast'
 
 export default trpc.withTRPC(App)
 
-const isMintterSite = process.env.GW_NEXT_HOST === 'https://mintter.com'
+const isMintterSite = process.env.HM_BASE_URL === 'https://mintter.com'
 const hostIconPrefix = isMintterSite ? '/mintter-icon' : '/generic-icon'
 
 export type EveryPageProps = {

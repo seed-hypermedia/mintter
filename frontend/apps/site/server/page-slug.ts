@@ -21,13 +21,13 @@ export async function prepareSlugPage(
     peerInfo.addrs.join(','),
   )
 
-  const path = await helpers.publication.getPath.fetch({pathName})
+  // const path = await helpers.publication.getPath.fetch({pathName})
 
-  if (!path) return {notFound: true} as const
-  await helpers.publication.get.prefetch({
-    documentId: path.documentId,
-    versionId: path.versionId,
-  })
+  // if (!path) return {notFound: true} as const
+  // await helpers.publication.get.prefetch({
+  //   documentId: path.documentId,
+  //   versionId: path.versionId,
+  // })
   return {
     props: await getPageProps(helpers, {pathName}),
   }

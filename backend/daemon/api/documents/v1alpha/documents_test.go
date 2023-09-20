@@ -89,7 +89,6 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "https://example.com"}},
 	})
 	require.Equal(t, draft.CreateTime, updated.CreateTime)
 
@@ -100,7 +99,6 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 
 	require.Equal(t, "My new document title", got.Title)
-	require.Equal(t, "https://example.com", got.WebUrl)
 
 	// Update again.
 	updated = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
@@ -111,7 +109,6 @@ func TestUpdateDraft_SimpleAttributes(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 
 	require.Equal(t, "My changed title", got.Title)
-	require.Equal(t, "https://example.com", got.WebUrl)
 }
 
 func TestUpdateDraft_WithBlocks(t *testing.T) {
@@ -131,7 +128,6 @@ func TestUpdateDraft_WithBlocks(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "https://example.com"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -147,7 +143,6 @@ func TestUpdateDraft_WithBlocks(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 
 	require.Equal(t, "My new document title", got.Title)
-	require.Equal(t, "https://example.com", got.WebUrl)
 	require.Equal(t, "b1", got.Children[0].Block.Id, "block id must match")
 	require.Nil(t, got.Children[0].Children, "block must not have children if not needed")
 	require.Equal(t, "statement", got.Children[0].Block.Type, "block type must match")
@@ -794,14 +789,12 @@ func TestPublisherAndEditors(t *testing.T) {
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
-			{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "http://example.com"}},
 		},
 	})
 	require.NoError(t, err)
 
 	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
-	require.Equal(t, "http://example.com", draft.WebUrl)
 	require.Equal(t, "Document title", draft.Title)
 	wantEditors := []string{api.me.MustGet().Account().Principal().String()}
 	require.Equal(t, wantEditors, draft.Editors)
@@ -868,7 +861,7 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db, nil, nil)
+	srv := NewServer(fut.ReadOnly, db, nil)
 	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)

@@ -6,6 +6,20 @@ import (
 	"mintter/backend/pkg/sqlitegen"
 )
 
+// Table accounts.
+const (
+	Accounts          sqlitegen.Table  = "accounts"
+	AccountsEntity    sqlitegen.Column = "accounts.entity"
+	AccountsPublicKey sqlitegen.Column = "accounts.public_key"
+)
+
+// Table accounts. Plain strings.
+const (
+	T_Accounts          = "accounts"
+	C_AccountsEntity    = "accounts.entity"
+	C_AccountsPublicKey = "accounts.public_key"
+)
+
 // Table blob_attrs.
 const (
 	BlobAttrs         sqlitegen.Table  = "blob_attrs"
@@ -192,22 +206,6 @@ const (
 	C_HeadsResource = "heads.resource"
 )
 
-// Table invite_tokens.
-const (
-	InviteTokens           sqlitegen.Table  = "invite_tokens"
-	InviteTokensExpireTime sqlitegen.Column = "invite_tokens.expire_time"
-	InviteTokensRole       sqlitegen.Column = "invite_tokens.role"
-	InviteTokensToken      sqlitegen.Column = "invite_tokens.token"
-)
-
-// Table invite_tokens. Plain strings.
-const (
-	T_InviteTokens           = "invite_tokens"
-	C_InviteTokensExpireTime = "invite_tokens.expire_time"
-	C_InviteTokensRole       = "invite_tokens.role"
-	C_InviteTokensToken      = "invite_tokens.token"
-)
-
 // Table key_delegations.
 const (
 	KeyDelegations         sqlitegen.Table  = "key_delegations"
@@ -304,54 +302,26 @@ const (
 	C_PublicKeysPrincipal = "public_keys.principal"
 )
 
-// Table served_sites.
+// Table remote_sites.
 const (
-	ServedSites         sqlitegen.Table  = "served_sites"
-	ServedSitesGroupID  sqlitegen.Column = "served_sites.group_id"
-	ServedSitesHostname sqlitegen.Column = "served_sites.hostname"
-	ServedSitesOwnerID  sqlitegen.Column = "served_sites.owner_id"
-	ServedSitesVersion  sqlitegen.Column = "served_sites.version"
+	RemoteSites               sqlitegen.Table  = "remote_sites"
+	RemoteSitesGroupID        sqlitegen.Column = "remote_sites.group_id"
+	RemoteSitesGroupVersion   sqlitegen.Column = "remote_sites.group_version"
+	RemoteSitesLastOkSyncTime sqlitegen.Column = "remote_sites.last_ok_sync_time"
+	RemoteSitesLastSyncTime   sqlitegen.Column = "remote_sites.last_sync_time"
+	RemoteSitesPeerID         sqlitegen.Column = "remote_sites.peer_id"
+	RemoteSitesURL            sqlitegen.Column = "remote_sites.url"
 )
 
-// Table served_sites. Plain strings.
+// Table remote_sites. Plain strings.
 const (
-	T_ServedSites         = "served_sites"
-	C_ServedSitesGroupID  = "served_sites.group_id"
-	C_ServedSitesHostname = "served_sites.hostname"
-	C_ServedSitesOwnerID  = "served_sites.owner_id"
-	C_ServedSitesVersion  = "served_sites.version"
-)
-
-// Table site_members.
-const (
-	SiteMembers          sqlitegen.Table  = "site_members"
-	SiteMembersAccountID sqlitegen.Column = "site_members.account_id"
-	SiteMembersRole      sqlitegen.Column = "site_members.role"
-)
-
-// Table site_members. Plain strings.
-const (
-	T_SiteMembers          = "site_members"
-	C_SiteMembersAccountID = "site_members.account_id"
-	C_SiteMembersRole      = "site_members.role"
-)
-
-// Table sites.
-const (
-	Sites          sqlitegen.Table  = "sites"
-	SitesAccountID sqlitegen.Column = "sites.account_id"
-	SitesAddresses sqlitegen.Column = "sites.addresses"
-	SitesHostname  sqlitegen.Column = "sites.hostname"
-	SitesRole      sqlitegen.Column = "sites.role"
-)
-
-// Table sites. Plain strings.
-const (
-	T_Sites          = "sites"
-	C_SitesAccountID = "sites.account_id"
-	C_SitesAddresses = "sites.addresses"
-	C_SitesHostname  = "sites.hostname"
-	C_SitesRole      = "sites.role"
+	T_RemoteSites               = "remote_sites"
+	C_RemoteSitesGroupID        = "remote_sites.group_id"
+	C_RemoteSitesGroupVersion   = "remote_sites.group_version"
+	C_RemoteSitesLastOkSyncTime = "remote_sites.last_ok_sync_time"
+	C_RemoteSitesLastSyncTime   = "remote_sites.last_sync_time"
+	C_RemoteSitesPeerID         = "remote_sites.peer_id"
+	C_RemoteSitesURL            = "remote_sites.url"
 )
 
 // Table sqlite_sequence.
@@ -406,25 +376,11 @@ const (
 	C_WalletsType     = "wallets.type"
 )
 
-// Table web_publications.
-const (
-	WebPublications        sqlitegen.Table  = "web_publications"
-	WebPublicationsEID     sqlitegen.Column = "web_publications.eid"
-	WebPublicationsPath    sqlitegen.Column = "web_publications.path"
-	WebPublicationsVersion sqlitegen.Column = "web_publications.version"
-)
-
-// Table web_publications. Plain strings.
-const (
-	T_WebPublications        = "web_publications"
-	C_WebPublicationsEID     = "web_publications.eid"
-	C_WebPublicationsPath    = "web_publications.path"
-	C_WebPublicationsVersion = "web_publications.version"
-)
-
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
+		AccountsEntity:                  {Table: Accounts, SQLType: "INTEGER"},
+		AccountsPublicKey:               {Table: Accounts, SQLType: "INTEGER"},
 		BlobAttrsAnchor:                 {Table: BlobAttrs, SQLType: "TEXT"},
 		BlobAttrsBlob:                   {Table: BlobAttrs, SQLType: "INTEGER"},
 		BlobAttrsExtra:                  {Table: BlobAttrs, SQLType: ""},
@@ -468,9 +424,6 @@ var Schema = sqlitegen.Schema{
 		HeadsBlob:                       {Table: Heads, SQLType: "INTEGER"},
 		HeadsName:                       {Table: Heads, SQLType: "TEXT"},
 		HeadsResource:                   {Table: Heads, SQLType: "INTEGER"},
-		InviteTokensExpireTime:          {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensRole:                {Table: InviteTokens, SQLType: "INTEGER"},
-		InviteTokensToken:               {Table: InviteTokens, SQLType: "TEXT"},
 		KeyDelegationsBlob:              {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsDelegate:          {Table: KeyDelegations, SQLType: ""},
 		KeyDelegationsIssuer:            {Table: KeyDelegations, SQLType: ""},
@@ -489,16 +442,12 @@ var Schema = sqlitegen.Schema{
 		PublicBlobsViewMultihash:        {Table: PublicBlobsView, SQLType: "BLOB"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
-		ServedSitesGroupID:              {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesHostname:             {Table: ServedSites, SQLType: "TEXT"},
-		ServedSitesOwnerID:              {Table: ServedSites, SQLType: "INTEGER"},
-		ServedSitesVersion:              {Table: ServedSites, SQLType: "TEXT"},
-		SiteMembersAccountID:            {Table: SiteMembers, SQLType: "INTEGER"},
-		SiteMembersRole:                 {Table: SiteMembers, SQLType: "INTEGER"},
-		SitesAccountID:                  {Table: Sites, SQLType: "INTEGER"},
-		SitesAddresses:                  {Table: Sites, SQLType: "TEXT"},
-		SitesHostname:                   {Table: Sites, SQLType: "TEXT"},
-		SitesRole:                       {Table: Sites, SQLType: "INTEGER"},
+		RemoteSitesGroupID:              {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesGroupVersion:         {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesLastOkSyncTime:       {Table: RemoteSites, SQLType: "INTEGER"},
+		RemoteSitesLastSyncTime:         {Table: RemoteSites, SQLType: "INTEGER"},
+		RemoteSitesPeerID:               {Table: RemoteSites, SQLType: "TEXT"},
+		RemoteSitesURL:                  {Table: RemoteSites, SQLType: "TEXT"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
@@ -510,8 +459,5 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                    {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                     {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationsEID:              {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsPath:             {Table: WebPublications, SQLType: "TEXT"},
-		WebPublicationsVersion:          {Table: WebPublications, SQLType: "TEXT"},
 	},
 }

@@ -4,17 +4,13 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
-	documents "mintter/backend/genproto/documents/v1alpha"
-	"net/http"
+	groups "mintter/backend/daemon/api/groups/v1alpha"
 	"time"
-
-	"mintter/backend/mttnet"
 
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ping "github.com/libp2p/go-libp2p/p2p/protocol/ping"
-	"google.golang.org/protobuf/encoding/protojson"
+	"github.com/multiformats/go-multiaddr"
 )
 
 func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (time.Duration, error) {
@@ -60,44 +56,28 @@ func (s *Srv) checkP2P(ctx context.Context, peer peer.AddrInfo, numPings int) (t
 }
 
 func (s *Srv) checkMintterAddrs(ctx context.Context, hostname, mustInclude string) (info peer.AddrInfo, err error) {
-	resp, err := s.getSiteInfoHTTP(ctx, hostname)
+	resp, err := groups.GetSiteInfoHTTP(ctx, nil, hostname)
 	if err != nil {
-		return
+		return info, err
 	}
-	info, err = mttnet.AddrInfoFromStrings(resp.Addresses[0]) // only TCP which is the first one
+
+	if resp.PeerInfo == nil {
+		return info, fmt.Errorf("no peer info got from site")
+	}
+
+	pid, err := peer.Decode(resp.PeerInfo.PeerId)
 	if err != nil {
-		return
+		return info, fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
 	}
 
-	return
-}
-
-func (s *Srv) getSiteInfoHTTP(ctx context.Context, SiteHostname string) (*documents.SiteDiscoveryConfig, error) {
-	requestURL := fmt.Sprintf("%s/%s", SiteHostname, mttnet.WellKnownPath)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
+	info.ID = pid
+	info.Addrs = make([]multiaddr.Multiaddr, len(resp.PeerInfo.Addrs))
+	for i, as := range resp.PeerInfo.Addrs {
+		info.Addrs[i], err = multiaddr.NewMultiaddr(as)
+		if err != nil {
+			return info, err
+		}
 	}
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read json body: %w", err)
-	}
-
-	var resp documents.SiteDiscoveryConfig
-
-	if err := protojson.Unmarshal(data, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
-	}
-	return &resp, nil
+	return info, nil
 }

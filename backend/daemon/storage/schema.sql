@@ -225,71 +225,26 @@ CREATE TABLE wallets (
     balance INTEGER DEFAULT 0
 );
 
--- Stores sites that user has manually added
-CREATE TABLE sites (
-    -- Site unique identification. The hostname of the site with protocol https://example.com
-    hostname TEXT PRIMARY KEY CHECK(hostname <> ''),
-    -- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
-    role INTEGER NOT NULL DEFAULT 0,
-    -- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
-    addresses TEXT NOT NULL CHECK(addresses <> ''),
-    -- The account ID of the site. We need a previous connection to the site so the 
-    -- actual account is inserted in the accounts table when handshake.
-    account_id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL
-) WITHOUT ROWID;
-
-CREATE INDEX sites_by_account ON sites (account_id);
-
--- Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
--- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-CREATE TABLE invite_tokens (
-    -- Unique token identification. Random string.
-    token TEXT PRIMARY KEY CHECK(token <> ''),
-    -- The member role for the user that will redeem the token.
-    -- OWNER = 1 | EDITOR = 2.
-    role INTEGER NOT NULL CHECK (role != 0),
-    -- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
-    expire_time INTEGER NOT NULL CHECK (expire_time > 0)
-) WITHOUT ROWID;
-
--- Table that stores the role each account has inside a site. Although this table is relevant only
--- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-CREATE TABLE site_members (
-    -- The account id that has been linked to a role on this site
-    account_id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-    -- The role of the site member.
-    -- OWNER = 1 | EDITOR = 2.
-    role INTEGER NOT NULL CHECK (role != 0),
-    PRIMARY KEY (account_id)
-) WITHOUT ROWID;
-
--- We currently only allow one owner per site.
-CREATE UNIQUE INDEX idx_site_owner ON site_members (role) WHERE role = 1;
-
--- Stores all the records published on this site. Although this table is relevant only
--- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-CREATE TABLE web_publications (
-    -- Entity ID of the published document.
-    eid TEXT PRIMARY KEY CHECK (eid <> ''),
-    -- doc version of the base document published. Not its references.
-    version TEXT NOT NULL,
-    -- Path this publication is published to. If NULL is not listed.
-    path TEXT UNIQUE
+-- Stores remote sites and their syncing status.
+CREATE TABLE remote_sites (
+    -- Values below are stable and are used to validate
+    -- whether site and group information correspond to each other.
+    url TEXT UNIQUE NOT NULL,
+    peer_id TEXT NOT NULL,
+    group_id TEXT NOT NULL,
+    -- Values below are updated on each sync and used for caching.
+    group_version TEXT NOT NULL,
+    last_sync_time INTEGER NOT NULL,
+    last_ok_sync_time INTEGER NOT NULL
 );
 
--- Stores all the sites served locally. Sites are a a group + domain.
--- for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
-CREATE TABLE served_sites (
-    -- the domain + protocol the site is served in.
-    hostname TEXT CHECK (hostname <> '') PRIMARY KEY,
-    -- entity ID of the group the site is associated with.
-    group_id INTEGER REFERENCES lookup (id) NOT NULL,
-    -- the version of the group the site is serving.
-    version TEXT NOT NULL,
-    -- account id of the owner of the group.
-    owner_id INTEGER REFERENCES lookup (id) NOT NULL,
-    -- same version + groupid cannot be published in different histnames.
-    UNIQUE(group_id, version) ON CONFLICT REPLACE
+-- Stores mapping between account public keys
+-- and their entity IDs.
+CREATE TABLE accounts (
+    entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (entity, public_key)
 );
 
-CREATE INDEX served_sites_by_owner ON served_sites (owner_id);
+-- Index to query entity ID of an account public key.
+CREATE INDEX accounts_by_key ON accounts (public_key, entity);
