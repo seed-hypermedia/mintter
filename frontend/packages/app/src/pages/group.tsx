@@ -39,7 +39,7 @@ import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
-import {copyLinkMenuItem} from '../components/list-item'
+import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar/common'
 import {useAccount, useMyAccount} from '../models/accounts'
@@ -277,6 +277,27 @@ export default function GroupPage() {
   const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
   const editGroupInfo = useEditGroupInfoDialog()
+  const removeDoc = useRemoveDocFromGroup()
+  const frontDocMenuItems = [
+    frontDocumentUrl && isMember
+      ? {
+          label: 'Remove Front Document',
+          key: 'remove-front-doc',
+          icon: Trash,
+          onPress: () => {
+            removeDoc
+              .mutateAsync({groupId, pathName: '/'})
+              .then(() => {
+                toast.success('Removed front document')
+              })
+              .catch((e) => {
+                console.error(e)
+                toast.error('Failed to remove front document: ' + e.message)
+              })
+          },
+        }
+      : null,
+  ].filter(Boolean)
   return (
     <>
       <MainWrapper>
@@ -317,6 +338,7 @@ export default function GroupPage() {
                     Create Front Document
                   </Button>
                 )}
+
                 <XGroup>
                   <XGroup.Item>
                     {isMember && (
@@ -384,7 +406,16 @@ export default function GroupPage() {
               >
                 <PublicationDisplay urlWithVersion={frontDocumentUrl} />
               </YStack>
-              <XStack gap="$2" position="absolute" right={0} top={'$4'}>
+              <XStack
+                gap="$2"
+                position="absolute"
+                right={0}
+                top={'$4'}
+                alignItems="center"
+              >
+                {frontDocMenuItems.length ? (
+                  <OptionsDropdown menuItems={frontDocMenuItems} />
+                ) : null}
                 <EditDocActions
                   contextRoute={route}
                   pubContext={{
