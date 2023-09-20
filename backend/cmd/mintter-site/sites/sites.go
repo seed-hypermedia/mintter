@@ -1,8 +1,9 @@
+// Package sites implements mintter-site server.
 package sites
 
 import (
 	"context"
-	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -14,7 +15,7 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"net/http"
-	"strings"
+	"sync"
 
 	"google.golang.org/grpc/codes"
 	rpcpeer "google.golang.org/grpc/peer"
@@ -34,10 +35,14 @@ type Website struct {
 	db *future.ReadOnly[*sqlitex.Pool]
 	// url is the protocol + hostname the group is being served at.
 	url string
+
+	once        sync.Once
+	setupSecret string
 }
 
 var errNodeNotReadyYet = errors.New("P2P node is not ready yet")
 
+// NewServer creates a new server for the site.
 func NewServer(url string, n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool]) *Website {
 	return &Website{
 		node: n,
@@ -45,7 +50,7 @@ func NewServer(url string, n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly
 		url:  url,
 	}
 }
-func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ws *Website) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
@@ -74,48 +79,32 @@ func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// RegisterSite registers this site under the passed hostname. It also prints to
-// stdout the secret configuration string for this site. We store the secret so
-// the same value is returned on subsequent calls with the same hostname.
-func (ws *Website) RegisterSite(ctx context.Context, hostname string) (link string, err error) {
-	db, err := ws.db.Await(ctx)
-	if err != nil {
-		return "", err
-	}
+// GetSetupURL returns the secret URL to setup this site.
+// We want to make the secret URL deterministic so that it persists across restarts.
+// We could use a random string, but that would require persisting it in the database,
+// which is not a problem, but seems unnecessary.
+func (ws *Website) GetSetupURL(ctx context.Context) string {
+	return ws.url + "/secret-invite/" + ws.getSetupSecret(ctx)
+}
 
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return "", err
-	}
-	defer release()
-
-	if err = func() error {
-		randomBytes := make([]byte, 16)
-		_, err := rand.Read(randomBytes)
+func (ws *Website) getSetupSecret(ctx context.Context) string {
+	ws.once.Do(func() {
+		node, err := ws.node.Await(ctx)
 		if err != nil {
-			return err
+			panic(err)
 		}
 
-		currentLink, err := sitesql.GetSiteRegistrationLink(conn)
+		signature, err := node.ID().DeviceKey().Sign([]byte("hypermedia-site-setup-secret"))
 		if err != nil {
-			return err
-		}
-		link = currentLink.KVValue
-		if link == "" || hostname != strings.Split(link, "/secret-invite/")[0] {
-			link = hostname + "/secret-invite/" + base64.RawURLEncoding.EncodeToString(randomBytes)
-			if err := sitesql.SetSiteRegistrationLink(conn, link); err != nil {
-				return err
-			}
+			panic(err)
 		}
 
-		// Print it to stdout so its visible from the command line.
-		fmt.Println("Site Invitation secret token: " + link)
+		sum := sha256.Sum256(signature)
 
-		return nil
-	}(); err != nil {
-		panic(err)
-	}
-	return
+		ws.setupSecret = base64.RawURLEncoding.EncodeToString(sum[:16])
+	})
+
+	return ws.setupSecret
 }
 
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
@@ -180,6 +169,29 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 		return nil, errNodeNotReadyYet
 	}
 
+	gid, err := ws.GetGroupID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if gid != "" {
+		return nil, status.Errorf(codes.FailedPrecondition, "site is already initialized")
+	}
+
+	link := ws.GetSetupURL(ctx)
+	if link != in.Secret {
+		return nil, status.Errorf(codes.PermissionDenied, "provided setup secret is not valid")
+	}
+
+	remoteDeviceID, err := getRemoteID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract peer ID from headers: %w", err)
+	}
+
+	_, err = n.AccountForDevice(ctx, remoteDeviceID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
+	}
+
 	db, err := ws.db.Await(ctx)
 	if err != nil {
 		return nil, err
@@ -187,24 +199,9 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 
 	conn, release, err := db.Conn(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get db connection: %w", err)
-	}
-	defer release()
-	remoteDeviceID, err := getRemoteID(ctx)
-
-	_, err = n.AccountForDevice(ctx, remoteDeviceID)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
-	}
-
-	link, err := sitesql.GetSiteRegistrationLink(conn)
-	if err != nil {
 		return nil, err
 	}
-
-	if link.KVValue != in.Secret {
-		return nil, fmt.Errorf("Provided secret link not valid")
-	}
+	defer release()
 
 	_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
 	if err != nil {
@@ -216,6 +213,28 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 	}
 
 	return &groups.InitializeServerResponse{}, nil
+}
+
+// GetGroupID returns the group ID this site is serving.
+// It's empty if the site is not initialized yet.
+func (ws *Website) GetGroupID(ctx context.Context) (string, error) {
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	conn, release, err := db.Conn(ctx)
+	if err != nil {
+		return "", fmt.Errorf("Failed to get db connection: %w", err)
+	}
+	defer release()
+
+	dbgroup, err := sitesql.GetServedGroupID(conn)
+	if err != nil {
+		return "", err
+	}
+
+	return dbgroup.KVValue, nil
 }
 
 // PublishBlobs publish blobs to the website.

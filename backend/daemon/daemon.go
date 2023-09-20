@@ -379,6 +379,7 @@ func initGRPC(
 	if err != nil {
 		return
 	}
+
 	opts := []grpc.ServerOption{}
 	for _, extra := range extras {
 		if opt, ok := extra.(grpc.ServerOption); ok {

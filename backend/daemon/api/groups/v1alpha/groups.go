@@ -12,6 +12,7 @@ import (
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
+	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
@@ -223,7 +224,7 @@ func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID 
 	{
 		u, err := url.Parse(setupURL)
 		if err != nil {
-			return "", fmt.Errorf("failed to parse site setup URL %s: %w", setupURL, err)
+			return "", fmt.Errorf("failed to parse setup URL %s: %w", setupURL, err)
 		}
 
 		baseURL = (&url.URL{
@@ -236,14 +237,21 @@ func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID 
 	if err != nil {
 		return "", fmt.Errorf("could not contact site at %s: %w", baseURL, err)
 	}
-	pid, err := peer.Decode(resp.PeerInfo.PeerId)
+
+	ai, err := addrInfoFromProto(resp.PeerInfo)
 	if err != nil {
-		return "", fmt.Errorf("failed to decode peer ID %s: %w", resp.PeerInfo.PeerId, err)
+		return "", err
 	}
-	c, err := n.SiteClient(ctx, pid)
+
+	if err := n.Connect(ctx, ai); err != nil {
+		return "", fmt.Errorf("failed to connect to site via P2P: %w", err)
+	}
+
+	c, err := n.SiteClient(ctx, ai.ID)
 	if err != nil {
-		return "", fmt.Errorf("could not contact site via P2P: %w", err)
+		return "", fmt.Errorf("could not get site rpc client: %w", err)
 	}
+
 	if _, err := c.InitializeServer(ctx, &groups.InitializeServerRequest{
 		Secret:  setupURL,
 		GroupId: string(groupID),
@@ -252,6 +260,23 @@ func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID 
 	}
 
 	return baseURL, nil
+}
+
+func addrInfoFromProto(in *groups.PeerInfo) (ai peer.AddrInfo, err error) {
+	pid, err := peer.Decode(in.PeerId)
+	if err != nil {
+		return ai, err
+	}
+
+	addrs, err := ipfs.ParseMultiaddrs(in.Addrs)
+	if err != nil {
+		return ai, fmt.Errorf("failed to parse peer info addrs: %w", err)
+	}
+
+	return peer.AddrInfo{
+		ID:    pid,
+		Addrs: addrs,
+	}, nil
 }
 
 // GetGroup gets a group.
@@ -744,6 +769,8 @@ func GetSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (
 	if client == nil {
 		client = http.DefaultClient
 	}
+
+	fmt.Println(siteURL)
 
 	if siteURL[len(siteURL)-1] == '/' {
 		return nil, fmt.Errorf("site URL must not have trailing slash: %s", siteURL)

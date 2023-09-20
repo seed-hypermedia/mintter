@@ -40,24 +40,6 @@ func generateQueries() error {
 			"FROM", s.KV,
 			"WHERE", s.KVKey, "='"+SiteGroupIDKey+"'",
 		),
-		qb.MakeQuery(s.Schema, "SetSiteRegistrationLink", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.KV, qb.ListColShort(
-				s.KVKey,
-				s.KVValue,
-			), '\n',
-			"VALUES", qb.List(
-				"'"+SiteRegistrationLinkKey+"'",
-				qb.Var("link", sqlitegen.TypeText),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "GetSiteRegistrationLink", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.KVValue),
-			),
-			"FROM", s.KV,
-			"WHERE", s.KVKey, "='"+SiteRegistrationLinkKey+"'",
-		),
 	)
 	if err != nil {
 		return err
