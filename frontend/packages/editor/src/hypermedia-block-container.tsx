@@ -164,7 +164,7 @@ export const HMBlockContainer = Node.create<{
             styles.blockOuter,
             hovered ? 'block-container-hovered' : '',
           )}
-          data-node-id="block-outer"
+          data-node-type="block-outer"
         >
           <div
             {...domAttributes}

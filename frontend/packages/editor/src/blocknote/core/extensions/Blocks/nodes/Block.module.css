@@ -152,14 +152,14 @@ NESTED BLOCKS
   --prev-level: 1.8em;
 }
 
-.blockOuter[data-prev-type='heading'] > .block > .blockContent {
+.blockOuter[data-prev-type='heading'] > .block .blockContent {
   font-size: var(--prev-level);
   font-weight: bold;
 }
 
 .blockOuter:not([data-prev-type])
   > .block
-  > .blockContent[data-content-type='heading'] {
+  .blockContent[data-content-type='heading'] {
   font-size: var(--level);
   line-height: 1.2;
   max-width: 24ch;
