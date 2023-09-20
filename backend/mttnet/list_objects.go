@@ -7,6 +7,7 @@ import (
 	"mintter/backend/hyper/hypersql"
 
 	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/exp/maps"
 )
@@ -47,4 +48,27 @@ func (srv *rpcMux) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 	}
 
 	return out, nil
+}
+
+// ListBlobs lists all the blobs that the node has.
+func (srv *rpcMux) ListBlobs(_ *p2p.ListBlobsRequest, stream p2p.P2P_ListBlobsServer) error {
+	ctx := stream.Context()
+	conn, release, err := srv.Node.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return sqlitex.Exec(conn, qAllPublicBlobs, func(stmt *sqlite.Stmt) error {
+		codec := stmt.ColumnInt64(0)
+		hash := stmt.ColumnBytesUnsafe(1)
+
+		c := cid.NewCidV1(uint64(codec), hash)
+
+		if err := stream.Send(&p2p.Blob{Cid: c.Bytes()}); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

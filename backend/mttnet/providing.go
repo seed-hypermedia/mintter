@@ -14,17 +14,18 @@ import (
 	"go.uber.org/zap"
 )
 
+const qAllPublicBlobs = `
+SELECT
+	` + storage.C_PublicBlobsViewCodec + `,
+	` + storage.C_PublicBlobsViewMultihash + `
+FROM ` + storage.T_PublicBlobsView + `;`
+
 func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
 	// except those which are marked as draft changes.
 	// TODO(burdiyan): this is a temporary solution during the braking change.
 
 	log := logging.New("mintter/reprovider", "debug")
-	const q = `
-SELECT
-	` + storage.C_PublicBlobsViewCodec + `,
-	` + storage.C_PublicBlobsViewMultihash + `
-FROM ` + storage.T_PublicBlobsView + `;`
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer
@@ -44,7 +45,7 @@ FROM ` + storage.T_PublicBlobsView + `;`
 				multihash []byte
 			)
 
-			if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+			if err := sqlitex.Exec(conn, qAllPublicBlobs, func(stmt *sqlite.Stmt) error {
 				stmt.Scan(&codec, &multihash)
 
 				select {

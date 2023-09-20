@@ -15,6 +15,7 @@ import (
 	"github.com/ipfs/go-datastore/sync"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -100,4 +101,19 @@ func ExportedFieldsFilter() cmp.Option {
 		r, _ := utf8.DecodeRuneInString(sf.Name())
 		return !unicode.IsUpper(r)
 	}, cmp.Ignore())
+}
+
+// MockedGRPCServerStream is a mocked gRPC server stream for testing server-side streaming gRPC methods.
+type MockedGRPCServerStream[T proto.Message] struct {
+	C chan T
+	grpc.ServerStream
+}
+
+// Send implements a gRPC stream.
+func (m *MockedGRPCServerStream[T]) Send(msg T) error {
+	if m.C == nil {
+		m.C = make(chan T, 10)
+	}
+	m.C <- msg
+	return nil
 }

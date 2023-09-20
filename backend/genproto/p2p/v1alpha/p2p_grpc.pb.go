@@ -32,6 +32,7 @@ type P2PClient interface {
 	// This is a very naive syncing protocol, it returns all the objects and all the changes
 	// every time. Eventually this will be improved and made more efficient.
 	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
+	ListBlobs(ctx context.Context, in *ListBlobsRequest, opts ...grpc.CallOption) (P2P_ListBlobsClient, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(ctx context.Context, in *RequestInvoiceRequest, opts ...grpc.CallOption) (*RequestInvoiceResponse, error)
 }
@@ -62,6 +63,38 @@ func (c *p2PClient) ListObjects(ctx context.Context, in *ListObjectsRequest, opt
 	return out, nil
 }
 
+func (c *p2PClient) ListBlobs(ctx context.Context, in *ListBlobsRequest, opts ...grpc.CallOption) (P2P_ListBlobsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &P2P_ServiceDesc.Streams[0], "/com.mintter.p2p.v1alpha.P2P/ListBlobs", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &p2PListBlobsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type P2P_ListBlobsClient interface {
+	Recv() (*Blob, error)
+	grpc.ClientStream
+}
+
+type p2PListBlobsClient struct {
+	grpc.ClientStream
+}
+
+func (x *p2PListBlobsClient) Recv() (*Blob, error) {
+	m := new(Blob)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *p2PClient) RequestInvoice(ctx context.Context, in *RequestInvoiceRequest, opts ...grpc.CallOption) (*RequestInvoiceResponse, error) {
 	out := new(RequestInvoiceResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/RequestInvoice", in, out, opts...)
@@ -85,6 +118,7 @@ type P2PServer interface {
 	// This is a very naive syncing protocol, it returns all the objects and all the changes
 	// every time. Eventually this will be improved and made more efficient.
 	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
+	ListBlobs(*ListBlobsRequest, P2P_ListBlobsServer) error
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error)
 }
@@ -98,6 +132,9 @@ func (UnimplementedP2PServer) Handshake(context.Context, *HandshakeInfo) (*Hands
 }
 func (UnimplementedP2PServer) ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListObjects not implemented")
+}
+func (UnimplementedP2PServer) ListBlobs(*ListBlobsRequest, P2P_ListBlobsServer) error {
+	return status.Errorf(codes.Unimplemented, "method ListBlobs not implemented")
 }
 func (UnimplementedP2PServer) RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not implemented")
@@ -150,6 +187,27 @@ func _P2P_ListObjects_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _P2P_ListBlobs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ListBlobsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(P2PServer).ListBlobs(m, &p2PListBlobsServer{stream})
+}
+
+type P2P_ListBlobsServer interface {
+	Send(*Blob) error
+	grpc.ServerStream
+}
+
+type p2PListBlobsServer struct {
+	grpc.ServerStream
+}
+
+func (x *p2PListBlobsServer) Send(m *Blob) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _P2P_RequestInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestInvoiceRequest)
 	if err := dec(in); err != nil {
@@ -188,6 +246,12 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _P2P_RequestInvoice_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ListBlobs",
+			Handler:       _P2P_ListBlobs_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "p2p/v1alpha/p2p.proto",
 }

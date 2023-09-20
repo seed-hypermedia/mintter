@@ -18,6 +18,8 @@ service P2P {
   // every time. Eventually this will be improved and made more efficient.
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
 
+  rpc ListBlobs(ListBlobsRequest) returns (stream Blob);
+
   // Request a peer to issue a lightning BOLT-11 invoice
   rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
 }
@@ -43,11 +45,7 @@ message ListObjectsResponse {
   repeated Object objects = 1;
 }
 
-message Object {
-  string id = 1;
-
-  repeated string change_ids = 2;
-}
+message ListBlobsRequest {}
 
 // Request Invoice request.
 message RequestInvoiceRequest {
@@ -68,4 +66,14 @@ message RequestInvoiceRequest {
 message RequestInvoiceResponse {
   // Text encoded BOLT-11 Invoice
   string pay_req = 1;
+}
+
+message Object {
+  string id = 1;
+
+  repeated string change_ids = 2;
+}
+
+message Blob {
+  bytes cid = 1;
 }

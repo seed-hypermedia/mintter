@@ -3,7 +3,9 @@ package mttnet
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
@@ -45,6 +47,21 @@ func TestListObjects(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, list.Objects, 2)
+
+	blobs, err := c.ListBlobs(ctx, &p2p.ListBlobsRequest{})
+	require.NoError(t, err)
+
+	var count int
+	for {
+		blob, err := blobs.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(t, err)
+		count++
+		_ = blob
+	}
+	require.Equal(t, 4, count, "must have 4 blobs in the list")
 }
 
 func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) (cid.Cid, error) {
