@@ -29,8 +29,14 @@ export const SlashMenuPositioner = <
     useState<ReactSlashMenuItem<BSchema>[]>()
   const [keyboardHoveredItemIndex, setKeyboardHoveredItemIndex] =
     useState<number>()
+  const scroller = useRef<HTMLElement | null>(null)
 
   const referencePos = useRef<DOMRect>()
+  useEffect(() => {
+    setTimeout(() => {
+      scroller.current = document.getElementById('scroll-page-wrapper')
+    }, 100)
+  }, [])
 
   useEffect(() => {
     return props.editor.slashMenu.onUpdate((slashMenuState) => {
@@ -76,7 +82,7 @@ export const SlashMenuPositioner = <
 
   return (
     <Tippy
-      appendTo={props.editor.domElement.parentElement!}
+      appendTo={scroller.current!}
       content={slashMenuElement}
       getReferenceClientRect={getReferenceClientRect}
       interactive={true}

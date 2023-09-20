@@ -32,6 +32,7 @@ import {
 import {getBlockInfoFromPos} from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema, hmBlockSchema} from './schema'
+import {useSelected} from './block-utils'
 
 const EditorText = styled(Text, {
   fontSize: '$5',
@@ -236,36 +237,6 @@ function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
       </YStack>
     </YStack>
   )
-}
-
-function useSelected(
-  block: BlockNoteBlock<HMBlockSchema>,
-  editor: BlockNoteEditor<HMBlockSchema>,
-) {
-  const [selected, setSelected] = useState(false)
-  const tiptapEditor = editor._tiptapEditor
-  const selection = tiptapEditor.state.selection
-
-  useEffect(() => {
-    if (editor) {
-      const selectedNode = getBlockInfoFromPos(
-        tiptapEditor.state.doc,
-        tiptapEditor.state.selection.from,
-      )
-      if (selectedNode && selectedNode.id) {
-        if (
-          selectedNode.id === block.id &&
-          selectedNode.startPos === selection.$anchor.pos
-        ) {
-          setSelected(true)
-        } else if (selectedNode.id !== block.id) {
-          setSelected(false)
-        }
-      }
-    }
-  }, [selection])
-
-  return selected
 }
 
 export function StaticBlockNode({block}: {block: BlockNode}) {

@@ -19,7 +19,12 @@ export const MainWrapper = ({
   noScroll?: boolean
 }) => (
   <YStack flex={1} className="content-wrapper" {...props}>
-    {noScroll ? children : <ScrollView>{children}</ScrollView>}
+    {noScroll ? (
+      children
+    ) : (
+      // TODO: we cannot remove this ID here because the SlashMenu is referencing this!
+      <ScrollView id="scroll-page-wrapper">{children}</ScrollView>
+    )}
   </YStack>
 )
 
