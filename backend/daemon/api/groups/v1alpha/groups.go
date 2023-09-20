@@ -666,6 +666,14 @@ func groupToProto(e *hyper.Entity) (*groups.Group, error) {
 		Version:        e.Version().String(),
 		UpdateTime:     timestamppb.New(e.LastChangeTime().Time()),
 	}
+	if v, ok := e.Get("siteURL"); ok {
+		vv, ok := v.(string)
+		if ok {
+			gpb.SiteInfo = &groups.Group_SiteInfo{
+				BaseUrl: vv,
+			}
+		}
+	}
 
 	{
 		v, ok := e.Get("title")
