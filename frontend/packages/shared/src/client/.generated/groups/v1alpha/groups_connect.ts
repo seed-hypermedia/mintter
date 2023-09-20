@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MethodKind } from "@bufbuild/protobuf";
 import { CreateGroupRequest, GetGroupRequest, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Groups service exposes the functionality for managing group entities.

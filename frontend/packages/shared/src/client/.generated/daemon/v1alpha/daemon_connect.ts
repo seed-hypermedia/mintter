@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Empty, MethodKind } from "@bufbuild/protobuf";
 import { ForceSyncRequest, GenMnemonicRequest, GenMnemonicResponse, GetInfoRequest, Info, RegisterRequest, RegisterResponse } from "./daemon_pb";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Daemon API encapsulates main functionality of the Mintter daemon.

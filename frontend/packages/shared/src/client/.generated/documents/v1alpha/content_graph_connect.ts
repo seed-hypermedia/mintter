@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MethodKind } from "@bufbuild/protobuf";
 import { ListCitationsRequest, ListCitationsResponse } from "./content_graph_pb";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Content graph service provides access to citations (backlinks).

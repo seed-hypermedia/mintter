@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Empty, MethodKind } from "@bufbuild/protobuf";
 import { AddCommentRequest, Conversation, CreateConversationRequest, DeleteCommentRequest, DeleteConversationRequest, ListConversationsRequest, ListConversationsResponse, ResolveConversationRequest, ResolveConversationResponse } from "./comments_pb";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 import { Block } from "./documents_pb";
 
 /**
