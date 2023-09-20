@@ -8,6 +8,8 @@ import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {toast} from '@mintter/app/src/toast'
+import {insertOrUpdateBlock} from '@mintter/editor'
+import {RiFile2Fill, RiImage2Fill, RiText, RiVideoAddFill} from 'react-icons/ri'
 import {
   Block,
   BlockIdentifier,
@@ -786,18 +788,71 @@ export function useDraftEditor(
       queryClient,
       openUrl,
     },
+
     onEditorReady: (e) => {
       readyThings.current[0] = e
       handleMaybeReady()
     },
     blockSchema: hmBlockSchema,
-    // slashCommands: [
-    //   ...defaultReactSlashMenuItems.slice(0, 2),
-    //   insertImage,
-    //   insertFile,
-    //   insertVideo,
-    //   ...defaultReactSlashMenuItems.slice(2),
-    // ],
+    slashMenuItems: [
+      {
+        name: 'Paragraph',
+        aliases: ['p'],
+        icon: <RiText size={18} />,
+        execute: (editor) =>
+          insertOrUpdateBlock(editor, {
+            type: 'paragraph',
+          } as PartialBlock<HMBlockSchema>),
+      },
+      {
+        name: 'Heading',
+        aliases: ['h', 'heading1', 'subheading'],
+        execute: (editor) =>
+          insertOrUpdateBlock(editor, {
+            type: 'heading',
+            props: {level: '2'},
+          } as PartialBlock<HMBlockSchema>),
+      },
+      {
+        name: 'Image',
+        aliases: ['image', 'img', 'picture'],
+        icon: <RiImage2Fill size={18} />,
+        hint: 'Insert a Image',
+        execute: (editor) =>
+          insertOrUpdateBlock(editor, {
+            type: 'image',
+            props: {
+              url: '',
+            },
+          } as PartialBlock<HMBlockSchema>),
+      },
+      {
+        name: 'Video',
+        aliases: ['video', 'vid', 'media'],
+        icon: <RiVideoAddFill size={18} />,
+        hint: 'Insert a video',
+        execute: (editor) =>
+          insertOrUpdateBlock(editor, {
+            type: 'video',
+            props: {
+              url: '',
+            },
+          } as PartialBlock<HMBlockSchema>),
+      },
+      {
+        name: 'File',
+        aliases: ['file', 'folder'],
+        icon: <RiFile2Fill size={18} />,
+        hint: 'Insert a File',
+        execute: (editor) =>
+          insertOrUpdateBlock(editor, {
+            type: 'file',
+            props: {
+              url: '',
+            },
+          } as PartialBlock<HMBlockSchema>),
+      },
+    ],
 
     _tiptapOptions: {
       extensions: [

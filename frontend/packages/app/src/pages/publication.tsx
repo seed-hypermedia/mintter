@@ -136,7 +136,6 @@ export function PublicationPageEditor() {
 
   const docId = route?.documentId
   const versionId = route?.versionId
-  const blockId = route?.blockId
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -145,11 +144,6 @@ export function PublicationPageEditor() {
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
   const publication = usePublicationEditor(docId, versionId, route.pubContext)
-
-  // this checks if there's a block in the url, so we can highlight and scroll into the selected block
-  let [focusBlock] = useState(() => blockId)
-
-  // useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   const {data: changes} = useDocChanges(
     publication.status == 'success' ? docId : undefined,
@@ -286,29 +280,6 @@ type ResizablePanelMachineServices = {
     data: void
   }
 }
-
-// eslint-disable-next-line
-// function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
-//   // TODO: find a way to scroll to the block when clicking on a mintter link
-//   useEffect(() => {
-//     setTimeout(() => {
-//       if (blockId) {
-//         if (ref?.current) {
-//           let entry = getEditorBlock(editor, {id: blockId})
-
-//           if (entry) {
-//             let [block] = entry
-//             let elm = ReactEditor.toDOMNode(editor, block)
-
-//             let rect = elm.getBoundingClientRect()
-//             let wrapper = ref.current.getBoundingClientRect()
-//             ref.current.scrollTo({top: rect.top - wrapper.top - 24})
-//           }
-//         }
-//       }
-//     }, 1000)
-//   }, [ref, blockId, editor])
-// }
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const route = useNavRoute()
