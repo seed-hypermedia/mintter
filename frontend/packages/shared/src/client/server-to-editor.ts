@@ -4,7 +4,12 @@ import {
   Block,
   BlockNode,
 } from './.generated/documents/v1alpha/documents_pb'
-import {EditorBlock, InlineContent, StyledText} from './editor-types'
+import {
+  EditorBlock,
+  EditorHeadingBlock,
+  InlineContent,
+  StyledText,
+} from './editor-types'
 import {HMBlockChildrenType, TextAnnotation} from './hyperdocs-presentation'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 // import {hmBlockSchema} from './schema'
@@ -201,7 +206,6 @@ export function serverBlockNodeToEditorParagraph(
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       ...opts,
-      // childrenType: extractChildrenType(block.attributes.childrenType),
       childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
     props: {
@@ -218,18 +222,25 @@ export function serverBlockToHeading(
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
-  return {
+
+  let res: EditorHeadingBlock = {
     type: 'heading',
     id: block.id,
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       headingLevel: (opts?.headingLevel || 0) + 1,
-      childrenType: extractChildrenType(block.attributes.childrenType),
+      childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
     props: {
       level: '2',
     },
   }
+
+  if (block.attributes.childrenType) {
+    res.props.childrenType = block.attributes
+      .childrenType as HMBlockChildrenType
+  }
+  return res
 }
 
 export function serverChildrenToEditorChildren(
