@@ -223,7 +223,6 @@ function ImageComponent({
             setSelected(false)
           }
         }}
-        borderWidth={0}
         outlineWidth={0}
       >
         {replace ? (

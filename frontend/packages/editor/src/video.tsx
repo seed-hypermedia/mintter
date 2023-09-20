@@ -11,16 +11,14 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {ChangeEvent, useEffect, useState} from 'react'
-import {RiVideoAddFill, RiVideoAddLine} from 'react-icons/ri'
+import {ChangeEvent, PropsWithChildren, useEffect, useState} from 'react'
+import {RiVideoAddLine} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
-  DefaultBlockSchema,
   createReactBlockSpec,
   defaultProps,
   getBlockInfoFromPos,
-  insertOrUpdateBlock,
 } from './blocknote'
 import {HMBlockSchema} from './schema'
 
@@ -288,7 +286,10 @@ function VideoComponent({
   )
 }
 
-function VideoWrapper({children, selected = false}) {
+function VideoWrapper({
+  children,
+  selected = false,
+}: PropsWithChildren<{selected: boolean}>) {
   return (
     <YStack
       backgroundColor={selected ? '$color4' : '$color3'}
