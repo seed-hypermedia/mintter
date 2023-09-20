@@ -66,7 +66,6 @@ function GroupListItem({group}: {group: Group}) {
   const goToItem = (e: GestureResponderEvent) => {
     navigate(groupRoute, e)
   }
-  const siteBaseUrl = group.siteInfo?.baseUrl
   return (
     <ListItem
       title={group.title}

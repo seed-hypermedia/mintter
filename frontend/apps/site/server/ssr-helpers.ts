@@ -15,7 +15,7 @@ export async function getPageProps<AdditionalProps = {}>(
   helpers: ServerHelpers,
   props: AdditionalProps,
 ): Promise<AdditionalProps & EveryPageProps> {
-  await helpers.siteInfo.get.prefetch()
+  // await helpers.siteInfo.get.prefetch()
   return {
     ...props,
     trpcState: helpers.dehydrate(),

@@ -97,7 +97,7 @@ def main():
         return run(
             "yarn site",
             args=args,
-            env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
+            env={**os.environ, "HM_BASE_URL": "http://localhost:3000"},
         )
 
     @cmd(cmds, "build-site", "Build site app for production.")
@@ -109,7 +109,7 @@ def main():
         return run(
             "yarn site:prod",
             args=args,
-            # env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
+            # env={**os.environ, "HM_BASE_URL": "http://localhost:3000"},
         )
 
     @cmd(cmds, "frontend-validate", "Formats, Validates")

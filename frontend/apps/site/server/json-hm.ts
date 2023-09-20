@@ -11,6 +11,7 @@ import type {
   MttLink,
   Profile,
   Publication,
+  Group_SiteInfo,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
@@ -64,6 +65,14 @@ export type HMDocument = {
 export type ServerPublication = Publication
 export type HMPublication = {
   document?: HMDocument
+  version?: string
+}
+
+export type ServerGroupSiteInfo = Group_SiteInfo
+export type HMGroupSiteInfo = {
+  baseUrl?: string
+  lastSyncTime?: HMTimestamp
+  lastOkSyncTime?: HMTimestamp
   version?: string
 }
 

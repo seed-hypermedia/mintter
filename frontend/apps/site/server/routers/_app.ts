@@ -3,6 +3,7 @@ import {
   Accounts,
   Changes,
   ContentGraph,
+  Entities,
   Groups,
   Publications,
   unpackDocId,
@@ -15,7 +16,6 @@ import {
   hmGroup,
   hmLink,
   hmPublication,
-  hmSiteInfo,
 } from 'server/to-json-hm'
 import {HMChangeInfo} from 'server/json-hm'
 import {z} from 'zod'
@@ -26,6 +26,7 @@ const publicationsClient = createPromiseClient(Publications, transport)
 const accountsClient = createPromiseClient(Accounts, transport)
 const groupsClient = createPromiseClient(Groups, transport)
 const changesClient = createPromiseClient(Changes, transport)
+const entitiesClient = createPromiseClient(Entities, transport)
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -43,45 +44,7 @@ const publicationRouter = router({
       // return {
       //   webPublications: records.publications,
       // }
-    }),
-  getPath: procedure
-    .input(
-      z.object({
-        pathName: z.string().optional(),
-      }),
-    )
-    .query(async ({input}) => {
-      if (!input.pathName) return null
-      // const pathRecord = await localWebsiteClient.getPath({
-      //   path: input.pathName,
-      // })
-      // const publication = pathRecord?.publication
-      // const documentId = publication?.document?.id
-      // if (!publication || !documentId) return null
-      // return {
-      //   versionId: publication.version,
-      //   documentId,
-      //   publishTime: publication.document?.publishTime?.toJson() as string,
-      // }
-    }),
-  getDocRecord: procedure
-    .input(
-      z.object({
-        documentId: z.string().optional(),
-      }),
-    )
-    .query(async ({input}) => {
-      if (!input.documentId) return null
-      // const webPubs = await localWebsiteClient.listWebPublications({})
-      // const pub = webPubs.publications.find(
-      //   (pub) => pub.documentId === input.documentId,
-      // )
-      // if (!pub) return null
-      // return {
-      //   path: pub.path,
-      //   versionId: pub.version,
-      //   documentId: pub.documentId,
-      // }
+      return null
     }),
   get: procedure
     .input(
@@ -94,12 +57,32 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {publication: null}
       }
-      const pub = await publicationsClient.getPublication({
-        documentId: input.documentId,
-        version: input.versionId || '',
-      })
+      const alreadyPub = publicationsClient
+        .getPublication({
+          documentId: input.documentId,
+          version: input.versionId || '',
+        })
+        .catch((e) => undefined)
+      const remoteSync = entitiesClient
+        .discoverEntity({
+          id: input.documentId,
+          version: input.versionId || '',
+        })
+        .then(() => undefined)
+      let resolvedPub = await Promise.race([alreadyPub, remoteSync])
+      if (!resolvedPub) {
+        // the remote Sync may have just found it. so we want to re-fetch
+        resolvedPub = await publicationsClient.getPublication({
+          documentId: input.documentId,
+          version: input.versionId || '',
+        })
+      }
+      if (!resolvedPub) {
+        return {publication: null}
+      }
+      return {publication: null}
       return {
-        publication: hmPublication(pub),
+        publication: hmPublication(resolvedPub) || null,
       }
     }),
   getEmbedMeta: procedure
@@ -360,8 +343,8 @@ const accountRouter = router({
 
 const siteInfoRouter = router({
   get: procedure.query(async () => {
-    const siteInfo = await getSiteInfo()
-    return hmSiteInfo(siteInfo)
+    // const siteInfo = await getSiteInfo()
+    return null
   }),
 })
 

@@ -28,5 +28,5 @@ separate directories:
 
 1. **Terminal 3: Site App**
    ```shell
-   NEXT_PUBLIC_GRPC_HOST="http://localhost:56001/" PORT=56100 GW_NEXT_HOST="http://127.0.0.1:56100/" yarn site
+   NEXT_PUBLIC_GRPC_HOST="http://localhost:56001/" PORT=56100 HM_BASE_URL="http://127.0.0.1:56100/" yarn site
    ```

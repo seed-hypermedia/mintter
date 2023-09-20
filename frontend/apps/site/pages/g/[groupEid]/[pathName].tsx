@@ -39,7 +39,7 @@ export const getServerSideProps: GetServerSideProps<
   EveryPageProps & GroupPubPageProps
 > = async (context) => {
   const pathName = (context.params?.pathName as string) || ''
-  const groupEid = (context.params?.groupId as string) || ''
+  const groupEid = (context.params?.groupEid as string) || ''
   const groupId = createHmId('g', groupEid)
   const helpers = serverHelpers({})
 

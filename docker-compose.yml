@@ -37,7 +37,7 @@ services:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
 
     environment:
-      - "GW_NEXT_HOST=${MTT_SITE_HOSTNAME:-http://nextjs}"
+      - "HM_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
       - "NEXT_PUBLIC_GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
       - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 

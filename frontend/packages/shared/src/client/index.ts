@@ -33,6 +33,20 @@ export type {
   RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon_pb'
 export {
+  Group,
+  Group_SiteInfo,
+  Role,
+  ListGroupsRequest,
+} from './.generated/groups/v1alpha/groups_pb'
+export {
+  Change,
+  DiscoverEntityRequest,
+  DiscoverEntityResponse,
+  EntityTimeline,
+  GetChangeRequest,
+  GetEntityTimelineRequest,
+} from './.generated/entities/v1alpha/entities_pb'
+export {
   ChangeInfo,
   GetChangeInfoRequest,
 } from './.generated/documents/v1alpha/changes_pb'
@@ -64,19 +78,6 @@ export {
   ListPublicationsResponse,
   PublishDraftRequest,
 } from './.generated/documents/v1alpha/documents_pb'
-export {
-  Change,
-  DiscoverEntityRequest,
-  DiscoverEntityResponse,
-  EntityTimeline,
-  GetChangeRequest,
-  GetEntityTimelineRequest,
-} from './.generated/entities/v1alpha/entities_pb'
-export {
-  Group,
-  ListGroupsRequest,
-  Role,
-} from './.generated/groups/v1alpha/groups_pb'
 export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
