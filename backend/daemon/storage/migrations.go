@@ -87,6 +87,11 @@ var migrations = []migration{
 			CREATE INDEX accounts_by_key ON accounts (public_key, entity);
 		`))
 	}},
+	{Version: "2023-09-20.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DELETE FROM kv WHERE key = 'last_reindex_time';	
+		`))
+	}},
 }
 
 const (
