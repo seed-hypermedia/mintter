@@ -1,6 +1,5 @@
 import {useIPC, useWindowUtils} from '@mintter/app/src/app-context'
 import {TitleBarProps} from '@mintter/app/src/components/titlebar'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 
 import {
@@ -101,7 +100,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
             paddingHorizontal={0}
             padding="$2"
           >
-            <XStack>
+            <XStack className="no-window-drag">
               <NavMenu />
               <PageContextButtons {...props} />
             </XStack>
@@ -109,6 +108,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
         </XStack>
         <XStack flex={1} />
         <XStack
+          className="no-window-drag"
           flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}
@@ -124,7 +124,6 @@ export default function TitleBarWindows(props: TitleBarProps) {
 }
 
 function SystemMenu() {
-  const route = useNavRoute()
   const {hide, close} = useWindowUtils()
   const spawn = useNavigate('spawn')
   const {invoke, send} = useIPC()

@@ -5,7 +5,8 @@ import {useDaemonInfo} from '@mintter/app/src/models/daemon'
 import {usePeerInfo} from '@mintter/app/src/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/src/models/payments'
 import {ObjectKeys} from '@mintter/app/src/utils/object-keys'
-import {LightningWallet, Profile} from '@mintter/shared'
+import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
+import {process} from 'electron'
 import {
   Back,
   Button,
@@ -37,7 +38,7 @@ import {ArrowDownRight} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useGRPCClient} from '../app-context'
+import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 
 export default function Settings() {
@@ -307,6 +308,8 @@ function DeviceItem({id}: {id: string}) {
 
 function AppSettings() {
   const grpcClient = useGRPCClient()
+  const ipc = useIPC()
+  const versions = useMemo(() => ipc.versions(), [ipc])
   async function onReloadSync() {
     await grpcClient.daemon.forceSync({})
     toast.success('reload sync successful!')
@@ -323,11 +326,11 @@ function AppSettings() {
           <SizableText
             size="$1"
             flex={0}
-            width={80}
+            width={140}
             flexShrink={0}
             flexGrow={0}
           >
-            Version:
+            App Version:
           </SizableText>
           <SizableText
             size="$1"
@@ -336,7 +339,70 @@ function AppSettings() {
             textOverflow="ellipsis"
             userSelect="text"
           >
-            {import.meta.env.APP_VERSION}
+            {APP_VERSION}
+          </SizableText>
+        </TableList.Item>
+        <Separator />
+        <TableList.Item>
+          <SizableText
+            size="$1"
+            flex={0}
+            width={140}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Electron Version:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            {versions.electron}
+          </SizableText>
+        </TableList.Item>
+        <Separator />
+        <TableList.Item>
+          <SizableText
+            size="$1"
+            flex={0}
+            width={140}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Chrome Version:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            {versions.chrome}
+          </SizableText>
+        </TableList.Item>
+        <Separator />
+        <TableList.Item>
+          <SizableText
+            size="$1"
+            flex={0}
+            width={140}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Node Version:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            {versions.node}
           </SizableText>
         </TableList.Item>
       </TableList>

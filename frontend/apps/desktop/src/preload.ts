@@ -64,4 +64,7 @@ contextBridge.exposeInMainWorld('ipc', {
       ipcRenderer.removeListener(cmd, innerHandler)
     }
   },
+  versions: () => {
+    return process.versions
+  },
 })

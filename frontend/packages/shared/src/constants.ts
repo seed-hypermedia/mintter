@@ -26,6 +26,11 @@ export const BACKEND_HOSTNAME =
   process.env.VITE_BACKEND_HOSTNAME ||
   'http://localhost'
 
+export const APP_VERSION =
+  (import.meta.env && import.meta.env.VITE_APP_VERSION) ||
+  process.env.VITE_APP_VERSION ||
+  '0.0.0'
+
 export const BACKEND_HTTP_URL = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}`
 export const BACKEND_GRPC_URL = `${BACKEND_HOSTNAME}:${BACKEND_GRPC_PORT}`
 export const BACKEND_P2P_URL = `${BACKEND_HOSTNAME}:${BACKEND_P2P_PORT}`

@@ -125,7 +125,7 @@ jobs:
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           DAEMON_NAME: "${{ matrix.config.daemon_name }}.exe"
-          APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          VITE_APP_VERSION: "${{ needs.get-version.outputs.version }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 

@@ -16,6 +16,7 @@ import {
 } from '@mintter/ui'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
+import {APP_VERSION} from '@mintter/shared'
 
 export function FooterButton({
   active,
@@ -102,7 +103,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           }}
           color="$color8"
         >
-          {`Mintter Alpha`}
+          {`Mintter Alpha (${APP_VERSION})`}
           {/* To do: include release date of this version. when this is clicked, we should help the user upgrade  */}
         </SizableText>
       </XStack>
