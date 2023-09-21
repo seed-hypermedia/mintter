@@ -14,10 +14,12 @@ export function getGroupView(input: string | string[] | undefined): GroupView {
 
 export async function getGroupPathNamePageProps({
   groupEid,
+  version,
   pathName,
   context,
 }: {
   groupEid: string
+  version: string | undefined
   pathName: string
   context: GetServerSidePropsContext
 }) {
@@ -34,8 +36,13 @@ export async function getGroupPathNamePageProps({
     'x-mintter-site-p2p-addresses',
     peerInfo.addrs.join(','),
   )
-  const group = await helpers.group.get.fetch({groupId})
-  const groupContent = await helpers.group.listContent.fetch({groupId})
+  const {query} = context
+  const groupVersion = query.v ? String(query.v) : version
+  const group = await helpers.group.get.fetch({groupId, version: groupVersion})
+  const groupContent = await helpers.group.listContent.fetch({
+    groupId,
+    version: groupVersion,
+  })
 
   return {
     props: await getPageProps(helpers, {pathName, groupId}),
@@ -44,17 +51,19 @@ export async function getGroupPathNamePageProps({
 
 export async function getGroupPageProps({
   groupEid,
+  version,
   context,
   view,
 }: {
   groupEid: string
+  version: string | undefined
   context: GetServerSidePropsContext
   view: GroupView
 }) {
   const {params, query} = context
   const groupId = groupEid ? createHmId('g', groupEid) : undefined
 
-  let version = query.v ? String(query.v) : null
+  const groupVersion = query.v ? String(query.v) : version
 
   setAllowAnyHostGetCORS(context.res)
 
@@ -64,9 +73,11 @@ export async function getGroupPageProps({
 
   const groupRecord = await helpers.group.get.fetch({
     groupId,
+    version: groupVersion,
   })
   const members = await helpers.group.listMembers.fetch({
     groupId,
+    version: groupVersion,
   })
   await Promise.all(
     members.map((member) =>

@@ -12,8 +12,8 @@ export default function HomePage(props: GroupPageProps) {
 export const getServerSideProps: GetServerSideProps<
   EveryPageProps & PubSlugPageProps
 > = async (context) => {
-  const {groupEid} = await getSiteGroup()
-  console.log('serer side', context.query)
+  const {groupEid, version} = await getSiteGroup()
+  if (!groupEid) return {notFound: true}
   const view = getGroupView(context.query.view)
-  return await getGroupPageProps({groupEid, context, view})
+  return await getGroupPageProps({groupEid, version, context, view})
 }

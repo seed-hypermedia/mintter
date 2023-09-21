@@ -1,13 +1,12 @@
-// const gatewayHostWithProtocol = process.env.HM_BASE_URL
-// const gatewayHost = new URL(gatewayHostWithProtocol || '').hostname
+import {websiteClient} from '../client'
 
 export async function getSiteGroup(): Promise<{
-  groupEid: string
+  groupEid?: string
   version?: string | null
 }> {
-  // todo, query for site group
+  const siteInfo = await websiteClient.getSiteInfo({})
   return {
-    groupEid: '8ctYvUJwv9kmpjCT4RjBeD',
-    version: null,
+    groupEid: siteInfo.groupId || undefined,
+    version: siteInfo.groupVersion || null,
   }
 }

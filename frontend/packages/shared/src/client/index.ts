@@ -38,6 +38,8 @@ export {
   Role,
   ListGroupsRequest,
 } from './.generated/groups/v1alpha/groups_pb'
+export * from './.generated/groups/v1alpha/website_pb'
+export * from './.generated/groups/v1alpha/website_connect'
 export {
   Change,
   DiscoverEntityRequest,

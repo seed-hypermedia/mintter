@@ -1,11 +1,9 @@
 subinclude("//build/rules/mintter:defs")
 
-mtt_go_proto(
-    name = "go",
+mtt_proto_codegen(
     srcs = glob(["*.proto"]),
-)
-
-mtt_js_proto(
-    name = "js",
-    srcs = ["groups.proto"],
+    languages = [
+        "go",
+        "js",
+    ],
 )

@@ -246,11 +246,13 @@ const groupRouter = router({
     .input(
       z.object({
         groupId: z.string(),
+        version: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
       const list = await groupsClient.listContent({
         id: input.groupId,
+        version: input.version,
       })
       const listedDocs = await Promise.all(
         Object.entries(list.content).map(async ([pathName, pubUrl]) => {
@@ -281,11 +283,13 @@ const groupRouter = router({
     .input(
       z.object({
         groupId: z.string(),
+        version: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
       const list = await groupsClient.listMembers({
         id: input.groupId,
+        version: input.version,
       })
       return Object.entries(list.members || {}).map(([account, role]) => ({
         account,

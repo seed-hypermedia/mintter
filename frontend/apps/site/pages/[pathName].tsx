@@ -12,9 +12,11 @@ export const getServerSideProps: GetServerSideProps<
   EveryPageProps & PubSlugPageProps
 > = async (context) => {
   const pathName = (context.params?.pathName as string) || ''
-  const {groupEid} = await getSiteGroup()
+  const {groupEid, version} = await getSiteGroup()
+  if (!groupEid) return {notFound: true}
   return await getGroupPathNamePageProps({
     groupEid,
+    version,
     pathName,
     context,
   })

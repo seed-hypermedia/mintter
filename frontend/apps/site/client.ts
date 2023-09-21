@@ -16,6 +16,7 @@ import {
   Daemon,
   Networking,
   Groups,
+  Website,
 } from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
@@ -82,3 +83,4 @@ export const accountsClient = createPromiseClient(Accounts, transport)
 export const groupsClient = createPromiseClient(Groups, transport)
 export const daemonClient = createPromiseClient(Daemon, transport)
 export const networkingClient = createPromiseClient(Networking, transport)
+export const websiteClient = createPromiseClient(Website, transport)
