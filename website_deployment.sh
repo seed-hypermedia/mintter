@@ -73,39 +73,12 @@ lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
 
 workspace="${HOME}/.mtt-site"
 
-usage()
-{
-    echo group_deployment script. It links a group [options]
-    echo Options
-	echo  "-h --hostname H     :domain where this site will be served. ex. https://example.com"
-	echo  "-g --gid ID         :group ID to be linked to this deployment"
-	echo  "-w --workspace PATH :path to install the site in. Default ${HOME}/.mtt-site"
-	echo  "-e --extra F        :extra flags we want to pass to the daemon. Empty by default"
-    echo  "--help              :shows help and exit"
-}
-
-while [ "$1" != "" ]; do
-    case $1 in
-        -h | --hostname )       shift
-                                hostname=$1
-                                ;;
-		-w | --workspace )      shift
-                                workspace=$1
-                                ;;
-        --help )            	usage
-                                exit 
-                                ;;
-        * )                     echo "param [$1] not valid. Run --help to see available params"
-                                exit 1
-    esac
-    shift
-done
-
-if [ -z "$hostname" ]; then
-  echo "Group Hostname flag (--hostname) must be provided"
+if [ "$#" -ne 1 ]; then
+  echo "Only One positional argument (address) is required"
   exit 1
 fi
 
+hostname="$1"
 mkdir -p ${workspace}
 rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
