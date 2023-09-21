@@ -16,12 +16,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
-
-var _ = litter.Dump
 
 func TestAPICreateDraft(t *testing.T) {
 	t.Parallel()

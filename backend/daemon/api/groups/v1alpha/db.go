@@ -36,7 +36,7 @@ func (db *DB) RecordSiteSync(ctx context.Context, baseURL string, pid peer.ID, n
 
 	nowts := now.Unix()
 
-	if err := sqlitex.Exec(conn, qRecordSiteSync(), nil, pid.String(), nowts, ok, nowts, baseURL); err != nil {
+	if err := sqlitex.Exec(conn, qRecordSiteSync(), nil, pid.String(), nowts, ok, baseURL); err != nil {
 		return err
 	}
 
@@ -51,7 +51,7 @@ var qRecordSiteSync = dqb.Str(`
 	UPDATE remote_sites SET
 		peer_id = :pid,
 		last_sync_time = :now,
-		last_ok_sync_time = iif(:ok, :now, last_ok_sync_time)
+		last_ok_sync_time = iif(:ok = 1, :now, last_ok_sync_time)
 	WHERE url = :url;
 `)
 
@@ -64,6 +64,7 @@ type siteRecord struct {
 	LastSyncOkTime int64
 }
 
+// GetSite returns the site record.
 func (db *DB) GetSite(ctx context.Context, baseURL string) (sr siteRecord, err error) {
 	return sr, db.QueryOne(ctx, qGetSite(), []any{baseURL}, []any{
 		&sr.URL,
@@ -165,13 +166,21 @@ func (db *DB) QueryOne(ctx context.Context, sql string, args []any, outs []any) 
 
 	var count int
 
-	return sqlitex.Exec(conn, sql, func(stmt *sqlite.Stmt) error {
+	if err := sqlitex.Exec(conn, sql, func(stmt *sqlite.Stmt) error {
 		count++
-		if count != 1 {
-			return fmt.Errorf("expected one row, but got more")
-		}
-
 		stmt.Scan(outs...)
 		return nil
-	}, args...)
+	}, args...); err != nil {
+		return err
+	}
+
+	if count == 0 {
+		return fmt.Errorf("not found")
+	}
+
+	if count > 1 {
+		return fmt.Errorf("expected one record but got %d", count)
+	}
+
+	return nil
 }

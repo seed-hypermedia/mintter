@@ -9,13 +9,15 @@ import (
 	"mintter/backend/daemon"
 	"mintter/backend/daemon/storage"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	"mintter/backend/hyper"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/must"
+	"mintter/backend/pkg/slicex"
 	"net/url"
 
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/multiformats/go-multiaddr"
 )
 
 // App is the site daemon app.
@@ -42,13 +44,16 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 		return nil, fmt.Errorf("address URL must not have a path: %s", address)
 	}
 
-	cfg.P2P.AnnounceAddrs = must.Do2(
-		ipfs.ParseMultiaddrs(
-			ipfs.DefaultListenAddrsDNS(u.Hostname(), cfg.P2P.Port)))
+	cfg.P2P.AnnounceAddrs, err = slicex.MapE(ipfs.DefaultListenAddrsDNS(u.Hostname(), cfg.P2P.Port), multiaddr.NewMultiaddr)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse announce addresses: %w", err))
+	}
 
-	nf := future.New[*mttnet.Node]()
-	ndb := future.New[*sqlitex.Pool]()
-	site := NewServer(address, nf.ReadOnly, ndb.ReadOnly)
+	nodePromise := future.New[*mttnet.Node]()
+	dbPromise := future.New[*sqlitex.Pool]()
+	blobsPromise := future.New[*hyper.Storage]()
+
+	site := NewServer(address, blobsPromise.ReadOnly, nodePromise.ReadOnly, dbPromise.ReadOnly)
 
 	app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
 		Path:    "/.well-known/hypermedia-site",
@@ -61,7 +66,7 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 
 	// This is some ugly stuff. Site server needs some stuff that are passed from the daemon.
 	go func() {
-		if err := ndb.Resolve(app.DB); err != nil {
+		if err := dbPromise.Resolve(app.DB); err != nil {
 			panic(err)
 		}
 
@@ -70,7 +75,11 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 			panic(err)
 		}
 
-		if err := nf.Resolve(node); err != nil {
+		if err := nodePromise.Resolve(node); err != nil {
+			panic(err)
+		}
+
+		if err := blobsPromise.Resolve(app.Blobs); err != nil {
 			panic(err)
 		}
 	}()

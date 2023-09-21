@@ -97,6 +97,20 @@ var migrations = []migration{
 			DROP VIEW public_blobs_view;
 		`))
 	}},
+	{Version: "2023-09-21.02", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE remote_sites;
+			CREATE TABLE remote_sites (
+				url TEXT UNIQUE NOT NULL,
+				peer_id TEXT NOT NULL DEFAULT (''),
+				group_id TEXT NOT NULL,
+				group_version TEXT NOT NULL DEFAULT (''),
+				last_sync_time INTEGER NOT NULL DEFAULT (0),
+				last_ok_sync_time INTEGER NOT NULL DEFAULT (0)
+			);
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

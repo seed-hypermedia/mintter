@@ -7,13 +7,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"mintter/backend/cmd/mintter-site/sitesql"
+
 	"mintter/backend/daemon/storage"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	"mintter/backend/pkg/slicex"
 	"net/http"
 	"sync"
 
@@ -24,17 +25,16 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // Website is the gate to manipulate internal node structures
 type Website struct {
-	// Network of the node.
-	node *future.ReadOnly[*mttnet.Node]
-	// db access to the node.
-	db *future.ReadOnly[*sqlitex.Pool]
-	// url is the protocol + hostname the group is being served at.
-	url string
+	blobs *future.ReadOnly[*hyper.Storage]
+	node  *future.ReadOnly[*mttnet.Node]
+	db    *future.ReadOnly[*sqlitex.Pool]
+	url   string
 
 	once        sync.Once
 	setupSecret string
@@ -43,19 +43,20 @@ type Website struct {
 var errNodeNotReadyYet = errors.New("P2P node is not ready yet")
 
 // NewServer creates a new server for the site.
-func NewServer(url string, n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool]) *Website {
+func NewServer(url string, blobs *future.ReadOnly[*hyper.Storage], n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool]) *Website {
 	return &Website{
-		node: n,
-		db:   db,
-		url:  url,
+		blobs: blobs,
+		node:  n,
+		db:    db,
+		url:   url,
 	}
 }
-func (ws *Website) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
+func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
-	siteInfo, err := ws.GetSiteInfo(context.Background(), &groups.GetSiteInfoRequest{})
 
+	siteInfo, err := ws.GetSiteInfo(r.Context(), &groups.GetSiteInfoRequest{})
 	if err != nil {
 		if errors.Is(err, errNodeNotReadyYet) {
 			w.Header().Set("Retry-After", "30")
@@ -107,6 +108,11 @@ func (ws *Website) getSetupSecret(ctx context.Context) string {
 	return ws.setupSecret
 }
 
+const (
+	keySiteGroup = "site_group_id"
+	keySiteOwner = "site_owner_id"
+)
+
 // GetSiteInfo exposes the public information of a site. Which group is serving and how to reach the site via p2p.
 func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoRequest) (*groups.PublicSiteInfo, error) {
 	n, ok := ws.node.Get()
@@ -121,42 +127,35 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 
 	conn, release, err := db.Conn(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get db connection: %w", err)
+		return nil, err
 	}
 	defer release()
 
-	gid, err := sitesql.GetServedGroupID(conn)
+	groupID, err := storage.GetKV(conn, keySiteGroup)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get group id from the db: %w", err)
+		return nil, fmt.Errorf("failed to get group id from the db: %w", err)
 	}
+
+	ai := n.AddrInfo()
 
 	resp := &groups.PublicSiteInfo{
-		PeerInfo: &groups.PeerInfo{},
-		GroupId:  gid.KVValue,
+		PeerInfo: &groups.PeerInfo{
+			PeerId:    ai.ID.String(),
+			AccountId: n.ID().Account().ID().String(),
+			Addrs:     slicex.Map(ai.Addrs, multiaddr.Multiaddr.String),
+		},
+		GroupId: groupID,
 	}
 
-	for _, address := range n.AddrInfo().Addrs {
-		resp.PeerInfo.Addrs = append(resp.PeerInfo.Addrs, address.String())
-	}
-	resp.PeerInfo.PeerId = n.ID().DeviceKey().PeerID().String()
-	resp.PeerInfo.AccountId = n.ID().Account().ID().String()
+	if groupID != "" {
+		entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(groupID))
+		if err != nil {
+			return nil, err
+		}
 
-	groupID, err := sitesql.GetServedGroupID(conn)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get group ID: %w", err)
-	}
-	if groupID.KVValue == "" {
-		// The site is not initialized yet
-		return resp, nil
-	}
-
-	entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(groupID.KVValue))
-	if err != nil {
-		return nil, fmt.Errorf("could not get entity [%s]: %w", groupID.KVValue, err)
-	}
-
-	if entity != nil {
-		resp.GroupVersion = entity.Version().String()
+		if entity != nil {
+			resp.GroupVersion = entity.Version().String()
+		}
 	}
 
 	return resp, nil
@@ -167,6 +166,10 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
+	}
+
+	if in.GroupId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "group ID is required")
 	}
 
 	gid, err := ws.GetGroupID(ctx)
@@ -187,7 +190,7 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 		return nil, fmt.Errorf("failed to extract peer ID from headers: %w", err)
 	}
 
-	_, err = n.AccountForDevice(ctx, remoteDeviceID)
+	owner, err := n.AccountForDevice(ctx, remoteDeviceID)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
 	}
@@ -208,8 +211,12 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 		return nil, err
 	}
 
-	if err := sitesql.SetServedGroupID(conn, in.GroupId); err != nil {
-		return nil, err
+	if err := storage.SetKV(conn, keySiteGroup, in.GroupId, false); err != nil {
+		return nil, fmt.Errorf("failed to save group ID")
+	}
+
+	if err := storage.SetKV(conn, keySiteOwner, owner.String(), false); err != nil {
+		return nil, fmt.Errorf("failed to save owner")
 	}
 
 	return &groups.InitializeServerResponse{}, nil
@@ -229,12 +236,12 @@ func (ws *Website) GetGroupID(ctx context.Context) (string, error) {
 	}
 	defer release()
 
-	dbgroup, err := sitesql.GetServedGroupID(conn)
+	groupID, err := storage.GetKV(conn, keySiteGroup)
 	if err != nil {
 		return "", err
 	}
 
-	return dbgroup.KVValue, nil
+	return groupID, nil
 }
 
 // PublishBlobs publish blobs to the website.
@@ -248,16 +255,6 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 		return nil, errNodeNotReadyYet
 	}
 
-	db, err := ws.db.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get db connection: %w", err)
-	}
-	defer release()
-
 	// Get caller identity
 	info, ok := rpcpeer.FromContext(ctx)
 	if !ok {
@@ -269,70 +266,103 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 		return nil, err
 	}
 
-	authorAcc, err := n.AccountForDevice(ctx, pid)
+	callerAccount, err := n.AccountForDevice(ctx, pid)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get account ID from device [%s]: %w", pid.String(), err)
 	}
 
+	db, err := ws.db.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn, release, err := db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get db connection: %w", err)
+	}
+	defer release()
+
 	// Get the owner's view of the list of members.
-	groupID, err := sitesql.GetServedGroupID(conn)
-	if err != nil || groupID.KVValue == "" {
-		return nil, fmt.Errorf("Error getting groupID on the site, is the site initialized?: %w", err)
+	groupID, err := storage.GetKV(conn, keySiteGroup)
+	if err != nil || groupID == "" {
+		return nil, fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
 	}
 
-	edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, groupID.KVValue)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get group (%s) resource: %w", groupID.KVValue, err)
-	}
-
-	groupOwner, err := hypersql.ResourceGetOwner(conn, edb)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get the owner of the group %s: %w", groupID.KVValue, err)
-	}
-
-	pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, authorAcc)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't get member entity for account [%s]: %w", authorAcc.String(), err)
-	}
-
-	// See if the caller is in the owner's group
-	role, err := hypersql.GroupGetRole(conn, edb, groupOwner, pkdb)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get role of member %s in group %s: %w", authorAcc.String(), groupID.KVValue, err)
-	}
-
-	if role == int64(groups.Role_ROLE_UNSPECIFIED) {
-		return nil, status.Errorf(codes.PermissionDenied, "Caller [%s] does not have enough permissions to publish to this site.", authorAcc.String())
-	}
-
-	want := []cid.Cid{}
-	for _, cIDStr := range in.Blobs {
-		c, err := cid.Parse(cIDStr)
+	var role groups.Role
+	{
+		edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, groupID)
 		if err != nil {
-			return nil, fmt.Errorf("Could not parse provided blob [%s]: %w", cIDStr, err)
+			return nil, fmt.Errorf("couldn't get group (%s) resource: %w", groupID, err)
 		}
-		res, err := hypersql.BlobsHave(conn, c.Hash())
+
+		owner, err := storage.GetKV(conn, keySiteOwner)
+		if err != nil || owner == "" {
+			return nil, fmt.Errorf("error getting owner on the site, is the site initialized?: %w", err)
+		}
+
+		if owner == callerAccount.String() {
+			role = groups.Role_OWNER
+		} else {
+			groupOwner, err := hypersql.ResourceGetOwner(conn, edb)
+			if err != nil {
+				return nil, fmt.Errorf("couldn't get the owner of the group %s: %w", groupID, err)
+			}
+
+			pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, callerAccount)
+			if err != nil {
+				return nil, fmt.Errorf("couldn't get member entity for account [%s]: %w", callerAccount.String(), err)
+			}
+
+			// See if the caller is in the owner's group
+			r, err := hypersql.GroupGetRole(conn, edb, groupOwner, pkdb)
+			if err != nil {
+				return nil, fmt.Errorf("couldn't get role of member %s in group %s: %w", callerAccount.String(), groupID, err)
+			}
+
+			role = groups.Role(r)
+		}
+	}
+
+	if role != groups.Role_OWNER && role != groups.Role_EDITOR {
+		return nil, status.Errorf(codes.PermissionDenied, "Caller [%s] does not have enough permissions to publish to this site.", callerAccount.String())
+	}
+
+	blobs, err := ws.blobs.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	bs := blobs.IPFSBlockstore()
+
+	var want []cid.Cid
+	for _, x := range in.Blobs {
+		c, err := cid.Parse(x)
 		if err != nil {
-			return nil, fmt.Errorf("Could not verify if we had blob [%s] or not: %w", c.String(), err)
+			return nil, fmt.Errorf("failed to parse CID %s: %w", x, err)
 		}
-		if res.Have == 0 {
+
+		ok, err := bs.Has(ctx, c)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check if we have blob %s: %w", c.String(), err)
+		}
+		if !ok {
 			want = append(want, c)
 		}
 	}
-	ses := n.Bitswap().NewSession(ctx)
-	blkCh, err := ses.GetBlocks(ctx, want)
-	if err != nil {
-		return nil, fmt.Errorf("Could not get bitswap channel: %w", err)
-	}
-	for {
-		blk, ok := <-blkCh
-		if !ok {
-			return &groups.PublishBlobsResponse{}, nil
+
+	sess := n.Bitswap().NewSession(ctx)
+	// We don't use sess.GetBlocks here because we care about the order of blobs for correct indexing.
+	for _, c := range want {
+		blk, err := sess.GetBlock(ctx, c)
+		if err != nil {
+			return nil, fmt.Errorf("could not get block %s: %w", c.String(), err)
 		}
-		if err := n.Blobs().IPFSBlockstore().Put(ctx, blk); err != nil {
-			return nil, fmt.Errorf("Could not store block %s", blk.Cid().String())
+
+		if err := bs.Put(ctx, blk); err != nil {
+			return nil, fmt.Errorf("could not store block %s: %w", c.String(), err)
 		}
 	}
+
+	return &groups.PublishBlobsResponse{}, nil
 }
 
 // getRemoteID gets the remote peer id if there is an opened p2p connection between them with context ctx.

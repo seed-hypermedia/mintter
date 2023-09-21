@@ -14,7 +14,6 @@ import (
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
-	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
@@ -29,6 +28,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -108,7 +108,7 @@ func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.D
 	}()
 
 	if info.GroupId != sr.GroupID {
-		return fmt.Errorf("group ID mismatch: remote %s != local %s", info.GroupId, sr.GroupID)
+		return fmt.Errorf("group ID mismatch: remote %q != local %q", info.GroupId, sr.GroupID)
 	}
 
 	// Nothing to sync if the site still has the same version since the last time we asked.
@@ -321,7 +321,7 @@ func addrInfoFromProto(in *groups.PeerInfo) (ai peer.AddrInfo, err error) {
 		return ai, err
 	}
 
-	addrs, err := ipfs.ParseMultiaddrs(in.Addrs)
+	addrs, err := slicex.MapE(in.Addrs, multiaddr.NewMultiaddr)
 	if err != nil {
 		return ai, fmt.Errorf("failed to parse peer info addrs: %w", err)
 	}
@@ -823,8 +823,6 @@ func GetSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (
 		client = http.DefaultClient
 	}
 
-	fmt.Println(siteURL)
-
 	if siteURL[len(siteURL)-1] == '/' {
 		return nil, fmt.Errorf("site URL must not have trailing slash: %s", siteURL)
 	}
@@ -841,13 +839,14 @@ func GetSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (
 		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
 	}
 	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
-	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read json body: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("site info url %q not working, status code: %d, response body: %s", requestURL, res.StatusCode, data)
 	}
 
 	resp := &groups.PublicSiteInfo{}

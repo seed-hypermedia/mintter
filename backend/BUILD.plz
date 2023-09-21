@@ -8,7 +8,6 @@ go_binary(
         ["**/*.go"],
         exclude = ["**/*_test.go"],
     ) + [
-        "//backend/cmd/mintter-site/sitesql:go_library",
         "//backend/daemon/storage:go_library",
         "//backend/hyper/hypersql:go_library",
         "//backend/lndhub/lndhubsql:go_library",

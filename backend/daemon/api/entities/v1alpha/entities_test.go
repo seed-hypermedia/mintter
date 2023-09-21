@@ -33,7 +33,6 @@ type onceFunc struct {
 
 func (o *onceFunc) Do() string {
 	o.once.Do(func() {
-		fmt.Println("doing")
 		o.val = o.fn()
 	})
 	return o.val

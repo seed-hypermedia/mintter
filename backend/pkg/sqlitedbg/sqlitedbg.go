@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"os"
 	"text/tabwriter"
 
 	"crawshaw.io/sqlite"
@@ -14,6 +15,10 @@ import (
 
 // Exec a query and print the results into w.
 func Exec[T *sqlitex.Pool | *sqlite.Conn](db T, w io.Writer, query string) {
+	if w == nil {
+		w = os.Stdout
+	}
+
 	var conn *sqlite.Conn
 
 	switch v := any(db).(type) {

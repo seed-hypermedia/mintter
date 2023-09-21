@@ -92,3 +92,26 @@ func MakeTestDB(t testing.TB) *sqlitex.Pool {
 	require.NoError(t, InitSQLiteSchema(pool))
 	return pool
 }
+
+// SetKV sets a key-value pair in the database.
+func SetKV(conn *sqlite.Conn, key, value string, replace bool) error {
+	if replace {
+		return sqlitex.Exec(conn, "INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?);", nil, key, value)
+	}
+
+	return sqlitex.Exec(conn, "INSERT INTO kv (key, value) VALUES (?, ?);", nil, key, value)
+}
+
+// GetKV gets a key-value pair from the database.
+func GetKV(conn *sqlite.Conn, key string) (string, error) {
+	var value string
+	err := sqlitex.Exec(conn, "SELECT value FROM kv WHERE key = ?;", func(stmt *sqlite.Stmt) error {
+		value = stmt.ColumnText(0)
+		return nil
+	}, key)
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
+}

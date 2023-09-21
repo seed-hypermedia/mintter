@@ -20,91 +20,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ListBlobsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *ListBlobsRequest) Reset() {
-	*x = ListBlobsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListBlobsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListBlobsRequest) ProtoMessage() {}
-
-func (x *ListBlobsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListBlobsRequest.ProtoReflect.Descriptor instead.
-func (*ListBlobsRequest) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{0}
-}
-
-type Blob struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Cid []byte `protobuf:"bytes,1,opt,name=cid,proto3" json:"cid,omitempty"`
-}
-
-func (x *Blob) Reset() {
-	*x = Blob{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Blob) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Blob) ProtoMessage() {}
-
-func (x *Blob) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Blob.ProtoReflect.Descriptor instead.
-func (*Blob) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Blob) GetCid() []byte {
-	if x != nil {
-		return x.Cid
-	}
-	return nil
-}
-
 type HandshakeInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -119,7 +34,7 @@ type HandshakeInfo struct {
 func (x *HandshakeInfo) Reset() {
 	*x = HandshakeInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -132,7 +47,7 @@ func (x *HandshakeInfo) String() string {
 func (*HandshakeInfo) ProtoMessage() {}
 
 func (x *HandshakeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -145,7 +60,7 @@ func (x *HandshakeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandshakeInfo.ProtoReflect.Descriptor instead.
 func (*HandshakeInfo) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{2}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *HandshakeInfo) GetKeyDelegationCid() []byte {
@@ -171,7 +86,7 @@ type ListObjectsRequest struct {
 func (x *ListObjectsRequest) Reset() {
 	*x = ListObjectsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -184,7 +99,7 @@ func (x *ListObjectsRequest) String() string {
 func (*ListObjectsRequest) ProtoMessage() {}
 
 func (x *ListObjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -197,7 +112,7 @@ func (x *ListObjectsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListObjectsRequest.ProtoReflect.Descriptor instead.
 func (*ListObjectsRequest) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{3}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{1}
 }
 
 type ListObjectsResponse struct {
@@ -211,7 +126,7 @@ type ListObjectsResponse struct {
 func (x *ListObjectsResponse) Reset() {
 	*x = ListObjectsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -224,7 +139,7 @@ func (x *ListObjectsResponse) String() string {
 func (*ListObjectsResponse) ProtoMessage() {}
 
 func (x *ListObjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -237,7 +152,7 @@ func (x *ListObjectsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListObjectsResponse.ProtoReflect.Descriptor instead.
 func (*ListObjectsResponse) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{4}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListObjectsResponse) GetObjects() []*Object {
@@ -247,32 +162,29 @@ func (x *ListObjectsResponse) GetObjects() []*Object {
 	return nil
 }
 
-type Object struct {
+type ListBlobsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Id        string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ChangeIds []string `protobuf:"bytes,2,rep,name=change_ids,json=changeIds,proto3" json:"change_ids,omitempty"`
 }
 
-func (x *Object) Reset() {
-	*x = Object{}
+func (x *ListBlobsRequest) Reset() {
+	*x = ListBlobsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *Object) String() string {
+func (x *ListBlobsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Object) ProtoMessage() {}
+func (*ListBlobsRequest) ProtoMessage() {}
 
-func (x *Object) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
+func (x *ListBlobsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,23 +195,9 @@ func (x *Object) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Object.ProtoReflect.Descriptor instead.
-func (*Object) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *Object) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Object) GetChangeIds() []string {
-	if x != nil {
-		return x.ChangeIds
-	}
-	return nil
+// Deprecated: Use ListBlobsRequest.ProtoReflect.Descriptor instead.
+func (*ListBlobsRequest) Descriptor() ([]byte, []int) {
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{3}
 }
 
 // Request Invoice request.
@@ -321,7 +219,7 @@ type RequestInvoiceRequest struct {
 func (x *RequestInvoiceRequest) Reset() {
 	*x = RequestInvoiceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[6]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -334,7 +232,7 @@ func (x *RequestInvoiceRequest) String() string {
 func (*RequestInvoiceRequest) ProtoMessage() {}
 
 func (x *RequestInvoiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[6]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -347,7 +245,7 @@ func (x *RequestInvoiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestInvoiceRequest.ProtoReflect.Descriptor instead.
 func (*RequestInvoiceRequest) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{6}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *RequestInvoiceRequest) GetAmountSats() int64 {
@@ -391,7 +289,7 @@ type RequestInvoiceResponse struct {
 func (x *RequestInvoiceResponse) Reset() {
 	*x = RequestInvoiceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[7]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -404,7 +302,7 @@ func (x *RequestInvoiceResponse) String() string {
 func (*RequestInvoiceResponse) ProtoMessage() {}
 
 func (x *RequestInvoiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[7]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +315,7 @@ func (x *RequestInvoiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestInvoiceResponse.ProtoReflect.Descriptor instead.
 func (*RequestInvoiceResponse) Descriptor() ([]byte, []int) {
-	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{7}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RequestInvoiceResponse) GetPayReq() string {
@@ -427,45 +325,147 @@ func (x *RequestInvoiceResponse) GetPayReq() string {
 	return ""
 }
 
+type Object struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id        string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ChangeIds []string `protobuf:"bytes,2,rep,name=change_ids,json=changeIds,proto3" json:"change_ids,omitempty"`
+}
+
+func (x *Object) Reset() {
+	*x = Object{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Object) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Object) ProtoMessage() {}
+
+func (x *Object) ProtoReflect() protoreflect.Message {
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Object.ProtoReflect.Descriptor instead.
+func (*Object) Descriptor() ([]byte, []int) {
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Object) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Object) GetChangeIds() []string {
+	if x != nil {
+		return x.ChangeIds
+	}
+	return nil
+}
+
+type Blob struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Cid []byte `protobuf:"bytes,1,opt,name=cid,proto3" json:"cid,omitempty"`
+}
+
+func (x *Blob) Reset() {
+	*x = Blob{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Blob) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Blob) ProtoMessage() {}
+
+func (x *Blob) ProtoReflect() protoreflect.Message {
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Blob.ProtoReflect.Descriptor instead.
+func (*Blob) Descriptor() ([]byte, []int) {
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *Blob) GetCid() []byte {
+	if x != nil {
+		return x.Cid
+	}
+	return nil
+}
+
 var File_p2p_v1alpha_p2p_proto protoreflect.FileDescriptor
 
 var file_p2p_v1alpha_p2p_proto_rawDesc = []byte{
 	0x0a, 0x15, 0x70, 0x32, 0x70, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2f, 0x70, 0x32,
 	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x17, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
 	0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61,
-	0x22, 0x12, 0x0a, 0x10, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x62, 0x73, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x22, 0x18, 0x0a, 0x04, 0x42, 0x6c, 0x6f, 0x62, 0x12, 0x10, 0x0a, 0x03,
-	0x63, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x63, 0x69, 0x64, 0x22, 0x6d,
-	0x0a, 0x0d, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12,
-	0x2c, 0x0a, 0x12, 0x6b, 0x65, 0x79, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x5f, 0x63, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x10, 0x6b, 0x65, 0x79,
-	0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x69, 0x64, 0x12, 0x2e, 0x0a,
-	0x13, 0x6b, 0x65, 0x79, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
-	0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x11, 0x6b, 0x65, 0x79, 0x44,
-	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x61, 0x74, 0x61, 0x22, 0x14, 0x0a,
-	0x12, 0x4c, 0x69, 0x73, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x22, 0x50, 0x0a, 0x13, 0x4c, 0x69, 0x73, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x39, 0x0a, 0x07, 0x6f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31,
-	0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x07, 0x6f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x73, 0x22, 0x37, 0x0a, 0x06, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x12,
+	0x22, 0x6d, 0x0a, 0x0d, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x49, 0x6e, 0x66,
+	0x6f, 0x12, 0x2c, 0x0a, 0x12, 0x6b, 0x65, 0x79, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x10, 0x6b,
+	0x65, 0x79, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x69, 0x64, 0x12,
+	0x2e, 0x0a, 0x13, 0x6b, 0x65, 0x79, 0x5f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x11, 0x6b, 0x65,
+	0x79, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x44, 0x61, 0x74, 0x61, 0x22,
+	0x14, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x50, 0x0a, 0x13, 0x4c, 0x69, 0x73, 0x74, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x39, 0x0a, 0x07,
+	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x07,
+	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x22, 0x12, 0x0a, 0x10, 0x4c, 0x69, 0x73, 0x74, 0x42,
+	0x6c, 0x6f, 0x62, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x94, 0x01, 0x0a, 0x15,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x5f,
+	0x73, 0x61, 0x74, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x53, 0x61, 0x74, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x12, 0x21, 0x0a, 0x0c, 0x68, 0x6f,
+	0x6c, 0x64, 0x5f, 0x69, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08,
+	0x52, 0x0b, 0x68, 0x6f, 0x6c, 0x64, 0x49, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x12, 0x23, 0x0a,
+	0x0d, 0x70, 0x72, 0x65, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x68, 0x61, 0x73, 0x68, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x0c, 0x70, 0x72, 0x65, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x48, 0x61,
+	0x73, 0x68, 0x22, 0x31, 0x0a, 0x16, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x76,
+	0x6f, 0x69, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x17, 0x0a, 0x07,
+	0x70, 0x61, 0x79, 0x5f, 0x72, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70,
+	0x61, 0x79, 0x52, 0x65, 0x71, 0x22, 0x37, 0x0a, 0x06, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x12,
 	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
 	0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x02, 0x20,
-	0x03, 0x28, 0x09, 0x52, 0x09, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x49, 0x64, 0x73, 0x22, 0x94,
-	0x01, 0x0a, 0x15, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x76, 0x6f, 0x69, 0x63,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x5f, 0x73, 0x61, 0x74, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x53, 0x61, 0x74, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6d, 0x65, 0x6d,
-	0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6d, 0x65, 0x6d, 0x6f, 0x12, 0x21, 0x0a,
-	0x0c, 0x68, 0x6f, 0x6c, 0x64, 0x5f, 0x69, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x0b, 0x68, 0x6f, 0x6c, 0x64, 0x49, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65,
-	0x12, 0x23, 0x0a, 0x0d, 0x70, 0x72, 0x65, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x68, 0x61, 0x73,
-	0x68, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0c, 0x70, 0x72, 0x65, 0x69, 0x6d, 0x61, 0x67,
-	0x65, 0x48, 0x61, 0x73, 0x68, 0x22, 0x31, 0x0a, 0x16, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x49, 0x6e, 0x76, 0x6f, 0x69, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x17, 0x0a, 0x07, 0x70, 0x61, 0x79, 0x5f, 0x72, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x06, 0x70, 0x61, 0x79, 0x52, 0x65, 0x71, 0x32, 0x98, 0x03, 0x0a, 0x03, 0x50, 0x32, 0x50,
+	0x03, 0x28, 0x09, 0x52, 0x09, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x49, 0x64, 0x73, 0x22, 0x18,
+	0x0a, 0x04, 0x42, 0x6c, 0x6f, 0x62, 0x12, 0x10, 0x0a, 0x03, 0x63, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x03, 0x63, 0x69, 0x64, 0x32, 0x98, 0x03, 0x0a, 0x03, 0x50, 0x32, 0x50,
 	0x12, 0x5b, 0x0a, 0x09, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x12, 0x26, 0x2e,
 	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e,
 	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b,
@@ -511,25 +511,25 @@ func file_p2p_v1alpha_p2p_proto_rawDescGZIP() []byte {
 
 var file_p2p_v1alpha_p2p_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_p2p_v1alpha_p2p_proto_goTypes = []interface{}{
-	(*ListBlobsRequest)(nil),       // 0: com.mintter.p2p.v1alpha.ListBlobsRequest
-	(*Blob)(nil),                   // 1: com.mintter.p2p.v1alpha.Blob
-	(*HandshakeInfo)(nil),          // 2: com.mintter.p2p.v1alpha.HandshakeInfo
-	(*ListObjectsRequest)(nil),     // 3: com.mintter.p2p.v1alpha.ListObjectsRequest
-	(*ListObjectsResponse)(nil),    // 4: com.mintter.p2p.v1alpha.ListObjectsResponse
-	(*Object)(nil),                 // 5: com.mintter.p2p.v1alpha.Object
-	(*RequestInvoiceRequest)(nil),  // 6: com.mintter.p2p.v1alpha.RequestInvoiceRequest
-	(*RequestInvoiceResponse)(nil), // 7: com.mintter.p2p.v1alpha.RequestInvoiceResponse
+	(*HandshakeInfo)(nil),          // 0: com.mintter.p2p.v1alpha.HandshakeInfo
+	(*ListObjectsRequest)(nil),     // 1: com.mintter.p2p.v1alpha.ListObjectsRequest
+	(*ListObjectsResponse)(nil),    // 2: com.mintter.p2p.v1alpha.ListObjectsResponse
+	(*ListBlobsRequest)(nil),       // 3: com.mintter.p2p.v1alpha.ListBlobsRequest
+	(*RequestInvoiceRequest)(nil),  // 4: com.mintter.p2p.v1alpha.RequestInvoiceRequest
+	(*RequestInvoiceResponse)(nil), // 5: com.mintter.p2p.v1alpha.RequestInvoiceResponse
+	(*Object)(nil),                 // 6: com.mintter.p2p.v1alpha.Object
+	(*Blob)(nil),                   // 7: com.mintter.p2p.v1alpha.Blob
 }
 var file_p2p_v1alpha_p2p_proto_depIdxs = []int32{
-	5, // 0: com.mintter.p2p.v1alpha.ListObjectsResponse.objects:type_name -> com.mintter.p2p.v1alpha.Object
-	2, // 1: com.mintter.p2p.v1alpha.P2P.Handshake:input_type -> com.mintter.p2p.v1alpha.HandshakeInfo
-	3, // 2: com.mintter.p2p.v1alpha.P2P.ListObjects:input_type -> com.mintter.p2p.v1alpha.ListObjectsRequest
-	0, // 3: com.mintter.p2p.v1alpha.P2P.ListBlobs:input_type -> com.mintter.p2p.v1alpha.ListBlobsRequest
-	6, // 4: com.mintter.p2p.v1alpha.P2P.RequestInvoice:input_type -> com.mintter.p2p.v1alpha.RequestInvoiceRequest
-	2, // 5: com.mintter.p2p.v1alpha.P2P.Handshake:output_type -> com.mintter.p2p.v1alpha.HandshakeInfo
-	4, // 6: com.mintter.p2p.v1alpha.P2P.ListObjects:output_type -> com.mintter.p2p.v1alpha.ListObjectsResponse
-	1, // 7: com.mintter.p2p.v1alpha.P2P.ListBlobs:output_type -> com.mintter.p2p.v1alpha.Blob
-	7, // 8: com.mintter.p2p.v1alpha.P2P.RequestInvoice:output_type -> com.mintter.p2p.v1alpha.RequestInvoiceResponse
+	6, // 0: com.mintter.p2p.v1alpha.ListObjectsResponse.objects:type_name -> com.mintter.p2p.v1alpha.Object
+	0, // 1: com.mintter.p2p.v1alpha.P2P.Handshake:input_type -> com.mintter.p2p.v1alpha.HandshakeInfo
+	1, // 2: com.mintter.p2p.v1alpha.P2P.ListObjects:input_type -> com.mintter.p2p.v1alpha.ListObjectsRequest
+	3, // 3: com.mintter.p2p.v1alpha.P2P.ListBlobs:input_type -> com.mintter.p2p.v1alpha.ListBlobsRequest
+	4, // 4: com.mintter.p2p.v1alpha.P2P.RequestInvoice:input_type -> com.mintter.p2p.v1alpha.RequestInvoiceRequest
+	0, // 5: com.mintter.p2p.v1alpha.P2P.Handshake:output_type -> com.mintter.p2p.v1alpha.HandshakeInfo
+	2, // 6: com.mintter.p2p.v1alpha.P2P.ListObjects:output_type -> com.mintter.p2p.v1alpha.ListObjectsResponse
+	7, // 7: com.mintter.p2p.v1alpha.P2P.ListBlobs:output_type -> com.mintter.p2p.v1alpha.Blob
+	5, // 8: com.mintter.p2p.v1alpha.P2P.RequestInvoice:output_type -> com.mintter.p2p.v1alpha.RequestInvoiceResponse
 	5, // [5:9] is the sub-list for method output_type
 	1, // [1:5] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -544,30 +544,6 @@ func file_p2p_v1alpha_p2p_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_p2p_v1alpha_p2p_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListBlobsRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Blob); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*HandshakeInfo); i {
 			case 0:
 				return &v.state
@@ -579,7 +555,7 @@ func file_p2p_v1alpha_p2p_proto_init() {
 				return nil
 			}
 		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListObjectsRequest); i {
 			case 0:
 				return &v.state
@@ -591,7 +567,7 @@ func file_p2p_v1alpha_p2p_proto_init() {
 				return nil
 			}
 		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListObjectsResponse); i {
 			case 0:
 				return &v.state
@@ -603,8 +579,8 @@ func file_p2p_v1alpha_p2p_proto_init() {
 				return nil
 			}
 		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Object); i {
+		file_p2p_v1alpha_p2p_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListBlobsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -615,7 +591,7 @@ func file_p2p_v1alpha_p2p_proto_init() {
 				return nil
 			}
 		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RequestInvoiceRequest); i {
 			case 0:
 				return &v.state
@@ -627,8 +603,32 @@ func file_p2p_v1alpha_p2p_proto_init() {
 				return nil
 			}
 		}
-		file_p2p_v1alpha_p2p_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RequestInvoiceResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_p2p_v1alpha_p2p_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Object); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_p2p_v1alpha_p2p_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Blob); i {
 			case 0:
 				return &v.state
 			case 1:

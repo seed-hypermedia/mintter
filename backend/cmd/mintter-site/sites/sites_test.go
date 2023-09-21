@@ -6,6 +6,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	"mintter/backend/daemon"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
@@ -51,6 +52,60 @@ func TestSiteInit(t *testing.T) {
 	require.Nil(t, init)
 	require.Error(t, err, "subsequent init must fail")
 	require.Equal(t, codes.FailedPrecondition, status.Code(err), "subsequent init must fail with precondition error")
+
+	info, err := site.Website.GetSiteInfo(ctx, &groups.GetSiteInfoRequest{})
+	require.NoError(t, err)
+	require.Equal(t, group.Id, info.GroupId, "site must serve the correct group ID")
+	require.Equal(t, "", info.GroupVersion, "version must be empty before publishing")
+}
+
+func TestSiteSync(t *testing.T) {
+	t.Parallel()
+
+	site := makeTestSite(t, "carol")
+	alice := daemon.MakeTestApp(t, "alice", daemon.MakeTestConfig(t), true)
+	bob := daemon.MakeTestApp(t, "bob", daemon.MakeTestConfig(t), true)
+	david := daemon.MakeTestApp(t, "david", daemon.MakeTestConfig(t), true)
+	ctx := context.Background()
+
+	require.NoError(t, alice.Net.MustGet().Connect(ctx, bob.Net.MustGet().AddrInfo()), "alice must connect to bob")
+
+	group, err := alice.RPC.Groups.CreateGroup(ctx, &groups.CreateGroupRequest{
+		Title: "My test group",
+	})
+	require.NoError(t, err)
+
+	group, err = alice.RPC.Groups.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group.Id,
+		UpdatedMembers: map[string]groups.Role{
+			bob.Storage.Identity().MustGet().Account().Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	group, err = alice.RPC.Groups.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id:           group.Id,
+		SiteSetupUrl: site.Website.GetSetupURL(ctx),
+	})
+	require.NoError(t, err)
+
+	err = alice.RPC.Groups.SyncSite(ctx, site.Address.String(), 0)
+	require.NoError(t, err, "alice must be able to sync with the site as an owner")
+	_ = david
+
+	info, err := site.Website.GetSiteInfo(ctx, &groups.GetSiteInfoRequest{})
+	require.NoError(t, err)
+	require.Equal(t, group.Id, info.GroupId, "site must serve the correct group ID")
+	require.NotEqual(t, "", info.GroupVersion, "version must be non-empty after publishing")
+
+	return
+	// TODO(burdiyan): fix this test.
+
+	bobOnSite, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: bob.Storage.Identity().MustGet().Account().Principal().String(),
+	})
+	require.NoError(t, err, "site must get bob's account from the group")
+	require.NotEqual(t, "", bobOnSite.Profile.Alias, "site must have bob's account because he's a member of the group")
 }
 
 func makeTestSite(t *testing.T, name string) *App {

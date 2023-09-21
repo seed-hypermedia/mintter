@@ -221,12 +221,12 @@ CREATE TABLE remote_sites (
     -- Values below are stable and are used to validate
     -- whether site and group information correspond to each other.
     url TEXT UNIQUE NOT NULL,
-    peer_id TEXT NOT NULL,
+    peer_id TEXT NOT NULL DEFAULT (''),
     group_id TEXT NOT NULL,
     -- Values below are updated on each sync and used for caching.
-    group_version TEXT NOT NULL,
-    last_sync_time INTEGER NOT NULL,
-    last_ok_sync_time INTEGER NOT NULL
+    group_version TEXT NOT NULL DEFAULT (''),
+    last_sync_time INTEGER NOT NULL DEFAULT (0),
+    last_ok_sync_time INTEGER NOT NULL DEFAULT (0)
 );
 
 -- Stores mapping between account public keys

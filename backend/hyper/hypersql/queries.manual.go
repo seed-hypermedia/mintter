@@ -166,7 +166,8 @@ func SitesInsertOrIgnore(conn *sqlite.Conn, baseURL, groupID string) error {
 }
 
 var qSitesInsertOrIgnore = dqb.Str(`
-	INSERT OR IGNORE INTO remote_sites (url, group_id) VALUES (?, ?);
+	INSERT INTO remote_sites (url, group_id) VALUES (?, ?)
+	ON CONFLICT (url) DO NOTHING;
 `)
 
 // AccountsInsertOrIgnore inserts an account if it doesn't exist.

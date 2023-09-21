@@ -2,6 +2,8 @@
 // that are not found in the stdlib slices package.
 package slicex
 
+import "fmt"
+
 // Map applies a map function to each element of the slice
 // and produces a new slice with (possibly) transformed value.
 func Map[In any, Out any](in []In, fn func(In) Out) []Out {
@@ -10,6 +12,19 @@ func Map[In any, Out any](in []In, fn func(In) Out) []Out {
 		out[i] = fn(v)
 	}
 	return out
+}
+
+// MapE applies a map function that might return an error.
+func MapE[In any, Out any](in []In, fn func(In) (Out, error)) ([]Out, error) {
+	out := make([]Out, len(in))
+	for i, v := range in {
+		var err error
+		out[i], err = fn(v)
+		if err != nil {
+			return nil, fmt.Errorf("failed to map element %v to type %T: %w", v, *(new(Out)), err)
+		}
+	}
+	return out, nil
 }
 
 // MapSet is a set-like map.
