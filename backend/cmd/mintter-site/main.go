@@ -41,7 +41,7 @@ Flags:
 
 		cfg := sites.DefaultConfig()
 		cfg.BindFlags(fs)
-		if err := ff.Parse(fs, os.Args[1:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
+		if err := ff.Parse(fs, os.Args[2:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
 			return err
 		}
 
