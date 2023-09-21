@@ -80,6 +80,12 @@ func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 			hash := stmt.ColumnBytes(stmt.ColumnIndex(storage.BlobsMultihash.ShortName()))
 			size := stmt.ColumnInt(stmt.ColumnIndex(storage.BlobsSize.ShortName()))
 			data := stmt.ColumnBytesUnsafe(stmt.ColumnIndex(storage.BlobsData.ShortName()))
+			// We have to skip blobs we know the hashes of but we don't have the data.
+			// Also the blobs that are inline (data stored in the hash itself) because we don't index them ever.
+			// TODO(burdiyan): filter the select query to avoid fetching these blobs in the first place.
+			if size <= 0 {
+				return nil
+			}
 
 			buf = buf[:0]
 			buf = slices.Grow(buf, size)
