@@ -634,10 +634,6 @@ func (bs *indexer) indexDocumentChange(conn *sqlite.Conn, blobID int64, author c
 
 	// Validate document change.
 	{
-		if ch.Patch == nil {
-			return fmt.Errorf("document change must have a patch")
-		}
-
 		pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, author)
 		if err != nil {
 			return err
