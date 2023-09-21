@@ -70,3 +70,24 @@ Eventually we might be able to setup all of this be configured with Nix.
 ## Building On Windows
 
 Internally, none of us uses Windows for development, but we _do_ build _for_ Windows _on_ Windows machines in CI. You can inspect the corresponding GitHub Actions workflow definitions to find out what needs to be installed to compile the project.
+
+
+### Running Web Site
+
+#### 1. Run the Daemon
+
+You can start the daemon go daemon with:
+
+`go run ./backend/cmd/mintter-site "http://localhost:3000" -data-dir=$HOME/.mttsite -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay`
+
+Alternatively, you can do this in two steps:
+
+`go build -o plz-out/stellar ./backend/cmd/mintter-site`
+
+`./plz-out/stellar "https://mintter.com" -data-dir /root/.mttsite -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay`
+
+### 2. Start the Next.js Web App
+
+In the Mintter directory, start by running `yarn`. Then:
+
+`HM_BASE_URL="http://localhost:3000" NEXT_PUBLIC_GRPC_HOST="http://localhost:57001" PORT=3000 yarn site`

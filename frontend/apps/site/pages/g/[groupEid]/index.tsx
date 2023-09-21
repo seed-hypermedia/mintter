@@ -10,6 +10,8 @@ import {SiteHead} from '../../../site-head'
 
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  Publication,
+  UnpackedHypermediaId,
   createHmId,
   createPublicWebHmUrl,
   formattedDate,
@@ -29,11 +31,13 @@ import {
 } from '@mintter/ui'
 import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
-import {ReactElement} from 'react'
+import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {Paragraph} from 'tamagui'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
+import {GroupView, getGroupPageProps, getGroupView} from '../../../server/group'
+import {PublicationContent} from '../../../publication-page'
 
 function GroupOwnerSection({owner}: {owner: string}) {
   return (
@@ -166,13 +170,33 @@ function GroupContentItem({
   )
 }
 
-export default function GroupPage({
-  groupId,
-  version,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function FrontDoc({
+  item,
+}: {
+  item:
+    | {
+        version: string
+        pathName: string
+        publication: HMPublication | null
+        docId: UnpackedHypermediaId & {docId: string}
+      }
+    | null
+    | undefined
+}) {
+  if (!item?.publication) return <Text>Not Found</Text>
+  return <PublicationContent publication={item?.publication} />
+}
+
+export type GroupPageProps = {
+  groupId: string
+  version?: string
+  view: GroupView
+}
+
+export default function GroupPage({groupId, version, view}: GroupPageProps) {
   const group = trpc.group.get.useQuery({
     groupId,
-    //version
+    version,
   })
   const groupContent = trpc.group.listContent.useQuery({
     groupId,
@@ -180,6 +204,43 @@ export default function GroupPage({
 
   const loadedGroup = group.data?.group
 
+  const listView = groupContent.data
+    ? groupContent.data.map((contentItem) => {
+        if (contentItem?.pathName === '/') return null
+        return (
+          contentItem && (
+            <GroupContentItem
+              key={contentItem?.pathName}
+              item={contentItem}
+              group={loadedGroup}
+            />
+          )
+        )
+      })
+    : null
+
+  let mainView: ReactNode = listView
+
+  const frontPageItem = groupContent.data?.find(
+    (item) => item?.pathName === '/',
+  )
+
+  const frontDocView = <FrontDoc item={frontPageItem} />
+
+  if (view === 'front') {
+    mainView = frontDocView
+  } else if (view === 'list') {
+    mainView = listView
+  } else if (frontPageItem) {
+    mainView = (
+      <>
+        {frontDocView}
+        {listView}
+      </>
+    )
+  } else {
+    mainView = listView
+  }
   return (
     <YStack flex={1}>
       <Head>
@@ -234,19 +295,7 @@ export default function GroupPage({
               {loadedGroup?.description}
             </Text>
           ) : null}
-          {groupContent.data
-            ? groupContent.data.map((contentItem) => {
-                return (
-                  contentItem && (
-                    <GroupContentItem
-                      key={contentItem?.pathName}
-                      item={contentItem}
-                      group={loadedGroup}
-                    />
-                  )
-                )
-              })
-            : null}
+          {mainView}
         </PageSection.Content>
         <PageSection.Side>
           <YStack className="publication-sidenav-sticky">
@@ -263,26 +312,8 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext,
 ) => {
   const {params, query} = context
-  const groupEid = params?.groupId ? String(params.groupId) : undefined
-  const groupId = groupEid ? createHmId('g', groupEid) : undefined
-
-  let version = query.v ? String(query.v) : null
-
-  setAllowAnyHostGetCORS(context.res)
-
-  if (!groupId) return {notFound: true} as const
-
-  const helpers = serverHelpers({})
-
-  const groupRecord = await helpers.group.get.fetch({
-    groupId,
-  })
-
-  await helpers.group.listContent.prefetch({
-    groupId,
-  })
-
-  return {
-    props: await getPageProps(helpers, {groupId, version}),
-  }
+  const groupEid = params?.groupEid ? String(params.groupEid) : undefined
+  if (!groupEid) return {notFound: true}
+  const view = getGroupView(query.view)
+  return await getGroupPageProps({groupEid, context, view})
 }

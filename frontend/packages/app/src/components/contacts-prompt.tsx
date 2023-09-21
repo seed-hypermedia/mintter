@@ -25,7 +25,26 @@ function AddConnectionForm(props: {onClose: () => void}) {
     if (peer) {
       const connectionRegexp = /connect-peer\/([\w\d]+)/
       const parsedConnectUrl = peer.match(connectionRegexp)
-      const connectionDeviceId = parsedConnectUrl ? parsedConnectUrl[1] : null
+      let connectionDeviceId = parsedConnectUrl ? parsedConnectUrl[1] : null
+      if (!connectionDeviceId && peer.match(/^(https:\/\/)/)) {
+        // in this case, the "peer" input is not https://site/connect-peer/x url, but it is a web url. So lets try to connect to this site via its well known peer id.
+        const peerUrl = new URL(peer)
+        peerUrl.search = ''
+        peerUrl.hash = ''
+        peerUrl.pathname = '/.well-known/hypermedia-site'
+        const peerWellKnown = peerUrl.toString()
+        const wellKnownData = await fetch(peerWellKnown)
+          .then((res) => res.json())
+          .catch((err) => {
+            console.error('Connect Error:', err)
+            return null
+          })
+        if (wellKnownData?.peerInfo?.peerId) {
+          connectionDeviceId = wellKnownData.peerInfo.peerId
+        } else {
+          throw new Error('Failed to connet to web url: ' + peer)
+        }
+      }
       const addrs = connectionDeviceId
         ? [connectionDeviceId]
         : peer.trim().split(',')

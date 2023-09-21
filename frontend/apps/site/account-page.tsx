@@ -43,11 +43,10 @@ function isEmptyObject(obj: unknown) {
 }
 
 export default function AccountPage({accountId}: {accountId: string}) {
-  const publication = trpc.account.get.useQuery({
+  const query = trpc.account.get.useQuery({
     accountId,
   })
-
-  const account = publication.data?.account
+  const account = query.data?.account
 
   return (
     <YStack flex={1}>
@@ -58,9 +57,9 @@ export default function AccountPage({accountId}: {accountId: string}) {
       <PageSection.Root flex={1}>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
-          {account && publication.isSuccess ? (
+          {account && query.isSuccess ? (
             <AccountContent account={account} />
-          ) : publication.isLoading ? (
+          ) : query.isLoading ? (
             <AccountPlaceholder />
           ) : (
             <AccountNotFound account={account} />

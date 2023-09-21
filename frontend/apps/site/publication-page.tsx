@@ -58,7 +58,7 @@ export type PublicationPageData = {
   siteInfo: SiteInfo | null
 }
 
-function PublicationContent({
+export function PublicationContent({
   publication,
 }: {
   publication: HMPublication | undefined

@@ -15,8 +15,8 @@ export function createPublicWebHmUrl(
     blockRef,
     hostname,
   }: {
-    version?: string
-    blockRef?: string
+    version?: string | null | undefined
+    blockRef?: string | null | undefined
     hostname?: string | null | undefined
   } = {},
 ) {
@@ -84,10 +84,10 @@ function inKeys<V extends string>(
 export type UnpackedHypermediaId = {
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
   eid: string
-  version?: string
-  blockRef?: string
-  hostname?: string
-  scheme?: string
+  version: string | null
+  blockRef: string | null
+  hostname: string | null
+  scheme: string | null
 }
 
 export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
@@ -101,8 +101,8 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       type,
       eid,
       version,
-      blockRef: parsed?.fragment || undefined,
-      hostname: undefined,
+      blockRef: parsed?.fragment || null,
+      hostname: null,
       scheme: parsed?.scheme,
     }
   }
@@ -116,7 +116,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       type,
       eid,
       version,
-      blockRef: parsed?.fragment || undefined,
+      blockRef: parsed?.fragment || null,
       hostname,
       scheme: parsed?.scheme,
     }
@@ -156,12 +156,13 @@ export function idToUrl(
   hmId: string,
   hostname?: string | null | undefined,
   versionId?: string | null | undefined,
+  blockRef?: string | null | undefined,
 ) {
   const unpacked = unpackHmId(hmId)
   if (!unpacked?.type) return null
   return createPublicWebHmUrl(unpacked.type, unpacked.eid, {
     version: versionId || unpacked.version,
-    blockRef: unpacked.blockRef,
+    blockRef: blockRef || unpacked.blockRef,
     hostname,
   })
 }

@@ -57,30 +57,16 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {publication: null}
       }
-      const alreadyPub = publicationsClient
+      const resolvedPub = await publicationsClient
         .getPublication({
           documentId: input.documentId,
           version: input.versionId || '',
         })
         .catch((e) => undefined)
-      const remoteSync = entitiesClient
-        .discoverEntity({
-          id: input.documentId,
-          version: input.versionId || '',
-        })
-        .then(() => undefined)
-      let resolvedPub = await Promise.race([alreadyPub, remoteSync])
-      if (!resolvedPub) {
-        // the remote Sync may have just found it. so we want to re-fetch
-        resolvedPub = await publicationsClient.getPublication({
-          documentId: input.documentId,
-          version: input.versionId || '',
-        })
-      }
+
       if (!resolvedPub) {
         return {publication: null}
       }
-      return {publication: null}
       return {
         publication: hmPublication(resolvedPub) || null,
       }
@@ -206,20 +192,6 @@ const publicationRouter = router({
 })
 
 const groupRouter = router({
-  getSitePath: procedure
-    .input(z.object({hostname: z.string()}))
-    .query(async ({input}) => {
-      // todo. get current group content and find the pathName, return the corresponding doc
-      console.log('getting site info')
-      // const siteInfo = await groupsClient.getGroup({
-      //   hostname: input.hostname,
-      // })
-      // return {
-      //   groupId: siteInfo.groupId,
-      //   ownerId: siteInfo.ownerId,
-      //   version: siteInfo.version,
-      // }
-    }),
   getGroupPath: procedure
     .input(
       z.object({
@@ -229,9 +201,7 @@ const groupRouter = router({
       }),
     )
     .query(async ({input: {pathName, groupId, version}}) => {
-      // todo. get current group content and find the pathName, return the corresponding doc
-      console.log('getting site info')
-      const siteInfo = await groupsClient.listContent({
+      const groupContent = await groupsClient.listContent({
         id: groupId,
         version,
       })
@@ -239,7 +209,7 @@ const groupRouter = router({
         id: groupId,
         version,
       })
-      const item = siteInfo.content[pathName]
+      const item = groupContent.content[pathName]
       if (!item) return null
       const itemId = unpackDocId(item)
       if (!itemId?.version) return null // version is required for group content
@@ -260,14 +230,14 @@ const groupRouter = router({
     .input(
       z.object({
         groupId: z.string(),
+        version: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
-      console.log('will getGroup with id', input)
       const group = await groupsClient.getGroup({
         id: input.groupId,
+        version: input.version,
       })
-      console.log('did get group', hmGroup(group))
       return {
         group: hmGroup(group),
       }

@@ -1,12 +1,9 @@
-import {createHmId} from '@mintter/shared'
+import {getGroupPathNamePageProps} from 'server/group'
 import {Heading, Spinner} from '@mintter/ui'
-import {daemonClient, networkingClient} from 'client'
 import {GetServerSideProps} from 'next'
 import {EveryPageProps} from 'pages/_app'
 import PublicationPage from 'publication-page'
-import {setAllowAnyHostGetCORS} from 'server/cors'
 import {useRouteQuery} from 'server/router-queries'
-import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {trpc} from 'trpc'
 
 export type GroupPubPageProps = {
@@ -40,23 +37,9 @@ export const getServerSideProps: GetServerSideProps<
 > = async (context) => {
   const pathName = (context.params?.pathName as string) || ''
   const groupEid = (context.params?.groupEid as string) || ''
-  const groupId = createHmId('g', groupEid)
-  const helpers = serverHelpers({})
-
-  setAllowAnyHostGetCORS(context.res)
-
-  const info = await daemonClient.getInfo({})
-  const peerInfo = await networkingClient.getPeerInfo({
-    deviceId: info.deviceId,
+  return await getGroupPathNamePageProps({
+    groupEid,
+    pathName,
+    context,
   })
-  context.res.setHeader(
-    'x-mintter-site-p2p-addresses',
-    peerInfo.addrs.join(','),
-  )
-  const group = await helpers.group.get.fetch({groupId})
-  const groupContent = await helpers.group.listContent.fetch({groupId})
-
-  return {
-    props: await getPageProps(helpers, {pathName, groupId}),
-  }
 }

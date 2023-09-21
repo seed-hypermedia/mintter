@@ -9,19 +9,6 @@ import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {createHmId} from '@mintter/shared'
 
-function getDocSlugUrl(
-  pathName: string | undefined,
-  docId: string,
-  versionId?: string,
-  blockRef?: string,
-) {
-  let url = `/d/${docId}`
-  if (pathName) url = pathName === '/' ? '/' : `/${pathName}`
-  if (versionId) url += `?v=${versionId}`
-  if (blockRef) url += `#${blockRef}`
-  return url
-}
-
 export default function IDPublicationPage(
   props: InferGetServerSidePropsType<typeof getServerSideProps>,
 ) {
@@ -46,21 +33,6 @@ export const getServerSideProps: GetServerSideProps = async (
   const docId = createHmId('d', docEid)
 
   const helpers = serverHelpers({})
-
-  // if (docRecord) {
-  // // old redirect to pretty URL behavior
-  //   return {
-  //     redirect: {
-  //       temporary: true,
-  //       destination: getDocSlugUrl(
-  //         docRecord.path,
-  //         docId,
-  //         version || docRecord.versionId,
-  //       ),
-  //     },
-  //     props: {},
-  //   } as const
-  // }
 
   // await impatiently(
   //   helpers.publication.get.prefetch({

@@ -114,15 +114,18 @@ export default function ContactsPage() {
   }
   if (allAccounts.length === 0) {
     return (
-      <MainWrapper>
-        <Container>
-          <YStack gap="$5" paddingVertical="$8">
-            <Text fontFamily="$body" fontSize="$3">
-              You have no Contacts yet.
-            </Text>
-          </YStack>
-        </Container>
-      </MainWrapper>
+      <>
+        <MainWrapper>
+          <Container>
+            <YStack gap="$5" paddingVertical="$8">
+              <Text fontFamily="$body" fontSize="$3">
+                You have no Contacts yet.
+              </Text>
+            </YStack>
+          </Container>
+        </MainWrapper>
+        <Footer />
+      </>
     )
   }
   return (

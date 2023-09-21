@@ -3,6 +3,7 @@ import {
   createPublicWebHmUrl,
   formattedDate,
   HMTimestamp,
+  idToUrl,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
@@ -382,11 +383,15 @@ function CitationPreview({citationLink}: {citationLink: HMLink}) {
   )
   if (!sourcePub.data) return null
   if (!source?.documentId) return null
+  const destUrl = idToUrl(
+    source?.documentId,
+    null,
+    source?.version,
+    source?.blockId,
+  )
+  if (!destUrl) return null
   return (
-    <NextLink
-      href={getDocUrl(source?.documentId, source?.version, source?.blockId)}
-      style={{textDecoration: 'none'}}
-    >
+    <NextLink href={destUrl} style={{textDecoration: 'none'}}>
       <Text>{sourcePub.data?.publication?.document?.title}</Text>
     </NextLink>
   )
@@ -508,14 +513,6 @@ export function PublicationMetadata({
   )
 }
 
-function getDocUrl(docId: string, versionId?: string, blockRef?: string) {
-  // todo centralize this url creation logic better
-  let url = `/d/${docId}`
-  if (versionId) url += `?v=${versionId}`
-  if (blockRef) url += `#${blockRef}`
-  return url
-}
-
 function getDocSlugUrl(
   pathName: string | undefined,
   docId: string,
@@ -605,9 +602,13 @@ export function PublishedMeta({
       <SideSectionTitle>Published:</SideSectionTitle>
       <SizableText size="$3" fontWeight="800">
         <NextLink
-          href={getDocUrl(
-            publication?.document?.id || '',
-            publication?.version || '',
+          href={createPublicWebHmUrl(
+            'd',
+            unpackDocId(publication?.document?.id || '')?.eid || '',
+            {
+              hostname: null,
+              version: publication?.version || '',
+            },
           )}
         >
           {publishTimeRelative}{' '}

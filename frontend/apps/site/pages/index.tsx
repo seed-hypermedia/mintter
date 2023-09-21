@@ -1,22 +1,19 @@
 import {GetServerSideProps} from 'next'
-import PublicationSlugPage, {PubSlugPageProps} from 'publication-slug-page'
-import {prepareSlugPage} from 'server/page-slug'
+import {PubSlugPageProps} from 'publication-slug-page'
 import {EveryPageProps} from './_app'
+import {getGroupPageProps, getGroupView} from 'server/group'
+import {getSiteGroup} from 'server/site-info'
+import GroupPage, {GroupPageProps} from './g/[groupEid]'
 
-// // Temp Mintter home screen document:
-// let fallbackDocId = process.env.MINTTER_HOME_PUBID || 'mnoboS11GwRlRAh2dhYlTw'
-// let fallbackVersion =
-//   process.env.MINTTER_HOME_VERSION ||
-//   'bafy2bzacednwllikmc7rittnmz4s7cfpo3p2ldsap3bcmgxp7cdpzhoiu5w'
-
-// //https://mintter.com/p/mnoboS11GwRlRAh2dhYlTw?v=bafy2bzacednwllikmc7rittnmz4s7cfpo3p2ldsap3bcmgxp7cdpzhoiu5w
-
-export default function HomePage(props: {pathName: string}) {
-  return <PublicationSlugPage pathName={props.pathName} />
+export default function HomePage(props: GroupPageProps) {
+  return <GroupPage {...props} />
 }
 
 export const getServerSideProps: GetServerSideProps<
   EveryPageProps & PubSlugPageProps
 > = async (context) => {
-  return await prepareSlugPage(context, '/')
+  const {groupEid} = await getSiteGroup()
+  console.log('serer side', context.query)
+  const view = getGroupView(context.query.view)
+  return await getGroupPageProps({groupEid, context, view})
 }
