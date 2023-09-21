@@ -23,7 +23,7 @@ func main() {
 
 		fs := flag.NewFlagSet("mintter-site", flag.ExitOnError)
 		fs.Usage = func() {
-			fmt.Fprintf(fs.Output(), `Usage: %s ADDRESS [flags]
+			fmt.Fprintf(fs.Output(), `Usage: %s [flags] ADDRESS
 
 This program is similar to our main mintterd program in a lot of ways, but has more suitable defaults for running on a server as site.
 
@@ -41,17 +41,19 @@ Flags:
 
 		cfg := sites.DefaultConfig()
 		cfg.BindFlags(fs)
-		if err := ff.Parse(fs, os.Args[2:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
+		if err := ff.Parse(fs, os.Args[1:], ff.WithEnvVarPrefix(envVarPrefix)); err != nil {
 			return err
 		}
 
-		if len(os.Args) < 2 {
+		args := fs.Args()
+
+		if len(args) != 1 {
 			fs.Usage()
-			fmt.Fprintf(fs.Output(), "Error: Positional argument ADDRESS is missing.\n")
+			fmt.Fprintf(fs.Output(), "Error: Positional argument ADDRESS is required.\n")
 			os.Exit(1)
 		}
 
-		rawURL := os.Args[1]
+		rawURL := args[0]
 
 		if err := cfg.Base.ExpandDataDir(); err != nil {
 			return err
