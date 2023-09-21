@@ -2,20 +2,16 @@ import {
   BlockNoteEditor,
   DefaultBlockSchema,
   defaultBlockSchema,
+  HMBlockSchema,
 } from '@mintter/editor'
 // import '@mintter/editor/style.css'
 import {BlockNoteView, useBlockNote} from '@mintter/editor'
 import {MainWrapper, YStack} from '@mintter/ui'
 
-type HyperdocsBlockSchema = Omit<
-  DefaultBlockSchema,
-  'bulletListItem' | 'numberedListItem'
->
-
 export default function BlockNoteDemo() {
   // Creates a new editor instance.
-  const editor: BlockNoteEditor<HyperdocsBlockSchema> | null =
-    useBlockNote<HyperdocsBlockSchema>({
+  const editor: BlockNoteEditor<HMBlockSchema> | null =
+    useBlockNote<HMBlockSchema>({
       theme: 'dark',
       onEditorContentChange(editor) {
         console.log('content change!', editor)

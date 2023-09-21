@@ -3,6 +3,7 @@ import {useMemo, useState} from 'react'
 import {IconType} from 'react-icons'
 import {RiH2, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
 
+import {updateGroup} from '@/block-utils'
 import {ToolbarDropdown} from '../../../SharedComponents/Toolbar/components/ToolbarDropdown'
 import {ToolbarDropdownItemProps} from '../../../SharedComponents/Toolbar/components/ToolbarDropdownItem'
 import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
@@ -56,6 +57,8 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
   items?: BlockTypeDropdownItem[]
 }) => {
   const [block, setBlock] = useState(props.editor.getTextCursorPosition().block)
+
+  console.log(`== ~ block:`, block)
 
   const filteredItems: BlockTypeDropdownItem[] = useMemo(() => {
     return (props.items || defaultBlockTypeDropdownItems).filter((item) => {
@@ -120,5 +123,27 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
     return null
   }
 
-  return <ToolbarDropdown items={fullItems} />
+  return (
+    <ToolbarDropdown
+      items={[
+        ...fullItems,
+        {
+          text: 'Bullet Item',
+          icon: RiListUnordered,
+          onClick: () => {
+            // @ts-expect-error
+            updateGroup(props.editor, block, 'ul')
+          },
+        },
+        {
+          text: 'Numbered Item',
+          icon: RiListOrdered,
+          onClick: () => {
+            // @ts-expect-error
+            updateGroup(props.editor, block, 'ol')
+          },
+        },
+      ]}
+    />
+  )
 }

@@ -19,7 +19,11 @@ import {usePublication} from '@mintter/app/src/models/documents'
 import {toast} from '@mintter/app/src/toast'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {
+  createPublicWebHmUrl,
+  HMBlockChildrenType,
+  unpackHmId,
+} from '@mintter/shared'
 import {Button, Copy, SizableText, XStack} from '@mintter/ui'
 import {
   NodeViewContent,
@@ -47,9 +51,9 @@ declare module '@tiptap/core' {
         posInBlock: number,
         block: PartialBlock<BSchema>,
       ) => ReturnType
-      UpdateGroup: <BSchema extends BlockSchema>(
+      UpdateGroup: (
         posInBlock: number,
-        listType: string,
+        listType: HMBlockChildrenType,
         start?: string,
       ) => ReturnType
     }

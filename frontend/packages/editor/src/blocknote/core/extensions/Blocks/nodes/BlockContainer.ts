@@ -16,6 +16,7 @@ import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
 import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
+import {HMBlockChildrenType} from '@mintter/shared'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -32,9 +33,9 @@ declare module '@tiptap/core' {
         posInBlock: number,
         block: PartialBlock<BSchema>,
       ) => ReturnType
-      UpdateGroup: <BSchema extends BlockSchema>(
+      UpdateGroup: (
         posInBlock: number,
-        listType: string,
+        listType: HMBlockChildrenType,
         start?: string,
       ) => ReturnType
     }
