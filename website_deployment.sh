@@ -92,9 +92,6 @@ while [ "$1" != "" ]; do
 		-w | --workspace )      shift
                                 workspace=$1
                                 ;;
-        -e | --extra )          shift
-								extra=$1
-                                ;;
         --help )            	usage
                                 exit 
                                 ;;
@@ -114,7 +111,7 @@ rm -f ${workspace}/deployment.log
 touch ${workspace}/deployment.log
 
 install_docker
-curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose-groups.yml
+curl -s -o ${workspace}/mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
 docker stop nextjs minttersite proxy 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 docker rm nextjs minttersite proxy 2> ${workspace}/deployment.log 1> ${workspace}/deployment.log || true
 

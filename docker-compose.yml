@@ -4,7 +4,7 @@ networks:
     driver: bridge # the default
 services:
   proxy:
-    container_name: proxy
+    container_name: ${MTT_SITE_PROXY_CONTAINER_NAME:-PROXY}
     image: caddy:2.6.4
     depends_on:
       - minttersite
@@ -24,7 +24,7 @@ services:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/CaddyFile:/etc/caddy/Caddyfile
 
   nextjs:
-    container_name: nextjs
+    container_name: ${MTT_SITE_NEXTJS_CONTAINER_NAME:-nextjs}
     image: mintter/sitegw:latest
     depends_on:
       - minttersite
@@ -42,9 +42,9 @@ services:
       - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 
   minttersite:
-    image: mintter/mintterd:latest
+    image: mintter/mintter-site:latest
     restart: unless-stopped
-    container_name: minttersite
+    container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-minttersite}
     ports:
       - "56000:56000"
       - "56000:56000/udp"
@@ -54,16 +54,12 @@ services:
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mttsite:rw
     command:
-      - "mintterd"
+      - "mintter-site"
+      - "${MTT_SITE_HOSTNAME:-http://nextjs}"
       - "-data-dir=/.mttsite"
       - "-lndhub.mainnet"
       - "-p2p.port=56000"
       - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
       - "-grpc.port=56002"
-      - "-p2p.public-reachability"
       - "-p2p.no-relay"
       - "-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1"
-      - "-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}"
-      - "-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}"
-      - "${MTT_SITE_NOWAIT_FLAG}"
-      - "${MTT_SITE_ADDITIONAL_FLAGS}"

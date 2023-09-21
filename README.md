@@ -58,7 +58,7 @@ a server with at least 1GB RAM and 512MB free space in root partition. Run the
 folloging command in the server:
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/group_deployment.sh) --hostname https://example.com
+sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/website_deployment.sh) --hostname https://example.com
 ```
 
 replacing `https://example.com` by your <`hostname`> If everything went well,
@@ -79,5 +79,5 @@ workspace (`~/.mtt-site`) or generate the new site in a different workspace unti
 everything is checked to work properly:
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/group_deployment.sh) --workspace /home/root/new-path --hostname https://new-domain.com
+sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/website_deployment.sh) --workspace /home/root/new-path --hostname https://new-domain.com
 ```
