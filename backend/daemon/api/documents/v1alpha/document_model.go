@@ -210,6 +210,11 @@ func (dm *docModel) Change() (hb hyper.Blob, err error) {
 		action = "Create"
 	}
 
+	// Make sure to remove the dummy field created in the initial draft change.
+	if len(dm.patch) > 1 {
+		delete(dm.patch, "isDraft")
+	}
+
 	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch, hyper.WithAction(action))
 }
 

@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
+import { Message, proto3, StringValue, Timestamp } from "@bufbuild/protobuf";
 
 /**
  * Role of a group member.
@@ -178,19 +178,19 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
   /**
    * Optional. Title of the Group.
    * Can be omitted if unchanged.
+   * Cannot be cleared. Groups without title make no sense.
    *
    * @generated from field: string title = 2;
    */
   title = "";
 
   /**
-   * Required. Description of the Group. Can be empty string.
-   * Must always be provided, even if unchanged
-   * to distinguish unchanged value from setting to empty string.
+   * Optional. Description of the Group.
+   * Using value wrapper to distinguish between clearing the value and leaving it unchanged.
    *
-   * @generated from field: string description = 3;
+   * @generated from field: google.protobuf.StringValue description = 3;
    */
-  description = "";
+  description?: string;
 
   /**
    * Optional. List of members to be updated in the Group.
@@ -232,7 +232,7 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "description", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "description", kind: "message", T: StringValue },
     { no: 4, name: "updated_members", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "enum", T: proto3.getEnumType(Role)} },
     { no: 5, name: "updated_content", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 6, name: "site_setup_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },

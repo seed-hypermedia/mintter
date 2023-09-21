@@ -193,7 +193,9 @@ func TestDocumentUpdatePublished(t *testing.T) {
 	_, ok := entity.Heads()[hb.CID]
 	require.True(t, ok, "entity must have last published change as heads")
 
-	hb2, err := entity.CreateChange(entity.NextTimestamp(), alice.Device, dm.delegation, map[string]any{}, hyper.WithAction("Update"))
+	hb2, err := entity.CreateChange(entity.NextTimestamp(), alice.Device, dm.delegation, map[string]any{
+		"isDraft": true,
+	}, hyper.WithAction("Update"))
 	require.NoError(t, err)
 	require.Equal(t, []cid.Cid{hb.CID}, hb2.Decoded.(hyper.Change).Deps, "new change must have old one in deps")
 

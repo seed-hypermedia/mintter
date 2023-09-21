@@ -340,10 +340,10 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		}
 	}
 
-	{
+	if in.Description != nil {
 		old, ok := e.Get("description")
-		if !ok || old.(string) != in.Description {
-			patch["description"] = in.Description
+		if !ok || old.(string) != in.Description.Value {
+			patch["description"] = in.Description.Value
 		}
 	}
 

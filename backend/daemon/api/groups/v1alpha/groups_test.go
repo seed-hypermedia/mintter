@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var _ groups.GroupsServer = (*Server)(nil)
@@ -73,8 +74,9 @@ func TestUpdateGroup(t *testing.T) {
 	require.NoError(t, err)
 
 	group2, err := srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
-		Id:    group.Id,
-		Title: "My Group 2",
+		Id:          group.Id,
+		Title:       "My Group 2",
+		Description: wrapperspb.String(""),
 	})
 
 	require.NoError(t, err)
@@ -97,7 +99,7 @@ func TestGetGroupWithVersion(t *testing.T) {
 	group2, err := srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 		Id:          group.Id,
 		Title:       "My Group 2",
-		Description: "Description of my group 2",
+		Description: wrapperspb.String("Description of my group 2"),
 	})
 	require.NoError(t, err)
 
@@ -179,15 +181,6 @@ func TestListContent(t *testing.T) {
 
 	// Getting content for old group version.
 	{
-		group, err = srv.UpdateGroup(ctx, &groups.UpdateGroupRequest{
-			Id: group.Id,
-			UpdatedContent: map[string]string{
-				"/":    "",
-				"/foo": "bar",
-			},
-		})
-		require.NoError(t, err)
-
 		content, err := srv.ListContent(ctx, &groups.ListContentRequest{
 			Id:      group.Id,
 			Version: old.Version,
@@ -445,7 +438,7 @@ func TestGroupMembersAfterSync(t *testing.T) {
 		group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
 			Id:          group.Id,
 			Title:       "Alice from the Wonderland",
-			Description: "Just a test group",
+			Description: wrapperspb.String("Just a test group"),
 		})
 		require.NoError(t, err)
 
@@ -485,9 +478,8 @@ func TestGroupMembersAfterSync(t *testing.T) {
 	require.Equal(t, bobGroups.Items[0].Role, groups.Role_EDITOR, "bob must be an editor of alice's group")
 
 	_, err = bob.UpdateGroup(ctx, &groups.UpdateGroupRequest{
-		Id:          group.Id,
-		Title:       "Bob, Not Bob",
-		Description: group.Description,
+		Id:    group.Id,
+		Title: "Bob, Not Bob",
 	})
 	require.NoError(t, err, "bob must be able to edit alice's group as an editor")
 }

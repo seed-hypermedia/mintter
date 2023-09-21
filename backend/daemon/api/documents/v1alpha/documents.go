@@ -90,7 +90,11 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return nil, err
 		}
 
-		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{}, hyper.WithAction("Update"))
+		hb, err := entity.CreateChange(entity.NextTimestamp(), me.DeviceKey(), del, map[string]any{
+			// Using the dummy field which will be cleared in future updates,
+			// because all changes must have patches.
+			"isDraft": true,
+		}, hyper.WithAction("Update"))
 		if err != nil {
 			return nil, err
 		}

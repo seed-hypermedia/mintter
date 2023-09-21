@@ -401,10 +401,6 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 
 	// Validate group change.
 	{
-		if ch.Patch == nil {
-			return fmt.Errorf("group change must have a patch")
-		}
-
 		pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, author)
 		if err != nil {
 			return err
@@ -587,10 +583,6 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 func (bs *indexer) indexAccountChange(conn *sqlite.Conn, blobID int64, author core.Principal, c cid.Cid, ch Change) error {
 	if "hm://a/"+author.String() != string(ch.Entity) {
 		return fmt.Errorf("author %s is not allowed to modify account entity %s", author.String(), ch.Entity)
-	}
-
-	if ch.Patch == nil {
-		return fmt.Errorf("account changes must have patches")
 	}
 
 	pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, author)

@@ -3,6 +3,7 @@ syntax = "proto3";
 package com.mintter.groups.v1alpha;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 option go_package = "mintter/backend/genproto/groups/v1alpha;groups";
 
@@ -72,12 +73,12 @@ message UpdateGroupRequest {
 
   // Optional. Title of the Group.
   // Can be omitted if unchanged.
+  // Cannot be cleared. Groups without title make no sense.
   string title = 2;
 
-  // Required. Description of the Group. Can be empty string.
-  // Must always be provided, even if unchanged
-  // to distinguish unchanged value from setting to empty string.
-  string description = 3;
+  // Optional. Description of the Group.
+  // Using value wrapper to distinguish between clearing the value and leaving it unchanged.
+  google.protobuf.StringValue description = 3;
 
   // Optional. List of members to be updated in the Group.
   // Key is the member's Account ID,
