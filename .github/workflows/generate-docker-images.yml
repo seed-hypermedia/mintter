@@ -47,12 +47,6 @@ jobs:
           push: true
           file: backend/cmd/monitord/Dockerfile
           tags: mintter/monitord:latest
-      - name: Build and push gateway
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          file: backend/cmd/minttergw/Dockerfile
-          tags: mintter/minttergw:latest
       - name: Build and push relay
         uses: docker/build-push-action@v4
         with:
