@@ -69,6 +69,7 @@ func TestSiteSync(t *testing.T) {
 	ctx := context.Background()
 
 	require.NoError(t, alice.Net.MustGet().Connect(ctx, bob.Net.MustGet().AddrInfo()), "alice must connect to bob")
+	require.NoError(t, alice.Syncing.MustGet().SyncWithPeer(ctx, bob.Storage.Device().PeerID()), "alice must have synced with bob")
 
 	group, err := alice.RPC.Groups.CreateGroup(ctx, &groups.CreateGroupRequest{
 		Title: "My test group",
@@ -98,8 +99,13 @@ func TestSiteSync(t *testing.T) {
 	require.Equal(t, group.Id, info.GroupId, "site must serve the correct group ID")
 	require.NotEqual(t, "", info.GroupVersion, "version must be non-empty after publishing")
 
-	return
-	// TODO(burdiyan): fix this test.
+	// TODO(burdiyan): add more complex scenarios.
+	// Create doc1.
+	// Create doc2 and link doc2.
+	// Create group.
+	// Publish doc2 to group.
+	// Sync group.
+	// Make sure referenced materials are correctly published.
 
 	bobOnSite, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{
 		Id: bob.Storage.Identity().MustGet().Account().Principal().String(),

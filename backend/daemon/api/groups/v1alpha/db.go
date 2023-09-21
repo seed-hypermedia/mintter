@@ -117,43 +117,54 @@ func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn f
 	}, gdb.EntitiesID)
 }
 
+/*
+group_blobs = group_changes + transitive blobs
++
+for each group_blob get attrs with resource values and no extra->v
++
+
+
+*/
+
 var qCollectBlobs = dqb.Str(`
 	WITH RECURSIVE
 		group_blobs (blob) AS (
 			SELECT blob
-			FROM changes
-			WHERE entity = :group
-			UNION
-			SELECT blob_links.target
-			FROM blob_links, group_blobs
-			WHERE blob_links.source = group_blobs.blob
-		),
-		account_entities (entity) AS (
-			SELECT DISTINCT accounts.entity
-			FROM group_blobs
-			JOIN changes ON changes.blob = group_blobs.blob
-			JOIN accounts ON accounts.entity = changes.entity
-		),
-		account_blobs (blob) AS (
+			FROM blob_attrs
+			WHERE key = 'resource/id'
+			AND value_ptr IS NOT NULL AND value_ptr = :group
+			-- Get changes for documents linked without version.
+			UNION 
 			SELECT changes.blob
-			FROM account_entities
-			JOIN changes ON changes.entity = account_entities.entity
+			FROM group_blobs
+			JOIN blob_attrs
+				ON blob_attrs.blob = group_blobs.blob
+				AND blob_attrs.key = 'group/content'
+				AND blob_attrs.extra->'v' IS NULL
+				AND blob_attrs.value_ptr IS NOT NULL
+			JOIN changes ON changes.entity = blob_attrs.value_ptr
+			-- Get changes for authors
+			UNION
+			SELECT changes.blob
+			FROM group_blobs
+			JOIN blob_attrs
+				ON blob_attrs.blob = group_blobs.blob
+				AND blob_attrs.key = 'group/member'
+				AND blob_attrs.value_ptr IS NOT NULL
+			JOIN accounts ON accounts.public_key = blob_attrs.value_ptr
+			JOIN changes ON changes.entity = accounts.entity
+			-- Get blob links.
 			UNION
 			SELECT blob_links.target
-			FROM account_blobs
-			JOIN blob_links ON blob_links.source = account_blobs.blob
-		),
-		all_blobs (blob) AS (
-			SELECT blob FROM group_blobs
-			UNION
-			SELECT blob FROM account_blobs
+			FROM group_blobs
+			JOIN blob_links ON blob_links.source = group_blobs.blob
 		)
 	SELECT
 		blobs.id AS id,
 		blobs.codec AS codec,
 		blobs.multihash AS multihash
-	FROM all_blobs
-	JOIN blobs ON blobs.id = all_blobs.blob
+	FROM group_blobs
+	JOIN blobs ON blobs.id = group_blobs.blob
 	ORDER BY blobs.id ASC;
 `)
 
