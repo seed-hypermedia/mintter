@@ -113,15 +113,6 @@ CREATE INDEX drafts_by_blob ON drafts (blob);
 -- so it's easier to drop eventually without a complex migration.
 CREATE UNIQUE INDEX drafts_unique ON drafts (entity);
 
-CREATE VIEW public_blobs_view AS
-SELECT
-    blobs.id,
-    blobs.codec,
-    blobs.multihash
-FROM blobs
-LEFT OUTER JOIN drafts ON drafts.blob = blobs.id
-WHERE drafts.blob IS NULL;
-
 -- View of drafts with dereferenced foreign keys.
 CREATE VIEW drafts_view AS
 SELECT

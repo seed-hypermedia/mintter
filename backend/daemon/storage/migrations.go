@@ -92,6 +92,11 @@ var migrations = []migration{
 			DELETE FROM kv WHERE key = 'last_reindex_time';	
 		`))
 	}},
+	{Version: "2023-09-21.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP VIEW public_blobs_view;
+		`))
+	}},
 }
 
 const (

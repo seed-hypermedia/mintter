@@ -272,22 +272,6 @@ const (
 	C_LookupValue = "lookup.value"
 )
 
-// Table public_blobs_view.
-const (
-	PublicBlobsView          sqlitegen.Table  = "public_blobs_view"
-	PublicBlobsViewCodec     sqlitegen.Column = "public_blobs_view.codec"
-	PublicBlobsViewID        sqlitegen.Column = "public_blobs_view.id"
-	PublicBlobsViewMultihash sqlitegen.Column = "public_blobs_view.multihash"
-)
-
-// Table public_blobs_view. Plain strings.
-const (
-	T_PublicBlobsView          = "public_blobs_view"
-	C_PublicBlobsViewCodec     = "public_blobs_view.codec"
-	C_PublicBlobsViewID        = "public_blobs_view.id"
-	C_PublicBlobsViewMultihash = "public_blobs_view.multihash"
-)
-
 // Table public_keys.
 const (
 	PublicKeys          sqlitegen.Table  = "public_keys"
@@ -437,9 +421,6 @@ var Schema = sqlitegen.Schema{
 		LookupID:                        {Table: Lookup, SQLType: "INTEGER"},
 		LookupType:                      {Table: Lookup, SQLType: "INTEGER"},
 		LookupValue:                     {Table: Lookup, SQLType: ""},
-		PublicBlobsViewCodec:            {Table: PublicBlobsView, SQLType: "INTEGER"},
-		PublicBlobsViewID:               {Table: PublicBlobsView, SQLType: "INTEGER"},
-		PublicBlobsViewMultihash:        {Table: PublicBlobsView, SQLType: "BLOB"},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
 		RemoteSitesGroupID:              {Table: RemoteSites, SQLType: "TEXT"},

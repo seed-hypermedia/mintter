@@ -5,19 +5,21 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
-	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
+	"mintter/backend/pkg/slicex"
 	"net/http"
 	"net/url"
 	"strings"
@@ -68,90 +70,141 @@ func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.
 	}
 }
 
-var qGetSite = dqb.Str(`
-	SELECT
-		url,
-		peer_id,
-		group_id,
-		group_version,
-		last_sync_time,
-		last_ok_sync_time
-	FROM remote_sites
-	WHERE url = :url;
-`)
-
-func (srv *Server) syncSite(ctx context.Context, siteURL string, interval time.Duration) error {
-	var (
-		url            string
-		peerID         string
-		groupID        string
-		groupVersion   string
-		lastSyncTime   int64
-		lastSyncOkTime int64
-	)
-	if err := srv.db.QueryOne(ctx, qGetSite(),
-		[]any{siteURL},
-		[]any{&url, &peerID, &groupID, &groupVersion, &lastSyncTime, &lastSyncOkTime},
-	); err != nil {
-		return err
+// SyncSite syncs one site and blocks until finished,
+// unless the last time we've synced was within the specified interval.
+func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.Duration) (err error) {
+	sr, err := srv.db.GetSite(ctx, siteURL)
+	if err != nil {
+		return fmt.Errorf("failed to get site record %s: %w", siteURL, err)
 	}
 
 	now := time.Now()
-	lastSync := time.Unix(lastSyncTime, 0)
+	lastSync := time.Unix(sr.LastSyncTime, 0)
 
+	// Check if we actually need to sync. Check the time of the last sync.
 	if now.Sub(lastSync) < interval {
 		return nil
 	}
 
+	// We make remote call on every sync, because we want to make sure the site is actually serving the group we are syncing.
 	info, err := GetSiteInfoHTTP(ctx, nil, siteURL)
 	if err != nil {
 		return fmt.Errorf("failed to get site info: %w", err)
 	}
 
-	if info.GroupId != groupID {
-		return fmt.Errorf("group ID mismatch: remote %s != local %s", info.GroupId, groupID)
+	ai, err := addrInfoFromProto(info.PeerInfo)
+	if err != nil {
+		return err
 	}
 
-	if info.GroupVersion == groupVersion {
+	// We want to record the timestamp of the last sync attempt, even if it fails.
+	defer func() {
+		doneTime := time.Now()
+		ok := err == nil
+
+		if dbErr := srv.db.RecordSiteSync(ctx, siteURL, ai.ID, doneTime, ok); dbErr != nil {
+			err = errors.Join(err, fmt.Errorf("failed to record site sync: %w", dbErr))
+		}
+	}()
+
+	if info.GroupId != sr.GroupID {
+		return fmt.Errorf("group ID mismatch: remote %s != local %s", info.GroupId, sr.GroupID)
+	}
+
+	// Nothing to sync if the site still has the same version since the last time we asked.
+	if info.GroupVersion == sr.GroupID {
 		return nil
 	}
 
-	// otherwise do the sync
-	//   get remote info
-	//      check remote group id correspond with the local one
-	// 		get all blobs from site
-	//      push all blobs to site
-	//   get remote version and check if we have heads. If so => skip
-	//   sync with site
-	//
+	n, err := srv.node.Await(ctx)
+	if err != nil {
+		return err
+	}
 
-	// TODO: record sync time in db
-	// if we don't have version heads - sync everything
-	//
+	if err := n.Connect(ctx, ai); err != nil {
+		return err
+	}
 
-	// n, err := srv.node.Await(ctx)
-	// if err != nil {
-	// 	return err
-	// }
+	client, err := n.Client(ctx, ai.ID)
+	if err != nil {
+		return err
+	}
 
-	// ai, err := addrInfoFromProto(info.PeerInfo)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to parse peer info: %w", err)
-	// }
+	stream, err := client.ListBlobs(ctx, &p2p.ListBlobsRequest{})
+	if err != nil {
+		return err
+	}
 
-	// // Using libp2p connect instead of mttnet connect to skip the handshake.
-	// // This way we never actually exchange the site's key delegation, so we won't be
-	// // syncing with sites that we don't care about using the regular syncing process.
-	// //
-	// // TODO(burdiyan): BAD!
-	// if err := n.Libp2p().Connect(ctx, ai); err != nil {
-	// 	return err
-	// }
+	bs := n.Blobs().IPFSBlockstore()
 
-	// // client, err := n.SiteClient(ctx, ai.ID)
-	// // if err != nil {
-	// // 	return err
-	// // }
+	// Pull from the site.
+	var want []cid.Cid
+	onSite := map[cid.Cid]struct{}{}
+	for {
+		blob, err := stream.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		c, err := cid.Cast(blob.Cid)
+		if err != nil {
+			return fmt.Errorf("failed to parse CID of a blob: %w", err)
+		}
+
+		onSite[c] = struct{}{}
+
+		ok, err := bs.Has(ctx, c)
+		if err != nil {
+			return fmt.Errorf("failed to check if we have blob %s: %w", c, err)
+		}
+		if ok {
+			continue
+		}
+
+		want = append(want, c)
+	}
+
+	sess := n.Bitswap().NewSession(ctx)
+	for _, c := range want {
+		blk, err := sess.GetBlock(ctx, c)
+		if err != nil {
+			return fmt.Errorf("failed to get blob %s from site: %w", c, err)
+		}
+
+		if err := bs.Put(ctx, blk); err != nil {
+			return fmt.Errorf("failed to put blob %s from site: %w", c, err)
+		}
+	}
+
+	// Reusing the same slice to reduce allocations.
+	missingOnSite := want[:0]
+
+	// Collect relevant blobs locally
+	if err := srv.db.ForEachRelatedBlob(ctx, hyper.EntityID(sr.GroupID), func(c cid.Cid) error {
+		if _, ok := onSite[c]; ok {
+			return nil
+		}
+
+		missingOnSite = append(missingOnSite, c)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	sc, err := n.SiteClient(ctx, ai.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get site client: %w", err)
+	}
+
+	if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
+		Blobs: slicex.Map(missingOnSite, cid.Cid.String),
+	}); err != nil {
+		return fmt.Errorf("failed to push blobs to the site: %w", err)
+	}
 
 	return nil
 }

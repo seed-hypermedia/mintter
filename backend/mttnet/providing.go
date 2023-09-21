@@ -2,10 +2,10 @@ package mttnet
 
 import (
 	"context"
-	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
+	"mintter/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -14,11 +14,15 @@ import (
 	"go.uber.org/zap"
 )
 
-const qAllPublicBlobs = `
-SELECT
-	` + storage.C_PublicBlobsViewCodec + `,
-	` + storage.C_PublicBlobsViewMultihash + `
-FROM ` + storage.T_PublicBlobsView + `;`
+var qAllPublicBlobs = dqb.Str(`
+	SELECT
+		blobs.codec,
+		blobs.multihash
+	FROM blobs
+	LEFT OUTER JOIN drafts ON drafts.blob = blobs.id
+	WHERE blobs.size >= 0
+	AND drafts.blob IS NULL;
+`)
 
 func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
@@ -45,7 +49,7 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 				multihash []byte
 			)
 
-			if err := sqlitex.Exec(conn, qAllPublicBlobs, func(stmt *sqlite.Stmt) error {
+			if err := sqlitex.Exec(conn, qAllPublicBlobs(), func(stmt *sqlite.Stmt) error {
 				stmt.Scan(&codec, &multihash)
 
 				select {

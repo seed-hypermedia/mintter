@@ -55,6 +55,38 @@ var qRecordSiteSync = dqb.Str(`
 	WHERE url = :url;
 `)
 
+type siteRecord struct {
+	URL            string
+	PeerID         string
+	GroupID        string
+	GroupVersion   string
+	LastSyncTime   int64
+	LastSyncOkTime int64
+}
+
+func (db *DB) GetSite(ctx context.Context, baseURL string) (sr siteRecord, err error) {
+	return sr, db.QueryOne(ctx, qGetSite(), []any{baseURL}, []any{
+		&sr.URL,
+		&sr.PeerID,
+		&sr.GroupID,
+		&sr.GroupVersion,
+		&sr.LastSyncTime,
+		&sr.LastSyncOkTime,
+	})
+}
+
+var qGetSite = dqb.Str(`
+	SELECT
+		url,
+		peer_id,
+		group_id,
+		group_version,
+		last_sync_time,
+		last_ok_sync_time
+	FROM remote_sites
+	WHERE url = :url;
+`)
+
 // ForEachRelatedBlob collects all the related blobs for a given group and calls fn on each CID.
 func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn func(c cid.Cid) error) error {
 	conn, release, err := db.db.Conn(ctx)

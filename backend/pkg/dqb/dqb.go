@@ -6,6 +6,7 @@ package dqb
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -21,6 +22,8 @@ func Q(fn func() string) LazyQuery {
 
 // Str returns a memoized string query that will be formatted lazily.
 func Str(s string) LazyQuery {
+	fmt.Println(os.Args)
+
 	return GlobalQueries.Str(s)
 }
 

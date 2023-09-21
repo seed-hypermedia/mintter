@@ -59,7 +59,7 @@ func (srv *rpcMux) ListBlobs(_ *p2p.ListBlobsRequest, stream p2p.P2P_ListBlobsSe
 	}
 	defer release()
 
-	return sqlitex.Exec(conn, qAllPublicBlobs, func(stmt *sqlite.Stmt) error {
+	return sqlitex.Exec(conn, qAllPublicBlobs(), func(stmt *sqlite.Stmt) error {
 		codec := stmt.ColumnInt64(0)
 		hash := stmt.ColumnBytesUnsafe(1)
 
