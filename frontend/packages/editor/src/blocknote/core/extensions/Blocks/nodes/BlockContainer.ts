@@ -410,6 +410,7 @@ export const BlockContainer = Node.create<{
           // If block is first block in the document do nothing
           if (
             $pos.node(depth - 1).type.name === 'doc' &&
+            container &&
             group.firstChild?.attrs.id === container.attrs.id
           )
             return false
