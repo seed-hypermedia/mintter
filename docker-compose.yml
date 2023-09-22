@@ -48,6 +48,7 @@ services:
     ports:
       - "56000:56000"
       - "56000:56000/udp"
+      - "56002:56002"
     networks:
       - internal_network
     volumes:
