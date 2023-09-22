@@ -141,7 +141,7 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 	resp := &groups.PublicSiteInfo{
 		PeerInfo: &groups.PeerInfo{
 			PeerId:    ai.ID.String(),
-			AccountId: n.ID().Account().ID().String(),
+			AccountId: n.ID().Account().Principal().String(),
 			Addrs:     slicex.Map(ai.Addrs, multiaddr.Multiaddr.String),
 		},
 		GroupId: groupID,
