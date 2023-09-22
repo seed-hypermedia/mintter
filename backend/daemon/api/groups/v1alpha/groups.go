@@ -464,6 +464,10 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 		e = v
 	}
 
+	if e == nil {
+		return nil, status.Errorf(codes.NotFound, "group %q with version %q not found", in.Id, in.Version)
+	}
+
 	return groupToProto(e)
 }
 
