@@ -171,6 +171,12 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	a.setupLogging(ctx, cfg)
 
+	if !cfg.Syncing.Disabled {
+		a.g.Go(func() error {
+			return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval)
+		})
+	}
+
 	return
 }
 

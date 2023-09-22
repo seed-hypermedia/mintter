@@ -544,7 +544,7 @@ func newTestSrv(t *testing.T, name string) *Server {
 	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 
 	node := future.New[*mttnet.Node]()
-	srv := NewServer(fut.ReadOnly, NewSQLiteDB(db), bs, node.ReadOnly)
+	srv := NewServer(fut.ReadOnly, logging.New("mintter/groups", "debug"), NewSQLiteDB(db), bs, node.ReadOnly)
 
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)

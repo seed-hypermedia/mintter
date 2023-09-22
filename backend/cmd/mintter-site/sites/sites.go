@@ -246,10 +246,6 @@ func (ws *Website) GetGroupID(ctx context.Context) (string, error) {
 
 // PublishBlobs publish blobs to the website.
 func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
-	if len(in.Blobs) < 1 {
-		return nil, fmt.Errorf("Please, provide at least 1 blob to publish")
-	}
-
 	n, ok := ws.node.Get()
 	if !ok {
 		return nil, errNodeNotReadyYet
@@ -349,16 +345,19 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 		}
 	}
 
-	sess := n.Bitswap().NewSession(ctx)
-	// We don't use sess.GetBlocks here because we care about the order of blobs for correct indexing.
-	for _, c := range want {
-		blk, err := sess.GetBlock(ctx, c)
-		if err != nil {
-			return nil, fmt.Errorf("could not get block %s: %w", c.String(), err)
-		}
+	// Pull those blobs we need.
+	if len(want) > 0 {
+		sess := n.Bitswap().NewSession(ctx)
+		// We don't use sess.GetBlocks here because we care about the order of blobs for correct indexing.
+		for _, c := range want {
+			blk, err := sess.GetBlock(ctx, c)
+			if err != nil {
+				return nil, fmt.Errorf("could not get block %s: %w", c.String(), err)
+			}
 
-		if err := bs.Put(ctx, blk); err != nil {
-			return nil, fmt.Errorf("could not store block %s: %w", c.String(), err)
+			if err := bs.Put(ctx, blk); err != nil {
+				return nil, fmt.Errorf("could not store block %s: %w", c.String(), err)
+			}
 		}
 	}
 

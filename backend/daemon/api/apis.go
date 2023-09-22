@@ -11,6 +11,7 @@ import (
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
+	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/syncing"
@@ -63,7 +64,7 @@ func New(
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(node),
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
-		Groups:     groups.NewServer(repo.Identity(), groups.NewSQLiteDB(db), blobs, node),
+		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", "debug"), groups.NewSQLiteDB(db), blobs, node),
 	}
 }
 

@@ -66,7 +66,7 @@ type siteRecord struct {
 
 // GetSite returns the site record.
 func (db *DB) GetSite(ctx context.Context, baseURL string) (sr siteRecord, err error) {
-	return sr, db.QueryOne(ctx, qGetSite(), []any{baseURL}, []any{
+	return sr, db.queryOne(ctx, qGetSite(), []any{baseURL}, []any{
 		&sr.URL,
 		&sr.PeerID,
 		&sr.GroupID,
@@ -168,7 +168,34 @@ var qCollectBlobs = dqb.Str(`
 	ORDER BY blobs.id ASC;
 `)
 
-func (db *DB) QueryOne(ctx context.Context, sql string, args []any, outs []any) error {
+// ListSites returns the list of sites we know about.
+func (db *DB) ListSites(ctx context.Context) ([]string, error) {
+	conn, release, err := db.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	var urls []string
+
+	if err := sqlitex.Exec(conn, qListSites(), func(stmt *sqlite.Stmt) error {
+		var url string
+		stmt.Scan(&url)
+		urls = append(urls, url)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return urls, nil
+}
+
+var qListSites = dqb.Str(`
+	SELECT url
+	FROM remote_sites;
+`)
+
+func (db *DB) queryOne(ctx context.Context, sql string, args []any, outs []any) error {
 	conn, release, err := db.db.Conn(ctx)
 	if err != nil {
 		return err

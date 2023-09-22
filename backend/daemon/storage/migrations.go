@@ -111,6 +111,11 @@ var migrations = []migration{
 			DELETE FROM kv WHERE key = 'last_reindex_time';
 		`))
 	}},
+	{Version: "2023-09-21.03", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
@@ -212,7 +213,9 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 			}
 			res.Peers[i] = pid
 
-			err = s.SyncWithPeer(ctx, pid)
+			if xerr := s.SyncWithPeer(ctx, pid); xerr != nil {
+				err = errors.Join(err, fmt.Errorf("failed to sync objects: %w", xerr))
+			}
 		}(i, del)
 	}
 
@@ -346,12 +349,78 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 	return nil
 }
 
+// SyncAllBlobs is the alternative dumb syncing method, which just syncs all the blob from the remote peer.
+func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
+	// Can't sync with self.
+	if s.me.DeviceKey().PeerID() == pid {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*40) // arbitrary timeout
+	defer cancel()
+
+	c, err := s.client(ctx, pid)
+	if err != nil {
+		return err
+	}
+
+	stream, err := c.ListBlobs(ctx, &p2p.ListBlobsRequest{})
+	if err != nil {
+		return err
+	}
+
+	bs := s.blobs.IPFSBlockstore()
+
+	var want []cid.Cid
+	for {
+		obj, err := stream.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+
+		c, err := cid.Cast(obj.Cid)
+		if err != nil {
+			return err
+		}
+
+		ok, err := bs.Has(ctx, c)
+		if err != nil {
+			return fmt.Errorf("failed to check if we have blob %s: %w", c, err)
+		}
+
+		if !ok {
+			want = append(want, c)
+		}
+	}
+
+	sess := s.bitswap.NewSession(ctx)
+	for _, c := range want {
+		blk, err := sess.GetBlock(ctx, c)
+		if err != nil {
+			return fmt.Errorf("failed to sync blob %s: %w", c, err)
+		}
+
+		if err := bs.Put(ctx, blk); err != nil {
+			return fmt.Errorf("failed to save blob %s: %w", c, err)
+		}
+	}
+
+	return nil
+}
+
 // SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
 // if a list a list of initialObjects is provided, then only syncs objects from that list.
 func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjects ...hyper.EntityID) error {
 	// Can't sync with self.
 	if s.me.DeviceKey().PeerID() == device {
 		return nil
+	}
+
+	if initialObjects == nil {
+		return s.SyncAllBlobs(ctx, device)
 	}
 
 	var filter map[hyper.EntityID]struct{}

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mintter/backend/core"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
@@ -22,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -29,6 +31,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -38,15 +41,17 @@ import (
 // Server is the implementation of the groups service.
 type Server struct {
 	me    *future.ReadOnly[core.Identity]
+	log   *zap.Logger
 	blobs *hyper.Storage
 	db    *DB
 	node  *future.ReadOnly[*mttnet.Node]
 }
 
 // NewServer creates a new groups server.
-func NewServer(me *future.ReadOnly[core.Identity], db *DB, blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], log *zap.Logger, db *DB, blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
 	return &Server{
 		me:    me,
+		log:   log,
 		db:    db,
 		blobs: blobs,
 		node:  node,
@@ -59,15 +64,99 @@ func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.
 	t := time.NewTimer(warmup)
 	defer t.Stop()
 
+	// Each interval we scan the list of known sites,
+	// and start separate worker goroutines for each site (unless already started).
+	// The worker goroutine syncs with the site using the same periodic interval.
+
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	// Creating a child context which will be cancelled anytime there's a fatal failure.
+	// This will make sure all workers can be shutdown gracefully before exiting.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Each worker has its own cancel function so that we can stop workers if we ever
+	// remove sites from the database and need to stop syncing them. But this is
+	// currently not implemented.
+	siteWorkers := map[string]context.CancelFunc{}
+
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-t.C:
-
+			if err := srv.scheduleSiteWorkers(ctx, &wg, siteWorkers, interval); err != nil {
+				return err
+			}
 			t.Reset(interval)
 		}
 	}
+}
+
+// scheduleSiteWorkers by checking the list of sites in the database and making sure we have workers for each of them.
+// The workers map argument is owned by this function, and it is unsafe for concurrency.
+func (srv *Server) scheduleSiteWorkers(ctx context.Context,
+	wg *sync.WaitGroup,
+	siteWorkers map[string]context.CancelFunc,
+	interval time.Duration,
+) error {
+	sites, err := srv.db.ListSites(ctx)
+	if err != nil {
+		return err
+	}
+
+	// TODO(burdiyan): handle removing sites and stopping workers.
+	// It's currently not possible anyways.
+	for _, s := range sites {
+		if _, ok := siteWorkers[s]; ok {
+			continue
+		}
+
+		ctx, cancel := context.WithCancel(ctx)
+		siteWorkers[s] = cancel
+
+		wg.Add(1)
+		s := s // Capture range variable to pass to the goroutine.
+		go func() {
+			srv.log.Debug("PeriodicSiteSyncWorkerStarter", zap.String("siteURL", s))
+			defer func() {
+				srv.log.Debug("PeriodicSiteSyncWorkerStopped", zap.String("siteURL", s))
+				wg.Done()
+			}()
+
+			// We randomly select a time to wait before we start the first sync.
+			// This is an attempt to avoid making all the sites syncing at exactly the same time.
+			t := time.NewTimer(time.Duration(rand.Intn(int(time.Minute)))) //nolint:gosec, We don't need a secure random generator here.
+			defer t.Stop()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-t.C:
+					start := time.Now()
+					srv.log.Debug("SiteSyncRoundStarted", zap.String("siteURL", s))
+
+					// We want to log error message if sync round failed.
+					log := srv.log.Debug
+					err := srv.SyncSite(ctx, s, interval)
+					if err != nil {
+						log = srv.log.Error
+					}
+					log("SiteSyncRoundFinished",
+						zap.String("siteURL", s),
+						zap.Duration("duration", time.Since(start)),
+						zap.Error(err),
+					)
+
+					t.Reset(interval)
+				}
+			}
+		}()
+	}
+
+	return nil
 }
 
 // SyncSite syncs one site and blocks until finished,
@@ -167,43 +256,58 @@ func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.D
 		want = append(want, c)
 	}
 
-	sess := n.Bitswap().NewSession(ctx)
-	for _, c := range want {
-		blk, err := sess.GetBlock(ctx, c)
-		if err != nil {
-			return fmt.Errorf("failed to get blob %s from site: %w", c, err)
-		}
+	// Pulling those blobs we want from site.
+	if len(want) > 0 {
+		sess := n.Bitswap().NewSession(ctx)
+		for _, c := range want {
+			blk, err := sess.GetBlock(ctx, c)
+			if err != nil {
+				return fmt.Errorf("failed to get blob %s from site: %w", c, err)
+			}
 
-		if err := bs.Put(ctx, blk); err != nil {
-			return fmt.Errorf("failed to put blob %s from site: %w", c, err)
+			if err := bs.Put(ctx, blk); err != nil {
+				return fmt.Errorf("failed to put blob %s from site: %w", c, err)
+			}
 		}
 	}
 
-	// Reusing the same slice to reduce allocations.
-	missingOnSite := want[:0]
+	// Pushing to site if we can.
+	{
+		sc, err := n.SiteClient(ctx, ai.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get site client: %w", err)
+		}
 
-	// Collect relevant blobs locally
-	if err := srv.db.ForEachRelatedBlob(ctx, hyper.EntityID(sr.GroupID), func(c cid.Cid) error {
-		if _, ok := onSite[c]; ok {
+		// This is a nasty way to check if we are allowed to push to the site.
+		if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{}); status.Code(err) == codes.PermissionDenied {
 			return nil
 		}
 
-		missingOnSite = append(missingOnSite, c)
+		// Reusing the same slice to reduce allocations.
+		missingOnSite := want[:0]
 
-		return nil
-	}); err != nil {
-		return err
-	}
+		// Collect relevant blobs locally
+		if err := srv.db.ForEachRelatedBlob(ctx, hyper.EntityID(sr.GroupID), func(c cid.Cid) error {
+			if _, ok := onSite[c]; ok {
+				return nil
+			}
 
-	sc, err := n.SiteClient(ctx, ai.ID)
-	if err != nil {
-		return fmt.Errorf("failed to get site client: %w", err)
-	}
+			missingOnSite = append(missingOnSite, c)
 
-	if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
-		Blobs: slicex.Map(missingOnSite, cid.Cid.String),
-	}); err != nil {
-		return fmt.Errorf("failed to push blobs to the site: %w", err)
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if len(missingOnSite) == 0 {
+			return nil
+		}
+
+		if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
+			Blobs: slicex.Map(missingOnSite, cid.Cid.String),
+		}); err != nil {
+			return fmt.Errorf("failed to push blobs to the site: %w", err)
+		}
 	}
 
 	return nil
@@ -437,7 +541,21 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(e)
+	grouppb, err := groupToProto(e)
+	if err != nil {
+		return nil, err
+	}
+
+	if v, ok := e.Get("siteURL"); ok {
+		vv, ok := v.(string)
+		if ok {
+			if err := srv.SyncSite(ctx, vv, 0); err != nil {
+				srv.log.Error("PushGroupToSiteError", zap.String("siteURL", vv), zap.Error(err))
+			}
+		}
+	}
+
+	return grouppb, nil
 }
 
 // ListGroups lists groups.
