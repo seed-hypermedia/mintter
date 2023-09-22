@@ -1,3 +1,4 @@
+import {unpackHmId} from '@mintter/shared'
 import {websiteClient} from '../client'
 
 export async function getSiteGroup(): Promise<{
@@ -5,8 +6,9 @@ export async function getSiteGroup(): Promise<{
   version?: string | null
 }> {
   const siteInfo = await websiteClient.getSiteInfo({})
+  const groupId = unpackHmId(siteInfo.groupId || '')
   return {
-    groupEid: siteInfo.groupId || undefined,
+    groupEid: groupId?.eid || undefined,
     version: siteInfo.groupVersion || null,
   }
 }
