@@ -22,6 +22,8 @@ func TestMigrateMatchesFreshSchema(t *testing.T) {
 	// We want to test that the data dir with all applied migrations matches the data dir created from scratch.
 	// So we copy the initial snapshot to a temporary directory, apply all migrations to it,
 	// and then compare it with a fresh directory.
+	// If we need to break the compatibility, a new snapshot can be generated using `go run ./backend/cmd/mkdb`,
+	// the resulting snapshot must be manually copied into the testdata directory (removing the previous snapshot first).
 
 	tmpDir := t.TempDir()
 	err := copyDir("./testdata/mintter-test-db-snapshot", tmpDir)

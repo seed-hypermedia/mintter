@@ -48,73 +48,8 @@ type migration struct {
 // Otherwise when you switch back to the main branch the program will complain about an unknown version of the data directory.
 var migrations = []migration{
 	// New beginning.
-	{Version: "2023-08-30.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+	{Version: "2023-09-22.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return nil
-	}},
-	{Version: "2023-09-12.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, `
-			DROP TABLE sites;
-			DROP TABLE invite_tokens;
-			DROP TABLE site_members;
-			DROP TABLE web_publications;
-		`)
-	}},
-	{Version: "2023-09-18.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, `
-			DROP TABLE served_sites;
-		`)
-	}},
-	{Version: "2023-09-18.02", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			CREATE TABLE remote_sites (
-				url TEXT UNIQUE NOT NULL,
-				peer_id TEXT NOT NULL,
-				group_id TEXT NOT NULL,
-				group_version TEXT NOT NULL,
-				last_sync_time INTEGER NOT NULL,
-				last_ok_sync_time INTEGER NOT NULL
-			);		
-		`))
-	}},
-	{Version: "2023-09-19.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			CREATE TABLE accounts (
-				entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-				public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-				PRIMARY KEY (entity, public_key)
-			);
-
-			CREATE INDEX accounts_by_key ON accounts (public_key, entity);
-		`))
-	}},
-	{Version: "2023-09-20.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			DELETE FROM kv WHERE key = 'last_reindex_time';	
-		`))
-	}},
-	{Version: "2023-09-21.01", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			DROP VIEW public_blobs_view;
-		`))
-	}},
-	{Version: "2023-09-21.02", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			DROP TABLE remote_sites;
-			CREATE TABLE remote_sites (
-				url TEXT UNIQUE NOT NULL,
-				peer_id TEXT NOT NULL DEFAULT (''),
-				group_id TEXT NOT NULL,
-				group_version TEXT NOT NULL DEFAULT (''),
-				last_sync_time INTEGER NOT NULL DEFAULT (0),
-				last_ok_sync_time INTEGER NOT NULL DEFAULT (0)
-			);
-			DELETE FROM kv WHERE key = 'last_reindex_time';
-		`))
-	}},
-	{Version: "2023-09-21.03", Run: func(d *Dir, conn *sqlite.Conn) error {
-		return sqlitex.ExecScript(conn, sqlfmt(`
-			DELETE FROM kv WHERE key = 'last_reindex_time';
-		`))
 	}},
 }
 
