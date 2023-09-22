@@ -8,7 +8,7 @@ export async function getSiteGroup(): Promise<{
   const siteInfo = await websiteClient.getSiteInfo({})
   const groupId = unpackHmId(siteInfo.groupId || '')
   return {
-    groupEid: groupId?.eid || undefined,
-    version: siteInfo.groupVersion || null,
+    groupEid: groupId?.eid || '',
+    version: '',
   }
 }
