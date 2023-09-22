@@ -177,7 +177,7 @@ func (d *Dir) init() (currentVersion string, err error) {
 func (d *Dir) migrate(currentVersion string) error {
 	desiredVersion := migrations[len(migrations)-1].Version
 	if currentVersion > desiredVersion {
-		return fmt.Errorf("current version '%s' is newer than the desired version '%s': you are probably running old version of the software", currentVersion, desiredVersion)
+		return fmt.Errorf("OLD VERSION: you are running an old version of Mintter: your data dir version is %q and it can't be downgraded to %q", currentVersion, desiredVersion)
 	}
 
 	// Running migrations if necessary.
@@ -194,7 +194,7 @@ func (d *Dir) migrate(currentVersion string) error {
 			return +1
 		})
 		if !ok {
-			return fmt.Errorf("failed to find migration for version '%s'", currentVersion)
+			return fmt.Errorf("BREAKING CHANGE: this version of Mintter is incompatible with your existing data: remove your data directory located in %q", d.path)
 		}
 
 		pending := migrations[idx+1:]
