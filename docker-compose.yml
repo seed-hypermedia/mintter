@@ -38,7 +38,7 @@ services:
 
     environment:
       - "HM_BASE_URL=${MTT_SITE_HOSTNAME:-http://nextjs}"
-      - "NEXT_PUBLIC_GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - "GRPC_HOST=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
       - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 
   minttersite:

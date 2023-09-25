@@ -1,5 +1,5 @@
 # Build from the root with `docker build -t nextjs-docker . -f ./frontend/apps/site/Dockerfile`.
-# docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e NEXT_PUBLIC_GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
+# docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
 
 FROM node:18-alpine AS builder
 RUN apk add git
@@ -12,7 +12,7 @@ RUN yarn install
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 ENV NEXT_PUBLIC_LN_HOST https://ln.mintter.com
-ENV NEXT_PUBLIC_GRPC_HOST http://minttersite:56001
+ENV GRPC_HOST http://minttersite:56001
 RUN yarn site:prod
 
 

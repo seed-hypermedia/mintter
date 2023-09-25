@@ -361,7 +361,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
       />
     </XStack>
   )
-  // return <img src={`${process.env.NEXT_PUBLIC_GRPC_HOST}/ipfs/${cid}`} />
+  // return <img src={`${process.env.GRPC_HOST}/ipfs/${cid}`} />
 }
 
 function stripHMLinkPrefix(link: string) {

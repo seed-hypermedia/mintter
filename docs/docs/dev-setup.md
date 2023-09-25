@@ -90,4 +90,4 @@ Alternatively, you can do this in two steps:
 
 In the Mintter directory, start by running `yarn`. Then:
 
-`HM_BASE_URL="http://localhost:3000" NEXT_PUBLIC_GRPC_HOST="http://localhost:57001" PORT=3000 yarn site`
+`HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:57001" PORT=3000 yarn site`
