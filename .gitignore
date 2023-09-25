@@ -88,3 +88,6 @@ _env.scss
 
 # changelog file
 whats-new.txt
+
+# tamagui
+**/.tamagui/*

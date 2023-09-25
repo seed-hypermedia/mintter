@@ -1,8 +1,18 @@
 {
   "compilerOptions": {
     "strictNullChecks": true,
-    "declaration": false,
     "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@mintter/app/*": ["./frontend/packages/app/*"],
+      "@mintter/ui/*": ["./frontend/packages/ui/*"],
+      "@mintter/shared/*": ["./frontend/packages/shared/*"]
+    },
+    "plugins": [
+      {
+        // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
+        "name": "@nderscore/tamagui-typescript-plugin",
+        "pathToApp": "apps/next"
+      }
+    ]
   },
-  "extends": "./tsconfig.base"
 }

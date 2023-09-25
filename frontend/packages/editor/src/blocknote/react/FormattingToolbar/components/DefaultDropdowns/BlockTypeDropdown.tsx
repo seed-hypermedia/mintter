@@ -58,8 +58,6 @@ export const BlockTypeDropdown = <BSchema extends BlockSchema>(props: {
 }) => {
   const [block, setBlock] = useState(props.editor.getTextCursorPosition().block)
 
-  console.log(`== ~ block:`, block)
-
   const filteredItems: BlockTypeDropdownItem[] = useMemo(() => {
     return (props.items || defaultBlockTypeDropdownItems).filter((item) => {
       // Checks if block type exists in the schema

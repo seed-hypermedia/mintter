@@ -12,8 +12,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@mintter/prettier": "workspace:*",
-    "eslint-config-custom": "workspace:*",
+    "@mintter/prettier": "*",
+    "eslint-config-custom": "*",
     "typescript": "5.1.6",
     "vitest": "0.34.2"
   },

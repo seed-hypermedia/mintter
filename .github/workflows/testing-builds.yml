@@ -103,7 +103,7 @@ jobs:
       - name: Build, package & make (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
-          TAMAGUI_TARGET=web DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
+          DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
@@ -118,7 +118,6 @@ jobs:
       - name: Build, package and make (Win32)
         if: matrix.config.os == 'windows-latest'
         run: |
-          $env:TAMAGUI_TARGET="web"
           $env:DEBUG='electron-osx-sign*,electron-notarize*'
           yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
