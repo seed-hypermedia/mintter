@@ -1,17 +1,19 @@
 import React from 'react'
-import {SizableText, Tooltip as TTooltop} from 'tamagui'
+import {SizableText, Tooltip as TTooltip, TooltipProps} from 'tamagui'
 
 export function Tooltip({
   children,
   content,
+  placement,
 }: {
   children: React.ReactNode
   content: string | React.ReactElement
+  placement?: TooltipProps['placement']
 }) {
   return (
-    <TTooltop>
-      <TTooltop.Trigger>{children}</TTooltop.Trigger>
-      <TTooltop.Content
+    <TTooltip placement={placement}>
+      <TTooltip.Trigger asChild>{children}</TTooltip.Trigger>
+      <TTooltip.Content
         enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         scale={1}
@@ -29,11 +31,11 @@ export function Tooltip({
           },
         ]}
       >
-        <TTooltop.Arrow />
+        <TTooltip.Arrow />
         <SizableText size="$1" margin={0} padding={0} lineHeight="$1">
           {content}
         </SizableText>
-      </TTooltop.Content>
-    </TTooltop>
+      </TTooltip.Content>
+    </TTooltip>
   )
 }

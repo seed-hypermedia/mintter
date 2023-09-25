@@ -1,18 +1,10 @@
-import {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from 'next'
+import {GetServerSideProps, GetServerSidePropsContext} from 'next'
 import Head from 'next/head'
-import {setAllowAnyHostGetCORS} from 'server/cors'
-import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {SiteHead} from '../../../site-head'
 
 import {Timestamp} from '@bufbuild/protobuf'
 import {
-  Publication,
   UnpackedHypermediaId,
-  createHmId,
   createPublicWebHmUrl,
   formattedDate,
   unpackHmId,
@@ -24,6 +16,7 @@ import {
   PageSection,
   SideSection,
   SideSectionTitle,
+  SizableText,
   Text,
   Tooltip,
   View,
@@ -33,11 +26,10 @@ import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
 import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
-import {Paragraph} from 'tamagui'
+import {PublicationContent} from '../../../publication-page'
+import {GroupView, getGroupPageProps, getGroupView} from '../../../server/group'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
-import {GroupView, getGroupPageProps, getGroupView} from '../../../server/group'
-import {PublicationContent} from '../../../publication-page'
 
 function GroupOwnerSection({owner}: {owner: string}) {
   return (
@@ -70,9 +62,9 @@ function LastUpdateSection({time}: {time: string}) {
       <SideSectionTitle>Last Update:</SideSectionTitle>
 
       <Tooltip content={format(new Date(time), 'MMMM do yyyy, HH:mm:ss z')}>
-        <Paragraph color="$blue11">
+        <SizableText color="$blue11">
           {format(new Date(time), 'EEEE, MMMM do, yyyy')}
-        </Paragraph>
+        </SizableText>
       </Tooltip>
     </SideSection>
   )

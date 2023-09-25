@@ -9,7 +9,6 @@ import {
 } from '@mintter/shared'
 import {
   Button,
-  Paragraph,
   SideSection,
   SideSectionTitle,
   SizableText,
@@ -556,9 +555,9 @@ function LatestVersionBanner({
           'MMMM do yyyy, HH:mm:ss z',
         )}
       >
-        <Paragraph color="$blue11">
+        <SizableText color="$blue11">
           {format(new Date(record.publishTime), 'EEEE, MMMM do, yyyy')}
-        </Paragraph>
+        </SizableText>
       </Tooltip>
     </NextLink>
   )

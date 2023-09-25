@@ -18,7 +18,6 @@ import {
   Input,
   Label,
   Next,
-  Paragraph,
   ParagraphProps,
   Prev,
   Reload,
@@ -680,9 +679,9 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
 
 function StepParagraph({children, ...props}: ParagraphProps) {
   return (
-    <Paragraph size="$5" maxWidth={CONTENT_MAX_WIDTH}>
+    <SizableText size="$5" maxWidth={CONTENT_MAX_WIDTH}>
       {children}
-    </Paragraph>
+    </SizableText>
   )
 }
 
