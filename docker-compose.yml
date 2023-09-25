@@ -52,10 +52,10 @@ services:
     networks:
       - internal_network
     volumes:
-      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mttsite:rw
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mtt-site:rw
     command:
       - "mintter-site"
-      - "-data-dir=/.mttsite"
+      - "-data-dir=/.mtt-site"
       - "-lndhub.mainnet"
       - "-p2p.port=56000"
       - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
