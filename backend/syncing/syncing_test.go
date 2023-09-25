@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -35,11 +34,11 @@ func TestSync(t *testing.T) {
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
 	entity := hyper.NewEntity("foo")
-	blob, err := entity.CreateChange(entity.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+	blob, err := entity.CreateChange(entity.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs), map[string]any{
 		"name": "alice",
 	})
 	require.NoError(t, err)
-	require.NoError(t, alice.Blobs().SaveBlob(ctx, blob))
+	require.NoError(t, alice.Blobs.SaveBlob(ctx, blob))
 
 	res, err := bob.Syncer.Sync(ctx)
 	require.NoError(t, err)
@@ -47,7 +46,7 @@ func TestSync(t *testing.T) {
 	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
 
 	{
-		blk, err := bob.Blobs().IPFSBlockstoreReader().Get(ctx, blob.CID)
+		blk, err := bob.Blobs.IPFSBlockstoreReader().Get(ctx, blob.CID)
 		require.NoError(t, err)
 
 		require.Equal(t, blob.Data, blk.RawData(), "bob must sync alice's change intact")
@@ -64,35 +63,36 @@ func TestSyncWithList(t *testing.T) {
 	entityID := hyper.EntityID("alice-test-entity")
 	{
 		e := hyper.NewEntity(entityID)
-		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs), map[string]any{
 			"title": "This is a title of a fake test entity",
 		})
 		require.NoError(t, err)
-		require.NoError(t, alice.Blobs().SaveBlob(ctx, hb))
+		require.NoError(t, alice.Blobs.SaveBlob(ctx, hb))
 	}
 	// Create another entity for alice to make sure we only sync one entity.
 	{
 		e := hyper.NewEntity("another-entity")
-		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs()), map[string]any{
+		hb, err := e.CreateChange(e.NextTimestamp(), alice.ID().DeviceKey(), getDelegation(ctx, alice.ID(), alice.Blobs), map[string]any{
 			"title": "This is a title of another fake test entity",
 		})
 		require.NoError(t, err)
-		require.NoError(t, alice.Blobs().SaveBlob(ctx, hb))
+		require.NoError(t, alice.Blobs.SaveBlob(ctx, hb))
 	}
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
 	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().PeerID(), entityID))
 
-	list, err := bob.Blobs().ListEntities(ctx, "")
+	list, err := bob.Blobs.ListEntities(ctx, "")
 	require.NoError(t, err)
 
 	require.Len(t, list, 3, "bob must have synced only one entity from alice") // 3 = bob's account + alice's account + alice's entity
 	require.Equal(t, entityID, list[2], "bob must have synced alice's entity")
 }
 
-func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, context.CancelFunc) {
+func makeTestNode(t *testing.T, name string) testNode {
 	u := coretest.NewTester(name)
+	db := storage.MakeTestDB(t)
 
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
@@ -125,7 +125,13 @@ func makeTestPeer(t *testing.T, db *sqlitex.Pool, name string) (*mttnet.Node, co
 		require.NoError(t, err)
 	}
 
-	return n, cancel
+	t.Cleanup(cancel)
+
+	return testNode{
+		Node:   n,
+		Blobs:  blobs,
+		Syncer: NewService(must.Do2(zap.NewDevelopment()).Named(name), n.ID(), db, blobs, n.Bitswap(), n.Client),
+	}
 }
 
 func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) cid.Cid {
@@ -162,19 +168,6 @@ func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) 
 
 type testNode struct {
 	*mttnet.Node
-
+	Blobs  *hyper.Storage
 	Syncer *Service
-}
-
-func makeTestNode(t *testing.T, name string) testNode {
-	var n testNode
-
-	db := storage.MakeTestDB(t)
-	peer, stop := makeTestPeer(t, db, name)
-	t.Cleanup(stop)
-	n.Node = peer
-
-	n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), db, peer.Blobs(), peer.Bitswap(), peer.Client)
-
-	return n
 }

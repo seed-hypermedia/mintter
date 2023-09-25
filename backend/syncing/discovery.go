@@ -9,6 +9,8 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const defaultDiscoveryTimeout = time.Second * 30
@@ -19,6 +21,10 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 	// TODO(burdiyan): if we know the version, there's no need to finding provider peers
 	// for the permanode, we could be just looking for the leaf change CIDs, and walk up the
 	// change DAG. We are doing almost exactly that inside the syncFromVersion() method.
+
+	if s.DisableDiscovery {
+		return status.Error(codes.FailedPrecondition, "remote content discovery is disabled")
+	}
 
 	ctx, cancel := context.WithTimeout(ctx, defaultDiscoveryTimeout)
 	defer cancel()

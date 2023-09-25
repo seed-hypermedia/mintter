@@ -1,4 +1,4 @@
-package ipfs
+package mttnet
 
 import (
 	"bytes"
@@ -6,9 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -30,15 +28,8 @@ import (
 )
 
 const (
-	// IPFSRootRoute is the root route of ipfs.
-	IPFSRootRoute = "/ipfs"
-	// UploadRoute is the route to upload a file.
-	UploadRoute = "/file-upload"
-	routeVar    = "cid"
-	// GetRoute is the route to get a file.
-	GetRoute = "/{" + routeVar + "}"
-	// MaxFileMB is the maximum file size (in MB) to be uploaded.
-	MaxFileMB = 64
+	// MaxFileBytes is the maximum file size in bytes to be uploaded.
+	MaxFileBytes = 64 * 1024 * 1024 // 64MiB
 	// SearchTimeout is the maximum time we are searching for a file.
 	SearchTimeout = 30 * time.Second
 )
@@ -64,58 +55,26 @@ type HTTPHandler interface {
 
 // FileManager is the main object to handle ipfs files.
 type FileManager struct {
-	ctx        context.Context
-	started    bool
 	log        *zap.Logger
-	exch       exchange.Interface
-	bstore     blockstore.Blockstore
-	bservice   blockservice.BlockService
-	DAGService ipld.DAGService // become a DAG service
+	DAGService ipld.DAGService
 	provider   provider.System
 }
 
-// NewManager creates a new fileManager instance.
-func NewManager(ctx context.Context, log *zap.Logger) *FileManager {
+// NewFileManager creates a new fileManager instance.
+func NewFileManager(log *zap.Logger, bs blockstore.Blockstore, bitswap exchange.Interface, prov provider.System) *FileManager {
+	bsvc := blockservice.New(bs, bitswap)
+	// Don't close the blockservice, because it doesn't do anything useful.
+	// It's actually closing the exchange, which is not even its responsibility.
+	// The whole blockservice interface is just bad, and IPFS keeps talking about removing it,
+	// but I guess it's too engrained everywhere to remove easily.
+
+	dag := merkledag.NewDAGService(bsvc)
+
 	return &FileManager{
-		log:     log,
-		ctx:     ctx,
-		started: false,
+		log:        log,
+		provider:   prov,
+		DAGService: dag,
 	}
-}
-
-// Start starts new manager.
-func (fm *FileManager) Start(blockstore blockstore.Blockstore, bitswap *Bitswap, provider provider.System) error {
-	fm.bstore = blockstore
-	fm.exch = bitswap
-	fm.provider = provider
-	if err := fm.setupBlockService(); err != nil {
-		return err
-	}
-
-	if err := fm.setupDAGService(); err != nil {
-		fm.bservice.Close()
-		return err
-	}
-
-	go fm.autoclose()
-	fm.started = true
-	return nil
-}
-
-func (fm *FileManager) autoclose() {
-	<-fm.ctx.Done()
-	fm.bservice.Close()
-	fm.started = false
-}
-
-func (fm *FileManager) setupBlockService() error {
-	fm.bservice = blockservice.New(fm.bstore, fm.exch)
-	return nil
-}
-
-func (fm *FileManager) setupDAGService() error {
-	fm.DAGService = merkledag.NewDAGService(fm.bservice)
-	return nil
 }
 
 // GetFile retrieves a file from ipfs.
@@ -123,18 +82,14 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
-	if !fm.started {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		fmt.Fprintf(w, "IPFS node not started")
-		return
-	}
+
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "Only GET method is supported.")
 		return
 	}
 	vars := mux.Vars(r)
-	cidStr, ok := vars[routeVar]
+	cidStr, ok := vars["cid"]
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Url format not recognized")
@@ -194,73 +149,42 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, OPTIONS")
-	if !fm.started {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		fmt.Fprintf(w, "IPFS node not started")
-		return
-	}
+
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprintf(w, "Only POST method is supported.")
 		return
 	}
 
-	// Parse our multipart form, 10 << 20 specifies a maximum
-	// upload of 10 MB files.
-	if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
+	if err := r.ParseMultipartForm(MaxFileBytes); err != nil {
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		fmt.Fprintf(w, "Parse body error: %s", err.Error())
 		return
 	}
-	if len(r.MultipartForm.File) != 1 {
+
+	f, _, err := r.FormFile("file")
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fm.log.Debug("Only one file supported", zap.Int("Number of files", len(r.MultipartForm.File)))
-		fmt.Fprintf(w, "Only one file supported, got: %d", len(r.MultipartForm.File))
+		fmt.Fprintf(w, "Error Retrieving file to upload: %v", err.Error())
 		return
 	}
-	fhs := []*multipart.FileHeader{}
-	for _, v := range r.MultipartForm.File {
-		fhs = v
-	}
-	if len(fhs) != 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		fm.log.Debug("Only one file header file supported", zap.Int("Number of headers", len(fhs)))
-		fmt.Fprintf(w, "Only one file header file supported, got: %d", len(fhs))
-		return
-	}
-	file, err := fhs[0].Open()
+	defer f.Close()
+
+	n, err := fm.addFile(f)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fm.log.Warn("Error Retrieving file to upload", zap.Error(err))
-		fmt.Fprintf(w, "Error Retrieving file to upload %s", err.Error())
-		return
-	}
-	defer file.Close()
-	n, err := fm.addFile(file)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fm.log.Warn("Cannot upload file to ipfs", zap.Error(err))
-		fmt.Fprintf(w, "Cannot upload file to ipfs: %s", err.Error())
-		return
-	}
-	size, err := n.Size()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fm.log.Warn("Cannot calculate size of the uploaded file", zap.Error(err))
-		fmt.Fprintf(w, "Cannot calculate size of the uploaded file: %s", err.Error())
+		fmt.Fprintf(w, "Failed to add file to the IPFS blockstore: %v", err.Error())
 		return
 	}
 
+	// Providing is best-effort so we don't fail the request if it fails.
 	if err = fm.provider.Provide(n.Cid()); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Warn("Failed to provide file", zap.Error(err))
-		fmt.Fprintf(w, "Failed to provide file: %s", err.Error())
-		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
-	w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
 	w.Header().Add("Content-Type", "text/plain")
-	_, _ = w.Write([]byte(n.Cid().String()))
+	w.Write([]byte(n.Cid().String()))
 }
 
 // addFile chunks and adds content to the DAGService from a reader. The content
@@ -279,10 +203,9 @@ func (fm *FileManager) addFile(r io.Reader) (ipld.Node, error) {
 	}
 	prefix.MhType = hashFunCode
 	prefix.MhLength = -1
-	DAGService := merkledag.NewDAGService(fm.bservice)
 
 	dbp := helpers.DagBuilderParams{
-		Dagserv:    DAGService,
+		Dagserv:    fm.DAGService,
 		RawLeaves:  true, // Leave the actual file bytes untouched instead of wrapping them in a dag-pb protobuf wrapper
 		Maxlinks:   helpers.DefaultLinksPerBlock,
 		NoCopy:     false,

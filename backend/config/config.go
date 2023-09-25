@@ -68,15 +68,15 @@ func (c *Config) BindFlags(fs *flag.FlagSet) {
 // Default creates a new default config.
 func Default() Config {
 	return Config{
+		Base: Base{
+			DataDir:  "~/.mtt",
+			LogLevel: "debug",
+		},
 		HTTP: HTTP{
 			Port: 55001,
 		},
 		GRPC: GRPC{
 			Port: 55002,
-		},
-		Base: Base{
-			DataDir:  "~/.mtt",
-			LogLevel: "debug",
 		},
 		Lndhub: Lndhub{
 			Mainnet: false,
@@ -152,11 +152,12 @@ type GRPC struct {
 	Port int
 }
 
+// BindFlags binds the flags to the given FlagSet.
 func (c *GRPC) BindFlags(fs *flag.FlagSet) {
 	fs.IntVar(&c.Port, "grpc.port", c.Port, "Port for the gRPC server")
 }
 
-// Lndhub related config. For field descriptions see SetupFlags().
+// Lndhub related config.
 type Lndhub struct {
 	Mainnet bool
 }
@@ -166,12 +167,13 @@ func (c *Lndhub) BindFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.Mainnet, "lndhub.mainnet", c.Mainnet, "Connect to the mainnet lndhub.go server")
 }
 
-// Syncing configuration. For field descriptions see SetupFlags().
+// Syncing configuration.
 type Syncing struct {
 	WarmupDuration time.Duration
 	Interval       time.Duration
 	TimeoutPerPeer time.Duration
-	Disabled       bool
+	NoPull         bool
+	NoDiscovery    bool
 }
 
 // BindFlags binds the flags to the given FlagSet.
@@ -179,20 +181,21 @@ func (c *Syncing) BindFlags(fs *flag.FlagSet) {
 	fs.DurationVar(&c.WarmupDuration, "syncing.warmup-duration", c.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&c.Interval, "syncing.interval", c.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&c.TimeoutPerPeer, "syncing.timeout-per-peer", c.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
-	fs.BoolVar(&c.Disabled, "syncing.disabled", c.Disabled, "Disables periodic syncing")
+	fs.BoolVar(&c.NoPull, "syncing.no-pull", c.NoPull, "Disables periodic content pulling")
+	fs.BoolVar(&c.NoDiscovery, "syncing.no-discovery", c.NoDiscovery, "Disables the ability to discover content from other peers")
 }
 
-// P2P configuration. For field descriptions see SetupFlags().
+// P2P networking configuration.
 type P2P struct {
 	Port                    int
 	NoRelay                 bool
 	BootstrapPeers          []multiaddr.Multiaddr
+	ListenAddrs             []multiaddr.Multiaddr
+	AnnounceAddrs           []multiaddr.Multiaddr
 	ForceReachabilityPublic bool
 	NoPrivateIps            bool
 	NoMetrics               bool
 	RelayBackoff            time.Duration
-	AnnounceAddrs           []multiaddr.Multiaddr
-	ListenAddrs             []multiaddr.Multiaddr
 }
 
 // BindFlags binds the flags to the given FlagSet.
@@ -200,9 +203,9 @@ func (p2p *P2P) BindFlags(fs *flag.FlagSet) {
 	fs.IntVar(&p2p.Port, "p2p.port", p2p.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&p2p.NoRelay, "p2p.no-relay", p2p.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Multiaddrs for bootstrap nodes (comma separated)")
+	fs.Var(newAddrsFlag(p2p.ListenAddrs, &p2p.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
 	fs.Var(newAddrsFlag(p2p.AnnounceAddrs, &p2p.AnnounceAddrs), "p2p.announce-addrs", "Multiaddrs this node will announce as being reachable at (comma separated)")
 	fs.BoolVar(&p2p.ForceReachabilityPublic, "p2p.force-reachability-public", p2p.ForceReachabilityPublic, "Force the node into thinking it's publicly reachable")
-	fs.Var(newAddrsFlag(p2p.ListenAddrs, &p2p.ListenAddrs), "p2p.listen-addrs", "Addresses to be listen at (comma separated multiaddresses format)")
 	fs.BoolVar(&p2p.NoPrivateIps, "p2p.no-private-ips", p2p.NoPrivateIps, "Avoid announcing private IP addresses (ignored when using -p2p.announce-addrs)")
 	fs.BoolVar(&p2p.NoMetrics, "p2p.no-metrics", p2p.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&p2p.RelayBackoff, "p2p.relay-backoff", p2p.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")

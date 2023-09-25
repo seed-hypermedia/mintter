@@ -147,8 +147,13 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		GroupId: groupID,
 	}
 
+	blobs, err := ws.blobs.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if groupID != "" {
-		entity, err := n.Blobs().LoadEntity(ctx, hyper.EntityID(groupID))
+		entity, err := blobs.LoadEntity(ctx, hyper.EntityID(groupID))
 		if err != nil {
 			return nil, err
 		}

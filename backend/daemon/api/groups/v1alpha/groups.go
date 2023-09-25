@@ -224,7 +224,7 @@ func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.D
 		return err
 	}
 
-	bs := n.Blobs().IPFSBlockstore()
+	bs := srv.blobs.IPFSBlockstore()
 
 	// Pull from the site.
 	var want []cid.Cid

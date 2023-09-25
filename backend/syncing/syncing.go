@@ -51,6 +51,10 @@ type Service struct {
 	client  NetDialFunc
 
 	mu sync.Mutex // Ensures only one sync loop is running at a time.
+
+	// DisableDiscovery can be used to disable remote content discovery.
+	// This value must be set before calling start, and before calling any Discover methods.
+	DisableDiscovery bool
 }
 
 const (

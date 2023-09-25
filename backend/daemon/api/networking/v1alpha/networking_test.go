@@ -35,16 +35,6 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 }
 
 func makeTestServer(t *testing.T, u coretest.Tester) *Server {
-	node, stopnode := makeTestPeer(t, u)
-	t.Cleanup(stopnode)
-
-	fut := future.New[*mttnet.Node]()
-	require.NoError(t, fut.Resolve(node))
-
-	return NewServer(fut.ReadOnly)
-}
-
-func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.CancelFunc) {
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), blobs, u.Account, u.Device.PublicKey, time.Now())
@@ -76,5 +66,10 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 		require.NoError(t, err)
 	}
 
-	return n, cancel
+	t.Cleanup(cancel)
+
+	fut := future.New[*mttnet.Node]()
+	require.NoError(t, fut.Resolve(n))
+
+	return NewServer(blobs, fut.ReadOnly)
 }

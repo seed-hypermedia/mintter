@@ -229,6 +229,17 @@ func (p *Pool) Put(conn *sqlite.Conn) {
 	p.free <- conn
 }
 
+// Query executes a function on a connection from the pool.
+func (p *Pool) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) error {
+	conn, release, err := p.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return fn(conn)
+}
+
 // PoolCloseTimeout is the
 var PoolCloseTimeout = 5 * time.Second
 

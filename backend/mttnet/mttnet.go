@@ -277,10 +277,6 @@ func (n *Node) AccountForDevice(ctx context.Context, pid peer.ID) (core.Principa
 	return out, nil
 }
 
-func (n *Node) Blobs() *hyper.Storage {
-	return n.blobs
-}
-
 // Libp2p returns the underlying libp2p host.
 func (n *Node) Libp2p() *ipfs.Libp2p { return n.p2p }
 

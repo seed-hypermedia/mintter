@@ -188,7 +188,7 @@ func (srv *Service) P2PInvoiceRequest(ctx context.Context, account core.Principa
 	}
 
 	var dels []hypersql.KeyDelegationsListResult
-	if err := net.Blobs().Query(ctx, func(conn *sqlite.Conn) error {
+	if err := srv.pool.Query(ctx, func(conn *sqlite.Conn) error {
 		list, err := hypersql.KeyDelegationsList(conn, account)
 		if err != nil {
 			return err

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"mintter/backend/graphql"
-	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/wallet"
 	"net"
@@ -41,9 +40,9 @@ func setupGraphQLHandlers(r *Router, wallet *wallet.Service) {
 }
 
 // setupIPFSFileHandlers sets up the IPFS file endpoints for uploading and getting files.
-func setupIPFSFileHandlers(r *Router, h ipfs.HTTPHandler) {
-	r.Handle(ipfs.IPFSRootRoute+ipfs.UploadRoute, http.HandlerFunc(h.UploadFile), 0)
-	r.Handle(ipfs.IPFSRootRoute+ipfs.GetRoute, http.HandlerFunc(h.GetFile), 0)
+func setupIPFSFileHandlers(r *Router, h IPFSFileHandler) {
+	r.Handle("/ipfs/file-upload", http.HandlerFunc(h.UploadFile), 0)
+	r.Handle("/ipfs/{cid}", http.HandlerFunc(h.GetFile), 0)
 }
 
 // setupDebugHandlers sets up the debug endpoints.
@@ -66,13 +65,20 @@ func setupGRPCWebHandler(r *Router, rpc *grpc.Server) {
 	})).Handler(grpcWebHandler)
 }
 
+// IPFSFileHandler is an interface to pass to the router only the http handlers and
+// not all the FileManager type.
+type IPFSFileHandler interface {
+	GetFile(http.ResponseWriter, *http.Request)
+	UploadFile(http.ResponseWriter, *http.Request)
+}
+
 func initHTTP(
 	port int,
 	rpc *grpc.Server,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	wallet *wallet.Service,
-	ipfsHandler ipfs.HTTPHandler,
+	ipfsHandler IPFSFileHandler,
 	extraHandlers ...GenericHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	router := &Router{r: mux.NewRouter()}

@@ -15,7 +15,6 @@ import (
 	"mintter/backend/daemon/api"
 	"mintter/backend/daemon/storage"
 	"mintter/backend/hyper"
-	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -27,6 +26,8 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/gorilla/mux"
+	"github.com/ipfs/boxo/exchange"
+	"github.com/ipfs/boxo/exchange/offline"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -150,34 +151,65 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		return nil, err
 	}
 
-	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
-
-	// We can't use futures in ipfs.NewManager since we will incur in a
-	// cyclic dependency loop between ipfs and mttnet packages. This is why
-	// we need a separate Start function to be called when the necessary
-	// resources (bitswap, blockstore, porvider, etc, ...) are available.
+	// Lazily initialize the file manager, because we need to wait for the P2P node to become ready.
+	fm := &lazyFileManager{fm: future.New[*mttnet.FileManager]()}
 	a.g.Go(func() error {
 		n, err := a.Net.Await(ctx)
 		if err != nil {
 			return err
 		}
 
-		return fileManager.Start(n.Blobs().IPFSBlockstore(), n.Bitswap(), n.Provider())
+		bs := a.Blobs.IPFSBlockstore()
+		var e exchange.Interface = n.Bitswap()
+		if cfg.Syncing.NoDiscovery {
+			e = offline.Exchange(bs)
+		}
+
+		files := mttnet.NewFileManager(logging.New("mintter/file-manager", "debug"), bs, e, n.Provider())
+		if err := fm.fm.Resolve(files); err != nil {
+			return err
+		}
+		return nil
 	})
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fileManager, extraHTTPHandlers...)
+
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fm, extraHTTPHandlers...)
 	if err != nil {
 		return nil, err
 	}
 
 	a.setupLogging(ctx, cfg)
 
-	if !cfg.Syncing.Disabled {
+	if !cfg.Syncing.NoPull {
 		a.g.Go(func() error {
 			return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval)
 		})
 	}
 
 	return
+}
+
+type lazyFileManager struct {
+	fm future.Value[*mttnet.FileManager]
+}
+
+func (l *lazyFileManager) GetFile(w http.ResponseWriter, r *http.Request) {
+	fm, err := l.fm.Await(r.Context())
+	if err != nil {
+		http.Error(w, "File manager is not ready yet", http.StatusPreconditionFailed)
+		return
+	}
+
+	fm.GetFile(w, r)
+}
+
+func (l *lazyFileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
+	fm, err := l.fm.Await(r.Context())
+	if err != nil {
+		http.Error(w, "File manager is not ready yet", http.StatusPreconditionFailed)
+		return
+	}
+
+	fm.UploadFile(w, r)
 }
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
@@ -347,7 +379,11 @@ func initSyncing(
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
 
-		if cfg.Disabled {
+		if cfg.NoDiscovery {
+			svc.DisableDiscovery = true
+		}
+
+		if cfg.NoPull {
 			close(done)
 		} else {
 			g.Go(func() error {

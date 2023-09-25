@@ -62,7 +62,7 @@ func New(
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
-		Networking: networking.NewServer(node),
+		Networking: networking.NewServer(blobs, node),
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
 		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", "debug"), groups.NewSQLiteDB(db), blobs, node),
 	}

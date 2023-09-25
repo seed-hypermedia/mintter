@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	networking "mintter/backend/genproto/networking/v1alpha"
+	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
@@ -20,13 +21,15 @@ import (
 
 // Server implements the networking API.
 type Server struct {
-	net *future.ReadOnly[*mttnet.Node]
+	blobs *hyper.Storage
+	net   *future.ReadOnly[*mttnet.Node]
 }
 
 // NewServer returns a new networking API server.
-func NewServer(node *future.ReadOnly[*mttnet.Node]) *Server {
+func NewServer(blobs *hyper.Storage, node *future.ReadOnly[*mttnet.Node]) *Server {
 	return &Server{
-		net: node,
+		blobs: blobs,
+		net:   node,
 	}
 }
 
@@ -67,7 +70,7 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 	out := &networking.ListPeersResponse{}
 
 	var dels []hypersql.KeyDelegationsListAllResult
-	if err := net.Blobs().Query(ctx, func(conn *sqlite.Conn) error {
+	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		dels, err = hypersql.KeyDelegationsListAll(conn)
 		return err
 	}); err != nil {

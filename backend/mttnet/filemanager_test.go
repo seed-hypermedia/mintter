@@ -1,10 +1,11 @@
-package ipfs
+package mttnet
 
 import (
 	"bytes"
-	"context"
 	"io/ioutil"
 	"mime/multipart"
+	"mintter/backend/core/coretest"
+	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"net"
 	"net/http"
@@ -28,6 +29,8 @@ const (
 	fileCID      = "bafybeiecq2irw4fl5vunnxo6cegoutv4de63h7n27tekkjtak3jrvrzzhe"
 )
 
+var akey = coretest.NewTester("alice").Device.Wrapped()
+
 func TestAddFile(t *testing.T) {
 	server := makeManager(t, akey)
 	fileBytes, err := createFile0toBound(fileBoundary)
@@ -46,8 +49,8 @@ func TestPostGet(t *testing.T) {
 	fileBytes, err := createFile0toBound(fileBoundary)
 	require.NoError(t, err)
 	router := mux.NewRouter()
-	router.HandleFunc(IPFSRootRoute+UploadRoute, server.UploadFile)
-	router.HandleFunc(IPFSRootRoute+GetRoute, server.GetFile)
+	router.HandleFunc("/ipfs/file-upload", server.UploadFile)
+	router.HandleFunc("/ipfs/{cid}", server.GetFile)
 	const port = 8085
 	srv := &http.Server{
 		Addr:         ":" + strconv.Itoa(port),
@@ -64,12 +67,12 @@ func TestPostGet(t *testing.T) {
 		require.ErrorAs(t, err, http.ErrServerClosed)
 	}()
 
-	res := makeRequest(t, "POST", IPFSRootRoute+UploadRoute, fileBytes, router)
+	res := makeRequest(t, "POST", "/ipfs/file-upload", fileBytes, router)
 	require.Equal(t, http.StatusCreated, res.Code)
 	responseData, err := ioutil.ReadAll(res.Body)
 	require.NoError(t, err)
 	require.Equal(t, fileCID, string(responseData))
-	res = makeRequest(t, "GET", IPFSRootRoute+"/"+string(responseData), nil, router)
+	res = makeRequest(t, "GET", "/ipfs/"+string(responseData), nil, router)
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, fileBytes, res.Body.Bytes())
 }
@@ -106,11 +109,10 @@ func makeRequest(t *testing.T, method, url string, body []byte, router *mux.Rout
 }
 
 func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
-	fileManager := NewManager(context.Background(), logging.New("mintter/ipfs", "debug"))
 	ds := sync.MutexWrap(datastore.NewMapDatastore())
 	t.Cleanup(func() { require.NoError(t, ds.Close()) })
 
-	n, err := NewLibp2pNode(k, ds, nil)
+	n, err := ipfs.NewLibp2pNode(k, ds, nil)
 	require.NoError(t, err)
 
 	ma, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
@@ -118,7 +120,7 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 
 	bs := blockstore.NewBlockstore(ds)
 
-	bitswap, err := NewBitswap(n, n.Routing, bs)
+	bitswap, err := ipfs.NewBitswap(n, n.Routing, bs)
 	require.NoError(t, err)
 
 	t.Cleanup(func() { require.NoError(t, bitswap.Close()) })
@@ -127,11 +129,10 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 
 	t.Cleanup(func() { require.NoError(t, n.Close()) })
 
-	providing, err := NewProviderSystem(ds, n.Routing, bs.AllKeysChan)
+	providing, err := ipfs.NewProviderSystem(ds, n.Routing, bs.AllKeysChan)
 	require.NoError(t, err)
 
-	require.NoError(t, fileManager.Start(bs, bitswap, providing))
-	return fileManager
+	return NewFileManager(logging.New("mintter/ipfs", "debug"), bs, bitswap, providing)
 }
 
 // createFile0toBound creates a file with the number 0 to bound.
