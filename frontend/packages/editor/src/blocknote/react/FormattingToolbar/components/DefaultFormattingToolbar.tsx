@@ -28,6 +28,7 @@ export const DefaultFormattingToolbar = <BSchema extends BlockSchema>(
       <ToggledStyleButton editor={props.editor} toggledStyle={'italic'} />
       <ToggledStyleButton editor={props.editor} toggledStyle={'underline'} />
       <ToggledStyleButton editor={props.editor} toggledStyle={'strike'} />
+      <ToggledStyleButton editor={props.editor} toggledStyle={'code'} />
 
       {/* <TextAlignButton editor={props.editor as any} textAlignment={'left'} />
       <TextAlignButton editor={props.editor as any} textAlignment={'center'} />
