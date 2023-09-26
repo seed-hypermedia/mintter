@@ -74,7 +74,10 @@ function PublishGroupDialog({
         <ButtonText
           textDecorationLine="underline"
           onPress={() => {
-            spawn({key: 'publication', documentId: '5rJPgXkzyHpyK6wQfbQgrC'})
+            spawn({
+              key: 'publication',
+              documentId: 'hm://d/3Kuk9GFL5LpXL4zsP5NBZd',
+            })
           }}
         >
           self-hosting guide.
