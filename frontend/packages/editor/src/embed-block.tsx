@@ -1,10 +1,15 @@
 import {PartialMessage} from '@bufbuild/protobuf'
 import {usePublication} from '@mintter/app/src/models/documents'
 import {useOpenUrl} from '@mintter/app/src/open-url'
-import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import {
+  NavRoute,
+  unpackHmIdWithAppRoute,
+} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import type {
+  Account,
   BlockNode,
+  Group,
   HeadingBlock,
   ImageBlock,
   ParagraphBlock,
@@ -15,13 +20,24 @@ import {
   BACKEND_FILE_URL,
   Block,
   EmbedBlock as EmbedBlockType,
+  createHmId,
   getCIDFromIPFSUrl,
   isHypermediaScheme,
   serverBlockToEditorInline,
   unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
-import {Spinner, Text, View, XStack, YStack, styled} from '@mintter/ui'
-import {AlertCircle} from '@tamagui/lucide-icons'
+import {
+  Avatar,
+  Spinner,
+  Text,
+  UIAvatar,
+  View,
+  XStack,
+  YStack,
+  styled,
+} from '@mintter/ui'
+import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {ComponentProps, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {
@@ -33,6 +49,9 @@ import {getBlockInfoFromPos} from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema, hmBlockSchema} from './schema'
 import {useSelected} from './block-utils'
+import {useGroup} from '@mintter/app/src/models/groups'
+import {useAccount} from '@mintter/app/src/models/accounts'
+import {getAvatarUrl} from '@mintter/app/src/utils/account-url'
 
 const EditorText = styled(Text, {
   fontSize: '$5',
@@ -150,6 +169,55 @@ function StaticBlock({block}: {block: ServerBlock}) {
   return <EditorText>mystery block 👻</EditorText>
 }
 
+function EntityCard({
+  title,
+  icon,
+  description,
+  route,
+}: {
+  title?: string
+  icon?: React.ReactNode
+  description?: string
+  route: NavRoute
+}) {
+  return (
+    <XStack gap="$3">
+      {icon}
+      <YStack>
+        <Text fontWeight={'bold'}>{title}</Text>
+        <Text>{description}</Text>
+      </YStack>
+    </XStack>
+  )
+}
+function GroupCard({group}: {group: Group}) {
+  return (
+    <EntityCard
+      title={group.title}
+      description={group.description}
+      route={{key: 'group', groupId: group.id}}
+      icon={<Book />}
+    />
+  )
+}
+function AccountCard({account}: {account: Account}) {
+  return (
+    <EntityCard
+      title={account.profile?.alias}
+      description={account.profile?.bio}
+      route={{key: 'account', accountId: account.id}}
+      icon={
+        <UIAvatar
+          id={account.id}
+          size="$2"
+          label={account.profile?.alias}
+          url={getAvatarUrl(account.profile?.avatar)}
+        />
+      }
+    />
+  )
+}
+
 function EmbedPresentation({
   block,
   editor,
@@ -162,15 +230,21 @@ function EmbedPresentation({
   let content = <Spinner />
   const selected = useSelected(block, editor)
 
-  if (embed.content) {
+  const isCardStyle = !!embed.account || !!embed.group
+  if (embed.embedBlocks) {
     content = (
       <>
-        {embed.content?.map((block) => (
+        {embed.embedBlocks?.map((block) => (
           <StaticBlockNode key={block.block?.id} block={block} />
         ))}
       </>
     )
+  } else if (embed.account) {
+    content = <AccountCard account={embed.account} />
+  } else if (embed.group) {
+    content = <GroupCard group={embed.group} />
   }
+
   return (
     <YStack
       // @ts-expect-error
@@ -184,6 +258,11 @@ function EmbedPresentation({
       overflow="hidden"
       hoverStyle={{
         backgroundColor: '$color4',
+        ...(isCardStyle
+          ? {
+              cursor: 'pointer',
+            }
+          : {}),
       }}
     >
       <YStack
@@ -208,16 +287,20 @@ function EmbedPresentation({
 function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
   let embed = useEmbed(block.ref)
   let content = <Spinner />
-
-  if (embed.content) {
+  if (embed.embedBlocks) {
     content = (
       <>
-        {embed.content?.map((block) => (
+        {embed.embedBlocks?.map((block) => (
           <StaticBlockNode key={block.block?.id} block={block} />
         ))}
       </>
     )
+  } else if (embed.account) {
+    content = <AccountCard account={embed.account} />
+  } else if (embed.group) {
+    content = <GroupCard group={embed.group} />
   }
+
   return (
     <YStack
       // @ts-expect-error
@@ -289,27 +372,44 @@ export const EmbedBlock = createReactBlockSpec({
   },
 })
 
-function useEmbed(ref: string): ReturnType<typeof usePublication> & {
-  content?: BlockNode[] & PartialMessage<BlockNode>[]
+function useEmbed(ref: string): {
+  isLoading: boolean
+  embedBlocks: (BlockNode[] & PartialMessage<BlockNode>[]) | undefined
+  group: Group | undefined
+  account: Account | undefined
 } {
-  const pubId = unpackDocId(ref)
+  const id = unpackHmId(ref)
+  const docId = id?.type === 'd' ? createHmId('d', id?.eid) : undefined
   let pubQuery = usePublication({
-    documentId: pubId?.docId,
-    versionId: pubId?.version,
-    enabled: !!pubId?.docId,
+    documentId: docId,
+    versionId: id?.version || undefined,
+    enabled: !!docId,
   })
-
+  const groupId = id?.type === 'g' ? createHmId('g', id?.eid) : undefined
+  const groupQuery = useGroup(groupId, id?.version || undefined)
+  const accountId = id?.type === 'a' ? id?.eid : undefined
+  const accountQuery = useAccount(accountId)
   return useMemo(() => {
     const data = pubQuery.data
-    if (!data || !data.document) return pubQuery
 
-    const selectedBlock = pubId?.blockRef
-      ? getBlockNodeById(data.document.children, pubId?.blockRef)
-      : null
+    const selectedBlock =
+      id?.blockRef && data?.document?.children
+        ? getBlockNodeById(data.document.children, id?.blockRef)
+        : null
 
-    const embedBlocks = selectedBlock ? [selectedBlock] : data.document.children
-    return {...pubQuery, content: embedBlocks}
-  }, [pubQuery.data, pubId?.blockRef])
+    const embedBlocks = selectedBlock
+      ? [selectedBlock]
+      : data?.document?.children
+
+    return {
+      isLoading:
+        pubQuery.isLoading || accountQuery.isLoading || groupQuery.isLoading,
+      error: pubQuery.error || accountQuery.error || groupQuery.error,
+      embedBlocks,
+      account: accountQuery.data,
+      group: groupQuery.data,
+    }
+  }, [pubQuery, accountQuery, groupQuery, id?.blockRef])
 }
 
 function getBlockNodeById(

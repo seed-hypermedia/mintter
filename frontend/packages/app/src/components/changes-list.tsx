@@ -273,7 +273,6 @@ export function EntityVersionsAccessory({
     return {activeVersionChanges, prevVersions, nextVersionChanges}
   }, [data, activeVersion])
   if (!id) return null
-  console.log('computed', computed)
   return (
     <AccessoryContainer>
       <NextVersions
