@@ -1,11 +1,35 @@
-import {Button, ButtonText, Form, Input, Text} from '@mintter/ui'
+import {
+  Button,
+  ButtonText,
+  Form,
+  Input,
+  SizableText,
+  Spinner,
+  Text,
+  YStack,
+} from '@mintter/ui'
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {usePublishGroupToSite} from '../models/groups'
 import {DialogDescription, DialogTitle, useAppDialog} from './dialog'
 import {useNavigate} from '../utils/useNavigate'
+import {useOpenUrl} from '../open-url'
 
+function ErrorBox({children}: {children: ReactNode}) {
+  return (
+    <YStack
+      backgroundColor="$red4"
+      borderColor="$red9"
+      padding="$4"
+      borderRadius="$4"
+      borderWidth={1}
+      marginVertical="$4"
+    >
+      <SizableText color="$red9">{children}</SizableText>
+    </YStack>
+  )
+}
 function FormWithError({
   mutator,
   onSubmit,
@@ -15,11 +39,18 @@ function FormWithError({
   onSubmit: () => void
   children: ReactNode
 }) {
-  console.log(mutator.error)
   return (
-    <Form onSubmit={onSubmit}>
-      {mutator.error ? <Text>{mutator.error?.message} </Text> : null}
+    <Form onSubmit={onSubmit} marginTop="$5" position="relative">
+      {mutator.error ? <ErrorBox>{mutator.error?.message}</ErrorBox> : null}
       {children}
+
+      {mutator.isLoading ? (
+        <Spinner
+          position="absolute"
+          top={-32} // spin now, regret layout choices later.
+          right={0}
+        />
+      ) : null}
     </Form>
   )
 }
@@ -33,6 +64,7 @@ function PublishGroupDialog({
 }) {
   const [setupUrl, setSetupUrl] = useState('')
   const publishToSite = usePublishGroupToSite()
+  const open = useOpenUrl()
   const spawn = useNavigate('spawn')
   let guidance = (
     <>
@@ -54,8 +86,15 @@ function PublishGroupDialog({
     guidance = (
       <>
         <DialogDescription>
-          Your site is published at:
-          {input.publishedBaseUrl}
+          Your site is published at:{' '}
+          <ButtonText
+            textDecorationLine="underline"
+            onPress={() => {
+              open(input.publishedBaseUrl)
+            }}
+          >
+            {input.publishedBaseUrl}
+          </ButtonText>
         </DialogDescription>
         <DialogDescription>
           You may re-publish your group to a different site by entering a new
