@@ -65,7 +65,7 @@ jobs:
           # matrix-arch: ${{ matrix.config.arch }}
 
       - name: Build Backend (Unix)
-        if: matrix.config.os != 'windows-latest'
+        if: matrix.config.os != 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
@@ -74,7 +74,7 @@ jobs:
           CGO_ENABLED: 1
 
       - name: Build Backend (Windows)
-        if: matrix.config.os == 'windows-latest'
+        if: matrix.config.os == 'windows-latest-l'
         run: |
           mkdir -p plz-out/bin/backend
           go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
@@ -106,7 +106,7 @@ jobs:
           APP_VERSION: "${{ needs.get-version.outputs.version }}"
 
       - name: Build, package & make (Unix)
-        if: matrix.config.os != 'windows-latest'
+        if: matrix.config.os != 'windows-latest-l'
         run: |
           DEBUG='electron-osx-sign*,electron-notarize*' yarn desktop:make --arch=${{ matrix.config.arch }}
         env:
@@ -121,7 +121,7 @@ jobs:
           timeout-minutes: 10
 
       - name: Build, package and make (Win32)
-        if: matrix.config.os == 'windows-latest'
+        if: matrix.config.os == 'windows-latest-l'
         run: |
           $env:DEBUG='electron-osx-sign*,electron-notarize*'
           yarn desktop:make --arch=${{ matrix.config.arch }}
