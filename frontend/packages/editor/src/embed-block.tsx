@@ -24,52 +24,47 @@ import {
   getCIDFromIPFSUrl,
   isHypermediaScheme,
   serverBlockToEditorInline,
-  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
-  Avatar,
+  FontSizeTokens,
+  SizableText,
   Spinner,
   Text,
   UIAvatar,
-  View,
   XStack,
   YStack,
-  styled,
 } from '@mintter/ui'
 import {AlertCircle, Book} from '@tamagui/lucide-icons'
-import {ComponentProps, useEffect, useMemo, useState} from 'react'
+import {useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {useSelected} from './block-utils'
 import {
   Block as BlockNoteBlock,
   BlockNoteEditor,
   InlineContent,
 } from './blocknote'
-import {getBlockInfoFromPos} from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
-import {HMBlockSchema, hmBlockSchema} from './schema'
-import {useSelected} from './block-utils'
-import {useGroup} from '@mintter/app/src/models/groups'
-import {useAccount} from '@mintter/app/src/models/accounts'
-import {getAvatarUrl} from '@mintter/app/src/utils/account-url'
 
-const EditorText = styled(Text, {
-  fontSize: '$5',
-  lineHeight: 1.5,
-  fontFamily: '$body',
-  // "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont,'Open Sans', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell','Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
-})
+import {useAccount} from '@mintter/app/src/models/accounts'
+import {useGroup} from '@mintter/app/src/models/groups'
+import {getAvatarUrl} from '@mintter/app/src/utils/account-url'
+import {hmBlockSchema} from './schema'
 
 function InlineContentView({
   inline,
-  style,
+  type,
 }: {
   inline: InlineContent[]
-  style?: ComponentProps<typeof EditorText>
+  type: string
 }) {
   const openUrl = useOpenUrl()
+  let size: FontSizeTokens | undefined = useMemo(
+    () => (type == 'heading' ? '$7' : undefined),
+    [type],
+  )
   return (
-    <>
+    <SizableText fontWeight={type == 'heading' ? 'bold' : undefined}>
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -88,22 +83,21 @@ function InlineContentView({
             textDecorationLine = 'line-through'
           }
           return (
-            <EditorText
-              {...style}
+            <SizableText
               key={`${content.type}-${index}`}
-              fontWeight={content.styles.bold ? 'bold' : style?.fontWeight}
               textDecorationLine={textDecorationLine || undefined}
-              // fontStyle={content.styles.italic ? 'italic' : undefined}
+              fontStyle={content.styles.italic ? 'italic' : undefined}
               fontFamily={content.styles.code ? '$mono' : '$body'}
+              size={size}
             >
               {content.text}
-            </EditorText>
+            </SizableText>
           )
         }
         if (content.type === 'link') {
           return (
-            <EditorText
-              {...style}
+            <SizableText
+              tag="a"
               className={isHypermediaScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
               onPress={() => {
@@ -115,13 +109,13 @@ function InlineContentView({
                 cursor: 'pointer',
               }}
             >
-              <InlineContentView style={style} inline={content.content} />
-            </EditorText>
+              <InlineContentView inline={content.content} type={type} />
+            </SizableText>
           )
         }
         return null
       })}
-    </>
+    </SizableText>
   )
 }
 
@@ -130,13 +124,8 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
-  const style =
-    block.type === 'heading' ? {fontSize: '$7', fontWeight: 'bold'} : undefined
-  return (
-    <View marginTop={12} marginBottom={3}>
-      <InlineContentView inline={inline} style={style} />
-    </View>
-  )
+
+  return <InlineContentView inline={inline} type={block.type} />
 }
 
 function StaticImageBlock({block}: {block: ImageBlock}) {
@@ -166,7 +155,7 @@ function StaticBlock({block}: {block: ServerBlock}) {
   }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
-  return <EditorText>mystery block 👻</EditorText>
+  return <SizableText>mystery block 👻</SizableText>
 }
 
 function EntityCard({
@@ -233,11 +222,11 @@ function EmbedPresentation({
   const isCardStyle = !!embed.account || !!embed.group
   if (embed.embedBlocks) {
     content = (
-      <>
+      <YStack gap="$4">
         {embed.embedBlocks?.map((block) => (
           <StaticBlockNode key={block.block?.id} block={block} />
         ))}
-      </>
+      </YStack>
     )
   } else if (embed.account) {
     content = <AccountCard account={embed.account} />
@@ -256,6 +245,7 @@ function EmbedPresentation({
       borderWidth={2}
       borderRadius="$4"
       overflow="hidden"
+      padding="$4"
       hoverStyle={{
         backgroundColor: '$color4',
         ...(isCardStyle
@@ -266,8 +256,6 @@ function EmbedPresentation({
       }}
     >
       <YStack
-        padding="$4"
-        paddingVertical="$2"
         onPress={() => {
           if (editor?.isEditable) {
             return
