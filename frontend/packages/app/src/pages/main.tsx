@@ -13,6 +13,7 @@ import {lazy, Suspense, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
+import {QuickSwitcher} from '../components/quick-switcher'
 import './polyfills'
 
 var PublicationList = lazy(
@@ -29,9 +30,6 @@ var Groups = lazy(() => import('@mintter/app/src/pages/groups'))
 var Publication = lazy(() => import('@mintter/app/src/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/src/pages/draft'))
 var Settings = lazy(() => import('@mintter/app/src/pages/settings'))
-var QuickSwitcher = lazy(
-  () => import('@mintter/app/src/components/quick-switcher'),
-)
 
 function BaseLoading() {
   return (

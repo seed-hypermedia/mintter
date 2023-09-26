@@ -15,7 +15,7 @@ import {useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import './quick-switcher.css'
 
-export default function QuickSwitcher() {
+export function QuickSwitcher() {
   const [open, setOpen] = useState(false)
   const {data: drafts} = useDraftList()
   const {data: publications} = usePublicationList({
