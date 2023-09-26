@@ -36,7 +36,7 @@ export function createPublicWebHmUrl(
 export function createHmId(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   id: string,
-  opts?: {version?: string; blockRef?: string},
+  opts?: {version?: string | null; blockRef?: string | null; id?: string},
 ) {
   let outputUrl = `${HYPERMEDIA_SCHEME}://${type}/${id}`
   if (opts?.version) outputUrl += `?v=${opts.version}`
@@ -82,6 +82,7 @@ function inKeys<V extends string>(
 }
 
 export type UnpackedHypermediaId = {
+  id: string
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
   eid: string
   version: string | null
@@ -98,6 +99,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const version = parsed?.query.v
     if (!type) return null
     return {
+      id: hypermediaId,
       type,
       eid,
       version,
@@ -113,6 +115,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     let hostname = parsed?.path[0]
     if (!type) return null
     return {
+      id: hypermediaId,
       type,
       eid,
       version,
@@ -124,15 +127,16 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
   return null
 }
 
-export function unpackDocId(
-  inputUrl: string,
-): (UnpackedHypermediaId & {docId: string}) | null {
+export type UnpackedDocId = UnpackedHypermediaId & {docId: string}
+
+export function unpackDocId(inputUrl: string): UnpackedDocId | null {
   const unpackedHm = unpackHmId(inputUrl)
   if (!unpackedHm?.eid) return null
   if (unpackedHm.type !== 'd') {
     throw new Error('URL is expected to be a document ID: ' + inputUrl)
   }
   return {
+    id: inputUrl,
     eid: unpackedHm.eid,
     type: 'd',
     docId: createHmId('d', unpackedHm.eid),
@@ -188,4 +192,8 @@ export function createHmDocLink(
   if (version) res += `?v=${version}`
   if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res
+}
+
+export function labelOfEntityType(type: keyof typeof HYPERMEDIA_ENTITY_TYPES) {
+  return HYPERMEDIA_ENTITY_TYPES[type]
 }

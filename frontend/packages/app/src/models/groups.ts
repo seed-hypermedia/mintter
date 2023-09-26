@@ -24,12 +24,15 @@ export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   })
 }
 
-export function useGroup(groupId: string | undefined) {
+export function useGroup(
+  groupId: string | undefined,
+  version?: string | undefined,
+) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_GROUP, groupId],
+    queryKey: [queryKeys.GET_GROUP, groupId, version],
     queryFn: async () => {
-      const group = await grpcClient.groups.getGroup({id: groupId})
+      const group = await grpcClient.groups.getGroup({id: groupId, version})
       return group
     },
     enabled: !!groupId,
@@ -226,12 +229,12 @@ export function useGroupContent(
   })
 }
 
-export function useGroupMembers(groupId: string) {
+export function useGroupMembers(groupId: string, version?: string | undefined) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_GROUP_MEMBERS, groupId],
+    queryKey: [queryKeys.GET_GROUP_MEMBERS, groupId, version],
     queryFn: async () => {
-      return await grpcClient.groups.listMembers({id: groupId})
+      return await grpcClient.groups.listMembers({id: groupId, version})
     },
   })
 }

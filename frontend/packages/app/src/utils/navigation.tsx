@@ -15,9 +15,10 @@ export type GlobalPublications = {key: 'all-publications'}
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 
-type EntityVersionsAccessory = {key: 'versions'}
-type PublicationCitationsAccessory = {key: 'citations'}
-type PublicationCommentsAccessory = {key: 'comments'}
+export type EntityVersionsAccessory = {key: 'versions'}
+export type PublicationCitationsAccessory = {key: 'citations'}
+export type PublicationCommentsAccessory = {key: 'comments'}
+
 export type GroupPublicationRouteContext = {
   key: 'group'
   groupId: string
@@ -53,6 +54,7 @@ export type GroupsRoute = {key: 'groups'}
 export type GroupRoute = {
   key: 'group'
   groupId: string
+  version?: string
   accessory?: null | EntityVersionsAccessory
 }
 export type NavRoute =
@@ -216,29 +218,33 @@ export function useNavigationDispatch() {
 
 export type NavMode = 'push' | 'replace' | 'spawn' | 'backplace'
 
+export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
+  let navRoute: NavRoute | undefined = undefined
+  if (id?.type === 'd') {
+    navRoute = {
+      key: 'publication',
+      documentId: createHmId('d', id.eid),
+      versionId: id.version || undefined,
+      blockId: id.blockRef || undefined,
+    }
+  } else if (id?.type === 'g') {
+    navRoute = {
+      key: 'group',
+      groupId: createHmId('g', id.eid),
+    }
+  } else if (id?.type === 'a') {
+    navRoute = {
+      key: 'account',
+      accountId: id.eid,
+    }
+  }
+  return navRoute
+}
+
 export function unpackHmIdWithAppRoute(
   hmId: string,
 ): (UnpackedHypermediaId & {navRoute?: NavRoute}) | null {
   const hmIds = unpackHmId(hmId)
   if (!hmIds) return null
-  let navRoute: NavRoute | undefined = undefined
-  if (hmIds?.type === 'd') {
-    navRoute = {
-      key: 'publication',
-      documentId: createHmId('d', hmIds.eid),
-      versionId: hmIds.version,
-      blockId: hmIds.blockRef,
-    }
-  } else if (hmIds?.type === 'g') {
-    navRoute = {
-      key: 'group',
-      groupId: createHmId('g', hmIds.eid),
-    }
-  } else if (hmIds?.type === 'a') {
-    navRoute = {
-      key: 'account',
-      accountId: hmIds.eid,
-    }
-  }
-  return {...hmIds, navRoute}
+  return {...hmIds, navRoute: appRouteOfId(hmIds)}
 }

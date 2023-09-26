@@ -3,6 +3,8 @@ import {StaticBlockNode} from '@mintter/editor'
 import {
   Document,
   Role,
+  UnpackedHypermediaId,
+  createHmId,
   idToUrl,
   pluralS,
   unpackDocId,
@@ -44,7 +46,7 @@ import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar/common'
 import {useAccount, useMyAccount} from '../models/accounts'
-import {useAllChanges} from '../models/changes'
+import {useAllChanges, useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -59,7 +61,11 @@ import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {Allotment} from 'allotment'
+import 'allotment/dist/style.css'
 import {useOpenUrl} from '../open-url'
+import {AccessoryContainer} from '../components/accessory-sidebar'
+import {EntityVersionsAccessory} from '../components/changes-list'
+import {VersionChangesInfo} from '../components/version-changes-info'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -255,11 +261,10 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
 export default function GroupPage() {
   const route = useNavRoute()
   if (route.key !== 'group') throw new Error('Group page needs group route')
-  const {groupId} = route
-  const group = useGroup(groupId)
-  const groupContent = useGroupContent(groupId)
-
-  console.log(`== ~ GroupPage ~ groupContent:`, groupContent.data)
+  const {groupId, version} = route
+  const group = useGroup(groupId, version)
+  const groupContent = useGroupContent(groupId, version)
+  // const groupMembers = useGroupMembers(groupId, version)
   const groupMembers = useGroupMembers(groupId)
   const drafts = useDraftList()
   const myAccount = useMyAccount()
@@ -303,196 +308,232 @@ export default function GroupPage() {
       : null,
   ].filter(Boolean)
   const openUrl = useOpenUrl()
+  const entityId = unpackHmId(groupId)
   return (
     <>
-      <MainWrapper>
-        <Container>
-          <YStack
-            gap="$2"
-            borderBottomWidth={1}
-            borderColor="$gray6"
-            paddingVertical="$4"
-            paddingHorizontal={0}
-          >
-            <XStack justifyContent="space-between">
-              <Heading size="$4" display="flex" gap="$1" alignItems="center">
-                {group.data?.title} -
-                {ownerAccountId ? (
-                  <>
-                    Managed by <AccountLinkAvatar accountId={ownerAccountId} />
-                    <AppLinkText
-                      toRoute={{key: 'account', accountId: ownerAccountId}}
+      <YStack flex={1} justifyContent="space-between" maxHeight={'100%'}>
+        <Allotment defaultSizes={[100]}>
+          <Allotment.Pane>
+            <MainWrapper maxHeight={'100%'}>
+              <Container>
+                <YStack
+                  gap="$2"
+                  borderBottomWidth={1}
+                  borderColor="$gray6"
+                  paddingVertical="$4"
+                  paddingHorizontal={0}
+                >
+                  <XStack justifyContent="space-between">
+                    <Heading
+                      size="$4"
+                      display="flex"
+                      gap="$1"
+                      alignItems="center"
                     >
-                      {ownerAccount.data?.profile?.alias}
-                    </AppLinkText>
-                  </>
-                ) : null}
-              </Heading>
-              <XStack gap="$3" alignItems="center">
-                {siteBaseUrl && (
-                  <Tooltip content={`Open ${group.data?.title} on the web.`}>
-                    <ButtonText
-                      fontFamily={'$mono'}
-                      fontSize={'$4'}
-                      hoverStyle={{textDecorationLine: 'underline'}}
-                      onPress={() => {
-                        openUrl(siteBaseUrl)
-                      }}
-                      color="$blue10"
-                    >
-                      {siteBaseUrl}
-                    </ButtonText>
-                  </Tooltip>
-                )}
-                {!frontDocumentUrl && isMember && (
-                  <Button
-                    icon={Store}
-                    size="$2"
-                    onPress={() => {
-                      openDraft(
-                        {groupId, pathName: '/', key: 'group'},
-                        {pathName: '/'},
-                      )
-                    }}
+                      {group.data?.title} -
+                      {ownerAccountId ? (
+                        <>
+                          Managed by{' '}
+                          <AccountLinkAvatar accountId={ownerAccountId} />
+                          <AppLinkText
+                            toRoute={{
+                              key: 'account',
+                              accountId: ownerAccountId,
+                            }}
+                          >
+                            {ownerAccount.data?.profile?.alias}
+                          </AppLinkText>
+                        </>
+                      ) : null}
+                    </Heading>
+                    <XStack gap="$3" alignItems="center">
+                      {siteBaseUrl && (
+                        <Tooltip
+                          content={`Open ${group.data?.title} on the web.`}
+                        >
+                          <ButtonText
+                            fontFamily={'$mono'}
+                            fontSize={'$4'}
+                            hoverStyle={{textDecorationLine: 'underline'}}
+                            onPress={() => {
+                              openUrl(siteBaseUrl)
+                            }}
+                            color="$blue10"
+                          >
+                            {siteBaseUrl}
+                          </ButtonText>
+                        </Tooltip>
+                      )}
+                      {!frontDocumentUrl && isMember && (
+                        <Button
+                          icon={Store}
+                          size="$2"
+                          onPress={() => {
+                            openDraft(
+                              {groupId, pathName: '/', key: 'group'},
+                              {pathName: '/'},
+                            )
+                          }}
+                        >
+                          Create Front Document
+                        </Button>
+                      )}
+
+                      <XGroup>
+                        <XGroup.Item>
+                          {isMember && (
+                            <Button
+                              icon={Pencil}
+                              size="$2"
+                              onPress={() => {
+                                editGroupInfo.open(groupId)
+                              }}
+                            ></Button>
+                          )}
+                        </XGroup.Item>
+                      </XGroup>
+                    </XStack>
+                  </XStack>
+
+                  <Text fontFamily="$body" fontSize="$3">
+                    {group.data?.description}
+                  </Text>
+                </YStack>
+
+                {memberCount > 1 || myMemberRole === Role.OWNER ? (
+                  <XStack
+                    gap="$2"
+                    borderBottomWidth={1}
+                    borderColor="$gray6"
+                    paddingVertical="$4"
+                    paddingHorizontal={0}
+                    justifyContent="space-between"
                   >
-                    Create Front Document
-                  </Button>
-                )}
-
-                <XGroup>
-                  <XGroup.Item>
-                    {isMember && (
-                      <Button
-                        icon={Pencil}
-                        size="$2"
+                    <XStack gap="$2">
+                      <Heading size="$2">Membership</Heading>
+                      {Object.keys(groupMembers.data?.members || {}).map(
+                        (memberId) => (
+                          <AccountLinkAvatar
+                            accountId={memberId}
+                            key={memberId}
+                          />
+                        ),
+                      )}
+                    </XStack>
+                    {myMemberRole === Role.OWNER ? (
+                      <InviteMemberButton
                         onPress={() => {
-                          editGroupInfo.open(groupId)
+                          inviteMember.open({groupId})
                         }}
-                      ></Button>
+                      />
+                    ) : (
+                      <View />
                     )}
-                  </XGroup.Item>
-                </XGroup>
-              </XStack>
-            </XStack>
-
-            <Text fontFamily="$body" fontSize="$3">
-              {group.data?.description}
-            </Text>
-          </YStack>
-
-          {memberCount > 1 || myMemberRole === Role.OWNER ? (
-            <XStack
-              gap="$2"
-              borderBottomWidth={1}
-              borderColor="$gray6"
-              paddingVertical="$4"
-              paddingHorizontal={0}
-              justifyContent="space-between"
-            >
-              <XStack gap="$2">
-                <Heading size="$2">Membership</Heading>
-                {Object.keys(groupMembers.data?.members || {}).map(
-                  (memberId) => (
-                    <AccountLinkAvatar accountId={memberId} key={memberId} />
-                  ),
-                )}
-              </XStack>
-              {myMemberRole === Role.OWNER ? (
-                <InviteMemberButton
-                  onPress={() => {
-                    inviteMember.open({groupId})
-                  }}
-                />
-              ) : (
-                <View />
-              )}
-            </XStack>
-          ) : null}
-
-          {frontPageId && frontDocumentUrl && (
-            <XStack
-              gap="$2"
-              borderBottomWidth={1}
-              borderColor="$gray6"
-              paddingVertical="$4"
-              paddingHorizontal={0}
-              minHeight="$6"
-            >
-              <YStack
-                paddingHorizontal={54}
-                maxWidth={664}
-                marginHorizontal="auto"
-                width="90%"
-              >
-                <PublicationDisplay urlWithVersion={frontDocumentUrl} />
-              </YStack>
-              <XStack
-                gap="$2"
-                position="absolute"
-                right={0}
-                top={'$4'}
-                alignItems="center"
-              >
-                {frontDocMenuItems.length ? (
-                  <OptionsDropdown menuItems={frontDocMenuItems} />
+                  </XStack>
                 ) : null}
-                <EditDocActions
-                  contextRoute={route}
-                  pubContext={{
-                    key: 'group',
-                    groupId,
-                    pathName: '/',
-                  }}
-                  docId={frontPageId?.docId}
-                  baseVersion={frontPageId?.version}
-                  navMode="push"
-                />
-                <Tooltip content="Open in New Window">
-                  <Button
-                    icon={ArrowUpRight}
-                    size="$2"
-                    onPress={() => {
-                      spawn({
-                        key: 'publication',
-                        documentId: frontPageId?.docId,
-                        pubContext: {key: 'group', groupId, pathName: '/'},
-                      })
-                    }}
-                  />
-                </Tooltip>
-              </XStack>
-            </XStack>
-          )}
 
-          <YStack paddingVertical="$2" gap="$2">
-            <Heading size="$2">Group Content</Heading>
-            {Object.entries(groupContent.data?.content || {}).map(
-              ([pathName, hmUrl]) => {
-                const docId = unpackDocId(hmUrl)
-
-                if (!docId) return null
-                if (pathName === '/') return null
-                return (
-                  <GroupContentItem
-                    key={pathName}
-                    docId={docId?.docId}
-                    groupId={groupId}
-                    version={docId?.version}
-                    hasDraft={drafts.data?.documents.find(
-                      (d) => d.id == docId.docId,
-                    )}
-                    userRole={myMemberRole}
-                    pathName={pathName}
-                  />
-                )
-              },
+                {frontPageId && frontDocumentUrl && (
+                  <XStack
+                    gap="$2"
+                    borderBottomWidth={1}
+                    borderColor="$gray6"
+                    paddingVertical="$4"
+                    paddingHorizontal={0}
+                    minHeight="$6"
+                  >
+                    <YStack
+                      paddingHorizontal={54}
+                      maxWidth={664}
+                      marginHorizontal="auto"
+                      width="90%"
+                    >
+                      <PublicationDisplay urlWithVersion={frontDocumentUrl} />
+                    </YStack>
+                    <XStack
+                      gap="$2"
+                      position="absolute"
+                      right={0}
+                      top={'$4'}
+                      alignItems="center"
+                    >
+                      {frontDocMenuItems.length ? (
+                        <OptionsDropdown menuItems={frontDocMenuItems} />
+                      ) : null}
+                      <EditDocActions
+                        contextRoute={route}
+                        pubContext={{
+                          key: 'group',
+                          groupId,
+                          pathName: '/',
+                        }}
+                        docId={frontPageId?.docId}
+                        baseVersion={frontPageId?.version || undefined}
+                        navMode="push"
+                      />
+                      <Tooltip content="Open in New Window">
+                        <Button
+                          icon={ArrowUpRight}
+                          size="$2"
+                          onPress={() => {
+                            spawn({
+                              key: 'publication',
+                              documentId: frontPageId?.docId,
+                              pubContext: {
+                                key: 'group',
+                                groupId,
+                                pathName: '/',
+                              },
+                            })
+                          }}
+                        />
+                      </Tooltip>
+                    </XStack>
+                  </XStack>
+                )}
+                <YStack paddingVertical="$2" gap="$2">
+                  <Heading size="$2">Group Content</Heading>
+                  {Object.entries(groupContent.data?.content || {}).map(
+                    ([pathName, hmUrl]) => {
+                      const docId = unpackDocId(hmUrl)
+                      if (!docId) return null
+                      if (pathName === '/') return null
+                      return (
+                        <GroupContentItem
+                          key={pathName}
+                          docId={docId?.docId}
+                          groupId={groupId}
+                          version={docId?.version || undefined}
+                          hasDraft={drafts.data?.documents.find(
+                            (d) => d.id == docId.docId,
+                          )}
+                          userRole={myMemberRole}
+                          pathName={pathName}
+                        />
+                      )
+                    },
+                  )}
+                </YStack>
+              </Container>
+            </MainWrapper>
+          </Allotment.Pane>
+          {group.data?.version && route.accessory?.key === 'versions' ? (
+            <EntityVersionsAccessory
+              id={entityId}
+              activeVersion={group.data?.version}
+            />
+          ) : null}
+        </Allotment>
+        <Footer>
+          <XStack gap="$3" marginHorizontal="$3">
+            {group.data?.version && (
+              <VersionChangesInfo version={group.data?.version} />
             )}
-          </YStack>
-        </Container>
-      </MainWrapper>
-      <Footer />
-      {inviteMember.content}
-      {editGroupInfo.content}
+          </XStack>
+          <ChangesFooterItem route={route} />
+        </Footer>
+        {inviteMember.content}
+        {editGroupInfo.content}
+      </YStack>
     </>
   )
 }
@@ -517,3 +558,21 @@ function ChangesFooterItem({route}: {route: GroupRoute}) {
     />
   )
 }
+
+// export function EntityChangesAccessory({
+//   id,
+//   accessory,
+// }: {
+//   id: UnpackedHypermediaId | null
+//   accessory: EntityVersionsAccessory | undefined | null
+// }) {
+//   const timeline = useEntityTimeline(
+//     (id && createHmId(id.type, id.eid)) || undefined,
+//   )
+//   if (accessory?.key !== 'versions') return null
+//   return (
+//     <AccessoryContainer title="Changes">
+//       <Text>Changes of {JSON.stringify(timeline.data)}</Text>
+//     </AccessoryContainer>
+//   )
+// }

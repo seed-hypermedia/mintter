@@ -1,5 +1,6 @@
 import {
   BlockNode,
+  Change,
   ChangeInfo,
   Document,
   GRPCClient,
@@ -50,6 +51,41 @@ function extractBlocksWithRevisions(
     }
   })
   return output
+}
+
+export type TimelineChange = {
+  change: Change
+  deps: string[]
+  citations: string[]
+  id: string
+}
+
+export function useEntityTimeline(entityId?: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryFn: async () => {
+      const rawTimeline = await grpcClient.entities.getEntityTimeline({
+        id: entityId || '',
+      })
+      const allChanges: Record<string, TimelineChange> = {}
+      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+        allChanges[changeId] = {
+          deps: change.deps,
+          citations: [],
+          change: change,
+          id: change.id,
+        }
+      })
+      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+        change.deps.forEach((depId) => {
+          allChanges[depId]?.citations.push(changeId)
+        })
+      })
+      return {allChanges}
+    },
+    queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
+    enabled: !!entityId,
+  })
 }
 
 // when we summarize block actions, we need a quick text representation, skipping all annotations and other block types

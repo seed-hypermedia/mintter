@@ -33,8 +33,8 @@ export function FooterButton({
     <Button
       size="$1"
       chromeless={!active}
-      color={active ? '$blue10' : undefined}
       onPress={onPress}
+      theme={active ? 'blue' : undefined}
       icon={icon}
       paddingHorizontal="$2"
     >
@@ -108,13 +108,7 @@ export default function Footer({children}: {children?: ReactNode}) {
         </SizableText>
       </XStack>
 
-      <XStack
-        flex={1}
-        alignItems="center"
-        justifyContent="flex-end"
-        marginRight="$2"
-        gap="$2"
-      >
+      <XStack flex={1} alignItems="center" justifyContent="flex-end" gap="$1">
         {children}
       </XStack>
     </FooterWrapper>

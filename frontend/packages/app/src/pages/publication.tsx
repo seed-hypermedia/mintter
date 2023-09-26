@@ -1,5 +1,4 @@
 import {AppBanner, BannerText} from '@mintter/app/src/components/app-banner'
-import {VersionsAccessory} from '@mintter/app/src/components/changes-list'
 import {CitationsAccessory} from '@mintter/app/src/components/citations'
 import Footer, {FooterButton} from '@mintter/app/src/components/footer'
 import {useDocChanges} from '@mintter/app/src/models/changes'
@@ -7,126 +6,33 @@ import {useDocCitations} from '@mintter/app/src/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/src/models/documents'
 import {useNavRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {
-  MttLink,
-  features,
-  formattedDateLong,
-  formattedDateMedium,
-  pluralS,
-} from '@mintter/shared'
+import {MttLink, features, pluralS, unpackDocId} from '@mintter/shared'
 import {
   Button,
-  ButtonText,
   Comment,
   Link,
   MainWrapper,
   Pencil,
   Text,
-  Tooltip,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-
-import {Timestamp} from '@bufbuild/protobuf'
 import {AppError} from '@mintter/app/src/components/app-error'
 import {CitationsProvider} from '@mintter/app/src/components/citations-context'
 import {DebugData} from '@mintter/app/src/components/debug-data'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
-import {useAccount} from '../models/accounts'
-import {useChange} from '../models/changes'
 import {useLatestPublication} from '../models/documents'
-import {NavRoute} from '../utils/navigation'
 import {DocumentPlaceholder} from './document-placeholder'
+import {EntityVersionsAccessory} from '../components/changes-list'
+import {VersionChangesInfo} from '../components/version-changes-info'
+import {History} from '@tamagui/lucide-icons'
+import {usePublicationInContext} from '../models/publication'
 
 export default function PublicationPage() {
   return <PublicationPageEditor />
-}
-
-function AuthorLink({author}: {author: string}) {
-  const navigate = useNavigate()
-  const account = useAccount(author)
-  return (
-    <ButtonText
-      fontSize="$1"
-      color="$color9"
-      hoverStyle={{
-        textDecorationLine: 'underline',
-      }}
-      onPress={() => {
-        navigate({key: 'account', accountId: author})
-      }}
-      gap="$1"
-      display="flex"
-    >
-      <AccountLinkAvatar size={16} accountId={author} />
-      {account.data?.profile?.alias || account.data?.id.slice(-10) || ''}
-    </ButtonText>
-  )
-}
-
-function PublishTimeItem({
-  publishTime,
-  destRoute,
-}: {
-  publishTime: Timestamp
-  destRoute?: NavRoute
-}) {
-  const navigate = useNavigate()
-  const enabled = !!destRoute
-  return (
-    <Tooltip content={`Version Published on ${formattedDateLong(publishTime)}`}>
-      <ButtonText
-        fontSize="$1"
-        color="$color9"
-        hoverStyle={
-          enabled
-            ? {
-                textDecorationLine: 'underline',
-              }
-            : undefined
-        }
-        disabled={!enabled}
-        onPress={() => {
-          if (destRoute) {
-            navigate(destRoute)
-          }
-        }}
-      >
-        {formattedDateMedium(publishTime)}
-      </ButtonText>
-    </Tooltip>
-  )
-}
-
-function VersionChangesInfo({version}: {version: string}) {
-  const changeIds = version.split('.')
-  return changeIds.map((changeId) => (
-    <ChangeInfo key={changeId} changeId={changeId} />
-  ))
-}
-function ChangeInfo({changeId}: {changeId: string}) {
-  const change = useChange(changeId)
-  const route = useNavRoute()
-  const pubRoute = route.key === 'publication' ? route : undefined
-  return (
-    <XStack gap="$2">
-      {change?.data?.author && <AuthorLink author={change?.data?.author} />}
-      {pubRoute && change.data?.createTime && change.data?.createTime ? (
-        <PublishTimeItem
-          publishTime={change.data?.createTime}
-          destRoute={{
-            ...pubRoute,
-            versionId: changeId,
-          }}
-        />
-      ) : null}
-    </XStack>
-  )
 }
 
 export function PublicationPageEditor() {
@@ -184,15 +90,20 @@ export function PublicationPageEditor() {
             </Allotment.Pane>
             {accessoryKey &&
               (accessoryKey == 'versions' ? (
-                <VersionsAccessory />
+                <EntityVersionsAccessory
+                  id={unpackDocId(docId)}
+                  activeVersion={publication.data.version}
+                />
               ) : (
                 <CitationsAccessory docId={docId} version={versionId} />
               ))}
           </Allotment>
           <Footer>
-            {publication.data?.version && (
-              <VersionChangesInfo version={publication.data?.version} />
-            )}
+            <XStack gap="$3" marginHorizontal="$3">
+              {publication.data?.version && (
+                <VersionChangesInfo version={publication.data?.version} />
+              )}
+            </XStack>
 
             <FooterButton
               active={accessoryKey === 'versions'}
@@ -200,9 +111,10 @@ export function PublicationPageEditor() {
                 changes?.changes?.length,
                 'Version',
               )}`}
-              icon={Pencil}
+              icon={History}
               onPress={() => {
-                if (route.accessory) return replace({...route, accessory: null})
+                if (route.accessory?.key === 'versions')
+                  return replace({...route, accessory: null})
                 replace({...route, accessory: {key: 'versions'}})
               }}
             />
@@ -216,7 +128,7 @@ export function PublicationPageEditor() {
                 )}`}
                 icon={Link}
                 onPress={() => {
-                  if (route.accessory)
+                  if (route.accessory?.key === 'citations')
                     return replace({...route, accessory: null})
                   replace({...route, accessory: {key: 'citations'}})
                 }}
@@ -228,7 +140,7 @@ export function PublicationPageEditor() {
                 label={`Conversations`}
                 icon={Comment}
                 onPress={() => {
-                  if (route.accessory?.key === 'versions')
+                  if (route.accessory?.key === 'comments')
                     return replace({...route, accessory: null})
                   replace({...route, accessory: {key: 'comments'}})
                 }}
@@ -261,54 +173,37 @@ export function PublicationPageEditor() {
   return <DocumentPlaceholder />
 }
 
-type ActivePanel = 'conversations' | 'citations' | 'changes' | undefined
-
-type ResizablePanelMachineContext = {
-  show: boolean
-  activePanel: ActivePanel
-  left: number
-}
-
-type ResizablePanelMachineEvent =
-  | {type: 'PANEL.TOGGLE'; activePanel?: ActivePanel}
-  | {type: 'PANEL.OPEN'; activePanel?: ActivePanel}
-  | {type: 'PANEL.CLOSE'}
-  | {type: 'PANEL.RESIZE'; values: Array<number>}
-
-type ResizablePanelMachineServices = {
-  matchMediaService: {
-    data: void
-  }
-}
-
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const route = useNavRoute()
-  const context = route.key === 'publication' ? route.pubContext : undefined
-  const {data: pub, isLoading} = useLatestPublication({
-    trustedVersionsOnly: context?.key === 'trusted',
-    documentId: docId,
-    enabled: !!docId,
-  })
+  const pubContext = route.key === 'publication' ? route.pubContext : undefined
+  const pub = usePublicationInContext({documentId: docId, pubContext})
+  // const {data: pub, isLoading} = useLatestPublication({
+  //   trustedVersionsOnly: pubContext?.key === 'trusted',
+  //   documentId: docId,
+  //   enabled: !!docId,
+  // })
 
   const navigate = useNavigate()
   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
-  if (isLoading) return null
-  if (version === pub?.version) return null
-  if (!pub?.version) return null
+  if (pub.isLoading) return null
+  if (version === pub?.data?.version) return null
+  if (pub?.data?.version) return null
   return (
     <AppBanner
       onPress={() => {
         navigate({
           key: 'publication',
           documentId: docId,
-          versionId: pub.version,
           accessory: pubAccessory,
+          pubContext,
         })
       }}
     >
       <BannerText>
-        There is a newer {context === 'trusted' ? 'trusted version' : 'version'}{' '}
-        of this Publication. Click here to go to latest →
+        There is a newer{' '}
+        {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
+        Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
+        here to go to latest →
       </BannerText>
     </AppBanner>
   )

@@ -22,3 +22,7 @@ body {
 .toaster {
   font-family: 'San Francisco', Helvetica, Arial, sans-serif;
 }
+
+.split-view-view {
+  height: 100%;
+}

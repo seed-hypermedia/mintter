@@ -21,12 +21,15 @@ export const queryKeys = {
 
   // groups
   GET_GROUPS: 'GET_GROUPS',
-  GET_GROUP: 'GET_GROUP', // , groupId: string
-  GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string
-  GET_GROUP_MEMBERS: 'GET_GROUP_MEMBERS', // , groupId: string
+  GET_GROUP: 'GET_GROUP', // , groupId: string, version: string
+  GET_GROUP_CONTENT: 'GET_GROUP_CONTENT', // , groupId: string, version: string
+  GET_GROUP_MEMBERS: 'GET_GROUP_MEMBERS', // , groupId: string, version: string
   GET_GROUPS_FOR_DOCUMENT: 'GET_GROUPS_FOR_DOCUMENT', // , documentId: string
   GET_GROUPS_FOR_ACCOUNT: 'GET_GROUPS_FOR_ACCOUNT', // , accountId: string
   GET_HOST_GROUP: 'GET_HOST_GROUP', // , hostname: string
+
+  // entities
+  ENTITY_TIMELINE: 'ENTITY_TIMELINE', //, entityId: string
 
   // documents
   GET_DRAFT_LIST: 'GET_DRAFT_LIST', //

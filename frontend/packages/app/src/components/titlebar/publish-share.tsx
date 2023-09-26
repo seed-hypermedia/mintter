@@ -28,7 +28,14 @@ import {
 } from '@mintter/app/utils/navigation'
 import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {createPublicWebHmUrl, unpackDocId} from '@mintter/shared'
+import {
+  UnpackedDocId,
+  UnpackedHypermediaId,
+  createPublicWebHmUrl,
+  labelOfEntityType,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
 import {
   Button,
   ButtonText,
@@ -60,6 +67,7 @@ import {
   ChevronDown,
   ChevronUp,
   Store,
+  X,
 } from '@tamagui/lucide-icons'
 import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -313,9 +321,12 @@ function GroupContextButton({route}: {route: GroupRoute}) {
   const group = useGroup(route.groupId)
   if (!group.data) return null
   return (
-    <Button size="$2" icon={Book} disabled>
-      {group.data.title}
-    </Button>
+    <>
+      <Button size="$2" icon={Book} disabled>
+        {group.data.title}
+      </Button>
+      <VersionContext route={route} />
+    </>
   )
 }
 
@@ -571,32 +582,84 @@ function ContextButton({
   )
 }
 
-function VersionContext({route}: {route: PublicationRoute}) {
-  const docId = unpackDocId(route.documentId)
-  if (!route.versionId || !docId) return null
+function VersionContext({route}: {route: NavRoute}) {
+  let exactVersion: string | null = null
+  let fullUrl: string | null = null
+  const navigate = useNavigate()
+  let unpackedId: UnpackedHypermediaId | null = null
+  let routeWithoutVersion: NavRoute | null = null
+  let latestVersionLabel = 'Latest Version'
+  if (route.key === 'group') {
+    const {groupId, accessory, version} = route
+    unpackedId = unpackHmId(groupId)
+    exactVersion = version || null
+    routeWithoutVersion = {
+      key: 'group',
+      groupId,
+      accessory,
+      version: undefined,
+    }
+  } else if (route.key === 'publication') {
+    const {accessory, documentId, versionId, pubContext} = route
+    unpackedId = unpackHmId(documentId)
+    exactVersion = versionId || null
+    routeWithoutVersion = {
+      key: 'publication',
+      documentId,
+      accessory,
+      versionId: undefined,
+      pubContext,
+    }
+    if (pubContext?.key === 'group') {
+      latestVersionLabel = 'Latest Version in this Group'
+    }
+    if (pubContext?.key === 'trusted') {
+      latestVersionLabel = 'Latest Version from Trusted Authors'
+    }
+  }
+  fullUrl =
+    unpackedId &&
+    exactVersion &&
+    createPublicWebHmUrl(unpackedId.type, unpackedId.eid, {
+      version: exactVersion,
+    })
+  if (!unpackedId || !exactVersion || !fullUrl) return null
   return (
-    <Tooltip
-      content={`You are viewing the exact version: @${route.versionId.slice(
-        -6,
-      )}. Click to Copy Version URL`}
-    >
-      <ButtonText
-        hoverStyle={{textDecorationLine: 'underline'}}
-        onPress={() => {
-          copyUrlToClipboardWithFeedback(
-            createPublicWebHmUrl('d', docId.eid, {
-              version: route.versionId,
-            }),
-            'Exact Doc Version',
-          )
-        }}
-        color={'$color10'}
-        fontFamily={'$mono'}
-        fontSize="$2"
+    <>
+      <Tooltip
+        content={`You are viewing the exact version: @${exactVersion.slice(
+          -6,
+        )}. Click to Copy Version URL`}
       >
-        @{route.versionId.slice(-6)}
-      </ButtonText>
-    </Tooltip>
+        <ButtonText
+          hoverStyle={{textDecorationLine: 'underline'}}
+          onPress={() => {
+            if (!unpackedId || !exactVersion || !fullUrl) return
+            copyUrlToClipboardWithFeedback(
+              fullUrl,
+              `Exact ${labelOfEntityType(unpackedId.type)} Version`,
+            )
+          }}
+          color={'$color10'}
+          fontFamily={'$mono'}
+          fontSize="$2"
+        >
+          @{exactVersion.slice(-6)}
+        </ButtonText>
+      </Tooltip>
+      {routeWithoutVersion ? (
+        <Tooltip content={`View ${latestVersionLabel}`}>
+          <Button
+            size="$2"
+            chromeless
+            onPress={() => {
+              routeWithoutVersion && navigate(routeWithoutVersion)
+            }}
+            icon={X}
+          />
+        </Tooltip>
+      ) : null}
+    </>
   )
 }
 
