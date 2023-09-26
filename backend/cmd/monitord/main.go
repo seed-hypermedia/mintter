@@ -20,8 +20,8 @@ func main() {
 	scanPeriod := flag.Duration("scan-period", time.Duration(10*time.Minute), "Site scanning periodicity.")
 	peerTimeout := flag.Duration("peer-timeout", time.Duration(45*time.Second), "Timeout to consider the peer to be offline.")
 	numPings := flag.Int("num-pings", 5, "Number of pings per site to calculate average TTR.")
-	portHTTP := flag.Int("http-port", 5002, "Port to run the server on.")
-	portP2P := flag.Int("p2p-port", 50002, "Port to run the p2p node on.")
+	portHTTP := flag.Int("http.port", 5002, "Port to run the server on.")
+	portP2P := flag.Int("p2p.port", 50002, "Port to run the p2p node on.")
 	templateFile := flag.String("html-template", "/template.html", "Path of the html template file.")
 	flag.Parse()
 	if *peerTimeout > *scanPeriod {
