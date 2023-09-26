@@ -1,5 +1,8 @@
 name: Desktop app release
 
+permissions:
+  contents: write
+  
 on:
   push:
     tags:
