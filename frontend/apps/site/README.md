@@ -21,7 +21,7 @@ separate directories:
 1. **Terminal 2: Site Backend**
 
    ```shell
-   ./dev run-backend -site.hostname "http://127.0.0.1:56100" --http.port 56001 -grpc.port 56002 -p2p.port 56000 -data-dir ~/.mtt-site -site.owner-id <ACCOUNT_ID> -site.title testsite -identity.no-account-wait -syncing.disable-inbound
+   ./dev run-backend -site.hostname "http://127.0.0.1:56100" --http.port 56001 -grpc.port 56002 -p2p.port 56000 -data-dir ~/.mtt-site -site.owner-id <ACCOUNT_ID> -site.title testsite -identity.no-account-wait -syncing.disabled
    ```
 
    > (make sure to replace `<ACCOUNT_ID>` with your desktop app's account ID)
