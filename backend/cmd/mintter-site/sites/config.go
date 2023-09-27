@@ -5,7 +5,7 @@ import "mintter/backend/config"
 // DefaultConfig for sites.
 func DefaultConfig() config.Config {
 	cfg := config.Default()
-	cfg.DataDir = "~/.mintter-site"
+	cfg.DataDir = "~/.mtt-site"
 	cfg.Syncing.NoPull = true
 	cfg.Syncing.NoDiscovery = true
 	cfg.P2P.ForceReachabilityPublic = true
