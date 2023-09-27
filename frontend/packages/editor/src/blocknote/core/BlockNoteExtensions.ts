@@ -42,6 +42,8 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
   editor: BlockNoteEditor<BSchema>
   domAttributes: Partial<BlockNoteDOMAttributes>
   blockSchema: BSchema
+  // TODO: properly type this.
+  linkExtensionOptions: any
   collaboration?: {
     fragment: Y.XmlFragment
     user: {
@@ -86,7 +88,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     Italic,
     Strike,
     Underline,
-    Link,
+    Link.configure(opts.linkExtensionOptions),
     TextColorMark,
     TextColorExtension,
     BackgroundColorMark,

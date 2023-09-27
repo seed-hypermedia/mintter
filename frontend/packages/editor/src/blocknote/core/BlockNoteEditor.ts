@@ -160,6 +160,8 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
     const newOptions: Omit<typeof options, 'defaultStyles' | 'blockSchema'> & {
       defaultStyles: boolean
       blockSchema: BSchema
+      // TODO: add proper types to this
+      linkExtensionOptions?: any
     } = {
       defaultStyles: true,
       // TODO: There's a lot of annoying typing stuff to deal with here. If
@@ -187,6 +189,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       blockSchema: newOptions.blockSchema,
       collaboration: newOptions.collaboration,
       editable: newOptions.editable,
+      linkExtensionOptions: newOptions.linkExtensionOptions,
     })
 
     const blockNoteUIExtension = Extension.create({
