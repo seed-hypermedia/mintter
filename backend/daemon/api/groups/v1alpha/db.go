@@ -6,6 +6,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/dqb"
+	"mintter/backend/pkg/errutil"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -217,7 +218,7 @@ func (db *DB) queryOne(ctx context.Context, sql string, args []any, outs []any) 
 	}
 
 	if count > 1 {
-		return fmt.Errorf("expected one record but got %d", count)
+		return errutil.NotFound("expected one record but got %d", count)
 	}
 
 	return nil

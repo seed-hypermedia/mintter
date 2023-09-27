@@ -369,7 +369,7 @@ func (srv *Server) CreateGroup(ctx context.Context, in *groups.CreateGroupReques
 		return nil, err
 	}
 
-	return groupToProto(e)
+	return srv.groupToProto(ctx, e)
 }
 
 func (srv *Server) initSiteServer(ctx context.Context, setupURL string, groupID hyper.EntityID) (baseURL string, err error) {
@@ -468,7 +468,7 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 		return nil, status.Errorf(codes.NotFound, "group %q with version %q not found", in.Id, in.Version)
 	}
 
-	return groupToProto(e)
+	return srv.groupToProto(ctx, e)
 }
 
 // UpdateGroup updates a group.
@@ -545,7 +545,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		return nil, err
 	}
 
-	grouppb, err := groupToProto(e)
+	grouppb, err := srv.groupToProto(ctx, e)
 	if err != nil {
 		return nil, err
 	}
@@ -848,7 +848,7 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 	return resp, nil
 }
 
-func groupToProto(e *hyper.Entity) (*groups.Group, error) {
+func (srv *Server) groupToProto(ctx context.Context, e *hyper.Entity) (*groups.Group, error) {
 	createTime, ok := e.AppliedChanges()[0].Data.Patch["createTime"].(int)
 	if !ok {
 		return nil, fmt.Errorf("group entity doesn't have createTime field")
@@ -869,8 +869,18 @@ func groupToProto(e *hyper.Entity) (*groups.Group, error) {
 	if v, ok := e.Get("siteURL"); ok {
 		vv, ok := v.(string)
 		if ok {
-			gpb.SiteInfo = &groups.Group_SiteInfo{
-				BaseUrl: vv,
+			sr, err := srv.db.GetSite(ctx, vv)
+			if err != nil {
+				if status.Code(err) != codes.NotFound {
+					return nil, err
+				}
+			} else {
+				gpb.SiteInfo = &groups.Group_SiteInfo{
+					BaseUrl:        vv,
+					LastSyncTime:   timestamppb.New(time.Unix(sr.LastSyncTime, 0)),
+					LastOkSyncTime: timestamppb.New(time.Unix(sr.LastSyncOkTime, 0)),
+					Version:        sr.GroupVersion,
+				}
 			}
 		}
 	}
