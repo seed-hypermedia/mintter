@@ -1,12 +1,15 @@
 import {
   BACKEND_GRAPHQL_ENDPOINT,
+  ExportWalletInput,
   LightningWallet,
+  Mutation,
   Payments,
   Query,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
   UseQueryOptions,
+  useMutation,
   useQuery,
 } from '@tanstack/react-query'
 import {gql, request} from 'graphql-request'
@@ -102,4 +105,46 @@ function queryInvoicesByWallet(
 
 export function useInvoicesBywallet(walletId?: string) {
   return useQuery(queryInvoicesByWallet(walletId))
+}
+
+let exportWalletMutationQuery = gql`
+  mutation exportWallet($id: ID!) {
+    exportWallet(input: {id: $id}) {
+      credentials
+    }
+  }
+`
+
+export function mutationExportWallet(opts = {}) {
+  return {
+    // mutationFn: async (walletId: string) => {
+    //   console.log(`== ~ mutationFn: ~ walletId:`, walletId)
+    //   let req: Mutation = await request(
+    //     BACKEND_GRAPHQL_ENDPOINT,
+    //     exportWalletMutationQuery,
+    //     {
+    //       id: walletId,
+    //     },
+    //   )
+
+    //   return req.exportWallet
+    // },
+    mutationFn: async (input: ExportWalletInput) => {
+      console.log(`== ~ mutationExportWallet ~ input:`, input)
+      try {
+        let req: Mutation = await request(
+          BACKEND_GRAPHQL_ENDPOINT,
+          exportWalletMutationQuery,
+          input,
+        )
+
+        return req.exportWallet
+      } catch (error) {}
+    },
+    ...opts,
+  }
+}
+
+export function useExportWallet() {
+  return useMutation(mutationExportWallet())
 }

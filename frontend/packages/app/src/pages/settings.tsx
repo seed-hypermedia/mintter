@@ -6,7 +6,6 @@ import {usePeerInfo} from '@mintter/app/src/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/src/models/payments'
 import {ObjectKeys} from '@mintter/app/src/utils/object-keys'
 import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
-import {process} from 'electron'
 import {
   Back,
   Button,
@@ -33,13 +32,15 @@ import {
   XGroup,
   XStack,
   YStack,
+  Share,
+  ArrowDownRight,
 } from '@mintter/ui'
-import {ArrowDownRight} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
+import {useExportWallet} from '../models/payments'
 
 export default function Settings() {
   return (
@@ -68,7 +69,7 @@ export default function Settings() {
             Settings
           </SizableText>
         </Tabs.Tab>
-        {/* <Tabs.Tab value="wallets" data-testid="tab-wallets">
+        <Tabs.Tab value="wallets" data-testid="tab-wallets">
           <SizableText flex={1} textAlign="left">
             Wallets
           </SizableText>
@@ -86,7 +87,7 @@ export default function Settings() {
           >
             NEW
           </SizableText>
-        </Tabs.Tab> */}
+        </Tabs.Tab>
       </Tabs.List>
       <Separator vertical />
       <TabsContent value="account">
@@ -96,9 +97,9 @@ export default function Settings() {
       <TabsContent value="settings">
         <AppSettings />
       </TabsContent>
-      {/* <TabsContent value="wallets">
+      <TabsContent value="wallets">
         <WalletsSettings />
-      </TabsContent> */}
+      </TabsContent>
     </Tabs>
   )
 }
@@ -430,21 +431,6 @@ function SettingsNavBack({
   )
 }
 
-function SettingsSection({
-  title,
-  children,
-}: {
-  title?: string
-  children: React.ReactNode
-}) {
-  return (
-    <YStack gap="$3">
-      <Heading>{title}</Heading>
-      {children}
-    </YStack>
-  )
-}
-
 const TabsContent = (props: TabsContentProps) => {
   return (
     <Tabs.Content
@@ -577,17 +563,36 @@ function WalletCard({
   active = false,
   ...props
 }: CardProps & {wallet: LightningWallet; active?: boolean}) {
+  const mutation = useExportWallet()
+
+  async function handleExport() {
+    try {
+      let res = await mutation.mutateAsync({id: wallet.id})
+      if (!res) {
+        toast.error('Error: ExportWallet error')
+        console.error('Error: ExportWallet error')
+      } else {
+        copyTextToClipboard(res.credentials)
+        toast.success('Wallet Exported and copied to your clipboard', {
+          duration: 5000,
+        })
+      }
+    } catch (error) {
+      toast.error(`Error: ExportWallet error: ${JSON.stringify(error)}`)
+      console.error('Error: ExportWallet error', error)
+    }
+  }
+
   return (
     <Card
       animation="bouncy"
       size="$4"
       theme="green"
       width={260}
-      height={120}
+      // height={120}
       scale={0.975}
       hoverStyle={{scale: 1}}
       pressStyle={{scale: 0.95}}
-      backgroundColor="$color8"
       borderRadius="$4"
       borderWidth={1}
       borderColor="$borderColor"
@@ -600,7 +605,7 @@ function WalletCard({
             <SizableText color="$color10">{wallet.name}</SizableText>
             <H3 color="$color12">{wallet.balanceSats} sats</H3>
           </YStack>
-          <Tooltip content="default wallet">
+          {/* <Tooltip content="default wallet">
             <Button
               size="$3"
               chromeless
@@ -610,9 +615,20 @@ function WalletCard({
               scaleIcon={2}
               padding="$1"
             />
-          </Tooltip>
+          </Tooltip> */}
         </XStack>
       </Card.Header>
+      <Card.Footer padded>
+        <XStack flex={1} />
+        <Button
+          disabled={mutation.isLoading}
+          size="$2"
+          onPress={handleExport}
+          icon={<Share />}
+        >
+          Export
+        </Button>
+      </Card.Footer>
     </Card>
   )
 }

@@ -36,7 +36,7 @@ export const BACKEND_GRPC_URL = `${BACKEND_HOSTNAME}:${BACKEND_GRPC_PORT}`
 export const BACKEND_P2P_URL = `${BACKEND_HOSTNAME}:${BACKEND_P2P_PORT}`
 export const BACKEND_FILE_UPLOAD_URL = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}/ipfs/file-upload`
 export const BACKEND_FILE_URL = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}/ipfs`
-export const BACKEND_GRAPHQL_ENDPOINT = `${BACKEND_HOSTNAME}/graphql`
+export const BACKEND_GRAPHQL_ENDPOINT = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}/graphql`
 
 export const features = {
   comments: false,

@@ -60,4 +60,6 @@ export {
   List as UnorderedList,
   User,
   Video as VideoIcon,
+  Share,
+  ArrowDownRight,
 } from '@tamagui/lucide-icons'
