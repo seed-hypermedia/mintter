@@ -9,7 +9,6 @@ import {
   unpackDocId,
 } from '@mintter/shared'
 import {transport} from 'client'
-import {getSiteInfo} from 'get-site-info'
 import {
   hmAccount,
   hmChangeInfo,
@@ -230,7 +229,7 @@ const groupRouter = router({
     .input(
       z.object({
         groupId: z.string(),
-        version: z.string().optional(),
+        version: z.string(),
       }),
     )
     .query(async ({input}) => {

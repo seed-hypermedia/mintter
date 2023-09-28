@@ -1,61 +1,63 @@
 import {PageSection, H1, styled, XStack, SizableText} from '@mintter/ui'
 import Head from 'next/head'
-import {trpc} from 'trpc'
 import {NextLink} from './next-link'
 
-const SITE_NAME = process.env.GW_SITE_NAME || 'Mintter Site'
-
 export function SiteHead({
-  title,
-  titleHref,
+  siteTitle = 'Hypermedia Site',
+  pageTitle,
+  siteSubheading,
 }: {
-  title?: string
-  titleHref?: string
+  siteTitle?: string
+  pageTitle?: string
+  sectionName?: string
+  siteSubheading?: string
 }) {
-  const siteInfo = trpc.siteInfo.get.useQuery()
-  let titleContent = title ? <H1>{title}</H1> : null
-  if (titleHref && titleContent) {
-    titleContent = (
-      <NextLink
-        style={{textDecoration: 'none'}} // for some reason this is needed instead of tamagui style
-        href={titleHref}
-      >
-        {titleContent}
-      </NextLink>
-    )
-  }
-  const {title: siteInfoTitle, description} = siteInfo?.data || {}
-  const siteTitle = siteInfoTitle || SITE_NAME
-  const siteDescription = description || ''
   return (
-    <PageSection.Root flexGrow={0} isHeader={true}>
+    <PageSection.Root flexGrow={0}>
       <Head>
-        <title>{title ? `${title} - ${siteTitle}` : siteTitle}</title>
-        {description && <meta name="description" content={description} />}
+        <title>{siteTitle}</title>
+        {siteSubheading && <meta name="description" content={siteSubheading} />}
       </Head>
       <PageSection.Side />
       <PageSection.Content>
-        <NextLink
-          href="/"
-          aria-label="home page"
-          style={{textDecoration: 'none'}} // for some reason this is needed instead of tamagui style
-        >
-          <SizableText
-            tag="h1"
-            size="$9"
-            letterSpacing={0}
-            fontWeight="600"
-            flexDirection="column"
-            display="flex"
+        <XStack gap="$2" alignItems="baseline">
+          <XStack
+            x="$-3"
+            borderRadius="$3"
+            paddingHorizontal="$3"
+            paddingBottom="$2"
+            hoverStyle={{backgroundColor: '$color6'}}
+            alignItems="center"
           >
-            <span>{siteTitle}</span>
-            {siteDescription ? (
-              <SizableText tag="small" color="$color8">
-                {siteDescription}
-              </SizableText>
-            ) : null}
-          </SizableText>
-        </NextLink>
+            <NextLink
+              href="/"
+              aria-label="home page"
+              style={{textDecoration: 'none'}} // for some reason this is needed instead of tamagui style
+              prefetch
+            >
+              <SizableText size="$6">{siteTitle}</SizableText>
+            </NextLink>
+          </XStack>
+          {/* {sectionName && (
+            <SizableText size="$6" color="$color10">
+              {`/ ${sectionName}`}
+            </SizableText>
+          )} */}
+        </XStack>
+        {pageTitle && (
+          <XStack marginTop="$7">
+            <SizableText
+              tag="h1"
+              size="$9"
+              letterSpacing={0}
+              fontWeight="600"
+              flexDirection="column"
+              display="flex"
+            >
+              {pageTitle}
+            </SizableText>
+          </XStack>
+        )}
       </PageSection.Content>
       <PageSection.Side />
     </PageSection.Root>

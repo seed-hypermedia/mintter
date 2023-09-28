@@ -1,46 +1,45 @@
 import {
   Account,
+  Block,
   EmbedBlock,
-  getCIDFromIPFSUrl,
   HeadingBlock,
   ImageBlock,
   InlineContent,
   ParagraphBlock,
   PresentationBlock,
-  serverBlockToEditorInline,
-  SiteInfo,
-  Block,
   Publication,
-  isHypermediaScheme,
   createPublicWebHmUrl,
-  unpackHmId,
+  getCIDFromIPFSUrl,
   idToUrl,
+  isHypermediaScheme,
+  serverBlockToEditorInline,
   unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {
   Button,
-  Check,
   Copy,
-  Footer,
-  Heading,
   PageSection,
+  SideSection,
+  SideSectionTitle,
   SizableText,
   Spinner,
   Text,
   XStack,
   YStack,
 } from '@mintter/ui'
+import {ArrowRight} from '@tamagui/lucide-icons'
 import {DehydratedState} from '@tanstack/react-query'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
-import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {WebTipping} from 'web-tipping'
+import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
+import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import Link from 'next/link'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -56,129 +55,6 @@ export type PublicationPageData = {
   author?: Account | null
   editors: Array<Account | string | null> | null
   siteInfo: SiteInfo | null
-}
-
-export function PublicationContent({
-  publication,
-}: {
-  publication: HMPublication | undefined
-}) {
-  return (
-    <YStack>
-      {publication?.document?.children?.map((block, index) => (
-        <StaticBlockNode
-          block={block}
-          key={block.block?.id || index}
-          ctx={{
-            enableBlockCopy: true,
-            ref: `/d/${publication?.document?.id}?v=${publication.version}`,
-          }}
-        />
-      ))}
-    </YStack>
-  )
-}
-
-function getBlockNodeById(
-  blocks: Array<HMBlockNode>,
-  blockId: string,
-): HMBlockNode | null {
-  if (!blockId) return null
-
-  let res: HMBlockNode | undefined
-  blocks.find((bn) => {
-    if (bn.block?.id == blockId) {
-      res = bn
-      return true
-    } else if (bn.children?.length) {
-      const foundChild = getBlockNodeById(bn.children, blockId)
-      if (foundChild) {
-        res = foundChild
-        return true
-      }
-    }
-    return false
-  })
-  return res || null
-}
-
-function GroupSidebarContent({
-  group,
-  activePathName,
-  content,
-}: {
-  activePathName: string
-  group?: HMGroup
-  content?: Array<null | {
-    publication: null | HMPublication
-    pathName: string
-    version: string
-    docId: string
-  }>
-}) {
-  const groupId = group?.id ? unpackHmId(group?.id) : null
-  const groupLink =
-    groupId?.eid && createPublicWebHmUrl('g', groupId.eid, {hostname: null})
-  return (
-    <>
-      {groupLink && (
-        <Text
-          tag="a"
-          href={groupLink}
-          fontSize={16}
-          fontWeight={'bold'}
-          marginBottom="$4"
-          color={'$color10'}
-          textDecorationLine="none"
-          justifyContent="flex-start"
-          hoverStyle={{
-            textDecorationLine: 'underline',
-          }}
-        >
-          {group?.title}
-        </Text>
-      )}
-      {content?.map((item) => {
-        if (!item) return null
-        return (
-          <Button
-            key={item.pathName}
-            tag="a"
-            href={`${groupLink}/${item.pathName}`}
-            size="$2"
-            chromeless
-            justifyContent="flex-start"
-            theme={activePathName === item.pathName ? 'green' : undefined}
-          >
-            {item?.publication?.document?.title}
-          </Button>
-        )
-      })}
-    </>
-  )
-}
-
-function PublicationContextSidebar({
-  group,
-  activePathName,
-}: {
-  group?: HMGroup | null
-  activePathName: string
-}) {
-  const groupContent = trpc.group.listContent.useQuery(
-    {
-      groupId: group?.id || '',
-    },
-    {enabled: !!group?.id},
-  )
-  const groupSidebarContent = group ? (
-    <GroupSidebarContent
-      activePathName={activePathName}
-      group={group}
-      content={groupContent.data}
-    />
-  ) : null
-  return <PageSection.Side>{groupSidebarContent}</PageSection.Side>
 }
 
 export default function PublicationPage({
@@ -200,7 +76,7 @@ export default function PublicationPage({
   const pub = publication.data?.publication
 
   return (
-    <YStack flex={1}>
+    <>
       <Head>
         <meta name="hyperdocs-entity-id" content={pub?.document?.id} />
         <meta name="hyperdocs-entity-version" content={pub?.version} />
@@ -210,7 +86,11 @@ export default function PublicationPage({
         <meta name="hyperdocs-document-version" content={pub?.version} />
         <meta name="hyperdocs-document-title" content={pub?.document?.title} />
       </Head>
-      <SiteHead title={pub?.document?.title} titleHref={`/d/${documentId}`} />
+      <SiteHead
+        siteTitle={contextGroup?.title}
+        pageTitle={pub?.document?.title}
+        siteSubheading={contextGroup?.description}
+      />
       <PageSection.Root flex={1}>
         <PublicationContextSidebar
           group={contextGroup}
@@ -252,7 +132,7 @@ export default function PublicationPage({
         </PageSection.Side>
       </PageSection.Root>
       <Footer />
-    </YStack>
+    </>
   )
 }
 
@@ -560,4 +440,123 @@ function BlockPlaceholder() {
       <YStack width="60%" height={16} backgroundColor="$color6" />
     </YStack>
   )
+}
+
+export function PublicationContent({
+  publication,
+}: {
+  publication: HMPublication | undefined
+}) {
+  return (
+    <YStack>
+      {publication?.document?.children?.map((block, index) => (
+        <StaticBlockNode
+          block={block}
+          key={block.block?.id || index}
+          ctx={{
+            enableBlockCopy: true,
+            ref: `/d/${publication?.document?.id}?v=${publication.version}`,
+          }}
+        />
+      ))}
+    </YStack>
+  )
+}
+
+function getBlockNodeById(
+  blocks: Array<HMBlockNode>,
+  blockId: string,
+): HMBlockNode | null {
+  if (!blockId) return null
+
+  let res: HMBlockNode | undefined
+  blocks.find((bn) => {
+    if (bn.block?.id == blockId) {
+      res = bn
+      return true
+    } else if (bn.children?.length) {
+      const foundChild = getBlockNodeById(bn.children, blockId)
+      if (foundChild) {
+        res = foundChild
+        return true
+      }
+    }
+    return false
+  })
+  return res || null
+}
+
+function GroupSidebarContent({
+  group,
+  activePathName,
+  content,
+}: {
+  activePathName: string
+  group?: HMGroup
+  content?: Array<null | {
+    publication: null | HMPublication
+    pathName: string
+    version: string
+    docId: string
+  }>
+}) {
+  const groupId = group?.id ? unpackHmId(group?.id) : null
+  const groupLink =
+    groupId?.eid && createPublicWebHmUrl('g', groupId.eid, {hostname: null})
+  return (
+    <SideSection>
+      {groupLink ? (
+        <XStack paddingHorizontal="$3">
+          <SideSectionTitle>Site Content:</SideSectionTitle>
+        </XStack>
+      ) : null}
+      {content?.map((item) => {
+        if (!item) return null
+        return (
+          <Button
+            key={item.pathName}
+            iconAfter={activePathName === item.pathName ? <ArrowRight /> : null}
+            tag="a"
+            href={`${groupLink}/${item.pathName}`}
+            size="$3"
+            chromeless
+            justifyContent="flex-start"
+            backgroundColor={
+              activePathName === item.pathName
+                ? '$backgroundHover'
+                : 'transparent'
+            }
+            hoverStyle={{
+              backgroundColor: '$backgroundHover',
+            }}
+          >
+            {item?.publication?.document?.title}
+          </Button>
+        )
+      })}
+    </SideSection>
+  )
+}
+
+function PublicationContextSidebar({
+  group,
+  activePathName,
+}: {
+  group?: HMGroup | null
+  activePathName: string
+}) {
+  const groupContent = trpc.group.listContent.useQuery(
+    {
+      groupId: group?.id || '',
+    },
+    {enabled: !!group?.id},
+  )
+  const groupSidebarContent = group ? (
+    <GroupSidebarContent
+      activePathName={activePathName}
+      group={group}
+      content={groupContent.data}
+    />
+  ) : null
+  return <PageSection.Side>{groupSidebarContent}</PageSection.Side>
 }

@@ -1,8 +1,8 @@
 import {createHmId} from '@mintter/shared'
-import {getPageProps, serverHelpers} from './ssr-helpers'
-import {setAllowAnyHostGetCORS} from './cors'
 import {GetServerSidePropsContext} from 'next'
 import {daemonClient, networkingClient} from '../client'
+import {setAllowAnyHostGetCORS} from './cors'
+import {getPageProps, serverHelpers} from './ssr-helpers'
 
 export type GroupView = 'front' | 'list' | null
 
@@ -14,12 +14,12 @@ export function getGroupView(input: string | string[] | undefined): GroupView {
 
 export async function getGroupPathNamePageProps({
   groupEid,
-  version,
+  version = '',
   pathName,
   context,
 }: {
   groupEid: string
-  version: string | undefined
+  version: string
   pathName: string
   context: GetServerSidePropsContext
 }) {
@@ -51,16 +51,17 @@ export async function getGroupPathNamePageProps({
 
 export async function getGroupPageProps({
   groupEid,
-  version,
+  version = '',
   context,
   view,
 }: {
   groupEid: string
-  version: string | undefined
+  version: string
   context: GetServerSidePropsContext
   view: GroupView
 }) {
-  const {params, query} = context
+  const {query} = context
+
   const groupId = groupEid ? createHmId('g', groupEid) : undefined
 
   const groupVersion = query.v ? String(query.v) : version

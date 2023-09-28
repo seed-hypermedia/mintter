@@ -33,8 +33,11 @@ export default class Document extends NextDocument {
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         </Head>
         <body>
-          <Main />
-          <NextScript />
+          {/* this is important to avoid the main container to expand the whole width of the screen */}
+          <div>
+            <Main />
+            <NextScript />
+          </div>
         </body>
       </Html>
     )

@@ -11,7 +11,7 @@ export function MainContainer({
   sidebarBefore?: React.ReactElement
 }) {
   return (
-    <YStack height="100%" flex={1} justifyContent="space-between">
+    <YStack flex={1} justifyContent="space-between">
       <YStack $gtXl={{flexDirection: 'row', paddingTop: '$4'}} gap="$2">
         <YStack
           marginHorizontal={'auto'}
@@ -73,16 +73,8 @@ const PageSectionRoot = styled(Stack, {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  variants: {
-    isHeader: {
-      true: {
-        $gtSm: {
-          paddingTop: '$7',
-          paddingBottom: '$4',
-        },
-      },
-    },
-  },
+  // borderWidth: 1,
+  // borderColor: '$color6',
 })
 
 const PageSectionContent = styled(YStack, {
@@ -90,7 +82,7 @@ const PageSectionContent = styled(YStack, {
   padding: '$4',
   width: '100%',
   flex: 1,
-  maxWidth: 640,
+  maxWidth: 680,
   alignSelf: 'center',
   $gtSm: {
     flex: 3,

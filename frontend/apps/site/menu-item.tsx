@@ -1,5 +1,5 @@
+import {SizableText} from '@mintter/ui'
 import {ReactNode} from 'react'
-import {Text} from '@mintter/ui'
 import {NextLink} from './next-link'
 
 export function MenuItem({
@@ -13,7 +13,7 @@ export function MenuItem({
 }) {
   return (
     <NextLink href={href} target={target}>
-      <Text fontFamily="$body">{children}</Text>
+      <SizableText fontFamily="$body">{children}</SizableText>
     </NextLink>
   )
 }

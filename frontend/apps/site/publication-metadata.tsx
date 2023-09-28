@@ -12,7 +12,6 @@ import {
   SideSection,
   SideSectionTitle,
   SizableText,
-  Text,
   Tooltip,
   XStack,
   YStack,
@@ -372,7 +371,7 @@ function EmbedMeta({publication}: {publication?: HMPublication | null}) {
 }
 
 function CitationPreview({citationLink}: {citationLink: HMLink}) {
-  const {source, target} = citationLink
+  const {source} = citationLink
   const sourcePub = trpc.publication.get.useQuery(
     {
       documentId: source?.documentId,
@@ -390,8 +389,10 @@ function CitationPreview({citationLink}: {citationLink: HMLink}) {
   )
   if (!destUrl) return null
   return (
-    <NextLink href={destUrl} style={{textDecoration: 'none'}}>
-      <Text>{sourcePub.data?.publication?.document?.title}</Text>
+    <NextLink href={destUrl} style={{textDecoration: 'none'}} prefetch>
+      <SizableText hoverStyle={{backgroundColor: '$backgroundColor'}}>
+        {sourcePub.data?.publication?.document?.title}
+      </SizableText>
     </NextLink>
   )
 }

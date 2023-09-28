@@ -1,18 +1,18 @@
 import {createHmId} from '@mintter/shared'
 import {
   Avatar,
-  Heading,
+  Card,
+  H2,
   PageSection,
+  Paragraph,
   SizableText,
-  Text,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
-import {HMAccount} from 'server/json-hm'
+import {HMAccount, HMGroup} from 'server/json-hm'
 import {SiteHead} from 'site-head'
-import {trpc} from 'trpc'
 import Footer from './footer'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
@@ -20,20 +20,60 @@ function AccountContent({account}: {account: HMAccount | null | undefined}) {
     return <AccountNotFound account={account} />
   }
 
-  const {alias, bio, avatar} = account?.profile || {}
-
+  // return (
+  //   <XStack alignItems="center" gap="$3">
+  //     {avatar && (
+  //       <Avatar circular size={64}>
+  //         <Avatar.Image src={cidURL(avatar)} />
+  //         <Avatar.Fallback backgroundColor="$color6" />
+  //       </Avatar>
+  //     )}
+  //     <SizableText>{bio}</SizableText>
+  //   </XStack>
+  // )
   return (
     <XStack>
-      <YStack gap="$2">
-        {avatar && (
-          <Avatar circular size={64}>
-            <Avatar.Image src={cidURL(avatar)} />
-            <Avatar.Fallback backgroundColor="$color6" />
-          </Avatar>
-        )}
-        <Heading>{alias}</Heading>
-      </YStack>
-      <Text>{bio}</Text>
+      <Card
+        elevate
+        size="$4"
+        bordered
+        animation="bouncy"
+        flex={1}
+        height={300}
+        // scale={0.9}
+        // hoverStyle={{scale: 0.925}}
+        // pressStyle={{scale: 0.875}}
+      >
+        <Card.Header padded>
+          <H2>{account?.profile?.alias}</H2>
+          <Paragraph theme="alt2">{account?.profile?.bio}</Paragraph>
+          {account?.profile?.avatar && (
+            <YStack paddingVertical="$3">
+              <Avatar circular size={80}>
+                <Avatar.Image src={cidURL(account?.profile?.avatar)} />
+                <Avatar.Fallback backgroundColor="$color6" />
+              </Avatar>
+            </YStack>
+          )}
+        </Card.Header>
+        <Card.Footer padded>
+          {/* <XStack flex={1} />
+        <Button borderRadius="$10">Purchase</Button> */}
+        </Card.Footer>
+        {/* <Card.Background>
+        <Image
+          alt="Avatar image"
+          resizeMode="contain"
+          alignSelf="center"
+          source={{
+            // width: 300,
+            // height: 300,
+            // uri: account?.profile?.avatar,
+            uri: 'https://placehold.co/600x400',
+          }}
+        />
+      </Card.Background> */}
+      </Card>
     </XStack>
   )
 }
@@ -42,25 +82,33 @@ function isEmptyObject(obj: unknown) {
   return JSON.stringify(obj) === '{}'
 }
 
-export default function AccountPage({accountId}: {accountId: string}) {
-  const query = trpc.account.get.useQuery({
-    accountId,
-  })
-  const account = query.data?.account
-
+export default function AccountPage({
+  account,
+  group,
+}: {
+  account: HMAccount
+  group: HMGroup
+}) {
   return (
-    <YStack flex={1}>
+    <>
       <Head>
-        <meta name="hyperdocs-entity-id" content={createHmId('a', accountId)} />
+        {account.id && (
+          <meta
+            name="hyperdocs-entity-id"
+            content={createHmId('a', account.id!)}
+          />
+        )}
       </Head>
-      <SiteHead title={account?.profile?.alias} titleHref={`/a/${accountId}`} />
+      <SiteHead
+        siteTitle={group.title}
+        pageTitle="Account Profile"
+        siteSubheading={group.description}
+      />
       <PageSection.Root flex={1}>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
-          {account && query.isSuccess ? (
+          {account ? (
             <AccountContent account={account} />
-          ) : query.isLoading ? (
-            <AccountPlaceholder />
           ) : (
             <AccountNotFound account={account} />
           )}
@@ -68,7 +116,7 @@ export default function AccountPage({accountId}: {accountId: string}) {
         <PageSection.Side />
       </PageSection.Root>
       <Footer />
-    </YStack>
+    </>
   )
 }
 
@@ -95,7 +143,7 @@ function AccountNotFound({account}: {account?: any}) {
   )
 }
 
-function AccountPlaceholder() {
+export function AccountPlaceholder() {
   console.log('RENDER PLACEHOLDER')
   return (
     <YStack gap="$6">

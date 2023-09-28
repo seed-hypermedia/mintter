@@ -31,6 +31,102 @@ import {GroupView, getGroupPageProps, getGroupView} from '../../../server/group'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
 
+export default function GroupPage({
+  groupId,
+  version = '',
+  view,
+}: GroupPageProps) {
+  const group = trpc.group.get.useQuery({
+    groupId,
+    version,
+  })
+  const groupContent = trpc.group.listContent.useQuery({
+    groupId,
+  })
+
+  const loadedGroup = group.data?.group
+
+  const listView = groupContent.data
+    ? groupContent.data.map((contentItem) => {
+        if (contentItem?.pathName === '/') return null
+        return (
+          contentItem && (
+            <GroupContentItem
+              key={contentItem?.pathName}
+              item={contentItem}
+              group={loadedGroup}
+            />
+          )
+        )
+      })
+    : null
+
+  let mainView: ReactNode = listView
+
+  const frontPageItem = groupContent.data?.find(
+    (item) => item?.pathName === '/',
+  )
+
+  const frontDocView = <FrontDoc item={frontPageItem} />
+
+  if (view == 'front') {
+    mainView = frontDocView
+  } else if (view == 'list') {
+    mainView = listView
+  } else if (frontPageItem) {
+    mainView = (
+      <>
+        {frontDocView}
+        {listView}
+      </>
+    )
+  } else {
+    mainView = listView
+  }
+
+  return (
+    <YStack flex={1}>
+      <Head>
+        {loadedGroup ? (
+          <>
+            <meta name="hyperdocs-entity-id" content={loadedGroup.id} />
+            <meta
+              name="hyperdocs-entity-version"
+              content={loadedGroup.version}
+            />
+            <meta name="hyperdocs-entity-title" content={loadedGroup.title} />
+          </>
+        ) : null}
+      </Head>
+      <SiteHead
+        siteTitle={loadedGroup?.title}
+        pageTitle={frontPageItem?.publication?.document?.title || undefined}
+        siteSubheading={loadedGroup?.description}
+      />
+      <PageSection.Root flex={1}>
+        <PageSection.Side />
+        <PageSection.Content>{mainView}</PageSection.Content>
+        <PageSection.Side>
+          <YStack className="publication-sidenav-sticky">
+            <GroupMetadata group={group.data?.group} groupId={groupId} />
+          </YStack>
+        </PageSection.Side>
+      </PageSection.Root>
+      <Footer />
+    </YStack>
+  )
+}
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  const {params, query} = context
+  const groupEid = params?.groupEid ? String(params.groupEid) : undefined
+  if (!groupEid) return {notFound: true}
+  const view = getGroupView(query.view)
+  return await getGroupPageProps({groupEid, context, view, version: ''})
+}
+
 function GroupOwnerSection({owner}: {owner: string}) {
   return (
     <SideSection>
@@ -181,131 +277,6 @@ function FrontDoc({
 
 export type GroupPageProps = {
   groupId: string
-  version?: string
+  version: string
   view: GroupView
-}
-
-export default function GroupPage({groupId, version, view}: GroupPageProps) {
-  const group = trpc.group.get.useQuery({
-    groupId,
-    version,
-  })
-  const groupContent = trpc.group.listContent.useQuery({
-    groupId,
-  })
-
-  const loadedGroup = group.data?.group
-
-  const listView = groupContent.data
-    ? groupContent.data.map((contentItem) => {
-        if (contentItem?.pathName === '/') return null
-        return (
-          contentItem && (
-            <GroupContentItem
-              key={contentItem?.pathName}
-              item={contentItem}
-              group={loadedGroup}
-            />
-          )
-        )
-      })
-    : null
-
-  let mainView: ReactNode = listView
-
-  const frontPageItem = groupContent.data?.find(
-    (item) => item?.pathName === '/',
-  )
-
-  const frontDocView = <FrontDoc item={frontPageItem} />
-
-  if (view === 'front') {
-    mainView = frontDocView
-  } else if (view === 'list') {
-    mainView = listView
-  } else if (frontPageItem) {
-    mainView = (
-      <>
-        {frontDocView}
-        {listView}
-      </>
-    )
-  } else {
-    mainView = listView
-  }
-  return (
-    <YStack flex={1}>
-      <Head>
-        {loadedGroup ? (
-          <>
-            <meta name="hyperdocs-entity-id" content={loadedGroup.id} />
-            <meta
-              name="hyperdocs-entity-version"
-              content={loadedGroup.version}
-            />
-            <meta name="hyperdocs-entity-title" content={loadedGroup.title} />
-          </>
-        ) : null}
-      </Head>
-      <SiteHead
-        title={loadedGroup?.title}
-        titleHref={`/g/${loadedGroup?.id}`}
-      />
-      <PageSection.Root flex={1}>
-        <PageSection.Side />
-        <PageSection.Content>
-          {/* {pub ? (
-              <PublicationContent publication={pub} />
-            ) : publication.isLoading ? (
-              <PublicationPlaceholder />
-            ) : (
-              <YStack
-                padding="$4"
-                borderRadius="$5"
-                elevation="$1"
-                borderColor="$color5"
-                borderWidth={1}
-                backgroundColor="$color3"
-                gap="$3"
-              >
-                <SizableText size="$5" fontWeight="800" textAlign="center">
-                  Document not found.
-                </SizableText>
-                <SizableText color="$color9">
-                  Document Id: {documentId}
-                </SizableText>
-                <SizableText color="$color9">version: {version}</SizableText>
-              </YStack>
-            )}*/}
-          {loadedGroup?.description ? (
-            <Text
-              paddingVertical="$2"
-              borderBottomWidth={1}
-              borderColor="$color5"
-              marginBottom="$3"
-            >
-              {loadedGroup?.description}
-            </Text>
-          ) : null}
-          {mainView}
-        </PageSection.Content>
-        <PageSection.Side>
-          <YStack className="publication-sidenav-sticky">
-            <GroupMetadata group={group.data?.group} groupId={groupId} />
-          </YStack>
-        </PageSection.Side>
-      </PageSection.Root>
-      <Footer />
-    </YStack>
-  )
-}
-
-export const getServerSideProps: GetServerSideProps = async (
-  context: GetServerSidePropsContext,
-) => {
-  const {params, query} = context
-  const groupEid = params?.groupEid ? String(params.groupEid) : undefined
-  if (!groupEid) return {notFound: true}
-  const view = getGroupView(query.view)
-  return await getGroupPageProps({groupEid, context, view})
 }

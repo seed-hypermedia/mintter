@@ -393,21 +393,28 @@ html {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  font-size: 62.5%;
+  /* font-size: 89.5%; */
 }
 
 body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background-color: var(--color-background-primary);
-  font-family: var(--font-family);
+  font-family: var(--font-content);
   margin: 2vw auto 0 auto;
-  line-height: 1.5;
-  padding: 2rem 0 24rem;
+  line-height: var(--line-height);
+  padding: 2rem 0;
   overflow-x: hidden;
   font-size: 1.8rem;
   font-size: calc(1.5rem + 0.25vw);
   color: var(--color-primary);
+}
+
+body,
+#root,
+#__next {
+  display: block;
+  min-height: 0;
 }
 
 html,

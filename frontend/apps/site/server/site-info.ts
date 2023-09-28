@@ -3,7 +3,7 @@ import {websiteClient} from '../client'
 
 export async function getSiteGroup(): Promise<{
   groupEid?: string
-  version?: string | null
+  version: string
 }> {
   const siteInfo = await websiteClient.getSiteInfo({})
   const groupId = unpackHmId(siteInfo.groupId || '')
