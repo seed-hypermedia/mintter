@@ -58,7 +58,7 @@ a server with at least 1GB RAM and 512MB free space in root partition. Run the
 folloging command in the server:
 
 ```shell
-sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/website_deployment.sh) https://example.com
+sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com
 ```
 
 replacing `https://example.com` by your <`address`> If everything went well,
@@ -67,12 +67,11 @@ after some seconds, you should be watching a final output line like
 the owner's application to register the newly created site and start publihing.
 The site deployment workspace will default to `~/.mtt-site`.
 
-### Update a Site
+#### Auto-Update a Site
 
-If you only want to update the site to the latest version, the easiest way is to
-rerun the [installation command](#deploy-a-site) with the same address. Note
-that if you change the address, a new secret invite will be generated to the
-new site and old one can't be retrieved again.
+If you want the site to auto update to latest images when they are pushed, 
+just execute the installation command with the `--auto-update` flag. Ex:
+```shell
+sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com --auto-update
+```
 
-So, if you want to update the address, we recommend to backup the site
-workspace (`~/.mtt-site`)
