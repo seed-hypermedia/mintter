@@ -124,7 +124,7 @@ export function ProfileForm({
       <YStack flex={0} alignItems="center" flexGrow={0}>
         <AvatarForm
           onAvatarUpload={async (avatar) => {
-            await setProfile.mutateAsync(new Profile({avatar}))
+            await setProfile.mutateAsync({...profile, avatar})
             toast.success('Avatar changed')
           }}
           url={getAvatarUrl(profile?.avatar)}
@@ -159,7 +159,7 @@ export function ProfileForm({
         </YStack>
         <Form
           onSubmit={() => {
-            setProfile.mutate(new Profile({...profile, alias, bio}))
+            setProfile.mutate({alias, bio})
           }}
         >
           <Label htmlFor="alias">Alias</Label>
