@@ -90,7 +90,7 @@ export type {
 export * from './.generated/types'
 export * from './client-utils'
 export * from './editor-types'
-export * from './hyperdocs-presentation'
+export * from './hypermedia-presentation'
 export * from './server-to-editor'
 export {
   Accounts,
