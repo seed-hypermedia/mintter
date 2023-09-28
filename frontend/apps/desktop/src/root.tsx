@@ -49,7 +49,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    // logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     let error = e
