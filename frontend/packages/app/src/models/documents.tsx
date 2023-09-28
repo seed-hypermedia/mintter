@@ -22,6 +22,7 @@ import {
   useBlockNote,
 } from '@mintter/editor'
 import {
+  BACKEND_FILE_UPLOAD_URL,
   Document,
   DocumentChange,
   GRPCClient,
@@ -709,6 +710,15 @@ export function useDraftEditor(
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
+          if (block.type === 'imagePlaceholder' && block.props.src) {
+            editor.updateBlock(block, {
+              type: 'image',
+              props: {
+                url: block.props.src,
+                name: '',
+              },
+            })
+          }
           let embedRef = extractEmbedRefOfLink(block)
           if (embedRef) {
             editor.updateBlock(block, {

@@ -147,7 +147,7 @@ export function editorBlockToServerBlock(
       attributes: {
         name: editorBlock.props.name,
       },
-      ref: `ipfs://${editorBlock.props.url}`, // currently the url is always an ipfs url
+      ref: editorBlock.props.url ? `ipfs://${editorBlock.props.url}` : '', // currently the url is always an ipfs url
       ...extractContent(editorBlock.content),
     })
   }
@@ -160,7 +160,7 @@ export function editorBlockToServerBlock(
         name: editorBlock.props.name,
         size: editorBlock.props.size,
       },
-      ref: `ipfs://${editorBlock.props.url}`,
+      ref: editorBlock.props.url ? `ipfs://${editorBlock.props.url}` : '',
     })
   }
 
@@ -171,7 +171,7 @@ export function editorBlockToServerBlock(
       attributes: {
         name: editorBlock.props.name,
       },
-      ref: `ipfs://${editorBlock.props.url}`,
+      ref: editorBlock.props.url ? `ipfs://${editorBlock.props.url}` : '',
     })
   }
 

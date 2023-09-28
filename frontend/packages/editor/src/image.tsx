@@ -24,6 +24,38 @@ import {
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
 import {HMBlockSchema} from './schema'
+import {InputRule, PasteRule} from '@tiptap/core'
+
+const isValidUrl = (urlString: string) => {
+  try {
+    return Boolean(new URL(urlString))
+  } catch (e) {
+    return false
+  }
+}
+
+const uploadImageToIpfs = async (url: string) => {
+  const blob = await fetch(url).then((res) => res.blob())
+  const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
+  if (webFile && webFile.size <= 62914560) {
+    const formData = new FormData()
+    formData.append('file', webFile)
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      return {url: data, name: webFile.name}
+    } catch (error) {
+      console.error(error)
+      return {}
+    }
+  } else {
+    return {name: 'The file size exceeds 60 MB.'}
+  }
+}
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -161,6 +193,16 @@ function ImageComponent({
     editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
+  if (isValidUrl(block.props.url)) {
+    uploadImageToIpfs(block.props.url)
+      .then((imageData) => {
+        if (imageData.url) {
+          assign({props: imageData} as ImageType)
+        }
+      })
+      .catch((error) => console.log(error))
+  }
+
   return (
     <YStack gap="$2">
       <YStack
@@ -268,11 +310,12 @@ function ImageComponent({
             </Button>
           )
         ) : null}
-
-        <img
-          src={`${BACKEND_FILE_URL}/${block.props.url}`}
-          contentEditable={false}
-        />
+        {!block.props.url.includes('.') && (
+          <img
+            src={`${BACKEND_FILE_URL}/${block.props.url}`}
+            contentEditable={false}
+          />
+        )}
       </YStack>
       <InlineContent
         className="image-caption"
@@ -368,36 +411,12 @@ function ImageForm({
 
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
-      const blob = await fetch(url).then((res) => res.blob())
-      const webFile = new File(
-        [blob],
-        `mintterImage.${blob.type.split('/').pop()}`,
-      )
-      if (webFile && webFile.size <= 62914560) {
-        const formData = new FormData()
-        formData.append('file', webFile)
-
-        try {
-          const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-            method: 'POST',
-            body: formData,
-          })
-          const data = await response.text()
-          assign({props: {url: data, name: webFile.name}} as ImageType)
-        } catch (error) {
-          console.error(error)
-        }
-      } else setFileName({name: 'The file size exceeds 60 MB.', color: 'red'})
+      const imageData = await uploadImageToIpfs(url)
+      if (imageData.url) {
+        assign({props: imageData} as ImageType)
+      } else if (imageData.name)
+        setFileName({name: imageData.name, color: 'red'})
     } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
-  }
-
-  const isValidUrl = (urlString: string) => {
-    try {
-      return Boolean(new URL(urlString))
-    } catch (e) {
-      console.log(e)
-      return false
-    }
   }
 
   return (
@@ -422,7 +441,7 @@ function ImageForm({
             justifyContent="flex-start"
             backgroundColor="$color3"
             hoverStyle={{
-              bg: '$color4',
+              backgroundColor: '$color4',
             }}
           >
             Add an Image

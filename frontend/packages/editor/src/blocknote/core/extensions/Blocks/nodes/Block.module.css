@@ -167,6 +167,17 @@ NESTED BLOCKS
   font-weight: bold;
 }
 
+/* IMAGE PLACEHOLDER */
+.blockContent[data-content-type='imagePlaceholder'] {
+  background-color: var(--color4);
+  border-color: var(--color4);
+  border-width: 2px;
+  border-radius: 5px;
+  overflow: 'hidden';
+  padding: 7px;
+  outline-width: 0;
+}
+
 /* LISTS */
 
 .blockContent::before {
