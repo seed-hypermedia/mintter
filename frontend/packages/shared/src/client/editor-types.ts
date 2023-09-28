@@ -1,4 +1,4 @@
-import {HMBlockChildrenType} from './hyperdocs-presentation'
+import {HMBlockChildrenType} from './hypermedia-presentation'
 
 export type Styles = {
   bold?: true

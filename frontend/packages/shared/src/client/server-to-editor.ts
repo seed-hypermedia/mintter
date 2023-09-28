@@ -10,7 +10,7 @@ import {
   InlineContent,
   StyledText,
 } from './editor-types'
-import {HMBlockChildrenType, TextAnnotation} from './hyperdocs-presentation'
+import {HMBlockChildrenType, TextAnnotation} from './hypermedia-presentation'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 // import {hmBlockSchema} from './schema'
 

@@ -162,20 +162,53 @@ function InlineContentView({
           } else if (content.styles.strike) {
             textDecorationLine = 'line-through'
           }
-          const isHeading = style?.heading || false
-          const isBold = content.styles.bold || false
-          return (
-            <SizableText
-              key={index}
-              fontSize={isHeading ? 24 : undefined}
-              fontWeight={isHeading || isBold ? '800' : '400'}
-              textDecorationLine={textDecorationLine || undefined}
-              fontStyle={content.styles.italic ? 'italic' : undefined}
-              fontFamily={content.styles.code ? '$mono' : undefined}
-            >
-              {content.text}
-            </SizableText>
-          )
+
+          let children: any = content.text
+
+          if (content.styles.bold) {
+            children = <b>{children}</b>
+          }
+
+          if (content.styles.italic) {
+            children = <i>{children}</i>
+          }
+
+          if (content.styles.underline) {
+            children = <u>{children}</u>
+          }
+
+          if (content.styles.code) {
+            children = (
+              <SizableText
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+                backgroundColor="$color7"
+                borderRadius="$2"
+              >
+                <code style={{fontSize: '0.95em'}}>{children}</code>
+              </SizableText>
+            )
+          }
+
+          if (content.styles.backgroundColor) {
+            children = (
+              <span style={{backgroundColor: content.styles.backgroundColor}}>
+                {children}
+              </span>
+            )
+          }
+
+          if (content.styles.strike) {
+            children = <s>{children}</s>
+          }
+
+          if (content.styles.textColor) {
+            children = (
+              <span style={{color: content.styles.textColor}}>{children}</span>
+            )
+          }
+
+          return <span key={index}>{children}</span>
         }
         if (content.type === 'link') {
           const href = idToUrl(content.href, null)
@@ -205,7 +238,7 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
     () => serverBlockToEditorInline(new Block(block)),
     [block],
   )
-  // const isBlockquote = block.attributes?.type === 'blockquote'
+  const isHeading = block.type == 'heading'
   return (
     <YStack
       id={`${block.id}-block`}
@@ -213,14 +246,18 @@ function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
       // borderLeftWidth={isBlockquote ? 1 : 0}
       borderLeftColor={'blue'}
     >
-      <Text>
+      <SizableText
+        size={isHeading ? '$7' : undefined}
+        fontWeight={isHeading ? 'bold' : undefined}
+        tag={isHeading ? 'h2' : 'p'}
+      >
         <InlineContentView
           inline={inline}
           style={{
             heading: block.type === 'heading',
           }}
         />
-      </Text>
+      </SizableText>
     </YStack>
   )
 }
@@ -447,6 +484,7 @@ export function PublicationContent({
 }: {
   publication: HMPublication | undefined
 }) {
+  console.log(`== ~ publication:`, publication)
   return (
     <YStack>
       {publication?.document?.children?.map((block, index) => (
