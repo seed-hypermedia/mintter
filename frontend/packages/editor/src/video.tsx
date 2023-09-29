@@ -484,6 +484,7 @@ function VideoForm({
             >
               <Tabs.List
                 marginBottom="$-0.5"
+                backgroundColor='$background'
                 borderBottomColor="$color8"
                 borderBottomWidth="$1"
                 borderBottomLeftRadius={0}
