@@ -91,7 +91,7 @@ jobs:
       - name: Build and push stable relay
         if: ${{ steps.weekday.outputs.weekday == '5' }}
         uses: docker/build-push-action@v4
-         with:
+        with:
           push: true
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:stable
