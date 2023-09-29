@@ -33,63 +33,63 @@ jobs:
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
       - name: Build and push stable mintter-site
-        if: ${{ steps.weekday.outputs.weekday == '5' }}
+        if: ${{ steps.weekday.outputs.weekday == '3' }}
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:stable
         
-      - name: Build and push lates mintterd
+      - name: Build and push latest mintterd
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintterd/Dockerfile
           tags: mintter/mintterd:latest
       - name: Build and push stable mintterd
-        if: ${{ steps.weekday.outputs.weekday == '5' }}
+        if: ${{ steps.weekday.outputs.weekday == '3' }}
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintterd/Dockerfile
           tags: mintter/mintterd:stable
 
-      - name: Build and push nextjs
+      - name: Build and push latest nextjs
         uses: docker/build-push-action@v4
         with:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
       - name: Build and push stable nextjs
-        if: ${{ steps.weekday.outputs.weekday == '5' }}
+        if: ${{ steps.weekday.outputs.weekday == '3' }}
         uses: docker/build-push-action@v4
         with:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:stable
 
-      - name: Build and push monitord
+      - name: Build and push latest monitord
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
           tags: mintter/monitord:latest
       - name: Build and push stable monitord
-        if: ${{ steps.weekday.outputs.weekday == '5' }}
+        if: ${{ steps.weekday.outputs.weekday == '3' }}
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
           tags: mintter/monitord:stable
 
-      - name: Build and push relay
+      - name: Build and push latest relay
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:latest
       - name: Build and push stable relay
-        if: ${{ steps.weekday.outputs.weekday == '5' }}
+        if: ${{ steps.weekday.outputs.weekday == '3' }}
         uses: docker/build-push-action@v4
         with:
           push: true
