@@ -25,7 +25,7 @@ services:
 
   nextjs:
     container_name: ${MTT_SITE_NEXTJS_CONTAINER_NAME:-nextjs}
-    image: mintter/sitegw:latest
+    image: mintter/sitegw:${MTT_SITE_TAG:-stable}
     depends_on:
       - minttersite
     networks:
@@ -42,7 +42,7 @@ services:
       - "NEXT_PUBLIC_LN_HOST=${MTT_SITE_LN_HOST:-https://ln.mintter.com}"
 
   minttersite:
-    image: mintter/mintter-site:latest
+    image: mintter/mintter-site:${MTT_SITE_TAG:-stable}
     restart: unless-stopped
     container_name: ${MTT_SITE_DAEMON_CONTAINER_NAME:-minttersite}
     ports:
