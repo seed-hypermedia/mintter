@@ -5,13 +5,15 @@ export function Tooltip({
   children,
   content,
   placement,
+  delay = 250,
 }: {
   children: React.ReactNode
   content: string | React.ReactElement
   placement?: TooltipProps['placement']
+  delay?: number
 }) {
   return (
-    <TTooltip placement={placement}>
+    <TTooltip placement={placement} delay={delay}>
       <TTooltip.Trigger asChild>{children}</TTooltip.Trigger>
       <TTooltip.Content
         enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}

@@ -6,6 +6,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import {
+  Group,
   ListDocumentGroupsResponse,
   ListGroupsResponse,
 } from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
@@ -27,6 +28,7 @@ export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
 export function useGroup(
   groupId: string | undefined,
   version?: string | undefined,
+  opts?: UseQueryOptions<Group>,
 ) {
   const grpcClient = useGRPCClient()
   return useQuery({
@@ -36,6 +38,7 @@ export function useGroup(
       return group
     },
     enabled: !!groupId,
+    ...opts,
   })
 }
 

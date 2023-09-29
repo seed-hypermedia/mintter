@@ -21,6 +21,7 @@ import {GroupRoute} from '../utils/navigation'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useOpenUrl} from '../open-url'
+import {hostnameStripProtocol} from '../utils/site-hostname'
 
 function MemberAvatarLinks({
   ownerAccountId,
@@ -54,7 +55,7 @@ function SiteUrlButton({group}: {group: Group}) {
         openUrl(siteBaseUrl)
       }}
     >
-      {siteBaseUrl}
+      {hostnameStripProtocol(siteBaseUrl)}
     </ButtonText>
   )
 }

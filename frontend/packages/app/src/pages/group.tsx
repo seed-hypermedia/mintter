@@ -2,9 +2,9 @@ import Footer from '@mintter/app/src/components/footer'
 import {StaticBlockNode} from '@mintter/editor'
 import {
   Document,
+  Group,
   Role,
-  UnpackedHypermediaId,
-  createHmId,
+  formattedDate,
   idToUrl,
   pluralS,
   unpackDocId,
@@ -35,7 +35,7 @@ import {
   Store,
   Trash,
 } from '@tamagui/lucide-icons'
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useAppDialog} from '../components/dialog'
@@ -46,7 +46,7 @@ import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar/common'
 import {useAccount, useMyAccount} from '../models/accounts'
-import {useAllChanges, useEntityTimeline} from '../models/changes'
+import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -63,9 +63,9 @@ import {useNavigate} from '../utils/useNavigate'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useOpenUrl} from '../open-url'
-import {AccessoryContainer} from '../components/accessory-sidebar'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {VersionChangesInfo} from '../components/version-changes-info'
+import {hostnameStripProtocol} from '../utils/site-hostname'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -258,11 +258,45 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
   })
 }
 
+function useRoughTime(): bigint {
+  // hook that provides time in seconds, updates every 5 seconds
+  const [time, setTime] = useState(BigInt(Math.round(Date.now() / 1000)))
+  const timer = useRef<NodeJS.Timeout | null>(null)
+  const updateTime = () => {
+    setTime(BigInt(Math.round(Date.now() / 1000)))
+  }
+  useEffect(() => {
+    timer.current = setInterval(updateTime, 5_000)
+    return () => {
+      if (timer.current) clearInterval(timer.current)
+    }
+  }, [])
+  return time
+}
+
+const GroupStatus = {
+  SyncedConnected: {
+    color: 'green',
+    message: (g: Group) =>
+      `Synced and Connected to ${hostnameStripProtocol(g.siteInfo?.baseUrl)}`,
+  },
+  UnsyncedConnected: {color: 'orange', message: (g: Group) => `Syncing`},
+  Disconnected: {
+    color: 'gray',
+    message: (g: Group) =>
+      g.siteInfo?.lastOkSyncTime
+        ? `Last Synced ${formattedDate(g.siteInfo.lastOkSyncTime)}`
+        : `Not Connected`,
+  },
+} as const
+
 export default function GroupPage() {
   const route = useNavRoute()
   if (route.key !== 'group') throw new Error('Group page needs group route')
   const {groupId, version} = route
-  const group = useGroup(groupId, version)
+  const group = useGroup(groupId, version, {
+    refetchInterval: 5_000,
+  })
   const groupContent = useGroupContent(groupId, version)
   // const groupMembers = useGroupMembers(groupId, version)
   const groupMembers = useGroupMembers(groupId)
@@ -285,6 +319,19 @@ export default function GroupPage() {
   const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
   const siteBaseUrl = group.data?.siteInfo?.baseUrl
+  const {lastSyncTime} = group.data?.siteInfo || {}
+  const now = useRoughTime()
+  const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
+  const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+  const siteVersionMatches = true
+  //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
+  // const siteVersionMatches =
+  //   group.data?.version === group.data?.siteInfo?.version
+  const syncStatus = isRecentlySynced
+    ? siteVersionMatches
+      ? GroupStatus.SyncedConnected
+      : GroupStatus.UnsyncedConnected
+    : GroupStatus.Disconnected
   const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
   const frontDocMenuItems = [
@@ -348,9 +395,7 @@ export default function GroupPage() {
                     </Heading>
                     <XStack gap="$3" alignItems="center">
                       {siteBaseUrl && (
-                        <Tooltip
-                          content={`Open ${group.data?.title} on the web.`}
-                        >
+                        <Tooltip content={`Open on the web.`}>
                           <ButtonText
                             fontFamily={'$mono'}
                             fontSize={'$4'}
@@ -360,8 +405,20 @@ export default function GroupPage() {
                             }}
                             color="$blue10"
                           >
-                            {siteBaseUrl}
+                            {hostnameStripProtocol(siteBaseUrl)}
                           </ButtonText>
+                        </Tooltip>
+                      )}
+                      {syncStatus && group.data && (
+                        <Tooltip content={syncStatus.message(group.data)}>
+                          <View
+                            style={{
+                              borderRadius: 5,
+                              width: 10,
+                              height: 10,
+                              backgroundColor: syncStatus.color,
+                            }}
+                          />
                         </Tooltip>
                       )}
                       {!frontDocumentUrl && isMember && (
