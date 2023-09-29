@@ -1,8 +1,9 @@
 import {useAppContext} from '@mintter/app/src/app-context'
-import {HMBlockSchema} from './schema'
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
+import {toast} from '@mintter/app/src/toast'
+import {BACKEND_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
   Button,
+  File,
   Label,
   Popover,
   SizableText,
@@ -12,15 +13,14 @@ import {
   useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
-import {RiFile2Fill, RiFile2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
   defaultProps,
   getBlockInfoFromPos,
-  insertOrUpdateBlock,
 } from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
+import {HMBlockSchema} from './schema'
 
 export const FileBlock = createReactBlockSpec({
   type: 'file',
@@ -130,7 +130,7 @@ const Render = (
   )
 }
 
-function FileComponent({
+export function FileComponent({
   block,
   editor,
   assign,
@@ -149,18 +149,6 @@ function FileComponent({
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
-  }
-
-  function formatBytes(bytes: number, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
-
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
   }
 
   const handleDragReplace = async (file: File) => {
@@ -288,7 +276,7 @@ function FileComponent({
         fontSize="$4"
         flex={1}
         justifyContent="flex-start"
-        icon={<RiFile2Line fill={theme.color12.get()} />}
+        icon={<File />}
         disabled
       >
         <SizableText
@@ -405,13 +393,13 @@ function FileForm({
       >
         <Popover.Trigger asChild>
           <Button
-            icon={<RiFile2Line fill={theme.color12.get()} />}
+            icon={<File />}
             borderRadius={0}
             size="$5"
             justifyContent="flex-start"
             backgroundColor="$color3"
             hoverStyle={{
-              bg: '$color4',
+              backgroundColor: '$color4',
             }}
           >
             Add a File

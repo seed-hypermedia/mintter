@@ -62,4 +62,5 @@ export {
   Video as VideoIcon,
   Share,
   ArrowDownRight,
+  ArrowRight,
 } from '@tamagui/lucide-icons'

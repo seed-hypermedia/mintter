@@ -2,6 +2,7 @@ import {
   Account,
   Block,
   EmbedBlock,
+  FileBlock,
   HeadingBlock,
   ImageBlock,
   InlineContent,
@@ -9,6 +10,7 @@ import {
   PresentationBlock,
   Publication,
   createPublicWebHmUrl,
+  formatBytes,
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
@@ -17,18 +19,20 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {
+  ArrowRight,
   Button,
   Copy,
+  File,
   PageSection,
   SideSection,
   SideSectionTitle,
   SizableText,
   Spinner,
   Text,
+  Tooltip,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {ArrowRight} from '@tamagui/lucide-icons'
 import {DehydratedState} from '@tanstack/react-query'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
@@ -40,6 +44,7 @@ import {PublicationMetadata} from './publication-metadata'
 import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {NextLink} from 'next-link'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -363,6 +368,10 @@ function StaticBlock({block}: {block: HMBlock}) {
   if (niceBlock.type === 'code') {
     return <span>code blocks not supported yet.</span>
   }
+
+  if (niceBlock.type == 'file') {
+    return <StaticFileBlock block={niceBlock} />
+  }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
   return (
@@ -597,4 +606,59 @@ function PublicationContextSidebar({
     />
   ) : null
   return <PageSection.Side>{groupSidebarContent}</PageSection.Side>
+}
+
+export function StaticFileBlock({block}: {block: FileBlock}) {
+  let cid = useMemo(() => getCIDFromIPFSUrl(block.ref), [block.ref])
+  return (
+    <NextLink
+      href={`/ipfs/${cid}`}
+      target="_blank"
+      style={{textDecoration: 'none'}}
+    >
+      <Tooltip content={`Download ${block.attributes.name}`}>
+        <YStack
+          backgroundColor={'$color3'}
+          borderColor={'$color4'}
+          borderWidth={2}
+          borderRadius="$4"
+          overflow="hidden"
+          hoverStyle={{
+            backgroundColor: '$color4',
+          }}
+        >
+          <XStack
+            borderWidth={0}
+            outlineWidth={0}
+            padding="$4"
+            ai="center"
+            space
+          >
+            <File size={18} />
+
+            <SizableText
+              size="$5"
+              maxWidth="17em"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+              userSelect="text"
+            >
+              {block.attributes.name}
+            </SizableText>
+            {block.attributes.size && (
+              <SizableText
+                paddingTop="$1"
+                color="$color10"
+                size="$2"
+                minWidth="4.5em"
+              >
+                {formatBytes(parseInt(block.attributes.size))}
+              </SizableText>
+            )}
+          </XStack>
+        </YStack>
+      </Tooltip>
+    </NextLink>
+  )
 }
