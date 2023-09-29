@@ -1,4 +1,4 @@
-import {ScrollView, SizableText} from '@mintter/ui'
+import {ScrollView, SizableText, XStack, YStack} from '@mintter/ui'
 import {Allotment} from 'allotment'
 
 export function AccessoryContainer({
@@ -10,13 +10,18 @@ export function AccessoryContainer({
 }) {
   return (
     <Allotment.Pane preferredSize="35%">
+      {title ? (
+        <XStack
+          paddingHorizontal="$4"
+          paddingVertical="$3"
+          borderBottomColor="$borderColor"
+          borderBottomWidth={1}
+        >
+          <SizableText>{title}</SizableText>
+        </XStack>
+      ) : null}
       <ScrollView height={'100%'}>
-        {title ? (
-          <SizableText size="$6" fontWeight="700" margin="$4" color="$gray12">
-            {title}
-          </SizableText>
-        ) : null}
-        {children}
+        <YStack padding="$4">{children}</YStack>
       </ScrollView>
     </Allotment.Pane>
   )

@@ -8,8 +8,6 @@ import {editorBlockToServerBlock} from '@mintter/app/src/client/editor-to-server
 import {serverChildrenToEditorChildren} from '@mintter/app/src/client/server-to-editor'
 import {useOpenUrl} from '@mintter/app/src/open-url'
 import {toast} from '@mintter/app/src/toast'
-import {insertOrUpdateBlock} from '@mintter/editor'
-import {RiFile2Fill, RiImage2Fill, RiText, RiVideoAddFill} from 'react-icons/ri'
 import {
   Block,
   BlockIdentifier,
@@ -19,10 +17,11 @@ import {
   PartialBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
+  insertOrUpdateBlock,
   useBlockNote,
 } from '@mintter/editor'
 import {
-  BACKEND_FILE_UPLOAD_URL,
+  BlockNode,
   Document,
   DocumentChange,
   GRPCClient,
@@ -44,6 +43,7 @@ import {
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
 import {useEffect, useRef} from 'react'
+import {RiFile2Fill, RiImage2Fill, RiText, RiVideoAddFill} from 'react-icons/ri'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
@@ -1130,5 +1130,41 @@ function setGroupTypes(
     if (block.children) {
       setGroupTypes(tiptap, block.children)
     }
+  })
+}
+
+export function useDocTextContent(pub?: Publication) {
+  return useQuery({
+    enabled: !!pub?.document?.children.length,
+    queryKey: [
+      queryKeys.DOCUMENT_TEXT_CONTENT,
+      pub?.document?.id,
+      pub?.version,
+    ],
+    queryFn: () => {
+      console.log('== calling queryFn on text content', document)
+      let content = ''
+
+      function extractContent(blocks: Array<BlockNode>) {
+        return blocks.map(extractBlockText).join('')
+      }
+
+      function extractBlockText({block, children}: BlockNode) {
+        if (!block) return ''
+        content += block.text
+
+        if (children.length) {
+          content += extractContent(children)
+        }
+
+        return content
+      }
+
+      if (pub?.document?.children.length) {
+        content = extractContent(pub.document?.children)
+      }
+
+      return content
+    },
   })
 }

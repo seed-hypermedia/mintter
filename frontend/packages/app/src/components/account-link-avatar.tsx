@@ -51,6 +51,7 @@ export function AccountLinkAvatar({
   return (
     <Tooltip content={account.data?.profile?.alias || account.data?.id || ''}>
       <Button
+        id="avatar"
         className="no-window-drag"
         size="$1"
         backgroundColor="transparent"
@@ -65,7 +66,7 @@ export function AccountLinkAvatar({
           navigate({key: 'account', accountId})
         }}
         position="relative"
-        data-testid="list-item-author"
+        height={size}
       >
         {content}
       </Button>

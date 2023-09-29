@@ -52,6 +52,7 @@ export const queryKeys = {
   // changes
   CHANGE: 'CHANGE', //, changeId: string
   ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
+  DOCUMENT_TEXT_CONTENT: 'DOCUMENT_TEXT_CONTENT',
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {

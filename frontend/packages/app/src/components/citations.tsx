@@ -2,55 +2,92 @@ import {
   CitationLink,
   useDocCitations,
 } from '@mintter/app/src/models/content-graph'
-import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {pluralS} from '@mintter/shared'
-import {Button, SizableText} from '@mintter/ui'
-import {useQuery} from '@tanstack/react-query'
-import {useGRPCClient} from '../app-context'
+import {SizableText, XStack, YStack} from '@mintter/ui'
+import {useDocTextContent, usePublication} from '../models/documents'
 import {AccessoryContainer} from './accessory-sidebar'
+import {AccountLinkAvatar} from './account-link-avatar'
 
-function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
+function CitationItem({
+  link,
+  docId,
+  isFirst,
+  isLast,
+}: {
+  link: CitationLink
+  docId: string
+  isFirst: boolean
+  isLast: boolean
+}) {
   if (!link.source?.documentId) throw 'Invalid citation'
-  const grpcClient = useGRPCClient()
   const spawn = useNavigate('spawn')
-  const pub = useQuery({
-    queryKey: [
-      queryKeys.GET_PUBLICATION,
-      link.source.documentId,
-      link.source.version,
-    ],
+
+  const pub = usePublication({
+    documentId: link.source.documentId,
+    versionId: link.source.version,
     enabled: !!link.source?.documentId,
-    queryFn: () =>
-      grpcClient.publications.getPublication({
-        documentId: link.source?.documentId,
-        version: link.source?.version,
-      }),
   })
+
+  const {data: docTextContent} = useDocTextContent(pub.data)
+  let avatarSize = 44
   return (
-    <Button
-      key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
-      chromeless
-      onPress={() => {
-        const sourceDocId = link.source?.documentId
-        if (!sourceDocId) return
-        spawn({
-          key: 'publication',
-          documentId: sourceDocId,
-          versionId: link.source?.version,
-          blockId: link.source?.blockId,
-        })
-      }}
-      flexDirection="row"
-      gap="$3"
+    <XStack
       alignItems="center"
-      position="relative"
       hoverStyle={{
-        cursor: 'default',
+        cursor: 'pointer',
+        backgroundColor: '$backgroundHover',
       }}
+      padding="$4"
+      gap="$4"
     >
-      <SizableText size="$2">{pub.data?.document?.title}</SizableText>
-    </Button>
+      {/* <YStack
+        position="absolute"
+        width={2}
+        height={isFirst || isLast ? '50%' : '100%'}
+        top={isFirst ? '50%' : 0}
+        left={(avatarSize - 2) / 2}
+        backgroundColor="$color5"
+      /> */}
+      <XStack alignSelf="stretch">
+        <AccountLinkAvatar
+          accountId={pub.data?.document?.author}
+          size={avatarSize}
+        />
+      </XStack>
+      <XStack
+        onPress={() => {
+          const sourceDocId = link.source?.documentId
+          if (!sourceDocId) return
+          spawn({
+            key: 'publication',
+            documentId: sourceDocId,
+            versionId: link.source?.version,
+            blockId: link.source?.blockId,
+          })
+        }}
+        flex={1}
+        gap="$4"
+        alignItems="flex-start"
+        overflow="hidden"
+        borderRadius="$4"
+      >
+        {/* <Square size={100} backgroundColor="$color10" /> */}
+
+        <YStack gap="$2" flex={1}>
+          <SizableText
+            textOverflow="ellipsis"
+            overflow="hidden"
+            whiteSpace="nowrap"
+          >
+            {pub.data?.document?.title}
+          </SizableText>
+          <SizableText color="$color10" overflow="hidden" maxHeight={69}>
+            {docTextContent}
+          </SizableText>
+        </YStack>
+      </XStack>
+    </XStack>
   )
 }
 
@@ -91,11 +128,13 @@ export function CitationsAccessory({
 
   return (
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
-      {distinctCitations?.map((link) => (
+      {distinctCitations?.map((link, index) => (
         <CitationItem
           docId={docId}
           key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
           link={link}
+          isFirst={index == 0}
+          isLast={index == distinctCitations.length - 1}
         />
       ))}
     </AccessoryContainer>
