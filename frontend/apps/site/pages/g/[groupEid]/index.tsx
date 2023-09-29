@@ -4,6 +4,7 @@ import {SiteHead} from '../../../site-head'
 
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  Role,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   formattedDate,
@@ -141,11 +142,14 @@ function GroupEditorsSection({groupId}: {groupId: string}) {
     groupId,
   })
   if (!groupMembers.data) return null
-
+  const editors = groupMembers.data.filter(
+    (member) => member.role === Role.EDITOR,
+  )
+  if (!editors.length) return null
   return (
     <SideSection>
       <SideSectionTitle>Editors:</SideSectionTitle>
-      {groupMembers.data.map((member) => {
+      {editors.map((member) => {
         return <AccountRow key={member.account} account={member?.account} />
       })}
     </SideSection>
