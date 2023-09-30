@@ -3,23 +3,14 @@ import {
   useDocCitations,
 } from '@mintter/app/src/models/content-graph'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {pluralS} from '@mintter/shared'
-import {SizableText, XStack, YStack} from '@mintter/ui'
+import {formattedDate, pluralS} from '@mintter/shared'
+import {PanelCard} from '@mintter/ui'
+import {useAccount} from '../models/accounts'
 import {useDocTextContent, usePublication} from '../models/documents'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 
-function CitationItem({
-  link,
-  docId,
-  isFirst,
-  isLast,
-}: {
-  link: CitationLink
-  docId: string
-  isFirst: boolean
-  isLast: boolean
-}) {
+function CitationItem({link}: {link: CitationLink}) {
   if (!link.source?.documentId) throw 'Invalid citation'
   const spawn = useNavigate('spawn')
 
@@ -29,65 +20,29 @@ function CitationItem({
     enabled: !!link.source?.documentId,
   })
 
-  const {data: docTextContent} = useDocTextContent(pub.data)
-  let avatarSize = 44
-  return (
-    <XStack
-      alignItems="center"
-      hoverStyle={{
-        cursor: 'pointer',
-        backgroundColor: '$backgroundHover',
-      }}
-      padding="$4"
-      gap="$4"
-    >
-      {/* <YStack
-        position="absolute"
-        width={2}
-        height={isFirst || isLast ? '50%' : '100%'}
-        top={isFirst ? '50%' : 0}
-        left={(avatarSize - 2) / 2}
-        backgroundColor="$color5"
-      /> */}
-      <XStack alignSelf="stretch">
-        <AccountLinkAvatar
-          accountId={pub.data?.document?.author}
-          size={avatarSize}
-        />
-      </XStack>
-      <XStack
-        onPress={() => {
-          const sourceDocId = link.source?.documentId
-          if (!sourceDocId) return
-          spawn({
-            key: 'publication',
-            documentId: sourceDocId,
-            versionId: link.source?.version,
-            blockId: link.source?.blockId,
-          })
-        }}
-        flex={1}
-        gap="$4"
-        alignItems="flex-start"
-        overflow="hidden"
-        borderRadius="$4"
-      >
-        {/* <Square size={100} backgroundColor="$color10" /> */}
+  let {data: account} = useAccount(pub.data?.document?.author)
 
-        <YStack gap="$2" flex={1}>
-          <SizableText
-            textOverflow="ellipsis"
-            overflow="hidden"
-            whiteSpace="nowrap"
-          >
-            {pub.data?.document?.title}
-          </SizableText>
-          <SizableText color="$color10" overflow="hidden" maxHeight={69}>
-            {docTextContent}
-          </SizableText>
-        </YStack>
-      </XStack>
-    </XStack>
+  const {data: docTextContent} = useDocTextContent(pub.data)
+  return (
+    <PanelCard
+      title={pub.data?.document?.title}
+      content={docTextContent}
+      author={account}
+      date={formattedDate(pub.data?.document?.createTime)}
+      onPress={() => {
+        const sourceDocId = link.source?.documentId
+        if (!sourceDocId) return
+        spawn({
+          key: 'publication',
+          documentId: sourceDocId,
+          versionId: link.source?.version,
+          blockId: link.source?.blockId,
+        })
+      }}
+      avatar={
+        <AccountLinkAvatar accountId={pub.data?.document?.author} size={24} />
+      }
+    />
   )
 }
 
@@ -130,11 +85,8 @@ export function CitationsAccessory({
     <AccessoryContainer title={`${count} ${pluralS(count, 'Citation')}`}>
       {distinctCitations?.map((link, index) => (
         <CitationItem
-          docId={docId}
           key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
           link={link}
-          isFirst={index == 0}
-          isLast={index == distinctCitations.length - 1}
         />
       ))}
     </AccessoryContainer>

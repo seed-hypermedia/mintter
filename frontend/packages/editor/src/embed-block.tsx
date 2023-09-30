@@ -198,7 +198,7 @@ function AccountCard({account}: {account: Account}) {
       icon={
         <UIAvatar
           id={account.id}
-          size="$2"
+          size={12}
           label={account.profile?.alias}
           url={getAvatarUrl(account.profile?.avatar)}
         />

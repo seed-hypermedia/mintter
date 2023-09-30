@@ -21,7 +21,7 @@ export function AccessoryContainer({
         </XStack>
       ) : null}
       <ScrollView height={'100%'}>
-        <YStack padding="$4">{children}</YStack>
+        <YStack paddingBottom={200}>{children}</YStack>
       </ScrollView>
     </Allotment.Pane>
   )

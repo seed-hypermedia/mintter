@@ -4515,6 +4515,7 @@ __metadata:
   resolution: "@mintter/ui@workspace:frontend/packages/ui"
   dependencies:
     "@mintter/prettier": "*"
+    "@mintter/shared": "*"
     "@storybook/react": ^7.0.26
     "@tamagui/animations-react-native": 1.69.0
     "@tamagui/build": 1.69.0
@@ -8039,9 +8040,9 @@ __metadata:
   linkType: hard
 
 "@swc/counter@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "@swc/counter@npm:0.1.1"
-  checksum: bb974babd493ba01c0d4a95ab610c3fc15fbf609c08cb0342798e485f57ecc0950abbf84e07124e63c5fe610b492d9a8dd03701d3b9ef7329d9e8bf3cc44980f
+  version: 0.1.2
+  resolution: "@swc/counter@npm:0.1.2"
+  checksum: 8427c594f1f0cf44b83885e9c8fe1e370c9db44ae96e07a37c117a6260ee97797d0709483efbcc244e77bac578690215f45b23254c4cd8a70fb25ddbb50bf33e
   languageName: node
   linkType: hard
 
@@ -10563,9 +10564,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:^20.6.5":
-  version: 20.7.1
-  resolution: "@types/node@npm:20.7.1"
-  checksum: 3140bd6c9130f1ed73a78ce7a1765ee43e155c1eea50eea45e18faeb31d11d97a84fffdc5e3a97582101d2f57d2652a50f510ede6c702780267bad74c822d56c
+  version: 20.7.2
+  resolution: "@types/node@npm:20.7.2"
+  checksum: 5baa09368c8daa50ad1eaa2499b988b2f4c06cacf8b251d1e63f68ad32df97b21d8104f1ac06889481f1d3e84056842732bb848dd1136164d823c1d4a6baf435
   languageName: node
   linkType: hard
 
@@ -10577,9 +10578,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^16.0.0, @types/node@npm:^16.11.26":
-  version: 16.18.54
-  resolution: "@types/node@npm:16.18.54"
-  checksum: 208e8fc64f605e9cd55ab5e620a0fd019d8fe5629e3e3c5de869a149b731ab0fac5720c516dccc0ecc834ac27df754723dfe6554551663f016ba5096ea8851df
+  version: 16.18.55
+  resolution: "@types/node@npm:16.18.55"
+  checksum: 6f5fca0063515545203ef7a1d587dd88f57bb15d88e053396648642dfce77cdd7ebf5312494a078c3ee27c0e62b599315e929086240e09f8ed0e8a84c20857a1
   languageName: node
   linkType: hard
 
@@ -10591,9 +10592,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^18.11.18, @types/node@npm:^18.16.3":
-  version: 18.18.0
-  resolution: "@types/node@npm:18.18.0"
-  checksum: 61bcffa28eb713e7a4c66fd369df603369c3f834a783faeced95fe3e78903faa25f1a704d49e054f41d71b7915eeb066d10a37cc699421fcf5dd267f96ad5808
+  version: 18.18.1
+  resolution: "@types/node@npm:18.18.1"
+  checksum: 079085afc8615b91727900628410a2077f7fff51c5c3e20c4ab2d9caae4010b035aac13dae1221155e9d6ca46084aebf68121642140527b4009eee17b716d339
   languageName: node
   linkType: hard
 
@@ -15623,9 +15624,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.535":
-  version: 1.4.536
-  resolution: "electron-to-chromium@npm:1.4.536"
-  checksum: 3c1f04f9b7526964a8c0d256eb223231a678b6a76411a547a3cf59aac32b773212e4e6497fa5534c77ee95d7fd634ffa9f18c1eeb72d229d6423eea4b81663e0
+  version: 1.4.537
+  resolution: "electron-to-chromium@npm:1.4.537"
+  checksum: 6375d3261eb2af2d2ba0d777c8639d7d3a32cfaf42b447e3f13faa21b27b7db3007205da3ce38cd7d2fc01ad3074bbefba1c4c588ded704becd8d6f27887db4e
   languageName: node
   linkType: hard
 
@@ -17618,10 +17619,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flow-parser@npm:0.*, flow-parser@npm:^0.217.1":
-  version: 0.217.1
-  resolution: "flow-parser@npm:0.217.1"
-  checksum: 968756576ae9862395807c3736cf6faad5db829a092b30d46d84f2605a8e43d31436693dea4caf6cffa2e5227e38ccdbfae2a1cea0d3c1f350106d2ae629d33e
+"flow-parser@npm:0.*, flow-parser@npm:^0.217.2":
+  version: 0.217.2
+  resolution: "flow-parser@npm:0.217.2"
+  checksum: f209c9a24538edc6308d23e9611cf7bd7032c9f798600ca1b2ac9325be69758290d40516dd67def6c5c846521fea7fc3bab5c1ee00c05354886c83c04b63220a
   languageName: node
   linkType: hard
 
@@ -17633,16 +17634,16 @@ __metadata:
   linkType: hard
 
 "flow-remove-types@npm:^2.214.0":
-  version: 2.217.1
-  resolution: "flow-remove-types@npm:2.217.1"
+  version: 2.217.2
+  resolution: "flow-remove-types@npm:2.217.2"
   dependencies:
-    flow-parser: ^0.217.1
+    flow-parser: ^0.217.2
     pirates: ^3.0.2
     vlq: ^0.2.1
   bin:
     flow-node: flow-node
     flow-remove-types: flow-remove-types
-  checksum: 5a37b8c44c1bdfc09c916a06562babde146d5e1d2977802505d912188817192f4cba391c1f67ab7551ecac6f4ed883aaa1e6118e026f315190ccc561125630f5
+  checksum: bc7ac872ce554eb955dc32c4963adbf4d5d3e43292e8f203b0f38ff0b8768de7940724b335d9bd8bb587edc5de91a48c8a449c3311ea2b6b2ecc50740e0708d6
   languageName: node
   linkType: hard
 

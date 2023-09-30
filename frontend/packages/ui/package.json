@@ -14,7 +14,6 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "build": "tamagui-build ./src",
     "watch": "tamagui-build --watch",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
@@ -24,6 +23,7 @@
     "generate": "tamagui generate-themes ./src/themes.ts ./src/generated-themes.ts"
   },
   "dependencies": {
+    "@mintter/shared": "*",
     "@tamagui/animations-react-native": "1.69.0",
     "@tamagui/config": "1.69.0",
     "@tamagui/create-theme": "1.69.0",

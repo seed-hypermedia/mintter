@@ -27,17 +27,17 @@ export function ErrorDot() {
 
 export function AccountLinkAvatar({
   accountId,
-  size,
+  size = 20,
 }: {
   accountId?: string
-  size?: FontSizeTokens | undefined
+  size: FontSizeTokens | number
 }) {
   const navigate = useNavigate()
   const account = useAccount(accountId)
 
   let content = account.data?.profile ? (
     <Avatar
-      size={size || '$1'}
+      size={size}
       label={account.data.profile.alias}
       id={account.data.id}
       url={getAvatarUrl(account.data?.profile?.avatar)}

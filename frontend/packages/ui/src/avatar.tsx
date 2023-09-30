@@ -1,15 +1,15 @@
 import {useMemo} from 'react'
-import {Avatar, FontSizeTokens, Text} from 'tamagui'
+import {Avatar, FontSizeTokens, SizableText} from 'tamagui'
 
 export function UIAvatar({
   url,
   id,
   label,
-  size = '$3',
+  size = 20,
   color,
 }: {
   url?: string
-  size?: FontSizeTokens
+  size?: number
   color?: string
   label?: string
   id?: string
@@ -19,23 +19,35 @@ export function UIAvatar({
     [id, color],
   )
 
+  let textSize = size > 32 ? 24 : 14
+
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && <Avatar.Image accessibilityLabel={label} src={url} />}
+      {url && (
+        <Avatar.Image
+          accessibilityLabel={label}
+          src={url}
+          width="100%"
+          height="100%"
+        />
+      )}
       <Avatar.Fallback
+        delayMs={600}
         backgroundColor={color || avatarColor}
         alignItems="center"
         justifyContent="center"
       >
-        <Text
+        <SizableText
+          width={size / 2}
+          textAlign="center"
           fontFamily="$body"
           textTransform="capitalize"
           fontWeight="700"
-          fontSize={size}
+          fontSize={textSize}
           color="black"
         >
           {label ? label[0] : id ? id[0] : '?'}
-        </Text>
+        </SizableText>
       </Avatar.Fallback>
     </Avatar>
   )

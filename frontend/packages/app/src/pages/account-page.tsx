@@ -161,7 +161,7 @@ export default function AccountPage() {
             <XStack gap="$4" alignItems="center">
               <Avatar
                 id={accountId}
-                size="$6"
+                size={60}
                 label={account.profile?.alias}
                 url={getAvatarUrl(account.profile?.avatar)}
               />

@@ -1,37 +1,13 @@
 import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
-import {Avatar} from '@mintter/app/src/components/avatar'
 import {useAccount} from '@mintter/app/src/models/accounts'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {
-  Change,
-  formattedDate,
-  formattedDateMedium,
-  labelOfEntityType,
-  pluralS,
-  unpackHmId,
-} from '@mintter/shared'
-import {
-  Button,
-  ButtonText,
-  Heading,
-  SizableText,
-  View,
-  XStack,
-  YStack,
-  styled,
-} from '@mintter/ui'
-import {getAvatarUrl} from '../utils/account-url'
-import {AccessoryContainer} from './accessory-sidebar'
+import {Change, formattedDate, pluralS} from '@mintter/shared'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
+import {PanelCard, SizableText, XStack, YStack} from '@mintter/ui'
 import {useMemo} from 'react'
 import {NavRoute, useNavRoute} from '../utils/navigation'
-
-const SubHeading = styled(Heading, {
-  size: '$2',
-  marginTop: '$4',
-  marginBottom: '$1',
-  marginHorizontal: '$4',
-})
+import {AccessoryContainer} from './accessory-sidebar'
+import {AccountLinkAvatar} from './account-link-avatar'
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
@@ -52,30 +28,13 @@ function ChangeItem({
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
-  const openAccount = () => {
-    navigate({key: 'account', accountId: change.author})
-  }
+
   const navRoute = useNavRoute()
   const isActive = activeVersion === change.id
+
   const shouldDisplayAuthorName =
     !prevListedChange || change.author !== prevListedChange.change.author
-  const changeTimeText = (
-    <SizableText
-      size="$2"
-      textAlign="left"
-      fontWeight={isActive ? 'bold' : 'normal'}
-    >
-      {change.createTime ? formattedDateMedium(change.createTime) : null}
-    </SizableText>
-  )
-  const topRow = shouldDisplayAuthorName ? (
-    <ButtonText onPress={openAccount}>
-      {author?.data?.profile?.alias || change.author}
-    </ButtonText>
-  ) : (
-    changeTimeText
-  )
-  const dateRow = shouldDisplayAuthorName ? changeTimeText : null
+
   let destRoute: NavRoute | null = null
   if (navRoute.key === 'group') {
     destRoute = {
@@ -94,47 +53,17 @@ function ChangeItem({
     }
   }
   return (
-    <View
-      padding={0}
+    <PanelCard
+      disabled={!destRoute}
+      active={isActive}
+      author={author.data}
+      avatar={<AccountLinkAvatar accountId={change.author} />}
+      date={formattedDate(change.createTime)}
       onPress={() => {
+        console.log('PRESSED')
         destRoute && navigate(destRoute)
       }}
-      disabled={!destRoute}
-      flexDirection="column"
-      gap="$3"
-      paddingHorizontal="$4"
-      paddingVertical="$2"
-      backgroundColor={isActive ? '$green4' : 'transparent'}
-      alignItems="center"
-      // group="change"
-      position="relative"
-      hoverStyle={{
-        backgroundColor: isActive ? '$green4' : 'transparent',
-        cursor: 'pointer',
-      }}
-    >
-      <YStack alignSelf="stretch">
-        <XStack alignItems="center" justifyContent="flex-start" gap="$2">
-          <Button size="$2" circular chromeless onPress={openAccount}>
-            <Avatar
-              id={change.author}
-              label={author?.data?.profile?.alias}
-              size={'$2'}
-              url={getAvatarUrl(author?.data?.profile?.avatar)}
-            />
-          </Button>
-
-          {topRow}
-        </XStack>
-
-        {dateRow && (
-          <XStack alignItems="center" justifyContent="flex-start" gap="$2">
-            <View width={28} />
-            {dateRow}
-          </XStack>
-        )}
-      </YStack>
-    </View>
+    />
   )
 }
 
@@ -150,8 +79,15 @@ function PrevVersions({
   if (!prevVersions.length) return null
   return (
     <>
-      <SubHeading>Previous Versions</SubHeading>
-      <YStack>
+      <XStack paddingHorizontal="$4" paddingVertical="$3">
+        <SizableText>Previous Versions</SizableText>
+      </XStack>
+      <YStack
+        paddingHorizontal="$4"
+        paddingBottom="$6"
+        borderBottomColor="$borderColor"
+        borderBottomWidth={1}
+      >
         {prevVersions.map((item, index) => {
           return (
             <ChangeItem
@@ -184,8 +120,15 @@ function ActiveVersions({
   }
   return (
     <>
-      <SubHeading>{subheading}</SubHeading>
-      <YStack>
+      <XStack paddingHorizontal="$4" paddingVertical="$3">
+        <SizableText>{subheading}</SizableText>
+      </XStack>
+      <YStack
+        paddingHorizontal="$4"
+        paddingBottom="$6"
+        borderBottomColor="$borderColor"
+        borderBottomWidth={1}
+      >
         {activeVersionChanges.map((item, index) => {
           return (
             <ChangeItem
@@ -214,10 +157,17 @@ function NextVersions({
   if (!nextVersionChanges.length) return null
   return (
     <>
-      <SubHeading>
-        {pluralS(nextVersionChanges.length, 'Next Version')}
-      </SubHeading>
-      <YStack>
+      <XStack paddingHorizontal="$4" paddingVertical="$3">
+        <SizableText>
+          {pluralS(nextVersionChanges.length, 'Next Version')}
+        </SizableText>
+      </XStack>
+      <YStack
+        paddingHorizontal="$4"
+        paddingBottom="$6"
+        borderBottomColor="$borderColor"
+        borderBottomWidth={1}
+      >
         {nextVersionChanges.map((item, index) => {
           return (
             <ChangeItem
@@ -274,7 +224,7 @@ export function EntityVersionsAccessory({
   }, [data, activeVersion])
   if (!id) return null
   return (
-    <AccessoryContainer>
+    <AccessoryContainer title="Versions">
       <NextVersions
         changeset={computed}
         id={id}

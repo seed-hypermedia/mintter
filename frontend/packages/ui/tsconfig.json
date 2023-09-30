@@ -4,7 +4,10 @@
   "compilerOptions": {
     "composite": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"]
+    }
   },
   "references": []
 }

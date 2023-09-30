@@ -19,7 +19,6 @@ export function AccountAvatarLink({account}: {account?: string}) {
     <UIAvatar
       id={account}
       url={profile?.avatar ? cidURL(profile.avatar) : undefined}
-      size={20}
       color="$color7"
       label={profile?.alias || label}
     />
