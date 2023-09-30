@@ -233,32 +233,30 @@ export default function AccountPage() {
               />
             </XStack>
           </XStack>
-          {account.profile?.bio && (
-            <Section>
-              <SizableText size="$4">{account.profile?.bio}</SizableText>
-              {groups?.items.length ? (
-                <XStack alignItems="center" space>
-                  <SizableText size="$2" fontWeight="bold">
-                    Groups
-                  </SizableText>
-                  {groups.items.map((item) => (
-                    <Button
-                      size="$2"
-                      key={item.group?.id}
-                      theme="blue"
-                      onPress={() =>
-                        item.group
-                          ? nav({key: 'group', groupId: item.group.id})
-                          : null
-                      }
-                    >
-                      {item.group?.title}
-                    </Button>
-                  ))}
-                </XStack>
-              ) : null}
-            </Section>
-          )}
+          <Section>
+            <SizableText size="$4">{account.profile?.bio}</SizableText>
+            {groups?.items.length ? (
+              <XStack alignItems="center" space>
+                <SizableText size="$2" fontWeight="bold">
+                  Groups
+                </SizableText>
+                {groups.items.map((item) => (
+                  <Button
+                    size="$2"
+                    key={item.group?.id}
+                    theme="blue"
+                    onPress={() =>
+                      item.group
+                        ? nav({key: 'group', groupId: item.group.id})
+                        : null
+                    }
+                  >
+                    {item.group?.title}
+                  </Button>
+                ))}
+              </XStack>
+            ) : null}
+          </Section>
 
           <AccountDocuments
             isTrusted={account.isTrusted}
