@@ -327,11 +327,12 @@ export default function GroupPage() {
   //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
   // const siteVersionMatches =
   //   group.data?.version === group.data?.siteInfo?.version
-  const syncStatus = isRecentlySynced
+  const siteSyncStatus = isRecentlySynced
     ? siteVersionMatches
       ? GroupStatus.SyncedConnected
       : GroupStatus.UnsyncedConnected
     : GroupStatus.Disconnected
+  const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
   const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
   const frontDocMenuItems = [
