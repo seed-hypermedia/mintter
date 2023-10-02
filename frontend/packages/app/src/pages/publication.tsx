@@ -71,7 +71,10 @@ export function PublicationPageEditor() {
             replace({...route, accessory: {key: 'citations'}})
           }}
         >
-          <Allotment defaultSizes={[100]}>
+          <Allotment
+            key={`${accessory}`}
+            defaultSizes={accessory ? [65, 35] : [100]}
+          >
             <Allotment.Pane>
               <YStack height="100%">
                 <MainWrapper>
