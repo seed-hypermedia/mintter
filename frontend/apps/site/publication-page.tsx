@@ -59,7 +59,6 @@ export type PublicationPageData = {
   publication?: Publication | null
   author?: Account | null
   editors: Array<Account | string | null> | null
-  siteInfo: SiteInfo | null
 }
 
 export default function PublicationPage({

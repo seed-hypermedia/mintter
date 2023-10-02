@@ -10,6 +10,7 @@ import type {
   Account,
   BlockNode,
   Group,
+  HMBlockChildrenType,
   HeadingBlock,
   ImageBlock,
   ParagraphBlock,
@@ -53,9 +54,11 @@ import {hmBlockSchema} from './schema'
 
 function InlineContentView({
   inline,
+  isLink,
   type,
 }: {
   inline: InlineContent[]
+  isLink?: boolean
   type: string
 }) {
   const openUrl = useOpenUrl()
@@ -64,7 +67,11 @@ function InlineContentView({
     [type],
   )
   return (
-    <SizableText fontWeight={type == 'heading' ? 'bold' : undefined}>
+    <SizableText
+      fontWeight={type == 'heading' ? 'bold' : undefined}
+      color={isLink ? '$blue10' : undefined}
+      textDecorationLine={isLink ? 'underline' : undefined}
+    >
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -89,6 +96,7 @@ function InlineContentView({
               fontStyle={content.styles.italic ? 'italic' : undefined}
               fontFamily={content.styles.code ? '$mono' : '$body'}
               size={size}
+              color={isLink ? '$blue10' : undefined}
             >
               {content.text}
             </SizableText>
@@ -109,7 +117,7 @@ function InlineContentView({
                 cursor: 'pointer',
               }}
             >
-              <InlineContentView inline={content.content} type={type} />
+              <InlineContentView inline={content.content} type={type} isLink />
             </SizableText>
           )
         }
@@ -278,8 +286,12 @@ function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
   if (embed.embedBlocks) {
     content = (
       <>
-        {embed.embedBlocks?.map((block) => (
-          <StaticBlockNode key={block.block?.id} block={block} />
+        {embed.embedBlocks?.map((child) => (
+          <StaticBlockNode
+            key={child.block?.id}
+            block={child}
+            childrenType={block.attributes.childrenType}
+          />
         ))}
       </>
     )
@@ -310,18 +322,38 @@ function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
   )
 }
 
-export function StaticBlockNode({block}: {block: BlockNode}) {
+export function StaticBlockNode({
+  block,
+  index = 0,
+  childrenType,
+}: {
+  block: BlockNode
+  index?: number
+  childrenType?: HMBlockChildrenType
+}) {
   const children =
     block.children.length > 0 ? (
-      <YStack paddingLeft="$5">
+      <YStack paddingLeft="$5" gap="$2">
         {block.children.map((child, index) => (
-          <StaticBlockNode key={child.block?.id || index} block={child} />
+          <StaticBlockNode
+            key={child.block?.id || index}
+            block={child}
+            index={index}
+            childrenType={
+              // todo, zod validate this
+              block.block?.attributes.childrenType as HMBlockChildrenType
+            }
+          />
         ))}
       </YStack>
     ) : null
   return (
-    <YStack>
-      {block.block && <StaticBlock block={block.block} />}
+    <YStack gap="$2" marginVertical="$1">
+      <XStack gap="$4">
+        {childrenType === 'ol' ? <Text>{index + 1}.</Text> : null}
+        {childrenType === 'ul' ? <Text>•</Text> : null}
+        {block.block && <StaticBlock block={block.block} />}
+      </XStack>
       {children}
     </YStack>
   )
