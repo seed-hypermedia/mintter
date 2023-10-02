@@ -24,7 +24,6 @@ import {
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
 import {HMBlockSchema} from './schema'
-import {InputRule, PasteRule} from '@tiptap/core'
 
 const isValidUrl = (urlString: string) => {
   try {
@@ -693,22 +692,3 @@ function ImageForm({
     </YStack>
   )
 }
-
-// export const insertImage = new ReactSlashMenuItem<
-//   DefaultBlockSchema & {image: typeof ImageBlock}
-// >(
-//   'Image',
-//   // @ts-ignore
-//   (editor: BlockNoteEditor<HMBlockSchema>) => {
-//     insertOrUpdateBlock(editor, {
-//       type: 'image',
-//       props: {
-//         url: '',
-//       },
-//     })
-//   },
-//   ['image', 'img', 'picture'],
-//   'Media',
-//   <RiImage2Fill size={18} />,
-//   'Insert an image',
-// )

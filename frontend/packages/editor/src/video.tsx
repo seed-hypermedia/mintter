@@ -699,22 +699,3 @@ function VideoForm({
     </div>
   )
 }
-
-// export const insertVideo = new ReactSlashMenuItem<
-//   DefaultBlockSchema & {video: typeof VideoBlock}
-// >(
-//   'Video',
-//   // @ts-ignore
-//   (editor: BlockNoteEditor<HMBlockSchema>) => {
-//     insertOrUpdateBlock(editor, {
-//       type: 'video',
-//       props: {
-//         url: '',
-//       },
-//     })
-//   },
-//   ['video', 'vid', 'media'],
-//   'Media',
-//   <RiVideoAddFill size={18} />,
-//   'Insert a video',
-// )

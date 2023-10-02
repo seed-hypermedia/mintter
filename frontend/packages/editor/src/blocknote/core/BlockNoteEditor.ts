@@ -28,10 +28,6 @@ import {
 } from './extensions/Blocks/api/blockTypes'
 import {TextCursorPosition} from './extensions/Blocks/api/cursorPositionTypes'
 import {
-  DefaultBlockSchema,
-  defaultBlockSchema,
-} from './extensions/Blocks/api/defaultBlocks'
-import {
   ColorStyle,
   Styles,
   ToggledStyle,
@@ -48,6 +44,7 @@ import {getDefaultSlashMenuItems} from './extensions/SlashMenu/defaultSlashMenuI
 import {UniqueID} from './extensions/UniqueID/UniqueID'
 import {mergeCSSClasses} from './shared/utils'
 import {createRightsideBlockWidgetExtension} from '@/rightside-block-widget'
+import {HMBlockSchema, hmBlockSchema} from '@/index'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
@@ -142,7 +139,7 @@ const blockNoteTipTapOptions = {
   enableCoreExtensions: false,
 }
 
-export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
+export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
   public readonly _tiptapEditor: TiptapEditor & {contentComponent: any}
   public blockCache = new WeakMap<Node, Block<BSchema>>()
   public readonly schema: BSchema
@@ -169,7 +166,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
       //  If BSchema is not specified, then options.blockSchema should also not
       //  be defined. Unfortunately, trying to implement these constraints seems
       //  to be a huge pain, hence the `as any` casts.
-      blockSchema: options.blockSchema || (defaultBlockSchema as any),
+      blockSchema: options.blockSchema || (hmBlockSchema as any),
       editable: options.editable || true,
       ...options,
     }
@@ -313,6 +310,9 @@ export class BlockNoteEditor<BSchema extends BlockSchema = DefaultBlockSchema> {
     const blocks: Block<BSchema>[] = []
 
     this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
+      if (blocks.some((block) => block.id === node.attrs.id)) {
+        return false
+      }
       blocks.push(nodeToBlock(node, this.schema, this.blockCache))
 
       return false
