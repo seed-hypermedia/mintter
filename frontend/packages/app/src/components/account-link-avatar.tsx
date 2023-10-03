@@ -30,7 +30,7 @@ export function AccountLinkAvatar({
   size = 20,
 }: {
   accountId?: string
-  size: FontSizeTokens | number
+  size?: FontSizeTokens | number
 }) {
   const navigate = useNavigate()
   const account = useAccount(accountId)

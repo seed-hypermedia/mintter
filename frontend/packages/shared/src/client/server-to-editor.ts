@@ -294,7 +294,7 @@ export function serverChildrenToEditorChildren(
         type: 'video',
         id: serverBlock.block.id,
         props: {
-          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
           backgroundColor: 'default',
           textColor: 'default',

@@ -109,9 +109,7 @@ const Render = (
         />
       ) : editor.isEditable ? (
         <VideoForm block={block} editor={editor} assign={assignFile} />
-      ) : (
-        <></>
-      )}
+      ) : null}
     </YStack>
   )
 }
@@ -248,11 +246,35 @@ function VideoComponent({
           replace
         </Button>
       ) : null}
-      {['.', '/', ':', 'http', 'https'].some((value) =>
-        block.props.url.includes(value),
-      ) ? (
+      {block.props.url.startsWith('ipfs://') ? (
         <VideoWrapper selected={selected}>
           <XStack
+            tag="video"
+            //@ts-expect-error
+            contentEditable={false}
+            playsInline
+            controls
+            preload="metadata"
+            top={0}
+            left={0}
+            position="absolute"
+            width="100%"
+            height="100%"
+          >
+            <source
+              src={`${BACKEND_FILE_URL}/${block.props.url.replace(
+                'ipfs://',
+                '',
+              )}`}
+              type={getSourceType(block.props.name)}
+            />
+            Something is wrong with the video file.
+          </XStack>
+        </VideoWrapper>
+      ) : (
+        <VideoWrapper selected={selected}>
+          <XStack
+            pointerEvents={editor.isEditable ? 'none' : 'auto'}
             tag="iframe"
             position="absolute"
             className="video-iframe"
@@ -265,21 +287,6 @@ function VideoComponent({
             frameBorder="0"
             allowFullScreen
           />
-        </VideoWrapper>
-      ) : (
-        <VideoWrapper selected={selected}>
-          <video
-            contentEditable={false}
-            playsInline
-            controls
-            preload="metadata"
-          >
-            <source
-              src={`${BACKEND_FILE_URL}/${block.props.url}`}
-              type={getSourceType(block.props.name)}
-            />
-            Something is wrong with the video file.
-          </video>
         </VideoWrapper>
       )}
     </YStack>

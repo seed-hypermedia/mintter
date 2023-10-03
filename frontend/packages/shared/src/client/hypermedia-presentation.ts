@@ -41,6 +41,15 @@ export type FileBlock = {
   }
 }
 
+export type VideoBlock = {
+  id: string
+  type: 'video'
+  ref: string
+  attributes: {
+    name?: string
+  }
+}
+
 export type ImageBlock = {
   // and any media object really
   id: string
@@ -68,6 +77,7 @@ export type PresentationBlock =
   | HeadingBlock
   | CodeBlock
   | FileBlock
+  | VideoBlock
 
 export type InlineEmbedAnnotation = {
   type: 'embed'

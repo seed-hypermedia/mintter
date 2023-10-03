@@ -60,3 +60,8 @@
 .block-container-hovered {
   background-color: var(--backgroundPress);
 }
+
+[data-list-type='ul'] .node-blockContainer,
+[data-list-type='ol'] .node-blockContainer {
+  display: list-item;
+}

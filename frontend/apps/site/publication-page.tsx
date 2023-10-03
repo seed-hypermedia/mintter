@@ -3,14 +3,16 @@ import {
   Block,
   EmbedBlock,
   FileBlock,
+  HMBlockChildrenType,
+  HYPERMEDIA_SCHEME,
   HeadingBlock,
   ImageBlock,
   InlineContent,
   ParagraphBlock,
   PresentationBlock,
   Publication,
+  VideoBlock,
   createHmDocLink,
-  createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
   groupDocUrl,
@@ -24,7 +26,9 @@ import {
   ArrowRight,
   Button,
   Copy,
+  ExternalLink,
   File,
+  FontSizeTokens,
   PageSection,
   SideSection,
   SideSectionTitle,
@@ -37,6 +41,7 @@ import {
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import {cidURL} from 'ipfs'
+import {NextLink} from 'next-link'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
@@ -46,7 +51,7 @@ import {PublicationMetadata} from './publication-metadata'
 import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import {NextLink} from 'next-link'
+import {DimensionValue} from 'react-native'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -62,6 +67,10 @@ export type PublicationPageData = {
   author?: Account | null
   editors: Array<Account | string | null> | null
 }
+
+let blockVerticalPadding: FontSizeTokens = '$4'
+let blockHorizontalPadding: FontSizeTokens = '$4'
+let blockBorderRadius: FontSizeTokens = '$3'
 
 export default function PublicationPage({
   pathName,
@@ -133,6 +142,10 @@ export default function PublicationPage({
               docId={documentId}
               editors={pub?.document?.editors || []}
             />
+            {/* 
+            // TODO: CRITICAL: add more actions here (open in mintter app)
+            // TODO: CRITICAL: make the web tipping button less "prominent"
+            */}
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
@@ -209,28 +222,44 @@ function InlineContentView({
 
           if (content.styles.textColor) {
             children = (
-              <span style={{color: content.styles.textColor}}>{children}</span>
+              <SizableText color={content.styles.textColor}>
+                {children}
+              </SizableText>
             )
           }
 
-          return <span key={index}>{children}</span>
+          return (
+            <SizableText
+              size="$6"
+              key={index}
+              textDecorationLine={textDecorationLine || undefined}
+            >
+              {children}
+            </SizableText>
+          )
         }
         if (content.type === 'link') {
           const href = isHypermediaScheme(content.href)
             ? idToUrl(content.href, null)
             : content.href
+
+          const isExternal = isHypermediaScheme(content.href)
           return (
             href && (
-              <a
-                href={href}
-                key={index}
-                className={
-                  isHypermediaScheme(content.href) ? 'hm-link' : 'link'
-                }
-                style={{cursor: 'pointer'}}
-              >
-                <InlineContentView inline={content.content} />
-              </a>
+              <Tooltip content={href}>
+                <a
+                  href={href}
+                  key={index}
+                  className={isExternal ? 'hm-link' : 'link'}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                  }}
+                >
+                  <InlineContentView inline={content.content} />
+                  {isExternal ? <ExternalLink size={10} /> : null}
+                </a>
+              </Tooltip>
             )
           )
         }
@@ -273,7 +302,18 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
   return (
-    <XStack minHeight={60} margin={10}>
+    <XStack
+      backgroundColor="$color3"
+      borderColor="$color4"
+      borderWidth={1}
+      borderRadius={blockBorderRadius}
+      // marginRight={blockHorizontalPadding}
+      overflow="hidden"
+      padding={blockVerticalPadding}
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+    >
       <img
         id={`${block.id}-block`}
         alt={block.attributes?.alt}
@@ -313,7 +353,7 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
       content = blockNode ? (
         <StaticBlockNode block={blockNode} />
       ) : (
-        <Text>Block not found.</Text>
+        <SizableText>Block not found.</SizableText>
       )
     } else {
       content = (
@@ -334,10 +374,11 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
       position="relative"
     >
       <YStack
-        padding="$4"
-        paddingVertical="$2"
-        borderRadius="$4"
-        backgroundColor="$color5"
+        // padding={blockVerticalPadding}
+        // paddingVertical={blockVerticalPadding}
+        // borderRadius={blockBorderRadius}
+        // backgroundColor="$color5"
+        // marginRight={blockHorizontalPadding}
         hoverStyle={{
           cursor: 'pointer',
         }}
@@ -354,25 +395,35 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   )
 }
 
-function StaticBlock({block}: {block: HMBlock}) {
+function StaticBlock({block, isList}: {block: HMBlock; isList?: boolean}) {
   let niceBlock = block as PresentationBlock // todo, validation
 
-  if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
-    return <StaticSectionBlock block={niceBlock} />
+  if (niceBlock.type == 'paragraph' || niceBlock.type == 'heading') {
+    return <StaticSectionBlock block={niceBlock} isList={isList} />
   }
 
-  if (niceBlock.type === 'image') {
-    return <StaticImageBlock block={niceBlock} />
+  if (niceBlock.type == 'image') {
+    return <StaticImageBlock block={niceBlock} isList={isList} />
   }
-  if (niceBlock.type === 'embed') {
-    return <StaticEmbedBlock block={niceBlock} />
+  if (niceBlock.type == 'embed') {
+    return <StaticEmbedBlock block={niceBlock} isList={isList} />
   }
-  if (niceBlock.type === 'code') {
-    return <span>code blocks not supported yet.</span>
+  if (niceBlock.type == 'code') {
+    let _content = (
+      <pre>
+        <code>{block.text}</code>
+      </pre>
+    )
+
+    return isList ? <li>{_content}</li> : _content
   }
 
   if (niceBlock.type == 'file') {
     return <StaticFileBlock block={niceBlock} />
+  }
+
+  if (niceBlock.type == 'video') {
+    return <StaticVideoBlock block={niceBlock} isList={isList} />
   }
   // fallback for unknown block types
   // return <span>{JSON.stringify(block)}</span>
@@ -389,15 +440,22 @@ function StaticBlock({block}: {block: HMBlock}) {
 function ErrorMessageBlock({message, id}: {message: string; id: string}) {
   return (
     <YStack
-      backgroundColor="#d8ede7"
-      borderColor="#95bfb4"
+      padding={blockVerticalPadding}
+      paddingVertical={blockVerticalPadding}
+      marginRight={blockHorizontalPadding}
+      backgroundColor="$color3"
+      borderColor="$color4"
       borderWidth={1}
-      padding="$4"
-      paddingVertical="$2"
-      borderRadius="$4"
+      borderRadius={blockBorderRadius}
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
       id={id}
     >
-      <Text>{message}</Text>
+      <SizableText color="$color8" size="$6">
+        {message}
+      </SizableText>
     </YStack>
   )
 }
@@ -409,18 +467,34 @@ type PublicationViewContext = {
 }
 
 function StaticBlockNode({
+  childrenType,
   block,
   ctx,
 }: {
   block: HMBlockNode
   ctx?: PublicationViewContext
+  childrenType?: HMBlockChildrenType
 }) {
   const [isHovering, setIsHovering] = useState(false)
+
   const children =
     (block.children?.length || 0) > 0 ? (
-      <YStack paddingLeft="$5">
+      <YStack
+        onHoverIn={() => setIsHovering(false)}
+        onHoverOut={() => setIsHovering(true)}
+        tag={block.block?.attributes?.childrenType}
+        start={
+          block.block?.attributes?.childrenType == 'ol'
+            ? (block.block?.attributes?.start as DimensionValue) || 1
+            : 'auto'
+        }
+        display="block"
+      >
         {block.children?.map((child, index) => (
           <StaticBlockNode
+            childrenType={
+              block.block?.attributes?.childrenType as HMBlockChildrenType
+            }
             key={child.block?.id || index}
             block={child}
             ctx={ctx}
@@ -429,39 +503,63 @@ function StaticBlockNode({
       </YStack>
     ) : null
   const id = block.block?.id || 'unknown-block'
+  const isList = childrenType == 'ol' || childrenType == 'ul'
   return (
     <YStack
       paddingVertical="$2"
+      paddingLeft={blockHorizontalPadding}
       id={id}
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
       position="relative"
+      // borderWidth={1}
+      // borderColor="$color6"
+      borderRadius={blockBorderRadius}
+      backgroundColor={isHovering ? '$backgroundHover' : 'transparent'}
+      // backgroundColor={
+      //   window.location.hash == `#${block.block?.id}`
+      //     ? '$yellow5'
+      //     : isHovering
+      //     ? '$color4'
+      //     : 'transparent'
+      // }
+      tag={isList ? 'li' : undefined}
+      marginLeft={isList ? blockHorizontalPadding : undefined}
+      style={
+        isList
+          ? {
+              display: 'list-item',
+              listStyleType: childrenType == 'ol' ? 'decimal' : 'disc',
+            }
+          : undefined
+      }
     >
-      {block.block && <StaticBlock block={block.block} />}
+      {block.block && <StaticBlock isList={isList} block={block.block} />}
       {children}
       {ctx?.enableBlockCopy && (
         <XStack
-          padding="$2"
-          gap="$1"
-          backgroundColor={'$background'}
+          bg="$background"
           position="absolute"
-          borderRadius="$2"
           top={0}
           right={0}
-          display={isHovering ? 'flex' : 'none'}
+          opacity={isHovering ? 1 : 0}
+          overflow="hidden"
+          borderRadius={blockBorderRadius}
         >
-          <Button
-            tag="a"
-            size="$2"
-            chromeless
-            href={`#${id}`}
-            icon={Copy}
-            onPress={() => {
-              navigator.clipboard.writeText(
-                `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
-              )
-            }}
-          />
+          <Tooltip content={`Copy block reference`}>
+            <Button
+              tag="a"
+              size="$2"
+              chromeless
+              href={`#${id}`}
+              icon={Copy}
+              onPress={() => {
+                navigator.clipboard.writeText(
+                  `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
+                )
+              }}
+            />
+          </Tooltip>
         </XStack>
       )}
     </YStack>
@@ -495,19 +593,38 @@ export function PublicationContent({
 }: {
   publication: HMPublication | undefined
 }) {
-  console.log(`== ~ publication:`, publication)
+  // This removes the first block from the document content if it's not a media element (embed, image, video...)
+  let blocks = useMemo(() => {
+    let _b = publication?.document?.children
+
+    if (!_b?.length || (_b.length == 1 && _b[0].block?.type != 'embed'))
+      return []
+
+    // check if the first block has content or not.
+    if (
+      _b[0].block?.type &&
+      ['embed', 'image', 'video'].includes(_b[0].block?.type)
+    )
+      return _b
+
+    let [_firstBlock, ...restBlocks] = _b
+
+    return restBlocks
+  }, [publication?.document?.children])
   return (
     <YStack>
-      {publication?.document?.children?.map((block, index) => (
-        <StaticBlockNode
-          block={block}
-          key={block.block?.id || index}
-          ctx={{
-            enableBlockCopy: true,
-            ref: `/d/${publication?.document?.id}?v=${publication.version}`,
-          }}
-        />
-      ))}
+      {blocks
+        ? blocks.map((block, index) => (
+            <StaticBlockNode
+              block={block}
+              key={block.block?.id || index}
+              ctx={{
+                enableBlockCopy: true,
+                ref: `/d/${publication?.document?.id}?v=${publication.version}`,
+              }}
+            />
+          ))
+        : null}
     </YStack>
   )
 }
@@ -619,10 +736,11 @@ export function StaticFileBlock({block}: {block: FileBlock}) {
     >
       <Tooltip content={`Download ${block.attributes.name}`}>
         <YStack
-          backgroundColor={'$color3'}
-          borderColor={'$color4'}
-          borderWidth={2}
-          borderRadius="$4"
+          backgroundColor="$color3"
+          borderColor="$color4"
+          borderWidth={1}
+          borderRadius={blockBorderRadius}
+          // marginRight={blockHorizontalPadding}
           overflow="hidden"
           hoverStyle={{
             backgroundColor: '$color4',
@@ -662,4 +780,70 @@ export function StaticFileBlock({block}: {block: FileBlock}) {
       </Tooltip>
     </NextLink>
   )
+}
+
+function StaticVideoBlock({
+  block,
+  isList,
+}: {
+  block: VideoBlock
+  isList?: boolean
+}) {
+  const ref = block.ref || ''
+  return ref ? (
+    <YStack
+      backgroundColor="$color3"
+      borderColor="$color8"
+      borderWidth={2}
+      borderRadius="$2"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+      paddingBottom="56.25%"
+      position="relative"
+      height={0}
+    >
+      {ref.startsWith('ipfs://') ? (
+        <XStack
+          tag="video"
+          top={0}
+          left={0}
+          position="absolute"
+          width="100%"
+          height="100%"
+          // @ts-expect-error
+          contentEditable={false}
+          playsInline
+          controls
+          preload="metadata"
+        >
+          <source
+            src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
+            type={getSourceType(block.attributes.name)}
+          />
+          Something is wrong with the video file.
+        </XStack>
+      ) : (
+        <XStack
+          tag="iframe"
+          top={0}
+          left={0}
+          position="absolute"
+          width="100%"
+          height="100%"
+          // @ts-expect-error
+          src={block.ref}
+          frameBorder="0"
+          allowFullScreen
+        />
+      )}
+    </YStack>
+  ) : null
+}
+
+function getSourceType(name?: string) {
+  if (!name) return
+  const nameArray = name.split('.')
+  return `video/${nameArray[nameArray.length - 1]}`
 }

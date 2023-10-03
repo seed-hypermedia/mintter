@@ -165,13 +165,18 @@ export function editorBlockToServerBlock(
   }
 
   if (editorBlock.type == 'video') {
+    let ref = editorBlock.props.url
+
+    if (!ref?.startsWith('http')) {
+      ref = `ipfs://${editorBlock.props.url}`
+    }
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'video',
       attributes: {
         name: editorBlock.props.name,
       },
-      ref: editorBlock.props.url ? `ipfs://${editorBlock.props.url}` : '',
+      ref: ref || '',
     })
   }
 

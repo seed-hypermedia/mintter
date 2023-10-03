@@ -9,14 +9,16 @@ export function PanelCard({
   onPress,
   avatar,
   active = false,
+  shorter = false,
 }: {
   title?: string
   content?: string
   author?: Account
   date?: any
   onPress?: () => void
-  avatar?: React.ReactElement
+  avatar?: Element | null
   active?: boolean
+  shorter?: boolean
 }) {
   return (
     <YStack
@@ -28,6 +30,7 @@ export function PanelCard({
         backgroundColor: '$backgroundHover',
       }}
       padding="$4"
+      paddingVertical={shorter ? '$1' : '$4'}
       gap="$2"
       onPress={onPress}
     >
@@ -48,6 +51,7 @@ export function PanelCard({
         {author && (
           <SizableText size="$2">{author.profile?.alias || '...'}</SizableText>
         )}
+        <XStack flex={1} />
         {date && (
           <SizableText size="$2" color="$color9" paddingHorizontal="$1">
             {date}
@@ -67,6 +71,7 @@ export function PanelCard({
                 textOverflow="ellipsis"
                 overflow="hidden"
                 whiteSpace="nowrap"
+                fontFamily="$body"
               >
                 {title}
               </SizableText>

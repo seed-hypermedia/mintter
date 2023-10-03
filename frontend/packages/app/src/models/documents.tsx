@@ -734,22 +734,23 @@ export function useDraftEditor(
                 ref: embedRef,
               },
             })
-            const { block: currentBlock, nextBlock } = editor.getTextCursorPosition()
+            const {block: currentBlock, nextBlock} =
+              editor.getTextCursorPosition()
             if (nextBlock) {
-              editor.setTextCursorPosition(
-                nextBlock
-              )
+              editor.setTextCursorPosition(nextBlock)
             } else {
-              editor.insertBlocks([
-                {
-                  type: 'paragraph',
-                  content: []
-                }],
+              editor.insertBlocks(
+                [
+                  {
+                    type: 'paragraph',
+                    content: [],
+                  },
+                ],
                 currentBlock,
-                'after'
+                'after',
               )
               editor.setTextCursorPosition(
-                editor.getTextCursorPosition().nextBlock!
+                editor.getTextCursorPosition().nextBlock!,
               )
             }
           }
