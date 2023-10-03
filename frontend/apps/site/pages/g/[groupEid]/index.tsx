@@ -256,7 +256,7 @@ function GroupContentItem({
   if (!groupEid) return null
   return (
     <ContentListItem
-      title={item.pathName}
+      title={item.publication?.document?.title || item.pathName}
       accessory={
         <>
           {item.publication?.document?.editors?.map((editor) => {
