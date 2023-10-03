@@ -33,6 +33,26 @@ export function createPublicWebHmUrl(
   return webUrl
 }
 
+export function groupDocUrl(
+  groupEid: string,
+  version: string | null | undefined,
+  pathName: string,
+  hostname: null | string = null,
+) {
+  const type = 'g'
+  const webPath = `/${type}/${groupEid}`
+  let urlHost =
+    hostname === null
+      ? ''
+      : hostname === undefined
+      ? HYPERMEDIA_PUBLIC_WEB_GATEWAY
+      : hostname
+  let webUrl = `${urlHost}${webPath}`
+  if (pathName && pathName !== '/') webUrl += `/${pathName}`
+  if (version) webUrl += `?v=${version}`
+  return webUrl
+}
+
 export function createHmId(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   id: string,

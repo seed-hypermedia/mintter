@@ -12,6 +12,7 @@ import {
   createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
+  groupDocUrl,
   idToUrl,
   isHypermediaScheme,
   serverBlockToEditorInline,
@@ -549,23 +550,21 @@ function GroupSidebarContent({
   }>
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
-  const groupLink =
-    groupId?.eid && createPublicWebHmUrl('g', groupId.eid, {hostname: null})
   return (
     <SideSection>
-      {groupLink ? (
+      {groupId?.eid ? (
         <XStack paddingHorizontal="$3">
           <SideSectionTitle>Site Content:</SideSectionTitle>
         </XStack>
       ) : null}
       {content?.map((item) => {
-        if (!item) return null
+        if (!item || !groupId?.eid) return null
         return (
           <Button
             key={item.pathName}
             iconAfter={activePathName === item.pathName ? <ArrowRight /> : null}
             tag="a"
-            href={`${groupLink}/${item.pathName}`}
+            href={groupDocUrl(groupId?.eid, group?.version, item.pathName)}
             size="$3"
             chromeless
             justifyContent="flex-start"

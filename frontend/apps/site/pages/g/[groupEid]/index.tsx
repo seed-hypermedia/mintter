@@ -9,6 +9,7 @@ import {
   createHmId,
   createPublicWebHmUrl,
   formattedDate,
+  groupDocUrl,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -63,6 +64,7 @@ export default function GroupPage({}: GroupPageProps) {
             <GroupContentItem
               key={contentItem?.pathName}
               item={contentItem}
+              groupVersion={version}
               group={loadedGroup}
             />
           )
@@ -247,9 +249,11 @@ export function TimeAccessory({
 function GroupContentItem({
   item,
   group,
+  groupVersion,
 }: {
   item: {pathName: string; publication: null | HMPublication}
   group?: null | HMGroup
+  groupVersion?: string | undefined
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   const groupEid = groupId?.eid
@@ -268,9 +272,7 @@ function GroupContentItem({
           />
         </>
       }
-      href={`${createPublicWebHmUrl('g', groupEid, {hostname: null})}/${
-        item.pathName
-      }`}
+      href={groupDocUrl(groupEid, groupVersion, item.pathName)}
     />
   )
 }
