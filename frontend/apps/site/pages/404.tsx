@@ -4,8 +4,8 @@ import {SiteHead} from '../site-head'
 export default function NotFoundPage() {
   return (
     <YStack flex={1}>
-      <SiteHead title="Not Found" />
-      <PageSection.Root flex={1}>
+      <SiteHead pageTitle="Not Found" />
+      <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
           <YStack

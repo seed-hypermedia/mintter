@@ -1,6 +1,7 @@
 import {httpBatchLink} from '@trpc/client'
 import {createTRPCNext} from '@trpc/next'
 import type {AppRouter} from './server/routers/_app'
+import superjson from 'superjson'
 
 // TODO: DAEMON_URL: make sure this component should receive the url it needs to ask the image from. not having it inside.
 function getBaseUrl() {
@@ -15,6 +16,7 @@ function getBaseUrl() {
 export const trpc = createTRPCNext<AppRouter>({
   config({ctx}) {
     return {
+      transformer: superjson,
       links: [
         httpBatchLink({
           /**

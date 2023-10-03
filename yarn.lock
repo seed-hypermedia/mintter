@@ -4289,9 +4289,9 @@ __metadata:
     "@sentry/vite-plugin": latest
     "@tamagui/core-node": 1.61.3
     "@tamagui/vite-plugin": 1.69.0
-    "@trpc/client": 10.37.1
-    "@trpc/react-query": 10.37.1
-    "@trpc/server": 10.37.1
+    "@trpc/client": 10.38.5
+    "@trpc/react-query": 10.38.5
+    "@trpc/server": 10.38.5
     "@types/react": 18.2.20
     "@types/react-dom": 18.2.7
     "@vitejs/plugin-react": 4.0.4
@@ -4311,7 +4311,6 @@ __metadata:
     react-hot-toast: 2.4.1
     react-native-svg: 13.9.0
     react-native-web-lite: 1.69.0
-    superjson: 1.13.1
     tamagui: 1.69.0
     vite: 4.4.9
     vite-tsconfig-paths: 4.2.0
@@ -4440,10 +4439,10 @@ __metadata:
     "@tamagui/next-theme": 1.69.0
     "@tanstack/react-query": 4.33.0
     "@tanstack/react-query-devtools": 4.33.0
-    "@trpc/client": 10.37.1
-    "@trpc/next": 10.37.1
-    "@trpc/react-query": 10.37.1
-    "@trpc/server": 10.37.1
+    "@trpc/client": 10.38.5
+    "@trpc/next": 10.38.5
+    "@trpc/react-query": 10.38.5
+    "@trpc/server": 10.38.5
     "@types/node": ^20.6.5
     "@types/react": 18.2.20
     "@types/react-dom": 18.2.7
@@ -9963,49 +9962,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trpc/client@npm:10.37.1":
-  version: 10.37.1
-  resolution: "@trpc/client@npm:10.37.1"
+"@trpc/client@npm:10.38.5":
+  version: 10.38.5
+  resolution: "@trpc/client@npm:10.38.5"
   peerDependencies:
-    "@trpc/server": 10.37.1
-  checksum: 82fefed08717f7bf59a9013387c69a990de1d35c142519e1e8f29472cb8d16b6ce4d530d20d336e4a371993d93663e4ff7a86d1652a500a97e0632324df2e899
+    "@trpc/server": 10.38.5
+  checksum: a53ebebf4b6e5f36d1739bb6ca4868f278a2b0a271f469cf00d578b6e2de0689c1e0332f2bf158ca715965678f743d67cd8dbc62703fd3f3de40bb2a61f2ebf3
   languageName: node
   linkType: hard
 
-"@trpc/next@npm:10.37.1":
-  version: 10.37.1
-  resolution: "@trpc/next@npm:10.37.1"
+"@trpc/next@npm:10.38.5":
+  version: 10.38.5
+  resolution: "@trpc/next@npm:10.38.5"
   dependencies:
     react-ssr-prepass: ^1.5.0
   peerDependencies:
     "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.37.1
-    "@trpc/react-query": 10.37.1
-    "@trpc/server": 10.37.1
+    "@trpc/client": 10.38.5
+    "@trpc/react-query": 10.38.5
+    "@trpc/server": 10.38.5
     next: "*"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: b114d7552e8aa505c470df6a7280f7847297d8f66e67951028259eeedb7cc6ee9d2c7cbe3146875c56c6f167b2dd909c913c03982782a33421746898da92e196
+  checksum: 02b04c5123d8de8f929d94e9e49ec674bf3dde8a008959cd8daf68e96c8ee7793ded2576f580e2466e5eba7fdea910a1178225a779513b69bcb334a085e87174
   languageName: node
   linkType: hard
 
-"@trpc/react-query@npm:10.37.1":
-  version: 10.37.1
-  resolution: "@trpc/react-query@npm:10.37.1"
+"@trpc/react-query@npm:10.38.5":
+  version: 10.38.5
+  resolution: "@trpc/react-query@npm:10.38.5"
   peerDependencies:
     "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.37.1
-    "@trpc/server": 10.37.1
+    "@trpc/client": 10.38.5
+    "@trpc/server": 10.38.5
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: c9047293041d36d833086782b837a2b9fefcb44329f2288e19acf38c4f3c38dc3c347bc8308286efb8b6f74538839aa637451f70b979de6e06503cf78d4af16e
+  checksum: 7341f2e5cdb19a5fe30fe1d34a0ca4f28e648521f187a64a38911ea096411832014804e044bae79fa3056ce74f736ec281b7014c9695254191a032f12c09cd24
   languageName: node
   linkType: hard
 
-"@trpc/server@npm:10.37.1":
-  version: 10.37.1
-  resolution: "@trpc/server@npm:10.37.1"
-  checksum: 0945bc60e1966f57c5944451a9a24b9d565f50e125e71369882379e6580de4ed2e2575a78c474709876d5e2e849fe0e133658c045484a230158516f59f23d7d7
+"@trpc/server@npm:10.38.5":
+  version: 10.38.5
+  resolution: "@trpc/server@npm:10.38.5"
+  checksum: 15a6fc41de59bb954950d230d6793228c7b347a7f0cb87f793e9c92099d64a6106992e3cac4cab2c29f3c7655d5a8f9162efce0be1f25e7e6276df55e80146b2
   languageName: node
   linkType: hard
 
@@ -23319,6 +23318,7 @@ __metadata:
     node-gyp: ^9.3.1
     prettier: 3.0.2
     sort-package-json: 2.5.1
+    superjson: ^1.13.3
     tamagui: 1.69.0
     ts-node: 10.9.1
     turbo: 1.10.14
@@ -29342,16 +29342,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superjson@npm:1.13.1":
-  version: 1.13.1
-  resolution: "superjson@npm:1.13.1"
-  dependencies:
-    copy-anything: ^3.0.2
-  checksum: 9c8c664a924ce097250112428805ccc8b500018b31a91042e953d955108b8481c156005d836b413940c9fa5f124a3195f55f3a518fe76510a254a59f9151a204
-  languageName: node
-  linkType: hard
-
-"superjson@npm:^1.10.0":
+"superjson@npm:^1.10.0, superjson@npm:^1.13.3":
   version: 1.13.3
   resolution: "superjson@npm:1.13.3"
   dependencies:

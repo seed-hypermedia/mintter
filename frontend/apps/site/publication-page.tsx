@@ -95,7 +95,7 @@ export default function PublicationPage({
         pageTitle={pub?.document?.title}
         siteSubheading={contextGroup?.description}
       />
-      <PageSection.Root flex={1}>
+      <PageSection.Root>
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
@@ -594,6 +594,7 @@ function PublicationContextSidebar({
   const groupContent = trpc.group.listContent.useQuery(
     {
       groupId: group?.id || '',
+      version: group?.version || '',
     },
     {enabled: !!group?.id},
   )

@@ -10,6 +10,7 @@ import {
   Groups,
   Networking,
   Publications,
+  Website,
 } from './client'
 
 export type GRPCClient = {
@@ -23,6 +24,7 @@ export type GRPCClient = {
   publications: PromiseClient<typeof Publications>
   daemon: PromiseClient<typeof Daemon>
   networking: PromiseClient<typeof Networking>
+  website: PromiseClient<typeof Website>
 }
 
 export function createGRPCClient(transport: any): GRPCClient {
@@ -37,5 +39,6 @@ export function createGRPCClient(transport: any): GRPCClient {
     networking: createPromiseClient(Networking, transport),
     groups: createPromiseClient(Groups, transport),
     entities: createPromiseClient(Entities, transport),
+    website: createPromiseClient(Website, transport),
   } as const
 }

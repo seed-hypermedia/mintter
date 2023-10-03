@@ -1,14 +1,4 @@
-import {createPromiseClient} from '@bufbuild/connect'
-import {
-  Accounts,
-  Changes,
-  ContentGraph,
-  Entities,
-  Groups,
-  Publications,
-  unpackDocId,
-} from '@mintter/shared'
-import {transport} from 'client'
+import {createHmId, unpackDocId, unpackHmId} from '@mintter/shared'
 import {
   hmAccount,
   hmChangeInfo,
@@ -16,16 +6,18 @@ import {
   hmLink,
   hmPublication,
 } from 'server/to-json-hm'
-import {HMChangeInfo} from 'server/json-hm'
+import {HMAccount, HMChangeInfo} from 'server/json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
+import {queryClient} from 'client'
 
-const contentGraphClient = createPromiseClient(ContentGraph, transport)
-const publicationsClient = createPromiseClient(Publications, transport)
-const accountsClient = createPromiseClient(Accounts, transport)
-const groupsClient = createPromiseClient(Groups, transport)
-const changesClient = createPromiseClient(Changes, transport)
-const entitiesClient = createPromiseClient(Entities, transport)
+function errWrap<V>(failable: Promise<V>) {
+  return failable.catch((e) => {
+    // throw 'Caught this error.' + e.message
+    // throw new Error('fails')
+    return null
+  })
+}
 
 const publicationRouter = router({
   getPathInfo: procedure
@@ -56,7 +48,7 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {publication: null}
       }
-      const resolvedPub = await publicationsClient
+      const resolvedPub = await queryClient.publications
         .getPublication({
           documentId: input.documentId,
           version: input.versionId || '',
@@ -81,7 +73,7 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {publication: null}
       }
-      const pub = await publicationsClient.getPublication({
+      const pub = await queryClient.publications.getPublication({
         documentId: input.documentId,
         version: input.versionId,
       })
@@ -100,7 +92,7 @@ const publicationRouter = router({
       if (!input.documentId) {
         return {citationLinks: []}
       }
-      const citationList = await contentGraphClient.listCitations({
+      const citationList = await queryClient.contentGraph.listCitations({
         documentId: input.documentId,
       })
       return {
@@ -117,7 +109,7 @@ const publicationRouter = router({
       }),
     )
     .query(async ({input}) => {
-      const pub = await publicationsClient.getPublication({
+      const pub = await queryClient.publications.getPublication({
         documentId: input.documentId,
         version: input.version,
       })
@@ -131,7 +123,7 @@ const publicationRouter = router({
       const downstreamChanges: Map<string, Set<string>> = new Map()
       // pub.changes = pub.changes || []
       const {documentId} = input
-      const {changes} = await changesClient.listChanges({documentId})
+      const {changes} = await queryClient.changes.listChanges({documentId})
       changes.forEach((change) => {
         const hmChange = hmChangeInfo(change)
         hmChange && changesIndex.set(change.id, hmChange)
@@ -200,11 +192,11 @@ const groupRouter = router({
       }),
     )
     .query(async ({input: {pathName, groupId, version}}) => {
-      const groupContent = await groupsClient.listContent({
+      const groupContent = await queryClient.groups.listContent({
         id: groupId,
         version,
       })
-      const group = await groupsClient.getGroup({
+      const group = await queryClient.groups.getGroup({
         id: groupId,
         version,
       })
@@ -212,7 +204,7 @@ const groupRouter = router({
       if (!item) return null
       const itemId = unpackDocId(item)
       if (!itemId?.version) return null // version is required for group content
-      const pub = await publicationsClient.getPublication({
+      const pub = await queryClient.publications.getPublication({
         documentId: itemId.docId,
         version: itemId.version,
       })
@@ -228,15 +220,17 @@ const groupRouter = router({
   get: procedure
     .input(
       z.object({
-        groupId: z.string(),
+        groupId: z.string().optional(),
         version: z.string(),
       }),
     )
     .query(async ({input}) => {
-      const group = await groupsClient.getGroup({
-        id: input.groupId,
-        version: input.version,
-      })
+      const group = await errWrap(
+        queryClient.groups.getGroup({
+          id: input.groupId,
+          version: input.version,
+        }),
+      )
       return {
         group: hmGroup(group),
       }
@@ -249,26 +243,28 @@ const groupRouter = router({
       }),
     )
     .query(async ({input}) => {
-      const list = await groupsClient.listContent({
+      const list = await queryClient.groups.listContent({
         id: input.groupId,
         version: input.version,
       })
       const listedDocs = await Promise.all(
-        Object.entries(list.content).map(async ([pathName, pubUrl]) => {
-          const docId = unpackDocId(pubUrl)
-          if (!docId?.version) return null // version is required for group content
+        Object.entries(list.content)
+          .sort((a, b) => a[0]?.localeCompare(b[0])) // just to make it deterministic
+          .map(async ([pathName, pubUrl]) => {
+            const docId = unpackDocId(pubUrl)
+            if (!docId?.version) return null // version is required for group content
 
-          const pub = await publicationsClient.getPublication({
-            documentId: docId.docId,
-            version: docId.version,
-          })
-          return {
-            pathName,
-            docId,
-            version: docId.version,
-            publication: hmPublication(pub),
-          }
-        }),
+            const pub = await queryClient.publications.getPublication({
+              documentId: docId.docId,
+              version: docId.version,
+            })
+            return {
+              pathName,
+              docId,
+              version: docId.version,
+              publication: hmPublication(pub),
+            }
+          }),
       )
 
       return listedDocs.sort((a, b) => {
@@ -286,14 +282,18 @@ const groupRouter = router({
       }),
     )
     .query(async ({input}) => {
-      const list = await groupsClient.listMembers({
+      const list = await queryClient.groups.listMembers({
         id: input.groupId,
-        version: input.version,
+        // listMembers doesn't actually support version yet, whoops!!
+        // version: input.version,
+        version: '',
       })
-      return Object.entries(list.members || {}).map(([account, role]) => ({
-        account,
-        role,
-      }))
+      return Object.entries(list.members || {})
+        .sort((a, b) => a[0]?.localeCompare(b[0])) // just to make it deterministic
+        .map(([account, role]) => ({
+          account,
+          role,
+        }))
     }),
 })
 
@@ -302,22 +302,61 @@ const accountRouter = router({
     .input(
       z.object({
         accountId: z.string().optional(),
+        // version: z.string().optional(), // disabled because getAccount doesnt accept versions yet
       }),
     )
     .query(async ({input}) => {
-      const account = await accountsClient.getAccount({
-        id: input.accountId,
-      })
+      if (!input.accountId) return {account: null}
+      let account: HMAccount | null = null
+      try {
+        const result = await queryClient.accounts.getAccount({
+          id: input.accountId,
+        })
+        account = hmAccount(result)
+      } catch (e) {
+        if (e.message.match('[not_found]')) {
+          const entityId = createHmId('a', input.accountId)
+          let succeeded = false
+          try {
+            await queryClient.entities.discoverEntity({
+              id: entityId,
+              // version: input.version, // disabled because getAccount doesnt accept versions yet
+            })
+            succeeded = true
+          } catch (e) {}
+          if (succeeded) {
+            try {
+              const result = await queryClient.accounts.getAccount({
+                id: input.accountId,
+              })
+              account = hmAccount(result)
+            } catch (e) {}
+          }
+        }
+      }
+      console.log('getAccount!', account)
       return {
-        account: hmAccount(account),
+        account,
       }
     }),
 })
 
 const siteInfoRouter = router({
   get: procedure.query(async () => {
-    // const siteInfo = await getSiteInfo()
-    return null
+    const siteInfo = await queryClient.website.getSiteInfo({})
+    const groupId = unpackHmId(siteInfo.groupId || '')
+
+    const info = await queryClient.daemon.getInfo({})
+    const peerInfo = await queryClient.networking.getPeerInfo({
+      deviceId: info.deviceId,
+    })
+
+    return {
+      groupEid: groupId?.eid || '',
+      groupId: siteInfo.groupId,
+      version: '', // so, this will result in the site querying the latest group
+      p2pAddresses: peerInfo.addrs,
+    }
   }),
 })
 

@@ -1,21 +1,22 @@
-import {PageSection, H1, styled, XStack, SizableText} from '@mintter/ui'
+import {PageSection, XStack, SizableText} from '@mintter/ui'
 import Head from 'next/head'
 import {NextLink} from './next-link'
+import {trpc} from 'trpc'
 
-export function SiteHead({
-  siteTitle = 'Hypermedia Site',
-  pageTitle,
-  siteSubheading,
-}: {
-  siteTitle?: string
-  pageTitle?: string
-  sectionName?: string
-  siteSubheading?: string
-}) {
+export function SiteHead({pageTitle}: {pageTitle?: string}) {
+  const siteInfo = trpc.siteInfo.get.useQuery()
+  const groupId = siteInfo.data?.groupId
+  const siteGroup = trpc.group.get.useQuery({groupId, version: ''})
+  const siteTitle = siteGroup.data?.group
+    ? siteGroup.data.group.title
+    : 'Hypermedia Site'
+  const siteSubheading = siteGroup.data?.group
+    ? siteGroup.data.group.description
+    : ''
   return (
     <PageSection.Root flexGrow={0}>
       <Head>
-        <title>{siteTitle}</title>
+        <title>{pageTitle}</title>
         {siteSubheading && <meta name="description" content={siteSubheading} />}
       </Head>
       <PageSection.Side />
@@ -38,11 +39,6 @@ export function SiteHead({
               <SizableText size="$6">{siteTitle}</SizableText>
             </NextLink>
           </XStack>
-          {/* {sectionName && (
-            <SizableText size="$6" color="$color10">
-              {`/ ${sectionName}`}
-            </SizableText>
-          )} */}
         </XStack>
         {pageTitle && (
           <XStack marginTop="$7">

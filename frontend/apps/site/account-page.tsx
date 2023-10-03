@@ -14,6 +14,8 @@ import Head from 'next/head'
 import {HMAccount, HMGroup} from 'server/json-hm'
 import {SiteHead} from 'site-head'
 import Footer from './footer'
+import {useRouter} from 'next/router'
+import {trpc} from 'trpc'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
   if (isEmptyObject(account?.profile)) {
@@ -82,35 +84,32 @@ function isEmptyObject(obj: unknown) {
   return JSON.stringify(obj) === '{}'
 }
 
-export default function AccountPage({
-  account,
-  group,
-}: {
-  account: HMAccount
-  group: HMGroup
-}) {
+export default function AccountPage({}: {}) {
+  const router = useRouter()
+  const accountId = String(router.query.accountId)
+  const account = trpc.account.get.useQuery({accountId})
   return (
     <>
       <Head>
-        {account.id && (
+        {accountId && (
           <meta
             name="hyperdocs-entity-id"
-            content={createHmId('a', account.id!)}
+            content={createHmId('a', accountId!)}
           />
         )}
       </Head>
       <SiteHead
-        siteTitle={group.title}
+        // siteTitle={group.title}
         pageTitle="Account Profile"
-        siteSubheading={group.description}
+        // siteSubheading={group.description}
       />
-      <PageSection.Root flex={1}>
+      <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
-          {account ? (
-            <AccountContent account={account} />
+          {account.data?.account ? (
+            <AccountContent account={account.data.account} />
           ) : (
-            <AccountNotFound account={account} />
+            <AccountNotFound accountId={accountId} />
           )}
         </PageSection.Content>
         <PageSection.Side />
@@ -120,8 +119,7 @@ export default function AccountPage({
   )
 }
 
-// TODO: add proper account type
-function AccountNotFound({account}: {account?: any}) {
+function AccountNotFound({accountId}: {accountId?: string}) {
   return (
     <YStack
       paddingVertical="$7"
@@ -137,7 +135,7 @@ function AccountNotFound({account}: {account?: any}) {
         Account not found
       </SizableText>
       <SizableText color="$color9" textAlign="center">
-        ({account.id})
+        ({accountId})
       </SizableText>
     </YStack>
   )

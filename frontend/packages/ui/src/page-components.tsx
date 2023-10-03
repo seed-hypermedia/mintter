@@ -64,6 +64,7 @@ export const SideContainer = styled(YStack, {
 })
 
 const PageSectionRoot = styled(Stack, {
+  flex: 1,
   position: 'relative',
   paddingVertical: '$4',
   // backgroundColor: '$background5',

@@ -5,19 +5,8 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import {
-  createGrpcWebTransport,
-  createPromiseClient,
-  Interceptor,
-} from '@bufbuild/connect-web'
-import {
-  Accounts,
-  Publications,
-  Daemon,
-  Networking,
-  Groups,
-  Website,
-} from '@mintter/shared'
+import {createGrpcWebTransport, Interceptor} from '@bufbuild/connect-web'
+import {createGRPCClient} from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
@@ -78,9 +67,4 @@ export const transport = createGrpcWebTransport({
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
 
-export const publicationsClient = createPromiseClient(Publications, transport)
-export const accountsClient = createPromiseClient(Accounts, transport)
-export const groupsClient = createPromiseClient(Groups, transport)
-export const daemonClient = createPromiseClient(Daemon, transport)
-export const networkingClient = createPromiseClient(Networking, transport)
-export const websiteClient = createPromiseClient(Website, transport)
+export const queryClient = createGRPCClient(transport)

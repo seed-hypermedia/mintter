@@ -62,6 +62,7 @@
     "node-gyp": "^9.3.1",
     "prettier": "3.0.2",
     "sort-package-json": "2.5.1",
+    "superjson": "^1.13.3",
     "tamagui": "1.69.0",
     "ts-node": "10.9.1",
     "turbo": "1.10.14",

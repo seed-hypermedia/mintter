@@ -6,6 +6,7 @@ import {Timestamp} from '@bufbuild/protobuf'
 import {
   Role,
   UnpackedHypermediaId,
+  createHmId,
   createPublicWebHmUrl,
   formattedDate,
   unpackHmId,
@@ -28,21 +29,28 @@ import {format} from 'date-fns'
 import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {PublicationContent} from '../../../publication-page'
-import {GroupView, getGroupPageProps, getGroupView} from '../../../server/group'
+import {prefetchGroup, getGroupView} from '../../../server/group'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
+import {getPageProps, serverHelpers} from 'server/ssr-helpers'
+import {useRouter} from 'next/router'
 
-export default function GroupPage({
-  groupId,
-  version = '',
-  view,
-}: GroupPageProps) {
+export default function GroupPage({}: GroupPageProps) {
+  const router = useRouter()
+  const view = getGroupView(router.query.view)
+  const version = router.query.v ? String(router.query.v) : ''
+  const siteInfo = trpc.siteInfo.get.useQuery()
+  const groupEid = router.query.groupEid
+    ? String(router.query.groupEid)
+    : siteInfo.data?.groupEid || ''
+  const groupId = createHmId('g', groupEid)
   const group = trpc.group.get.useQuery({
     groupId,
     version,
   })
   const groupContent = trpc.group.listContent.useQuery({
     groupId,
+    version: group?.data?.group?.version || '',
   })
 
   const loadedGroup = group.data?.group
@@ -100,11 +108,9 @@ export default function GroupPage({
         ) : null}
       </Head>
       <SiteHead
-        siteTitle={loadedGroup?.title}
         pageTitle={frontPageItem?.publication?.document?.title || undefined}
-        siteSubheading={loadedGroup?.description}
       />
-      <PageSection.Root flex={1}>
+      <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content>{mainView}</PageSection.Content>
         <PageSection.Side>
@@ -123,9 +129,14 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const {params, query} = context
   const groupEid = params?.groupEid ? String(params.groupEid) : undefined
+  const version = query.v ? String(query.v) : ''
   if (!groupEid) return {notFound: true}
   const view = getGroupView(query.view)
-  return await getGroupPageProps({groupEid, context, view, version: ''})
+  const groupId = createHmId('g', groupEid)
+  const helpers = serverHelpers({})
+  await prefetchGroup(helpers, groupId, version, view)
+
+  return {props: await getPageProps(helpers, context, {})}
 }
 
 function GroupOwnerSection({owner}: {owner: string}) {
@@ -137,10 +148,12 @@ function GroupOwnerSection({owner}: {owner: string}) {
   )
 }
 
-function GroupEditorsSection({groupId}: {groupId: string}) {
+function GroupEditorsSection({group}: {group: HMGroup}) {
   const groupMembers = trpc.group.listMembers.useQuery({
-    groupId,
+    groupId: group.id || '',
+    version: group.version,
   })
+  console.log('groupMembers', groupMembers.data, group.id, group.version)
   if (!groupMembers.data) return null
   const editors = groupMembers.data.filter(
     (member) => member.role === Role.EDITOR,
@@ -184,7 +197,7 @@ function GroupMetadata({
       {group.ownerAccountId && (
         <GroupOwnerSection owner={group.ownerAccountId} />
       )}
-      {group.id && <GroupEditorsSection groupId={groupId} />}
+      {group.id && <GroupEditorsSection group={group} />}
       {time && <LastUpdateSection time={time} />}
     </>
   )
@@ -279,8 +292,4 @@ function FrontDoc({
   return <PublicationContent publication={item?.publication} />
 }
 
-export type GroupPageProps = {
-  groupId: string
-  version: string
-  view: GroupView
-}
+export type GroupPageProps = {}
