@@ -253,9 +253,19 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
     versionId: unpacked?.version || '',
   })
 
-  return pub.data?.document?.children?.map((block) => {
-    return <StaticBlockNode block={block} key={block?.block?.id} />
-  })
+  return (
+    <YStack
+      gap="$4"
+      paddingHorizontal={54}
+      maxWidth={664}
+      marginHorizontal="auto"
+      width="90%"
+    >
+      {pub.data?.document?.children?.map((block) => {
+        return <StaticBlockNode block={block} key={block?.block?.id} />
+      })}
+    </YStack>
+  )
 }
 
 function useRoughTime(): bigint {
@@ -499,14 +509,8 @@ export default function GroupPage() {
                     paddingHorizontal={0}
                     minHeight="$6"
                   >
-                    <YStack
-                      paddingHorizontal={54}
-                      maxWidth={664}
-                      marginHorizontal="auto"
-                      width="90%"
-                    >
-                      <PublicationDisplay urlWithVersion={frontDocumentUrl} />
-                    </YStack>
+                    <PublicationDisplay urlWithVersion={frontDocumentUrl} />
+
                     <XStack
                       gap="$2"
                       position="absolute"

@@ -67,7 +67,7 @@ function InlineContentView({
     [type],
   )
   return (
-    <SizableText
+    <Text
       fontWeight={type == 'heading' ? 'bold' : undefined}
       color={isLink ? '$blue10' : undefined}
       textDecorationLine={isLink ? 'underline' : undefined}
@@ -90,21 +90,24 @@ function InlineContentView({
             textDecorationLine = 'line-through'
           }
           return (
-            <SizableText
+            <Text
               key={`${content.type}-${index}`}
               textDecorationLine={textDecorationLine || undefined}
               fontStyle={content.styles.italic ? 'italic' : undefined}
               fontFamily={content.styles.code ? '$mono' : '$body'}
-              size={size}
+              fontWeight={content.styles.bold ? 'bold' : undefined}
+              fontSize={size}
               color={isLink ? '$blue10' : undefined}
+              whiteSpace="pre-wrap"
+              lineHeight={24}
             >
               {content.text}
-            </SizableText>
+            </Text>
           )
         }
         if (content.type === 'link') {
           return (
-            <SizableText
+            <Text
               tag="a"
               className={isHypermediaScheme(content.href) ? 'hm-link' : 'link'}
               key={index}
@@ -118,12 +121,12 @@ function InlineContentView({
               }}
             >
               <InlineContentView inline={content.content} type={type} isLink />
-            </SizableText>
+            </Text>
           )
         }
         return null
       })}
-    </SizableText>
+    </Text>
   )
 }
 
