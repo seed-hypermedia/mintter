@@ -148,24 +148,46 @@ export function useFullReferenceUrl(
     pubContext: pubRoute?.pubContext,
     enabled: !!pubRoute?.documentId,
   })
+  const contextGroupId =
+    pubRoute?.pubContext?.key === 'group'
+      ? pubRoute.pubContext.groupId
+      : undefined
+  const contextGroup = useGroup(contextGroupId)
+
   if (!pubRoute) return getReferenceUrlOfRoute(route)
   const docId = unpackHmId(pubRoute.documentId)
   if (!docId) return null
-  if (pub.data?.version)
+  if (pubRoute.versionId) {
     return {
-      url: createPublicWebHmUrl('d', docId.eid, {version: pub.data?.version}),
+      url: createPublicWebHmUrl('d', docId.eid, {version: pubRoute.versionId}),
       label: 'Doc Version',
     }
+  }
+  const hostname = contextGroup.data?.siteInfo?.baseUrl
+  if (pub.data?.version) {
+    // here we are providing a web URL to the site, so we should ideally make sure that this version actually appears on the site
+    // the way we do that for now is by returning a special case ABOVE this, when the version is set on the route
+    return {
+      url: createPublicWebHmUrl('d', docId.eid, {
+        version: pub.data?.version,
+        hostname,
+      }),
+      label: hostname ? 'Site Version' : 'Doc Version',
+    }
+  }
 
-  const reference = getReferenceUrlOfRoute(route)
+  const reference = getReferenceUrlOfRoute(route, hostname)
   return reference
 }
 
-function getReferenceUrlOfRoute(route: NavRoute) {
+function getReferenceUrlOfRoute(
+  route: NavRoute,
+  hostname?: string | undefined,
+) {
   if (route.key === 'group') {
     const groupId = unpackHmId(route.groupId)
     if (!groupId || groupId.type !== 'g') return null
-    const url = createPublicWebHmUrl('g', groupId.eid)
+    const url = createPublicWebHmUrl('g', groupId.eid, {hostname})
     return {
       label: 'Group URL',
       url,
@@ -174,7 +196,10 @@ function getReferenceUrlOfRoute(route: NavRoute) {
   if (route.key === 'publication') {
     const docId = unpackHmId(route.documentId)
     if (!docId || docId.type !== 'd') return null
-    const url = createPublicWebHmUrl('d', docId.eid, {version: route.versionId})
+    const url = createPublicWebHmUrl('d', docId.eid, {
+      version: route.versionId,
+      hostname,
+    })
     if (!url) return null
     return {
       label: 'Doc URL',
@@ -182,7 +207,7 @@ function getReferenceUrlOfRoute(route: NavRoute) {
     }
   }
   if (route.key === 'account') {
-    const url = createPublicWebHmUrl('a', route.accountId)
+    const url = createPublicWebHmUrl('a', route.accountId, {hostname})
     if (!url) return null
     return {
       label: 'Account URL',
