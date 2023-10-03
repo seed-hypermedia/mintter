@@ -143,7 +143,13 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
   return (
-    <img src={`${BACKEND_FILE_URL}/${cid}`} alt={`image block: ${block.id}`} />
+    <XStack
+      tag="img"
+      display="block"
+      width="100%"
+      src={`${BACKEND_FILE_URL}/${cid}`}
+      alt={`image block: ${block.id}`}
+    />
   )
 }
 
