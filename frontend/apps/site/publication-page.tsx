@@ -215,7 +215,9 @@ function InlineContentView({
           return <span key={index}>{children}</span>
         }
         if (content.type === 'link') {
-          const href = idToUrl(content.href, null)
+          const href = isHypermediaScheme(content.href)
+            ? idToUrl(content.href, null)
+            : content.href
           return (
             href && (
               <a
