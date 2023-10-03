@@ -377,6 +377,12 @@ export const router = t.router({
       const prevWindowBounds = win?.getBounds()
       const bounds = input.bounds
         ? input.bounds
+        : prevWindowBounds
+        ? {
+            ...prevWindowBounds,
+            x: prevWindowBounds.x + 60,
+            y: prevWindowBounds.y + 60,
+          }
         : {
             width: 1200,
             height: 800,
