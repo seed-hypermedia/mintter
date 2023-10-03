@@ -887,7 +887,7 @@ export function DraftPublicationButtons() {
         navReplace({
           key: 'publication',
           documentId: draftId,
-          versionId: publishedDoc.version,
+          versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
           pubContext: pubContext,
         })
       }
