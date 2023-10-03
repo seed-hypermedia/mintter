@@ -608,11 +608,12 @@ export function PublishedMeta({
               version: publication?.version || '',
             },
           )}
+          style={{textDecoration: 'none'}}
         >
           {publishTimeRelative}{' '}
           {publishTimeDate && (
-            <SizableText size="$1" opacity={0.5}>
-              ( {format(publishTimeDate, 'EEEE, MMMM do, yyyy')} )
+            <SizableText size="$1" color="$color11" marginLeft="$2">
+              {format(publishTimeDate, 'EEEE, MMMM do, yyyy')}
             </SizableText>
           )}
         </NextLink>
