@@ -15,7 +15,6 @@ import {
 import {
   Button,
   ButtonText,
-  Footer,
   PageSection,
   SideSection,
   SideSectionTitle,
@@ -35,6 +34,7 @@ import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRouter} from 'next/router'
+import Footer from 'footer'
 
 export default function GroupPage({}: GroupPageProps) {
   const router = useRouter()
@@ -121,7 +121,9 @@ export default function GroupPage({}: GroupPageProps) {
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
-      <Footer />
+      <Footer
+        hmUrl={createHmId('g', groupEid, {version: group.data?.group?.version})}
+      />
     </YStack>
   )
 }
@@ -155,7 +157,6 @@ function GroupEditorsSection({group}: {group: HMGroup}) {
     groupId: group.id || '',
     version: group.version,
   })
-  console.log('groupMembers', groupMembers.data, group.id, group.version)
   if (!groupMembers.data) return null
   const editors = groupMembers.data.filter(
     (member) => member.role === Role.EDITOR,

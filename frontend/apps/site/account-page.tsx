@@ -114,7 +114,7 @@ export default function AccountPage({}: {}) {
         </PageSection.Content>
         <PageSection.Side />
       </PageSection.Root>
-      <Footer />
+      <Footer hmUrl={createHmId('a', accountId)} />
     </>
   )
 }

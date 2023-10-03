@@ -9,6 +9,7 @@ import {
   ParagraphBlock,
   PresentationBlock,
   Publication,
+  createHmDocLink,
   createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
@@ -79,7 +80,6 @@ export default function PublicationPage({
   })
 
   const pub = publication.data?.publication
-
   return (
     <>
       <Head>
@@ -136,7 +136,7 @@ export default function PublicationPage({
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
-      <Footer />
+      <Footer hmUrl={createHmDocLink(documentId, pub?.version)} />
     </>
   )
 }
