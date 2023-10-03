@@ -129,9 +129,14 @@ function DepPreview({
     createTime && format(new Date(createTime), 'd MMMM yyyy • HH:mm')
   const docId = publication?.document?.id
   if (!docId || !dep) return null
+  const docIds = unpackDocId(docId)
+  if (!docIds?.eid) return null
   return (
     <NextLink
-      href={getDocSlugUrl(pathName, docId, dep?.version)}
+      href={createPublicWebHmUrl('d', docIds?.eid, {
+        version: dep?.version,
+        hostname: null,
+      })}
       style={{textDecoration: 'none'}}
     >
       {displayAuthor ? (
@@ -513,19 +518,6 @@ export function PublicationMetadata({
   )
 }
 
-function getDocSlugUrl(
-  pathName: string | undefined,
-  docId: string,
-  versionId?: string,
-  blockRef?: string,
-) {
-  let url = `/d/${docId}`
-  if (pathName) url = pathName === '/' ? '/' : `/${pathName}`
-  if (versionId) url += `?v=${versionId}`
-  if (blockRef) url += `#${blockRef}`
-  return url
-}
-
 function LatestVersionBanner({
   record,
   pathName,
@@ -540,9 +532,15 @@ function LatestVersionBanner({
   const publishTimeRelative = useFormattedTime(record?.publishTime, true)
   if (!pathName || !record) return null
 
+  const docId = unpackDocId(record.documentId)
+  if (!docId?.eid) return null
+
   return (
     <NextLink
-      href={getDocSlugUrl(pathName, record.documentId, record.versionId)}
+      href={createPublicWebHmUrl('d', docId?.eid, {
+        version: record.versionId,
+        hostname: null,
+      })}
       style={{textDecoration: 'none'}}
     >
       <SideSectionTitle>Latest Version:&nbsp;</SideSectionTitle>
