@@ -258,6 +258,7 @@ function GroupContentItem({
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   const groupEid = groupId?.eid
+  const siteInfo = trpc.siteInfo.get.useQuery()
   if (!groupEid) return null
   return (
     <ContentListItem
@@ -273,7 +274,11 @@ function GroupContentItem({
           />
         </>
       }
-      href={groupDocUrl(groupEid, groupVersion, item.pathName)}
+      href={
+        siteInfo.data?.groupEid === groupEid
+          ? `/${item.pathName}`
+          : groupDocUrl(groupEid, groupVersion, item.pathName)
+      }
     />
   )
 }

@@ -98,11 +98,7 @@ export default function AccountPage({}: {}) {
           />
         )}
       </Head>
-      <SiteHead
-        // siteTitle={group.title}
-        pageTitle="Account Profile"
-        // siteSubheading={group.description}
-      />
+      <SiteHead pageTitle="Account Profile" />
       <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
