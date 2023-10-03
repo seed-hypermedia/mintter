@@ -734,9 +734,24 @@ export function useDraftEditor(
                 ref: embedRef,
               },
             })
-            editor.setTextCursorPosition(
-              editor.getTextCursorPosition().nextBlock!,
-            )
+            const { block: currentBlock, nextBlock } = editor.getTextCursorPosition()
+            if (nextBlock) {
+              editor.setTextCursorPosition(
+                nextBlock
+              )
+            } else {
+              editor.insertBlocks([
+                {
+                  type: 'paragraph',
+                  content: []
+                }],
+                currentBlock,
+                'after'
+              )
+              editor.setTextCursorPosition(
+                editor.getTextCursorPosition().nextBlock!
+              )
+            }
           }
           possiblyRemovedBlockIds.delete(block.id)
           const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
