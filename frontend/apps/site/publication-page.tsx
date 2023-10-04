@@ -307,9 +307,7 @@ function StaticImageBlock({block}: {block: ImageBlock}) {
       borderColor="$color4"
       borderWidth={1}
       borderRadius={blockBorderRadius}
-      // marginRight={blockHorizontalPadding}
       overflow="hidden"
-      padding={blockVerticalPadding}
       hoverStyle={{
         backgroundColor: '$color4',
       }}

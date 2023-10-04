@@ -12,3 +12,8 @@ body {
   margin: 0;
   line-height: inherit;
 }
+
+.image {
+  display: block;
+  width: 100%;
+}
