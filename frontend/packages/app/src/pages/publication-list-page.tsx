@@ -22,7 +22,6 @@ import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {copyLinkMenuItem} from '../components/list-item'
 import {queryPublication} from '../models/documents'
-import './publication-list-page.css'
 
 export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   let publications = usePublicationList({trustedOnly})
