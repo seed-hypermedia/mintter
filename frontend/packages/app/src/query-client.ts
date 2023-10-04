@@ -1,4 +1,9 @@
-import {QueryCache, QueryClient, QueryKey} from '@tanstack/react-query'
+import {
+  QueryCache,
+  QueryClient,
+  QueryKey,
+  onlineManager,
+} from '@tanstack/react-query'
 import {toast} from '@mintter/app/src/toast'
 // import {labelOfQueryKey, queryKeys} from './models/query-keys'
 import {JsonValue} from '@bufbuild/protobuf'
@@ -66,3 +71,6 @@ export function getQueryClient(ipc: AppIPC): AppQueryClient {
     invalidate: appInvalidateQueries,
   }
 }
+
+// this is so fucked up, RQ will refuse to run mutations if !isOnline
+onlineManager.setOnline(true)
