@@ -47,6 +47,11 @@ let goDaemonExecutablePath =
     ? devDaemonBinaryPath
     : prodDaemonBinaryPath
 
+let lndhubFlags =
+  process.env.NODE_ENV == 'development'
+    ? '-lndhub.mainnet=false'
+    : '-lndhub.mainnet=true'
+
 console.log(`== ~ goDaemonExecutablePath:`, goDaemonExecutablePath)
 
 const daemonArguments = [
@@ -61,6 +66,8 @@ const daemonArguments = [
 
   '-data-dir',
   userDataDir,
+
+  lndhubFlags,
 ]
 logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)
 const daemonProcess = spawn(goDaemonExecutablePath, daemonArguments, {
