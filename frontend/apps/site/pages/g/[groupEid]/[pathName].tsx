@@ -23,7 +23,7 @@ export default function GroupPublicationPage({}) {
   })
   const groupContent = trpc.group.listContent.useQuery({
     groupId,
-    version: versionQuery,
+    version: group.data?.group?.version,
   })
   if (groupContent.isInitialLoading) return <Spinner />
   if (!groupContent.data) return <Heading>Not found</Heading>
