@@ -77,7 +77,12 @@ export function PanelCard({
               </SizableText>
             )}
             {content && (
-              <SizableText color="$color10" overflow="hidden" maxHeight={69}>
+              <SizableText
+                color="$color10"
+                overflow="hidden"
+                maxHeight={69}
+                fontFamily="$body"
+              >
                 {content}
               </SizableText>
             )}

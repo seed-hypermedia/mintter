@@ -1,13 +1,27 @@
 import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
 import {useAccount} from '@mintter/app/src/models/accounts'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {Change, formattedDate, pluralS} from '@mintter/shared'
+import {
+  Change,
+  formattedDate,
+  formattedDateMedium,
+  pluralS,
+} from '@mintter/shared'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
-import {PanelCard, SizableText, XStack, YStack} from '@mintter/ui'
+import {
+  Avatar,
+  Button,
+  ButtonText,
+  PanelCard,
+  SizableText,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {useMemo} from 'react'
 import {NavRoute, useNavRoute} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
+import {getAvatarUrl} from '../utils/account-url'
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
@@ -28,13 +42,39 @@ function ChangeItem({
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
-
+  const openAccount = () => {
+    navigate({key: 'account', accountId: change.author})
+  }
   const navRoute = useNavRoute()
   const isActive = activeVersion === change.id
-
   const shouldDisplayAuthorName =
     !prevListedChange || change.author !== prevListedChange.change.author
-
+  const changeTimeText = (
+    <SizableText
+      size="$2"
+      textAlign="left"
+      fontWeight={isActive ? 'bold' : 'normal'}
+    >
+      {change.createTime ? formattedDateMedium(change.createTime) : null}
+    </SizableText>
+  )
+  const topRow = shouldDisplayAuthorName ? (
+    <XStack>
+      <Button
+        size="$2"
+        alignItems="center"
+        justifyContent="flex-start"
+        chromeless
+        onPress={openAccount}
+        icon={<AccountLinkAvatar accountId={author?.data?.id} size={20} />}
+      >
+        {author?.data?.profile?.alias || change.author}
+      </Button>
+    </XStack>
+  ) : (
+    <XStack paddingLeft={35}>{changeTimeText}</XStack>
+  )
+  const dateRow = shouldDisplayAuthorName ? changeTimeText : null
   let destRoute: NavRoute | null = null
   if (navRoute.key === 'group') {
     destRoute = {
@@ -53,17 +93,35 @@ function ChangeItem({
     }
   }
   return (
-    <PanelCard
-      disabled={!destRoute}
-      active={isActive}
-      author={author.data}
-      avatar={<AccountLinkAvatar accountId={change.author} />}
-      date={formattedDate(change.createTime)}
+    <YStack
+      marginTop={shouldDisplayAuthorName ? '$4' : undefined}
+      overflow="hidden"
+      borderRadius="$2"
+      backgroundColor={isActive ? '$backgroundHover' : 'transparent'}
+      hoverStyle={{
+        cursor: 'pointer',
+        backgroundColor: isActive ? '$green4' : '$backgroundHover',
+      }}
+      // padding="$4"
+      // paddingVertical="$4"
+
       onPress={() => {
-        console.log('PRESSED')
         destRoute && navigate(destRoute)
       }}
-    />
+      disabled={!destRoute}
+      paddingHorizontal="$4"
+      // group="change"
+      position="relative"
+    >
+      {topRow}
+
+      {dateRow && (
+        <XStack gap="$2">
+          <XStack width={28} />
+          {dateRow}
+        </XStack>
+      )}
+    </YStack>
   )
 }
 
