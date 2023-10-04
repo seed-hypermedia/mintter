@@ -2,7 +2,7 @@ import {Button, Dialog, TextArea, XStack} from '@mintter/ui'
 import {ComponentProps, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {useGRPCClient} from '../app-context'
-import {AppDialog, DialogTitle, DialogDescription} from './dialog'
+import {AppDialog, DialogTitle, DialogDescription, useAppDialog} from './dialog'
 import {UserPlus} from '@tamagui/lucide-icons'
 import {AccessURLRow} from './url'
 import {useDaemonInfo} from '../models/daemon'
@@ -15,12 +15,15 @@ function AddConnectionButton(props: ComponentProps<typeof Button>) {
     </Button>
   )
 }
-function AddConnectionForm(props: {onClose: () => void}) {
+function AddConnectionForm(props: {
+  onClose: () => void
+  input?: string | undefined
+}) {
   const [peer, setPeer] = useState('')
   const grpcClient = useGRPCClient()
   const daemonInfo = useDaemonInfo()
   const deviceId = daemonInfo.data?.deviceId
-  async function handleConnect() {
+  async function handleConnect(peer: string) {
     props.onClose()
     if (peer) {
       const connectionRegexp = /connect-peer\/([\w\d]+)/
@@ -64,34 +67,57 @@ function AddConnectionForm(props: {onClose: () => void}) {
   return (
     <>
       <DialogTitle>Add Connection</DialogTitle>
-      <DialogDescription>
-        Share your device connection URL with your friends:
-      </DialogDescription>
-      {deviceId && (
-        <AccessURLRow
-          url={`${HYPERMEDIA_PUBLIC_WEB_GATEWAY}/connect-peer/${deviceId}`}
-        />
+
+      {props.input ? (
+        <>
+          <DialogDescription>
+            Confirm connection to "{props.input.slice(0, 6)}...
+            {props.input.slice(-6)}"
+          </DialogDescription>
+          <Button onPress={() => handleConnect(props.input)} icon={UserPlus}>
+            Connect
+          </Button>
+        </>
+      ) : (
+        <>
+          <DialogDescription>
+            Share your device connection URL with your friends:
+          </DialogDescription>
+          {deviceId && (
+            <AccessURLRow
+              url={`${HYPERMEDIA_PUBLIC_WEB_GATEWAY}/connect-peer/${deviceId}`}
+            />
+          )}
+          <DialogDescription>
+            Paste other people&apos;s connection URL here:
+          </DialogDescription>
+          <TextArea
+            value={peer}
+            onChangeText={setPeer}
+            multiline
+            numberOfLines={4}
+            data-testid="add-contact-input"
+          />
+          <DialogDescription size={'$1'}>
+            You can also paste the full peer address here.
+          </DialogDescription>
+          <XStack>
+            <Button
+              onPress={() => handleConnect(peer)}
+              disabled={!peer}
+              icon={UserPlus}
+            >
+              Connect
+            </Button>
+          </XStack>
+        </>
       )}
-      <DialogDescription>
-        Paste other people&apos;s connection URL here:
-      </DialogDescription>
-      <TextArea
-        value={peer}
-        onChangeText={setPeer}
-        multiline
-        numberOfLines={4}
-        data-testid="add-contact-input"
-      />
-      <DialogDescription size={'$1'}>
-        You can also paste the full peer address here.
-      </DialogDescription>
-      <XStack>
-        <Button onPress={handleConnect} disabled={!peer} icon={UserPlus}>
-          Connect
-        </Button>
-      </XStack>
     </>
   )
+}
+
+export function useConfirmConnection() {
+  return useAppDialog<string>(AddConnectionForm)
 }
 export function useAddConnection() {
   return null

@@ -11,6 +11,7 @@ import {
   setAppNavDispatch,
 } from './navigation'
 import {decodeRouteFromPath} from './route-encoding'
+import {useConfirmConnection} from '../components/contacts-prompt'
 
 const initRouteEncoded = window.location.pathname.slice(1)
 
@@ -43,6 +44,8 @@ export function NavigationContainer({
   const [navState, dispatch] = useReducer(navStateReducer, initialNav)
   const {send} = useIPC()
 
+  // const confirmConnection = useConfirmConnection()
+
   useEffect(() => {
     send('windowNavState', navState)
   }, [navState, send])
@@ -55,24 +58,8 @@ export function NavigationContainer({
       if (event === 'forward') {
         dispatch({type: 'forward'})
       }
-      if (typeof event === 'object' && event.key === 'connectPeer') {
-        // const route = decodeRouteFromPath(event.value)
-        // dispatch({type: 'replace', route})
-        toast.success(`Connecting to peer ${event.peer.substring(0, 20)}...`)
-      }
     })
   }, [])
-  //   useEffect(() => {
-  //     console.log(
-  //       `${routes.map((r, i) => {
-  //         const {key, ...rest} = r
-  //         return `${i === routeIndex ? '✅' : '⏺️'} ${key} :: ${simpleStringy(
-  //           rest,
-  //         )}`
-  //       }).join(`
-  // `)}`,
-  //     )
-  //   }, [routes, routeIndex])
 
   useEffect(() => {
     setAppNavDispatch(dispatch)
@@ -80,14 +67,6 @@ export function NavigationContainer({
       setAppNavDispatch(null)
     }
   }, [])
-
-  // go to pub with pending edit
-  // resume editing
-  // press forward
-  // draft changes?!
-
-  // start editing pub, add content
-  // second time resume editing, doesnt work
 
   let value = useMemo(
     () => ({
@@ -97,5 +76,23 @@ export function NavigationContainer({
     [navState],
   )
 
-  return <NavContextProvider value={value}>{children}</NavContextProvider>
+  return (
+    <NavContextProvider value={value}>
+      {children}
+      <ConnectionConfirmer />
+    </NavContextProvider>
+  )
+}
+
+function ConnectionConfirmer() {
+  const confirmConnection = useConfirmConnection()
+  useEffect(() => {
+    return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
+      if (typeof event === 'object' && event.key === 'connectPeer') {
+        const peerId = event.peer.substring(0, 20)
+        confirmConnection.open(peerId)
+      }
+    })
+  }, [])
+  return confirmConnection.content
 }
