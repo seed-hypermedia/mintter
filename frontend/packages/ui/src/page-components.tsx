@@ -66,7 +66,7 @@ export const SideContainer = styled(YStack, {
 const PageSectionRoot = styled(Stack, {
   flex: 1,
   position: 'relative',
-  paddingVertical: '$4',
+  // paddingVertical: '$4',
   // backgroundColor: '$background5',
   flexDirection: 'column',
   width: '100%',
@@ -84,6 +84,7 @@ const PageSectionContent = styled(YStack, {
   width: '100%',
   flex: 1,
   maxWidth: 680,
+  paddingLeft: 0,
   alignSelf: 'center',
   $gtSm: {
     flex: 3,
@@ -95,20 +96,23 @@ const PageSectionContent = styled(YStack, {
 })
 
 const PageSectionSide = styled(YStack, {
-  // backgroundColor: 'lightblue',
-  width: '100%',
-  flex: 1,
-  position: 'relative',
-  maxWidth: 640,
-  alignSelf: 'center',
-  padding: '$4',
+  // variants: {
+  //   show: {
+  //     true: {
+  //       padding: '$4',
+  //     },
+  //   },
+  // },
   $gtSm: {
-    padding: '$4',
-    maxWidth: 180,
+    width: '100%',
+    flex: 1,
+    position: 'relative',
+    maxWidth: 640,
+    // alignSelf: 'center',
     alignSelf: 'auto',
   },
   $gtMd: {
-    padding: '$6',
+    // padding: '$6',
     maxWidth: 300,
   },
   // borderWidth: 1,
@@ -120,6 +124,7 @@ export const SideSection = styled(YStack, {
   gap: '$1',
   borderTopColor: '$color6',
   borderTopWidth: 1,
+  marginHorizontal: '$4',
 })
 
 export const SideSectionTitle = styled(SizableText, {

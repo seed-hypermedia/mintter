@@ -38,6 +38,7 @@ import {
   Tooltip,
   XStack,
   YStack,
+  useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import {cidURL} from 'ipfs'
@@ -83,6 +84,9 @@ export default function PublicationPage({
   version?: string | null
   contextGroup?: HMGroup | null
 }) {
+  const media = useMedia()
+
+  console.log(`== ~ media:`, media)
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
     versionId: version || '',
@@ -109,7 +113,9 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
+          display={media.gtSm ? 'inherit' : 'none'}
         />
+
         <PageSection.Content>
           {pub ? (
             <PublicationContent publication={pub} />
@@ -164,6 +170,11 @@ export default function PublicationPage({
             */}
           </YStack>
         </PageSection.Side>
+        <PublicationContextSidebar
+          group={contextGroup}
+          activePathName={pathName || ''}
+          display={media.gtSm ? 'none' : 'inherit'}
+        />
       </PageSection.Root>
       <Footer />
     </>
@@ -730,6 +741,7 @@ function GroupSidebarContent({
 function PublicationContextSidebar({
   group,
   activePathName,
+  ...props
 }: {
   group?: HMGroup | null
   activePathName: string
@@ -748,7 +760,13 @@ function PublicationContextSidebar({
       content={groupContent.data}
     />
   ) : null
-  return <PageSection.Side>{groupSidebarContent}</PageSection.Side>
+
+  console.log(`== ~ groupSidebarContent:`, groupSidebarContent)
+  return (
+    <PageSection.Side show={props.display != 'none'} {...props}>
+      {groupSidebarContent}
+    </PageSection.Side>
+  )
 }
 
 export function StaticFileBlock({block}: {block: FileBlock}) {

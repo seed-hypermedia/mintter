@@ -21,7 +21,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
       </Head>
       <PageSection.Side />
       <PageSection.Content>
-        <XStack gap="$2" alignItems="baseline">
+        <XStack gap="$2" alignItems="baseline" paddingLeft="$4">
           <XStack
             x="$-3"
             borderRadius="$3"
@@ -41,7 +41,13 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
           </XStack>
         </XStack>
         {pageTitle && (
-          <XStack marginTop="$7">
+          <XStack
+            marginTop="$4"
+            $gtSm={{
+              marginTop: '$7',
+            }}
+            paddingLeft="$4"
+          >
             <SizableText
               tag="h1"
               size="$9"
