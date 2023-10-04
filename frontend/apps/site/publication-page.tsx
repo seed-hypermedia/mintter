@@ -4,7 +4,6 @@ import {
   EmbedBlock,
   FileBlock,
   HMBlockChildrenType,
-  HYPERMEDIA_SCHEME,
   HeadingBlock,
   ImageBlock,
   InlineContent,
@@ -30,11 +29,11 @@ import {
   File,
   FontSizeTokens,
   PageSection,
+  Share,
   SideSection,
   SideSectionTitle,
   SizableText,
   Spinner,
-  Text,
   Tooltip,
   XStack,
   YStack,
@@ -45,13 +44,13 @@ import {NextLink} from 'next-link'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {useMemo, useState} from 'react'
+import {DimensionValue} from 'react-native'
 import {WebTipping} from 'web-tipping'
 import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import {DimensionValue} from 'react-native'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -141,7 +140,23 @@ export default function PublicationPage({
             <WebTipping
               docId={documentId}
               editors={pub?.document?.editors || []}
-            />
+            >
+              <Button
+                onPress={() =>
+                  window.open(
+                    createHmDocLink(documentId, pub?.version),
+                    '_blank',
+                  )
+                }
+                size="$2"
+                chromeless
+                iconAfter={Share}
+              >
+                <XStack flex={1} alignItems="center">
+                  <SizableText size="$1">Open in Mintter app</SizableText>
+                </XStack>
+              </Button>
+            </WebTipping>
             {/* 
             // TODO: CRITICAL: add more actions here (open in mintter app)
             // TODO: CRITICAL: make the web tipping button less "prominent"
@@ -149,7 +164,7 @@ export default function PublicationPage({
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
-      <Footer hmUrl={createHmDocLink(documentId, pub?.version)} />
+      <Footer />
     </>
   )
 }

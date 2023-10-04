@@ -16,7 +16,14 @@ import {
 import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
 import {AccountRow} from 'components/account-row'
 import Link from 'next/link'
-import React, {useEffect, useMemo, useReducer, useRef, useState} from 'react'
+import React, {
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {HMAccount} from '@mintter/ui'
@@ -47,10 +54,11 @@ const isTouchDevice =
 export function WebTipping({
   docId,
   editors = [],
-}: {
+  children,
+}: PropsWithChildren<{
   docId?: string
   editors: Array<HMAccount | string | null>
-}) {
+}>) {
   const [open, onOpenChange] = useState<boolean>(false)
 
   return (
@@ -64,14 +72,17 @@ export function WebTipping({
         />
       )}
       <Button
-        icon={Zap}
+        onPress={() => onOpenChange(true)}
+        size="$2"
+        chromeless
+        iconAfter={Zap}
         theme="green"
-        onPress={() => {
-          onOpenChange(true)
-        }}
       >
-        Donate Bitcoin
+        <XStack flex={1}>
+          <SizableText size="$1">Donate Bitcoin</SizableText>
+        </XStack>
       </Button>
+      {children}
     </SideSection>
   )
 }
