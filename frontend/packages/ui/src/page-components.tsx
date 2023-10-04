@@ -80,11 +80,11 @@ const PageSectionRoot = styled(Stack, {
 
 const PageSectionContent = styled(YStack, {
   // backgroundColor: 'lightgreen',
-  padding: '$4',
+  paddingRight: '$4',
+  paddingBottom: '$4',
   width: '100%',
   flex: 1,
   maxWidth: 680,
-  paddingLeft: 0,
   alignSelf: 'center',
   $gtSm: {
     flex: 3,
@@ -96,13 +96,13 @@ const PageSectionContent = styled(YStack, {
 })
 
 const PageSectionSide = styled(YStack, {
-  // variants: {
-  //   show: {
-  //     true: {
-  //       padding: '$4',
-  //     },
-  //   },
-  // },
+  variants: {
+    show: {
+      true: {
+        padding: '$2',
+      },
+    },
+  },
   $gtSm: {
     width: '100%',
     flex: 1,
