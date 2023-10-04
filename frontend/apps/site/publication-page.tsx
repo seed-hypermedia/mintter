@@ -12,6 +12,7 @@ import {
   Publication,
   VideoBlock,
   createHmDocLink,
+  createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
   groupDocUrl,
@@ -476,7 +477,10 @@ function ErrorMessageBlock({message, id}: {message: string; id: string}) {
 type PublicationViewContext = {
   headingDepth?: number
   enableBlockCopy?: boolean
-  ref?: string
+  ref?: {
+    docId?: string
+    docVersion?: string
+  }
 }
 
 function StaticBlockNode({
@@ -517,6 +521,7 @@ function StaticBlockNode({
     ) : null
   const id = block.block?.id || 'unknown-block'
   const isList = childrenType == 'ol' || childrenType == 'ul'
+  const docIds = ctx?.ref?.docId ? unpackDocId(ctx?.ref?.docId) : null
   return (
     <YStack
       paddingVertical="$2"
@@ -560,18 +565,24 @@ function StaticBlockNode({
           borderRadius={blockBorderRadius}
         >
           <Tooltip content={`Copy block reference`}>
-            <Button
-              tag="a"
-              size="$2"
-              chromeless
-              href={`#${id}`}
-              icon={Copy}
-              onPress={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.protocol}//${window.location.host}${ctx.ref}#${id}`,
-                )
-              }}
-            />
+            {docIds?.eid && (
+              <Button
+                tag="a"
+                size="$2"
+                chromeless
+                href={`#${id}`}
+                icon={Copy}
+                onPress={() => {
+                  navigator.clipboard.writeText(
+                    createPublicWebHmUrl('d', docIds?.eid, {
+                      version: ctx?.ref?.docVersion,
+                      blockRef: id,
+                      hostname: `${window.location.protocol}//${window.location.host}`,
+                    }),
+                  )
+                }}
+              />
+            )}
           </Tooltip>
         </XStack>
       )}
@@ -626,18 +637,19 @@ export function PublicationContent({
   }, [publication?.document?.children])
   return (
     <YStack>
-      {blocks
-        ? blocks.map((block, index) => (
-            <StaticBlockNode
-              block={block}
-              key={block.block?.id || index}
-              ctx={{
-                enableBlockCopy: true,
-                ref: `/d/${publication?.document?.id}?v=${publication.version}`,
-              }}
-            />
-          ))
-        : null}
+      {publication?.document?.children?.map((block, index) => (
+        <StaticBlockNode
+          block={block}
+          key={block.block?.id || index}
+          ctx={{
+            enableBlockCopy: true,
+            ref: {
+              docId: publication?.document?.id,
+              docVersion: publication.version,
+            },
+          }}
+        />
+      ))}
     </YStack>
   )
 }
