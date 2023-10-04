@@ -10,6 +10,7 @@ import {HMAccount, HMChangeInfo} from 'server/json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 import {queryClient} from 'client'
+import {Timestamp} from '@bufbuild/protobuf'
 
 function errWrap<V>(failable: Promise<V>) {
   return failable.catch((e) => {
@@ -182,6 +183,14 @@ const publicationRouter = router({
     }),
 })
 
+function sortDocuments(a?: string, b?: string) {
+  let dateA = a ? new Date(a) : 0
+  let dateB = b ? new Date(b) : 1
+
+  // @ts-ignore
+  return dateB - dateA
+}
+
 const groupRouter = router({
   getGroupPath: procedure
     .input(
@@ -249,7 +258,8 @@ const groupRouter = router({
       })
       const listedDocs = await Promise.all(
         Object.entries(list.content)
-          .sort((a, b) => a[0]?.localeCompare(b[0])) // just to make it deterministic
+          // .sort((a, b) => a[0]?.localeCompare(b[0])) // just to make it deterministic
+
           .map(async ([pathName, pubUrl]) => {
             const docId = unpackDocId(pubUrl)
             if (!docId?.version) return null // version is required for group content
@@ -267,12 +277,12 @@ const groupRouter = router({
           }),
       )
 
-      return listedDocs.sort((a, b) => {
-        const aTitle = a?.publication?.document?.title
-        const bTitle = b?.publication?.document?.title
-        if (!aTitle || !bTitle) return 0
-        return aTitle.localeCompare(bTitle)
-      })
+      return listedDocs.sort((a, b) =>
+        sortDocuments(
+          a?.publication?.document?.updateTime,
+          b?.publication?.document?.updateTime,
+        ),
+      )
     }),
   listMembers: procedure
     .input(
