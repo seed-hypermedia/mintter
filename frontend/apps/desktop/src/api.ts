@@ -109,8 +109,9 @@ type AppWindow = {
 const userData = app.getPath('userData')
 log('App UserData: ', userData)
 
+const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
 let windowsState =
-  (store.get('WindowState-v002') as Record<string, AppWindow>) ||
+  (store.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
   ({} as Record<string, AppWindow>)
 
 function getAWindow() {
@@ -149,7 +150,7 @@ app.addListener('before-quit', () => {
 
 function setWindowsState(newWindows: Record<string, AppWindow>) {
   windowsState = newWindows
-  store.set('WindowState', newWindows)
+  store.set(WINDOW_STATE_STORAGE_KEY, newWindows)
 }
 
 function deleteWindowState(windowId: string) {

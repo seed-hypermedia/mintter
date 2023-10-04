@@ -1,5 +1,8 @@
 import * as logger from 'electron-log'
-console.log('Logs will be written to ' + logger.transports.file)
+console.log(
+  '== Logs will be written here: ',
+  logger.transports.file.getFile().path,
+)
 
 export function log(...input: any[]) {
   console.log(...input)
