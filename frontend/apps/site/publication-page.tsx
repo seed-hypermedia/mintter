@@ -157,10 +157,10 @@ export default function PublicationPage({
                 }
                 size="$2"
                 chromeless
-                iconAfter={Share}
+                icon={Share}
               >
                 <XStack flex={1} alignItems="center">
-                  <SizableText size="$1">Open in Mintter app</SizableText>
+                  <SizableText size="$2">Open in Mintter app</SizableText>
                 </XStack>
               </Button>
             </WebTipping>

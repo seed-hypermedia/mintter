@@ -75,11 +75,11 @@ export function WebTipping({
         onPress={() => onOpenChange(true)}
         size="$2"
         chromeless
-        iconAfter={Zap}
+        icon={Zap}
         theme="green"
       >
         <XStack flex={1}>
-          <SizableText size="$1">Donate Bitcoin</SizableText>
+          <SizableText size="$2">Donate Bitcoin</SizableText>
         </XStack>
       </Button>
       {children}
@@ -347,6 +347,7 @@ function CreateInvoiceStep({
       sendWeblnPayment(resp.pr)
         .then((output) => {
           console.log('Done Paying with webln', output)
+          if (!output) return
           onComplete(true)
         })
         .catch((e) => {

@@ -14,7 +14,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     ? siteGroup.data.group.description
     : ''
   return (
-    <PageSection.Root flexGrow={0}>
+    <PageSection.Root flexGrow={0} paddingTop="$4" $gtMd={{paddingTop: '$6'}}>
       <Head>
         <title>{pageTitle}</title>
         {siteSubheading && <meta name="description" content={siteSubheading} />}
@@ -26,14 +26,18 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
             x="$-3"
             borderRadius="$3"
             paddingHorizontal="$3"
-            paddingBottom="$2"
+            paddingVertical="$1"
             hoverStyle={{backgroundColor: '$color6'}}
             alignItems="center"
           >
             <NextLink
               href="/"
               aria-label="home page"
-              style={{textDecoration: 'none'}} // for some reason this is needed instead of tamagui style
+              style={{
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+              }} // for some reason this is needed instead of tamagui style
               prefetch
             >
               <SizableText size="$6">{siteTitle}</SizableText>
