@@ -519,7 +519,16 @@ function PayInvoiceStep({
         Now scan this with your wallet and pay to the creators!
       </Dialog.Description>
       <YStack padding="$3" gap="$3" alignItems="center" justifyContent="center">
-        {invoice && <QRCode size={400} value={invoice.payload} />}
+        {invoice && (
+          <YStack height="auto" maxWidth={64} alignSelf="center" width="100%">
+            <QRCode
+              size={256}
+              style={{height: 'auto', maxWidth: '100%', width: '100%'}}
+              value={invoice.payload}
+              viewBox={`0 0 256 256`}
+            />
+          </YStack>
+        )}
         <Button
           chromeless
           onPress={() => {
@@ -528,8 +537,7 @@ function PayInvoiceStep({
             toast.success('Copied Invoice correctly!')
           }}
         >
-          or <SizableText fontWeight="700">Copy</SizableText> the invoice and
-          pay it however you want
+          copy invoice
         </Button>
       </YStack>
     </>
@@ -611,8 +619,8 @@ function DontationDialog({
               },
             },
           ]}
-          maxWidth="100vw"
-          maxHeight="100vh"
+          maxWidth="90vw"
+          maxHeight="90vh"
           margin={20}
           overflow="scroll"
           x={0}
