@@ -520,7 +520,7 @@ function PayInvoiceStep({
       </Dialog.Description>
       <YStack padding="$3" gap="$3" alignItems="center" justifyContent="center">
         {invoice && (
-          <YStack height="auto" maxWidth={64} alignSelf="center" width="100%">
+          <YStack height="auto" maxWidth={400} alignSelf="center" width="100%">
             <QRCode
               size={256}
               style={{height: 'auto', maxWidth: '100%', width: '100%'}}
