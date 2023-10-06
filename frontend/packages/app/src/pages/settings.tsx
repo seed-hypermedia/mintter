@@ -311,10 +311,6 @@ function AppSettings() {
   const grpcClient = useGRPCClient()
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
-  async function onReloadSync() {
-    await grpcClient.daemon.forceSync({})
-    toast.success('reload sync successful!')
-  }
 
   return (
     <YStack gap="$5">
@@ -408,9 +404,6 @@ function AppSettings() {
         </TableList.Item>
       </TableList>
       <Separator />
-      <YStack>
-        <Button onPress={onReloadSync}>Reload Database</Button>
-      </YStack>
     </YStack>
   )
 }
