@@ -10,6 +10,7 @@ import {
   ParagraphBlock,
   PresentationBlock,
   Publication,
+  UnpackedHypermediaId,
   VideoBlock,
   createHmDocLink,
   createPublicWebHmUrl,
@@ -688,6 +689,64 @@ function getBlockNodeById(
   return res || null
 }
 
+export function useGroupContentUrl(
+  groupEid: string | undefined,
+  groupVersion?: string,
+  pathName?: string,
+) {
+  const siteInfo = trpc.siteInfo.get.useQuery()
+  if (!groupEid) return null
+  const rootPathName = pathName === '/' ? '/' : pathName
+  return siteInfo.data?.groupEid === groupEid
+    ? rootPathName
+    : groupDocUrl(groupEid, groupVersion, pathName || '/')
+}
+
+function GroupSidebarContentItem({
+  item,
+  groupVersion,
+  groupId,
+  activePathName,
+}: {
+  item: ContentItem
+  groupVersion: string | undefined
+  groupId: UnpackedHypermediaId
+  activePathName: string
+}) {
+  const contentUrl = useGroupContentUrl(
+    groupId.eid,
+    groupVersion,
+    item.pathName,
+  )
+  if (!contentUrl) return null
+  return (
+    <Button
+      key={item.pathName}
+      iconAfter={activePathName === item.pathName ? <ArrowRight /> : null}
+      tag="a"
+      href={contentUrl}
+      size="$3"
+      chromeless
+      justifyContent="flex-start"
+      backgroundColor={
+        activePathName === item.pathName ? '$backgroundHover' : 'transparent'
+      }
+      hoverStyle={{
+        backgroundColor: '$backgroundHover',
+      }}
+    >
+      {item?.publication?.document?.title}
+    </Button>
+  )
+}
+
+type ContentItem = {
+  publication: null | HMPublication
+  pathName: string
+  version: string
+  docId: string
+}
+
 function GroupSidebarContent({
   group,
   activePathName,
@@ -695,12 +754,7 @@ function GroupSidebarContent({
 }: {
   activePathName: string
   group?: HMGroup
-  content?: Array<null | {
-    publication: null | HMPublication
-    pathName: string
-    version: string
-    docId: string
-  }>
+  content?: Array<null | ContentItem>
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   return (
@@ -713,25 +767,12 @@ function GroupSidebarContent({
       {content?.map((item) => {
         if (!item || !groupId?.eid) return null
         return (
-          <Button
-            key={item.pathName}
-            iconAfter={activePathName === item.pathName ? <ArrowRight /> : null}
-            tag="a"
-            href={groupDocUrl(groupId?.eid, group?.version, item.pathName)}
-            size="$3"
-            chromeless
-            justifyContent="flex-start"
-            backgroundColor={
-              activePathName === item.pathName
-                ? '$backgroundHover'
-                : 'transparent'
-            }
-            hoverStyle={{
-              backgroundColor: '$backgroundHover',
-            }}
-          >
-            {item?.publication?.document?.title}
-          </Button>
+          <GroupSidebarContentItem
+            item={item}
+            groupId={groupId}
+            groupVersion={group?.version}
+            activePathName={activePathName}
+          />
         )
       })}
     </SideSection>

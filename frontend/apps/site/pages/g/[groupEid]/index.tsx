@@ -28,7 +28,7 @@ import {AccountAvatarLink, AccountRow} from 'components/account-row'
 import {format} from 'date-fns'
 import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
-import {PublicationContent} from '../../../publication-page'
+import {PublicationContent, useGroupContentUrl} from '../../../publication-page'
 import {prefetchGroup, getGroupView} from '../../../server/group'
 import {HMGroup, HMPublication} from '../../../server/json-hm'
 import {trpc} from '../../../trpc'
@@ -258,8 +258,8 @@ function GroupContentItem({
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   const groupEid = groupId?.eid
-  const siteInfo = trpc.siteInfo.get.useQuery()
-  if (!groupEid) return null
+  const contentUrl = useGroupContentUrl(groupEid, groupVersion, item.pathName)
+  if (!contentUrl) return null
   return (
     <ContentListItem
       title={item.publication?.document?.title || item.pathName}
@@ -274,11 +274,7 @@ function GroupContentItem({
           />
         </>
       }
-      href={
-        siteInfo.data?.groupEid === groupEid
-          ? `/${item.pathName}`
-          : groupDocUrl(groupEid, groupVersion, item.pathName)
-      }
+      href={contentUrl}
     />
   )
 }
