@@ -1,4 +1,4 @@
-import {useAppContext, useListen} from '@mintter/app/src/app-context'
+import {useAppContext} from '@mintter/app/src/app-context'
 import {
   useDraftList,
   usePublicationList,
@@ -14,6 +14,7 @@ import {toast} from 'react-hot-toast'
 import {useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import './quick-switcher.css'
+import {useListenAppEvent} from '../utils/window-events'
 
 export function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -29,10 +30,10 @@ export function QuickSwitcher() {
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 
-  useListen('open_quick_switcher', () => {
-    console.log('open_quick_switcher')
+  useListenAppEvent('openQuickSwitcher', () => {
     setOpen(true)
   })
+
   const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
 

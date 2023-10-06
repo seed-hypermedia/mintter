@@ -24,6 +24,7 @@ import {createIPC} from './ipc'
 import './root.css'
 import type {StateStream} from './stream'
 import {client} from './trpc'
+import {useListenAppEvent} from '@mintter/app/src/utils/window-events'
 
 const logger = {
   log: wrapLogger(console.log),
@@ -67,6 +68,14 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
       logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
       return result
     }
+    if (
+      req.method.name === 'ListAccountGroups' ||
+      req.method.name === 'ListAccounts' ||
+      req.method.name === 'ListPeers'
+    ) {
+      return result
+    }
+
     // @ts-ignore
     logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
@@ -169,6 +178,18 @@ function MainApp({
   // @ts-expect-error
   const initNavState = useStream<NavState | null>(window.initNavState)
 
+  useListenAppEvent('triggerPeerSync', () => {
+    grpcClient.daemon
+      .forceSync({})
+      .then(() => {
+        toast.success('Peer Sync Started')
+      })
+      .catch((e) => {
+        console.error('Failed to sync', e)
+        toast.error('Sync failed!')
+      })
+  })
+
   if (daemonState?.t == 'ready' && initNavState) {
     return (
       <AppContextProvider
@@ -239,6 +260,7 @@ function ElectronApp() {
       }),
     [],
   )
+
   return (
     <trpcReact.Provider queryClient={queryClient.client} client={trpcClient}>
       <MainApp queryClient={queryClient} ipc={ipc} />

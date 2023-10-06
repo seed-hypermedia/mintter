@@ -1,8 +1,5 @@
-import type {
-  AppWindowEvent,
-  NavRoute,
-  NavState,
-} from '@mintter/app/src/utils/navigation'
+import type {NavRoute, NavState} from '@mintter/app/src/utils/navigation'
+import type {AppWindowEvent} from '@mintter/app/src/utils/window-events'
 import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
@@ -54,10 +51,8 @@ ipcMain.on('invalidate_queries', (_event, info) => {
   invalidationHandlers.forEach((handler) => handler(info))
 })
 
-ipcMain.on('open_quick_switcher', (_event, info) => {
-  if (getFocusedWindow) {
-    getFocusedWindow()?.webContents.send('open_quick_switcher')
-  }
+ipcMain.on('focusedWindowAppEvent', (_event, info) => {
+  dispatchFocusedWindowAppEvent(info)
 })
 
 ipcMain.on('minimize_window', (_event, _info) => {
@@ -200,16 +195,15 @@ mainMenu.append(
         label: 'Search / Open',
         accelerator: 'CmdOrCtrl+k',
         click: () => {
-          const focusedWindow = getFocusedWindow()
-          if (!focusedWindow) {
-            error(
-              'No focused window to open quick switcher',
-              focusedWindowKey,
-              windowIdCount,
-            )
-          } else {
-            focusedWindow.webContents.send('open_quick_switcher')
-          }
+          dispatchFocusedWindowAppEvent('openQuickSwitcher')
+        },
+      },
+      {type: 'separator'},
+      {
+        label: 'Trigger Sync with Peers',
+        accelerator: 'CmdOrCtrl+Option+r',
+        click: () => {
+          dispatchFocusedWindowAppEvent('triggerPeerSync')
         },
       },
       {type: 'separator'},

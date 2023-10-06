@@ -6,8 +6,6 @@ import {
   unpackHmId,
 } from '@mintter/shared/src/utils/entity-id-url'
 
-// import type {GestureResponderEvent} from 'react-native'
-
 global.Buffer = global.Buffer || Buffer
 
 export type HomeRoute = {key: 'home'}
@@ -173,11 +171,6 @@ let appNavDispatch: null | React.Dispatch<NavAction> = null
 export function setAppNavDispatch(v: null | React.Dispatch<NavAction>) {
   appNavDispatch = v
 }
-
-export type AppWindowEvent =
-  | 'back'
-  | 'forward'
-  | {key: 'connectPeer'; peer: string}
 
 export function dispatchAppNavigation(action: NavAction) {
   if (!appNavDispatch) {

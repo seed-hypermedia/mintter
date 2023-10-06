@@ -1,8 +1,6 @@
 import {ReactNode, useEffect, useMemo, useReducer} from 'react'
 import {useIPC} from '../app-context'
-import {toast} from '../toast'
 import {
-  AppWindowEvent,
   HomeRoute,
   NavContextProvider,
   NavRoute,
@@ -12,6 +10,7 @@ import {
 } from './navigation'
 import {decodeRouteFromPath} from './route-encoding'
 import {useConfirmConnection} from '../components/contacts-prompt'
+import {AppWindowEvent} from './window-events'
 
 const initRouteEncoded = window.location.pathname.slice(1)
 
@@ -51,6 +50,7 @@ export function NavigationContainer({
   }, [navState, send])
 
   useEffect(() => {
+    // @ts-expect-error
     return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
       if (event === 'back') {
         dispatch({type: 'pop'})

@@ -56,6 +56,7 @@ import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
+import {useTriggerWindowEvent} from '../../utils/window-events'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -342,8 +343,8 @@ function NavMenuContentUnpure({
   onRoute: (route: NavRoute) => void
 }) {
   const route = useNavRoute()
-  const {send} = useIPC()
   const {data: account} = useMyAccount()
+  const triggerFocusedWindow = useTriggerWindowEvent()
 
   return (
     <Popover.Content
@@ -445,7 +446,7 @@ function NavMenuContentUnpure({
         <YGroup.Item>
           <MenuItem
             onPress={() => {
-              send('open_quick_switcher')
+              triggerFocusedWindow('openQuickSwitcher')
               onClose()
             }}
             title="Search / Open"
