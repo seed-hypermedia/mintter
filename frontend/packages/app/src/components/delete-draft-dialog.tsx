@@ -1,56 +1,51 @@
-import {DeleteDialog} from '@mintter/app/src/components/delete-dialog'
 import {useDeleteDraft} from '@mintter/app/src/models/documents'
-import {usePopoverState} from '@mintter/app/src/use-popover-state'
-import {Button} from '@mintter/ui'
+import {AlertDialog, Button, XStack} from '@mintter/ui'
+import {useAppDialog} from './dialog'
 
-export function useDeleteDraftDialog({
-  id = null,
-  trigger,
-  onSuccess,
+export function useDeleteDraftDialog() {
+  return useAppDialog(DeleteDraftDialog, {isAlert: true})
+}
+
+function DeleteDraftDialog({
+  onClose,
+  input,
 }: {
-  id: string | null
-  trigger?: (props: {onPress: () => void}) => JSX.Element
-  onSuccess?: () => void
+  onClose: () => void
+  input: {draftId: string; onSuccess?: () => void}
 }) {
-  const dialogState = usePopoverState()
   const deleteDraft = useDeleteDraft({
-    onSuccess: () => {
-      dialogState.onOpenChange(false)
-      onSuccess?.()
-    },
+    onSuccess: input.onSuccess,
   })
+  return (
+    <>
+      <AlertDialog.Title>Discard Draft</AlertDialog.Title>
+      <AlertDialog.Description>
+        Permanently delete this draft document?
+      </AlertDialog.Description>
 
-  return {
-    ...dialogState,
-    deleteDialog: !id ? null : (
-      <DeleteDialog
-        {...dialogState}
-        trigger={trigger}
-        title="Discard Draft"
-        description="Permanently delete this draft document?"
-        onOpenChange={dialogState.onOpenChange}
-        cancelButton={
+      <XStack space="$3" justifyContent="flex-end">
+        <AlertDialog.Cancel asChild>
           <Button
             onPress={() => {
-              dialogState.onOpenChange(false)
+              onClose()
             }}
             chromeless
           >
             Cancel
           </Button>
-        }
-        actionButton={
+        </AlertDialog.Cancel>
+        <AlertDialog.Action asChild>
           <Button
             theme="red"
             onPress={() => {
-              deleteDraft.mutate(id)
-              dialogState.onOpenChange(false)
+              deleteDraft.mutate(input.draftId)
+              onClose()
             }}
           >
             Delete
           </Button>
-        }
-      />
-    ),
-  }
+        </AlertDialog.Action>
+      </XStack>
+    </>
+  )
 }

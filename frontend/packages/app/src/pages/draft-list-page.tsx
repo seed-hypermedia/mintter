@@ -79,9 +79,7 @@ export default function DraftList() {
 
 export function DraftListItem({draft}: {draft: Document}) {
   let title = draft.title || 'Untitled Document'
-  const {deleteDialog, ...dialogState} = useDeleteDraftDialog({
-    id: draft.id,
-  })
+  const deleteDialog = useDeleteDraftDialog()
   const navigate = useClickNavigate()
   const {queryClient, grpcClient} = useAppContext()
   const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
@@ -104,12 +102,12 @@ export function DraftListItem({draft}: {draft: Document}) {
             key: 'delete',
             icon: X,
             onPress: () => {
-              dialogState.onOpenChange(true)
+              deleteDialog.open({draftId: draft.id})
             },
           },
         ]}
       />
-      {deleteDialog}
+      {deleteDialog.content}
     </>
   )
 }

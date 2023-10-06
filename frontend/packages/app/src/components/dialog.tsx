@@ -28,6 +28,11 @@ export const DialogContent = styled(YStack, {
   padding: '$6',
   display: 'flex',
   gap: '$4',
+  borderWidth: 0,
+})
+
+export const AlertDialogContent = styled(AlertDialog.Content, {
+  borderWidth: 0,
 })
 
 export const DialogFooter = styled(XStack, {
@@ -46,7 +51,7 @@ function getComponent(isAlert?: boolean) {
         Trigger: AlertDialog.Trigger,
         Portal: AlertDialog.Portal,
         Overlay: AlertDialog.Overlay,
-        Content: AlertDialog.Content,
+        Content: AlertDialogContent,
       }
     : {
         Root: Dialog,
