@@ -48,8 +48,29 @@ const trpcReact = createTRPCReact<AppRouter>()
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
+    if (
+      req.method.name === 'Register' &&
+      req.service.typeName === 'com.mintter.daemon.v1alpha.Daemon'
+    ) {
+      logger.log(
+        `🔃 to ${req.method.name} `,
+        `${req.message.mnemonic.length} words HIDDEN FROM LOGS`,
+        // @ts-ignore
+        result?.message,
+      )
+      return result
+    }
+    if (
+      req.method.name === 'GenMnemonic' &&
+      req.service.typeName === 'com.mintter.daemon.v1alpha.Daemon'
+    ) {
+      logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
+      return result
+    }
+
     // @ts-ignore
     logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    console.log('lol', req.service)
     return result
   } catch (e) {
     let error = e
@@ -63,7 +84,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 
 const transport = createGrpcWebTransport({
   baseUrl: BACKEND_HTTP_URL,
-  interceptors: import.meta.env.PROD ? undefined : [loggingInterceptor],
+  interceptors: [loggingInterceptor],
 })
 
 function useWindowUtils(ipc: AppIPC): WindowUtils {
