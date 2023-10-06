@@ -67,10 +67,8 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
       logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
       return result
     }
-
     // @ts-ignore
     logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
-    console.log('lol', req.service)
     return result
   } catch (e) {
     let error = e
