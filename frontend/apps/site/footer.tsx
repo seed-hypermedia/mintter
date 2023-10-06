@@ -6,10 +6,14 @@ export default function Footer() {
   return (
     <PageSection.Root tag="footer">
       <PageSection.Side />
-      <PageSection.Content>
-        <SizableText size="$2">
+      <PageSection.Content padding="$4">
+        <SizableText size="$2" color="$color9">
           Powered by{' '}
-          <NextLink href="https://mintter.com" target="_blank">
+          <NextLink
+            href="https://mintter.com"
+            target="_blank"
+            style={{color: 'var(--blue9)'}}
+          >
             MintterHypermedia
           </NextLink>
         </SizableText>

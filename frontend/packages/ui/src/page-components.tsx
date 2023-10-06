@@ -57,7 +57,7 @@ export const SideContainer = styled(YStack, {
   // maxWidth: 300,
   width: '100%',
   gap: '$4',
-  $gtSm: {
+  $gtMd: {
     width: '25%',
     maxWidth: 300,
   },
@@ -66,11 +66,9 @@ export const SideContainer = styled(YStack, {
 const PageSectionRoot = styled(Stack, {
   flex: 1,
   position: 'relative',
-  // paddingVertical: '$4',
-  // backgroundColor: '$background5',
   flexDirection: 'column',
   width: '100%',
-  $gtSm: {
+  $gtMd: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -79,14 +77,23 @@ const PageSectionRoot = styled(Stack, {
 })
 
 const PageSectionContent = styled(YStack, {
-  // backgroundColor: 'lightgreen',
+  variants: {
+    show: {
+      true: {
+        display: 'inherit',
+      },
+      false: {
+        display: 'none',
+      },
+    },
+  },
   paddingRight: '$4',
   paddingBottom: '$4',
   width: '100%',
   flex: 1,
   maxWidth: 680,
   alignSelf: 'center',
-  $gtSm: {
+  $gtMd: {
     flex: 3,
     flexGrow: 1,
     alignSelf: 'auto',
@@ -103,17 +110,17 @@ const PageSectionSide = styled(YStack, {
       },
     },
   },
-  $gtSm: {
+  $gtMd: {
+    // padding: '$6',
     width: '100%',
     flex: 1,
     position: 'relative',
-    maxWidth: 640,
+    maxWidth: 300,
     // alignSelf: 'center',
     alignSelf: 'auto',
   },
-  $gtMd: {
-    // padding: '$6',
-    maxWidth: 300,
+  $gtLg: {
+    maxWidth: 640,
   },
   // borderWidth: 1,
   // borderColor: '$color6',

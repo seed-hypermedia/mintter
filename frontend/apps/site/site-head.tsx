@@ -14,7 +14,11 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     ? siteGroup.data.group.description
     : ''
   return (
-    <PageSection.Root flexGrow={0} paddingTop="$4" $gtMd={{paddingTop: '$6'}}>
+    <PageSection.Root
+      flexGrow={0}
+      paddingTop="$4"
+      $gtMd={{paddingTop: '$6', paddingBottom: '$6'}}
+    >
       <Head>
         <title>{pageTitle}</title>
         {siteSubheading && <meta name="description" content={siteSubheading} />}

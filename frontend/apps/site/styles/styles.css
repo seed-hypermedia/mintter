@@ -11,9 +11,16 @@ html {
 body {
   margin: 0;
   line-height: inherit;
+  overflow-x: hidden;
 }
 
 .image {
   display: block;
   width: 100%;
+}
+
+.link,
+.hm-link {
+  word-wrap: break-word;
+  word-break: break-all;
 }

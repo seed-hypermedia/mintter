@@ -114,7 +114,7 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtSm ? 'inherit' : 'none'}
+          display={media.gtMd ? 'inherit' : 'none'}
         />
 
         <PageSection.Content>
@@ -174,7 +174,7 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtSm ? 'none' : 'inherit'}
+          display={media.gtMd ? 'none' : 'inherit'}
         />
       </PageSection.Root>
       <Footer />
