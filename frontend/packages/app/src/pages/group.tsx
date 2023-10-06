@@ -294,7 +294,7 @@ const GroupStatus = {
   Disconnected: {
     color: 'gray',
     message: (g: Group) =>
-      g.siteInfo?.lastOkSyncTime
+      g.siteInfo?.lastOkSyncTime && g.siteInfo?.lastOkSyncTime?.seconds !== 0n
         ? `Last Synced ${formattedDate(g.siteInfo.lastOkSyncTime)}`
         : `Not Connected`,
   },
@@ -329,19 +329,21 @@ export default function GroupPage() {
   const frontPageId = frontDocumentUrl ? unpackDocId(frontDocumentUrl) : null
   const memberCount = Object.keys(groupMembers.data?.members || {}).length
   const siteBaseUrl = group.data?.siteInfo?.baseUrl
-  const {lastSyncTime} = group.data?.siteInfo || {}
+  const {lastSyncTime, lastOkSyncTime} = group.data?.siteInfo || {}
   const now = useRoughTime()
   const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
   const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+  const hasOkSync = lastOkSyncTime && lastOkSyncTime.seconds !== 0n
   const siteVersionMatches = true
   //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
   // const siteVersionMatches =
   //   group.data?.version === group.data?.siteInfo?.version
-  const siteSyncStatus = isRecentlySynced
-    ? siteVersionMatches
-      ? GroupStatus.SyncedConnected
-      : GroupStatus.UnsyncedConnected
-    : GroupStatus.Disconnected
+  const siteSyncStatus =
+    isRecentlySynced && hasOkSync
+      ? siteVersionMatches
+        ? GroupStatus.SyncedConnected
+        : GroupStatus.UnsyncedConnected
+      : GroupStatus.Disconnected
   const syncStatus = siteBaseUrl ? siteSyncStatus : undefined
   const editGroupInfo = useEditGroupInfoDialog()
   const removeDoc = useRemoveDocFromGroup()
