@@ -89,8 +89,7 @@ function ConnectionConfirmer() {
   useEffect(() => {
     return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
       if (typeof event === 'object' && event.key === 'connectPeer') {
-        const peerId = event.peer.substring(0, 20)
-        confirmConnection.open(peerId)
+        confirmConnection.open(event.peer)
       }
     })
   }, [])
