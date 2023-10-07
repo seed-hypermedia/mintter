@@ -347,6 +347,7 @@ export type EditorDraftState = {
   children: PartialBlock<typeof hmBlockSchema>[]
   title: string
   changes: DraftChangesState
+  webUrl: string
 }
 
 export function useDraftTitle(
@@ -379,6 +380,7 @@ type DraftChangesState = {
   moves: MoveBlockAction[]
   changed: Set<string>
   deleted: Set<string>
+  webUrl?: string
 }
 
 type MoveBlockAction = {
@@ -467,6 +469,7 @@ export function queryDraft(
           deleted: new Set<string>(),
           moves: [],
         },
+        webUrl: serverDraft.webUrl,
         title: serverDraft.title,
         id: serverDraft.id,
       }
@@ -488,104 +491,110 @@ export function useDraftEditor(
   const openUrl = useOpenUrl()
   const grpcClient = useGRPCClient()
   const {invalidate, client} = queryClient
-  async function goSaveDraft() {
-    if (!editor) return
-    const draftState: EditorDraftState | undefined = client.getQueryData([
-      queryKeys.EDITOR_DRAFT,
-      documentId,
-    ])
-    if (!draftState) return
+  const saveDraftMutation = useMutation({
+    mutationFn: async () => {
+      if (!editor) return
+      const draftState: EditorDraftState | undefined = client.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        documentId,
+      ])
+      if (!draftState) return
 
-    const {changed, moves, deleted} = draftState.changes
-    const newTitle = getTitleFromContent(editor.topLevelBlocks)
-    const changes: Array<DocumentChange> = [
-      new DocumentChange({
-        op: {
-          case: 'setTitle',
-          value: newTitle,
-        },
-      }),
-    ]
-
-    if (draft.data?.children.length == 0) {
-      // This means the draft is empty and we need to prepent a "move block" operation so it will not break
-      let firstBlock = editor.topLevelBlocks[0]
-      changes.push(
+      const {changed, moves, deleted} = draftState.changes
+      const newTitle = getTitleFromContent(editor.topLevelBlocks)
+      const changes: Array<DocumentChange> = [
         new DocumentChange({
           op: {
-            case: 'moveBlock',
-            value: {
-              blockId: firstBlock.id,
-              leftSibling: '',
-              parent: '',
+            case: 'setTitle',
+            value: newTitle,
+          },
+        }),
+      ]
+
+      if (draft.data?.children.length == 0) {
+        // This means the draft is empty and we need to prepent a "move block" operation so it will not break
+        let firstBlock = editor.topLevelBlocks[0]
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: firstBlock.id,
+                leftSibling: '',
+                parent: '',
+              },
             },
-          },
-        }),
-      )
-    }
-
-    moves.forEach((move) => {
-      changes.push(
-        new DocumentChange({
-          op: {
-            case: 'moveBlock',
-            value: {
-              blockId: move.blockId,
-              leftSibling: move.leftSibling,
-              parent: move.parent,
-            },
-          },
-        }),
-      )
-    })
-
-    deleted.forEach((blockId) => {
-      changes.push(
-        new DocumentChange({
-          op: {
-            case: 'deleteBlock',
-            value: blockId,
-          },
-        }),
-      )
-    })
-
-    changed.forEach((blockId) => {
-      const currentBlock = editor.getBlock(blockId)
-      const childGroup = getBlockGroup(blockId)
-      if (!currentBlock) return
-      if (childGroup) {
-        currentBlock.props.childrenType = childGroup.type
-          ? childGroup.type
-          : 'group'
-        if (childGroup.start)
-          currentBlock.props.start = childGroup.start.toString()
+          }),
+        )
       }
-      const serverBlock = editorBlockToServerBlock(currentBlock)
-      changes.push(
-        new DocumentChange({
-          op: {
-            case: 'replaceBlock',
-            value: serverBlock,
-          },
-        }),
-      )
-    })
-    client.setQueryData(
-      [queryKeys.EDITOR_DRAFT, documentId],
-      (state: EditorDraftState | undefined) => {
-        if (!state) return undefined
-        return {
-          ...state,
-          changes: createEmptyChanges(),
+
+      moves.forEach((move) => {
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: move.blockId,
+                leftSibling: move.leftSibling,
+                parent: move.parent,
+              },
+            },
+          }),
+        )
+      })
+
+      deleted.forEach((blockId) => {
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'deleteBlock',
+              value: blockId,
+            },
+          }),
+        )
+      })
+
+      changed.forEach((blockId) => {
+        const currentBlock = editor.getBlock(blockId)
+        const childGroup = getBlockGroup(blockId)
+        if (!currentBlock) return
+        if (childGroup) {
+          currentBlock.props.childrenType = childGroup.type
+            ? childGroup.type
+            : 'group'
+          if (childGroup.start)
+            currentBlock.props.start = childGroup.start.toString()
         }
-      },
-    )
-    await grpcClient.drafts.updateDraft({
-      documentId,
-      changes,
-    })
-  }
+        const serverBlock = editorBlockToServerBlock(currentBlock)
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: serverBlock,
+            },
+          }),
+        )
+      })
+      client.setQueryData(
+        [queryKeys.EDITOR_DRAFT, documentId],
+        (state: EditorDraftState | undefined) => {
+          if (!state) return undefined
+          return {
+            ...state,
+            changes: createEmptyChanges(),
+          }
+        },
+      )
+      await grpcClient.drafts.updateDraft({
+        documentId,
+        changes,
+      })
+    },
+    retry: false,
+    onError: (err) => {
+      console.error('Failed to save draft', err)
+    },
+  })
 
   let lastBlocks = useRef<Record<string, HMBlock>>({})
   let lastBlockParent = useRef<Record<string, string>>({})
@@ -775,14 +784,7 @@ export function useDraftEditor(
       clearTimeout(savingDebounceTimout.current)
       savingDebounceTimout.current = setTimeout(() => {
         if (!isReady.current) return
-        goSaveDraft()
-          .then(() => {
-            // todo: signal to the user that draft is saved.
-          })
-          .catch((e) => {
-            console.error(e)
-            toast.error('Failed to save draft')
-          })
+        saveDraftMutation.mutate()
       }, 500)
 
       client.setQueryData(
@@ -923,7 +925,8 @@ export function useDraftEditor(
       ])
       const {changes} = state || {}
       if (!changes) return
-      goSaveDraft()
+      saveDraftMutation
+        .mutateAsync()
         .then(() => {
           client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
           invalidate([queryKeys.GET_DRAFT_LIST])
@@ -938,6 +941,7 @@ export function useDraftEditor(
   return {
     editor,
     query: draft,
+    mutation: saveDraftMutation,
   }
 }
 
@@ -945,6 +949,62 @@ export type HyperDocsEditor = Exclude<
   ReturnType<typeof useDraftEditor>['editor'],
   null
 >
+
+export function useWriteDraftWebUrl(draftId?: string) {
+  const {invalidate, client} = useAppContext().queryClient
+  const grpcClient = useGRPCClient()
+  return useMutation({
+    onMutate: (webUrl: string) => {
+      let title: string
+
+      client.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (draft: EditorDraftState | undefined) => {
+          if (!draft) return undefined
+          return {
+            ...draft,
+            webUrl,
+          }
+        },
+      )
+    },
+    mutationFn: async (webUrl: string) => {
+      const draftData: EditorDraftState | undefined = client.getQueryData([
+        queryKeys.EDITOR_DRAFT,
+        draftId,
+      ])
+      if (!draftData) {
+        throw new Error(
+          'failed to access editor from useWriteDraftWebUrl mutation',
+        )
+      }
+      await grpcClient.drafts.updateDraft({
+        documentId: draftId,
+        // changes: draftData.changes,
+        changes: [
+          new DocumentChange({
+            op: {
+              case: 'setWebUrl',
+              value: webUrl,
+            },
+          }),
+        ],
+      })
+
+      invalidate([queryKeys.GET_DRAFT_LIST])
+      return null
+    },
+    onSuccess: (response, webUrl) => {
+      client.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (draft: EditorDraftState | undefined) => {
+          if (!draft) return draft
+          return {...draft, webUrl}
+        },
+      )
+    },
+  })
+}
 
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
@@ -1044,6 +1104,8 @@ function extractEmbedRefOfLink(block: any): false | string {
     if (leaf.type == 'link') {
       if (isPublicGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
         const hmLink = normlizeHmId(leaf.href)
+
+        console.log(`== ~ extractEmbedRefOfLink ~ hmLink:`, hmLink)
         if (hmLink) return hmLink
       }
     }
