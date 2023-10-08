@@ -50,7 +50,6 @@ import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
-import {fetchWebLink} from './web-links'
 
 export type HMBlock = Block<typeof hmBlockSchema>
 export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>

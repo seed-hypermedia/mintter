@@ -1,4 +1,4 @@
-import {InlineContent} from '@mintter/shared'
+import {InlineContent} from '@mintter/app/blocknote-core'
 import {Block, BlockNode, serverBlockToEditorInline} from '@mintter/shared'
 import {describe, expect, test} from 'vitest'
 import {examples} from '../example-docs'

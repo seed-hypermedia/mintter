@@ -92,6 +92,7 @@ export * from './client-utils'
 export * from './editor-types'
 export * from './hypermedia-presentation'
 export * from './server-to-editor'
+export * from './editor-to-server'
 export {
   Accounts,
   Changes,
