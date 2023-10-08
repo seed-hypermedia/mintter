@@ -135,7 +135,9 @@ export function editorBlockToServerBlock(
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'heading',
-      attributes: {},
+      attributes: {
+        level: editorBlock.props.level,
+      },
       ...extractContent(editorBlock.content),
     })
   }
@@ -193,6 +195,7 @@ export function editorBlockToServerBlock(
 
   if (res) {
     res = extractChildrenType(res, editorBlock)
+    res = addLevelAttr(res, editorBlock)
     return res
   }
 
@@ -210,6 +213,15 @@ function extractChildrenType(
   if (editorBlock.props.start) {
     block.attributes.start = editorBlock.props.start
   }
+
+  return block
+}
+
+function addLevelAttr(
+  block: ServerBlock,
+  editorBlock: EditorBlock<typeof hmBlockSchema>,
+): ServerBlock {
+  block.attributes.level = editorBlock.props.level
 
   return block
 }

@@ -19,7 +19,9 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [],
           children: [],
         },
@@ -35,7 +37,9 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'hello', type: 'text', styles: {}}],
           children: [],
         },
@@ -54,14 +58,18 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'hello', type: 'text', styles: {}}],
           children: [],
         },
         {
           id: 'b',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'world', type: 'text', styles: {}}],
           children: [],
         },
@@ -76,7 +84,9 @@ describe('Editor: ', () => {
         {
           id: '1',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [
             {text: 'hello ', type: 'text', styles: {}},
             {text: 'world', type: 'text', styles: {bold: true}},
@@ -95,7 +105,9 @@ describe('Editor: ', () => {
         {
           id: '1',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [
             {text: 'A', type: 'text', styles: {}},
             {text: 'B', type: 'text', styles: {bold: true}},
@@ -306,8 +318,10 @@ describe('Editor: ', () => {
           id: 'ab',
           type: 'image',
           props: {
-            url: 'ABC',
+            url: 'ipfs://ABC',
             defaultOpen: 'false',
+            name: undefined,
+            childrenType: 'group',
             // junk:
             backgroundColor: 'default',
             textAlignment: 'left',
@@ -315,6 +329,76 @@ describe('Editor: ', () => {
           },
           children: [],
           content: [{type: 'text', text: 'new alt image', styles: {}}],
+        },
+      ])
+    })
+  })
+
+  describe('Server Video Block to Editor: ', () => {
+    test('IPFS video', () => {
+      const result = serverChildrenToEditorChildren([
+        new BlockNode({
+          block: new Block({
+            id: 'ab',
+            type: 'video',
+            text: 'new video alt',
+            annotations: [],
+            attributes: {},
+            ref: 'ipfs://ABC',
+          }),
+        }),
+      ])
+
+      expect(result).toEqual([
+        {
+          id: 'ab',
+          type: 'video',
+          props: {
+            url: 'ipfs://ABC',
+            defaultOpen: 'false',
+            name: undefined,
+            childrenType: 'group',
+            // junk:
+            backgroundColor: 'default',
+            textAlignment: 'left',
+            textColor: 'default',
+          },
+          children: [],
+          content: [{type: 'text', text: 'new video alt', styles: {}}],
+        },
+      ])
+    })
+
+    test('youtube video', () => {
+      const result = serverChildrenToEditorChildren([
+        new BlockNode({
+          block: new Block({
+            id: 'ab',
+            type: 'video',
+            text: 'new video alt',
+            annotations: [],
+            attributes: {},
+            ref: 'https://youtube.com/watch?v=ABC',
+          }),
+        }),
+      ])
+
+      expect(result).toEqual([
+        {
+          id: 'ab',
+          type: 'video',
+          props: {
+            url: 'https://youtube.com/watch?v=ABC',
+            defaultOpen: 'false',
+            name: undefined,
+            childrenType: 'group',
+            // junk:
+            backgroundColor: 'default',
+            textAlignment: 'left',
+            textColor: 'default',
+          },
+          children: [],
+          content: [{type: 'text', text: 'new video alt', styles: {}}],
         },
       ])
     })
@@ -344,6 +428,7 @@ describe('Editor: ', () => {
             backgroundColor: 'default',
             textAlignment: 'left',
             textColor: 'default',
+            childrenType: 'group',
           },
           children: [],
         },

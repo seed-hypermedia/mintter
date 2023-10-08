@@ -1,7 +1,8 @@
 import {useConnectionSummary} from '@mintter/app/models/contacts'
-import {useDaemonOnline, useDaemonReady} from '@mintter/app/node-status-context'
+import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {APP_VERSION} from '@mintter/shared'
 import {
   Button,
   ButtonProps,
@@ -13,7 +14,6 @@ import {
 } from '@mintter/ui'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
-import {APP_VERSION} from '@mintter/shared'
 
 export function FooterButton({
   active,
@@ -67,7 +67,6 @@ function FooterContactsButton() {
 
 export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
-  let isOnline = useDaemonOnline()
 
   return (
     <FooterWrapper>
@@ -76,17 +75,6 @@ export default function Footer({children}: {children?: ReactNode}) {
           <Clock size={10} />
           <SizableText size="$1" userSelect="none">
             Initializing node...
-          </SizableText>
-        </XStack>
-      ) : !isOnline ? (
-        <XStack alignItems="center">
-          <SizableText
-            size="$1"
-            userSelect="none"
-            color="$color9"
-            paddingHorizontal="$2"
-          >
-            You are Offline
           </SizableText>
         </XStack>
       ) : null}

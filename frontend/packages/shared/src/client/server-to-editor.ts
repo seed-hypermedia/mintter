@@ -1,4 +1,3 @@
-import {getCIDFromIPFSUrl} from '../utils'
 import {
   Annotation,
   Block,
@@ -175,7 +174,17 @@ export function partialBlockToStyledText({
 export type EditorChildrenType = HMBlockChildrenType
 
 export type ServerToEditorRecursiveOpts = {
-  headingLevel: number
+  level: number
+}
+
+function extractChildrenType(
+  childrenType: string | undefined,
+): EditorChildrenType {
+  if (childrenType === 'ol') return 'ol'
+  if (childrenType === 'ul') return 'ul'
+  if (childrenType === 'blockquote') return 'blockquote'
+  // console.warn(`Unknown childrenType block attr: ${childrenType}`)
+  return 'group'
 }
 
 export function serverBlockNodeToEditorParagraph(
@@ -189,16 +198,17 @@ export function serverBlockNodeToEditorParagraph(
   // let type: 'p' | 'code' | 'blockquote' = 'p'
   // if (opts?.paragraphType === 'code') type = 'code'
   // if (opts?.paragraphType === 'blockquote') type = 'blockquote'
+  let childrenType = extractChildrenType(block.attributes.childrenType)
   return {
     id: block.id,
     type: 'paragraph',
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
       ...opts,
-      childrenType: block.attributes.childrenType as HMBlockChildrenType,
+      childrenType,
     }),
     props: {
-      type: serverBlock.block.attributes.type as 'p',
+      childrenType,
     },
   }
 }
@@ -217,47 +227,46 @@ export function serverBlockToHeading(
     id: block.id,
     content: serverBlockToEditorInline(block),
     children: serverChildrenToEditorChildren(children, {
-      headingLevel: (opts?.headingLevel || 0) + 1,
+      level: (opts?.level || 0) + 1,
       childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
     props: {
-      level: '2',
+      level: opts?.level || 1,
     },
   }
 
-  if (block.attributes.childrenType) {
-    res.props.childrenType = block.attributes
-      .childrenType as HMBlockChildrenType
-  }
   return res
 }
 
 export function serverChildrenToEditorChildren(
   children: BlockNode[],
-  opts?: ServerToEditorRecursiveOpts & {
+  opts: ServerToEditorRecursiveOpts & {
     childrenType?: EditorChildrenType
     start?: string
-  },
+  } = {level: 1},
 ): EditorBlock[] {
   const childRecursiveOpts: ServerToEditorRecursiveOpts = {
-    headingLevel: opts?.headingLevel || 0,
+    level: opts?.level || 0,
   }
   return children.map((serverBlock) => {
     let res: EditorBlock | null = null
-    if (serverBlock.block?.type === 'image') {
+    if (serverBlock.block?.type == 'image') {
       res = {
         type: 'image',
         id: serverBlock.block.id,
         props: {
-          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',
           defaultOpen: 'false',
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
         },
         content: serverBlockToEditorInline(serverBlock.block),
-        children: serverChildrenToEditorChildren(serverBlock.children),
+        children: [],
       }
     }
 
@@ -266,15 +275,18 @@ export function serverChildrenToEditorChildren(
         type: 'file',
         id: serverBlock.block.id,
         props: {
-          url: getCIDFromIPFSUrl(serverBlock.block.ref) || '',
+          url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
           size: serverBlock.block.attributes.size,
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',
           defaultOpen: 'false',
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
         },
-        children: serverChildrenToEditorChildren(serverBlock.children),
+        children: [],
       }
     }
 
@@ -289,9 +301,12 @@ export function serverChildrenToEditorChildren(
           textColor: 'default',
           textAlignment: 'left',
           defaultOpen: 'false',
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
         },
         content: serverBlockToEditorInline(serverBlock.block),
-        children: serverChildrenToEditorChildren(serverBlock.children),
+        children: [],
       }
     }
 
@@ -304,8 +319,11 @@ export function serverChildrenToEditorChildren(
           backgroundColor: 'default',
           textColor: 'default',
           textAlignment: 'left',
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
         },
-        children: serverChildrenToEditorChildren(serverBlock.children),
+        children: [],
       }
     }
 
@@ -331,6 +349,12 @@ export function serverChildrenToEditorChildren(
 
     if (serverBlock.block?.attributes.start) {
       res.props.start = serverBlock.block.attributes.start
+    }
+
+    if (serverBlock.children.length) {
+      res.children = serverChildrenToEditorChildren(serverBlock.children, {
+        level: childRecursiveOpts.level + 1,
+      })
     }
 
     return res
