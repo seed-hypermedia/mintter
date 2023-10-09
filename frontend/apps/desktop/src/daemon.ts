@@ -95,13 +95,13 @@ daemonProcess.on('spawn', () => {
 
 daemonProcess.stdout.on('data', (data) => {
   const multilineString = data.toString()
-  multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
+  // multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
 })
 let lastStderr = ''
 daemonProcess.stderr.on('data', (data) => {
   const multilineString = data.toString()
   lastStderr = multilineString
-  multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
+  // multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
   if (multilineString.match('INFO') && multilineString.match('DaemonStarted')) {
     updateGoDaemonState({t: 'ready'})
   }

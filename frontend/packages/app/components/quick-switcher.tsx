@@ -4,8 +4,8 @@ import {fetchWebLink} from '@mintter/app/models/web-links'
 import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
+  GRPCClient,
   HYPERMEDIA_SCHEME,
-  createHmId,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -18,6 +18,50 @@ import {useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import './quick-switcher.css'
 import {useListenAppEvent} from '../utils/window-events'
+import {trpc} from '@mintter/desktop/src/trpc'
+import {importWebCapture} from '../models/web-importer'
+import {useGRPCClient} from '../app-context'
+import {AppQueryClient} from '../query-client'
+import {NavRoute} from '../utils/navigation'
+
+function useURLHandler() {
+  const experiments = trpc.experiments.get.useQuery()
+  const webQuery = trpc.webQuery.useMutation()
+  return async (
+    queryClient: AppQueryClient,
+    grpcClient: GRPCClient,
+    search: string,
+  ): Promise<NavRoute> => {
+    if (experiments.data?.webImporting) {
+      const webResult = await webQuery.mutateAsync({webUrl: search})
+      toast('Importing from the web')
+      const imported = await importWebCapture(webResult, grpcClient)
+      const documentId = imported.published.document?.id
+      if (!documentId)
+        throw new Error('Conversion succeeded but documentId is not here')
+      return {
+        key: 'publication',
+        documentId,
+      }
+    } else {
+      const result = await fetchWebLink(queryClient, search)
+      console.log('🌐 Queried Web URL Result', search, result)
+      const blockRef = extractBlockRefOfUrl(search)
+      const fullHmId = hmIdWithVersion(
+        result?.hmId,
+        result?.hmVersion,
+        blockRef,
+      )
+      if (!fullHmId) throw new Error('Failed to fetch web link')
+      const queried =
+        result?.hmId == null ? null : unpackHmIdWithAppRoute(fullHmId)
+      if (queried?.navRoute) {
+        return queried?.navRoute
+      }
+    }
+    throw new Error('Failed to fetch web link')
+  }
+}
 
 export function QuickSwitcher() {
   const [open, setOpen] = useState(false)
@@ -37,8 +81,11 @@ export function QuickSwitcher() {
     setOpen(true)
   })
 
+  const grpcClient = useGRPCClient()
   const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
+
+  const handleUrl = useURLHandler()
 
   return (
     <Command.Dialog
@@ -70,7 +117,6 @@ export function QuickSwitcher() {
               value={search}
               onSelect={() => {
                 const searched = unpackHmIdWithAppRoute(search)
-                console.log('== ~ QuickSwitcher ~ searched', searched)
                 if (
                   (searched?.scheme === HYPERMEDIA_SCHEME ||
                     searched?.hostname === 'hyper.media') &&
@@ -78,27 +124,16 @@ export function QuickSwitcher() {
                 ) {
                   setOpen(false)
                   navigate(searched?.navRoute)
-                } else {
+                } else if (
+                  search.startsWith('http://') ||
+                  search.startsWith('https://')
+                ) {
                   console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
                   setActionPromise(
-                    fetchWebLink(queryClient, search)
-                      .then((result) => {
-                        console.log('🌐 Queried Web URL Result', search, result)
-                        const blockRef = extractBlockRefOfUrl(search)
-                        const fullHmId = hmIdWithVersion(
-                          result?.hmId,
-                          result?.hmVersion,
-                          blockRef,
-                        )
-                        if (!fullHmId) return
-                        const queried =
-                          result?.hmId == null
-                            ? null
-                            : unpackHmIdWithAppRoute(fullHmId)
-                        if (queried?.navRoute) {
-                          setOpen(false)
-                          navigate(queried.navRoute)
-                        }
+                    handleUrl(queryClient, grpcClient, search)
+                      .then((navRoute) => {
+                        setOpen(false)
+                        navigate(navRoute)
                       })
                       .catch((e) => {
                         console.error('🚨 Failed to fetch web link', search, e)

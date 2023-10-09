@@ -1,4 +1,3 @@
-import {NavState} from '@mintter/app/utils/navigation'
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
 import type {GoDaemonState} from './api'

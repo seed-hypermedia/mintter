@@ -26,8 +26,8 @@ import {AppRouter} from './api'
 import {createIPC} from './ipc'
 import './root.css'
 import type {StateStream} from './stream'
-import {client} from './trpc'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
+import {client, trpc} from './trpc'
 
 const logger = {
   log: wrapLogger(console.log),
@@ -47,7 +47,6 @@ function wrapLogger(logFn: (...args: any[]) => void) {
     )
   }
 }
-const trpcReact = createTRPCReact<AppRouter>()
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
@@ -266,7 +265,7 @@ function ElectronApp() {
   }, [queryClient])
   const trpcClient = useMemo(
     () =>
-      trpcReact.createClient({
+      trpc.createClient({
         links: [ipcLink()],
         transformer: superjson,
       }),
@@ -274,9 +273,9 @@ function ElectronApp() {
   )
 
   return (
-    <trpcReact.Provider queryClient={queryClient.client} client={trpcClient}>
+    <trpc.Provider queryClient={queryClient.client} client={trpcClient}>
       <MainApp queryClient={queryClient} ipc={ipc} />
-    </trpcReact.Provider>
+    </trpc.Provider>
   )
 }
 

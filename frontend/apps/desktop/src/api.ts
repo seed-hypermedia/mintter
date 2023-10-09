@@ -11,6 +11,8 @@ import {
   dialog,
   ipcMain,
   nativeTheme,
+  BrowserView,
+  NativeImage,
 } from 'electron'
 import Store from 'electron-store'
 import {createIPCHandler} from 'electron-trpc/main'
@@ -20,6 +22,8 @@ import z from 'zod'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {childLogger, logFilePath, log, warn} from './logger'
 import {BACKEND_HTTP_PORT} from '@mintter/shared'
+import {writeFile} from 'fs-extra'
+import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -122,6 +126,8 @@ const userData = app.getPath('userData')
 log('App UserData: ', userData)
 
 const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
+const EXPERIMENTS_STORAGE_KEY = 'Experiments-v001'
+
 let windowsState =
   (store.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
   ({} as Record<string, AppWindow>)
@@ -360,7 +366,39 @@ function openRoute(route: NavRoute) {
   }
 }
 
+async function uploadFile(file: Blob | string) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+    method: 'POST',
+    body: formData,
+  })
+  const data = await response.text()
+  return data
+}
+
+const experimentsZ = z.object({
+  webImporting: z.boolean().optional(),
+  nostr: z.boolean().optional(),
+})
+
 export const router = t.router({
+  experiments: t.router({
+    get: t.procedure.query(async () => {
+      return ((await store.get(EXPERIMENTS_STORAGE_KEY)) || {}) as Partial<{
+        webImporting?: boolean
+        nostr?: boolean
+      }>
+    }),
+    write: t.procedure.input(experimentsZ).mutation(async ({input}) => {
+      console.log('experiments write input', input)
+      const prevExperimentsState = await store.get(EXPERIMENTS_STORAGE_KEY)
+      const newExperimentsState = {...(prevExperimentsState || {}), ...input}
+      await store.set(EXPERIMENTS_STORAGE_KEY, newExperimentsState)
+      return undefined
+    }),
+  }),
   createAppWindow: t.procedure
     .input(
       z.object({
@@ -521,6 +559,8 @@ export const router = t.router({
         windowBlurred(windowId)
       })
 
+      windowFocused(windowId)
+
       // and load the index.html of the app.
       if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
         browserWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
@@ -534,6 +574,50 @@ export const router = t.router({
       }
 
       // if (!IS_PROD_DESKTOP) browserWindow.webContents.openDevTools()
+    }),
+
+  webQuery: t.procedure
+    .input(
+      z.object({
+        webUrl: z.string(),
+      }),
+    )
+    .mutation(async ({input: {webUrl}}) => {
+      const webView = new BrowserWindow({
+        show: false,
+        width: 1200,
+        height: 1200,
+        webPreferences: {
+          offscreen: true,
+        },
+      })
+      await webView.webContents.loadURL(webUrl)
+      const png = await new Promise<Buffer>((resolve, reject) => {
+        function paintHandler(
+          event: unknown,
+          dirty: unknown,
+          image: NativeImage,
+        ) {
+          webView.webContents.removeListener('paint', paintHandler)
+          resolve(image.toPNG())
+        }
+        webView.webContents.on('paint', paintHandler)
+        setTimeout(() => {
+          reject(new Error('paint timeout'))
+        }, 500)
+      })
+      const pdf = await webView.webContents.printToPDF({
+        scale: 1,
+      })
+      const htmlValue = await webView.webContents.executeJavaScript(
+        "document.getElementsByTagName('html').item(0).outerHTML",
+      )
+      await writeFile('/tmp/test.pdf', pdf)
+      const uploadedPDF = await uploadFile(new Blob([pdf]))
+      const uploadedHTML = await uploadFile(new Blob([htmlValue]))
+      await writeFile('/tmp/test.png', png)
+      const uploadedPNG = await uploadFile(new Blob([htmlValue]))
+      return {uploadedPNG, uploadedPDF, uploadedHTML, htmlValue}
     }),
 
   queryInvalidation: t.procedure.subscription(() => {

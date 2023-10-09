@@ -1,5 +1,3 @@
-import {AvatarForm} from '@mintter/app/components/avatar-form'
-import {TableList} from '@mintter/app/components/table-list'
 import {useMyAccount, useSetProfile} from '@mintter/app/models/accounts'
 import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {usePeerInfo} from '@mintter/app/models/networking'
@@ -7,7 +5,6 @@ import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
 import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
 import {
-  Back,
   Button,
   Card,
   CardProps,
@@ -24,7 +21,6 @@ import {
   Select,
   Separator,
   SizableText,
-  Star,
   Tabs,
   TabsContentProps,
   TextArea,
@@ -35,16 +31,18 @@ import {
   Share,
   ArrowDownRight,
   ExternalLink,
-  View,
+  Checkbox,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, ReactNode, useMemo, useState} from 'react'
+import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {useExportWallet} from '../models/payments'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {useOpenUrl} from '../open-url'
+import {TableList} from '../components/table-list'
+import {AvatarForm} from '../components/avatar-form'
 
 export default function Settings() {
   return (
@@ -76,9 +74,14 @@ export default function Settings() {
           <SizableText flex={1} textAlign="left">
             Wallets
           </SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="experimental" data-testid="tab-experimental">
+          <SizableText flex={1} textAlign="left">
+            Experiments
+          </SizableText>
 
           <SizableText
-            size="$0.5"
+            size="$1"
             fontSize={10}
             paddingHorizontal="$2"
             paddingVertical="$1"
@@ -102,6 +105,9 @@ export default function Settings() {
       </TabsContent>
       <TabsContent value="wallets">
         <WalletsSettings />
+      </TabsContent>
+      <TabsContent value="experimental">
+        <ExperimentsSettings />
       </TabsContent>
     </Tabs>
   )
@@ -210,7 +216,7 @@ function DevicesInfo({}: {}) {
   const account = useMyAccount()
   const devices = account.data?.devices
   return (
-    <YStack data-testid="account-device-list" gap="$3">
+    <YStack gap="$3">
       <Heading>Devices</Heading>
       {devices && ObjectKeys(devices).length
         ? Object.keys(devices).map((deviceId) => (
@@ -292,6 +298,87 @@ function InfoListItem({
         </Tooltip>
       ) : null}
     </TableList.Item>
+  )
+}
+
+export function ExperimentCheckbox({
+  id,
+  experiment,
+  onValue,
+  value,
+}: {
+  id: string
+  experiment: ExperimentType
+  onValue: (v) => void
+  value: boolean
+}) {
+  return (
+    <XStack width={300} alignItems="center" space="$4">
+      <Checkbox
+        id={id}
+        checked={value}
+        onCheckedChange={(v) => {
+          onValue(v)
+        }}
+      >
+        <Checkbox.Indicator>
+          <Check />
+        </Checkbox.Indicator>
+      </Checkbox>
+      <Label htmlFor={id}>
+        <YStack>
+          <Heading marginVertical={0}>
+            {experiment.label} {experiment.emoji}
+          </Heading>
+          <p>{experiment.description}</p>
+        </YStack>
+      </Label>
+    </XStack>
+  )
+}
+
+type ExperimentType = {
+  key: string
+  label: string
+  emoji: string
+  description: string
+}
+const EXPERIMENTS: ExperimentType[] = [
+  {
+    key: 'webImporting',
+    label: 'Web Importing',
+    emoji: '🛰️',
+    description:
+      'When opening a Web URL from the Quick Switcher, automatically convert to a Hypermedia Document.',
+  },
+  // {
+  //   key: 'nostr',
+  //   label: 'Nostr?',
+  //   emoji: '🍀',
+  //   description: 'It is your lucky day.',
+  // },
+]
+
+function ExperimentsSettings({}: {}) {
+  const experiments = trpc.experiments.get.useQuery()
+  const writeExperiment = trpc.experiments.write.useMutation()
+  return (
+    <YStack gap="$3">
+      <Heading>Experiments</Heading>
+      {EXPERIMENTS.map((experiment) => {
+        return (
+          <ExperimentCheckbox
+            key={experiment.key}
+            id={experiment.key}
+            value={!!experiments.data?.[experiment.key]}
+            experiment={experiment}
+            onValue={(isEnabled) => {
+              writeExperiment.mutate({[experiment.key]: isEnabled})
+            }}
+          />
+        )
+      })}
+    </YStack>
   )
 }
 
@@ -395,22 +482,6 @@ Go Build Info:
         <InfoListItem label="Go Build Info" value={daemonInfo?.split('\n')} />
       </TableList>
     </YStack>
-  )
-}
-
-function SettingsNavBack({
-  onDone,
-  title,
-  icon,
-}: {
-  onDone: () => void
-  title: string
-  icon?: ComponentProps<typeof Button>['icon']
-}) {
-  return (
-    <Button size="$2" onPress={onDone} icon={icon || Back}>
-      {title}
-    </Button>
   )
 }
 
