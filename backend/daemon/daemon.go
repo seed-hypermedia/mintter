@@ -172,7 +172,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		return nil
 	})
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Wallet, fm, extraHTTPHandlers...)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTP.Port, a.GRPCServer, &a.clean, a.g, a.Blobs, a.Wallet, fm, extraHTTPHandlers...)
 	if err != nil {
 		return nil, err
 	}

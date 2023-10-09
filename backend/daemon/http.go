@@ -1,10 +1,13 @@
 package daemon
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mintter/backend/graphql"
+	"mintter/backend/hyper"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/wallet"
 	"net"
@@ -16,6 +19,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/ipfs/boxo/blockstore"
+	"github.com/ipfs/go-cid"
+	"github.com/ipld/go-ipld-prime"
+	"github.com/ipld/go-ipld-prime/codec/dagjson"
+	"github.com/ipld/go-ipld-prime/multicodec"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
@@ -46,12 +54,61 @@ func setupIPFSFileHandlers(r *Router, h IPFSFileHandler) {
 }
 
 // setupDebugHandlers sets up the debug endpoints.
-func setupDebugHandlers(r *Router) {
+func setupDebugHandlers(r *Router, blobs *hyper.Storage) {
 	r.Handle("/debug/metrics", promhttp.Handler(), RouteNav)
 	r.Handle("/debug/pprof", http.DefaultServeMux, RoutePrefix|RouteNav)
 	r.Handle("/debug/vars", http.DefaultServeMux, RoutePrefix|RouteNav)
 	r.Handle("/debug/grpc", grpcLogsHandler(), RouteNav)
 	r.Handle("/debug/buildinfo", buildInfoHandler(), RouteNav)
+	r.Handle("/debug/cid/{cid}", makeBlobDebugHandler(blobs.IPFSBlockstore()), 0)
+}
+
+func makeBlobDebugHandler(bs blockstore.Blockstore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cs := mux.Vars(r)["cid"]
+		if cs == "" {
+			http.Error(w, "missing cid", http.StatusBadRequest)
+			return
+		}
+
+		c, err := cid.Decode(cs)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		blk, err := bs.Get(r.Context(), c)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		dec, err := multicodec.LookupDecoder(c.Prefix().Codec)
+		if err != nil {
+			http.Error(w, "unknown decoder "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		node, err := ipld.Decode(blk.RawData(), dec)
+		if err != nil {
+			http.Error(w, "failed to decode IPFS block "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data, err := ipld.Encode(node, dagjson.Encode)
+		if err != nil {
+			http.Error(w, "failed to encode IPFS block "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var b bytes.Buffer
+		if err := json.Indent(&b, data, "", "  "); err != nil {
+			http.Error(w, "failed to format JSON "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		_, _ = io.Copy(w, &b)
+	}
 }
 
 // setupGRPCWebHandler sets up the gRPC-Web handler.
@@ -77,13 +134,14 @@ func initHTTP(
 	rpc *grpc.Server,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
+	blobs *hyper.Storage,
 	wallet *wallet.Service,
 	ipfsHandler IPFSFileHandler,
 	extraHandlers ...GenericHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	router := &Router{r: mux.NewRouter()}
 
-	setupDebugHandlers(router)
+	setupDebugHandlers(router, blobs)
 	setupGraphQLHandlers(router, wallet)
 	setupIPFSFileHandlers(router, ipfsHandler)
 	setupGRPCWebHandler(router, rpc)
