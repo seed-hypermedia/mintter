@@ -801,6 +801,7 @@ export function useDraftEditor(
       )
     },
     linkExtensionOptions: {
+      openOnClick: false,
       queryClient,
       openUrl,
     },
@@ -1068,6 +1069,7 @@ export function usePublicationEditor(
     linkExtensionOptions: {
       queryClient,
       openUrl,
+      openOnClick: true, // this is default, but just to be explicit.
     },
     editable: false,
     blockSchema: hmBlockSchema,
