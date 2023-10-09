@@ -120,7 +120,7 @@ export function PublicationListItem({
         ...(menuItems || []),
         {
           key: 'spawn',
-          label: 'Open in new Window',
+          label: 'Open in New Window',
           icon: ExternalLink,
           onPress: () => {
             spawn(openRoute)

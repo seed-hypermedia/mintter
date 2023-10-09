@@ -20,6 +20,7 @@ export type HyperlinkToolbarProps = Pick<
 export const HyperlinkToolbarPositioner = <
   BSchema extends BlockSchema = DefaultBlockSchema,
 >(props: {
+  openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
   editor: BlockNoteEditor<BSchema>
   hyperlinkToolbar?: FC<HyperlinkToolbarProps>
 }) => {
@@ -68,6 +69,7 @@ export const HyperlinkToolbarPositioner = <
         deleteHyperlink={props.editor.hyperlinkToolbar.deleteHyperlink}
         startHideTimer={props.editor.hyperlinkToolbar.startHideTimer}
         stopHideTimer={props.editor.hyperlinkToolbar.stopHideTimer}
+        openUrl={props.openUrl}
       />
     )
   }, [props.hyperlinkToolbar, props.editor, text, url])

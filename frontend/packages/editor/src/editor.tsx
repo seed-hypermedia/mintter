@@ -9,13 +9,15 @@ import {
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
+import {useOpenUrl} from '@mintter/app/src/open-url'
 
 export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
+  const openUrl = useOpenUrl()
   if (editor.isEditable) {
     return (
       <BlockNoteView editor={editor}>
         <FormattingToolbarPositioner editor={editor} />
-        <HyperlinkToolbarPositioner editor={editor} />
+        <HyperlinkToolbarPositioner editor={editor} openUrl={openUrl} />
         <SlashMenuPositioner editor={editor} />
         <SideMenuPositioner editor={editor} placement="left" />
       </BlockNoteView>

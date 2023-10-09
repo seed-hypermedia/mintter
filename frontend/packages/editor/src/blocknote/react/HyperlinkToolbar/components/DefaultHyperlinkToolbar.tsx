@@ -7,7 +7,11 @@ import {Toolbar} from '../../SharedComponents/Toolbar/components/Toolbar'
 import {ToolbarButton} from '../../SharedComponents/Toolbar/components/ToolbarButton'
 import {EditHyperlinkMenu} from '../EditHyperlinkMenu/components/EditHyperlinkMenu'
 
-export const DefaultHyperlinkToolbar = (props: HyperlinkToolbarProps) => {
+export const DefaultHyperlinkToolbar = (
+  props: HyperlinkToolbarProps & {
+    openUrl: (url?: string | undefined, newWindow?: boolean | undefined) => void
+  },
+) => {
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const editMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -44,10 +48,10 @@ export const DefaultHyperlinkToolbar = (props: HyperlinkToolbarProps) => {
         Edit Link
       </ToolbarButton>
       <ToolbarButton
-        mainTooltip="Open in new tab"
+        mainTooltip="Open in New Window"
         isSelected={false}
         onClick={() => {
-          window.open(props.url, '_blank')
+          props.openUrl(props.url, true)
         }}
         icon={RiExternalLinkFill}
       />
