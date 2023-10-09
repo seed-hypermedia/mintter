@@ -278,14 +278,6 @@ mainMenu.append(
       },
       {
         id: 'route_pubs',
-        label: 'Publications',
-        accelerator: 'CmdOrCtrl+1',
-        click: () => {
-          openRoute({key: 'home'})
-        },
-      },
-      {
-        id: 'route_pubs',
         label: 'All Publications',
         accelerator: 'CmdOrCtrl+2',
         click: () => {
