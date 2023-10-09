@@ -22,7 +22,6 @@ export const DefaultDragHandleMenu = <BSchema extends HMBlockSchema>(
 )
 
 function TurnIntoMenu(props: DragHandleMenuProps<HMBlockSchema>) {
-  console.log(`== ~ TurnIntoMenu ~ props:`, props)
   const [opened, setOpened] = useState(false)
 
   const menuCloseTimer = useRef<NodeJS.Timeout | undefined>()

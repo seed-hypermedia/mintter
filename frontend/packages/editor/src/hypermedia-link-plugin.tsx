@@ -1,18 +1,16 @@
-import {createHmDocLink} from '@mintter/shared'
+import {extractBlockRefOfUrl, hmIdWithVersion} from '@mintter/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {AppQueryClient} from '@mintter/app/src/query-client'
+import {fetchWebLink} from '@mintter/app/src/models/web-links'
 
 export const hypermediaPluginKey = new PluginKey('hypermedia-link')
 
 // TODO: use `createX` function instead of just exporting the plugin
 export function createHypermediaDocLinkPlugin({
   queryClient,
-  fetchWebLink,
 }: {
   queryClient: AppQueryClient
-  // TODO: add proper types
-  fetchWebLink: any
 }) {
   let plugin = new Plugin({
     key: hypermediaPluginKey,
@@ -23,7 +21,7 @@ export function createHypermediaDocLinkPlugin({
           if (state?.size && state?.size > 0) {
             if (state) {
               for (const entry of state) {
-                checkHyperLink(queryClient, fetchWebLink, view, entry)
+                checkHyperLink(queryClient, view, entry)
               }
             }
           }
@@ -46,7 +44,6 @@ export function createHypermediaDocLinkPlugin({
           if (step.jsonID == 'addMark') {
             let mark = step.toJSON().mark
             if (mark.type == 'link' && mark.attrs.id == linkId) {
-              console.log('== ~ hmlink is link mark: ', step.toJSON().mark)
               return true
             }
           }
@@ -68,8 +65,6 @@ export function createHypermediaDocLinkPlugin({
 
 async function checkHyperLink(
   queryClient: AppQueryClient,
-  // TODO: add proper types
-  fetchWebLink: any,
   view: EditorView,
   entry: [key: string, value: string],
 ): Promise<
@@ -85,7 +80,12 @@ async function checkHyperLink(
   view.dispatch(view.state.tr.setMeta('hmPlugin:removeId', id))
   try {
     let res = await fetchWebLink(queryClient, entryUrl)
-    if (res && res.documentId) {
+    if (res && res.hmId) {
+      const fullHmId = hmIdWithVersion(
+        res.hmId,
+        res.hmVersion,
+        extractBlockRefOfUrl(entryUrl),
+      )
       view.state.doc.descendants((node, pos) => {
         if (node.marks.some((mark) => mark.attrs.id == id)) {
           let tr = view.state.tr
@@ -93,11 +93,7 @@ async function checkHyperLink(
             pos,
             pos + node.textContent.length,
             view.state.schema.mark('link', {
-              href: createHmDocLink(
-                res!.documentId!,
-                res?.documentVersion,
-                res?.blockId,
-              ),
+              href: fullHmId,
             }),
           )
           tr.setMeta('hmPlugin:removeId', id)
@@ -105,11 +101,9 @@ async function checkHyperLink(
           view.dispatch(tr)
         }
       })
-    } else {
-      console.log('== ~ hmlink ~ CHECK LINK RESOLVE NO LINK:', res)
     }
   } catch (error) {
-    console.log('== ~ hmlink ~ CHECK LINK ERROR:', error)
+    console.error('CHECK LINK ERROR:', error)
   }
 
   return

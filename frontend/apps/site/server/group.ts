@@ -1,3 +1,4 @@
+import {createHmId, unpackHmId} from '@mintter/shared'
 import {ServerHelpers} from './ssr-helpers'
 
 export type GroupView = 'front' | 'list' | null
@@ -12,7 +13,6 @@ export async function prefetchGroup(
   helpers: ServerHelpers,
   groupId: string,
   groupVersion: string,
-  view: GroupView,
 ) {
   const groupRecord = await helpers.group.get.fetch({
     groupId,
@@ -36,4 +36,19 @@ export async function prefetchGroup(
   })
 
   return {group: groupRecord, content}
+}
+
+export async function prefetchGroupContent(
+  helpers: ServerHelpers,
+  prefetched: Awaited<ReturnType<typeof prefetchGroup>>,
+  pathName?: string,
+) {
+  const contentPath = !pathName || pathName === '/' ? '/' : pathName
+  const {group, content} = prefetched
+  const contentItem = content.find((item) => item?.pathName === contentPath)
+  if (!contentItem?.docId || contentItem?.docId.type !== 'd') return null
+  const publication = await helpers.publication.get.prefetch({
+    documentId: createHmId('d', contentItem.docId.eid),
+    versionId: contentItem.docId.version || undefined,
+  })
 }

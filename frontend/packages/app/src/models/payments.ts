@@ -118,7 +118,6 @@ let exportWalletMutationQuery = gql`
 export function mutationExportWallet(opts = {}) {
   return {
     // mutationFn: async (walletId: string) => {
-    //   console.log(`== ~ mutationFn: ~ walletId:`, walletId)
     //   let req: Mutation = await request(
     //     BACKEND_GRAPHQL_ENDPOINT,
     //     exportWalletMutationQuery,
@@ -130,7 +129,6 @@ export function mutationExportWallet(opts = {}) {
     //   return req.exportWallet
     // },
     mutationFn: async (input: ExportWalletInput) => {
-      console.log(`== ~ mutationExportWallet ~ input:`, input)
       try {
         let req: Mutation = await request(
           BACKEND_GRAPHQL_ENDPOINT,

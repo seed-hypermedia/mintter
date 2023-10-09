@@ -132,7 +132,6 @@ function Welcome(props: OnboardingStepProps) {
 }
 
 function Mnemonics(props: OnboardingStepProps) {
-  console.log('== ~ OnboardingSteps ~ obValue MNEMONICS')
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
   const [error, setError] = useState('')
@@ -182,9 +181,6 @@ function Mnemonics(props: OnboardingStepProps) {
 
     function isInputValid(input: string): string | boolean {
       let res = extractWords(input)
-
-      console.log(`== ~ extractWords ~ res:`, res)
-
       if (!res.length) {
         return `Can't extract words from input. malformed input => ${input}`
       }

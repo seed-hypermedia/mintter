@@ -74,6 +74,21 @@ let blockVerticalPadding: FontSizeTokens = '$4'
 let blockHorizontalPadding: FontSizeTokens = '$4'
 let blockBorderRadius: FontSizeTokens = '$3'
 
+function OpenInAppLink({url}: {url: string}) {
+  return (
+    <Button
+      onPress={() => window.open(url, '_blank')}
+      size="$2"
+      chromeless
+      icon={Share}
+    >
+      <XStack flex={1} alignItems="center">
+        <SizableText size="$2">Open in Mintter app</SizableText>
+      </XStack>
+    </Button>
+  )
+}
+
 export default function PublicationPage({
   pathName,
   documentId,
@@ -87,7 +102,6 @@ export default function PublicationPage({
 }) {
   const media = useMedia()
 
-  console.log(`== ~ media:`, media)
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
     versionId: version || '',
@@ -97,13 +111,9 @@ export default function PublicationPage({
   return (
     <>
       <Head>
-        <meta name="hyperdocs-entity-id" content={pub?.document?.id} />
-        <meta name="hyperdocs-entity-version" content={pub?.version} />
-        <meta name="hyperdocs-entity-title" content={pub?.document?.title} />
-        {/* legacy mintter metadata */}
-        <meta name="hyperdocs-document-id" content={pub?.document?.id} />
-        <meta name="hyperdocs-document-version" content={pub?.version} />
-        <meta name="hyperdocs-document-title" content={pub?.document?.title} />
+        <meta name="hypermedia-entity-id" content={pub?.document?.id} />
+        <meta name="hypermedia-entity-version" content={pub?.version} />
+        <meta name="hypermedia-entity-title" content={pub?.document?.title} />
       </Head>
       <SiteHead
         siteTitle={contextGroup?.title}
@@ -149,26 +159,8 @@ export default function PublicationPage({
               docId={documentId}
               editors={pub?.document?.editors || []}
             >
-              <Button
-                onPress={() =>
-                  window.open(
-                    createHmDocLink(documentId, pub?.version),
-                    '_blank',
-                  )
-                }
-                size="$2"
-                chromeless
-                icon={Share}
-              >
-                <XStack flex={1} alignItems="center">
-                  <SizableText size="$2">Open in Mintter app</SizableText>
-                </XStack>
-              </Button>
+              <OpenInAppLink url={createHmDocLink(documentId, pub?.version)} />
             </WebTipping>
-            {/* 
-            // TODO: CRITICAL: add more actions here (open in mintter app)
-            // TODO: CRITICAL: make the web tipping button less "prominent"
-            */}
           </YStack>
         </PageSection.Side>
         <PublicationContextSidebar
@@ -365,7 +357,7 @@ function StaticEmbedBlock({block}: {block: EmbedBlock}) {
   let embed = trpc.publication.get.useQuery(
     {
       documentId: docId?.docId,
-      versionId: docId?.version,
+      versionId: docId?.version || undefined,
     },
     {enabled: !!docId},
   )
@@ -802,7 +794,6 @@ function PublicationContextSidebar({
     />
   ) : null
 
-  console.log(`== ~ groupSidebarContent:`, groupSidebarContent)
   return (
     <PageSection.Side show={props.display != 'none'} {...props}>
       {groupSidebarContent}

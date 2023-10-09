@@ -217,3 +217,23 @@ export function createHmDocLink(
 export function labelOfEntityType(type: keyof typeof HYPERMEDIA_ENTITY_TYPES) {
   return HYPERMEDIA_ENTITY_TYPES[type]
 }
+
+export function hmIdWithVersion(
+  hmId: string | null | undefined,
+  version: string | null | undefined,
+  blockRef?: string | null | undefined,
+) {
+  if (!hmId) return null
+  const unpacked = unpackHmId(hmId)
+  if (!unpacked) return null
+  return createHmId(unpacked.type, unpacked.eid, {
+    version,
+    blockRef,
+  })
+}
+
+export function extractBlockRefOfUrl(
+  url: string | null | undefined,
+): string | null {
+  return url?.match(/#(.*)$/)?.[1] || null
+}

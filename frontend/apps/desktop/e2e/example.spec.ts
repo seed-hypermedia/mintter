@@ -45,8 +45,6 @@ let page: Page
 
 test('renders the first page', async () => {
   page = await electronApp.firstWindow()
-
-  console.log(`== ~ test ~ page:`, page)
   await page.waitForSelector('[role="heading"]')
   const text = await page.$eval('[role="heading"]', (el) => el.textContent)
   expect(text).toBe('All Publications')

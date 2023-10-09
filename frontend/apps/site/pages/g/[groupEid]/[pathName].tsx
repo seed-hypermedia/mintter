@@ -4,7 +4,7 @@ import {GetServerSideProps} from 'next'
 import {useRouter} from 'next/router'
 import {EveryPageProps} from 'pages/_app'
 import PublicationPage from 'publication-page'
-import {prefetchGroup} from 'server/group'
+import {prefetchGroup, prefetchGroupContent} from 'server/group'
 import {useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {trpc} from 'trpc'
@@ -43,10 +43,12 @@ export default function GroupPublicationPage({}) {
 export const getServerSideProps: GetServerSideProps<EveryPageProps> = async (
   context,
 ) => {
+  const pathName = (context.params?.pathName as string) || ''
   const groupEid = (context.params?.groupEid as string) || ''
   const version = (context.params?.v as string) || ''
   const helpers = serverHelpers({})
   const groupId = createHmId('g', groupEid)
-  await prefetchGroup(helpers, groupId, version, 'list')
+  const prefechedGroup = await prefetchGroup(helpers, groupId, version)
+  const pub = await prefetchGroupContent(helpers, prefechedGroup, pathName)
   return {props: await getPageProps(helpers, context, {})}
 }

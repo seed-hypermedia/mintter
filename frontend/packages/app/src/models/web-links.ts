@@ -1,6 +1,7 @@
 import {AppQueryClient} from '@mintter/app/src/query-client'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
+import {extractBlockRefOfUrl} from '@mintter/shared'
 
 function parseHTML(html: string): Document {
   const parser = new DOMParser()
@@ -24,43 +25,25 @@ function queryWebLink(url: string, enabled: boolean) {
           method: 'GET',
         })
 
-        // // for some reason the headers aren't coming through?!
+        // // for some reason the headers aren't coming through?! perhaps due to CORS issues??
         // return {
-        //   documentId: webResponse.headers.get('x-hm-document-id'),
+        //   documentId: webResponse.headers.get('x-hm-entity-id'),
         //   documentVersion: webResponse.headers.get(
-        //     'x-mintter-document-version',
+        //     'x-hm-entity-version',
         //   ),
         // }
 
         // parsing for the meta tags is heavier but works, no problem
         const htmlData = await webResponse.text()
         const doc = parseHTML(htmlData)
-        const fallbackDocumentId = extractMetaTagValue(
-          doc,
-          'hyperdocs-document-id',
-        )
-        const fallbackDocumentVersion =
-          extractMetaTagValue(doc, 'hyperdocs-document-version') || undefined
-        const fallbackDocumentTitle =
-          extractMetaTagValue(doc, 'hyperdocs-document-title') ||
-          doc.querySelector('title')?.innerText ||
-          url
-
-        // new aer meta tags
-        const hmEntityId = extractMetaTagValue(doc, 'hyperdocs-entity-id')
-        const hmIdMatch = hmEntityId ? hmEntityId.match(/hm:\/\/d\/(.*)/) : null
-        const hmDocId = hmIdMatch?.[1]
-        const hmEntityVersion = extractMetaTagValue(
-          doc,
-          'hyperdocs-entity-version',
-        )
-        const hmEntityTitle = extractMetaTagValue(doc, 'hyperdocs-entity-title')
-
+        const hmId = extractMetaTagValue(doc, 'hypermedia-entity-id')
+        const hmVersion = extractMetaTagValue(doc, 'hypermedia-entity-version')
+        const hmTitle = extractMetaTagValue(doc, 'hypermedia-entity-title')
         return {
-          documentId: hmDocId || fallbackDocumentId,
-          documentVersion: hmEntityVersion || fallbackDocumentVersion,
-          documentTitle: hmEntityTitle || fallbackDocumentTitle,
-          blockId: url.match(/#(.*)$/)?.[1] || undefined,
+          hmId,
+          hmVersion,
+          hmTitle,
+          blockRef: extractBlockRefOfUrl(url),
         }
       } catch (e) {
         return null

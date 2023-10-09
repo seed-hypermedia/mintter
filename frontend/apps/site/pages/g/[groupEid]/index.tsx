@@ -6,6 +6,7 @@ import {Timestamp} from '@bufbuild/protobuf'
 import {
   Role,
   UnpackedHypermediaId,
+  createHmDocLink,
   createHmId,
   createPublicWebHmUrl,
   formattedDate,
@@ -35,6 +36,7 @@ import {trpc} from '../../../trpc'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRouter} from 'next/router'
 import Footer from 'footer'
+import {OpenInAppLink} from 'components/metadata'
 
 export default function GroupPage({}: GroupPageProps) {
   const router = useRouter()
@@ -100,12 +102,12 @@ export default function GroupPage({}: GroupPageProps) {
       <Head>
         {loadedGroup ? (
           <>
-            <meta name="hyperdocs-entity-id" content={loadedGroup.id} />
+            <meta name="hypermedia-entity-id" content={loadedGroup.id} />
             <meta
-              name="hyperdocs-entity-version"
+              name="hypermedia-entity-version"
               content={loadedGroup.version}
             />
-            <meta name="hyperdocs-entity-title" content={loadedGroup.title} />
+            <meta name="hypermedia-entity-title" content={loadedGroup.title} />
           </>
         ) : null}
       </Head>
@@ -121,9 +123,7 @@ export default function GroupPage({}: GroupPageProps) {
           </YStack>
         </PageSection.Side>
       </PageSection.Root>
-      <Footer
-        hmUrl={createHmId('g', groupEid, {version: group.data?.group?.version})}
-      />
+      <Footer />
     </YStack>
   )
 }
@@ -195,6 +195,7 @@ function GroupMetadata({
 }) {
   if (!group) return null
   const time = group.createTime
+  const unpackedGroupId = unpackHmId(groupId)
   return (
     <>
       {group.ownerAccountId && (
@@ -202,6 +203,12 @@ function GroupMetadata({
       )}
       {group.id && <GroupEditorsSection group={group} />}
       {time && <LastUpdateSection time={time} />}
+
+      {unpackedGroupId && unpackedGroupId?.type === 'g' && (
+        <OpenInAppLink
+          url={createHmId('g', unpackedGroupId.eid, {version: group.version})}
+        />
+      )}
     </>
   )
 }

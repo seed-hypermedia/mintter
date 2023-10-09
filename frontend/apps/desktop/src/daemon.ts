@@ -52,8 +52,6 @@ let lndhubFlags =
     ? '-lndhub.mainnet=false'
     : '-lndhub.mainnet=true'
 
-console.log(`== ~ goDaemonExecutablePath:`, goDaemonExecutablePath)
-
 const daemonArguments = [
   '-http.port',
   String(BACKEND_HTTP_PORT),

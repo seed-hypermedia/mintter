@@ -178,17 +178,6 @@ export type ServerToEditorRecursiveOpts = {
   headingLevel: number
 }
 
-function extractChildrenType(
-  childrenType: string | undefined,
-): EditorChildrenType {
-  console.log(`== ~ childrenType:`, childrenType)
-  if (childrenType === 'ol') return 'ol'
-  if (childrenType === 'ul') return 'ul'
-  if (childrenType === 'blockquote') return 'blockquote'
-  console.warn(`Unknown childrenType block attr: ${childrenType}`)
-  return 'group'
-}
-
 export function serverBlockNodeToEditorParagraph(
   serverBlock: BlockNode,
   opts: ServerToEditorRecursiveOpts,

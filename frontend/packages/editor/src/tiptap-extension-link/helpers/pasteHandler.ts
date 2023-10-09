@@ -2,6 +2,8 @@ import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {AppQueryClient} from '@mintter/app/src/query-client'
 import {
   createHmDocLink,
+  extractBlockRefOfUrl,
+  hmIdWithVersion,
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
@@ -203,15 +205,11 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               let tr = view.state.tr
               let pos = findPlaceholder(view.state, link.href)
               if (!pos) return null
-              let href =
-                res && res.documentId
-                  ? createHmDocLink(
-                      res.documentId,
-                      res.documentVersion,
-                      res.blockId,
-                    )
-                  : link.href
-
+              const fullHmId = hmIdWithVersion(
+                res?.hmId,
+                res?.hmVersion,
+                extractBlockRefOfUrl(link.href),
+              )
               view.dispatch(
                 tr
                   .insertText(link.href, pos)
@@ -219,7 +217,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     pos,
                     pos + link.href.length,
                     options.editor.schema.mark('link', {
-                      href,
+                      href: fullHmId || link.href,
                     }),
                   )
                   .setMeta('link-placeholder', {remove: {link}}),

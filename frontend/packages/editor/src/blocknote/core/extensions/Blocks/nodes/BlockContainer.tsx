@@ -88,9 +88,6 @@ export const BlockContainer = Node.create<{
       class: styles.blockOuter,
       'data-node-type': 'block-outer',
     })
-
-    console.log(`== ~ renderHTML ~ attrs:`, attrs)
-
     let innerAttrs = {
       ...domAttributes,
       class: mergeCSSClasses(styles.block, domAttributes.class),

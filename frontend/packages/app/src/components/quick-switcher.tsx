@@ -6,7 +6,13 @@ import {
 import {fetchWebLink} from '@mintter/app/src/models/web-links'
 import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
-import {HYPERMEDIA_SCHEME, isHypermediaScheme} from '@mintter/shared'
+import {
+  HYPERMEDIA_SCHEME,
+  createHmId,
+  extractBlockRefOfUrl,
+  hmIdWithVersion,
+  isHypermediaScheme,
+} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {Command} from 'cmdk'
 import {useState} from 'react'
@@ -69,44 +75,42 @@ export function QuickSwitcher() {
                 const searched = unpackHmIdWithAppRoute(search)
                 console.log('== ~ QuickSwitcher ~ searched', searched)
                 if (
-                  searched?.scheme === HYPERMEDIA_SCHEME ||
-                  searched?.hostname === 'hyper.media'
+                  (searched?.scheme === HYPERMEDIA_SCHEME ||
+                    searched?.hostname === 'hyper.media') &&
+                  searched?.navRoute
                 ) {
-                  if (searched?.navRoute) {
-                    setOpen(false)
-                    navigate(searched?.navRoute)
-                  } else {
-                    console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
-                    setActionPromise(
-                      fetchWebLink(queryClient, search)
-                        .then((result) => {
-                          console.log(
-                            '🌐 Queried Web URL Result',
-                            search,
-                            result,
-                          )
-                          if (result && result?.documentId) {
-                            setOpen(false)
-                            navigate({
-                              key: 'publication',
-                              documentId: result.documentId,
-                              versionId: result.documentVersion,
-                            })
-                          }
-                        })
-                        .catch((e) => {
-                          console.error(
-                            '🚨 Failed to fetch web link',
-                            search,
-                            e,
-                          )
-                          toast.error('Failed to open link.')
-                        })
-                        .finally(() => {
-                          setActionPromise(null)
-                        }),
-                    )
-                  }
+                  setOpen(false)
+                  navigate(searched?.navRoute)
+                } else {
+                  console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
+                  setActionPromise(
+                    fetchWebLink(queryClient, search)
+                      .then((result) => {
+                        console.log('🌐 Queried Web URL Result', search, result)
+                        const blockRef = extractBlockRefOfUrl(search)
+                        const fullHmId = hmIdWithVersion(
+                          result?.hmId,
+                          result?.hmVersion,
+                          blockRef,
+                        )
+                        if (!fullHmId) return
+                        const queried =
+                          result?.hmId == null
+                            ? null
+                            : unpackHmIdWithAppRoute(fullHmId)
+                        if (queried?.navRoute) {
+                          setOpen(false)
+                          navigate(queried.navRoute)
+                        }
+                      })
+                      .catch((e) => {
+                        console.error('🚨 Failed to fetch web link', search, e)
+                        toast.error('Failed to open link.')
+                      })
+                      .finally(() => {
+                        setActionPromise(null)
+                      }),
+                  )
                 }
               }}
             >

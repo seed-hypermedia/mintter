@@ -428,21 +428,12 @@ type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
 //   return state
 // }
 
-var defaultOnError = (err: any) => {
-  console.log('== queryDraft ERROR', err)
-}
-
 export function queryDraft(
   grpcClient: GRPCClient,
   documentId: string | undefined,
   opts?: UseQueryOptions<EditorDraftState | null>,
 ) {
-  const {
-    enabled = true,
-    retry = false,
-    onError = defaultOnError,
-    ...restOpts
-  } = opts || {}
+  const {enabled = true, retry = false, ...restOpts} = opts || {}
   return {
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
     queryFn: async () => {
@@ -477,7 +468,6 @@ export function queryDraft(
     },
     retry,
     enabled: !!documentId && enabled,
-    onError,
     ...restOpts,
   }
 }
@@ -687,7 +677,7 @@ export function useDraftEditor(
       },
       retry: false,
       onError: (err) => {
-        console.log('== DRAFT FETCH ERROR', err)
+        console.error('DRAFT FETCH ERROR', err)
       },
     }),
   )
@@ -888,7 +878,6 @@ export function useDraftEditor(
             return [
               createHypermediaDocLinkPlugin({
                 queryClient,
-                fetchWebLink,
               }).plugin,
             ]
           },
@@ -1104,8 +1093,6 @@ function extractEmbedRefOfLink(block: any): false | string {
     if (leaf.type == 'link') {
       if (isPublicGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
         const hmLink = normlizeHmId(leaf.href)
-
-        console.log(`== ~ extractEmbedRefOfLink ~ hmLink:`, hmLink)
         if (hmLink) return hmLink
       }
     }
@@ -1158,7 +1145,6 @@ export function useDocTextContent(pub?: Publication) {
       pub?.version,
     ],
     queryFn: () => {
-      console.log('== calling queryFn on text content', document)
       let content = ''
 
       function extractContent(blocks: Array<BlockNode>) {

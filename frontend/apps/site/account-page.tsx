@@ -16,6 +16,7 @@ import {SiteHead} from 'site-head'
 import Footer from './footer'
 import {useRouter} from 'next/router'
 import {trpc} from 'trpc'
+import {OpenInAppLink} from 'components/metadata'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
   if (isEmptyObject(account?.profile)) {
@@ -93,7 +94,7 @@ export default function AccountPage({}: {}) {
       <Head>
         {accountId && (
           <meta
-            name="hyperdocs-entity-id"
+            name="hypermedia-entity-id"
             content={createHmId('a', accountId!)}
           />
         )}
@@ -108,9 +109,11 @@ export default function AccountPage({}: {}) {
             <AccountNotFound accountId={accountId} />
           )}
         </PageSection.Content>
-        <PageSection.Side />
+        <PageSection.Side>
+          <OpenInAppLink url={createHmId('a', accountId)} />
+        </PageSection.Side>
       </PageSection.Root>
-      <Footer hmUrl={createHmId('a', accountId)} />
+      <Footer />
     </>
   )
 }
