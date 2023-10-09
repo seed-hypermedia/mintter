@@ -514,6 +514,8 @@ export const router = t.router({
       }
     })
   }),
+
+  getUserDataDir: t.procedure.query(() => userData),
 })
 
 export const trpc = router.createCaller({})

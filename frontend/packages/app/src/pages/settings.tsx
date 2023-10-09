@@ -36,11 +36,12 @@ import {
   ArrowDownRight,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, useMemo, useState} from 'react'
+import {ComponentProps, ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {useExportWallet} from '../models/payments'
+import {trpc} from '@mintter/desktop/src/trpc'
 
 export default function Settings() {
   return (
@@ -54,22 +55,21 @@ export default function Settings() {
       borderColor="$borderColor"
     >
       <Tabs.List
-        disablePassBorderRadius="end"
         aria-label="Manage your account"
         separator={<Separator />}
         minWidth={200}
       >
-        <Tabs.Tab value="account" data-testid="tab-account">
+        <Tabs.Tab value="account" data-testid="tab-account" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
             Account
           </SizableText>
         </Tabs.Tab>
-        <Tabs.Tab value="settings" data-testid="tab-settings">
+        <Tabs.Tab value="settings" data-testid="tab-settings" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
             Settings
           </SizableText>
         </Tabs.Tab>
-        <Tabs.Tab value="wallets" data-testid="tab-wallets">
+        <Tabs.Tab value="wallets" data-testid="tab-wallets" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
             Wallets
           </SizableText>
@@ -218,6 +218,58 @@ function DevicesInfo({}: {}) {
   )
 }
 
+function InfoListHeader({title, right}: {title: string; right?: ReactNode}) {
+  return (
+    <TableList.Header>
+      <SizableText fontWeight="700">{title}</SizableText>
+      <XStack flex={1} alignItems="center" justifyContent="flex-end">
+        {right}
+      </XStack>
+    </TableList.Header>
+  )
+}
+
+function InfoListItem({
+  label,
+  value,
+  copyable,
+}: {
+  label: string
+  value?: string
+  copyable?: boolean
+}) {
+  return (
+    <TableList.Item>
+      <SizableText size="$1" flex={0} width={140}>
+        {label}:
+      </SizableText>
+      <SizableText
+        flex={1}
+        fontFamily="$mono"
+        size="$1"
+        width="100%"
+        overflow="hidden"
+        textOverflow="ellipsis"
+        userSelect="text"
+      >
+        {value}
+      </SizableText>
+      {!!value && copyable ? (
+        <Tooltip content={`Copy ${label}`}>
+          <Button
+            size="$2"
+            icon={Copy}
+            onPress={() => {
+              copyTextToClipboard(value)
+              toast.success(`${label} copied!`)
+            }}
+          />
+        </Tooltip>
+      ) : null}
+    </TableList.Item>
+  )
+}
+
 function DeviceItem({id}: {id: string}) {
   let {status, data} = usePeerInfo(id)
   let {data: current} = useDaemonInfo()
@@ -230,79 +282,32 @@ function DeviceItem({id}: {id: string}) {
 
   return (
     <TableList>
-      <TableList.Header>
-        <SizableText fontWeight="700">
-          {id.substring(id.length - 10)}
-        </SizableText>
-        <XStack flex={1} alignItems="center" justifyContent="flex-end">
-          {isCurrent && (
+      <InfoListHeader
+        title={id.substring(id.length - 10)}
+        right={
+          isCurrent && (
             <Button size="$1" fontWeight="700" disabled>
               current device
             </Button>
-          )}
-        </XStack>
-      </TableList.Header>
-      <TableList.Item>
-        <SizableText size="$1" flex={0} width={80}>
-          Alias:
-        </SizableText>
-        <SizableText
-          size="$1"
-          flex={1}
-          overflow="hidden"
-          textOverflow="ellipsis"
-        >
-          {status == 'success' ? id.substring(id.length - 10) : '...'}
-        </SizableText>
-      </TableList.Item>
+          )
+        }
+      />
+      <InfoListItem
+        label="Alias"
+        value={status == 'success' ? id.substring(id.length - 10) : '...'}
+      />
 
       <Separator />
-      <TableList.Item>
-        <SizableText size="$1" flex={0} width={80} flexShrink={0} flexGrow={0}>
-          Id:
-        </SizableText>
-        <SizableText
-          size="$1"
-          flex={1}
-          overflow="hidden"
-          textOverflow="ellipsis"
-          userSelect="text"
-        >
-          {id}
-        </SizableText>
-      </TableList.Item>
+
+      <InfoListItem label="Peer ID" value={id} copyable />
 
       <Separator />
-      <TableList.Item>
-        <SizableText size="$1" flex={0} width={80} flexShrink={0} flexGrow={0}>
-          Addresses:
-        </SizableText>
-        <XStack flex={1} position="relative" space="$2">
-          <SizableText
-            fontFamily="$mono"
-            size="$1"
-            width="100%"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {status == 'success' ? data?.addrs.join(',') : '...'}
-          </SizableText>
-          <Tooltip content="Copy Device Address">
-            {data?.addrs ? (
-              <Button
-                size="$2"
-                icon={Copy}
-                onPress={() => {
-                  // TODO: make sure this is true all the time.
-                  copyTextToClipboard(data?.addrs.join(',')!)
-                  toast.success('Device address copied!')
-                }}
-              />
-            ) : null}
-          </Tooltip>
-        </XStack>
-      </TableList.Item>
+
+      <InfoListItem
+        label="Device Address"
+        value={data?.addrs.join(',')}
+        copyable
+      />
     </TableList>
   )
 }
@@ -311,97 +316,23 @@ function AppSettings() {
   const grpcClient = useGRPCClient()
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
-
+  const userDataDir = trpc.getUserDataDir.useQuery().data
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
       <TableList>
-        <TableList.Header>
-          <SizableText fontWeight="700">Bundle Information</SizableText>
-        </TableList.Header>
-        <TableList.Item>
-          <SizableText
-            size="$1"
-            flex={0}
-            width={140}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            App Version:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {APP_VERSION}
-          </SizableText>
-        </TableList.Item>
+        <InfoListHeader title="User Data" />
+        <InfoListItem label="Data Directory" value={userDataDir} copyable />
+      </TableList>
+      <TableList>
+        <InfoListHeader title="Bundle Information" />
+        <InfoListItem label="App Version" value={APP_VERSION} />
         <Separator />
-        <TableList.Item>
-          <SizableText
-            size="$1"
-            flex={0}
-            width={140}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Electron Version:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {versions.electron}
-          </SizableText>
-        </TableList.Item>
+        <InfoListItem label="Electron Version" value={versions.electron} />
         <Separator />
-        <TableList.Item>
-          <SizableText
-            size="$1"
-            flex={0}
-            width={140}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Chrome Version:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {versions.chrome}
-          </SizableText>
-        </TableList.Item>
+        <InfoListItem label="Chrome Version" value={versions.chrome} />
         <Separator />
-        <TableList.Item>
-          <SizableText
-            size="$1"
-            flex={0}
-            width={140}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Node Version:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {versions.node}
-          </SizableText>
-        </TableList.Item>
+        <InfoListItem label="Node Version" value={versions.node} />
       </TableList>
       <Separator />
     </YStack>
