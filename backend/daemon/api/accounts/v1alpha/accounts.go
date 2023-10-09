@@ -194,13 +194,7 @@ func UpdateProfile(ctx context.Context, me core.Identity, blobs *hyper.Storage, 
 
 	patch := map[string]any{}
 
-	if in.Alias != "" {
-		parts := strings.Fields(in.Alias)
-		if len(parts) != 1 {
-			return fmt.Errorf("alias must be a single word: got = %q", in.Alias)
-		}
-		in.Alias = parts[0]
-	}
+	in.Alias = strings.TrimSpace(in.Alias)
 
 	v, ok := e.Get("alias")
 	if (ok && v.(string) != in.Alias) || (!ok && in.Alias != "") {
