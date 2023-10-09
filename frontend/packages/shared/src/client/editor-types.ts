@@ -1,4 +1,4 @@
-import {HMBlockChildrenType} from './hypermedia-presentation'
+export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
 
 export type Styles = {
   bold?: true

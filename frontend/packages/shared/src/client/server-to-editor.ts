@@ -9,7 +9,8 @@ import {
   InlineContent,
   StyledText,
 } from './editor-types'
-import {HMBlockChildrenType, TextAnnotation} from './hypermedia-presentation'
+import {TextAnnotation} from './hypermedia-presentation'
+import {HMBlockChildrenType} from './editor-types'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 // import {hmBlockSchema} from './schema'
 
@@ -174,7 +175,7 @@ export function partialBlockToStyledText({
 export type EditorChildrenType = HMBlockChildrenType
 
 export type ServerToEditorRecursiveOpts = {
-  level: number
+  level?: number
 }
 
 function extractChildrenType(
@@ -241,7 +242,7 @@ export function serverBlockToHeading(
 export function serverChildrenToEditorChildren(
   children: BlockNode[],
   opts: ServerToEditorRecursiveOpts & {
-    childrenType?: EditorChildrenType
+    childrenType?: HMBlockChildrenType
     start?: string
   } = {level: 1},
 ): EditorBlock[] {

@@ -1,4 +1,4 @@
-export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
+import {HMBlockChildrenType} from './editor-types'
 
 export type HMBlockAttributes = {
   childrenType?: HMBlockChildrenType // default is "group"

@@ -88,13 +88,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </TitleText>
     )
   }
-  if (route.key === 'site') {
-    return (
-      <TitleText data-testid="titlebar-title" size={size}>
-        {hostnameStripProtocol(route.hostname)}
-      </TitleText>
-    )
-  }
+
   if (route.key === 'publication') {
     return <PublicationTitle route={route} />
   }
