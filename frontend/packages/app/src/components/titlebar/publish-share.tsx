@@ -56,6 +56,7 @@ import {
   Spinner,
   Text,
   Tooltip,
+  View,
   XStack,
   YStack,
   styled,
@@ -297,6 +298,7 @@ const ContextPopoverContent = styled(Popover.Content, {
   name: 'ContextPopoverContent',
   borderWidth: 1,
   borderColor: '$borderColor',
+  backgroundColor: '$background',
   elevation: '$2',
   enterStyle: {y: -10, opacity: 0},
   exitStyle: {y: -10, opacity: 0},
@@ -314,7 +316,7 @@ const ContextPopoverContent = styled(Popover.Content, {
 const ContextPopoverArrow = styled(Popover.Arrow, {
   name: 'ContextPopoverArrow',
   borderWidth: 1,
-  borderColor: '$borderColor',
+  backgroundColor: '$borderColor',
 })
 
 function GroupContextButton({route}: {route: GroupRoute}) {
@@ -486,70 +488,72 @@ function GroupContextItem({
   })
   const isPathPressable = isActive && isGroupMember && onPathPress
   return (
-    <XStack alignItems="center" gap="$2">
-      <Button
-        size="$3"
-        justifyContent="flex-start"
-        icon={Book}
-        flex={1}
-        color={isActive ? undefined : '$color11'}
-        onPress={() => {
-          replaceRoute({
-            ...route,
-            ...(route.key === 'publication'
-              ? {
-                  versionId: undefined,
-                }
-              : {}),
-            pubContext: {
-              key: 'group',
-              groupId: groupId,
-              groupVersion,
-              pathName: path,
-            },
-          })
-        }}
-      >
-        <XStack gap="$2">
-          <YStack alignItems="flex-start">
-            <Text
-              fontSize={path === '/' ? 12 : 10}
-              color={isActive ? undefined : '$color9'}
+    <Button
+      size="$3"
+      justifyContent="flex-start"
+      icon={Book}
+      flex={1}
+      minHeight={50}
+      disabled={isActive}
+      onPress={() => {
+        replaceRoute({
+          ...route,
+          ...(route.key === 'publication'
+            ? {
+                versionId: undefined,
+              }
+            : {}),
+          pubContext: {
+            key: 'group',
+            groupId: groupId,
+            groupVersion,
+            pathName: path,
+          },
+        })
+      }}
+    >
+      <XStack gap="$2" jc="space-between" flex={1} ai="center" mr={-8}>
+        <YStack alignItems="flex-start">
+          <Text
+            fontSize={path === '/' ? 14 : 12}
+            color={isActive ? undefined : '$color12'}
+          >
+            {group.data?.title}
+          </Text>
+          {path === '/' ? null : (
+            <ButtonText
+              fontSize={10}
+              color="$color12"
+              marginVertical={0}
+              disabled={!isPathPressable}
+              onPress={
+                isPathPressable
+                  ? (e) => {
+                      e.stopPropagation()
+                      onPathPress()
+                    }
+                  : undefined
+              }
+              hoverStyle={
+                isPathPressable
+                  ? {
+                      textDecorationLine: 'underline',
+                    }
+                  : {}
+              }
             >
-              {group.data?.title}
-            </Text>
-            {path === '/' ? null : (
-              <ButtonText
-                fontSize={10}
-                color="$color9"
-                marginVertical={0}
-                disabled={!isPathPressable}
-                onPress={
-                  isPathPressable
-                    ? (e) => {
-                        e.stopPropagation()
-                        onPathPress()
-                      }
-                    : undefined
-                }
-                hoverStyle={
-                  isPathPressable
-                    ? {
-                        textDecorationLine: 'underline',
-                      }
-                    : {}
-                }
-              >
-                {path}
-              </ButtonText>
-            )}
-          </YStack>
-          {path === '/' ? (
-            <Store color={isActive ? undefined : '$color9'} size={14} />
-          ) : null}
-        </XStack>
-      </Button>
-    </XStack>
+              /{path}
+            </ButtonText>
+          )}
+        </YStack>
+        {path === '/' ? (
+          <Store color={isActive ? undefined : '$color9'} size={14} />
+        ) : null}
+        <View style={{minWidth: 22}}>
+          {isActive && <Check size="$1" color="red" />}
+        </View>
+      </XStack>
+    </Button>
   )
 }
 
@@ -577,7 +581,12 @@ function ContextButton({
       chromeless
       aria-selected={isActive}
     >
-      {name}
+      <XStack space mr={-8} ai="center" jc="space-between" f={1}>
+        <Text color="$color12">{name}</Text>
+        <View style={{minWidth: 22}}>
+          {isActive && <Check color="$blue" size="$1" />}
+        </View>
+      </XStack>
     </Button>
   )
 }

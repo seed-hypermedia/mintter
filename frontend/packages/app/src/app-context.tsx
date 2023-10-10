@@ -7,10 +7,11 @@ import {
 } from '@mintter/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {createContext, ReactNode, useContext, useEffect} from 'react'
+import {createContext, ReactNode, useContext, useEffect, useState} from 'react'
 import {AppIPC, Event, EventCallback} from './app-ipc'
 import {AppQueryClient} from './query-client'
 import {WindowUtils} from './window-utils'
+import {trpc} from '@mintter/desktop/src/trpc'
 
 export type AppPlatform = typeof process.platform
 
@@ -67,20 +68,24 @@ export function AppContextProvider({
   )
 }
 
-// TODO: OS theme change on linux
 export function StyleProvider({
   children,
   ...rest
 }: Omit<TamaguiProviderProps, 'config'>) {
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const s = trpc.systemTheme.useSubscription(undefined, {
+    onData: (data) => {
+      setIsDarkMode(data.shouldUseDarkColor)
+    },
+  })
   return (
     <TamaguiProvider
       // @ts-ignore
       config={tamaguiConfig}
-      defaultTheme="light"
-      disableRootThemeClass
+      defaultTheme={isDarkMode ? 'dark' : 'light'}
       {...rest}
     >
-      <Theme name="mint">{children}</Theme>
+      <Theme>{children}</Theme>
     </TamaguiProvider>
   )
 }

@@ -3,7 +3,15 @@ import type {AppWindowEvent} from '@mintter/app/src/utils/window-events'
 import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
 import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
-import {BrowserWindow, Menu, MenuItem, app, dialog, ipcMain} from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  MenuItem,
+  app,
+  dialog,
+  ipcMain,
+  nativeTheme,
+} from 'electron'
 import Store from 'electron-store'
 import {createIPCHandler} from 'electron-trpc/main'
 import path from 'path'
@@ -525,6 +533,21 @@ export const router = t.router({
 
   getAppInfo: t.procedure.query(() => {
     return {dataDir: userData, logFilePath, grpcHost: process.env.GRPC_HOST}
+  }),
+
+  systemTheme: t.procedure.subscription(() => {
+    return observable<{shouldUseDarkColor: boolean}>((emit) => {
+      function handler() {
+        console.log('gotchayyy', nativeTheme.shouldUseDarkColors)
+        emit.next({shouldUseDarkColor: nativeTheme.shouldUseDarkColors})
+      }
+      console.log('1gotchayyy', nativeTheme.shouldUseDarkColors)
+      emit.next({shouldUseDarkColors: nativeTheme.shouldUseDarkColors})
+      nativeTheme.addListener('updated', handler)
+      return () => {
+        nativeTheme.removeListener('updated', handler)
+      }
+    })
   }),
 })
 
