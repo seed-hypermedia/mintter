@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@bufbuild/connect-web": "0.7.0",
-    "@bufbuild/protobuf": "1.2.0",
+    "@bufbuild/connect-web": "0.13.0",
+    "@bufbuild/protobuf": "1.3.3",
     "@hookform/resolvers": "3.3.1",
     "@juggle/resize-observer": "3.4.0",
     "@mintter/shared": "*",

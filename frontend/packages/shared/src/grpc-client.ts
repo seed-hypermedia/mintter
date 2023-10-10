@@ -1,4 +1,4 @@
-import {createPromiseClient, PromiseClient} from '@bufbuild/connect-web'
+import {createPromiseClient, PromiseClient} from '@bufbuild/connect'
 import {
   Accounts,
   Changes,
