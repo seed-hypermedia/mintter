@@ -68,6 +68,7 @@ import {
   ChevronDown,
   ChevronUp,
   Store,
+  Upload,
   X,
 } from '@tamagui/lucide-icons'
 import {useEffect, useState} from 'react'
@@ -770,20 +771,20 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
                 </YStack>
               </>
             ) : null}
-            <PublishDialogInstance
-              docId={docId}
-              version={docVersion}
-              docTitle={publication.data?.document?.title}
-              groupPubContext={
-                route.pubContext?.key === 'group' ? route.pubContext : null
-              }
-              {...publishDialogState}
-            />
           </YStack>
         </ContextPopoverContent>
       </ContextPopover>
       {renameDialog.content}
       <VersionContext route={route} />
+      <PublishDialogInstance
+        docId={docId}
+        version={docVersion}
+        docTitle={publication.data?.document?.title}
+        groupPubContext={
+          route.pubContext?.key === 'group' ? route.pubContext : null
+        }
+        {...publishDialogState}
+      />
     </>
   )
 }
@@ -830,11 +831,11 @@ function PublishDialogInstance({
         }
       }}
     >
-      <Dialog.Trigger asChild>
-        <ButtonText size="$2" color="$blue10">
-          Publish to Group...
-        </ButtonText>
-      </Dialog.Trigger>
+      <Tooltip content="Publish to Group">
+        <Dialog.Trigger asChild>
+          <Button size="$2" icon={Upload} chromeless></Button>
+        </Dialog.Trigger>
+      </Tooltip>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
