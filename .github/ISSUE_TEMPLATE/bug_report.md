@@ -1,36 +1,32 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+name: Bug Report
+about: Report an unexpected behavior, bug, or crash
+title: "Bug: "
+labels: ["type: bug"]
 assignees: ''
 ---
 
-**Describe the bug** A clear and concise description of what the bug is.
+## Problem
 
-**To Reproduce** Steps to reproduce the behavior:
+<!--
+    Describe the bug as clearly and concisely as possible.
+    Add as much information as useful, such as screenshots, logs, etc.
+-->
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## Steps to Reproduce
 
-**Expected behavior** A clear and concise description of what you expected to
-happen.
+<!-- 
+    List the actions that would allow to reproduce the bug.
+    Bugs that are reproducible are *much* more likely to get fixed!
+    If you are unable to reproduce the problem, try to at least describe what you were doing
+    before the problem occurred.
+-->
 
-**Screenshots** If applicable, add screenshots to help explain your problem.
+## Expected Behavior
 
-**Desktop (please complete the following information):**
+<!-- Describe the expected behavior of the system. -->
 
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
 
-**Smartphone (please complete the following information):**
+## Debug Info
 
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
-
-**Additional context** Add any other context about the problem here.
+<!-- Paste debug information you find in your app's settings screen. -->
