@@ -75,14 +75,16 @@ workspace="${HOME}/.mtt-site"
 hostname=""
 tag="latest"
 auto_update=0
+no_discovery="true"
 usage()
 {
     echo "group_deployment script. It links a group [options] hostname"
-	echo "   hostname          :protocol + domain this sice will be served in. Ex.: https://example.com"
+	echo "   hostname          :Protocol + domain this sice will be served in. Ex.: https://example.com"
     echo "Options"
-	echo  "-t --tag T          :image tag to pull. latest by default"
-	echo  "-a --auto-update    :updates containers whenever a new image is available. Disabled by default"
-    echo  "-h --help           :shows help and exit"
+	echo  "-t --tag T          :Image tag to pull. Latest by default"
+	echo  "-g --gateway        :Site behaves as a gateway, storing all data. False by default."
+	echo  "-a --auto-update    :Updates containers whenever a new image is available. Disabled by default"
+    echo  "-h --help           :Shows help and exit"
 }
 
 while [ "$1" != "" ]; do
@@ -91,6 +93,8 @@ while [ "$1" != "" ]; do
                                 exit
                                 ;;
         -a | --auto-update )    auto_update=1
+                                ;;
+		-g | --gateway )        no_discovery="false"
                                 ;;
         -t | --tag )            shift
                                 tag="$1"
@@ -143,7 +147,7 @@ if [ $auto_update -eq 1 ]; then
   docker run -d --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
 fi
 
-MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
+MTT_SITE_DNS="$dns" MTT_SITE_TAG="$tag" MTT_SITE_NO_DISCOVERY="$no_discovery" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 # MTT_SITE_DNS="$dns" MTT_SITE_HOSTNAME="$hostname" MTT_SITE_PROXY_CONTAINER_NAME="proxy" MTT_SITE_NEXTJS_CONTAINER_NAME="nextjs" MTT_SITE_DAEMON_CONTAINER_NAME="minttersite" docker compose -f ${workspace}/mttsite.yml up -d --pull always --quiet-pull 2> ${workspace}/deployment.log || true
 
 timeout 15 docker logs -f minttersite 2> /dev/null | sed '/Site Invitation secret token: / q' | awk -F ': ' '{print $2}'
