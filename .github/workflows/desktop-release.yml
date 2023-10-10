@@ -2,7 +2,7 @@ name: Desktop app release
 
 permissions:
   contents: write
-  
+
 on:
   push:
     tags:
@@ -114,8 +114,8 @@ jobs:
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           DAEMON_NAME: ${{ matrix.config.daemon_name }}
-          APP_VERSION: "${{ needs.get-version.outputs.version }}"
-          # APP_VERSION: "0.0.100"
+          VITE_APP_VERSION: "${{ needs.get-version.outputs.version }}"
+          # VITE_APP_VERSION: "0.0.100"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           timeout-minutes: 10
