@@ -60,6 +60,6 @@ services:
       - "--http.port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
       - "-grpc.port=56002"
       - "-p2p.no-relay"
-      - "-no-discovery"=${MTT_SITE_NO_DISCOVERY:-true}"
+      - "-no-discovery=${MTT_SITE_NO_DISCOVERY:-true}"
       - "-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1"
       - "${MTT_SITE_HOSTNAME:-http://nextjs}"
