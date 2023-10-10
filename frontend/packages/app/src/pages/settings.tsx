@@ -35,6 +35,7 @@ import {
   Share,
   ArrowDownRight,
   ExternalLink,
+  View,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, ReactNode, useMemo, useState} from 'react'
@@ -238,27 +239,33 @@ function InfoListItem({
   openable,
 }: {
   label: string
-  value?: string
+  value?: string | string[]
   copyable?: boolean
   openable?: boolean
 }) {
   const openUrl = useOpenUrl()
+  const values = Array.isArray(value) ? value : [value]
   return (
     <TableList.Item>
       <SizableText size="$1" flex={0} width={140}>
         {label}:
       </SizableText>
-      <SizableText
-        flex={1}
-        fontFamily="$mono"
-        size="$1"
-        width="100%"
-        overflow="hidden"
-        textOverflow="ellipsis"
-        userSelect="text"
-      >
-        {value}
-      </SizableText>
+      <YStack flexGrow={1}>
+        {values.map((value, index) => (
+          <SizableText
+            flex={1}
+            key={index}
+            fontFamily="$mono"
+            size="$1"
+            width="100%"
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            {value}
+          </SizableText>
+        ))}
+      </YStack>
       {!!value && copyable ? (
         <Tooltip content={`Copy ${label}`}>
           <Button
@@ -334,7 +341,8 @@ function AppSettings() {
   const grpcClient = useGRPCClient()
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
-  const userDataDir = trpc.getUserDataInfo.useQuery().data
+  const appInfo = trpc.getAppInfo.useQuery().data
+  const daemonInfo = trpc.getDaemonInfo.useQuery().data
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
@@ -342,20 +350,39 @@ function AppSettings() {
         <InfoListHeader title="User Data" />
         <InfoListItem
           label="Data Directory"
-          value={userDataDir?.dataDir}
+          value={appInfo?.dataDir}
           copyable
           openable
         />
         <Separator />
         <InfoListItem
           label="Log File"
-          value={userDataDir?.logFilePath}
+          value={appInfo?.logFilePath}
           copyable
           openable
         />
       </TableList>
       <TableList>
-        <InfoListHeader title="Bundle Information" />
+        <InfoListHeader
+          title="Bundle Information"
+          right={
+            <Tooltip content="Copy App Version Info">
+              <Button
+                size="$2"
+                icon={Copy}
+                onPress={() => {
+                  copyTextToClipboard(`App Version: ${APP_VERSION}
+Electron Version: ${versions.electron}
+Chrome Version: ${versions.chrome}
+Node Version: ${versions.node}
+${daemonInfo}`)
+                }}
+              >
+                Copy App Version Info
+              </Button>
+            </Tooltip>
+          }
+        />
         <InfoListItem label="App Version" value={APP_VERSION} />
         <Separator />
         <InfoListItem label="Electron Version" value={versions.electron} />
@@ -363,6 +390,8 @@ function AppSettings() {
         <InfoListItem label="Chrome Version" value={versions.chrome} />
         <Separator />
         <InfoListItem label="Node Version" value={versions.node} />
+        <Separator />
+        <InfoListItem label="Daemon Details" value={daemonInfo.split('\n')} />
       </TableList>
       <Separator />
     </YStack>

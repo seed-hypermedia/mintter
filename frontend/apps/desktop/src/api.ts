@@ -11,6 +11,7 @@ import superjson from 'superjson'
 import z from 'zod'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {childLogger, logFilePath, log, warn} from './logger'
+import {BACKEND_HTTP_PORT} from '@mintter/shared'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -515,8 +516,15 @@ export const router = t.router({
     })
   }),
 
-  getUserDataInfo: t.procedure.query(() => {
-    return {dataDir: userData, logFilePath}
+  getDaemonInfo: t.procedure.query(async () => {
+    const buildInfoUrl = `http://localhost:${BACKEND_HTTP_PORT}/debug/buildinfo`
+    const daemonVersionReq = await fetch(buildInfoUrl)
+    const daemonVersion = await daemonVersionReq.text()
+    return daemonVersion
+  }),
+
+  getAppInfo: t.procedure.query(() => {
+    return {dataDir: userData, logFilePath, grpcHost: process.env.GRPC_HOST}
   }),
 })
 
