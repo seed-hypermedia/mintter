@@ -553,9 +553,13 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	if v, ok := e.Get("siteURL"); ok {
 		vv, ok := v.(string)
 		if ok {
-			if err := srv.SyncSite(ctx, vv, 0); err != nil {
-				srv.log.Error("PushGroupToSiteError", zap.String("siteURL", vv), zap.Error(err))
-			}
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+				defer cancel()
+				if err := srv.SyncSite(ctx, vv, 0); err != nil {
+					srv.log.Error("PushGroupToSiteError", zap.String("siteURL", vv), zap.Error(err))
+				}
+			}()
 		}
 	}
 

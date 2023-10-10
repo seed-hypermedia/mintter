@@ -146,7 +146,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
 		}
 	}
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, me, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraOpts...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +408,6 @@ func initGRPC(
 	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
-	id *future.ReadOnly[core.Identity],
 	repo *storage.Dir,
 	pool *sqlitex.Pool,
 	blobs *hyper.Storage,
