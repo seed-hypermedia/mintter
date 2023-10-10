@@ -366,7 +366,7 @@ function AppSettings() {
         <InfoListHeader
           title="Bundle Information"
           right={
-            <Tooltip content="Copy App Version Info">
+            <Tooltip content="Copy Debug Info">
               <Button
                 size="$2"
                 icon={Copy}
@@ -375,10 +375,11 @@ function AppSettings() {
 Electron Version: ${versions.electron}
 Chrome Version: ${versions.chrome}
 Node Version: ${versions.node}
-${daemonInfo}`)
+Go Build Info:
+    ${daemonInfo.replace(/\n/g, '\n    ')}`)
                 }}
               >
-                Copy App Version Info
+                Copy Debug Info
               </Button>
             </Tooltip>
           }
@@ -391,7 +392,7 @@ ${daemonInfo}`)
         <Separator />
         <InfoListItem label="Node Version" value={versions.node} />
         <Separator />
-        <InfoListItem label="Daemon Details" value={daemonInfo.split('\n')} />
+        <InfoListItem label="Go Build Info" value={daemonInfo?.split('\n')} />
       </TableList>
       <Separator />
     </YStack>
