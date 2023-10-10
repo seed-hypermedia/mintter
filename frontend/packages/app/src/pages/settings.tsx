@@ -247,10 +247,10 @@ function InfoListItem({
   const values = Array.isArray(value) ? value : [value]
   return (
     <TableList.Item>
-      <SizableText size="$1" flex={0} width={140}>
+      <SizableText size="$1" flex={0} minWidth={140} width={140}>
         {label}:
       </SizableText>
-      <YStack flexGrow={1}>
+      <YStack flex={1}>
         {values.map((value, index) => (
           <SizableText
             flex={1}
@@ -366,7 +366,7 @@ function AppSettings() {
         <InfoListHeader
           title="Bundle Information"
           right={
-            <Tooltip content="Copy Debug Info">
+            <Tooltip content="Copy App Info for Developers">
               <Button
                 size="$2"
                 icon={Copy}
@@ -376,7 +376,7 @@ Electron Version: ${versions.electron}
 Chrome Version: ${versions.chrome}
 Node Version: ${versions.node}
 Go Build Info:
-    ${daemonInfo.replace(/\n/g, '\n    ')}`)
+    ${daemonInfo?.replace(/\n/g, '\n    ')}`)
                 }}
               >
                 Copy Debug Info
@@ -394,7 +394,6 @@ Go Build Info:
         <Separator />
         <InfoListItem label="Go Build Info" value={daemonInfo?.split('\n')} />
       </TableList>
-      <Separator />
     </YStack>
   )
 }
