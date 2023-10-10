@@ -3,25 +3,35 @@ import {useAccount} from '@mintter/app/src/models/accounts'
 import {useNavigate} from '@mintter/app/src/utils/useNavigate'
 import {
   Change,
+  createPublicWebHmUrl,
   formattedDate,
   formattedDateMedium,
   pluralS,
+  unpackHmId,
 } from '@mintter/shared'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Avatar,
   Button,
   ButtonText,
+  Copy,
+  ExternalLink,
   PanelCard,
   SizableText,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {useMemo} from 'react'
-import {NavRoute, useNavRoute} from '../utils/navigation'
+import {
+  NavRoute,
+  unpackHmIdWithAppRoute,
+  useNavRoute,
+} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {getAvatarUrl} from '../utils/account-url'
+import {OptionsDropdown} from './list-item'
+import {copyTextToClipboard} from '../copy-to-clipboard'
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
@@ -92,36 +102,68 @@ function ChangeItem({
       accessory: {key: 'versions'},
     }
   }
+  const parsedEntityId = unpackHmId(entityId)
+  const publicWebUrl =
+    parsedEntityId &&
+    createPublicWebHmUrl('d', parsedEntityId?.eid, {
+      version: change.id,
+    })
+  const spawn = useNavigate('spawn')
   return (
-    <YStack
+    <XStack
       marginTop={shouldDisplayAuthorName ? '$4' : undefined}
-      overflow="hidden"
-      borderRadius="$2"
-      backgroundColor={isActive ? '$backgroundHover' : 'transparent'}
-      hoverStyle={{
-        cursor: 'pointer',
-        backgroundColor: isActive ? '$green4' : '$backgroundHover',
-      }}
-      // padding="$4"
-      // paddingVertical="$4"
-
-      onPress={() => {
-        destRoute && navigate(destRoute)
-      }}
-      disabled={!destRoute}
-      paddingHorizontal="$4"
-      // group="change"
-      position="relative"
+      ai="center"
+      gap="$2"
     >
-      {topRow}
+      <YStack
+        f={1}
+        overflow="hidden"
+        borderRadius="$2"
+        backgroundColor={isActive ? '$backgroundHover' : 'transparent'}
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: isActive ? '$green4' : '$backgroundHover',
+        }}
+        onPress={() => {
+          destRoute && navigate(destRoute)
+        }}
+        disabled={!destRoute}
+        paddingHorizontal="$4"
+        position="relative"
+      >
+        {topRow}
 
-      {dateRow && (
-        <XStack gap="$2">
-          <XStack width={28} />
-          {dateRow}
-        </XStack>
-      )}
-    </YStack>
+        {dateRow && (
+          <XStack gap="$2">
+            <XStack width={28} />
+            {dateRow}
+          </XStack>
+        )}
+      </YStack>
+      <OptionsDropdown
+        menuItems={[
+          {
+            key: 'copyLink',
+            icon: Copy,
+            onPress: () => {
+              if (!publicWebUrl) return
+              copyTextToClipboard(publicWebUrl)
+            },
+            label: 'Copy Link to Version',
+          },
+          {
+            key: 'openNewWindow',
+            icon: ExternalLink,
+            onPress: () => {
+              const dest = unpackHmIdWithAppRoute(publicWebUrl)
+              if (!dest?.navRoute) return
+              spawn(dest.navRoute)
+            },
+            label: 'Open in New Window',
+          },
+        ]}
+      />
+    </XStack>
   )
 }
 
