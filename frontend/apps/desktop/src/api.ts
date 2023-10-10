@@ -10,7 +10,7 @@ import path from 'path'
 import superjson from 'superjson'
 import z from 'zod'
 import {APP_USER_DATA_PATH} from './app-paths'
-import {childLogger, error, log, warn} from './logger'
+import {childLogger, logFilePath, log, warn} from './logger'
 
 const t = initTRPC.create({isServer: true, transformer: superjson})
 
@@ -515,7 +515,9 @@ export const router = t.router({
     })
   }),
 
-  getUserDataDir: t.procedure.query(() => userData),
+  getUserDataInfo: t.procedure.query(() => {
+    return {dataDir: userData, logFilePath}
+  }),
 })
 
 export const trpc = router.createCaller({})

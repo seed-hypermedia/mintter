@@ -34,6 +34,7 @@ import {
   YStack,
   Share,
   ArrowDownRight,
+  ExternalLink,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, ReactNode, useMemo, useState} from 'react'
@@ -42,6 +43,7 @@ import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {useExportWallet} from '../models/payments'
 import {trpc} from '@mintter/desktop/src/trpc'
+import {useOpenUrl} from '../open-url'
 
 export default function Settings() {
   return (
@@ -233,11 +235,14 @@ function InfoListItem({
   label,
   value,
   copyable,
+  openable,
 }: {
   label: string
   value?: string
   copyable?: boolean
+  openable?: boolean
 }) {
+  const openUrl = useOpenUrl()
   return (
     <TableList.Item>
       <SizableText size="$1" flex={0} width={140}>
@@ -258,10 +263,23 @@ function InfoListItem({
         <Tooltip content={`Copy ${label}`}>
           <Button
             size="$2"
+            marginLeft="$2"
             icon={Copy}
             onPress={() => {
               copyTextToClipboard(value)
               toast.success(`${label} copied!`)
+            }}
+          />
+        </Tooltip>
+      ) : null}
+      {!!value && openable ? (
+        <Tooltip content={`Open ${label}`}>
+          <Button
+            size="$2"
+            marginLeft="$2"
+            icon={ExternalLink}
+            onPress={() => {
+              openUrl(`file://${value}`)
             }}
           />
         </Tooltip>
@@ -316,13 +334,25 @@ function AppSettings() {
   const grpcClient = useGRPCClient()
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
-  const userDataDir = trpc.getUserDataDir.useQuery().data
+  const userDataDir = trpc.getUserDataInfo.useQuery().data
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
       <TableList>
         <InfoListHeader title="User Data" />
-        <InfoListItem label="Data Directory" value={userDataDir} copyable />
+        <InfoListItem
+          label="Data Directory"
+          value={userDataDir?.dataDir}
+          copyable
+          openable
+        />
+        <Separator />
+        <InfoListItem
+          label="Log File"
+          value={userDataDir?.logFilePath}
+          copyable
+          openable
+        />
       </TableList>
       <TableList>
         <InfoListHeader title="Bundle Information" />
