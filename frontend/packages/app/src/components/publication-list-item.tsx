@@ -4,7 +4,7 @@ import {
   useNavRoute,
 } from '@mintter/app/src/utils/navigation'
 import {useClickNavigate} from '@mintter/app/src/utils/useNavigate'
-import {Document, Publication} from '@mintter/shared'
+import {Document, Publication, shortenPath} from '@mintter/shared'
 import {Button, ButtonText, ExternalLink, XStack} from '@mintter/ui'
 import {GestureResponderEvent} from 'react-native'
 import {NavRoute} from '../utils/navigation'
@@ -16,7 +16,8 @@ function unique(keys: string[]) {
   return Array.from(new Set(keys))
 }
 export function getDocumentTitle(document?: Document) {
-  return document?.title || 'Untitled Document'
+  let res = document?.title || 'Untitled Document'
+  return shortenPath(res)
 }
 
 export function PublicationListItem({
@@ -97,7 +98,7 @@ export function PublicationListItem({
                   : undefined
               }
             >
-              {pathName}
+              {shortenPath(pathName)}
             </ButtonText>
           )}
 

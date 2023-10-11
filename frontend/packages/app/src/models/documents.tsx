@@ -30,6 +30,7 @@ import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
+  shortenPath,
   unpackDocId,
 } from '@mintter/shared'
 import {
@@ -259,7 +260,7 @@ export function getDefaultShortname(
   const unpackedId = unpackDocId(docId)
   const idShortname = unpackedId ? unpackedId.eid.slice(0, 5).toLowerCase() : ''
   const shortname = docTitle ? pathNameify(docTitle) : idShortname
-  return shortname
+  return shortenPath(shortname)
 }
 
 export function usePublishDraft(

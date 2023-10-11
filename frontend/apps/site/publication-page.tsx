@@ -163,6 +163,7 @@ export default function PublicationPage({
             </WebTipping>
           </YStack>
         </PageSection.Side>
+
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
@@ -625,7 +626,11 @@ export function PublicationContent({
   let blocks = useMemo(() => {
     let _b = publication?.document?.children
 
-    if (!_b?.length || (_b.length == 1 && _b[0].block?.type != 'embed'))
+    if (
+      !_b?.length ||
+      (_b.length == 1 &&
+        !['embed', 'image', 'video'].includes(_b[0].block?.type))
+    )
       return []
 
     // check if the first block has content or not.
@@ -641,7 +646,7 @@ export function PublicationContent({
   }, [publication?.document?.children])
   return (
     <YStack>
-      {publication?.document?.children?.map((block, index) => (
+      {blocks.map((block, index) => (
         <StaticBlockNode
           block={block}
           key={block.block?.id || index}

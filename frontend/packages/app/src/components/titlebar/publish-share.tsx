@@ -33,6 +33,7 @@ import {
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   labelOfEntityType,
+  shortenPath,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
@@ -544,7 +545,7 @@ function GroupContextItem({
                   : {}
               }
             >
-              /{path}
+              /{shortenPath(path)}
             </ButtonText>
           )}
         </YStack>
