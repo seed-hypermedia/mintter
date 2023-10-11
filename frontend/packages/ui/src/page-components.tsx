@@ -1,4 +1,4 @@
-import {Main, SizableText, Stack, YStack, styled} from 'tamagui'
+import {Main, SizableText, Stack, XStack, YStack, styled} from 'tamagui'
 import {Container} from './container'
 
 export function MainContainer({
@@ -57,7 +57,7 @@ export const SideContainer = styled(YStack, {
   // maxWidth: 300,
   width: '100%',
   gap: '$4',
-  $gtMd: {
+  $gtLg: {
     width: '25%',
     maxWidth: 300,
   },
@@ -68,12 +68,11 @@ const PageSectionRoot = styled(Stack, {
   position: 'relative',
   flexDirection: 'column',
   width: '100%',
-  $gtMd: {
+  $gtLg: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  // borderWidth: 1,
-  // borderColor: '$color6',
+  justifyContent: 'center',
 })
 
 const PageSectionContent = styled(YStack, {
@@ -87,19 +86,17 @@ const PageSectionContent = styled(YStack, {
       },
     },
   },
+  alignSelf: 'stretch',
   paddingRight: '$4',
   paddingBottom: '$4',
   width: '100%',
   flex: 1,
   maxWidth: 680,
-  alignSelf: 'center',
-  $gtMd: {
+  $gtLg: {
     flex: 3,
     flexGrow: 1,
     alignSelf: 'auto',
   },
-  // borderWidth: 1,
-  // borderColor: '$color6',
 })
 
 const PageSectionSide = styled(YStack, {
@@ -110,20 +107,15 @@ const PageSectionSide = styled(YStack, {
       },
     },
   },
-  $gtMd: {
-    // padding: '$6',
-    width: '100%',
+  maxWidth: 680,
+  alignSelf: 'center',
+  width: '100%',
+  $gtLg: {
     flex: 1,
     position: 'relative',
     maxWidth: 300,
-    // alignSelf: 'center',
     alignSelf: 'auto',
   },
-  $gtLg: {
-    maxWidth: 640,
-  },
-  // borderWidth: 1,
-  // borderColor: '$color6',
 })
 
 export const SideSection = styled(YStack, {
@@ -141,7 +133,14 @@ export const SideSectionTitle = styled(SizableText, {
 })
 
 const Root = PageSectionRoot
-const Content = PageSectionContent
+
+function Content({children}) {
+  return (
+    <XStack f={1} jc="center">
+      <PageSectionContent>{children}</PageSectionContent>
+    </XStack>
+  )
+}
 const Side = PageSectionSide
 
 export const PageSection = {Root, Content, Side}

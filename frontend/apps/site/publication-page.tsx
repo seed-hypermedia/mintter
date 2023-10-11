@@ -124,7 +124,7 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtMd ? 'inherit' : 'none'}
+          display={media.gtLg ? 'inherit' : 'none'}
         />
 
         <PageSection.Content>
@@ -152,7 +152,7 @@ export default function PublicationPage({
             </YStack>
           )}
         </PageSection.Content>
-        <PageSection.Side>
+        <PageSection.Side paddingRight="$4">
           <YStack className="publication-sidenav-sticky">
             <PublicationMetadata publication={pub} pathName={pathName} />
             <WebTipping
@@ -166,7 +166,7 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtMd ? 'none' : 'inherit'}
+          display={media.gtLg ? 'none' : 'inherit'}
         />
       </PageSection.Root>
       <Footer />

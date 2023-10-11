@@ -22,7 +22,13 @@ export default function DownloadPage(props: any) {
       <SiteHead pageTitle={`Download Mintter ${props.versionName}`} />
       <PageSection.Root>
         <PageSection.Side />
-        <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
+        <PageSection.Content
+          tag="main"
+          id="main-content"
+          tabIndex={-1}
+          backgroundColor={'pink'}
+          overflow="hidden"
+        >
           <Heading size="$3">
             Released{' '}
             {relativeFormattedDate(new Date(props.publishedAt), {

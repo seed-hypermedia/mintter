@@ -78,16 +78,12 @@ Internally, none of us uses Windows for development, but we _do_ build _for_ Win
 
 You can start the daemon go daemon with:
 
-`go run ./backend/cmd/mintter-site "http://localhost:3000" -data-dir=$HOME/.mtt-site -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay`
+`go run ./backend/cmd/mintter-site -data-dir=~/.mttsite -p2p.port=59000 --http.port=59001 -p2p.no-relay -grpc.port=59002 http://127.0.0.1:59001`
 
-Alternatively, you can do this in two steps:
-
-`go build -o plz-out/stellar ./backend/cmd/mintter-site`
-
-`./plz-out/stellar "https://mintter.com" -data-dir /root/.mtt-site -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay`
 
 ### 2. Start the Next.js Web App
 
 In the Mintter directory, start by running `yarn`. Then:
 
-`HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:57001" PORT=3000 yarn site`
+`HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site`
+

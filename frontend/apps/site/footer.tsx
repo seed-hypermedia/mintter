@@ -1,12 +1,17 @@
-import {PageSection, SizableText} from '@mintter/ui'
+import {SizableText, XStack, YStack} from '@mintter/ui'
 import {NextLink} from 'next-link'
-import {useRouter} from 'next/router'
 
 export default function Footer() {
   return (
-    <PageSection.Root tag="footer">
-      <PageSection.Side />
-      <PageSection.Content padding="$4">
+    <YStack alignItems="center">
+      <XStack
+        padding="$6"
+        $gtLg={{
+          padding: '$4',
+        }}
+        maxWidth={680}
+        width="100%"
+      >
         <SizableText size="$2" color="$color9">
           Powered by{' '}
           <NextLink
@@ -17,8 +22,7 @@ export default function Footer() {
             MintterHypermedia
           </NextLink>
         </SizableText>
-      </PageSection.Content>
-      <PageSection.Side />
-    </PageSection.Root>
+      </XStack>
+    </YStack>
   )
 }

@@ -15,7 +15,6 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     : ''
   return (
     <PageSection.Root
-      flexGrow={0}
       paddingTop="$4"
       $gtMd={{paddingTop: '$6', paddingBottom: '$6'}}
     >

@@ -29,6 +29,7 @@ const prodInter: Interceptor = (next) => async (req) => {
     ...req,
     init: {...req.init, redirect: 'follow'},
   })
+  // todo catch (e) code: ECONNREFUSED for undici error, figure it out!
   return result
 }
 
