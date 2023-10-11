@@ -113,7 +113,7 @@ function ChangeItem({
   const parsedEntityId = unpackHmId(entityId)
   const publicWebUrl =
     parsedEntityId &&
-    createPublicWebHmUrl('d', parsedEntityId?.eid, {
+    createPublicWebHmUrl(parsedEntityId?.type, parsedEntityId?.eid, {
       version: change.id,
     })
   const spawn = useNavigate('spawn')
