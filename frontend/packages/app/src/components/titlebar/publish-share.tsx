@@ -75,6 +75,7 @@ import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppDialog} from '../dialog'
 import DiscardDraftButton from './discard-draft-button'
+import CommitDraftButton from './commit-draft-button'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -874,52 +875,9 @@ function PublishDialogInstance({
 }
 
 export function DraftPublicationButtons() {
-  const route = useNavRoute()
-  if (route.key !== 'draft')
-    throw new Error('DraftPublicationButtons requires draft route')
-  const draftId = route.draftId
-  const groupRouteContext =
-    route.pubContext?.key === 'group' ? route.pubContext : null
-  const navReplace = useNavigate('replace')
-  const navBack = useNavigate('backplace')
-
-  const isDaemonReady = useDaemonReady()
-  const publish = usePublishDraft({
-    onSuccess: ({pub: publishedDoc, pubContext}) => {
-      if (!publishedDoc || !draftId) return
-      if (
-        route.contextRoute?.key === 'group' &&
-        pubContext?.key === 'group' &&
-        pubContext.pathName === '/'
-      ) {
-        navBack(route.contextRoute)
-      } else {
-        navReplace({
-          key: 'publication',
-          documentId: draftId,
-          versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
-          pubContext: pubContext,
-        })
-      }
-      toast.success('Document Committed.')
-    },
-    onError: (e: any) => {
-      toast.error('Failed to publish: ' + e.message)
-    },
-  })
   return (
     <>
-      <Button
-        size="$2"
-        disabled={!isDaemonReady}
-        onPress={() => {
-          publish.mutate({draftId})
-        }}
-        theme="green"
-        icon={Check}
-      >
-        {groupRouteContext ? 'Commit to Group' : 'Commit'}
-      </Button>
+      <CommitDraftButton />
       <DiscardDraftButton />
     </>
   )
