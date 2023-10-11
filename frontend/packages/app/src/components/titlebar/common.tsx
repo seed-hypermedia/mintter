@@ -51,7 +51,11 @@ import {
 import {memo} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
-import {useGroup} from '../../models/groups'
+import {
+  useGroup,
+  useGroupContent,
+  useInvertedGroupContent,
+} from '../../models/groups'
 import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
@@ -154,6 +158,7 @@ export function useFullReferenceUrl(
       ? pubRoute.pubContext.groupId
       : undefined
   const contextGroup = useGroup(contextGroupId)
+  const invertedGroupContent = useInvertedGroupContent(contextGroupId)
 
   if (!pubRoute) return getReferenceUrlOfRoute(route)
   const docId = unpackHmId(pubRoute.documentId)
@@ -165,7 +170,17 @@ export function useFullReferenceUrl(
     }
   }
   const hostname = contextGroup.data?.siteInfo?.baseUrl
+
   if (pub.data?.version) {
+    const matchedPrettyPath =
+      invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
+    if (matchedPrettyPath) {
+      return {
+        url: `${hostname}/${matchedPrettyPath}?v=${pub.data?.version}`,
+        label: 'Site Document',
+      }
+    }
+
     // here we are providing a web URL to the site, so we should ideally make sure that this version actually appears on the site
     // the way we do that for now is by returning a special case ABOVE this, when the version is set on the route
     return {

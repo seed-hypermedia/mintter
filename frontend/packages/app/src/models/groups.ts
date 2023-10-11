@@ -1,4 +1,4 @@
-import {Role, unpackDocId} from '@mintter/shared'
+import {Role, unpackDocId, unpackHmId} from '@mintter/shared'
 import {
   UseMutationOptions,
   UseQueryOptions,
@@ -13,6 +13,7 @@ import {
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
 import {queryKeys} from './query-keys'
+import {useMemo} from 'react'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
@@ -230,6 +231,30 @@ export function useGroupContent(
     },
     enabled: !!groupId,
   })
+}
+
+export function useInvertedGroupContent(
+  groupId?: string | undefined,
+  version?: string,
+) {
+  const groupContent = useGroupContent(groupId, version)
+  const data = useMemo(() => {
+    const groupPathsByDocIdVersion: Record<string, Record<string, string>> = {}
+    Object.entries(groupContent?.data?.content || {}).map(
+      ([pathName, fullContentId]) => {
+        if (!fullContentId) return
+        const unpackedId = unpackHmId(fullContentId)
+        if (unpackedId && unpackedId.version) {
+          const versions =
+            groupPathsByDocIdVersion[unpackedId.eid] ||
+            (groupPathsByDocIdVersion[unpackedId.eid] = {})
+          versions[unpackedId.version] = pathName
+        }
+      },
+    )
+    return groupPathsByDocIdVersion
+  }, [groupContent.data])
+  return {...groupContent, data}
 }
 
 export function useGroupMembers(groupId: string, version?: string | undefined) {
