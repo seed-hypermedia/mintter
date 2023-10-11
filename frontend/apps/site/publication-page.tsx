@@ -642,6 +642,10 @@ export function PublicationContent({
 
     let [_firstBlock, ...restBlocks] = _b
 
+    if (_firstBlock.children?.length) {
+      restBlocks = [..._firstBlock.children, ...restBlocks]
+    }
+
     return restBlocks
   }, [publication?.document?.children])
   return (
