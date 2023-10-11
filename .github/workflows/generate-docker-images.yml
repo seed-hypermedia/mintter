@@ -16,9 +16,6 @@ jobs:
   generate-docker-images:
     runs-on: ubuntu-latest
     steps:
-      - name: Get day of the week to see if its after hyper-tuesdays
-        id: weekday
-        run: echo "::set-output name=weekday::$(date +'%u')"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker Hub
@@ -33,7 +30,10 @@ jobs:
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:master
       - name: Build and push stable mintter-site
-        if: ${{ steps.weekday.outputs.weekday == '3' }}
+        on:
+          push:
+            tags:        
+              - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -47,7 +47,10 @@ jobs:
           file: backend/cmd/mintterd/Dockerfile
           tags: mintter/mintterd:master
       - name: Build and push stable mintterd
-        if: ${{ steps.weekday.outputs.weekday == '3' }}
+        on:
+          push:
+            tags:        
+              - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -61,7 +64,10 @@ jobs:
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:master
       - name: Build and push stable nextjs
-        if: ${{ steps.weekday.outputs.weekday == '3' }}
+        on:
+          push:
+            tags:        
+              - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -75,7 +81,10 @@ jobs:
           file: backend/cmd/monitord/Dockerfile
           tags: mintter/monitord:master
       - name: Build and push stable monitord
-        if: ${{ steps.weekday.outputs.weekday == '3' }}
+        on:
+          push:
+            tags:        
+              - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -89,7 +98,10 @@ jobs:
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:master
       - name: Build and push stable relay
-        if: ${{ steps.weekday.outputs.weekday == '3' }}
+        on:
+          push:
+            tags:        
+              - '[0-9]{4}.[0-9]{2}.[0-9]{2}'
         uses: docker/build-push-action@v4
         with:
           push: true
