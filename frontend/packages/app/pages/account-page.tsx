@@ -236,13 +236,14 @@ export default function AccountPage() {
           <Section>
             <SizableText size="$4">{account.profile?.bio}</SizableText>
             {groups?.items.length ? (
-              <XStack alignItems="center" space>
-                <SizableText size="$2" fontWeight="bold">
+              <XStack alignItems="center" space flexWrap="wrap">
+                <SizableText size="$2" marginBottom="$2" fontWeight="bold">
                   Groups
                 </SizableText>
                 {groups.items.map((item) => (
                   <Button
                     size="$2"
+                    marginBottom="$2"
                     key={item.group?.id}
                     theme="blue"
                     onPress={() =>
