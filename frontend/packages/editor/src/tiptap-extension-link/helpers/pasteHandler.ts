@@ -1,5 +1,5 @@
-import {fetchWebLink} from '@mintter/app/src/models/web-links'
-import {AppQueryClient} from '@mintter/app/src/query-client'
+import {fetchWebLink} from '@mintter/app/models/web-links'
+import {AppQueryClient} from '@mintter/app/query-client'
 import {
   createHmDocLink,
   extractBlockRefOfUrl,

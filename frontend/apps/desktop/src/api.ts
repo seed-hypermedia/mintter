@@ -1,6 +1,6 @@
-import type {NavRoute, NavState} from '@mintter/app/src/utils/navigation'
-import type {AppWindowEvent} from '@mintter/app/src/utils/window-events'
-import {unpackHmIdWithAppRoute} from '@mintter/app/src/utils/navigation'
+import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
+import type {AppWindowEvent} from '@mintter/app/utils/window-events'
+import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
 import {initTRPC} from '@trpc/server'
 import {observable} from '@trpc/server/observable'
 import {

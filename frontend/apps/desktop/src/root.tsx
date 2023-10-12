@@ -1,4 +1,7 @@
-import {Interceptor, createGrpcWebTransport} from '@bufbuild/connect-web'
+import '@tamagui/core/reset.css'
+import '@tamagui/font-inter/css/400.css'
+import '@tamagui/font-inter/css/700.css'
+import {createGrpcWebTransport} from '@bufbuild/connect-web'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
 import {AppError, AppErrorPage} from '@mintter/app/components/app-error'
@@ -24,7 +27,7 @@ import {createIPC} from './ipc'
 import './root.css'
 import type {StateStream} from './stream'
 import {client} from './trpc'
-import {useListenAppEvent} from '@mintter/app/src/utils/window-events'
+import {useListenAppEvent} from '@mintter/app/utils/window-events'
 
 const logger = {
   log: wrapLogger(console.log),

@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "serve": "NODE_ENV=production next start --port 8151",
+    "dev": "yarn next dev",
+    "build": "yarn next:build",
+    "next:build": "yarn next build",
+    "start": "yarn next start",
+    "serve": "NODE_ENV=production yarn next start --port 8151",
     "lint": "next lint",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
-    "test": "echo 'SITE: NO TESTS';"
+    "test": "echo 'SITE: NO TESTS';",
+    "with-env": "TAMAGUI_TARGET=web"
   },
   "dependencies": {
     "@bufbuild/connect": "0.13.0",

@@ -3,7 +3,7 @@
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@mintter/app/*": ["./frontend/packages/app/*"],
+      "@mintter/app/*": ["./frontend/packages/app/src/*"],
       "@mintter/ui/*": ["./frontend/packages/ui/*"],
       "@mintter/shared/*": ["./frontend/packages/shared/*"]
     },
@@ -11,8 +11,14 @@
       {
         // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
         "name": "@nderscore/tamagui-typescript-plugin",
-        "pathToApp": "apps/next"
+        "pathToApp": "frontend/apps/site"
+      },
+      {
+        // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
+        "name": "@nderscore/tamagui-typescript-plugin",
+        "pathToApp": "frontend/apps/desktop"
       }
     ]
   },
+  // "extends": "expo/tsconfig.base"
 }

@@ -1,4 +1,4 @@
-import {useCitationsForBlock} from '@mintter/app/src/components/citations-context'
+import {useCitationsForBlock} from '@mintter/app/components/citations-context'
 import {mergeAttributes, Node, NodeViewProps} from '@tiptap/core'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
@@ -14,11 +14,11 @@ import {
   PartialBlock,
 } from './blocknote'
 
-import {copyTextToClipboard} from '@mintter/app/src/copy-to-clipboard'
-import {usePublication} from '@mintter/app/src/models/documents'
-import {toast} from '@mintter/app/src/toast'
-import {useNavRoute} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {usePublication} from '@mintter/app/models/documents'
+import {toast} from '@mintter/app/toast'
+import {useNavRoute} from '@mintter/app/utils/navigation'
+import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   createPublicWebHmUrl,
   HMBlockChildrenType,

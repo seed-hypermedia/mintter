@@ -90,6 +90,7 @@ export default async function mediaHandler(
               )
             const src = `${process.env.GRPC_HOST}/ipfs/${account.profile.avatar}`
             return (
+              /* eslint-disable */
               <img
                 key={account.id}
                 src={src}

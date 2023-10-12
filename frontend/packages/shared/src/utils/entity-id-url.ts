@@ -96,7 +96,8 @@ function inKeys<V extends string>(
   key: string,
   values: Record<V, string>,
 ): V | null {
-  // @ts-expect-error
+  // TODO: change to expect-error instead
+  // @ts-ignore
   if (values[key]) return key as V
   return null
 }

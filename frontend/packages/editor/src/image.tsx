@@ -1,5 +1,5 @@
-import {useAppContext} from '@mintter/app/src/app-context'
-import {toast} from '@mintter/app/src/toast'
+import {useAppContext} from '@mintter/app/app-context'
+import {toast} from '@mintter/app/toast'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,

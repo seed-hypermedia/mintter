@@ -1,4 +1,5 @@
 import {SizableText, XStack, YStack} from 'tamagui'
+import * as React from 'react'
 import {formattedDate, Account} from '@mintter/shared'
 
 export function PanelCard({
@@ -16,7 +17,7 @@ export function PanelCard({
   author?: Account
   date?: any
   onPress?: () => void
-  avatar?: Element | null
+  avatar?: React.JSX.Element | null
   active?: boolean
   shorter?: boolean
 }) {
@@ -24,11 +25,12 @@ export function PanelCard({
     <YStack
       overflow="hidden"
       borderRadius="$2"
-      backgroundColor={active ? '$backgroundHover' : 'transparent'}
+      backgroundColor={active ? '$backgroundHover' : '$backgroundTransparent'}
       hoverStyle={{
         cursor: 'pointer',
         backgroundColor: '$backgroundHover',
       }}
+      margin="$4"
       padding="$4"
       paddingVertical={shorter ? '$1' : '$4'}
       gap="$2"
@@ -58,36 +60,28 @@ export function PanelCard({
           </SizableText>
         )}
       </XStack>
-      {title ||
-        (content && (
-          <YStack
-            // borderColor="$color5"
-            // borderWidth={1}
-            gap="$2"
-            flex={1}
+      <YStack gap="$2" flex={1}>
+        {title && (
+          <SizableText
+            textOverflow="ellipsis"
+            overflow="hidden"
+            whiteSpace="nowrap"
           >
-            {title && (
-              <SizableText
-                textOverflow="ellipsis"
-                overflow="hidden"
-                whiteSpace="nowrap"
-                fontFamily="$body"
-              >
-                {title}
-              </SizableText>
-            )}
-            {content && (
-              <SizableText
-                color="$color10"
-                overflow="hidden"
-                maxHeight={69}
-                fontFamily="$body"
-              >
-                {content}
-              </SizableText>
-            )}
-          </YStack>
-        ))}
+            {title}
+          </SizableText>
+        )}
+        {content && (
+          <SizableText
+            color="$color10"
+            overflow="hidden"
+            maxHeight={23 * 3}
+            size="$1"
+            lineHeight="$5"
+          >
+            {content}
+          </SizableText>
+        )}
+      </YStack>
     </YStack>
   )
 }

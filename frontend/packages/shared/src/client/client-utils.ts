@@ -1,6 +1,8 @@
-import {Interceptor} from '@bufbuild/connect-web'
+// import {Interceptor} from '@bufbuild/connect-web'
 
-export const loggingInterceptor: Interceptor = (next) => async (req) => {
+// TODO: change to expect-error instead
+// @ts-ignore
+export const loggingInterceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
@@ -12,7 +14,9 @@ export const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
-export const prodInter: Interceptor = (next) => async (req) => {
+// TODO: change to expect-error instead
+// @ts-ignore
+export const prodInter = (next) => async (req) => {
   const result = await next({
     ...req,
     init: {...req.init, redirect: 'follow'},

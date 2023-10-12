@@ -1,10 +1,11 @@
 {
   "name": "@mintter/app",
   "version": "0.1.0",
+  "main": "index.ts",
+  "private": true,
   "sideEffects": [
     "*.css"
   ],
-  "private": true,
   "scripts": {
     "lint": "eslint .",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",

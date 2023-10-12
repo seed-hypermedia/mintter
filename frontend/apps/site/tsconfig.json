@@ -20,7 +20,7 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "next"
+        "name": "site"
       },
       {
         // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme

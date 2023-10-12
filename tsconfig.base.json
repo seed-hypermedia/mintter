@@ -29,12 +29,11 @@
     "types": ["node"],
     "lib": ["dom", "esnext"],
     "plugins": [
-      // TODO: study for real what is this plugin all about
-      // {
+      {
         // docs: https://github.com/nderscore/tamagui-typescript-plugin#readme
-      //   "name": "@nderscore/tamagui-typescript-plugin",
-      //   "pathToApp": "apps/desktop"
-      // }
+        "name": "@nderscore/tamagui-typescript-plugin",
+        "pathToApp": "apps/next"
+      }
     ]
   },
   "exclude": ["_"],

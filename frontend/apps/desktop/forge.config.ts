@@ -22,6 +22,7 @@ const LLVM_TRIPLES = {
 function getPlatformTriple() {
   return (
     process.env.DAEMON_NAME ||
+    // @ts-ignore
     LLVM_TRIPLES[`${process.platform}/${process.arch}`]
   )
 }

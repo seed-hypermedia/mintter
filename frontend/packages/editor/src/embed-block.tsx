@@ -1,11 +1,8 @@
 import {PartialMessage} from '@bufbuild/protobuf'
-import {usePublication} from '@mintter/app/src/models/documents'
-import {useOpenUrl} from '@mintter/app/src/open-url'
-import {
-  NavRoute,
-  unpackHmIdWithAppRoute,
-} from '@mintter/app/src/utils/navigation'
-import {useNavigate} from '@mintter/app/src/utils/useNavigate'
+import {usePublication} from '@mintter/app/models/documents'
+import {useOpenUrl} from '@mintter/app/open-url'
+import {NavRoute, unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
+import {useNavigate} from '@mintter/app/utils/useNavigate'
 import type {
   Account,
   BlockNode,
@@ -47,9 +44,9 @@ import {
 } from './blocknote'
 import {createReactBlockSpec} from './blocknote/react'
 
-import {useAccount} from '@mintter/app/src/models/accounts'
-import {useGroup} from '@mintter/app/src/models/groups'
-import {getAvatarUrl} from '@mintter/app/src/utils/account-url'
+import {useAccount} from '@mintter/app/models/accounts'
+import {useGroup} from '@mintter/app/models/groups'
+import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {hmBlockSchema} from './schema'
 
 function InlineContentView({

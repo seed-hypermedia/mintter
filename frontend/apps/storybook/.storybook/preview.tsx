@@ -1,4 +1,3 @@
-import {themes} from "@mintter/ui/src/themes";
 import {Preview} from "@storybook/react";
 import "@tamagui/core/reset.css";
 import "@tamagui/font-inter/css/400.css";
@@ -12,7 +11,7 @@ const themeData = [
   new Set<string>(), // alt1/alt2
   // new Set<string>(), // component
 ];
-for (const themeKey of Object.keys(themes)) {
+for (const themeKey of Object.keys({})) {
   themeKey.split("_").forEach((fragment, idx) => {
     if (fragment[0].toLowerCase() === fragment[0]) themeData[idx].add(fragment);
   });

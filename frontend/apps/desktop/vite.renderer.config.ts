@@ -33,14 +33,9 @@ export default defineConfig(({command, mode}) => {
       tsConfigPaths(),
       react(),
       tamaguiPlugin({
-        target: 'web',
         components: ['@mintter/ui', 'tamagui'],
         config: './tamagui.config.ts',
         useReactNativeWebLite: true,
-        themeBuilder: {
-          input: '../../packages/ui/src/themes.ts',
-          output: '../../packages/ui/src/generated-themes.ts',
-        },
       }),
     ],
   }

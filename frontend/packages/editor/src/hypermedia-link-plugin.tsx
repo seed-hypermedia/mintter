@@ -1,8 +1,8 @@
 import {extractBlockRefOfUrl, hmIdWithVersion} from '@mintter/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {AppQueryClient} from '@mintter/app/src/query-client'
-import {fetchWebLink} from '@mintter/app/src/models/web-links'
+import {AppQueryClient} from '@mintter/app/query-client'
+import {fetchWebLink} from '@mintter/app/models/web-links'
 
 export const hypermediaPluginKey = new PluginKey('hypermedia-link')
 
