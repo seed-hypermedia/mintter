@@ -1,9 +1,9 @@
 import {queryKeys} from '@mintter/app/src/models/query-keys'
 import {Device} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
+import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
-import {useGRPCClient} from '../app-context'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
 
 export function useContactsList() {
   const grpcClient = useGRPCClient()
@@ -45,4 +45,49 @@ export function useAccountWithDevices(accountId: string) {
       },
     ),
   }
+}
+
+export function useConnectPeer(
+  opts: UseMutationOptions<undefined, void, string | undefined>,
+) {
+  const grpcClient = useGRPCClient()
+  const invalidate = useQueryInvalidator()
+  return useMutation<undefined, void, string | undefined>({
+    mutationFn: async (peer: string | undefined) => {
+      if (!peer) return undefined
+      const connectionRegexp = /connect-peer\/([\w\d]+)/
+      const parsedConnectUrl = peer.match(connectionRegexp)
+      let connectionDeviceId = parsedConnectUrl ? parsedConnectUrl[1] : null
+      if (!connectionDeviceId && peer.match(/^(https:\/\/)/)) {
+        // in this case, the "peer" input is not https://site/connect-peer/x url, but it is a web url. So lets try to connect to this site via its well known peer id.
+        const peerUrl = new URL(peer)
+        peerUrl.search = ''
+        peerUrl.hash = ''
+        peerUrl.pathname = '/.well-known/hypermedia-site'
+        const peerWellKnown = peerUrl.toString()
+        const wellKnownData = await fetch(peerWellKnown)
+          .then((res) => res.json())
+          .catch((err) => {
+            console.error('Connect Error:', err)
+            return null
+          })
+        if (wellKnownData?.peerInfo?.peerId) {
+          connectionDeviceId = wellKnownData.peerInfo.peerId
+        } else {
+          throw new Error('Failed to connet to web url: ' + peer)
+        }
+      }
+      const addrs = connectionDeviceId
+        ? [connectionDeviceId]
+        : peer.trim().split(',')
+
+      await grpcClient.networking.connect({addrs})
+      return undefined
+    },
+    onSuccess: (data, ...rest) => {
+      invalidate([queryKeys.GET_PEERS])
+      opts?.onSuccess?.(data, ...rest)
+    },
+    ...opts,
+  })
 }
