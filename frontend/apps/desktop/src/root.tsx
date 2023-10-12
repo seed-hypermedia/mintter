@@ -68,16 +68,9 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
       logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
       return result
     }
-    if (
-      req.method.name === 'ListAccountGroups' ||
-      req.method.name === 'ListAccounts' ||
-      req.method.name === 'ListPeers'
-    ) {
-      return result
-    }
-
     // @ts-ignore
-    logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    logger.log(`🔃 to ${req.method.name} `)
+    // logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     let error = e
