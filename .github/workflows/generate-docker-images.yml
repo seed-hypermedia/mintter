@@ -30,7 +30,7 @@ jobs:
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:master
       - name: Build and push stable mintter-site
-        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && matches(github.ref, '^refs/tags/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
+        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && contains(github.ref, '/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -44,7 +44,7 @@ jobs:
           file: backend/cmd/mintterd/Dockerfile
           tags: mintter/mintterd:master
       - name: Build and push stable mintterd
-        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && matches(github.ref, '^refs/tags/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
+        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && contains(github.ref, '/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -58,7 +58,7 @@ jobs:
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:master
       - name: Build and push stable nextjs
-        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && matches(github.ref, '^refs/tags/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
+        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && contains(github.ref, '/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -72,7 +72,7 @@ jobs:
           file: backend/cmd/monitord/Dockerfile
           tags: mintter/monitord:master
       - name: Build and push stable monitord
-        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && matches(github.ref, '^refs/tags/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
+        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && contains(github.ref, '/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -86,7 +86,7 @@ jobs:
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:master
       - name: Build and push stable relay
-        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && matches(github.ref, '^refs/tags/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
+        if: startsWith(github.ref, 'refs/tags/') && github.event.ref_type == 'tag' && contains(github.ref, '/[0-9]{4}.[0-9]{2}.[0-9]{2}$')
         uses: docker/build-push-action@v4
         with:
           push: true
