@@ -36,6 +36,10 @@ export default defineConfig(({command, mode}) => {
         components: ['@mintter/ui', 'tamagui'],
         config: './tamagui.config.ts',
         useReactNativeWebLite: true,
+        themeBuilder: {
+          input: '../../packages/ui/src/themes/theme.ts',
+          output: '../../packages/ui/src/generated-themes.ts',
+        },
       }),
     ],
   }

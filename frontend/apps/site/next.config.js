@@ -64,7 +64,7 @@ const plugins = [
       'Touchable',
     ],
     themeBuilder: {
-      input: '../../packages/ui/src/themes.ts',
+      input: '../../packages/ui/src/themes/theme.ts',
       output: '../../packages/ui/src/generated-themes.ts',
     },
   }),
