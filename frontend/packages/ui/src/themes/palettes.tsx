@@ -1,5 +1,5 @@
-import { objectFromEntries, objectKeys } from './helpers'
-import { colorTokens } from './token-colors'
+import {objectFromEntries, objectKeys} from './helpers'
+import {colorTokens} from './token-colors'
 
 export const palettes = (() => {
   const lightTransparent = 'rgba(255,255,255,0)'
@@ -12,7 +12,10 @@ export const palettes = (() => {
     const colorPalette = Object.values(colors)
 
     // were re-ordering these
-    const [head, tail] = [colorPalette.slice(0, 6), colorPalette.slice(colorPalette.length - 5)]
+    const [head, tail] = [
+      colorPalette.slice(0, 6),
+      colorPalette.slice(colorPalette.length - 5),
+    ]
 
     // add our transparent colors first/last
     // and make sure the last (foreground) color is white/black rather than colorful
@@ -64,14 +67,22 @@ export const palettes = (() => {
 
   const lightPalettes = objectFromEntries(
     objectKeys(colorTokens.light).map(
-      (key) => [`light_${key}`, getColorPalette(colorTokens.light[key], lightColor)] as const
-    )
+      (key) =>
+        [
+          `light_${key}`,
+          getColorPalette(colorTokens.light[key], lightColor),
+        ] as const,
+    ),
   )
 
   const darkPalettes = objectFromEntries(
     objectKeys(colorTokens.dark).map(
-      (key) => [`dark_${key}`, getColorPalette(colorTokens.dark[key], darkColor)] as const
-    )
+      (key) =>
+        [
+          `dark_${key}`,
+          getColorPalette(colorTokens.dark[key], darkColor),
+        ] as const,
+    ),
   )
 
   const colorPalettes = {

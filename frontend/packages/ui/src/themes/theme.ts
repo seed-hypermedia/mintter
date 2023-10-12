@@ -1,11 +1,11 @@
-import { createThemeBuilder } from '@tamagui/theme-builder'
+import {createThemeBuilder} from '@tamagui/theme-builder'
 
-import { componentThemeDefinitions } from './componentThemeDefinitions'
-import { masks } from './masks'
-import { palettes } from './palettes'
-import { shadows } from './shadows'
-import { maskOptions, templates } from './templates'
-import { darkColors, lightColors } from './token-colors'
+import {componentThemeDefinitions} from './componentThemeDefinitions'
+import {masks} from './masks'
+import {palettes} from './palettes'
+import {shadows} from './shadows'
+import {maskOptions, templates} from './templates'
+import {darkColors, lightColors} from './token-colors'
 
 const colorThemeDefinition = (colorName: string) => [
   {

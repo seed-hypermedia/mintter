@@ -1,4 +1,4 @@
-import { maskOptions } from './templates'
+import {maskOptions} from './templates'
 
 const overlayThemes = {
   light: {

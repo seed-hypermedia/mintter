@@ -1,8 +1,8 @@
-import { MaskOptions } from '@tamagui/create-theme'
+import {MaskOptions} from '@tamagui/create-theme'
 
-import { palettes } from './palettes'
+import {palettes} from './palettes'
 
-export const { templates, maskOptions } = (() => {
+export const {templates, maskOptions} = (() => {
   const templateColors = {
     color1: 1,
     color2: 2,

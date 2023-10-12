@@ -2,7 +2,7 @@
 we use system fonts for native to give a more native feeling to the app
 you can safely delete this file and just use the same font we use on web
 */
-import { createFont, getVariableValue } from 'tamagui'
+import {createFont, getVariableValue} from 'tamagui'
 
 const headingSize = {
   1: 11,
@@ -34,9 +34,11 @@ export const headingFont = createFont({
     3: '500',
     4: '700',
   },
-  size: Object.fromEntries(Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v)])),
+  size: Object.fromEntries(
+    Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v)]),
+  ),
   lineHeight: Object.fromEntries(
-    Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v) + 4])
+    Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v) + 4]),
   ),
 })
 
@@ -68,9 +70,9 @@ export const bodyFont = createFont({
     6: '600',
   },
   size: Object.fromEntries(
-    Object.entries(bodySize).map(([k, v]) => [k, getVariableValue(v) * 1.2])
+    Object.entries(bodySize).map(([k, v]) => [k, getVariableValue(v) * 1.2]),
   ),
   lineHeight: Object.fromEntries(
-    Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v) + 5])
+    Object.entries(headingSize).map(([k, v]) => [k, getVariableValue(v) + 5]),
   ),
 })

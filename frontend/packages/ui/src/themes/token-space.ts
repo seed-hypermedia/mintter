@@ -1,4 +1,4 @@
-import { SizeKeys, Sizes, size } from './token-size'
+import {SizeKeys, Sizes, size} from './token-size'
 
 const spaces = Object.entries(size).map(([k, v]) => {
   return [k, sizeToSpace(v)] as const
