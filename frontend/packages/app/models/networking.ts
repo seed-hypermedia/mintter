@@ -1,4 +1,4 @@
-import {ConnectError} from '@bufbuild/connect-web'
+import {ConnectError} from '@bufbuild/connect'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import appError from '@mintter/app/errors'
 import {ConnectionStatus, GRPCClient, PeerInfo} from '@mintter/shared'

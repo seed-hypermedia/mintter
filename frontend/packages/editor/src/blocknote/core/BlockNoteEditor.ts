@@ -11,9 +11,9 @@ import {
   updateBlock,
 } from './api/blockManipulation/blockManipulation'
 import {
+  HTMLToBlocks,
   blocksToHTML,
   blocksToMarkdown,
-  HTMLToBlocks,
   markdownToBlocks,
 } from './api/formatConversions/formatConversions'
 import {blockToNode, nodeToBlock} from './api/nodeConversions/nodeConversions'
@@ -35,6 +35,7 @@ import {
 import {Selection} from './extensions/Blocks/api/selectionTypes'
 import {getBlockInfoFromPos} from './extensions/Blocks/helpers/getBlockInfoFromPos'
 
+import {HMBlockSchema, hmBlockSchema} from '@/schema'
 import {FormattingToolbarProsemirrorPlugin} from './extensions/FormattingToolbar/FormattingToolbarPlugin'
 import {HyperlinkToolbarProsemirrorPlugin} from './extensions/HyperlinkToolbar/HyperlinkToolbarPlugin'
 import {SideMenuProsemirrorPlugin} from './extensions/SideMenu/SideMenuPlugin'
@@ -43,8 +44,6 @@ import {SlashMenuProsemirrorPlugin} from './extensions/SlashMenu/SlashMenuPlugin
 import {getDefaultSlashMenuItems} from './extensions/SlashMenu/defaultSlashMenuItems'
 import {UniqueID} from './extensions/UniqueID/UniqueID'
 import {mergeCSSClasses} from './shared/utils'
-import {createRightsideBlockWidgetExtension} from '@/rightside-block-widget'
-import {HMBlockSchema, hmBlockSchema} from '@/index'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.

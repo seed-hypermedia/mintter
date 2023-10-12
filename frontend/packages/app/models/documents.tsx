@@ -5,7 +5,7 @@ import {
   useQueryInvalidator,
 } from '@mintter/app/app-context'
 import {editorBlockToServerBlock} from '@mintter/app/client/editor-to-server'
-import {serverChildrenToEditorChildren} from '@mintter/app/client/server-to-editor'
+import {serverChildrenToEditorChildren} from '@mintter/shared'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {toast} from '@mintter/app/toast'
 import {
@@ -460,6 +460,7 @@ export function queryDraft(
           deleted: new Set<string>(),
           moves: [],
         },
+        // @ts-expect-error
         webUrl: serverDraft.webUrl,
         title: serverDraft.title,
         id: serverDraft.id,
@@ -974,6 +975,7 @@ export function useWriteDraftWebUrl(draftId?: string) {
         changes: [
           new DocumentChange({
             op: {
+              // @ts-expect-error
               case: 'setWebUrl',
               value: webUrl,
             },

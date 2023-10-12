@@ -5,7 +5,7 @@ import {useConnectedPeers} from './networking'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useDaemonInfo} from '@mintter/app/models/daemon'
 import appError from '@mintter/app/errors'
-import {ConnectError} from '@bufbuild/connect-web'
+import {ConnectError} from '@bufbuild/connect'
 import {useGRPCClient, useQueryInvalidator} from '@mintter/app/app-context'
 
 export function useAccount(accountId?: string) {

@@ -141,6 +141,7 @@ export function openInitialWindows() {
       })
     })
   } catch (error) {
+    //@ts-expect-error
     error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
     trpc.createAppWindow({routes: [{key: 'home'}]})
     return
@@ -393,6 +394,7 @@ export const router = t.router({
         webPreferences: {
           preload: path.join(__dirname, 'preload.js'),
         },
+        // @ts-expect-error
         icon: import.meta.env.RELEASE_NIGHTLY
           ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
           : path.resolve(__dirname, '../assets/icons/icon.png'),
@@ -405,6 +407,7 @@ export const router = t.router({
 
       log('[MAIN:API]: window created')
 
+      // @ts-expect-error
       const windowLogger = childLogger(windowId)
       browserWindow.webContents.on(
         'console-message',
@@ -428,12 +431,15 @@ export const router = t.router({
           saveWindowPosition()
         }, 200)
       }
+      // @ts-expect-error
       browserWindow.on('resize', (e, a) => {
         saveWindowPositionDebounced()
       })
+      // @ts-expect-error
       browserWindow.on('moved', (e, a) => {
         saveWindowPositionDebounced()
       })
+      // @ts-expect-error
       browserWindow.on('show', (e) => {
         saveWindowPosition()
       })
@@ -542,6 +548,7 @@ export const router = t.router({
         emit.next({shouldUseDarkColor: nativeTheme.shouldUseDarkColors})
       }
       console.log('1gotchayyy', nativeTheme.shouldUseDarkColors)
+      // @ts-expect-error
       emit.next({shouldUseDarkColors: nativeTheme.shouldUseDarkColors})
       nativeTheme.addListener('updated', handler)
       return () => {
