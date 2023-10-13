@@ -10,7 +10,7 @@ import {GestureResponderEvent} from 'react-native'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {ListItem, MenuItem, TimeAccessory} from './list-item'
+import {ListItem, MenuItemType, TimeAccessory} from './list-item'
 
 function unique(keys: string[]) {
   return Array.from(new Set(keys))
@@ -34,7 +34,7 @@ export function PublicationListItem({
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   pubContext: PublicationRouteContext
-  menuItems?: (MenuItem | null)[]
+  menuItems?: (MenuItemType | null)[]
   pathName?: string
   onPointerEnter?: () => void
   openRoute: NavRoute

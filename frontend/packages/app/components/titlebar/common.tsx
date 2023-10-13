@@ -1,9 +1,8 @@
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {usePublicationInContext} from '@mintter/app/models/publication'
-import {useGRPCClient, useIPC} from '@mintter/app/app-context'
+import {useGRPCClient} from '@mintter/app/app-context'
 import {Avatar} from '@mintter/app/components/avatar'
 import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
-import {Dropdown, MenuItem} from '@mintter/app/components/dropdown'
 import appError from '@mintter/app/errors'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDraftList} from '@mintter/app/models/documents'
@@ -39,11 +38,11 @@ import {
 import {
   Bookmark,
   Contact,
+  Copy,
   FilePlus2,
   Globe,
   Library,
   Link,
-  MoreHorizontal,
   Pencil,
   Search,
   Send,
@@ -51,16 +50,16 @@ import {
 import {memo} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
-import {
-  useGroup,
-  useGroupContent,
-  useInvertedGroupContent,
-} from '../../models/groups'
+import {useGroup, useInvertedGroupContent} from '../../models/groups'
 import {useEditGroupInfoDialog} from '../edit-group-info'
 import {AddGroupButton} from '../new-group'
 import {usePublishGroupDialog} from '../publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
 import {useTriggerWindowEvent} from '../../utils/window-events'
+import {MenuItemType, OptionsDropdown} from '../list-item'
+import {MenuItem} from '../dropdown'
+import {useAppDialog} from '../dialog'
+import {CloneGroupDialog} from '../clone-group'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -105,40 +104,45 @@ export function GroupOptionsButton() {
   const editInfo = useEditGroupInfoDialog()
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
-  const dropdownPopover = usePopoverState()
-  if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
+  const cloneGroup = useAppDialog(CloneGroupDialog)
+  const menuItems: MenuItemType[] = [
+    {
+      key: 'clone',
+      label: 'Clone Group',
+      icon: Copy,
+      onPress: () => {
+        cloneGroup.open(groupId)
+      },
+    },
+  ]
+  // if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
+  if (isGroupOwner) {
+    menuItems.push({
+      key: 'publishSite',
+      label: 'Publish Group to Site',
+      icon: Send,
+      onPress: () => {
+        publish.open({
+          groupId,
+          publishedBaseUrl: group.data?.siteInfo?.baseUrl,
+        })
+      },
+    })
+    menuItems.push({
+      key: 'editGroupInfo',
+      label: 'Edit Group Info',
+      icon: Pencil,
+      onPress: () => {
+        editInfo.open(groupId)
+      },
+    })
+  }
   return (
     <>
-      <Dropdown.Root {...dropdownPopover}>
-        <Dropdown.Trigger circular icon={MoreHorizontal} />
-        <Dropdown.Portal>
-          <Dropdown.Content align="start">
-            {isGroupOwner && (
-              <>
-                <Dropdown.Item
-                  onPress={() => {
-                    publish.open({
-                      groupId,
-                      publishedBaseUrl: group.data?.siteInfo?.baseUrl,
-                    })
-                  }}
-                  icon={Send}
-                  title={`Publish Group to Site`}
-                />
-                <Dropdown.Item
-                  onPress={() => {
-                    editInfo.open(groupId)
-                  }}
-                  icon={Pencil}
-                  title={`Edit Group Info`}
-                />
-              </>
-            )}
-          </Dropdown.Content>
-        </Dropdown.Portal>
-      </Dropdown.Root>
+      <OptionsDropdown menuItems={menuItems} />
       {publish.content}
       {editInfo.content}
+      {cloneGroup.content}
     </>
   )
 }

@@ -29,7 +29,7 @@ import {
 } from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {MenuItem, OptionsDropdown} from './list-item'
+import {MenuItemType, OptionsDropdown} from './list-item'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import {Upload} from '@tamagui/lucide-icons'
 import {useAppDialog} from './dialog'
@@ -118,7 +118,7 @@ function ChangeItem({
     })
   const spawn = useNavigate('spawn')
   const postToGroup = useContext(PostToGroup)
-  const menuItems: MenuItem[] = []
+  const menuItems: MenuItemType[] = []
   if (postToGroup && activeVersion !== change.id) {
     menuItems.push({
       key: 'postToGroup',

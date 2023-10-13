@@ -16,7 +16,7 @@ import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
 
-export type MenuItem = {
+export type MenuItemType = {
   key: string
   label: string
   icon: FC
@@ -26,7 +26,7 @@ export type MenuItem = {
 export function copyLinkMenuItem(
   url: string | undefined | null,
   label: string,
-): MenuItem | null {
+): MenuItemType | null {
   if (!url) return null
   return {
     onPress: () => url && copyUrlToClipboardWithFeedback(url, label),
@@ -47,7 +47,7 @@ export function ListItem({
   title: string
   onPress: (e: GestureResponderEvent) => void
   onPointerEnter?: () => void
-  menuItems?: (MenuItem | null)[]
+  menuItems?: (MenuItemType | null)[]
 }) {
   // const [isHovering, setIsHovering] = useState(false)
 
@@ -74,7 +74,11 @@ export function ListItem({
   )
 }
 
-export function OptionsDropdown({menuItems}: {menuItems: (MenuItem | null)[]}) {
+export function OptionsDropdown({
+  menuItems,
+}: {
+  menuItems: (MenuItemType | null)[]
+}) {
   const popoverState = usePopoverState()
   return (
     <Popover {...popoverState} placement="bottom-end">

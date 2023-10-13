@@ -48,8 +48,10 @@ export function useCreateGroup(
     string,
     unknown,
     {
-      description: string
+      description?: string | undefined
       title: string
+      members?: string[]
+      content?: Record<string, string>
     }
   >,
 ) {
@@ -59,11 +61,27 @@ export function useCreateGroup(
     mutationFn: async ({
       description,
       title,
+      members,
+      content,
     }: {
-      description: string
+      description?: string | undefined
       title: string
+      members?: string[]
+      content?: Record<string, string>
     }) => {
-      const group = await grpcClient.groups.createGroup({description, title})
+      const group = await grpcClient.groups.createGroup({
+        description,
+        title,
+        members: members
+          ? Object.fromEntries(members.map((m) => [m, Role.EDITOR]))
+          : undefined,
+      })
+      if (content) {
+        await grpcClient.groups.updateGroup({
+          id: group.id,
+          updatedContent: content,
+        })
+      }
       return group.id
     },
     onSuccess: (result, input, context) => {

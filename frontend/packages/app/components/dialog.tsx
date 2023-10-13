@@ -40,7 +40,9 @@ export const DialogFooter = styled(XStack, {
   gap: '$4',
 })
 
-export const DialogTitle = Dialog.Title
+export const DialogTitle = styled(Dialog.Title, {
+  fontSize: '$7',
+})
 
 export const DialogDescription = Dialog.Description
 
