@@ -533,7 +533,7 @@ export const router = t.router({
         )
       }
 
-      // if (!import.meta.env.PROD) browserWindow.webContents.openDevTools()
+      // if (!IS_PROD_DESKTOP) browserWindow.webContents.openDevTools()
     }),
 
   queryInvalidation: t.procedure.subscription(() => {

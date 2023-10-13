@@ -6,13 +6,12 @@ import {useDocCitations} from '@mintter/app/models/content-graph'
 import {usePublicationEditor} from '@mintter/app/models/documents'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {MttLink, features, pluralS, unpackDocId} from '@mintter/shared'
+import {MttLink, pluralS, unpackDocId} from '@mintter/shared'
 import {
   Button,
   Comment,
   Link,
   MainWrapper,
-  Pencil,
   Text,
   XStack,
   YStack,
@@ -24,7 +23,6 @@ import {AppError} from '@mintter/app/components/app-error'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import {DebugData} from '@mintter/app/components/debug-data'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {useLatestPublication} from '../models/documents'
 import {DocumentPlaceholder} from './document-placeholder'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {VersionChangesInfo} from '../components/version-changes-info'
@@ -137,7 +135,7 @@ export function PublicationPageEditor() {
                 }}
               />
             ) : null}
-            {features.comments ? (
+            {false ? (
               <FooterButton
                 active={accessoryKey === 'comments'}
                 label={`Conversations`}

@@ -38,6 +38,8 @@ export const BACKEND_FILE_UPLOAD_URL = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}
 export const BACKEND_FILE_URL = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}/ipfs`
 export const BACKEND_GRAPHQL_ENDPOINT = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT}/graphql`
 
-export const features = {
-  comments: false,
-}
+// this is injected by Vite, so it indicates if we are in the production build of the DESKTOP app
+export const IS_PROD_DESKTOP = !!import.meta.env?.PROD
+
+export const MINTTER_SENTRY_DESKTOP_DSN = import.meta.env
+  ?.VITE_MINTTER_SENTRY_DESKTOP

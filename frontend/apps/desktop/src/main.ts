@@ -14,21 +14,24 @@ import {
 import {initPaths} from './app-paths'
 import {mainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
+import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
 
 const OS_REGISTER_SCHEME = 'hm'
 
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME, process.execPath, [
-      path.resolve(process.argv[1]!),
-    ])
+if (IS_PROD_DESKTOP) {
+  if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+      app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME, process.execPath, [
+        path.resolve(process.argv[1]!),
+      ])
+    }
+  } else {
+    app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
   }
-} else {
-  app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
-}
 
-if (squirrelStartup) {
-  app.quit()
+  if (squirrelStartup) {
+    app.quit()
+  }
 }
 
 initPaths()
@@ -50,10 +53,10 @@ log.initialize({
   spyRendererConsole: true,
 })
 
-if (import.meta.env.PROD) {
+if (IS_PROD_DESKTOP) {
   Sentry.init({
     debug: true,
-    dsn: import.meta.env.VITE_MINTTER_SENTRY_DESKTOP,
+    dsn: MINTTER_SENTRY_DESKTOP_DSN,
     transportOptions: {
       // The maximum number of days to keep an event in the queue.
       maxQueueAgeDays: 30,
