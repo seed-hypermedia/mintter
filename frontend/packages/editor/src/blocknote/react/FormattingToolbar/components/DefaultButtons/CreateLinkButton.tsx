@@ -30,7 +30,7 @@ export const CreateLinkButton = <BSchema extends BlockSchema>(props: {
     <LinkToolbarButton
       isSelected={!!url}
       mainTooltip="Link"
-      secondaryTooltip={formatKeyboardShortcut('Mod+K')}
+      // secondaryTooltip={formatKeyboardShortcut('Mod+K')} // cmd-k is the quick switcher in Mintter
       icon={RiLink}
       hyperlinkIsActive={!!url}
       activeHyperlinkUrl={url}
