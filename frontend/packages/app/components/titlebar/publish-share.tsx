@@ -64,7 +64,6 @@ import {
   CheckCheck,
   ChevronDown,
   ChevronUp,
-  Store,
   Upload,
   X,
 } from '@tamagui/lucide-icons'
@@ -545,9 +544,6 @@ function GroupContextItem({
             </ButtonText>
           )}
         </YStack>
-        {path === '/' ? (
-          <Store color={isActive ? undefined : '$color9'} size={14} />
-        ) : null}
         <View style={{minWidth: 22}}>
           {isActive && <Check size="$1" color="$blue11" />}
         </View>
