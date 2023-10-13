@@ -1,6 +1,6 @@
 export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
 
-export type Styles = {
+export type HMStyles = {
   bold?: true
   italic?: true
   underline?: true
@@ -11,36 +11,37 @@ export type Styles = {
 }
 
 export type ToggledStyle = {
-  [K in keyof Styles]-?: Required<Styles>[K] extends true ? K : never
-}[keyof Styles]
+  [K in keyof HMStyles]-?: Required<HMStyles>[K] extends true ? K : never
+}[keyof HMStyles]
 
 export type ColorStyle = {
-  [K in keyof Styles]-?: Required<Styles>[K] extends string ? K : never
-}[keyof Styles]
+  [K in keyof HMStyles]-?: Required<HMStyles>[K] extends string ? K : never
+}[keyof HMStyles]
 
 export type StyledText = {
   type: 'text'
   text: string
-  styles: Styles
+  styles: HMStyles
 }
 
-export type Link = {
+export type HMLink = {
   type: 'link'
   href: string
   content: Array<StyledText>
 }
 
-export type Mention = {
+export type HMMention = {
   type: 'mention'
   ref: string
   text: string
+  styles?: HMStyles
 }
 
-export type PartialLink = Omit<Link, 'content'> & {
-  content: string | Link['content']
+export type PartialLink = Omit<HMLink, 'content'> & {
+  content: string | HMLink['content']
 }
 
-export type InlineContent = StyledText | Link | Mention
+export type HMInlineContent = StyledText | HMLink | HMMention
 export type PartialInlineContent = StyledText | PartialLink
 export type HMBlockProps<T = unknown> = {
   childrenType?: HMBlockChildrenType
@@ -52,19 +53,28 @@ export type HMBlockProps<T = unknown> = {
 export type HMBlockParagraph = {
   type: 'paragraph'
   id: string
-  content: Array<InlineContent>
+  content: Array<HMInlineContent>
+  children: Array<HMBlock>
+  props: HMBlockProps
+}
+
+export type HMBlockCode = {
+  type: 'code'
+  id: string
+  content: Array<HMInlineContent>
   children: Array<HMBlock>
   props: HMBlockProps<{
-    type: 'p'
+    lang?: string
   }>
 }
+
 export type HMBlockHeading = {
   type: 'heading'
   id: string
-  content: InlineContent[]
-  children: HMBlock[]
+  content: Array<HMInlineContent>
+  children: Array<HMBlock>
   props: HMBlockProps<{
-    level: '1' | '2' | '3'
+    level: '1' | '2' | '3' | number
   }>
 }
 export type HMBlockImage = {
@@ -74,8 +84,8 @@ export type HMBlockImage = {
     url: string
     name: string
   }>
-  content: InlineContent[]
-  children: HMBlock[]
+  content: Array<HMInlineContent>
+  children: Array<HMBlock>
 }
 
 export type HMBlockFile = {
@@ -86,6 +96,7 @@ export type HMBlockFile = {
     name: string
     size: string
   }>
+  content: Array<HMInlineContent>
   children: Array<HMBlock>
 }
 
@@ -96,7 +107,7 @@ export type HMBlockVideo = {
     url: string
     name: string
   }>
-  content: Array<InlineContent>
+  content: Array<HMInlineContent>
   children: Array<HMBlock>
 }
 
@@ -106,6 +117,7 @@ export type HMBlockEmbed = {
   props: HMBlockProps<{
     ref: string
   }>
+  content: Array<HMInlineContent>
   children: Array<HMBlock>
 }
 
@@ -116,3 +128,4 @@ export type HMBlock =
   | HMBlockFile
   | HMBlockVideo
   | HMBlockEmbed
+  | HMBlockCode

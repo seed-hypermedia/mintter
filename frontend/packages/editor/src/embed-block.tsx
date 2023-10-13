@@ -7,21 +7,22 @@ import type {
   Account,
   BlockNode,
   Group,
+  HMBlock,
   HMBlockChildrenType,
-  HeadingBlock,
-  ImageBlock,
-  ParagraphBlock,
-  PresentationBlock,
+  HMBlockCode,
+  HMBlockEmbed,
+  HMBlockHeading,
+  HMBlockImage,
+  HMBlockParagraph,
   Block as ServerBlock,
 } from '@mintter/shared'
 import {
   BACKEND_FILE_URL,
   Block,
-  EmbedBlock as EmbedBlockType,
   createHmId,
   getCIDFromIPFSUrl,
   isHypermediaScheme,
-  serverBlockToEditorInline,
+  toHMInlineContent,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -48,13 +49,14 @@ import {useAccount} from '@mintter/app/models/accounts'
 import {useGroup} from '@mintter/app/models/groups'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {hmBlockSchema} from './schema'
+import {HMInlineContent} from '@mintter/shared'
 
 function InlineContentView({
   inline,
   isLink,
   type,
 }: {
-  inline: InlineContent[]
+  inline: HMInlineContent[]
   isLink?: boolean
   type: string
 }) {
@@ -127,32 +129,34 @@ function InlineContentView({
   )
 }
 
-function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
-  const inline = useMemo(
-    () => serverBlockToEditorInline(new Block(block)),
-    [block],
-  )
+function StaticSectionBlock({
+  block,
+}: {
+  block: HMBlockHeading | HMBlockParagraph | HMBlockCode
+}) {
+  const inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return <InlineContentView inline={inline} type={block.type} />
 }
 
-function StaticImageBlock({block}: {block: ImageBlock}) {
-  const cid = getCIDFromIPFSUrl(block?.ref)
+function StaticImageBlock({block}: {block: HMBlockImage}) {
+  const cid = getCIDFromIPFSUrl(block?.props.url)
   if (!cid) return null
   return (
     <XStack
       tag="img"
       display="block"
       width="100%"
+      // @ts-expect-error
       src={`${BACKEND_FILE_URL}/${cid}`}
       alt={`image block: ${block.id}`}
     />
   )
 }
 
-function StaticBlock({block}: {block: ServerBlock}) {
+function StaticBlock({block}: {block: HMBlock}) {
   // TODO: validation
-  let niceBlock = block as PresentationBlock
+  let niceBlock = block
 
   if (niceBlock.type === 'paragraph' || niceBlock.type === 'heading') {
     return <StaticSectionBlock block={niceBlock} />
@@ -164,7 +168,6 @@ function StaticBlock({block}: {block: ServerBlock}) {
     return <StaticEmbedPresentation block={niceBlock} />
   }
   if (niceBlock.type === 'code') {
-    // @ts-expect-error
     return <StaticSectionBlock block={niceBlock} />
   }
   // fallback for unknown block types
@@ -286,7 +289,7 @@ function EmbedPresentation({
   )
 }
 
-function StaticEmbedPresentation({block}: {block: EmbedBlockType}) {
+function StaticEmbedPresentation({block}: {block: HMBlockEmbed}) {
   let embed = useEmbed(block.ref)
   let content = <Spinner />
   if (embed.embedBlocks) {

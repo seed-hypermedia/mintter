@@ -19,7 +19,7 @@ import {
   groupDocUrl,
   idToUrl,
   isHypermediaScheme,
-  serverBlockToEditorInline,
+  toHMInlineContent,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
@@ -291,10 +291,7 @@ function InlineContentView({
 }
 
 function StaticSectionBlock({block}: {block: HeadingBlock | ParagraphBlock}) {
-  const inline = useMemo(
-    () => serverBlockToEditorInline(new Block(block)),
-    [block],
-  )
+  const inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const isHeading = block.type == 'heading'
   return (
     <YStack

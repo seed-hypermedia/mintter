@@ -66,10 +66,6 @@ export const ImageBlock = createReactBlockSpec({
     name: {
       default: '',
     },
-    defaultOpen: {
-      values: ['false', 'true'],
-      default: 'true',
-    },
   },
   containsInlineContent: true,
   // @ts-ignore

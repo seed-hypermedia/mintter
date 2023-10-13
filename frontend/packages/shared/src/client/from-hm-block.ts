@@ -1,17 +1,6 @@
-import {
-  Annotation,
-  Block as ServerBlock,
-  ColorAnnotation,
-  InlineEmbedAnnotation,
-} from '@mintter/shared'
-import {
-  Block as EditorBlock,
-  InlineContent,
-  Styles,
-  hmBlockSchema,
-} from '@mintter/editor'
-
-import {TextAnnotation} from '@mintter/shared'
+import {Block as EditorBlock, Styles, hmBlockSchema} from '@mintter/editor'
+import {Block as ServerBlock} from '@mintter/shared'
+import {HMInlineContent} from '../hm-documents'
 
 function styleMarkToAnnotationType(
   style: keyof Styles,
@@ -24,12 +13,12 @@ function styleMarkToAnnotationType(
   throw new Error('Cannot handle this style yet')
 }
 
-export function extractContent(content: InlineContent[]): {
-  annotations: TextAnnotation[]
+export function extractContent(content: Array<HMInlineContent>): {
+  annotations: Array<TextAnnotation>
   text: string
 } {
   let text = ''
-  const annotations: TextAnnotation[] = []
+  const annotations: Array<TextAnnotation> = []
   const styleStarts: Record<string, number> = {}
   let charIndex = 0
 
@@ -66,29 +55,34 @@ export function extractContent(content: InlineContent[]): {
       //   text += ' '
       //   charIndex++
       // } else {
-      const {styles} = inline
       const inlineLength = inline.text.length
 
       // Check for style starts
-      for (const style in styles) {
-        if (styles[style as keyof Styles] && styleStarts[style] === undefined) {
-          styleStarts[style] = charIndex
+      if ('styles' in inline) {
+        const {styles} = inline
+        for (const style in styles) {
+          if (
+            styles[style as keyof Styles] &&
+            styleStarts[style] === undefined
+          ) {
+            styleStarts[style] = charIndex
+          }
         }
-      }
 
-      // Check for style ends
-      for (const style in styleStarts) {
-        if (
-          !styles[style as keyof Styles] &&
-          styleStarts[style] !== undefined
-        ) {
-          // @ts-expect-error
-          annotations.push({
-            type: styleMarkToAnnotationType(style as keyof Styles),
-            starts: [styleStarts[style]],
-            ends: [charIndex],
-          })
-          delete styleStarts[style]
+        // Check for style ends
+        for (const style in styleStarts) {
+          if (
+            !styles[style as keyof Styles] &&
+            styleStarts[style] !== undefined
+          ) {
+            // @ts-expect-error
+            annotations.push({
+              type: styleMarkToAnnotationType(style as keyof Styles),
+              starts: [styleStarts[style]],
+              ends: [charIndex],
+            })
+            delete styleStarts[style]
+          }
         }
       }
 
@@ -113,7 +107,7 @@ export function extractContent(content: InlineContent[]): {
   return {text, annotations}
 }
 
-export function editorBlockToServerBlock(
+export function fromHMBlock(
   editorBlock: EditorBlock<typeof hmBlockSchema>,
 ): ServerBlock {
   if (!editorBlock.id) throw new Error('this block has no id')
@@ -225,3 +219,59 @@ function addLevelAttr(
 
   return block
 }
+
+export type InlineEmbedAnnotation = {
+  type: 'embed'
+  starts: number[]
+  ends: number[]
+  ref: string // 'hm://... with #BlockRef
+  attributes: {}
+}
+
+type BaseAnnotation = {
+  starts: number[]
+  ends: number[]
+  // attributes: {}
+}
+
+export type StrongAnnotation = BaseAnnotation & {
+  type: 'strong'
+}
+
+export type EmphasisAnnotation = BaseAnnotation & {
+  type: 'emphasis'
+}
+
+export type UnderlineAnnotation = BaseAnnotation & {
+  type: 'underline'
+}
+
+export type StrikeAnnotation = BaseAnnotation & {
+  type: 'strike'
+}
+
+export type CodeAnnotation = BaseAnnotation & {
+  type: 'code'
+}
+
+export type LinkAnnotation = BaseAnnotation & {
+  type: 'link'
+  ref: string
+}
+
+export type ColorAnnotation = BaseAnnotation & {
+  type: 'color'
+  attributes: {
+    color: string
+  }
+}
+
+export type TextAnnotation =
+  | LinkAnnotation
+  | StrongAnnotation
+  | EmphasisAnnotation
+  | CodeAnnotation
+  | UnderlineAnnotation
+  | StrikeAnnotation
+  | ColorAnnotation
+  | InlineEmbedAnnotation

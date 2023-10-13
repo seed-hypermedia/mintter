@@ -4,8 +4,7 @@ import {
   useListen,
   useQueryInvalidator,
 } from '@mintter/app/app-context'
-import {editorBlockToServerBlock} from '@mintter/app/client/editor-to-server'
-import {serverChildrenToEditorChildren} from '@mintter/shared'
+import {toHMBlock, fromHMBlock, HMBlock, HMInlineContent} from '@mintter/shared'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {toast} from '@mintter/app/toast'
 import {
@@ -50,9 +49,6 @@ import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
-
-export type HMBlock = Block<typeof hmBlockSchema>
-export type HMPartialBlock = PartialBlock<typeof hmBlockSchema>
 
 function createEmptyChanges(): DraftChangesState {
   return {
@@ -344,7 +340,7 @@ export function usePublishDraft(
 
 export type EditorDraftState = {
   id: string
-  children: PartialBlock<typeof hmBlockSchema>[]
+  children: Array<HMBlock>
   title: string
   changes: DraftChangesState
   webUrl: string
@@ -357,7 +353,7 @@ export function useDraftTitle(
   return draft.data?.title || undefined
 }
 
-function getTitleFromInline(children: InlineContent[]): string {
+function getTitleFromInline(children: Array<HMInlineContent>): string {
   const topChild = children[0]
   if (!topChild) return ''
   return children
@@ -452,7 +448,7 @@ export function queryDraft(
       if (!serverDraft) {
         return null
       }
-      const topChildren = serverChildrenToEditorChildren(serverDraft.children)
+      const topChildren = toHMBlock(serverDraft.children)
       const draftState: EditorDraftState = {
         children: topChildren,
         changes: {
@@ -556,7 +552,7 @@ export function useDraftEditor(
           if (childGroup.start)
             currentBlock.props.start = childGroup.start.toString()
         }
-        const serverBlock = editorBlockToServerBlock(currentBlock)
+        const serverBlock = fromHMBlock(currentBlock)
         changes.push(
           new DocumentChange({
             op: {
@@ -600,6 +596,7 @@ export function useDraftEditor(
       const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
       lastBlockParent.current[block.id] = parentId
       lastBlockLeftSibling.current[block.id] = leftSibling
+      // @ts-expect-error
       lastBlocks.current[block.id] = block
       if (block.children) {
         prepareBlockObservations(block.children, block.id)
@@ -760,6 +757,7 @@ export function useDraftEditor(
           if (lastBlocks.current[block.id] !== block) {
             changedBlockIds.add(block.id)
           }
+          // @ts-expect-error
           nextBlocks[block.id] = block
           lastBlockParent.current[block.id] = parentId
           lastBlockLeftSibling.current[block.id] = leftSibling
@@ -795,6 +793,7 @@ export function useDraftEditor(
           )
           return {
             ...state,
+            // @ts-expect-error
             title: getTitleFromContent(editor.topLevelBlocks),
             changes: state.changes,
           }
@@ -927,6 +926,7 @@ export function useDraftEditor(
           console.error(e)
         })
     }
+    // Can't add anything to this deps array bc it will cause an infinite look in the draft page
   }, [])
 
   return {
@@ -1003,9 +1003,7 @@ export const findBlock = findParentNode(
 )
 
 function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
-  const editorBlocks = serverChildrenToEditorChildren(
-    pub.document?.children || [],
-  )
+  const editorBlocks = toHMBlock(pub.document?.children || [])
   // editor._tiptapEditor.commands.clearContent()
   editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
   setGroupTypes(editor._tiptapEditor, editorBlocks)
@@ -1053,10 +1051,8 @@ export function usePublicationEditor(
 
         if (editor && pub.data) {
           editor?._tiptapEditor.commands.clearContent()
-          const editorBlocks = serverChildrenToEditorChildren(
-            pub.data.document?.children || [],
-          )
-          setGroupTypes(editor._tiptapEditor, editorBlocks)
+          const editorBlocks = toHMBlock(pub.data.document?.children || [])
+          setGroupTypes(editor._tiptapEditor, editorBlocks as any)
           editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
         }
       }
@@ -1075,7 +1071,7 @@ export function usePublicationEditor(
     },
     editable: false,
     blockSchema: hmBlockSchema,
-    onEditorReady: (e) => {
+    onEditorReady: (e: Editor) => {
       readyThings.current[0] = e
       const readyPub = readyThings.current[1]
       if (readyPub) {
@@ -1104,11 +1100,8 @@ function extractEmbedRefOfLink(block: any): false | string {
   return false
 }
 
-function setGroupTypes(
-  tiptap: Editor,
-  blocks: PartialBlock<typeof hmBlockSchema>[],
-) {
-  blocks.forEach((block: PartialBlock<typeof hmBlockSchema>) => {
+function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
+  blocks.forEach((block: Partial<HMBlock>) => {
     tiptap.state.doc.descendants((node: Node, pos: number) => {
       if (
         node.attrs.id === block.id &&

@@ -1,6 +1,6 @@
 import {Block} from '@mintter/shared'
 import {describe, expect, test} from 'vitest'
-import {editorBlockToServerBlock, extractContent} from '../editor-to-server'
+import {fromHMBlock, extractContent} from '../from-hm-block'
 
 describe('Editor to Server: ', () => {
   describe('Extract Content: ', () => {
@@ -120,10 +120,10 @@ describe('Editor to Server: ', () => {
   //   })
   // })
 })
-describe('editorBlockToServerBlock', () => {
+describe('fromHMBlock', () => {
   describe('Image block: ', () => {
     test('a image', () => {
-      const eBlock = editorBlockToServerBlock({
+      const eBlock = fromHMBlock({
         id: 'abc',
         type: 'image',
         children: [],
@@ -156,7 +156,7 @@ describe('editorBlockToServerBlock', () => {
 
     describe('Embed block: ', () => {
       test('a embed', () => {
-        const eBlock = editorBlockToServerBlock({
+        const eBlock = fromHMBlock({
           id: 'abc',
           type: 'embed',
           children: [],
@@ -183,7 +183,7 @@ describe('editorBlockToServerBlock', () => {
 
   // describe('Embed block: ', () => {
   //   test('a embed', () => {
-  //     const eBlock = editorBlockToServerBlock({
+  //     const eBlock = fromHMBlock({
   //       id: 'abc',
   //       type: 'embed',
   //       children: [],

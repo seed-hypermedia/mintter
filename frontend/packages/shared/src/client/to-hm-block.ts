@@ -4,13 +4,17 @@ import {
   BlockNode,
 } from './.generated/documents/v1alpha/documents_pb'
 import {
-  EditorBlock,
-  EditorHeadingBlock,
-  InlineContent,
+  HMBlock,
+  HMBlockChildrenType,
+  HMBlockFile,
+  HMBlockHeading,
+  HMBlockImage,
+  HMBlockParagraph,
+  HMBlockVideo,
+  HMInlineContent,
+  HMStyles,
   StyledText,
-} from './editor-types'
-import {TextAnnotation} from './hypermedia-presentation'
-import {HMBlockChildrenType} from './editor-types'
+} from '../hm-documents'
 // import {Annotation, Block, BlockNode, TextAnnotation} from '@mintter/shared'
 // import {hmBlockSchema} from './schema'
 
@@ -33,8 +37,8 @@ function areStylesEqual(
 
 type InternalAnnotation = Record<string, string | boolean>
 
-function annotationStyle(a: Annotation): InternalAnnotation {
-  const annotation: TextAnnotation = a as any //umm, hacks! I guess we should handle unknown annotations too
+function annotationStyle(a: Annotation): HMStyles {
+  const annotation = a
   if (annotation.type === 'emphasis') {
     return {italic: true}
   }
@@ -57,7 +61,7 @@ function annotationStyle(a: Annotation): InternalAnnotation {
   return {}
 }
 
-export function serverBlockToEditorInline(block: Block): InlineContent[] {
+export function toHMInlineContent(block: Block): Array<HMInlineContent> {
   const linkAnnotations = block.annotations.filter((a) => a.type === 'link')
   if (!linkAnnotations.length) {
     return partialBlockToStyledText(block)
@@ -90,7 +94,7 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
   }
 
   let linkStart = sortedLinkAnnotations[0].starts[0]
-  const inlines: InlineContent[] = []
+  const inlines: Array<HMInlineContent> = []
   inlines.push(...getSlicedContent(0, linkStart))
 
   sortedLinkAnnotations.forEach((a, aIndex) => {
@@ -100,7 +104,6 @@ export function serverBlockToEditorInline(block: Block): InlineContent[] {
     inlines.push({
       type: 'link',
       href: a.ref,
-      // @ts-expect-error
       content: getSlicedContent(linkStart, linkEnd),
     })
 
@@ -119,8 +122,8 @@ export function partialBlockToStyledText({
   annotations,
 }: {
   text: string
-  annotations: Annotation[]
-}): InlineContent[] {
+  annotations: Array<Annotation>
+}) {
   if (!text) text = ''
   const stylesForIndex: (InternalAnnotation | null)[] = Array(text.length).fill(
     null,
@@ -188,10 +191,10 @@ function extractChildrenType(
   return 'group'
 }
 
-export function serverBlockNodeToEditorParagraph(
+export function toHMBlockParagraph(
   serverBlock: BlockNode,
   opts: ServerToEditorRecursiveOpts,
-): EditorBlock {
+): HMBlockParagraph {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
@@ -203,8 +206,8 @@ export function serverBlockNodeToEditorParagraph(
   return {
     id: block.id,
     type: 'paragraph',
-    content: serverBlockToEditorInline(block),
-    children: serverChildrenToEditorChildren(children, {
+    content: toHMInlineContent(block),
+    children: toHMBlock(children, {
       ...opts,
       childrenType,
     }),
@@ -214,20 +217,20 @@ export function serverBlockNodeToEditorParagraph(
   }
 }
 
-export function serverBlockToHeading(
+export function toHMBlockHeading(
   serverBlock: BlockNode,
   opts?: ServerToEditorRecursiveOpts,
-): EditorBlock {
+): HMBlockHeading {
   if (!serverBlock.block) {
     throw new Error('Server BlockNode is missing Block data')
   }
   const {block, children} = serverBlock
 
-  let res: EditorHeadingBlock = {
+  let res: HMBlockHeading = {
     type: 'heading',
     id: block.id,
-    content: serverBlockToEditorInline(block),
-    children: serverChildrenToEditorChildren(children, {
+    content: toHMInlineContent(block),
+    children: toHMBlock(children, {
       level: (opts?.level || 0) + 1,
       childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
@@ -239,18 +242,18 @@ export function serverBlockToHeading(
   return res
 }
 
-export function serverChildrenToEditorChildren(
+export function toHMBlock(
   children: BlockNode[],
   opts: ServerToEditorRecursiveOpts & {
     childrenType?: HMBlockChildrenType
     start?: string
   } = {level: 1},
-): EditorBlock[] {
+): Array<HMBlock> {
   const childRecursiveOpts: ServerToEditorRecursiveOpts = {
     level: opts?.level || 0,
   }
   return children.map((serverBlock) => {
-    let res: EditorBlock | null = null
+    let res: HMBlock | null = null
     if (serverBlock.block?.type == 'image') {
       res = {
         type: 'image',
@@ -258,17 +261,14 @@ export function serverChildrenToEditorChildren(
         props: {
           url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
-          backgroundColor: 'default',
-          textColor: 'default',
           textAlignment: 'left',
-          defaultOpen: 'false',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
         },
-        content: serverBlockToEditorInline(serverBlock.block),
+        content: toHMInlineContent(serverBlock.block),
         children: [],
-      }
+      } satisfies HMBlockImage
     }
 
     if (serverBlock.block?.type === 'file') {
@@ -279,16 +279,13 @@ export function serverChildrenToEditorChildren(
           url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
           size: serverBlock.block.attributes.size,
-          backgroundColor: 'default',
-          textColor: 'default',
           textAlignment: 'left',
-          defaultOpen: 'false',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
         },
         children: [],
-      }
+      } satisfies HMBlockFile
     }
 
     if (serverBlock.block?.type === 'video') {
@@ -298,17 +295,14 @@ export function serverChildrenToEditorChildren(
         props: {
           url: serverBlock.block.ref,
           name: serverBlock.block.attributes.name,
-          backgroundColor: 'default',
-          textColor: 'default',
           textAlignment: 'left',
-          defaultOpen: 'false',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
         },
-        content: serverBlockToEditorInline(serverBlock.block),
+        content: toHMInlineContent(serverBlock.block),
         children: [],
-      }
+      } satisfies HMBlockVideo
     }
 
     if (serverBlock.block?.type === 'embed') {
@@ -317,8 +311,6 @@ export function serverChildrenToEditorChildren(
         id: serverBlock.block.id,
         props: {
           ref: serverBlock.block.ref,
-          backgroundColor: 'default',
-          textColor: 'default',
           textAlignment: 'left',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
@@ -331,7 +323,7 @@ export function serverChildrenToEditorChildren(
     // how to handle when serverBlock.type is 'heading' but we are inside of a list?
     // for now, we prioritize the node type
     if (serverBlock.block?.type === 'heading') {
-      res = serverBlockToHeading(serverBlock, childRecursiveOpts)
+      res = toHMBlockHeading(serverBlock, childRecursiveOpts)
     }
     // if (opts?.childrenType === 'numbers') {
     //   return serverBlockToEditorOLI(serverBlock, childRecursiveOpts)
@@ -340,7 +332,7 @@ export function serverChildrenToEditorChildren(
     //   return serverBlockToEditorULI(serverBlock, childRecursiveOpts)
     // }
     if (!res) {
-      res = serverBlockNodeToEditorParagraph(serverBlock, childRecursiveOpts)
+      res = toHMBlockParagraph(serverBlock, childRecursiveOpts)
     }
 
     if (serverBlock.block?.attributes.childrenType) {
@@ -353,8 +345,8 @@ export function serverChildrenToEditorChildren(
     }
 
     if (serverBlock.children.length) {
-      res.children = serverChildrenToEditorChildren(serverBlock.children, {
-        level: childRecursiveOpts.level + 1,
+      res.children = toHMBlock(serverBlock.children, {
+        level: childRecursiveOpts.level ? childRecursiveOpts.level + 1 : 1,
       })
     }
 

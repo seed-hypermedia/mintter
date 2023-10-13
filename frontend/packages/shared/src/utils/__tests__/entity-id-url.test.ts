@@ -9,18 +9,20 @@ import {
 describe('unpackHmId', () => {
   test('unpacks hm://d/abc', () => {
     expect(unpackHmId('hm://d/abc')).toEqual({
+      id: 'hm://d/abc',
       scheme: 'hm',
-      hostname: undefined,
+      hostname: null,
       type: 'd',
       eid: 'abc',
       version: undefined,
-      blockRef: undefined,
+      blockRef: null,
     })
   })
   test('unpacks hm://g/abc?v=123#foo', () => {
     expect(unpackHmId('hm://g/abc?v=123#foo')).toEqual({
+      id: 'hm://g/abc?v=123#foo',
       scheme: 'hm',
-      hostname: undefined,
+      hostname: null,
       type: 'g',
       eid: 'abc',
       version: '123',
@@ -29,8 +31,9 @@ describe('unpackHmId', () => {
   })
   test('unpacks hm://d/foo#bar', () => {
     expect(unpackHmId('hm://d/foo#bar')).toEqual({
+      id: 'hm://d/foo#bar',
       scheme: 'hm',
-      hostname: undefined,
+      hostname: null,
       type: 'd',
       eid: 'foo',
       version: undefined,
@@ -39,12 +42,13 @@ describe('unpackHmId', () => {
   })
   test('unpacks hm://a/foo?v=bar', () => {
     expect(unpackHmId('hm://a/foo?v=bar')).toEqual({
+      id: 'hm://a/foo?v=bar',
       scheme: 'hm',
-      hostname: undefined,
+      hostname: null,
       type: 'a',
       eid: 'foo',
       version: 'bar',
-      blockRef: undefined,
+      blockRef: null,
     })
   })
   test('unpacks https://foobar.com/d/1?v=2', () => {
@@ -54,7 +58,8 @@ describe('unpackHmId', () => {
       type: 'd',
       eid: '1',
       version: '2',
-      blockRef: undefined,
+      blockRef: null,
+      id: 'https://foobar.com/d/1?v=2',
     })
   })
   test('unpacks http://foobar.com/a/1#block', () => {
@@ -65,6 +70,7 @@ describe('unpackHmId', () => {
       eid: '1',
       version: undefined,
       blockRef: 'block',
+      id: 'http://foobar.com/a/1#block',
     })
   })
 })
@@ -108,6 +114,7 @@ describe('unpackDocId', () => {
       type: 'd',
       version: 'bar',
       blockRef: 'block',
+      id: 'https://hyper.media/d/foo?v=bar#block',
     })
   })
 
@@ -120,7 +127,8 @@ describe('unpackDocId', () => {
       scheme: 'http',
       type: 'd',
       version: undefined,
-      blockRef: undefined,
+      blockRef: null,
+      id: 'http://gabo.es/d/anotherpath',
     })
   })
 
@@ -129,11 +137,12 @@ describe('unpackDocId', () => {
     expect(result).toEqual({
       docId: 'hm://d/abc123',
       eid: 'abc123',
-      hostname: undefined,
+      hostname: null,
+      id: 'hm://d/abc123',
       scheme: 'hm',
       type: 'd',
       version: undefined,
-      blockRef: undefined,
+      blockRef: null,
     })
   })
 })
