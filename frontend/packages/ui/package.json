@@ -16,7 +16,6 @@
     "build": "tamagui-build ./src",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "generate-theme": "tamagui generate-themes ./src/themes/theme.ts",
     "watch": "tamagui-build --watch",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
