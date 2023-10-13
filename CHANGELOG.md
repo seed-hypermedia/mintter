@@ -7,3 +7,4 @@
 - Fixes incorrect URL being copied from header leaving group context
 - Fixes shortcut labels in editor formatting menu tooltips
 - Avoids duplicate Changes listed in version sidebar
+- Empty blocks at the end of draft are removed before saving

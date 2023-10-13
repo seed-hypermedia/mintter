@@ -493,6 +493,7 @@ function GroupContextItem({
       icon={Book}
       flex={1}
       minHeight={50}
+      color={isActive ? '$blue11' : '$color12'}
       disabled={isActive}
       onPress={() => {
         replaceRoute({
@@ -513,17 +514,16 @@ function GroupContextItem({
     >
       <XStack gap="$2" jc="space-between" flex={1} ai="center" mr={-8}>
         <YStack alignItems="flex-start">
-          <Text
-            fontSize={path === '/' ? 14 : 12}
-            color={isActive ? undefined : '$color12'}
+          <SizableText
+            fontSize={path === '/' ? '$3' : '$2'}
+            color={isActive ? '$blue11' : '$color12'}
           >
             {group.data?.title}
-          </Text>
+          </SizableText>
           {path === '/' ? null : (
             <ButtonText
               fontSize={10}
-              color="$color12"
-              marginVertical={0}
+              color="$color11"
               disabled={!isPathPressable}
               onPress={
                 isPathPressable
@@ -549,7 +549,7 @@ function GroupContextItem({
           <Store color={isActive ? undefined : '$color9'} size={14} />
         ) : null}
         <View style={{minWidth: 22}}>
-          {isActive && <Check size="$1" color="red" />}
+          {isActive && <Check size="$1" color="$blue11" />}
         </View>
       </XStack>
     </Button>
@@ -576,15 +576,15 @@ function ContextButton({
         replaceRoute(route)
       }}
       justifyContent="flex-start"
-      color={isActive ? undefined : '$color11'}
+      color={isActive ? '$blue11' : '$color11'}
       chromeless
       aria-selected={isActive}
     >
       <XStack space mr={-8} ai="center" jc="space-between" f={1}>
-        <Text color="$color12">{name}</Text>
-        <View style={{minWidth: 22}}>
-          {isActive && <Check color="$blue" size="$1" />}
-        </View>
+        <SizableText color={isActive ? '$blue11' : '$color11'}>
+          {name}
+        </SizableText>
+        <Check color={isActive ? '$blue11' : 'transparent'} size="$1" />
       </XStack>
     </Button>
   )
@@ -746,7 +746,9 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
             />
             {docGroups.data?.length ? (
               <>
-                <SizableText size="$2">Appears in:</SizableText>
+                <SizableText size="$2" marginVertical="$2">
+                  Appears in:
+                </SizableText>
                 <YStack gap="$2">
                   {docGroups.data?.map((docGroup) => {
                     return (
