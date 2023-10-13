@@ -169,9 +169,11 @@ export function useFullReferenceUrl(
       label: 'Doc Version',
     }
   }
-  const hostname = contextGroup.data?.siteInfo?.baseUrl
+  const hostname = contextGroupId
+    ? contextGroup.data?.siteInfo?.baseUrl
+    : undefined
 
-  if (pub.data?.version) {
+  if (pub.data?.version && contextGroupId) {
     const matchedPrettyPath =
       invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
     if (matchedPrettyPath) {
@@ -192,18 +194,22 @@ export function useFullReferenceUrl(
     }
   }
 
-  const reference = getReferenceUrlOfRoute(route, hostname)
+  const reference = getReferenceUrlOfRoute(route, hostname, pub.data?.version)
   return reference
 }
 
 function getReferenceUrlOfRoute(
   route: NavRoute,
   hostname?: string | undefined,
+  exactVersion?: string | undefined,
 ) {
   if (route.key === 'group') {
     const groupId = unpackHmId(route.groupId)
     if (!groupId || groupId.type !== 'g') return null
-    const url = createPublicWebHmUrl('g', groupId.eid, {hostname})
+    const url = createPublicWebHmUrl('g', groupId.eid, {
+      hostname,
+      version: exactVersion,
+    })
     return {
       label: 'Group URL',
       url,
@@ -213,7 +219,7 @@ function getReferenceUrlOfRoute(
     const docId = unpackHmId(route.documentId)
     if (!docId || docId.type !== 'd') return null
     const url = createPublicWebHmUrl('d', docId.eid, {
-      version: route.versionId,
+      version: exactVersion || route.versionId,
       hostname,
     })
     if (!url) return null
@@ -223,7 +229,10 @@ function getReferenceUrlOfRoute(
     }
   }
   if (route.key === 'account') {
-    const url = createPublicWebHmUrl('a', route.accountId, {hostname})
+    const url = createPublicWebHmUrl('a', route.accountId, {
+      hostname,
+      version: exactVersion,
+    })
     if (!url) return null
     return {
       label: 'Account URL',
