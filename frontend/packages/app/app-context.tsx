@@ -75,38 +75,11 @@ export function StyleProvider({
   darkMode,
   ...rest
 }: Omit<TamaguiProviderProps, 'config'> & {darkMode: boolean}) {
-  // const [isDarkMode, setIsDarkMode] = useState<boolean | null>(false)
-  // const s = trpc.systemTheme.useSubscription(undefined, {
-  //   onData: (data, ...rest) => {
-  //     if (Array.isArray(data)) {
-  //       // wtf, for some reason queryInvalidation values are coming in here!?!
-  //       console.log(
-  //         'onData for systemTheme useSubscription is array because wtf',
-  //         data,
-  //         rest,
-  //       )
-  //       return
-  //     }
-  //     // console.log('StyleProvider systemTheme', data)
-  //     setIsDarkMode(data.shouldUseDarkColor)
-  //   },
-  // })
-  // useEffect(() => {
-  //   if (isDarkMode !== null) {
-  //     // this is the deepest place in the app that may not be ready, because at this point root.tsx and AppContext have been mounted
-  //     console.log('==========HELLOOOOO==')
-  //     console.log('==========HELLOOOOO')
-  //     console.log('==========HELLOOOOO')
-  //     console.log('==========HELLOOOOO')
-  //     console.log('==========HELLOOOOO==')
-  //     window.windowIsReady()
-  //   }
-  // }, [isDarkMode])
-  // if (isDarkMode === null) return null
   return (
     <TamaguiProvider
       // @ts-ignore
       config={tamaguiConfig}
+      className={darkMode ? 'mintter-app-dark' : 'mintter-app-light'}
       defaultTheme={darkMode ? 'dark' : 'light'}
       {...rest}
     >

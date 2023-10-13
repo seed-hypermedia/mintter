@@ -9,7 +9,7 @@ import {size} from './themes/token-size'
 import {space} from './themes/token-space'
 import {zIndex} from './themes/token-z-index'
 
-import * as themes from './themes/theme-generated'
+import * as themes from './generated-themes'
 import {color} from './themes/token-colors'
 
 const conf = {

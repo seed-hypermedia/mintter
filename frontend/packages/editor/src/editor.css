@@ -8,20 +8,31 @@
   background-color: transparent;
 }
 
-.ProseMirror .link {
-  color: #454f94;
+.link,
+.hm-link {
   text-decoration: underline;
 }
-
 .link:hover,
 .hm-link:hover {
   cursor: pointer;
 }
 
-.ProseMirror .hm-link {
-  color: #40847a;
-  text-decoration: underline;
+/* manually synced with tamagui colors: blue11 and blueDark11 */
+.ProseMirror .link {
+  color: hsl(211, 100%, 43.2%);
 }
+.mintter-app-dark .ProseMirror .link {
+  color: hsl(210, 100%, 66.1%)
+}
+
+/* manually sync these values with colors.ts mint11 and mintDark11 */
+.ProseMirror .hm-link {
+  color: hsl(181, 50.0%, 45.8%);
+}
+.mintter-app-dark .ProseMirror .hm-link {
+  color: hsl(184, 80.0%, 71.0%);
+}
+
 
 .ProseMirror .link-placeholder {
   width: 16px;

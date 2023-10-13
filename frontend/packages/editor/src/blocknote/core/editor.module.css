@@ -105,7 +105,7 @@ Tippy popups that are appended to document.body directly
 
 .ProseMirror-focused {
   /* Color of the virtual cursor */
-  --prosemirror-virtual-cursor-color: #40847a;
+  --prosemirror-virtual-cursor-color: #406b84;
 }
 
 .ProseMirror .prosemirror-virtual-cursor {

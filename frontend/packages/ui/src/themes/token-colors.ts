@@ -16,6 +16,8 @@ import {
   redDark,
   yellow,
   yellowDark,
+  mint,
+  mintDark,
 } from './colors'
 
 export {
@@ -37,6 +39,7 @@ export const colorTokens = {
     purple: purple,
     red: red,
     yellow: yellow,
+    mint: mint, // customized in colors.ts
   },
   dark: {
     blue: blueDark,
@@ -47,6 +50,7 @@ export const colorTokens = {
     purple: purpleDark,
     red: redDark,
     yellow: yellowDark,
+    mint: mintDark,
   },
 }
 
@@ -59,6 +63,7 @@ export const darkColors = {
   ...colorTokens.dark.purple,
   ...colorTokens.dark.red,
   ...colorTokens.dark.yellow,
+  ...colorTokens.dark.mint,
 }
 
 export const lightColors = {
@@ -70,6 +75,7 @@ export const lightColors = {
   ...colorTokens.light.purple,
   ...colorTokens.light.red,
   ...colorTokens.light.yellow,
+  ...colorTokens.light.mint,
 }
 
 export const color = {

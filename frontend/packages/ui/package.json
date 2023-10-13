@@ -16,14 +16,14 @@
     "build": "tamagui-build ./src",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "generate-theme": "tamagui generate-themes ./src/themes/theme.ts ./src/themes/theme-generated.ts",
+    "generate-theme": "tamagui generate-themes ./src/themes/theme.ts",
     "watch": "tamagui-build --watch",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
     "clean:build": "tamagui-build clean:build",
     "test": "echo TODO",
     "typecheck": "tsc --noEmit",
-    "generate": "tamagui generate-themes ./src/themes.ts ./src/generated-themes.ts"
+    "generate": "tamagui generate-themes ./src/themes/theme.ts ./src/generated-themes.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "3.3.1",

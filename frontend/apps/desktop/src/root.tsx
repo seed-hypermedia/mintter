@@ -169,7 +169,7 @@ function MainApp({
   ipc: AppIPC
 }) {
   // @ts-expect-error
-  const darkMode = useStream(window.darkMode)
+  const darkMode = useStream<boolean>(window.darkMode)
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
@@ -222,7 +222,12 @@ function MainApp({
               }
             >
               <DaemonStatusProvider>
-                <Main />
+                <Main
+                  className={
+                    // this is used by editor.css which doesn't know tamagui styles, boooo!
+                    darkMode ? 'mintter-app-dark' : 'mintter-app-light'
+                  }
+                />
               </DaemonStatusProvider>
             </NavigationContainer>
             <Toaster

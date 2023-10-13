@@ -49,13 +49,21 @@ import {useGroup} from '@mintter/app/models/groups'
 import {getAvatarUrl} from '@mintter/app/utils/account-url'
 import {hmBlockSchema} from './schema'
 
+type LinkType = null | 'basic' | 'hypermedia'
+
+function hmTextColor(linkType: LinkType): string {
+  if (linkType === 'basic') return '$blue11'
+  if (linkType === 'hypermedia') return '$mint11'
+  return '$color12'
+}
+
 function InlineContentView({
   inline,
-  isLink,
+  linkType = null,
   type,
 }: {
   inline: InlineContent[]
-  isLink?: boolean
+  linkType?: LinkType
   type: string
 }) {
   const openUrl = useOpenUrl()
@@ -66,8 +74,8 @@ function InlineContentView({
   return (
     <Text
       fontWeight={type == 'heading' ? 'bold' : undefined}
-      color={isLink ? '$blue10' : undefined}
-      textDecorationLine={isLink ? 'underline' : undefined}
+      color={hmTextColor(linkType)}
+      textDecorationLine={linkType ? 'underline' : undefined}
     >
       {inline.map((content, index) => {
         if (content.type === 'text') {
@@ -94,7 +102,7 @@ function InlineContentView({
               fontFamily={content.styles.code ? '$mono' : '$body'}
               fontWeight={content.styles.bold ? 'bold' : undefined}
               fontSize={size}
-              color={isLink ? '$blue10' : undefined}
+              color={hmTextColor(linkType)}
               whiteSpace="pre-wrap"
               lineHeight={24}
             >
@@ -117,7 +125,13 @@ function InlineContentView({
                 cursor: 'pointer',
               }}
             >
-              <InlineContentView inline={content.content} type={type} isLink />
+              <InlineContentView
+                inline={content.content}
+                type={type}
+                linkType={
+                  isHypermediaScheme(content.href) ? 'hypermedia' : 'basic'
+                }
+              />
             </Text>
           )
         }

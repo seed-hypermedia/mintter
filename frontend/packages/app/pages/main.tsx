@@ -95,7 +95,7 @@ function getPageComponent(navRoute: NavRoute) {
   }
 }
 
-export default function Main() {
+export default function Main({className}: {className?: string}) {
   const navR = useNavRoute()
   const isSettings = navR?.key == 'settings'
   const navigate = useNavigate()
@@ -114,7 +114,7 @@ export default function Main() {
     [navigate],
   )
   return (
-    <YStack fullscreen>
+    <YStack fullscreen className={className}>
       <TitleBar clean={isSettings} />
       <Suspense fallback={<Fallback />}>
         <ErrorBoundary
