@@ -197,9 +197,7 @@ export function serverBlockNodeToEditorParagraph(
       ...opts,
       childrenType: block.attributes.childrenType as HMBlockChildrenType,
     }),
-    props: {
-      type: serverBlock.block.attributes.type as 'p',
-    },
+    props: {},
   }
 }
 

@@ -50,9 +50,7 @@ export type EditorParagraphBlock = {
   id: string
   content: InlineContent[]
   children: EditorBlock[]
-  props: EditorBlockProps<{
-    type: 'p'
-  }>
+  props: EditorBlockProps
 }
 export type EditorHeadingBlock = {
   type: 'heading'

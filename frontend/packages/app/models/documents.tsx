@@ -285,6 +285,47 @@ export function usePublishDraft(
     mutationFn: async ({draftId}: {draftId: string}) => {
       const draft = await grpcClient.drafts.getDraft({documentId: draftId})
       if (!draft) throw new Error('no draft found')
+      let lastChildIndex = draft.children.length - 1
+      const changes: DocumentChange[] = []
+      while (true) {
+        const lastChild = draft.children[lastChildIndex]
+        if (
+          !lastChild.block?.text &&
+          !['image', 'embed', 'file', 'video'].includes(lastChild.block!.type)
+        ) {
+          if (lastChild.children.length === 0) {
+            changes.push(
+              new DocumentChange({
+                op: {
+                  case: 'deleteBlock',
+                  value: lastChild.block!.id,
+                },
+              }),
+            )
+          } else {
+            const nonEmptyChild = lastChild.children.some(
+              (block) =>
+                block.block?.text ||
+                ['image', 'embed', 'file', 'video'].includes(block.block!.type),
+            )
+            if (!nonEmptyChild) {
+              changes.push(
+                new DocumentChange({
+                  op: {
+                    case: 'deleteBlock',
+                    value: lastChild.block!.id,
+                  },
+                }),
+              )
+            } else break
+          }
+        } else break
+        lastChildIndex -= 1
+      }
+      await grpcClient.drafts.updateDraft({
+        documentId: draftId,
+        changes,
+      })
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {

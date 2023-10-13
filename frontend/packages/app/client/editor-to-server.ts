@@ -124,9 +124,7 @@ export function editorBlockToServerBlock(
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'paragraph',
-      attributes: {
-        type: editorBlock.props.type,
-      },
+      attributes: {},
       ...extractContent(editorBlock.content),
     })
   }

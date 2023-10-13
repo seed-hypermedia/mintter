@@ -1,10 +1,6 @@
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
-import {
-  getDefaultShortname,
-  useDraftTitle,
-  usePublishDraft,
-} from '@mintter/app/models/documents'
+import {getDefaultShortname, useDraftTitle} from '@mintter/app/models/documents'
 import {
   useAccountGroups,
   useDocumentGroups,
