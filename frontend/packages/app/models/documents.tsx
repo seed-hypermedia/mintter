@@ -322,10 +322,12 @@ export function usePublishDraft(
         } else break
         lastChildIndex -= 1
       }
-      await grpcClient.drafts.updateDraft({
-        documentId: draftId,
-        changes,
-      })
+      if (changes.length) {
+        await grpcClient.drafts.updateDraft({
+          documentId: draftId,
+          changes,
+        })
+      }
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
@@ -981,62 +983,6 @@ export type HyperDocsEditor = Exclude<
   ReturnType<typeof useDraftEditor>['editor'],
   null
 >
-
-export function useWriteDraftWebUrl(draftId?: string) {
-  const {invalidate, client} = useAppContext().queryClient
-  const grpcClient = useGRPCClient()
-  return useMutation({
-    onMutate: (webUrl: string) => {
-      let title: string
-
-      client.setQueryData(
-        [queryKeys.EDITOR_DRAFT, draftId],
-        (draft: EditorDraftState | undefined) => {
-          if (!draft) return undefined
-          return {
-            ...draft,
-            webUrl,
-          }
-        },
-      )
-    },
-    mutationFn: async (webUrl: string) => {
-      const draftData: EditorDraftState | undefined = client.getQueryData([
-        queryKeys.EDITOR_DRAFT,
-        draftId,
-      ])
-      if (!draftData) {
-        throw new Error(
-          'failed to access editor from useWriteDraftWebUrl mutation',
-        )
-      }
-      await grpcClient.drafts.updateDraft({
-        documentId: draftId,
-        // changes: draftData.changes,
-        changes: [
-          new DocumentChange({
-            op: {
-              case: 'setWebUrl',
-              value: webUrl,
-            },
-          }),
-        ],
-      })
-
-      invalidate([queryKeys.GET_DRAFT_LIST])
-      return null
-    },
-    onSuccess: (response, webUrl) => {
-      client.setQueryData(
-        [queryKeys.EDITOR_DRAFT, draftId],
-        (draft: EditorDraftState | undefined) => {
-          if (!draft) return draft
-          return {...draft, webUrl}
-        },
-      )
-    },
-  })
-}
 
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
