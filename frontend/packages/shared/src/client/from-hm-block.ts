@@ -1,6 +1,11 @@
 import {Block as EditorBlock, Styles, hmBlockSchema} from '@mintter/editor'
 import {Block as ServerBlock} from '@mintter/shared'
-import {HMInlineContent} from '../hm-documents'
+import {
+  ColorAnnotation,
+  HMInlineContent,
+  InlineEmbedAnnotation,
+  TextAnnotation,
+} from '../hm-documents'
 
 function styleMarkToAnnotationType(
   style: keyof Styles,
@@ -72,6 +77,7 @@ export function extractContent(content: Array<HMInlineContent>): {
         // Check for style ends
         for (const style in styleStarts) {
           if (
+            styles &&
             !styles[style as keyof Styles] &&
             styleStarts[style] !== undefined
           ) {
@@ -219,59 +225,3 @@ function addLevelAttr(
 
   return block
 }
-
-export type InlineEmbedAnnotation = {
-  type: 'embed'
-  starts: number[]
-  ends: number[]
-  ref: string // 'hm://... with #BlockRef
-  attributes: {}
-}
-
-type BaseAnnotation = {
-  starts: number[]
-  ends: number[]
-  // attributes: {}
-}
-
-export type StrongAnnotation = BaseAnnotation & {
-  type: 'strong'
-}
-
-export type EmphasisAnnotation = BaseAnnotation & {
-  type: 'emphasis'
-}
-
-export type UnderlineAnnotation = BaseAnnotation & {
-  type: 'underline'
-}
-
-export type StrikeAnnotation = BaseAnnotation & {
-  type: 'strike'
-}
-
-export type CodeAnnotation = BaseAnnotation & {
-  type: 'code'
-}
-
-export type LinkAnnotation = BaseAnnotation & {
-  type: 'link'
-  ref: string
-}
-
-export type ColorAnnotation = BaseAnnotation & {
-  type: 'color'
-  attributes: {
-    color: string
-  }
-}
-
-export type TextAnnotation =
-  | LinkAnnotation
-  | StrongAnnotation
-  | EmphasisAnnotation
-  | CodeAnnotation
-  | UnderlineAnnotation
-  | StrikeAnnotation
-  | ColorAnnotation
-  | InlineEmbedAnnotation

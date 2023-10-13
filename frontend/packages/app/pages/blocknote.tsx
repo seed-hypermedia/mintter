@@ -1,6 +1,5 @@
 import {
   BlockNoteEditor,
-  DefaultBlockSchema,
   defaultBlockSchema,
   HMBlockSchema,
 } from '@mintter/editor'

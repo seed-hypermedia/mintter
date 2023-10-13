@@ -1,3 +1,6 @@
+import {Block} from './client'
+import {HMTimestamp} from './utils'
+
 export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
 
 export type HMStyles = {
@@ -18,31 +21,34 @@ export type ColorStyle = {
   [K in keyof HMStyles]-?: Required<HMStyles>[K] extends string ? K : never
 }[keyof HMStyles]
 
-export type StyledText = {
+export type HMInlineContentText = {
   type: 'text'
   text: string
   styles: HMStyles
 }
 
-export type HMLink = {
+export type HMInlineContentLink = {
   type: 'link'
   href: string
-  content: Array<StyledText>
+  content: Array<HMInlineContentText>
 }
 
-export type HMMention = {
+export type HMInlineContentMention = {
   type: 'mention'
   ref: string
   text: string
   styles?: HMStyles
 }
 
-export type PartialLink = Omit<HMLink, 'content'> & {
-  content: string | HMLink['content']
+export type PartialLink = Omit<HMInlineContentLink, 'content'> & {
+  content: string | HMInlineContentLink['content']
 }
 
-export type HMInlineContent = StyledText | HMLink | HMMention
-export type PartialInlineContent = StyledText | PartialLink
+export type HMInlineContent =
+  | HMInlineContentText
+  | HMInlineContentLink
+  | HMInlineContentMention
+export type PartialInlineContent = HMInlineContentText | PartialLink
 export type HMBlockProps<T = unknown> = {
   childrenType?: HMBlockChildrenType
   start?: string
@@ -50,75 +56,59 @@ export type HMBlockProps<T = unknown> = {
   defaultOpen?: true
 } & T
 
-export type HMBlockParagraph = {
+export type HMBlockBase = {
+  id: string
+  revision?: string
+  text: string
+  annotations: Array<TextAnnotation>
+  attributes?: {
+    childrenType: HMBlockChildrenType
+    [key: string]: string
+  }
+}
+
+export type HMBlockParagraph = HMBlockBase & {
   type: 'paragraph'
-  id: string
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
-  props: HMBlockProps
 }
 
-export type HMBlockCode = {
+export type HMBlockCode = HMBlockBase & {
   type: 'code'
-  id: string
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
-  props: HMBlockProps<{
+  attributes: HMBlockBase['attributes'] & {
     lang?: string
-  }>
+  }
 }
 
-export type HMBlockHeading = {
+export type HMBlockHeading = HMBlockBase & {
   type: 'heading'
-  id: string
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
-  props: HMBlockProps<{
+  attributes: HMBlockBase['attributes'] & {
     level: '1' | '2' | '3' | number
-  }>
+  }
 }
-export type HMBlockImage = {
+
+export type HMBlockImage = HMBlockBase & {
   type: 'image'
-  id: string
-  props: HMBlockProps<{
-    url: string
-    name: string
-  }>
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
+  ref: string
 }
 
-export type HMBlockFile = {
+export type HMBlockFile = HMBlockBase & {
   type: 'file'
-  id: string
-  props: HMBlockProps<{
-    url: string
-    name: string
-    size: string
-  }>
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
+  ref: string
+  attributes: {
+    name?: string
+  }
 }
 
-export type HMBlockVideo = {
+export type HMBlockVideo = HMBlockBase & {
   type: 'video'
-  id: string
-  props: HMBlockProps<{
-    url: string
-    name: string
-  }>
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
+  ref: string
+  attributes: {
+    name?: string
+  }
 }
 
-export type HMBlockEmbed = {
+export type HMBlockEmbed = HMBlockBase & {
   type: 'embed'
-  id: string
-  props: HMBlockProps<{
-    ref: string
-  }>
-  content: Array<HMInlineContent>
-  children: Array<HMBlock>
+  ref: string
 }
 
 export type HMBlock =
@@ -129,3 +119,81 @@ export type HMBlock =
   | HMBlockVideo
   | HMBlockEmbed
   | HMBlockCode
+
+export type HMBlockNode = {
+  block: HMBlock
+  children?: Array<HMBlockNode>
+}
+
+export type HMDocument = {
+  title?: string
+  id?: string
+  author?: string
+  webUrl?: string
+  editors?: string[]
+  children?: Array<HMBlockNode>
+  createTime?: HMTimestamp
+  updateTime?: HMTimestamp
+  publishTime?: HMTimestamp
+}
+
+export type HMPublication = {
+  document?: HMDocument
+  version?: string
+}
+
+export type InlineEmbedAnnotation = {
+  type: 'embed'
+  starts: number[]
+  ends: number[]
+  ref: string // 'hm://... with #BlockRef
+  attributes: {}
+}
+
+type BaseAnnotation = {
+  starts: number[]
+  ends: number[]
+  // attributes: {}
+}
+
+export type StrongAnnotation = BaseAnnotation & {
+  type: 'strong'
+}
+
+export type EmphasisAnnotation = BaseAnnotation & {
+  type: 'emphasis'
+}
+
+export type UnderlineAnnotation = BaseAnnotation & {
+  type: 'underline'
+}
+
+export type StrikeAnnotation = BaseAnnotation & {
+  type: 'strike'
+}
+
+export type CodeAnnotation = BaseAnnotation & {
+  type: 'code'
+}
+
+export type LinkAnnotation = BaseAnnotation & {
+  type: 'link'
+  ref: string
+}
+
+export type ColorAnnotation = BaseAnnotation & {
+  type: 'color'
+  attributes: {
+    color: string
+  }
+}
+
+export type TextAnnotation =
+  | LinkAnnotation
+  | StrongAnnotation
+  | EmphasisAnnotation
+  | CodeAnnotation
+  | UnderlineAnnotation
+  | StrikeAnnotation
+  | ColorAnnotation
+  | InlineEmbedAnnotation

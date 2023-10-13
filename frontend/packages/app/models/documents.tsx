@@ -12,7 +12,6 @@ import {
   BlockIdentifier,
   BlockNoteEditor,
   HMBlockSchema,
-  InlineContent,
   PartialBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,

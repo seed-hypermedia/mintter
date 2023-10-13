@@ -383,6 +383,7 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     ...node.attrs,
     ...blockInfo.contentNode.attrs,
   })) {
+    console.log(`== ~ attr, value:`, attr, value)
     const blockSpec = blockSchema[blockInfo.contentType.name]
     if (!blockSpec) {
       throw Error(

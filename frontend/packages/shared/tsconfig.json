@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "allowJs": false,
     "declaration": true,
+    "jsx": "react-jsx",
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",

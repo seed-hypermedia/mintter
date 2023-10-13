@@ -243,7 +243,7 @@ export function toHMBlockHeading(
 }
 
 export function toHMBlock(
-  children: BlockNode[],
+  children: Array<BlockNode>,
   opts: ServerToEditorRecursiveOpts & {
     childrenType?: HMBlockChildrenType
     start?: string

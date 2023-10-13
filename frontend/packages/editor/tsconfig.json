@@ -25,5 +25,6 @@
       "@/*": ["./src/*"]
     }
   },
+  "include": ["src", "../shared/src/static-renderer.tsx"],
   "exclude": ["node_modules", "dist", "./**/*.test.ts", "./**/*.d.ts"]
 }

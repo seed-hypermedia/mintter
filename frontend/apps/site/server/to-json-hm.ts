@@ -1,11 +1,12 @@
-import {Account, ChangeInfo, MttLink, Publication, Group} from '@mintter/shared'
 import {
-  HMAccount,
-  HMChangeInfo,
+  Account,
+  ChangeInfo,
+  MttLink,
+  Publication,
+  Group,
   HMPublication,
-  HMLink,
-  HMGroup,
-} from './json-hm'
+} from '@mintter/shared'
+import {HMAccount, HMChangeInfo, HMLink, HMGroup} from './json-hm'
 
 export function hmPublication(
   input?: Publication | null,

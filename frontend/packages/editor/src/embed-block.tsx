@@ -233,6 +233,7 @@ function EmbedPresentation({
 }) {
   let spawn = useNavigate('spawn')
   let embed = useEmbed(block.props.ref)
+
   let content = <Spinner />
   const selected = useSelected(block, editor)
 
@@ -341,7 +342,7 @@ export function StaticBlockNode({
   childrenType?: HMBlockChildrenType
 }) {
   const children =
-    block.children.length > 0 ? (
+    (block.children?.length || 0) > 0 ? (
       <YStack paddingLeft="$5" gap="$2">
         {block.children.map((child, index) => (
           <StaticBlockNode
