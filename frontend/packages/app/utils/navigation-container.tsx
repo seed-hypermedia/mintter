@@ -3,36 +3,19 @@ import {useIPC} from '../app-context'
 import {
   HomeRoute,
   NavContextProvider,
-  NavRoute,
   NavState,
   navStateReducer,
   setAppNavDispatch,
 } from './navigation'
-import {decodeRouteFromPath} from './route-encoding'
 import {useConfirmConnection} from '../components/contacts-prompt'
 import {AppWindowEvent} from './window-events'
 
-const initRouteEncoded = window.location.pathname.slice(1)
-
 const homeRoute: HomeRoute = {key: 'home'}
-
-let initRoute: NavRoute = homeRoute
-
-try {
-  if (initRouteEncoded === '') {
-    initRoute = homeRoute
-  } else {
-    initRoute = decodeRouteFromPath(initRouteEncoded)
-  }
-} catch (e) {
-  console.log(`Initial Route: "${initRouteEncoded}"`)
-  console.error('Error parsing initial route! ', e)
-}
 
 export function NavigationContainer({
   children,
   initialNav = {
-    routes: [initRoute],
+    routes: [homeRoute],
     routeIndex: 0,
     lastAction: 'replace',
   },

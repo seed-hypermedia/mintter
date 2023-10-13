@@ -168,11 +168,11 @@ function MainApp({
   queryClient: AppQueryClient
   ipc: AppIPC
 }) {
+  // @ts-expect-error
+  const darkMode = useStream(window.darkMode)
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
-  // @ts-expect-error
-  const initNavState = useStream<NavState | null>(window.initNavState)
 
   useListenAppEvent('triggerPeerSync', () => {
     grpcClient.daemon
@@ -186,7 +186,12 @@ function MainApp({
       })
   })
 
-  if (daemonState?.t == 'ready' && initNavState) {
+  useEffect(() => {
+    // @ts-expect-error
+    window.windowIsReady()
+  }, [])
+
+  if (daemonState?.t == 'ready') {
     return (
       <AppContextProvider
         grpcClient={grpcClient}
@@ -200,6 +205,7 @@ function MainApp({
           ipc.send?.('save-file', {cid, name})
         }}
         windowUtils={windowUtils}
+        darkMode={darkMode}
       >
         <Suspense
           fallback={
@@ -209,7 +215,12 @@ function MainApp({
           }
         >
           <ErrorBoundary FallbackComponent={AppError}>
-            <NavigationContainer initialNav={initNavState}>
+            <NavigationContainer
+              initialNav={
+                // @ts-expect-error
+                window.initNavState
+              }
+            >
               <DaemonStatusProvider>
                 <Main />
               </DaemonStatusProvider>
@@ -226,7 +237,7 @@ function MainApp({
 
   if (daemonState?.t === 'error') {
     return (
-      <StyleProvider>
+      <StyleProvider darkMode={darkMode}>
         <AppErrorPage message={daemonState?.message} />
       </StyleProvider>
     )

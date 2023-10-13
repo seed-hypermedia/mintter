@@ -90,7 +90,7 @@ daemonProcess.on('close', (code, signal) => {
   }
 })
 daemonProcess.on('spawn', () => {
-  logger.info('Spawned')
+  // logger.info('Spawned')
 })
 
 daemonProcess.stdout.on('data', (data) => {

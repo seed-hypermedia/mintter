@@ -30,7 +30,9 @@ const allWindows = new Map<string, BrowserWindow>()
 let focusedWindowKey: string | null = null
 
 function getFocusedWindow(): BrowserWindow | null | undefined {
-  return focusedWindowKey ? allWindows.get(focusedWindowKey) : null
+  // return focusedWindowKey ? allWindows.get(focusedWindowKey) : null
+  // return Object.values(allWindows).find(window => window.focused)
+  return BrowserWindow.getFocusedWindow()
 }
 
 function windowFocused(windowId: string) {
@@ -99,6 +101,12 @@ export function updateGoDaemonState(state: GoDaemonState) {
   })
 }
 
+nativeTheme.addListener('updated', () => {
+  allWindows.forEach((window) => {
+    window.webContents.send('darkMode', nativeTheme.shouldUseDarkColors)
+  })
+})
+
 const store = new Store({
   name: 'AppStore',
   cwd: APP_USER_DATA_PATH,
@@ -126,6 +134,8 @@ function getAWindow() {
   return window
 }
 
+const windowNavState: Record<string, {routes: any[]; routeIndex: number}> = {}
+
 export function openInitialWindows() {
   if (!Object.keys(windowsState).length) {
     trpc.createAppWindow({routes: [{key: 'home'}]})
@@ -141,7 +151,7 @@ export function openInitialWindows() {
       })
     })
   } catch (error) {
-    error(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
+    log(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
     trpc.createAppWindow({routes: [{key: 'home'}]})
     return
   }
@@ -364,6 +374,7 @@ export const router = t.router({
             width: z.number(),
             height: z.number(),
           })
+          .or(z.null())
           .optional(),
       }),
     )
@@ -385,6 +396,9 @@ export const router = t.router({
           }
       const browserWindow = new BrowserWindow({
         show: false,
+        backgroundColor: nativeTheme.shouldUseDarkColors
+          ? '#151515'
+          : '#f9f9f9',
         frame: false,
         autoHideMenuBar: true,
         // width: 1200,
@@ -405,7 +419,7 @@ export const router = t.router({
 
       log('[MAIN:API]: window created')
 
-      const windowLogger = childLogger(windowId)
+      const windowLogger = childLogger({logId: windowId})
       browserWindow.webContents.on(
         'console-message',
         (e, level, message, line, sourceId) => {
@@ -415,6 +429,27 @@ export const router = t.router({
           else windowLogger.error(message)
         },
       )
+
+      const initRoutes = input?.routes || [{key: 'home'}]
+
+      windowNavState[windowId] = {
+        routes: initRoutes,
+        routeIndex: input.routeIndex,
+      }
+
+      browserWindow.webContents.ipc.on('initWindow', (e) => {
+        e.returnValue = {
+          navState: windowNavState[windowId],
+          daemonState: goDaemonState,
+          windowId,
+          darkMode: nativeTheme.shouldUseDarkColors,
+        }
+      })
+
+      browserWindow.webContents.ipc.on('windowIsReady', (e) => {
+        browserWindow.show()
+      })
+
       function saveWindowPosition() {
         const bounds = browserWindow.getBounds()
         updateWindowState(windowId, (window) => ({...window, bounds}))
@@ -440,7 +475,6 @@ export const router = t.router({
       allWindows.set(windowId, browserWindow)
       trpcHandlers.attachWindow(browserWindow)
 
-      const initRoutes = input?.routes || [{key: 'home'}]
       setWindowState(windowId, {
         routes: initRoutes,
         routeIndex: input.routeIndex,
@@ -456,6 +490,7 @@ export const router = t.router({
       browserWindow.webContents.ipc.addListener(
         'windowNavState',
         (info, {routes, routeIndex}: NavState) => {
+          windowNavState[windowId] = {routes, routeIndex}
           updateWindowState(windowId, (window) => ({
             ...window,
             routes,
@@ -464,20 +499,9 @@ export const router = t.router({
         },
       )
 
-      browserWindow.webContents.on('did-finish-load', () => {
-        const routes = windowsState[windowId]?.routes
-        const routeIndex = windowsState[windowId]?.routeIndex
-        browserWindow.webContents.send('initWindow', {
-          routes,
-          routeIndex,
-          daemonState: goDaemonState,
-          windowId,
-        })
-      })
-
       // First render trick: https://getlotus.app/21-making-electron-apps-feel-native-on-mac
       browserWindow.on('ready-to-show', () => {
-        browserWindow.show()
+        // browserWindow.show()
       })
 
       browserWindow.on('close', () => {
@@ -515,6 +539,7 @@ export const router = t.router({
   queryInvalidation: t.procedure.subscription(() => {
     return observable((emit) => {
       function handler(value: any[]) {
+        // console.log('invalidation okayyy', value)
         emit.next(value)
       }
       invalidationHandlers.add(handler)
@@ -535,21 +560,29 @@ export const router = t.router({
     return {dataDir: userData, logFilePath, grpcHost: process.env.GRPC_HOST}
   }),
 
-  systemTheme: t.procedure.subscription(() => {
-    return observable<{shouldUseDarkColor: boolean}>((emit) => {
-      function handler() {
-        console.log('gotchayyy', nativeTheme.shouldUseDarkColors)
-        emit.next({shouldUseDarkColor: nativeTheme.shouldUseDarkColors})
-      }
-      console.log('1gotchayyy', nativeTheme.shouldUseDarkColors)
-      emit.next({shouldUseDarkColors: nativeTheme.shouldUseDarkColors})
-      nativeTheme.addListener('updated', handler)
-      return () => {
-        nativeTheme.removeListener('updated', handler)
-      }
-    })
-  }),
+  // systemTheme: t.procedure.subscription(() => {
+  //   return observable<{shouldUseDarkColor: boolean}>((emitSystemTheme) => {
+  //     function handler() {
+  //       // console.log('hihooooo', nativeTheme.shouldUseDarkColors)
+  //       emitSystemTheme.next({
+  //         shouldUseDarkColor: nativeTheme.shouldUseDarkColors,
+  //       })
+  //     }
+  //     // console.log('hih000', nativeTheme.shouldUseDarkColors)
+  //     emitSystemTheme.next({
+  //       shouldUseDarkColor: nativeTheme.shouldUseDarkColors,
+  //     })
+  //     nativeTheme.addListener('updated', handler)
+  //     return () => {
+  //       nativeTheme.removeListener('updated', handler)
+  //     }
+  //   })
+  // }),
 })
+
+// ipcMain.on('windowIsReady', (_event, route) => {
+//   console.log('ahahahha', route)
+// })
 
 export const trpc = router.createCaller({})
 

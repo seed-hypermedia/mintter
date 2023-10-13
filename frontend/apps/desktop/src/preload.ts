@@ -9,33 +9,54 @@ process.once('loaded', async () => {
   exposeElectronTRPC()
 })
 
-const [updateDaemonState, daemonState] =
-  writeableStateStream<GoDaemonState | null>(null)
-
-const [updateInitNavState, initNavState] =
-  writeableStateStream<NavState | null>(null)
+// const [updateInitNavState, initNavState] =
+//   writeableStateStream<NavState | null>(null)
 
 const [dispatchAppWindow, appWindowEvents] = eventStream<AppWindowEvent>()
 
-contextBridge.exposeInMainWorld('daemonState', daemonState)
-contextBridge.exposeInMainWorld('initNavState', initNavState)
 contextBridge.exposeInMainWorld('appWindowEvents', appWindowEvents)
 contextBridge.exposeInMainWorld('appInfo', {
   platform: () => process.platform,
   arch: () => process.arch,
 })
 
-//@ts-expect-error
-ipcRenderer.addListener('initWindow', (info, event) => {
-  console.log('💡 Init Window', event)
-  updateInitNavState({
-    routes: event.routes,
-    routeIndex: event.routeIndex,
-    lastAction: 'replace',
-  })
-  updateDaemonState(event.daemonState)
-})
+// let windowId: string | null = null
+// console.log('---preloooadddd')
+// ipcRenderer.addListener('initWindow', (info, event) => {
+//   console.log('💡 Init Window', event)
+//   windowId = event.windowId
+//   updateInitNavState({
+//     routes: event.routes,
+//     routeIndex: event.routeIndex,
+//     lastAction: 'replace',
+//   })
+//   updateDaemonState(event.daemonState)
+// })
 
+const windowInfo = ipcRenderer.sendSync('initWindow')
+
+console.log('windowInfo ====')
+
+console.log(JSON.stringify(windowInfo, null, 2))
+
+contextBridge.exposeInMainWorld('initNavState', windowInfo.navState)
+
+const [updateDarkMode, darkMode] = writeableStateStream<GoDaemonState>(
+  windowInfo.darkMode,
+)
+contextBridge.exposeInMainWorld('darkMode', darkMode)
+
+const windowId = windowInfo.windowId
+
+const [updateDaemonState, daemonState] = writeableStateStream<GoDaemonState>(
+  windowInfo.daemonState,
+)
+contextBridge.exposeInMainWorld('daemonState', daemonState)
+
+contextBridge.exposeInMainWorld('windowIsReady', () => {
+  console.log('windowIsReady')
+  ipcRenderer.send('windowIsReady')
+})
 const routeHandlers = new Set<(route: any) => void>()
 
 contextBridge.exposeInMainWorld('routeHandlers', routeHandlers)
@@ -46,6 +67,10 @@ ipcRenderer.addListener('openRoute', (info, route) => {
 
 ipcRenderer.addListener('goDaemonState', (info, state) => {
   updateDaemonState(state)
+})
+
+ipcRenderer.addListener('darkMode', (info, state) => {
+  updateDarkMode(state)
 })
 
 ipcRenderer.addListener('appWindowEvent', (info, event) => {

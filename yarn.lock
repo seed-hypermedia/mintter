@@ -4689,9 +4689,9 @@ __metadata:
     "@sentry/vite-plugin": latest
     "@tamagui/core-node": 1.61.3
     "@tamagui/vite-plugin": 1.74.15
-    "@trpc/client": 10.38.5
-    "@trpc/react-query": 10.38.5
-    "@trpc/server": 10.38.5
+    "@trpc/client": 10.40.0
+    "@trpc/react-query": 10.40.0
+    "@trpc/server": 10.40.0
     "@types/react": 18.2.20
     "@types/react-dom": 18.2.7
     "@vitejs/plugin-react": 4.0.4
@@ -4839,10 +4839,10 @@ __metadata:
     "@tamagui/next-theme": 1.74.15
     "@tanstack/react-query": 4.33.0
     "@tanstack/react-query-devtools": 4.33.0
-    "@trpc/client": 10.38.5
-    "@trpc/next": 10.38.5
-    "@trpc/react-query": 10.38.5
-    "@trpc/server": 10.38.5
+    "@trpc/client": 10.40.0
+    "@trpc/next": 10.40.0
+    "@trpc/react-query": 10.40.0
+    "@trpc/server": 10.40.0
     "@types/node": ^20.6.5
     "@types/react": 18.2.20
     "@types/react-dom": 18.2.7
@@ -10640,49 +10640,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trpc/client@npm:10.38.5":
-  version: 10.38.5
-  resolution: "@trpc/client@npm:10.38.5"
+"@trpc/client@npm:10.40.0":
+  version: 10.40.0
+  resolution: "@trpc/client@npm:10.40.0"
   peerDependencies:
-    "@trpc/server": 10.38.5
-  checksum: a53ebebf4b6e5f36d1739bb6ca4868f278a2b0a271f469cf00d578b6e2de0689c1e0332f2bf158ca715965678f743d67cd8dbc62703fd3f3de40bb2a61f2ebf3
+    "@trpc/server": 10.40.0
+  checksum: b0375431ef6239dc3a95142ffcc259d23d5901d613d1eede17a6c78fa3bff06595249984d5d5b6f279297f4fcda4e4fa92fbc8a54a71b1cb4ed84ba1c49bce7b
   languageName: node
   linkType: hard
 
-"@trpc/next@npm:10.38.5":
-  version: 10.38.5
-  resolution: "@trpc/next@npm:10.38.5"
+"@trpc/next@npm:10.40.0":
+  version: 10.40.0
+  resolution: "@trpc/next@npm:10.40.0"
   dependencies:
     react-ssr-prepass: ^1.5.0
   peerDependencies:
     "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.38.5
-    "@trpc/react-query": 10.38.5
-    "@trpc/server": 10.38.5
+    "@trpc/client": 10.40.0
+    "@trpc/react-query": 10.40.0
+    "@trpc/server": 10.40.0
     next: "*"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 02b04c5123d8de8f929d94e9e49ec674bf3dde8a008959cd8daf68e96c8ee7793ded2576f580e2466e5eba7fdea910a1178225a779513b69bcb334a085e87174
+  checksum: 225086efde6d07ec0eb9814e4a11ddb21745b78d37087c75dad1059ee24a70a2aeef4fcf09ecdeeefd0a80aacf2f3f6500e18e65ca7a8a1c8655c9cecc3fec19
   languageName: node
   linkType: hard
 
-"@trpc/react-query@npm:10.38.5":
-  version: 10.38.5
-  resolution: "@trpc/react-query@npm:10.38.5"
+"@trpc/react-query@npm:10.40.0":
+  version: 10.40.0
+  resolution: "@trpc/react-query@npm:10.40.0"
   peerDependencies:
     "@tanstack/react-query": ^4.18.0
-    "@trpc/client": 10.38.5
-    "@trpc/server": 10.38.5
+    "@trpc/client": 10.40.0
+    "@trpc/server": 10.40.0
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 7341f2e5cdb19a5fe30fe1d34a0ca4f28e648521f187a64a38911ea096411832014804e044bae79fa3056ce74f736ec281b7014c9695254191a032f12c09cd24
+  checksum: 1175952d350c07a8174eb9c47b11b350dae96080ae0f0a0b60212cedaba68609163df0dba6a4588bfcdc4614b071fa1a8f9552aacdb1d76c5bfc86f916c4bbe2
   languageName: node
   linkType: hard
 
-"@trpc/server@npm:10.38.5":
-  version: 10.38.5
-  resolution: "@trpc/server@npm:10.38.5"
-  checksum: 15a6fc41de59bb954950d230d6793228c7b347a7f0cb87f793e9c92099d64a6106992e3cac4cab2c29f3c7655d5a8f9162efce0be1f25e7e6276df55e80146b2
+"@trpc/server@npm:10.40.0":
+  version: 10.40.0
+  resolution: "@trpc/server@npm:10.40.0"
+  checksum: 343d765002573b7f0d800de76b9d649de4245174454198ecd39fe7b98db07f09e6aadfcaab2f2654780826e996f1b28abe82b55965dce91f80b666e5864d17da
   languageName: node
   linkType: hard
 

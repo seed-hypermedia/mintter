@@ -36,6 +36,7 @@ export function AppContextProvider({
   externalOpen,
   windowUtils,
   saveCidAsFile,
+  darkMode,
 }: {
   children: ReactNode
   platform: AppPlatform
@@ -45,6 +46,7 @@ export function AppContextProvider({
   externalOpen: (url: string) => Promise<void>
   windowUtils: WindowUtils
   saveCidAsFile: (cid: string, name: string) => Promise<void>
+  darkMode: boolean
 }) {
   if (!queryClient)
     throw new Error('queryClient is required for AppContextProvider')
@@ -61,7 +63,7 @@ export function AppContextProvider({
       }}
     >
       <QueryClientProvider client={queryClient.client}>
-        <StyleProvider>{children}</StyleProvider>
+        <StyleProvider darkMode={darkMode}>{children}</StyleProvider>
         <ReactQueryDevtools />
       </QueryClientProvider>
     </AppContext.Provider>
@@ -70,19 +72,42 @@ export function AppContextProvider({
 
 export function StyleProvider({
   children,
+  darkMode,
   ...rest
-}: Omit<TamaguiProviderProps, 'config'>) {
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const s = trpc.systemTheme.useSubscription(undefined, {
-    onData: (data) => {
-      setIsDarkMode(data.shouldUseDarkColor)
-    },
-  })
+}: Omit<TamaguiProviderProps, 'config'> & {darkMode: boolean}) {
+  // const [isDarkMode, setIsDarkMode] = useState<boolean | null>(false)
+  // const s = trpc.systemTheme.useSubscription(undefined, {
+  //   onData: (data, ...rest) => {
+  //     if (Array.isArray(data)) {
+  //       // wtf, for some reason queryInvalidation values are coming in here!?!
+  //       console.log(
+  //         'onData for systemTheme useSubscription is array because wtf',
+  //         data,
+  //         rest,
+  //       )
+  //       return
+  //     }
+  //     // console.log('StyleProvider systemTheme', data)
+  //     setIsDarkMode(data.shouldUseDarkColor)
+  //   },
+  // })
+  // useEffect(() => {
+  //   if (isDarkMode !== null) {
+  //     // this is the deepest place in the app that may not be ready, because at this point root.tsx and AppContext have been mounted
+  //     console.log('==========HELLOOOOO==')
+  //     console.log('==========HELLOOOOO')
+  //     console.log('==========HELLOOOOO')
+  //     console.log('==========HELLOOOOO')
+  //     console.log('==========HELLOOOOO==')
+  //     window.windowIsReady()
+  //   }
+  // }, [isDarkMode])
+  // if (isDarkMode === null) return null
   return (
     <TamaguiProvider
       // @ts-ignore
       config={tamaguiConfig}
-      defaultTheme={isDarkMode ? 'dark' : 'light'}
+      defaultTheme={darkMode ? 'dark' : 'light'}
       {...rest}
     >
       <Theme>{children}</Theme>
