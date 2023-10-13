@@ -43,8 +43,8 @@ import {
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
-  prevVersions: TimelineChange[]
-  nextVersionChanges: TimelineChange[]
+  prevChanges: TimelineChange[]
+  nextChanges: TimelineChange[]
 }
 
 function ChangeItem({
@@ -189,8 +189,8 @@ function ChangeItem({
   )
 }
 
-function PrevVersions({
-  changeset: {prevVersions},
+function PrevChangesList({
+  changeset: {prevChanges},
   id,
   activeVersion,
 }: {
@@ -198,7 +198,7 @@ function PrevVersions({
   id: UnpackedHypermediaId
   activeVersion: string
 }) {
-  if (!prevVersions.length) return null
+  if (!prevChanges.length) return null
   return (
     <>
       <XStack paddingHorizontal="$4" paddingVertical="$3">
@@ -210,10 +210,10 @@ function PrevVersions({
         borderBottomColor="$borderColor"
         borderBottomWidth={1}
       >
-        {prevVersions.map((item, index) => {
+        {prevChanges.map((item, index) => {
           return (
             <ChangeItem
-              prevListedChange={prevVersions[index - 1]}
+              prevListedChange={prevChanges[index - 1]}
               entityId={id.id}
               key={item.change.id}
               change={item.change}
@@ -226,8 +226,8 @@ function PrevVersions({
   )
 }
 
-function ActiveVersions({
-  changeset: {activeVersionChanges, nextVersionChanges, prevVersions},
+function ActiveChangesList({
+  changeset: {activeVersionChanges, nextChanges, prevChanges},
   id,
   activeVersion,
 }: {
@@ -235,7 +235,7 @@ function ActiveVersions({
   id: UnpackedHypermediaId
   activeVersion: string
 }) {
-  let subheading = prevVersions.length === 0 ? 'Original Version' : null
+  let subheading = prevChanges.length === 0 ? 'Original Version' : null
   if (!subheading) {
     subheading =
       activeVersionChanges.length > 1 ? 'Selected Versions' : 'Selected Version'
@@ -267,8 +267,8 @@ function ActiveVersions({
   )
 }
 
-function NextVersions({
-  changeset: {nextVersionChanges},
+function NextChangesList({
+  changeset: {nextChanges},
   id,
   activeVersion,
 }: {
@@ -276,13 +276,11 @@ function NextVersions({
   id: UnpackedHypermediaId
   activeVersion: string
 }) {
-  if (!nextVersionChanges.length) return null
+  if (!nextChanges.length) return null
   return (
     <>
       <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>
-          {pluralS(nextVersionChanges.length, 'Next Version')}
-        </SizableText>
+        <SizableText>{pluralS(nextChanges.length, 'Next Version')}</SizableText>
       </XStack>
       <YStack
         paddingHorizontal="$4"
@@ -290,10 +288,10 @@ function NextVersions({
         borderBottomColor="$borderColor"
         borderBottomWidth={1}
       >
-        {nextVersionChanges.map((item, index) => {
+        {nextChanges.map((item, index) => {
           return (
             <ChangeItem
-              prevListedChange={nextVersionChanges[index - 1]}
+              prevListedChange={nextChanges[index - 1]}
               entityId={id.id}
               key={item.change.id}
               change={item.change}
@@ -370,6 +368,17 @@ function PostToGroupDialog({
   return
 }
 
+function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
+  const seenChanges = new Set<string>()
+  const deduplicated: TimelineChange[] = []
+  changes.forEach((ch) => {
+    if (seenChanges.has(ch.change.id)) return
+    seenChanges.add(ch.change.id)
+    deduplicated.push(ch)
+  })
+  return deduplicated
+}
+
 export function EntityVersionsAccessory({
   id,
   activeVersion,
@@ -384,7 +393,7 @@ export function EntityVersionsAccessory({
       ?.split('.')
       .map((chId) => data?.allChanges[chId])
       .forEach((ch) => ch && activeVersionChanges.push(ch))
-    const prevVersions: TimelineChange[] = []
+    const prevChanges: TimelineChange[] = []
     let walkLeafVersions = activeVersionChanges
     while (walkLeafVersions?.length) {
       const nextLeafVersions: TimelineChange[] = []
@@ -392,7 +401,7 @@ export function EntityVersionsAccessory({
         change?.change.deps?.map((depChangeId) => {
           const depChange = data?.allChanges[depChangeId]
           if (depChange) {
-            prevVersions.push(depChange)
+            prevChanges.push(depChange)
             nextLeafVersions.push(depChange)
           }
         })
@@ -406,7 +415,11 @@ export function EntityVersionsAccessory({
     const nextVersionChanges = [...nextVersionChangeIds]
       .map((changeId) => data?.allChanges[changeId])
       .filter(Boolean) as TimelineChange[]
-    return {activeVersionChanges, prevVersions, nextVersionChanges}
+    return {
+      activeVersionChanges,
+      prevChanges: deduplicatedChanges(prevChanges),
+      nextChanges: deduplicatedChanges(nextVersionChanges),
+    }
   }, [data, activeVersion])
   const route = useNavRoute()
   const pubContext = route?.key === 'publication' ? route.pubContext : undefined
@@ -432,17 +445,17 @@ export function EntityVersionsAccessory({
               : null
           }
         >
-          <NextVersions
+          <NextChangesList
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
           />
-          <ActiveVersions
+          <ActiveChangesList
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
           />
-          <PrevVersions
+          <PrevChangesList
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
