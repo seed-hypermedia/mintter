@@ -6,6 +6,7 @@ import {readFileSync} from 'fs'
 import {join} from 'path'
 import {serverHelpers} from 'server/ssr-helpers'
 import {createHmId} from '@mintter/shared'
+import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 
 const robotoBoldPath = join(process.cwd(), 'font/Roboto-Bold.ttf')
 const robotoArrayBuffer = readFileSync(robotoBoldPath)
@@ -107,8 +108,8 @@ export default async function mediaHandler(
       </div>
     </div>,
     {
-      width: 1200,
-      height: 630,
+      width: OG_IMAGE_SIZE.width,
+      height: OG_IMAGE_SIZE.height,
       fonts: [
         {
           name: 'Roboto',

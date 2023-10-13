@@ -22,7 +22,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     >
       <Head>
         <title>{pageTitle}</title>
-        {siteSubheading && <meta name="description" content={siteSubheading} />}
+        {siteTitle && <meta property="og:site_name" content={siteTitle} />}
       </Head>
       <PageSection.Side />
       <PageSection.Content>

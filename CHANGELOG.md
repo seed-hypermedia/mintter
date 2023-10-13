@@ -1,3 +1,11 @@
+## 🌆 Open Graph Images
+
+When posting content on the web, either on hyper.media or your self-hosted site, the documents now shares info and a content image for presentation on social media.
+
+## 🪩 Group Cloning
+
+You can now take groups in your own direction by cloning the group index, while preserving the attribution for all content.
+
 ## 🎉 More New Features
 
 ## 🐛 Bug Fixes

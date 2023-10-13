@@ -54,6 +54,7 @@ import {PublicationMetadata} from './publication-metadata'
 import {HMBlock, HMBlockNode, HMGroup, HMPublication} from './server/json-hm'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -108,12 +109,34 @@ export default function PublicationPage({
   })
 
   const pub = publication.data?.publication
+  const pubId = pub?.document?.id ? unpackHmId(pub?.document?.id) : null
+  const pubVersion = pub?.version
+  const ogImageUrl =
+    pubId && pubVersion
+      ? `/api/content-image/${pubId.type}/${pubId.eid}/${pubVersion}/media.png`
+      : undefined
   return (
     <>
       <Head>
         <meta name="hypermedia-entity-id" content={pub?.document?.id} />
         <meta name="hypermedia-entity-version" content={pub?.version} />
         <meta name="hypermedia-entity-title" content={pub?.document?.title} />
+        <meta property="og:title" content={pub?.document?.title} />
+
+        {ogImageUrl && (
+          <>
+            <meta property="og:image" content={ogImageUrl} />
+            <meta
+              property="og:image:width"
+              content={`${OG_IMAGE_SIZE.width}`}
+            />
+            <meta
+              property="og:image:height"
+              content={`${OG_IMAGE_SIZE.height}`}
+            />
+            <meta property="og:image:type" content="image/png" />
+          </>
+        )}
       </Head>
       <SiteHead
         siteTitle={contextGroup?.title}
