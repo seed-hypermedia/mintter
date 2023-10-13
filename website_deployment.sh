@@ -5,72 +5,15 @@ command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
 
-get_distribution() {
-	lsb_dist=""
-	# Every system that we officially support has /etc/os-release
-	if [ -r /etc/os-release ]; then
-			lsb_dist="$(. /etc/os-release && echo "$ID")"
-	fi
-	# Returning an empty string here should be alright since the
-	# case statements don't act unless you provide an actual value
-	echo "$lsb_dist"
-}
-
 install_docker() {
 	if ! command_exists docker; then
-      if [ $userid -ne 0 ]; then
-        echo "please run the script as root to install docker"
-        exit 1
-      fi
-      echo "It seems that you don't have docker installed, we will install it now."
-      curl -fsSL https://get.docker.com -o get-docker.sh
-      sh get-docker.sh --dry-run
-      read -p "Are you ok to install the above commands (y/n)?" install
-      if [ "$install" = "y" ]; then
-        sh get-docker.sh
-        rm get-docker.sh
-      else
-        rm get-docker.sh
-        echo "Ok, install docker and docker compose manually and execute this script again."
-        exit 0
-      fi
-    fi
-    if ! command_exists docker compose; then
-      if [ $userid -ne 0 ]; then
-        echo "please run the script as root to install docker compose."
-        exit 1
-      fi
-      echo "We need to install docker compose plugin. Downloading..."
-      case "$lsb_dist" in
-        ubuntu)
-          mkdir -p ${HOME}/.docker/cli-plugins/
-          curl -sSL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o ${HOME}/.docker/cli-plugins/docker-compose
-          chmod +x ${HOME}/.docker/cli-plugins/docker-compose
-        ;;
-
-        debian|raspbian)
-          curl -sL https://github.com/docker/compose/releases/download/2.16.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-        ;;
-
-        centos|rhel|sles)
-          curl -sL "https://github.com/docker/compose/releases/download/2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-        ;;
-
-        *)
-          echo "Could not install docker compose for $lsb_dist distro. Please, install it manually."
-          exit 1
-        ;;
-
-      esac
-      
-    fi
+		curl -fsSL https://get.docker.com -o install-docker.sh
+		sh install-docker.sh
+		rm install-docker.sh
+	fi
 }
-userid=$(id -u)
-lsb_dist=$( get_distribution )
-lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
 
+userid=$(id -u)
 workspace="${HOME}/.mtt-site"
 hostname=""
 tag="latest"
@@ -132,10 +75,20 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 
 @wellknown {
 	method GET HEAD OPTIONS
-	path /.well-known/*
+	path /.well-known/hypermedia-site
+}
+
+@version {
+	method GET HEAD OPTIONS
+	path /.well-known/version
 }
 
 reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+
+route @version {
+    rewrite /.well-known/version /debug/buildinfo
+    reverse_proxy minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+}
 
 reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
