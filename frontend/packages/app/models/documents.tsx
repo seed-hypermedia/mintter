@@ -200,14 +200,16 @@ export function queryPublication(
 export function usePublication({
   documentId,
   versionId,
+  trustedOnly,
   ...options
 }: UseQueryOptions<Publication> & {
   documentId?: string
   versionId?: string
+  trustedOnly?: boolean
 }) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    ...queryPublication(grpcClient, documentId, versionId),
+    ...queryPublication(grpcClient, documentId, versionId, trustedOnly),
     ...options,
   })
 }

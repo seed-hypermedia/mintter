@@ -49,6 +49,7 @@ export function usePublicationInContext({
     ...options,
     documentId: queryDocumentId,
     versionId: queryVersionId,
+    trustedOnly: pubContext?.key === 'trusted',
     enabled: options.enabled !== false && pubQueryReady,
   })
 }
