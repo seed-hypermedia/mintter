@@ -1,6 +1,7 @@
 export * from './editor'
 export * from './embed-block'
 export * from './file'
+export * from './nostr'
 export * from './heading-component-plugin'
 export * from './hypermedia-link-plugin'
 export * from './image'

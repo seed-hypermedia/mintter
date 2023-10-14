@@ -4,11 +4,12 @@ import {
   defaultBlockSchema,
   defaultProps,
 } from './blocknote'
+import {CodeBlock} from './code-block'
 import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {ImageBlock} from './image'
 import {ImagePlaceholder} from './image-placeholder'
-import {CodeBlock} from './code-block'
+import {NostrBlock} from './nostr'
 import {VideoBlock} from './video'
 
 export const hmBlockSchema: BlockSchema = {
@@ -33,6 +34,7 @@ export const hmBlockSchema: BlockSchema = {
   embed: EmbedBlock,
   video: VideoBlock,
   file: FileBlock,
+  nostr: NostrBlock,
 }
 
 export type HMBlockSchema = TypesMatch<typeof hmBlockSchema>
