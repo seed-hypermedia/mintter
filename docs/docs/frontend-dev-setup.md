@@ -16,7 +16,7 @@
 
 ## TLDR;
 
-⚠️ make sure you [setup the project tools](./dev-setup) ⚠️
+⚠️ make sure you [setup the project tools](./dev-setup.md) ⚠️
 
 ```bash
 git clone <repo>
