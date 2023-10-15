@@ -27,7 +27,6 @@ exts/*
 .vite
 **/*.typegen.*
 .next
-frontend/packages/ui/src/generated-themes.ts
 
 
 # Site

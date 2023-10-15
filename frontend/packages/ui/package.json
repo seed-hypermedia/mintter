@@ -22,7 +22,7 @@
     "clean:build": "tamagui-build clean:build",
     "test": "echo TODO",
     "typecheck": "tsc --noEmit",
-    "generate": "tamagui generate-themes ./src/themes/theme.ts ./src/generated-themes.ts"
+    "generate": "tamagui generate-themes ./src/themes/theme.ts ./src/themes-generated.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "3.3.1",

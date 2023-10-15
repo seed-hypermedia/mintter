@@ -38,7 +38,7 @@ export default defineConfig(({command, mode}) => {
         useReactNativeWebLite: true,
         themeBuilder: {
           input: '../../packages/ui/src/themes/theme.ts',
-          output: '../../packages/ui/src/generated-themes.ts',
+          output: '../../packages/ui/src/themes-generated.ts',
         },
       }),
     ],
