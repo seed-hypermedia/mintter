@@ -18,7 +18,7 @@
     "desktop:devtools": "yarn workspace @mintter/desktop devtools",
     "watch": "yarn workspaces foreach -pi run watch",
     "fix": "manypkg fix",
-    "postinstall": "yarn check-deps && yarn build",
+    "postinstall": "yarn build",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/docs run build",
     "storybook": "yarn storybook:web",
     "sb": "yarn storybook:web",

@@ -1,9 +1,9 @@
-import {defineConfig, loadEnv} from 'vite'
-import react from '@vitejs/plugin-react'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
+import react from '@vitejs/plugin-react'
+import {defineConfig, loadEnv} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
-import {TamaguiConfig} from 'tamagui'
+import path from 'path'
 
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {

@@ -25,3 +25,4 @@ You can try Web Importing after enabling the experimental feature switch in the 
 - Avoids duplicate Changes listed in version sidebar
 - Empty blocks at the end of draft are removed before saving
 - Fix "Trusted only" view of document, filtering changes from untrusted authors
+- remove network status from node-status-context
