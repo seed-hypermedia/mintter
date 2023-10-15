@@ -31,12 +31,12 @@ import {
   Share,
   ArrowDownRight,
   ExternalLink,
-  Checkbox,
+  View,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useGRPCClient, useIPC} from '../app-context'
+import {useGRPCClient, useIPC, useQueryInvalidator} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {useExportWallet} from '../models/payments'
 import {trpc} from '@mintter/desktop/src/trpc'
@@ -301,8 +301,7 @@ function InfoListItem({
   )
 }
 
-export function ExperimentCheckbox({
-  id,
+export function ExperimentSection({
   experiment,
   onValue,
   value,
@@ -313,26 +312,51 @@ export function ExperimentCheckbox({
   value: boolean
 }) {
   return (
-    <XStack width={300} alignItems="center" space="$4">
-      <Checkbox
-        id={id}
-        checked={value}
-        onCheckedChange={(v) => {
-          onValue(v)
-        }}
-      >
-        <Checkbox.Indicator>
-          <Check />
-        </Checkbox.Indicator>
-      </Checkbox>
-      <Label htmlFor={id}>
-        <YStack>
-          <Heading marginVertical={0}>
-            {experiment.label} {experiment.emoji}
+    <XStack
+      alignItems="center"
+      space="$6"
+      paddingHorizontal="$6"
+      borderWidth={1}
+      borderRadius={'$4'}
+      borderColor="$borderColor"
+      padding="$3"
+    >
+      <Heading fontSize={42}>{experiment.emoji}</Heading>
+      <YStack gap="$3" flex={1}>
+        <XStack gap="$3" flex={1}>
+          <Heading size="$6" marginVertical={0}>
+            {experiment.label}
           </Heading>
-          <p>{experiment.description}</p>
-        </YStack>
-      </Label>
+        </XStack>
+        <SizableText>{experiment.description}</SizableText>
+        <XStack alignItems="center" jc="space-between">
+          {value ? (
+            <XStack
+              backgroundColor="$blue12"
+              padding="$2"
+              paddingHorizontal="$3"
+              gap="$3"
+              alignItems="center"
+              borderRadius="$2"
+            >
+              <Check size="$1" color="$color1" />
+              <SizableText size="$1" color="$color1" fontWeight="bold">
+                Enabled
+              </SizableText>
+            </XStack>
+          ) : (
+            <View />
+          )}
+          <Button
+            theme={value ? 'red' : 'green'}
+            onPress={() => {
+              onValue(!value)
+            }}
+          >
+            {value ? 'Disable Feature' : `Enable Feature`}
+          </Button>
+        </XStack>
+      </YStack>
     </XStack>
   )
 }
@@ -361,23 +385,30 @@ const EXPERIMENTS: ExperimentType[] = [
 
 function ExperimentsSettings({}: {}) {
   const experiments = trpc.experiments.get.useQuery()
-  const writeExperiment = trpc.experiments.write.useMutation()
+  const invalidate = useQueryInvalidator()
+  const writeExperiment = trpc.experiments.write.useMutation({
+    onSuccess() {
+      invalidate(['trpc.experiments.get'])
+    },
+  })
   return (
     <YStack gap="$3">
-      <Heading>Experiments</Heading>
-      {EXPERIMENTS.map((experiment) => {
-        return (
-          <ExperimentCheckbox
-            key={experiment.key}
-            id={experiment.key}
-            value={!!experiments.data?.[experiment.key]}
-            experiment={experiment}
-            onValue={(isEnabled) => {
-              writeExperiment.mutate({[experiment.key]: isEnabled})
-            }}
-          />
-        )
-      })}
+      <Heading>Experimental Features</Heading>
+      <YStack space marginVertical="$4" alignSelf="stretch">
+        {EXPERIMENTS.map((experiment) => {
+          return (
+            <ExperimentSection
+              key={experiment.key}
+              id={experiment.key}
+              value={!!experiments.data?.[experiment.key]}
+              experiment={experiment}
+              onValue={(isEnabled) => {
+                writeExperiment.mutate({[experiment.key]: isEnabled})
+              }}
+            />
+          )
+        })}
+      </YStack>
     </YStack>
   )
 }

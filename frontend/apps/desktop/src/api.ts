@@ -382,19 +382,18 @@ const experimentsZ = z.object({
   webImporting: z.boolean().optional(),
   nostr: z.boolean().optional(),
 })
+type Experiments = z.infer<typeof experimentsZ>
+let experimentsState: Experiments = store.get(EXPERIMENTS_STORAGE_KEY) || {}
 
 export const router = t.router({
   experiments: t.router({
     get: t.procedure.query(async () => {
-      return ((await store.get(EXPERIMENTS_STORAGE_KEY)) || {}) as Partial<{
-        webImporting?: boolean
-        nostr?: boolean
-      }>
+      return experimentsState
     }),
     write: t.procedure.input(experimentsZ).mutation(async ({input}) => {
-      console.log('experiments write input', input)
       const prevExperimentsState = await store.get(EXPERIMENTS_STORAGE_KEY)
       const newExperimentsState = {...(prevExperimentsState || {}), ...input}
+      experimentsState = newExperimentsState
       await store.set(EXPERIMENTS_STORAGE_KEY, newExperimentsState)
       return undefined
     }),
@@ -622,8 +621,7 @@ export const router = t.router({
 
   queryInvalidation: t.procedure.subscription(() => {
     return observable((emit) => {
-      function handler(value: any[]) {
-        // console.log('invalidation okayyy', value)
+      function handler(value: unknown[]) {
         emit.next(value)
       }
       invalidationHandlers.add(handler)

@@ -53,15 +53,6 @@ export function getQueryClient(ipc: AppIPC): AppQueryClient {
     },
   })
 
-  ipc
-    .listen('invalidate_queries', (event: any) => {
-      const queryKey = event.payload as QueryKey
-      client.invalidateQueries(queryKey)
-    })
-    .then((unlisten) => {
-      // noop
-    })
-
   function appInvalidateQueries(queryKey: QueryKey) {
     ipc.send?.('invalidate_queries', queryKey)
   }

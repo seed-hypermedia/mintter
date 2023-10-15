@@ -184,6 +184,23 @@ function MainApp({
         toast.error('Sync failed!')
       })
   })
+  const utils = trpc.useContext()
+
+  useEffect(() => {
+    const sub = client.queryInvalidation.subscribe(undefined, {
+      onData: (queryKey: unknown[]) => {
+        if (!queryKey) return
+        if (queryKey[0] === 'trpc.experiments.get') {
+          utils.experiments.get.invalidate()
+        } else if (queryClient.client) {
+          queryClient.client.invalidateQueries(queryKey)
+        }
+      },
+    })
+    return () => {
+      sub.unsubscribe()
+    }
+  }, [queryClient.client, utils])
 
   useEffect(() => {
     // @ts-expect-error
@@ -253,16 +270,7 @@ function MainApp({
 function ElectronApp() {
   const ipc = useMemo(() => createIPC(), [])
   const queryClient = useMemo(() => getQueryClient(ipc), [ipc])
-  useEffect(() => {
-    const sub = client.queryInvalidation.subscribe(undefined, {
-      onData: (queryKey) => {
-        queryClient.client.invalidateQueries(queryKey)
-      },
-    })
-    return () => {
-      sub.unsubscribe()
-    }
-  }, [queryClient])
+
   const trpcClient = useMemo(
     () =>
       trpc.createClient({
