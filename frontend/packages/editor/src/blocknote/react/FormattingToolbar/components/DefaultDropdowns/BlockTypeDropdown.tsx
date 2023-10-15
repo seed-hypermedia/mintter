@@ -4,10 +4,10 @@ import {IconType} from 'react-icons'
 import {RiH2, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
 
 import {updateGroup} from '@/block-utils'
-import {ToolbarDropdown} from '../../../SharedComponents/Toolbar/components/ToolbarDropdown'
-import {ToolbarDropdownItemProps} from '../../../SharedComponents/Toolbar/components/ToolbarDropdownItem'
-import {useEditorContentChange} from '../../../hooks/useEditorContentChange'
-import {useEditorSelectionChange} from '../../../hooks/useEditorSelectionChange'
+import {ToolbarDropdown} from '@/blocknote/react/SharedComponents/Toolbar/components/ToolbarDropdown'
+import {ToolbarDropdownItemProps} from '@/blocknote/react/SharedComponents/Toolbar/components/ToolbarDropdownItem'
+import {useEditorContentChange} from '@/blocknote/react/hooks/useEditorContentChange'
+import {useEditorSelectionChange} from '@/blocknote/react/hooks/useEditorSelectionChange'
 
 export type BlockTypeDropdownItem = {
   name: string

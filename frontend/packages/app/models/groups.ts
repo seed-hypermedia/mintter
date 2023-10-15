@@ -9,7 +9,7 @@ import {
   Group,
   ListDocumentGroupsResponse,
   ListGroupsResponse,
-} from 'frontend/packages/shared/src/client/.generated/groups/v1alpha/groups_pb'
+} from '@mintter/shared'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
 import {queryKeys} from './query-keys'

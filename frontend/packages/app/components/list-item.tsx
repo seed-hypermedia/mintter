@@ -2,6 +2,7 @@ import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
 import {
   Button,
+  ButtonProps,
   ButtonText,
   Link,
   MoreHorizontal,
@@ -11,7 +12,6 @@ import {
   YGroup,
 } from '@mintter/ui'
 import {FC, ReactElement} from 'react'
-import {GestureResponderEvent} from 'react-native'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePopoverState} from '../use-popover-state'
 import {MenuItem} from './dropdown'
@@ -45,7 +45,7 @@ export function ListItem({
 }: {
   accessory: ReactElement
   title: string
-  onPress: (e: GestureResponderEvent) => void
+  onPress: ButtonProps['onPress']
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[]
 }) {

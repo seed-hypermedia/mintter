@@ -15,7 +15,6 @@ import {
   YStack,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
-import {GestureResponderEvent} from 'react-native'
 import {useAppContext} from '../app-context'
 import {ListItem} from '../components/list-item'
 import {queryDraft} from '../models/documents'
@@ -83,7 +82,7 @@ export function DraftListItem({draft}: {draft: Document}) {
   const navigate = useClickNavigate()
   const {queryClient, grpcClient} = useAppContext()
   const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
-  const goToItem = (e: GestureResponderEvent) => {
+  const goToItem = (e: any) => {
     navigate(draftRoute, e)
   }
 

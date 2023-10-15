@@ -1,6 +1,5 @@
 import {SizableText, XStack, YStack} from 'tamagui'
 import * as React from 'react'
-import {formattedDate, Account} from '@mintter/shared'
 
 export function PanelCard({
   title,
@@ -14,7 +13,7 @@ export function PanelCard({
 }: {
   title?: string
   content?: string
-  author?: Account
+  author?: any
   date?: any
   onPress?: () => void
   avatar?: React.JSX.Element | null

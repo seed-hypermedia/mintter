@@ -1,10 +1,8 @@
 import {
   BlockNoteEditor,
-  DefaultBlockSchema,
   defaultBlockSchema,
   HMBlockSchema,
 } from '@mintter/editor'
-// import '@mintter/editor/style.css'
 import {BlockNoteView, useBlockNote} from '@mintter/editor'
 import {MainWrapper, YStack} from '@mintter/ui'
 

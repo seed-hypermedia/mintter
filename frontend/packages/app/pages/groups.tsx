@@ -10,18 +10,17 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {GestureResponderEvent} from 'react-native'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {
   ListItem,
   TimeAccessory,
   copyLinkMenuItem,
 } from '../components/list-item'
 import {useGroupMembers, useGroups} from '../models/groups'
-import {GroupRoute} from '../utils/navigation'
-import {useClickNavigate, useNavigate} from '../utils/useNavigate'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {useOpenUrl} from '../open-url'
+import {GroupRoute} from '../utils/navigation'
 import {hostnameStripProtocol} from '../utils/site-hostname'
+import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
 function MemberAvatarLinks({
   ownerAccountId,
@@ -64,7 +63,7 @@ function GroupListItem({group}: {group: Group}) {
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)
   const groupRoute: GroupRoute = {key: 'group', groupId: group.id}
-  const goToItem = (e: GestureResponderEvent) => {
+  const goToItem = (e: any) => {
     navigate(groupRoute, e)
   }
   return (

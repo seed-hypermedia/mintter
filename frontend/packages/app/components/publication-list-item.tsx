@@ -6,7 +6,6 @@ import {
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
 import {Document, Publication, shortenPath} from '@mintter/shared'
 import {Button, ButtonText, ExternalLink, XStack} from '@mintter/ui'
-import {GestureResponderEvent} from 'react-native'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {AccountLinkAvatar} from './account-link-avatar'
@@ -49,13 +48,11 @@ export function PublicationListItem({
 
   const navigate = useClickNavigate()
 
-  function goToItem(event: GestureResponderEvent) {
-    navigate(openRoute, event)
-  }
-
   return (
     <ListItem
-      onPress={goToItem}
+      onPress={() => {
+        navigate(openRoute, event)
+      }}
       title={title}
       onPointerEnter={onPointerEnter}
       accessory={
@@ -113,7 +110,9 @@ export function PublicationListItem({
           </XStack>
           <TimeAccessory
             time={publication.document?.updateTime}
-            onPress={goToItem}
+            onPress={() => {
+              navigate(openRoute, event)
+            }}
           />
         </XStack>
       }

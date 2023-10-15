@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {Avatar, FontSizeTokens, SizableText} from 'tamagui'
+import {Avatar, SizableText} from 'tamagui'
 
 export function UIAvatar({
   url,
