@@ -1,9 +1,9 @@
 import Footer from '@mintter/app/components/footer'
-import {StaticBlockNode} from '@mintter/editor'
 import {
   Document,
   Group,
   Role,
+  StaticPublication,
   formattedDate,
   idToUrl,
   pluralS,
@@ -35,9 +35,12 @@ import {
   Store,
   Trash,
 } from '@tamagui/lucide-icons'
+import {Allotment} from 'allotment'
+import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
+import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FooterButton} from '../components/footer'
@@ -45,6 +48,7 @@ import {AppLinkText} from '../components/link'
 import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar/common'
+import {VersionChangesInfo} from '../components/version-changes-info'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
@@ -56,16 +60,12 @@ import {
   useRemoveDocFromGroup,
   useRenameGroupDoc,
 } from '../models/groups'
+import {useOpenUrl} from '../open-url'
 import {GroupRoute, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
-import {useNavigate} from '../utils/useNavigate'
-import {Allotment} from 'allotment'
-import 'allotment/dist/style.css'
-import {useOpenUrl} from '../open-url'
-import {EntityVersionsAccessory} from '../components/changes-list'
-import {VersionChangesInfo} from '../components/version-changes-info'
 import {hostnameStripProtocol} from '../utils/site-hostname'
+import {useNavigate} from '../utils/useNavigate'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -134,7 +134,7 @@ function GroupContentItem({
   userRole: Role
 }) {
   const removeDoc = useRemoveDocFromGroup()
-  const pub = usePublication({documentId: docId, versionId: version})
+  const pub = usePublication({id: docId, version})
   const renameDialog = useAppDialog(RenamePubDialog)
   if (!pub.data) return null
   const memberMenuItems = [
@@ -249,23 +249,13 @@ function InviteMemberDialog({
 function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
   const unpacked = unpackDocId(urlWithVersion)
   const pub = usePublication({
-    documentId: unpacked?.docId || '',
-    versionId: unpacked?.version || '',
+    id: unpacked?.docId || '',
+    version: unpacked?.version || '',
   })
 
-  return (
-    <YStack
-      gap="$4"
-      paddingHorizontal={54}
-      maxWidth={664}
-      marginHorizontal="auto"
-      width="90%"
-    >
-      {pub.data?.document?.children?.map((block) => {
-        return <StaticBlockNode block={block} key={block?.block?.id} />
-      })}
-    </YStack>
-  )
+  return pub.status == 'success' && pub.data ? (
+    <StaticPublication publication={pub.data} />
+  ) : null
 }
 
 function useRoughTime(): bigint {

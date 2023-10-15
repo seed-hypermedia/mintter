@@ -47,8 +47,8 @@ export function usePublicationInContext({
   const pubQueryReady = !!queryVersionId || pubContext?.key !== 'group'
   return usePublication({
     ...options,
-    documentId: queryDocumentId,
-    versionId: queryVersionId,
+    id: queryDocumentId,
+    version: queryVersionId,
     trustedOnly: pubContext?.key === 'trusted',
     enabled: options.enabled !== false && pubQueryReady,
   })

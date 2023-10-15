@@ -75,7 +75,9 @@ export default function DraftPage() {
 function NotSavingBanner() {
   return (
     <AppBanner>
-      <BannerText>The Draft is not being saved right now.</BannerText>
+      <BannerText>
+        The Draft might not be saved because your Local peer is not ready (yet!)
+      </BannerText>
     </AppBanner>
   )
 }

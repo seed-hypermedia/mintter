@@ -1,7 +1,7 @@
 import {InputRule, mergeAttributes} from '@tiptap/core'
 
-import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import {createTipTapBlock} from './blocknote'
+import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
 
 export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
   name: 'heading',
@@ -64,14 +64,14 @@ export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
     ]
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({node, HTMLAttributes}) {
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         class: styles.blockContent,
         'data-content-type': this.name,
       }),
-      ['h2', {class: styles.inlineContent}, 0],
+      [`h${node.attrs.level}`, {class: styles.inlineContent}, 0],
     ]
   },
 })

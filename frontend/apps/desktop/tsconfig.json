@@ -10,7 +10,9 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
-
+    "paths": {
+      "react-native": ["../../../node_modules/react-native-web"],
+    },
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,

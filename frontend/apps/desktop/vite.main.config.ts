@@ -1,6 +1,17 @@
 import {defineConfig, loadEnv} from 'vite'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import tsConfigPaths from 'vite-tsconfig-paths'
+import {tamaguiPlugin} from '@tamagui/vite-plugin'
+
+const _tamaguiPlugin = tamaguiPlugin({
+  components: ['@mintter/ui', 'tamagui'],
+  config: './tamagui.config.ts',
+  useReactNativeWebLite: true,
+  themeBuilder: {
+    input: '../../packages/ui/src/themes/theme.ts',
+    output: '../../packages/ui/src/themes-generated.ts',
+  },
+})
 
 // https://vitejs.dev/config
 export default defineConfig(({command, mode}) => {
@@ -41,7 +52,8 @@ export default defineConfig(({command, mode}) => {
               project: 'electron',
               telemetry: false,
             }),
+            _tamaguiPlugin,
           ]
-        : [tsConfigPaths()],
+        : [tsConfigPaths(), _tamaguiPlugin],
   }
 })

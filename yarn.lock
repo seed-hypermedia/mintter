@@ -4709,7 +4709,6 @@ __metadata:
     react-dom: 18.2.0
     react-error-boundary: 4.0.11
     react-hot-toast: 2.4.1
-    react-native-svg: 13.9.0
     react-native-web-lite: 1.74.15
     tamagui: 1.74.15
     vite: 4.4.9
@@ -4866,7 +4865,6 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     react-hot-toast: 2.4.1
-    react-native-svg: 13.9.0
     react-native-web: ~0.19.6
     react-native-web-lite: 1.74.15
     react-qr-code: 2.0.11
@@ -27031,19 +27029,6 @@ __metadata:
     react-loadable: "*"
     webpack: ">=4.41.1 || 5.x"
   checksum: 1cf7ceb488d329a5be15f891dae16727fb7ade08ef57826addd21e2c3d485e2440259ef8be94f4d54e9afb4bcbd2fcc22c3c5bad92160c9c06ae6ba7b5562497
-  languageName: node
-  linkType: hard
-
-"react-native-svg@npm:13.9.0":
-  version: 13.9.0
-  resolution: "react-native-svg@npm:13.9.0"
-  dependencies:
-    css-select: ^5.1.0
-    css-tree: ^1.1.3
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: f4fe1c9e802d7ea86b9efef74313a80fb75d486f40ca79aaa04d42ffd3f6e462a3f37ee54018fae9fd1efdc2d8b005d1e71b02bb266c0ab8baec70d9a5730892
   languageName: node
   linkType: hard
 

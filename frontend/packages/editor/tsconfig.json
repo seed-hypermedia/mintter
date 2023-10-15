@@ -1,25 +1,12 @@
+
+
 {
+  "extends": "../../../tsconfig.base",
+  "include": ["src"],
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "module": "ESNext",
-    "rootDir": "./src",
-    "moduleResolution": "node",
+    "composite": true,
     "types": ["vitest/globals"],
-    "resolveJsonModule": true,
-    "allowJs": false,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "removeComments": true,
-    "declarationDir": "./dist",
-    "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "esModuleInterop": true,
     "jsx": "react-jsx",
-    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

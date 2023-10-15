@@ -26,10 +26,10 @@ export function AppBanner({
       transform={[{translateY: 0}]}
       opacity={1}
       padding="$1"
-      cursor="pointer"
       borderColor={'$gray4'}
       borderBottomWidth={1}
       paddingHorizontal="$3"
+      userSelect="none"
       {...props}
     >
       {children}

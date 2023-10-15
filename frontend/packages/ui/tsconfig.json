@@ -3,7 +3,10 @@
   "include": ["src"],
   "compilerOptions": {
     "composite": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "react-native": ["node_modules/react-native-web"],
+    }
   },
   "references": []
 }

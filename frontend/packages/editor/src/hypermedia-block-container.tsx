@@ -71,8 +71,8 @@ function BlockHelper({
   let route = useNavRoute()
   let replace = useNavigate('replace')
   let pub = usePublication({
-    documentId: route.key == 'publication' ? route.documentId : undefined,
-    versionId: route.key == 'publication' ? route.versionId : undefined,
+    id: route.key == 'publication' ? route.documentId : undefined,
+    version: route.key == 'publication' ? route.versionId : undefined,
     enabled: route.key == 'publication' && !!route.documentId,
   })
 

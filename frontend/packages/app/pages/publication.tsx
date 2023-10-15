@@ -1,12 +1,13 @@
 import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
+import {AppError} from '@mintter/app/components/app-error'
 import {CitationsAccessory} from '@mintter/app/components/citations'
+import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
 import {useDocChanges} from '@mintter/app/models/changes'
 import {useDocCitations} from '@mintter/app/models/content-graph'
-import {usePublicationEditor} from '@mintter/app/models/documents'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {MttLink, pluralS, unpackDocId} from '@mintter/shared'
+import {MttLink, StaticPublication, pluralS, unpackDocId} from '@mintter/shared'
 import {
   Button,
   Comment,
@@ -16,18 +17,15 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {ErrorBoundary} from 'react-error-boundary'
-import {AppError} from '@mintter/app/components/app-error'
-import {CitationsProvider} from '@mintter/app/components/citations-context'
-import {DebugData} from '@mintter/app/components/debug-data'
-import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {DocumentPlaceholder} from './document-placeholder'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {VersionChangesInfo} from '../components/version-changes-info'
-import {History} from '@tamagui/lucide-icons'
+import {usePublication} from '../models/documents'
 import {usePublicationInContext} from '../models/publication'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
   return <PublicationPageEditor />
@@ -39,7 +37,7 @@ export function PublicationPageEditor() {
     throw new Error('Publication page expects publication actor')
 
   const docId = route?.documentId
-  const versionId = route?.versionId
+  const version = route?.versionId
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -47,7 +45,7 @@ export function PublicationPageEditor() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const publication = usePublicationEditor(docId, versionId, route.pubContext)
+  const publication = usePublication({id: docId, version})
 
   const {data: changes} = useDocChanges(
     publication.status == 'success' ? docId : undefined,
@@ -76,15 +74,9 @@ export function PublicationPageEditor() {
             <Allotment.Pane>
               <YStack height="100%">
                 <MainWrapper>
-                  {publication.editor && (
-                    <HMEditorContainer>
-                      <HyperMediaEditorView editor={publication.editor} />
-                      <DebugData data={publication.editor.topLevelBlocks} />
-                    </HMEditorContainer>
-                  )}
-
-                  {versionId && (
-                    <OutOfDateBanner docId={docId} version={versionId} />
+                  <StaticPublication publication={publication.data} />
+                  {version && (
+                    <OutOfDateBanner docId={docId} version={version} />
                   )}
                 </MainWrapper>
               </YStack>
@@ -96,7 +88,7 @@ export function PublicationPageEditor() {
                   activeVersion={publication.data.version}
                 />
               ) : (
-                <CitationsAccessory docId={docId} version={versionId} />
+                <CitationsAccessory docId={docId} version={version} />
               ))}
           </Allotment>
           <Footer>

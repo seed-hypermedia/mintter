@@ -1,16 +1,15 @@
-import {InlineContent} from '@mintter/app/blocknote-core'
-import {Block, BlockNode, serverBlockToEditorInline} from '@mintter/shared'
+import {Block, BlockNode, toHMInlineContent} from '@mintter/shared'
 import {describe, expect, test} from 'vitest'
 import {examples} from '../example-docs'
-import {serverChildrenToEditorChildren} from '../server-to-editor'
+import {toHMBlock} from '../to-hm-block'
 
 describe('Editor: ', () => {
   describe('Server to Editor: ', () => {
     test('empty/basic', () => {
-      expect(serverChildrenToEditorChildren([])).toEqual([])
+      expect(toHMBlock([])).toEqual([])
     })
     test('single empty paragraph', () => {
-      const eChildren = serverChildrenToEditorChildren([
+      const eChildren = toHMBlock([
         new BlockNode({
           block: new Block({id: 'a', type: 'section', text: ''}),
         }),
@@ -19,14 +18,16 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [],
           children: [],
         },
       ])
     })
     test('single paragraph', () => {
-      const eChildren = serverChildrenToEditorChildren([
+      const eChildren = toHMBlock([
         new BlockNode({
           block: new Block({id: 'a', type: 'section', text: 'hello'}),
         }),
@@ -35,14 +36,16 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'hello', type: 'text', styles: {}}],
           children: [],
         },
       ])
     })
     test('two paragraphs', () => {
-      const eChildren = serverChildrenToEditorChildren([
+      const eChildren = toHMBlock([
         new BlockNode({
           block: new Block({id: 'a', type: 'section', text: 'hello'}),
         }),
@@ -54,14 +57,18 @@ describe('Editor: ', () => {
         {
           id: 'a',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'hello', type: 'text', styles: {}}],
           children: [],
         },
         {
           id: 'b',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [{text: 'world', type: 'text', styles: {}}],
           children: [],
         },
@@ -69,14 +76,14 @@ describe('Editor: ', () => {
     })
 
     test('bolding', () => {
-      const eChildren = serverChildrenToEditorChildren(
-        examples.withBoldText.children,
-      )
+      const eChildren = toHMBlock(examples.withBoldText.children)
       expect(eChildren).toEqual([
         {
           id: '1',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [
             {text: 'hello ', type: 'text', styles: {}},
             {text: 'world', type: 'text', styles: {bold: true}},
@@ -88,14 +95,14 @@ describe('Editor: ', () => {
     })
 
     test('overlap annotations', () => {
-      const eChildren = serverChildrenToEditorChildren(
-        examples.withOverlappingAnnotations.children,
-      )
+      const eChildren = toHMBlock(examples.withOverlappingAnnotations.children)
       expect(eChildren).toEqual([
         {
           id: '1',
           type: 'paragraph',
-          props: {},
+          props: {
+            childrenType: 'group',
+          },
           content: [
             {text: 'A', type: 'text', styles: {}},
             {text: 'B', type: 'text', styles: {bold: true}},
@@ -111,7 +118,7 @@ describe('Editor: ', () => {
 
   describe('Server Block to Editor Inline: ', () => {
     test('no annotations', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({text: 'ABC', annotations: []}),
       )
       expect(result.length).toEqual(1)
@@ -123,7 +130,7 @@ describe('Editor: ', () => {
       })
     })
     test('basic annotation', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({
           text: 'ABC',
           annotations: [
@@ -139,7 +146,7 @@ describe('Editor: ', () => {
     })
 
     test('simple marks kitchen sink', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({
           text: '01234',
           annotations: [
@@ -161,7 +168,7 @@ describe('Editor: ', () => {
     })
 
     test('overlapping annotations', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         // A - no style
         // B - bold
         // C - bold + italic
@@ -193,7 +200,7 @@ describe('Editor: ', () => {
     })
 
     test('link annotation', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({
           text: 'a link',
           annotations: [
@@ -217,7 +224,7 @@ describe('Editor: ', () => {
     })
 
     test('two link annotations', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({
           text: 'ok link ok link ok',
           annotations: [
@@ -254,7 +261,7 @@ describe('Editor: ', () => {
     })
 
     test('link annotation with bold inside', () => {
-      const result: InlineContent[] = serverBlockToEditorInline(
+      const result = toHMInlineContent(
         new Block({
           text: 'a strong link',
           annotations: [
@@ -288,7 +295,7 @@ describe('Editor: ', () => {
 
   describe('Server Image Block to Editor: ', () => {
     test('basic', () => {
-      const result = serverChildrenToEditorChildren([
+      const result = toHMBlock([
         new BlockNode({
           block: new Block({
             id: 'ab',
@@ -306,12 +313,10 @@ describe('Editor: ', () => {
           id: 'ab',
           type: 'image',
           props: {
-            url: 'ABC',
-            defaultOpen: 'false',
-            // junk:
-            backgroundColor: 'default',
+            url: 'ipfs://ABC',
+            name: undefined,
+            childrenType: 'group',
             textAlignment: 'left',
-            textColor: 'default',
           },
           children: [],
           content: [{type: 'text', text: 'new alt image', styles: {}}],
@@ -320,9 +325,72 @@ describe('Editor: ', () => {
     })
   })
 
+  describe('Server Video Block to Editor: ', () => {
+    test('IPFS video', () => {
+      const result = toHMBlock([
+        new BlockNode({
+          block: new Block({
+            id: 'ab',
+            type: 'video',
+            text: 'new video alt',
+            annotations: [],
+            attributes: {},
+            ref: 'ipfs://ABC',
+          }),
+        }),
+      ])
+
+      expect(result).toEqual([
+        {
+          id: 'ab',
+          type: 'video',
+          props: {
+            url: 'ipfs://ABC',
+            name: undefined,
+            childrenType: 'group',
+
+            textAlignment: 'left',
+          },
+          children: [],
+          content: [{type: 'text', text: 'new video alt', styles: {}}],
+        },
+      ])
+    })
+
+    test('youtube video', () => {
+      const result = toHMBlock([
+        new BlockNode({
+          block: new Block({
+            id: 'ab',
+            type: 'video',
+            text: 'new video alt',
+            annotations: [],
+            attributes: {},
+            ref: 'https://youtube.com/watch?v=ABC',
+          }),
+        }),
+      ])
+
+      expect(result).toEqual([
+        {
+          id: 'ab',
+          type: 'video',
+          props: {
+            url: 'https://youtube.com/watch?v=ABC',
+            name: undefined,
+            childrenType: 'group',
+            textAlignment: 'left',
+          },
+          children: [],
+          content: [{type: 'text', text: 'new video alt', styles: {}}],
+        },
+      ])
+    })
+  })
+
   describe('Server Embed Block to Editor: ', () => {
     test('basic', () => {
-      const result = serverChildrenToEditorChildren([
+      const result = toHMBlock([
         new BlockNode({
           block: new Block({
             id: 'a',
@@ -340,10 +408,8 @@ describe('Editor: ', () => {
           type: 'embed',
           props: {
             ref: 'hm://foobar',
-            // junk:
-            backgroundColor: 'default',
             textAlignment: 'left',
-            textColor: 'default',
+            childrenType: 'group',
           },
           children: [],
         },
@@ -353,7 +419,7 @@ describe('Editor: ', () => {
 
   // describe('Server Embed to Block Editor', () => {
   //   test('simple embed', () => {
-  //     const result: InlineContent[] = serverBlockToEditorInline(
+  //     const result = toHMInlineContent(
   //       new Block({
   //         text: ' ',
   //         annotations: [
@@ -370,7 +436,7 @@ describe('Editor: ', () => {
   //   })
 
   //   test('overlapping annotations + embed', () => {
-  //     const result: InlineContent[] = serverBlockToEditorInline(
+  //     const result = toHMInlineContent(
   //       new Block({
   //         text: 'ABC DE',
   //         annotations: [

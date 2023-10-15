@@ -144,12 +144,32 @@ NESTED BLOCKS
 }
 
 /* HEADINGS*/
-[data-level] {
+[data-level='1'] {
   --level: 1.8em;
 }
+[data-level='2'] {
+  --level: 1.4em;
+}
+[data-level='3'] {
+  --level: 1.2em;
+}
 
-[data-prev-level] {
+[data-level='4'] {
+  --level: 1.1em;
+}
+
+[data-prev-level='1'] {
   --prev-level: 1.8em;
+}
+[data-prev-level='2'] {
+  --prev-level: 1.4em;
+}
+[data-prev-level='3'] {
+  --prev-level: 1.2em;
+}
+
+[data-prev-level='4'] {
+  --prev-level: 1.1em;
 }
 
 .blockOuter[data-prev-type='heading'] > .block .blockContent {

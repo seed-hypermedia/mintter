@@ -12,8 +12,8 @@ function CitationItem({link}: {link: CitationLink}) {
   const spawn = useNavigate('spawn')
 
   const pub = usePublication({
-    documentId: link.source.documentId,
-    versionId: link.source.version,
+    id: link.source.documentId,
+    version: link.source.version,
     enabled: !!link.source?.documentId,
   })
 

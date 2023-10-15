@@ -1,17 +1,11 @@
+import {Block as EditorBlock, Styles, hmBlockSchema} from '@mintter/editor'
+import {Block as ServerBlock} from '@mintter/shared'
 import {
-  Annotation,
-  Block as ServerBlock,
   ColorAnnotation,
+  HMInlineContent,
   InlineEmbedAnnotation,
-} from '@mintter/shared'
-import {
-  Block as EditorBlock,
-  InlineContent,
-  Styles,
-  hmBlockSchema,
-} from '@mintter/editor'
-
-import {TextAnnotation} from '@mintter/shared'
+  TextAnnotation,
+} from '../hm-documents'
 
 function styleMarkToAnnotationType(
   style: keyof Styles,
@@ -24,12 +18,12 @@ function styleMarkToAnnotationType(
   throw new Error('Cannot handle this style yet')
 }
 
-export function extractContent(content: InlineContent[]): {
-  annotations: TextAnnotation[]
+export function extractContent(content: Array<HMInlineContent>): {
+  annotations: Array<TextAnnotation>
   text: string
 } {
   let text = ''
-  const annotations: TextAnnotation[] = []
+  const annotations: Array<TextAnnotation> = []
   const styleStarts: Record<string, number> = {}
   let charIndex = 0
 
@@ -66,29 +60,35 @@ export function extractContent(content: InlineContent[]): {
       //   text += ' '
       //   charIndex++
       // } else {
-      const {styles} = inline
       const inlineLength = inline.text.length
 
       // Check for style starts
-      for (const style in styles) {
-        if (styles[style as keyof Styles] && styleStarts[style] === undefined) {
-          styleStarts[style] = charIndex
+      if ('styles' in inline) {
+        const {styles} = inline
+        for (const style in styles) {
+          if (
+            styles[style as keyof Styles] &&
+            styleStarts[style] === undefined
+          ) {
+            styleStarts[style] = charIndex
+          }
         }
-      }
 
-      // Check for style ends
-      for (const style in styleStarts) {
-        if (
-          !styles[style as keyof Styles] &&
-          styleStarts[style] !== undefined
-        ) {
-          // @ts-expect-error
-          annotations.push({
-            type: styleMarkToAnnotationType(style as keyof Styles),
-            starts: [styleStarts[style]],
-            ends: [charIndex],
-          })
-          delete styleStarts[style]
+        // Check for style ends
+        for (const style in styleStarts) {
+          if (
+            styles &&
+            !styles[style as keyof Styles] &&
+            styleStarts[style] !== undefined
+          ) {
+            // @ts-expect-error
+            annotations.push({
+              type: styleMarkToAnnotationType(style as keyof Styles),
+              starts: [styleStarts[style]],
+              ends: [charIndex],
+            })
+            delete styleStarts[style]
+          }
         }
       }
 
@@ -113,7 +113,7 @@ export function extractContent(content: InlineContent[]): {
   return {text, annotations}
 }
 
-export function editorBlockToServerBlock(
+export function fromHMBlock(
   editorBlock: EditorBlock<typeof hmBlockSchema>,
 ): ServerBlock {
   if (!editorBlock.id) throw new Error('this block has no id')
@@ -133,7 +133,9 @@ export function editorBlockToServerBlock(
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'heading',
-      attributes: {},
+      attributes: {
+        level: editorBlock.props.level,
+      },
       ...extractContent(editorBlock.content),
     })
   }
@@ -191,6 +193,7 @@ export function editorBlockToServerBlock(
 
   if (res) {
     res = extractChildrenType(res, editorBlock)
+    res = addLevelAttr(res, editorBlock)
     return res
   }
 
@@ -208,6 +211,15 @@ function extractChildrenType(
   if (editorBlock.props.start) {
     block.attributes.start = editorBlock.props.start
   }
+
+  return block
+}
+
+function addLevelAttr(
+  block: ServerBlock,
+  editorBlock: EditorBlock<typeof hmBlockSchema>,
+): ServerBlock {
+  block.attributes.level = editorBlock.props.level
 
   return block
 }

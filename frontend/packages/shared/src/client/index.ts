@@ -37,6 +37,9 @@ export {
   Group_SiteInfo,
   Role,
   ListGroupsRequest,
+  ListDocumentGroupsRequest,
+  ListDocumentGroupsResponse,
+  ListGroupsResponse,
 } from './.generated/groups/v1alpha/groups_pb'
 export * from './.generated/groups/v1alpha/website_pb'
 export * from './.generated/groups/v1alpha/website_connect'
@@ -89,9 +92,8 @@ export type {
 } from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
 export * from './client-utils'
-export * from './editor-types'
-export * from './hypermedia-presentation'
-export * from './server-to-editor'
+export * from './to-hm-block'
+export * from './from-hm-block'
 export {
   Accounts,
   Changes,
