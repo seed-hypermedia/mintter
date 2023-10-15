@@ -6,6 +6,14 @@ When posting content on the web, either on hyper.media or your self-hosted site,
 
 You can now take groups in your own direction by cloning the group index, while preserving the attribution for all content.
 
+## ☢️ Experimental: Web Importing
+
+Coming soon, you can paste web URLs in the quick switcher. Mintter will load the page and convert it to a Hypermedia document.
+
+This feature is not fully supported yet, as it does not import links or images correctly, and it may not reflect the correct structure of the web page.
+
+You can try Web Importing after enabling the experimental feature switch in the settings.
+
 ## 🎉 More New Features
 
 ## 🐛 Bug Fixes
