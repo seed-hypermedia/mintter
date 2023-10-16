@@ -169,6 +169,10 @@ export function useFullReferenceUrl(
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(contextGroupId)
 
+  let redirectedContext: undefined | PublicationRouteContext = undefined
+
+  const navigateReplace = useNavigate('replace')
+
   if (groupRoute) {
     const groupExactVersion = groupRoute?.version
     return getReferenceUrlOfRoute(
@@ -221,7 +225,15 @@ export function useFullReferenceUrl(
           // this is the main purpose for all this code!
           // if the version is not hosted on this site, we should link to hyper.media by setting hostname to undefined
           hostname = undefined
+          // also we want to clear the publication context from the route:
+          redirectedContext = null
         }
+      }
+      if (redirectedContext !== undefined) {
+        navigateReplace({
+          ...pubRoute,
+          pubContext: redirectedContext,
+        })
       }
       return {
         url: createPublicWebHmUrl('d', docId.eid, {
