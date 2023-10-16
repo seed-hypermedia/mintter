@@ -12,7 +12,7 @@ import {
   trpc,
 } from './api'
 import {initPaths} from './app-paths'
-import {mainDaemon} from './daemon'
+import {startMainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
 import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
 
@@ -36,7 +36,7 @@ if (IS_PROD_DESKTOP) {
 
 initPaths()
 
-mainDaemon
+const mainDaemon = startMainDaemon()
 
 Menu.setApplicationMenu(mainMenu)
 

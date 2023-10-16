@@ -67,64 +67,72 @@ const daemonArguments = [
 
   lndhubFlags,
 ]
-logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)
-const daemonProcess = spawn(goDaemonExecutablePath, daemonArguments, {
-  // daemon env
-  cwd: devProjectRoot,
-  env: {
-    ...process.env,
-  },
-  stdio: 'pipe',
-})
-let expectingDaemonClose = false
-daemonProcess.on('error', (err) => {
-  logger.error('Error:', err)
-})
-daemonProcess.on('close', (code, signal) => {
-  if (!expectingDaemonClose) {
-    updateGoDaemonState({
-      t: 'error',
-      message: 'Service Error: ' + lastStderr,
-    })
-    logger.error('Closed:', code, signal)
+
+export function startMainDaemon() {
+  logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)
+
+  const daemonProcess = spawn(goDaemonExecutablePath, daemonArguments, {
+    // daemon env
+    cwd: devProjectRoot,
+    env: {
+      ...process.env,
+    },
+    stdio: 'pipe',
+  })
+  let expectingDaemonClose = false
+  daemonProcess.on('error', (err) => {
+    logger.error('Error:', err)
+  })
+  daemonProcess.on('close', (code, signal) => {
+    if (!expectingDaemonClose) {
+      updateGoDaemonState({
+        t: 'error',
+        message: 'Service Error: ' + lastStderr,
+      })
+      logger.error('Closed:', code, signal)
+    }
+  })
+  daemonProcess.on('spawn', () => {
+    // logger.info('Spawned')
+  })
+
+  daemonProcess.stdout.on('data', (data) => {
+    const multilineString = data.toString()
+    // multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
+  })
+  let lastStderr = ''
+  daemonProcess.stderr.on('data', (data) => {
+    const multilineString = data.toString()
+    lastStderr = multilineString
+    // multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
+    if (
+      multilineString.match('INFO') &&
+      multilineString.match('DaemonStarted')
+    ) {
+      updateGoDaemonState({t: 'ready'})
+    }
+  })
+  daemonProcess.stdout.on('error', (err) => {
+    logger.error('output error:', err)
+  })
+  daemonProcess.stderr.on('error', (err) => {
+    logger.error('output (stderr) error:', err)
+  })
+  daemonProcess.stdout.on('close', (code, signal) => {
+    if (!expectingDaemonClose)
+      logger.error('unexpected stdout close', code, signal)
+  })
+
+  app.addListener('will-quit', () => {
+    log('App will quit')
+    expectingDaemonClose = true
+    daemonProcess.kill()
+  })
+
+  const mainDaemon = {
+    httpPort: BACKEND_HTTP_PORT,
+    grpcPort: BACKEND_GRPC_PORT,
+    p2pPort: BACKEND_P2P_PORT,
   }
-})
-daemonProcess.on('spawn', () => {
-  // logger.info('Spawned')
-})
-
-daemonProcess.stdout.on('data', (data) => {
-  const multilineString = data.toString()
-  // multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
-})
-let lastStderr = ''
-daemonProcess.stderr.on('data', (data) => {
-  const multilineString = data.toString()
-  lastStderr = multilineString
-  // multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
-  if (multilineString.match('INFO') && multilineString.match('DaemonStarted')) {
-    updateGoDaemonState({t: 'ready'})
-  }
-})
-daemonProcess.stdout.on('error', (err) => {
-  logger.error('output error:', err)
-})
-daemonProcess.stderr.on('error', (err) => {
-  logger.error('output (stderr) error:', err)
-})
-daemonProcess.stdout.on('close', (code, signal) => {
-  if (!expectingDaemonClose)
-    logger.error('unexpected stdout close', code, signal)
-})
-
-app.addListener('will-quit', () => {
-  log('App will quit')
-  expectingDaemonClose = true
-  daemonProcess.kill()
-})
-
-export const mainDaemon = {
-  httpPort: BACKEND_HTTP_PORT,
-  grpcPort: BACKEND_GRPC_PORT,
-  p2pPort: BACKEND_P2P_PORT,
+  return mainDaemon
 }
