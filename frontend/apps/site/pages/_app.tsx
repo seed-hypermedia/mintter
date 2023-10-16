@@ -83,7 +83,7 @@ function App({Component, pageProps}: AppProps<EveryPageProps>) {
       </Head>
       <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
-          <Theme name="mint">{contents}</Theme>
+          {contents}
           <Toaster position="bottom-center" />
         </ThemeProvider>
       </Hydrate>
@@ -110,7 +110,7 @@ function ThemeProvider({children}: {children: React.ReactNode}) {
         disableRootThemeClass
         disableInjectCSS
       >
-        <Theme name="mint">{children}</Theme>
+        {children}
       </TamaguiProvider>
     </NextThemeProvider>
   )
