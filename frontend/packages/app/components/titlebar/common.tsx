@@ -39,6 +39,7 @@ import {
   Bookmark,
   Contact,
   Copy,
+  ExternalLink,
   FilePlus2,
   Globe,
   Library,
@@ -47,7 +48,7 @@ import {
   Search,
   Send,
 } from '@tamagui/lucide-icons'
-import {memo} from 'react'
+import {memo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {useGroup, useInvertedGroupContent} from '../../models/groups'
@@ -61,6 +62,8 @@ import {MenuItem} from '../dropdown'
 import {useAppDialog} from '../dialog'
 import {CloneGroupDialog} from '../clone-group'
 import {useEntityTimeline} from '../../models/changes'
+import {useOpenUrl} from '../../open-url'
+import {useAppContext} from '../../app-context'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -294,18 +297,38 @@ function getReferenceUrlOfRoute(
 }
 
 function CopyReferenceButton() {
+  const [shouldOpen, setShouldOpen] = useState(false)
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
+  const {externalOpen} = useAppContext()
   if (!reference) return null
   return (
-    <Tooltip content={`Copy ${reference.label} Link`}>
+    <Tooltip
+      content={
+        shouldOpen ? `Open ${reference.label}` : `Copy ${reference.label} Link`
+      }
+    >
       <Button
-        aria-label={`Copy ${reference.label} Link`}
+        onHoverOut={() => {
+          setShouldOpen(false)
+        }}
+        aria-label={`${shouldOpen ? 'Open' : 'Copy'} ${reference.label} Link`}
         chromeless
         size="$2"
-        icon={Link}
+        icon={shouldOpen ? ExternalLink : Link}
         onPress={() => {
-          copyUrlToClipboardWithFeedback(reference.url, reference.label)
+          if (shouldOpen) {
+            setShouldOpen(false)
+            console.log('open url', reference.url)
+            externalOpen(reference.url)
+          } else {
+            setShouldOpen(true)
+            // in theory we should save this timeout in a ref and deal with it upon unmount. in practice it doesn't matter
+            setTimeout(() => {
+              setShouldOpen(false)
+            }, 5000)
+            copyUrlToClipboardWithFeedback(reference.url, reference.label)
+          }
         }}
       ></Button>
     </Tooltip>
