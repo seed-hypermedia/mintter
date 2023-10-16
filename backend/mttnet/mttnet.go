@@ -359,9 +359,16 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to parse bootstrap addresses %+v: %w", n.cfg.BootstrapPeers, err)
 		}
-
+		ticker := time.NewTicker(10 * time.Minute)
+		done := make(chan bool)
 		res := n.p2p.Bootstrap(ctx, bootInfo)
-
+		if res.NumFailedConnections == 0 {
+			n.log.Info("BootstrapFinished",
+				zap.Int("peersTotal", len(res.Peers)),
+				zap.Int("failedConnections", int(res.NumFailedConnections)),
+			)
+			return nil
+		}
 		n.log.Info("BootstrapFinished",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),
@@ -369,17 +376,38 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 			zap.Any("ConnectErrs", res.ConnectErrs),
 		)
 
-		if res.NumFailedConnections > 0 {
-			for i, err := range res.ConnectErrs {
-				if err == nil {
-					continue
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					res := n.p2p.Bootstrap(ctx, bootInfo)
+
+					n.log.Info("BootstrapFinished",
+						zap.NamedError("dhtError", res.RoutingErr),
+						zap.Int("peersTotal", len(res.Peers)),
+						zap.Int("failedConnectionsTotal", int(res.NumFailedConnections)),
+						zap.Any("ConnectErrs", res.ConnectErrs),
+					)
+
+					if res.NumFailedConnections > 0 {
+						for i, err := range res.ConnectErrs {
+							if err == nil {
+								continue
+							}
+							n.log.Debug("BootstrapConnectionError",
+								zap.String("peer", res.Peers[i].ID.String()),
+								zap.Error(err),
+							)
+						}
+					} else {
+						ticker.Stop()
+						done <- true
+					}
 				}
-				n.log.Debug("BootstrapConnectionError",
-					zap.String("peer", res.Peers[i].ID.String()),
-					zap.Error(err),
-				)
 			}
-		}
+		}()
 	}
 
 	return nil
