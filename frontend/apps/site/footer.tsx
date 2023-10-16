@@ -14,12 +14,12 @@ export default function Footer() {
       >
         <SizableText size="$2" color="$color9">
           Powered by{' '}
-          <NextLink
-            href="https://mintter.com"
-            target="_blank"
-            style={{color: 'var(--blue9)'}}
-          >
-            MintterHypermedia
+          <NextLink href="https://mintter.com" target="_blank">
+            Mintter
+          </NextLink>
+          {' + '}
+          <NextLink href="https://hyper.media" target="_blank">
+            The Hypermedia Protocol
           </NextLink>
         </SizableText>
       </XStack>
