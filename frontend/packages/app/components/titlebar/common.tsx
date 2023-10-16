@@ -60,6 +60,7 @@ import {MenuItemType, OptionsDropdown} from '../list-item'
 import {MenuItem} from '../dropdown'
 import {useAppDialog} from '../dialog'
 import {CloneGroupDialog} from '../clone-group'
+import {useEntityTimeline} from '../../models/changes'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -151,6 +152,7 @@ export function useFullReferenceUrl(
   route: NavRoute,
 ): {label: string; url: string} | null {
   const pubRoute = route.key === 'publication' ? route : null
+  const groupRoute = route.key === 'group' ? route : null
   const pub = usePublicationInContext({
     documentId: pubRoute?.documentId,
     versionId: pubRoute?.versionId,
@@ -161,44 +163,77 @@ export function useFullReferenceUrl(
     pubRoute?.pubContext?.key === 'group'
       ? pubRoute.pubContext.groupId
       : undefined
-  const contextGroup = useGroup(contextGroupId)
+  const routeGroupId = groupRoute?.groupId
+  const pubRouteDocId = pubRoute?.documentId
+  const group = useGroup(contextGroupId || routeGroupId)
+  const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(contextGroupId)
 
-  if (!pubRoute) return getReferenceUrlOfRoute(route)
-  const docId = unpackHmId(pubRoute.documentId)
-  if (!docId) return null
-  if (pubRoute.versionId) {
-    return {
-      url: createPublicWebHmUrl('d', docId.eid, {version: pubRoute.versionId}),
-      label: 'Doc Version',
-    }
+  if (groupRoute) {
+    const groupExactVersion = groupRoute?.version
+    return getReferenceUrlOfRoute(
+      route,
+      undefined,
+      groupExactVersion || group.data?.version,
+    )
   }
-  const hostname = contextGroupId
-    ? contextGroup.data?.siteInfo?.baseUrl
-    : undefined
 
-  if (pub.data?.version && contextGroupId) {
-    const matchedPrettyPath =
-      invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
-    if (matchedPrettyPath) {
+  if (pubRoute) {
+    const docId = unpackHmId(pubRoute.documentId)
+    if (!docId) return null
+
+    if (pub.data?.version && contextGroupId) {
+      let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
+      const matchedPrettyPath =
+        invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
+      if (matchedPrettyPath) {
+        const displayPrettyPath =
+          matchedPrettyPath === '/' ? '' : matchedPrettyPath
+        return {
+          url: `${hostname}/${displayPrettyPath}`,
+          label: 'Site Document',
+        }
+      }
+      if (hostname && entityTimeline.data) {
+        const linkVersion = pub.data?.version
+        const linkChangeIds = linkVersion.split('.')
+        const allChanges = entityTimeline.data.allChanges
+        const explicitlyHostedChangeIds = new Set(
+          Object.keys(invertedGroupContent.data?.[docId.eid] || {})
+            .map((version) => version.split('.'))
+            .flat(),
+        )
+        const allHostedChangeIds = new Set<string>()
+        let walkingHostedChangeIds = [...explicitlyHostedChangeIds]
+        while (walkingHostedChangeIds.length) {
+          walkingHostedChangeIds = walkingHostedChangeIds
+            .map((changeId) => {
+              allHostedChangeIds.add(changeId)
+              const change = allChanges[changeId]
+              if (!change) return []
+              return change.deps
+            })
+            .flat()
+        }
+        if (
+          linkChangeIds.find((changeId) => !allHostedChangeIds.has(changeId))
+        ) {
+          // this is the main purpose for all this code!
+          // if the version is not hosted on this site, we should link to hyper.media by setting hostname to undefined
+          hostname = undefined
+        }
+      }
       return {
-        url: `${hostname}/${matchedPrettyPath}?v=${pub.data?.version}`,
-        label: 'Site Document',
+        url: createPublicWebHmUrl('d', docId.eid, {
+          version: pub.data?.version,
+          hostname,
+        }),
+        label: hostname ? 'Site Version' : 'Doc Version',
       }
     }
-
-    // here we are providing a web URL to the site, so we should ideally make sure that this version actually appears on the site
-    // the way we do that for now is by returning a special case ABOVE this, when the version is set on the route
-    return {
-      url: createPublicWebHmUrl('d', docId.eid, {
-        version: pub.data?.version,
-        hostname,
-      }),
-      label: hostname ? 'Site Version' : 'Doc Version',
-    }
   }
 
-  const reference = getReferenceUrlOfRoute(route, hostname, pub.data?.version)
+  const reference = getReferenceUrlOfRoute(route)
   return reference
 }
 
