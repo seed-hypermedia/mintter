@@ -78,6 +78,7 @@ def main():
     def run_desktop(args):
         run("./scripts/cleanup-desktop.sh")
         run("yarn install")
+        run("yarn workspace @mintter/ui generate")
         run("plz build //backend:mintterd //:yarn")
         return run("yarn desktop", args=args)
 

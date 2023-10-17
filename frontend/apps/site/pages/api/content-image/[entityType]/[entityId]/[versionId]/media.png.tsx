@@ -7,19 +7,18 @@ import {join} from 'path'
 import {serverHelpers} from 'server/ssr-helpers'
 import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 import {
-  HMBlockChildrenType,
-  InlineContent,
-  createHmId,
-  serverBlockToEditorInline,
-} from '@mintter/shared'
-import {
   HMAccount,
   HMBlock,
+  HMBlockChildrenType,
   HMBlockNode,
   HMGroup,
   HMPublication,
-} from 'server/json-hm'
+  createHmId,
+  toHMInlineContent,
+} from '@mintter/shared'
+
 import {ReactElement} from 'react'
+import {InlineContent} from '@mintter/editor'
 
 function loadFont(fileName: string) {
   const path = join(process.cwd(), 'font', fileName)
@@ -69,7 +68,7 @@ function ParagraphBlockDisplay({
   block: HMBlock
   childrenType: HMBlockChildrenType
 }) {
-  const inlineContent = serverBlockToEditorInline(block)
+  const inlineContent = toHMInlineContent(block)
   return (
     <div
       style={{
@@ -89,7 +88,7 @@ function HeadingBlockDisplay({
   block: HMBlock
   childrenType: HMBlockChildrenType
 }) {
-  const inlineContent = serverBlockToEditorInline(block)
+  const inlineContent = toHMInlineContent(block)
   return (
     <div
       style={{

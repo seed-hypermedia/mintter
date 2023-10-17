@@ -61,8 +61,8 @@ function annotationStyle(a: Annotation): HMStyles {
 }
 
 export function toHMInlineContent(block: Block): Array<HMInlineContent> {
-  const linkAnnotations = block.annotations.filter((a) => a.type === 'link')
-  if (!linkAnnotations.length) {
+  const linkAnnotations = block.annotations?.filter((a) => a.type === 'link')
+  if (!linkAnnotations?.length) {
     return partialBlockToStyledText(block)
   }
   if (
@@ -130,7 +130,7 @@ export function partialBlockToStyledText({
   const inlines: HMStyles[] = []
   const allStyleKeys = new Set<string>()
 
-  annotations.forEach((annotation) => {
+  annotations?.forEach((annotation) => {
     const {starts, ends} = annotation
     const annotationStyles = annotationStyle(annotation)
     Object.keys(annotationStyles).forEach((key) => allStyleKeys.add(key))
