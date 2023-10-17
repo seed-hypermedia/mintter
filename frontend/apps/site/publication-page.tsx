@@ -33,12 +33,12 @@ import {DehydratedState} from '@tanstack/react-query'
 import {NextLink} from 'next-link'
 import Head from 'next/head'
 import {useMemo} from 'react'
-import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 import {WebTipping} from 'web-tipping'
 import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {OGImageMeta} from 'head'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -105,22 +105,9 @@ export default function PublicationPage({
         <meta name="hypermedia-entity-id" content={pub?.document?.id} />
         <meta name="hypermedia-entity-version" content={pub?.version} />
         <meta name="hypermedia-entity-title" content={pub?.document?.title} />
-        <meta property="og:title" content={pub?.document?.title} />
 
-        {ogImageUrl && (
-          <>
-            <meta property="og:image" content={ogImageUrl} />
-            <meta
-              property="og:image:width"
-              content={`${OG_IMAGE_SIZE.width}`}
-            />
-            <meta
-              property="og:image:height"
-              content={`${OG_IMAGE_SIZE.height}`}
-            />
-            <meta property="og:image:type" content="image/png" />
-          </>
-        )}
+        <meta property="og:title" content={pub?.document?.title} />
+        {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
       </Head>
       <SiteHead pageTitle={pub?.document?.title} />
       <PageSection.Root>

@@ -230,7 +230,7 @@ const groupRouter = router({
     .input(
       z.object({
         groupId: z.string().optional(),
-        version: z.string(),
+        version: z.string().optional(),
       }),
     )
     .query(async ({input}) => {
@@ -344,7 +344,6 @@ const accountRouter = router({
           }
         }
       }
-      console.log('getAccount!', account)
       return {
         account,
       }

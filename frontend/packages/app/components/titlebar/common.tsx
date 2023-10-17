@@ -193,7 +193,7 @@ export function useFullReferenceUrl(
       let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
       const matchedPrettyPath =
         invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
-      if (matchedPrettyPath) {
+      if (matchedPrettyPath && !pubRoute.versionId) {
         const displayPrettyPath =
           matchedPrettyPath === '/' ? '' : matchedPrettyPath
         return {
@@ -232,12 +232,13 @@ export function useFullReferenceUrl(
           redirectedContext = null
         }
       }
-      if (redirectedContext !== undefined) {
-        navigateReplace({
-          ...pubRoute,
-          pubContext: redirectedContext,
-        })
-      }
+      // if (redirectedContext !== undefined) {
+      // this is causing buggy behavior. maybe we should show a visual indicator that this version doesn't actually appear in the group, rather than redirecting
+      // navigateReplace({
+      //   ...pubRoute,
+      //   pubContext: redirectedContext,
+      // })
+      // }
       return {
         url: createPublicWebHmUrl('d', docId.eid, {
           version: pub.data?.version,

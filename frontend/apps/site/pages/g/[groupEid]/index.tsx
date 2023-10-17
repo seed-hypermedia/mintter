@@ -37,6 +37,7 @@ import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRouter} from 'next/router'
 import Footer from 'footer'
 import {OpenInAppLink} from 'components/metadata'
+import {OGImageMeta} from 'head'
 
 export default function GroupPage({}: GroupPageProps) {
   const router = useRouter()
@@ -96,7 +97,11 @@ export default function GroupPage({}: GroupPageProps) {
   } else {
     mainView = listView
   }
-
+  const groupVersion = loadedGroup?.version
+  const ogImageUrl =
+    groupEid && groupVersion
+      ? `/api/content-image/g/${groupEid}/${groupVersion}/media.png`
+      : undefined
   return (
     <YStack flex={1}>
       <Head>
@@ -108,6 +113,10 @@ export default function GroupPage({}: GroupPageProps) {
               content={loadedGroup.version}
             />
             <meta name="hypermedia-entity-title" content={loadedGroup.title} />
+
+            <meta property="og:title" content={loadedGroup.title} />
+            <meta property="og:description" content={loadedGroup.description} />
+            {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
           </>
         ) : null}
       </Head>
