@@ -214,50 +214,6 @@ function SystemMenu() {
   )
 
   return (
-    <XStack className="no-window-drag">
-      {menuItems.map((item) => (
-        <Popover key={item.id} placement="bottom-start">
-          <Popover.Trigger asChild>
-            <Button
-              size="$1.5"
-              backgroundColor="transparent"
-              borderRadius={0}
-              paddingHorizontal="$2"
-            >
-              {item.title}
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content
-            padding={0}
-            elevation="$2"
-            enterStyle={{y: -10, opacity: 0}}
-            exitStyle={{y: -10, opacity: 0}}
-            elevate
-            animation={[
-              'quick',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-          >
-            <YGroup separator={<Separator />}>
-              {item.children.map((p) => (
-                <YGroup.Item key={p.id}>
-                  <MenuItem
-                    disabled={p.disabled}
-                    key={p.id}
-                    {...p}
-                    onSelect={p.onSelect}
-                  />
-                </YGroup.Item>
-              ))}
-            </YGroup>
-          </Popover.Content>
-        </Popover>
-      ))}
-    </XStack>
     // <NavigationMenu.Root asChild className="no-window-drag">
     //   <XStack
     //     position="relative"
@@ -302,6 +258,50 @@ function SystemMenu() {
     //     </XStack>
     //   </XStack>
     // </NavigationMenu.Root>
+    <XStack className="no-window-drag">
+      {menuItems.map((item) => (
+        <Popover key={item.id} placement="bottom-start">
+          <Popover.Trigger asChild>
+            <Button
+              size="$1.5"
+              backgroundColor="transparent"
+              borderRadius={0}
+              paddingHorizontal="$2"
+            >
+              {item.title}
+            </Button>
+          </Popover.Trigger>
+          <Popover.Content
+            padding={0}
+            elevation="$2"
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+            elevate
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+          >
+            <YGroup separator={<Separator />}>
+              {item.children.map((p) => (
+                <YGroup.Item key={p.id}>
+                  <MenuItem
+                    disabled={p.disabled}
+                    key={p.id}
+                    {...p}
+                    onSelect={p.onSelect}
+                  />
+                </YGroup.Item>
+              ))}
+            </YGroup>
+          </Popover.Content>
+        </Popover>
+      ))}
+    </XStack>
   )
 }
 

@@ -1,7 +1,7 @@
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
-import {createGrpcWebTransport} from '@bufbuild/connect-web'
+import {createGrpcWebTransport} from '@connectrpc/connect-web'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
 import {AppError, AppErrorPage} from '@mintter/app/components/app-error'

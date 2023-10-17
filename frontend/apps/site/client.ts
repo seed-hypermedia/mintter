@@ -5,7 +5,7 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import {createGrpcWebTransport, Interceptor} from '@bufbuild/connect-web'
+import {createGrpcWebTransport, Interceptor} from '@connectrpc/connect-web'
 import {createGRPCClient} from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {

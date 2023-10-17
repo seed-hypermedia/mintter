@@ -11,7 +11,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "paths": {
-      "react-native": ["../../../node_modules/react-native-web"],
+      "react-native": ["../../../node_modules/react-native-web"]
     },
     "moduleResolution": "node",
     "resolveJsonModule": true,

@@ -26,7 +26,7 @@
     "publish": "electron-forge publish"
   },
   "dependencies": {
-    "@bufbuild/connect-web": "0.13.0",
+    "@connectrpc/connect-web": "^1.1.2",
     "@mintter/app": "*",
     "@mintter/prettier": "*",
     "@mintter/shared": "*",

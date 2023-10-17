@@ -1,4 +1,4 @@
-import {createPromiseClient, PromiseClient} from '@bufbuild/connect'
+import {createPromiseClient, PromiseClient} from '@connectrpc/connect'
 import {
   Accounts,
   Changes,

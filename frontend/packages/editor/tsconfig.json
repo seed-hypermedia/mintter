@@ -1,5 +1,3 @@
-
-
 {
   "extends": "../../../tsconfig.base",
   "include": ["src"],

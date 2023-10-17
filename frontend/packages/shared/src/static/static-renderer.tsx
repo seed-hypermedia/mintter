@@ -488,20 +488,7 @@ function InlineContentView({
 
           const isExternal = isHypermediaScheme(content.href)
           return (
-            href && (
-              <a
-                href={href}
-                key={index}
-                className={isExternal ? 'hm-link' : 'link'}
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline',
-                }}
-              >
-                <InlineContentView inline={content.content} />
-                {isExternal ? <ExternalLink size={10} /> : null}
-              </a>
-              // <Tooltip content={href}>
+            href && ( // <Tooltip content={href}>
               //   <SizableText
               //     key={index}
               //     display="inline"
@@ -522,6 +509,18 @@ function InlineContentView({
               //     </a>
               //   </SizableText>
               // </Tooltip>
+              <a
+                href={href}
+                key={index}
+                className={isExternal ? 'hm-link' : 'link'}
+                style={{
+                  cursor: 'pointer',
+                  display: 'inline',
+                }}
+              >
+                <InlineContentView inline={content.content} />
+                {isExternal ? <ExternalLink size={10} /> : null}
+              </a>
             )
           )
         }
