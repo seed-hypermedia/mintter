@@ -92,8 +92,8 @@ export default function PublicationPage() {
                       <StaticPublication publication={publication.data} />
                     </StaticPublicationProvider>
                   </YStack>
-                  {version && (
-                    <OutOfDateBanner docId={docId} version={version} />
+                  {route.versionId && (
+                    <OutOfDateBanner docId={docId} version={route.versionId} />
                   )}
                 </MainWrapper>
               </YStack>
