@@ -1,6 +1,4 @@
 import {
-  BACKEND_FILE_URL,
-  BACKEND_HTTP_PORT,
   Block,
   BlockNode,
   HMBlockChildrenType,
@@ -50,6 +48,7 @@ export type EntityComponentsRecord = {
 export type StaticPublicationContextValue = {
   entityComponents: EntityComponentsRecord
   onLinkClick: (dest: string, e: any) => void
+  ipfsBlobPrefix: string
 }
 
 export const staticPublicationContext =
@@ -59,11 +58,10 @@ export type StaticEmbedProps = StaticBlockProps & ReturnType<typeof unpackHmId>
 
 export function StaticPublicationProvider({
   children,
-  entityComponents,
-  onLinkClick,
+  ...staticPubContext
 }: PropsWithChildren<StaticPublicationContextValue>) {
   return (
-    <staticPublicationContext.Provider value={{entityComponents, onLinkClick}}>
+    <staticPublicationContext.Provider value={staticPubContext}>
       {children}
     </staticPublicationContext.Provider>
   )
@@ -433,6 +431,7 @@ function useHeadingMarginStyles(depth: number) {
 function StaticBlockImage({block, depth}: StaticBlockProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
+  const {ipfsBlobPrefix} = useStaticPublicationContext()
   if (!cid) return null
 
   return (
@@ -442,7 +441,7 @@ function StaticBlockImage({block, depth}: StaticBlockProps) {
       paddingVertical="$3"
       gap="$2"
     >
-      <img alt={block.attributes.alt} src={`${BACKEND_FILE_URL}/${cid}`} />
+      <img alt={block.attributes.alt} src={`${ipfsBlobPrefix}${cid}`} />
       {inline.length ? (
         <SizableText opacity={0.7} size="$2">
           <InlineContentView inline={inline} />
@@ -455,6 +454,7 @@ function StaticBlockImage({block, depth}: StaticBlockProps) {
 function StaticBlockVideo({block, depth}: StaticBlockProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
+  const {ipfsBlobPrefix} = useStaticPublicationContext()
 
   return (
     <YStack
@@ -482,10 +482,7 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
             preload="metadata"
           >
             <source
-              src={`http://localhost:${BACKEND_HTTP_PORT}/ipfs/${block.ref.replace(
-                'ipfs://',
-                '',
-              )}`}
+              src={`${ipfsBlobPrefix}${block.ref.replace('ipfs://', '')}`}
               type={getSourceType(block.attributes.name)}
             />
             Something is wrong with the video file.

@@ -8,6 +8,7 @@ import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
+  BACKEND_FILE_URL,
   MttLink,
   StaticPublication,
   StaticPublicationProvider,
@@ -27,8 +28,8 @@ import {
 } from '../components/static-embeds'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {usePublicationInContext} from '../models/publication'
-import {DocumentPlaceholder} from './document-placeholder'
 import {useOpenUrl} from '../open-url'
+import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -96,6 +97,7 @@ export default function PublicationPage() {
                         e.stopPropagation()
                         openUrl(href)
                       }}
+                      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
                     >
                       <StaticPublication publication={publication.data} />
                     </StaticPublicationProvider>
