@@ -3,9 +3,6 @@
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": ".",
-    "paths": {
-      "react-native": ["react-native-web"]
-    },
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

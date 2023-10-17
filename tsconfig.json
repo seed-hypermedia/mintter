@@ -5,8 +5,7 @@
     "paths": {
       "@mintter/app/*": ["./frontend/packages/app/src/*"],
       "@mintter/ui/*": ["./frontend/packages/ui/*"],
-      "@mintter/shared/*": ["./frontend/packages/shared/*"],
-      "react-native": ["./node_modules/react-native-web"],
+      "@mintter/shared/*": ["./frontend/packages/shared/*"]
     },
     "plugins": [
       {

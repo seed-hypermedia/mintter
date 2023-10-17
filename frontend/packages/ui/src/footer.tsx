@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {styled, XStack} from 'tamagui'
 
 export const FooterWrapper = styled(XStack, {

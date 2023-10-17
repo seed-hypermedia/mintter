@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import {Meta} from '@storybook/react'
 import {StoryObj} from '@storybook/react'

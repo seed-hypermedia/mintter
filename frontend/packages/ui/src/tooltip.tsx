@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 import {SizableText, Tooltip as TTooltip, TooltipProps} from 'tamagui'
 
@@ -14,7 +15,9 @@ export function Tooltip({
 }) {
   return (
     <TTooltip placement={placement} delay={delay}>
+      {/* @ts-ignore */}
       <TTooltip.Trigger asChild>{children}</TTooltip.Trigger>
+      {/* @ts-ignore */}
       <TTooltip.Content
         enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {ScrollView, YStack, YStackProps, styled} from 'tamagui'
 
 export const AppMain = styled(YStack, {

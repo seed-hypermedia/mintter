@@ -7,8 +7,7 @@
     // "baseUrl": ".",
     "paths": {
       "@mintter/app/*": ["*", "frontend/packages/app/src/*"],
-      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"],
-      "react-native": ["node_modules/react-native-web"]
+      "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"]
     }
   },
   "references": []

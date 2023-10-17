@@ -20,9 +20,6 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "paths": {
-      "react-native": ["react-native-web"]
-    }
   },
   "exclude": ["node_modules", "dist", "./**/*.test.ts", "./**/*.d.ts"]
 }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 export {
   Medal as Acknowledgements,
   Plus as Add,

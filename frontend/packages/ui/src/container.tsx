@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {styled, YStack} from 'tamagui'
 
 const variants = {

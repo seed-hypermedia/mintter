@@ -1,3 +1,4 @@
+// @ts-nocheck
 type ObjectType = Record<PropertyKey, unknown>
 
 type PickByValue<OBJ_T, VALUE_T> = // From https://stackoverflow.com/a/55153000

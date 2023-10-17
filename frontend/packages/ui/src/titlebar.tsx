@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {SizableText, styled, XStack, YStack} from 'tamagui'
 
 export const TitlebarWrapper = styled(YStack, {

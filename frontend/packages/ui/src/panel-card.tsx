@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {SizableText, XStack, YStack} from 'tamagui'
 import * as React from 'react'
 

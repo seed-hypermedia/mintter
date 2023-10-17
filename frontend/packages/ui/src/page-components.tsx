@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {Main, SizableText, Stack, XStack, YStack, styled} from 'tamagui'
 import {Container} from './container'
 

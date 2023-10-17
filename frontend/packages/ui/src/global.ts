@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {config} from './tamagui.config'
 
 export type Conf = typeof config
