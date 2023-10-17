@@ -20,7 +20,6 @@ export type PublicationCommentsAccessory = {key: 'comments'}
 export type GroupPublicationRouteContext = {
   key: 'group'
   groupId: string
-  groupVersion?: string | undefined
   pathName: string | null
 }
 export type PublicationRouteContext =

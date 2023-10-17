@@ -211,21 +211,6 @@ export function usePublication({
   })
 }
 
-export function useLatestPublication({
-  documentId,
-  trustedVersionsOnly,
-  ...options
-}: UseQueryOptions<Publication> & {
-  documentId?: string
-  trustedVersionsOnly?: boolean
-}) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
-    ...queryLatestPublication(grpcClient, documentId, trustedVersionsOnly),
-    ...options,
-  })
-}
-
 export function prefetchPublication(
   grpcClient: GRPCClient,
   documentId: string,

@@ -121,6 +121,7 @@ export function RenamePubDialog({
 function GroupContentItem({
   docId,
   version,
+  latestVersion,
   hasDraft,
   groupId,
   pathName,
@@ -128,6 +129,7 @@ function GroupContentItem({
 }: {
   docId: string
   version?: string
+  latestVersion?: string
   hasDraft: undefined | Document
   groupId: string
   pathName: string
@@ -159,6 +161,7 @@ function GroupContentItem({
       key: 'rename',
     },
   ]
+  console.log('group content item', {pathName, latestVersion, docId, version})
   return (
     <>
       <PublicationListItem
@@ -183,7 +186,9 @@ function GroupContentItem({
         openRoute={{
           key: 'publication',
           documentId: docId,
-          pubContext: {key: 'group', groupId, pathName},
+          ...(latestVersion === version
+            ? {pubContext: {key: 'group', groupId, pathName}}
+            : {versionId: version}),
         }}
       />
       {renameDialog.content}
@@ -298,6 +303,7 @@ export default function GroupPage() {
     refetchInterval: 5_000,
   })
   const groupContent = useGroupContent(groupId, version)
+  const latestGroupContent = useGroupContent(groupId)
   // const groupMembers = useGroupMembers(groupId, version)
   const groupMembers = useGroupMembers(groupId)
   const drafts = useDraftList()
@@ -551,12 +557,20 @@ export default function GroupPage() {
                       const docId = unpackDocId(hmUrl)
                       if (!docId) return null
                       if (pathName === '/') return null
+
+                      const latestEntry =
+                        latestGroupContent.data?.content?.[pathName]
+                      const latestDocId = latestEntry
+                        ? unpackDocId(latestEntry)
+                        : null
+
                       return (
                         <GroupContentItem
                           key={pathName}
                           docId={docId?.docId}
                           groupId={groupId}
                           version={docId?.version || undefined}
+                          latestVersion={latestDocId?.version || undefined}
                           hasDraft={drafts.data?.documents.find(
                             (d) => d.id == docId.docId,
                           )}

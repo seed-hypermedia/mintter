@@ -185,12 +185,12 @@ export function StaticBlockNode({
   )
 
   const headingStyles = useMemo(() => {
-    if (blockNode.block.type == 'heading') {
+    if (blockNode.block?.type == 'heading') {
       return headingMarginStyles
     }
 
     return {}
-  }, [blockNode.block])
+  }, [blockNode.block, headingMarginStyles])
 
   return (
     <YStack
@@ -273,7 +273,7 @@ function StaticBlock(props: StaticBlockProps) {
 }
 
 function StaticBlockParagraph({block, depth}: StaticBlockProps) {
-  let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
+  let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return (
     <YStack {...blockStyles} className="block-static block-paragraph">
@@ -285,7 +285,7 @@ function StaticBlockParagraph({block, depth}: StaticBlockProps) {
 }
 
 function StaticBlockHeading({block, depth}: StaticBlockProps) {
-  let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
+  let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth)
   let tag = `h${depth}`
 
@@ -387,7 +387,7 @@ function useHeadingMarginStyles(depth: number) {
 }
 
 function StaticBlockImage({block, depth}: StaticBlockProps) {
-  let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
+  let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
   if (!cid) return null
 

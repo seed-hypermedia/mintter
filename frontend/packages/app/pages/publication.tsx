@@ -8,36 +8,22 @@ import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {MttLink, StaticPublication, pluralS, unpackDocId} from '@mintter/shared'
-import {
-  Button,
-  Comment,
-  Link,
-  MainWrapper,
-  Text,
-  XStack,
-  YStack,
-} from '@mintter/ui'
+import {Button, Link, MainWrapper, Text, XStack, YStack} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {ErrorBoundary} from 'react-error-boundary'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {VersionChangesInfo} from '../components/version-changes-info'
-import {usePublication} from '../models/documents'
 import {usePublicationInContext} from '../models/publication'
 import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
-  return <PublicationPageEditor />
-}
-
-export function PublicationPageEditor() {
   const route = useNavRoute()
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 
   const docId = route?.documentId
-  const version = route?.versionId
   const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
@@ -45,7 +31,11 @@ export function PublicationPageEditor() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const publication = usePublication({id: docId, version})
+  const publication = usePublicationInContext({
+    documentId: docId,
+    versionId: route.versionId,
+    pubContext: route.pubContext,
+  })
 
   const {data: changes} = useDocChanges(
     publication.status == 'success' ? docId : undefined,
@@ -75,9 +65,9 @@ export function PublicationPageEditor() {
               <YStack height="100%">
                 <MainWrapper>
                   <StaticPublication publication={publication.data} />
-                  {version && (
-                    <OutOfDateBanner docId={docId} version={version} />
-                  )}
+                  {route.versionId ? (
+                    <OutOfDateBanner docId={docId} version={route.versionId} />
+                  ) : null}
                 </MainWrapper>
               </YStack>
             </Allotment.Pane>
@@ -88,7 +78,7 @@ export function PublicationPageEditor() {
                   activeVersion={publication.data.version}
                 />
               ) : (
-                <CitationsAccessory docId={docId} version={version} />
+                <CitationsAccessory docId={docId} />
               ))}
           </Allotment>
           <Footer>
@@ -127,18 +117,6 @@ export function PublicationPageEditor() {
                 }}
               />
             ) : null}
-            {false ? (
-              <FooterButton
-                active={accessoryKey === 'comments'}
-                label={`Conversations`}
-                icon={Comment}
-                onPress={() => {
-                  if (route.accessory?.key === 'comments')
-                    return replace({...route, accessory: null})
-                  replace({...route, accessory: {key: 'comments'}})
-                }}
-              />
-            ) : null}
           </Footer>
         </CitationsProvider>
       </ErrorBoundary>
@@ -168,13 +146,9 @@ export function PublicationPageEditor() {
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const route = useNavRoute()
-  const pubContext = route.key === 'publication' ? route.pubContext : undefined
+  const pubRoute = route.key === 'publication' ? route : undefined
+  const pubContext = pubRoute?.pubContext
   const pub = usePublicationInContext({documentId: docId, pubContext})
-  // const {data: pub, isLoading} = useLatestPublication({
-  //   trustedVersionsOnly: pubContext?.key === 'trusted',
-  //   documentId: docId,
-  //   enabled: !!docId,
-  // })
 
   const navigate = useNavigate()
   const pubAccessory = route.key === 'publication' ? route.accessory : undefined

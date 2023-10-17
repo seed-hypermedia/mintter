@@ -463,13 +463,11 @@ function DraftContextButton({route}: {route: DraftRoute}) {
 
 function GroupContextItem({
   groupId,
-  groupVersion,
   path,
   route,
   onPathPress,
 }: {
   groupId: string
-  groupVersion?: string | undefined
   path: string | null
   route: PublicationRoute | DraftRoute
   onPathPress?: (() => void) | undefined
@@ -505,7 +503,6 @@ function GroupContextItem({
           pubContext: {
             key: 'group',
             groupId: groupId,
-            groupVersion,
             pathName: path,
           },
         })
@@ -519,7 +516,7 @@ function GroupContextItem({
           >
             {group.data?.title}
           </SizableText>
-          {path === '/' ? null : (
+          {path === '/' || path == null ? null : (
             <ButtonText
               fontSize={10}
               color="$color11"
@@ -697,7 +694,6 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
     ? {
         key: 'group',
         groupId: groupPubContext.groupId,
-        // version: groupPubContext.groupVersion,
       }
     : null
 
@@ -750,7 +746,6 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
                     return (
                       <GroupContextItem
                         groupId={docGroup.groupId}
-                        groupVersion={docGroup.changeId}
                         path={docGroup.path}
                         route={route}
                         onPathPress={() => {

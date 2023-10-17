@@ -16,10 +16,7 @@ export function usePublicationInContext({
 }) {
   const groupContext = pubContext?.key === 'group' ? pubContext : undefined
   const groupContextId = groupContext ? groupContext.groupId : undefined
-  const groupContextVersion = groupContext
-    ? groupContext.groupVersion
-    : undefined
-  const groupContent = useGroupContent(groupContextId, groupContextVersion)
+  const groupContent = useGroupContent(groupContextId)
   let queryVersionId = versionId
   let queryDocumentId = documentId
   const groupContextContent = groupContent.data?.content
@@ -29,19 +26,20 @@ export function usePublicationInContext({
     groupContextContent &&
     !groupContent.isPreviousData
   ) {
-    const contentURL = groupContextContent[groupContext.pathName]
+    const contentURL =
+      groupContext.pathName && groupContextContent[groupContext.pathName]
     if (!contentURL) {
       // throw new Error(
       //   `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
       // )
       queryDocumentId = undefined
     }
-    const groupItem = unpackDocId(contentURL)
+    const groupItem = contentURL ? unpackDocId(contentURL) : null
     if (groupItem?.docId !== documentId)
       throw new Error(
         `Group ${groupContextId} content for "${groupContext.pathName}" not match route document id "${documentId}", instead has "${groupItem?.docId}"`,
       )
-    queryVersionId = groupItem?.version
+    queryVersionId = groupItem?.version || undefined
   }
   // this avoids querying usePublication if we are in a group context and the group content is not yet loaded, or if it has an error. if the route specifies the version directly we are also ready to query
   const pubQueryReady = !!queryVersionId || pubContext?.key !== 'group'

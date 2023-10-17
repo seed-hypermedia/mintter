@@ -44,13 +44,7 @@ function CitationItem({link}: {link: CitationLink}) {
   )
 }
 
-export function CitationsAccessory({
-  docId,
-  version,
-}: {
-  docId?: string
-  version?: string
-}) {
+export function CitationsAccessory({docId}: {docId?: string}) {
   const {data: citations} = useDocCitations(docId)
   if (!docId) return null
   const count = citations?.links?.length || 0
