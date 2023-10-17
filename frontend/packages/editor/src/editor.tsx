@@ -1,4 +1,5 @@
 import {HyperDocsEditor} from '@mintter/app/models/documents'
+import {useOpenUrl} from '@mintter/app/open-url'
 import {YStack} from '@mintter/ui'
 import {
   BlockNoteView,
@@ -9,13 +10,6 @@ import {
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
-import {useOpenUrl} from '@mintter/app/open-url'
-import {
-  DefaultStaticBlockAccount,
-  DefaultStaticBlockGroup,
-  DefaultStaticBlockPublication,
-  StaticPublicationProvider,
-} from '@mintter/shared'
 
 export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
   const openUrl = useOpenUrl()

@@ -5,6 +5,7 @@ import {
   HMGroup,
   HMPublication,
   Publication,
+  StaticBlockNode,
   UnpackedHypermediaId,
   createHmDocLink,
   formatBytes,
@@ -13,7 +14,6 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 
-import {StaticBlockNode} from '@mintter/shared'
 import {
   ArrowRight,
   Button,
@@ -30,6 +30,7 @@ import {
   useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
+import {OGImageMeta} from 'head'
 import {NextLink} from 'next-link'
 import Head from 'next/head'
 import {useMemo} from 'react'
@@ -38,7 +39,6 @@ import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import {OGImageMeta} from 'head'
 
 export type PublicationPageProps = {
   // documentId: string

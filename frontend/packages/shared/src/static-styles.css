@@ -1,0 +1,11 @@
+li.blocknode-static {
+  font-family: 'Courier New', Courier, monospace;
+  position: absolute;
+}
+
+.static-inlinecontent code {
+  background-color: red;
+  padding: 0.18rem 0.3rem;
+  border-radius: 6px;
+  font-size: 85%;
+}

@@ -67,6 +67,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
               blockNode={bn}
               childrenType="group"
               index={idx}
+              embedDepth={1}
             />
           ))}
         </StaticGroup>
@@ -78,25 +79,80 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
 }
 
 export function StaticBlockGroup(props: StaticEmbedProps) {
-  const groupId = props.type == 'g' ? createHmId('d', props.eid) : undefined
+  const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
 
-  if (groupQuery.status == 'success') {
-    return <GroupCard group={groupQuery.data} />
-  }
-
-  return null
+  return groupQuery.status == 'success' ? (
+    <YStack
+      flex={1}
+      overflow="hidden"
+      borderRadius="$3"
+      backgroundColor="$backgroundFocus"
+      hoverStyle={{
+        backgroundColor: '$color6',
+      }}
+    >
+      <XStack gap="$3" padding="$4" alignItems="flex-start">
+        <XStack paddingVertical="$3">
+          <Book size={36} />
+        </XStack>
+        <YStack justifyContent="center" flex={1}>
+          <SizableText size="$1" opacity={0.5} flex={0}>
+            Group
+          </SizableText>
+          <YStack gap="$2">
+            <SizableText size="$6" fontWeight="bold">
+              {groupQuery.data?.title}
+            </SizableText>
+            <SizableText size="$2">
+              Some random group description...
+            </SizableText>
+          </YStack>
+        </YStack>
+      </XStack>
+    </YStack>
+  ) : null
 }
 
 export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = useAccount(accountId)
 
-  if (accountQuery.status == 'success') {
-    return <AccountCard account={accountQuery.data} />
-  }
-
-  return null
+  return accountQuery.status == 'success' ? (
+    <YStack
+      flex={1}
+      overflow="hidden"
+      borderRadius="$3"
+      backgroundColor="$backgroundFocus"
+      hoverStyle={{
+        backgroundColor: '$color6',
+      }}
+    >
+      <XStack gap="$3" padding="$4" alignItems="flex-start">
+        <XStack paddingVertical="$3">
+          <UIAvatar
+            id={accountQuery.data.id}
+            size={36}
+            label={accountQuery.data.profile?.alias}
+            url={getAvatarUrl(accountQuery.data.profile?.avatar)}
+          />
+        </XStack>
+        <YStack justifyContent="center" flex={1}>
+          <SizableText size="$1" opacity={0.5} flex={0}>
+            Account
+          </SizableText>
+          <YStack gap="$2">
+            <SizableText size="$6" fontWeight="bold">
+              {accountQuery.data?.profile?.alias}
+            </SizableText>
+            <SizableText size="$2">
+              {accountQuery.data.profile?.bio}
+            </SizableText>
+          </YStack>
+        </YStack>
+      </XStack>
+    </YStack>
+  ) : null
 }
 
 function EntityCard({
@@ -111,15 +167,9 @@ function EntityCard({
   route: NavRoute
 }) {
   return (
-    <XStack gap="$3">
-      {icon}
-      <YStack>
-        <SizableText size="$5" fontWeight="bold" fontFamily="$body">
-          {title}
-        </SizableText>
-        <SizableText fontFamily="$body">{description}</SizableText>
-      </YStack>
-    </XStack>
+    <YStack {...blockStyles}>
+      <span>{JSON.stringify({title, description, route})}</span>
+    </YStack>
   )
 }
 function GroupCard({group}: {group: Group}) {
