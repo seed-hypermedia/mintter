@@ -259,7 +259,14 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
   })
 
   return pub.status == 'success' && pub.data ? (
-    <StaticPublication publication={pub.data} />
+    <YStack
+      width="100%"
+      maxWidth="calc(90ch + 20vw)"
+      paddingHorizontal="$5"
+      alignSelf="center"
+    >
+      <StaticPublication publication={pub.data} />
+    </YStack>
   ) : null
 }
 

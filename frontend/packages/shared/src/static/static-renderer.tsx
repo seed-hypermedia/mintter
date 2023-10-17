@@ -1,31 +1,28 @@
 import {
+  Account,
   BACKEND_FILE_URL,
   Block,
   BlockNode,
-  HMBlock,
+  Group,
   HMBlockChildrenType,
-  HMBlockEmbed,
   HMBlockFile,
-  HMBlockImage,
   HMBlockNode,
-  HMBlockVideo,
   HMInlineContent,
-  HMPublication,
   Publication,
   formatBytes,
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
   toHMInlineContent,
-  unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {
+  ColorProp,
   ExternalLink,
   File,
   FontSizeTokens,
   SizableText,
   SizableTextProps,
-  Spinner,
   Text,
   TextProps,
   Tooltip,
@@ -34,49 +31,76 @@ import {
   YStackProps,
 } from '@mintter/ui'
 
-import {useRouter} from 'next/router'
-import {createContext, useMemo, useState} from 'react'
+import {
+  PropsWithChildren,
+  ReactNode,
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 import './static-styles.css'
 
 let blockVerticalPadding: FontSizeTokens = '$4'
 let blockHorizontalPadding: FontSizeTokens = '$4'
 let blockBorderRadius = '$3'
 
-export const staticRendererContext = createContext(null)
+export type StaticPublicationContextValue = EntityComponentsRecord | null
 
-export function StaticPublicationProvider({children}) {
-  let value = useMemo(() => {
-    client: undefined
-  }, [])
+export const staticPublicationContext =
+  createContext<StaticPublicationContextValue>(null)
 
+export type StaticEmbedProps = StaticBlockProps & ReturnType<typeof unpackHmId>
+export type EntityComponentsRecord = {
+  StaticAccount: (props: StaticEmbedProps) => JSX.Element
+  StaticGroup: (props: StaticEmbedProps) => JSX.Element
+  StaticPublication: (props: StaticEmbedProps) => JSX.Element
+}
+
+export function StaticPublicationProvider({
+  children,
+  entityComponents = null,
+}: PropsWithChildren<{entityComponents: StaticPublicationContextValue}>) {
   return (
-    <staticRendererContext.Provider value={value}>
+    <staticPublicationContext.Provider value={entityComponents}>
       {children}
-    </staticRendererContext.Provider>
+    </staticPublicationContext.Provider>
   )
+}
+
+export function useStaticPublication() {
+  let context = useContext(staticPublicationContext)
+
+  if (!context) {
+    throw new Error(
+      `Please wrap <StaticPublication /> with <StaticPublicationProvider />`,
+    )
+  }
+
+  return context
+}
+
+function debugStyles(color: ColorProp = '$color7') {
+  // return {
+  //   borderWidth: 1,
+  //   borderColor: color,
+  // }
+  return {}
 }
 
 export function StaticPublication({publication}: {publication: Publication}) {
   return (
-    <YStack
-      paddingVertical={80}
-      width="100%"
-      maxWidth="calc(100ch + 20vw)"
-      paddingHorizontal="10vw"
-      alignSelf="center"
-    >
-      <StaticGroup childrenType={'group'}>
-        {publication.document?.children.map((bn, idx) => (
-          <StaticBlockNode
-            key={bn.block?.id}
-            blockNode={bn}
-            depth={1}
-            childrenType="group"
-            index={idx}
-          />
-        ))}
-      </StaticGroup>
-    </YStack>
+    <StaticGroup childrenType={'group'}>
+      {publication.document?.children.map((bn, idx) => (
+        <StaticBlockNode
+          key={bn.block?.id}
+          blockNode={bn}
+          depth={1}
+          childrenType="group"
+          index={idx}
+        />
+      ))}
+    </StaticGroup>
   )
 }
 
@@ -89,11 +113,7 @@ export function StaticGroup({
   childrenType?: HMBlockChildrenType
   start?: any
 }) {
-  return (
-    <YStack {...props} borderWidth={1} borderColor="$color7">
-      {children}
-    </YStack>
-  )
+  return <YStack {...props}>{children}</YStack>
 }
 
 function BlockNodeMarker({
@@ -140,7 +160,7 @@ function BlockNodeMarker({
       alignItems="center"
       justifyContent="center"
     >
-      <Text {...styles} fontFamily="$body">
+      <Text {...styles} fontFamily="$body" userSelect="none">
         {marker}
       </Text>
     </XStack>
@@ -179,11 +199,6 @@ export function StaticBlockNode({
       ))
     : null
 
-  const isList = useMemo(
-    () => childrenType == 'ol' || childrenType == 'ul',
-    [childrenType],
-  )
-
   const headingStyles = useMemo(() => {
     if (blockNode.block?.type == 'heading') {
       return headingMarginStyles
@@ -192,21 +207,23 @@ export function StaticBlockNode({
     return {}
   }, [blockNode.block, headingMarginStyles])
 
+  const isEmbed = blockNode.block?.type == 'embed'
+
   return (
     <YStack
-      marginLeft="1.5em"
+      overflow="hidden"
+      borderRadius="$3"
+      marginLeft={!isEmbed ? '1.5em' : undefined}
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
       backgroundColor={isHovering ? '$color5' : 'transparent'}
-      className="blocknode-static"
+      className="static-blocknode"
     >
       <XStack
-        borderWidth={1}
-        borderColor="red"
-        paddingHorizontal="$2"
-        paddingVertical="$1"
+        padding={isEmbed ? 0 : '$3'}
         alignItems="baseline"
         {...headingStyles}
+        {...debugStyles('red')}
       >
         <BlockNodeMarker
           block={blockNode.block!}
@@ -214,7 +231,7 @@ export function StaticBlockNode({
           index={props.index}
           start={props.start}
         />
-        <StaticBlock block={blockNode.block!} isList={isList} depth={depth} />
+        <StaticBlock block={blockNode.block!} depth={depth} />
       </XStack>
       {bnChildren ? (
         <StaticGroup
@@ -231,14 +248,11 @@ export function StaticBlockNode({
   )
 }
 
-let blockStyles: YStackProps = {
+export const blockStyles: YStackProps = {
   width: '100%',
   alignSelf: 'center',
-  overflow: 'hidden',
-  borderRadius: '$2',
-  borderWidth: 1,
-  borderColor: 'blue',
   flex: 1,
+  ...debugStyles('blue'),
 }
 
 let inlineContentProps: SizableTextProps = {
@@ -253,7 +267,7 @@ let inlineContentProps: SizableTextProps = {
   },
 }
 
-type StaticBlockProps = {
+export type StaticBlockProps = {
   block: Block
   depth: number
 }
@@ -269,6 +283,20 @@ function StaticBlock(props: StaticBlockProps) {
 
   if (props.block.type == 'image') {
     return <StaticBlockImage {...props} depth={props.depth || 1} />
+  }
+
+  if (props.block.type == 'video') {
+    return <StaticBlockVideo {...props} depth={props.depth} />
+  }
+
+  if (props.block.type == 'embed') {
+    return (
+      <StaticBlockEmbed
+        {...props}
+        blockRef={props.block.ref}
+        depth={props.depth}
+      />
+    )
   }
 }
 
@@ -347,9 +375,10 @@ function useHeadingTextStyles(depth: number) {
 
 function useHeadingMarginStyles(depth: number) {
   function headingFontValues(value: number) {
+    let realValue = value - 8
     return {
-      marginTop: value,
-      marginBottom: value / 2,
+      marginTop: realValue,
+      marginBottom: realValue / 3,
     }
   }
 
@@ -399,6 +428,67 @@ function StaticBlockImage({block, depth}: StaticBlockProps) {
       gap="$2"
     >
       <img alt={block.attributes.alt} src={`${BACKEND_FILE_URL}/${cid}`} />
+      {inline.length ? (
+        <SizableText opacity={0.7} size="$2">
+          <InlineContentView inline={inline} />
+        </SizableText>
+      ) : null}
+    </YStack>
+  )
+}
+
+function StaticBlockVideo({block, depth}: StaticBlockProps) {
+  let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
+  const ref = block.ref || ''
+
+  return (
+    <YStack
+      {...blockStyles}
+      className="block-static block-video"
+      paddingVertical="$3"
+      gap="$2"
+      paddingBottom="56.25%"
+      position="relative"
+      height={0}
+    >
+      {ref ? (
+        ref.startsWith('ipfs://') ? (
+          <XStack
+            tag="video"
+            top={0}
+            left={0}
+            position="absolute"
+            width="100%"
+            height="100%"
+            // @ts-expect-error
+            contentEditable={false}
+            playsInline
+            controls
+            preload="metadata"
+          >
+            <source
+              src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
+              type={getSourceType(block.attributes.name)}
+            />
+            Something is wrong with the video file.
+          </XStack>
+        ) : (
+          <XStack
+            tag="iframe"
+            top={0}
+            left={0}
+            position="absolute"
+            width="100%"
+            height="100%"
+            // @ts-expect-error
+            src={block.ref}
+            frameBorder="0"
+            allowFullScreen
+          />
+        )
+      ) : (
+        <SizableText>Video block wrong state</SizableText>
+      )}
       {inline.length ? (
         <SizableText opacity={0.7} size="$2">
           <InlineContentView inline={inline} />
@@ -530,239 +620,93 @@ function InlineContentView({
   )
 }
 
-// ====================================================================================================
-
-function StaticImageBlock({
-  block,
-  isList,
-}: {
-  block: HMBlockImage
-  isList?: boolean
-}) {
-  const cid = getCIDFromIPFSUrl(block?.ref)
-  if (!cid) return null
-  return (
-    <XStack
-      backgroundColor="$color3"
-      borderColor="$color4"
-      borderWidth={1}
-      borderRadius={blockBorderRadius as any}
-      overflow="hidden"
-      hoverStyle={{
-        backgroundColor: '$color4',
-      }}
-    >
-      <img
-        id={`${block.id}-block`}
-        alt={block.attributes?.alt}
-        src={`/ipfs/${cid}`}
-        className="image"
-        onError={(e) => {
-          console.error('image errored', e)
-        }}
-      />
-    </XStack>
-  )
-  // return <img src={`${process.env.GRPC_HOST}/ipfs/${cid}`} />
-}
-
 function stripHMLinkPrefix(link: string) {
   return link.replace(/^hm:\//, '')
 }
 
-function StaticEmbedBlock({
-  block,
-  isList,
-}: {
-  block: HMBlockEmbed
-  isList?: boolean
-}) {
-  const reference = block.ref
-  const docId = unpackDocId(reference)
-  const router = useRouter()
-  let embed = trpc.publication.get.useQuery(
-    {
-      documentId: docId?.docId,
-      versionId: docId?.version || undefined,
-    },
-    {enabled: !!docId},
-  )
-  let content = <Spinner />
-  if (embed.data?.publication?.document?.children) {
-    if (docId?.blockRef) {
-      const blockNode = getBlockNodeById(
-        embed.data?.publication?.document?.children,
-        docId.blockRef,
-      )
-      content = blockNode ? (
-        <StaticBlockNode block={blockNode} />
-      ) : (
-        <SizableText>Block not found.</SizableText>
-      )
-    } else {
-      content = (
-        <>
-          {embed.data?.publication?.document?.children?.map(
-            (block: HMBlockNode) => (
-              <StaticBlockNode block={block} key={block?.block?.id} ctx={{}} />
-            ),
-          )}
-        </>
-      )
-    }
+export function StaticBlockEmbed(props: StaticBlockProps & {blockRef: string}) {
+  console.log('EMBED HERE', props)
+  const EmbedTypes = useStaticPublication()
+  const id = unpackHmId(props.blockRef)
+
+  if (id?.type == 'a') {
+    return <EmbedTypes.StaticAccount {...props} {...id} />
   }
-  return (
-    <YStack
-      id={`${block.id}-block`}
-      data-ref={reference}
-      transform="translateX(-19px)"
-      width="calc(100% + 16px)"
-      position="relative"
-    >
-      <YStack
-        // padding={blockVerticalPadding}
-        // paddingVertical={blockVerticalPadding}
-        // borderRadius={blockBorderRadius}
-        // backgroundColor="$color5"
-        // marginRight={blockHorizontalPadding}
-        hoverStyle={{
-          cursor: 'pointer',
-        }}
-        onPress={() => {
-          const ref = stripHMLinkPrefix(block.ref)
-          router.push(ref)
-        }}
-        href={stripHMLinkPrefix(block.ref)}
-      >
-        {content}
-        {/* <EmbedMetadata embed={embed} /> */}
-      </YStack>
-    </YStack>
-  )
+
+  if (id?.type == 'g') {
+    return <EmbedTypes.StaticGroup {...props} {...id} />
+  }
+
+  if (id?.type == 'd') {
+    console.log(`== ~ StaticBlockEmbed ~ DOCUMENT:`, id)
+    return <EmbedTypes.StaticPublication {...props} {...id} />
+  }
+
+  return <DefaultStaticBlockUnknown {...props} {...id} />
 }
 
-function StaticBlock_({block, isList}: {block: HMBlock; isList?: boolean}) {
-  let niceBlock = block
-
-  if (niceBlock.type == 'paragraph' || niceBlock.type == 'heading') {
-    return <StaticSectionBlock block={niceBlock} isList={isList} />
-  }
-
-  if (niceBlock.type == 'image') {
-    return <StaticImageBlock block={niceBlock} isList={isList} />
-  }
-  if (niceBlock.type == 'embed') {
-    return <StaticEmbedBlock block={niceBlock} isList={isList} />
-  }
-  if (niceBlock.type == 'code') {
-    let _content = (
-      <pre>
-        <code>{block.text}</code>
-      </pre>
-    )
-
-    return isList ? <li>{_content}</li> : _content
-  }
-
-  if (niceBlock.type == 'file') {
-    return <StaticFileBlock block={niceBlock} />
-  }
-
-  if (niceBlock.type == 'video') {
-    return <StaticVideoBlock block={niceBlock} isList={isList} />
-  }
-  // fallback for unknown block types
-  // return <span>{JSON.stringify(block)}</span>
-  return (
-    <ErrorMessageBlock
-      // @ts-expect-error
-      id={`${niceBlock.id}-block`}
-      // @ts-expect-error
-      message={`Unknown block type: "${niceBlock.type}"`}
-    />
-  )
+export type StaticBlockAccountProps = {
+  account?: Account
 }
 
-function ErrorMessageBlock({message, id}: {message: string; id: string}) {
+export function DefaultStaticBlockAccount(
+  props: StaticBlockProps & StaticBlockAccountProps,
+) {
   return (
-    <YStack
-      padding={blockVerticalPadding}
-      paddingVertical={blockVerticalPadding}
-      marginRight={blockHorizontalPadding}
-      backgroundColor="$color3"
-      borderColor="$color4"
-      borderWidth={1}
-      borderRadius={blockBorderRadius as any}
-      overflow="hidden"
-      hoverStyle={{
-        backgroundColor: '$color4',
-      }}
-      id={id}
-    >
-      <SizableText color="$color8" size="$6">
-        {message}
+    <YStack {...blockStyles} className="block-static block-embed" tag="pre">
+      <SizableText {...inlineContentProps} tag="code" fontFamily="$mono">
+        Account Embed here: {props.block.ref}
       </SizableText>
     </YStack>
   )
 }
 
-export function PublicationContent({
-  publication,
-}: {
-  publication: HMPublication | undefined
-}) {
-  // This removes the first block from the document content if it's not a media element (embed, image, video...)
-  let blocks = useMemo(() => {
-    let _b = publication?.document?.children
+export type StaticBlockGroupProps = {
+  group?: Group
+}
 
-    if (
-      !_b?.length ||
-      (_b.length == 1 &&
-        !['embed', 'image', 'video'].includes(_b[0].block?.type))
-    )
-      return []
-
-    // check if the first block has content or not.
-    if (
-      _b[0].block?.type &&
-      ['embed', 'image', 'video'].includes(_b[0].block?.type)
-    )
-      return _b
-
-    let [_firstBlock, ...restBlocks] = _b
-
-    if (_firstBlock.children?.length) {
-      restBlocks = [..._firstBlock.children, ...restBlocks]
-    }
-
-    return restBlocks
-  }, [publication?.document?.children])
+export function DefaultStaticBlockGroup(
+  props: StaticBlockProps & StaticBlockGroupProps,
+) {
   return (
-    <YStack>
-      {blocks.map((block, index) => (
-        <StaticBlockNode
-          block={block}
-          key={block.block?.id || index}
-          ctx={{
-            enableBlockCopy: true,
-            ref: {
-              docId: publication?.document?.id,
-              docVersion: publication?.version,
-            },
-          }}
-        />
-      ))}
+    <YStack {...blockStyles} className="block-static block-embed" tag="pre">
+      <SizableText {...inlineContentProps} tag="code" fontFamily="$mono">
+        Group Embed here: {props.block.ref}
+      </SizableText>
     </YStack>
   )
 }
 
-function getBlockNodeById(
-  blocks: Array<HMBlockNode>,
+export function DefaultStaticBlockPublication(props: StaticBlockProps) {
+  return (
+    <YStack {...blockStyles} className="block-static block-embed" tag="pre">
+      <SizableText {...inlineContentProps} tag="code" fontFamily="$mono">
+        Publication Embed here: {props.block.ref}
+      </SizableText>
+    </YStack>
+  )
+}
+
+export function DefaultStaticBlockUnknown(props: StaticBlockProps) {
+  return (
+    <YStack {...blockStyles} className="block-static block-embed" tag="pre">
+      <SizableText {...inlineContentProps} tag="code" fontFamily="$mono">
+        Unknown Embed here: {props.block.ref}
+      </SizableText>
+      <pre>
+        <code>{JSON.stringify(props, null, 3)}</code>
+      </pre>
+    </YStack>
+  )
+}
+
+export function getBlockNodeById(
+  blocks: Array<BlockNode>,
   blockId: string,
-): HMBlockNode | null {
+): BlockNode | null {
   if (!blockId) return null
 
-  let res: HMBlockNode | undefined
+  let res: BlockNode | undefined
   blocks.find((bn) => {
     if (bn.block?.id == blockId) {
       res = bn
@@ -828,66 +772,6 @@ export function StaticFileBlock({block}: {block: HMBlockFile}) {
       </YStack>
     </Tooltip>
   )
-}
-
-function StaticVideoBlock({
-  block,
-  isList,
-}: {
-  block: HMBlockVideo
-  isList?: boolean
-}) {
-  const ref = block.ref || ''
-  return ref ? (
-    <YStack
-      backgroundColor="$color3"
-      borderColor="$color8"
-      borderWidth={2}
-      borderRadius="$2"
-      overflow="hidden"
-      hoverStyle={{
-        backgroundColor: '$color4',
-      }}
-      paddingBottom="56.25%"
-      position="relative"
-      height={0}
-    >
-      {ref.startsWith('ipfs://') ? (
-        <XStack
-          tag="video"
-          top={0}
-          left={0}
-          position="absolute"
-          width="100%"
-          height="100%"
-          // @ts-expect-error
-          contentEditable={false}
-          playsInline
-          controls
-          preload="metadata"
-        >
-          <source
-            src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
-            type={getSourceType(block.attributes.name)}
-          />
-          Something is wrong with the video file.
-        </XStack>
-      ) : (
-        <XStack
-          tag="iframe"
-          top={0}
-          left={0}
-          position="absolute"
-          width="100%"
-          height="100%"
-          // @ts-expect-error
-          src={block.ref}
-          frameBorder="0"
-          allowFullScreen
-        />
-      )}
-    </YStack>
-  ) : null
 }
 
 function getSourceType(name?: string) {

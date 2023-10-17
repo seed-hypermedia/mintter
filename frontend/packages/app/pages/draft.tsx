@@ -35,6 +35,8 @@ export default function DraftPage() {
     onEditorState: setDebugValue,
   })
 
+  console.log(`== ~ DraftPage ~ query:`, query)
+
   let isDaemonReady = useDaemonReady()
 
   if (editor && query.data) {
@@ -45,6 +47,7 @@ export default function DraftPage() {
       >
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
+
           <HMEditorContainer>
             {editor && <HyperMediaEditorView editor={editor} />}
             {debugValue && <DebugData data={debugValue} />}

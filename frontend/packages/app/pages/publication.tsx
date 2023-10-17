@@ -7,13 +7,24 @@ import {useDocChanges} from '@mintter/app/models/changes'
 import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {MttLink, StaticPublication, pluralS, unpackDocId} from '@mintter/shared'
+import {
+  MttLink,
+  StaticPublication,
+  StaticPublicationProvider,
+  pluralS,
+  unpackDocId,
+} from '@mintter/shared'
 import {Button, Link, MainWrapper, Text, XStack, YStack} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {ErrorBoundary} from 'react-error-boundary'
 import {EntityVersionsAccessory} from '../components/changes-list'
+import {
+  StaticBlockAccount,
+  StaticBlockGroup,
+  StaticBlockPublication,
+} from '../components/static-embeds'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {usePublicationInContext} from '../models/publication'
 import {DocumentPlaceholder} from './document-placeholder'
@@ -64,10 +75,26 @@ export default function PublicationPage() {
             <Allotment.Pane>
               <YStack height="100%">
                 <MainWrapper>
-                  <StaticPublication publication={publication.data} />
-                  {route.versionId ? (
-                    <OutOfDateBanner docId={docId} version={route.versionId} />
-                  ) : null}
+                  <YStack
+                    paddingVertical={80}
+                    width="100%"
+                    maxWidth="calc(90ch + 20vw)"
+                    paddingHorizontal="10vw"
+                    alignSelf="center"
+                  >
+                    <StaticPublicationProvider
+                      entityComponents={{
+                        StaticAccount: StaticBlockAccount,
+                        StaticGroup: StaticBlockGroup,
+                        StaticPublication: StaticBlockPublication,
+                      }}
+                    >
+                      <StaticPublication publication={publication.data} />
+                    </StaticPublicationProvider>
+                  </YStack>
+                  {version && (
+                    <OutOfDateBanner docId={docId} version={version} />
+                  )}
                 </MainWrapper>
               </YStack>
             </Allotment.Pane>

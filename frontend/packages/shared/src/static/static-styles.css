@@ -1,3 +1,7 @@
+.static-embed {
+  zoom: 0.9;
+}
+
 li.blocknode-static {
   font-family: 'Courier New', Courier, monospace;
   position: absolute;
