@@ -161,7 +161,6 @@ function GroupContentItem({
       key: 'rename',
     },
   ]
-  console.log('group content item', {pathName, latestVersion, docId, version})
   return (
     <>
       <PublicationListItem

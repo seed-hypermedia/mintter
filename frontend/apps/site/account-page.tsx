@@ -11,15 +11,15 @@ import {
 } from '@mintter/ui'
 import {cidURL} from 'ipfs'
 import Head from 'next/head'
-import {HMAccount, HMGroup} from 'server/json-hm'
 import {SiteHead} from 'site-head'
 import Footer from './footer'
 import {useRouter} from 'next/router'
 import {trpc} from 'trpc'
 import {OpenInAppLink} from 'components/metadata'
+import {HMAccount} from '@mintter/shared/src/json-hm'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
-  if (isEmptyObject(account?.profile)) {
+  if (!account || isEmptyObject(account?.profile)) {
     return <AccountNotFound account={account} />
   }
 

@@ -7,11 +7,9 @@ import {join} from 'path'
 import {serverHelpers} from 'server/ssr-helpers'
 import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 import {
-  HMAccount,
   HMBlock,
   HMBlockChildrenType,
   HMBlockNode,
-  HMGroup,
   HMPublication,
   createHmId,
   toHMInlineContent,
@@ -19,6 +17,7 @@ import {
 
 import {ReactElement} from 'react'
 import {InlineContent} from '@mintter/editor'
+import {HMAccount, HMGroup} from '@mintter/shared/src/json-hm'
 
 function loadFont(fileName: string) {
   const path = join(process.cwd(), 'font', fileName)
@@ -118,19 +117,31 @@ function BlockDisplay({
   return null
 }
 
-function BlockNodeDisplay({blockNode}: {blockNode: HMBlockNode}) {
+function BlockNodeDisplay({
+  index,
+  blockNode,
+}: {
+  index: number
+  blockNode: HMBlockNode
+}) {
   return (
     <div style={{display: 'flex'}}>
       {blockNode.block && (
         <BlockDisplay
           block={blockNode.block}
-          childrenType={blockNode.childrenType}
+          childrenType={blockNode.block.attributes?.childrenType}
         />
       )}
       <div style={{display: 'flex', marginLeft: 20, flexDirection: 'column'}}>
-        {blockNode.children?.map((child) => {
+        {blockNode.children?.map((child, index) => {
           if (!child.block) return null
-          return <BlockNodeDisplay key={child.block.id} blockNode={child} />
+          return (
+            <BlockNodeDisplay
+              index={index}
+              key={child.block.id}
+              blockNode={child}
+            />
+          )
         })}
       </div>
     </div>

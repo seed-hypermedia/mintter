@@ -6,11 +6,11 @@ import {
   hmLink,
   hmPublication,
 } from 'server/to-json-hm'
-import {HMAccount, HMChangeInfo} from 'server/json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 import {queryClient} from 'client'
 import {Timestamp} from '@bufbuild/protobuf'
+import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 
 function errWrap<V>(failable: Promise<V>) {
   return failable.catch((e) => {

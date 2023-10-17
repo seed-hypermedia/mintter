@@ -1,3 +1,4 @@
+import {HMAccount} from '@mintter/shared/src/json-hm'
 import {
   Button,
   Dialog,
@@ -26,7 +27,6 @@ import React, {
 } from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
-import {HMAccount} from '@mintter/ui'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},

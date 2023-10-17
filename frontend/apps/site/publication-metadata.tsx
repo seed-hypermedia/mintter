@@ -2,6 +2,8 @@ import {
   abbreviateCid,
   createPublicWebHmUrl,
   formattedDate,
+  HMBlockNode,
+  HMPublication,
   HMTimestamp,
   idToUrl,
   pluralS,
@@ -22,8 +24,8 @@ import {format} from 'date-fns'
 import {NextLink} from 'next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {HMBlockNode, HMChangeInfo, HMLink, HMPublication} from 'server/json-hm'
 import {trpc} from './trpc'
+import {HMChangeInfo, HMLink} from '@mintter/shared/src/json-hm'
 
 function IDLabelRow({id, label}: {id?: string; label: string}) {
   if (!id) return null
