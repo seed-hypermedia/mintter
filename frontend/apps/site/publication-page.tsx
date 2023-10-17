@@ -6,6 +6,8 @@ import {
   HMPublication,
   Publication,
   StaticBlockNode,
+  StaticPublication,
+  StaticPublicationProvider,
   UnpackedHypermediaId,
   createHmDocLink,
   formatBytes,
@@ -39,6 +41,12 @@ import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {
+  StaticBlockAccount,
+  StaticBlockGroup,
+  StaticBlockPublication,
+} from 'components/site-static-embeds'
+import {useRouter} from 'next/router'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -86,6 +94,7 @@ export default function PublicationPage({
   contextGroup?: HMGroup | null
 }) {
   const media = useMedia()
+  const router = useRouter()
 
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
@@ -119,7 +128,22 @@ export default function PublicationPage({
 
         <PageSection.Content>
           {pub ? (
-            <PublicationContent publication={pub} />
+            <XStack marginLeft="-1.5em" flex={1}>
+              <StaticPublicationProvider
+                entityComponents={{
+                  StaticAccount: StaticBlockAccount,
+                  StaticGroup: StaticBlockGroup,
+                  StaticPublication: StaticBlockPublication,
+                }}
+                onLinkClick={(href, e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  router.push(href)
+                }}
+              >
+                <StaticPublication publication={pub} />
+              </StaticPublicationProvider>
+            </XStack>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
           ) : (

@@ -1,9 +1,12 @@
 import {
   Block,
   BlockNode,
+  HMBlock,
   HMBlockChildrenType,
   HMBlockFile,
+  HMBlockNode,
   HMInlineContent,
+  HMPublication,
   Publication,
   formatBytes,
   getCIDFromIPFSUrl,
@@ -35,8 +38,6 @@ import {
 } from 'react'
 import './static-styles.css'
 
-let blockVerticalPadding: FontSizeTokens = '$4'
-let blockHorizontalPadding: FontSizeTokens = '$4'
 let blockBorderRadius = '$3'
 
 export type EntityComponentsRecord = {
@@ -87,18 +88,23 @@ function debugStyles(color: ColorProp = '$color7') {
   return {}
 }
 
-export function StaticPublication({publication}: {publication: Publication}) {
+export function StaticPublication({
+  publication,
+}: {
+  publication: Publication | HMPublication
+}) {
   return (
     <StaticGroup childrenType={'group'}>
-      {publication.document?.children.map((bn, idx) => (
-        <StaticBlockNode
-          key={bn.block?.id}
-          blockNode={bn}
-          depth={1}
-          childrenType="group"
-          index={idx}
-        />
-      ))}
+      {publication.document?.children?.length &&
+        publication.document?.children?.map((bn, idx) => (
+          <StaticBlockNode
+            key={bn.block?.id}
+            blockNode={bn}
+            depth={1}
+            childrenType="group"
+            index={idx}
+          />
+        ))}
     </StaticGroup>
   )
 }
@@ -172,7 +178,7 @@ export function StaticBlockNode({
   childrenType = 'group',
   ...props
 }: {
-  blockNode: BlockNode
+  blockNode: BlockNode | HMBlockNode
   index: number
   copyBlock?: {
     docId: string
@@ -193,7 +199,7 @@ export function StaticBlockNode({
           depth={depth + 1}
           blockNode={bn}
           childrenType={blockNode.block!.attributes?.childrenType}
-          start={blockNode.block?.attributes.start}
+          start={blockNode.block?.attributes?.start}
           index={index}
           embedDepth={
             props.embedDepth ? props.embedDepth + 1 : props.embedDepth
@@ -282,7 +288,7 @@ let inlineContentProps: SizableTextProps = {
 }
 
 export type StaticBlockProps = {
-  block: Block
+  block: Block | HMBlock
   depth: number
 }
 

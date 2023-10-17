@@ -92,7 +92,7 @@ const PageSectionContent = styled(YStack, {
   paddingBottom: '$4',
   width: '100%',
   flex: 1,
-  maxWidth: 680,
+  maxWidth: 720,
   $gtLg: {
     flex: 3,
     flexGrow: 1,
@@ -108,7 +108,7 @@ const PageSectionSide = styled(YStack, {
       },
     },
   },
-  maxWidth: 680,
+  maxWidth: 720,
   alignSelf: 'center',
   width: '100%',
   $gtLg: {

@@ -1,3 +1,4 @@
+import {trpc} from '../trpc'
 import {
   Account,
   DefaultStaticBlockUnknown,
@@ -11,62 +12,55 @@ import {
 } from '@mintter/shared'
 import {SizableText, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {Book} from '@tamagui/lucide-icons'
+import {cidURL} from 'ipfs'
+import {NextLink} from 'next-link'
+import {useRouter} from 'next/router'
 import {useMemo, PropsWithChildren} from 'react'
-import {useAccount} from '../models/accounts'
-import {usePublication} from '../models/documents'
-import {useGroup} from '../models/groups'
-import {getAvatarUrl} from '../utils/account-url'
-import {NavRoute, unpackHmIdWithAppRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
-import {useOpenUrl} from '../open-url'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
-  let spawn = useNavigate('spawn')
   return (
-    <YStack
-      {...blockStyles}
-      className="block-static block-embed"
-      hoverStyle={{
-        cursor: 'pointer',
-        backgroundColor: '$color5',
-      }}
-      overflow="hidden"
-      borderRadius="$3"
-      borderWidth={1}
-      borderColor="$color5"
-      onPress={() => {
-        const unpacked = unpackHmIdWithAppRoute(props.hmRef)
-
-        console.log(`== ~ EmbedWrapper ~ unpacked:`, unpacked)
-        if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
-          spawn(unpacked?.navRoute)
-        }
-      }}
-    >
-      {props.children}
-    </YStack>
+    <NextLink href={stripHMLinkPrefix(props.hmRef)}>
+      <YStack
+        {...blockStyles}
+        className="block-static block-embed"
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: '$color5',
+        }}
+        overflow="hidden"
+        borderRadius="$3"
+        borderWidth={1}
+        borderColor="$color5"
+      >
+        {props.children}
+      </YStack>
+    </NextLink>
   )
 }
 
 export function StaticBlockPublication(props: StaticEmbedProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
-  const pub = usePublication({
-    id: docId,
-    version: props.version || undefined,
-    enabled: !!docId,
-  })
-  const openUrl = useOpenUrl()
+  const pub = trpc.publication.get.useQuery(
+    {
+      documentId: docId,
+      versionId: props.version || undefined,
+    },
+    {
+      enabled: !!docId,
+    },
+  )
+
   let embedData = useMemo(() => {
     const {data} = pub
 
     const selectedBlock =
-      props.blockRef && data?.document?.children
-        ? getBlockNodeById(data.document.children, props.blockRef)
+      props.blockRef && data?.publication?.document?.children
+        ? getBlockNodeById(data.publication?.document.children, props.blockRef)
         : null
 
     const embedBlocks = selectedBlock
       ? [selectedBlock]
-      : data?.document?.children
+      : data?.publication?.document?.children
 
     return {
       ...pub,
@@ -101,8 +95,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
 
 export function StaticBlockGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
-  const groupQuery = useGroup(groupId, props.version || undefined)
-  const openUrl = useOpenUrl()
+  const groupQuery = trpc.group.get.useQuery({groupId, version: ''})
 
   return groupQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
@@ -116,9 +109,11 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
           </SizableText>
           <YStack gap="$2">
             <SizableText size="$6" fontWeight="bold">
-              {groupQuery.data?.title}
+              {groupQuery.data?.group?.title}
             </SizableText>
-            <SizableText size="$2">{groupQuery.data?.description}</SizableText>
+            <SizableText size="$2">
+              {groupQuery.data.group?.description}
+            </SizableText>
           </YStack>
         </YStack>
       </XStack>
@@ -128,19 +123,21 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
 
 export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
-  const accountHMId = props.type == 'a' ? createHmId('a', props.eid) : undefined
-  const openUrl = useOpenUrl()
-  const accountQuery = useAccount(accountId)
+  const accountQuery = trpc.account.get.useQuery({accountId})
 
   return accountQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
       <XStack gap="$3" padding="$4" alignItems="flex-start">
         <XStack paddingVertical="$3">
           <UIAvatar
-            id={accountQuery.data.id}
+            id={accountQuery.data.account?.id}
             size={36}
-            label={accountQuery.data.profile?.alias}
-            url={getAvatarUrl(accountQuery.data.profile?.avatar)}
+            label={accountQuery.data.account?.profile?.alias}
+            url={
+              accountQuery.data.account?.profile?.avatar
+                ? cidURL(accountQuery.data.account?.profile?.avatar)
+                : undefined
+            }
           />
         </XStack>
         <YStack justifyContent="center" flex={1}>
@@ -149,14 +146,18 @@ export function StaticBlockAccount(props: StaticEmbedProps) {
           </SizableText>
           <YStack gap="$2">
             <SizableText size="$6" fontWeight="bold">
-              {accountQuery.data?.profile?.alias}
+              {accountQuery.data?.account?.profile?.alias}
             </SizableText>
             <SizableText size="$2">
-              {accountQuery.data.profile?.bio}
+              {accountQuery.data.account?.profile?.bio}
             </SizableText>
           </YStack>
         </YStack>
       </XStack>
     </EmbedWrapper>
   ) : null
+}
+
+function stripHMLinkPrefix(link: string) {
+  return link.replace(/^hm:\//, '')
 }

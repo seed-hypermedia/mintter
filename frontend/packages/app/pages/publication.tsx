@@ -33,6 +33,7 @@ import {DocumentPlaceholder} from './document-placeholder'
 
 export default function PublicationPage() {
   const route = useNavRoute()
+  const openUrl = useOpenUrl()
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 
@@ -56,8 +57,6 @@ export default function PublicationPage() {
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
-
-  const openUrl = useOpenUrl()
 
   if (publication.data) {
     return (
