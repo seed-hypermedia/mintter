@@ -37,7 +37,7 @@
     "react-hot-toast": "2.4.1",
     "react-icons": "4.9.0",
     "react-native": "0.72.4",
-    "zod": "3.22.2"
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@mintter/prettier": "*",

@@ -4748,7 +4748,7 @@ __metadata:
     react-native: 0.72.4
     typescript: 5.1.6
     vitest: 0.34.2
-    zod: 3.22.2
+    zod: 3.22.3
   languageName: unknown
   linkType: soft
 
@@ -4796,7 +4796,7 @@ __metadata:
     vite: 4.4.9
     vite-tsconfig-paths: 4.2.0
     xvfb-maybe: 0.2.1
-    zod: 3.22.2
+    zod: 3.22.3
   languageName: unknown
   linkType: soft
 
@@ -4957,7 +4957,7 @@ __metadata:
     typescript: 5.1.6
     unist-util-visit: 4.1.2
     webpack: 5.80.0
-    zod: 3.22.2
+    zod: 3.22.3
   peerDependencies:
     "@babel/core": ">=7.0.0 <8.0.0"
     expo-modules-core: 0.6.3
@@ -33934,10 +33934,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.22.2":
-  version: 3.22.2
-  resolution: "zod@npm:3.22.2"
-  checksum: 231e2180c8eabb56e88680d80baff5cf6cbe6d64df3c44c50ebe52f73081ecd0229b1c7215b9552537f537a36d9e36afac2737ddd86dc14e3519bdbc777e82b9
+"zod@npm:3.22.3":
+  version: 3.22.3
+  resolution: "zod@npm:3.22.3"
+  checksum: 65b05139be337078a70700b05942ab7f2ef5f11abe194df14ef257fac4e5c383476a4dc290731842996bd57fc8d5bf38e5a4c907fe8cdf8b15477f8da5bfcc00
   languageName: node
   linkType: hard
 
