@@ -24,7 +24,15 @@ export function UIAvatar({
 
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && <Avatar.Image src={url} />}
+      {url && (
+        <Avatar.Image
+          source={{
+            uri: url,
+            width: size,
+            height: size,
+          }}
+        />
+      )}
       <Avatar.Fallback
         delayMs={600}
         backgroundColor={color || avatarColor}
