@@ -43,30 +43,35 @@ let blockVerticalPadding: FontSizeTokens = '$4'
 let blockHorizontalPadding: FontSizeTokens = '$4'
 let blockBorderRadius = '$3'
 
-export type StaticPublicationContextValue = EntityComponentsRecord | null
-
-export const staticPublicationContext =
-  createContext<StaticPublicationContextValue>(null)
-
-export type StaticEmbedProps = StaticBlockProps & ReturnType<typeof unpackHmId>
 export type EntityComponentsRecord = {
   StaticAccount: React.FC<StaticEmbedProps>
   StaticGroup: React.FC<StaticEmbedProps>
   StaticPublication: React.FC<StaticEmbedProps>
 }
 
+export type StaticPublicationContextValue = {
+  entityComponents: EntityComponentsRecord
+  onLinkClick: (dest: string, e: any) => void
+}
+
+export const staticPublicationContext =
+  createContext<StaticPublicationContextValue | null>(null)
+
+export type StaticEmbedProps = StaticBlockProps & ReturnType<typeof unpackHmId>
+
 export function StaticPublicationProvider({
   children,
-  entityComponents = null,
-}: PropsWithChildren<{entityComponents: StaticPublicationContextValue}>) {
+  entityComponents,
+  onLinkClick,
+}: PropsWithChildren<StaticPublicationContextValue>) {
   return (
-    <staticPublicationContext.Provider value={entityComponents}>
+    <staticPublicationContext.Provider value={{entityComponents, onLinkClick}}>
       {children}
     </staticPublicationContext.Provider>
   )
 }
 
-export function useStaticPublication() {
+export function useStaticPublicationContext() {
   let context = useContext(staticPublicationContext)
 
   if (!context) {
@@ -510,13 +515,24 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
   )
 }
 
+type LinkType = null | 'basic' | 'hypermedia'
+
+function hmTextColor(linkType: LinkType): string {
+  if (linkType === 'basic') return '$blue11'
+  if (linkType === 'hypermedia') return '$mint11'
+  return '$color12'
+}
+
 function InlineContentView({
   inline,
   style,
+  linkType = null,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
+  linkType?: LinkType
 }) {
+  const {onLinkClick} = useStaticPublicationContext()
   return (
     <span>
       {inline.map((content, index) => {
@@ -527,7 +543,8 @@ function InlineContentView({
             | 'underline'
             | 'underline line-through'
             | undefined
-          if (content.styles.underline) {
+          const underline = linkType || content.styles.underline
+          if (underline) {
             if (content.styles.strike) {
               textDecorationLine = 'underline line-through'
             } else {
@@ -559,71 +576,59 @@ function InlineContentView({
             )
           }
 
-          if (content.styles.backgroundColor) {
-            children = (
-              <span style={{backgroundColor: content.styles.backgroundColor}}>
-                {children}
-              </span>
-            )
-          }
+          // does anything use this?
+          // if (content.styles.backgroundColor) {
+          //   children = (
+          //     <span style={{backgroundColor: content.styles.backgroundColor}}>
+          //       {children}
+          //     </span>
+          //   )
+          // }
 
           if (content.styles.strike) {
             children = <s>{children}</s>
           }
 
-          if (content.styles.textColor) {
-            children = (
-              <span style={{color: content.styles.textColor}}>{children}</span>
-            )
-          }
+          // does anything use this?
+          // if (content.styles.textColor) {
+          //   children = (
+          //     <span style={{color: content.styles.textColor}}>{children}</span>
+          //   )
+          // }
 
           return (
-            <span key={index} style={{textDecorationLine}}>
+            <Text
+              key={index}
+              color={hmTextColor(linkType)}
+              textDecorationColor={hmTextColor(linkType)}
+              style={{textDecorationLine}}
+            >
               {children}
-            </span>
+            </Text>
           )
         }
         if (content.type === 'link') {
           const href = isHypermediaScheme(content.href)
             ? idToUrl(content.href, null)
             : content.href
-
-          const isExternal = isHypermediaScheme(content.href)
+          if (!href) return null
+          const isHmLink = isHypermediaScheme(content.href)
           return (
-            href && ( // <Tooltip content={href}>
-              //   <SizableText
-              //     key={index}
-              //     display="inline"
-              //     {...props}
-              //     {...inlineContentProps}
-              //   >
-              //     <a
-              //       href={href}
-              //       key={index}
-              //       className={isExternal ? 'hm-link' : 'link'}
-              //       style={{
-              //         cursor: 'pointer',
-              //         display: 'inline',
-              //       }}
-              //     >
-              //       <InlineContentView inline={content.content} />
-              //       {isExternal ? <ExternalLink size={10} /> : null}
-              //     </a>
-              //   </SizableText>
-              // </Tooltip>
-              <a
-                href={href}
-                key={index}
-                className={isExternal ? 'hm-link' : 'link'}
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline',
-                }}
-              >
-                <InlineContentView inline={content.content} />
-                {isExternal ? <ExternalLink size={10} /> : null}
-              </a>
-            )
+            <a
+              href={href}
+              key={index}
+              onClick={(e) => onLinkClick(content.href, e)}
+              style={{
+                cursor: 'pointer',
+                display: 'inline',
+                textDecoration: 'none',
+              }}
+            >
+              <InlineContentView
+                inline={content.content}
+                linkType={isHmLink ? 'hypermedia' : 'basic'}
+              />
+            </a>
           )
         }
         return null
@@ -638,7 +643,7 @@ function stripHMLinkPrefix(link: string) {
 
 export function StaticBlockEmbed(props: StaticBlockProps & {blockRef: string}) {
   console.log('EMBED HERE', props)
-  const EmbedTypes = useStaticPublication()
+  const EmbedTypes = useStaticPublicationContext().entityComponents
   const id = unpackHmId(props.blockRef)
 
   if (id?.type == 'a') {

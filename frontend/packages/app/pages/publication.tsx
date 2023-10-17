@@ -28,6 +28,7 @@ import {
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {usePublicationInContext} from '../models/publication'
 import {DocumentPlaceholder} from './document-placeholder'
+import {useOpenUrl} from '../open-url'
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -54,6 +55,8 @@ export default function PublicationPage() {
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
+
+  const openUrl = useOpenUrl()
 
   if (publication.data) {
     return (
@@ -87,6 +90,11 @@ export default function PublicationPage() {
                         StaticAccount: StaticBlockAccount,
                         StaticGroup: StaticBlockGroup,
                         StaticPublication: StaticBlockPublication,
+                      }}
+                      onLinkClick={(href, e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        openUrl(href)
                       }}
                     >
                       <StaticPublication publication={publication.data} />
