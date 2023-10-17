@@ -72,6 +72,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
+import {AppStaticPublicationProvider} from './publication'
 
 export function RenamePubDialog({
   input: {groupId, pathName, docTitle},
@@ -271,20 +272,9 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
       paddingHorizontal="$5"
       alignSelf="center"
     >
-      <StaticPublicationProvider
-        entityComponents={{
-          StaticAccount: StaticBlockAccount,
-          StaticGroup: StaticBlockGroup,
-          StaticPublication: StaticBlockPublication,
-        }}
-        onLinkClick={(href, e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          openUrl(href)
-        }}
-      >
+      <AppStaticPublicationProvider>
         <StaticPublication publication={pub.data} />
-      </StaticPublicationProvider>
+      </AppStaticPublicationProvider>
     </YStack>
   ) : null
 }

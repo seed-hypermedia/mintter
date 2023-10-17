@@ -30,6 +30,32 @@ import {VersionChangesInfo} from '../components/version-changes-info'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
+import {useAppContext} from '../app-context'
+
+export function AppStaticPublicationProvider({
+  children,
+}: React.PropsWithChildren<{}>) {
+  const {saveCidAsFile} = useAppContext()
+  const openUrl = useOpenUrl()
+  return (
+    <StaticPublicationProvider
+      entityComponents={{
+        StaticAccount: StaticBlockAccount,
+        StaticGroup: StaticBlockGroup,
+        StaticPublication: StaticBlockPublication,
+      }}
+      onLinkClick={(href, e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        openUrl(href)
+      }}
+      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
+      saveCidAsFile={saveCidAsFile}
+    >
+      {children}
+    </StaticPublicationProvider>
+  )
+}
 
 export default function PublicationPage() {
   const route = useNavRoute()
@@ -85,21 +111,9 @@ export default function PublicationPage() {
                     paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <StaticPublicationProvider
-                      entityComponents={{
-                        StaticAccount: StaticBlockAccount,
-                        StaticGroup: StaticBlockGroup,
-                        StaticPublication: StaticBlockPublication,
-                      }}
-                      onLinkClick={(href, e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        openUrl(href)
-                      }}
-                      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
-                    >
+                    <AppStaticPublicationProvider>
                       <StaticPublication publication={publication.data} />
-                    </StaticPublicationProvider>
+                    </AppStaticPublicationProvider>
                   </YStack>
                   {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />

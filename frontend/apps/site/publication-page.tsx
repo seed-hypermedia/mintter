@@ -140,6 +140,10 @@ export default function PublicationPage({
                   e.stopPropagation()
                   router.push(href)
                 }}
+                saveCidAsFile={async () => {
+                  alert('Not implemented yet.')
+                }}
+                ipfsBlobPrefix="/"
               >
                 <StaticPublication publication={pub} />
               </StaticPublicationProvider>

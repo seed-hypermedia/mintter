@@ -16,6 +16,7 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {
+  Button,
   ColorProp,
   File,
   FontSizeTokens,
@@ -50,6 +51,7 @@ export type StaticPublicationContextValue = {
   entityComponents: EntityComponentsRecord
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
+  saveCidAsFile: (cid: string, name: string) => Promise<void>
 }
 
 export const staticPublicationContext =
@@ -309,6 +311,10 @@ function StaticBlock(props: StaticBlockProps) {
     return <StaticBlockVideo {...props} depth={props.depth} />
   }
 
+  if (props.block.type == 'file') {
+    return <StaticFileBlock block={props.block} />
+  }
+
   if (props.block.type == 'embed') {
     return (
       <StaticBlockEmbed
@@ -489,7 +495,7 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
             preload="metadata"
           >
             <source
-              src={`${ipfsBlobPrefix}${block.ref.replace('ipfs://', '')}`}
+              src={`${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.ref)}`}
               type={getSourceType(block.attributes.name)}
             />
             Something is wrong with the video file.
@@ -704,53 +710,59 @@ export function getBlockNodeById(
 }
 
 export function StaticFileBlock({block}: {block: HMBlockFile}) {
-  let cid = useMemo(() => getCIDFromIPFSUrl(block.ref), [block.ref])
+  const {saveCidAsFile} = useStaticPublicationContext()
   return (
-    <Tooltip content={`Download ${block.attributes.name}`}>
-      <YStack
-        backgroundColor="$color3"
-        borderColor="$color4"
-        borderWidth={1}
-        borderRadius={blockBorderRadius as any}
-        // marginRight={blockHorizontalPadding}
-        overflow="hidden"
-        hoverStyle={{
-          backgroundColor: '$color4',
-        }}
-        onPress={() => console.log('OPEN FILE', cid)}
+    <YStack
+      backgroundColor="$color3"
+      borderColor="$color4"
+      borderWidth={1}
+      borderRadius={blockBorderRadius as any}
+      // marginRight={blockHorizontalPadding}
+      overflow="hidden"
+      // hoverStyle={{
+      //   backgroundColor: '$color4',
+      // }}
+    >
+      <XStack
+        borderWidth={0}
+        outlineWidth={0}
+        padding="$4"
+        alignItems="center"
+        space
       >
-        <XStack
-          borderWidth={0}
-          outlineWidth={0}
-          padding="$4"
-          alignItems="center"
-          space
-        >
-          <File size={18} />
+        <File size={18} />
 
+        <SizableText
+          size="$5"
+          maxWidth="17em"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          userSelect="text"
+        >
+          {block.attributes.name}
+        </SizableText>
+        {block.attributes.size && (
           <SizableText
-            size="$5"
-            maxWidth="17em"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-            userSelect="text"
+            paddingTop="$1"
+            color="$color10"
+            size="$2"
+            minWidth="4.5em"
           >
-            {block.attributes.name}
+            {formatBytes(parseInt(block.attributes.size))}
           </SizableText>
-          {block.attributes.size && (
-            <SizableText
-              paddingTop="$1"
-              color="$color10"
-              size="$2"
-              minWidth="4.5em"
-            >
-              {formatBytes(parseInt(block.attributes.size))}
-            </SizableText>
-          )}
-        </XStack>
-      </YStack>
-    </Tooltip>
+        )}
+        <Tooltip content={`Download ${block.attributes.name}`}>
+          <Button
+            onPress={() => {
+              saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
+            }}
+          >
+            Download
+          </Button>
+        </Tooltip>
+      </XStack>
+    </YStack>
   )
 }
 
