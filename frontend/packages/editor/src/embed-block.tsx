@@ -375,6 +375,8 @@ export function StaticBlockNode({
 function EmbedError() {
   return (
     <XStack
+      contentEditable={false}
+      userSelect="none"
       backgroundColor="$red5"
       borderColor="$red8"
       borderWidth={1}

@@ -17,6 +17,7 @@ import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {getAvatarUrl} from '../utils/account-url'
 import {NavRoute} from '../utils/navigation'
+import {useOpenUrl} from '../open-url'
 
 export function StaticBlockPublication(props: StaticEmbedProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
@@ -25,7 +26,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
     version: props.version || undefined,
     enabled: !!docId,
   })
-
+  const openUrl = useOpenUrl()
   let embedData = useMemo(() => {
     const {data} = pub
 
@@ -55,6 +56,10 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
       hoverStyle={{
         backgroundColor: '$color6',
       }}
+      cursor="pointer"
+      onPress={() => {
+        openUrl(docId)
+      }}
       overflow="hidden"
       borderRadius="$3"
     >
@@ -81,6 +86,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
 export function StaticBlockGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
+  const openUrl = useOpenUrl()
 
   return groupQuery.status == 'success' ? (
     <YStack
@@ -90,6 +96,10 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
       backgroundColor="$backgroundFocus"
       hoverStyle={{
         backgroundColor: '$color6',
+      }}
+      cursor="pointer"
+      onPress={() => {
+        openUrl(groupId)
       }}
     >
       <XStack gap="$3" padding="$4" alignItems="flex-start">
@@ -116,6 +126,8 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
 
 export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
+  const accountHMId = props.type == 'a' ? createHmId('a', props.eid) : undefined
+  const openUrl = useOpenUrl()
   const accountQuery = useAccount(accountId)
 
   return accountQuery.status == 'success' ? (
@@ -126,6 +138,10 @@ export function StaticBlockAccount(props: StaticEmbedProps) {
       backgroundColor="$backgroundFocus"
       hoverStyle={{
         backgroundColor: '$color6',
+      }}
+      cursor="pointer"
+      onPress={() => {
+        openUrl(accountHMId)
       }}
     >
       <XStack gap="$3" padding="$4" alignItems="flex-start">
