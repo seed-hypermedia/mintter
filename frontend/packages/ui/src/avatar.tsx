@@ -25,10 +25,11 @@ export function UIAvatar({
     <Avatar circular size={size} alignItems="center" justifyContent="center">
       {url && (
         <Avatar.Image
-          accessibilityLabel={label}
-          src={url}
-          width="100%"
-          height="100%"
+          source={{
+            uri: 'https://placekitten.com/200/300',
+            width: 200,
+            height: 300,
+          }}
         />
       )}
       <Avatar.Fallback

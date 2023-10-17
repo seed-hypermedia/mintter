@@ -27,25 +27,25 @@
   "dependencies": {
     "@hookform/resolvers": "3.3.1",
     "@mintter/shared": "*",
-    "@tamagui/animations-moti": "1.74.15",
-    "@tamagui/animations-react-native": "1.74.15",
-    "@tamagui/cli": "1.74.15",
-    "@tamagui/config": "1.74.15",
-    "@tamagui/create-theme": "1.74.15",
-    "@tamagui/font-inter": "1.74.15",
-    "@tamagui/helpers-icon": "1.74.15",
-    "@tamagui/lucide-icons": "1.74.15",
-    "@tamagui/react-native-media-driver": "1.74.15",
-    "@tamagui/shorthands": "1.74.15",
-    "@tamagui/theme-builder": "1.74.15",
-    "@tamagui/themes": "1.74.15",
-    "@tamagui/toast": "1.74.15",
-    "@tamagui/web": "1.74.15",
-    "tamagui": "1.74.15"
+    "@tamagui/animations-moti": "1.74.17",
+    "@tamagui/animations-react-native": "1.74.17",
+    "@tamagui/cli": "1.74.17",
+    "@tamagui/config": "1.74.17",
+    "@tamagui/create-theme": "1.74.17",
+    "@tamagui/font-inter": "1.74.17",
+    "@tamagui/helpers-icon": "1.74.17",
+    "@tamagui/lucide-icons": "1.74.17",
+    "@tamagui/react-native-media-driver": "1.74.17",
+    "@tamagui/shorthands": "1.74.17",
+    "@tamagui/theme-builder": "1.74.17",
+    "@tamagui/themes": "1.74.17",
+    "@tamagui/toast": "1.74.17",
+    "@tamagui/web": "1.74.17",
+    "tamagui": "1.74.17"
   },
   "devDependencies": {
     "@mintter/prettier": "*",
-    "@tamagui/build": "1.74.15",
+    "@tamagui/build": "1.74.17",
     "eslint-config-custom": "*"
   }
 }
