@@ -483,7 +483,7 @@ export default function GroupPage() {
                     justifyContent="space-between"
                   >
                     <XStack gap="$2">
-                      <Heading size="$2">Membership</Heading>
+                      <Heading size="$4">Membership</Heading>
                       {Object.keys(groupMembers.data?.members || {}).map(
                         (memberId) => (
                           <AccountLinkAvatar
@@ -557,8 +557,8 @@ export default function GroupPage() {
                     </XStack>
                   </XStack>
                 )}
-                <YStack paddingVertical="$2" gap="$2">
-                  <Heading size="$2">Group Content</Heading>
+                <YStack paddingVertical="$4" gap="$4">
+                  <Heading size="$5">Group Content</Heading>
                   {Object.entries(groupContent.data?.content || {}).map(
                     ([pathName, hmUrl]) => {
                       const docId = unpackDocId(hmUrl)
