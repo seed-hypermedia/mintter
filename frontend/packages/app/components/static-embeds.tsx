@@ -11,13 +11,42 @@ import {
 } from '@mintter/shared'
 import {SizableText, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {Book} from '@tamagui/lucide-icons'
-import {useMemo} from 'react'
+import {useMemo, PropsWithChildren} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {getAvatarUrl} from '../utils/account-url'
-import {NavRoute} from '../utils/navigation'
+import {NavRoute, unpackHmIdWithAppRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 import {useOpenUrl} from '../open-url'
+
+function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
+  let spawn = useNavigate('spawn')
+  return (
+    <YStack
+      {...blockStyles}
+      className="block-static block-embed"
+      hoverStyle={{
+        cursor: 'pointer',
+        backgroundColor: '$color5',
+      }}
+      overflow="hidden"
+      borderRadius="$3"
+      borderWidth={1}
+      borderColor="$color5"
+      onPress={() => {
+        const unpacked = unpackHmIdWithAppRoute(props.hmRef)
+
+        console.log(`== ~ EmbedWrapper ~ unpacked:`, unpacked)
+        if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
+          spawn(unpacked?.navRoute)
+        }
+      }}
+    >
+      {props.children}
+    </YStack>
+  )
+}
 
 export function StaticBlockPublication(props: StaticEmbedProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
@@ -49,22 +78,9 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
   }, [props.blockRef, pub])
 
   return (
-    <YStack
-      {...blockStyles}
-      className="block-static block-embed"
-      backgroundColor="$color5"
-      hoverStyle={{
-        backgroundColor: '$color6',
-      }}
-      cursor="pointer"
-      onPress={() => {
-        openUrl(docId)
-      }}
-      overflow="hidden"
-      borderRadius="$3"
-    >
+    <EmbedWrapper hmRef={props.id}>
       {embedData.data.embedBlocks?.length ? (
-        <StaticGroup childrenType="group">
+        <StaticGroup childrenType="group" marginLeft="-1.5em">
           {embedData.data.embedBlocks.map((bn, idx) => (
             <StaticBlockNode
               key={bn.block?.id}
@@ -79,7 +95,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
       ) : (
         <DefaultStaticBlockUnknown {...props} />
       )}
-    </YStack>
+    </EmbedWrapper>
   )
 }
 
@@ -89,19 +105,7 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
   const openUrl = useOpenUrl()
 
   return groupQuery.status == 'success' ? (
-    <YStack
-      flex={1}
-      overflow="hidden"
-      borderRadius="$3"
-      backgroundColor="$backgroundFocus"
-      hoverStyle={{
-        backgroundColor: '$color6',
-      }}
-      cursor="pointer"
-      onPress={() => {
-        openUrl(groupId)
-      }}
-    >
+    <EmbedWrapper hmRef={props.id}>
       <XStack gap="$3" padding="$4" alignItems="flex-start">
         <XStack paddingVertical="$3">
           <Book size={36} />
@@ -120,7 +124,7 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
           </YStack>
         </YStack>
       </XStack>
-    </YStack>
+    </EmbedWrapper>
   ) : null
 }
 
@@ -131,19 +135,7 @@ export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountQuery = useAccount(accountId)
 
   return accountQuery.status == 'success' ? (
-    <YStack
-      flex={1}
-      overflow="hidden"
-      borderRadius="$3"
-      backgroundColor="$backgroundFocus"
-      hoverStyle={{
-        backgroundColor: '$color6',
-      }}
-      cursor="pointer"
-      onPress={() => {
-        openUrl(accountHMId)
-      }}
-    >
+    <EmbedWrapper hmRef={props.id}>
       <XStack gap="$3" padding="$4" alignItems="flex-start">
         <XStack paddingVertical="$3">
           <UIAvatar
@@ -167,51 +159,6 @@ export function StaticBlockAccount(props: StaticEmbedProps) {
           </YStack>
         </YStack>
       </XStack>
-    </YStack>
+    </EmbedWrapper>
   ) : null
-}
-
-function EntityCard({
-  title,
-  icon,
-  description,
-  route,
-}: {
-  title?: string
-  icon?: React.ReactNode
-  description?: string
-  route: NavRoute
-}) {
-  return (
-    <YStack {...blockStyles}>
-      <span>{JSON.stringify({title, description, route})}</span>
-    </YStack>
-  )
-}
-function GroupCard({group}: {group: Group}) {
-  return (
-    <EntityCard
-      title={group.title}
-      description={group.description}
-      route={{key: 'group', groupId: group.id}}
-      icon={<Book />}
-    />
-  )
-}
-function AccountCard({account}: {account: Account}) {
-  return (
-    <EntityCard
-      title={account.profile?.alias}
-      description={account.profile?.bio}
-      route={{key: 'account', accountId: account.id}}
-      icon={
-        <UIAvatar
-          id={account.id}
-          size={24}
-          label={account.profile?.alias}
-          url={getAvatarUrl(account.profile?.avatar)}
-        />
-      }
-    />
-  )
 }

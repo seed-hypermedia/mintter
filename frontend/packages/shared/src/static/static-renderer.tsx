@@ -216,16 +216,17 @@ export function StaticBlockNode({
     <YStack
       overflow="hidden"
       borderRadius="$3"
-      marginLeft={!isEmbed ? '1.5em' : undefined}
-      onHoverIn={() => (props.embedDepth ? setIsHovering(true) : undefined)}
-      onHoverOut={() => (props.embedDepth ? setIsHovering(false) : undefined)}
-      backgroundColor={
-        props.embedDepth
-          ? 'transparent'
-          : isHovering
-          ? '$color5'
-          : 'transparent'
-      }
+      marginLeft="1.5em"
+      // marginLeft={!props.embedDepth ? '1.5em' : undefined}
+      onHoverIn={() => (props.embedDepth ? undefined : setIsHovering(true))}
+      onHoverOut={() => (props.embedDepth ? undefined : setIsHovering(false))}
+      // backgroundColor={
+      //   props.embedDepth
+      //     ? 'transparent'
+      //     : isHovering
+      //     ? '$color6'
+      //     : 'transparent'
+      // }
       className="static-blocknode"
     >
       <XStack
@@ -245,10 +246,10 @@ export function StaticBlockNode({
       {bnChildren ? (
         <StaticGroup
           onHoverIn={() =>
-            props.embedDepth ? setIsHovering(false) : undefined
+            props.embedDepth ? undefined : setIsHovering(false)
           }
           onHoverOut={() =>
-            props.embedDepth ? setIsHovering(true) : undefined
+            props.embedDepth ? undefined : setIsHovering(true)
           }
           childrenType={childrenType as HMBlockChildrenType}
           start={props.start}
