@@ -1,9 +1,8 @@
 import {
-  Account,
   BACKEND_FILE_URL,
+  BACKEND_HTTP_PORT,
   Block,
   BlockNode,
-  Group,
   HMBlockChildrenType,
   HMBlockFile,
   HMInlineContent,
@@ -17,7 +16,6 @@ import {
 } from '@mintter/shared'
 import {
   ColorProp,
-  ExternalLink,
   File,
   FontSizeTokens,
   SizableText,
@@ -484,7 +482,10 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
             preload="metadata"
           >
             <source
-              src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
+              src={`http://localhost:${BACKEND_HTTP_PORT}/ipfs/${block.ref.replace(
+                'ipfs://',
+                '',
+              )}`}
               type={getSourceType(block.attributes.name)}
             />
             Something is wrong with the video file.
