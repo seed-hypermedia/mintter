@@ -1,4 +1,4 @@
-import {createHmId, unpackHmId} from '@mintter/shared'
+import {createHmId} from '@mintter/shared'
 import {ServerHelpers} from './ssr-helpers'
 
 export type GroupView = 'front' | 'list' | null

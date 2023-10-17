@@ -4,6 +4,7 @@ import {
   Group,
   Role,
   StaticPublication,
+  StaticPublicationProvider,
   formattedDate,
   idToUrl,
   pluralS,
@@ -47,6 +48,11 @@ import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
 import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
 import {PublicationListItem} from '../components/publication-list-item'
+import {
+  StaticBlockAccount,
+  StaticBlockGroup,
+  StaticBlockPublication,
+} from '../components/static-embeds'
 import {EditDocActions} from '../components/titlebar/common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {useAccount, useMyAccount} from '../models/accounts'
@@ -251,6 +257,7 @@ function InviteMemberDialog({
   )
 }
 function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
+  const openUrl = useOpenUrl()
   const unpacked = unpackDocId(urlWithVersion)
   const pub = usePublication({
     id: unpacked?.docId || '',
@@ -264,7 +271,20 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
       paddingHorizontal="$5"
       alignSelf="center"
     >
-      <StaticPublication publication={pub.data} />
+      <StaticPublicationProvider
+        entityComponents={{
+          StaticAccount: StaticBlockAccount,
+          StaticGroup: StaticBlockGroup,
+          StaticPublication: StaticBlockPublication,
+        }}
+        onLinkClick={(href, e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          openUrl(href)
+        }}
+      >
+        <StaticPublication publication={pub.data} />
+      </StaticPublicationProvider>
     </YStack>
   ) : null
 }
