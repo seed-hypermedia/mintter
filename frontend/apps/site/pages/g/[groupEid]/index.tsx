@@ -156,7 +156,7 @@ export const getServerSideProps: GetServerSideProps = async (
 function GroupOwnerSection({owner}: {owner: string}) {
   return (
     <SideSection>
-      <SideSectionTitle>Editor in Chief:</SideSectionTitle>
+      <SideSectionTitle>Owner:</SideSectionTitle>
       <AccountRow account={owner} />
     </SideSection>
   )
