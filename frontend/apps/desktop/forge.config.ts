@@ -42,7 +42,10 @@ let iconsPath = process.env.CI
 const commonLinuxConfig: MakerDebConfig = {
   options: {
     categories: ['Development', 'Utility'],
-    icon: `${iconsPath}.ico`,
+    icon: `${iconsPath}.png`,
+    maintainer: 'Mintter Inc.',
+    description: 'Mintter: a hyper.media protocol client',
+    productName: 'Mintter',
     mimeType: ['x-scheme-handler/hm'],
     version,
     bin: 'Mintter',
@@ -79,9 +82,11 @@ const config: ForgeConfig = {
       // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
       iconUrl: `${iconsPath}.ico`,
       noMsi: true,
+      setupIcon: `${iconsPath}.ico`,
       setupExe: `mintter-${version}-win32-${process.arch}-setup.exe`,
       // The ICO file to use as the icon for the generated Setup.exe
-      setupIcon: `${iconsPath}.ico`,
+      loadingGif: path.resolve(__dirname, 'assets', 'loading.gif'),
+
       // certificateFile: process.env.WINDOWS_PFX_FILE,
       // certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
     }),
