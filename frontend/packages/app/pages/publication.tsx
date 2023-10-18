@@ -111,9 +111,29 @@ export default function PublicationPage() {
                     paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <AppStaticPublicationProvider>
+                    <StaticPublicationProvider
+                      entityComponents={{
+                        StaticAccount: StaticBlockAccount,
+                        StaticGroup: StaticBlockGroup,
+                        StaticPublication: StaticBlockPublication,
+                      }}
+                      onLinkClick={(href, e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        openUrl(href)
+                      }}
+                      saveCidAsFile={async () => {
+                        alert('Not implemented yet.')
+                      }}
+                      onCitationClick={() => {
+                        // todo, pass active citations into route
+                        replace({...route, accessory: {key: 'citations'}})
+                      }}
+                      citations={citations?.links}
+                      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
+                    >
                       <StaticPublication publication={publication.data} />
-                    </AppStaticPublicationProvider>
+                    </StaticPublicationProvider>
                   </YStack>
                   {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />
@@ -224,4 +244,8 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
       </BannerText>
     </AppBanner>
   )
+}
+
+function usePublicationCitations(docId?: string) {
+  return useDocCitations(docId)
 }

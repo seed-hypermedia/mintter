@@ -32,21 +32,21 @@ import {
   useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
+import {
+  StaticBlockAccount,
+  StaticBlockGroup,
+  StaticBlockPublication,
+} from 'components/site-static-embeds'
 import {OGImageMeta} from 'head'
 import {NextLink} from 'next-link'
 import Head from 'next/head'
+import {useRouter} from 'next/router'
 import {useMemo} from 'react'
 import {WebTipping} from 'web-tipping'
 import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import {
-  StaticBlockAccount,
-  StaticBlockGroup,
-  StaticBlockPublication,
-} from 'components/site-static-embeds'
-import {useRouter} from 'next/router'
 
 export type PublicationPageProps = {
   // documentId: string

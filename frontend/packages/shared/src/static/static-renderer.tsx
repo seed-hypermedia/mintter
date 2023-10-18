@@ -7,17 +7,21 @@ import {
   HMBlockNode,
   HMInlineContent,
   HMPublication,
+  MttLink,
   Publication,
+  createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
   toHMInlineContent,
+  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
   Button,
   ColorProp,
+  Copy,
   File,
   FontSizeTokens,
   SizableText,
@@ -38,6 +42,8 @@ import {
   useState,
 } from 'react'
 import './static-styles.css'
+import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
+import {toast} from '@mintter/app/toast'
 
 let blockBorderRadius = '$3'
 
@@ -52,6 +58,8 @@ export type StaticPublicationContextValue = {
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
   saveCidAsFile: (cid: string, name: string) => Promise<void>
+  citations?: Array<MttLink>
+  onCitationClick?: () => void
 }
 
 export const staticPublicationContext =
@@ -87,7 +95,7 @@ function debugStyles(color: ColorProp = '$color7') {
   //   borderWidth: 1,
   //   borderColor: color,
   // }
-  return {}
+  // return {}
 }
 
 export function StaticPublication({
@@ -105,6 +113,10 @@ export function StaticPublication({
             depth={1}
             childrenType="group"
             index={idx}
+            copyBlock={{
+              docId: publication.document?.id,
+              version: publication.version,
+            }}
           />
         ))}
     </StaticGroup>
@@ -193,6 +205,8 @@ export function StaticBlockNode({
 }) {
   const headingMarginStyles = useHeadingMarginStyles(depth)
   const [isHovering, setIsHovering] = useState(false)
+  const {citations} = useBlockCitations(blockNode.block?.id)
+  const {onCitationClick} = useStaticPublicationContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -206,6 +220,7 @@ export function StaticBlockNode({
           embedDepth={
             props.embedDepth ? props.embedDepth + 1 : props.embedDepth
           }
+          copyBlock={props.copyBlock}
         />
       ))
     : null
@@ -222,7 +237,7 @@ export function StaticBlockNode({
 
   return (
     <YStack
-      overflow="hidden"
+      // overflow="hidden"
       borderRadius="$3"
       marginLeft="1.5em"
       // marginLeft={!props.embedDepth ? '1.5em' : undefined}
@@ -250,6 +265,61 @@ export function StaticBlockNode({
           start={props.start}
         />
         <StaticBlock block={blockNode.block!} depth={depth} />
+        {citations.length && !props.embedDepth ? (
+          <XStack
+            paddingHorizontal="$2"
+            position="absolute"
+            // backgroundColor={isHovering ? '$background' : 'transparent'}
+            top="$2"
+            right={-50}
+            padding="$2"
+            borderRadius="$2"
+          >
+            {citations?.length ? (
+              <Button
+                size="$1"
+                padding="$2"
+                borderRadius="$2"
+                chromeless
+                onPress={() => onCitationClick?.()}
+              >
+                <SizableText color="$blue11" fontWeight="700" size="$1">
+                  {citations.length}
+                </SizableText>
+              </Button>
+            ) : null}
+            <Button
+              opacity={isHovering ? 1 : 0}
+              size="$1"
+              padding="$2"
+              borderRadius="$2"
+              chromeless
+              icon={Copy}
+              onPress={() => {
+                const docId = props.copyBlock?.docId
+                  ? unpackDocId(props.copyBlock?.docId)
+                  : null
+                const docVersion = props.copyBlock?.version
+                if (
+                  docId &&
+                  docId.type === 'd' &&
+                  docVersion &&
+                  blockNode.block?.id
+                ) {
+                  copyTextToClipboard(
+                    createPublicWebHmUrl('d', docId.eid, {
+                      version: docVersion,
+                      blockRef: blockNode.block.id,
+                    }),
+                  )
+                  toast.success('Block reference copied!')
+                } else {
+                  console.log('Block reference copy failed')
+                }
+              }}
+            />
+          </XStack>
+        ) : null}
       </XStack>
       {bnChildren ? (
         <StaticGroup
@@ -770,4 +840,18 @@ function getSourceType(name?: string) {
   if (!name) return
   const nameArray = name.split('.')
   return `video/${nameArray[nameArray.length - 1]}`
+}
+
+export function useBlockCitations(blockId?: string) {
+  const context = useStaticPublicationContext()
+  let citations = useMemo(() => {
+    if (!context.citations?.length) return []
+    return context.citations.filter((link) => {
+      return link.target?.blockId == blockId
+    })
+  }, [blockId, context.citations])
+
+  return {
+    citations,
+  }
 }
