@@ -127,7 +127,7 @@ export default function GroupPage({}: GroupPageProps) {
       <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content>{mainView}</PageSection.Content>
-        <PageSection.Side>
+        <PageSection.Side paddingRight="$4">
           <YStack className="publication-sidenav-sticky">
             <GroupMetadata group={group.data?.group} groupId={groupId} />
           </YStack>
@@ -215,9 +215,11 @@ function GroupMetadata({
       {time && <LastUpdateSection time={time} />}
 
       {unpackedGroupId && unpackedGroupId?.type === 'g' && (
-        <OpenInAppLink
-          url={createHmId('g', unpackedGroupId.eid, {version: group.version})}
-        />
+        <SideSection>
+          <OpenInAppLink
+            url={createHmId('g', unpackedGroupId.eid, {version: group.version})}
+          />
+        </SideSection>
       )}
     </>
   )
@@ -312,7 +314,7 @@ function FrontDoc({
   if (!item?.publication) return <Text>Not Found</Text>
 
   return (
-    <SiteStaticPublicationProvider>
+    <SiteStaticPublicationProvider unpackedId={item.docId}>
       <PublicationContent publication={item?.publication} />
     </SiteStaticPublicationProvider>
   )

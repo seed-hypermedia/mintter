@@ -9,13 +9,11 @@ import {
   HMPublication,
   MttLink,
   Publication,
-  createPublicWebHmUrl,
   formatBytes,
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
   toHMInlineContent,
-  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -41,10 +39,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import './static-styles.css'
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
-import {toast} from '@mintter/app/toast'
 import {HMAccount, HMGroup} from '../json-hm'
+import './static-styles.css'
 
 let blockBorderRadius = '$3'
 
@@ -62,6 +58,7 @@ export type StaticPublicationContextValue = {
   citations?: Array<MttLink>
   onCitationClick?: () => void
   disableEmbedClick?: boolean
+  onCopyBlock: (blockId: string) => void
 }
 
 export const staticPublicationContext =
@@ -97,7 +94,7 @@ function debugStyles(color: ColorProp = '$color7') {
   //   borderWidth: 1,
   //   borderColor: color,
   // }
-  // return {}
+  return {}
 }
 
 export function StaticPublication({
@@ -105,6 +102,7 @@ export function StaticPublication({
 }: {
   publication: Publication | HMPublication
 }) {
+  const ctx = useStaticPublicationContext()
   return (
     <StaticGroup childrenType={'group'}>
       {publication.document?.children?.length &&
@@ -115,10 +113,6 @@ export function StaticPublication({
             depth={1}
             childrenType="group"
             index={idx}
-            copyBlock={{
-              docId: publication.document?.id,
-              version: publication.version,
-            }}
           />
         ))}
     </StaticGroup>
@@ -211,7 +205,7 @@ export function StaticBlockNode({
   const headingMarginStyles = useHeadingMarginStyles(depth)
   const [isHovering, setIsHovering] = useState(false)
   const {citations} = useBlockCitations(blockNode.block?.id)
-  const {onCitationClick} = useStaticPublicationContext()
+  const {onCitationClick, onCopyBlock} = useStaticPublicationContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -225,7 +219,6 @@ export function StaticBlockNode({
           embedDepth={
             props.embedDepth ? props.embedDepth + 1 : props.embedDepth
           }
-          copyBlock={props.copyBlock}
         />
       ))
     : null
@@ -301,25 +294,10 @@ export function StaticBlockNode({
               chromeless
               icon={Copy}
               onPress={() => {
-                const docId = props.copyBlock?.docId
-                  ? unpackDocId(props.copyBlock?.docId)
-                  : null
-                const docVersion = props.copyBlock?.version
-                if (
-                  docId &&
-                  docId.type === 'd' &&
-                  docVersion &&
-                  blockNode.block?.id
-                ) {
-                  copyTextToClipboard(
-                    createPublicWebHmUrl('d', docId.eid, {
-                      version: docVersion,
-                      blockRef: blockNode.block.id,
-                    }),
-                  )
-                  toast.success('Block reference copied!')
+                if (blockNode.block?.id) {
+                  onCopyBlock(blockNode.block.id)
                 } else {
-                  console.log('Block reference copy failed')
+                  console.error('onCopyBlock Error: no blockId available')
                 }
               }}
             />

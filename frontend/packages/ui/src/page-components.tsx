@@ -55,9 +55,9 @@ export function MainContainer({
 }
 
 export const SideContainer = styled(YStack, {
-  // maxWidth: 300,
   width: '100%',
   gap: '$4',
+  // paddingHorizontal: '$4',
   $gtLg: {
     width: '25%',
     maxWidth: 300,

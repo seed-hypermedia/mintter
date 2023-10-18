@@ -39,8 +39,8 @@ export function AppStaticPublicationProvider({
 }: React.PropsWithChildren<{}>) {
   const {saveCidAsFile} = useAppContext()
   const openUrl = useOpenUrl()
-  // const route = useNavRoute()
-  // const reference = useFullReferenceUrl(route)
+  const route = useNavRoute()
+  const reference = useFullReferenceUrl(route)
   return (
     <StaticPublicationProvider
       entityComponents={{
@@ -53,10 +53,12 @@ export function AppStaticPublicationProvider({
         e.stopPropagation()
         openUrl(href)
       }}
-      // onCopyBlock={(blockId: string) => {
-      //   copyUrlToClipboardWithFeedback(blockId, 'YEIIII')
-      //   // console.log('COPY BLOCK', blockId)
-      // }}
+      onCopyBlock={(blockId: string) => {
+        if (blockId && reference?.url) {
+          const url = `${reference.url}#${blockId}`
+          copyUrlToClipboardWithFeedback(url, reference?.label)
+        }
+      }}
       ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
     >
@@ -119,27 +121,9 @@ export default function PublicationPage() {
                     paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <StaticPublicationProvider
-                      entityComponents={{
-                        StaticAccount: StaticBlockAccount,
-                        StaticGroup: StaticBlockGroup,
-                        StaticPublication: StaticBlockPublication,
-                      }}
-                      onLinkClick={(href, e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        openUrl(href)
-                      }}
-                      saveCidAsFile={saveCidAsFile}
-                      onCitationClick={() => {
-                        // todo, pass active citations into route
-                        replace({...route, accessory: {key: 'citations'}})
-                      }}
-                      citations={citations?.links}
-                      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
-                    >
+                    <AppStaticPublicationProvider>
                       <StaticPublication publication={publication.data} />
-                    </StaticPublicationProvider>
+                    </AppStaticPublicationProvider>
                   </YStack>
                   {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />

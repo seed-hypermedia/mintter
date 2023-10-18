@@ -6,8 +6,11 @@ import {
   StaticEmbedProps,
   StaticGroup,
   StaticPublicationProvider,
+  UnpackedDocId,
+  UnpackedHypermediaId,
   blockStyles,
   createHmId,
+  createPublicWebHmUrl,
   getBlockNodeById,
 } from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
@@ -15,11 +18,14 @@ import {NextLink} from 'next-link'
 import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
 import {trpc} from '../trpc'
+import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 
 export function SiteStaticPublicationProvider({
   children,
+  unpackedId,
 }: {
   children: ReactNode
+  unpackedId: UnpackedHypermediaId | null
 }) {
   const router = useRouter()
   return (
@@ -37,6 +43,19 @@ export function SiteStaticPublicationProvider({
       }}
       saveCidAsFile={async () => {
         alert('Not implemented yet.')
+      }}
+      onCopyBlock={(blockId: string) => {
+        if (unpackedId) {
+          console.log('window.location', window.location)
+          copyUrlToClipboardWithFeedback(
+            createPublicWebHmUrl('d', unpackedId.eid, {
+              version: unpackedId.version,
+              blockRef: blockId,
+              hostname: window.location.origin,
+            }),
+            'Block',
+          )
+        }
       }}
       ipfsBlobPrefix="/"
     >

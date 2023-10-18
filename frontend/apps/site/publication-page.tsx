@@ -123,7 +123,7 @@ export default function PublicationPage({
 
         <PageSection.Content>
           {pub ? (
-            <SiteStaticPublicationProvider>
+            <SiteStaticPublicationProvider unpackedId={pubId}>
               <StaticPublication publication={pub} />
             </SiteStaticPublicationProvider>
           ) : publication.isLoading ? (
