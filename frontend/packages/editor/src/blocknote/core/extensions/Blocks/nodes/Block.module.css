@@ -69,10 +69,12 @@ NESTED BLOCKS
 
 .blockGroup[data-list-type='ul'] {
   margin-left: 1.5em;
+  list-style-type: disc;
 }
 
 .blockGroup[data-list-type='ol'] {
   margin-left: 1.5em;
+  list-style-type: decimal;
 }
 
 .blockGroup[data-list-type='ul'] > .blockOuter {
@@ -283,10 +285,6 @@ NESTED BLOCKS
   > .blockContent[data-content-type='bulletListItem']::before {
   margin-right: 1.2em;
   content: '▪';
-}
-
-.inlineContent {
-  background-color: red;
 }
 
 /* PLACEHOLDERS*/
