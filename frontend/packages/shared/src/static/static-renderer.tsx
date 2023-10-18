@@ -539,6 +539,7 @@ function StaticBlockImage({block, depth}: StaticBlockProps) {
 }
 
 function StaticBlockVideo({block, depth}: StaticBlockProps) {
+  console.log(`== ~ StaticBlockVideo ~ block:`, block)
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
   const {ipfsBlobPrefix} = useStaticPublicationContext()

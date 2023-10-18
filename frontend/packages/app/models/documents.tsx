@@ -44,7 +44,7 @@ import {
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
-import {useEffect, useRef} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {RiFile2Fill, RiImage2Fill, RiText, RiVideoAddFill} from 'react-icons/ri'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
@@ -1109,36 +1109,38 @@ function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
 }
 
 export function useDocTextContent(pub?: Publication) {
-  return useQuery({
-    enabled: !!pub?.document?.children.length,
-    queryKey: [
-      queryKeys.DOCUMENT_TEXT_CONTENT,
-      pub?.document?.id,
-      pub?.version,
-    ],
-    queryFn: () => {
+  return useMemo(() => {
+    let res = ''
+    function extractContent(blocks: Array<BlockNode>) {
+      blocks.forEach((bn) => {
+        res += extractBlockText(bn)
+      })
+
+      return res
+    }
+
+    function extractBlockText({block, children}: BlockNode) {
       let content = ''
+      if (!block) return content
+      content += block.text
 
-      function extractContent(blocks: Array<BlockNode>) {
-        return blocks.map(extractBlockText).join('')
-      }
-
-      function extractBlockText({block, children}: BlockNode) {
-        if (!block) return ''
-        content += block.text
-
-        if (children.length) {
-          content += extractContent(children)
-        }
-
-        return content
-      }
-
-      if (pub?.document?.children.length) {
-        content = extractContent(pub.document?.children)
+      if (children.length) {
+        console.log(`== ~ useDocTextContent ~ children:`, children)
+        let nc = extractContent(children)
+        content += nc
       }
 
       return content
-    },
-  })
+    }
+
+    if (pub?.document?.children.length) {
+      console.log(
+        `== ~ useDocTextContent ~ pub.document?.children:`,
+        pub.document?.children,
+      )
+      res = extractContent(pub.document?.children)
+    }
+
+    return res
+  }, [pub])
 }
