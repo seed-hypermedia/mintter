@@ -128,27 +128,25 @@ export default function PublicationPage({
 
         <PageSection.Content>
           {pub ? (
-            <XStack marginLeft="-1.5em" flex={1}>
-              <StaticPublicationProvider
-                entityComponents={{
-                  StaticAccount: StaticBlockAccount,
-                  StaticGroup: StaticBlockGroup,
-                  StaticPublication: StaticBlockPublication,
-                }}
-                onLinkClick={(href, e) => {
-                  if (e.metaKey || e.ctrlKey) return
-                  e.preventDefault()
-                  e.stopPropagation()
-                  router.push(href)
-                }}
-                saveCidAsFile={async () => {
-                  alert('Not implemented yet.')
-                }}
-                ipfsBlobPrefix="/"
-              >
-                <StaticPublication publication={pub} />
-              </StaticPublicationProvider>
-            </XStack>
+            <StaticPublicationProvider
+              entityComponents={{
+                StaticAccount: StaticBlockAccount,
+                StaticGroup: StaticBlockGroup,
+                StaticPublication: StaticBlockPublication,
+              }}
+              onLinkClick={(href, e) => {
+                if (e.metaKey || e.ctrlKey) return
+                e.preventDefault()
+                e.stopPropagation()
+                router.push(href)
+              }}
+              saveCidAsFile={async () => {
+                alert('Not implemented yet.')
+              }}
+              ipfsBlobPrefix="/"
+            >
+              <StaticPublication publication={pub} />
+            </StaticPublicationProvider>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
           ) : (
