@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '50 6 * * 0-6'
 
+  push:
+    tags:
+      - "*.*.*"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
