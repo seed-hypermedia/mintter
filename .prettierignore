@@ -38,3 +38,6 @@ frotnend/apps/desktop/out
 
 # Shared
 frontend/packages/shared/src/client/.generated/
+
+# UI generated themes
+frontend/packages/ui/src/themes-generated.ts
