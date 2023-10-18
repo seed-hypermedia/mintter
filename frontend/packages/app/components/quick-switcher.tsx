@@ -225,7 +225,7 @@ export function QuickSwitcher() {
                   navigate({
                     key: 'publication',
                     documentId: docId,
-                    versionId: publication.version,
+                    // versionId not included here, we will navigate to the latest version in the global context
                   })
                 }}
               >
