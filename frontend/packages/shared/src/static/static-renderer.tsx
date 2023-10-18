@@ -678,6 +678,7 @@ function InlineContentView({
             <a
               href={href}
               key={index}
+              target={isHmLink ? undefined : '_blank'}
               onClick={(e) => onLinkClick(content.href, e)}
               style={{
                 cursor: 'pointer',

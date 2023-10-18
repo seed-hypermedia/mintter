@@ -12,6 +12,8 @@ import {
   createHmId,
   createPublicWebHmUrl,
   getBlockNodeById,
+  isHypermediaScheme,
+  unpackHmId,
 } from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {NextLink} from 'next-link'
@@ -19,6 +21,7 @@ import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
 import {trpc} from '../trpc'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
+import {create} from 'domain'
 
 export function SiteStaticPublicationProvider({
   children,
@@ -36,10 +39,21 @@ export function SiteStaticPublicationProvider({
         StaticPublication: StaticBlockPublication,
       }}
       onLinkClick={(href, e) => {
-        if (e.metaKey || e.ctrlKey) return
+        const isHmHref = isHypermediaScheme(href)
+        const id = unpackHmId(href)
+        // if the user is pressing a modifier, the browser will open the actual link href in a new tab.
+        // external links are also handled with the default browser href behavior
+        // we can open parsable hypermedia links as a router push for a smoother transition.
+        if (e.metaKey || e.ctrlKey || !isHmHref || !id) return
+        // only in the case of hypermedia IDs do we want to explicitly push the route.
         e.preventDefault()
         e.stopPropagation()
-        router.push(href)
+        const dest = createPublicWebHmUrl(id.type, id.eid, {
+          version: id.version,
+          hostname: null,
+          blockRef: id.blockRef,
+        })
+        router.push(dest)
       }}
       saveCidAsFile={async () => {
         alert('Not implemented yet.')
