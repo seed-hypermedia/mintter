@@ -140,8 +140,12 @@ export default function PublicationPage({
                 e.stopPropagation()
                 router.push(href)
               }}
-              saveCidAsFile={async () => {
-                alert('Not implemented yet.')
+              saveCidAsFile={async (cid: string, fileName: string) => {
+                const aElement = document.createElement('a')
+                aElement.setAttribute('download', fileName)
+                aElement.href = `/ipfs/${cid}`
+                aElement.setAttribute('target', '_blank')
+                aElement.click()
               }}
               ipfsBlobPrefix="/"
             >

@@ -83,7 +83,7 @@ export default function PublicationPage() {
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
-
+  const {saveCidAsFile} = useAppContext()
   if (publication.data) {
     return (
       <ErrorBoundary
@@ -122,9 +122,7 @@ export default function PublicationPage() {
                         e.stopPropagation()
                         openUrl(href)
                       }}
-                      saveCidAsFile={async () => {
-                        alert('Not implemented yet.')
-                      }}
+                      saveCidAsFile={saveCidAsFile}
                       onCitationClick={() => {
                         // todo, pass active citations into route
                         replace({...route, accessory: {key: 'citations'}})
