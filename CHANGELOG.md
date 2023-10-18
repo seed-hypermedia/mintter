@@ -16,13 +16,17 @@ You can try Web Importing after enabling the experimental feature switch in the 
 
 ## 🎉 More New Features
 
+- Improved Consistency and styles of Documents
+- Copy Public Group URL in options of Group
 - Click twice on "Copy URL" button to open in browser
+- Site links open in a new tab
 
 ## 🐛 Bug Fixes
 
+- Group URL now copies the Site URL when published
+- Fixes several incorrect URLs being copied
 - Fixes Dark mode support and flash of bright window
 - Fixes cases where keyboard shortcut happens in the wrong window
-- Fixes incorrect URL being copied from header leaving group context
 - Fixes shortcut labels in editor formatting menu tooltips
 - Avoids duplicate Changes listed in version sidebar
 - Empty blocks at the end of draft are removed before saving

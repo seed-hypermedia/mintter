@@ -45,12 +45,12 @@ function InlineContent({
   return (
     <span style={{fontSize: 32}}>
       {content.map((item, index) => {
-        // if (item.type === 'link')
-        //   return (
-        //     <span key={index} style={{color: 'blue'}}>
-        //       <InlineContent content={item.content} />
-        //     </span>
-        //   )
+        if (item.type === 'link')
+          return (
+            <span key={index} style={{color: '#000055', marginLeft: 4}}>
+              <InlineContent content={item.content} />
+            </span>
+          )
         if (item.type === 'text') {
           let content: ReactElement = <>{item.text}</>
           if (item.styles.bold) content = <b>{content}</b>
