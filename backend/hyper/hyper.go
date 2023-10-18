@@ -15,6 +15,7 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	format "github.com/ipfs/go-ipld-format"
 	dagpb "github.com/ipld/go-codec-dagpb"
 	"github.com/multiformats/go-multicodec"
 	"go.uber.org/zap"
@@ -434,6 +435,83 @@ type indexingBlockStore struct {
 	*blockStore
 	indexBlob func(conn *sqlite.Conn, id int64, c cid.Cid, blob any) error
 }
+
+// The following Get methods are wrapped to make sure
+// we can respond to BitSwap requests asking for our CID-encoded Entity IDs.
+
+func (b *indexingBlockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	eid, err := EntityIDFromCID(c)
+	if err != nil {
+		return b.blockStore.Get(ctx, c)
+	}
+
+	ok, err := b.checkEntityExists(ctx, eid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, format.ErrNotFound{Cid: c}
+	}
+
+	return blocks.NewBlockWithCid(nil, c)
+}
+
+func (b *indexingBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+	eid, err := EntityIDFromCID(c)
+	if err != nil {
+		return b.blockStore.GetSize(ctx, c)
+	}
+
+	ok, err := b.checkEntityExists(ctx, eid)
+	if err != nil {
+		return 0, err
+	}
+
+	if !ok {
+		return 0, format.ErrNotFound{Cid: c}
+	}
+
+	return 0, nil
+}
+
+func (b *indexingBlockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+	eid, err := EntityIDFromCID(c)
+	if err != nil {
+		return b.blockStore.Has(ctx, c)
+	}
+
+	ok, err := b.checkEntityExists(ctx, eid)
+	if err != nil {
+		return false, err
+	}
+
+	return ok, nil
+}
+
+func (b *indexingBlockStore) checkEntityExists(ctx context.Context, eid EntityID) (exists bool, err error) {
+	conn, release, err := b.db.Conn(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer release()
+
+	res, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return false, err
+	}
+
+	if res.EntitiesID == 0 {
+		return false, nil
+	}
+
+	return hypersql.CheckEntityHasChanges(conn, res.EntitiesID)
+}
+
+// The following methods are wrapped
+// to make sure all the blobs
+// coming into the blockstore
+// from the outside are indexed.
 
 func (b *indexingBlockStore) Put(ctx context.Context, block blocks.Block) error {
 	conn, release, err := b.db.Conn(ctx)

@@ -178,3 +178,20 @@ func AccountsInsertOrIgnore(conn *sqlite.Conn, entity, publicKey int64) error {
 var qAccountsInsertOrIgnore = dqb.Str(`
 	INSERT OR IGNORE INTO accounts (entity, public_key) VALUES (?, ?);
 `)
+
+// CheckEntityHasChanges checks if the entity has any changes in our database.
+func CheckEntityHasChanges(conn *sqlite.Conn, entity int64) (bool, error) {
+	var hasChanges bool
+	if err := sqlitex.Exec(conn, qCheckEntityHasChanges(), func(stmt *sqlite.Stmt) error {
+		hasChanges = true
+		return nil
+	}, entity); err != nil {
+		return false, err
+	}
+
+	return hasChanges, nil
+}
+
+var qCheckEntityHasChanges = dqb.Str(`
+	SELECT 1 FROM changes WHERE entity = ? LIMIT 1;
+`)

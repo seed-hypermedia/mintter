@@ -12,6 +12,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestFoo(t *testing.T) {
+	eid := EntityID("my-test-entity")
+	c, err := eid.CID()
+	require.NoError(t, err)
+
+	eid2, err := EntityIDFromCID(c)
+	require.NoError(t, err)
+
+	require.Equal(t, eid, eid2)
+}
+
 func TestEntity(t *testing.T) {
 	e := NewEntity("hm://a/alice")
 	alice := coretest.NewTester("alice")

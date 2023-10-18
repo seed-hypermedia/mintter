@@ -21,6 +21,7 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/multiformats/go-multibase"
 	"github.com/multiformats/go-multicodec"
+	"github.com/multiformats/go-multihash"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -29,6 +30,26 @@ import (
 
 // EntityID is a type for IDs of mutable entities.
 type EntityID string
+
+// EntityIDFromCID converts a previously CID-encoded Entity ID bas into the initial form.
+func EntityIDFromCID(c cid.Cid) (EntityID, error) {
+	codec, hash := ipfs.DecodeCID(c)
+
+	if multicodec.Code(codec) != multicodec.Raw {
+		return "", fmt.Errorf("failed to convert CID %s into entity ID: unsupported codec %s", c, multicodec.Code(codec))
+	}
+
+	mh, err := multihash.Decode(hash)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode multihash from CID %q: %w", c, err)
+	}
+
+	if multicodec.Code(mh.Code) != multicodec.Identity {
+		return "", fmt.Errorf("failed to convert CID %s into entity ID: unsupported hash %s", c, multicodec.Code(mh.Code))
+	}
+
+	return EntityID(mh.Digest), nil
+}
 
 // CID representation of the entity ID. Used for announcing on the DHT.
 func (eid EntityID) CID() (cid.Cid, error) {
