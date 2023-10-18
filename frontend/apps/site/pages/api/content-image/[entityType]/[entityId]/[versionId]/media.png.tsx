@@ -9,9 +9,11 @@ import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 import {
   HMBlock,
   HMBlockChildrenType,
+  HMBlockImage,
   HMBlockNode,
   HMPublication,
   createHmId,
+  getCIDFromIPFSUrl,
   toHMInlineContent,
 } from '@mintter/shared'
 
@@ -25,6 +27,7 @@ function loadFont(fileName: string) {
 }
 
 const AVATAR_SIZE = 100
+const IPFS_RESOURCE_PREFIX = `${process.env.GRPC_HOST}/ipfs/`
 
 const avatarLayout: React.CSSProperties = {
   margin: 10,
@@ -40,7 +43,7 @@ function InlineContent({
   fontSize?: number
 }) {
   return (
-    <span style={{fontSize: 24}}>
+    <span style={{fontSize: 32}}>
       {content.map((item, index) => {
         // if (item.type === 'link')
         //   return (
@@ -99,7 +102,14 @@ function HeadingBlockDisplay({
     </div>
   )
 }
-
+function ImageBlockDisplay({block}: {block: HMBlockImage}) {
+  return (
+    <img
+      style={{borderRadius: 8}}
+      src={`${IPFS_RESOURCE_PREFIX}${getCIDFromIPFSUrl(block.ref)}`}
+    />
+  )
+}
 function BlockDisplay({
   block,
   childrenType,
@@ -112,7 +122,7 @@ function BlockDisplay({
   if (block.type === 'heading')
     return <HeadingBlockDisplay block={block} childrenType={childrenType} />
 
-  if (block.type === 'image') return <span>{block.ref}</span>
+  if (block.type === 'image') return <ImageBlockDisplay block={block} />
 
   return null
 }
@@ -125,7 +135,7 @@ function BlockNodeDisplay({
   blockNode: HMBlockNode
 }) {
   return (
-    <div style={{display: 'flex'}}>
+    <div style={{display: 'flex', marginBottom: 20}}>
       {blockNode.block && (
         <BlockDisplay
           block={blockNode.block}
@@ -148,6 +158,8 @@ function BlockNodeDisplay({
   )
 }
 
+const BG_COLOR = '#f5f5f5'
+
 function TitleMembersCard({
   title,
   accounts,
@@ -164,11 +176,12 @@ function TitleMembersCard({
         display: 'flex',
         height: '100%',
         width: '100%',
+        backgroundColor: BG_COLOR,
       }}
     >
       <div style={{padding: 60, display: 'flex', flexDirection: 'column'}}>
         {title && (
-          <span style={{fontSize: 64, fontWeight: 'bold', marginBottom: 100}}>
+          <span style={{fontSize: 72, fontWeight: 'bold', marginBottom: 100}}>
             {title}
           </span>
         )}
@@ -184,7 +197,7 @@ function TitleMembersCard({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          background: 'linear-gradient(#ffffff11, #ffffff11, white)',
+          background: `linear-gradient(#ffffff11, #ffffff11, ${BG_COLOR})`,
         }}
       >
         <div
@@ -219,7 +232,7 @@ function TitleMembersCard({
                   </span>
                 </div>
               )
-            const src = `${process.env.GRPC_HOST}/ipfs/${account.profile.avatar}`
+            const src = `${IPFS_RESOURCE_PREFIX}${account.profile.avatar}`
             return (
               /* eslint-disable */
               <img
