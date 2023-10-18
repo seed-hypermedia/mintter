@@ -70,9 +70,20 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
       logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
       return result
     }
-    // @ts-ignore
-    logger.log(`🔃 to ${req.method.name} `)
-    // logger.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    const enabledLogMessages = new Set<string>([
+      // 'Groups.GetGroup',
+      // 'Groups.ListContent',
+      // etc.. add the messages you need to see here, please comment out before committing!
+    ])
+    const messageName: string = req.method.name
+    const serviceLabel = req.service.typeName.split('.').at(-1)
+    const request = req.message
+    const response = result?.message
+    if (enabledLogMessages.has(`${serviceLabel}.${messageName}`)) {
+      logger.log(`🔃 to ${serviceLabel}.${req.method.name} `, request, response)
+    } else {
+      logger.log(`🔃 to ${serviceLabel}.${req.method.name} `)
+    }
     return result
   } catch (e) {
     let error = e
