@@ -1,6 +1,6 @@
 .editor {
-  max-width: 664px;
-  margin: 40px auto;
+  max-width: 840px;
+  margin: 60px auto;
   width: 90%;
 }
 
@@ -19,20 +19,19 @@
 
 /* manually synced with tamagui colors: blue11 and blueDark11 */
 .ProseMirror .link {
-  color: hsl(211, 100%, 43.2%);
+  color: var(--blue11);
 }
-.mintter-app-dark .ProseMirror .link {
-  color: hsl(210, 100%, 66.1%)
-}
+/* .mintter-app-dark .ProseMirror .link {
+  color: hsl(210, 100%, 66.1%);
+} */
 
 /* manually sync these values with colors.ts mint11 and mintDark11 */
 .ProseMirror .hm-link {
-  color: hsl(181, 50.0%, 45.8%);
+  color: var(--mint11);
 }
-.mintter-app-dark .ProseMirror .hm-link {
-  color: hsl(184, 80.0%, 71.0%);
-}
-
+/* .mintter-app-dark .ProseMirror .hm-link {
+  color: hsl(184, 80%, 71%);
+} */
 
 .ProseMirror .link-placeholder {
   width: 16px;

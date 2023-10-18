@@ -31,7 +31,6 @@ export default class Document extends NextDocument {
       <Html>
         <Head>
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
         <body>
           {/* this is important to avoid the main container to expand the whole width of the screen */}

@@ -1,29 +1,32 @@
 import {
-  Account,
   DefaultStaticBlockUnknown,
-  Group,
   StaticBlockNode,
   StaticEmbedProps,
   StaticGroup,
   blockStyles,
   createHmId,
   getBlockNodeById,
+  useStaticPublicationContext,
 } from '@mintter/shared'
 import {SizableText, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {Book} from '@tamagui/lucide-icons'
-import {useMemo, PropsWithChildren} from 'react'
+import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
-import {getAvatarUrl} from '../utils/account-url'
-import {NavRoute, unpackHmIdWithAppRoute} from '../utils/navigation'
-import {useNavigate} from '../utils/useNavigate'
 import {useOpenUrl} from '../open-url'
+import {getAvatarUrl} from '../utils/account-url'
+import {unpackHmIdWithAppRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
+  const {disableEmbedClick = false} = useStaticPublicationContext()
   let spawn = useNavigate('spawn')
   return (
     <YStack
+      // @ts-expect-error
+      contentEditable={false}
+      userSelect="none"
       {...blockStyles}
       className="block-static block-embed"
       hoverStyle={{
@@ -34,14 +37,16 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
       borderRadius="$3"
       borderWidth={1}
       borderColor="$color5"
-      onPress={() => {
-        const unpacked = unpackHmIdWithAppRoute(props.hmRef)
-
-        console.log(`== ~ EmbedWrapper ~ unpacked:`, unpacked)
-        if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
-          spawn(unpacked?.navRoute)
-        }
-      }}
+      onPress={
+        !disableEmbedClick
+          ? () => {
+              const unpacked = unpackHmIdWithAppRoute(props.hmRef)
+              if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
+                spawn(unpacked?.navRoute)
+              }
+            }
+          : undefined
+      }
     >
       {props.children}
     </YStack>
@@ -55,7 +60,6 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
     version: props.version || undefined,
     enabled: !!docId,
   })
-  const openUrl = useOpenUrl()
   let embedData = useMemo(() => {
     const {data} = pub
 
@@ -102,7 +106,6 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
 export function StaticBlockGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
-  const openUrl = useOpenUrl()
 
   return groupQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
@@ -128,8 +131,6 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
 
 export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
-  const accountHMId = props.type == 'a' ? createHmId('a', props.eid) : undefined
-  const openUrl = useOpenUrl()
   const accountQuery = useAccount(accountId)
 
   return accountQuery.status == 'success' ? (

@@ -1,3 +1,7 @@
+.static-group {
+  -webkit-font-smoothing: antialiased;
+}
+
 .static-embed {
   zoom: 0.9;
 }

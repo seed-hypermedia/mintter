@@ -1,10 +1,10 @@
-import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
 import {useAccount} from '@mintter/app/models/accounts'
+import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Change,
   createPublicWebHmUrl,
-  formattedDateMedium,
+  formattedDateLong,
   pluralS,
   unpackHmId,
 } from '@mintter/shared'
@@ -20,7 +20,16 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext, useMemo} from 'react'
+import {copyTextToClipboard} from '../copy-to-clipboard'
+import {
+  useGroup,
+  useGroupContent,
+  useMyGroups,
+  usePublishDocToGroup,
+} from '../models/groups'
+import {toast} from '../toast'
 import {
   GroupPublicationRouteContext,
   NavRoute,
@@ -29,17 +38,8 @@ import {
 } from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
-import {MenuItemType, OptionsDropdown} from './list-item'
-import {copyTextToClipboard} from '../copy-to-clipboard'
-import {Upload} from '@tamagui/lucide-icons'
 import {useAppDialog} from './dialog'
-import {toast} from '../toast'
-import {
-  useGroup,
-  useGroupContent,
-  useMyGroups,
-  usePublishDocToGroup,
-} from '../models/groups'
+import {MenuItemType, OptionsDropdown} from './list-item'
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
@@ -73,7 +73,7 @@ function ChangeItem({
       textAlign="left"
       fontWeight={isActive ? 'bold' : 'normal'}
     >
-      {change.createTime ? formattedDateMedium(change.createTime) : null}
+      {change.createTime ? formattedDateLong(change.createTime) : null}
     </SizableText>
   )
   const topRow = shouldDisplayAuthorName ? (

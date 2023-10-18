@@ -145,31 +145,31 @@ NESTED BLOCKS
 
 /* HEADINGS*/
 [data-level='1'] {
-  --level: 1.8em;
+  --level: 36px;
 }
 [data-level='2'] {
-  --level: 1.4em;
+  --level: 30px;
 }
 [data-level='3'] {
-  --level: 1.2em;
+  --level: 24px;
 }
 
 [data-level='4'] {
-  --level: 1.1em;
+  --level: 20px;
 }
 
 [data-prev-level='1'] {
-  --prev-level: 1.8em;
+  --prev-level: 36px;
 }
 [data-prev-level='2'] {
-  --prev-level: 1.4em;
+  --prev-level: 30px;
 }
 [data-prev-level='3'] {
-  --prev-level: 1.2em;
+  --prev-level: 24px;
 }
 
 [data-prev-level='4'] {
-  --prev-level: 1.1em;
+  --prev-level: 20px;
 }
 
 .blockOuter[data-prev-type='heading'] > .block .blockContent {
@@ -184,6 +184,7 @@ NESTED BLOCKS
   line-height: 1.2;
   max-width: 24ch;
   margin-top: 1.5em;
+  margin-bottom: 0.5em;
   font-weight: bold;
 }
 
@@ -284,6 +285,10 @@ NESTED BLOCKS
   content: '▪';
 }
 
+.inlineContent {
+  background-color: red;
+}
+
 /* PLACEHOLDERS*/
 
 .isEmpty .inlineContent:before,
@@ -310,15 +315,61 @@ NESTED BLOCKS
 /* TODO: would be nicer if defined from code */
 
 .blockContent.isEmpty.hasAnchor .inlineContent:before {
+  font-size: 0.9em;
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   content: "Enter text or type '/' for commands";
 }
 
 .blockContent.isFilter.hasAnchor .inlineContent:before {
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   content: 'Type to filter';
 }
 
 .blockContent[data-content-type='heading'].isEmpty.hasAnchor
   .inlineContent:before {
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   content: 'Heading';
 }
 
@@ -326,6 +377,24 @@ NESTED BLOCKS
   .blockContent[data-content-type='image']
   .inlineContent:before {
   content: 'Image caption';
+}
+
+[data-content-type='heading'] {
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
 }
 
 /* TEXT COLORS */

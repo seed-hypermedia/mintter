@@ -53,12 +53,12 @@ export const HMHeadingBlockContent = createTipTapBlock<'heading'>({
       },
       {
         tag: 'h2',
-        attrs: {level: 2},
+        attrs: {level: 3},
         node: 'heading',
       },
       {
         tag: 'h3',
-        attrs: {level: 2},
+        attrs: {level: 3},
         node: 'heading',
       },
     ]

@@ -45,9 +45,9 @@ Tippy popups that are appended to document.body directly
 }
 
 .defaultStyles {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: normal;
-  font-family:
+  /* font-family:
     'Inter',
     'SF Pro Display',
     -apple-system,
@@ -61,7 +61,9 @@ Tippy popups that are appended to document.body directly
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',
-    sans-serif;
+    sans-serif; */
+  font-family: var(--f-fa) !important;
+  font-size: 1.2em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

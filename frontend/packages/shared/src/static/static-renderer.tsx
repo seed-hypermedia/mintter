@@ -60,6 +60,7 @@ export type StaticPublicationContextValue = {
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   citations?: Array<MttLink>
   onCitationClick?: () => void
+  disableEmbedClick: boolean
 }
 
 export const staticPublicationContext =
@@ -132,7 +133,11 @@ export function StaticGroup({
   childrenType?: HMBlockChildrenType
   start?: any
 }) {
-  return <YStack {...props}>{children}</YStack>
+  return (
+    <YStack className="static-group" {...props}>
+      {children}
+    </YStack>
+  )
 }
 
 function BlockNodeMarker({
@@ -140,7 +145,6 @@ function BlockNodeMarker({
   childrenType,
   index = 0,
   start,
-  headingTextStyles,
 }: {
   block: Block
   childrenType?: string
@@ -265,7 +269,7 @@ export function StaticBlockNode({
           start={props.start}
         />
         <StaticBlock block={blockNode.block!} depth={depth} />
-        {citations.length && !props.embedDepth ? (
+        {!props.embedDepth ? (
           <XStack
             paddingHorizontal="$2"
             position="absolute"
@@ -723,9 +727,10 @@ function stripHMLinkPrefix(link: string) {
 }
 
 export function StaticBlockEmbed(props: StaticBlockProps & {blockRef: string}) {
-  console.log('EMBED HERE', props)
   const EmbedTypes = useStaticPublicationContext().entityComponents
   const id = unpackHmId(props.blockRef)
+
+  console.log(`== ~ StaticBlockEmbed ~ id:`, id)
 
   if (id?.type == 'a') {
     return <EmbedTypes.StaticAccount {...props} {...id} />

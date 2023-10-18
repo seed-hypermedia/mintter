@@ -17,6 +17,40 @@ import {useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
+import {useAppContext} from '../app-context'
+import {useOpenUrl} from '../open-url'
+import {BACKEND_FILE_URL, StaticPublicationProvider} from '@mintter/shared'
+import {
+  StaticBlockAccount,
+  StaticBlockGroup,
+  StaticBlockPublication,
+} from '../components/static-embeds'
+
+export function AppStaticPublicationProvider({
+  children,
+}: React.PropsWithChildren<{}>) {
+  const {saveCidAsFile} = useAppContext()
+  const openUrl = useOpenUrl()
+  return (
+    <StaticPublicationProvider
+      entityComponents={{
+        StaticAccount: StaticBlockAccount,
+        StaticGroup: StaticBlockGroup,
+        StaticPublication: StaticBlockPublication,
+      }}
+      disableEmbedClick
+      onLinkClick={(href, e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        openUrl(href)
+      }}
+      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
+      saveCidAsFile={saveCidAsFile}
+    >
+      {children}
+    </StaticPublicationProvider>
+  )
+}
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -35,8 +69,6 @@ export default function DraftPage() {
     onEditorState: setDebugValue,
   })
 
-  console.log(`== ~ DraftPage ~ query:`, query)
-
   let isDaemonReady = useDaemonReady()
 
   if (editor && query.data) {
@@ -47,11 +79,12 @@ export default function DraftPage() {
       >
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-
-          <HMEditorContainer>
-            {editor && <HyperMediaEditorView editor={editor} />}
-            {debugValue && <DebugData data={debugValue} />}
-          </HMEditorContainer>
+          <AppStaticPublicationProvider>
+            <HMEditorContainer>
+              {editor && <HyperMediaEditorView editor={editor} />}
+              {debugValue && <DebugData data={debugValue} />}
+            </HMEditorContainer>
+          </AppStaticPublicationProvider>
         </MainWrapper>
         <Footer />
       </ErrorBoundary>
