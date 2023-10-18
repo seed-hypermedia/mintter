@@ -6,7 +6,6 @@ import {ChangeEvent} from 'react'
 import toast from 'react-hot-toast'
 
 export function AvatarForm({
-  size = '$12',
   url,
   onAvatarUpload,
 }: {
@@ -64,7 +63,7 @@ export function AvatarForm({
         <Avatar
           label={account.data?.profile?.alias}
           id={account.data?.id}
-          size={size}
+          size={140}
           url={url}
           color="$blue12"
         />
