@@ -158,7 +158,7 @@ function BlockNodeMarker({
         ? ({
             position: 'absolute',
             right: '27%',
-            marginTop: 6,
+            marginTop: 4,
           } satisfies SizableTextProps)
         : {},
     [childrenType],
