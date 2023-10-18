@@ -405,7 +405,9 @@ export default function GroupPage() {
                       gap="$1"
                       alignItems="center"
                     >
-                      {group.data?.title} -
+                      {group.data?.title}
+                    </Heading>
+                    <Heading size="$4">
                       {ownerAccountId ? (
                         <>
                           Managed by{' '}
@@ -492,9 +494,10 @@ export default function GroupPage() {
                     borderColor="$gray6"
                     paddingVertical="$4"
                     paddingHorizontal={0}
+                    alignItems="center"
                     justifyContent="space-between"
                   >
-                    <XStack gap="$2">
+                    <XStack gap="$2" alignItems="center">
                       <Heading size="$4">Membership</Heading>
                       {Object.keys(groupMembers.data?.members || {}).map(
                         (memberId) => (
