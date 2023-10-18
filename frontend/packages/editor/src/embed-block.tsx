@@ -1,77 +1,20 @@
 import {PartialMessage} from '@bufbuild/protobuf'
+import {useAccount} from '@mintter/app/models/accounts'
 import {usePublication} from '@mintter/app/models/documents'
-import {useOpenUrl} from '@mintter/app/open-url'
-import {NavRoute, unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import type {
-  Account,
-  BlockNode,
-  Group,
-  HMBlockChildrenType,
-  Block as ServerBlock,
-} from '@mintter/shared'
-import {
-  BACKEND_FILE_URL,
-  Block,
-  StaticBlockEmbed,
-  createHmId,
-  fromHMBlock,
-  getCIDFromIPFSUrl,
-  isHypermediaScheme,
-  toHMBlock,
-  unpackHmId,
-} from '@mintter/shared'
-import {
-  FontSizeTokens,
-  SizableText,
-  Spinner,
-  Text,
-  UIAvatar,
-  XStack,
-  YStack,
-} from '@mintter/ui'
-import {AlertCircle, Book} from '@tamagui/lucide-icons'
+import {useGroup} from '@mintter/app/models/groups'
+import type {Account, BlockNode, Group} from '@mintter/shared'
+import {StaticBlockEmbed, createHmId, unpackHmId} from '@mintter/shared'
+import {ErrorBlock} from '@mintter/shared/src/static/static-renderer'
 import {useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {useSelected} from './block-utils'
-import {
-  Block as BlockNoteBlock,
-  BlockNoteEditor,
-  InlineContent,
-} from './blocknote'
 import {createReactBlockSpec} from './blocknote/react'
-
-import {useAccount} from '@mintter/app/models/accounts'
-import {useGroup} from '@mintter/app/models/groups'
-import {getAvatarUrl} from '@mintter/app/utils/account-url'
-import {hmBlockSchema} from './schema'
 
 type LinkType = null | 'basic' | 'hypermedia'
 
-function hmTextColor(linkType: LinkType): string {
-  if (linkType === 'basic') return '$blue11'
-  if (linkType === 'hypermedia') return '$mint11'
-  return '$color12'
+function EmbedError() {
+  return <ErrorBlock message="Failed to load this Embedded document" />
 }
 
-function EmbedError() {
-  return (
-    <XStack
-      contentEditable={false}
-      userSelect="none"
-      backgroundColor="$red5"
-      borderColor="$red8"
-      borderWidth={1}
-      padding="$4"
-      paddingVertical="$2"
-      borderRadius="$4"
-      gap="$2"
-    >
-      <AlertCircle size={18} color="$red10" />
-      <Text>Failed to load this Embedded document</Text>
-    </XStack>
-  )
-}
 export const EmbedBlock = createReactBlockSpec({
   type: 'embed',
   propSchema: {

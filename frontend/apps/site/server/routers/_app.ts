@@ -5,7 +5,7 @@ import {
   hmGroup,
   hmLink,
   hmPublication,
-} from 'server/to-json-hm'
+} from '@mintter/shared/src/to-json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
 import {queryClient} from 'client'

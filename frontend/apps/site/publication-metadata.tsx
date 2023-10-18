@@ -1,5 +1,6 @@
 import {
   abbreviateCid,
+  createHmId,
   createPublicWebHmUrl,
   formattedDate,
   HMBlockNode,
@@ -8,6 +9,7 @@ import {
   idToUrl,
   pluralS,
   unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {
   Button,
@@ -315,20 +317,23 @@ function surfaceEmbedRefs(children?: HMBlockNode[]): EmbedRef[] {
 }
 
 function EmbeddedDocMeta({blockId, url}: {blockId: string; url: string}) {
-  const urlId = unpackDocId(url)
+  const embedId = unpackHmId(url)
+  const documentId =
+    embedId?.type === 'd' ? createHmId(embedId.type, embedId.eid) : undefined
   const pub = trpc.publication.get.useQuery(
     {
-      documentId: urlId?.docId,
-      versionId: urlId?.version,
+      documentId,
+      versionId: embedId?.version || undefined,
     },
     {
-      enabled: !!urlId,
+      enabled: !!embedId,
     },
   )
-  if (!urlId?.eid) return null
+  // we don't support sidebar metadata for groups or accounts yet
+  if (!documentId || !embedId) return null
   return (
     <NextLink
-      href={createPublicWebHmUrl('d', urlId.eid, urlId)}
+      href={createPublicWebHmUrl('d', embedId.eid, embedId)}
       style={{textDecoration: 'none'}}
     >
       <XStack

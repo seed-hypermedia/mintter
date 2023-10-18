@@ -2,6 +2,9 @@ import {trpc} from '../trpc'
 import {
   Account,
   DefaultStaticBlockUnknown,
+  EmbedContentAccount,
+  EmbedContentGroup,
+  ErrorBlock,
   Group,
   StaticBlockNode,
   StaticEmbedProps,
@@ -10,16 +13,18 @@ import {
   createHmId,
   getBlockNodeById,
 } from '@mintter/shared'
-import {SizableText, UIAvatar, XStack, YStack} from '@mintter/ui'
+import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {Book} from '@tamagui/lucide-icons'
 import {cidURL} from 'ipfs'
 import {NextLink} from 'next-link'
-import {useRouter} from 'next/router'
 import {useMemo, PropsWithChildren} from 'react'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   return (
-    <NextLink href={stripHMLinkPrefix(props.hmRef)}>
+    <NextLink
+      href={stripHMLinkPrefix(props.hmRef)}
+      style={{textDecoration: 'none'}}
+    >
       <YStack
         {...blockStyles}
         className="block-static block-embed"
@@ -50,32 +55,33 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
     },
   )
 
-  let embedData = useMemo(() => {
-    const {data} = pub
-
+  const pubData = pub.data
+  let embedBlocks = useMemo(() => {
     const selectedBlock =
-      props.blockRef && data?.publication?.document?.children
-        ? getBlockNodeById(data.publication?.document.children, props.blockRef)
+      props.blockRef && pubData?.publication?.document?.children
+        ? getBlockNodeById(
+            pubData.publication?.document?.children,
+            props.blockRef,
+          )
         : null
 
     const embedBlocks = selectedBlock
       ? [selectedBlock]
-      : data?.publication?.document?.children
+      : pubData?.publication?.document?.children
 
-    return {
-      ...pub,
-      data: {
-        publication: pub.data,
-        embedBlocks,
-      },
-    }
-  }, [props.blockRef, pub])
+    return embedBlocks
+  }, [props.blockRef, pubData])
 
+  if (pub.isLoading) return <Spinner />
+  if (pub.error) return <ErrorBlock message={pub.error.message} />
+
+  if (!docId || !embedBlocks?.length)
+    return <ErrorBlock message="Failed to load this embed" />
   return (
     <EmbedWrapper hmRef={props.id}>
-      {embedData.data.embedBlocks?.length ? (
+      {embedBlocks?.length ? (
         <StaticGroup childrenType="group" marginLeft="-1.5em">
-          {embedData.data.embedBlocks.map((bn, idx) => (
+          {embedBlocks.map((bn, idx) => (
             <StaticBlockNode
               key={bn.block?.id}
               depth={1}
@@ -87,7 +93,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
           ))}
         </StaticGroup>
       ) : (
-        <DefaultStaticBlockUnknown {...props} />
+        <ErrorBlock message="Embedded content was not found" />
       )}
     </EmbedWrapper>
   )
@@ -97,65 +103,32 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = trpc.group.get.useQuery({groupId, version: ''})
 
-  return groupQuery.status == 'success' ? (
+  if (groupQuery.isLoading) return <Spinner />
+  if (groupQuery.error) return <ErrorBlock message={groupQuery.error.message} />
+  const group = groupQuery.data?.group
+  return group ? (
     <EmbedWrapper hmRef={props.id}>
-      <XStack gap="$3" padding="$4" alignItems="flex-start">
-        <XStack paddingVertical="$3">
-          <Book size={36} />
-        </XStack>
-        <YStack justifyContent="center" flex={1}>
-          <SizableText size="$1" opacity={0.5} flex={0}>
-            Group
-          </SizableText>
-          <YStack gap="$2">
-            <SizableText size="$6" fontWeight="bold">
-              {groupQuery.data?.group?.title}
-            </SizableText>
-            <SizableText size="$2">
-              {groupQuery.data.group?.description}
-            </SizableText>
-          </YStack>
-        </YStack>
-      </XStack>
+      <EmbedContentGroup group={group} />
     </EmbedWrapper>
-  ) : null
+  ) : (
+    <ErrorBlock message="Failed to load group embed" />
+  )
 }
 
 export function StaticBlockAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = trpc.account.get.useQuery({accountId})
-
-  return accountQuery.status == 'success' ? (
+  const account = accountQuery.data?.account
+  if (accountQuery.isLoading) return <Spinner />
+  if (accountQuery.error)
+    return <ErrorBlock message={accountQuery.error.message} />
+  return account ? (
     <EmbedWrapper hmRef={props.id}>
-      <XStack gap="$3" padding="$4" alignItems="flex-start">
-        <XStack paddingVertical="$3">
-          <UIAvatar
-            id={accountQuery.data.account?.id}
-            size={36}
-            label={accountQuery.data.account?.profile?.alias}
-            url={
-              accountQuery.data.account?.profile?.avatar
-                ? cidURL(accountQuery.data.account?.profile?.avatar)
-                : undefined
-            }
-          />
-        </XStack>
-        <YStack justifyContent="center" flex={1}>
-          <SizableText size="$1" opacity={0.5} flex={0}>
-            Account
-          </SizableText>
-          <YStack gap="$2">
-            <SizableText size="$6" fontWeight="bold">
-              {accountQuery.data?.account?.profile?.alias}
-            </SizableText>
-            <SizableText size="$2">
-              {accountQuery.data.account?.profile?.bio}
-            </SizableText>
-          </YStack>
-        </YStack>
-      </XStack>
+      <EmbedContentAccount account={account} />
     </EmbedWrapper>
-  ) : null
+  ) : (
+    <ErrorBlock message="Failed to account embed" />
+  )
 }
 
 function stripHMLinkPrefix(link: string) {

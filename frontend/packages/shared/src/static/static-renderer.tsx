@@ -23,17 +23,17 @@ import {
   ColorProp,
   Copy,
   File,
-  FontSizeTokens,
   SizableText,
   SizableTextProps,
   Text,
   TextProps,
   Tooltip,
+  UIAvatar,
   XStack,
   YStack,
   YStackProps,
 } from '@mintter/ui'
-
+import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {
   PropsWithChildren,
   createContext,
@@ -44,6 +44,7 @@ import {
 import './static-styles.css'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {toast} from '@mintter/app/toast'
+import {HMAccount, HMGroup} from '../json-hm'
 
 let blockBorderRadius = '$3'
 
@@ -237,7 +238,7 @@ export function StaticBlockNode({
     return {}
   }, [blockNode.block, headingMarginStyles])
 
-  const isEmbed = blockNode.block.type == 'embed'
+  const isEmbed = blockNode.block?.type == 'embed'
 
   return (
     <YStack
@@ -390,14 +391,10 @@ function StaticBlock(props: StaticBlockProps) {
   }
 
   if (props.block.type == 'embed') {
-    return (
-      <StaticBlockEmbed
-        {...props}
-        blockRef={props.block.ref}
-        depth={props.depth}
-      />
-    )
+    return <StaticBlockEmbed {...props} depth={props.depth} />
   }
+
+  return <DefaultStaticBlockUnknown {...props} />
 }
 
 function StaticBlockParagraph({block, depth}: StaticBlockProps) {
@@ -727,39 +724,109 @@ function stripHMLinkPrefix(link: string) {
   return link.replace(/^hm:\//, '')
 }
 
-export function StaticBlockEmbed(props: StaticBlockProps & {blockRef: string}) {
+export function StaticBlockEmbed(props: StaticBlockProps) {
   const EmbedTypes = useStaticPublicationContext().entityComponents
-  const id = unpackHmId(props.blockRef)
-
-  console.log(`== ~ StaticBlockEmbed ~ id:`, id)
-
+  if (props.block.type !== 'embed')
+    throw new Error('StaticBlockEmbed requires an embed block type')
+  const id = unpackHmId(props.block.ref)
   if (id?.type == 'a') {
     return <EmbedTypes.StaticAccount {...props} {...id} />
   }
-
   if (id?.type == 'g') {
     return <EmbedTypes.StaticGroup {...props} {...id} />
   }
-
   if (id?.type == 'd') {
-    console.log(`== ~ StaticBlockEmbed ~ DOCUMENT:`, id)
     return <EmbedTypes.StaticPublication {...props} {...id} />
   }
+  return <DefaultStaticBlockUnknown {...props} />
+}
 
-  return <DefaultStaticBlockUnknown {...props} {...id} />
+export function EmbedContentGroup({group}: {group: HMGroup}) {
+  return (
+    <XStack gap="$3" padding="$4" alignItems="flex-start">
+      <XStack paddingVertical="$3">
+        <Book size={36} />
+      </XStack>
+      <YStack justifyContent="center" flex={1}>
+        <SizableText size="$1" opacity={0.5} flex={0}>
+          Group
+        </SizableText>
+        <YStack gap="$2">
+          <SizableText size="$6" fontWeight="bold">
+            {group?.title}
+          </SizableText>
+          <SizableText size="$2">{group?.description}</SizableText>
+        </YStack>
+      </YStack>
+    </XStack>
+  )
+}
+
+export function EmbedContentAccount({account}: {account: HMAccount}) {
+  return (
+    <XStack gap="$3" padding="$4" alignItems="flex-start">
+      <XStack paddingVertical="$3">
+        <UIAvatar
+          id={account.id}
+          size={36}
+          label={account.profile?.alias}
+          // url={getAvatarUrl(account.profile?.avatar)}
+          url={'f'}
+        />
+      </XStack>
+      <YStack justifyContent="center" flex={1}>
+        <SizableText size="$1" opacity={0.5} flex={0}>
+          Account
+        </SizableText>
+        <YStack gap="$2">
+          <SizableText size="$6" fontWeight="bold">
+            {account?.profile?.alias}
+          </SizableText>
+          <SizableText size="$2">{account.profile?.bio}</SizableText>
+        </YStack>
+      </YStack>
+    </XStack>
+  )
+}
+
+export function ErrorBlock({
+  message,
+  debugData,
+}: {
+  message: string
+  debugData?: any
+}) {
+  return (
+    <YStack
+      contentEditable={false}
+      userSelect="none"
+      backgroundColor="$red5"
+      borderColor="$red8"
+      borderWidth={1}
+      padding="$4"
+      paddingVertical="$2"
+      borderRadius="$4"
+      gap="$2"
+    >
+      <XStack gap="$2">
+        <AlertCircle size={18} color="$red10" />
+        <Text fontFamily={'$body'}>{message}</Text>
+      </XStack>
+      {debugData ? (
+        <pre>
+          <code>{JSON.stringify(debugData, null, 3)}</code>
+        </pre>
+      ) : null}
+    </YStack>
+  )
 }
 
 export function DefaultStaticBlockUnknown(props: StaticBlockProps) {
-  return (
-    <YStack {...blockStyles} className="block-static block-embed" tag="pre">
-      <SizableText {...inlineContentProps} tag="code" fontFamily="$mono">
-        Unknown Embed here: {props.block.ref}
-      </SizableText>
-      <pre>
-        <code>{JSON.stringify(props, null, 3)}</code>
-      </pre>
-    </YStack>
-  )
+  let message = 'Unrecognized Block'
+  if (props.block.type === 'embed') {
+    message = `Unrecognized Embed: ${props.block.ref}`
+  }
+  return <ErrorBlock message={message} debugData={props.block} />
 }
 
 export function getBlockNodeById(

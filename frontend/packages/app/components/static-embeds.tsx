@@ -1,5 +1,7 @@
 import {
   DefaultStaticBlockUnknown,
+  EmbedContentAccount,
+  EmbedContentGroup,
   StaticBlockNode,
   StaticEmbedProps,
   StaticGroup,
@@ -8,7 +10,8 @@ import {
   getBlockNodeById,
   useStaticPublicationContext,
 } from '@mintter/shared'
-import {SizableText, UIAvatar, XStack, YStack} from '@mintter/ui'
+import {hmGroup} from '@mintter/shared/src/to-json-hm'
+import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {Book} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
@@ -81,6 +84,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
     }
   }, [props.blockRef, pub])
 
+  if (embedData.isLoading) return <Spinner />
   return (
     <EmbedWrapper hmRef={props.id}>
       {embedData.data.embedBlocks?.length ? (
@@ -107,24 +111,10 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
 
-  return groupQuery.status == 'success' ? (
+  const group = hmGroup(groupQuery.data)
+  return group && groupQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
-      <XStack gap="$3" padding="$4" alignItems="flex-start">
-        <XStack paddingVertical="$3">
-          <Book size={36} />
-        </XStack>
-        <YStack justifyContent="center" flex={1}>
-          <SizableText size="$1" opacity={0.5} flex={0}>
-            Group
-          </SizableText>
-          <YStack gap="$2">
-            <SizableText size="$6" fontWeight="bold">
-              {groupQuery.data?.title}
-            </SizableText>
-            <SizableText size="$2">{groupQuery.data?.description}</SizableText>
-          </YStack>
-        </YStack>
-      </XStack>
+      <EmbedContentGroup group={group} />
     </EmbedWrapper>
   ) : null
 }
@@ -135,29 +125,7 @@ export function StaticBlockAccount(props: StaticEmbedProps) {
 
   return accountQuery.status == 'success' ? (
     <EmbedWrapper hmRef={props.id}>
-      <XStack gap="$3" padding="$4" alignItems="flex-start">
-        <XStack paddingVertical="$3">
-          <UIAvatar
-            id={accountQuery.data.id}
-            size={36}
-            label={accountQuery.data.profile?.alias}
-            url={getAvatarUrl(accountQuery.data.profile?.avatar)}
-          />
-        </XStack>
-        <YStack justifyContent="center" flex={1}>
-          <SizableText size="$1" opacity={0.5} flex={0}>
-            Account
-          </SizableText>
-          <YStack gap="$2">
-            <SizableText size="$6" fontWeight="bold">
-              {accountQuery.data?.profile?.alias}
-            </SizableText>
-            <SizableText size="$2">
-              {accountQuery.data.profile?.bio}
-            </SizableText>
-          </YStack>
-        </YStack>
-      </XStack>
+      <EmbedContentAccount account={accountQuery.data} />
     </EmbedWrapper>
   ) : null
 }
