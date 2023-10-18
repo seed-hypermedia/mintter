@@ -345,13 +345,16 @@ export default function GroupPage() {
   const now = useRoughTime()
   const syncAge = lastSyncTime ? now - lastSyncTime.seconds : 0n
   const isRecentlySynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+  const okSyncAge = lastOkSyncTime ? now - lastOkSyncTime.seconds : 0n
+  const isRecentlyOkSynced = syncAge < 70n // slightly over 60s just in case. we are polling and updating time ever 5s
+
   const hasOkSync = lastOkSyncTime && lastOkSyncTime.seconds !== 0n
   const siteVersionMatches = true
   //https://www.notion.so/mintter/SiteInfo-version-not-set-c37f78820189401ab4621ae0f7c1b63a?pvs=4
   // const siteVersionMatches =
   //   group.data?.version === group.data?.siteInfo?.version
   const siteSyncStatus =
-    isRecentlySynced && hasOkSync
+    isRecentlySynced && isRecentlyOkSynced
       ? siteVersionMatches
         ? GroupStatus.SyncedConnected
         : GroupStatus.UnsyncedConnected
