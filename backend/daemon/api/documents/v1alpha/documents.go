@@ -355,7 +355,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	// a lot of trickery between frontend and backend, it would optimize
 	// time to the first (more or less) meaningful result.
 	if err := api.disc.DiscoverObject(ctx, eid, version); err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", eid, version)
+		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q: %s", eid, version, err.Error())
 	}
 
 	return api.loadPublication(ctx, eid, version, in.TrustedOnly)
