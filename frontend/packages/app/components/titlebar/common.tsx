@@ -24,6 +24,7 @@ import {
   Button,
   Draft,
   Forward,
+  ListItem,
   Menu,
   Popover,
   Separator,
@@ -34,6 +35,7 @@ import {
   XGroup,
   XStack,
   YGroup,
+  YStack,
 } from '@mintter/ui'
 import {
   Bookmark,
@@ -442,9 +444,36 @@ export function AccountDropdownItem({
   onRoute: (route: NavRoute) => void
 }) {
   const route = useNavRoute()
+  const disabled = route.key == 'account' && route.accountId == account?.id
   return (
-    <MenuItem
-      disabled={route.key == 'account' && route.accountId == account?.id}
+    <ListItem
+      hoverTheme
+      pressTheme
+      focusTheme
+      paddingVertical="$2"
+      minHeight={70}
+      paddingHorizontal="$4"
+      textAlign="left"
+      outlineColor="transparent"
+      space="$2"
+      userSelect="none"
+      cursor={disabled ? 'not-allowed' : 'pointer'}
+      title={
+        <YStack>
+          <SizableText
+            fontSize="$2"
+            fontWeight={'bold'}
+            cursor={disabled ? 'not-allowed' : 'pointer'}
+            userSelect="none"
+          >
+            {account?.profile?.alias || 'My Profile'}
+          </SizableText>
+          <SizableText size="$1" color="$9">
+            My Profile
+          </SizableText>
+        </YStack>
+      }
+      disabled={disabled}
       onPress={() => {
         if (!account?.id) {
           appError('Account has not loaded.')
@@ -454,14 +483,13 @@ export function AccountDropdownItem({
       }}
       icon={
         <Avatar
-          size="$1"
+          size={36}
           label={account?.profile?.alias}
           id={account?.id}
           url={getAvatarUrl(account?.profile?.avatar)}
         />
       }
-      title={account?.profile?.alias || 'My Profile'}
-    />
+    ></ListItem>
   )
 }
 
@@ -506,7 +534,7 @@ function NavMenuContentUnpure({
             title="Trusted Publications"
             icon={Bookmark}
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; 1
               </SizableText>
             }
@@ -522,7 +550,7 @@ function NavMenuContentUnpure({
             title="All Publications"
             icon={Globe}
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; 2
               </SizableText>
             }
@@ -536,7 +564,7 @@ function NavMenuContentUnpure({
             title="Groups"
             icon={Library}
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; 3
               </SizableText>
             }
@@ -552,7 +580,7 @@ function NavMenuContentUnpure({
             icon={Draft}
             title="Drafts"
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; 8
               </SizableText>
             }
@@ -567,7 +595,7 @@ function NavMenuContentUnpure({
             icon={Contact}
             title="Contacts"
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; 9
               </SizableText>
             }
@@ -582,7 +610,7 @@ function NavMenuContentUnpure({
             title="Search / Open"
             icon={Search}
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; K
               </SizableText>
             }
@@ -596,7 +624,7 @@ function NavMenuContentUnpure({
             icon={Settings}
             title="Settings"
             iconAfter={
-              <SizableText size="$1" color="$mint5">
+              <SizableText size="$1" color="$color9">
                 &#8984; ,
               </SizableText>
             }

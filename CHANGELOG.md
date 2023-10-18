@@ -17,9 +17,10 @@ You can try Web Importing after enabling the experimental feature switch in the 
 ## 🎉 More New Features
 
 - Improved Consistency and styles of Documents
+- New layout of Group page
 - Copy Public Group URL in options of Group
 - Click twice on "Copy URL" button to open in browser
-- Site links open in a new tab
+- External Web links open in a new browser tab
 
 ## 🐛 Bug Fixes
 
@@ -31,4 +32,5 @@ You can try Web Importing after enabling the experimental feature switch in the 
 - Avoids duplicate Changes listed in version sidebar
 - Empty blocks at the end of draft are removed before saving
 - Fix "Trusted only" view of document, filtering changes from untrusted authors
-- remove network status from node-status-context
+- Fixes draft committing when offline
+- Improved sync performance on HyperMedia gateway
