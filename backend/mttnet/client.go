@@ -12,6 +12,7 @@ import (
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc"
@@ -36,8 +37,8 @@ type singleConn struct {
 	conn *grpc.ClientConn
 }
 
-// NewClient creates a new Client using the provided libp2p host.
-func NewClient(me core.Identity, h host.Host) *Client {
+// newClient creates a new Client using the provided libp2p host.
+func newClient(me core.Identity, h host.Host, protoID protocol.ID) *Client {
 	return &Client{
 		opts: []grpc.DialOption{
 			grpc.WithContextDialer(func(ctx context.Context, target string) (net.Conn, error) {
@@ -46,7 +47,7 @@ func NewClient(me core.Identity, h host.Host) *Client {
 					return nil, fmt.Errorf("failed to dial peer %s: %w", target, err)
 				}
 
-				return gostream.Dial(ctx, h, id, ProtocolID)
+				return gostream.Dial(ctx, h, id, protoID)
 			}),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock(),

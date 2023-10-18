@@ -56,7 +56,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return fmt.Errorf("failed to connect to peer %s: %w", info.ID, err)
 	}
 
-	if err := n.checkMintterProtocolVersion(info.ID, protocolVersion); err != nil {
+	if err := n.checkMintterProtocolVersion(info.ID, n.protocol.version); err != nil {
 		return err
 	}
 
@@ -92,15 +92,14 @@ func (n *Node) checkMintterProtocolVersion(pid peer.ID, desiredVersion string) (
 	if len(protos) == 0 {
 		n.log.Warn("peer does not support any protocol", zap.String("PeerID", pid.String()))
 	}
+
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
 	for _, p := range protos {
-		version := strings.TrimPrefix(string(p), protocolPrefix)
+		version := strings.TrimPrefix(string(p), n.protocol.prefix)
 		if version == string(p) {
 			continue
-		} else {
-			isMintter = true
 		}
-
+		isMintter = true
 		if version == desiredVersion {
 			return nil
 		}
@@ -170,7 +169,7 @@ func (srv *rpcMux) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 
 	log := n.log.With(zap.String("peer", pid.String()))
 
-	if err := n.checkMintterProtocolVersion(pid, protocolVersion); err != nil {
+	if err := n.checkMintterProtocolVersion(pid, srv.Node.protocol.version); err != nil {
 		return nil, err
 	}
 

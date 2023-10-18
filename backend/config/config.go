@@ -187,6 +187,7 @@ func (c *Syncing) BindFlags(fs *flag.FlagSet) {
 
 // P2P networking configuration.
 type P2P struct {
+	TestnetName             string
 	Port                    int
 	NoRelay                 bool
 	BootstrapPeers          []multiaddr.Multiaddr
@@ -200,6 +201,7 @@ type P2P struct {
 
 // BindFlags binds the flags to the given FlagSet.
 func (p2p *P2P) BindFlags(fs *flag.FlagSet) {
+	fs.StringVar(&p2p.TestnetName, "p2p.testnet-name", p2p.TestnetName, "Name of the testnet to use (empty for mainnet)")
 	fs.IntVar(&p2p.Port, "p2p.port", p2p.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&p2p.NoRelay, "p2p.no-relay", p2p.NoRelay, "Disable libp2p circuit relay")
 	fs.Var(newAddrsFlag(p2p.BootstrapPeers, &p2p.BootstrapPeers), "p2p.bootstrap-peers", "Multiaddrs for bootstrap nodes (comma separated)")

@@ -237,7 +237,7 @@ func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 			return err
 		}
 
-		a.log.Info("P2PNodeStarted", zap.Any("listeners", addrs))
+		a.log.Info("P2PNodeReady", zap.Any("listeners", addrs))
 
 		return nil
 	})

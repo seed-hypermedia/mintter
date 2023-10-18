@@ -39,15 +39,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Protocol values.
-const (
-	protocolPrefix  = "/hypermedia/"
-	protocolVersion = "0.2.0"
-
-	ProtocolID protocol.ID = protocolPrefix + protocolVersion
-
-	protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
-)
+const protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 
 var userAgent = "mintter/<dev>"
 
@@ -113,6 +105,7 @@ type Node struct {
 	invoicer Invoicer
 	client   *Client
 
+	protocol  protocolInfo
 	p2p       *ipfs.Libp2p
 	bitswap   *ipfs.Bitswap
 	providing provider.System
@@ -152,7 +145,14 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 	}
 	clean.Add(providing)
 
-	client := NewClient(me, host)
+	var testnetSuffix string
+	if cfg.TestnetName != "" {
+		testnetSuffix = "-" + cfg.TestnetName
+	}
+
+	protoInfo := newProtocolInfo("/hypermedia/", "0.2.0"+testnetSuffix)
+
+	client := newClient(me, host, protoInfo.ID)
 	clean.Add(client)
 
 	n := &Node{
@@ -162,6 +162,7 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 		me:        me,
 		cfg:       cfg,
 		client:    client,
+		protocol:  protoInfo,
 		p2p:       host,
 		bitswap:   bitswap,
 		providing: providing,
@@ -285,14 +286,15 @@ func (n *Node) Libp2p() *ipfs.Libp2p { return n.p2p }
 func (n *Node) Start(ctx context.Context) (err error) {
 	n.ctx = ctx
 
-	n.log.Debug("P2PNodeStarted")
+	n.log.Debug("P2PNodeStarted", zap.String("protocolID", string(n.protocol.ID)))
+
 	defer func() { n.log.Debug("P2PNodeFinished", zap.Error(err)) }()
 
 	if err := n.startLibp2p(ctx); err != nil {
 		return err
 	}
 
-	lis, err := gostream.Listen(n.p2p.Host, ProtocolID)
+	lis, err := gostream.Listen(n.p2p.Host, n.protocol.ID)
 	if err != nil {
 		return fmt.Errorf("failed to start listener: %w", err)
 	}
@@ -527,4 +529,18 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	}
 
 	return node, &clean, nil
+}
+
+type protocolInfo struct {
+	ID      protocol.ID
+	prefix  string
+	version string
+}
+
+func newProtocolInfo(prefix, version string) protocolInfo {
+	return protocolInfo{
+		ID:      protocol.ID(prefix + version),
+		prefix:  prefix,
+		version: version,
+	}
 }
