@@ -64,6 +64,7 @@ import {CloneGroupDialog} from '../clone-group'
 import {useEntityTimeline} from '../../models/changes'
 import {useOpenUrl} from '../../open-url'
 import {useAppContext} from '../../app-context'
+import copyTextToClipboard from 'copy-text-to-clipboard'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -99,7 +100,9 @@ function NewDocumentButton() {
 
 export function GroupOptionsButton() {
   const route = useNavRoute()
-  const groupId = route.key === 'group' ? route.groupId : null
+  const groupRoute = route.key === 'group' ? route : null
+  const groupRouteVersion = groupRoute?.version
+  const groupId = groupRoute?.groupId
   if (!groupId)
     throw new Error('GroupOptionsButton not supported in this route')
   const publish = usePublishGroupDialog()
@@ -116,6 +119,19 @@ export function GroupOptionsButton() {
       icon: Copy,
       onPress: () => {
         cloneGroup.open(groupId)
+      },
+    },
+    {
+      key: 'link',
+      label: 'Copy Public Group URL',
+      icon: Link,
+      onPress: () => {
+        const id = unpackHmId(groupId)
+        if (!id) return
+        copyTextToClipboard(
+          createPublicWebHmUrl('g', id.eid, {version: groupRouteVersion}),
+        )
+        toast.success('Copied Public Group URL')
       },
     },
   ]
@@ -178,7 +194,14 @@ export function useFullReferenceUrl(
   const navigateReplace = useNavigate('replace')
 
   if (groupRoute) {
-    const groupExactVersion = groupRoute?.version
+    const groupExactVersion = groupRoute?.version || group?.data?.version
+    const baseUrl = group.data?.siteInfo?.baseUrl
+    if (baseUrl) {
+      return {
+        label: 'Site',
+        url: groupExactVersion ? `${baseUrl}/?v=${groupExactVersion}` : baseUrl,
+      }
+    }
     return getReferenceUrlOfRoute(
       route,
       undefined,
