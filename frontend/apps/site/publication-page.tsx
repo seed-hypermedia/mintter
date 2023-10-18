@@ -136,6 +136,7 @@ export default function PublicationPage({
                   StaticPublication: StaticBlockPublication,
                 }}
                 onLinkClick={(href, e) => {
+                  if (e.metaKey || e.ctrlKey) return
                   e.preventDefault()
                   e.stopPropagation()
                   router.push(href)
