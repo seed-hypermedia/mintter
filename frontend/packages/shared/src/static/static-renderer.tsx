@@ -61,7 +61,7 @@ export type StaticPublicationContextValue = {
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   citations?: Array<MttLink>
   onCitationClick?: () => void
-  disableEmbedClick: boolean
+  disableEmbedClick?: boolean
 }
 
 export const staticPublicationContext =

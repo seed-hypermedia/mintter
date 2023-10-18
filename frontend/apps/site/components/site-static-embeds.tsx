@@ -1,23 +1,49 @@
-import {trpc} from '../trpc'
 import {
-  Account,
-  DefaultStaticBlockUnknown,
   EmbedContentAccount,
   EmbedContentGroup,
   ErrorBlock,
-  Group,
   StaticBlockNode,
   StaticEmbedProps,
   StaticGroup,
+  StaticPublicationProvider,
   blockStyles,
   createHmId,
   getBlockNodeById,
 } from '@mintter/shared'
-import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
-import {Book} from '@tamagui/lucide-icons'
-import {cidURL} from 'ipfs'
+import {Spinner, YStack} from '@mintter/ui'
 import {NextLink} from 'next-link'
-import {useMemo, PropsWithChildren} from 'react'
+import {useRouter} from 'next/router'
+import {PropsWithChildren, ReactNode, useMemo} from 'react'
+import {trpc} from '../trpc'
+
+export function SiteStaticPublicationProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
+  const router = useRouter()
+  return (
+    <StaticPublicationProvider
+      entityComponents={{
+        StaticAccount: StaticBlockAccount,
+        StaticGroup: StaticBlockGroup,
+        StaticPublication: StaticBlockPublication,
+      }}
+      onLinkClick={(href, e) => {
+        if (e.metaKey || e.ctrlKey) return
+        e.preventDefault()
+        e.stopPropagation()
+        router.push(href)
+      }}
+      saveCidAsFile={async () => {
+        alert('Not implemented yet.')
+      }}
+      ipfsBlobPrefix="/"
+    >
+      {children}
+    </StaticPublicationProvider>
+  )
+}
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   return (

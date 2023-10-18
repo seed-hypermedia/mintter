@@ -31,12 +31,16 @@ import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
 import {useAppContext} from '../app-context'
+import {useFullReferenceUrl} from '../components/titlebar/common'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
 export function AppStaticPublicationProvider({
   children,
 }: React.PropsWithChildren<{}>) {
   const {saveCidAsFile} = useAppContext()
   const openUrl = useOpenUrl()
+  // const route = useNavRoute()
+  // const reference = useFullReferenceUrl(route)
   return (
     <StaticPublicationProvider
       entityComponents={{
@@ -49,6 +53,10 @@ export function AppStaticPublicationProvider({
         e.stopPropagation()
         openUrl(href)
       }}
+      // onCopyBlock={(blockId: string) => {
+      //   copyUrlToClipboardWithFeedback(blockId, 'YEIIII')
+      //   // console.log('COPY BLOCK', blockId)
+      // }}
       ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
     >

@@ -38,6 +38,7 @@ import {useRouter} from 'next/router'
 import Footer from 'footer'
 import {OpenInAppLink} from 'components/metadata'
 import {OGImageMeta} from 'head'
+import {SiteStaticPublicationProvider} from 'components/site-static-embeds'
 
 export default function GroupPage({}: GroupPageProps) {
   const router = useRouter()
@@ -309,7 +310,12 @@ function FrontDoc({
     | undefined
 }) {
   if (!item?.publication) return <Text>Not Found</Text>
-  return <PublicationContent publication={item?.publication} />
+
+  return (
+    <SiteStaticPublicationProvider>
+      <PublicationContent publication={item?.publication} />
+    </SiteStaticPublicationProvider>
+  )
 }
 
 export type GroupPageProps = {}

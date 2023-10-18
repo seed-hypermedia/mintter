@@ -7,7 +7,6 @@ import {
   Publication,
   StaticBlockNode,
   StaticPublication,
-  StaticPublicationProvider,
   UnpackedHypermediaId,
   createHmDocLink,
   formatBytes,
@@ -32,11 +31,7 @@ import {
   useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
-import {
-  StaticBlockAccount,
-  StaticBlockGroup,
-  StaticBlockPublication,
-} from 'components/site-static-embeds'
+import {SiteStaticPublicationProvider} from 'components/site-static-embeds'
 import {OGImageMeta} from 'head'
 import {NextLink} from 'next-link'
 import Head from 'next/head'
@@ -128,29 +123,9 @@ export default function PublicationPage({
 
         <PageSection.Content>
           {pub ? (
-            <StaticPublicationProvider
-              entityComponents={{
-                StaticAccount: StaticBlockAccount,
-                StaticGroup: StaticBlockGroup,
-                StaticPublication: StaticBlockPublication,
-              }}
-              onLinkClick={(href, e) => {
-                if (e.metaKey || e.ctrlKey) return
-                e.preventDefault()
-                e.stopPropagation()
-                router.push(href)
-              }}
-              saveCidAsFile={async (cid: string, fileName: string) => {
-                const aElement = document.createElement('a')
-                aElement.setAttribute('download', fileName)
-                aElement.href = `/ipfs/${cid}`
-                aElement.setAttribute('target', '_blank')
-                aElement.click()
-              }}
-              ipfsBlobPrefix="/"
-            >
+            <SiteStaticPublicationProvider>
               <StaticPublication publication={pub} />
-            </StaticPublicationProvider>
+            </SiteStaticPublicationProvider>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
           ) : (
