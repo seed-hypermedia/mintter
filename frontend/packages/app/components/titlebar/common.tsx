@@ -166,6 +166,7 @@ export function useFullReferenceUrl(
     pubRoute?.pubContext?.key === 'group'
       ? pubRoute.pubContext.groupId
       : undefined
+  const contextGroup = useGroup(contextGroupId)
   const routeGroupId = groupRoute?.groupId
   const pubRouteDocId = pubRoute?.documentId
   const group = useGroup(contextGroupId || routeGroupId)
@@ -189,15 +190,21 @@ export function useFullReferenceUrl(
     const docId = unpackHmId(pubRoute.documentId)
     if (!docId) return null
 
+    let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
+
     if (pub.data?.version && contextGroupId) {
-      let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
       const matchedPrettyPath =
         invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
       if (matchedPrettyPath && !pubRoute.versionId) {
         const displayPrettyPath =
           matchedPrettyPath === '/' ? '' : matchedPrettyPath
+        const groupVersion = contextGroup.data?.version
+        let sitePrettyUrl = `${hostname}/${displayPrettyPath}`
+        if (groupVersion) {
+          sitePrettyUrl += `?v=${groupVersion}`
+        }
         return {
-          url: `${hostname}/${displayPrettyPath}`,
+          url: sitePrettyUrl,
           label: 'Site Document',
         }
       }
@@ -222,6 +229,7 @@ export function useFullReferenceUrl(
             })
             .flat()
         }
+
         if (
           linkChangeIds.find((changeId) => !allHostedChangeIds.has(changeId))
         ) {
@@ -239,13 +247,13 @@ export function useFullReferenceUrl(
       //   pubContext: redirectedContext,
       // })
       // }
-      return {
-        url: createPublicWebHmUrl('d', docId.eid, {
-          version: pub.data?.version,
-          hostname,
-        }),
-        label: hostname ? 'Site Version' : 'Doc Version',
-      }
+    }
+    return {
+      url: createPublicWebHmUrl('d', docId.eid, {
+        version: pub.data?.version,
+        hostname,
+      }),
+      label: hostname ? 'Site Version' : 'Doc Version',
     }
   }
 
@@ -266,7 +274,7 @@ function getReferenceUrlOfRoute(
       version: exactVersion,
     })
     return {
-      label: 'Group URL',
+      label: 'Group',
       url,
     }
   }
@@ -279,7 +287,7 @@ function getReferenceUrlOfRoute(
     })
     if (!url) return null
     return {
-      label: 'Doc URL',
+      label: 'Doc',
       url,
     }
   }
@@ -290,7 +298,7 @@ function getReferenceUrlOfRoute(
     })
     if (!url) return null
     return {
-      label: 'Account URL',
+      label: 'Account',
       url,
     }
   }

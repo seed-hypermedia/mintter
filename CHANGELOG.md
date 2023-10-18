@@ -16,6 +16,8 @@ You can try Web Importing after enabling the experimental feature switch in the 
 
 ## 🎉 More New Features
 
+- Click twice on "Copy URL" button to open in browser
+
 ## 🐛 Bug Fixes
 
 - Fixes Dark mode support and flash of bright window
