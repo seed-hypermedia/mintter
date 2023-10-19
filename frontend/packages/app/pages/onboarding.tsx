@@ -57,7 +57,7 @@ export function OnboardingSteps() {
   const enterVariant = direction == 1 ? 'isRight' : 'isLeft'
   const exitVariant = direction === 1 ? 'isLeft' : 'isRight'
   return (
-    <AnimatePresence enterVariant={enterVariant} exitVariant={exitVariant}>
+    <>
       {obValue.state.key == 'welcome' && (
         <Welcome key={obValue.state.key} {...obValue} />
       )}
@@ -79,7 +79,7 @@ export function OnboardingSteps() {
       {obValue.state.key == 'device complete' && (
         <Complete key={obValue.state.key} />
       )}
-    </AnimatePresence>
+    </>
   )
 }
 
