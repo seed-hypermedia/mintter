@@ -54,8 +54,12 @@ export function SiteStaticPublicationProvider({
         })
         router.push(dest)
       }}
-      saveCidAsFile={async () => {
-        alert('Not implemented yet.')
+      saveCidAsFile={async (cid: string, fileName: string) => {
+        const aElement = document.createElement('a')
+        aElement.setAttribute('download', fileName)
+        aElement.href = `/ipfs/${cid}`
+        aElement.setAttribute('target', '_blank')
+        aElement.click()
       }}
       onCopyBlock={(blockId: string) => {
         if (unpackedId) {
@@ -70,7 +74,7 @@ export function SiteStaticPublicationProvider({
           )
         }
       }}
-      ipfsBlobPrefix="/ipfs"
+      ipfsBlobPrefix="/ipfs/"
     >
       {children}
     </StaticPublicationProvider>
