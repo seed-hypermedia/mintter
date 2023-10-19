@@ -80,7 +80,7 @@ export default function Settings() {
             Experiments
           </SizableText>
         </Tabs.Tab>
-        <Tabs.Tab value="developer" data-testid="tab-developer">
+        {/* <Tabs.Tab value="developer" data-testid="tab-developer">
           <SizableText flex={1} textAlign="left">
             Developers
           </SizableText>
@@ -98,7 +98,7 @@ export default function Settings() {
           >
             NEW
           </SizableText>
-        </Tabs.Tab>
+        </Tabs.Tab> */}
       </Tabs.List>
       <Separator vertical />
       <TabsContent value="account">
@@ -114,9 +114,9 @@ export default function Settings() {
       <TabsContent value="experimental">
         <ExperimentsSettings />
       </TabsContent>
-      <TabsContent value="developer">
+      {/* <TabsContent value="developer">
         <DeveloperSettings />
-      </TabsContent>
+      </TabsContent> */}
     </Tabs>
   )
 }

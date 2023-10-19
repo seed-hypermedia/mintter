@@ -34,6 +34,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
             paddingVertical="$1"
             hoverStyle={{backgroundColor: '$color6'}}
             alignItems="center"
+            marginLeft="1.5em"
           >
             <NextLink
               href="/"
@@ -49,26 +50,6 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
             </NextLink>
           </XStack>
         </XStack>
-        {pageTitle && (
-          <XStack
-            marginTop="$4"
-            $gtSm={{
-              marginTop: '$7',
-            }}
-            paddingLeft="$4"
-          >
-            <SizableText
-              tag="h1"
-              size="$9"
-              letterSpacing={0}
-              fontWeight="600"
-              flexDirection="column"
-              display="flex"
-            >
-              {pageTitle}
-            </SizableText>
-          </XStack>
-        )}
       </PageSection.Content>
       <PageSection.Side />
     </PageSection.Root>

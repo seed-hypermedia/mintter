@@ -102,7 +102,6 @@ export function StaticPublication({
 }: {
   publication: Publication | HMPublication
 }) {
-  const ctx = useStaticPublicationContext()
   return (
     <StaticGroup childrenType={'group'}>
       {publication.document?.children?.length &&
