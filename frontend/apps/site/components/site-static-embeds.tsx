@@ -38,6 +38,7 @@ export function SiteStaticPublicationProvider({
         StaticPublication: StaticBlockPublication,
       }}
       onLinkClick={(href, e) => {
+        e.stopPropagation()
         const isHmHref = isHypermediaScheme(href)
         const id = unpackHmId(href)
         // if the user is pressing a modifier, the browser will open the actual link href in a new tab.
@@ -46,7 +47,6 @@ export function SiteStaticPublicationProvider({
         if (e.metaKey || e.ctrlKey || !isHmHref || !id) return
         // only in the case of hypermedia IDs do we want to explicitly push the route.
         e.preventDefault()
-        e.stopPropagation()
         const dest = createPublicWebHmUrl(id.type, id.eid, {
           version: id.version,
           hostname: null,
