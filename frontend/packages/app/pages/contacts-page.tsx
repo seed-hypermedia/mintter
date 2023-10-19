@@ -51,7 +51,7 @@ function ContactItem({
     >
       <XStack alignItems="center" gap="$4" flex={1}>
         <Avatar
-          size="$2"
+          size={36}
           id={account.id}
           label={account.profile?.alias}
           url={getAvatarUrl(account.profile?.avatar)}
