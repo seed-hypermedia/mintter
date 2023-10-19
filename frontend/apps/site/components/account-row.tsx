@@ -50,10 +50,12 @@ export function AccountRow({
   }
   const content = (
     <XStack gap="$2" alignItems="center">
-      <Avatar circular size={20}>
-        {profile?.avatar ? <Avatar.Image src={cidURL(profile.avatar)} /> : null}
-        <Avatar.Fallback backgroundColor="$color7" />
-      </Avatar>
+      <UIAvatar
+        url={profile?.avatar ? cidURL(profile.avatar) : ''}
+        id={account}
+        color="$color7"
+        label={profile?.alias || label}
+      />
       {!onlyAvatar ? (
         <>
           <SizableText
