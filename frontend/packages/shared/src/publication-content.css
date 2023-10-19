@@ -1,18 +1,22 @@
-.static-group {
+.blocknode-list {
+  /* border: 1px solid gray; */
   -webkit-font-smoothing: antialiased;
 }
 
-.static-embed {
+/* .content-embed {
   zoom: 0.9;
+} */
+
+.content-inline {
+  line-height: 1.5;
 }
 
-li.blocknode-static {
+li.blocknode-content {
   font-family: 'Courier New', Courier, monospace;
   position: absolute;
 }
 
-.static-inlinecontent code {
-  background-color: red;
+.content-inline code {
   padding: 0.18rem 0.3rem;
   border-radius: 6px;
   font-size: 85%;

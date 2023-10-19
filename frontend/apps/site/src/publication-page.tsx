@@ -1,12 +1,12 @@
 import {
   Account,
+  BlockNodeContent,
   HMBlockFile,
   HMBlockVideo,
   HMGroup,
   HMPublication,
   Publication,
-  StaticBlockNode,
-  StaticPublication,
+  PublicationContent,
   UnpackedHypermediaId,
   createHmDocLink,
   formatBytes,
@@ -19,7 +19,6 @@ import {
   ArrowRight,
   Button,
   File,
-  FontSizeTokens,
   PageSection,
   Share,
   SideSection,
@@ -31,12 +30,11 @@ import {
   useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
-import {SiteStaticPublicationProvider} from 'src/site-static-embeds'
+import Head from 'next/head'
+import {useMemo} from 'react'
 import {OGImageMeta} from 'src/head'
 import {NextLink} from 'src/next-link'
-import Head from 'next/head'
-import {useRouter} from 'next/router'
-import {useMemo} from 'react'
+import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
@@ -58,9 +56,6 @@ export type PublicationPageData = {
   author?: Account | null
   editors: Array<Account | string | null> | null
 }
-
-let blockVerticalPadding: FontSizeTokens = '$4'
-let blockHorizontalPadding: FontSizeTokens = '$4'
 let blockBorderRadius = '$3'
 
 function OpenInAppLink({url}: {url: string}) {
@@ -90,7 +85,6 @@ export default function PublicationPage({
   contextGroup?: HMGroup | null
 }) {
   const media = useMedia()
-  const router = useRouter()
 
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
@@ -134,9 +128,9 @@ export default function PublicationPage({
 
         <PageSection.Content>
           {pub ? (
-            <SiteStaticPublicationProvider unpackedId={pubId}>
-              <StaticPublication publication={pub} />
-            </SiteStaticPublicationProvider>
+            <SitePublicationContentProvider unpackedId={pubId}>
+              <PublicationContent publication={pub} />
+            </SitePublicationContentProvider>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
           ) : null}
@@ -182,56 +176,6 @@ function BlockPlaceholder() {
       <YStack height={16} backgroundColor="$color6" />
       <YStack width="75%" height={16} backgroundColor="$color6" />
       <YStack width="60%" height={16} backgroundColor="$color6" />
-    </YStack>
-  )
-}
-
-export function PublicationContent({
-  publication,
-}: {
-  publication: HMPublication | undefined
-}) {
-  // This removes the first block from the document content if it's not a media element (embed, image, video...)
-  let blocks = useMemo(() => {
-    let _b = publication?.document?.children
-
-    if (
-      !_b?.length ||
-      (_b.length == 1 &&
-        !['embed', 'image', 'video'].includes(_b[0].block?.type))
-    )
-      return []
-
-    // check if the first block has content or not.
-    if (
-      _b[0].block?.type &&
-      ['embed', 'image', 'video'].includes(_b[0].block?.type)
-    )
-      return _b
-
-    let [_firstBlock, ...restBlocks] = _b
-
-    if (_firstBlock.children?.length) {
-      restBlocks = [..._firstBlock.children, ...restBlocks]
-    }
-
-    return restBlocks
-  }, [publication?.document?.children])
-  return (
-    <YStack>
-      {blocks.map((block, index) => (
-        <StaticBlockNode
-          blockNode={block}
-          key={block.block?.id || index}
-          ctx={{
-            enableBlockCopy: true,
-            ref: {
-              docId: publication?.document?.id,
-              docVersion: publication?.version,
-            },
-          }}
-        />
-      ))}
     </YStack>
   )
 }

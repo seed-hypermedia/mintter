@@ -3,8 +3,8 @@ import {useAccount} from '@mintter/app/models/accounts'
 import {usePublication} from '@mintter/app/models/documents'
 import {useGroup} from '@mintter/app/models/groups'
 import type {Account, BlockNode, Group} from '@mintter/shared'
-import {StaticBlockEmbed, createHmId, unpackHmId} from '@mintter/shared'
-import {ErrorBlock} from '@mintter/shared/src/static/static-renderer'
+import {BlockContentEmbed, createHmId, unpackHmId} from '@mintter/shared'
+import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {createReactBlockSpec} from './blocknote/react'
@@ -27,7 +27,7 @@ export const EmbedBlock = createReactBlockSpec({
   render: ({block, editor}) => {
     return (
       <ErrorBoundary FallbackComponent={EmbedError}>
-        <StaticBlockEmbed
+        <BlockContentEmbed
           block={{
             id: block.id,
             type: 'embed',

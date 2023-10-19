@@ -4,6 +4,7 @@ import {
   createHmId,
   formattedDate,
   unpackHmId,
+  PublicationContent,
 } from '@mintter/shared'
 import {useRouter} from 'next/router'
 import {getGroupView} from 'server/group'
@@ -14,8 +15,8 @@ import {SiteHead} from './site-head'
 import Head from 'next/head'
 import Footer from './footer'
 import {OGImageMeta} from './head'
-import {SiteStaticPublicationProvider} from './site-static-embeds'
-import {PublicationContent, useGroupContentUrl} from './publication-page'
+import {SitePublicationContentProvider} from './site-embeds'
+import {useGroupContentUrl} from './publication-page'
 import {AccountAvatarLink} from './account-row'
 import {HMGroup} from '@mintter/shared/src/json-hm'
 import {GroupMetadata} from './group-metadata'
@@ -138,9 +139,9 @@ function FrontDoc({
   if (!item?.publication) return <Text>Not Found</Text>
 
   return (
-    <SiteStaticPublicationProvider unpackedId={item.docId}>
+    <SitePublicationContentProvider unpackedId={item.docId}>
       <PublicationContent publication={item?.publication} />
-    </SiteStaticPublicationProvider>
+    </SitePublicationContentProvider>
   )
 }
 

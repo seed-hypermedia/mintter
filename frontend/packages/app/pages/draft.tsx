@@ -19,24 +19,24 @@ import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {useAppContext} from '../app-context'
 import {useOpenUrl} from '../open-url'
-import {BACKEND_FILE_URL, StaticPublicationProvider} from '@mintter/shared'
+import {BACKEND_FILE_URL, PublicationContentProvider} from '@mintter/shared'
 import {
-  StaticBlockAccount,
-  StaticBlockGroup,
-  StaticBlockPublication,
-} from '../components/static-embeds'
+  EmbedAccount,
+  EmbedGroup,
+  EmbedPublication,
+} from '../components/app-embeds'
 
-export function AppStaticPublicationProvider({
+export function AppPublicationContentProvider({
   children,
 }: React.PropsWithChildren<{}>) {
   const {saveCidAsFile} = useAppContext()
   const openUrl = useOpenUrl()
   return (
-    <StaticPublicationProvider
+    <PublicationContentProvider
       entityComponents={{
-        StaticAccount: StaticBlockAccount,
-        StaticGroup: StaticBlockGroup,
-        StaticPublication: StaticBlockPublication,
+        AccountCard: EmbedAccount,
+        GroupCard: EmbedGroup,
+        PublicationCard: EmbedPublication,
       }}
       disableEmbedClick
       onLinkClick={(href, e) => {
@@ -46,9 +46,12 @@ export function AppStaticPublicationProvider({
       }}
       ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
+      onCopyBlock={(blockId: string) => {
+        console.log('COPY HERE')
+      }}
     >
       {children}
-    </StaticPublicationProvider>
+    </PublicationContentProvider>
   )
 }
 
@@ -79,12 +82,12 @@ export default function DraftPage() {
       >
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-          <AppStaticPublicationProvider>
+          <AppPublicationContentProvider>
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
               {debugValue && <DebugData data={debugValue} />}
             </HMEditorContainer>
-          </AppStaticPublicationProvider>
+          </AppPublicationContentProvider>
         </MainWrapper>
         <Footer />
       </ErrorBoundary>

@@ -3,7 +3,7 @@ import {
   Document,
   Group,
   Role,
-  StaticPublication,
+  PublicationContent,
   formattedDate,
   idToUrl,
   pluralS,
@@ -72,7 +72,7 @@ import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
-import {AppStaticPublicationProvider} from './publication'
+import {AppPublicationContentProvider} from './publication'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -600,9 +600,9 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
       paddingHorizontal="$5"
       alignSelf="center"
     >
-      <AppStaticPublicationProvider>
-        <StaticPublication publication={pub.data} />
-      </AppStaticPublicationProvider>
+      <AppPublicationContentProvider>
+        <PublicationContent publication={pub.data} />
+      </AppPublicationContentProvider>
     </YStack>
   ) : null
 }

@@ -10,8 +10,8 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
   MttLink,
-  StaticPublication,
-  StaticPublicationProvider,
+  PublicationContent,
+  PublicationContentProvider,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
@@ -22,10 +22,10 @@ import 'allotment/dist/style.css'
 import {ErrorBoundary} from 'react-error-boundary'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {
-  StaticBlockAccount,
-  StaticBlockGroup,
-  StaticBlockPublication,
-} from '../components/static-embeds'
+  EmbedAccount,
+  EmbedGroup,
+  EmbedPublication,
+} from '../components/app-embeds'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
@@ -34,7 +34,7 @@ import {useAppContext} from '../app-context'
 import {useFullReferenceUrl} from '../components/titlebar/common'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
-export function AppStaticPublicationProvider({
+export function AppPublicationContentProvider({
   children,
 }: React.PropsWithChildren<{}>) {
   const {saveCidAsFile} = useAppContext()
@@ -42,11 +42,11 @@ export function AppStaticPublicationProvider({
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
   return (
-    <StaticPublicationProvider
+    <PublicationContentProvider
       entityComponents={{
-        StaticAccount: StaticBlockAccount,
-        StaticGroup: StaticBlockGroup,
-        StaticPublication: StaticBlockPublication,
+        AccountCard: EmbedAccount,
+        GroupCard: EmbedGroup,
+        PublicationCard: EmbedPublication,
       }}
       onLinkClick={(href, e) => {
         e.preventDefault()
@@ -63,7 +63,7 @@ export function AppStaticPublicationProvider({
       saveCidAsFile={saveCidAsFile}
     >
       {children}
-    </StaticPublicationProvider>
+    </PublicationContentProvider>
   )
 }
 
@@ -117,13 +117,13 @@ export default function PublicationPage() {
                   <YStack
                     paddingVertical={80}
                     width="100%"
-                    maxWidth="calc(90ch + 20vw)"
-                    paddingHorizontal="10vw"
+                    maxWidth="90ch"
+                    // paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <AppStaticPublicationProvider>
-                      <StaticPublication publication={publication.data} />
-                    </AppStaticPublicationProvider>
+                    <AppPublicationContentProvider>
+                      <PublicationContent publication={publication.data} />
+                    </AppPublicationContentProvider>
                   </YStack>
                   {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />

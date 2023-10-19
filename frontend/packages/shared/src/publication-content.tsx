@@ -39,18 +39,16 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {HMAccount, HMGroup} from '../json-hm'
-import './static-styles.css'
-
-let blockBorderRadius = '$3'
+import {HMAccount, HMGroup} from './json-hm'
+import './publication-content.css'
 
 export type EntityComponentsRecord = {
-  StaticAccount: React.FC<StaticEmbedProps>
-  StaticGroup: React.FC<StaticEmbedProps>
-  StaticPublication: React.FC<StaticEmbedProps>
+  AccountCard: React.FC<EntityComponentProps>
+  GroupCard: React.FC<EntityComponentProps>
+  PublicationCard: React.FC<EntityComponentProps>
 }
 
-export type StaticPublicationContextValue = {
+export type PublicationContentContextValue = {
   entityComponents: EntityComponentsRecord
   onLinkClick: (dest: string, e: any) => void
   ipfsBlobPrefix: string
@@ -61,28 +59,29 @@ export type StaticPublicationContextValue = {
   onCopyBlock: (blockId: string) => void
 }
 
-export const staticPublicationContext =
-  createContext<StaticPublicationContextValue | null>(null)
+export const publicationContentContext =
+  createContext<PublicationContentContextValue | null>(null)
 
-export type StaticEmbedProps = StaticBlockProps & ReturnType<typeof unpackHmId>
+export type EntityComponentProps = BlockContentProps &
+  ReturnType<typeof unpackHmId>
 
-export function StaticPublicationProvider({
+export function PublicationContentProvider({
   children,
-  ...staticPubContext
-}: PropsWithChildren<StaticPublicationContextValue>) {
+  ...PubContentContext
+}: PropsWithChildren<PublicationContentContextValue>) {
   return (
-    <staticPublicationContext.Provider value={staticPubContext}>
+    <publicationContentContext.Provider value={PubContentContext}>
       {children}
-    </staticPublicationContext.Provider>
+    </publicationContentContext.Provider>
   )
 }
 
-export function useStaticPublicationContext() {
-  let context = useContext(staticPublicationContext)
+export function usePublicationContentContext() {
+  let context = useContext(publicationContentContext)
 
   if (!context) {
     throw new Error(
-      `Please wrap <StaticPublication /> with <StaticPublicationProvider />`,
+      `Please wrap <PublicationContent /> with <PublicationContentProvider />`,
     )
   }
 
@@ -97,28 +96,30 @@ function debugStyles(color: ColorProp = '$color7') {
   return {}
 }
 
-export function StaticPublication({
+export function PublicationContent({
   publication,
 }: {
   publication: Publication | HMPublication
 }) {
   return (
-    <StaticGroup childrenType={'group'}>
-      {publication.document?.children?.length &&
-        publication.document?.children?.map((bn, idx) => (
-          <StaticBlockNode
-            key={bn.block?.id}
-            blockNode={bn}
-            depth={1}
-            childrenType="group"
-            index={idx}
-          />
-        ))}
-    </StaticGroup>
+    <XStack paddingHorizontal="$3" $gtMd={{paddingHorizontal: '$4'}}>
+      <BlockNodeList childrenType={'group'}>
+        {publication.document?.children?.length &&
+          publication.document?.children?.map((bn, idx) => (
+            <BlockNodeContent
+              key={bn.block?.id}
+              blockNode={bn}
+              depth={1}
+              childrenType="group"
+              index={idx}
+            />
+          ))}
+      </BlockNodeList>
+    </XStack>
   )
 }
 
-export function StaticGroup({
+export function BlockNodeList({
   children,
   childrenType = 'group',
   start,
@@ -128,7 +129,7 @@ export function StaticGroup({
   start?: any
 }) {
   return (
-    <YStack className="static-group" {...props}>
+    <YStack className="blocknode-list" {...props} width="100%">
       {children}
     </YStack>
   )
@@ -152,7 +153,8 @@ function BlockNodeMarker({
         ? ({
             position: 'absolute',
             right: '27%',
-            marginTop: 4,
+            marginTop: 3,
+            fontSize: '$1',
           } satisfies SizableTextProps)
         : {},
     [childrenType],
@@ -172,19 +174,21 @@ function BlockNodeMarker({
   return (
     <XStack
       flex={0}
-      width={33}
-      height={33}
+      width={24}
+      height={24}
       alignItems="center"
-      justifyContent="center"
+      justifyContent="flex-start"
+      // borderWidth={1}
+      // borderColor="$color5"
     >
-      <Text {...styles} fontFamily="$body" userSelect="none">
+      <Text {...styles} fontFamily="$body" userSelect="none" opacity={0.7}>
         {marker}
       </Text>
     </XStack>
   )
 }
 
-export function StaticBlockNode({
+export function BlockNodeContent({
   blockNode,
   depth = 1,
   childrenType = 'group',
@@ -204,11 +208,13 @@ export function StaticBlockNode({
   const headingMarginStyles = useHeadingMarginStyles(depth)
   const [isHovering, setIsHovering] = useState(false)
   const {citations} = useBlockCitations(blockNode.block?.id)
-  const {onCitationClick, onCopyBlock} = useStaticPublicationContext()
+
+  console.log(`== ~ citations:`, citations)
+  const {onCitationClick, onCopyBlock} = usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
-        <StaticBlockNode
+        <BlockNodeContent
           key={bn.block!.id}
           depth={depth + 1}
           blockNode={bn}
@@ -234,9 +240,8 @@ export function StaticBlockNode({
 
   return (
     <YStack
-      // overflow="hidden"
       borderRadius="$3"
-      marginLeft="1.5em"
+      // overflow="hidden"
       // marginLeft={!props.embedDepth ? '1.5em' : undefined}
       onHoverIn={() => (props.embedDepth ? undefined : setIsHovering(true))}
       onHoverOut={() => (props.embedDepth ? undefined : setIsHovering(false))}
@@ -247,10 +252,11 @@ export function StaticBlockNode({
       //     ? '$color6'
       //     : 'transparent'
       // }
-      className="static-blocknode"
+      className="blocknode-content"
     >
       <XStack
-        padding={isEmbed ? 0 : '$3'}
+        padding={isEmbed ? 0 : '$2'}
+        // paddingVertical={isEmbed ? 0 : '$3'}
         alignItems="baseline"
         {...headingStyles}
         {...debugStyles('red')}
@@ -261,14 +267,13 @@ export function StaticBlockNode({
           index={props.index}
           start={props.start}
         />
-        <StaticBlock block={blockNode.block!} depth={depth} />
+        <BlockContent block={blockNode.block!} depth={depth} />
         {!props.embedDepth ? (
           <XStack
             paddingHorizontal="$2"
             position="absolute"
-            // backgroundColor={isHovering ? '$background' : 'transparent'}
-            top="$2"
-            right={-50}
+            top="$1"
+            right={-24}
             padding="$2"
             borderRadius="$2"
           >
@@ -280,9 +285,9 @@ export function StaticBlockNode({
                 chromeless
                 onPress={() => onCitationClick?.()}
               >
-                <SizableText color="$blue11" fontWeight="700" size="$1">
+                <Text color="$blue11" fontWeight="700">
                   {citations.length}
-                </SizableText>
+                </Text>
               </Button>
             ) : null}
             <Button
@@ -304,7 +309,7 @@ export function StaticBlockNode({
         ) : null}
       </XStack>
       {bnChildren ? (
-        <StaticGroup
+        <BlockNodeList
           onHoverIn={() =>
             props.embedDepth ? undefined : setIsHovering(false)
           }
@@ -316,7 +321,7 @@ export function StaticBlockNode({
           display="block"
         >
           {bnChildren}
-        </StaticGroup>
+        </BlockNodeList>
       ) : null}
     </YStack>
   )
@@ -330,69 +335,69 @@ export const blockStyles: YStackProps = {
 }
 
 let inlineContentProps: SizableTextProps = {
-  className: 'static-inlinecontent',
+  className: 'content-inline',
   fontFamily: '$editorBody',
-  size: '$4',
+  fontSize: '$4',
   $gtMd: {
-    size: '$5',
+    size: '$4',
   },
   $gtLg: {
-    size: '$6',
+    size: '$5',
   },
 }
 
-export type StaticBlockProps = {
+export type BlockContentProps = {
   block: Block | HMBlock
   depth: number
 }
 
-function StaticBlock(props: StaticBlockProps) {
+function BlockContent(props: BlockContentProps) {
   if (props.block.type == 'paragraph') {
-    return <StaticBlockParagraph {...props} depth={props.depth || 1} />
+    return <BlockContentParagraph {...props} depth={props.depth || 1} />
   }
 
   if (props.block.type == 'heading') {
-    return <StaticBlockHeading {...props} depth={props.depth || 1} />
+    return <BlockContentHeading {...props} depth={props.depth || 1} />
   }
 
   if (props.block.type == 'image') {
-    return <StaticBlockImage {...props} depth={props.depth || 1} />
+    return <BlockContentImage {...props} depth={props.depth || 1} />
   }
 
   if (props.block.type == 'video') {
-    return <StaticBlockVideo {...props} depth={props.depth} />
+    return <BlockContentVideo {...props} depth={props.depth} />
   }
 
   if (props.block.type == 'file') {
-    return <StaticFileBlock block={props.block} />
+    return <BlockContentFile block={props.block} />
   }
 
   if (props.block.type == 'embed') {
-    return <StaticBlockEmbed {...props} depth={props.depth} />
+    return <BlockContentEmbed {...props} depth={props.depth} />
   }
 
-  return <DefaultStaticBlockUnknown {...props} />
+  return <BlockContentUnknown {...props} />
 }
 
-function StaticBlockParagraph({block, depth}: StaticBlockProps) {
+function BlockContentParagraph({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return (
     <YStack {...blockStyles} className="block-static block-paragraph">
-      <SizableText {...inlineContentProps}>
+      <Text {...inlineContentProps}>
         <InlineContentView inline={inline} />
-      </SizableText>
+      </Text>
     </YStack>
   )
 }
 
-function StaticBlockHeading({block, depth}: StaticBlockProps) {
+function BlockContentHeading({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth)
   let tag = `h${depth}`
 
   return (
-    <YStack {...blockStyles} className="block-static block-heading">
+    <YStack {...blockStyles} className="block-content block-heading">
       <Text
         {...inlineContentProps}
         {...headingTextStyles}
@@ -417,82 +422,82 @@ function useHeadingTextStyles(depth: number) {
   return useMemo(() => {
     if (depth == 1) {
       return {
-        ...headingFontValues(30),
-        $gtMd: headingFontValues(36),
-        $gtLg: headingFontValues(42),
+        ...headingFontValues(24),
+        $gtMd: headingFontValues(28),
+        $gtLg: headingFontValues(32),
       } satisfies TextProps
     }
 
     if (depth == 2) {
       return {
-        ...headingFontValues(24),
-        $gtMd: headingFontValues(30),
-        $gtLg: headingFontValues(36),
+        ...headingFontValues(20),
+        $gtMd: headingFontValues(22),
+        $gtLg: headingFontValues(24),
       } satisfies TextProps
     }
 
     if (depth == 3) {
       return {
-        ...headingFontValues(20),
-        $gtMd: headingFontValues(24),
-        $gtLg: headingFontValues(30),
+        ...headingFontValues(16),
+        $gtMd: headingFontValues(18),
+        $gtLg: headingFontValues(20),
       } satisfies TextProps
     }
 
     return {
-      ...headingFontValues(18),
-      $gtMd: headingFontValues(20),
-      $gtLg: headingFontValues(24),
+      ...headingFontValues(16),
+      $gtMd: headingFontValues(18),
+      $gtLg: headingFontValues(20),
     } satisfies TextProps
   }, [depth])
 }
 
 function useHeadingMarginStyles(depth: number) {
   function headingFontValues(value: number) {
-    let realValue = value - 8
+    let realValue = value
     return {
       marginTop: realValue,
-      marginBottom: realValue / 3,
+      // marginBottom: realValue / 3,
     }
   }
 
   return useMemo(() => {
     if (depth == 1) {
       return {
-        ...headingFontValues(30),
-        $gtMd: headingFontValues(36),
-        $gtLg: headingFontValues(42),
+        ...headingFontValues(16),
+        $gtMd: headingFontValues(18),
+        $gtLg: headingFontValues(20),
       } satisfies TextProps
     }
 
     if (depth == 2) {
       return {
-        ...headingFontValues(24),
-        $gtMd: headingFontValues(30),
-        $gtLg: headingFontValues(36),
+        ...headingFontValues(12),
+        $gtMd: headingFontValues(14),
+        $gtLg: headingFontValues(16),
       } satisfies TextProps
     }
 
     if (depth == 3) {
       return {
-        ...headingFontValues(20),
-        $gtMd: headingFontValues(24),
-        $gtLg: headingFontValues(30),
+        ...headingFontValues(8),
+        $gtMd: headingFontValues(10),
+        $gtLg: headingFontValues(12),
       } satisfies TextProps
     }
 
     return {
-      ...headingFontValues(18),
-      $gtMd: headingFontValues(20),
-      $gtLg: headingFontValues(24),
+      ...headingFontValues(8),
+      $gtMd: headingFontValues(10),
+      $gtLg: headingFontValues(12),
     } satisfies TextProps
   }, [depth])
 }
 
-function StaticBlockImage({block, depth}: StaticBlockProps) {
+function BlockContentImage({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
-  const {ipfsBlobPrefix} = useStaticPublicationContext()
+  const {ipfsBlobPrefix} = usePublicationContentContext()
   if (!cid) return null
 
   return (
@@ -504,19 +509,18 @@ function StaticBlockImage({block, depth}: StaticBlockProps) {
     >
       <img alt={block.attributes.alt} src={`${ipfsBlobPrefix}${cid}`} />
       {inline.length ? (
-        <SizableText opacity={0.7} size="$2">
+        <Text opacity={0.7} size="$2">
           <InlineContentView inline={inline} />
-        </SizableText>
+        </Text>
       ) : null}
     </YStack>
   )
 }
 
-function StaticBlockVideo({block, depth}: StaticBlockProps) {
-  console.log(`== ~ StaticBlockVideo ~ block:`, block)
+function BlockContentVideo({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
-  const {ipfsBlobPrefix} = useStaticPublicationContext()
+  const {ipfsBlobPrefix} = usePublicationContentContext()
 
   return (
     <YStack
@@ -564,12 +568,12 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
           />
         )
       ) : (
-        <SizableText>Video block wrong state</SizableText>
+        <Text>Video block wrong state</Text>
       )}
       {inline.length ? (
-        <SizableText opacity={0.7} size="$2">
+        <Text opacity={0.7} size="$2">
           <InlineContentView inline={inline} />
-        </SizableText>
+        </Text>
       ) : null}
     </YStack>
   )
@@ -578,7 +582,7 @@ function StaticBlockVideo({block, depth}: StaticBlockProps) {
 type LinkType = null | 'basic' | 'hypermedia'
 
 function hmTextColor(linkType: LinkType): string {
-  if (linkType === 'basic') return '$blue11'
+  if (linkType === 'basic') return '$color11'
   if (linkType === 'hypermedia') return '$mint11'
   return '$color12'
 }
@@ -592,7 +596,7 @@ function InlineContentView({
   inline: HMInlineContent[]
   linkType?: LinkType
 }) {
-  const {onLinkClick} = useStaticPublicationContext()
+  const {onLinkClick} = usePublicationContentContext()
   return (
     <span>
       {inline.map((content, index) => {
@@ -698,25 +702,21 @@ function InlineContentView({
   )
 }
 
-function stripHMLinkPrefix(link: string) {
-  return link.replace(/^hm:\//, '')
-}
-
-export function StaticBlockEmbed(props: StaticBlockProps) {
-  const EmbedTypes = useStaticPublicationContext().entityComponents
+export function BlockContentEmbed(props: BlockContentProps) {
+  const EmbedTypes = usePublicationContentContext().entityComponents
   if (props.block.type !== 'embed')
-    throw new Error('StaticBlockEmbed requires an embed block type')
+    throw new Error('BlockContentEmbed requires an embed block type')
   const id = unpackHmId(props.block.ref)
   if (id?.type == 'a') {
-    return <EmbedTypes.StaticAccount {...props} {...id} />
+    return <EmbedTypes.AccountCard {...props} {...id} />
   }
   if (id?.type == 'g') {
-    return <EmbedTypes.StaticGroup {...props} {...id} />
+    return <EmbedTypes.GroupCard {...props} {...id} />
   }
   if (id?.type == 'd') {
-    return <EmbedTypes.StaticPublication {...props} {...id} />
+    return <EmbedTypes.PublicationCard {...props} {...id} />
   }
-  return <DefaultStaticBlockUnknown {...props} />
+  return <BlockContentUnknown {...props} />
 }
 
 export function EmbedContentGroup({group}: {group: HMGroup}) {
@@ -726,14 +726,14 @@ export function EmbedContentGroup({group}: {group: HMGroup}) {
         <Book size={36} />
       </XStack>
       <YStack justifyContent="center" flex={1}>
-        <SizableText size="$1" opacity={0.5} flex={0}>
+        <Text size="$1" opacity={0.5} flex={0}>
           Group
-        </SizableText>
+        </Text>
         <YStack gap="$2">
-          <SizableText size="$6" fontWeight="bold">
+          <Text size="$6" fontWeight="bold">
             {group?.title}
-          </SizableText>
-          <SizableText size="$2">{group?.description}</SizableText>
+          </Text>
+          <Text size="$2">{group?.description}</Text>
         </YStack>
       </YStack>
     </XStack>
@@ -741,6 +741,7 @@ export function EmbedContentGroup({group}: {group: HMGroup}) {
 }
 
 export function EmbedContentAccount({account}: {account: HMAccount}) {
+  const {ipfsBlobPrefix} = usePublicationContentContext()
   return (
     <XStack gap="$3" padding="$4" alignItems="flex-start">
       <XStack paddingVertical="$3">
@@ -748,19 +749,18 @@ export function EmbedContentAccount({account}: {account: HMAccount}) {
           id={account.id}
           size={36}
           label={account.profile?.alias}
-          // url={getAvatarUrl(account.profile?.avatar)}
-          url={'f'}
+          url={`${ipfsBlobPrefix}${account.profile?.avatar}`}
         />
       </XStack>
       <YStack justifyContent="center" flex={1}>
-        <SizableText size="$1" opacity={0.5} flex={0}>
+        <Text size="$1" opacity={0.5} flex={0}>
           Account
-        </SizableText>
+        </Text>
         <YStack gap="$2">
-          <SizableText size="$6" fontWeight="bold">
+          <Text size="$6" fontWeight="bold">
             {account?.profile?.alias}
-          </SizableText>
-          <SizableText size="$2">{account.profile?.bio}</SizableText>
+          </Text>
+          <Text size="$2">{account.profile?.bio}</Text>
         </YStack>
       </YStack>
     </XStack>
@@ -776,6 +776,7 @@ export function ErrorBlock({
 }) {
   return (
     <YStack
+      // @ts-ignore
       contentEditable={false}
       userSelect="none"
       backgroundColor="$red5"
@@ -788,7 +789,7 @@ export function ErrorBlock({
     >
       <XStack gap="$2">
         <AlertCircle size={18} color="$red10" />
-        <Text fontFamily={'$body'}>{message}</Text>
+        <Text fontFamily="$body">{message}</Text>
       </XStack>
       {debugData ? (
         <pre>
@@ -799,9 +800,9 @@ export function ErrorBlock({
   )
 }
 
-export function DefaultStaticBlockUnknown(props: StaticBlockProps) {
+export function BlockContentUnknown(props: BlockContentProps) {
   let message = 'Unrecognized Block'
-  if (props.block.type === 'embed') {
+  if (props.block.type == 'embed') {
     message = `Unrecognized Embed: ${props.block.ref}`
   }
   return <ErrorBlock message={message} debugData={props.block} />
@@ -830,19 +831,15 @@ export function getBlockNodeById(
   return res || null
 }
 
-export function StaticFileBlock({block}: {block: HMBlockFile}) {
-  const {saveCidAsFile} = useStaticPublicationContext()
+export function BlockContentFile({block}: {block: HMBlockFile}) {
+  const {saveCidAsFile} = usePublicationContentContext()
   return (
     <YStack
       backgroundColor="$color3"
       borderColor="$color4"
       borderWidth={1}
       borderRadius={blockBorderRadius as any}
-      // marginRight={blockHorizontalPadding}
       overflow="hidden"
-      // hoverStyle={{
-      //   backgroundColor: '$color4',
-      // }}
     >
       <XStack
         borderWidth={0}
@@ -853,7 +850,7 @@ export function StaticFileBlock({block}: {block: HMBlockFile}) {
       >
         <File size={18} />
 
-        <SizableText
+        <Text
           size="$5"
           maxWidth="17em"
           overflow="hidden"
@@ -862,16 +859,11 @@ export function StaticFileBlock({block}: {block: HMBlockFile}) {
           userSelect="text"
         >
           {block.attributes.name}
-        </SizableText>
+        </Text>
         {block.attributes.size && (
-          <SizableText
-            paddingTop="$1"
-            color="$color10"
-            size="$2"
-            minWidth="4.5em"
-          >
+          <Text paddingTop="$1" color="$color10" size="$2" minWidth="4.5em">
             {formatBytes(parseInt(block.attributes.size))}
-          </SizableText>
+          </Text>
         )}
         <Tooltip content={`Download ${block.attributes.name}`}>
           <Button
@@ -894,7 +886,7 @@ function getSourceType(name?: string) {
 }
 
 export function useBlockCitations(blockId?: string) {
-  const context = useStaticPublicationContext()
+  const context = usePublicationContentContext()
   let citations = useMemo(() => {
     if (!context.citations?.length) return []
     return context.citations.filter((link) => {

@@ -2,10 +2,10 @@ import {
   EmbedContentAccount,
   EmbedContentGroup,
   ErrorBlock,
-  StaticBlockNode,
+  BlockNodeContent,
   StaticEmbedProps,
-  StaticGroup,
-  StaticPublicationProvider,
+  BlockNodeList,
+  PublicationContentProvider,
   UnpackedDocId,
   UnpackedHypermediaId,
   blockStyles,
@@ -22,7 +22,7 @@ import {PropsWithChildren, ReactNode, useMemo} from 'react'
 import {trpc} from './trpc'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 
-export function SiteStaticPublicationProvider({
+export function SitePublicationContentProvider({
   children,
   unpackedId,
 }: {
@@ -31,11 +31,11 @@ export function SiteStaticPublicationProvider({
 }) {
   const router = useRouter()
   return (
-    <StaticPublicationProvider
+    <PublicationContentProvider
       entityComponents={{
-        StaticAccount: StaticBlockAccount,
-        StaticGroup: StaticBlockGroup,
-        StaticPublication: StaticBlockPublication,
+        AccountCard: EmbedAccount,
+        GroupCard: EmbedGroup,
+        PublicationCard: EmbedPublication,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -77,7 +77,7 @@ export function SiteStaticPublicationProvider({
       ipfsBlobPrefix="/ipfs/"
     >
       {children}
-    </StaticPublicationProvider>
+    </PublicationContentProvider>
   )
 }
 
@@ -105,7 +105,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   )
 }
 
-export function StaticBlockPublication(props: StaticEmbedProps) {
+export function EmbedPublication(props: StaticEmbedProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = trpc.publication.get.useQuery(
     {
@@ -142,9 +142,9 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       {embedBlocks?.length ? (
-        <StaticGroup childrenType="group" marginLeft="-1.5em">
+        <BlockNodeList childrenType="group" marginLeft="-1.5em">
           {embedBlocks.map((bn, idx) => (
-            <StaticBlockNode
+            <BlockNodeContent
               key={bn.block?.id}
               depth={1}
               blockNode={bn}
@@ -153,7 +153,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
               embedDepth={1}
             />
           ))}
-        </StaticGroup>
+        </BlockNodeList>
       ) : (
         <ErrorBlock message="Embedded content was not found" />
       )}
@@ -161,7 +161,7 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
   )
 }
 
-export function StaticBlockGroup(props: StaticEmbedProps) {
+export function EmbedGroup(props: StaticEmbedProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = trpc.group.get.useQuery({groupId, version: ''})
 
@@ -177,7 +177,7 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
   )
 }
 
-export function StaticBlockAccount(props: StaticEmbedProps) {
+export function EmbedAccount(props: StaticEmbedProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = trpc.account.get.useQuery({accountId})
   const account = accountQuery.data?.account

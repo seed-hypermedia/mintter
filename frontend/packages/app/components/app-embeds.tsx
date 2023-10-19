@@ -1,14 +1,14 @@
 import {
-  DefaultStaticBlockUnknown,
+  BlockContentUnknown,
   EmbedContentAccount,
   EmbedContentGroup,
-  StaticBlockNode,
-  StaticEmbedProps,
-  StaticGroup,
+  BlockNodeContent,
+  BlockContentProps,
+  BlockNodeList,
   blockStyles,
   createHmId,
   getBlockNodeById,
-  useStaticPublicationContext,
+  usePublicationContentContext,
 } from '@mintter/shared'
 import {hmGroup} from '@mintter/shared/src/to-json-hm'
 import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
@@ -23,7 +23,7 @@ import {unpackHmIdWithAppRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
-  const {disableEmbedClick = false} = useStaticPublicationContext()
+  const {disableEmbedClick = false} = usePublicationContentContext()
   let spawn = useNavigate('spawn')
   return (
     <YStack
@@ -56,7 +56,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   )
 }
 
-export function StaticBlockPublication(props: StaticEmbedProps) {
+export function EmbedPublication(props: BlockContentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = usePublication({
     id: docId,
@@ -88,9 +88,9 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       {embedData.data.embedBlocks?.length ? (
-        <StaticGroup childrenType="group" marginLeft="-1.5em">
+        <BlockNodeList childrenType="group" marginLeft="-1.5em">
           {embedData.data.embedBlocks.map((bn, idx) => (
-            <StaticBlockNode
+            <BlockNodeContent
               key={bn.block?.id}
               depth={1}
               blockNode={bn}
@@ -99,15 +99,15 @@ export function StaticBlockPublication(props: StaticEmbedProps) {
               embedDepth={1}
             />
           ))}
-        </StaticGroup>
+        </BlockNodeList>
       ) : (
-        <DefaultStaticBlockUnknown {...props} />
+        <BlockContentUnknown {...props} />
       )}
     </EmbedWrapper>
   )
 }
 
-export function StaticBlockGroup(props: StaticEmbedProps) {
+export function EmbedGroup(props: BlockContentProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
 
@@ -119,7 +119,7 @@ export function StaticBlockGroup(props: StaticEmbedProps) {
   ) : null
 }
 
-export function StaticBlockAccount(props: StaticEmbedProps) {
+export function EmbedAccount(props: BlockContentProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = useAccount(accountId)
 
