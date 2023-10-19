@@ -1,5 +1,5 @@
 import {SizableText, XStack, YStack} from '@mintter/ui'
-import {NextLink} from 'next-link'
+import {NextLink} from 'src/next-link'
 
 export default function Footer() {
   return (

@@ -21,9 +21,9 @@ import {
   YStack,
 } from '@mintter/ui'
 import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
-import {AccountRow} from 'components/account-row'
+import {AccountRow} from 'src/account-row'
 import {format} from 'date-fns'
-import {NextLink} from 'next-link'
+import {NextLink} from 'src/next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {trpc} from './trpc'

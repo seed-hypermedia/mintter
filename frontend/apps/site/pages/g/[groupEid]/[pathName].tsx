@@ -3,11 +3,11 @@ import {Heading, Spinner} from '@mintter/ui'
 import {GetServerSideProps} from 'next'
 import {useRouter} from 'next/router'
 import {EveryPageProps} from 'pages/_app'
-import PublicationPage from 'publication-page'
+import PublicationPage from 'src/publication-page'
 import {prefetchGroup, prefetchGroupContent} from 'server/group'
 import {useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import {trpc} from 'trpc'
+import {trpc} from 'src/trpc'
 
 export default function GroupPublicationPage({}) {
   const versionQuery = useRouteQuery('v') || ''

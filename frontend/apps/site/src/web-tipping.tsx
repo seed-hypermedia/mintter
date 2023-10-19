@@ -15,7 +15,7 @@ import {
   YStack,
 } from '@mintter/ui'
 import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
-import {AccountRow} from 'components/account-row'
+import {AccountRow} from 'src/account-row'
 import Link from 'next/link'
 import React, {
   PropsWithChildren,

@@ -1,4 +1,4 @@
-import AccountPage from 'account-page'
+import AccountPage from 'src/account-page'
 import {GetServerSideProps, GetServerSidePropsContext} from 'next'
 import {impatiently} from 'server/impatiently'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'

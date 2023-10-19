@@ -1,8 +1,8 @@
 import {abbreviateCid} from '@mintter/shared'
 import {Avatar, SizableText, UIAvatar, XStack} from '@mintter/ui'
 import Link from 'next/link'
-import {cidURL} from '../ipfs'
-import {trpc} from '../trpc'
+import {cidURL} from './ipfs'
+import {trpc} from './trpc'
 
 export function AccountAvatarLink({account}: {account?: string}) {
   const acct = trpc.account.get.useQuery({

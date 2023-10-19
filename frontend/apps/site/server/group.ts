@@ -14,6 +14,7 @@ export async function prefetchGroup(
   groupId: string,
   groupVersion: string,
 ) {
+  if (!groupId) return null
   const groupRecord = await helpers.group.get.fetch({
     groupId,
     version: groupVersion,

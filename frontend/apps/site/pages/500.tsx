@@ -1,5 +1,5 @@
 import {PageSection, SizableText, YStack} from '@mintter/ui'
-import {SiteHead} from '../site-head'
+import {SiteHead} from '../src/site-head'
 
 export default function ServerErrorPage() {
   return (

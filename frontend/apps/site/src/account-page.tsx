@@ -9,13 +9,13 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {cidURL} from 'ipfs'
+import {cidURL} from 'src/ipfs'
 import Head from 'next/head'
-import {SiteHead} from 'site-head'
+import {SiteHead} from 'src/site-head'
 import Footer from './footer'
 import {useRouter} from 'next/router'
-import {trpc} from 'trpc'
-import {OpenInAppLink} from 'components/metadata'
+import {trpc} from 'src/trpc'
+import {OpenInAppLink} from 'src/metadata'
 import {HMAccount} from '@mintter/shared/src/json-hm'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
@@ -141,7 +141,6 @@ function AccountNotFound({accountId}: {accountId?: string}) {
 }
 
 export function AccountPlaceholder() {
-  console.log('RENDER PLACEHOLDER')
   return (
     <YStack gap="$6">
       <YStack gap="$3" flex={1} alignItems="center">

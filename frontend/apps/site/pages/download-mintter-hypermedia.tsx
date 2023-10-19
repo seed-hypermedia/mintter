@@ -1,5 +1,5 @@
 import {Button, Heading, MainWrapper, PageSection, XStack} from '@mintter/ui'
-import {SiteHead} from 'site-head'
+import {SiteHead} from 'src/site-head'
 import {relativeFormattedDate} from '@mintter/shared'
 
 function DownloadButton({

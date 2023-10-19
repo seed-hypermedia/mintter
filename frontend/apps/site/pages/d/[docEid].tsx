@@ -4,7 +4,7 @@ import {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from 'next'
-import PublicationPage from 'publication-page'
+import PublicationPage from 'src/publication-page'
 import {impatiently} from 'server/impatiently'
 import {useRequiredRouteQuery, useRouteQuery} from 'server/router-queries'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'

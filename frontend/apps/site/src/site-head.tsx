@@ -1,7 +1,7 @@
 import {PageSection, XStack, SizableText} from '@mintter/ui'
 import Head from 'next/head'
 import {NextLink} from './next-link'
-import {trpc} from 'trpc'
+import {trpc} from 'src/trpc'
 
 export function SiteHead({pageTitle}: {pageTitle?: string}) {
   const siteInfo = trpc.siteInfo.get.useQuery()

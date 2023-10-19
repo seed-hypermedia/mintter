@@ -8,7 +8,7 @@ import {
 } from '@mintter/shared/src/to-json-hm'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
-import {queryClient} from 'client'
+import {queryClient} from 'src/client'
 import {Timestamp} from '@bufbuild/protobuf'
 import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 
@@ -354,12 +354,10 @@ const siteInfoRouter = router({
   get: procedure.query(async () => {
     const siteInfo = await queryClient.website.getSiteInfo({})
     const groupId = unpackHmId(siteInfo.groupId || '')
-
     const info = await queryClient.daemon.getInfo({})
     const peerInfo = await queryClient.networking.getPeerInfo({
       deviceId: info.deviceId,
     })
-
     return {
       groupEid: groupId?.eid || '',
       groupId: siteInfo.groupId,

@@ -1,7 +1,7 @@
 import {SiteDiscoveryConfig} from '@mintter/shared'
 import {NextApiRequest, NextApiResponse} from 'next'
 import {setAllowAnyHostGetCORS} from 'server/cors'
-import {daemonClient, networkingClient} from '../../client'
+import {daemonClient, networkingClient} from '../../src/client'
 
 export default async function handler(
   req: NextApiRequest,

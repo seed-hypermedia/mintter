@@ -1,5 +1,5 @@
 import {Button, PageSection, SizableText, YStack} from '@mintter/ui'
-import {SiteHead} from '../../site-head'
+import {SiteHead} from '../../src/site-head'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
 

@@ -1,6 +1,6 @@
 import {GetServerSideProps, GetServerSidePropsContext} from 'next'
 import Head from 'next/head'
-import {SiteHead} from '../../../site-head'
+import {SiteHead} from '../../../src/site-head'
 
 import {Timestamp} from '@bufbuild/protobuf'
 import {
@@ -25,20 +25,23 @@ import {
   View,
   YStack,
 } from '@mintter/ui'
-import {AccountAvatarLink, AccountRow} from 'components/account-row'
+import {AccountAvatarLink, AccountRow} from 'src/account-row'
 import {format} from 'date-fns'
 import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
-import {PublicationContent, useGroupContentUrl} from '../../../publication-page'
+import {
+  PublicationContent,
+  useGroupContentUrl,
+} from '../../../src/publication-page'
 import {prefetchGroup, getGroupView} from '../../../server/group'
 import {HMGroup, HMPublication} from '@mintter/shared/src/json-hm'
-import {trpc} from '../../../trpc'
+import {trpc} from '../../../src/trpc'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {useRouter} from 'next/router'
-import Footer from 'footer'
-import {OpenInAppLink} from 'components/metadata'
-import {OGImageMeta} from 'head'
-import {SiteStaticPublicationProvider} from 'components/site-static-embeds'
+import Footer from 'src/footer'
+import {OpenInAppLink} from 'src/metadata'
+import {OGImageMeta} from 'src/head'
+import {SiteStaticPublicationProvider} from 'src/site-static-embeds'
 
 export default function GroupPage({}: GroupPageProps) {
   const router = useRouter()

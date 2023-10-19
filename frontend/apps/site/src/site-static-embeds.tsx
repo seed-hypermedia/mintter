@@ -16,10 +16,10 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
-import {NextLink} from 'next-link'
+import {NextLink} from 'src/next-link'
 import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
-import {trpc} from '../trpc'
+import {trpc} from './trpc'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 
 export function SiteStaticPublicationProvider({
