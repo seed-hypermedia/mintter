@@ -4,9 +4,11 @@ import {SiteHead} from './site-head'
 export function ErrorPage({
   title,
   description,
+  children,
 }: {
   title: string
   description?: string
+  children?: React.ReactNode
 }) {
   return (
     <YStack flex={1}>
@@ -30,6 +32,7 @@ export function ErrorPage({
             <SizableText color="$color9" textAlign="center">
               {description}
             </SizableText>
+            {children}
           </YStack>
         </PageSection.Content>
         <PageSection.Side />

@@ -42,6 +42,7 @@ import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {ErrorPage} from './error-page'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -103,6 +104,16 @@ export default function PublicationPage({
     pubId && pubVersion
       ? `/api/content-image/${pubId.type}/${pubId.eid}/${pubVersion}/media.png`
       : undefined
+  if (!pub && !publication.isLoading) {
+    return (
+      <ErrorPage
+        title="Document not found"
+        description={`Document Id: ${documentId}`}
+      >
+        <SizableText color="$color9">version: {version}</SizableText>
+      </ErrorPage>
+    )
+  }
   return (
     <>
       <Head>
@@ -128,25 +139,7 @@ export default function PublicationPage({
             </SiteStaticPublicationProvider>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
-          ) : (
-            <YStack
-              padding="$4"
-              borderRadius="$5"
-              elevation="$1"
-              borderColor="$color5"
-              borderWidth={1}
-              backgroundColor="$color3"
-              gap="$3"
-            >
-              <SizableText size="$5" fontWeight="800" textAlign="center">
-                Document not found.
-              </SizableText>
-              <SizableText color="$color9">
-                Document Id: {documentId}
-              </SizableText>
-              <SizableText color="$color9">version: {version}</SizableText>
-            </YStack>
-          )}
+          ) : null}
         </PageSection.Content>
         <PageSection.Side paddingRight="$4">
           <YStack className="publication-sidenav-sticky">
