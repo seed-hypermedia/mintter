@@ -44,7 +44,7 @@ NESTED BLOCKS
 */
 
 .blockGroup .blockGroup {
-  margin-left: 1.5em;
+  margin-left: 1em;
 }
 
 .blockGroup .blockGroup > .blockOuter {
@@ -68,12 +68,12 @@ NESTED BLOCKS
 }
 
 .blockGroup[data-list-type='ul'] {
-  margin-left: 1.5em;
+  margin-left: 1em;
   list-style-type: disc;
 }
 
 .blockGroup[data-list-type='ol'] {
-  margin-left: 1.5em;
+  margin-left: 1em;
   list-style-type: decimal;
 }
 
@@ -166,13 +166,13 @@ NESTED BLOCKS
 
 /* HEADINGS*/
 [data-level='1'] {
-  --level: 36px;
+  --level: 32px;
 }
 [data-level='2'] {
-  --level: 30px;
+  --level: 24px;
 }
 [data-level='3'] {
-  --level: 24px;
+  --level: 22px;
 }
 
 [data-level='4'] {
@@ -180,13 +180,13 @@ NESTED BLOCKS
 }
 
 [data-prev-level='1'] {
-  --prev-level: 36px;
+  --prev-level: 32px;
 }
 [data-prev-level='2'] {
-  --prev-level: 30px;
+  --prev-level: 24px;
 }
 [data-prev-level='3'] {
-  --prev-level: 24px;
+  --prev-level: 22px;
 }
 
 [data-prev-level='4'] {
@@ -203,9 +203,8 @@ NESTED BLOCKS
   .blockContent[data-content-type='heading'] {
   font-size: var(--level);
   line-height: 1.2;
-  max-width: 24ch;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  max-width: 44ch;
+  margin-top: 0.6em;
   font-weight: bold;
 }
 

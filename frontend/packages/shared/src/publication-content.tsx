@@ -196,10 +196,6 @@ export function BlockNodeContent({
 }: {
   blockNode: BlockNode | HMBlockNode
   index: number
-  copyBlock?: {
-    docId: string
-    version: string
-  }
   depth?: number
   start?: string | number
   childrenType?: HMBlockChildrenType | string
@@ -255,7 +251,8 @@ export function BlockNodeContent({
       className="blocknode-content"
     >
       <XStack
-        padding={isEmbed ? 0 : '$2'}
+        // padding={isEmbed ? 0 : '$2'}
+        padding="$2"
         // paddingVertical={isEmbed ? 0 : '$3'}
         alignItems="baseline"
         {...headingStyles}
@@ -273,7 +270,7 @@ export function BlockNodeContent({
             paddingHorizontal="$2"
             position="absolute"
             top="$1"
-            right={-24}
+            right={-32}
             padding="$2"
             borderRadius="$2"
           >
@@ -438,9 +435,9 @@ function useHeadingTextStyles(depth: number) {
 
     if (depth == 3) {
       return {
-        ...headingFontValues(16),
-        $gtMd: headingFontValues(18),
-        $gtLg: headingFontValues(20),
+        ...headingFontValues(18),
+        $gtMd: headingFontValues(20),
+        $gtLg: headingFontValues(22),
       } satisfies TextProps
     }
 

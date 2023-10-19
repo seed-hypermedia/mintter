@@ -1,5 +1,5 @@
 .editor {
-  max-width: 840px;
+  max-width: calc(80ch + 108px);
   margin: 60px auto;
   width: 90%;
 }
@@ -18,9 +18,9 @@
 }
 
 /* manually synced with tamagui colors: blue11 and blueDark11 */
-.ProseMirror .link {
-  color: var(--blue11);
-}
+/* .ProseMirror .link { */
+/* color: var(--blue11); */
+/* } */
 /* .mintter-app-dark .ProseMirror .link {
   color: hsl(210, 100%, 66.1%);
 } */

@@ -88,7 +88,7 @@ export function EmbedPublication(props: BlockContentProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       {embedData.data.embedBlocks?.length ? (
-        <BlockNodeList childrenType="group" marginLeft="-1.5em">
+        <BlockNodeList childrenType="group">
           {embedData.data.embedBlocks.map((bn, idx) => (
             <BlockNodeContent
               key={bn.block?.id}
