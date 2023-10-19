@@ -3,7 +3,7 @@ name: Validate + Test Desktop code
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/validate-desktop.yml"
       - "frontend/apps/desktop/**"

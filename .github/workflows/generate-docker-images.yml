@@ -3,7 +3,7 @@ name: Update Docker Images
 on:
   workflow_dispatch:
   schedule:
-    - cron: '50 6 * * 0-6'
+    - cron: "50 6 * * 0-6"
 
   push:
     tags:
@@ -40,7 +40,7 @@ jobs:
         with:
           push: true
           file: backend/cmd/mintter-site/Dockerfile
-          tags: mintter/mintter-site:master
+          tags: mintter/mintter-site:main
       - name: Build and push stable mintter-site
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -48,13 +48,13 @@ jobs:
           push: true
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
-        
+
       - name: Build and push edge mintterd
         uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintterd/Dockerfile
-          tags: mintter/mintterd:master
+          tags: mintter/mintterd:main
       - name: Build and push stable mintterd
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -68,7 +68,7 @@ jobs:
         with:
           push: true
           file: frontend/apps/site/Dockerfile
-          tags: mintter/sitegw:master
+          tags: mintter/sitegw:main
       - name: Build and push stable nextjs
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -82,7 +82,7 @@ jobs:
         with:
           push: true
           file: backend/cmd/monitord/Dockerfile
-          tags: mintter/monitord:master
+          tags: mintter/monitord:main
       - name: Build and push stable monitord
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -96,7 +96,7 @@ jobs:
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
-          tags: mintter/relayd:master
+          tags: mintter/relayd:main
       - name: Build and push stable relay
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4

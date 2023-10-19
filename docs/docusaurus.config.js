@@ -70,7 +70,7 @@ const config = {
             label: 'HyperDocs',
           },
           {
-            href: 'https://github.com/mintterteam/mintter/tree/master/docs/docs',
+            href: 'https://github.com/mintterteam/mintter/tree/main/docs/docs',
             label: 'GitHub',
             position: 'right',
           },

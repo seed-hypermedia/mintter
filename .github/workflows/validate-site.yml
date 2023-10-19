@@ -3,7 +3,7 @@ name: Validate + Test Site code
 on:
   push:
     branches:
-      - master
+      - main
       - electron-ci
     paths:
       - ".github/workflows/validate-site.yml"

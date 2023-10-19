@@ -42,7 +42,7 @@ type migration struct {
 }
 
 // In order for a migration to actually run, it has to have a version higher than the version of the data directory.
-// Care has to be taken when migrations are being added in master, and feature branches in parallel.
+// Care has to be taken when migrations are being added in main, and feature branches in parallel.
 //
 // It's important to backup your data directory when trying out the code from a feature branch that has a migration.
 // Otherwise when you switch back to the main branch the program will complain about an unknown version of the data directory.

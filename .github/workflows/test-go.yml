@@ -3,7 +3,7 @@ name: Test Go
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - ".github/workflows/test-go.yml"
       - "go.mod"
