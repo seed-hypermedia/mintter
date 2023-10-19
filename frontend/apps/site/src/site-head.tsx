@@ -9,10 +9,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
   const siteGroup = trpc.group.get.useQuery({groupId, version: ''})
   const siteTitle = siteGroup.data?.group
     ? siteGroup.data.group.title
-    : 'Hypermedia Site'
-  const siteSubheading = siteGroup.data?.group
-    ? siteGroup.data.group.description
-    : ''
+    : 'Hypermedia Site (coming soon)'
   return (
     <PageSection.Root
       paddingTop="$4"

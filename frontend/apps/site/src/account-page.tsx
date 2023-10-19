@@ -19,9 +19,6 @@ import {OpenInAppLink} from 'src/metadata'
 import {HMAccount} from '@mintter/shared/src/json-hm'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
-  if (!account || isEmptyObject(account?.profile)) {
-    return <AccountNotFound account={account} />
-  }
 
   // return (
   //   <XStack alignItems="center" gap="$3">
