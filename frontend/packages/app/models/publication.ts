@@ -35,11 +35,12 @@ export function usePublicationInContext({
       queryDocumentId = undefined
     }
     const groupItem = contentURL ? unpackDocId(contentURL) : null
-    if (groupItem?.docId !== documentId)
-      throw new Error(
-        `Group ${groupContextId} content for "${groupContext.pathName}" not match route document id "${documentId}", instead has "${groupItem?.docId}"`,
-      )
-    queryVersionId = groupItem?.version || undefined
+    if (groupItem?.docId === documentId) {
+      queryVersionId = groupItem?.version || undefined
+    } else {
+      // the document is not actually in the group. so we should not query for anything.
+      // this probably happens as a race condition sometimes while publishing
+    }
   }
   // this avoids querying usePublication if we are in a group context and the group content is not yet loaded, or if it has an error. if the route specifies the version directly we are also ready to query
   const pubQueryReady = !!queryVersionId || pubContext?.key !== 'group'
