@@ -644,7 +644,7 @@ export function NavMenu() {
     <XStack paddingRight="$2" position="relative" zIndex={1000}>
       <Popover {...popoverState} placement="bottom-start">
         <Popover.Trigger asChild>
-          <Button size="$2" icon={Menu} />
+          <Button size="$2" icon={Menu} chromeless />
         </Popover.Trigger>
 
         <NavMenuContent

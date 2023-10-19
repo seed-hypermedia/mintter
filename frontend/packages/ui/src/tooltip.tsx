@@ -6,7 +6,7 @@ export function Tooltip({
   children,
   content,
   placement,
-  delay = 250,
+  delay = 100,
 }: {
   children: React.ReactNode
   content: string | React.ReactElement

@@ -20,7 +20,6 @@ import {
 
 export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
-  const {send} = useIPC()
 
   useEffect(() => {
     const focus = () => setFocus(true)
