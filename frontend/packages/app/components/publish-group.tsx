@@ -108,7 +108,11 @@ function PublishGroupDialog({
   }
   return (
     <>
-      <DialogTitle>Publish Group to Site</DialogTitle>
+      <DialogTitle>
+        <SizableText size="$5" fontWeight="bold">
+          Publish Group to Site
+        </SizableText>
+      </DialogTitle>
       {guidance}
       <FormWithError
         mutator={publishToSite}

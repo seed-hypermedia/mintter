@@ -21,7 +21,6 @@ import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
 import {trpc} from '../trpc'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
-import {create} from 'domain'
 
 export function SiteStaticPublicationProvider({
   children,
@@ -71,7 +70,7 @@ export function SiteStaticPublicationProvider({
           )
         }
       }}
-      ipfsBlobPrefix="/"
+      ipfsBlobPrefix="/ipfs"
     >
       {children}
     </StaticPublicationProvider>
