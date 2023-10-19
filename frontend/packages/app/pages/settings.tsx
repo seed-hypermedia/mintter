@@ -67,7 +67,7 @@ export default function Settings() {
         </Tabs.Tab>
         <Tabs.Tab value="settings" data-testid="tab-settings" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
-            Settings
+            App Info
           </SizableText>
         </Tabs.Tab>
         <Tabs.Tab value="wallets" data-testid="tab-wallets" borderRadius={0}>
@@ -78,6 +78,11 @@ export default function Settings() {
         <Tabs.Tab value="experimental" data-testid="tab-experimental">
           <SizableText flex={1} textAlign="left">
             Experiments
+          </SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="developer" data-testid="tab-developer">
+          <SizableText flex={1} textAlign="left">
+            Developers
           </SizableText>
 
           <SizableText
@@ -109,8 +114,15 @@ export default function Settings() {
       <TabsContent value="experimental">
         <ExperimentsSettings />
       </TabsContent>
+      <TabsContent value="developer">
+        <DeveloperSettings />
+      </TabsContent>
     </Tabs>
   )
+}
+
+export function DeveloperSettings() {
+  return null
 }
 
 export function ProfileForm({
