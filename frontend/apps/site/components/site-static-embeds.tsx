@@ -85,7 +85,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   return (
     <NextLink
       href={stripHMLinkPrefix(props.hmRef)}
-      style={{textDecoration: 'none'}}
+      style={{textDecoration: 'none', display: 'block', width: '100%'}}
     >
       <YStack
         {...blockStyles}
