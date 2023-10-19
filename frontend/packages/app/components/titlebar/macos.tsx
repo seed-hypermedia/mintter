@@ -5,11 +5,11 @@ import {Title} from './title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper className="window-drag" />
+    return <TitlebarWrapper style={{flex: 'none'}} className="window-drag" />
   }
 
   return (
-    <TitlebarWrapper className="window-drag">
+    <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
       <XStack
         paddingHorizontal="$2"
         justifyContent="space-between"

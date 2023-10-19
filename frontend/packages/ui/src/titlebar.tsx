@@ -14,14 +14,15 @@ export const TitlebarWrapper = styled(YStack, {
   alignItems: 'stretch',
   justifyContent: 'center',
   borderStyle: 'solid',
-  flex: 0,
-  flexGrow: 0,
-  flexShrink: 0,
+  flex: 'none',
 })
 
 export const TitlebarRow = styled(XStack, {
   name: 'TitlebarRow',
   paddingHorizontal: '$2',
+  flex: 'none',
+  flexShrink: 0,
+  flexGrow: 0,
 })
 
 export const TitlebarSection = styled(XStack, {

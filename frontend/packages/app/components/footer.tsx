@@ -69,7 +69,7 @@ export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
 
   return (
-    <FooterWrapper>
+    <FooterWrapper style={{flex: 'none'}}>
       {!isDaemonReady ? (
         <XStack alignItems="center" gap="$2" paddingHorizontal="$3">
           <Clock size={10} />

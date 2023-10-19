@@ -64,7 +64,6 @@ import {MenuItem} from '../dropdown'
 import {useAppDialog} from '../dialog'
 import {CloneGroupDialog} from '../clone-group'
 import {useEntityTimeline} from '../../models/changes'
-import {useOpenUrl} from '../../open-url'
 import {useAppContext} from '../../app-context'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 

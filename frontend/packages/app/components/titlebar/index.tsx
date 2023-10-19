@@ -15,7 +15,7 @@ export function TitleBar(props: TitleBarProps) {
   const {platform} = useAppContext()
   let Component = useMemo(() => getComponent(platform), [platform])
   return (
-    <Suspense fallback={<TitlebarWrapper />}>
+    <Suspense fallback={<TitlebarWrapper style={{flex: 'none'}} />}>
       <Component {...props} />
     </Suspense>
   )

@@ -39,11 +39,8 @@ export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <TitlebarWrapper className="window-drag">
+      <TitlebarWrapper style={{flex: 'none'}} className="window-drag">
         <TitlebarRow>
-          <TitlebarSection>
-            <MintterIcon />
-          </TitlebarSection>
           <TitlebarSection
             flex={1}
             alignItems="center"
@@ -59,24 +56,10 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <TitlebarWrapper className="window-drag">
+    <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
       <TitlebarRow minHeight={28} backgroundColor="$color3">
         <TitlebarSection>
-          <MintterIcon size="$1" />
           <SystemMenu />
-        </TitlebarSection>
-        <TitlebarSection
-          position="absolute"
-          alignItems="center"
-          justifyContent="center"
-          zIndex="$0"
-          width="100%"
-          pointerEvents="none"
-          height="100%"
-          ai="center"
-          jc="center"
-        >
-          <Title size="$2" />
         </TitlebarSection>
         <XStack flex={1} />
         <TitlebarSection space>
@@ -106,6 +89,19 @@ export default function TitleBarWindows(props: TitleBarProps) {
             </XStack>
           </XStack>
         </XStack>
+        <TitlebarSection
+          position="absolute"
+          alignItems="center"
+          justifyContent="center"
+          zIndex="$0"
+          width="100%"
+          pointerEvents="none"
+          height="100%"
+          ai="center"
+          jc="center"
+        >
+          <Title />
+        </TitlebarSection>
         <XStack flex={1} />
         <XStack
           className="no-window-drag"
@@ -114,7 +110,6 @@ export default function TitleBarWindows(props: TitleBarProps) {
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
-          backgroundColor="$color1"
         >
           <PageActionButtons {...props} />
         </XStack>
