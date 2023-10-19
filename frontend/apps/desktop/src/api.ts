@@ -621,6 +621,7 @@ export const router = t.router({
       const uploadedHTML = await uploadFile(new Blob([htmlValue]))
       await writeFile('/tmp/test.png', png)
       const uploadedPNG = await uploadFile(new Blob([htmlValue]))
+      webView.close()
       return {uploadedPNG, uploadedPDF, uploadedHTML, htmlValue}
     }),
 
