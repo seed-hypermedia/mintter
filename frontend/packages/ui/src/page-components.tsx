@@ -1,6 +1,15 @@
 // @ts-nocheck
-import {Main, SizableText, Stack, XStack, YStack, styled} from 'tamagui'
+import {
+  Main,
+  SizableText,
+  Stack,
+  XStack,
+  XStackProps,
+  YStack,
+  styled,
+} from 'tamagui'
 import {Container} from './container'
+import {PropsWithChildren} from 'react'
 
 export function MainContainer({
   children,
@@ -88,8 +97,7 @@ const PageSectionContent = styled(YStack, {
     },
   },
   alignSelf: 'stretch',
-  paddingRight: '$4',
-  paddingBottom: '$4',
+
   width: '100%',
   flex: 1,
   maxWidth: 720,
@@ -135,9 +143,9 @@ export const SideSectionTitle = styled(SizableText, {
 
 const Root = PageSectionRoot
 
-function Content({children}) {
+function Content({children, ...props}: PropsWithChildren<XStackProps>) {
   return (
-    <XStack f={1} jc="center">
+    <XStack f={1} jc="center" overflow="hidden" {...props}>
       <PageSectionContent>{children}</PageSectionContent>
     </XStack>
   )

@@ -270,9 +270,15 @@ export function BlockNodeContent({
             paddingHorizontal="$2"
             position="absolute"
             top="$1"
-            right={-32}
+            right={0}
             padding="$2"
             borderRadius="$2"
+            $gtMd={{
+              right: -24,
+            }}
+            $gtLg={{
+              right: -32,
+            }}
           >
             {citations?.length ? (
               <Button
@@ -307,6 +313,7 @@ export function BlockNodeContent({
       </XStack>
       {bnChildren ? (
         <BlockNodeList
+          paddingLeft="$4"
           onHoverIn={() =>
             props.embedDepth ? undefined : setIsHovering(false)
           }
@@ -677,14 +684,10 @@ function InlineContentView({
           return (
             <a
               href={href}
+              className={isHmLink ? 'hm-link' : 'link'}
               key={index}
               target={isHmLink ? undefined : '_blank'}
               onClick={(e) => onLinkClick(content.href, e)}
-              style={{
-                cursor: 'pointer',
-                display: 'inline',
-                textDecoration: 'none',
-              }}
             >
               <InlineContentView
                 inline={content.content}

@@ -22,16 +22,18 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
         {siteTitle && <meta property="og:site_name" content={siteTitle} />}
       </Head>
       <PageSection.Side />
-      <PageSection.Content>
-        <XStack gap="$2" alignItems="baseline" paddingLeft="$4">
+      <PageSection.Content paddingBottom={20}>
+        <XStack
+          paddingHorizontal="$3"
+          $gtMd={{paddingHorizontal: '$4'}}
+          gap="$2"
+          alignItems="baseline"
+          marginTop="$5"
+        >
           <XStack
-            x="$-3"
-            borderRadius="$3"
-            paddingHorizontal="$3"
-            paddingVertical="$1"
             hoverStyle={{backgroundColor: '$color6'}}
             alignItems="center"
-            marginLeft="1.5em"
+            paddingHorizontal="$2"
           >
             <NextLink
               href="/"

@@ -37,10 +37,10 @@ function getFormattedDateTime() {
 
 const nowLabel = getFormattedDateTime();
 
-if (existsSync(mintterDir)) {
-  console.log(`Mintter App Exists. Moving to MintterArchive`);
-  moveSync(mintterDir, join(mintterArchive, `Mintter.dev.${nowLabel}`));
-}
+// if (existsSync(mintterDir)) {
+//   console.log(`Mintter App Exists. Moving to MintterArchive`);
+//   moveSync(mintterDir, join(mintterArchive, `Mintter.dev.${nowLabel}`));
+// }
 if (existsSync(mintterSiteDir)) {
   console.log(`Mintter Site Exists. Moving to MintterArchive`);
   moveSync(mintterSiteDir, join(mintterArchive, `Mintter.site.${nowLabel}`));

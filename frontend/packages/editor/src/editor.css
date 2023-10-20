@@ -8,13 +8,20 @@
   background-color: transparent;
 }
 
+/* recommendation from Haz: https://twitter.com/diegohaz/status/1591829631811846147 */
 .link,
 .hm-link {
-  text-decoration: underline;
+  word-wrap: break-word;
+  word-break: break-all;
+  text-decoration-line: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-skip-ink: none;
 }
+
 .link:hover,
 .hm-link:hover {
   cursor: pointer;
+  text-decoration-thickness: 3px;
 }
 
 /* manually synced with tamagui colors: blue11 and blueDark11 */

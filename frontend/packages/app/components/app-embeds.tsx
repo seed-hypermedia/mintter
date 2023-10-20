@@ -1,24 +1,21 @@
 import {
+  BlockContentProps,
   BlockContentUnknown,
+  BlockNodeContent,
+  BlockNodeList,
   EmbedContentAccount,
   EmbedContentGroup,
-  BlockNodeContent,
-  BlockContentProps,
-  BlockNodeList,
   blockStyles,
   createHmId,
   getBlockNodeById,
   usePublicationContentContext,
 } from '@mintter/shared'
 import {hmGroup} from '@mintter/shared/src/to-json-hm'
-import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
-import {Book} from '@tamagui/lucide-icons'
+import {Spinner, YStack} from '@mintter/ui'
 import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
-import {useOpenUrl} from '../open-url'
-import {getAvatarUrl} from '../utils/account-url'
 import {unpackHmIdWithAppRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -31,15 +28,21 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
-      className="block-static block-embed"
+      className="block-embed"
+      backgroundColor="$color4"
       hoverStyle={{
         cursor: 'pointer',
         backgroundColor: '$color5',
+        // borderColor: '$color6',
       }}
+      margin={0}
+      marginLeft={-13}
+      width="calc(100% + 13px)"
+      padding="$2"
       overflow="hidden"
       borderRadius="$3"
-      borderWidth={1}
-      borderColor="$color5"
+      borderWidth={2}
+      borderColor="transparent"
       onPress={
         !disableEmbedClick
           ? () => {

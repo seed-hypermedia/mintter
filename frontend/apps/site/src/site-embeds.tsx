@@ -89,11 +89,14 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
     >
       <YStack
         {...blockStyles}
-        className="block-static block-embed"
+        className="block-embed"
         hoverStyle={{
           cursor: 'pointer',
           backgroundColor: '$color5',
         }}
+        margin={0}
+        marginLeft={-13}
+        width="calc(100% + 13px)"
         overflow="hidden"
         borderRadius="$3"
         borderWidth={1}

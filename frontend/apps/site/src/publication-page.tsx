@@ -126,7 +126,7 @@ export default function PublicationPage({
           display={media.gtLg ? 'inherit' : 'none'}
         />
 
-        <PageSection.Content>
+        <PageSection.Content paddingBottom={80}>
           {pub ? (
             <SitePublicationContentProvider unpackedId={pubId}>
               <PublicationContent publication={pub} />
@@ -135,8 +135,8 @@ export default function PublicationPage({
             <PublicationPlaceholder />
           ) : null}
         </PageSection.Content>
-        <PageSection.Side paddingRight="$4">
-          <YStack className="publication-sidenav-sticky">
+        <PageSection.Side>
+          <YStack>
             <PublicationMetadata publication={pub} pathName={pathName} />
             <WebTipping
               docId={documentId}
@@ -249,7 +249,11 @@ function GroupSidebarContent({
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   return (
-    <SideSection>
+    <SideSection
+      $gtLg={{
+        marginTop: 80,
+      }}
+    >
       {groupId?.eid ? (
         <XStack paddingHorizontal="$3">
           <SideSectionTitle>Site Content:</SideSectionTitle>
