@@ -1,20 +1,19 @@
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
-// import updater from 'update-electron-app'
 import squirrelStartup from 'electron-squirrel-startup'
 import path from 'node:path'
 import {
   handleSecondInstance,
   handleUrlOpen,
-  mainMenu,
   openInitialWindows,
   trpc,
-} from './api'
+} from './app-api'
 import {initPaths} from './app-paths'
 import {startMainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
 import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
+import {createAppMenu} from './app-menu'
 
 const OS_REGISTER_SCHEME = 'hm'
 
@@ -38,7 +37,7 @@ initPaths()
 
 const mainDaemon = startMainDaemon()
 
-Menu.setApplicationMenu(mainMenu)
+Menu.setApplicationMenu(createAppMenu())
 
 // // check for updates Powered by the free and open-source
 // updater({

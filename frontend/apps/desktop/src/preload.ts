@@ -1,6 +1,6 @@
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
-import type {GoDaemonState} from './api'
+import type {GoDaemonState} from './app-api'
 import {eventStream, writeableStateStream} from './stream'
 import {AppWindowEvent} from '@mintter/app/utils/window-events'
 

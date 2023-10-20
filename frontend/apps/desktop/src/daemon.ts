@@ -7,7 +7,7 @@ import {spawn} from 'child_process'
 import {color} from 'console-log-colors'
 import {app} from 'electron'
 import {join} from 'path'
-import {updateGoDaemonState} from './api'
+import {updateGoDaemonState} from './app-api'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {childLogger, log} from './logger'
 

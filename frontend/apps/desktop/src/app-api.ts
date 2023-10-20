@@ -1,31 +1,24 @@
 import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
-import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
-import {initTRPC} from '@trpc/server'
+import type {AppWindowEvent} from '@mintter/app/utils/window-events'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_HTTP_PORT} from '@mintter/shared'
 import {observable} from '@trpc/server/observable'
 import {
   BrowserWindow,
-  Menu,
-  MenuItem,
+  NativeImage,
   app,
   dialog,
   ipcMain,
   nativeTheme,
-  BrowserView,
-  NativeImage,
 } from 'electron'
-import Store from 'electron-store'
 import {createIPCHandler} from 'electron-trpc/main'
-import path from 'path'
-import superjson from 'superjson'
-import z from 'zod'
-import {APP_USER_DATA_PATH} from './app-paths'
-import {childLogger, logFilePath, log, warn} from './logger'
-import {BACKEND_HTTP_PORT} from '@mintter/shared'
 import {writeFile} from 'fs-extra'
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
-
-const t = initTRPC.create({isServer: true, transformer: superjson})
+import path from 'path'
+import z from 'zod'
+import {experimentsApi} from './app-experiments'
+import {appStore} from './app-store'
+import {t} from './app-trpc'
+import {childLogger, log, logFilePath, warn} from './logger'
 
 let windowIdCount = 1
 
@@ -89,8 +82,6 @@ ipcMain.on('close_window', (_event, _info) => {
   getFocusedWindow()?.close()
 })
 
-export const mainMenu = new Menu()
-
 type ReadyState = {t: 'ready'}
 type ErrorState = {t: 'error'; message: string}
 type StartupState = {t: 'startup'}
@@ -111,11 +102,6 @@ nativeTheme.addListener('updated', () => {
   })
 })
 
-const store = new Store({
-  name: 'AppStore',
-  cwd: APP_USER_DATA_PATH,
-})
-
 type AppWindow = {
   routes: NavRoute[]
   routeIndex: number
@@ -126,10 +112,9 @@ const userData = app.getPath('userData')
 log('App UserData: ', userData)
 
 const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
-const EXPERIMENTS_STORAGE_KEY = 'Experiments-v001'
 
 let windowsState =
-  (store.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
+  (appStore.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
   ({} as Record<string, AppWindow>)
 
 function getAWindow() {
@@ -170,7 +155,7 @@ app.addListener('before-quit', () => {
 
 function setWindowsState(newWindows: Record<string, AppWindow>) {
   windowsState = newWindows
-  store.set(WINDOW_STATE_STORAGE_KEY, newWindows)
+  appStore.set(WINDOW_STATE_STORAGE_KEY, newWindows)
 }
 
 function deleteWindowState(windowId: string) {
@@ -195,169 +180,14 @@ function updateWindowState(
   } else warn('updateWindowState: window not found: ' + windowId)
 }
 
-function dispatchFocusedWindowAppEvent(event: AppWindowEvent) {
+export function dispatchFocusedWindowAppEvent(event: AppWindowEvent) {
   const focusedWindow = getFocusedWindow()
   if (focusedWindow) {
     focusedWindow.webContents.send('appWindowEvent', event)
   }
 }
 
-mainMenu.append(
-  new MenuItem({
-    role: 'appMenu',
-    label: 'Mintter',
-    submenu: [
-      {role: 'about'},
-      {type: 'separator'},
-      {
-        label: 'Settings',
-        accelerator: 'CmdOrCtrl+,',
-        click: () => {
-          trpc.createAppWindow({routes: [{key: 'settings'}]})
-        },
-      },
-      {
-        label: 'Search / Open',
-        accelerator: 'CmdOrCtrl+k',
-        click: () => {
-          dispatchFocusedWindowAppEvent('openQuickSwitcher')
-        },
-      },
-      {type: 'separator'},
-      {
-        label: 'Trigger Sync with Peers',
-        accelerator: 'CmdOrCtrl+Option+r',
-        click: () => {
-          dispatchFocusedWindowAppEvent('triggerPeerSync')
-        },
-      },
-      {type: 'separator'},
-      {role: 'services'},
-      {type: 'separator'},
-      {role: 'hide'},
-      {role: 'hideOthers'},
-      {role: 'unhide'},
-      {type: 'separator'},
-      {role: 'quit'},
-    ],
-  }),
-)
-mainMenu.append(
-  new MenuItem({
-    role: 'fileMenu',
-    submenu: [
-      {
-        label: 'New Document',
-        accelerator: 'CmdOrCtrl+n',
-        click: () => {
-          trpc.createAppWindow({routes: [{key: 'draft'}]})
-        },
-      },
-      {
-        label: 'New Window',
-        accelerator: 'CmdOrCtrl+Shift+n',
-        click: () => {
-          trpc.createAppWindow({routes: [{key: 'home'}]})
-        },
-      },
-      {type: 'separator'},
-      {role: 'close'},
-    ],
-  }),
-)
-mainMenu.append(new MenuItem({role: 'editMenu'}))
-
-mainMenu.append(
-  new MenuItem({
-    id: 'viewMenu',
-    label: 'View',
-    submenu: [
-      {role: 'reload'},
-      {role: 'forceReload'},
-      {role: 'toggleDevTools'},
-      {type: 'separator'},
-      {
-        id: 'back',
-        label: 'Back',
-        accelerator: 'CmdOrCtrl+Left',
-        click: () => {
-          dispatchFocusedWindowAppEvent('back')
-        },
-      },
-      {
-        id: 'forward',
-        label: 'Forward',
-        accelerator: 'CmdOrCtrl+Right',
-        click: () => {
-          dispatchFocusedWindowAppEvent('forward')
-        },
-      },
-      {type: 'separator'},
-      {
-        id: 'route_pubs',
-        label: 'Publications',
-        accelerator: 'CmdOrCtrl+1',
-        click: () => {
-          openRoute({key: 'home'})
-        },
-      },
-      {
-        id: 'route_pubs',
-        label: 'All Publications',
-        accelerator: 'CmdOrCtrl+2',
-        click: () => {
-          openRoute({key: 'all-publications'})
-        },
-      },
-      {
-        id: 'groups',
-        label: 'Groups',
-        accelerator: 'CmdOrCtrl+3',
-        click: () => {
-          openRoute({key: 'groups'})
-        },
-      },
-      {
-        id: 'route_drafts',
-        label: 'Drafts',
-        accelerator: 'CmdOrCtrl+8',
-        click: () => {
-          openRoute({key: 'drafts'})
-        },
-      },
-      {
-        id: 'route_contacts',
-        label: 'Contacts',
-        accelerator: 'CmdOrCtrl+9',
-        click: () => {
-          openRoute({
-            key: 'contacts',
-          })
-        },
-      },
-      {type: 'separator'},
-      {role: 'resetZoom'},
-      {role: 'zoomIn'},
-      {role: 'zoomOut'},
-      {type: 'separator'},
-      {role: 'togglefullscreen'},
-    ],
-  }),
-)
-// mainMenu.getMenuItemById('route_pubs').enabled = false
-
-mainMenu.append(
-  new MenuItem({
-    role: 'windowMenu',
-    submenu: [
-      {
-        role: 'minimize',
-      },
-    ],
-  }),
-)
-
-function openRoute(route: NavRoute) {
+export function openRoute(route: NavRoute) {
   const focusedWindow = getFocusedWindow()
   if (focusedWindow) {
     focusedWindow.webContents.send('open_route', route)
@@ -378,26 +208,8 @@ async function uploadFile(file: Blob | string) {
   return data
 }
 
-const experimentsZ = z.object({
-  webImporting: z.boolean().optional(),
-  nostr: z.boolean().optional(),
-})
-type Experiments = z.infer<typeof experimentsZ>
-let experimentsState: Experiments = store.get(EXPERIMENTS_STORAGE_KEY) || {}
-
 export const router = t.router({
-  experiments: t.router({
-    get: t.procedure.query(async () => {
-      return experimentsState
-    }),
-    write: t.procedure.input(experimentsZ).mutation(async ({input}) => {
-      const prevExperimentsState = await store.get(EXPERIMENTS_STORAGE_KEY)
-      const newExperimentsState = {...(prevExperimentsState || {}), ...input}
-      experimentsState = newExperimentsState
-      await store.set(EXPERIMENTS_STORAGE_KEY, newExperimentsState)
-      return undefined
-    }),
-  }),
+  experiments: experimentsApi,
   createAppWindow: t.procedure
     .input(
       z.object({
@@ -457,7 +269,6 @@ export const router = t.router({
 
       log('[MAIN:API]: window created')
 
-      // @ts-expect-error
       const windowLogger = childLogger(windowId)
       browserWindow.webContents.on(
         'console-message',
@@ -647,30 +458,7 @@ export const router = t.router({
   getAppInfo: t.procedure.query(() => {
     return {dataDir: userData, logFilePath, grpcHost: process.env.GRPC_HOST}
   }),
-
-  // systemTheme: t.procedure.subscription(() => {
-  //   return observable<{shouldUseDarkColor: boolean}>((emitSystemTheme) => {
-  //     function handler() {
-  //       // console.log('hihooooo', nativeTheme.shouldUseDarkColors)
-  //       emitSystemTheme.next({
-  //         shouldUseDarkColor: nativeTheme.shouldUseDarkColors,
-  //       })
-  //     }
-  //     // console.log('hih000', nativeTheme.shouldUseDarkColors)
-  //     emitSystemTheme.next({
-  //       shouldUseDarkColor: nativeTheme.shouldUseDarkColors,
-  //     })
-  //     nativeTheme.addListener('updated', handler)
-  //     return () => {
-  //       nativeTheme.removeListener('updated', handler)
-  //     }
-  //   })
-  // }),
 })
-
-// ipcMain.on('windowIsReady', (_event, route) => {
-//   console.log('ahahahha', route)
-// })
 
 export const trpc = router.createCaller({})
 
