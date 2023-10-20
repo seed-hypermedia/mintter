@@ -45,7 +45,13 @@ import {
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {RiFile2Fill, RiImage2Fill, RiText, RiVideoAddFill} from 'react-icons/ri'
+import {
+  RiFile2Fill,
+  RiHeading,
+  RiImage2Fill,
+  RiText,
+  RiVideoAddFill,
+} from 'react-icons/ri'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
@@ -856,6 +862,7 @@ export function useDraftEditor(
       {
         name: 'Heading',
         aliases: ['h', 'heading1', 'subheading'],
+        icon: <RiHeading size={18} />,
         execute: (editor) =>
           insertOrUpdateBlock(editor, {
             type: 'heading',
