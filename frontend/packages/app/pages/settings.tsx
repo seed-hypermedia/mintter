@@ -32,17 +32,19 @@ import {
   ArrowDownRight,
   ExternalLink,
   View,
+  Text,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useGRPCClient, useIPC, useQueryInvalidator} from '../app-context'
+import {useGRPCClient, useIPC} from '../app-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {useExportWallet} from '../models/payments'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {useOpenUrl} from '../open-url'
 import {TableList} from '../components/table-list'
 import {AvatarForm} from '../components/avatar-form'
+import {useExperiments, useWriteExperiments} from '../models/experiments'
 
 export default function Settings() {
   return (
@@ -122,7 +124,38 @@ export default function Settings() {
 }
 
 export function DeveloperSettings() {
-  return null
+  const experiments = useExperiments()
+  const writeExperiments = useWriteExperiments()
+  const enabledDevTools = experiments.data?.developerTools
+  return (
+    <YStack gap="$3">
+      <YStack
+        space="$6"
+        paddingHorizontal="$6"
+        borderWidth={1}
+        borderRadius={'$4'}
+        borderColor="$borderColor"
+        padding="$3"
+      >
+        <Heading size="$5">Debugging Tools</Heading>
+        <SizableText fontSize="$4">
+          Adds features across the app for helping diagnose issues. Mostly
+          useful for Mintter Developers.
+        </SizableText>
+        <XStack jc="space-between">
+          {enabledDevTools ? <EnabledTag /> : <View />}
+          <Button
+            theme={enabledDevTools ? 'red' : 'green'}
+            onPress={() => {
+              writeExperiments.mutate({developerTools: !enabledDevTools})
+            }}
+          >
+            {enabledDevTools ? 'Disable Debug Tools' : `Enable Debug Tools`}
+          </Button>
+        </XStack>
+      </YStack>
+    </YStack>
+  )
 }
 
 export function ProfileForm({
@@ -342,23 +375,7 @@ export function ExperimentSection({
         </XStack>
         <SizableText>{experiment.description}</SizableText>
         <XStack alignItems="center" jc="space-between">
-          {value ? (
-            <XStack
-              backgroundColor="$blue12"
-              padding="$2"
-              paddingHorizontal="$3"
-              gap="$3"
-              alignItems="center"
-              borderRadius="$2"
-            >
-              <Check size="$1" color="$color1" />
-              <SizableText size="$1" color="$color1" fontWeight="bold">
-                Enabled
-              </SizableText>
-            </XStack>
-          ) : (
-            <View />
-          )}
+          {value ? <EnabledTag /> : <View />}
           <Button
             theme={value ? 'red' : 'green'}
             onPress={() => {
@@ -369,6 +386,24 @@ export function ExperimentSection({
           </Button>
         </XStack>
       </YStack>
+    </XStack>
+  )
+}
+
+function EnabledTag() {
+  return (
+    <XStack
+      backgroundColor="$blue12"
+      padding="$2"
+      paddingHorizontal="$3"
+      gap="$3"
+      alignItems="center"
+      borderRadius="$2"
+    >
+      <Check size="$1" color="$color1" />
+      <SizableText size="$1" color="$color1" fontWeight="bold">
+        Enabled
+      </SizableText>
     </XStack>
   )
 }
@@ -396,13 +431,8 @@ const EXPERIMENTS: ExperimentType[] = [
 ]
 
 function ExperimentsSettings({}: {}) {
-  const experiments = trpc.experiments.get.useQuery()
-  const invalidate = useQueryInvalidator()
-  const writeExperiment = trpc.experiments.write.useMutation({
-    onSuccess() {
-      invalidate(['trpc.experiments.get'])
-    },
-  })
+  const experiments = useExperiments()
+  const writeExperiments = useWriteExperiments()
   return (
     <YStack gap="$3">
       <Heading>Experimental Features</Heading>
@@ -415,7 +445,7 @@ function ExperimentsSettings({}: {}) {
               value={!!experiments.data?.[experiment.key]}
               experiment={experiment}
               onValue={(isEnabled) => {
-                writeExperiment.mutate({[experiment.key]: isEnabled})
+                writeExperiments.mutate({[experiment.key]: isEnabled})
               }}
             />
           )

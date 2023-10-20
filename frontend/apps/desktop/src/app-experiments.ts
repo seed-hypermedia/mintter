@@ -7,6 +7,7 @@ const EXPERIMENTS_STORAGE_KEY = 'Experiments-v001'
 const experimentsZ = z.object({
   webImporting: z.boolean().optional(),
   nostr: z.boolean().optional(),
+  developerTools: z.boolean().optional(),
 })
 type Experiments = z.infer<typeof experimentsZ>
 let experimentsState: Experiments = appStore.get(EXPERIMENTS_STORAGE_KEY) || {}
@@ -16,10 +17,12 @@ export const experimentsApi = t.router({
     return experimentsState
   }),
   write: t.procedure.input(experimentsZ).mutation(async ({input}) => {
+    console.log('effuffjf', input)
     const prevExperimentsState = await appStore.get(EXPERIMENTS_STORAGE_KEY)
     const newExperimentsState = {...(prevExperimentsState || {}), ...input}
     experimentsState = newExperimentsState
-    await appStore.set(EXPERIMENTS_STORAGE_KEY, newExperimentsState)
+    appStore.set(EXPERIMENTS_STORAGE_KEY, newExperimentsState)
+    console.log(newExperimentsState)
     return undefined
   }),
 })

@@ -1,8 +1,11 @@
 import {Button, SizableText, XStack, YStack} from '@mintter/ui'
 import {useState} from 'react'
+import {useHasDevTools} from '../models/experiments'
 
-export function DevDebugData({data}: {data: any}) {
+export function DebugData({data}: {data: any}) {
+  const hasDevTools = useHasDevTools()
   const [debugValue, setDebugValue] = useState(false)
+  if (!hasDevTools) return null
   return (
     <YStack maxWidth="500px" marginHorizontal="auto" marginVertical="200px">
       <Button
@@ -28,6 +31,3 @@ export function DevDebugData({data}: {data: any}) {
     </YStack>
   )
 }
-
-const isDev = import.meta.env.DEV
-export const DebugData = isDev ? DevDebugData : () => null
