@@ -1,6 +1,11 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
-import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
+import {
+  BACKEND_FILE_UPLOAD_URL,
+  BACKEND_FILE_URL,
+  getCIDFromIPFSUrl,
+  useStaticPublicationContext,
+} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -166,7 +171,10 @@ function ImageComponent({
   const saveImage = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
   }
-
+  const {ipfsBlobPrefix} = useStaticPublicationContext()
+  const imageUrl = block.props.url.includes('.') // what does this check for??
+    ? null
+    : `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
       toast.error(`The size of ${file.name} exceeds 60 MB.`)
@@ -306,12 +314,9 @@ function ImageComponent({
             </Button>
           )
         ) : null}
-        {!block.props.url.includes('.') && (
+        {imageUrl && (
           <img
-            src={`${BACKEND_FILE_URL}/${block.props.url.replace(
-              'ipfs://',
-              '',
-            )}`}
+            src={imageUrl}
             alt={block.props.name || 'image'}
             contentEditable={false}
           />
