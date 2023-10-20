@@ -20,7 +20,7 @@ import {unpackHmIdWithAppRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
-  const {disableEmbedClick = false} = usePublicationContentContext()
+  const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
   let spawn = useNavigate('spawn')
   return (
     <YStack
@@ -36,13 +36,10 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
         // borderColor: '$color6',
       }}
       margin={0}
-      marginLeft={-13}
-      width="calc(100% + 13px)"
-      padding="$2"
+      marginHorizontal={(-1 * layoutUnit) / 2}
+      padding={layoutUnit / 2}
       overflow="hidden"
-      borderRadius="$3"
-      borderWidth={2}
-      borderColor="transparent"
+      borderRadius={layoutUnit / 4}
       onPress={
         !disableEmbedClick
           ? () => {

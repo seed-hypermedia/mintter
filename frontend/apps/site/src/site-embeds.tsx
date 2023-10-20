@@ -14,6 +14,9 @@ import {
   getBlockNodeById,
   isHypermediaScheme,
   unpackHmId,
+  usePublicationContentContext,
+  contentLayoutUnit,
+  contentTextUnit,
 } from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
 import {NextLink} from 'src/next-link'
@@ -32,6 +35,9 @@ export function SitePublicationContentProvider({
   const router = useRouter()
   return (
     <PublicationContentProvider
+      layoutUnit={contentLayoutUnit}
+      textUnit={contentTextUnit}
+      debug={false}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,
@@ -82,6 +88,7 @@ export function SitePublicationContentProvider({
 }
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
+  const {layoutUnit} = usePublicationContentContext()
   return (
     <NextLink
       href={stripHMLinkPrefix(props.hmRef)}
@@ -95,12 +102,11 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
           backgroundColor: '$color5',
         }}
         margin={0}
-        marginLeft={-13}
-        width="calc(100% + 13px)"
+        marginHorizontal={(-1 * layoutUnit) / 2}
+        width={`calc(100% + ${layoutUnit})`}
+        padding={layoutUnit / 2}
         overflow="hidden"
-        borderRadius="$3"
-        borderWidth={1}
-        borderColor="$color5"
+        borderRadius={layoutUnit / 4}
       >
         {props.children}
       </YStack>
@@ -145,7 +151,7 @@ export function EmbedPublication(props: StaticEmbedProps) {
   return (
     <EmbedWrapper hmRef={props.id}>
       {embedBlocks?.length ? (
-        <BlockNodeList childrenType="group" marginLeft="-1.5em">
+        <BlockNodeList childrenType="group">
           {embedBlocks.map((bn, idx) => (
             <BlockNodeContent
               key={bn.block?.id}

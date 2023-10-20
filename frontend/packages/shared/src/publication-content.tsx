@@ -21,12 +21,18 @@ import {
   ColorProp,
   Copy,
   File,
+  Check as CheckIcon,
+  Checkbox,
+  CheckboxProps,
   SizableText,
   SizableTextProps,
   Text,
   TextProps,
+  Label,
   Tooltip,
   UIAvatar,
+  RadioGroup,
+  SizeTokens,
   XStack,
   YStack,
   YStackProps,
@@ -41,6 +47,10 @@ import {
 } from 'react'
 import {HMAccount, HMGroup} from './json-hm'
 import './publication-content.css'
+import {
+  contentLayoutUnit,
+  contentTextUnit,
+} from './publication-content-constants'
 
 export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>
@@ -57,6 +67,9 @@ export type PublicationContentContextValue = {
   onCitationClick?: () => void
   disableEmbedClick?: boolean
   onCopyBlock: (blockId: string) => void
+  layoutUnit: number
+  textUnit: number
+  debug: boolean
 }
 
 export const publicationContentContext =
@@ -69,8 +82,67 @@ export function PublicationContentProvider({
   children,
   ...PubContentContext
 }: PropsWithChildren<PublicationContentContextValue>) {
+  const [tUnit, setTUnit] = useState(contentTextUnit)
+  const [lUnit, setLUnit] = useState(contentLayoutUnit)
+  const [debug, setDebug] = useState(false)
   return (
-    <publicationContentContext.Provider value={PubContentContext}>
+    <publicationContentContext.Provider
+      value={{
+        ...PubContentContext,
+        layoutUnit: lUnit,
+        textUnit: tUnit,
+        debug,
+      }}
+    >
+      {true ? (
+        <YStack
+          zIndex={100}
+          padding="$2"
+          position="absolute"
+          borderColor="$color7"
+          borderWidth={1}
+          top={0}
+          right={0}
+          backgroundColor="$backgroundHover"
+        >
+          <CheckboxWithLabel
+            label="debug"
+            checked={debug}
+            onCheckedChange={setDebug}
+            size="$1"
+          />
+          <RadioGroup
+            aria-labelledby="text unit"
+            defaultValue="18"
+            name="form"
+            onValueChange={(val) => setTUnit(Number(val))}
+          >
+            <XStack gap="$2">
+              <SizableText size="$1">Text unit:</SizableText>
+              <RadioGroupItemWithLabel value="14" label="14" />
+              <RadioGroupItemWithLabel value="16" label="16" />
+              <RadioGroupItemWithLabel value="18" label="18" />
+              <RadioGroupItemWithLabel value="20" label="20" />
+              <RadioGroupItemWithLabel value="24" label="24" />
+            </XStack>
+          </RadioGroup>
+          <RadioGroup
+            aria-labelledby="layout unit"
+            defaultValue="24"
+            name="form"
+            onValueChange={(val) => setLUnit(Number(val))}
+          >
+            <XStack gap="$2">
+              <SizableText size="$1">Layout unit:</SizableText>
+              <RadioGroupItemWithLabel value="16" label="16" />
+              <RadioGroupItemWithLabel value="20" label="20" />
+              <RadioGroupItemWithLabel value="24" label="24" />
+              <RadioGroupItemWithLabel value="28" label="28" />
+              <RadioGroupItemWithLabel value="32" label="32" />
+            </XStack>
+          </RadioGroup>
+        </YStack>
+      ) : null}
       {children}
     </publicationContentContext.Provider>
   )
@@ -88,12 +160,13 @@ export function usePublicationContentContext() {
   return context
 }
 
-function debugStyles(color: ColorProp = '$color7') {
-  // return {
-  //   borderWidth: 1,
-  //   borderColor: color,
-  // }
-  return {}
+function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
+  return debug
+    ? {
+        borderWidth: 1,
+        borderColor: color,
+      }
+    : {}
 }
 
 export function PublicationContent({
@@ -101,8 +174,12 @@ export function PublicationContent({
 }: {
   publication: Publication | HMPublication
 }) {
+  const {layoutUnit} = usePublicationContentContext()
   return (
-    <XStack paddingHorizontal="$3" $gtMd={{paddingHorizontal: '$4'}}>
+    <XStack
+      paddingHorizontal={layoutUnit}
+      $gtMd={{paddingHorizontal: layoutUnit}}
+    >
       <BlockNodeList childrenType={'group'}>
         {publication.document?.children?.length &&
           publication.document?.children?.map((bn, idx) => (
@@ -147,17 +224,18 @@ function BlockNodeMarker({
   index?: number
   headingTextStyles: TextProps
 }) {
+  const {layoutUnit, textUnit, debug} = usePublicationContentContext()
   let styles = useMemo(
     () =>
       childrenType == 'ol'
         ? ({
             position: 'absolute',
-            right: '27%',
-            marginTop: 3,
-            fontSize: '$1',
+            right: layoutUnit / 4,
+            marginTop: layoutUnit / 7,
+            fontSize: textUnit * 0.7,
           } satisfies SizableTextProps)
         : {},
-    [childrenType],
+    [childrenType, textUnit],
   )
   let marker
 
@@ -174,12 +252,11 @@ function BlockNodeMarker({
   return (
     <XStack
       flex={0}
-      width={24}
-      height={24}
+      width={layoutUnit}
+      height={textUnit * 1.5}
       alignItems="center"
       justifyContent="flex-start"
-      // borderWidth={1}
-      // borderColor="$color5"
+      {...debugStyles(debug, 'green')}
     >
       <Text {...styles} fontFamily="$body" userSelect="none" opacity={0.7}>
         {marker}
@@ -201,11 +278,12 @@ export function BlockNodeContent({
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
 }) {
-  const headingMarginStyles = useHeadingMarginStyles(depth)
+  const {layoutUnit} = usePublicationContentContext()
+  const headingMarginStyles = useHeadingMarginStyles(depth, layoutUnit)
   const [isHovering, setIsHovering] = useState(false)
   const {citations} = useBlockCitations(blockNode.block?.id)
 
-  const {onCitationClick, onCopyBlock} = usePublicationContentContext()
+  const {onCitationClick, onCopyBlock, debug} = usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -235,27 +313,16 @@ export function BlockNodeContent({
 
   return (
     <YStack
-      borderRadius="$3"
-      // overflow="hidden"
-      // marginLeft={!props.embedDepth ? '1.5em' : undefined}
+      className="blocknode-content"
+      borderRadius={layoutUnit / 4}
       onHoverIn={() => (props.embedDepth ? undefined : setIsHovering(true))}
       onHoverOut={() => (props.embedDepth ? undefined : setIsHovering(false))}
-      // backgroundColor={
-      //   props.embedDepth
-      //     ? 'transparent'
-      //     : isHovering
-      //     ? '$color6'
-      //     : 'transparent'
-      // }
-      className="blocknode-content"
     >
       <XStack
-        // padding={isEmbed ? 0 : '$2'}
-        padding="$2"
-        // paddingVertical={isEmbed ? 0 : '$3'}
+        padding={isEmbed ? 0 : layoutUnit / 3}
         alignItems="baseline"
         {...headingStyles}
-        {...debugStyles('red')}
+        {...debugStyles(debug, 'red')}
       >
         <BlockNodeMarker
           block={blockNode.block!}
@@ -266,33 +333,16 @@ export function BlockNodeContent({
         <BlockContent block={blockNode.block!} depth={depth} />
         {!props.embedDepth ? (
           <XStack
-            paddingHorizontal="$2"
             position="absolute"
-            top="$1"
+            top={layoutUnit / 4}
             right={0}
-            padding="$2"
             backgroundColor="$background"
-            borderRadius="$2"
-            flexDirection="row-reverse"
+            borderRadius={layoutUnit / 4}
+            // flexDirection="row-reverse"
             $gtMd={{
-              right: -56,
+              right: isEmbed ? layoutUnit * -2.5 : layoutUnit * -2,
             }}
           >
-            <Button
-              size="$1"
-              opacity={isHovering ? 1 : 0}
-              padding="$2"
-              borderRadius="$2"
-              chromeless
-              icon={Copy}
-              onPress={() => {
-                if (blockNode.block?.id) {
-                  onCopyBlock(blockNode.block.id)
-                } else {
-                  console.error('onCopyBlock Error: no blockId available')
-                }
-              }}
-            />
             {citations?.length ? (
               <Button
                 size="$1"
@@ -306,12 +356,27 @@ export function BlockNodeContent({
                 </SizableText>
               </Button>
             ) : null}
+            <Button
+              size="$1"
+              opacity={isHovering ? 1 : 0}
+              padding={layoutUnit / 4}
+              borderRadius={layoutUnit / 4}
+              chromeless
+              icon={Copy}
+              onPress={() => {
+                if (blockNode.block?.id) {
+                  onCopyBlock(blockNode.block.id)
+                } else {
+                  console.error('onCopyBlock Error: no blockId available')
+                }
+              }}
+            />
           </XStack>
         ) : null}
       </XStack>
       {bnChildren ? (
         <BlockNodeList
-          paddingLeft="$4"
+          paddingLeft={layoutUnit}
           onHoverIn={() =>
             props.embedDepth ? undefined : setIsHovering(false)
           }
@@ -333,19 +398,24 @@ export const blockStyles: YStackProps = {
   width: '100%',
   alignSelf: 'center',
   flex: 1,
-  ...debugStyles('blue'),
 }
 
 let inlineContentProps: SizableTextProps = {
   className: 'content-inline',
   fontFamily: '$editorBody',
-  fontSize: '$4',
-  $gtMd: {
-    size: '$4',
-  },
-  $gtLg: {
-    size: '$5',
-  },
+}
+
+function inlineContentSize(unit: number): TextProps {
+  return {
+    fontSize: unit,
+    lineHeight: unit * 1.3,
+    $gtMd: {
+      fontSize: unit * 1.1,
+    },
+    $gtLg: {
+      fontSize: unit * 1.2,
+    },
+  }
 }
 
 export type BlockContentProps = {
@@ -382,11 +452,16 @@ function BlockContent(props: BlockContentProps) {
 }
 
 function BlockContentParagraph({block, depth}: BlockContentProps) {
+  const {debug, textUnit} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return (
-    <YStack {...blockStyles} className="block-static block-paragraph">
-      <Text {...inlineContentProps}>
+    <YStack
+      {...blockStyles}
+      {...debugStyles(debug, 'blue')}
+      className="block-static block-paragraph"
+    >
+      <Text {...inlineContentProps} {...inlineContentSize(textUnit)}>
         <InlineContentView inline={inline} />
       </Text>
     </YStack>
@@ -394,106 +469,114 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
 }
 
 function BlockContentHeading({block, depth}: BlockContentProps) {
+  const {textUnit, debug} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
-  let headingTextStyles = useHeadingTextStyles(depth)
+  let headingTextStyles = useHeadingTextStyles(depth, textUnit)
   let tag = `h${depth}`
 
   return (
-    <YStack {...blockStyles} className="block-content block-heading">
+    <YStack
+      {...blockStyles}
+      {...debugStyles(debug, 'blue')}
+      className="block-content block-heading"
+    >
       <Text
         {...inlineContentProps}
-        {...headingTextStyles}
         tag={tag}
-        fontWeight="bold"
-        fontFamily="$heading"
+        {...headingTextStyles}
+        maxWidth="75%"
       >
-        <InlineContentView inline={inline} />
+        <InlineContentView
+          inline={inline}
+          fontWeight="bold"
+          fontFamily="$heading"
+          {...headingTextStyles}
+        />
       </Text>
     </YStack>
   )
 }
 
-function useHeadingTextStyles(depth: number) {
+function useHeadingTextStyles(depth: number, unit: number) {
   function headingFontValues(value: number) {
+    console.log(`== ~ headingFontValues ~ value:`, value)
     return {
       fontSize: value,
-      lineHeight: value * 1.25,
+      lineHeight: value * 1.2,
     }
   }
 
   return useMemo(() => {
     if (depth == 1) {
       return {
-        ...headingFontValues(24),
-        $gtMd: headingFontValues(28),
-        $gtLg: headingFontValues(32),
+        ...headingFontValues(unit * 1.6),
+        $gtMd: headingFontValues(unit * 1.7),
+        $gtLg: headingFontValues(unit * 1.8),
       } satisfies TextProps
     }
 
     if (depth == 2) {
       return {
-        ...headingFontValues(20),
-        $gtMd: headingFontValues(22),
-        $gtLg: headingFontValues(24),
+        ...headingFontValues(unit * 1.4),
+        $gtMd: headingFontValues(unit * 1.5),
+        $gtLg: headingFontValues(unit * 1.6),
       } satisfies TextProps
     }
 
     if (depth == 3) {
       return {
-        ...headingFontValues(18),
-        $gtMd: headingFontValues(20),
-        $gtLg: headingFontValues(22),
+        ...headingFontValues(unit * 1.2),
+        $gtMd: headingFontValues(unit * 1.3),
+        $gtLg: headingFontValues(unit * 1.4),
       } satisfies TextProps
     }
 
     return {
-      ...headingFontValues(16),
-      $gtMd: headingFontValues(18),
-      $gtLg: headingFontValues(20),
+      ...headingFontValues(unit),
+      $gtMd: headingFontValues(unit * 1.1),
+      $gtLg: headingFontValues(unit * 1.2),
     } satisfies TextProps
-  }, [depth])
+  }, [depth, unit])
 }
 
-function useHeadingMarginStyles(depth: number) {
+function useHeadingMarginStyles(depth: number, unit: number) {
   function headingFontValues(value: number) {
-    let realValue = value
     return {
-      marginTop: realValue,
-      // marginBottom: realValue / 3,
+      marginTop: value,
     }
   }
 
   return useMemo(() => {
     if (depth == 1) {
       return {
-        ...headingFontValues(16),
-        $gtMd: headingFontValues(18),
-        $gtLg: headingFontValues(20),
+        ...headingFontValues(unit * 1.3),
+        $gtMd: headingFontValues(unit * 1.4),
+        $gtLg: headingFontValues(unit * 1.5),
       } satisfies TextProps
     }
 
     if (depth == 2) {
       return {
-        ...headingFontValues(12),
-        $gtMd: headingFontValues(14),
-        $gtLg: headingFontValues(16),
+        ...headingFontValues(unit * 1.2),
+        $gtMd: headingFontValues(unit * 1.25),
+        $gtLg: headingFontValues(unit * 1.3),
       } satisfies TextProps
     }
 
     if (depth == 3) {
       return {
-        ...headingFontValues(8),
-        $gtMd: headingFontValues(10),
-        $gtLg: headingFontValues(12),
+        ...headingFontValues(unit * 1),
+        $gtMd: headingFontValues(unit * 1.15),
+        $gtLg: headingFontValues(unit * 1.2),
       } satisfies TextProps
     }
 
     return {
-      ...headingFontValues(8),
-      $gtMd: headingFontValues(10),
-      $gtLg: headingFontValues(12),
+      ...headingFontValues(unit),
+      $gtMd: headingFontValues(unit),
+      $gtLg: headingFontValues(unit),
     } satisfies TextProps
-  }, [depth])
+  }, [depth, unit])
 }
 
 function BlockContentImage({block, depth}: BlockContentProps) {
@@ -598,9 +681,9 @@ function InlineContentView({
   inline: HMInlineContent[]
   linkType?: LinkType
 }) {
-  const {onLinkClick} = usePublicationContentContext()
+  const {onLinkClick, textUnit} = usePublicationContentContext()
   return (
-    <span>
+    <Text fontSize={textUnit} {...props}>
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -623,21 +706,27 @@ function InlineContentView({
           let children: any = content.text
 
           if (content.styles.bold) {
-            children = <b>{children}</b>
+            children = <Text fontWeight="bold">{children}</Text>
           }
 
           if (content.styles.italic) {
-            children = <i>{children}</i>
-          }
-
-          if (content.styles.underline) {
-            children = <u>{children}</u>
+            children = <Text fontStyle="italic">{children}</Text>
           }
 
           if (content.styles.code) {
             children = (
-              <Text backgroundColor="$backgroundFocus" asChild>
-                <code>{children}</code>
+              <Text
+                backgroundColor="$backgroundFocus"
+                // bg="red"
+                fontFamily="$mono"
+                tag="code"
+                borderRadius="$2"
+                overflow="hidden"
+                fontSize={textUnit * 0.85}
+                paddingHorizontal="$2"
+                paddingVertical={2}
+              >
+                {children}
               </Text>
             )
           }
@@ -651,9 +740,9 @@ function InlineContentView({
           //   )
           // }
 
-          if (content.styles.strike) {
-            children = <s>{children}</s>
-          }
+          // if (content.styles.strike) {
+          //   children = <s>{children}</s>
+          // }
 
           // does anything use this?
           // if (content.styles.textColor) {
@@ -696,7 +785,7 @@ function InlineContentView({
         }
         return null
       })}
-    </span>
+    </Text>
   )
 }
 
@@ -751,14 +840,14 @@ export function EmbedContentAccount({account}: {account: HMAccount}) {
         />
       </XStack>
       <YStack justifyContent="center" flex={1}>
-        <Text size="$1" opacity={0.5} flex={0}>
+        <SizableText size="$1" opacity={0.5} flex={0}>
           Account
-        </Text>
+        </SizableText>
         <YStack gap="$2">
-          <Text size="$6" fontWeight="bold">
+          <SizableText size="$6" fontWeight="bold">
             {account?.profile?.alias}
-          </Text>
-          <Text size="$2">{account.profile?.bio}</Text>
+          </SizableText>
+          <SizableText size="$2">{account.profile?.bio}</SizableText>
         </YStack>
       </YStack>
     </XStack>
@@ -848,7 +937,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       >
         <File size={18} />
 
-        <Text
+        <SizableText
           size="$5"
           maxWidth="17em"
           overflow="hidden"
@@ -857,11 +946,16 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
           userSelect="text"
         >
           {block.attributes.name}
-        </Text>
+        </SizableText>
         {block.attributes.size && (
-          <Text paddingTop="$1" color="$color10" size="$2" minWidth="4.5em">
+          <SizableText
+            paddingTop="$1"
+            color="$color10"
+            size="$2"
+            minWidth="4.5em"
+          >
             {formatBytes(parseInt(block.attributes.size))}
-          </Text>
+          </SizableText>
         )}
         <Tooltip content={`Download ${block.attributes.name}`}>
           <Button
@@ -895,4 +989,40 @@ export function useBlockCitations(blockId?: string) {
   return {
     citations,
   }
+}
+
+function CheckboxWithLabel({
+  size,
+  label,
+  ...checkboxProps
+}: CheckboxProps & {size: SizeTokens; label: string}) {
+  const id = `checkbox-${size.toString().slice(1)}`
+  return (
+    <XStack alignItems="center" space="$2">
+      <Checkbox id={id} size={size} {...checkboxProps}>
+        <Checkbox.Indicator>
+          <CheckIcon />
+        </Checkbox.Indicator>
+      </Checkbox>
+
+      <Label size={size} htmlFor={id}>
+        {label}
+      </Label>
+    </XStack>
+  )
+}
+
+function RadioGroupItemWithLabel(props: {value: string; label: string}) {
+  const id = `radiogroup-${props.value}`
+  return (
+    <XStack alignItems="center" space="$2">
+      <RadioGroup.Item value={props.value} id={id} size="$1">
+        <RadioGroup.Indicator />
+      </RadioGroup.Item>
+
+      <Label size="$1" htmlFor={id}>
+        {props.label}
+      </Label>
+    </XStack>
+  )
 }
