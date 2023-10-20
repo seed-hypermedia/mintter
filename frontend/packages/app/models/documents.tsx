@@ -985,6 +985,59 @@ function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
   // editor._tiptapEditor.commands.setContent(editorBlocks)
 }
 
+function generateBlockId(length: number = 8): string {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length))
+  }
+  return result
+}
+
+export function useCreatePublication() {
+  const invalidate = useQueryInvalidator()
+  const client = useGRPCClient()
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const draft = await client.drafts.createDraft({})
+      const blockId = generateBlockId()
+      await client.drafts.updateDraft({
+        documentId: draft.id,
+        changes: [
+          new DocumentChange({
+            op: {
+              case: 'setTitle',
+              value: title,
+            },
+          }),
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId,
+                leftSibling: '',
+                parent: '',
+              },
+            },
+          }),
+          new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: {id: blockId, type: 'paragraph', text: title},
+            },
+          }),
+        ],
+      })
+      await client.drafts.publishDraft({documentId: draft.id})
+      return draft.id
+    },
+    onSuccess: () => {
+      invalidate([queryKeys.GET_PUBLICATION_LIST])
+    },
+  })
+}
+
 export function usePublicationEditor(
   documentId: string,
   versionId?: string,

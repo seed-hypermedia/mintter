@@ -5,22 +5,44 @@ import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
 import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {
   Button,
+  ButtonText,
   Container,
+  Copy,
   Delete,
+  DialogDescription,
+  DialogTitle,
+  Form,
+  Label,
   MainWrapper,
   SizableText,
   Spinner,
+  XStack,
   YStack,
 } from '@mintter/ui'
 
-import {idToUrl} from '@mintter/shared'
+import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {copyLinkMenuItem} from '../components/list-item'
-import {queryPublication} from '../models/documents'
+import {queryPublication, useCreatePublication} from '../models/documents'
+import {useForm} from 'react-hook-form'
+import {z} from 'zod'
+import {zodResolver} from '@hookform/resolvers/zod'
+import {FormInput} from '../components/form-input'
+import {toast} from '../toast'
+import {useOpenUrl} from '../open-url'
+import {useDaemonReady} from '../node-status-context'
+import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useWaitForPublication} from '../models/web-links'
 
-export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
+export function PublicationListPage({
+  trustedOnly,
+  empty,
+}: {
+  trustedOnly: boolean
+  empty?: React.ReactNode
+}) {
   let publications = usePublicationList({trustedOnly})
   let drafts = useDraftList()
   let {queryClient, grpcClient} = useAppContext()
@@ -90,12 +112,14 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
         <>
           <MainWrapper>
             <Container>
-              <EmptyList
-                description="You have no Publications yet."
-                action={() => {
-                  openDraft()
-                }}
-              />
+              {empty || (
+                <EmptyList
+                  description="You have no Publications yet."
+                  action={() => {
+                    openDraft()
+                  }}
+                />
+              )}
             </Container>
           </MainWrapper>
           <Footer />
@@ -136,6 +160,127 @@ export function PublicationListPage({trustedOnly}: {trustedOnly: boolean}) {
   )
 }
 
+function PublishedFirstDocDialog({
+  input,
+  onClose,
+}: {
+  input: {docId: string}
+  onClose: () => void
+}) {
+  const {externalOpen} = useAppContext()
+  const id = unpackHmId(input.docId)
+  if (!id) throw new Error('invalid doc id')
+  const url = createPublicWebHmUrl('d', id.eid)
+  const {resultMeta, timedOut} = useWaitForPublication(url, 120)
+  return (
+    <>
+      <DialogTitle>Congrats!</DialogTitle>
+      <DialogDescription>
+        Your doc has been published. You can share your doc on the public
+        Hypermedia gateway:
+      </DialogDescription>
+      <XStack jc="space-between" ai="center">
+        {resultMeta ? (
+          <ButtonText
+            color="$blue10"
+            size="$2"
+            fontFamily={'$mono'}
+            fontSize="$4"
+            onPress={() => {
+              externalOpen(url)
+            }}
+          >
+            {url}
+          </ButtonText>
+        ) : (
+          <Spinner />
+        )}
+        {timedOut ? (
+          <DialogDescription theme="red">
+            We failed to publish your document to the hypermedia gateway. Please
+            try again later.
+          </DialogDescription>
+        ) : null}
+        <Button
+          size="$2"
+          icon={Copy}
+          onPress={() => {
+            copyTextToClipboard(url)
+            toast.success('Copied link to document')
+          }}
+        />
+      </XStack>
+      <Button onPress={onClose}>Done</Button>
+    </>
+  )
+}
+
+const newDocFields = z.object({
+  title: z.string(),
+})
+type NewGroupFields = z.infer<typeof newDocFields>
+
+export function CreateFirstDocForm({
+  onSuccess,
+}: {
+  onSuccess: (docId: string) => void
+}) {
+  const {
+    control,
+    handleSubmit,
+    setFocus,
+    formState: {errors},
+  } = useForm<NewGroupFields>({
+    resolver: zodResolver(newDocFields),
+    defaultValues: {
+      title: `Hello, World`,
+    },
+  })
+  const openUrl = useOpenUrl()
+  const createPublication = useCreatePublication()
+  const isDaemonReady = useDaemonReady()
+  if (!isDaemonReady) return <Spinner />
+  return (
+    <YStack>
+      <Button
+        onPress={() => {
+          openUrl('https://hyper.media/d/FHD735zUfVznrESN5s9JMz')
+        }}
+      >
+        Open Welcome Document
+      </Button>
+      <Form
+        onSubmit={handleSubmit(async (values) =>
+          createPublication.mutateAsync(values.title).then((docId) => {
+            toast.success('Published Document')
+            onSuccess(docId)
+          }),
+        )}
+      >
+        <Label htmlFor="title">Title</Label>
+        <FormInput placeholder={'Group Name'} control={control} name="title" />
+        <Form.Trigger>
+          <Button>Create Document</Button>
+        </Form.Trigger>
+      </Form>
+    </YStack>
+  )
+}
+
 export default function TrustedPublicationList() {
-  return <PublicationListPage trustedOnly={true} />
+  const successDialog = useAppDialog(PublishedFirstDocDialog)
+
+  return (
+    <>
+      <PublicationListPage
+        trustedOnly={true}
+        empty={
+          <CreateFirstDocForm
+            onSuccess={(docId) => successDialog.open({docId})}
+          />
+        }
+      />
+      {successDialog.content}
+    </>
+  )
 }
