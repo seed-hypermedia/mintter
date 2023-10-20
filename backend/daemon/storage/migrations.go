@@ -51,6 +51,23 @@ var migrations = []migration{
 	{Version: "2023-09-22.01", Run: func(d *Dir, conn *sqlite.Conn) error {
 		return nil
 	}},
+	{Version: "2023-10-20.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE remote_sites;
+			CREATE TABLE group_sites (
+				group_id TEXT NOT NULL,
+				url TEXT NOT NULL,
+				hlc_time INTEGER NOT NULL,
+				hlc_origin TEXT NOT NULL,
+				remote_version TEXT NOT NULL DEFAULT (''),
+				last_sync_time INTEGER NOT NULL DEFAULT (0),
+				last_ok_sync_time INTEGER NOT NULL DEFAULT (0),
+				last_sync_error TEXT NOT NULL DEFAULT (''),
+				PRIMARY KEY (group_id)
+			);
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

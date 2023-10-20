@@ -190,6 +190,32 @@ const (
 	C_EntitiesID  = "entities.id"
 )
 
+// Table group_sites.
+const (
+	GroupSites               sqlitegen.Table  = "group_sites"
+	GroupSitesGroupID        sqlitegen.Column = "group_sites.group_id"
+	GroupSitesHLCOrigin      sqlitegen.Column = "group_sites.hlc_origin"
+	GroupSitesHLCTime        sqlitegen.Column = "group_sites.hlc_time"
+	GroupSitesLastOkSyncTime sqlitegen.Column = "group_sites.last_ok_sync_time"
+	GroupSitesLastSyncError  sqlitegen.Column = "group_sites.last_sync_error"
+	GroupSitesLastSyncTime   sqlitegen.Column = "group_sites.last_sync_time"
+	GroupSitesRemoteVersion  sqlitegen.Column = "group_sites.remote_version"
+	GroupSitesURL            sqlitegen.Column = "group_sites.url"
+)
+
+// Table group_sites. Plain strings.
+const (
+	T_GroupSites               = "group_sites"
+	C_GroupSitesGroupID        = "group_sites.group_id"
+	C_GroupSitesHLCOrigin      = "group_sites.hlc_origin"
+	C_GroupSitesHLCTime        = "group_sites.hlc_time"
+	C_GroupSitesLastOkSyncTime = "group_sites.last_ok_sync_time"
+	C_GroupSitesLastSyncError  = "group_sites.last_sync_error"
+	C_GroupSitesLastSyncTime   = "group_sites.last_sync_time"
+	C_GroupSitesRemoteVersion  = "group_sites.remote_version"
+	C_GroupSitesURL            = "group_sites.url"
+)
+
 // Table heads.
 const (
 	Heads         sqlitegen.Table  = "heads"
@@ -284,28 +310,6 @@ const (
 	T_PublicKeys          = "public_keys"
 	C_PublicKeysID        = "public_keys.id"
 	C_PublicKeysPrincipal = "public_keys.principal"
-)
-
-// Table remote_sites.
-const (
-	RemoteSites               sqlitegen.Table  = "remote_sites"
-	RemoteSitesGroupID        sqlitegen.Column = "remote_sites.group_id"
-	RemoteSitesGroupVersion   sqlitegen.Column = "remote_sites.group_version"
-	RemoteSitesLastOkSyncTime sqlitegen.Column = "remote_sites.last_ok_sync_time"
-	RemoteSitesLastSyncTime   sqlitegen.Column = "remote_sites.last_sync_time"
-	RemoteSitesPeerID         sqlitegen.Column = "remote_sites.peer_id"
-	RemoteSitesURL            sqlitegen.Column = "remote_sites.url"
-)
-
-// Table remote_sites. Plain strings.
-const (
-	T_RemoteSites               = "remote_sites"
-	C_RemoteSitesGroupID        = "remote_sites.group_id"
-	C_RemoteSitesGroupVersion   = "remote_sites.group_version"
-	C_RemoteSitesLastOkSyncTime = "remote_sites.last_ok_sync_time"
-	C_RemoteSitesLastSyncTime   = "remote_sites.last_sync_time"
-	C_RemoteSitesPeerID         = "remote_sites.peer_id"
-	C_RemoteSitesURL            = "remote_sites.url"
 )
 
 // Table sqlite_sequence.
@@ -405,6 +409,14 @@ var Schema = sqlitegen.Schema{
 		DraftsViewMultihash:             {Table: DraftsView, SQLType: "BLOB"},
 		EntitiesEID:                     {Table: Entities, SQLType: "BLOB"},
 		EntitiesID:                      {Table: Entities, SQLType: "INTEGER"},
+		GroupSitesGroupID:               {Table: GroupSites, SQLType: "TEXT"},
+		GroupSitesHLCOrigin:             {Table: GroupSites, SQLType: "TEXT"},
+		GroupSitesHLCTime:               {Table: GroupSites, SQLType: "INTEGER"},
+		GroupSitesLastOkSyncTime:        {Table: GroupSites, SQLType: "INTEGER"},
+		GroupSitesLastSyncError:         {Table: GroupSites, SQLType: "TEXT"},
+		GroupSitesLastSyncTime:          {Table: GroupSites, SQLType: "INTEGER"},
+		GroupSitesRemoteVersion:         {Table: GroupSites, SQLType: "TEXT"},
+		GroupSitesURL:                   {Table: GroupSites, SQLType: "TEXT"},
 		HeadsBlob:                       {Table: Heads, SQLType: "INTEGER"},
 		HeadsName:                       {Table: Heads, SQLType: "TEXT"},
 		HeadsResource:                   {Table: Heads, SQLType: "INTEGER"},
@@ -423,12 +435,6 @@ var Schema = sqlitegen.Schema{
 		LookupValue:                     {Table: Lookup, SQLType: ""},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
-		RemoteSitesGroupID:              {Table: RemoteSites, SQLType: "TEXT"},
-		RemoteSitesGroupVersion:         {Table: RemoteSites, SQLType: "TEXT"},
-		RemoteSitesLastOkSyncTime:       {Table: RemoteSites, SQLType: "INTEGER"},
-		RemoteSitesLastSyncTime:         {Table: RemoteSites, SQLType: "INTEGER"},
-		RemoteSitesPeerID:               {Table: RemoteSites, SQLType: "TEXT"},
-		RemoteSitesURL:                  {Table: RemoteSites, SQLType: "TEXT"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},

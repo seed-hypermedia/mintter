@@ -161,13 +161,18 @@ func GroupGetRole(conn *sqlite.Conn, resource, owner, member int64) (int64, erro
 }
 
 // SitesInsertOrIgnore inserts a site if it doesn't exist.
-func SitesInsertOrIgnore(conn *sqlite.Conn, baseURL, groupID string) error {
-	return sqlitex.Exec(conn, qSitesInsertOrIgnore(), nil, baseURL, groupID)
+func SitesInsertOrIgnore(conn *sqlite.Conn, group, baseURL string, hlc int64, origin string) error {
+	return sqlitex.Exec(conn, qSitesInsertOrIgnore(), nil, group, baseURL, hlc, origin)
 }
 
 var qSitesInsertOrIgnore = dqb.Str(`
-	INSERT INTO remote_sites (url, group_id) VALUES (?, ?)
-	ON CONFLICT (url) DO NOTHING;
+	INSERT INTO group_sites (group_id, url, hlc_time, hlc_origin) VALUES (?, ?, ?, ?)
+	ON CONFLICT DO UPDATE SET
+		group_id = excluded.group_id,
+		url = excluded.url,
+		hlc_time = excluded.hlc_time,
+		hlc_origin = excluded.hlc_origin
+	WHERE (hlc_time, hlc_origin) < (excluded.hlc_time, excluded.hlc_origin);
 `)
 
 // AccountsInsertOrIgnore inserts an account if it doesn't exist.

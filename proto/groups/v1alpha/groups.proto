@@ -255,6 +255,9 @@ message Group {
     // Timestamp of the last successful sync of the Group's content with the Site.
     google.protobuf.Timestamp last_ok_sync_time = 3;
 
+    // The error message from the last sync (if it was unsuccessful).
+    string last_sync_error = 5;
+
     // Version of the Group as per the Site.
     string version = 4;
   }

@@ -216,17 +216,18 @@ CREATE TABLE wallets (
     balance INTEGER DEFAULT 0
 );
 
--- Stores remote sites and their syncing status.
-CREATE TABLE remote_sites (
-    -- Values below are stable and are used to validate
-    -- whether site and group information correspond to each other.
-    url TEXT UNIQUE NOT NULL,
-    peer_id TEXT NOT NULL DEFAULT (''),
+-- Stores data for syncing groups that are known to be published to a site.
+CREATE TABLE group_sites (
     group_id TEXT NOT NULL,
-    -- Values below are updated on each sync and used for caching.
-    group_version TEXT NOT NULL DEFAULT (''),
+    url TEXT NOT NULL,
+    hlc_time INTEGER NOT NULL,
+    hlc_origin TEXT NOT NULL,
+    -- Bellow this line are cached/derived values.
+    remote_version TEXT NOT NULL DEFAULT (''),
     last_sync_time INTEGER NOT NULL DEFAULT (0),
-    last_ok_sync_time INTEGER NOT NULL DEFAULT (0)
+    last_ok_sync_time INTEGER NOT NULL DEFAULT (0),
+    last_sync_error TEXT NOT NULL DEFAULT (''),
+    PRIMARY KEY (group_id)
 );
 
 -- Stores mapping between account public keys

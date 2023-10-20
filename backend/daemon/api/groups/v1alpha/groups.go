@@ -101,27 +101,30 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 	siteWorkers map[string]context.CancelFunc,
 	interval time.Duration,
 ) error {
-	sites, err := srv.db.ListSites(ctx)
+	groups, err := srv.db.ListSiteGroups(ctx)
 	if err != nil {
 		return err
 	}
 
 	// TODO(burdiyan): handle removing sites and stopping workers.
 	// It's currently not possible anyways.
-	for _, s := range sites {
-		if _, ok := siteWorkers[s]; ok {
+	for _, group := range groups {
+		if _, ok := siteWorkers[group]; ok {
 			continue
 		}
 
 		ctx, cancel := context.WithCancel(ctx)
-		siteWorkers[s] = cancel
+		siteWorkers[group] = cancel
 
 		wg.Add(1)
-		s := s // Capture range variable to pass to the goroutine.
-		go func() {
-			srv.log.Debug("PeriodicSiteSyncWorkerStarter", zap.String("siteURL", s))
+		go func(group string) {
+			log := srv.log.With(
+				zap.String("groupID", group),
+			)
+
+			log.Debug("PeriodicSiteSyncWorkerStarter")
 			defer func() {
-				srv.log.Debug("PeriodicSiteSyncWorkerStopped", zap.String("siteURL", s))
+				log.Debug("PeriodicSiteSyncWorkerStopped")
 				wg.Done()
 			}()
 
@@ -136,16 +139,15 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 					return
 				case <-t.C:
 					start := time.Now()
-					srv.log.Debug("SiteSyncRoundStarted", zap.String("siteURL", s))
+					log.Debug("SiteSyncRoundStarted")
 
 					// We want to log error message if sync round failed.
-					log := srv.log.Debug
-					err := srv.SyncSite(ctx, s, interval)
+					logFunc := log.Debug
+					err := srv.SyncGroupSite(ctx, group, interval)
 					if err != nil {
-						log = srv.log.Error
+						logFunc = log.Error
 					}
-					log("SiteSyncRoundFinished",
-						zap.String("siteURL", s),
+					logFunc("SiteSyncRoundFinished",
 						zap.Duration("duration", time.Since(start)),
 						zap.Error(err),
 					)
@@ -153,7 +155,7 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 					t.Reset(interval)
 				}
 			}
-		}()
+		}(group)
 	}
 
 	return nil
@@ -161,10 +163,10 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 
 // SyncSite syncs one site and blocks until finished,
 // unless the last time we've synced was within the specified interval.
-func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.Duration) (err error) {
-	sr, err := srv.db.GetSite(ctx, siteURL)
+func (srv *Server) SyncGroupSite(ctx context.Context, group string, interval time.Duration) (err error) {
+	sr, err := srv.db.GetGroupSite(ctx, group)
 	if err != nil {
-		return fmt.Errorf("failed to get site record %s: %w", siteURL, err)
+		return fmt.Errorf("failed to get site record for group %s: %w", group, err)
 	}
 
 	now := time.Now()
@@ -175,8 +177,14 @@ func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.D
 		return nil
 	}
 
+	var info *groups.PublicSiteInfo
+	// We want to record the timestamp of the last sync attempt, even if it fails.
+	defer func() {
+		err = errors.Join(err, srv.db.RecordGroupSiteSync(ctx, group, time.Now(), err, info))
+	}()
+
 	// We make remote call on every sync, because we want to make sure the site is actually serving the group we are syncing.
-	info, err := GetSiteInfoHTTP(ctx, nil, siteURL)
+	info, err = GetSiteInfoHTTP(ctx, nil, sr.URL)
 	if err != nil {
 		return fmt.Errorf("failed to get site info: %w", err)
 	}
@@ -185,16 +193,6 @@ func (srv *Server) SyncSite(ctx context.Context, siteURL string, interval time.D
 	if err != nil {
 		return err
 	}
-
-	// We want to record the timestamp of the last sync attempt, even if it fails.
-	defer func() {
-		doneTime := time.Now()
-		ok := err == nil
-
-		if dbErr := srv.db.RecordSiteSync(ctx, siteURL, ai.ID, doneTime, ok); dbErr != nil {
-			err = errors.Join(err, fmt.Errorf("failed to record site sync: %w", dbErr))
-		}
-	}()
 
 	if info.GroupId != sr.GroupID {
 		return fmt.Errorf("group ID mismatch: remote %q != local %q", info.GroupId, sr.GroupID)
@@ -556,8 +554,8 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 			go func() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 				defer cancel()
-				if err := srv.SyncSite(ctx, vv, 0); err != nil {
-					srv.log.Error("PushGroupToSiteError", zap.String("siteURL", vv), zap.Error(err))
+				if err := srv.SyncGroupSite(ctx, in.Id, 0); err != nil {
+					srv.log.Error("PushGroupToSiteError", zap.String("groupID", in.Id), zap.String("siteURL", vv), zap.Error(err))
 				}
 			}()
 		}
@@ -871,19 +869,20 @@ func (srv *Server) groupToProto(ctx context.Context, e *hyper.Entity) (*groups.G
 		UpdateTime:     timestamppb.New(e.LastChangeTime().Time()),
 	}
 	if v, ok := e.Get("siteURL"); ok {
-		vv, ok := v.(string)
+		_, ok := v.(string)
 		if ok {
-			sr, err := srv.db.GetSite(ctx, vv)
+			sr, err := srv.db.GetGroupSite(ctx, gpb.Id)
 			if err != nil {
 				if status.Code(err) != codes.NotFound {
 					return nil, err
 				}
 			} else {
 				gpb.SiteInfo = &groups.Group_SiteInfo{
-					BaseUrl:        vv,
-					LastSyncTime:   timestamppb.New(time.Unix(sr.LastSyncTime, 0)),
-					LastOkSyncTime: timestamppb.New(time.Unix(sr.LastSyncOkTime, 0)),
-					Version:        sr.GroupVersion,
+					BaseUrl:        sr.URL,
+					Version:        sr.RemoteVersion,
+					LastSyncTime:   maybeTimeToProto(time.Unix(sr.LastSyncTime, 0)),
+					LastOkSyncTime: maybeTimeToProto(time.Unix(sr.LastOKSyncTime, 0)),
+					LastSyncError:  sr.LastSyncError,
 				}
 			}
 		}
@@ -905,6 +904,13 @@ func (srv *Server) groupToProto(ctx context.Context, e *hyper.Entity) (*groups.G
 	}
 
 	return gpb, nil
+}
+
+func maybeTimeToProto(t time.Time) *timestamppb.Timestamp {
+	if t.IsZero() {
+		return nil
+	}
+	return timestamppb.New(t)
 }
 
 func (srv *Server) getMe() (core.Identity, error) {

@@ -1050,6 +1050,13 @@ export class Group_SiteInfo extends Message<Group_SiteInfo> {
   lastOkSyncTime?: Timestamp;
 
   /**
+   * The error message from the last sync (if it was unsuccessful).
+   *
+   * @generated from field: string last_sync_error = 5;
+   */
+  lastSyncError = "";
+
+  /**
    * Version of the Group as per the Site.
    *
    * @generated from field: string version = 4;
@@ -1067,6 +1074,7 @@ export class Group_SiteInfo extends Message<Group_SiteInfo> {
     { no: 1, name: "base_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "last_sync_time", kind: "message", T: Timestamp },
     { no: 3, name: "last_ok_sync_time", kind: "message", T: Timestamp },
+    { no: 5, name: "last_sync_error", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 

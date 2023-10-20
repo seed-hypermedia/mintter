@@ -57,6 +57,7 @@ func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 		storage.T_Changes,
 		storage.T_BlobLinks,
 		storage.T_BlobAttrs,
+		storage.T_GroupSites,
 	}
 
 	const q = "SELECT * FROM " + storage.T_Blobs
@@ -531,7 +532,7 @@ func (bs *indexer) indexGroupChange(conn *sqlite.Conn, blobID int64, author core
 			return err
 		}
 
-		if err := hypersql.SitesInsertOrIgnore(conn, siteURL, string(ch.Entity)); err != nil {
+		if err := hypersql.SitesInsertOrIgnore(conn, string(ch.Entity), siteURL, ch.HLCTime.Pack(), OriginFromCID(c)); err != nil {
 			return err
 		}
 	}

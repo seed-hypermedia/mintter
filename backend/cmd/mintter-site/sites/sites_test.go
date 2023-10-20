@@ -90,7 +90,7 @@ func TestSiteSync(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = alice.RPC.Groups.SyncSite(ctx, site.Address.String(), 0)
+	err = alice.RPC.Groups.SyncGroupSite(ctx, group.Id, 0)
 	require.NoError(t, err, "alice must be able to sync with the site as an owner")
 	_ = david
 

@@ -3,6 +3,7 @@ package groups
 import (
 	"context"
 	"fmt"
+	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/dqb"
@@ -12,7 +13,6 @@ import (
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -28,7 +28,7 @@ func NewSQLiteDB(db *sqlitex.Pool) *DB {
 }
 
 // RecordSiteSync updates the last sync time of a site.
-func (db *DB) RecordSiteSync(ctx context.Context, baseURL string, pid peer.ID, now time.Time, ok bool) error {
+func (db *DB) RecordGroupSiteSync(ctx context.Context, group string, now time.Time, syncErr error, info *groups.PublicSiteInfo) error {
 	conn, release, err := db.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -37,56 +37,67 @@ func (db *DB) RecordSiteSync(ctx context.Context, baseURL string, pid peer.ID, n
 
 	nowts := now.Unix()
 
-	if err := sqlitex.Exec(conn, qRecordSiteSync(), nil, pid.String(), nowts, ok, baseURL); err != nil {
+	var errmsg string
+	if syncErr != nil {
+		errmsg = syncErr.Error()
+	}
+
+	var remoteVersion string
+	if info != nil {
+		remoteVersion = info.GroupVersion
+	}
+
+	if err := sqlitex.Exec(conn, qRecordGroupSiteSync(), nil, errmsg, remoteVersion, nowts, group); err != nil {
 		return err
 	}
 
 	if conn.Changes() == 0 {
-		return fmt.Errorf("site %s not found", baseURL)
+		return fmt.Errorf("group site %s couldn't update: not found", group)
 	}
 
 	return nil
 }
 
-var qRecordSiteSync = dqb.Str(`
-	UPDATE remote_sites SET
-		peer_id = :pid,
+var qRecordGroupSiteSync = dqb.Str(`
+	UPDATE group_sites SET
+		remote_version = iif(:err != '', remote_version, :remote_version),
 		last_sync_time = :now,
-		last_ok_sync_time = iif(:ok = 1, :now, last_ok_sync_time)
-	WHERE url = :url;
+		last_ok_sync_time = iif(:err != '', last_ok_sync_time, :now),
+		last_sync_error = :err
+	WHERE group_id = :group_id;
 `)
 
-type siteRecord struct {
-	URL            string
-	PeerID         string
+type groupSite struct {
 	GroupID        string
-	GroupVersion   string
+	URL            string
+	RemoteVersion  string
 	LastSyncTime   int64
-	LastSyncOkTime int64
+	LastOKSyncTime int64
+	LastSyncError  string
 }
 
-// GetSite returns the site record.
-func (db *DB) GetSite(ctx context.Context, baseURL string) (sr siteRecord, err error) {
-	return sr, db.queryOne(ctx, qGetSite(), []any{baseURL}, []any{
-		&sr.URL,
-		&sr.PeerID,
+// GetGroupSite returns the site record.
+func (db *DB) GetGroupSite(ctx context.Context, groupID string) (sr groupSite, err error) {
+	return sr, db.queryOne(ctx, qGetSite(), []any{groupID}, []any{
 		&sr.GroupID,
-		&sr.GroupVersion,
+		&sr.URL,
+		&sr.RemoteVersion,
 		&sr.LastSyncTime,
-		&sr.LastSyncOkTime,
+		&sr.LastOKSyncTime,
+		&sr.LastSyncError,
 	})
 }
 
 var qGetSite = dqb.Str(`
 	SELECT
-		url,
-		peer_id,
 		group_id,
-		group_version,
+		url,
+		remote_version,
 		last_sync_time,
-		last_ok_sync_time
-	FROM remote_sites
-	WHERE url = :url;
+		last_ok_sync_time,
+		last_sync_error
+	FROM group_sites
+	WHERE group_id = :group_id;
 `)
 
 // ForEachRelatedBlob collects all the related blobs for a given group and calls fn on each CID.
@@ -170,30 +181,30 @@ var qCollectBlobs = dqb.Str(`
 `)
 
 // ListSites returns the list of sites we know about.
-func (db *DB) ListSites(ctx context.Context) ([]string, error) {
+func (db *DB) ListSiteGroups(ctx context.Context) ([]string, error) {
 	conn, release, err := db.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	var urls []string
+	var groups []string
 
-	if err := sqlitex.Exec(conn, qListSites(), func(stmt *sqlite.Stmt) error {
-		var url string
-		stmt.Scan(&url)
-		urls = append(urls, url)
+	if err := sqlitex.Exec(conn, qListSiteGroups(), func(stmt *sqlite.Stmt) error {
+		var group string
+		stmt.Scan(&group)
+		groups = append(groups, group)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return urls, nil
+	return groups, nil
 }
 
-var qListSites = dqb.Str(`
-	SELECT url
-	FROM remote_sites;
+var qListSiteGroups = dqb.Str(`
+	SELECT group_id
+	FROM group_sites;
 `)
 
 func (db *DB) queryOne(ctx context.Context, sql string, args []any, outs []any) error {
