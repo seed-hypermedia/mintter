@@ -7,9 +7,9 @@ import {spawn} from 'child_process'
 import {color} from 'console-log-colors'
 import {app} from 'electron'
 import {join} from 'path'
-import {updateGoDaemonState} from './app-api'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {childLogger, log} from './logger'
+import {getAllWindows} from './app-windows'
 
 const logger = childLogger(color.cyan('Go Daemon'))
 
@@ -67,6 +67,32 @@ const daemonArguments = [
 
   lndhubFlags,
 ]
+
+type ReadyState = {t: 'ready'}
+type ErrorState = {t: 'error'; message: string}
+type StartupState = {t: 'startup'}
+
+export type GoDaemonState = ReadyState | ErrorState | StartupState
+
+let goDaemonState: GoDaemonState = {t: 'startup'}
+
+export function getDaemonState() {
+  return goDaemonState
+}
+const daemonStateHandlers = new Set<(state: GoDaemonState) => void>()
+export function subscribeDaemonState(
+  handler: (state: GoDaemonState) => void,
+): () => void {
+  daemonStateHandlers.add(handler)
+  return () => {
+    daemonStateHandlers.delete(handler)
+  }
+}
+
+export function updateGoDaemonState(state: GoDaemonState) {
+  goDaemonState = state
+  daemonStateHandlers.forEach((handler) => handler(state))
+}
 
 export function startMainDaemon() {
   logger.info('Launching daemon:', goDaemonExecutablePath, daemonArguments)

@@ -1,8 +1,8 @@
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
-import type {GoDaemonState} from './app-api'
 import {eventStream, writeableStateStream} from './stream'
 import {AppWindowEvent} from '@mintter/app/utils/window-events'
+import {GoDaemonState} from './daemon'
 
 process.once('loaded', async () => {
   exposeElectronTRPC()
@@ -14,10 +14,13 @@ process.once('loaded', async () => {
 const [dispatchAppWindow, appWindowEvents] = eventStream<AppWindowEvent>()
 
 contextBridge.exposeInMainWorld('appWindowEvents', appWindowEvents)
-contextBridge.exposeInMainWorld('appInfo', {
+
+const AppInfo = {
   platform: () => process.platform,
   arch: () => process.arch,
-})
+} as const
+export type AppInfoType = typeof AppInfo
+contextBridge.exposeInMainWorld('appInfo', AppInfo)
 
 // let windowId: string | null = null
 // console.log('---preloooadddd')

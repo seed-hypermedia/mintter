@@ -1,6 +1,3 @@
-import '@tamagui/core/reset.css'
-import '@tamagui/font-inter/css/400.css'
-import '@tamagui/font-inter/css/700.css'
 import {createGrpcWebTransport} from '@connectrpc/connect-web'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
@@ -9,24 +6,25 @@ import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
 import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
 import {toast} from '@mintter/app/toast'
-import {NavState} from '@mintter/app/utils/navigation'
 import {NavigationContainer} from '@mintter/app/utils/navigation-container'
+import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
 import {Spinner, YStack} from '@mintter/ui'
-import {createTRPCReact} from '@trpc/react-query'
+import '@tamagui/core/reset.css'
+import '@tamagui/font-inter/css/400.css'
+import '@tamagui/font-inter/css/700.css'
 import {ipcLink} from 'electron-trpc/renderer'
 import React, {Suspense, useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import superjson from 'superjson'
-import type {AppInfo, GoDaemonState} from './app-api'
-import {AppRouter} from './app-api'
+import type {GoDaemonState} from './app-api'
 import {createIPC} from './ipc'
+import type {AppInfoType} from './preload'
 import './root.css'
 import type {StateStream} from './stream'
-import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {client, trpc} from './trpc'
 
 const logger = {
@@ -138,7 +136,7 @@ function useWindowUtils(ipc: AppIPC): WindowUtils {
 // @ts-expect-error
 const daemonState: StateStream<GoDaemonState> = window.daemonState
 // @ts-expect-error
-const appInfo: AppInfo = window.appInfo
+const appInfo: AppInfoType = window.appInfo
 
 function useGoDaemonState(): GoDaemonState | undefined {
   const [state, setState] = useState<GoDaemonState | undefined>(
