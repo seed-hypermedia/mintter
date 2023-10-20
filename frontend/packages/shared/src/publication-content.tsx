@@ -67,7 +67,7 @@ export type PublicationContentContextValue = {
   citations?: Array<MttLink>
   onCitationClick?: () => void
   disableEmbedClick?: boolean
-  onCopyBlock: (blockId: string) => void
+  onCopyBlock: null | ((blockId: string) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -374,23 +374,26 @@ export function BlockNodeContent({
                 </SizableText>
               </Button>
             ) : null}
-            <Tooltip content="Copy block reference" delay={800}>
-              <Button
-                size="$1"
-                opacity={isHovering ? 1 : 0}
-                padding={layoutUnit / 4}
-                borderRadius={layoutUnit / 4}
-                chromeless
-                icon={Copy}
-                onPress={() => {
-                  if (blockNode.block?.id) {
-                    onCopyBlock(blockNode.block.id)
-                  } else {
-                    console.error('onCopyBlock Error: no blockId available')
-                  }
-                }}
-              />
-            </Tooltip>
+
+            {onCopyBlock ? (
+              <Tooltip content="Copy block reference" delay={800}>
+                <Button
+                  size="$1"
+                  opacity={isHovering ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  chromeless
+                  icon={Copy}
+                  onPress={() => {
+                    if (blockNode.block?.id) {
+                      onCopyBlock(blockNode.block.id)
+                    } else {
+                      console.error('onCopyBlock Error: no blockId available')
+                    }
+                  }}
+                />
+              </Tooltip>
+            ) : null}
           </XStack>
         ) : null}
       </XStack>

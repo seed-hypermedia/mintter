@@ -17,48 +17,7 @@ import {useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
-import {useAppContext} from '../app-context'
-import {useOpenUrl} from '../open-url'
-import {
-  BACKEND_FILE_URL,
-  IS_PROD_DESKTOP,
-  PublicationContentProvider,
-} from '@mintter/shared'
-import {
-  EmbedAccount,
-  EmbedGroup,
-  EmbedPublication,
-} from '../components/app-embeds'
-
-export function AppPublicationContentProvider({
-  children,
-}: React.PropsWithChildren<{}>) {
-  const {saveCidAsFile} = useAppContext()
-  const openUrl = useOpenUrl()
-  return (
-    <PublicationContentProvider
-      isProd={IS_PROD_DESKTOP}
-      entityComponents={{
-        AccountCard: EmbedAccount,
-        GroupCard: EmbedGroup,
-        PublicationCard: EmbedPublication,
-      }}
-      disableEmbedClick
-      onLinkClick={(href, e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        openUrl(href)
-      }}
-      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
-      saveCidAsFile={saveCidAsFile}
-      onCopyBlock={(blockId: string) => {
-        console.log('COPY HERE')
-      }}
-    >
-      {children}
-    </PublicationContentProvider>
-  )
-}
+import {AppPublicationContentProvider} from './publication'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -87,7 +46,7 @@ export default function DraftPage() {
       >
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
-          <AppPublicationContentProvider>
+          <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
               {debugValue && <DebugData data={debugValue} />}

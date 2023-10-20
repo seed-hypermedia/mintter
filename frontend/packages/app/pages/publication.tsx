@@ -10,9 +10,9 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
   IS_PROD_DESKTOP,
-  ListCitationsResponse,
   MttLink,
   PublicationContent,
+  PublicationContentContextValue,
   PublicationContentProvider,
   pluralS,
   unpackDocId,
@@ -22,24 +22,24 @@ import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {ErrorBoundary} from 'react-error-boundary'
-import {EntityVersionsAccessory} from '../components/changes-list'
+import {useAppContext} from '../app-context'
 import {
   EmbedAccount,
   EmbedGroup,
   EmbedPublication,
 } from '../components/app-embeds'
+import {EntityVersionsAccessory} from '../components/changes-list'
+import {useFullReferenceUrl} from '../components/titlebar/common'
 import {VersionChangesInfo} from '../components/version-changes-info'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
-import {useAppContext} from '../app-context'
-import {useFullReferenceUrl} from '../components/titlebar/common'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
 export function AppPublicationContentProvider({
   children,
-  citations = [],
-}: React.PropsWithChildren<{citations?: ListCitationsResponse['links']}>) {
+  ...overrides
+}: React.PropsWithChildren<Partial<PublicationContentContextValue>>) {
   const {saveCidAsFile} = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
@@ -63,9 +63,9 @@ export function AppPublicationContentProvider({
           copyUrlToClipboardWithFeedback(url, reference?.label)
         }
       }}
-      citations={citations}
       ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
+      {...overrides}
     >
       {children}
     </PublicationContentProvider>
