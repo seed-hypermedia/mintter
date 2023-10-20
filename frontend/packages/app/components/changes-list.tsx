@@ -39,7 +39,7 @@ import {
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
-import {MenuItemType, OptionsDropdown} from './list-item'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
 type ComputedChangeset = {
   activeVersionChanges: TimelineChange[]
@@ -158,6 +158,7 @@ function ChangeItem({
       marginTop={shouldDisplayAuthorName ? '$4' : undefined}
       ai="center"
       gap="$2"
+      group="item"
     >
       <YStack
         f={1}
@@ -184,7 +185,7 @@ function ChangeItem({
           </XStack>
         )}
       </YStack>
-      <OptionsDropdown menuItems={menuItems} />
+      <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
     </XStack>
   )
 }

@@ -51,7 +51,8 @@ import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
-import {OptionsDropdown, copyLinkMenuItem} from '../components/list-item'
+import {copyLinkMenuItem} from '../components/list-item'
+import {OptionsDropdown} from '../components/options-dropdown'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar/common'
 import {VersionChangesInfo} from '../components/version-changes-info'
@@ -304,6 +305,7 @@ export default function GroupPage() {
                     paddingVertical="$4"
                     paddingHorizontal={0}
                     minHeight="$6"
+                    group="item"
                   >
                     <PublicationDisplay urlWithVersion={frontDocumentUrl} />
 
@@ -315,7 +317,10 @@ export default function GroupPage() {
                       alignItems="center"
                     >
                       {frontDocMenuItems.length ? (
-                        <OptionsDropdown menuItems={frontDocMenuItems} />
+                        <OptionsDropdown
+                          hiddenUntilItemHover
+                          menuItems={frontDocMenuItems}
+                        />
                       ) : null}
                       <EditDocActions
                         contextRoute={route}

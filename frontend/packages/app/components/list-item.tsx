@@ -1,40 +1,10 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
-import {
-  Button,
-  ButtonProps,
-  ButtonText,
-  Link,
-  MoreHorizontal,
-  Popover,
-  Separator,
-  Tooltip,
-  YGroup,
-} from '@mintter/ui'
-import {FC, ReactElement} from 'react'
+import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
+import {ReactElement} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
-import {usePopoverState} from '../use-popover-state'
-import {MenuItem} from './dropdown'
-
-export type MenuItemType = {
-  key: string
-  label: string
-  icon: FC
-  onPress: () => void
-}
-
-export function copyLinkMenuItem(
-  url: string | undefined | null,
-  label: string,
-): MenuItemType | null {
-  if (!url) return null
-  return {
-    onPress: () => url && copyUrlToClipboardWithFeedback(url, label),
-    key: 'copy-link',
-    label: `Copy Link to ${label}`,
-    icon: Link,
-  }
-}
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import {GestureResponderEvent} from 'react-native'
 
 export function ListItem({
   accessory,
@@ -58,6 +28,7 @@ export function ListItem({
         // onPointerLeave={() => setIsHovering(false)}
         chromeless
         onPress={onPress}
+        group="item"
       >
         <ButtonText
           onPress={onPress}
@@ -68,68 +39,23 @@ export function ListItem({
           {title}
         </ButtonText>
         {accessory}
-        <OptionsDropdown menuItems={menuItems} />
+        <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
       </Button>
     </>
   )
 }
 
-export function OptionsDropdown({
-  menuItems,
-}: {
-  menuItems: (MenuItemType | null)[]
-}) {
-  const popoverState = usePopoverState()
-  return (
-    <Popover {...popoverState} placement="bottom-end">
-      <Popover.Trigger asChild>
-        <Button
-          size="$1"
-          circular
-          data-trigger
-          onPress={(e) => {
-            // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
-            e.stopPropagation()
-          }}
-          icon={MoreHorizontal}
-        />
-      </Popover.Trigger>
-      <Popover.Content
-        padding={0}
-        elevation="$2"
-        enterStyle={{y: -10, opacity: 0}}
-        exitStyle={{y: -10, opacity: 0}}
-        elevate
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-      >
-        <YGroup separator={<Separator />}>
-          {menuItems.map(
-            (item) =>
-              item && (
-                <YGroup.Item key={item.key}>
-                  <MenuItem
-                    onPress={(e) => {
-                      e.stopPropagation()
-                      popoverState.onOpenChange(false)
-                      item.onPress()
-                    }}
-                    title={item.label}
-                    icon={item.icon}
-                  />
-                </YGroup.Item>
-              ),
-          )}
-        </YGroup>
-      </Popover.Content>
-    </Popover>
-  )
+export function copyLinkMenuItem(
+  url: string | undefined | null,
+  label: string,
+): MenuItemType | null {
+  if (!url) return null
+  return {
+    onPress: () => url && copyUrlToClipboardWithFeedback(url, label),
+    key: 'copy-link',
+    label: `Copy Link to ${label}`,
+    icon: Link,
+  }
 }
 
 export function TimeAccessory({
