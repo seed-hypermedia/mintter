@@ -35,6 +35,7 @@ export function SitePublicationContentProvider({
   const router = useRouter()
   return (
     <PublicationContentProvider
+      debugTop={-80}
       layoutUnit={contentLayoutUnit}
       textUnit={contentTextUnit}
       debug={false}

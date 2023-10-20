@@ -145,7 +145,7 @@ const Root = PageSectionRoot
 
 function Content({children, ...props}: PropsWithChildren<XStackProps>) {
   return (
-    <XStack f={1} jc="center" overflow="hidden" {...props}>
+    <XStack f={1} jc="center" {...props}>
       <PageSectionContent>{children}</PageSectionContent>
     </XStack>
   )

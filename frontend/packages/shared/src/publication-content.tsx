@@ -80,8 +80,9 @@ export type EntityComponentProps = BlockContentProps &
 
 export function PublicationContentProvider({
   children,
+  debugTop = 0,
   ...PubContentContext
-}: PropsWithChildren<PublicationContentContextValue>) {
+}: PropsWithChildren<PublicationContentContextValue & {debugTop?: number}>) {
   const [tUnit, setTUnit] = useState(contentTextUnit)
   const [lUnit, setLUnit] = useState(contentLayoutUnit)
   const [debug, setDebug] = useState(false)
@@ -98,16 +99,18 @@ export function PublicationContentProvider({
         <YStack
           zIndex={100}
           padding="$2"
-          position="absolute"
+          // @ts-ignore
+          position="fixed"
           borderColor="$color7"
           borderWidth={1}
-          top={0}
-          right={0}
+          top={16}
+          right={16}
           backgroundColor="$backgroundHover"
         >
           <CheckboxWithLabel
             label="debug"
             checked={debug}
+            // @ts-ignore
             onCheckedChange={setDebug}
             size="$1"
           />
@@ -177,7 +180,7 @@ export function PublicationContent({
   const {layoutUnit} = usePublicationContentContext()
   return (
     <XStack
-      paddingHorizontal={layoutUnit}
+      paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
     >
       <BlockNodeList childrenType={'group'}>
