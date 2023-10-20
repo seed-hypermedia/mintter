@@ -11,10 +11,8 @@ import {
   BlockIdentifier,
   BlockNoteEditor,
   HMBlockSchema,
-  PartialBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
-  insertOrUpdateBlock,
   useBlockNote,
 } from '@mintter/editor'
 import {
@@ -45,18 +43,12 @@ import {
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {
-  RiFile2Fill,
-  RiHeading,
-  RiImage2Fill,
-  RiText,
-  RiVideoAddFill,
-} from 'react-icons/ri'
 import {useGRPCClient} from '../app-context'
 import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
+import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 
 function createEmptyChanges(): DraftChangesState {
   return {
@@ -422,45 +414,6 @@ type MoveBlockAction = {
   leftSibling: string
   parent: string
 }
-
-type ChangeBlockAction = {
-  type: 'changeBlock'
-  blockId: string
-}
-
-type DeleteBlockAction = {
-  type: 'deleteBlock'
-  blockId: string
-}
-
-type DraftChangeAction = MoveBlockAction | ChangeBlockAction | DeleteBlockAction
-
-// function draftChangesReducer(
-//   state: DraftChangesState,
-//   action: DraftChangeAction,
-// ): DraftChangesState {
-//   if (action.type === 'moveBlock') {
-//     return {
-//       ...state,
-//       moves: [...state.moves, action],
-//     }
-//   } else if (action.type === 'deleteBlock') {
-//     return {
-//       ...state,
-//       deleted: [...state.deleted, action.blockId],
-//       changed: state.changed.filter((blockId) => blockId !== action.blockId),
-//       moves: state.moves.filter((move) => move.blockId !== action.blockId),
-//     }
-//   } else if (action.type === 'changeBlock') {
-//     if (state.changed.indexOf(action.blockId) === -1) {
-//       return {
-//         ...state,
-//         changed: [...state.changed, action.blockId],
-//       }
-//     }
-//   }
-//   return state
-// }
 
 export function queryDraft(
   grpcClient: GRPCClient,
@@ -849,66 +802,7 @@ export function useDraftEditor(
       handleMaybeReady()
     },
     blockSchema: hmBlockSchema,
-    slashMenuItems: [
-      {
-        name: 'Paragraph',
-        aliases: ['p'],
-        icon: <RiText size={18} />,
-        execute: (editor) =>
-          insertOrUpdateBlock(editor, {
-            type: 'paragraph',
-          } as PartialBlock<HMBlockSchema>),
-      },
-      {
-        name: 'Heading',
-        aliases: ['h', 'heading1', 'subheading'],
-        icon: <RiHeading size={18} />,
-        execute: (editor) =>
-          insertOrUpdateBlock(editor, {
-            type: 'heading',
-            props: {level: '2'},
-          } as PartialBlock<HMBlockSchema>),
-      },
-      {
-        name: 'Image',
-        aliases: ['image', 'img', 'picture'],
-        icon: <RiImage2Fill size={18} />,
-        hint: 'Insert a Image',
-        execute: (editor) =>
-          insertOrUpdateBlock(editor, {
-            type: 'image',
-            props: {
-              url: '',
-            },
-          } as PartialBlock<HMBlockSchema>),
-      },
-      {
-        name: 'Video',
-        aliases: ['video', 'vid', 'media'],
-        icon: <RiVideoAddFill size={18} />,
-        hint: 'Insert a video',
-        execute: (editor) =>
-          insertOrUpdateBlock(editor, {
-            type: 'video',
-            props: {
-              url: '',
-            },
-          } as PartialBlock<HMBlockSchema>),
-      },
-      {
-        name: 'File',
-        aliases: ['file', 'folder'],
-        icon: <RiFile2Fill size={18} />,
-        hint: 'Insert a File',
-        execute: (editor) =>
-          insertOrUpdateBlock(editor, {
-            type: 'file',
-            props: {
-              url: '',
-            },
-          } as PartialBlock<HMBlockSchema>),
-      },
-    ],
+    slashMenuItems,
 
     _tiptapOptions: {
       extensions: [

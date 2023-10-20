@@ -178,6 +178,7 @@ function ImageComponent({
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
       toast.error(`The size of ${file.name} exceeds 60 MB.`)
+      // lol, so what? lots of good files are larger than 60MB 😂
       return
     }
 
