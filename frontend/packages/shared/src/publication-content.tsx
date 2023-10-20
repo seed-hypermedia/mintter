@@ -205,7 +205,6 @@ export function BlockNodeContent({
   const [isHovering, setIsHovering] = useState(false)
   const {citations} = useBlockCitations(blockNode.block?.id)
 
-  console.log(`== ~ citations:`, citations)
   const {onCitationClick, onCopyBlock} = usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
@@ -272,30 +271,16 @@ export function BlockNodeContent({
             top="$1"
             right={0}
             padding="$2"
+            backgroundColor="$background"
             borderRadius="$2"
+            flexDirection="row-reverse"
             $gtMd={{
-              right: -24,
-            }}
-            $gtLg={{
-              right: -32,
+              right: -56,
             }}
           >
-            {citations?.length ? (
-              <Button
-                size="$1"
-                padding="$2"
-                borderRadius="$2"
-                chromeless
-                onPress={() => onCitationClick?.()}
-              >
-                <Text color="$blue11" fontWeight="700">
-                  {citations.length}
-                </Text>
-              </Button>
-            ) : null}
             <Button
-              opacity={isHovering ? 1 : 0}
               size="$1"
+              opacity={isHovering ? 1 : 0}
               padding="$2"
               borderRadius="$2"
               chromeless
@@ -308,6 +293,19 @@ export function BlockNodeContent({
                 }
               }}
             />
+            {citations?.length ? (
+              <Button
+                size="$1"
+                padding="$2"
+                borderRadius="$2"
+                chromeless
+                onPress={() => onCitationClick?.()}
+              >
+                <SizableText color="$blue11" size="$1">
+                  {citations.length}
+                </SizableText>
+              </Button>
+            ) : null}
           </XStack>
         ) : null}
       </XStack>

@@ -9,6 +9,7 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
+  ListCitationsResponse,
   MttLink,
   PublicationContent,
   PublicationContentProvider,
@@ -36,7 +37,8 @@ import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 
 export function AppPublicationContentProvider({
   children,
-}: React.PropsWithChildren<{}>) {
+  citations = [],
+}: React.PropsWithChildren<{citations?: ListCitationsResponse['links']}>) {
   const {saveCidAsFile} = useAppContext()
   const openUrl = useOpenUrl()
   const route = useNavRoute()
@@ -59,6 +61,7 @@ export function AppPublicationContentProvider({
           copyUrlToClipboardWithFeedback(url, reference?.label)
         }
       }}
+      citations={citations}
       ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
     >
@@ -69,7 +72,6 @@ export function AppPublicationContentProvider({
 
 export default function PublicationPage() {
   const route = useNavRoute()
-  const openUrl = useOpenUrl()
   if (route.key !== 'publication')
     throw new Error('Publication page expects publication actor')
 
@@ -93,7 +95,7 @@ export default function PublicationPage() {
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
-  const {saveCidAsFile} = useAppContext()
+
   if (publication.data) {
     return (
       <ErrorBoundary
@@ -121,7 +123,7 @@ export default function PublicationPage() {
                     // paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <AppPublicationContentProvider>
+                    <AppPublicationContentProvider citations={citations?.links}>
                       <PublicationContent publication={publication.data} />
                     </AppPublicationContentProvider>
                   </YStack>
