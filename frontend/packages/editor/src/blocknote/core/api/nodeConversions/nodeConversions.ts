@@ -405,7 +405,7 @@ export function nodeToBlock<BSchema extends BlockSchema>(
     // so these 2 props are technically unexpected but we shouldn't log a warning.
     // (this is a bit hacky)
     else if (attr !== 'id' && !(attr in defaultProps)) {
-      console.warn('Block has an unrecognized attribute: ' + attr)
+      // console.warn('Block has an unrecognized attribute: ' + attr)
     }
   }
 

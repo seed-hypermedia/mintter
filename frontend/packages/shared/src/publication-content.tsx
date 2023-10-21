@@ -15,6 +15,7 @@ import {
   isHypermediaScheme,
   toHMInlineContent,
   unpackHmId,
+  IS_PROD_DESKTOP,
 } from '@mintter/shared'
 import {
   Button,
@@ -95,7 +96,7 @@ export function PublicationContentProvider({
         debug,
       }}
     >
-      {true ? (
+      {!IS_PROD_DESKTOP ? (
         <YStack
           zIndex={100}
           padding="$2"
@@ -639,7 +640,7 @@ function BlockContentVideo({block, depth}: BlockContentProps) {
               src={`${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.ref)}`}
               type={getSourceType(block.attributes.name)}
             />
-            Something is wrong with the video file.
+            <SizableText>Something is wrong with the video file.</SizableText>
           </XStack>
         ) : (
           <XStack
@@ -922,21 +923,23 @@ export function getBlockNodeById(
 }
 
 export function BlockContentFile({block}: {block: HMBlockFile}) {
-  const {saveCidAsFile} = usePublicationContentContext()
+  const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
     <YStack
-      backgroundColor="$color3"
-      borderColor="$color4"
+      // backgroundColor="$color3"
+      borderColor="$color6"
       borderWidth={1}
-      borderRadius={blockBorderRadius as any}
+      borderRadius={layoutUnit / 4}
+      padding={layoutUnit / 2}
       overflow="hidden"
+      width="100%"
     >
       <XStack
         borderWidth={0}
         outlineWidth={0}
-        padding="$4"
         alignItems="center"
         space
+        flex={1}
       >
         <File size={18} />
 
@@ -947,6 +950,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
           textOverflow="ellipsis"
           whiteSpace="nowrap"
           userSelect="text"
+          flex={1}
         >
           {block.attributes.name}
         </SizableText>
@@ -962,6 +966,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
         )}
         <Tooltip content={`Download ${block.attributes.name}`}>
           <Button
+            size="$2"
             onPress={() => {
               saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
             }}

@@ -158,12 +158,15 @@ function VideoComponent({
         body: formData,
       })
       const data = await response.text()
+
       assign({props: {url: data, name: file.name}} as VideoType)
     } catch (error) {
       console.error(error)
     }
     editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
+
+  let mediaUrl = `${BACKEND_FILE_URL}/${block.props.url.replace('ipfs://', '')}`
 
   return (
     <YStack
@@ -261,14 +264,8 @@ function VideoComponent({
             width="100%"
             height="100%"
           >
-            <source
-              src={`${BACKEND_FILE_URL}/${block.props.url.replace(
-                'ipfs://',
-                '',
-              )}`}
-              type={getSourceType(block.props.name)}
-            />
-            Something is wrong with the video file.
+            <source src={mediaUrl} type={getSourceType(block.props.name)} />
+            <SizableText>Something is wrong with the video file.</SizableText>
           </XStack>
         </VideoWrapper>
       ) : (
