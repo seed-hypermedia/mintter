@@ -1,18 +1,63 @@
-import {Button, Heading, MainWrapper, PageSection, XStack} from '@mintter/ui'
-import {SiteHead} from 'src/site-head'
 import {relativeFormattedDate} from '@mintter/shared'
+import {
+  AppleIcon,
+  ButtonFrame,
+  ButtonText,
+  DebianIcon,
+  MainWrapper,
+  PageSection,
+  SizableText,
+  Square,
+  View,
+  WindowsIcon,
+  XStack,
+  YStack,
+} from '@mintter/ui'
+import {Touchable, TouchableOpacity} from 'react-native'
+import {SiteHead} from 'src/site-head'
 
 function DownloadButton({
   item,
   label,
+  icon,
 }: {
   item: {downloadUrl: string}
   label: string
+  icon: any
 }) {
   return (
-    <Button tag="a" href={item.downloadUrl} download size="$6">
-      {label}
-    </Button>
+    <View
+      width="100%"
+      paddingVertical="$2"
+      $gtMd={{
+        width: '50%',
+        padding: '$2',
+      }}
+      $gtLg={{
+        width: '25%',
+      }}
+    >
+      <ButtonFrame
+        flex={1}
+        backgroundColor="$mint4"
+        overflow="hidden"
+        borderRadius="$3"
+        hoverStyle={{
+          cursor: 'pointer',
+          backgroundColor: '$mint6',
+        }}
+        padding="$4"
+        href={item.downloadUrl}
+        download
+        alignItems="center"
+        flexDirection="column"
+        gap="$4"
+        height="auto"
+      >
+        {icon}
+        <SizableText>{label}</SizableText>
+      </ButtonFrame>
+    </View>
   )
 }
 
@@ -22,47 +67,54 @@ export default function DownloadPage(props: any) {
       <SiteHead pageTitle={`Download Mintter ${props.versionName}`} />
       <PageSection.Root>
         <PageSection.Side />
-        <PageSection.Content
-          tag="main"
-          id="main-content"
-          tabIndex={-1}
-          backgroundColor={'pink'}
-          overflow="hidden"
-        >
-          <Heading size="$3">
-            Released{' '}
-            {relativeFormattedDate(new Date(props.publishedAt), {
-              onlyRelative: true,
-            })}
-          </Heading>
-
-          {/* <pre>{JSON.stringify(props)}</pre> */}
-          <XStack space marginVertical="$7" alignSelf="stretch">
-            {props.manifest.macOSarm64 && (
-              <DownloadButton
-                item={props.manifest.macOSarm64}
-                label="MacOS (Apple Silicon)"
-              />
-            )}
-            {props.manifest.macOSx64 && (
-              <DownloadButton
-                item={props.manifest.macOSx64}
-                label="MacOS (Intel)"
-              />
-            )}
-            {props.manifest.win32x64 && (
-              <DownloadButton
-                item={props.manifest.win32x64}
-                label="Windows (64-bit)"
-              />
-            )}
-            {props.manifest.linuxx64 && (
-              <DownloadButton
-                item={props.manifest.linuxx64}
-                label="Linux (64-bit)"
-              />
-            )}
-          </XStack>
+        <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
+          <YStack paddingHorizontal="$4" $gtMd={{paddingHorizontal: '$5'}}>
+            <SizableText size="$8" fontWeight="bold">
+              Download Mintter
+            </SizableText>
+            <SizableText size="$6" fontWeight="bold" opacity={0.6}>
+              {props.versionName}
+            </SizableText>
+            <SizableText tag="a" target="_blank" href={props.releaseUrl}>
+              Release Notes
+            </SizableText>
+            <XStack marginVertical="$7" flexWrap="wrap">
+              {props.manifest.macOSarm64 && (
+                <DownloadButton
+                  item={props.manifest.macOSarm64}
+                  label="Apple Silicon"
+                  icon={<AppleIcon width={32} height={32} />}
+                />
+              )}
+              {props.manifest.macOSx64 && (
+                <DownloadButton
+                  item={props.manifest.macOSx64}
+                  label="Intel"
+                  icon={<AppleIcon width={32} height={32} />}
+                />
+              )}
+              {props.manifest.win32x64 && (
+                <DownloadButton
+                  item={props.manifest.win32x64}
+                  label="Windows (x64)"
+                  icon={<WindowsIcon width={32} height={32} />}
+                />
+              )}
+              {props.manifest.linuxx64 && (
+                <DownloadButton
+                  item={props.manifest.linuxx64}
+                  label="Debian (x64)"
+                  icon={<DebianIcon width={32} height={32} />}
+                />
+              )}
+            </XStack>
+            {/* <YStack>
+              <SizableText size="$6" fontWeight="bold">
+                {props.versionName}
+              </SizableText>
+              <SizableText>You can see the release notes here</SizableText>
+            </YStack> */}
+          </YStack>
         </PageSection.Content>
         <PageSection.Side />
       </PageSection.Root>
