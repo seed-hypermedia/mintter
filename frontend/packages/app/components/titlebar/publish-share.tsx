@@ -283,14 +283,17 @@ function GroupPublishDialog({
   )
 }
 
-const ContextPopover = styled(Popover, {
-  name: 'ContextPopover',
-  size: '$5',
-  allowFlip: true,
-  placement: 'bottom-start',
-  keepChildrenMounted: true,
-})
-
+function ContextPopover({children, ...props}) {
+  return (
+    <Popover
+      size="$5"
+      allowFlip={true}
+      placement="bottom-start"
+      keepChildrenMounted={true}
+      {...props}
+    />
+  )
+}
 const ContextPopoverContent = styled(Popover.Content, {
   padding: '$2',
   name: 'ContextPopoverContent',

@@ -34,6 +34,7 @@ const isValidUrl = (urlString: string) => {
 }
 
 const uploadImageToIpfs = async (url: string) => {
+  if (url.startsWith('ipfs://')) return
   const blob = await fetch(url).then((res) => res.blob())
   const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
   if (webFile && webFile.size <= 62914560) {
@@ -191,7 +192,7 @@ function ImageComponent({
   if (isValidUrl(block.props.url)) {
     uploadImageToIpfs(block.props.url)
       .then((imageData) => {
-        if (imageData.url) {
+        if (imageData?.url) {
           assign({props: imageData} as ImageType)
         }
       })
@@ -307,7 +308,11 @@ function ImageComponent({
         ) : null}
         {!block.props.url.includes('.') && (
           <img
-            src={`${BACKEND_FILE_URL}/${block.props.url}`}
+            src={`${BACKEND_FILE_URL}/${block.props.url.replace(
+              'ipfs://',
+              '',
+            )}`}
+            alt={block.props.name || 'image'}
             contentEditable={false}
           />
         )}

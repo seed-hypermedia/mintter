@@ -401,7 +401,7 @@ function StaticVideoBlock({
             src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
             type={getSourceType(block.attributes.name)}
           />
-          Something is wrong with the video file.
+          <SizableText>Something is wrong with the video file.</SizableText>
         </XStack>
       ) : (
         <XStack

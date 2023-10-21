@@ -34,10 +34,6 @@ contextBridge.exposeInMainWorld('appInfo', {
 
 const windowInfo = ipcRenderer.sendSync('initWindow')
 
-console.log('windowInfo ====')
-
-console.log(JSON.stringify(windowInfo, null, 2))
-
 contextBridge.exposeInMainWorld('initNavState', windowInfo.navState)
 
 const [updateDarkMode, darkMode] = writeableStateStream<GoDaemonState>(
@@ -53,7 +49,6 @@ const [updateDaemonState, daemonState] = writeableStateStream<GoDaemonState>(
 contextBridge.exposeInMainWorld('daemonState', daemonState)
 
 contextBridge.exposeInMainWorld('windowIsReady', () => {
-  console.log('windowIsReady')
   ipcRenderer.send('windowIsReady')
 })
 const routeHandlers = new Set<(route: any) => void>()

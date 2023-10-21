@@ -145,7 +145,6 @@ export function FileComponent({
 }) {
   const [replace, setReplace] = useState(false)
   const {saveCidAsFile} = useAppContext()
-  const theme = useTheme()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
