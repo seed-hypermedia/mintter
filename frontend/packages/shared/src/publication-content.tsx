@@ -82,8 +82,11 @@ export type EntityComponentProps = BlockContentProps &
 export function PublicationContentProvider({
   children,
   debugTop = 0,
+  isProd = false,
   ...PubContentContext
-}: PropsWithChildren<PublicationContentContextValue & {debugTop?: number}>) {
+}: PropsWithChildren<
+  PublicationContentContextValue & {debugTop?: number; isProd?: boolean}
+>) {
   const [tUnit, setTUnit] = useState(contentTextUnit)
   const [lUnit, setLUnit] = useState(contentLayoutUnit)
   const [debug, setDebug] = useState(false)
@@ -96,7 +99,7 @@ export function PublicationContentProvider({
         debug,
       }}
     >
-      {!IS_PROD_DESKTOP ? (
+      {!isProd ? (
         <YStack
           zIndex={100}
           padding="$2"

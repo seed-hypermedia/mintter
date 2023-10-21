@@ -35,6 +35,7 @@ export function SitePublicationContentProvider({
   const router = useRouter()
   return (
     <PublicationContentProvider
+      isProd={process.env.NODE_ENV == 'production'}
       debugTop={-80}
       layoutUnit={contentLayoutUnit}
       textUnit={contentTextUnit}

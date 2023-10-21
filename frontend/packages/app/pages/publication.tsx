@@ -9,6 +9,7 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
+  IS_PROD_DESKTOP,
   ListCitationsResponse,
   MttLink,
   PublicationContent,
@@ -45,6 +46,7 @@ export function AppPublicationContentProvider({
   const reference = useFullReferenceUrl(route)
   return (
     <PublicationContentProvider
+      isProd={IS_PROD_DESKTOP}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,

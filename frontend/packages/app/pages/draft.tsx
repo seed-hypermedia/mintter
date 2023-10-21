@@ -19,7 +19,11 @@ import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {useAppContext} from '../app-context'
 import {useOpenUrl} from '../open-url'
-import {BACKEND_FILE_URL, PublicationContentProvider} from '@mintter/shared'
+import {
+  BACKEND_FILE_URL,
+  IS_PROD_DESKTOP,
+  PublicationContentProvider,
+} from '@mintter/shared'
 import {
   EmbedAccount,
   EmbedGroup,
@@ -33,6 +37,7 @@ export function AppPublicationContentProvider({
   const openUrl = useOpenUrl()
   return (
     <PublicationContentProvider
+      isProd={IS_PROD_DESKTOP}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,
