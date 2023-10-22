@@ -2,8 +2,8 @@ import {relativeFormattedDate} from '@mintter/shared'
 import {
   AppleIcon,
   ButtonFrame,
-  ButtonText,
-  DebianIcon,
+  Button,
+  LinuxIcon,
   MainWrapper,
   PageSection,
   SizableText,
@@ -12,54 +12,9 @@ import {
   WindowsIcon,
   XStack,
   YStack,
+  Group,
 } from '@mintter/ui'
-import {Touchable, TouchableOpacity} from 'react-native'
 import {SiteHead} from 'src/site-head'
-
-function DownloadButton({
-  item,
-  label,
-  icon,
-}: {
-  item: {downloadUrl: string}
-  label: string
-  icon: any
-}) {
-  return (
-    <View
-      width="100%"
-      paddingVertical="$2"
-      $gtMd={{
-        width: '50%',
-        padding: '$2',
-      }}
-      $gtLg={{
-        width: '25%',
-      }}
-    >
-      <ButtonFrame
-        flex={1}
-        backgroundColor="$mint4"
-        overflow="hidden"
-        borderRadius="$3"
-        hoverStyle={{
-          cursor: 'pointer',
-          backgroundColor: '$mint6',
-        }}
-        padding="$4"
-        href={item.downloadUrl}
-        download
-        alignItems="center"
-        flexDirection="column"
-        gap="$4"
-        height="auto"
-      >
-        {icon}
-        <SizableText>{label}</SizableText>
-      </ButtonFrame>
-    </View>
-  )
-}
 
 export default function DownloadPage(props: any) {
   return (
@@ -78,42 +33,32 @@ export default function DownloadPage(props: any) {
             <SizableText tag="a" target="_blank" href={props.releaseUrl}>
               Release Notes
             </SizableText>
-            <XStack marginVertical="$7" flexWrap="wrap">
-              {props.manifest.macOSarm64 && (
-                <DownloadButton
-                  item={props.manifest.macOSarm64}
-                  label="Apple Silicon"
-                  icon={<AppleIcon width={32} height={32} />}
+            <XStack
+              marginVertical="$7"
+              flexWrap="wrap"
+              gap="$2"
+              $gtMd={{gap: '$4', flexDirection: 'row'}}
+              flexDirection="column"
+            >
+              {props.manifest.macos && (
+                <PlarformSection
+                  platform={props.manifest.macos}
+                  icon={<AppleIcon width={44} height={44} />}
                 />
               )}
-              {props.manifest.macOSx64 && (
-                <DownloadButton
-                  item={props.manifest.macOSx64}
-                  label="Intel"
-                  icon={<AppleIcon width={32} height={32} />}
+              {props.manifest.windows && (
+                <PlarformSection
+                  platform={props.manifest.windows}
+                  icon={<WindowsIcon width={44} height={44} />}
                 />
               )}
-              {props.manifest.win32x64 && (
-                <DownloadButton
-                  item={props.manifest.win32x64}
-                  label="Windows (x64)"
-                  icon={<WindowsIcon width={32} height={32} />}
-                />
-              )}
-              {props.manifest.linuxx64 && (
-                <DownloadButton
-                  item={props.manifest.linuxx64}
-                  label="Debian (x64)"
-                  icon={<DebianIcon width={32} height={32} />}
+              {props.manifest.linux && (
+                <PlarformSection
+                  platform={props.manifest.linux}
+                  icon={<LinuxIcon width={44} height={44} />}
                 />
               )}
             </XStack>
-            {/* <YStack>
-              <SizableText size="$6" fontWeight="bold">
-                {props.versionName}
-              </SizableText>
-              <SizableText>You can see the release notes here</SizableText>
-            </YStack> */}
           </YStack>
         </PageSection.Content>
         <PageSection.Side />
@@ -121,14 +66,57 @@ export default function DownloadPage(props: any) {
     </MainWrapper>
   )
 }
-function extractedAsset(asset: {url: string; browser_download_url: string}) {
-  return {downloadUrl: asset.browser_download_url}
+
+function PlarformSection({
+  platform,
+  icon,
+}: {
+  platform: {items: Array<{name: string; downloadUrl: string}>; name: string}
+  icon: any
+}) {
+  return (
+    <View flex={1} flexDirection="column">
+      <YStack
+        padding="$4"
+        alignItems="center"
+        gap="$4"
+        elevate
+        borderWidth={1}
+        borderColor="$color6"
+        borderRadius="$3"
+      >
+        <SizableText fontWeight="bold" size="$5">
+          {platform.name}
+        </SizableText>
+        {icon}
+        <Group orientation="horizontal">
+          {platform.items.map((item) => (
+            <Group.Item key={item.name}>
+              <Button theme="mint" href={item.downloadUrl} download size="$2">
+                {item.name}
+              </Button>
+            </Group.Item>
+          ))}
+        </Group>
+      </YStack>
+    </View>
+  )
+}
+
+function extractedAsset(
+  name: string,
+  asset: {url: string; browser_download_url: string},
+) {
+  return {name, downloadUrl: asset.browser_download_url}
 }
 export async function getStaticProps() {
   let req = await fetch(
     `https://api.github.com/repos/mintterhypermedia/mintter/releases/latest`,
   )
+
   let manifest = await req.json()
+
+  console.log(`== ~ getStaticProps ~ manifest:`, manifest)
   // example manifest.assets[].name:
   //  Mintter-2023.10.2-full.nupkg
   //  mintter-2023.10.2-win32-x64-setup.exe
@@ -157,10 +145,21 @@ export async function getStaticProps() {
       publishedAt: manifest.published_at,
       notes: manifest.body,
       manifest: {
-        macOSarm64: extractedAsset(macOSarm64),
-        macOSx64: extractedAsset(macOSx64),
-        win32x64: extractedAsset(win32x64),
-        linuxx64: extractedAsset(linuxx64),
+        macos: {
+          name: 'Apple',
+          items: [
+            extractedAsset('arm64', macOSarm64),
+            extractedAsset('x64', macOSx64),
+          ],
+        },
+        windows: {
+          name: 'Windows',
+          items: [extractedAsset('x64', win32x64)],
+        },
+        linux: {
+          name: 'Linux',
+          items: [extractedAsset('.deb', linuxx64)],
+        },
       },
     },
   }

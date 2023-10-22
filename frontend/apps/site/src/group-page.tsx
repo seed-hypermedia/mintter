@@ -45,23 +45,27 @@ export function GroupPage({}: GroupPageProps) {
 
   const loadedGroup = group.data?.group
 
-  const listView = groupContent.data
-    ? groupContent.data.map((contentItem) => {
-        if (contentItem?.pathName === '/') return null
-        return (
-          contentItem && (
-            <GroupContentItem
-              key={contentItem?.pathName}
-              item={contentItem}
-              groupVersion={version}
-              group={loadedGroup}
-            />
-          )
-        )
-      })
-    : null
+  const listView = (
+    <ListviewWrapper>
+      {groupContent.data
+        ? groupContent.data.map((contentItem) => {
+            if (contentItem?.pathName === '/') return null
+            return (
+              contentItem && (
+                <GroupContentItem
+                  key={contentItem?.pathName}
+                  item={contentItem}
+                  groupVersion={version}
+                  group={loadedGroup}
+                />
+              )
+            )
+          })
+        : null}
+    </ListviewWrapper>
+  )
 
-  let mainView: ReactNode = listView
+  let mainView = listView
 
   const frontPageItem = groupContent.data?.find(
     (item) => item?.pathName === '/',
@@ -72,49 +76,16 @@ export function GroupPage({}: GroupPageProps) {
   if (view == 'front') {
     mainView = frontDocView
   } else if (view == 'list') {
-    mainView = (
-      <YStack
-        paddingHorizontal="$2"
-        $gtMd={{paddingHorizontal: '$3'}}
-        $gtLg={{paddingHorizontal: '$4'}}
-        gap="$2"
-        alignItems="baseline"
-        marginTop="$5"
-      >
-        {listView}
-      </YStack>
-    )
+    mainView = listView
   } else if (frontPageItem) {
     mainView = (
       <>
         <YStack>{frontDocView}</YStack>
-        <YStack
-          padding="$2"
-          $gtMd={{padding: '$3'}}
-          $gtLg={{padding: '$4'}}
-          gap="$2"
-          alignItems="baseline"
-          marginTop="$5"
-          borderTopColor="$borderColor"
-          borderTopWidth={1}
-        >
-          {listView}
-        </YStack>
+        {listView}
       </>
     )
   } else {
-    mainView = (
-      <YStack
-        paddingHorizontal="$2"
-        $gtMd={{paddingHorizontal: '$3'}}
-        $gtLg={{paddingHorizontal: '$4'}}
-        gap="$2"
-        alignItems="baseline"
-        marginTop="$5"
-      >
-        {listView}
-      </YStack>
-    )
+    mainView = listView
   }
   const groupVersion = loadedGroup?.version
   const ogImageUrl =
@@ -270,5 +241,20 @@ export function ContentListItem({
         {accessory}
       </Button>
     </>
+  )
+}
+
+function ListviewWrapper({children}: {children: ReactNode}) {
+  return (
+    <YStack
+      paddingHorizontal="$2"
+      $gtMd={{paddingHorizontal: '$3'}}
+      $gtLg={{paddingHorizontal: '$4'}}
+      gap="$2"
+      alignItems="baseline"
+      marginTop="$5"
+    >
+      {children}
+    </YStack>
   )
 }
