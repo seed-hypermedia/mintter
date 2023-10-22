@@ -71,6 +71,7 @@ export type PublicationContentContextValue = {
   layoutUnit: number
   textUnit: number
   debug: boolean
+  ffSerif: boolean
 }
 
 export const publicationContentContext =
@@ -90,6 +91,7 @@ export function PublicationContentProvider({
   const [tUnit, setTUnit] = useState(contentTextUnit)
   const [lUnit, setLUnit] = useState(contentLayoutUnit)
   const [debug, setDebug] = useState(false)
+  const [ffSerif, toggleSerif] = useState(true)
   return (
     <publicationContentContext.Provider
       value={{
@@ -97,9 +99,11 @@ export function PublicationContentProvider({
         layoutUnit: lUnit,
         textUnit: tUnit,
         debug,
+        ffSerif,
       }}
     >
-      {!isProd ? (
+      {/* {!isProd ? ( */}
+      {true ? (
         <YStack
           zIndex={100}
           padding="$2"
@@ -116,6 +120,13 @@ export function PublicationContentProvider({
             checked={debug}
             // @ts-ignore
             onCheckedChange={setDebug}
+            size="$1"
+          />
+          <CheckboxWithLabel
+            label="body sans-serif"
+            checked={ffSerif}
+            // @ts-ignore
+            onCheckedChange={toggleSerif}
             size="$1"
           />
           <RadioGroup
@@ -409,11 +420,6 @@ export const blockStyles: YStackProps = {
   flex: 1,
 }
 
-let inlineContentProps: SizableTextProps = {
-  className: 'content-inline',
-  fontFamily: '$editorBody',
-}
-
 function inlineContentSize(unit: number): TextProps {
   return {
     fontSize: unit,
@@ -461,7 +467,7 @@ function BlockContent(props: BlockContentProps) {
 }
 
 function BlockContentParagraph({block, depth}: BlockContentProps) {
-  const {debug, textUnit} = usePublicationContentContext()
+  const {debug, textUnit, ffSerif} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return (
@@ -470,7 +476,11 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
       {...debugStyles(debug, 'blue')}
       className="block-static block-paragraph"
     >
-      <Text {...inlineContentProps} {...inlineContentSize(textUnit)}>
+      <Text
+        className="content-inline"
+        fontFamily={ffSerif ? '$editorBody' : '$body'}
+        {...inlineContentSize(textUnit)}
+      >
         <InlineContentView inline={inline} />
       </Text>
     </YStack>
@@ -478,7 +488,7 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
 }
 
 function BlockContentHeading({block, depth}: BlockContentProps) {
-  const {textUnit, debug} = usePublicationContentContext()
+  const {textUnit, debug, ffSerif} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
   let tag = `h${depth}`
@@ -490,7 +500,8 @@ function BlockContentHeading({block, depth}: BlockContentProps) {
       className="block-content block-heading"
     >
       <Text
-        {...inlineContentProps}
+        className="content-inline"
+        fontFamily={ffSerif ? '$editorBody' : '$body'}
         tag={tag}
         {...headingTextStyles}
         maxWidth="75%"
