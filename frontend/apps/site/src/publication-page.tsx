@@ -136,7 +136,11 @@ export default function PublicationPage({
           ) : null}
         </PageSection.Content>
         <PageSection.Side>
-          <YStack>
+          <YStack
+            $gtLg={{
+              marginTop: 80,
+            }}
+          >
             <PublicationMetadata publication={pub} pathName={pathName} />
             <WebTipping
               docId={documentId}
@@ -303,126 +307,4 @@ function PublicationContextSidebar({
   return display != 'none' ? (
     <PageSection.Side {...props}>{groupSidebarContent}</PageSection.Side>
   ) : null
-}
-
-export function StaticFileBlock({block}: {block: HMBlockFile}) {
-  let cid = useMemo(() => getCIDFromIPFSUrl(block.ref), [block.ref])
-  return (
-    <NextLink
-      href={`/ipfs/${cid}`}
-      target="_blank"
-      style={{textDecoration: 'none'}}
-    >
-      <Tooltip content={`Download ${block.attributes.name}`}>
-        <YStack
-          backgroundColor="$color3"
-          borderColor="$color4"
-          borderWidth={1}
-          borderRadius={blockBorderRadius as any}
-          // marginRight={blockHorizontalPadding}
-          overflow="hidden"
-          hoverStyle={{
-            backgroundColor: '$color4',
-          }}
-        >
-          <XStack
-            borderWidth={0}
-            outlineWidth={0}
-            padding="$4"
-            ai="center"
-            space
-          >
-            <File size={18} />
-
-            <SizableText
-              size="$5"
-              maxWidth="17em"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              whiteSpace="nowrap"
-              userSelect="text"
-            >
-              {block.attributes.name}
-            </SizableText>
-            {block.attributes.size && (
-              <SizableText
-                paddingTop="$1"
-                color="$color10"
-                size="$2"
-                minWidth="4.5em"
-              >
-                {formatBytes(parseInt(block.attributes.size))}
-              </SizableText>
-            )}
-          </XStack>
-        </YStack>
-      </Tooltip>
-    </NextLink>
-  )
-}
-
-function StaticVideoBlock({
-  block,
-  isList,
-}: {
-  block: HMBlockVideo
-  isList?: boolean
-}) {
-  const ref = block.ref || ''
-  return ref ? (
-    <YStack
-      backgroundColor="$color3"
-      borderColor="$color8"
-      borderWidth={2}
-      borderRadius="$2"
-      overflow="hidden"
-      hoverStyle={{
-        backgroundColor: '$color4',
-      }}
-      paddingBottom="56.25%"
-      position="relative"
-      height={0}
-    >
-      {ref.startsWith('ipfs://') ? (
-        <XStack
-          tag="video"
-          top={0}
-          left={0}
-          position="absolute"
-          width="100%"
-          height="100%"
-          // @ts-expect-error
-          contentEditable={false}
-          playsInline
-          controls
-          preload="metadata"
-        >
-          <source
-            src={`/ipfs/${block.ref.replace('ipfs://', '')}`}
-            type={getSourceType(block.attributes.name)}
-          />
-          <SizableText>Something is wrong with the video file.</SizableText>
-        </XStack>
-      ) : (
-        <XStack
-          tag="iframe"
-          top={0}
-          left={0}
-          position="absolute"
-          width="100%"
-          height="100%"
-          // @ts-expect-error
-          src={block.ref}
-          frameBorder="0"
-          allowFullScreen
-        />
-      )}
-    </YStack>
-  ) : null
-}
-
-function getSourceType(name?: string) {
-  if (!name) return
-  const nameArray = name.split('.')
-  return `video/${nameArray[nameArray.length - 1]}`
 }

@@ -111,7 +111,17 @@ export function GroupPage({}: GroupPageProps) {
       />
       <PageSection.Root>
         <PageSection.Side />
-        <PageSection.Content>{mainView}</PageSection.Content>
+        <PageSection.Content>
+          <YStack
+            paddingHorizontal="$3"
+            $gtMd={{paddingHorizontal: '$4'}}
+            gap="$2"
+            alignItems="baseline"
+            // marginTop="$5"
+          >
+            {mainView}
+          </YStack>
+        </PageSection.Content>
         <PageSection.Side paddingRight="$4">
           <YStack className="publication-sidenav-sticky">
             <GroupMetadata group={group.data?.group} groupId={groupId} />
@@ -209,7 +219,15 @@ export function ContentListItem({
 }) {
   return (
     <>
-      <Button chromeless tag="a" href={href} onPress={() => {}} size="$5">
+      <Button
+        width="100%"
+        chromeless
+        tag="a"
+        href={href}
+        onPress={() => {}}
+        size="$5"
+        paddingHorizontal="$3"
+      >
         {title}
         <View flex={1} />
         {accessory}

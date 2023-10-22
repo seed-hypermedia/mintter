@@ -31,9 +31,11 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
           marginTop="$5"
         >
           <XStack
+            borderRadius="$2"
             hoverStyle={{backgroundColor: '$color6'}}
             alignItems="center"
-            paddingHorizontal="$2"
+            paddingHorizontal="$3"
+            paddingVertical="$2"
           >
             <NextLink
               href="/"
@@ -45,7 +47,9 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
               }} // for some reason this is needed instead of tamagui style
               prefetch
             >
-              <SizableText size="$6">{siteTitle}</SizableText>
+              <SizableText fontWeight="$10" size="$6">
+                {siteTitle}
+              </SizableText>
             </NextLink>
           </XStack>
         </XStack>

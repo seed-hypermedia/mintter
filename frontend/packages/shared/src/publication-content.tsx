@@ -363,21 +363,23 @@ export function BlockNodeContent({
                 </SizableText>
               </Button>
             ) : null}
-            <Button
-              size="$1"
-              opacity={isHovering ? 1 : 0}
-              padding={layoutUnit / 4}
-              borderRadius={layoutUnit / 4}
-              chromeless
-              icon={Copy}
-              onPress={() => {
-                if (blockNode.block?.id) {
-                  onCopyBlock(blockNode.block.id)
-                } else {
-                  console.error('onCopyBlock Error: no blockId available')
-                }
-              }}
-            />
+            <Tooltip content="Copy block reference" delay={800}>
+              <Button
+                size="$1"
+                opacity={isHovering ? 1 : 0}
+                padding={layoutUnit / 4}
+                borderRadius={layoutUnit / 4}
+                chromeless
+                icon={Copy}
+                onPress={() => {
+                  if (blockNode.block?.id) {
+                    onCopyBlock(blockNode.block.id)
+                  } else {
+                    console.error('onCopyBlock Error: no blockId available')
+                  }
+                }}
+              />
+            </Tooltip>
           </XStack>
         ) : null}
       </XStack>
@@ -936,6 +938,10 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       padding={layoutUnit / 2}
       overflow="hidden"
       width="100%"
+      hoverStyle={{
+        backgroundColor: '$backgroundHover',
+      }}
+      group="fileblock"
     >
       <XStack
         borderWidth={0}
@@ -967,8 +973,13 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
             {formatBytes(parseInt(block.attributes.size))}
           </SizableText>
         )}
+        <XStack flex={1} />
         <Tooltip content={`Download ${block.attributes.name}`}>
           <Button
+            opacity={0}
+            $group-fileblock-hover={{
+              opacity: 1,
+            }}
             size="$2"
             onPress={() => {
               saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
