@@ -196,6 +196,17 @@ export function fromHMBlock(
     })
   }
 
+  if (editorBlock.type == 'codeBlock') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'codeBlock',
+      attributes: {
+        language: editorBlock.props.language,
+      },
+      ...extractContent(editorBlock.content),
+    })
+  }
+
   if (res) {
     res = extractChildrenType(res, editorBlock)
     res = addLevelAttr(res, editorBlock)

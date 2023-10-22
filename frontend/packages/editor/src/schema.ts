@@ -8,6 +8,7 @@ import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {ImageBlock} from './image'
 import {ImagePlaceholder} from './imagePlaceholder'
+import CodeBlock from './tiptap-extension-codeblock'
 import {VideoBlock} from './video'
 
 export const hmBlockSchema: BlockSchema = {
@@ -21,6 +22,13 @@ export const hmBlockSchema: BlockSchema = {
       title: {default: ''},
     },
     node: ImagePlaceholder,
+  },
+  codeBlock: {
+    propSchema: {
+      ...defaultProps,
+      language: {default: ''},
+    },
+    node: CodeBlock,
   },
   embed: EmbedBlock,
   video: VideoBlock,

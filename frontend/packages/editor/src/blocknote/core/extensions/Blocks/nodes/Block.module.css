@@ -219,6 +219,21 @@ NESTED BLOCKS
   outline-width: 0;
 }
 
+.blockContent[data-content-type='codeBlock'] {
+  background-color: var(--color4);
+  border-color: var(--color4);
+  /* border-width: 2px; */
+  border-radius: 5px;
+  overflow: 'hidden';
+  padding: 7px;
+  outline-width: 0;
+}
+
+.blockContent[data-content-type='codeBlock'] code {
+  font-family: monospace;
+  font-size: inherit;
+}
+
 /* LISTS */
 
 .blockContent::before {

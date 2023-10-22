@@ -110,6 +110,13 @@ export type HMBlockEmbed = HMBlockBase & {
   ref: string
 }
 
+export type HMBlockCodeBlock = HMBlockBase & {
+  type: 'codeBlock'
+  attributes: {
+    language?: string
+  }
+}
+
 export type HMBlock =
   | HMBlockParagraph
   | HMBlockHeading
@@ -118,6 +125,7 @@ export type HMBlock =
   | HMBlockVideo
   | HMBlockEmbed
   | HMBlockCode
+  | HMBlockCodeBlock
 
 export type HMBlockNode = {
   block: HMBlock

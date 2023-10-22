@@ -1,6 +1,7 @@
 import {
   HMBlock,
   HMBlockChildrenType,
+  HMBlockCodeBlock,
   HMBlockFile,
   HMBlockHeading,
   HMBlockImage,
@@ -316,6 +317,22 @@ export function toHMBlock(
         },
         children: [],
       }
+    }
+
+    if (serverBlock.block?.type === 'codeBlock') {
+      res = {
+        type: 'codeBlock',
+        id: serverBlock.block.id,
+        props: {
+          language: serverBlock.block.attributes.language,
+          textAlignment: 'left',
+          childrenType: extractChildrenType(
+            serverBlock.block.attributes.childrenType,
+          ),
+        },
+        content: toHMInlineContent(serverBlock.block),
+        children: [],
+      } satisfies HMBlockCodeBlock
     }
 
     // how to handle when serverBlock.type is 'heading' but we are inside of a list?
