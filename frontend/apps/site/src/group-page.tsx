@@ -1,27 +1,27 @@
+import {Timestamp} from '@bufbuild/protobuf'
 import {
   HMPublication,
+  PublicationContent,
   UnpackedHypermediaId,
   createHmId,
   formattedDate,
   unpackHmId,
-  PublicationContent,
 } from '@mintter/shared'
-import {useRouter} from 'next/router'
-import {getGroupView} from 'server/group'
-import {trpc} from './trpc'
-import {ReactElement, ReactNode} from 'react'
-import {Button, ButtonText, PageSection, Text, View, YStack} from '@mintter/ui'
-import {SiteHead} from './site-head'
-import Head from 'next/head'
-import Footer from './footer'
-import {OGImageMeta} from './head'
-import {SitePublicationContentProvider} from './site-embeds'
-import {useGroupContentUrl} from './publication-page'
-import {AccountAvatarLink} from './account-row'
 import {HMGroup} from '@mintter/shared/src/json-hm'
-import {GroupMetadata} from './group-metadata'
-import {Timestamp} from '@bufbuild/protobuf'
+import {Button, ButtonText, PageSection, Text, View, YStack} from '@mintter/ui'
+import Head from 'next/head'
+import {useRouter} from 'next/router'
+import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
+import {getGroupView} from 'server/group'
+import {AccountAvatarLink} from './account-row'
+import Footer from './footer'
+import {GroupMetadata} from './group-metadata'
+import {OGImageMeta} from './head'
+import {useGroupContentUrl} from './publication-page'
+import {SitePublicationContentProvider} from './site-embeds'
+import {SiteHead} from './site-head'
+import {trpc} from './trpc'
 
 export type GroupPageProps = {}
 
@@ -72,16 +72,49 @@ export function GroupPage({}: GroupPageProps) {
   if (view == 'front') {
     mainView = frontDocView
   } else if (view == 'list') {
-    mainView = listView
+    mainView = (
+      <YStack
+        paddingHorizontal="$2"
+        $gtMd={{paddingHorizontal: '$3'}}
+        $gtLg={{paddingHorizontal: '$4'}}
+        gap="$2"
+        alignItems="baseline"
+        marginTop="$5"
+      >
+        {listView}
+      </YStack>
+    )
   } else if (frontPageItem) {
     mainView = (
       <>
-        {frontDocView}
-        {listView}
+        <YStack>{frontDocView}</YStack>
+        <YStack
+          padding="$2"
+          $gtMd={{padding: '$3'}}
+          $gtLg={{padding: '$4'}}
+          gap="$2"
+          alignItems="baseline"
+          marginTop="$5"
+          borderTopColor="$borderColor"
+          borderTopWidth={1}
+        >
+          {listView}
+        </YStack>
       </>
     )
   } else {
-    mainView = listView
+    mainView = (
+      <YStack
+        paddingHorizontal="$2"
+        $gtMd={{paddingHorizontal: '$3'}}
+        $gtLg={{paddingHorizontal: '$4'}}
+        gap="$2"
+        alignItems="baseline"
+        marginTop="$5"
+      >
+        {listView}
+      </YStack>
+    )
   }
   const groupVersion = loadedGroup?.version
   const ogImageUrl =
@@ -113,17 +146,21 @@ export function GroupPage({}: GroupPageProps) {
         <PageSection.Side />
         <PageSection.Content>
           <YStack
-            paddingHorizontal="$3"
-            $gtMd={{paddingHorizontal: '$4'}}
-            gap="$2"
-            alignItems="baseline"
-            // marginTop="$5"
+          // paddingHorizontal="$3"
+          // $gtMd={{paddingHorizontal: '$4'}}
+          // gap="$2"
+          // alignItems="baseline"
           >
             {mainView}
           </YStack>
         </PageSection.Content>
-        <PageSection.Side paddingRight="$4">
-          <YStack className="publication-sidenav-sticky">
+        <PageSection.Side>
+          <YStack
+            className="publication-sidenav-sticky"
+            $gtLg={{
+              marginTop: 80,
+            }}
+          >
             <GroupMetadata group={group.data?.group} groupId={groupId} />
           </YStack>
         </PageSection.Side>
@@ -225,7 +262,7 @@ export function ContentListItem({
         tag="a"
         href={href}
         onPress={() => {}}
-        size="$5"
+        size="$4"
         paddingHorizontal="$3"
       >
         {title}

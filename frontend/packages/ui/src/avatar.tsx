@@ -20,7 +20,11 @@ export function UIAvatar({
     [id, color],
   )
 
-  let textSize = size > 32 ? 24 : 14
+  function clampNumber(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max)
+  }
+
+  let textSize = clampNumber(size / 2, 10, 56)
 
   return (
     <Avatar circular size={size} alignItems="center" justifyContent="center">

@@ -70,7 +70,7 @@ function LastUpdateSection({time}: {time: string}) {
       <SideSectionTitle>Last Update:</SideSectionTitle>
 
       <Tooltip content={format(new Date(time), 'MMMM do yyyy, HH:mm:ss z')}>
-        <SizableText color="$blue11">
+        <SizableText size="$2">
           {format(new Date(time), 'EEEE, MMMM do, yyyy')}
         </SizableText>
       </Tooltip>

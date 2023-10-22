@@ -54,6 +54,7 @@ export function AccountRow({
         url={profile?.avatar ? cidURL(profile.avatar) : ''}
         id={account}
         color="$color7"
+        size={20}
         label={profile?.alias || label}
       />
       {!onlyAvatar ? (
