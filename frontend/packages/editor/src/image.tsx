@@ -4,7 +4,7 @@ import {
   BACKEND_FILE_UPLOAD_URL,
   BACKEND_FILE_URL,
   getCIDFromIPFSUrl,
-  useStaticPublicationContext,
+  usePublicationContentContext,
 } from '@mintter/shared'
 import {
   Button,
@@ -171,7 +171,7 @@ function ImageComponent({
   const saveImage = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
   }
-  const {ipfsBlobPrefix} = useStaticPublicationContext()
+  const {ipfsBlobPrefix} = usePublicationContentContext()
   const imageUrl = block.props.url.includes('.') // what does this check for??
     ? null
     : `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
