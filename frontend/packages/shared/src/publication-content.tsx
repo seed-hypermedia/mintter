@@ -108,7 +108,7 @@ export function PublicationContentProvider({
         ffSerif,
       }}
     >
-      {!isDev ? (
+      {isDev ? (
         <YStack
           zIndex={100}
           padding="$2"
