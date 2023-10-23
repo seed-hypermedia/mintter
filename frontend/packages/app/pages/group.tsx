@@ -231,9 +231,6 @@ export default function GroupPage() {
                 </XStack>
                 <YStack>
                   <XStack paddingVertical="$4" alignItems="center" gap="$3">
-                    {/* <SizableText size="$3" fontWeight="bold">
-                      Group Members
-                    </SizableText> */}
                     <XStack gap="$3" flex={1} alignItems="flex-end">
                       {ownerAccountId ? (
                         <YStack

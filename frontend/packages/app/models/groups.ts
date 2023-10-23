@@ -14,6 +14,7 @@ import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
 import {queryKeys} from './query-keys'
 import {useMemo} from 'react'
+import {FieldValues, useController} from 'react-hook-form'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
@@ -72,14 +73,14 @@ export function useCreateGroup(
       const group = await grpcClient.groups.createGroup({
         description,
         title,
-        members: members
-          ? Object.fromEntries(members.map((m) => [m, Role.EDITOR]))
-          : undefined,
       })
-      if (content) {
+      if (content || members) {
         await grpcClient.groups.updateGroup({
           id: group.id,
           updatedContent: content,
+          updatedMembers: members
+            ? Object.fromEntries(members.map((m) => [m, Role.EDITOR]))
+            : undefined,
         })
       }
       return group.id

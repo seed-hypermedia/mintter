@@ -42,6 +42,12 @@ installed.
 - `./dev run-site`
 - `./dev build-site`
 
+To run the dev build with the production network, use the following command:
+
+```
+MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
+```
+
 ## Web Build
 
 You can build docker images for different modules of the system. Always from the
@@ -69,9 +75,9 @@ The site deployment workspace will default to `~/.mtt-site`.
 
 #### Auto-Update a Site
 
-If you want the site to auto update to latest stable images when they are pushed, 
+If you want the site to auto update to latest stable images when they are pushed,
 just execute the installation command with the `--auto-update` flag. Ex:
+
 ```shell
 sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com --auto-update
 ```
-
