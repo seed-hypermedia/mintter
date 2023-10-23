@@ -88,7 +88,11 @@ export function PublicationContentProvider({
   isDev = false,
   ...PubContentContext
 }: PropsWithChildren<
-  PublicationContentContextValue & {debugTop?: number; isDev?: boolean}
+  PublicationContentContextValue & {
+    debugTop?: number
+    isDev?: boolean
+    ffSerif?: boolean
+  }
 >) {
   const [tUnit, setTUnit] = useState(contentTextUnit)
   const [lUnit, setLUnit] = useState(contentLayoutUnit)
@@ -611,7 +615,7 @@ function useHeadingMarginStyles(depth: number, unit: number) {
 function BlockContentImage({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
-  const {ipfsBlobPrefix} = usePublicationContentContext()
+  const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
   if (!cid) return null
 
   return (
@@ -623,8 +627,8 @@ function BlockContentImage({block, depth}: BlockContentProps) {
     >
       <img alt={block.attributes.alt} src={`${ipfsBlobPrefix}${cid}`} />
       {inline.length ? (
-        <Text opacity={0.7} size="$2">
-          <InlineContentView inline={inline} />
+        <Text opacity={0.7} fontFamily="$body">
+          <InlineContentView inline={inline} textUnit={textUnit * 0.85} />
         </Text>
       ) : null}
     </YStack>
@@ -634,7 +638,7 @@ function BlockContentImage({block, depth}: BlockContentProps) {
 function BlockContentVideo({block, depth}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
-  const {ipfsBlobPrefix} = usePublicationContentContext()
+  const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
 
   return (
     <YStack
@@ -685,8 +689,8 @@ function BlockContentVideo({block, depth}: BlockContentProps) {
         <Text>Video block wrong state</Text>
       )}
       {inline.length ? (
-        <Text opacity={0.7} size="$2">
-          <InlineContentView inline={inline} />
+        <Text opacity={0.7}>
+          <InlineContentView textUnit={textUnit * 0.7} inline={inline} />
         </Text>
       ) : null}
     </YStack>
@@ -705,14 +709,18 @@ function InlineContentView({
   inline,
   style,
   linkType = null,
+  textUnit,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
   linkType?: LinkType
+  textUnit?: number
 }) {
-  const {onLinkClick, textUnit} = usePublicationContentContext()
+  const {onLinkClick, textUnit: providerTextUnit} =
+    usePublicationContentContext()
+  let fSize = textUnit || providerTextUnit
   return (
-    <Text fontSize={textUnit} {...props}>
+    <Text fontSize={fSize} {...props}>
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -735,11 +743,19 @@ function InlineContentView({
           let children: any = content.text
 
           if (content.styles.bold) {
-            children = <Text fontWeight="bold">{children}</Text>
+            children = (
+              <Text fontWeight="bold" fontSize={fSize}>
+                {children}
+              </Text>
+            )
           }
 
           if (content.styles.italic) {
-            children = <Text fontStyle="italic">{children}</Text>
+            children = (
+              <Text fontStyle="italic" fontSize={fSize}>
+                {children}
+              </Text>
+            )
           }
 
           if (content.styles.code) {
@@ -751,7 +767,7 @@ function InlineContentView({
                 tag="code"
                 borderRadius="$2"
                 overflow="hidden"
-                fontSize={textUnit * 0.85}
+                fontSize={fSize * 0.85}
                 paddingHorizontal="$2"
                 paddingVertical={2}
               >
@@ -786,6 +802,7 @@ function InlineContentView({
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
               style={{textDecorationLine}}
+              fontSize={fSize}
             >
               {children}
             </Text>
@@ -806,6 +823,7 @@ function InlineContentView({
               onClick={(e) => onLinkClick(content.href, e)}
             >
               <InlineContentView
+                textUnit={fSize}
                 inline={content.content}
                 linkType={isHmLink ? 'hypermedia' : 'basic'}
               />
