@@ -125,7 +125,14 @@ export default function PublicationPage() {
                     // paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <AppPublicationContentProvider citations={citations?.links}>
+                    <AppPublicationContentProvider
+                      citations={citations?.links}
+                      onCitationClick={() => {
+                        if (route.accessory?.key === 'citations')
+                          return replace({...route, accessory: null})
+                        replace({...route, accessory: {key: 'citations'}})
+                      }}
+                    >
                       <PublicationContent publication={publication.data} />
                     </AppPublicationContentProvider>
                   </YStack>
