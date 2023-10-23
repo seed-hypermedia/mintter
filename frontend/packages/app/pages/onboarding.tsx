@@ -201,7 +201,7 @@ function Mnemonics(props: OnboardingStepProps) {
 
   function onCopy() {
     if (mnemonics.data) {
-      copyTextToClipboard(mnemonics.data.join(','))
+      copyTextToClipboard(mnemonics.data.join(' '))
       toast.success('Words copied to your clipboard!')
     } else {
       console.error(
@@ -236,7 +236,7 @@ function Mnemonics(props: OnboardingStepProps) {
                     flex={1}
                     id="mnemonics-input"
                     placeholder={
-                      'Add your 12 mnemonics words \n(food, barrel, buzz, ...)'
+                      'Add your 12 mnemonics words \n(food barrel buzz, ...)'
                     }
                     minHeight={130}
                     onChangeText={setOwnSeed}
@@ -302,7 +302,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   display="block"
                   id="mnemonics"
                 >
-                  {mnemonics.data?.join(', ')}
+                  {mnemonics.data?.join(' ')}
                 </SizableText>
                 <XStack>
                   <Tooltip content="regenerate words">
