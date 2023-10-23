@@ -16,7 +16,9 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
+	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
 )
@@ -56,7 +58,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return fmt.Errorf("failed to connect to peer %s: %w", info.ID, err)
 	}
 
-	if err := n.checkMintterProtocolVersion(info.ID, n.protocol.version); err != nil {
+	if err := n.checkMintterProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
 		return err
 	}
 
@@ -82,18 +84,28 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	return nil
 }
 
-func (n *Node) checkMintterProtocolVersion(pid peer.ID, desiredVersion string) (err error) {
-	protos, err := n.p2p.Peerstore().GetProtocols(pid)
-	if err != nil {
-		return fmt.Errorf("failed to check mintter protocol version: %w", err)
-	}
+func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
 
-	var isMintter bool
-	if len(protos) == 0 {
-		n.log.Warn("peer does not support any protocol", zap.String("PeerID", pid.String()))
+	var protos []protocol.ID
+	if err := retry.Exponential(ctx, 50*time.Millisecond, func(ctx context.Context) error {
+		protos, err = n.p2p.Peerstore().GetProtocols(pid)
+		if err != nil {
+			return fmt.Errorf("failed to check mintter protocol version: %w", err)
+		}
+
+		if len(protos) > 0 {
+			return nil
+		}
+
+		return fmt.Errorf("peer %s doesn't support any protocols", pid.String())
+	}); err != nil {
+		return err
 	}
 
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
+	var isMintter bool
 	for _, p := range protos {
 		version := strings.TrimPrefix(string(p), n.protocol.prefix)
 		if version == string(p) {
@@ -169,7 +181,7 @@ func (srv *rpcMux) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 
 	log := n.log.With(zap.String("peer", pid.String()))
 
-	if err := n.checkMintterProtocolVersion(pid, srv.Node.protocol.version); err != nil {
+	if err := n.checkMintterProtocolVersion(ctx, pid, srv.Node.protocol.version); err != nil {
 		return nil, err
 	}
 
