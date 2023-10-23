@@ -12,8 +12,6 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     : 'Hypermedia Site (coming soon)'
   return (
     <PageSection.Root
-      paddingTop="$4"
-      $gtMd={{paddingTop: '$6', paddingBottom: '$6'}}
       // this prevents the head to be stretched as the other content in the page.
       flex="none"
     >
