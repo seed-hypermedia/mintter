@@ -156,7 +156,13 @@ export function blockToNode<BSchema extends BlockSchema>(
       schema.text(block.content),
     )
   } else {
-    const nodes = inlineContentToNodes(block.content, schema)
+    let nodes: Node[] = []
+    // Don't want hard breaks inserted as nodes in codeblock
+    if (block.type === 'codeBlock') {
+      // @ts-ignore
+      const textNode = schema.text(block.content[0].text)
+      nodes.push(textNode)
+    } else nodes = inlineContentToNodes(block.content, schema)
     contentNode = schema.nodes[type].create(block.props, nodes)
   }
 

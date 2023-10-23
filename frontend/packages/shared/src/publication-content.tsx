@@ -16,6 +16,7 @@ import {
   toHMInlineContent,
   unpackHmId,
   IS_PROD_DESKTOP,
+  HMBlockCodeBlock,
 } from '@mintter/shared'
 import {
   Button,
@@ -464,6 +465,10 @@ function BlockContent(props: BlockContentProps) {
 
   if (props.block.type == 'embed') {
     return <BlockContentEmbed {...props} depth={props.depth} />
+  }
+
+  if (props.block.type == 'codeBlock') {
+    return <BlockContentCode block={props.block} />
   }
 
   return <BlockContentUnknown {...props} />
@@ -1003,6 +1008,30 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
           </Button>
         </Tooltip>
       </XStack>
+    </YStack>
+  )
+}
+
+export function BlockContentCode({block}: {block: HMBlockCodeBlock}) {
+  const {layoutUnit} = usePublicationContentContext()
+
+  return (
+    <YStack
+      {...blockStyles}
+      borderColor="$color6"
+      borderWidth={1}
+      borderRadius={layoutUnit / 4}
+      className="block-static block-code"
+      padding="$3"
+      gap="$2"
+      // overflow="hidden"
+      width="100%"
+    >
+      <pre>
+        <code style={{fontFamily: 'monospace', whiteSpace: 'pre'}}>
+          {block.text}
+        </code>
+      </pre>
     </YStack>
   )
 }

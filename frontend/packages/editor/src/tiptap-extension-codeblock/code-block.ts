@@ -1,4 +1,4 @@
-import {mergeAttributes, Node, textblockTypeInputRule} from '@tiptap/core'
+import {mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
 import {Plugin, PluginKey, TextSelection} from '@tiptap/pm/state'
 import {createTipTapBlock, mergeCSSClasses} from '..'
 import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
@@ -64,7 +64,7 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
     ]
   },
 
-  renderHTML({node, HTMLAttributes}) {
+  renderHTML({HTMLAttributes}) {
     const blockContentDOMAttributes =
       this.options.domAttributes?.blockContent || {}
     const inlineContentDOMAttributes =
@@ -130,6 +130,22 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
         return false
       },
 
+      // Tab: ({editor}) => {
+      //   const {state, view} = editor
+      //   const {selection} = state
+      //   const {$from, empty} = selection
+
+      //   if (!empty || $from.parent.type !== this.type) {
+      //     return false
+      //   }
+
+      //   let tr = state.tr
+      //   const tabSpace = state.schema.text('\t')
+      //   tr = tr.replaceSelectionWith(tabSpace)
+      //   view.dispatch(tr)
+      //   return true
+      // },
+
       // exit node on if at end of the block and at the new line or add a new line
       Enter: ({editor}) => {
         const {state, view} = editor
@@ -157,14 +173,8 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
 
           return true
         }
-        // editor.commands.insertContentAt(
-        //   {from: $from.pos, to: $from.pos},
-        //   '\n',
-        //   {updateSelection: true},
-        // )
         let tr = state.tr
-        const smth = state.schema.text('\n')
-        tr = tr.replaceWith($from.pos, $from.pos, smth)
+        tr = tr.replaceSelectionWith(state.schema.text('\n'))
         view.dispatch(tr)
         return true
       },
