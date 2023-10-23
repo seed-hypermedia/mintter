@@ -1079,7 +1079,6 @@ export function useDocTextContent(pub?: Publication) {
       content += block.text
 
       if (children.length) {
-        console.log(`== ~ useDocTextContent ~ children:`, children)
         let nc = extractContent(children)
         content += nc
       }
@@ -1088,10 +1087,6 @@ export function useDocTextContent(pub?: Publication) {
     }
 
     if (pub?.document?.children.length) {
-      console.log(
-        `== ~ useDocTextContent ~ pub.document?.children:`,
-        pub.document?.children,
-      )
       res = extractContent(pub.document?.children)
     }
 

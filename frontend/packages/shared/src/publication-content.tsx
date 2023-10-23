@@ -514,7 +514,7 @@ function BlockContentHeading({block, depth}: BlockContentProps) {
         fontFamily={ffSerif ? '$editorBody' : '$body'}
         tag={tag}
         {...headingTextStyles}
-        maxWidth="75%"
+        maxWidth="95%"
       >
         <InlineContentView
           inline={inline}
@@ -529,7 +529,6 @@ function BlockContentHeading({block, depth}: BlockContentProps) {
 
 function useHeadingTextStyles(depth: number, unit: number) {
   function headingFontValues(value: number) {
-    console.log(`== ~ headingFontValues ~ value:`, value)
     return {
       fontSize: value,
       lineHeight: value * 1.2,
