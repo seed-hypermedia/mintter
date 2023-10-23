@@ -1024,7 +1024,6 @@ export function BlockContentCode({block}: {block: HMBlockCodeBlock}) {
       className="block-static block-code"
       padding="$3"
       gap="$2"
-      // overflow="hidden"
       width="100%"
     >
       <pre>

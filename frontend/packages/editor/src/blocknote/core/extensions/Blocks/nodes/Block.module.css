@@ -219,13 +219,13 @@ NESTED BLOCKS
   outline-width: 0;
 }
 
+/* CODE BLOCK */
 .blockContent[data-content-type='codeBlock'] {
   background-color: var(--color4);
   border-color: var(--color4);
-  /* border-width: 2px; */
   border-radius: 5px;
   overflow: 'hidden';
-  padding: 7px;
+  padding: 7px 15px;
   outline-width: 0;
 }
 
@@ -402,6 +402,26 @@ NESTED BLOCKS
     'Helvetica Neue',
     sans-serif;
   content: 'Heading';
+}
+
+.blockContent[data-content-type='codeBlock'].isEmpty.hasAnchor
+  .inlineContent:before {
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  content: 'Code Block';
 }
 
 .isEmpty.hasAnchor
