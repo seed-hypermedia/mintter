@@ -360,7 +360,7 @@ export function BlockNodeContent({
             position="absolute"
             top={layoutUnit / 4}
             right={0}
-            backgroundColor="$background"
+            backgroundColor={isHovering ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
             $gtMd={{
@@ -715,10 +715,11 @@ function InlineContentView({
   linkType?: LinkType
   fontSize?: number
 }) {
-  const {onLinkClick, textUnit: providerTextUnit} =
-    usePublicationContentContext()
+  const {onLinkClick, textUnit} = usePublicationContentContext()
+
+  const fSize = fontSize || textUnit
   return (
-    <Text fontSize={fontSize} {...props}>
+    <Text fontSize={fSize} lineHeight={fSize * 1.5} {...props}>
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -742,7 +743,7 @@ function InlineContentView({
 
           if (content.styles.bold) {
             children = (
-              <Text fontWeight="bold" fontSize={fontSize}>
+              <Text fontWeight="bold" fontSize={fSize} lineHeight={fSize * 1.5}>
                 {children}
               </Text>
             )
@@ -750,7 +751,11 @@ function InlineContentView({
 
           if (content.styles.italic) {
             children = (
-              <Text fontStyle="italic" fontSize={fontSize}>
+              <Text
+                fontStyle="italic"
+                fontSize={fSize}
+                lineHeight={fSize * 1.5}
+              >
                 {children}
               </Text>
             )
@@ -765,7 +770,8 @@ function InlineContentView({
                 tag="code"
                 borderRadius="$2"
                 overflow="hidden"
-                fontSize={fontSize * 0.85}
+                fontSize={fSize * 0.85}
+                lineHeight={fSize * 1.5}
                 paddingHorizontal="$2"
                 paddingVertical={2}
               >
@@ -800,7 +806,8 @@ function InlineContentView({
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
               style={{textDecorationLine}}
-              fontSize={fontSize}
+              fontSize={fSize}
+              lineHeight={fSize * 1.5}
             >
               {children}
             </Text>
@@ -821,7 +828,8 @@ function InlineContentView({
               onClick={(e) => onLinkClick(content.href, e)}
             >
               <InlineContentView
-                fontSize={fontSize}
+                fontSize={fSize}
+                lineHeight={fSize * 1.5}
                 inline={content.content}
                 linkType={isHmLink ? 'hypermedia' : 'basic'}
               />
