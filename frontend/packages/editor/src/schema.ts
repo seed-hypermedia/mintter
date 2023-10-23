@@ -8,7 +8,7 @@ import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {ImageBlock} from './image'
 import {ImagePlaceholder} from './imagePlaceholder'
-import CodeBlock from './tiptap-extension-codeblock'
+import {CodeBlock} from './code-block'
 import {VideoBlock} from './video'
 
 export const hmBlockSchema: BlockSchema = {

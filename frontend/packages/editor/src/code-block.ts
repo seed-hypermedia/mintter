@@ -1,6 +1,6 @@
 import {mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
 import {Plugin, PluginKey, TextSelection} from '@tiptap/pm/state'
-import {createTipTapBlock, mergeCSSClasses} from '..'
+import {createTipTapBlock, mergeCSSClasses} from '.'
 import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
 
 declare module '@tiptap/core' {
