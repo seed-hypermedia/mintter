@@ -198,11 +198,6 @@ func (srv *Server) SyncGroupSite(ctx context.Context, group string, interval tim
 		return fmt.Errorf("group ID mismatch: remote %q != local %q", info.GroupId, sr.GroupID)
 	}
 
-	// Nothing to sync if the site still has the same version since the last time we asked.
-	if info.GroupVersion == sr.GroupID {
-		return nil
-	}
-
 	n, err := srv.node.Await(ctx)
 	if err != nil {
 		return err
