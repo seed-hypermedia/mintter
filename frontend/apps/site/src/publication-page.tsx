@@ -129,7 +129,12 @@ export default function PublicationPage({
         <PageSection.Content paddingBottom={80}>
           {pub ? (
             <SitePublicationContentProvider unpackedId={pubId}>
-              <PublicationContent publication={pub} />
+              <PublicationContent
+                paddingHorizontal={0}
+                // $gtMd={{paddingHorizontal: '$3'}}
+                // $gtLg={{paddingHorizontal: '$3'}}
+                publication={pub}
+              />
             </SitePublicationContentProvider>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />

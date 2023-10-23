@@ -19,7 +19,6 @@ import {OpenInAppLink} from 'src/metadata'
 import {HMAccount} from '@mintter/shared/src/json-hm'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
-
   // return (
   //   <XStack alignItems="center" gap="$3">
   //     {avatar && (

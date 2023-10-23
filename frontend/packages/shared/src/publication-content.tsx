@@ -38,6 +38,7 @@ import {
   XStack,
   YStack,
   YStackProps,
+  XStackProps,
 } from '@mintter/ui'
 import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {
@@ -189,7 +190,8 @@ function debugStyles(debug: boolean = false, color: ColorProp = '$color7') {
 
 export function PublicationContent({
   publication,
-}: {
+  ...props
+}: XStackProps & {
   publication: Publication | HMPublication
 }) {
   const {layoutUnit} = usePublicationContentContext()
@@ -197,6 +199,7 @@ export function PublicationContent({
     <XStack
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
+      {...props}
     >
       <BlockNodeList childrenType={'group'}>
         {publication.document?.children?.length &&

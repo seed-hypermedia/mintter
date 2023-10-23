@@ -22,10 +22,11 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
         {siteTitle && <meta property="og:site_name" content={siteTitle} />}
       </Head>
       <PageSection.Side />
-      <PageSection.Content paddingBottom={20}>
+      <PageSection.Content>
         <XStack
           paddingHorizontal="$3"
-          $gtMd={{paddingHorizontal: '$4'}}
+          $gtMd={{paddingHorizontal: '$5'}}
+          // $gtLg={{paddingHorizontal: '$4'}}
           gap="$2"
           alignItems="baseline"
           marginTop="$5"
@@ -34,7 +35,9 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
             borderRadius="$2"
             hoverStyle={{backgroundColor: '$color6'}}
             alignItems="center"
-            paddingHorizontal="$3"
+            paddingHorizontal="$2"
+            // $gtMd={{paddingHorizontal: '$3'}}
+            // $gtLg={{paddingHorizontal: '$'}}
             paddingVertical="$2"
           >
             <NextLink
