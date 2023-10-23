@@ -84,10 +84,10 @@ export type EntityComponentProps = BlockContentProps &
 export function PublicationContentProvider({
   children,
   debugTop = 0,
-  isProd = false,
+  isDev = false,
   ...PubContentContext
 }: PropsWithChildren<
-  PublicationContentContextValue & {debugTop?: number; isProd?: boolean}
+  PublicationContentContextValue & {debugTop?: number; isDev?: boolean}
 >) {
   const [tUnit, setTUnit] = useState(contentTextUnit)
   const [lUnit, setLUnit] = useState(contentLayoutUnit)
@@ -103,8 +103,7 @@ export function PublicationContentProvider({
         ffSerif,
       }}
     >
-      {/* {!isProd ? ( */}
-      {true ? (
+      {!isDev ? (
         <YStack
           zIndex={100}
           padding="$2"

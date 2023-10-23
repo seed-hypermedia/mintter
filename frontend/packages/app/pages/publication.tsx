@@ -46,7 +46,7 @@ export function AppPublicationContentProvider({
   const reference = useFullReferenceUrl(route)
   return (
     <PublicationContentProvider
-      isProd={IS_PROD_DESKTOP}
+      isDev={!IS_PROD_DESKTOP}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,
