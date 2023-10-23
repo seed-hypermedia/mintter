@@ -38,7 +38,6 @@ export function SitePublicationContentProvider({
       isDev={process.env.NODE_ENV == 'development'}
       debugTop={-80}
       layoutUnit={contentLayoutUnit}
-      textUnit={contentTextUnit}
       debug={false}
       entityComponents={{
         AccountCard: EmbedAccount,

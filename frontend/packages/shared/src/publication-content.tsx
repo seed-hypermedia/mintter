@@ -71,9 +71,8 @@ export type PublicationContentContextValue = {
   disableEmbedClick?: boolean
   onCopyBlock: null | ((blockId: string) => void)
   layoutUnit: number
-  textUnit: number
   debug: boolean
-  ffSerif: boolean
+  ffSerif?: boolean
 }
 
 export const publicationContentContext =
@@ -628,7 +627,7 @@ function BlockContentImage({block, depth}: BlockContentProps) {
       <img alt={block.attributes.alt} src={`${ipfsBlobPrefix}${cid}`} />
       {inline.length ? (
         <Text opacity={0.7} fontFamily="$body">
-          <InlineContentView inline={inline} textUnit={textUnit * 0.85} />
+          <InlineContentView inline={inline} fontSize={textUnit * 0.85} />
         </Text>
       ) : null}
     </YStack>
@@ -690,7 +689,7 @@ function BlockContentVideo({block, depth}: BlockContentProps) {
       )}
       {inline.length ? (
         <Text opacity={0.7}>
-          <InlineContentView textUnit={textUnit * 0.7} inline={inline} />
+          <InlineContentView fontSize={textUnit * 0.85} inline={inline} />
         </Text>
       ) : null}
     </YStack>
@@ -709,18 +708,17 @@ function InlineContentView({
   inline,
   style,
   linkType = null,
-  textUnit,
+  fontSize,
   ...props
 }: SizableTextProps & {
   inline: HMInlineContent[]
   linkType?: LinkType
-  textUnit?: number
+  fontSize?: number
 }) {
   const {onLinkClick, textUnit: providerTextUnit} =
     usePublicationContentContext()
-  let fSize = textUnit || providerTextUnit
   return (
-    <Text fontSize={fSize} {...props}>
+    <Text fontSize={fontSize} {...props}>
       {inline.map((content, index) => {
         if (content.type === 'text') {
           let textDecorationLine:
@@ -744,7 +742,7 @@ function InlineContentView({
 
           if (content.styles.bold) {
             children = (
-              <Text fontWeight="bold" fontSize={fSize}>
+              <Text fontWeight="bold" fontSize={fontSize}>
                 {children}
               </Text>
             )
@@ -752,7 +750,7 @@ function InlineContentView({
 
           if (content.styles.italic) {
             children = (
-              <Text fontStyle="italic" fontSize={fSize}>
+              <Text fontStyle="italic" fontSize={fontSize}>
                 {children}
               </Text>
             )
@@ -767,7 +765,7 @@ function InlineContentView({
                 tag="code"
                 borderRadius="$2"
                 overflow="hidden"
-                fontSize={fSize * 0.85}
+                fontSize={fontSize * 0.85}
                 paddingHorizontal="$2"
                 paddingVertical={2}
               >
@@ -802,7 +800,7 @@ function InlineContentView({
               color={hmTextColor(linkType)}
               textDecorationColor={hmTextColor(linkType)}
               style={{textDecorationLine}}
-              fontSize={fSize}
+              fontSize={fontSize}
             >
               {children}
             </Text>
@@ -823,7 +821,7 @@ function InlineContentView({
               onClick={(e) => onLinkClick(content.href, e)}
             >
               <InlineContentView
-                textUnit={fSize}
+                fontSize={fontSize}
                 inline={content.content}
                 linkType={isHmLink ? 'hypermedia' : 'basic'}
               />

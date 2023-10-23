@@ -130,7 +130,7 @@ export default function PublicationPage({
           {pub ? (
             <SitePublicationContentProvider unpackedId={pubId}>
               <PublicationContent
-                paddingHorizontal={0}
+                // paddingHorizontal={0}
                 // $gtMd={{paddingHorizontal: '$3'}}
                 // $gtLg={{paddingHorizontal: '$3'}}
                 publication={pub}
