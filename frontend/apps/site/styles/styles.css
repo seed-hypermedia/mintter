@@ -22,8 +22,6 @@ body {
 /* recommendation from Haz: https://twitter.com/diegohaz/status/1591829631811846147 */
 .link,
 .hm-link {
-  word-wrap: break-word;
-  word-break: break-all;
   text-decoration-line: underline;
   text-underline-offset: 0.2em;
   text-decoration-skip-ink: none;
