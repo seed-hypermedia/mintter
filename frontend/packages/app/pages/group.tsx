@@ -2,8 +2,8 @@ import Footer from '@mintter/app/components/footer'
 import {
   Document,
   Group,
-  Role,
   PublicationContent,
+  Role,
   formattedDate,
   idToUrl,
   pluralS,
@@ -12,20 +12,16 @@ import {
 } from '@mintter/shared'
 import {
   Button,
-  ButtonText,
-  Circle,
   Container,
   DialogDescription,
   DialogTitle,
   Form,
   H1,
-  Heading,
   Input,
   Label,
   MainWrapper,
   Separator,
   SizableText,
-  Text,
   Tooltip,
   View,
   XGroup,
@@ -34,10 +30,8 @@ import {
 } from '@mintter/ui'
 import {
   ArrowUpRight,
-  ExternalLink,
   Pencil,
   PlusCircle,
-  Share,
   Store,
   Trash,
 } from '@tamagui/lucide-icons'
