@@ -68,8 +68,8 @@ func TestMigrateMatchesFreshSchema(t *testing.T) {
 }
 
 func TestMigrationList(t *testing.T) {
-	require.True(t, slices.IsSortedFunc(migrations, func(a, b migration) bool {
-		return a.Version < b.Version
+	require.True(t, slices.IsSortedFunc(migrations, func(a, b migration) int {
+		return strings.Compare(a.Version, b.Version)
 	}), "the list of migrations must be sorted")
 
 	out := slices.CompactFunc(migrations, func(a, b migration) bool {

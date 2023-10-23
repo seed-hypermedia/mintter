@@ -181,8 +181,18 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 		out.LatestPublicVersion = strings.Join(publicHeads, ".")
 		out.LatestTrustedVersion = strings.Join(trustedHeads, ".")
 
-		slices.SortFunc(out.ChangesByTime, func(a, b string) bool {
-			return out.Changes[a].CreateTime.AsTime().Before(out.Changes[b].CreateTime.AsTime())
+		slices.SortFunc(out.ChangesByTime, func(a, b string) int {
+			at, bt := out.Changes[a].CreateTime.AsTime(), out.Changes[b].CreateTime.AsTime()
+
+			if at.Equal(bt) {
+				return 0
+			}
+
+			if at.Before(bt) {
+				return -1
+			}
+
+			return +1
 		})
 
 		return nil

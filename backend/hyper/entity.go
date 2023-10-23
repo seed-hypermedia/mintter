@@ -292,7 +292,7 @@ func (e *Entity) ReplaceChange(old cid.Cid, ts hlc.Time, signer core.KeyPair, de
 // SortCIDs sorts the multiple CIDs when determinism is needed.
 // The sorting is done in place, and the same slice is returned for convenience.
 func SortCIDs(cids []cid.Cid) []cid.Cid {
-	slices.SortFunc(cids, func(a, b cid.Cid) bool { return a.KeyString() < b.KeyString() })
+	slices.SortFunc(cids, func(a, b cid.Cid) int { return strings.Compare(a.KeyString(), b.KeyString()) })
 	return cids
 }
 

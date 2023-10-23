@@ -32,7 +32,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
-	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
+	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoremem"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -126,7 +126,7 @@ type Synchronizer interface {
 func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identity, log *zap.Logger, extraServers ...interface{}) (*Node, error) {
 	var clean cleanup.Stack
 
-	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), db)
+	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped())
 	if err != nil {
 		return nil, fmt.Errorf("failed to start libp2p host: %w", err)
 	}
@@ -454,18 +454,18 @@ func AddrInfoFromStrings(addrs ...string) (out peer.AddrInfo, err error) {
 	return out, nil
 }
 
-func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs.Libp2p, io.Closer, error) {
+func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, error) {
 	var clean cleanup.Stack
 
-	ds := dssync.MutexWrap(datastore.NewMapDatastore())
-	clean.Add(ds)
-
-	ps, err := pstoreds.NewPeerstore(context.Background(), ds, pstoreds.DefaultOpts())
+	ps, err := pstoremem.NewPeerstore()
 	if err != nil {
 		return nil, nil, err
 	}
 	// Not adding peerstore to the cleanup stack because weirdly enough, libp2p host closes it,
 	// even if it doesn't own it. See BasicHost#Close() inside libp2p.
+
+	ds := dssync.MutexWrap(datastore.NewMapDatastore())
+	clean.Add(ds)
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
