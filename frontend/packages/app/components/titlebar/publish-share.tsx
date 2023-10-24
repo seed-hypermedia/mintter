@@ -283,7 +283,7 @@ function GroupPublishDialog({
   )
 }
 
-function ContextPopover({children, ...props}) {
+function ContextPopover({...props}) {
   return (
     <Popover
       size="$5"
