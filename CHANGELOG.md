@@ -1,4 +1,6 @@
-## 🌆 Coming Soon
+## 🧑‍💻 Code Blocks
+
+## 🌋 BREAKING: Editable Document Title
 
 ## 🎉 More New Features
 

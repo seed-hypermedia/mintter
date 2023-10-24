@@ -8,9 +8,11 @@ import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   Button,
   Container,
+  Input,
   MainWrapper,
   SizableText,
   Theme,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import {useEffect, useState} from 'react'
@@ -18,6 +20,7 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
+import {useDraftTitleInput} from '../models/documents'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -26,7 +29,7 @@ export default function DraftPage() {
 
   const openDraft = useOpenDraft('replace')
   const [debugValue, setDebugValue] = useState(false)
-  const documentId = route.draftId // TODO, clean this up when draftId != docId
+  const documentId = route.draftId! // TODO, clean this up when draftId != docId
   useEffect(() => {
     if (route.key === 'draft' && route.draftId === undefined) {
       openDraft()
@@ -47,6 +50,10 @@ export default function DraftPage() {
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
+            <XStack alignSelf="stretch" jc="center">
+              <DraftTitleInput draftId={documentId} />
+            </XStack>
+
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
               {debugValue && <DebugData data={debugValue} />}
@@ -73,6 +80,29 @@ export default function DraftPage() {
   }
 
   return <DocumentPlaceholder />
+}
+
+function DraftTitleInput({draftId}: {draftId: string}) {
+  const {title, onTitle} = useDraftTitleInput(draftId)
+  return (
+    <Input
+      multiline
+      size="$9"
+      borderRadius={0}
+      borderWidth={0}
+      backgroundColor="$color2"
+      fontWeight="bold"
+      fontFamily={'$body'}
+      value={title || ''}
+      f={1}
+      maxWidth={640}
+      paddingLeft={9.6}
+      marginLeft={54}
+      marginRight={54}
+      onChangeText={onTitle}
+      placeholder="Untitled Document"
+    />
+  )
 }
 
 function NotSavingBanner() {

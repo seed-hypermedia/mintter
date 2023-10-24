@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Button,
   File,
+  Heading,
   PageSection,
   Share,
   SideSection,
@@ -125,17 +126,35 @@ export default function PublicationPage({
           activePathName={pathName || ''}
           display={media.gtLg ? 'inherit' : 'none'}
         />
-
         <PageSection.Content paddingBottom={80}>
           {pub ? (
-            <SitePublicationContentProvider unpackedId={pubId}>
-              <PublicationContent
-                // paddingHorizontal={0}
-                // $gtMd={{paddingHorizontal: '$3'}}
-                // $gtLg={{paddingHorizontal: '$3'}}
-                publication={pub}
-              />
-            </SitePublicationContentProvider>
+            <>
+              {pub.document?.title ? (
+                <Heading
+                  size="$1"
+                  fontSize={'$2'}
+                  marginTop="$6"
+                  paddingHorizontal="$5"
+                  $gtMd={{
+                    marginTop: '$5',
+                    paddingHorizontal: '$6',
+                  }}
+                  $sm={{
+                    fontSize: '$3',
+                  }}
+                >
+                  {pub.document?.title}
+                </Heading>
+              ) : null}
+              <SitePublicationContentProvider unpackedId={pubId}>
+                <PublicationContent
+                  // paddingHorizontal={0}
+                  // $gtMd={{paddingHorizontal: '$3'}}
+                  // $gtLg={{paddingHorizontal: '$3'}}
+                  publication={pub}
+                />
+              </SitePublicationContentProvider>
+            </>
           ) : publication.isLoading ? (
             <PublicationPlaceholder />
           ) : null}

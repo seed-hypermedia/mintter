@@ -2,7 +2,7 @@
   --text-unit: 18;
   --layout-unit: 24;
   max-width: calc(80ch + 108px);
-  margin: 40px auto 60px auto;
+  margin: 0px auto 60px auto;
   width: 100%;
 }
 

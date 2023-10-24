@@ -8,7 +8,15 @@ import {
   unpackHmId,
 } from '@mintter/shared'
 import {HMGroup} from '@mintter/shared/src/json-hm'
-import {Button, ButtonText, PageSection, Text, View, YStack} from '@mintter/ui'
+import {
+  Button,
+  ButtonText,
+  Heading,
+  PageSection,
+  Text,
+  View,
+  YStack,
+} from '@mintter/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {ReactElement, ReactNode} from 'react'
@@ -71,7 +79,9 @@ export function GroupPage({}: GroupPageProps) {
     (item) => item?.pathName === '/',
   )
 
-  const frontDocView = <FrontDoc item={frontPageItem} />
+  const frontDocView = (
+    <FrontDoc item={frontPageItem} groupTitle={loadedGroup?.title} />
+  )
 
   if (view == 'front') {
     mainView = frontDocView
@@ -143,6 +153,7 @@ export function GroupPage({}: GroupPageProps) {
 
 function FrontDoc({
   item,
+  groupTitle,
 }: {
   item:
     | {
@@ -153,13 +164,32 @@ function FrontDoc({
       }
     | null
     | undefined
+  groupTitle?: string
 }) {
   if (!item?.publication) return <Text>Not Found</Text>
-
+  const frontPageTitle = item.publication?.document?.title
+  const hasFrontDocTitle = !!frontPageTitle && frontPageTitle !== groupTitle
   return (
-    <SitePublicationContentProvider unpackedId={item.docId}>
-      <PublicationContent publication={item?.publication} />
-    </SitePublicationContentProvider>
+    <YStack
+      paddingTop="$5"
+      $gtMd={{paddingTop: hasFrontDocTitle ? '$5' : '$11'}}
+    >
+      {hasFrontDocTitle ? (
+        <Heading
+          size="$1"
+          fontSize={'$2'}
+          paddingHorizontal="$5"
+          $gtMd={{
+            paddingHorizontal: '$6',
+          }}
+        >
+          {frontPageTitle}
+        </Heading>
+      ) : null}
+      <SitePublicationContentProvider unpackedId={item.docId}>
+        <PublicationContent publication={item?.publication} />
+      </SitePublicationContentProvider>
+    </YStack>
   )
 }
 

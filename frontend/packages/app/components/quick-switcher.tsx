@@ -155,7 +155,7 @@ export function QuickSwitcher() {
             return (
               <Command.Item
                 key={draft.id}
-                value={(draft.title || 'Untitled Draft') + draft.id}
+                value={(draft.title || 'Untitled Document') + draft.id}
                 onSelect={() => {
                   setOpen(false)
                   navigate({
@@ -165,7 +165,7 @@ export function QuickSwitcher() {
                 }}
               >
                 <span className="cmdk-mtt-text">
-                  {draft.title || 'Untitled Draft'}
+                  {draft.title || 'Untitled Document'}
                 </span>
                 <span className="cmdk-mtt-type">Draft</span>
               </Command.Item>

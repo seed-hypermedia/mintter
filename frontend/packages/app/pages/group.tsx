@@ -17,6 +17,7 @@ import {
   DialogTitle,
   Form,
   H1,
+  Heading,
   Input,
   Label,
   MainWrapper,
@@ -202,7 +203,10 @@ export default function GroupPage() {
                             onPress={() => {
                               openDraft(
                                 {groupId, pathName: '/', key: 'group'},
-                                {pathName: '/'},
+                                {
+                                  pathName: '/',
+                                  initialTitle: group?.data?.title,
+                                },
                               )
                             }}
                           >
@@ -298,7 +302,10 @@ export default function GroupPage() {
                     minHeight="$6"
                     group="item"
                   >
-                    <PublicationDisplay urlWithVersion={frontDocumentUrl} />
+                    <FrontPublicationDisplay
+                      urlWithVersion={frontDocumentUrl}
+                      groupTitle={group.data?.title || ''}
+                    />
 
                     <XStack
                       gap="$2"
@@ -582,7 +589,14 @@ function InviteMemberDialog({
     </>
   )
 }
-function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
+
+function FrontPublicationDisplay({
+  urlWithVersion,
+  groupTitle,
+}: {
+  urlWithVersion: string
+  groupTitle: string
+}) {
   const unpacked = unpackDocId(urlWithVersion)
   const pub = usePublication({
     id: unpacked?.docId || '',
@@ -596,6 +610,18 @@ function PublicationDisplay({urlWithVersion}: {urlWithVersion: string}) {
       paddingHorizontal="$5"
       alignSelf="center"
     >
+      {pub.data?.document?.title && groupTitle !== pub.data?.document?.title ? (
+        <Heading
+          size="$1"
+          fontSize={'$2'}
+          paddingHorizontal="$5"
+          $gtMd={{
+            paddingHorizontal: '$6',
+          }}
+        >
+          {pub.data?.document?.title}
+        </Heading>
+      ) : null}
       <AppPublicationContentProvider>
         <PublicationContent publication={pub.data} />
       </AppPublicationContentProvider>

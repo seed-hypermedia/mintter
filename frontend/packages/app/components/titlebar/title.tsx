@@ -155,7 +155,7 @@ function DraftTitle({
   const title = useDraftTitle({
     documentId: route.draftId,
   })
-  const displayTitle = title ?? 'Untitled Draft'
+  const displayTitle = title ?? 'Untitled Document'
   return (
     <>
       <Pencil size={12} />

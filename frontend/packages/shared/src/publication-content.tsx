@@ -107,7 +107,7 @@ export function PublicationContentProvider({
         ffSerif,
       }}
     >
-      {isDev ? (
+      {false ? (
         <YStack
           zIndex={100}
           padding="$2"
@@ -198,6 +198,14 @@ export function PublicationContent({
   publication: Publication | HMPublication
 }) {
   const {layoutUnit} = usePublicationContentContext()
+  const allBlocks = publication.document?.children || []
+  const hideTopBlock = // to avoid thrashing existing content, we hide the top block if it is effectively the same as the doc title
+    !!publication.document?.title &&
+    allBlocks[0]?.block?.type == 'heading' &&
+    (!allBlocks[0]?.children || allBlocks[0]?.children?.length == 0) &&
+    allBlocks[0]?.block?.text &&
+    allBlocks[0]?.block?.text === publication.document?.title
+  const displayBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
   return (
     <XStack
       paddingHorizontal={layoutUnit / 2}
@@ -205,8 +213,8 @@ export function PublicationContent({
       {...props}
     >
       <BlockNodeList childrenType={'group'}>
-        {publication.document?.children?.length &&
-          publication.document?.children?.map((bn, idx) => (
+        {displayBlocks?.length &&
+          displayBlocks?.map((bn, idx) => (
             <BlockNodeContent
               key={bn.block?.id}
               blockNode={bn}

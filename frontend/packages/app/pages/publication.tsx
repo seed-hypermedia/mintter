@@ -17,7 +17,15 @@ import {
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
-import {Button, Link, MainWrapper, Text, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  Heading,
+  Link,
+  MainWrapper,
+  Text,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
@@ -119,12 +127,15 @@ export default function PublicationPage() {
               <YStack height="100%">
                 <MainWrapper>
                   <YStack
-                    paddingVertical={80}
+                    paddingVertical={'$7'}
                     width="100%"
                     maxWidth="90ch"
                     // paddingHorizontal="10vw"
                     alignSelf="center"
                   >
+                    <Heading size="$1" paddingHorizontal="$4" marginBottom="$7">
+                      {publication.data?.document?.title}
+                    </Heading>
                     <AppPublicationContentProvider
                       citations={citations?.links}
                       onCitationClick={() => {

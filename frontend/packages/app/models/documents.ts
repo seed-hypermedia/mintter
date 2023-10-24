@@ -5,7 +5,7 @@ import {
   useQueryInvalidator,
 } from '@mintter/app/app-context'
 import {useOpenUrl} from '@mintter/app/open-url'
-import {toast} from '@mintter/app/toast'
+import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 import {
   Block,
   BlockIdentifier,
@@ -39,6 +39,7 @@ import {
   useMutation,
   useQueries,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {Node} from 'prosemirror-model'
@@ -48,7 +49,7 @@ import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {usePublicationInContext} from './publication'
 import {queryKeys} from './query-keys'
-import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
+import {toast} from '../toast'
 
 function createEmptyChanges(): DraftChangesState {
   return {
@@ -157,24 +158,6 @@ export function useDraft({
   return useQuery(queryDraft(grpcClient, documentId, options))
 }
 
-function queryLatestPublication(
-  grpcClient: GRPCClient,
-  documentId?: string,
-  trustedVersionsOnly?: boolean,
-) {
-  const queryKey = trustedVersionsOnly
-    ? [queryKeys.GET_PUBLICATION, documentId, 'trusted']
-    : [queryKeys.GET_PUBLICATION, documentId]
-  return {
-    queryKey,
-    enabled: !!documentId,
-    queryFn: () =>
-      grpcClient.publications.getPublication({
-        documentId,
-        trustedOnly: trustedVersionsOnly,
-      }),
-  }
-}
 export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
@@ -208,12 +191,6 @@ export function usePublication({
     ...options,
   })
 }
-
-export function prefetchPublication(
-  grpcClient: GRPCClient,
-  documentId: string,
-  versionId?: string,
-) {}
 
 export function useDocumentVersions(
   documentId: string | undefined,
@@ -479,15 +456,7 @@ export function useDraftEditor(
       if (!draftState) return
 
       const {changed, moves, deleted} = draftState.changes
-      const newTitle = getTitleFromContent(editor.topLevelBlocks)
-      const changes: Array<DocumentChange> = [
-        new DocumentChange({
-          op: {
-            case: 'setTitle',
-            value: newTitle,
-          },
-        }),
-      ]
+      const changes: Array<DocumentChange> = []
 
       if (draft.data?.children.length == 0) {
         // This means the draft is empty and we need to prepent a "move block" operation so it will not break
@@ -784,8 +753,6 @@ export function useDraftEditor(
           )
           return {
             ...state,
-            // @ts-expect-error
-            title: getTitleFromContent(editor.topLevelBlocks),
             changes: state.changes,
           }
         },
@@ -841,6 +808,7 @@ export function useDraftEditor(
 
   useEffect(() => {
     return () => {
+      // this runs when the editor is unmounted, to make sure it gets saved even if a keystroke just happened
       clearTimeout(savingDebounceTimout.current)
       const state: EditorDraftState | undefined = client.getQueryData([
         queryKeys.EDITOR_DRAFT,
@@ -866,6 +834,45 @@ export function useDraftEditor(
     editor,
     query: draft,
     mutation: saveDraftMutation,
+  }
+}
+
+export function useDraftTitleInput(draftId: string) {
+  const draft = useDraft({documentId: draftId})
+  const savingDebounceTimout = useRef<any>(null)
+  const queryClient = useQueryClient()
+  const client = useGRPCClient()
+  const saveTitleMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const changes: Array<DocumentChange> = [
+        new DocumentChange({
+          op: {
+            case: 'setTitle',
+            value: title,
+          },
+        }),
+      ]
+      await client.drafts.updateDraft({
+        documentId: draftId,
+        changes,
+      })
+    },
+  })
+  const title = draft.data?.title || undefined
+  return {
+    title,
+    onTitle: (title: string) => {
+      queryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (state: EditorDraftState | undefined) => {
+          return {...state, title}
+        },
+      )
+      clearTimeout(savingDebounceTimout.current)
+      savingDebounceTimout.current = setTimeout(() => {
+        saveTitleMutation.mutate(title)
+      }, 500)
+    },
   }
 }
 

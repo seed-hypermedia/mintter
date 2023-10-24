@@ -9,19 +9,19 @@ import {PublicationRouteContext} from '@mintter/app/utils/navigation'
 
 async function createDraft(
   grpcClient: GRPCClient,
-  pubContext: PublicationRouteContext | undefined,
+  initialTitle?: string,
 ): Promise<string> {
   const doc = await grpcClient.drafts.createDraft({})
-  // if (siteHostname) {
-  //   await grpcClient.drafts.updateDraft({
-  //     documentId: doc.id,
-  //     changes: [
-  //       new DocumentChange({
-  //         op: {case: 'setWebUrl', value: siteHostname},
-  //       }),
-  //     ],
-  //   })
-  // }
+  if (initialTitle) {
+    await grpcClient.drafts.updateDraft({
+      documentId: doc.id,
+      changes: [
+        new DocumentChange({
+          op: {case: 'setTitle', value: initialTitle},
+        }),
+      ],
+    })
+  }
   return doc.id
 }
 
@@ -32,7 +32,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   const grpcClient = useGRPCClient()
   function openNewDraft(
     pubContext?: PublicationRouteContext | undefined,
-    opts?: {pathName?: string | null},
+    opts?: {pathName?: string | null; initialTitle?: string},
   ) {
     const destPubContext: PublicationRouteContext =
       pubContext?.key === 'group'
@@ -41,7 +41,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
             pathName: opts?.pathName || null,
           }
         : pubContext || null
-    createDraft(grpcClient, pubContext)
+    createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
