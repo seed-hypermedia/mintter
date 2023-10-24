@@ -11,7 +11,7 @@ export function AvatarForm({
 }: {
   size?: FontSizeTokens
   url?: string
-  onAvatarUpload: (avatar: string) => Promise<void>
+  onAvatarUpload: (avatar: string) => Awaited<void>
 }) {
   const account = useMyAccount()
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

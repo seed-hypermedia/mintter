@@ -33,6 +33,7 @@ import {
   ExternalLink,
   View,
   Text,
+  Pencil,
 } from '@mintter/ui'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useMemo, useState} from 'react'
@@ -45,6 +46,7 @@ import {useOpenUrl} from '../open-url'
 import {TableList} from '../components/table-list'
 import {AvatarForm} from '../components/avatar-form'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
+import {useEditProfileDialog} from '../components/edit-profile-dialog'
 
 export default function Settings() {
   return (
@@ -166,77 +168,64 @@ export function ProfileForm({
   accountId: string
 }) {
   const setProfile = useSetProfile()
-  const [alias, setAlias] = useState(profile.alias)
-  const [bio, setBio] = useState(profile.bio)
+  const editProfileDialog = useEditProfileDialog()
   function onCopy() {
     copyTextToClipboard(accountId)
     toast.success('Account ID copied!')
   }
-
   return (
-    <XStack gap="$4">
-      <YStack flex={0} alignItems="center" flexGrow={0}>
-        <AvatarForm
-          onAvatarUpload={async (avatar) => {
-            await setProfile.mutateAsync({...profile, avatar})
-            toast.success('Avatar changed')
-          }}
-          url={getAvatarUrl(profile?.avatar)}
-        />
-      </YStack>
-      <YStack flex={1}>
-        <YStack>
-          <Label size="$3" htmlFor="accountid">
-            Account Id
-          </Label>
-          <XGroup>
-            <XGroup.Item>
-              <Input
-                size="$3"
-                id="accountid"
-                userSelect="none"
-                disabled
-                value={accountId}
-                data-testid="account-id"
-                flex={1}
-                hoverStyle={{
-                  cursor: 'default',
-                }}
-              />
-            </XGroup.Item>
-            <XGroup.Item>
-              <Tooltip content="Copy your account id">
-                <Button size="$3" icon={Copy} onPress={onCopy} />
-              </Tooltip>
-            </XGroup.Item>
-          </XGroup>
-        </YStack>
-        <Form
-          onSubmit={() => {
-            setProfile.mutate({alias, bio})
-          }}
-        >
-          <Label htmlFor="alias">Alias</Label>
-          <Input id="alias" value={alias} onChangeText={setAlias} />
-          <Label htmlFor="bio">Bio</Label>
-          <TextArea
-            id="bio"
-            value={bio}
-            onChangeText={setBio}
-            placeholder="A little bit about yourself..."
+    <>
+      <XStack gap="$4">
+        <YStack flex={0} alignItems="center" flexGrow={0}>
+          <AvatarForm
+            onAvatarUpload={async (avatar) => {
+              await setProfile.mutateAsync({...profile, avatar})
+              toast.success('Avatar changed')
+            }}
+            url={getAvatarUrl(profile?.avatar)}
           />
-
-          <XStack gap="$4" alignItems="center" paddingTop="$3">
-            <Form.Trigger asChild>
-              <Button disabled={setProfile.isLoading}>Save</Button>
-            </Form.Trigger>
-            {setProfile.data && (
-              <SizableText theme="green">update success!</SizableText>
-            )}
+        </YStack>
+        <YStack flex={1} space>
+          <YStack>
+            <Label size="$3" htmlFor="accountid">
+              Account Id
+            </Label>
+            <XGroup>
+              <XGroup.Item>
+                <Input
+                  size="$3"
+                  id="accountid"
+                  userSelect="none"
+                  disabled
+                  value={accountId}
+                  data-testid="account-id"
+                  flex={1}
+                  hoverStyle={{
+                    cursor: 'default',
+                  }}
+                />
+              </XGroup.Item>
+              <XGroup.Item>
+                <Tooltip content="Copy your account id">
+                  <Button size="$3" icon={Copy} onPress={onCopy} />
+                </Tooltip>
+              </XGroup.Item>
+            </XGroup>
+          </YStack>
+          <XStack>
+            <Button
+              icon={Pencil}
+              onPress={() => {
+                editProfileDialog.open(true)
+              }}
+            >
+              Edit My Profile
+            </Button>
           </XStack>
-        </Form>
-      </YStack>
-    </XStack>
+        </YStack>
+      </XStack>
+      {editProfileDialog.content}
+    </>
   )
 }
 
@@ -248,7 +237,9 @@ export function ProfileInfo() {
   if (profile && accountId) {
     return (
       <>
-        <Heading>Profile information</Heading>
+        <Heading>
+          Profile Information{profile.alias ? ` – ${profile.alias}` : null}
+        </Heading>
         <ProfileForm profile={profile} accountId={accountId} />
       </>
     )

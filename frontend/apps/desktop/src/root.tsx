@@ -69,6 +69,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
       return result
     }
     const enabledLogMessages = new Set<string>([
+      // 'Accounts.ListAccounts',
       // 'Groups.GetGroup',
       // 'Groups.ListContent',
       // etc.. add the messages you need to see here, please comment out before committing!

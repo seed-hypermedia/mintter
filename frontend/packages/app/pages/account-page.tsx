@@ -22,13 +22,14 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
+import {CheckCircle, Pencil, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
 import {copyLinkMenuItem} from '../components/list-item'
 import {useMyAccount, useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
+import {useEditProfileDialog} from '../components/edit-profile-dialog'
 
 function DeviceRow({
   isOnline,
@@ -154,6 +155,7 @@ export default function AccountPage() {
     .length
   const isConnected = !!connectedCount
   const isMe = myAccount.data?.id === accountId
+  const editProfileDialog = useEditProfileDialog()
   return (
     <>
       <MainWrapper>
@@ -179,6 +181,17 @@ export default function AccountPage() {
             </XStack>
 
             <XStack space="$2">
+              {isMe ? (
+                <Button
+                  size="$2"
+                  icon={Pencil}
+                  onPress={() => {
+                    editProfileDialog.open(true)
+                  }}
+                >
+                  Edit Profile
+                </Button>
+              ) : null}
               <Popover placement="bottom-end">
                 <Popover.Trigger asChild>
                   <Button
@@ -275,6 +288,7 @@ export default function AccountPage() {
         </Container>
       </MainWrapper>
       <Footer />
+      {editProfileDialog.content}
     </>
   )
 }

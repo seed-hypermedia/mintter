@@ -87,10 +87,11 @@ export function useSetProfile(
       return accountId || '' // empty string here is nonsense but we need to pass the account id to the invalidation fn if we have it
       // but accountId is empty during onboarding, so the invalidate will be nonsense but who cares
     },
+    ...opts, // careful to put this above onSuccess so that it overrides opts.onSuccess
     onSuccess: (accountId, ...rest) => {
       invalidate([queryKeys.GET_ACCOUNT, accountId])
+      invalidate([queryKeys.GET_ALL_ACCOUNTS])
       opts?.onSuccess?.(accountId, ...rest)
     },
-    ...opts,
   })
 }
