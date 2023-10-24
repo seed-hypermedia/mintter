@@ -274,11 +274,12 @@ export default function TrustedPublicationList() {
     <>
       <PublicationListPage
         trustedOnly={true}
-        empty={
-          <CreateFirstDocForm
-            onSuccess={(docId) => successDialog.open({docId})}
-          />
-        }
+        // // disabled welcome experience
+        // empty={
+        //   <CreateFirstDocForm
+        //     onSuccess={(docId) => successDialog.open({docId})}
+        //   />
+        // }
       />
       {successDialog.content}
     </>
