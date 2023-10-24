@@ -71,6 +71,7 @@ export type PublicationContentContextValue = {
   disableEmbedClick?: boolean
   onCopyBlock: null | ((blockId: string) => void)
   layoutUnit: number
+  textUnit: number
   debug: boolean
   ffSerif?: boolean
 }
@@ -107,7 +108,7 @@ export function PublicationContentProvider({
         ffSerif,
       }}
     >
-      {false ? (
+      {isDev ? (
         <YStack
           zIndex={100}
           padding="$2"
@@ -1046,23 +1047,31 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
 }
 
 export function BlockContentCode({block}: {block: HMBlockCodeBlock}) {
-  const {layoutUnit} = usePublicationContentContext()
+  const {layoutUnit, debug, textUnit} = usePublicationContentContext()
 
   return (
     <YStack
       {...blockStyles}
       borderColor="$color6"
+      backgroundColor="$color4"
       borderWidth={1}
       borderRadius={layoutUnit / 4}
-      className="block-static block-code"
-      padding="$3"
-      gap="$2"
+      padding={layoutUnit / 2}
+      overflow="hidden"
       width="100%"
+      {...debugStyles(debug, 'blue')}
+      marginHorizontal={(-1 * layoutUnit) / 2}
     >
       <pre>
-        <code style={{fontFamily: 'monospace', whiteSpace: 'pre'}}>
+        <Text
+          tag="code"
+          whiteSpace="pre-wrap"
+          fontFamily="$mono"
+          lineHeight={textUnit * 1.5}
+          fontSize={textUnit * 0.85}
+        >
           {block.text}
-        </code>
+        </Text>
       </pre>
     </YStack>
   )
