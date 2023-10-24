@@ -226,6 +226,8 @@ NESTED BLOCKS
   overflow: 'hidden';
   padding: 7px 15px;
   outline-width: 0;
+  margin: 5px 0px -4px;
+  position: 'relative';
 }
 
 .blockContent[data-content-type='codeBlock'] code {
