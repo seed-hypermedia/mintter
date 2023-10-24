@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateGroupRequest, GetGroupRequest, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, UpdateGroupRequest } from "./groups_pb";
+import { CreateGroupRequest, GetGroupRequest, Group, ListAccountGroupsRequest, ListAccountGroupsResponse, ListContentRequest, ListContentResponse, ListDocumentGroupsRequest, ListDocumentGroupsResponse, ListGroupsRequest, ListGroupsResponse, ListMembersRequest, ListMembersResponse, SyncGroupSiteRequest, SyncGroupSiteResponse, UpdateGroupRequest } from "./groups_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -46,6 +46,20 @@ export const Groups = {
       name: "UpdateGroup",
       I: UpdateGroupRequest,
       O: Group,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Forces a sync of a group with its site.
+     * Only works for those groups that are published to sites.
+     * Could be useful to trigger the sync manually
+     * without having to wait for the next round of the automatic periodic sync.
+     *
+     * @generated from rpc com.mintter.groups.v1alpha.Groups.SyncGroupSite
+     */
+    syncGroupSite: {
+      name: "SyncGroupSite",
+      I: SyncGroupSiteRequest,
+      O: SyncGroupSiteResponse,
       kind: MethodKind.Unary,
     },
     /**
