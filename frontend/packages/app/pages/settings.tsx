@@ -156,7 +156,10 @@ export function DeleteDraftLogs() {
         icon={Trash}
         theme="red"
         onPress={() => {
-          destroyDraftLogs.mutate()
+          destroyDraftLogs.mutateAsync().then(() => {
+            toast.success('Cleaned up Draft Logs')
+            setIsConfirming(false)
+          })
         }}
       >
         Confirm Delete Draft Log Folder?
