@@ -1,4 +1,9 @@
-import {HMBlockSchema, PartialBlock, insertOrUpdateBlock, BlockNoteEditor} from '@mintter/editor'
+import {
+  HMBlockSchema,
+  PartialBlock,
+  insertOrUpdateBlock,
+  BlockNoteEditor,
+} from '@mintter/editor'
 import {
   RiCodeBoxFill,
   RiFile2Fill,
@@ -72,7 +77,7 @@ export const slashMenuItems = [
     aliases: ['code', 'pre', 'code-block', 'codeBlock'],
     icon: <RiCodeBoxFill size={18} />,
     hint: 'Insert a Code Block',
-    execute: (editor: BlockNoteEditor) => 
+    execute: (editor: BlockNoteEditor) =>
       insertOrUpdateBlock(editor, {
         type: 'codeBlock',
         props: {
