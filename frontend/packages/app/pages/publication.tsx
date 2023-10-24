@@ -9,11 +9,13 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
+  BlockContentHeading,
   IS_PROD_DESKTOP,
   MttLink,
   PublicationContent,
   PublicationContentContextValue,
   PublicationContentProvider,
+  PublicationHeading,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
@@ -133,9 +135,6 @@ export default function PublicationPage() {
                     // paddingHorizontal="10vw"
                     alignSelf="center"
                   >
-                    <Heading size="$1" paddingHorizontal="$4" marginBottom="$7">
-                      {publication.data?.document?.title}
-                    </Heading>
                     <AppPublicationContentProvider
                       citations={citations?.links}
                       onCitationClick={() => {
@@ -144,6 +143,7 @@ export default function PublicationPage() {
                         replace({...route, accessory: {key: 'citations'}})
                       }}
                     >
+                      <PublicationHeading publication={publication.data} />
                       <PublicationContent publication={publication.data} />
                     </AppPublicationContentProvider>
                   </YStack>

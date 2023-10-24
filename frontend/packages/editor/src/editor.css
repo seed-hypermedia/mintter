@@ -1,9 +1,14 @@
+.editor-title,
 .editor {
   --text-unit: 18;
   --layout-unit: 24;
   max-width: calc(80ch + 108px);
-  margin: 0px auto 60px auto;
   width: 100%;
+  margin: 0px auto;
+}
+
+.editor {
+  margin-bottom: 60px;
 }
 
 .ProseMirror {

@@ -208,7 +208,7 @@ export function PublicationContent({
     allBlocks[0]?.block?.text === publication.document?.title
   const displayBlocks = hideTopBlock ? allBlocks.slice(1) : allBlocks
   return (
-    <XStack
+    <YStack
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
       {...props}
@@ -225,7 +225,7 @@ export function PublicationContent({
             />
           ))}
       </BlockNodeList>
-    </XStack>
+    </YStack>
   )
 }
 
@@ -509,7 +509,7 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
   )
 }
 
-function BlockContentHeading({block, depth}: BlockContentProps) {
+export function BlockContentHeading({block, depth}: BlockContentProps) {
   const {textUnit, debug, ffSerif} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
@@ -539,7 +539,39 @@ function BlockContentHeading({block, depth}: BlockContentProps) {
   )
 }
 
-function useHeadingTextStyles(depth: number, unit: number) {
+export function PublicationHeading({publication}: {publication?: Publication}) {
+  const {textUnit, debug, layoutUnit} = usePublicationContentContext()
+  let headingTextStyles = useHeadingTextStyles(1, textUnit)
+
+  return (
+    <YStack
+      paddingHorizontal={layoutUnit / 2}
+      $gtMd={{paddingHorizontal: layoutUnit}}
+    >
+      <YStack
+        padding={layoutUnit / 3}
+        marginBottom={layoutUnit}
+        paddingBottom={layoutUnit / 2}
+        borderBottomColor="$color6"
+        borderBottomWidth={1}
+      >
+        <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
+          <Text
+            className="content-inline"
+            fontFamily={'$body'}
+            tag="h1"
+            {...headingTextStyles}
+            maxWidth="95%"
+          >
+            {publication?.document?.title || 'Untitled document'}
+          </Text>
+        </YStack>
+      </YStack>
+    </YStack>
+  )
+}
+
+export function useHeadingTextStyles(depth: number, unit: number) {
   function headingFontValues(value: number) {
     return {
       fontSize: value,

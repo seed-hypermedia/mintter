@@ -5,14 +5,18 @@ import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
-import {StateStream} from '@mintter/shared'
+import {
+  StateStream,
+  blockStyles,
+  useHeadingTextStyles,
+  usePublicationContentContext,
+} from '@mintter/shared'
 import {
   Button,
   Container,
   Input,
   MainWrapper,
   SizableText,
-  Text,
   Theme,
   XStack,
   YStack,
@@ -51,9 +55,9 @@ export default function DraftPage() {
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
-            <XStack alignSelf="stretch" jc="center">
+            <YStack className="editor-title">
               <DraftTitleInput draftId={documentId} />
-            </XStack>
+            </YStack>
 
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
@@ -86,7 +90,44 @@ export default function DraftPage() {
 }
 
 function DraftTitleInput({draftId}: {draftId: string}) {
+  const {textUnit, layoutUnit} = usePublicationContentContext()
+  let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const {title, onTitle} = useDraftTitleInput(draftId)
+
+  return (
+    <YStack
+    // paddingHorizontal={layoutUnit / 2}
+    // $gtMd={{paddingHorizontal: layoutUnit}}
+    >
+      <YStack
+        {...blockStyles}
+        marginBottom={layoutUnit}
+        paddingBottom={layoutUnit / 2}
+        borderBottomColor="$color6"
+        borderBottomWidth={1}
+        paddingHorizontal={54}
+      >
+        <Input
+          multiline
+          size="$9"
+          borderRadius={0}
+          borderWidth={0}
+          backgroundColor="$color2"
+          fontWeight="bold"
+          fontFamily="$body"
+          value={title || ''}
+          outlineColor="transparent"
+          borderColor="transparent"
+          f={1}
+          paddingLeft={9.6}
+          onChangeText={onTitle}
+          placeholder="Untitled Document"
+          {...headingTextStyles}
+        />
+      </YStack>
+    </YStack>
+  )
+
   return (
     <Input
       multiline
@@ -97,6 +138,8 @@ function DraftTitleInput({draftId}: {draftId: string}) {
       fontWeight="bold"
       fontFamily={'$body'}
       value={title || ''}
+      outlineColor="transparent"
+      borderColor="transparent"
       f={1}
       maxWidth={640}
       paddingLeft={9.6}
