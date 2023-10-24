@@ -17,18 +17,21 @@ import {
   Input,
   MainWrapper,
   SizableText,
+  Text,
   Theme,
+  View,
   XStack,
   YStack,
   useStream,
 } from '@mintter/ui'
-import {useEffect, useState} from 'react'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useDraftTitleInput} from '../models/documents'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
+import {TextInput} from 'react-native'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -104,13 +107,29 @@ function DraftTitleInput({
   const {textUnit, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const {title, onTitle} = useDraftTitleInput(draftId)
+  const input = useRef<HTMLTextAreaElement | null>(null)
+  useLayoutEffect(() => {
+    const target = input.current
+    if (!target) return
 
+    // first, apply the title in case it doesn't match. this will hapepn if the user pastes a newline, for example
+    if (target.value !== title) {
+      // only set the title if it doesn't match. because this will jump the cursor to the end of the input
+      target.value = title || ''
+    }
+
+    // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
+    target.style.height = ''
+
+    // here is the actual auto-resize
+    target.style.height = `${target.scrollHeight}px`
+  }, [title])
   return (
     <YStack
     // paddingHorizontal={layoutUnit / 2}
     // $gtMd={{paddingHorizontal: layoutUnit}}
     >
-      <YStack
+      <XStack
         {...blockStyles}
         marginBottom={layoutUnit}
         paddingBottom={layoutUnit / 2}
@@ -119,29 +138,42 @@ function DraftTitleInput({
         paddingHorizontal={54}
       >
         <Input
+          // we use multiline so that we can avoid horizontal scrolling for long titles
+          multiline
+          // @ts-expect-error this will only work on web, where multiline TextInput is a HTMLTextAreaElement
+          ref={input}
           onKeyPress={(e) => {
             if (e.nativeEvent.key == 'Enter') {
               e.preventDefault()
               onEnter()
             }
           }}
-          multiline
           size="$9"
-          borderRadius={0}
+          borderRadius="$1"
           borderWidth={0}
+          overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
+          flex={1}
           backgroundColor="$color2"
           fontWeight="bold"
           fontFamily="$body"
-          value={title || ''}
+          onChange={(e) => {
+            // this is replicated in useLayoutEffect but we handle it here so that there is no layout thrashing when creating new lines
+            const target: HTMLTextAreaElement | null = input.current
+            if (!target) return
+            target.style.height = '' // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
+            target.style.height = `${target.scrollHeight}px`
+          }}
           outlineColor="transparent"
           borderColor="transparent"
-          f={1}
           paddingLeft={9.6}
+          marginTop="$3"
+          paddingVertical={'$4'}
+          defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
           onChangeText={onTitle}
           placeholder="Untitled Document"
           {...headingTextStyles}
         />
-      </YStack>
+      </XStack>
     </YStack>
   )
 

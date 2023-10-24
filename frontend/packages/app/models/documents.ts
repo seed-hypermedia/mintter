@@ -917,7 +917,9 @@ export function useDraftTitleInput(draftId: string) {
   const title = draft.data?.title || undefined
   return {
     title,
-    onTitle: (title: string) => {
+    onTitle: (inputTitle: string) => {
+      // avoid multiline values that may be pasted into the title
+      const title = inputTitle.split('\n').join(' ')
       queryClient.setQueryData(
         [queryKeys.EDITOR_DRAFT, draftId],
         (state: EditorDraftState | undefined) => {
