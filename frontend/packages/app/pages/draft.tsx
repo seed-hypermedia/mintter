@@ -56,7 +56,12 @@ export default function DraftPage() {
           {!isDaemonReady ? <NotSavingBanner /> : null}
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <YStack className="editor-title">
-              <DraftTitleInput draftId={documentId} />
+              <DraftTitleInput
+                draftId={documentId}
+                onEnter={() => {
+                  editor?._tiptapEditor?.commands?.focus?.('start')
+                }}
+              />
             </YStack>
 
             <HMEditorContainer>
@@ -89,7 +94,13 @@ export default function DraftPage() {
   return <DocumentPlaceholder />
 }
 
-function DraftTitleInput({draftId}: {draftId: string}) {
+function DraftTitleInput({
+  draftId,
+  onEnter,
+}: {
+  draftId: string
+  onEnter: () => void
+}) {
   const {textUnit, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const {title, onTitle} = useDraftTitleInput(draftId)
@@ -108,6 +119,12 @@ function DraftTitleInput({draftId}: {draftId: string}) {
         paddingHorizontal={54}
       >
         <Input
+          onKeyPress={(e) => {
+            if (e.nativeEvent.key == 'Enter') {
+              e.preventDefault()
+              onEnter()
+            }
+          }}
           multiline
           size="$9"
           borderRadius={0}
