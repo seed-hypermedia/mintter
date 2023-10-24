@@ -25,13 +25,11 @@ import (
 	groups "mintter/backend/genproto/groups/v1alpha"
 
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/gorilla/mux"
 	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/boxo/exchange/offline"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/multierr"
@@ -450,85 +448,6 @@ func initGRPC(
 	})
 
 	return
-}
-
-var (
-	mInFlightGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "http_in_flight_requests",
-		Help: "A gauge of HTTP requests currently being served.",
-	})
-
-	mCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "A counter for HTTP requests.",
-		},
-		[]string{"code", "method"},
-	)
-
-	mDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "A histogram of HTTP latencies for requests.",
-			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
-		},
-		[]string{"handler", "method"},
-	)
-)
-
-func init() {
-	prometheus.MustRegister(mInFlightGauge, mCounter, mDuration)
-}
-
-func instrumentHTTPHandler(h http.Handler, name string) http.Handler {
-	return promhttp.InstrumentHandlerInFlight(mInFlightGauge,
-		promhttp.InstrumentHandlerDuration(mDuration.MustCurryWith(prometheus.Labels{"handler": name}),
-			promhttp.InstrumentHandlerCounter(mCounter, h),
-		),
-	)
-}
-
-func setRoute(m *mux.Router, path string, isPrefix bool, h http.Handler) {
-	h = instrumentHTTPHandler(h, path)
-	if isPrefix {
-		m.PathPrefix(path).Handler(h)
-	} else {
-		m.Handle(path, h)
-	}
-}
-
-const (
-	// RoutePrefix exposes path prefix.
-	RoutePrefix = 1 << 1
-	// RouteNav adds the path to a route nav.
-	RouteNav = 1 << 2
-)
-
-// Router is a wrapper around mux that can build the navigation menu.
-type Router struct {
-	r   *mux.Router
-	nav []string
-}
-
-// Handle a route.
-func (r *Router) Handle(path string, h http.Handler, mode int) {
-	h = instrumentHTTPHandler(h, path)
-
-	if mode&RouteNav != 0 {
-		r.r.PathPrefix(path).Handler(h)
-	} else {
-		r.r.Handle(path, h)
-	}
-
-	if mode&RouteNav != 0 {
-		r.nav = append(r.nav, path)
-	}
-}
-
-func (r *Router) Index(w http.ResponseWriter, req *http.Request) {
-	for _, route := range r.nav {
-		fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, route, route)
-	}
 }
 
 // WithMiddleware generates an grpc option with the given middleware.

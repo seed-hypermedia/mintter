@@ -24,6 +24,8 @@ import (
 	"github.com/ipld/go-ipld-prime"
 	"github.com/ipld/go-ipld-prime/codec/dagjson"
 	"github.com/ipld/go-ipld-prime/multicodec"
+	"github.com/peterbourgon/trc/eztrc"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
@@ -61,6 +63,7 @@ func setupDebugHandlers(r *Router, blobs *hyper.Storage) {
 	r.Handle("/debug/grpc", grpcLogsHandler(), RouteNav)
 	r.Handle("/debug/buildinfo", buildInfoHandler(), RouteNav)
 	r.Handle("/debug/cid/{cid}", makeBlobDebugHandler(blobs.IPFSBlockstore()), 0)
+	r.Handle("/debug/traces", eztrc.Handler(), RouteNav)
 }
 
 func makeBlobDebugHandler(bs blockstore.Blockstore) http.HandlerFunc {
@@ -141,6 +144,11 @@ func initHTTP(
 ) (srv *http.Server, lis net.Listener, err error) {
 	router := &Router{r: mux.NewRouter()}
 
+	router.r.Use(
+		handlerNameMiddleware,
+		instrument,
+	)
+
 	setupDebugHandlers(router, blobs)
 	setupGraphQLHandlers(router, wallet)
 	setupIPFSFileHandlers(router, ipfsHandler)
@@ -217,4 +225,107 @@ func buildInfoHandler() http.Handler {
 			fmt.Fprint(w, info.String())
 		}
 	})
+}
+
+var (
+	mInFlightGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "http_in_flight_requests",
+		Help: "A gauge of HTTP requests currently being served.",
+	})
+
+	mCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "A counter for HTTP requests.",
+		},
+		[]string{"code", "method"},
+	)
+
+	mDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "A histogram of HTTP latencies for requests.",
+			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
+		},
+		[]string{"handler", "method"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(mInFlightGauge, mCounter, mDuration)
+}
+
+var ctxKeyHandlerName struct{}
+
+func handlerNameMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.String()
+		route := mux.CurrentRoute(r)
+		if route != nil {
+			rn := route.GetName()
+			if rn != "/" && rn != "" {
+				name = rn
+			}
+		}
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, &ctxKeyHandlerName, name)
+		r = r.WithContext(ctx)
+
+		h.ServeHTTP(w, r)
+	})
+}
+
+func instrument(h http.Handler) http.Handler {
+	h = eztrc.Middleware(func(r *http.Request) string {
+		v := r.Context().Value(&ctxKeyHandlerName)
+		if v == nil {
+			panic("BUG: no handler name in context")
+		}
+		return v.(string)
+	})(h)
+
+	h = promhttp.InstrumentHandlerInFlight(mInFlightGauge, h)
+	h = promhttp.InstrumentHandlerCounter(mCounter, h)
+	h = promhttp.InstrumentHandlerDuration(mDuration, h, promhttp.WithLabelFromCtx("handler", func(ctx context.Context) string {
+		v := ctx.Value(&ctxKeyHandlerName)
+		if v == nil {
+			panic("BUG: no handler name in context")
+		}
+		return v.(string)
+	}))
+
+	return h
+}
+
+const (
+	// RoutePrefix exposes path prefix.
+	RoutePrefix = 1 << 1
+	// RouteNav adds the path to a route nav.
+	RouteNav = 1 << 2
+)
+
+// Router is a wrapper around mux that can build the navigation menu.
+type Router struct {
+	r   *mux.Router
+	nav []string
+}
+
+// Handle a route.
+func (r *Router) Handle(path string, h http.Handler, mode int) {
+	if mode&RouteNav != 0 {
+		r.r.Name(path).PathPrefix(path).Handler(h)
+	} else {
+		r.r.Name(path).Path(path).Handler(h)
+	}
+
+	if mode&RouteNav != 0 {
+		r.nav = append(r.nav, path)
+	}
+}
+
+func (r *Router) Index(w http.ResponseWriter, _ *http.Request) {
+	for _, route := range r.nav {
+		fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, route, route)
+	}
 }
