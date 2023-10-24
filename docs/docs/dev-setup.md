@@ -87,3 +87,10 @@ In the Mintter directory, start by running `yarn`. Then:
 
 `HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site`
 
+### Debugging Data
+
+Use this URL:
+
+```
+localhost:{your-http-port-or-default-55002/debug/cid/{your-cid}
+```

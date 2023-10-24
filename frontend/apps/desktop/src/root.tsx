@@ -10,7 +10,7 @@ import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
-import {Spinner, YStack} from '@mintter/ui'
+import {Spinner, YStack, useStream} from '@mintter/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
@@ -24,7 +24,7 @@ import type {GoDaemonState} from './app-api'
 import {createIPC} from './ipc'
 import type {AppInfoType} from './preload'
 import './root.css'
-import type {StateStream} from './stream'
+import type {StateStream} from '@mintter/shared/src/utils/stream'
 import {client, trpc} from './trpc'
 
 const logger = {
@@ -162,14 +162,6 @@ function useGoDaemonState(): GoDaemonState | undefined {
   return state
 }
 
-function useStream<V>(stream: StateStream<V>): V {
-  const [state, setState] = useState<V>(stream.get())
-  useEffect(() => {
-    return stream.subscribe(setState)
-  }, [stream])
-  return state
-}
-
 function MainApp({
   queryClient,
   ipc,
@@ -177,7 +169,6 @@ function MainApp({
   queryClient: AppQueryClient
   ipc: AppIPC
 }) {
-  // @ts-expect-error
   const darkMode = useStream<boolean>(window.darkMode)
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
