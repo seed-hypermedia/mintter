@@ -1,26 +1,30 @@
 import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
-import {DebugData} from '@mintter/app/components/debug-data'
 import Footer from '@mintter/app/components/footer'
 import {useDraftEditor} from '@mintter/app/models/documents'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
+import {StateStream} from '@mintter/shared'
 import {
   Button,
   Container,
   Input,
   MainWrapper,
   SizableText,
+  Text,
   Theme,
   XStack,
   YStack,
+  useStream,
 } from '@mintter/ui'
 import {useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {useDraftTitleInput} from '../models/documents'
+import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
-import {useDraftTitleInput} from '../models/documents'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -28,16 +32,13 @@ export default function DraftPage() {
     throw new Error('Draft actor must be passed to DraftPage')
 
   const openDraft = useOpenDraft('replace')
-  const [debugValue, setDebugValue] = useState(false)
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
   useEffect(() => {
     if (route.key === 'draft' && route.draftId === undefined) {
       openDraft()
     }
   }, [route])
-  const {editor, query} = useDraftEditor(documentId, {
-    onEditorState: setDebugValue,
-  })
+  const {editor, query, editorState} = useDraftEditor(documentId)
 
   let isDaemonReady = useDaemonReady()
 
@@ -56,9 +57,11 @@ export default function DraftPage() {
 
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
-              {debugValue && <DebugData data={debugValue} />}
             </HMEditorContainer>
           </AppPublicationContentProvider>
+          {documentId ? (
+            <DraftDevTools draftId={documentId} editorState={editorState} />
+          ) : null}
         </MainWrapper>
         <Footer />
       </ErrorBoundary>
@@ -102,6 +105,47 @@ function DraftTitleInput({draftId}: {draftId: string}) {
       onChangeText={onTitle}
       placeholder="Untitled Document"
     />
+  )
+}
+
+function DraftDevTools({
+  draftId,
+  editorState,
+}: {
+  draftId: string
+  editorState: StateStream<any>
+}) {
+  const hasDevTools = useHasDevTools()
+  const openDraft = trpc.diagnosis.openDraftLog.useMutation()
+  const [debugValue, setShowValue] = useState(false)
+  const editorValue = useStream(editorState)
+  if (!hasDevTools) return null
+  return (
+    <YStack alignSelf="stretch">
+      <XStack space="$4" margin="$4">
+        <Button
+          size="$2"
+          theme="orange"
+          onPress={() => {
+            openDraft.mutate(draftId)
+          }}
+        >
+          Open Draft Log
+        </Button>
+        <Button
+          theme="orange"
+          size="$2"
+          onPress={() => setShowValue((v) => !v)}
+        >
+          {debugValue ? 'Hide Draft Value' : 'Show Draft Value'}
+        </Button>
+      </XStack>
+      {debugValue && (
+        <code style={{whiteSpace: 'pre-wrap'}}>
+          {JSON.stringify(editorValue, null, 2)}
+        </code>
+      )}
+    </YStack>
   )
 }
 

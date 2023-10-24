@@ -47,6 +47,7 @@ import {TableList} from '../components/table-list'
 import {AvatarForm} from '../components/avatar-form'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import {Trash} from '@tamagui/lucide-icons'
 
 export default function Settings() {
   return (
@@ -124,11 +125,10 @@ export default function Settings() {
     </Tabs>
   )
 }
-
-export function DeveloperSettings() {
-  const experiments = useExperiments()
-  const writeExperiments = useWriteExperiments()
-  const enabledDevTools = experiments.data?.developerTools
+function SettingsSection({
+  title,
+  children,
+}: React.PropsWithChildren<{title: string}>) {
   return (
     <YStack gap="$3">
       <YStack
@@ -139,7 +139,51 @@ export function DeveloperSettings() {
         borderColor="$borderColor"
         padding="$3"
       >
-        <Heading size="$5">Debugging Tools</Heading>
+        <Heading size="$5">{title}</Heading>
+        {children}
+      </YStack>
+    </YStack>
+  )
+}
+
+export function DeleteDraftLogs() {
+  const [isConfirming, setIsConfirming] = useState(false)
+  const destroyDraftLogs = trpc.diagnosis.destroyDraftLogFolder.useMutation()
+
+  if (isConfirming) {
+    return (
+      <Button
+        icon={Trash}
+        theme="red"
+        onPress={() => {
+          destroyDraftLogs.mutate()
+        }}
+      >
+        Confirm Delete Draft Log Folder?
+      </Button>
+    )
+  }
+  return (
+    <Button
+      icon={Trash}
+      theme="red"
+      onPress={() => {
+        setIsConfirming(true)
+      }}
+    >
+      Delete All Draft Logs
+    </Button>
+  )
+}
+
+export function DeveloperSettings() {
+  const experiments = useExperiments()
+  const writeExperiments = useWriteExperiments()
+  const enabledDevTools = experiments.data?.developerTools
+  const openDraftLogs = trpc.diagnosis.openDraftLogFolder.useMutation()
+  return (
+    <>
+      <SettingsSection title="Developer Tools">
         <SizableText fontSize="$4">
           Adds features across the app for helping diagnose issues. Mostly
           useful for Mintter Developers.
@@ -155,8 +199,21 @@ export function DeveloperSettings() {
             {enabledDevTools ? 'Disable Debug Tools' : `Enable Debug Tools`}
           </Button>
         </XStack>
-      </YStack>
-    </YStack>
+      </SettingsSection>
+      <SettingsSection title="Draft Logs">
+        <XStack space>
+          <Button
+            icon={ExternalLink}
+            onPress={() => {
+              openDraftLogs.mutate()
+            }}
+          >
+            Open Draft Log Folder
+          </Button>
+          <DeleteDraftLogs />
+        </XStack>
+      </SettingsSection>
+    </>
   )
 }
 

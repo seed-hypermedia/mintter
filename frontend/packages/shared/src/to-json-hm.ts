@@ -4,7 +4,9 @@ import {
   MttLink,
   Publication,
   Group,
+  Document,
   HMPublication,
+  HMDocument,
 } from '@mintter/shared'
 import {
   HMAccount,
@@ -18,6 +20,11 @@ export function hmPublication(
 ): HMPublication | null {
   if (!input) return null
   return input.toJson() as HMPublication
+}
+
+export function hmDocument(input?: Document | null): HMDocument | null {
+  if (!input) return null
+  return input.toJson() as HMDocument
 }
 
 export function hmAccount(input?: Account | null) {

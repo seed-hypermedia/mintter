@@ -6,6 +6,7 @@ import {
 } from '@mintter/app/app-context'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {
   Block,
   BlockIdentifier,
@@ -31,6 +32,9 @@ import {
   shortenPath,
   toHMBlock,
   unpackDocId,
+  hmDocument,
+  hmPublication,
+  writeableStateStream,
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
@@ -155,7 +159,8 @@ export function useDraft({
   documentId?: string
 }) {
   const grpcClient = useGRPCClient()
-  return useQuery(queryDraft(grpcClient, documentId, options))
+  const diagnosis = useDraftDiagnosis()
+  return useQuery(queryDraft(grpcClient, documentId, diagnosis, options))
 }
 
 export function queryPublication(
@@ -222,6 +227,29 @@ export function getDefaultShortname(
   return shortenPath(shortname)
 }
 
+function useDraftDiagnosis() {
+  const appendDraft = trpc.diagnosis.appendDraftLog.useMutation()
+  const completeDraft = trpc.diagnosis.completeDraftLog.useMutation()
+  return {
+    append(draftId, event) {
+      return appendDraft.mutateAsync({draftId, event})
+    },
+    complete(draftId, event) {
+      return completeDraft.mutateAsync({draftId, event})
+    },
+  }
+}
+type DraftDiagnosis = ReturnType<typeof useDraftDiagnosis>
+
+function changesToJSON(changes: DocumentChange[]) {
+  return changes.map((change) => {
+    if (change.op.case === 'replaceBlock') {
+      return {...change.op}
+    }
+    return change.op
+  })
+}
+
 export function usePublishDraft(
   opts?: UseMutationOptions<
     {pub: Publication; pubContext: PublicationRouteContext},
@@ -239,10 +267,15 @@ export function usePublishDraft(
   const draftGroupContext =
     draftPubContext?.key === 'group' ? draftPubContext : undefined
   const {client, invalidate} = useAppContext().queryClient
+  const diagnosis = useDraftDiagnosis()
   return useMutation({
     ...opts,
     mutationFn: async ({draftId}: {draftId: string}) => {
       const draft = await grpcClient.drafts.getDraft({documentId: draftId})
+      await diagnosis.append(draftId, {
+        key: 'getDraft',
+        value: hmDocument(draft),
+      })
       if (!draft) throw new Error('no draft found')
       let lastChildIndex = draft.children.length - 1
       const changes: DocumentChange[] = []
@@ -282,12 +315,21 @@ export function usePublishDraft(
         lastChildIndex -= 1
       }
       if (changes.length) {
+        await diagnosis.append(draftId, {
+          key: 'will.updateDraft',
+          note: 'removing extra blocks before publication',
+          value: changesToJSON(changes),
+        })
         await grpcClient.drafts.updateDraft({
           documentId: draftId,
           changes,
         })
       }
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
+      await diagnosis.complete(draftId, {
+        key: 'did.publishDraft',
+        value: hmPublication(pub),
+      })
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
         let docTitle: string | undefined = (
@@ -395,6 +437,7 @@ type MoveBlockAction = {
 export function queryDraft(
   grpcClient: GRPCClient,
   documentId: string | undefined,
+  diagnosis?: DraftDiagnosis,
   opts?: UseQueryOptions<EditorDraftState | null>,
 ) {
   const {enabled = true, retry = false, ...restOpts} = opts || {}
@@ -405,6 +448,10 @@ export function queryDraft(
       try {
         serverDraft = await grpcClient.drafts.getDraft({
           documentId,
+        })
+        diagnosis?.append(documentId!, {
+          key: 'getDraft',
+          value: hmDocument(serverDraft),
         })
       } catch (error: any) {
         const message: string = error.message || ''
@@ -437,15 +484,13 @@ export function queryDraft(
   }
 }
 
-export function useDraftEditor(
-  documentId?: string,
-  opts?: {onEditorState?: (v: any) => void},
-) {
+export function useDraftEditor(documentId?: string) {
   let savingDebounceTimout = useRef<any>(null)
   const queryClient = useAppContext().queryClient
   const openUrl = useOpenUrl()
   const grpcClient = useGRPCClient()
   const {invalidate, client} = queryClient
+  const diagnosis = useDraftDiagnosis()
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       if (!editor) return
@@ -532,6 +577,12 @@ export function useDraftEditor(
           }
         },
       )
+      if (!documentId) throw new Error('Cannot persist a draft without id')
+      diagnosis.append(documentId, {
+        key: 'will.updateDraft',
+        // note: 'regular updateDraft',
+        value: changesToJSON(changes),
+      })
       await grpcClient.drafts.updateDraft({
         documentId,
         changes,
@@ -627,7 +678,7 @@ export function useDraftEditor(
   }
 
   const draft = useQuery(
-    queryDraft(grpcClient, documentId, {
+    queryDraft(grpcClient, documentId, diagnosis, {
       // enabled: !!editor,
       onSuccess: (draft: EditorDraftState | null) => {
         readyThings.current[1] = draft
@@ -640,9 +691,13 @@ export function useDraftEditor(
     }),
   )
 
+  const [writeEditorState, editorState] = useRef(
+    writeableStateStream<any>(null),
+  ).current
+
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      opts?.onEditorState?.(editor.topLevelBlocks)
+      writeEditorState(editor.topLevelBlocks)
 
       if (!isReady.current) return
       if (!readyThings.current[0] || !readyThings.current[1]) return
@@ -832,6 +887,7 @@ export function useDraftEditor(
 
   return {
     editor,
+    editorState,
     query: draft,
     mutation: saveDraftMutation,
   }

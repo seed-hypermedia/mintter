@@ -31,7 +31,6 @@ function getFormattedDateTime() {
   const day = now.getDate().toString().padStart(2, "0");
   const hour = now.getHours().toString().padStart(2, "0");
   const minute = now.getMinutes().toString().padStart(2, "0");
-
   return `${year}.${month}.${day}-${hour}.${minute}`;
 }
 
@@ -45,10 +44,14 @@ if (existsSync(mintterSiteDir)) {
   console.log(`Mintter Site Exists. Moving to MintterArchive`);
   moveSync(mintterSiteDir, join(mintterArchive, `Mintter.site.${nowLabel}`));
 }
+
+const TESTNET_NAME = "";
+
 const desktopProcess = spawn("./dev", ["run-desktop"], {
   cwd: cwd(),
   env: {
     ...process.env,
+    MINTTER_P2P_TESTNET_NAME: TESTNET_NAME,
   },
   stdio: "inherit",
 });
@@ -73,7 +76,7 @@ const siteDaemonProcess = spawn(
     cwd: cwd(),
     env: {
       ...process.env,
-      MINTTER_P2P_TESTNET_NAME: "dev",
+      MINTTER_P2P_TESTNET_NAME: TESTNET_NAME,
     },
     stdio: "inherit",
   }
