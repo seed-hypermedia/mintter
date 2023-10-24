@@ -1,7 +1,8 @@
-import {mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
+import {Editor, mergeAttributes, textblockTypeInputRule} from '@tiptap/core'
 import {Plugin, PluginKey, TextSelection} from '@tiptap/pm/state'
-import {createTipTapBlock, mergeCSSClasses} from '.'
+import {createTipTapBlock, getBlockInfoFromPos, mergeCSSClasses} from '.'
 import styles from '@/blocknote/core/extensions/Blocks/nodes/Block.module.css'
+import {Fragment, Slice} from '@tiptap/pm/model'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -111,8 +112,54 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
   },
 
   addKeyboardShortcuts() {
+    function splitCodeBlock(editor: Editor) {
+      const {state} = editor
+      const codePos = state.doc.resolve(state.selection.$from.pos)
+      const blockInfo = getBlockInfoFromPos(state.doc, codePos.pos)
+      if (blockInfo === undefined) {
+        return false
+      }
+
+      const {depth} = blockInfo
+
+      const originalBlockContent = state.doc.cut(codePos.start(), codePos.pos)
+      const newBlockContent = state.doc.cut(codePos.pos, codePos.end())
+
+      const newBlock = state.schema.nodes['blockContainer'].createAndFill()!
+      const nextBlockPos = codePos.end() + 2
+      const nextBlockContentPos = nextBlockPos + 2
+
+      let tr = state.tr
+      tr = tr.insert(nextBlockPos, newBlock)
+      tr = tr.replace(
+        nextBlockContentPos,
+        nextBlockContentPos + 1,
+        newBlockContent.content.size > 0
+          ? new Slice(Fragment.from(newBlockContent), depth + 2, depth + 2)
+          : undefined,
+      )
+      tr = tr.replace(
+        codePos.start(),
+        codePos.end(),
+        originalBlockContent.content.size > 0
+          ? new Slice(Fragment.from(originalBlockContent), depth + 2, depth + 2)
+          : undefined,
+      )
+
+      editor.view.dispatch(tr)
+
+      editor.commands.setTextSelection(
+        nextBlockContentPos - newBlockContent.textContent?.length,
+      )
+
+      return true
+    }
+
     return {
       'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
+
+      'Shift-Enter': ({editor}) => splitCodeBlock(editor),
+      'Mod-Enter': ({editor}) => splitCodeBlock(editor),
 
       // remove code block when at start of document or code block is empty
       Backspace: () => {

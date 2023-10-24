@@ -630,10 +630,6 @@ export const BlockContainer = Node.create<{
               state.selection.from,
             )!
 
-            if (node.firstChild?.type.name === 'codeBlock') {
-              return false
-            }
-
             const selectionAtBlockStart =
               state.selection.$anchor.parentOffset === 0
             const selectionEmpty =
@@ -659,10 +655,6 @@ export const BlockContainer = Node.create<{
         () =>
           commands.command(({state, chain}) => {
             const {node} = getBlockInfoFromPos(state.doc, state.selection.from)!
-
-            if (node.firstChild?.type.name === 'codeBlock') {
-              return false
-            }
 
             const blockEmpty = node.textContent.length === 0
 
