@@ -372,6 +372,7 @@ export function usePublishDraft(
       invalidate([queryKeys.GET_DRAFT_LIST])
       invalidate([queryKeys.GET_PUBLICATION, documentId])
       invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
+      invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       if (draftGroupContext) {
         invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
@@ -1000,8 +1001,9 @@ export function useCreatePublication() {
       await client.drafts.publishDraft({documentId: draft.id})
       return draft.id
     },
-    onSuccess: () => {
+    onSuccess: (draftId) => {
       invalidate([queryKeys.GET_PUBLICATION_LIST])
+      invalidate([queryKeys.ENTITY_TIMELINE, draftId])
     },
   })
 }
