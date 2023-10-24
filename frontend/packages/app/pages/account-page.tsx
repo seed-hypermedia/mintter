@@ -26,7 +26,7 @@ import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {MenuItem} from '../components/dropdown'
 import {copyLinkMenuItem} from '../components/list-item'
-import {useSetTrusted} from '../models/accounts'
+import {useMyAccount, useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -149,10 +149,11 @@ export default function AccountPage() {
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
   const {data: groups} = useAccountGroups(accountId)
-  const deviceCount = account.devices.length
+  const myAccount = useMyAccount()
   const connectedCount = account.devices?.filter((device) => device.isConnected)
     .length
   const isConnected = !!connectedCount
+  const isMe = myAccount.data?.id === accountId
   return (
     <>
       <MainWrapper>
@@ -181,11 +182,17 @@ export default function AccountPage() {
               <Popover placement="bottom-end">
                 <Popover.Trigger asChild>
                   <Button
-                    icon={<OnlineIndicator online={isConnected} />}
+                    icon={
+                      isMe ? null : <OnlineIndicator online={isConnected} />
+                    }
                     iconAfter={ChevronDown}
                     size="$2"
                   >
-                    {isConnected ? 'Connected' : 'Offline'}
+                    {isMe
+                      ? 'My Devices'
+                      : isConnected
+                      ? 'Connected'
+                      : 'Offline'}
                   </Button>
                 </Popover.Trigger>
                 <Popover.Content
@@ -227,10 +234,12 @@ export default function AccountPage() {
                   </YGroup>
                 </Popover.Content>
               </Popover>
-              <AccountTrustButton
-                accountId={accountId}
-                isTrusted={account.isTrusted}
-              />
+              {isMe ? null : (
+                <AccountTrustButton
+                  accountId={accountId}
+                  isTrusted={account.isTrusted}
+                />
+              )}
             </XStack>
           </XStack>
           <Section>

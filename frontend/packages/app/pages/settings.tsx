@@ -262,7 +262,7 @@ function DevicesInfo({}: {}) {
   const devices = account.data?.devices
   return (
     <YStack gap="$3">
-      <Heading>Devices</Heading>
+      <Heading>My Devices</Heading>
       {devices && ObjectKeys(devices).length
         ? Object.keys(devices).map((deviceId) => (
             <DeviceItem key={deviceId} id={deviceId} />
@@ -477,12 +477,6 @@ function DeviceItem({id}: {id: string}) {
           )
         }
       />
-      <InfoListItem
-        label="Alias"
-        value={status == 'success' ? id.substring(id.length - 10) : '...'}
-      />
-
-      <Separator />
 
       <InfoListItem label="Peer ID" value={id} copyable />
 
