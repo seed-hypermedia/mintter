@@ -583,10 +583,12 @@ export function useDraftEditor(documentId?: string) {
         // note: 'regular updateDraft',
         value: changesToJSON(changes),
       })
-      await grpcClient.drafts.updateDraft({
-        documentId,
-        changes,
-      })
+      if (changes.length) {
+        await grpcClient.drafts.updateDraft({
+          documentId,
+          changes,
+        })
+      }
     },
     retry: false,
     onError: (err) => {
