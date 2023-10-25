@@ -156,6 +156,21 @@ export const router = t.router({
         },
       })
       await webView.webContents.loadURL(webUrl)
+      const htmlValue = await webView.webContents.executeJavaScript(
+        "document.getElementsByTagName('html').item(0).outerHTML",
+      )
+      const versionRegex =
+        /<meta\s+name="hypermedia-entity-version"\s+content="(.*?)"/
+      const versionMatch = htmlValue.match(versionRegex)
+      const hmVersion = versionMatch ? versionMatch[1] : null
+
+      const hmIdRegex = /<meta\s+name="hypermedia-entity-id"\s+content="(.*?)"/
+      const hmIdMatch = htmlValue.match(hmIdRegex)
+      const hmId = hmIdMatch ? hmIdMatch[1] : null
+      if (hmId && hmVersion) {
+        return {hypermedia: {id: hmId, version: hmVersion}}
+      }
+
       const png = await new Promise<Buffer>((resolve, reject) => {
         function paintHandler(
           event: unknown,
@@ -173,9 +188,7 @@ export const router = t.router({
       const pdf = await webView.webContents.printToPDF({
         scale: 1,
       })
-      const htmlValue = await webView.webContents.executeJavaScript(
-        "document.getElementsByTagName('html').item(0).outerHTML",
-      )
+
       await writeFile('/tmp/test.pdf', pdf)
       const uploadedPDF = await uploadFile(new Blob([pdf]))
       const uploadedHTML = await uploadFile(new Blob([htmlValue]))

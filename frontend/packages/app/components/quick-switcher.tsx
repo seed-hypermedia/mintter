@@ -31,9 +31,21 @@ function useURLHandler() {
     queryClient: AppQueryClient,
     grpcClient: GRPCClient,
     search: string,
-  ): Promise<NavRoute> => {
+  ): Promise<NavRoute | null> => {
     if (experiments.data?.webImporting) {
       const webResult = await webQuery.mutateAsync({webUrl: search})
+      if (webResult.hypermedia) {
+        const unpacked = unpackHmIdWithAppRoute(
+          `${webResult.hypermedia.id}?v=${webResult.hypermedia.version}`,
+        )
+        if (unpacked?.navRoute) return unpacked.navRoute
+        console.log(
+          'Failed to open this hypermedia content',
+          webResult.hypermedia,
+        )
+        toast.error('Failed to open this hypermedia content')
+        return null
+      }
       toast('Importing from the web')
       const imported = await importWebCapture(webResult, grpcClient)
       const documentId = imported.published.document?.id
@@ -132,8 +144,10 @@ export function QuickSwitcher() {
                   setActionPromise(
                     handleUrl(queryClient, grpcClient, search)
                       .then((navRoute) => {
-                        setOpen(false)
-                        navigate(navRoute)
+                        if (navRoute) {
+                          setOpen(false)
+                          navigate(navRoute)
+                        }
                       })
                       .catch((e) => {
                         console.error('🚨 Failed to fetch web link', search, e)
