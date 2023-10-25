@@ -116,7 +116,7 @@ export function PublicationContentProvider({
           position="fixed"
           borderColor="$color7"
           borderWidth={1}
-          top={16}
+          bottom={16}
           right={16}
           backgroundColor="$backgroundHover"
         >
