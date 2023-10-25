@@ -1,26 +1,21 @@
+import {zodResolver} from '@hookform/resolvers/zod'
 import {Profile} from '@mintter/shared'
-import {useMyAccount, useSetProfile} from '../models/accounts'
-import {useEffect, useState} from 'react'
-import {copyTextToClipboard} from '../copy-to-clipboard'
-import {AvatarForm} from './avatar-form'
-import {getAvatarUrl} from '../utils/account-url'
 import {
+  Button,
+  DialogTitle,
   Form,
   Label,
-  Input,
-  TextArea,
-  Button,
-  SizableText,
-  DialogTitle,
   Spinner,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {toast} from '../toast'
-import {useAppDialog} from './dialog'
-import {z} from 'zod'
-import {zodResolver} from '@hookform/resolvers/zod'
+import {useEffect} from 'react'
 import {Control, useController, useForm} from 'react-hook-form'
+import {z} from 'zod'
+import {useMyAccount, useSetProfile} from '../models/accounts'
+import {getAvatarUrl} from '../utils/account-url'
+import {AvatarForm} from './avatar-form'
+import {useAppDialog} from './dialog'
 import {FormError, FormInput, FormTextArea} from './form-input'
 
 export function useEditProfileDialog() {

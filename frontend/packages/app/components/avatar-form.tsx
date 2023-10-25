@@ -7,9 +7,10 @@ import toast from 'react-hot-toast'
 
 export function AvatarForm({
   url,
+  disabled,
   onAvatarUpload,
 }: {
-  size?: FontSizeTokens
+  disabled?: boolean
   url?: string
   onAvatarUpload: (avatar: string) => Awaited<void>
 }) {
@@ -42,6 +43,16 @@ export function AvatarForm({
     }
     await onAvatarUpload(data)
   }
+  const avatarImage = (
+    <Avatar
+      label={account.data?.profile?.alias}
+      id={account.data?.id}
+      size={140}
+      url={url}
+      color="$blue12"
+    />
+  )
+  if (disabled) return avatarImage
   return (
     <Tooltip content="Click or Drag to Set Avatar Image">
       <Stack hoverStyle={{opacity: 0.7}}>
@@ -60,13 +71,7 @@ export function AvatarForm({
             cursor: 'pointer',
           }}
         />
-        <Avatar
-          label={account.data?.profile?.alias}
-          id={account.data?.id}
-          size={140}
-          url={url}
-          color="$blue12"
-        />
+        {avatarImage}
       </Stack>
     </Tooltip>
   )
