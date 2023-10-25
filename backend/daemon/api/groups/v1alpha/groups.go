@@ -143,7 +143,7 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 
 					// We want to log error message if sync round failed.
 					logFunc := log.Debug
-					err := srv.SyncGroupSite(ctx, group, interval)
+					err := srv.syncGroupSite(ctx, group, interval)
 					if err != nil {
 						logFunc = log.Error
 					}
@@ -161,9 +161,37 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 	return nil
 }
 
-// SyncSite syncs one site and blocks until finished,
+// SyncGroupSite syncs one group with its site in a blocking fashion.
+func (srv *Server) SyncGroupSite(ctx context.Context, in *groups.SyncGroupSiteRequest) (*groups.SyncGroupSiteResponse, error) {
+	if in.GroupId == "" {
+		return nil, errutil.MissingArgument("groupId")
+	}
+
+	if err := srv.syncGroupSite(ctx, in.GroupId, 0); err != nil {
+		return nil, err
+	}
+
+	sr, err := srv.db.GetGroupSite(ctx, in.GroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	info := &groups.Group_SiteInfo{
+		BaseUrl:        sr.URL,
+		Version:        sr.RemoteVersion,
+		LastSyncTime:   maybeTimeToProto(time.Unix(sr.LastSyncTime, 0)),
+		LastOkSyncTime: maybeTimeToProto(time.Unix(sr.LastOKSyncTime, 0)),
+		LastSyncError:  sr.LastSyncError,
+	}
+
+	return &groups.SyncGroupSiteResponse{
+		SiteInfo: info,
+	}, nil
+}
+
+// syncSite syncs one site and blocks until finished,
 // unless the last time we've synced was within the specified interval.
-func (srv *Server) SyncGroupSite(ctx context.Context, group string, interval time.Duration) (err error) {
+func (srv *Server) syncGroupSite(ctx context.Context, group string, interval time.Duration) (err error) {
 	sr, err := srv.db.GetGroupSite(ctx, group)
 	if err != nil {
 		return fmt.Errorf("failed to get site record for group %s: %w", group, err)
@@ -549,7 +577,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 			go func() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 				defer cancel()
-				if err := srv.SyncGroupSite(ctx, in.Id, 0); err != nil {
+				if err := srv.syncGroupSite(ctx, in.Id, 0); err != nil {
 					srv.log.Error("PushGroupToSiteError", zap.String("groupID", in.Id), zap.String("siteURL", vv), zap.Error(err))
 				}
 			}()

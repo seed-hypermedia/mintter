@@ -19,6 +19,12 @@ service Groups {
   // Updates a group.
   rpc UpdateGroup(UpdateGroupRequest) returns (Group);
 
+  // Forces a sync of a group with its site.
+  // Only works for those groups that are published to sites.
+  // Could be useful to trigger the sync manually
+  // without having to wait for the next round of the automatic periodic sync.
+  rpc SyncGroupSite(SyncGroupSiteRequest) returns (SyncGroupSiteResponse);
+
   // Lists members of a group.
   rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
 
@@ -97,6 +103,18 @@ message UpdateGroupRequest {
   // Optional. Secret setup URL that is provided during site server deployment.
   // I.e. a place on the Web where this group has to be published.
   string site_setup_url = 6;
+}
+
+// Request to sync group site.
+message SyncGroupSiteRequest {
+  // Group ID to sync.
+  string group_id = 1;
+}
+
+// Response for syncing a group site.
+message SyncGroupSiteResponse {
+  // The site info of a group after the sync.
+  Group.SiteInfo site_info = 1;
 }
 
 // Request to list members.

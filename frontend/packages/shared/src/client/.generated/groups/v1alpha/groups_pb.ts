@@ -256,6 +256,88 @@ export class UpdateGroupRequest extends Message<UpdateGroupRequest> {
 }
 
 /**
+ * Request to sync group site.
+ *
+ * @generated from message com.mintter.groups.v1alpha.SyncGroupSiteRequest
+ */
+export class SyncGroupSiteRequest extends Message<SyncGroupSiteRequest> {
+  /**
+   * Group ID to sync.
+   *
+   * @generated from field: string group_id = 1;
+   */
+  groupId = "";
+
+  constructor(data?: PartialMessage<SyncGroupSiteRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.groups.v1alpha.SyncGroupSiteRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "group_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SyncGroupSiteRequest {
+    return new SyncGroupSiteRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SyncGroupSiteRequest {
+    return new SyncGroupSiteRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SyncGroupSiteRequest {
+    return new SyncGroupSiteRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SyncGroupSiteRequest | PlainMessage<SyncGroupSiteRequest> | undefined, b: SyncGroupSiteRequest | PlainMessage<SyncGroupSiteRequest> | undefined): boolean {
+    return proto3.util.equals(SyncGroupSiteRequest, a, b);
+  }
+}
+
+/**
+ * Response for syncing a group site.
+ *
+ * @generated from message com.mintter.groups.v1alpha.SyncGroupSiteResponse
+ */
+export class SyncGroupSiteResponse extends Message<SyncGroupSiteResponse> {
+  /**
+   * The site info of a group after the sync.
+   *
+   * @generated from field: com.mintter.groups.v1alpha.Group.SiteInfo site_info = 1;
+   */
+  siteInfo?: Group_SiteInfo;
+
+  constructor(data?: PartialMessage<SyncGroupSiteResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.groups.v1alpha.SyncGroupSiteResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "site_info", kind: "message", T: Group_SiteInfo },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SyncGroupSiteResponse {
+    return new SyncGroupSiteResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SyncGroupSiteResponse {
+    return new SyncGroupSiteResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SyncGroupSiteResponse {
+    return new SyncGroupSiteResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SyncGroupSiteResponse | PlainMessage<SyncGroupSiteResponse> | undefined, b: SyncGroupSiteResponse | PlainMessage<SyncGroupSiteResponse> | undefined): boolean {
+    return proto3.util.equals(SyncGroupSiteResponse, a, b);
+  }
+}
+
+/**
  * Request to list members.
  *
  * @generated from message com.mintter.groups.v1alpha.ListMembersRequest

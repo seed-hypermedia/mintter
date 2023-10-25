@@ -28,6 +28,11 @@ type GroupsClient interface {
 	GetGroup(ctx context.Context, in *GetGroupRequest, opts ...grpc.CallOption) (*Group, error)
 	// Updates a group.
 	UpdateGroup(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*Group, error)
+	// Forces a sync of a group with its site.
+	// Only works for those groups that are published to sites.
+	// Could be useful to trigger the sync manually
+	// without having to wait for the next round of the automatic periodic sync.
+	SyncGroupSite(ctx context.Context, in *SyncGroupSiteRequest, opts ...grpc.CallOption) (*SyncGroupSiteResponse, error)
 	// Lists members of a group.
 	ListMembers(ctx context.Context, in *ListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
 	// Lists content of a group.
@@ -69,6 +74,15 @@ func (c *groupsClient) GetGroup(ctx context.Context, in *GetGroupRequest, opts .
 func (c *groupsClient) UpdateGroup(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*Group, error) {
 	out := new(Group)
 	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/UpdateGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupsClient) SyncGroupSite(ctx context.Context, in *SyncGroupSiteRequest, opts ...grpc.CallOption) (*SyncGroupSiteResponse, error) {
+	out := new(SyncGroupSiteResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.groups.v1alpha.Groups/SyncGroupSite", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +144,11 @@ type GroupsServer interface {
 	GetGroup(context.Context, *GetGroupRequest) (*Group, error)
 	// Updates a group.
 	UpdateGroup(context.Context, *UpdateGroupRequest) (*Group, error)
+	// Forces a sync of a group with its site.
+	// Only works for those groups that are published to sites.
+	// Could be useful to trigger the sync manually
+	// without having to wait for the next round of the automatic periodic sync.
+	SyncGroupSite(context.Context, *SyncGroupSiteRequest) (*SyncGroupSiteResponse, error)
 	// Lists members of a group.
 	ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error)
 	// Lists content of a group.
@@ -154,6 +173,9 @@ func (UnimplementedGroupsServer) GetGroup(context.Context, *GetGroupRequest) (*G
 }
 func (UnimplementedGroupsServer) UpdateGroup(context.Context, *UpdateGroupRequest) (*Group, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateGroup not implemented")
+}
+func (UnimplementedGroupsServer) SyncGroupSite(context.Context, *SyncGroupSiteRequest) (*SyncGroupSiteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncGroupSite not implemented")
 }
 func (UnimplementedGroupsServer) ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMembers not implemented")
@@ -232,6 +254,24 @@ func _Groups_UpdateGroup_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GroupsServer).UpdateGroup(ctx, req.(*UpdateGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Groups_SyncGroupSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncGroupSiteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupsServer).SyncGroupSite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.groups.v1alpha.Groups/SyncGroupSite",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupsServer).SyncGroupSite(ctx, req.(*SyncGroupSiteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -344,6 +384,10 @@ var Groups_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateGroup",
 			Handler:    _Groups_UpdateGroup_Handler,
+		},
+		{
+			MethodName: "SyncGroupSite",
+			Handler:    _Groups_SyncGroupSite_Handler,
 		},
 		{
 			MethodName: "ListMembers",
