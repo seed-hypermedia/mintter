@@ -129,7 +129,7 @@ export default function PublicationPage() {
               <YStack height="100%">
                 <MainWrapper>
                   <YStack
-                    paddingVertical={'$7'}
+                    paddingBottom={'$7'}
                     width="100%"
                     maxWidth="90ch"
                     // paddingHorizontal="10vw"
@@ -143,7 +143,9 @@ export default function PublicationPage() {
                         replace({...route, accessory: {key: 'citations'}})
                       }}
                     >
-                      <PublicationHeading publication={publication.data} />
+                      <PublicationHeading>
+                        {publication.data.document?.title}
+                      </PublicationHeading>
                       <PublicationContent publication={publication.data} />
                     </AppPublicationContentProvider>
                   </YStack>

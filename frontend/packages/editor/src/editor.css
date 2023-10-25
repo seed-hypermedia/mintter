@@ -1,4 +1,4 @@
-.editor-title,
+#editor-title,
 .editor {
   --text-unit: 18;
   --layout-unit: 24;
@@ -9,6 +9,11 @@
 
 .editor {
   margin-bottom: 60px;
+}
+
+#editor-title textarea {
+  border-color: transparent !important;
+  outline: none !important;
 }
 
 .ProseMirror {

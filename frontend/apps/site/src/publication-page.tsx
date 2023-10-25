@@ -1,16 +1,12 @@
 import {
   Account,
-  BlockNodeContent,
-  HMBlockFile,
-  HMBlockVideo,
   HMGroup,
   HMPublication,
   Publication,
   PublicationContent,
+  PublicationHeading,
   UnpackedHypermediaId,
   createHmDocLink,
-  formatBytes,
-  getCIDFromIPFSUrl,
   groupDocUrl,
   unpackHmId,
 } from '@mintter/shared'
@@ -18,30 +14,26 @@ import {
 import {
   ArrowRight,
   Button,
-  File,
   Heading,
   PageSection,
   Share,
   SideSection,
   SideSectionTitle,
   SizableText,
-  Tooltip,
   XStack,
   YStack,
   useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
-import {useMemo} from 'react'
 import {OGImageMeta} from 'src/head'
-import {NextLink} from 'src/next-link'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
+import {ErrorPage} from './error-page'
 import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
-import {ErrorPage} from './error-page'
 
 export type PublicationPageProps = {
   // documentId: string
@@ -129,24 +121,10 @@ export default function PublicationPage({
         <PageSection.Content paddingBottom={80}>
           {pub ? (
             <>
-              {pub.document?.title ? (
-                <Heading
-                  size="$1"
-                  fontSize={'$2'}
-                  marginTop="$6"
-                  paddingHorizontal="$5"
-                  $gtMd={{
-                    marginTop: '$5',
-                    paddingHorizontal: '$6',
-                  }}
-                  $sm={{
-                    fontSize: '$3',
-                  }}
-                >
-                  {pub.document?.title}
-                </Heading>
-              ) : null}
               <SitePublicationContentProvider unpackedId={pubId}>
+                {pub.document?.title ? (
+                  <PublicationHeading>{pub.document.title}</PublicationHeading>
+                ) : null}
                 <PublicationContent
                   // paddingHorizontal={0}
                   // $gtMd={{paddingHorizontal: '$3'}}

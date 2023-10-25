@@ -539,9 +539,10 @@ export function BlockContentHeading({block, depth}: BlockContentProps) {
   )
 }
 
-export function PublicationHeading({publication}: {publication?: Publication}) {
+export function PublicationHeading({children}: {children?: string}) {
   const {textUnit, debug, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
+  let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
 
   return (
     <YStack
@@ -554,6 +555,7 @@ export function PublicationHeading({publication}: {publication?: Publication}) {
         paddingBottom={layoutUnit / 2}
         borderBottomColor="$color6"
         borderBottomWidth={1}
+        {...headingMarginStyles}
       >
         <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
           <Text
@@ -563,7 +565,7 @@ export function PublicationHeading({publication}: {publication?: Publication}) {
             {...headingTextStyles}
             maxWidth="95%"
           >
-            {publication?.document?.title || 'Untitled document'}
+            {children || 'Untitled document'}
           </Text>
         </YStack>
       </YStack>
@@ -612,7 +614,7 @@ export function useHeadingTextStyles(depth: number, unit: number) {
   }, [depth, unit])
 }
 
-function useHeadingMarginStyles(depth: number, unit: number) {
+export function useHeadingMarginStyles(depth: number, unit: number) {
   function headingFontValues(value: number) {
     return {
       marginTop: value,

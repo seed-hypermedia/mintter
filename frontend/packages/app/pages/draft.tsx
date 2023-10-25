@@ -8,6 +8,7 @@ import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
+  useHeadingMarginStyles,
   useHeadingTextStyles,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -17,21 +18,18 @@ import {
   Input,
   MainWrapper,
   SizableText,
-  Text,
   Theme,
-  View,
   XStack,
   YStack,
   useStream,
 } from '@mintter/ui'
-import {useEffect, useLayoutEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {useDraftTitleInput} from '../models/documents'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
-import {TextInput} from 'react-native'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -58,7 +56,7 @@ export default function DraftPage() {
         <MainWrapper>
           {!isDaemonReady ? <NotSavingBanner /> : null}
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
-            <YStack className="editor-title">
+            <YStack id="editor-title">
               <DraftTitleInput
                 draftId={documentId}
                 onEnter={() => {
@@ -108,7 +106,9 @@ function DraftTitleInput({
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   const {title, onTitle} = useDraftTitleInput(draftId)
   const input = useRef<HTMLTextAreaElement | null>(null)
-  useLayoutEffect(() => {
+  const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
+
+  let calcTitleSize = useCallback((title?: string) => {
     const target = input.current
     if (!target) return
 
@@ -123,7 +123,19 @@ function DraftTitleInput({
 
     // here is the actual auto-resize
     target.style.height = `${target.scrollHeight}px`
-  }, [title])
+  }, [])
+
+  useLayoutEffect(() => {
+    window.addEventListener('resize', () => calcTitleSize(title))
+
+    return () => {
+      window.removeEventListener('resize', () => calcTitleSize(title))
+    }
+  }, [])
+  useLayoutEffect(() => {
+    calcTitleSize(title)
+  }, [title, calcTitleSize])
+
   return (
     <YStack
     // paddingHorizontal={layoutUnit / 2}
@@ -136,6 +148,7 @@ function DraftTitleInput({
         borderBottomColor="$color6"
         borderBottomWidth={1}
         paddingHorizontal={54}
+        {...headingMarginStyles}
       >
         <Input
           // we use multiline so that we can avoid horizontal scrolling for long titles
@@ -158,45 +171,19 @@ function DraftTitleInput({
           fontFamily="$body"
           onChange={(e) => {
             // this is replicated in useLayoutEffect but we handle it here so that there is no layout thrashing when creating new lines
-            const target: HTMLTextAreaElement | null = input.current
-            if (!target) return
-            target.style.height = '' // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
-            target.style.height = `${target.scrollHeight}px`
+            calcTitleSize(title)
           }}
           outlineColor="transparent"
           borderColor="transparent"
           paddingLeft={9.6}
-          marginTop="$3"
-          paddingVertical={'$4'}
           defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
           onChangeText={onTitle}
           placeholder="Untitled Document"
           {...headingTextStyles}
+          padding={0}
         />
       </XStack>
     </YStack>
-  )
-
-  return (
-    <Input
-      multiline
-      size="$9"
-      borderRadius={0}
-      borderWidth={0}
-      backgroundColor="$color2"
-      fontWeight="bold"
-      fontFamily={'$body'}
-      value={title || ''}
-      outlineColor="transparent"
-      borderColor="transparent"
-      f={1}
-      maxWidth={640}
-      paddingLeft={9.6}
-      marginLeft={54}
-      marginRight={54}
-      onChangeText={onTitle}
-      placeholder="Untitled Document"
-    />
   )
 }
 
