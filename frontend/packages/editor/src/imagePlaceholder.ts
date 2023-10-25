@@ -18,13 +18,13 @@ export const ImagePlaceholder = createTipTapBlock<'imagePlaceholder'>({
     }
   },
 
-  parseHTML() {
-    return [
-      {
-        tag: 'img[src]',
-      },
-    ]
-  },
+  // parseHTML() {
+  //   return [
+  //     {
+  //       tag: 'img[src]',
+  //     },
+  //   ]
+  // },
 
   renderHTML({HTMLAttributes}) {
     const blockContentDOMAttributes =
