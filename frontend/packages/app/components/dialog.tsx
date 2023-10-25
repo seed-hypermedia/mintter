@@ -2,13 +2,9 @@ import {AlertDialog, Dialog, XStack, YStack, styled} from '@mintter/ui'
 import {FC, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'
 
-export const DialogOverlay = styled(XStack, {
-  backgroundColor: '$base-component-bg-normal',
-  opacity: 0.7,
+export const DialogOverlay = styled(Dialog.Overlay, {
   // @ts-expect-error
-  position: 'fixed',
-  inset: 0,
-  zIndex: '$max',
+  zIndex: '$max', // for somer reason this is required for the overlay to go behind the DialogContent. maybe because of the DialogContent position:fixed below
 })
 
 export const DialogContent = styled(YStack, {
@@ -18,7 +14,6 @@ export const DialogContent = styled(YStack, {
     'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
   // @ts-expect-error
   position: 'fixed',
-  zIndex: '$max',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
