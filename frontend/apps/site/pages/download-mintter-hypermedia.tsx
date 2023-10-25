@@ -92,7 +92,13 @@ function PlarformSection({
         <Group orientation="horizontal">
           {platform.items.map((item) => (
             <Group.Item key={item.name}>
-              <Button theme="mint" href={item.downloadUrl} download size="$2">
+              <Button
+                tag="a"
+                theme="mint"
+                href={item.downloadUrl}
+                download
+                size="$2"
+              >
                 {item.name}
               </Button>
             </Group.Item>
