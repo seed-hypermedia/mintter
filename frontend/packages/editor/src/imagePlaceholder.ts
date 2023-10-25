@@ -97,5 +97,5 @@ async function uploadMedia(file: File) {
     body: formData,
   })
   const data = await response.text()
-  return data
+  return `ipfs://${data}`
 }
