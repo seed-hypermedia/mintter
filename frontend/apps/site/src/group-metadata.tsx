@@ -14,7 +14,7 @@ export function GroupMetadata({
   groupId: string
 }) {
   if (!group) return null
-  const time = group.createTime
+  const createTime = group.createTime
   const unpackedGroupId = unpackHmId(groupId)
   return (
     <>
@@ -22,7 +22,10 @@ export function GroupMetadata({
         <GroupOwnerSection owner={group.ownerAccountId} />
       )}
       {group.id && <GroupEditorsSection group={group} />}
-      {time && <LastUpdateSection time={time} />}
+
+      {/* Disabled because group doesnt include updated time, only created date which is not very relevant to show. */}
+      {/* todo: re-enable when we have updateTime available in group */}
+      {/* createTime && <LastUpdateSection time={time} />} */}
 
       {unpackedGroupId && unpackedGroupId?.type === 'g' && (
         <SideSection>
