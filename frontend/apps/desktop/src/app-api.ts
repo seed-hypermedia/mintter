@@ -25,6 +25,7 @@ import {
 } from './app-windows'
 import {log, logFilePath} from './logger'
 import {diagnosisApi} from './app-diagnosis'
+import {welcomingApi} from './app-welcoming'
 
 const invalidationHandlers = new Set<(queryKey: any) => void>()
 
@@ -115,6 +116,7 @@ async function uploadFile(file: Blob | string) {
 export const router = t.router({
   experiments: experimentsApi,
   diagnosis: diagnosisApi,
+  welcoming: welcomingApi,
   createAppWindow: t.procedure
     .input(
       z.object({

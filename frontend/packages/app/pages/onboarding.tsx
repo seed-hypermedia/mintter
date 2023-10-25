@@ -39,6 +39,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
+import {trpc} from '@mintter/desktop/src/trpc'
 
 const CONTENT_MAX_WIDTH = 500
 
@@ -807,13 +808,21 @@ export function OnboardingProvider({
   initialStep?: OBState
 }) {
   let [state, send] = useReducer(transition, initialStep)
-
+  const writeIsProbablyNewAccount =
+    trpc.welcoming.writeIsProbablyNewAccount.useMutation()
   let value = useMemo(
     () => ({
       state,
-      send,
+      send: (action: OBAction) => {
+        if (action === 'NEW_ACCOUNT') {
+          writeIsProbablyNewAccount.mutate(true)
+        } else if (action === 'NEW_DEVICE') {
+          writeIsProbablyNewAccount.mutate(false)
+        }
+        send(action)
+      },
     }),
-    [state],
+    [state, writeIsProbablyNewAccount],
   )
 
   return (

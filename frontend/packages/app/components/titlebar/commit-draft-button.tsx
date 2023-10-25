@@ -23,7 +23,7 @@ export default function CommitDraftButton() {
   const mediaDialog = useMediaDialog()
   const isDaemonReady = useDaemonReady()
   const publish = usePublishDraft({
-    onSuccess: ({pub: publishedDoc, pubContext}) => {
+    onSuccess: ({pub: publishedDoc, pubContext, isFirstPublish}) => {
       if (!publishedDoc || !draftId) return
       if (
         route.contextRoute?.key === 'group' &&
@@ -39,7 +39,11 @@ export default function CommitDraftButton() {
           pubContext: pubContext,
         })
       }
-      toast.success('Document Committed.')
+      if (isFirstPublish) {
+        toast.success('Congratulations, you published your first document!')
+      } else {
+        toast.success('Document Committed.')
+      }
     },
     onError: (e: any) => {
       toast.error('Failed to publish: ' + e.message)

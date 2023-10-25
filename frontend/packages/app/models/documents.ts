@@ -260,6 +260,7 @@ export function usePublishDraft(
   >,
 ) {
   const queryClient = useAppContext().queryClient
+  const markDocPublish = trpc.welcoming.markDocPublish.useMutation()
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
@@ -330,6 +331,7 @@ export function usePublishDraft(
         key: 'did.publishDraft',
         value: hmPublication(pub),
       })
+      const isFirstPublish = await markDocPublish.mutateAsync(draftId)
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
         let docTitle: string | undefined = (
@@ -349,6 +351,7 @@ export function usePublishDraft(
             },
           })
           return {
+            isFirstPublish,
             pub,
             pubContext: {
               key: 'group',
@@ -358,7 +361,7 @@ export function usePublishDraft(
           }
         }
       }
-      return {pub, pubContext: draftPubContext}
+      return {isFirstPublish, pub, pubContext: draftPubContext}
     },
     onSuccess: (
       result: {pub: Publication; pubContext: PublicationRouteContext},
