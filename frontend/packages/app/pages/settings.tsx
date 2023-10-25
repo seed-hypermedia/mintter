@@ -1,10 +1,12 @@
-import {useMyAccount, useSetProfile} from '@mintter/app/models/accounts'
+import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
 import {
+  ArrowDownRight,
   Button,
   Card,
   CardProps,
@@ -12,42 +14,37 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
-  Form,
+  ExternalLink,
   H3,
   Heading,
   Input,
   Label,
+  Pencil,
   ScrollView,
   Select,
   Separator,
+  Share,
   SizableText,
   Tabs,
   TabsContentProps,
-  TextArea,
   Tooltip,
+  View,
   XGroup,
   XStack,
   YStack,
-  Share,
-  ArrowDownRight,
-  ExternalLink,
-  View,
-  Text,
-  Pencil,
 } from '@mintter/ui'
+import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
-import {getAvatarUrl} from '../utils/account-url'
-import {useExportWallet} from '../models/payments'
-import {trpc} from '@mintter/desktop/src/trpc'
-import {useOpenUrl} from '../open-url'
-import {TableList} from '../components/table-list'
 import {AvatarForm} from '../components/avatar-form'
-import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
-import {Trash} from '@tamagui/lucide-icons'
+import {TableList} from '../components/table-list'
+import {useExperiments, useWriteExperiments} from '../models/experiments'
+import {useExportWallet} from '../models/payments'
+import {useOpenUrl} from '../open-url'
+import {getAvatarUrl} from '../utils/account-url'
 
 export default function Settings() {
   return (
@@ -227,7 +224,6 @@ export function ProfileForm({
   profile: Profile
   accountId: string
 }) {
-  const setProfile = useSetProfile()
   const editProfileDialog = useEditProfileDialog()
   function onCopy() {
     copyTextToClipboard(accountId)
@@ -238,10 +234,8 @@ export function ProfileForm({
       <XStack gap="$4">
         <YStack flex={0} alignItems="center" flexGrow={0}>
           <AvatarForm
-            onAvatarUpload={async (avatar) => {
-              await setProfile.mutateAsync({...profile, avatar})
-              toast.success('Avatar changed')
-            }}
+            disabled
+            onAvatarUpload={async (avatar) => {}}
             url={getAvatarUrl(profile?.avatar)}
           />
         </YStack>
