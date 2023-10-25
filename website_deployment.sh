@@ -20,6 +20,8 @@ tag="latest"
 auto_update=0
 no_discovery="true"
 no_pull="true"
+clean_images_cron="0 3 * * * docker rmi \$(docker images | grep -E 'mintter/mintter-site|mintter/sitegw' | awk '{print \$3}')"
+
 usage()
 {
     echo "group_deployment script. It links a group [options] hostname"
@@ -99,6 +101,10 @@ BLOCK
 
 if [ $auto_update -eq 1 ]; then
   docker rm -f autoupdater >/dev/null 2>&1
+  if ! crontab -l | grep -q "$clean_images_cron"; then
+    # Remove any existing cron job for this task, add the new cron job, and install the new crontab
+    (crontab -l | grep -v -F "$clean_images_cron"; echo "$clean_images_cron") | crontab -
+  fi
   docker run -d --name autoupdater -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -i 300 nextjs minttersite >/dev/null 2>&1
 fi
 
