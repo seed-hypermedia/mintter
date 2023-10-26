@@ -67,6 +67,9 @@ message UpdateDraftRequest {
 message UpdateDraftResponse {
   // The ID of the change representing the draft version after the update is processed.
   string change_id = 1;
+
+  // The state of the document after the update.
+  Document updated_document = 2;
 }
 
 // Granular document change.

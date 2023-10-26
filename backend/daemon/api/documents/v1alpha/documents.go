@@ -207,8 +207,14 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 		return nil, err
 	}
 
+	updated, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.DocumentId})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get draft after applying update: %w", err)
+	}
+
 	return &documents.UpdateDraftResponse{
-		ChangeId: blob.CID.String(),
+		ChangeId:        blob.CID.String(),
+		UpdatedDocument: updated,
 	}, nil
 }
 
