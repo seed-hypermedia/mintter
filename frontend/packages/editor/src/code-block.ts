@@ -158,8 +158,66 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
     return {
       'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
 
+      // Split code block's content on current selection and move other content to the next block.
       'Shift-Enter': ({editor}) => splitCodeBlock(editor),
       'Mod-Enter': ({editor}) => splitCodeBlock(editor),
+
+      // remove double space (if any) from the current line on shift+tab click
+      'Shift-Tab': ({editor}) => {
+        const {state, view} = editor
+        const {selection} = state
+        const {$from, empty} = selection
+
+        if (!empty || $from.parent.type !== this.type) {
+          return false
+        }
+
+        const codePos = state.doc.resolve($from.pos)
+
+        if (codePos.pos === codePos.start()) {
+          return false
+        }
+
+        const codeBlock = codePos.parent
+        let currentPosInBlock = codePos.pos - codePos.start()
+        let currentChar
+        const tabSpace = '  '
+
+        do {
+          currentPosInBlock--
+
+          currentChar = codeBlock.textBetween(
+            currentPosInBlock,
+            currentPosInBlock + 1,
+          )
+        } while (currentChar !== '\n' && currentPosInBlock != -1)
+
+        if (currentPosInBlock + 2 >= codePos.end() - codePos.start())
+          return true
+
+        do {
+          currentPosInBlock++
+          currentChar = codeBlock.textBetween(
+            currentPosInBlock,
+            currentPosInBlock + 2,
+          )
+        } while (
+          currentChar !== tabSpace &&
+          !currentChar.includes('\n') &&
+          currentPosInBlock + 2 < codePos.end() - codePos.start()
+        )
+
+        if (currentChar === tabSpace) {
+          let tr = state.tr
+          tr = tr.deleteRange(
+            currentPosInBlock + codePos.start(),
+            currentPosInBlock + codePos.start() + 2,
+          )
+          view.dispatch(tr)
+        }
+
+        return true
+      },
 
       // remove code block when at start of document or code block is empty
       Backspace: () => {
@@ -177,21 +235,44 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
         return false
       },
 
-      // Tab: ({editor}) => {
-      //   const {state, view} = editor
-      //   const {selection} = state
-      //   const {$from, empty} = selection
+      // add double space to the current line on tab click
+      Tab: ({editor}) => {
+        const {state, view} = editor
+        const {selection} = state
+        const {$from, empty} = selection
 
-      //   if (!empty || $from.parent.type !== this.type) {
-      //     return false
-      //   }
+        if (!empty || $from.parent.type !== this.type) {
+          return false
+        }
 
-      //   let tr = state.tr
-      //   const tabSpace = state.schema.text('\t')
-      //   tr = tr.replaceSelectionWith(tabSpace)
-      //   view.dispatch(tr)
-      //   return true
-      // },
+        const codePos = state.doc.resolve($from.pos)
+
+        if (codePos.pos === codePos.start()) {
+          return false
+        }
+
+        const codeBlock = codePos.parent
+        let currentPosInBlock = codePos.pos - codePos.start()
+        let currentChar
+
+        while (currentChar !== '\n' && currentPosInBlock != -1) {
+          currentPosInBlock--
+
+          currentChar = codeBlock.textBetween(
+            currentPosInBlock,
+            currentPosInBlock + 1,
+          )
+        }
+
+        let tr = state.tr
+        const tabSpace = '  '
+        tr = tr.insert(
+          currentPosInBlock + codePos.start() + 1,
+          state.schema.text(tabSpace),
+        )
+        view.dispatch(tr)
+        return true
+      },
 
       // exit node on if at end of the block and at the new line or add a new line
       Enter: ({editor}) => {
