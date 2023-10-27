@@ -28,8 +28,16 @@ const prodInter: Interceptor = (next) => async (req) => {
   const result = await next({
     ...req,
     init: {...req.init, redirect: 'follow'},
+  }).catch((e) => {
+    if (e.message.match('fetch failed') && e.stack.join('.').match('undici')) {
+      console.error(
+        'Mysterious Undici Error via ConnectWeb. Quitting the server so that the environment restarts it',
+      )
+      console.error(e)
+      process.exit(1)
+    }
+    throw e
   })
-  // todo catch (e) code: ECONNREFUSED for undici error, figure it out!
   return result
 }
 
