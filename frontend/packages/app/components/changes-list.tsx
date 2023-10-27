@@ -14,13 +14,12 @@ import {
   Copy,
   DialogDescription,
   DialogTitle,
-  ExternalLink,
   SizableText,
   Spinner,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Upload} from '@tamagui/lucide-icons'
+import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext, useMemo} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import {
@@ -146,7 +145,7 @@ function ChangeItem({
   if (newWindowRoute) {
     menuItems.push({
       key: 'openNewWindow',
-      icon: ExternalLink,
+      icon: ArrowUpRight,
       onPress: () => {
         spawn(newWindowRoute)
       },

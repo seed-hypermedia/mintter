@@ -1,7 +1,6 @@
 import {useConnectionSummary} from '@mintter/app/models/contacts'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {APP_VERSION} from '@mintter/shared'
 import {
   Button,
@@ -9,11 +8,12 @@ import {
   Clock,
   FooterWrapper,
   SizableText,
-  User,
   XStack,
 } from '@mintter/ui'
+import {Cable} from '@tamagui/lucide-icons'
 import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
+import {useNetworkDialog} from './network-dialog'
 
 export function FooterButton({
   active,
@@ -40,27 +40,28 @@ export function FooterButton({
   )
 }
 
-function FooterContactsButton() {
+function FooterNetworkingButton() {
   const route = useNavRoute()
-  const navigate = useNavigate()
+  const networkDialog = useNetworkDialog()
   const summary = useConnectionSummary()
   return (
-    <XStack alignItems="center" theme="mint" gap="$2">
+    <XStack alignItems="center" gap="$2">
       <Button
         size="$1"
         chromeless={route.key != 'contacts'}
         color={route.key == 'contacts' ? '$blue10' : undefined}
         onPress={() => {
-          navigate({key: 'contacts'})
+          networkDialog.open(true)
         }}
         paddingHorizontal="$2"
       >
         <OnlineIndicator online={summary.online} />
-        <User size={12} />
+        <Cable size={12} />
         <SizableText size="$1" color="$color">
           {summary.connectedCount}
         </SizableText>
       </Button>
+      {networkDialog.content}
     </XStack>
   )
 }
@@ -78,7 +79,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           </SizableText>
         </XStack>
       ) : null}
-      <FooterContactsButton />
+      <FooterNetworkingButton />
       <XStack alignItems="center" paddingHorizontal="$2">
         <SizableText
           fontSize={10}

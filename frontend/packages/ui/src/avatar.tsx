@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {useMemo} from 'react'
-import {Avatar, SizableText, Text} from 'tamagui'
+import {Avatar, SizableText, Text, View, XStack} from 'tamagui'
 
 export function UIAvatar({
   url,
@@ -8,12 +8,14 @@ export function UIAvatar({
   label,
   size = 20,
   color,
+  onPress,
 }: {
   url?: string
   size?: number
   color?: string
   label?: string
   id?: string
+  onPress?: () => void
 }) {
   let avatarColor = useMemo(
     () => (id ? getRandomColor(id) : color ? color : '$blue8'),
@@ -26,7 +28,7 @@ export function UIAvatar({
 
   let textSize = clampNumber(size / 2, 10, 56)
 
-  return (
+  let avatar = (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
       {url && (
         <Avatar.Image
@@ -57,6 +59,15 @@ export function UIAvatar({
       </Avatar.Fallback>
     </Avatar>
   )
+
+  if (onPress) {
+    return (
+      <XStack cursor="pointer" onPress={onPress}>
+        {avatar}
+      </XStack>
+    )
+  }
+  return avatar
 }
 
 export function getRandomColor(id: string) {

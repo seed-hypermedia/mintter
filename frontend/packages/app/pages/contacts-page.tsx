@@ -96,7 +96,7 @@ function ErrorPage({}: {error: any}) {
 }
 
 export default function ContactsPage() {
-  const contacts = useAllAccounts()
+  const contacts = useAllAccounts(true)
   const allAccounts = contacts.data?.accounts || []
   const trustedAccounts = allAccounts.filter((account) => account.isTrusted)
   const untrustedAccounts = allAccounts.filter((account) => !account.isTrusted)

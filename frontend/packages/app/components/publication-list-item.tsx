@@ -5,7 +5,7 @@ import {
 } from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
 import {Document, Publication, shortenPath} from '@mintter/shared'
-import {Button, ButtonText, ExternalLink, XStack} from '@mintter/ui'
+import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {AccountLinkAvatar} from './account-link-avatar'
@@ -121,7 +121,7 @@ export function PublicationListItem({
         {
           key: 'spawn',
           label: 'Open in New Window',
-          icon: ExternalLink,
+          icon: ArrowUpRight,
           onPress: () => {
             spawn(openRoute)
           },

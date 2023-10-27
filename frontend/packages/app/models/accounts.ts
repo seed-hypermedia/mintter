@@ -18,14 +18,23 @@ export function useAccount(accountId?: string) {
   })
 }
 
-export function useAllAccounts() {
-  let isDaemonReady = useDaemonReady()
+export function useAllAccounts(filterSites?: boolean) {
+  // let isDaemonReady = useDaemonReady()
   const grpcClient = useGRPCClient()
-  const contacts = useQuery<ListAccountsResponse, ConnectError>({
-    enabled: !!isDaemonReady,
-    queryKey: [queryKeys.GET_ALL_ACCOUNTS],
+  const contacts = useQuery<{accounts: Array<Account>}, ConnectError>({
+    // enabled: !!isDaemonReady,
+    queryKey: [queryKeys.GET_ALL_ACCOUNTS, filterSites],
     queryFn: async () => {
-      return await grpcClient.accounts.listAccounts({})
+      const listed = await grpcClient.accounts.listAccounts({})
+      if (filterSites) {
+        return {
+          accounts: listed.accounts.filter(
+            (account) =>
+              account.profile?.bio !== 'Hypermedia Site. Powered by Mintter.',
+          ),
+        }
+      }
+      return listed
     },
     onError: (err) => {
       appError(`useAllAccounts Error ${err.code}: ${err.message}`, err.metadata)

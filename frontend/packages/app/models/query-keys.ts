@@ -12,11 +12,11 @@ export const queryKeys = {
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
 
   // networking
-  GET_PEERS: 'GET_PEERS',
+  GET_PEERS: 'GET_PEERS', // , filterConnected: boolean
   GET_PEER_INFO: 'GET_PEER_INFO', // , deviceId: string
 
   // accounts
-  GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS',
+  GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS', // , filterSites: boolean
   GET_ACCOUNT: 'GET_ACCOUNT', // , accountId: string
 
   // groups
