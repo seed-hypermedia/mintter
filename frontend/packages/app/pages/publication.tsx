@@ -45,6 +45,7 @@ import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
+import {useExperiments} from '../models/experiments'
 
 export function AppPublicationContentProvider({
   children,
@@ -54,9 +55,10 @@ export function AppPublicationContentProvider({
   const openUrl = useOpenUrl()
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)
+  const experiments = useExperiments()
   return (
     <PublicationContentProvider
-      isDev={!IS_PROD_DESKTOP}
+      showDevMenu={experiments.data?.pubContentDevMenu}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,

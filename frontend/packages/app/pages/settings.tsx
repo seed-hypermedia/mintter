@@ -180,6 +180,7 @@ export function DeveloperSettings() {
   const experiments = useExperiments()
   const writeExperiments = useWriteExperiments()
   const enabledDevTools = experiments.data?.developerTools
+  const enabledPubContentDevMenu = experiments.data?.pubContentDevMenu
   const openDraftLogs = trpc.diagnosis.openDraftLogFolder.useMutation()
   return (
     <>
@@ -197,6 +198,26 @@ export function DeveloperSettings() {
             }}
           >
             {enabledDevTools ? 'Disable Debug Tools' : `Enable Debug Tools`}
+          </Button>
+        </XStack>
+      </SettingsSection>
+      <SettingsSection title="Publication Content Dev Tools">
+        <SizableText fontSize="$4">
+          Debug options for the formatting of all publication content
+        </SizableText>
+        <XStack jc="space-between">
+          {enabledPubContentDevMenu ? <EnabledTag /> : <View />}
+          <Button
+            theme={enabledPubContentDevMenu ? 'red' : 'green'}
+            onPress={() => {
+              writeExperiments.mutate({
+                pubContentDevMenu: !enabledPubContentDevMenu,
+              })
+            }}
+          >
+            {enabledPubContentDevMenu
+              ? 'Disable Publication Debug Panel'
+              : `Enable Publication Debug Panel`}
           </Button>
         </XStack>
       </SettingsSection>

@@ -85,12 +85,12 @@ export type EntityComponentProps = BlockContentProps &
 export function PublicationContentProvider({
   children,
   debugTop = 0,
-  isDev = false,
+  showDevMenu = false,
   ...PubContentContext
 }: PropsWithChildren<
   PublicationContentContextValue & {
     debugTop?: number
-    isDev?: boolean
+    showDevMenu?: boolean
     ffSerif?: boolean
   }
 >) {
@@ -108,7 +108,7 @@ export function PublicationContentProvider({
         ffSerif,
       }}
     >
-      {isDev ? (
+      {showDevMenu ? (
         <YStack
           zIndex={100}
           padding="$2"
