@@ -69,7 +69,7 @@ import {
 } from '@tamagui/lucide-icons'
 import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useAppDialog} from '../dialog'
+import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
 import CommitDraftButton from './commit-draft-button'
 
@@ -699,86 +699,89 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
         groupId: groupPubContext.groupId,
       }
     : null
-
   return (
     <>
-      <ContextPopover {...popoverState}>
-        <PopoverTrigger asChild>
-          <Button size="$2" icon={icon}>
-            {contextDestRoute ? (
-              <ButtonText
-                hoverStyle={
-                  popoverState.open ? {textDecorationLine: 'underline'} : {}
-                }
-                fontSize="$2"
-                onPress={(e) => {
-                  if (!popoverState.open) return
-                  e.stopPropagation()
-                  navigate(contextDestRoute)
-                }}
-              >
-                {title}
-              </ButtonText>
-            ) : (
-              title
-            )}
-          </Button>
-        </PopoverTrigger>
-        <ContextPopoverContent>
-          <ContextPopoverArrow />
-          <YStack space="$2">
-            <ContextButton
-              icon={Globe}
-              name="All Authors"
-              route={{...route, pubContext: null}}
-              isActive={!route.pubContext?.key}
-            />
-            <ContextButton
-              icon={Bookmark}
-              name="Trusted Authors"
-              route={{...route, pubContext: {key: 'trusted'}}}
-              isActive={route.pubContext?.key === 'trusted'}
-            />
-            {docGroups.data?.length ? (
-              <>
-                <SizableText size="$2" marginVertical="$2">
-                  Appears in:
-                </SizableText>
-                <YStack gap="$2">
-                  {docGroups.data?.map((docGroup) => {
-                    return (
-                      <GroupContextItem
-                        groupId={docGroup.groupId}
-                        path={docGroup.path}
-                        route={route}
-                        onPathPress={() => {
-                          renameDialog.open({
-                            groupId: docGroup.groupId,
-                            pathName: docGroup.path,
-                            docTitle: publication.data?.document?.title || '',
-                          })
-                        }}
-                        key={`${docGroup.groupId}-${docGroup.path}`}
-                      />
-                    )
-                  })}
-                </YStack>
-              </>
-            ) : null}
-          </YStack>
-        </ContextPopoverContent>
-      </ContextPopover>
+      <XStack space="$2">
+        <ContextPopover {...popoverState}>
+          <PopoverTrigger asChild>
+            <Button size="$2" icon={icon}>
+              {contextDestRoute ? (
+                <ButtonText
+                  hoverStyle={
+                    popoverState.open ? {textDecorationLine: 'underline'} : {}
+                  }
+                  fontSize="$2"
+                  onPress={(e) => {
+                    if (!popoverState.open) return
+                    e.stopPropagation()
+                    navigate(contextDestRoute)
+                  }}
+                >
+                  {title}
+                </ButtonText>
+              ) : (
+                title
+              )}
+            </Button>
+          </PopoverTrigger>
+          <ContextPopoverContent>
+            <ContextPopoverArrow />
+            <YStack space="$2">
+              <ContextButton
+                icon={Globe}
+                name="All Authors"
+                route={{...route, pubContext: null}}
+                isActive={!route.pubContext?.key}
+              />
+              <ContextButton
+                icon={Bookmark}
+                name="Trusted Authors"
+                route={{...route, pubContext: {key: 'trusted'}}}
+                isActive={route.pubContext?.key === 'trusted'}
+              />
+              {docGroups.data?.length ? (
+                <>
+                  <SizableText size="$2" marginVertical="$2">
+                    Appears in:
+                  </SizableText>
+                  <YStack gap="$2">
+                    {docGroups.data?.map((docGroup) => {
+                      return (
+                        <GroupContextItem
+                          groupId={docGroup.groupId}
+                          path={docGroup.path}
+                          route={route}
+                          onPathPress={() => {
+                            renameDialog.open({
+                              groupId: docGroup.groupId,
+                              pathName: docGroup.path,
+                              docTitle: publication.data?.document?.title || '',
+                            })
+                          }}
+                          key={`${docGroup.groupId}-${docGroup.path}`}
+                        />
+                      )
+                    })}
+                  </YStack>
+                </>
+              ) : null}
+            </YStack>
+          </ContextPopoverContent>
+        </ContextPopover>
+        {route.versionId !== undefined ? (
+          <VersionContext route={route} />
+        ) : null}
+        <PublishDialogInstance
+          docId={docId}
+          version={docVersion}
+          docTitle={publication.data?.document?.title}
+          groupPubContext={
+            route.pubContext?.key === 'group' ? route.pubContext : null
+          }
+          {...publishDialogState}
+        />
+      </XStack>
       {renameDialog.content}
-      <VersionContext route={route} />
-      <PublishDialogInstance
-        docId={docId}
-        version={docVersion}
-        docTitle={publication.data?.document?.title}
-        groupPubContext={
-          route.pubContext?.key === 'group' ? route.pubContext : null
-        }
-        {...publishDialogState}
-      />
     </>
   )
 }

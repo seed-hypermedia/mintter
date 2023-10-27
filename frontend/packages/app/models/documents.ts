@@ -172,6 +172,10 @@ export function queryPublication(
   return {
     queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId, trustedOnly],
     enabled: !!documentId,
+    // retry: false, // to test error handling faster
+    // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
+    retry: 10,
+    // about 15 seconds total right now
     queryFn: () =>
       grpcClient.publications.getPublication({
         trustedOnly,

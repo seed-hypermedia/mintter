@@ -3,6 +3,7 @@ import {SizableText, styled, XStack, YStack} from 'tamagui'
 
 export const TitlebarWrapper = styled(YStack, {
   name: 'TitlebarWrapper',
+  className: 'window-drag',
   // theme: 'gray',
   paddingVertical: 0,
   width: '100%',
@@ -19,6 +20,7 @@ export const TitlebarWrapper = styled(YStack, {
 
 export const TitlebarRow = styled(XStack, {
   name: 'TitlebarRow',
+  className: 'window-drag',
   paddingHorizontal: '$2',
   flex: 'none',
   flexShrink: 0,
@@ -27,6 +29,7 @@ export const TitlebarRow = styled(XStack, {
 
 export const TitlebarSection = styled(XStack, {
   name: 'TitlebarSection',
+  className: 'no-window-drag',
   ai: 'center',
   gap: '$2',
   userSelect: 'none',

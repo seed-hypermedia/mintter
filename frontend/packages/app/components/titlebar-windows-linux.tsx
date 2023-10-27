@@ -1,7 +1,6 @@
 import {useIPC, useWindowUtils} from '@mintter/app/app-context'
 import {TitleBarProps} from '@mintter/app/components/titlebar'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-
 import {
   AddSquare,
   Button,
@@ -23,20 +22,23 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import * as NavigationMenu from '@radix-ui/react-navigation-menu'
-import {useEffect, useMemo} from 'react'
-import {MintterIcon} from '../mintter-icon'
-import {NavMenu, PageActionButtons, PageContextButtons} from './common'
-import {Title} from './title'
+import {useMemo} from 'react'
+import {useTriggerWindowEvent} from '../utils/window-events'
+import {
+  NavMenu,
+  NavigationButtons,
+  PageActionButtons,
+  PageContextControl,
+} from './titlebar-common'
+import {Title} from './titlebar-title'
+import './titlebar-windows-linux.css'
 import {
   CloseButton,
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
-import './windows.css'
 
 export default function TitleBarWindows(props: TitleBarProps) {
-  // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
       <TitlebarWrapper style={{flex: 'none'}} className="window-drag">
@@ -55,6 +57,30 @@ export default function TitleBarWindows(props: TitleBarProps) {
     )
   }
 
+  return (
+    <WindowsLinuxTitleBar
+      right={<PageActionButtons {...props} />}
+      left={
+        <XStack paddingHorizontal={0} paddingVertical="$2" space="$2">
+          <NavMenu />
+          <NavigationButtons />
+          <PageContextControl {...props} />
+        </XStack>
+      }
+      title={<Title />}
+    />
+  )
+}
+
+export function WindowsLinuxTitleBar({
+  left,
+  title,
+  right,
+}: {
+  title: React.ReactNode
+  left?: React.ReactNode
+  right?: React.ReactNode
+}) {
   return (
     <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
       <TitlebarRow minHeight={28} backgroundColor="$color3">
@@ -76,51 +102,40 @@ export default function TitleBarWindows(props: TitleBarProps) {
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
+          className="window-drag"
         >
-          <XStack
-            flex={1}
-            alignItems="flex-start"
-            paddingHorizontal={0}
-            padding="$2"
-          >
-            <XStack className="no-window-drag">
-              <NavMenu />
-              <PageContextButtons {...props} />
-            </XStack>
-          </XStack>
+          {left}
         </XStack>
-        <TitlebarSection
-          position="absolute"
+        <XStack
+          f={1}
           alignItems="center"
           justifyContent="center"
-          zIndex="$0"
-          width="100%"
           pointerEvents="none"
           height="100%"
           ai="center"
           jc="center"
         >
-          <Title />
-        </TitlebarSection>
-        <XStack flex={1} />
+          {title}
+        </XStack>
         <XStack
-          className="no-window-drag"
           flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}
           flexBasis={0}
+          className="window-drag"
           alignItems="center"
         >
-          <PageActionButtons {...props} />
+          {right}
         </XStack>
       </TitlebarRow>
     </TitlebarWrapper>
   )
 }
 
-function SystemMenu() {
+export function SystemMenu() {
   const {hide, close} = useWindowUtils()
   const spawn = useNavigate('spawn')
+  const triggerFocusedWindow = useTriggerWindowEvent()
   const {invoke, send} = useIPC()
   const menuItems: Array<MenuItemElement> = useMemo(
     () => [
@@ -170,7 +185,7 @@ function SystemMenu() {
           },
           {
             id: 'closeallwindows',
-            title: 'Close all Window',
+            title: 'Close all Windows',
             accelerator: 'Ctrl+Shift+Alt+W',
             onSelect: () => invoke('close_all_windows'),
             icon: CloseAll,
@@ -192,67 +207,23 @@ function SystemMenu() {
             id: 'quickswitcher',
             title: 'Quick Switcher',
             accelerator: 'Ctrl+K',
-            onSelect: () => send('open_quick_switcher'),
+            onSelect: () => triggerFocusedWindow('openQuickSwitcher'),
             icon: Search,
           },
-          {
-            id: 'contacts',
-            title: 'Contacts',
-            accelerator: 'Ctrl+9',
-            onSelect: () => {},
-            icon: Reload,
-          },
+          // { // todo, fix this
+          //   id: 'contacts',
+          //   title: 'Contacts',
+          //   accelerator: 'Ctrl+9',
+          //   onSelect: () => {},
+          //   icon: Reload,
+          // },
         ],
       },
     ],
-    [close, hide, invoke, send, spawn],
+    [close, hide, invoke, spawn, triggerFocusedWindow],
   )
 
   return (
-    // <NavigationMenu.Root asChild className="no-window-drag">
-    //   <XStack
-    //     position="relative"
-    //     justifyContent="flex-start"
-    //     width="100%"
-    //     zIndex="$1"
-    //     bg="red"
-    //   >
-    //     <NavigationMenu.List asChild>
-    //       <XStack
-    //         bg="green"
-    //         className="no-window-drag"
-    //         display="flex"
-    //         style={{listStyle: 'none'}}
-    //       >
-    //         {menuItems.map((item) => (
-    //           <NavigationMenu.Item key={item.id} style={{position: 'relative'}}>
-    //             <NavigationMenu.Trigger asChild>
-    //               <Button size="$1">{item.title}</Button>
-    //             </NavigationMenu.Trigger>
-    //             {item.children.length ? (
-    //               <NavigationMenu.Content className="NavigationMenuContent">
-    //                 <YStack>
-    //                   {item.children.map((p) => (
-    //                     // <MenuItem
-    //                     //   disabled={p.disabled}
-    //                     //   key={p.id}
-    //                     //   {...p}
-    //                     //   onSelect={p.onSelect}
-    //                     // />
-    //                     <li key={p.id}>{p.title}</li>
-    //                   ))}
-    //                 </YStack>
-    //               </NavigationMenu.Content>
-    //             ) : null}
-    //           </NavigationMenu.Item>
-    //         ))}
-    //       </XStack>
-    //     </NavigationMenu.List>
-    //     <XStack>
-    //       <NavigationMenu.Viewport className="NavigationMenuViewport" />
-    //     </XStack>
-    //   </XStack>
-    // </NavigationMenu.Root>
     <XStack className="no-window-drag">
       {menuItems.map((item) => (
         <Popover key={item.id} placement="bottom-start">
@@ -267,6 +238,7 @@ function SystemMenu() {
             </Button>
           </Popover.Trigger>
           <Popover.Content
+            className="no-window-drag"
             padding={0}
             elevation="$2"
             enterStyle={{y: -10, opacity: 0}}
@@ -284,12 +256,32 @@ function SystemMenu() {
             <YGroup separator={<Separator />}>
               {item.children.map((p) => (
                 <YGroup.Item key={p.id}>
-                  <MenuItem
-                    disabled={p.disabled}
-                    key={p.id}
-                    {...p}
-                    onSelect={p.onSelect}
-                  />
+                  <ListItem
+                    className="no-window-drag"
+                    icon={p.icon}
+                    hoverTheme
+                    pressTheme
+                    hoverStyle={{
+                      cursor: 'pointer',
+                    }}
+                    paddingHorizontal="$3"
+                    paddingVertical="$1"
+                    backgroundColor="transparent"
+                    onPress={p.onSelect}
+                  >
+                    <SizableText fontSize="$2" flex={1}>
+                      {p.title}
+                    </SizableText>
+                    {p.accelerator && (
+                      <SizableText
+                        marginLeft="$2"
+                        fontSize="$2"
+                        color={'$color9'}
+                      >
+                        {p.accelerator}
+                      </SizableText>
+                    )}
+                  </ListItem>
                 </YGroup.Item>
               ))}
             </YGroup>
@@ -297,61 +289,6 @@ function SystemMenu() {
         </Popover>
       ))}
     </XStack>
-  )
-}
-
-function MenuItem(props: {
-  title: string
-  accelerator?: string
-  disabled?: boolean
-  onSelect: () => void
-  icon: ListItemProps['icon']
-}) {
-  useEffect(() => {
-    if (props.accelerator) {
-      const keys = props.accelerator.split('+')
-
-      window.addEventListener('keyup', (e) => {
-        if (
-          keys.every((k) => {
-            if (k === 'Alt') return e.altKey
-            if (k === 'Shift') return e.shiftKey
-            if (k === 'Ctrl') return e.ctrlKey
-            k === e.key
-          })
-        ) {
-          console.log(`triggered acc ${props.accelerator}!`)
-        }
-      })
-    }
-  }, [props.accelerator])
-
-  return (
-    <NavigationMenu.Item data-disabled={props.disabled} asChild>
-      <YGroup.Item>
-        <ListItem
-          size="$2"
-          icon={props.icon}
-          hoverTheme
-          hoverStyle={{
-            cursor: 'pointer',
-          }}
-          pressTheme
-          onPress={() => {
-            props.onSelect()
-          }}
-        >
-          <SizableText fontSize="$2" flex={1}>
-            {props.title}
-          </SizableText>
-          {props.accelerator && (
-            <SizableText fontSize="$2" opacity={0.5}>
-              {props.accelerator}
-            </SizableText>
-          )}
-        </ListItem>
-      </YGroup.Item>
-    </NavigationMenu.Item>
   )
 }
 

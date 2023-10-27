@@ -5,7 +5,7 @@ import {
   onlineManager,
 } from '@tanstack/react-query'
 import {toast} from '@mintter/app/toast'
-// import {labelOfQueryKey, queryKeys} from './models/query-keys'
+import {labelOfQueryKey, queryKeys} from './models/query-keys'
 import {JsonValue} from '@bufbuild/protobuf'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {AppIPC} from '@mintter/app/app-ipc'
@@ -27,8 +27,7 @@ export function getQueryClient(ipc: AppIPC): AppQueryClient {
       onError: (err, query) => {
         const queryKey = query.queryKey as string[]
         const errorMessage = ((err as any)?.message || null) as string | null // todo: repent for my sins
-        // toast.error(`Failed to Load ${labelOfQueryKey(queryKey)}`, {
-        toast.error(`Failed to Load`, {
+        toast.error(`Failed to Load ${labelOfQueryKey(queryKey)}`, {
           onClick: () => {
             copyDetails({queryKey, errorMessage})
           },

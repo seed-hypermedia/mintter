@@ -2,11 +2,11 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Button} from '@mintter/ui'
 import {Check} from '@tamagui/lucide-icons'
-import {useMediaDialog} from '../media-dialog'
-import {useDaemonReady} from '../../node-status-context'
-import {toast} from '../../toast'
-import {useGRPCClient} from '../../app-context'
-import {usePublishDraft} from '../../models/documents'
+import {useMediaDialog} from './media-dialog'
+import {useDaemonReady} from '../node-status-context'
+import {toast} from '../toast'
+import {useGRPCClient} from '../app-context'
+import {usePublishDraft} from '../models/documents'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()

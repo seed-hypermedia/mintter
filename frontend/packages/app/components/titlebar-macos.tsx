@@ -1,15 +1,20 @@
 import {TitleBarProps} from '@mintter/app/components/titlebar'
 import {TitlebarWrapper, XStack} from '@mintter/ui'
-import {NavMenu, PageActionButtons, PageContextButtons} from './common'
-import {Title} from './title'
+import {
+  NavMenu,
+  NavigationButtons,
+  PageActionButtons,
+  PageContextControl,
+} from './titlebar-common'
+import {Title} from './titlebar-title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper style={{flex: 'none'}} className="window-drag" />
+    return <TitlebarWrapper />
   }
 
   return (
-    <TitlebarWrapper className="window-drag" style={{flex: 'none'}}>
+    <TitlebarWrapper>
       <XStack
         paddingHorizontal="$2"
         justifyContent="space-between"
@@ -22,17 +27,16 @@ export default function TitleBarMacos(props: TitleBarProps) {
           alignItems="center"
           className="window-drag"
         >
-          {/* TODO: not sure why we are using Container here */}
           <XStack
             flex={1}
-            paddingLeft={72}
+            paddingLeft={72} // this width to stay away from the traffic lights
             alignItems="flex-start"
             className="window-drag"
+            gap="$2"
           >
-            <XStack className="no-window-drag">
-              <NavMenu />
-              <PageContextButtons {...props} />
-            </XStack>
+            <NavMenu />
+            <NavigationButtons />
+            <PageContextControl {...props} />
           </XStack>
         </XStack>
         <XStack flex={1} alignItems="center">

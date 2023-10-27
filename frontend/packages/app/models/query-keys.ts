@@ -102,7 +102,14 @@ export function labelOfQueryKey(key: QueryKey) {
     case queryKeys.GET_URL:
       return `URL ${arg1}`
 
+    case queryKeys.ENTITY_TIMELINE:
+      return 'Entity Timeline'
+
+    case queryKeys.GET_GROUPS_FOR_DOCUMENT:
+      return `Groups for this Document`
+
     default:
-      return 'unknown'
+      // return 'unknown'
+      return discriminator
   }
 }

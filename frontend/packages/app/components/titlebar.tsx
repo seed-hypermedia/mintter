@@ -1,19 +1,17 @@
 import {AppPlatform, useAppContext} from '@mintter/app/app-context'
 import {TitlebarWrapper} from '@mintter/ui'
-import {Suspense, lazy, useMemo} from 'react'
+import {Suspense, lazy} from 'react'
 
-var TitleBarMacos = lazy(() => import('./macos'))
-var TitleBarWindows = lazy(() => import('./windows'))
-var TitleBarLinux = lazy(() => import('./linux'))
+var TitleBarMacos = lazy(() => import('./titlebar-macos'))
+var TitleBarWindowsLinux = lazy(() => import('./titlebar-windows-linux'))
 
 export interface TitleBarProps {
   clean?: boolean
-  isMacOS?: boolean
 }
 
 export function TitleBar(props: TitleBarProps) {
   const {platform} = useAppContext()
-  let Component = useMemo(() => getComponent(platform), [platform])
+  let Component = getTitleBar(platform)
   return (
     <Suspense fallback={<TitlebarWrapper style={{flex: 'none'}} />}>
       <Component {...props} />
@@ -21,12 +19,12 @@ export function TitleBar(props: TitleBarProps) {
   )
 }
 
-function getComponent(platform: AppPlatform) {
+function getTitleBar(platform: AppPlatform) {
+  // return TitleBarWindowsLinux // to test from macOS
   switch (platform) {
     case 'win32':
-      return TitleBarWindows
     case 'linux':
-      return TitleBarLinux
+      return TitleBarWindowsLinux
     case 'darwin':
       return TitleBarMacos
     default:

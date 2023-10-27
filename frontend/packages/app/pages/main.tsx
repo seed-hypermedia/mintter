@@ -1,15 +1,15 @@
 import {useListen} from '@mintter/app/app-context'
 
-import {AppError} from '@mintter/app//components/app-error'
+import {AppErrorPage} from '@mintter/app//components/app-error'
 import {TitleBar} from '@mintter/app/components/titlebar'
 import {getRouteKey, NavRoute, useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Spinner, YStack} from '@mintter/ui'
-import {lazy, Suspense, useMemo} from 'react'
+import {lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {QuickSwitcher} from '../components/quick-switcher'
 import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
-import {QuickSwitcher} from '../components/quick-switcher'
 import './polyfills'
 
 var PublicationList = lazy(
@@ -104,7 +104,6 @@ export default function Main({className}: {className?: string}) {
     [navR],
   )
   const routeKey = useMemo(() => getRouteKey(navR), [navR])
-
   useListen<NavRoute>(
     'open_route',
     (event) => {
@@ -113,20 +112,20 @@ export default function Main({className}: {className?: string}) {
     },
     [navigate],
   )
+
   return (
     <YStack fullscreen className={className}>
-      <TitleBar clean={isSettings} />
-      <Suspense fallback={<Fallback />}>
-        <ErrorBoundary
-          FallbackComponent={AppError}
-          onReset={() => {
-            window.location.reload()
-          }}
-        >
-          <PageComponent key={routeKey} />
-          {!isSettings ? <QuickSwitcher /> : null}
-        </ErrorBoundary>
-      </Suspense>
+      <ErrorBoundary
+        key={routeKey}
+        FallbackComponent={AppErrorPage}
+        onReset={() => {
+          window.location.reload()
+        }}
+      >
+        <TitleBar clean={isSettings} />
+        <PageComponent />
+        {!isSettings ? <QuickSwitcher /> : null}
+      </ErrorBoundary>
     </YStack>
   )
 }

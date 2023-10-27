@@ -1,17 +1,24 @@
-import {usePublicationInContext} from '@mintter/app/models/publication'
 import {AccountLinkAvatar} from '@mintter/app/components/account-link-avatar'
 import {useDraftTitle} from '@mintter/app/models/documents'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 import {
   DraftRoute,
   PublicationRoute,
   useNavRoute,
 } from '@mintter/app/utils/navigation'
-import {hostnameStripProtocol} from '@mintter/app/utils/site-hostname'
-import {FontSizeTokens, Globe, Pencil, TitleText, XStack} from '@mintter/ui'
+import {
+  ErrorIcon,
+  FontSizeTokens,
+  Globe,
+  Pencil,
+  Spinner,
+  TitleText,
+  XStack,
+} from '@mintter/ui'
 import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
-import {NavRoute} from '../../utils/navigation'
-import {getDocumentTitle} from '../publication-list-item'
+import {NavRoute} from '../utils/navigation'
+import {getDocumentTitle} from './publication-list-item'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -121,22 +128,26 @@ function PublicationTitle({
   route: PublicationRoute
   size?: FontSizeTokens
 }) {
-  let {data: pub} = usePublicationInContext({
+  let pub = usePublicationInContext({
     documentId: route.documentId,
     versionId: route.versionId,
     pubContext: route.pubContext,
     enabled: !!route.documentId,
   })
+  if (pub.error) {
+    return <ErrorIcon />
+  }
+  const document = pub.data?.document
   return (
     <>
       <TitleText data-testid="titlebar-title" size={size}>
-        {getDocumentTitle(pub?.document)}
+        {pub.isInitialLoading ? <Spinner /> : getDocumentTitle(document)}
       </TitleText>
       <XStack gap={0} data-tauri-drag-region>
-        {pub?.document?.editors.length === 0 ? (
-          <AccountLinkAvatar accountId={pub?.document?.author} />
+        {document?.editors.length === 0 ? (
+          <AccountLinkAvatar accountId={document?.author} />
         ) : (
-          pub?.document?.editors.map((editor) => (
+          document?.editors.map((editor) => (
             <AccountLinkAvatar accountId={editor} key={editor} />
           ))
         )}

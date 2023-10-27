@@ -52,19 +52,19 @@ import {
 } from '@tamagui/lucide-icons'
 import {memo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {TitleBarProps} from '.'
-import {useGroup, useInvertedGroupContent} from '../../models/groups'
-import {useEditGroupInfoDialog} from '../edit-group-info'
-import {AddGroupButton} from '../new-group'
-import {usePublishGroupDialog} from '../publish-group'
+import {TitleBarProps} from './titlebar'
+import {useGroup, useInvertedGroupContent} from '../models/groups'
+import {useEditGroupInfoDialog} from './edit-group-info'
+import {AddGroupButton} from './new-group'
+import {usePublishGroupDialog} from './publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
-import {useTriggerWindowEvent} from '../../utils/window-events'
-import {MenuItemType, OptionsDropdown} from '../options-dropdown'
-import {MenuItem} from '../dropdown'
-import {useAppDialog} from '../dialog'
-import {CloneGroupDialog} from '../clone-group'
-import {useEntityTimeline} from '../../models/changes'
-import {useAppContext} from '../../app-context'
+import {useTriggerWindowEvent} from '../utils/window-events'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import {MenuItem} from './dropdown'
+import {useAppDialog} from './dialog'
+import {CloneGroupDialog} from './clone-group'
+import {useEntityTimeline} from '../models/changes'
+import {useAppContext} from '../app-context'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 
 function getRoutePubContext(
@@ -403,12 +403,20 @@ export function PageActionButtons(props: TitleBarProps) {
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }
 
-export function PageContextButtons(props: TitleBarProps) {
+export function PageContextControl(props: TitleBarProps) {
+  return (
+    <XStack className="no-window-drag">
+      <PageContextButton />
+    </XStack>
+  )
+}
+
+export function NavigationButtons() {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
-    <XStack className="no-window-drag" gap="$2" alignItems="center">
-      <XGroup backgroundColor="transparent">
+    <XStack className="no-window-drag">
+      <XGroup>
         <XGroup.Item>
           <Button
             size="$2"
@@ -430,7 +438,6 @@ export function PageContextButtons(props: TitleBarProps) {
           />
         </XGroup.Item>
       </XGroup>
-      <PageContextButton />
     </XStack>
   )
 }
@@ -641,7 +648,7 @@ export function NavMenu() {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
-    <XStack paddingRight="$2" position="relative" zIndex={1000}>
+    <XStack position="relative" zIndex={1000} className="no-window-drag">
       <Popover {...popoverState} placement="bottom-start">
         <Popover.Trigger asChild>
           <Button size="$2" icon={Menu} chromeless />

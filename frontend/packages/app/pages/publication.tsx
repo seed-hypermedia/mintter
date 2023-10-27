@@ -1,5 +1,5 @@
 import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
-import {AppError} from '@mintter/app/components/app-error'
+import {AppErrorPage} from '@mintter/app/components/app-error'
 import {CitationsAccessory} from '@mintter/app/components/citations'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
@@ -39,7 +39,7 @@ import {
   EmbedPublication,
 } from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
-import {useFullReferenceUrl} from '../components/titlebar/common'
+import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {usePublicationInContext} from '../models/publication'
@@ -111,7 +111,7 @@ export default function PublicationPage() {
   if (publication.data) {
     return (
       <ErrorBoundary
-        FallbackComponent={AppError}
+        FallbackComponent={AppErrorPage}
         onReset={() => publication.refetch()}
       >
         <CitationsProvider
@@ -204,24 +204,6 @@ export default function PublicationPage() {
           </Footer>
         </CitationsProvider>
       </ErrorBoundary>
-    )
-  }
-
-  if (publication.error) {
-    return (
-      <YStack>
-        <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
-          <Text fontFamily="$body" fontWeight="700" fontSize="$6">
-            Publication ERROR
-          </Text>
-          <Text fontFamily="$body" fontSize="$4">
-            {JSON.stringify(publication.error)}
-          </Text>
-          <Button theme="yellow" onPress={() => publication.refetch()}>
-            try again
-          </Button>
-        </YStack>
-      </YStack>
     )
   }
 

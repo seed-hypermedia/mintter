@@ -1,7 +1,35 @@
-import {Button, Heading, SizableText, Text, XStack, YStack} from '@mintter/ui'
+import {Button, Heading, SizableText, XStack, YStack} from '@mintter/ui'
 import {FallbackProps} from 'react-error-boundary'
+import {ErrorBar} from './error-bar'
 
-export function AppError({error, resetErrorBoundary}: FallbackProps) {
+export function AppErrorPage({error, resetErrorBoundary}: FallbackProps) {
+  return (
+    <YStack flex={1}>
+      <ErrorBar />
+      <AppErrorContent
+        message={error.message}
+        resetErrorBoundary={resetErrorBoundary}
+      />
+    </YStack>
+  )
+}
+
+export function RootAppError({error, resetErrorBoundary}: FallbackProps) {
+  return (
+    <AppErrorContent
+      message={error.message}
+      resetErrorBoundary={resetErrorBoundary}
+    />
+  )
+}
+
+export function AppErrorContent({
+  message,
+  resetErrorBoundary,
+}: {
+  message: string
+  resetErrorBoundary?: () => void
+}) {
   return (
     <XStack jc="center" ai="center" f={1} backgroundColor={'$color2'}>
       <YStack
@@ -16,23 +44,15 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
         <Heading color="$red10">Something went wrong</Heading>
         <YStack padding="$4" backgroundColor={'$gray2'} borderRadius="$2">
           <SizableText tag="pre" fontFamily={'$mono'}>
-            {error.message}
+            {message}
           </SizableText>
         </YStack>
-        <XStack jc="center">
-          <Button onPress={resetErrorBoundary}>Try again</Button>
-        </XStack>
+        {resetErrorBoundary && (
+          <XStack jc="center">
+            <Button onPress={resetErrorBoundary}>Try again</Button>
+          </XStack>
+        )}
       </YStack>
     </XStack>
-  )
-}
-
-export function AppErrorPage({message}: {message: string}) {
-  return (
-    <YStack role="alert" space>
-      <Text>App Error</Text>
-      <Text tag="pre">{message}</Text>
-      <Text>Quit and re-launch the app to try again.</Text>
-    </YStack>
   )
 }

@@ -2,7 +2,7 @@ import {createGrpcWebTransport} from '@connectrpc/connect-web'
 import type {Interceptor} from '@connectrpc/connect'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
-import {AppError, AppErrorPage} from '@mintter/app/components/app-error'
+import {AppErrorContent, RootAppError} from '@mintter/app/components/app-error'
 import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
 import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
@@ -11,6 +11,7 @@ import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
 import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
+import type {StateStream} from '@mintter/shared/src/utils/stream'
 import {Spinner, YStack, useStream} from '@mintter/ui'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
@@ -25,7 +26,6 @@ import type {GoDaemonState} from './app-api'
 import {createIPC} from './ipc'
 import type {AppInfoType} from './preload'
 import './root.css'
-import type {StateStream} from '@mintter/shared/src/utils/stream'
 import {client, trpc} from './trpc'
 
 const logger = {
@@ -232,7 +232,12 @@ function MainApp({
             </YStack>
           }
         >
-          <ErrorBoundary FallbackComponent={AppError}>
+          <ErrorBoundary
+            FallbackComponent={RootAppError}
+            onReset={() => {
+              window.location.reload()
+            }}
+          >
             <NavigationContainer
               initialNav={
                 // @ts-expect-error
@@ -261,7 +266,7 @@ function MainApp({
   if (daemonState?.t === 'error') {
     return (
       <StyleProvider darkMode={darkMode}>
-        <AppErrorPage message={daemonState?.message} />
+        <AppErrorContent message={daemonState?.message} />
       </StyleProvider>
     )
   }
