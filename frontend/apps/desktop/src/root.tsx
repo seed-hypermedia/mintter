@@ -1,4 +1,5 @@
 import {createGrpcWebTransport} from '@connectrpc/connect-web'
+import type {Interceptor} from '@connectrpc/connect'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
 import {AppError, AppErrorPage} from '@mintter/app/components/app-error'

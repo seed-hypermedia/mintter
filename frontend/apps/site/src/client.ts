@@ -4,15 +4,15 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   globalThis['setImmediate'] = setTimeout
 }
-
-import {createGrpcWebTransport, Interceptor} from '@connectrpc/connect-web'
+import type {Interceptor} from '@connectrpc/connect'
+import {createGrpcWebTransport} from '@connectrpc/connect-node'
 import {createGRPCClient} from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
+    // console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     let error = e
@@ -70,9 +70,11 @@ console.log('⚙️ Client Config ', {
   IS_CLIENT,
 })
 
+console.log('Creating transport', grpcBaseURL)
+
 export const transport = createGrpcWebTransport({
   baseUrl: grpcBaseURL,
-  // @ts-ignore
+  httpVersion: '1.1',
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
 
