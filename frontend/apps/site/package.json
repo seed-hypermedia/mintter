@@ -14,8 +14,8 @@
     "with-env": "TAMAGUI_TARGET=web"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "1.3.3",
-    "@connectrpc/connect": "^1.1.2",
+    "@bufbuild/protobuf": "1.4.1",
+    "@connectrpc/connect": "^1.1.3",
     "@connectrpc/connect-node": "^1.1.3",
     "@mintter/shared": "*",
     "@mintter/ui": "*",

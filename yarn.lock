@@ -2041,12 +2041,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@connectrpc/connect@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@connectrpc/connect@npm:1.1.2"
+"@connectrpc/connect@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@connectrpc/connect@npm:1.1.3"
   peerDependencies:
     "@bufbuild/protobuf": ^1.3.3
-  checksum: f8a8742183c99ab8ab15df65a7a53cfd284885bf0a0a92c226dc056c566fa671b238a64fadd7f5dc8dde65c09bca3e6602ce6d4f07ec37c4ff5236001908999f
+  checksum: df6737f7669cdc980811870920a6f62636fe6847ad157f2166fe604f3a131d055c37c4f9f2b5f6eb3f8f436f7de8a44cbcd98d95401e7aeecd1c0c8f555bfaee
   languageName: node
   linkType: hard
 
@@ -4842,8 +4842,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/site@workspace:frontend/apps/site"
   dependencies:
-    "@bufbuild/protobuf": 1.3.3
-    "@connectrpc/connect": ^1.1.2
+    "@bufbuild/protobuf": 1.4.1
+    "@connectrpc/connect": ^1.1.3
     "@connectrpc/connect-node": ^1.1.3
     "@mintter/prettier": "*"
     "@mintter/shared": "*"
