@@ -190,9 +190,9 @@ export function useFullReferenceUrl(
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(contextGroupId)
 
-  let redirectedContext: undefined | PublicationRouteContext = undefined
+  // let redirectedContext: undefined | PublicationRouteContext = undefined
 
-  const navigateReplace = useNavigate('replace')
+  // const navigateReplace = useNavigate('replace')
 
   if (groupRoute) {
     const groupExactVersion = groupRoute?.version || group?.data?.version
@@ -216,7 +216,7 @@ export function useFullReferenceUrl(
 
     let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
 
-    if (pub.data?.version && contextGroupId) {
+    if (hostname && pub.data?.version && contextGroupId) {
       const matchedPrettyPath =
         invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
       if (matchedPrettyPath && !pubRoute.versionId) {
