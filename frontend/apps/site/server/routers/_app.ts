@@ -183,6 +183,7 @@ const publicationRouter = router({
     }),
 })
 
+// TODO: Duplicate (packages/app/models/documents.ts#209)
 function sortDocuments(a?: string, b?: string) {
   let dateA = a ? new Date(a) : 0
   let dateB = b ? new Date(b) : 1

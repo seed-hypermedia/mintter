@@ -1,5 +1,6 @@
 // @ts-nocheck
 export {
+  AlertCircle,
   Medal as Acknowledgements,
   Plus as Add,
   PlusSquare as AddSquare,

@@ -4,7 +4,6 @@
     "composite": true,
     "esModuleInterop": true,
     "jsx": "preserve",
-    // "baseUrl": ".",
     "paths": {
       "@mintter/app/*": ["*", "frontend/packages/app/src/*"],
       "@mintter/shared": ["*", "frontend/packages/shared/src/index.ts"]

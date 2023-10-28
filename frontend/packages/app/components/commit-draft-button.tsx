@@ -1,7 +1,9 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Button} from '@mintter/ui'
+import {formattedDate} from '@mintter/shared'
+import {Button, SizableText} from '@mintter/ui'
 import {Check} from '@tamagui/lucide-icons'
+import {useDraft} from '../../models/documents'
 import {useGRPCClient} from '../app-context'
 import {usePublishDraft} from '../models/documents'
 import {useDaemonReady} from '../node-status-context'
@@ -13,6 +15,8 @@ export default function CommitDraftButton() {
   if (route.key !== 'draft')
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.key == 'draft' ? route.draftId : null
+  const {data} = useDraft({documentId: draftId})
+
   const navReplace = useNavigate('replace')
   const navBack = useNavigate('backplace')
   const grpcClient = useGRPCClient()
@@ -52,6 +56,11 @@ export default function CommitDraftButton() {
   return (
     <>
       {mediaDialog.content}
+      {data?.updatedAt ? (
+        <SizableText size="$1">
+          Last update: {formattedDate(data?.updatedAt)}
+        </SizableText>
+      ) : null}
       <Button
         size="$2"
         disabled={!isDaemonReady}
