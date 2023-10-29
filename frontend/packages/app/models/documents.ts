@@ -60,6 +60,7 @@ import {
 import {pathNameify} from '../utils/path'
 import {draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
+import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -559,30 +560,41 @@ export function useDraftEditor({
         },
       },
       actors: {
-        updateDraft: fromPromise(async ({input}) => {
-          let {changes, touchedBlocks} = compareBlocksWithMap(
-            editor,
-            input,
-            editor.topLevelBlocks,
-            '',
-          )
+        updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
+          async ({input}) => {
+            let {changes, touchedBlocks} = compareBlocksWithMap(
+              editor,
+              input,
+              editor.topLevelBlocks,
+              '',
+            )
 
-          let deletedBlocks = extractDeletes(input, touchedBlocks)
-          let capturedChanges = [...changes, ...deletedBlocks]
-          if (capturedChanges.length) {
-            diagnosis.append(documentId, {
-              key: 'will.updateDraft',
-              // note: 'regular updateDraft',
-              value: changesToJSON(capturedChanges),
-            })
-            let mutation = await grpcClient.drafts.updateDraft({
-              documentId,
-              changes: capturedChanges,
-            })
+            let deletedBlocks = extractDeletes(input, touchedBlocks)
+            let capturedChanges = [...changes, ...deletedBlocks]
+            if (capturedChanges.length) {
+              try {
+                diagnosis.append(documentId, {
+                  key: 'will.updateDraft',
+                  // note: 'regular updateDraft',
+                  value: changesToJSON(capturedChanges),
+                })
 
-            return mutation
-          }
-        }),
+                let mutation = await grpcClient.drafts.updateDraft({
+                  documentId,
+                  changes: capturedChanges,
+                })
+
+                return mutation
+              } catch (error) {
+                return Promise.reject(JSON.stringify(error))
+              }
+            }
+
+            return Promise.resolve(
+              'No changes applied. Reaching this should be impossible!',
+            )
+          },
+        ),
       },
     }),
   )
@@ -1086,15 +1098,27 @@ export function extractDeletes(
 
 export function isBlocksEqual(b1: Block, b2: Block): boolean {
   let result =
-    b1.id == b2.id &&
+    // b1.id == b2.id &&
     b1.text == b2.text &&
     b1.ref == b2.ref &&
     _.isEqual(b1.annotations, b2.annotations) &&
     // TODO: how to correctly compare attributes???
-    _.isEqual(b1.attributes, {
-      ...b2.attributes,
-      level: b2.attributes ? String(b2.attributes) : '',
-    }) &&
+    isBlockAttributesEqual(b1, b2) &&
     b1.type == b2.type
   return result
+}
+
+function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
+  let a1 = b1.attributes
+  let a2 = b2.attributes
+
+  return (
+    a1.childrenType == a2.childrenType &&
+    a1.start == a2.start &&
+    a1.level == a2.level &&
+    a1.url == a2.url &&
+    a1.size == a2.size &&
+    a1.ref == a2.ref &&
+    a1.language == a2.language
+  )
 }
