@@ -2,11 +2,11 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Button} from '@mintter/ui'
 import {Check} from '@tamagui/lucide-icons'
-import {useMediaDialog} from './media-dialog'
-import {useDaemonReady} from '../node-status-context'
-import {toast} from '../toast'
 import {useGRPCClient} from '../app-context'
 import {usePublishDraft} from '../models/documents'
+import {useDaemonReady} from '../node-status-context'
+import {toast} from '../toast'
+import {useMediaDialog} from './media-dialog'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -37,13 +37,10 @@ export default function CommitDraftButton() {
           documentId: draftId,
           versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
           pubContext: pubContext,
+          showFirstPublicationMessage: isFirstPublish,
         })
       }
-      if (isFirstPublish) {
-        toast.success('Congratulations, you published your first document!')
-      } else {
-        toast.success('Document Committed.')
-      }
+      toast.success('Document Committed.')
     },
     onError: (e: any) => {
       toast.error('Failed to publish: ' + e.message)

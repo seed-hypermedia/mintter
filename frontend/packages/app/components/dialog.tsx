@@ -1,5 +1,5 @@
 import {AlertDialog, Dialog, XStack, YStack, styled} from '@mintter/ui'
-import {FC, useState} from 'react'
+import {FC, useMemo, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'
 
 export const DialogOverlay = styled(Dialog.Overlay, {
@@ -101,49 +101,52 @@ export function AppDialog({
 
 export function useAppDialog<DialogInput>(
   DialogContentComponent: FC<{onClose: () => void; input: DialogInput}>,
-  options?: {isAlert?: boolean},
+  options?: {isAlert?: boolean; onClose?: () => void},
 ) {
   const [openState, setOpenState] = useState<null | DialogInput>(null)
   const nav = useNavigation()
 
   const Component = getComponent(options?.isAlert)
+  const onClose = options?.onClose
+  return useMemo(() => {
+    function open(input: DialogInput) {
+      setOpenState(input)
+    }
 
-  function open(input: DialogInput) {
-    setOpenState(input)
-  }
-
-  function close() {
-    setOpenState(null)
-  }
-
-  return {
-    open,
-    close,
-    content: (
-      <Component.Root
-        modal
-        onOpenChange={(isOpen) => {
-          if (isOpen) throw new Error('Cannot open app dialog')
-          close()
-        }}
-        open={!!openState}
-      >
-        <Component.Portal>
-          <NavContextProvider value={nav}>
-            <Component.Overlay height="100vh" width="100vw" onPress={close} />
-            <Component.Content backgroundColor={'$background'}>
-              {openState && (
-                <DialogContentComponent
-                  input={openState}
-                  onClose={() => {
-                    setOpenState(null)
-                  }}
-                />
-              )}
-            </Component.Content>
-          </NavContextProvider>
-        </Component.Portal>
-      </Component.Root>
-    ),
-  }
+    function close() {
+      setOpenState(null)
+      onClose?.()
+    }
+    return {
+      open,
+      close,
+      content: (
+        <Component.Root
+          modal
+          onOpenChange={(isOpen) => {
+            if (isOpen) throw new Error('Cannot open app dialog')
+            close()
+          }}
+          open={!!openState}
+        >
+          <Component.Portal>
+            <NavContextProvider value={nav}>
+              <Component.Overlay height="100vh" width="100vw" onPress={close} />
+              <Component.Content backgroundColor={'$background'}>
+                {openState && (
+                  <DialogContentComponent
+                    input={openState}
+                    onClose={() => {
+                      setOpenState(null)
+                      onClose?.()
+                    }}
+                  />
+                )}
+              </Component.Content>
+            </NavContextProvider>
+          </Component.Portal>
+        </Component.Root>
+      ),
+    }
+  }, [Component, DialogContentComponent, nav, openState, onClose])
 }

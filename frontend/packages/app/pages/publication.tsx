@@ -46,6 +46,9 @@ import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
 import {useExperiments} from '../models/experiments'
+import {useCallback, useEffect} from 'react'
+import {useAppDialog} from '../components/dialog'
+import {FirstPublishDialog} from '../components/first-publish-dialog'
 
 export function AppPublicationContentProvider({
   children,
@@ -110,12 +113,27 @@ export default function PublicationPage() {
     publication.status == 'success' ? docId : undefined,
   )
 
+  const firstPubDialog = useAppDialog(FirstPublishDialog, {
+    onClose: useCallback(() => {
+      replace({...route, showFirstPublicationMessage: false})
+    }, [replace, route]),
+  })
+
+  const showFirstPublicationMessage = route.showFirstPublicationMessage
+  const pubVersion = publication.data?.version
+  useEffect(() => {
+    if (showFirstPublicationMessage && pubVersion) {
+      firstPubDialog.open({route, version: pubVersion})
+    }
+  }, [showFirstPublicationMessage, route, pubVersion])
+
   if (publication.data) {
     return (
       <ErrorBoundary
         FallbackComponent={AppErrorPage}
         onReset={() => publication.refetch()}
       >
+        {firstPubDialog.content}
         <CitationsProvider
           documentId={docId}
           onCitationsOpen={(citations: Array<MttLink>) => {

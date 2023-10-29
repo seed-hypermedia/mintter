@@ -14,7 +14,7 @@ function extractMetaTagValue(doc: Document, name: string): string | null {
   return metaTag ? metaTag.getAttribute('content') : null
 }
 
-type WebLinkMeta = {
+export type WebLinkMeta = {
   hmId: string | null
   hmVersion: string | null
   hmTitle: string | null

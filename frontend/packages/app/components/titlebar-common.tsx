@@ -261,7 +261,7 @@ export function useFullReferenceUrl(
           // if the version is not hosted on this site, we should link to hyper.media by setting hostname to undefined
           hostname = undefined
           // also we want to clear the publication context from the route:
-          redirectedContext = null
+          // redirectedContext = null
         }
       }
       // if (redirectedContext !== undefined) {

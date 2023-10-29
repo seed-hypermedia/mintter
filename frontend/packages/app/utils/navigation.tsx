@@ -38,6 +38,7 @@ export type PublicationRoute = {
     | EntityVersionsAccessory
     | PublicationCitationsAccessory
     | PublicationCommentsAccessory
+  showFirstPublicationMessage?: boolean
 }
 export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
