@@ -78,14 +78,18 @@ Internally, none of us uses Windows for development, but we _do_ build _for_ Win
 
 You can start the daemon go daemon with:
 
-`go run ./backend/cmd/mintter-site -data-dir=~/.mttsite -p2p.port=59000 --http.port=59001 -p2p.no-relay -grpc.port=59002 http://127.0.0.1:59001`
+```
+go run ./backend/cmd/mintter-site -data-dir=~/.mttsite -p2p.port=59000 --http.port=59001 -p2p.no-relay -grpc.port=59002 http://127.0.0.1:59001
+```
 
 
 ### 2. Start the Next.js Web App
 
 In the Mintter directory, start by running `yarn`. Then:
 
-`HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site`
+```
+HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site
+``````
 
 ### Debugging Data
 
