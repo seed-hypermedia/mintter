@@ -31,10 +31,11 @@ const prodInter: Interceptor = (next) => async (req) => {
   }).catch((e) => {
     if (e.message.match('fetch failed') && e.stack.join('.').match('undici')) {
       console.error(
-        'Mysterious Undici Error via ConnectWeb. Quitting the server so that the environment restarts it',
+        // 'Mysterious Undici Error via ConnectWeb. Quitting the server so that the environment restarts it',
+        'Mysterious Undici Error',
       )
       console.error(e)
-      process.exit(1)
+      // process.exit(1)
     }
     throw e
   })
