@@ -162,25 +162,41 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
       'Shift-Enter': ({editor}) => splitCodeBlock(editor),
       'Mod-Enter': ({editor}) => splitCodeBlock(editor),
 
+      // remove code block when at start of document or code block is empty
+      Backspace: () => {
+        const {empty, $anchor} = this.editor.state.selection
+        const isAtStart = $anchor.pos === 1
+
+        if (!empty || $anchor.parent.type.name !== this.name) {
+          return false
+        }
+
+        if (isAtStart || !$anchor.parent.textContent.length) {
+          return this.editor.commands.clearNodes()
+        }
+
+        return false
+      },
+
       // remove double space (if any) from the current line on shift+tab click
       'Shift-Tab': ({editor}) => {
         const {state, view} = editor
         const {selection} = state
-        const {$from, empty} = selection
+        const {$from, $to, empty} = selection
 
-        if (!empty || $from.parent.type !== this.type) {
+        if ($from.parent.type !== this.type) {
           return false
         }
 
         const codePos = state.doc.resolve($from.pos)
 
-        if (codePos.pos === codePos.start()) {
+        if (codePos.pos === codePos.start() && empty) {
           return false
         }
 
         const codeBlock = codePos.parent
         let currentPosInBlock = codePos.pos - codePos.start()
-        let currentChar
+        let currentChar: string = ''
         const tabSpace = '  '
 
         do {
@@ -207,53 +223,78 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
           currentPosInBlock + 2 < codePos.end() - codePos.start()
         )
 
+        const breakLinePositions: number[] = []
+
+        if (!empty) {
+          let currentPos = $from.pos - codePos.start()
+          let currentChar: string = ''
+          while (currentPos !== $to.pos - codePos.start()) {
+            currentChar = codeBlock.textBetween(currentPos, currentPos + 1)
+
+            if (currentChar === '\n') {
+              const nextChars = codeBlock.textBetween(
+                currentPos + 1,
+                currentPos + 3,
+              )
+              if (nextChars === tabSpace)
+                breakLinePositions.push(currentPos + 1)
+            }
+
+            currentPos++
+          }
+        }
+
+        let shouldDispatch = false
+        let tr = state.tr
         if (currentChar === tabSpace) {
-          let tr = state.tr
           tr = tr.deleteRange(
             currentPosInBlock + codePos.start(),
             currentPosInBlock + codePos.start() + 2,
           )
-          view.dispatch(tr)
+          shouldDispatch = true
         }
+        if (breakLinePositions.length > 0) {
+          breakLinePositions.forEach((pos, index) => {
+            let startPos = pos + codePos.start()
+            let endPos = pos + codePos.start() + 2
+            if (shouldDispatch) {
+              tr = tr.deleteRange(
+                startPos - (index + 1) * 2,
+                endPos - (index + 1) * 2,
+              )
+            } else {
+              tr = tr.deleteRange(startPos - index * 2, endPos - index * 2)
+            }
+            return
+          })
+          shouldDispatch = true
+        }
+
+        view.dispatch(tr)
 
         return true
-      },
-
-      // remove code block when at start of document or code block is empty
-      Backspace: () => {
-        const {empty, $anchor} = this.editor.state.selection
-        const isAtStart = $anchor.pos === 1
-
-        if (!empty || $anchor.parent.type.name !== this.name) {
-          return false
-        }
-
-        if (isAtStart || !$anchor.parent.textContent.length) {
-          return this.editor.commands.clearNodes()
-        }
-
-        return false
       },
 
       // add double space to the current line on tab click
       Tab: ({editor}) => {
         const {state, view} = editor
         const {selection} = state
-        const {$from, empty} = selection
+        const {$from, $to, empty} = selection
+        const tabSpace = '  '
 
-        if (!empty || $from.parent.type !== this.type) {
+        if ($from.parent.type !== this.type) {
           return false
         }
 
         const codePos = state.doc.resolve($from.pos)
 
-        if (codePos.pos === codePos.start()) {
+        if (codePos.pos === codePos.start() && empty) {
           return false
         }
 
         const codeBlock = codePos.parent
         let currentPosInBlock = codePos.pos - codePos.start()
-        let currentChar
+        let currentChar: string = ''
 
         while (currentChar !== '\n' && currentPosInBlock != -1) {
           currentPosInBlock--
@@ -264,12 +305,36 @@ export const CodeBlock = createTipTapBlock<'codeBlock'>({
           )
         }
 
+        const breakLinePositions: number[] = []
+
+        if (!empty) {
+          let currentPos = $from.pos - codePos.start()
+          let currentChar: string = ''
+          while (currentPos !== $to.pos - codePos.start()) {
+            currentChar = codeBlock.textBetween(currentPos, currentPos + 1)
+
+            if (currentChar === '\n') {
+              breakLinePositions.push(currentPos)
+            }
+
+            currentPos++
+          }
+        }
+
         let tr = state.tr
-        const tabSpace = '  '
         tr = tr.insert(
           currentPosInBlock + codePos.start() + 1,
           state.schema.text(tabSpace),
         )
+        if (breakLinePositions.length > 0) {
+          breakLinePositions.forEach((pos, index) => {
+            tr = tr.insert(
+              pos + codePos.start() + 1 + (index + 1) * 2,
+              state.schema.text(tabSpace),
+            )
+            return
+          })
+        }
         view.dispatch(tr)
         return true
       },
