@@ -13,28 +13,23 @@ import {
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
-  AlertCircle,
   Button,
-  Check,
   Input,
   MainWrapper,
   SizableText,
-  Spinner,
   Theme,
   Tooltip,
   XStack,
   YStack,
   useStream,
 } from '@mintter/ui'
-import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useDraft, useDraftEditor, useDraftTitleInput} from '../models/documents'
+import {useDraftEditor, useDraftTitleInput} from '../models/documents'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
-import {DraftStatusContext} from '../models/draft-machine'
-import {useSelector} from '@xstate/react'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -85,11 +80,9 @@ export default function DraftPage() {
         <Footer>
           <XStack gap="$3" marginHorizontal="$3">
             {data.draft?.updateTime && (
-              <Tooltip content={formattedDateMedium(data.draft.updateTime)}>
-                <SizableText size="$1" color="$color9">
-                  Last update: {formattedDate(data.draft.updateTime)}
-                </SizableText>
-              </Tooltip>
+              <SizableText size="$1" color="$color9">
+                Last update: {formattedDateMedium(data.draft.updateTime)}
+              </SizableText>
             )}
           </XStack>
         </Footer>
