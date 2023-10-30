@@ -1,7 +1,7 @@
 # Build from the root with `docker build -t nextjs-docker . -f ./frontend/apps/site/Dockerfile`.
 # docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
 
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 RUN apk add git
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
@@ -16,7 +16,7 @@ ENV GRPC_HOST http://minttersite:56001
 RUN yarn site:prod
 
 
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 COPY --from=builder /app/frontend/apps/site/.next/standalone .
 COPY --from=builder /app/frontend/apps/site/.next/static ./frontend/apps/site/.next/static
 COPY --from=builder /app/frontend/apps/site/public ./frontend/apps/site/public
