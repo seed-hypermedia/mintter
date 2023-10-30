@@ -159,7 +159,9 @@ function VideoComponent({
       })
       const data = await response.text()
 
-      assign({props: {url: data, name: file.name}} as VideoType)
+      assign({
+        props: {url: data ? `ipfs://${data}` : '', name: file.name},
+      } as VideoType)
     } catch (error) {
       console.error(error)
     }
@@ -363,7 +365,11 @@ function VideoForm({
         body: formData,
       })
       const data = await response.text()
-      assign({props: {url: data, name: name}} as VideoType)
+
+      console.log(`== ~ handleUpload ~ data:`, data)
+      assign({
+        props: {url: data ? `ipfs://${data}` : '', name: name},
+      } as VideoType)
     } catch (error) {
       console.error(error)
     }

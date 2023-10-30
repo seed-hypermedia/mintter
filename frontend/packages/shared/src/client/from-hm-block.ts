@@ -141,23 +141,30 @@ export function fromHMBlock(
   }
 
   if (editorBlock.type === 'image') {
-    let ref = editorBlock.props.url || ''
+    let ref = editorBlock.props.url
 
-    if (editorBlock.props.url && !editorBlock.props.url.startsWith('ipfs://')) {
+    if (ref && !ref?.startsWith('http') && !ref?.startsWith('ipfs://')) {
       ref = `ipfs://${editorBlock.props.url}`
     }
+
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'image',
       attributes: {
         name: editorBlock.props.name,
       },
-      ref,
+      ref: ref || '',
       ...extractContent(editorBlock.content),
     })
   }
 
   if (editorBlock.type === 'file') {
+    let ref = editorBlock.props.url
+
+    if (ref && !ref?.startsWith('http') && !ref?.startsWith('ipfs://')) {
+      ref = `ipfs://${editorBlock.props.url}`
+    }
+
     res = new ServerBlock({
       id: editorBlock.id,
       type: 'file',
@@ -165,14 +172,14 @@ export function fromHMBlock(
         name: editorBlock.props.name,
         size: editorBlock.props.size,
       },
-      ref: editorBlock.props.url ? `ipfs://${editorBlock.props.url}` : '',
+      ref: ref || '',
     })
   }
 
   if (editorBlock.type == 'video') {
     let ref = editorBlock.props.url
 
-    if (!ref?.startsWith('http') && !ref?.startsWith('ipfs://')) {
+    if (ref && !ref?.startsWith('http') && !ref?.startsWith('ipfs://')) {
       ref = `ipfs://${editorBlock.props.url}`
     }
     res = new ServerBlock({

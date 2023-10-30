@@ -166,7 +166,11 @@ export function FileComponent({
       })
       const data = await response.text()
       assign({
-        props: {url: data, name: file.name, size: file.size.toString()},
+        props: {
+          url: data ? `ipfs://${data}` : '',
+          name: file.name,
+          size: file.size.toString(),
+        },
       } as FileType)
     } catch (error) {
       console.error(error)
@@ -350,7 +354,11 @@ function FileForm({
       })
       const data = await response.text()
       assign({
-        props: {url: data, name: name, size: files[0].size.toString()},
+        props: {
+          url: data ? `ipfs://${data}` : '',
+          name: name,
+          size: files[0].size.toString(),
+        },
       } as FileType)
     } catch (error) {
       console.error(error)
@@ -367,7 +375,11 @@ function FileForm({
         })
         const data = await response.text()
         assign({
-          props: {url: data, name: name, size: files[0].size.toString()},
+          props: {
+            url: data ? `ipfs://${data}` : '',
+            name: name,
+            size: files[0].size.toString(),
+          },
         } as FileType)
       } catch (error) {
         console.error(error)

@@ -39,7 +39,7 @@ const isValidUrl = (urlString: string) => {
 }
 
 const uploadImageToIpfs = async (url: string) => {
-  if (url.startsWith('ipfs://')) return
+  if (url.startsWith('ipfs://')) return url
   const blob = await fetch(url).then((res) => res.blob())
   const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
   if (webFile && webFile.size <= 62914560) {
@@ -52,7 +52,7 @@ const uploadImageToIpfs = async (url: string) => {
         body: formData,
       })
       const data = await response.text()
-      return {url: data, name: webFile.name}
+      return {url: data ? `ipfs://${data}` : '', name: webFile.name}
     } catch (error) {
       console.error(error)
       return {}
@@ -175,6 +175,8 @@ function ImageComponent({
   const imageUrl = block.props.url.includes('.') // what does this check for??
     ? null
     : `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
+
+  console.log(`== ~ imageUrl:`, imageUrl, block.props)
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
       toast.error(`The size of ${file.name} exceeds 60 MB.`)
@@ -191,7 +193,9 @@ function ImageComponent({
         body: formData,
       })
       const data = await response.text()
-      assign({props: {url: data, name: file.name}} as ImageType)
+      assign({
+        props: {url: data ? `ipfs://${data}` : '', name: file.name},
+      } as ImageType)
     } catch (error) {
       console.error(error)
     }
@@ -380,7 +384,9 @@ function ImageForm({
         body: formData,
       })
       const data = await response.text()
-      assign({props: {url: data, name: name}} as ImageType)
+      assign({
+        props: {url: data ? `ipfs://${data}` : '', name: name},
+      } as ImageType)
     } catch (error) {
       console.error(error)
     }
@@ -418,9 +424,9 @@ function ImageForm({
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
       const imageData = await uploadImageToIpfs(url)
-      if (imageData.url) {
+      if (imageData?.url) {
         assign({props: imageData} as ImageType)
-      } else if (imageData.name)
+      } else if (imageData?.name)
         setFileName({name: imageData.name, color: 'red'})
     } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
   }
