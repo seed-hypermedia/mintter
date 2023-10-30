@@ -63,7 +63,7 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic-v1")),
 			},
 		},
 		// Mintter test server
@@ -71,7 +71,7 @@ func DefaultRelays() []peer.AddrInfo {
 			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic-v1")),
 			},
 		},
 	}

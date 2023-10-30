@@ -29,7 +29,7 @@ func initAndTest() error {
 	h2, _ := NewRelay(log, "")
 	h2.cfg.Network.AnnounceAddrs = []string{
 		"/ip4/0.0.0.0/tcp/4001",
-		"/ip4/0.0.0.0/udp/4001/quic",
+		"/ip4/0.0.0.0/udp/4001/quic-v1",
 	}
 
 	if err := h2.Start(); err != nil {

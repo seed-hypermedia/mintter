@@ -49,7 +49,6 @@ func NewServer(portHTTP int, portP2P int, log *zap.Logger, sitesCSVPath string) 
 	node, err := libp2p.New(
 		libp2p.ListenAddrStrings([]string{
 			"/ip4/0.0.0.0/tcp/" + portStr,
-			"/ip4/0.0.0.0/udp/" + portStr + "/quic",
 			"/ip4/0.0.0.0/udp/" + portStr + "/quic-v1"}...),
 	)
 	if err != nil {

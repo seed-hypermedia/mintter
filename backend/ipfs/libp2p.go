@@ -293,10 +293,8 @@ func DefaultListenAddrs(port int) []string {
 	return []string{
 		"/ip4/0.0.0.0/tcp/" + portstr,
 		"/ip6/::/tcp/" + portstr,
-		"/ip4/0.0.0.0/udp/" + portstr + "/quic",
 		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1",
 		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1/webtransport",
-		"/ip6/::/udp/" + portstr + "/quic",
 		"/ip6/::/udp/" + portstr + "/quic-v1",
 		"/ip6/::/udp/" + portstr + "/quic-v1/webtransport",
 	}
@@ -307,7 +305,6 @@ func DefaultListenAddrsDNS(hostname string, port int) []string {
 	portstr := strconv.Itoa(port)
 	return []string{
 		"/dns4/" + hostname + "/tcp/" + portstr,
-		"/dns4/" + hostname + "/udp/" + portstr + "/quic",
 		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1",
 		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1/webtransport",
 	}
