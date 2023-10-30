@@ -46,6 +46,7 @@ export const draftMachine = createMachine(
         },
       },
       error: {
+        entry: [{type: 'indicatorError'}],
         on: {
           'GET.DRAFT.RETRY': {
             target: 'fetching',
@@ -215,17 +216,9 @@ export const draftMachine = createMachine(
 export const saveIndicator = createMachine(
   {
     id: 'saveIndicator',
-    initial: 'lastUpdate',
+    initial: 'idle',
     states: {
-      lastUpdate: {},
       idle: {
-        after: {
-          idleUpdate: {
-            target: '#saveIndicator.lastUpdate',
-            actions: [],
-            meta: {},
-          },
-        },
         on: {
           'INDICATOR.SAVING': {
             target: 'saving',
@@ -258,6 +251,7 @@ export const saveIndicator = createMachine(
         target: '.error',
       },
     },
+    onDone: [{target: '.idle'}],
     types: {
       events: {} as
         | {type: 'INDICATOR.CHANGE'}
@@ -270,9 +264,7 @@ export const saveIndicator = createMachine(
     actions: {},
     actors: {},
     guards: {},
-    delays: {
-      idleUpdate: 60000,
-    },
+    delays: {},
   },
 )
 

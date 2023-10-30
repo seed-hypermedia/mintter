@@ -6,6 +6,7 @@ import {
   Button,
   SizableText,
   Spinner,
+  Tooltip,
   YStack,
   YStackProps,
 } from '@mintter/ui'
@@ -35,6 +36,10 @@ export default function CommitDraftButton() {
   const mediaDialog = useMediaDialog()
   const isDaemonReady = useDaemonReady()
   const isSaving = DraftStatusContext.useSelector((s) => s.matches('saving'))
+  const hasUpdateError = DraftStatusContext.useSelector((s) =>
+    s.matches('error'),
+  )
+  console.log(`== ~ CommitDraftButton ~ isSaving:`, isSaving)
   const publish = usePublishDraft({
     onSuccess: ({pub: publishedDoc, pubContext, isFirstPublish}) => {
       if (!publishedDoc || !draftId) return
@@ -65,59 +70,49 @@ export default function CommitDraftButton() {
   return (
     <>
       {mediaDialog.content}
-      <DraftStatus updateAt={data?.updatedAt} />
-      <Button
-        size="$2"
-        disabled={!isDaemonReady || isSaving}
-        onPress={() => {
-          grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
-            const hasEmptyMedia = draft.children.find((block) => {
-              return (
-                block.block &&
-                ['image', 'video', 'file'].includes(block.block.type) &&
-                !block.block.ref
-              )
-            })
-            if (hasEmptyMedia) {
-              mediaDialog.open({
-                draftId,
-                publish,
+      <SaveIndicatorStatus />
+      {!hasUpdateError ? (
+        <Button
+          size="$2"
+          disabled={!isDaemonReady || isSaving}
+          onPress={() => {
+            grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
+              const hasEmptyMedia = draft.children.find((block) => {
+                return (
+                  block.block &&
+                  ['image', 'video', 'file'].includes(block.block.type) &&
+                  !block.block.ref
+                )
               })
-            } else {
-              publish.mutate({draftId})
-            }
-          })
-        }}
-        theme="green"
-        icon={Check}
-      >
-        {groupRouteContext ? 'Commit to Group' : 'Commit'}
-      </Button>
+              if (hasEmptyMedia) {
+                mediaDialog.open({
+                  draftId,
+                  publish,
+                })
+              } else {
+                publish.mutate({draftId})
+              }
+            })
+          }}
+          theme="green"
+        >
+          {groupRouteContext ? 'Commit to Group' : 'Commit'}
+        </Button>
+      ) : null}
     </>
   )
 }
 
 function StatusWrapper({children, ...props}: PropsWithChildren<YStackProps>) {
   return (
-    <YStack zIndex={1000} space="$2">
+    <YStack space="$2" opacity={0.6}>
       {children}
     </YStack>
   )
 }
 
-function DraftStatus({updateAt}: {updateAt: any}) {
-  const [errorInfo, toggleErrorInfo] = useState(false)
+function SaveIndicatorStatus() {
   const state = DraftStatusContext.useSelector((s) => s)
-
-  if (state.matches('lastUpdate') && updateAt) {
-    return (
-      <StatusWrapper>
-        <Button chromeless size="$1">
-          Last update: {formattedDateMedium(updateAt)}
-        </Button>
-      </StatusWrapper>
-    )
-  }
 
   if (state.matches('saving')) {
     return (
@@ -142,30 +137,16 @@ function DraftStatus({updateAt}: {updateAt: any}) {
   if (state.matches('error')) {
     return (
       <StatusWrapper alignItems="flex-end">
-        <Button
-          chromeless
-          size="$1"
-          theme="red"
-          icon={<AlertCircle />}
-          alignSelf="end"
-          flex="none"
-          onPress={() => toggleErrorInfo((v) => !v)}
-        >
-          Error
-        </Button>
-        {errorInfo ? (
-          <YStack
-            borderRadius="$3"
-            padding="$2"
-            maxWidth={200}
-            backgroundColor="$backgroundStrong"
+        <Tooltip content="An error ocurred while trying to save the latest changes. please reload to make sure you do not loose any data.">
+          <Button
+            theme="red"
+            size="$2"
+            icon={<AlertCircle />}
+            onPress={() => window.location.reload()}
           >
-            <SizableText size="$1">
-              An error ocurred while trying to save the latest changes. please
-              reload to make sure you do not loose any data.
-            </SizableText>
-          </YStack>
-        ) : null}
+            Error
+          </Button>
+        </Tooltip>
       </StatusWrapper>
     )
   }

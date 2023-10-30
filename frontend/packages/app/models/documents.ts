@@ -565,14 +565,16 @@ export function useDraftEditor({
         indicatorSaving: () =>
           draftStatusActor.send({type: 'INDICATOR.SAVING'}),
         indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
+        indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
       },
       actors: {
         updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
           async ({input}) => {
+            let currentEditorBlocks = [...editor.topLevelBlocks]
             let {changes, touchedBlocks} = compareBlocksWithMap(
               editor,
               input,
-              editor.topLevelBlocks,
+              currentEditorBlocks,
               '',
             )
 

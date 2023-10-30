@@ -6,27 +6,35 @@ import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
+  formattedDate,
+  formattedDateMedium,
   useHeadingMarginStyles,
   useHeadingTextStyles,
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
+  AlertCircle,
   Button,
+  Check,
   Input,
   MainWrapper,
   SizableText,
+  Spinner,
   Theme,
+  Tooltip,
   XStack,
   YStack,
   useStream,
 } from '@mintter/ui'
 import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useDraftEditor, useDraftTitleInput} from '../models/documents'
+import {useDraft, useDraftEditor, useDraftTitleInput} from '../models/documents'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
+import {DraftStatusContext} from '../models/draft-machine'
+import {useSelector} from '@xstate/react'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -74,7 +82,17 @@ export default function DraftPage() {
             />
           ) : null}
         </MainWrapper>
-        <Footer />
+        <Footer>
+          <XStack gap="$3" marginHorizontal="$3">
+            {data.draft?.updateTime && (
+              <Tooltip content={formattedDateMedium(data.draft.updateTime)}>
+                <SizableText size="$1" color="$color9">
+                  Last update: {formattedDate(data.draft.updateTime)}
+                </SizableText>
+              </Tooltip>
+            )}
+          </XStack>
+        </Footer>
       </ErrorBoundary>
     )
   }

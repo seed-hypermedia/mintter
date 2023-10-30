@@ -19,6 +19,7 @@ export function Tooltip({
       <TTooltip.Trigger asChild>{children}</TTooltip.Trigger>
       {/* @ts-ignore */}
       <TTooltip.Content
+        maxWidth="350px"
         enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
         scale={1}
