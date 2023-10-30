@@ -85,11 +85,11 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 				case <-ctx.Done():
 					return
 				case ch <- c:
+					log.Debug("Reproviding", zap.String("entity", e.EntitiesEID), zap.String("CID", c.String()))
 					// Send OK.
 				}
 			}
 		}()
-
 		return ch, nil
 	}
 }

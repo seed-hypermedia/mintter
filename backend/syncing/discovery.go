@@ -43,6 +43,7 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 		maxProviders = 0
 	}
 
+	//TODO(juligasa): create a bitswap session, get the version block and try to find who served it. Connect and sync everything
 	peers := s.bitswap.FindProvidersAsync(ctx, c, maxProviders)
 
 	var wg sync.WaitGroup
@@ -54,6 +55,7 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 			defer wg.Done()
 			log := s.log.With(
 				zap.String("entity", string(obj)),
+				zap.String("CID", c.String()),
 				zap.String("peer", p.String()),
 			)
 			log.Debug("DiscoveredProvider")
