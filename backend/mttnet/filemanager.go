@@ -57,11 +57,11 @@ type HTTPHandler interface {
 type FileManager struct {
 	log        *zap.Logger
 	DAGService ipld.DAGService
-	provider   provider.System
+	provider   provider.Provider
 }
 
 // NewFileManager creates a new fileManager instance.
-func NewFileManager(log *zap.Logger, bs blockstore.Blockstore, bitswap exchange.Interface, prov provider.System) *FileManager {
+func NewFileManager(log *zap.Logger, bs blockstore.Blockstore, bitswap exchange.Interface, prov provider.Provider) *FileManager {
 	bsvc := blockservice.New(bs, bitswap)
 	// Don't close the blockservice, because it doesn't do anything useful.
 	// It's actually closing the exchange, which is not even its responsibility.
