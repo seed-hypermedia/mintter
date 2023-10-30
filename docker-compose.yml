@@ -61,6 +61,4 @@ services:
       - "-grpc.port=56002"
       - "-syncing.no-discovery=${MTT_SITE_NO_DISCOVERY:-true}"
       - "-syncing.no-pull=${MTT_SITE_NO_PULL:-true}"
-      - "-p2p.no-relay"
-      - "-p2p.announce-addrs=/dns4/${MTT_SITE_DNS}/tcp/56000,/dns4/${MTT_SITE_DNS}/udp/56000/quic,/dns4/${MTT_SITE_DNS}/udp/56000/quic-v1"
       - "${MTT_SITE_HOSTNAME:-http://nextjs}"
