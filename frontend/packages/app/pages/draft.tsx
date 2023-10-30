@@ -81,6 +81,14 @@ export default function DraftPage() {
   return <DocumentPlaceholder />
 }
 
+function applyTitleResize(target: HTMLTextAreaElement) {
+  // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
+  target.style.height = ''
+
+  // here is the actual auto-resize
+  target.style.height = `${target.scrollHeight}px`
+}
+
 function DraftTitleInput({
   draftId,
   onEnter,
@@ -94,82 +102,80 @@ function DraftTitleInput({
   const input = useRef<HTMLTextAreaElement | null>(null)
   const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
 
-  let calcTitleSize = useCallback((title?: string) => {
+  useEffect(() => {
+    // handle the initial size of the title
     const target = input.current
     if (!target) return
+    applyTitleResize(target)
+  }, [])
 
-    // first, apply the title in case it doesn't match. this will hapepn if the user pastes a newline, for example
+  useEffect(() => {
+    const target = input.current
+    if (!target) return
     if (target.value !== title) {
-      // only set the title if it doesn't match. because this will jump the cursor to the end of the input
+      // handle cases where the model has a different title. this happens when pasting multiline text into the title
       target.value = title || ''
+      applyTitleResize(target)
     }
+  }, [title])
 
-    // without this, the scrollHeight doesn't shrink, so when the user deletes a long title it doesnt shrink back
-    target.style.height = ''
-
-    // here is the actual auto-resize
-    target.style.height = `${target.scrollHeight}px`
-  }, [])
-
-  useLayoutEffect(() => {
-    window.addEventListener('resize', () => calcTitleSize(title))
-
+  useEffect(() => {
+    function handleResize() {
+      // handle the resize size of the title, responsive size may be changed
+      const target = input.current
+      if (!target) return
+      applyTitleResize(target)
+    }
+    window.addEventListener('resize', handleResize)
     return () => {
-      window.removeEventListener('resize', () => calcTitleSize(title))
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
-  useLayoutEffect(() => {
-    calcTitleSize(title)
-  }, [title, calcTitleSize])
 
   return (
-    <YStack
-    // paddingHorizontal={layoutUnit / 2}
-    // $gtMd={{paddingHorizontal: layoutUnit}}
+    <XStack
+      {...blockStyles}
+      marginBottom={layoutUnit}
+      paddingBottom={layoutUnit / 2}
+      borderBottomColor="$color6"
+      borderBottomWidth={1}
+      paddingHorizontal={54}
+      {...headingMarginStyles}
     >
-      <XStack
-        {...blockStyles}
-        marginBottom={layoutUnit}
-        paddingBottom={layoutUnit / 2}
-        borderBottomColor="$color6"
-        borderBottomWidth={1}
-        paddingHorizontal={54}
-        {...headingMarginStyles}
-      >
-        <Input
-          // we use multiline so that we can avoid horizontal scrolling for long titles
-          multiline
-          // @ts-expect-error this will only work on web, where multiline TextInput is a HTMLTextAreaElement
-          ref={input}
-          onKeyPress={(e) => {
-            if (e.nativeEvent.key == 'Enter') {
-              e.preventDefault()
-              onEnter()
-            }
-          }}
-          size="$9"
-          borderRadius="$1"
-          borderWidth={0}
-          overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
-          flex={1}
-          backgroundColor="$color2"
-          fontWeight="bold"
-          fontFamily="$body"
-          onChange={(e) => {
-            // this is replicated in useLayoutEffect but we handle it here so that there is no layout thrashing when creating new lines
-            calcTitleSize(title)
-          }}
-          outlineColor="transparent"
-          borderColor="transparent"
-          paddingLeft={9.6}
-          defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
-          onChangeText={onTitle}
-          placeholder="Untitled Document"
-          {...headingTextStyles}
-          padding={0}
-        />
-      </XStack>
-    </YStack>
+      <Input
+        // we use multiline so that we can avoid horizontal scrolling for long titles
+        multiline
+        // @ts-expect-error this will only work on web, where multiline TextInput is a HTMLTextAreaElement
+        ref={input}
+        onKeyPress={(e) => {
+          if (e.nativeEvent.key == 'Enter') {
+            e.preventDefault()
+            onEnter()
+          }
+        }}
+        size="$9"
+        borderRadius="$1"
+        borderWidth={0}
+        overflow="hidden" // trying to hide extra content that flashes when pasting multi-line text into the title
+        flex={1}
+        backgroundColor="$color2"
+        fontWeight="bold"
+        fontFamily="$body"
+        onChange={(e) => {
+          // @ts-expect-error
+          applyTitleResize(e.target as HTMLTextAreaElement)
+        }}
+        outlineColor="transparent"
+        borderColor="transparent"
+        paddingLeft={9.6}
+        defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
+        // value={title}
+        onChangeText={onTitle}
+        placeholder="Untitled Document"
+        {...headingTextStyles}
+        padding={0}
+      />
+    </XStack>
   )
 }
 
