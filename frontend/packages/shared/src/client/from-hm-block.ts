@@ -209,7 +209,7 @@ export function fromHMBlock(
 
   if (res) {
     res = extractChildrenType(res, editorBlock)
-    res = addLevelAttr(res, editorBlock)
+    // res = addLevelAttr(res, editorBlock)
     return res
   }
 

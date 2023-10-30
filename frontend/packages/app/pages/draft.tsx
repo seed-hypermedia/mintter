@@ -1,7 +1,5 @@
 import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
 import Footer from '@mintter/app/components/footer'
-import {useDraftEditor} from '@mintter/app/models/documents'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
@@ -14,7 +12,6 @@ import {
 } from '@mintter/shared'
 import {
   Button,
-  Container,
   Input,
   MainWrapper,
   SizableText,
@@ -25,7 +22,7 @@ import {
 } from '@mintter/ui'
 import {useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useDraftTitleInput} from '../models/documents'
+import {useDraftEditor, useDraftTitleInput} from '../models/documents'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
@@ -43,55 +40,44 @@ export default function DraftPage() {
       openDraft()
     }
   }, [route])
-  const {editor, query, editorState} = useDraftEditor(documentId)
 
-  let isDaemonReady = useDaemonReady()
+  let data = useDraftEditor({
+    documentId: route.draftId,
+    route,
+  })
 
-  if (editor && query.data) {
+  if (data.state.matches('ready')) {
     return (
       <ErrorBoundary
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
         <MainWrapper>
-          {!isDaemonReady ? <NotSavingBanner /> : null}
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <YStack id="editor-title">
               <DraftTitleInput
-                draftId={documentId}
+                draftId={data.draft?.id}
                 onEnter={() => {
-                  editor?._tiptapEditor?.commands?.focus?.('start')
+                  data.editor?._tiptapEditor?.commands?.focus?.('start')
                 }}
               />
             </YStack>
 
             <HMEditorContainer>
-              {editor && <HyperMediaEditorView editor={editor} />}
+              {data.editor && <HyperMediaEditorView editor={data.editor} />}
             </HMEditorContainer>
           </AppPublicationContentProvider>
           {documentId ? (
-            <DraftDevTools draftId={documentId} editorState={editorState} />
+            <DraftDevTools
+              draftId={documentId}
+              editorState={data.editorStream}
+            />
           ) : null}
         </MainWrapper>
         <Footer />
       </ErrorBoundary>
     )
   }
-
-  if (editor && query.error) {
-    return (
-      <MainWrapper>
-        <Container>
-          <DraftError
-            documentId={documentId}
-            error={query.error}
-            resetErrorBoundary={() => query.refetch()}
-          />
-        </Container>
-      </MainWrapper>
-    )
-  }
-
   return <DocumentPlaceholder />
 }
 

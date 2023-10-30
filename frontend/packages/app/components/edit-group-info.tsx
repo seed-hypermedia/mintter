@@ -1,8 +1,7 @@
 import {Group} from '@mintter/shared'
-import {Button, Form, Input, Label, Spinner} from '@mintter/ui'
+import {Button, Form, Input, Label, Spinner, TextInput} from '@mintter/ui'
 import {useRef} from 'react'
 import {toast} from 'react-hot-toast'
-import {TextInput} from 'react-native-web'
 import {useGroup, useUpdateGroup} from '../models/groups'
 import {DialogTitle, useAppDialog} from './dialog'
 

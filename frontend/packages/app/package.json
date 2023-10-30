@@ -27,6 +27,7 @@
     "@tiptap/core": "2.0.3",
     "@tiptap/pm": "2.0.3",
     "@tiptap/react": "2.0.3",
+    "@xstate/react": "beta",
     "allotment": "1.18.1",
     "cmdk": "0.1.21",
     "graphql-request": "6.0.0",
@@ -36,7 +37,7 @@
     "react-hook-form": "7.46.1",
     "react-hot-toast": "2.4.1",
     "react-icons": "4.9.0",
-    "react-native": "0.72.4",
+    "xstate": "beta",
     "zod": "3.22.2"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "@types/node": "^20.6.5",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
-    "@types/react-native": "0.71.8",
     "copy-text-to-clipboard": "3.1.0",
     "eslint-config-custom": "*",
     "happy-dom": "7.8.1",

@@ -4,7 +4,6 @@ import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
 import {ReactElement} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {GestureResponderEvent} from 'react-native'
 
 export function ListItem({
   accessory,
@@ -63,7 +62,7 @@ export function TimeAccessory({
   onPress,
 }: {
   time: Timestamp | undefined
-  onPress: (e: GestureResponderEvent) => void
+  onPress: (e) => void
 }) {
   return (
     <Tooltip content={formattedDateLong(time)}>

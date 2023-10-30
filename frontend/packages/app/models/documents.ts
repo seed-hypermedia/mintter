@@ -8,15 +8,15 @@ import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
-  Block,
   BlockIdentifier,
   BlockNoteEditor,
-  HMBlockSchema,
+  Block as EditorBlock,
   createHypermediaDocLinkPlugin,
   hmBlockSchema,
   useBlockNote,
 } from '@mintter/editor'
 import {
+  Block,
   BlockNode,
   Document,
   DocumentChange,
@@ -26,14 +26,14 @@ import {
   ListPublicationsResponse,
   Publication,
   fromHMBlock,
+  hmDocument,
+  hmPublication,
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
   shortenPath,
   toHMBlock,
   unpackDocId,
-  hmDocument,
-  hmPublication,
   writeableStateStream,
 } from '@mintter/shared'
 import {
@@ -46,22 +46,21 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
+import {useMachine} from '@xstate/react'
+import _ from 'lodash'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
+import {createActor, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {PublicationRouteContext, useNavRoute} from '../utils/navigation'
+import {
+  NavRoute,
+  PublicationRouteContext,
+  useNavRoute,
+} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
-import {usePublicationInContext} from './publication'
+import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
-import {toast} from '../toast'
-
-function createEmptyChanges(): DraftChangesState {
-  return {
-    changed: new Set<string>(),
-    deleted: new Set<string>(),
-    moves: [],
-  }
-}
+import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -152,15 +151,21 @@ export function useDeletePublication(
   })
 }
 
-export function useDraft({
-  documentId,
+export function usePublication({
+  id,
+  version,
+  trustedOnly,
   ...options
-}: UseQueryOptions<EditorDraftState | null> & {
-  documentId?: string
+}: UseQueryOptions<Publication> & {
+  id?: string
+  version?: string
+  trustedOnly?: boolean
 }) {
   const grpcClient = useGRPCClient()
-  const diagnosis = useDraftDiagnosis()
-  return useQuery(queryDraft(grpcClient, documentId, diagnosis, options))
+  return useQuery({
+    ...queryPublication(grpcClient, id, version, trustedOnly),
+    ...options,
+  })
 }
 
 export function queryPublication(
@@ -184,22 +189,6 @@ export function queryPublication(
       }),
   }
 }
-export function usePublication({
-  id,
-  version,
-  trustedOnly,
-  ...options
-}: UseQueryOptions<Publication> & {
-  id?: string
-  version?: string
-  trustedOnly?: boolean
-}) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
-    ...queryPublication(grpcClient, id, version, trustedOnly),
-    ...options,
-  })
-}
 
 export function useDocumentVersions(
   documentId: string | undefined,
@@ -212,7 +201,7 @@ export function useDocumentVersions(
     ),
   })
 }
-
+// TODO: Duplicate (apps/site/server/routers/_app.ts#~187)
 function sortDocuments(a?: Timestamp, b?: Timestamp) {
   let dateA = a ? a.toDate() : 0
   let dateB = b ? b.toDate() : 1
@@ -401,6 +390,7 @@ export type EditorDraftState = {
   title: string
   changes: DraftChangesState
   webUrl: string
+  updatedAt: any
 }
 
 export function useDraftTitle(
@@ -423,12 +413,6 @@ function getTitleFromInline(children: Array<HMInlineContent>): string {
     .join('')
 }
 
-export function getTitleFromContent(children: HMBlock[]): string {
-  const topChild = children[0]
-  if (!topChild) return ''
-  return getTitleFromInline(topChild.content)
-}
-
 type DraftChangesState = {
   moves: MoveBlockAction[]
   changed: Set<string>
@@ -440,6 +424,17 @@ type MoveBlockAction = {
   blockId: string
   leftSibling: string
   parent: string
+}
+
+export function useDraft({
+  documentId,
+  ...options
+}: UseQueryOptions<EditorDraftState | null> & {
+  documentId?: string
+}) {
+  const grpcClient = useGRPCClient()
+  const diagnosis = useDraftDiagnosis()
+  return useQuery(queryDraft(grpcClient, documentId, diagnosis, options))
 }
 
 export function queryDraft(
@@ -479,6 +474,7 @@ export function queryDraft(
           deleted: new Set<string>(),
           moves: [],
         },
+        updatedAt: serverDraft.updateTime,
         // @ts-expect-error
         webUrl: serverDraft.webUrl,
         title: serverDraft.title,
@@ -492,234 +488,139 @@ export function queryDraft(
   }
 }
 
-export function useDraftEditor(documentId?: string) {
-  let savingDebounceTimout = useRef<any>(null)
-  const queryClient = useAppContext().queryClient
-  const openUrl = useOpenUrl()
+/**
+ *
+ * Draft Machine logic
+ *
+ * - initialize machine with all the context data:
+ *    - draft: Document
+ *    -
+ * - fetch draft
+ *    - Error: show draft error (maybe retry or do extra checks before showing the error)
+ *    - OK:
+ */
+
+export function useDraftEditor({
+  documentId,
+  route,
+}: {
+  documentId?: string
+  route: NavRoute
+}) {
   const grpcClient = useGRPCClient()
+  const openUrl = useOpenUrl()
+
+  const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
-  const saveDraftMutation = useMutation({
-    mutationFn: async () => {
-      if (!editor) return
-      const draftState: EditorDraftState | undefined = client.getQueryData([
-        queryKeys.EDITOR_DRAFT,
+  const [writeEditorStream, editorStream] = useRef(
+    writeableStateStream<any>(null),
+  ).current
+  // fetch draft
+  const backendDraft = useQuery({
+    queryFn: async () =>
+      await grpcClient.drafts.getDraft({
         documentId,
-      ])
-      if (!draftState) return
-
-      const {changed, moves, deleted} = draftState.changes
-      const changes: Array<DocumentChange> = []
-
-      if (draft.data?.children.length == 0) {
-        // This means the draft is empty and we need to prepent a "move block" operation so it will not break
-        let firstBlock = editor.topLevelBlocks[0]
-        changes.push(
-          new DocumentChange({
-            op: {
-              case: 'moveBlock',
-              value: {
-                blockId: firstBlock.id,
-                leftSibling: '',
-                parent: '',
-              },
-            },
-          }),
-        )
-      }
-
-      moves.forEach((move) => {
-        changes.push(
-          new DocumentChange({
-            op: {
-              case: 'moveBlock',
-              value: {
-                blockId: move.blockId,
-                leftSibling: move.leftSibling,
-                parent: move.parent,
-              },
-            },
-          }),
-        )
-      })
-
-      deleted.forEach((blockId) => {
-        changes.push(
-          new DocumentChange({
-            op: {
-              case: 'deleteBlock',
-              value: blockId,
-            },
-          }),
-        )
-      })
-
-      changed.forEach((blockId) => {
-        const currentBlock = editor.getBlock(blockId)
-        const childGroup = getBlockGroup(blockId)
-        if (!currentBlock) return
-        if (childGroup) {
-          currentBlock.props.childrenType = childGroup.type
-            ? childGroup.type
-            : 'group'
-          if (childGroup.start)
-            currentBlock.props.start = childGroup.start.toString()
-        }
-        const serverBlock = fromHMBlock(currentBlock)
-        changes.push(
-          new DocumentChange({
-            op: {
-              case: 'replaceBlock',
-              value: serverBlock,
-            },
-          }),
-        )
-      })
-      client.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (state: EditorDraftState | undefined) => {
-          if (!state) return undefined
-          return {
-            ...state,
-            changes: createEmptyChanges(),
-          }
-        },
-      )
-      if (!documentId) throw new Error('Cannot persist a draft without id')
-      diagnosis.append(documentId, {
-        key: 'will.updateDraft',
-        // note: 'regular updateDraft',
-        value: changesToJSON(changes),
-      })
-      if (changes.length) {
-        await grpcClient.drafts.updateDraft({
-          documentId,
-          changes,
-        })
-      }
-    },
-    retry: false,
-    onError: (err) => {
-      console.error('Failed to save draft', err)
-    },
+      }),
+    queryKey: ['NEW_DRAFT', queryKeys.EDITOR_DRAFT, documentId],
   })
 
-  let lastBlocks = useRef<Record<string, HMBlock>>({})
-  let lastBlockParent = useRef<Record<string, string>>({})
-  let lastBlockLeftSibling = useRef<Record<string, string>>({})
-  let isReady = useRef<boolean>(false)
+  const draftStatusActor = DraftStatusContext.useActorRef()
 
-  function prepareBlockObservations(
-    blocks: Block<typeof hmBlockSchema>[],
-    parentId: string,
-  ) {
-    blocks.forEach((block, index) => {
-      const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
-      lastBlockParent.current[block.id] = parentId
-      lastBlockLeftSibling.current[block.id] = leftSibling
-      // @ts-expect-error
-      lastBlocks.current[block.id] = block
-      if (block.children) {
-        prepareBlockObservations(block.children, block.id)
-      }
-    })
-  }
-
-  function getBlockGroup(blockId: BlockIdentifier) {
-    const [editor] = readyThings.current
-    const tiptap = editor?._tiptapEditor
-    if (tiptap) {
-      const id = typeof blockId === 'string' ? blockId : blockId.id
-      let group: {type: string; start?: number} | undefined
-      tiptap.state.doc.firstChild!.descendants((node: Node) => {
-        if (typeof group !== 'undefined') {
-          return false
-        }
-
-        if (node.attrs.id !== id) {
-          return true
-        }
-
-        node.descendants((child: Node) => {
-          if (child.attrs.listType && child.type.name === 'blockGroup') {
-            group = {
-              type: child.attrs.listType,
-              start: child.attrs.start,
-            }
-            return false
+  const [state, send, actor] = useMachine(
+    draftMachine.provide({
+      actions: {
+        populateEditor: ({event}) => {
+          if (
+            event.type == 'GET.DRAFT.SUCCESS' &&
+            event.draft.children.length
+          ) {
+            let editorBlocks = toHMBlock(event.draft.children)
+            const tiptap = editor?._tiptapEditor
+            editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+            // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
+            setGroupTypes(tiptap, editorBlocks)
           }
-          return true
-        })
-
-        return true
-      })
-
-      return group
-    }
-
-    return undefined
-  }
-
-  function handleAfterReady() {
-    const [editor, draft] = readyThings.current
-    const tiptap = editor?._tiptapEditor
-    if (tiptap && draft) {
-      setGroupTypes(tiptap, draft.children)
-    }
-    if (tiptap && !tiptap.isFocused) {
-      editor._tiptapEditor.commands.focus()
-    }
-  }
-
-  function handleMaybeReady() {
-    const [editor, draft] = readyThings.current
-    if (!editor || !draft) return
-    // we load the data from the backend here
-    editor.replaceBlocks(editor.topLevelBlocks, [
-      ...draft.children,
-      // editor._tiptapEditor.schema.nodes.paragraph.create(),
-    ])
-
-    // this is to populate the blocks we use to compare changes
-
-    prepareBlockObservations(editor.topLevelBlocks, '')
-    isReady.current = true
-    handleAfterReady()
-  }
-
-  const draft = useQuery(
-    queryDraft(grpcClient, documentId, diagnosis, {
-      // enabled: !!editor,
-      onSuccess: (draft: EditorDraftState | null) => {
-        readyThings.current[1] = draft
-        handleMaybeReady()
+        },
+        focusEditor: () => {
+          const tiptap = editor?._tiptapEditor
+          if (tiptap && !tiptap.isFocused) {
+            editor._tiptapEditor.commands.focus()
+          }
+        },
+        onSaveSuccess: ({event}) => {
+          // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
+          // @ts-expect-error
+          if (event.output) {
+            invalidate([queryKeys.GET_DRAFT_LIST])
+            client.setQueryData(
+              [queryKeys.GET_DRAFT_LIST, documentId],
+              // @ts-expect-error
+              event.output.updatedDocument,
+            )
+          }
+        },
+        indicatorChange: () =>
+          draftStatusActor.send({type: 'INDICATOR.CHANGE'}),
+        indicatorSaving: () =>
+          draftStatusActor.send({type: 'INDICATOR.SAVING'}),
+        indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
       },
-      retry: false,
-      onError: (err) => {
-        console.error('DRAFT FETCH ERROR', err)
+      actors: {
+        updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
+          async ({input}) => {
+            let {changes, touchedBlocks} = compareBlocksWithMap(
+              editor,
+              input,
+              editor.topLevelBlocks,
+              '',
+            )
+
+            let deletedBlocks = extractDeletes(input, touchedBlocks)
+            let capturedChanges = [...changes, ...deletedBlocks]
+            if (capturedChanges.length) {
+              try {
+                diagnosis.append(documentId, {
+                  key: 'will.updateDraft',
+                  // note: 'regular updateDraft',
+                  value: changesToJSON(capturedChanges),
+                })
+
+                let mutation = await grpcClient.drafts.updateDraft({
+                  documentId,
+                  changes: capturedChanges,
+                })
+
+                return mutation
+              } catch (error) {
+                return Promise.reject(JSON.stringify(error))
+              }
+            }
+
+            return Promise.resolve(
+              'No changes applied. Reaching this should be impossible!',
+            )
+          },
+        ),
       },
     }),
   )
 
-  const [writeEditorState, editorState] = useRef(
-    writeableStateStream<any>(null),
-  ).current
+  useEffect(() => {
+    if (state.matches('fetching') && backendDraft.status == 'success') {
+      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+    }
+    /* eslint-disable */
+  }, [backendDraft.status])
 
+  // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      writeEditorState(editor.topLevelBlocks)
+      writeEditorStream(editor.topLevelBlocks)
+      send({type: 'CHANGE'})
 
-      if (!isReady.current) return
-      if (!readyThings.current[0] || !readyThings.current[1]) return
-
-      let changedBlockIds = new Set<string>()
-      let possiblyRemovedBlockIds = new Set<string>(
-        Object.keys(lastBlocks.current),
-      )
-      const nextBlocks: Record<string, HMBlock> = {}
-      const moves: MoveBlockAction[] = []
       function observeBlocks(
-        blocks: Block<typeof hmBlockSchema>[],
+        blocks: EditorBlock<typeof hmBlockSchema>[],
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
@@ -767,61 +668,13 @@ export function useDraftEditor(documentId?: string) {
               )
             }
           }
-          possiblyRemovedBlockIds.delete(block.id)
-          const leftSibling = index === 0 ? '' : blocks[index - 1]?.id
-          if (
-            lastBlockParent.current[block.id] !== parentId ||
-            lastBlockLeftSibling.current[block.id] !== leftSibling
-          ) {
-            moves.push({
-              blockId: block.id,
-              leftSibling,
-              parent: parentId,
-            })
-          }
-          if (lastBlocks.current[block.id] !== block) {
-            changedBlockIds.add(block.id)
-          }
-          // @ts-expect-error
-          nextBlocks[block.id] = block
-          lastBlockParent.current[block.id] = parentId
-          lastBlockLeftSibling.current[block.id] = leftSibling
+
           if (block.children) {
             observeBlocks(block.children, block.id)
           }
         })
       }
       observeBlocks(editor.topLevelBlocks, '')
-      const removedBlockIds = possiblyRemovedBlockIds
-      lastBlocks.current = nextBlocks
-
-      clearTimeout(savingDebounceTimout.current)
-      savingDebounceTimout.current = setTimeout(() => {
-        if (!isReady.current) return
-        saveDraftMutation.mutate()
-      }, 500)
-
-      client.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        (state: EditorDraftState | undefined) => {
-          if (!state) {
-            console.warn('no editor state yet!')
-            return
-          }
-
-          changedBlockIds.forEach((blockId) =>
-            state.changes.changed.add(blockId),
-          )
-          moves.forEach((move) => state.changes.moves.push(move))
-          removedBlockIds.forEach((blockId) =>
-            state.changes.deleted.add(blockId),
-          )
-          return {
-            ...state,
-            changes: state.changes,
-          }
-        },
-      )
     },
     linkExtensionOptions: {
       openOnClick: false,
@@ -829,10 +682,10 @@ export function useDraftEditor(documentId?: string) {
       openUrl,
     },
 
-    onEditorReady: (e) => {
-      readyThings.current[0] = e
-      handleMaybeReady()
-    },
+    // onEditorReady: (e) => {
+    //   readyThings.current[0] = e
+    //   handleMaybeReady()
+    // },
     blockSchema: hmBlockSchema,
     slashMenuItems,
 
@@ -865,41 +718,14 @@ export function useDraftEditor(documentId?: string) {
     [editor],
   )
 
-  // both the publication data and the editor are asyncronously loaded
-  // using a ref to avoid extra renders, and ensure the editor is available and ready
-  const readyThings = useRef<[HyperDocsEditor | null, EditorDraftState | null]>(
-    [null, draft.data || null],
-  )
-
-  useEffect(() => {
-    return () => {
-      // this runs when the editor is unmounted, to make sure it gets saved even if a keystroke just happened
-      clearTimeout(savingDebounceTimout.current)
-      const state: EditorDraftState | undefined = client.getQueryData([
-        queryKeys.EDITOR_DRAFT,
-        documentId,
-      ])
-      const {changes} = state || {}
-      if (!changes) return
-      saveDraftMutation
-        .mutateAsync()
-        .then(() => {
-          client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
-          invalidate([queryKeys.GET_DRAFT_LIST])
-        })
-        .catch((e) => {
-          toast.error('Draft changes were not saved correctly.')
-          console.error(e)
-        })
-    }
-    // Can't add anything to this deps array bc it will cause an infinite look in the draft page
-  }, [])
-
   return {
+    state,
+    send,
+    actor,
+    draft: backendDraft.data,
     editor,
-    editorState,
-    query: draft,
-    mutation: saveDraftMutation,
+    editorStream,
+    draftStatusActor,
   }
 }
 
@@ -952,14 +778,6 @@ export type HyperDocsEditor = Exclude<
 export const findBlock = findParentNode(
   (node) => node.type.name === 'blockContainer',
 )
-
-function applyPubToEditor(editor: HyperDocsEditor, pub: Publication) {
-  const editorBlocks = toHMBlock(pub.document?.children || [])
-  // editor._tiptapEditor.commands.clearContent()
-  editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-  setGroupTypes(editor._tiptapEditor, editorBlocks)
-  // editor._tiptapEditor.commands.setContent(editorBlocks)
-}
 
 function generateBlockId(length: number = 8): string {
   const characters =
@@ -1015,83 +833,6 @@ export function useCreatePublication() {
   })
 }
 
-export function usePublicationEditor(
-  documentId: string,
-  versionId?: string,
-  pubContext?: PublicationRouteContext | undefined,
-) {
-  const pub = usePublicationInContext({
-    documentId,
-    versionId,
-    pubContext,
-    enabled: !!documentId,
-    onSuccess: (pub: Publication) => {
-      readyThings.current[1] = pub
-      const readyEditor = readyThings.current[0]
-      if (readyEditor) {
-        readyEditor.isEditable = false // this is the way
-        applyPubToEditor(readyEditor, pub)
-      }
-    },
-  })
-
-  // both the publication data and the editor are asyncronously loaded
-  // using a ref to avoid extra renders, and ensure the editor is available and ready
-  const readyThings = useRef<[HyperDocsEditor | null, Publication | null]>([
-    null,
-    pub.data || null,
-  ])
-
-  const currentVersion = useRef<string | null>(null)
-
-  // this effect let you change the content of the editor when the version from the version panel is changed.
-  // without this the editor do not update.
-  useEffect(() => {
-    const readyPub = readyThings.current[1]
-    if (readyPub) {
-      let newVersion = pub.data?.version
-
-      if (newVersion != currentVersion.current) {
-        const editor = readyThings.current[0]
-
-        if (editor && pub.data) {
-          editor?._tiptapEditor.commands.clearContent()
-          const editorBlocks = toHMBlock(pub.data.document?.children || [])
-          setGroupTypes(editor._tiptapEditor, editorBlocks as any)
-          editor?.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-        }
-      }
-    }
-  }, [pub.data])
-
-  const {queryClient} = useAppContext()
-  const openUrl = useOpenUrl()
-
-  // careful using this editor too quickly. even when it it appears, it may not be "ready" yet, and bad things happen if you replaceBlocks too early
-  const editor: HyperDocsEditor | null = useBlockNote<HMBlockSchema>({
-    linkExtensionOptions: {
-      queryClient,
-      openUrl,
-      openOnClick: true, // this is default, but just to be explicit.
-    },
-    editable: false,
-    blockSchema: hmBlockSchema,
-    onEditorReady: (e: Editor) => {
-      readyThings.current[0] = e
-      const readyPub = readyThings.current[1]
-      if (readyPub) {
-        applyPubToEditor(e, readyPub)
-      }
-    },
-  })
-
-  return {
-    ...pub,
-    editor,
-    isLoading: pub.isLoading || editor === null,
-  }
-}
-
 function extractEmbedRefOfLink(block: any): false | string {
   if (block.content.length == 1) {
     let leaf = block.content[0]
@@ -1110,19 +851,25 @@ function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
     tiptap.state.doc.descendants((node: Node, pos: number) => {
       if (
         node.attrs.id === block.id &&
+        // @ts-expect-error
         block.props &&
+        // @ts-expect-error
         block.props.childrenType
       ) {
         node.descendants((child: Node, childPos: number) => {
           if (child.type.name === 'blockGroup') {
             setTimeout(() => {
               let tr = tiptap.state.tr
+              // @ts-expect-error
               tr = block.props?.start
                 ? tr.setNodeMarkup(pos + childPos + 1, null, {
+                    // @ts-expect-error
                     listType: block.props?.childrenType,
+                    // @ts-expect-error
                     start: parseInt(block.props?.start),
                   })
                 : tr.setNodeMarkup(pos + childPos + 1, null, {
+                    // @ts-expect-error
                     listType: block.props?.childrenType,
                   })
               tiptap.view.dispatch(tr)
@@ -1132,7 +879,9 @@ function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
         })
       }
     })
+    // @ts-expect-error
     if (block.children) {
+      // @ts-expect-error
       setGroupTypes(tiptap, block.children)
     }
   })
@@ -1168,4 +917,216 @@ export function useDocTextContent(pub?: Publication) {
 
     return res
   }, [pub])
+}
+
+export type BlocksMap = Record<string, BlocksMapIten>
+
+export type BlocksMapIten = {
+  parent: string
+  left: string
+  block: Block
+}
+
+export function createBlocksMap(
+  blockNodes: Array<BlockNode>,
+  parentId: string,
+) {
+  let result: BlocksMap = {}
+
+  blockNodes.forEach((bn, idx) => {
+    if (bn.block?.id) {
+      let prevBlockNode = idx > 0 ? blockNodes[idx - 1] : undefined
+
+      result[bn.block.id] = {
+        parent: parentId,
+        left:
+          prevBlockNode && prevBlockNode.block ? prevBlockNode.block.id : '',
+        block: bn.block,
+      }
+
+      if (bn.children.length) {
+        // recursively call the block children and append to the result
+        result = {...result, ...createBlocksMap(bn.children, bn.block.id)}
+      }
+    }
+  })
+
+  return result
+}
+
+export function compareBlocksWithMap(
+  editor: BlockNoteEditor,
+  blocksMap: BlocksMap,
+  blocks: Array<EditorBlock>,
+  parentId: string,
+) {
+  let changes: Array<DocumentChange> = []
+  let touchedBlocks: Array<string> = []
+
+  // iterate over editor blocks
+  blocks.forEach((block, idx) => {
+    // add blockid to the touchedBlocks list to capture deletes later
+    touchedBlocks.push(block.id)
+
+    // compare replace
+    let prevBlockState = blocksMap[block.id]
+
+    const childGroup = getBlockGroup(block.id)
+
+    if (childGroup) {
+      // @ts-expect-error
+      block.props.childrenType = childGroup.type ? childGroup.type : 'group'
+      // @ts-expect-error
+      if (childGroup.start) block.props.start = childGroup.start.toString()
+    }
+    let currentBlockState = fromHMBlock(block)
+
+    if (!prevBlockState) {
+      const serverBlock = fromHMBlock(block)
+
+      // add moveBlock change by default to all blocks
+      changes.push(
+        new DocumentChange({
+          op: {
+            case: 'moveBlock',
+            value: {
+              blockId: block.id,
+              leftSibling: idx > 0 && blocks[idx - 1] ? blocks[idx - 1].id : '',
+              parent: parentId,
+            },
+          },
+        }),
+        new DocumentChange({
+          op: {
+            case: 'replaceBlock',
+            value: serverBlock,
+          },
+        }),
+      )
+    } else {
+      let left = idx > 0 && blocks[idx - 1] ? blocks[idx - 1].id : ''
+      if (prevBlockState.left !== left || prevBlockState.parent !== parentId) {
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: block.id,
+                leftSibling: left,
+                parent: parentId,
+              },
+            },
+          }),
+        )
+      }
+
+      if (!isBlocksEqual(prevBlockState.block, currentBlockState)) {
+        // this means is a new block and we need to also add a replaceBlock change
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: currentBlockState,
+            },
+          }),
+        )
+      }
+    }
+
+    if (block.children.length) {
+      let nestedResults = compareBlocksWithMap(
+        editor,
+        blocksMap,
+        block.children,
+        block.id,
+      )
+      changes = [...changes, ...nestedResults.changes]
+      touchedBlocks = [...touchedBlocks, ...nestedResults.touchedBlocks]
+    }
+  })
+
+  function getBlockGroup(blockId: BlockIdentifier) {
+    const tiptap = editor?._tiptapEditor
+    if (tiptap) {
+      const id = typeof blockId === 'string' ? blockId : blockId.id
+      let group: {type: string; start?: number} | undefined
+      tiptap.state.doc.firstChild!.descendants((node: Node) => {
+        if (typeof group !== 'undefined') {
+          return false
+        }
+
+        if (node.attrs.id !== id) {
+          return true
+        }
+
+        node.descendants((child: Node) => {
+          if (child.attrs.listType && child.type.name === 'blockGroup') {
+            group = {
+              type: child.attrs.listType,
+              start: child.attrs.start,
+            }
+            return false
+          }
+          return true
+        })
+
+        return true
+      })
+
+      return group
+    }
+
+    return undefined
+  }
+
+  return {
+    changes,
+    touchedBlocks,
+  }
+}
+
+export function extractDeletes(
+  blocksMap: BlocksMap,
+  touchedBlocks: Array<string>,
+) {
+  let deletedIds = Object.keys(blocksMap).filter(
+    (id) => !touchedBlocks.includes(id),
+  )
+
+  return deletedIds.map(
+    (dId) =>
+      new DocumentChange({
+        op: {
+          case: 'deleteBlock',
+          value: dId,
+        },
+      }),
+  )
+}
+
+export function isBlocksEqual(b1: Block, b2: Block): boolean {
+  let result =
+    // b1.id == b2.id &&
+    b1.text == b2.text &&
+    b1.ref == b2.ref &&
+    _.isEqual(b1.annotations, b2.annotations) &&
+    // TODO: how to correctly compare attributes???
+    isBlockAttributesEqual(b1, b2) &&
+    b1.type == b2.type
+  return result
+}
+
+function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
+  let a1 = b1.attributes
+  let a2 = b2.attributes
+
+  return (
+    a1.childrenType == a2.childrenType &&
+    a1.start == a2.start &&
+    a1.level == a2.level &&
+    a1.url == a2.url &&
+    a1.size == a2.size &&
+    a1.ref == a2.ref &&
+    a1.language == a2.language
+  )
 }

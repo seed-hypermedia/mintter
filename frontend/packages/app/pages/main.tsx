@@ -11,6 +11,7 @@ import {QuickSwitcher} from '../components/quick-switcher'
 import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
+import {DraftStatusContext} from '../models/draft-machine'
 
 var PublicationList = lazy(
   () => import('@mintter/app/pages/publication-list-page'),
@@ -122,9 +123,11 @@ export default function Main({className}: {className?: string}) {
           window.location.reload()
         }}
       >
-        <TitleBar clean={isSettings} />
-        <PageComponent />
-        {!isSettings ? <QuickSwitcher /> : null}
+        <DraftStatusContext.Provider>
+          <TitleBar clean={isSettings} />
+          <PageComponent />
+          {!isSettings ? <QuickSwitcher /> : null}
+        </DraftStatusContext.Provider>
       </ErrorBoundary>
     </YStack>
   )
