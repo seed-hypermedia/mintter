@@ -128,7 +128,7 @@ function SaveIndicatorStatus() {
     return (
       <StatusWrapper>
         <Button chromeless size="$1" icon={<Check />} disabled>
-          saved!
+          saved
         </Button>
       </StatusWrapper>
     )
