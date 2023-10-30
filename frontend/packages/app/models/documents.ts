@@ -50,7 +50,7 @@ import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {fromPromise} from 'xstate'
+import {createActor, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {
   NavRoute,
@@ -58,7 +58,7 @@ import {
   useNavRoute,
 } from '../utils/navigation'
 import {pathNameify} from '../utils/path'
-import {draftMachine} from './draft-machine'
+import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
 import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 
@@ -525,6 +525,8 @@ export function useDraftEditor({
     queryKey: ['NEW_DRAFT', queryKeys.EDITOR_DRAFT, documentId],
   })
 
+  const draftStatusActor = DraftStatusContext.useActorRef()
+
   const [state, send, actor] = useMachine(
     draftMachine.provide({
       actions: {
@@ -546,7 +548,7 @@ export function useDraftEditor({
             editor._tiptapEditor.commands.focus()
           }
         },
-        onUpdateSuccess: ({event}) => {
+        onSaveSuccess: ({event}) => {
           // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
           // @ts-expect-error
           if (event.output) {
@@ -558,6 +560,11 @@ export function useDraftEditor({
             )
           }
         },
+        indicatorChange: () =>
+          draftStatusActor.send({type: 'INDICATOR.CHANGE'}),
+        indicatorSaving: () =>
+          draftStatusActor.send({type: 'INDICATOR.SAVING'}),
+        indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
       },
       actors: {
         updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
@@ -718,6 +725,7 @@ export function useDraftEditor({
     draft: backendDraft.data,
     editor,
     editorStream,
+    draftStatusActor,
   }
 }
 

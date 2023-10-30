@@ -1,8 +1,10 @@
 import {Document} from '@mintter/shared'
-import {StateFrom, assign, createMachine} from 'xstate'
+import {ActorRefFrom, StateFrom, assign, createMachine} from 'xstate'
 import {BlocksMap, BlocksMapIten, createBlocksMap} from './documents'
+import {createActorContext} from '@xstate/react'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
+
 export const draftMachine = createMachine(
   {
     context: {
@@ -71,6 +73,11 @@ export const draftMachine = createMachine(
             },
           },
           changed: {
+            entry: [
+              {
+                type: 'indicatorChange',
+              },
+            ],
             after: {
               autosaveTimeout: {
                 target: '#Draft.ready.saving',
@@ -88,6 +95,9 @@ export const draftMachine = createMachine(
               {
                 type: 'resetChangeWhileSaving',
               },
+              {
+                type: 'indicatorSaving',
+              },
             ],
             invoke: {
               src: 'updateDraft',
@@ -99,7 +109,8 @@ export const draftMachine = createMachine(
                   guard: 'didChangeWhileSaving',
                   reenter: true,
                   actions: [
-                    {type: 'onUpdateSuccess'},
+                    {type: 'onSaveSuccess'},
+                    {type: 'indicatorSaved'},
                     {
                       type: 'updateContextAfterSave',
                     },
@@ -108,6 +119,8 @@ export const draftMachine = createMachine(
                 {
                   target: 'idle',
                   actions: [
+                    {type: 'onSaveSuccess'},
+                    {type: 'indicatorSaved'},
                     {
                       type: 'updateContextAfterSave',
                     },
@@ -190,13 +203,77 @@ export const draftMachine = createMachine(
         draft: ({event}) => event.draft,
       }),
     },
-    actors: {},
     guards: {
       didChangeWhileSaving: ({context}) => context.hasChangedWhileSaving,
     },
     delays: {
       autosaveTimeout: 500,
-      saveIndicator: 1000,
     },
   },
 )
+
+export const saveIndicator = createMachine(
+  {
+    id: 'saveIndicator',
+    initial: 'lastUpdate',
+    states: {
+      lastUpdate: {},
+      idle: {
+        after: {
+          idleUpdate: {
+            target: '#saveIndicator.lastUpdate',
+            actions: [],
+            meta: {},
+          },
+        },
+        on: {
+          'INDICATOR.SAVING': {
+            target: 'saving',
+          },
+        },
+      },
+      saving: {
+        on: {
+          'INDICATOR.SAVED': {
+            target: 'saved',
+          },
+        },
+      },
+      saved: {
+        after: {
+          '2000': {
+            target: '#saveIndicator.idle',
+            actions: [],
+            meta: {},
+          },
+        },
+      },
+      error: {},
+    },
+    on: {
+      'INDICATOR.CHANGE': {
+        target: '.idle',
+      },
+      'INDICATOR.ERROR': {
+        target: '.error',
+      },
+    },
+    types: {
+      events: {} as
+        | {type: 'INDICATOR.CHANGE'}
+        | {type: 'INDICATOR.SAVING'}
+        | {type: 'INDICATOR.SAVED'}
+        | {type: 'INDICATOR.ERROR'},
+    },
+  },
+  {
+    actions: {},
+    actors: {},
+    guards: {},
+    delays: {
+      idleUpdate: 60000,
+    },
+  },
+)
+
+export const DraftStatusContext = createActorContext(saveIndicator)
