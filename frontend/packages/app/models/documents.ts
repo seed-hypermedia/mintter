@@ -31,7 +31,6 @@ import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
-  shortenPath,
   toHMBlock,
   unpackDocId,
   writeableStateStream,
@@ -216,8 +215,10 @@ export function getDefaultShortname(
 ) {
   const unpackedId = unpackDocId(docId)
   const idShortname = unpackedId ? unpackedId.eid.slice(0, 5).toLowerCase() : ''
-  const shortname = docTitle ? pathNameify(docTitle) : idShortname
-  return shortenPath(shortname)
+  const kebabName = docTitle ? pathNameify(docTitle) : idShortname
+  const shortName =
+    kebabName.length > 40 ? kebabName.substring(0, 40) : kebabName
+  return shortName
 }
 
 function useDraftDiagnosis() {

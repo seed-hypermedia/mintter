@@ -150,7 +150,7 @@ function GroupPublishDialog({
     if (myGroups?.data?.items?.length && !selectedGroupId)
       setSelectedGroupId(myGroups.data?.items?.[0]?.group?.id)
   }, [myGroups.data, selectedGroupId])
-  const defaultPathName = pathNameify(input.docTitle || '')
+  const defaultPathName = getDefaultShortname(input.docTitle || '', input.docId)
   const [pathName, setPathName] = useState(defaultPathName)
   const route = useNavRoute()
   const navigate = useNavigate('replace')
