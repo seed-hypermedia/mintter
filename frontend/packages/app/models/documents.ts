@@ -8,6 +8,7 @@ import {
   BlockNoteEditor,
   Block as EditorBlock,
   createHypermediaDocLinkPlugin,
+  handleDragReplace,
   hmBlockSchema,
   useBlockNote,
 } from '@mintter/editor'
@@ -56,15 +57,6 @@ import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
-<<<<<<< HEAD
-import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
-<<<<<<< HEAD
-import {handleDragReplace} from '@mintter/editor'
-=======
-import {useNavigate} from '../utils/useNavigate'
->>>>>>> 1c0bbdde (fix(draft): fixing undeletable draft)
-=======
->>>>>>> fe47479e (fix(image): cleanup feature)
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -727,6 +719,60 @@ export function useDraftEditor({
           })
         }
       })
+    },
+  }
+}
+
+const chromiumSupportedImageMimeTypes = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+  'image/apng',
+  'image/avif',
+])
+
+export function useDraftTitleInput(draftId: string) {
+  const draft = useDraft({documentId: draftId})
+  const savingDebounceTimout = useRef<any>(null)
+  const queryClient = useQueryClient()
+  const client = useGRPCClient()
+  const saveTitleMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const changes: Array<DocumentChange> = [
+        new DocumentChange({
+          op: {
+            case: 'setTitle',
+            value: title,
+          },
+        }),
+      ]
+      await client.drafts.updateDraft({
+        documentId: draftId,
+        changes,
+      })
+    },
+  })
+  const title = draft.data?.title || undefined
+  return {
+    title,
+    onTitle: (inputTitle: string) => {
+      // avoid multiline values that may be pasted into the title
+      const title = inputTitle.split('\n').join(' ')
+      queryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (state: EditorDraftState | undefined) => {
+          return {...state, title}
+        },
+      )
+      clearTimeout(savingDebounceTimout.current)
+      savingDebounceTimout.current = setTimeout(() => {
+        saveTitleMutation.mutate(title)
+      }, 500)
     },
   }
 }

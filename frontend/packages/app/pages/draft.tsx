@@ -1,17 +1,15 @@
-import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
+import { AppBanner, BannerText } from '@mintter/app/components/app-banner'
 import Footer from '@mintter/app/components/footer'
-import {useNavRoute} from '@mintter/app/utils/navigation'
-import {trpc} from '@mintter/desktop/src/trpc'
-import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
+import { useNavRoute } from '@mintter/app/utils/navigation'
+import { trpc } from '@mintter/desktop/src/trpc'
+import { HMEditorContainer, HyperMediaEditorView } from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
-  createPublicWebHmUrl,
   formattedDateMedium,
-  unpackDocId,
   useHeadingMarginStyles,
   useHeadingTextStyles,
-  usePublicationContentContext,
+  usePublicationContentContext
 } from '@mintter/shared'
 import {
   Button,
@@ -22,17 +20,16 @@ import {
   YStack,
   useStream,
 } from '@mintter/ui'
-import {useSelector} from '@xstate/react'
-import {useEffect, useRef, useState} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {ActorRefFrom} from 'xstate'
-import {MainWrapper} from '../components/main-wrapper'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
-import {useDraftEditor} from '../models/documents'
-import {DraftStatusContext, draftMachine} from '../models/draft-machine'
-import {useHasDevTools} from '../models/experiments'
-import {useOpenDraft} from '../utils/open-draft'
-import {AppPublicationContentProvider} from './publication'
+import { useSelector } from '@xstate/react'
+import { useEffect, useRef, useState } from 'react'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { ActorRefFrom } from 'xstate'
+import { MainWrapper } from '../components/main-wrapper'
+import { useDraftEditor } from '../models/documents'
+import { draftMachine } from '../models/draft-machine'
+import { useHasDevTools } from '../models/experiments'
+import { useOpenDraft } from '../utils/open-draft'
+import { AppPublicationContentProvider } from './publication'
 
 export default function DraftPage() {
   let route = useNavRoute()
@@ -46,68 +43,28 @@ export default function DraftPage() {
     }
   }, [route])
 
-  const isSaved = DraftStatusContext.useSelector((s) => s.matches('saved'))
-
-  let data = useDraftEditor({
+  let {state, editorStream, draft, editor, handleDrop} = useDraftEditor({
     documentId: route.draftId,
     route,
   })
 
-  useEffect(() => {
-    function handleSelectAll(event: KeyboardEvent) {
-      if (event.key == 'a' && event.metaKey) {
-        if (data.editor) {
-          event.preventDefault()
-          data.editor._tiptapEditor.commands.focus()
-          data.editor._tiptapEditor.commands.selectAll()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleSelectAll)
-
-    return () => {
-      window.removeEventListener('keydown', handleSelectAll)
-    }
-  }, [])
-
-  if (data.state.matches('ready')) {
-    return (
-      <ErrorBoundary
-        FallbackComponent={DraftError}
-        onReset={() => window.location.reload()}
-      >
-        <MainWrapper>
-          <AppPublicationContentProvider
-            disableEmbedClick
-            onCopyBlock={(blockId: string) => {
-              if (route.key != 'draft')
-                throw new Error('DraftPage must have draft route')
-              if (!route.draftId)
-                throw new Error('draft route draftId is missing')
-              const id = unpackDocId(route.draftId)
-              if (!id?.eid)
-                throw new Error('eid could not be extracted from draft route')
-              copyUrlToClipboardWithFeedback(
-                createPublicWebHmUrl('d', id.eid, {blockRef: blockId}),
-                'Block',
-              )
-            }}
-          >
+        <MainWrapper
+          backgroundColor="red"
+          onDrop={(e) => {
+            handleDrop(e)
+          }}
+        >
+          <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <YStack id="editor-title">
               <DraftTitleInput
-                draftActor={data.actor}
+                draftId={draft?.id}
                 onEnter={() => {
                   editor?._tiptapEditor?.commands?.focus?.('start')
                 }}
               />
             </YStack>
             <HMEditorContainer>
-              {data.state.context.draft &&
-              data.editor &&
-              data.editor.topLevelBlocks.length ? (
-                <HyperMediaEditorView editor={data.editor} />
-              ) : null}
+              {editor && <HyperMediaEditorView editor={editor} />}
             </HMEditorContainer>
           </AppPublicationContentProvider>
           {documentId ? (
@@ -116,9 +73,9 @@ export default function DraftPage() {
         </MainWrapper>
         <Footer>
           <XStack gap="$3" marginHorizontal="$3">
-            {data.draft?.updateTime && (
-              <SizableText size="$1" color={isSaved ? '$color' : '$color9'}>
-                Last update: {formattedDateMedium(data.draft.updateTime)}
+            {draft?.updateTime && (
+              <SizableText size="$1" color="$color9">
+                Last update: {formattedDateMedium(draft.updateTime)}
               </SizableText>
             )}
           </XStack>
