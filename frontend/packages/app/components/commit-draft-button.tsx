@@ -24,7 +24,6 @@ export default function CommitDraftButton() {
   if (route.key !== 'draft')
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.key == 'draft' ? route.draftId : null
-  const {data} = useDraft({documentId: draftId})
 
   const navReplace = useNavigate('replace')
   const navBack = useNavigate('backplace')
@@ -35,11 +34,10 @@ export default function CommitDraftButton() {
 
   const mediaDialog = useMediaDialog()
   const isDaemonReady = useDaemonReady()
-  const isSaving = DraftStatusContext.useSelector((s) => s.matches('saving'))
+  const canPublish = DraftStatusContext.useSelector((s) => !s.matches('saving'))
   const hasUpdateError = DraftStatusContext.useSelector((s) =>
     s.matches('error'),
   )
-  console.log(`== ~ CommitDraftButton ~ isSaving:`, isSaving)
   const publish = usePublishDraft({
     onSuccess: ({pub: publishedDoc, pubContext, isFirstPublish}) => {
       if (!publishedDoc || !draftId) return
@@ -74,7 +72,8 @@ export default function CommitDraftButton() {
       {!hasUpdateError ? (
         <Button
           size="$2"
-          disabled={!isDaemonReady || isSaving}
+          disabled={!isDaemonReady || !canPublish}
+          opacity={!canPublish ? 0.5 : 1}
           onPress={() => {
             grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
               const hasEmptyMedia = draft.children.find((block) => {
