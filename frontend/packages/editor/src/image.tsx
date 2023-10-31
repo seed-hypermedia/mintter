@@ -176,7 +176,6 @@ function ImageComponent({
     ? null
     : `${ipfsBlobPrefix}${getCIDFromIPFSUrl(block.props.url)}`
 
-  console.log(`== ~ imageUrl:`, imageUrl, block.props)
   const handleDragReplace = async (file: File) => {
     if (file.size > 62914560) {
       toast.error(`The size of ${file.name} exceeds 60 MB.`)
