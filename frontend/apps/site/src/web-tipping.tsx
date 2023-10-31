@@ -258,17 +258,28 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
       editorsOverallPercentage - prevTargetPercentage
     const nextRemainderPercentage = editorsOverallPercentage - nextPercentage
 
+    if (
+      !state.filter((s) => s.id !== action.id).find((s) => s.percentage !== 0)
+    ) {
+      return state.map((s) => {
+        if (s.id === action.id) {
+          return {id: s.id, percentage: nextPercentage}
+        }
+        const percentage = nextRemainderPercentage / (state.length - 1)
+        return {id: s.id, percentage}
+      })
+    }
     return state.map((s) => {
       if (s.id === action.id) {
         return {id: s.id, percentage: nextPercentage}
       }
+
       // these split the remainder based on their ratio from the previous remainder
       const prevRatioExcludingTarget =
         prevRemainderPercentage === 0
           ? 0
           : s.percentage / prevRemainderPercentage
       const percentage = prevRatioExcludingTarget * nextRemainderPercentage
-
       return {id: s.id, percentage}
     })
   }
