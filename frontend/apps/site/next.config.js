@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const {withTamagui} = require('@tamagui/next-plugin')
 const {join} = require('path')
+const {withSentryConfig} = require('@sentry/nextjs')
 // const withBundleAnalyzer = require('@next/bundle-analyzer')
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
@@ -118,8 +119,6 @@ module.exports = function () {
 
 // Injected content via Sentry wizard below
 
-const {withSentryConfig} = require('@sentry/nextjs')
-
 module.exports = withSentryConfig(
   module.exports,
   {
@@ -128,7 +127,6 @@ module.exports = withSentryConfig(
 
     // Suppresses source map uploading logs during build
     silent: true,
-
     org: 'mintter',
     project: 'sites',
   },
