@@ -2,6 +2,10 @@
 
 Rather than mixing Site peers into the "Contacts" page, there is a new panel that shows your connection status to all peers and the `hyper.media` gateway.
 
+![Screenshot 2023-10-31 at 12 48 59 PM](https://github.com/MintterHypermedia/mintter/assets/1483597/1dac06ba-875e-4c76-a278-8e1f4d9f4fbc)
+
+You can see the new panel by pressing the networking button on the left side of the footer.
+
 ## 🎉 More New Features
 
 - Feedback showing the draft auto-save progress
