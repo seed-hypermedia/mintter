@@ -130,6 +130,31 @@ const Render = (
   )
 }
 
+export async function handleDragReplace(file: File) {
+  if (file.size > 62914560) {
+    toast.error(`The size of ${file.name} exceeds 60 MB.`)
+    return null
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await response.text()
+    return {
+      url: data ? `ipfs://${data}` : '',
+      name: file.name,
+      size: file.size.toString(),
+    } as FileType['props']
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 export function FileComponent({
   block,
   editor,
@@ -150,34 +175,6 @@ export function FileComponent({
     await saveCidAsFile(block.props.url, block.props.name)
   }
 
-  const handleDragReplace = async (file: File) => {
-    if (file.size > 62914560) {
-      toast.error(`The size of ${file.name} exceeds 60 MB.`)
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await response.text()
-      assign({
-        props: {
-          url: data ? `ipfs://${data}` : '',
-          name: file.name,
-          size: file.size.toString(),
-        },
-      } as FileType)
-    } catch (error) {
-      console.error(error)
-    }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
-  }
-
   return (
     <YStack
       // @ts-ignore
@@ -196,7 +193,23 @@ export function FileComponent({
         if (selected) setSelected(false)
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           const files = Array.from(e.dataTransfer.files)
-          handleDragReplace(Array.from(files)[0])
+          const file = files[0]
+          if (!file) return
+
+          handleDragReplace(file)
+            .then((newProps) => {
+              assign({
+                props: newProps,
+              })
+              editor.setTextCursorPosition(
+                editor.topLevelBlocks.slice(-1)[0],
+                'end',
+              )
+            })
+            .catch((e) => {
+              toast.error('Something went wrong adding this file')
+              console.error(e)
+            })
           return
         }
       }}

@@ -44,44 +44,46 @@ export default function DraftPage() {
     }
   }, [route])
 
-  let data = useDraftEditor({
+  let {state, editorStream, draft, editor, handleDrop} = useDraftEditor({
     documentId: route.draftId,
     route,
   })
 
-  if (data.state.matches('ready')) {
+  if (state.matches('ready')) {
     return (
       <ErrorBoundary
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
-        <MainWrapper>
+        <MainWrapper
+          backgroundColor="red"
+          onDrop={(e) => {
+            handleDrop(e)
+          }}
+        >
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <YStack id="editor-title">
               <DraftTitleInput
-                draftId={data.draft?.id}
+                draftId={draft?.id}
                 onEnter={() => {
-                  data.editor?._tiptapEditor?.commands?.focus?.('start')
+                  editor?._tiptapEditor?.commands?.focus?.('start')
                 }}
               />
             </YStack>
 
             <HMEditorContainer>
-              {data.editor && <HyperMediaEditorView editor={data.editor} />}
+              {editor && <HyperMediaEditorView editor={editor} />}
             </HMEditorContainer>
           </AppPublicationContentProvider>
           {documentId ? (
-            <DraftDevTools
-              draftId={documentId}
-              editorState={data.editorStream}
-            />
+            <DraftDevTools draftId={documentId} editorState={editorStream} />
           ) : null}
         </MainWrapper>
         <Footer>
           <XStack gap="$3" marginHorizontal="$3">
-            {data.draft?.updateTime && (
+            {draft?.updateTime && (
               <SizableText size="$1" color="$color9">
-                Last update: {formattedDateMedium(data.draft.updateTime)}
+                Last update: {formattedDateMedium(draft.updateTime)}
               </SizableText>
             )}
           </XStack>

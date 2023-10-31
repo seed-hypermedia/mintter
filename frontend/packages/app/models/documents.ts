@@ -60,6 +60,7 @@ import {pathNameify} from '../utils/path'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
 import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
+import {handleDragReplace} from '@mintter/editor'
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -729,8 +730,47 @@ export function useDraftEditor({
     editor,
     editorStream,
     draftStatusActor,
+    handleDrop: (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      let file: File | null =
+        event.dataTransfer.items?.[0]?.getAsFile() ||
+        event.dataTransfer.files?.[0] ||
+        null
+      if (!file) return
+      handleDragReplace(file).then((props) => {
+        if (chromiumSupportedImageMimeTypes.has(file.type)) {
+          editor?._tiptapEditor.commands.insertContent({
+            type: 'image',
+            id: generateBlockId(),
+            attrs: props,
+            text: '',
+          })
+          // todo: support video type
+        } else {
+          editor?._tiptapEditor.commands.insertContent({
+            type: 'file',
+            id: generateBlockId(),
+            attrs: props,
+            text: '',
+          })
+        }
+      })
+    },
   }
 }
+
+const chromiumSupportedImageMimeTypes = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+  'image/apng',
+  'image/avif',
+])
 
 export function useDraftTitleInput(draftId: string) {
   const draft = useDraft({documentId: draftId})
