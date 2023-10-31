@@ -372,6 +372,7 @@ export function usePublishDraft(
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       if (draftGroupContext) {
+        invalidate([queryKeys.GET_GROUP, draftGroupContext.groupId])
         invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }

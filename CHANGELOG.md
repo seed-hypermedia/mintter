@@ -23,6 +23,7 @@ Rather than mixing Site peers into the "Contacts" page, there is a new panel tha
 - Fix payment split buttons in case where one recipient has the full amount
 - Backend deprecated `/quic` protocol, now uses `/quic-v1`
 - Backend added logging when re-providing content to the DHT
+- Fixed invalid group doc version after publish
 
 ## 🚨 Known Issues
 
