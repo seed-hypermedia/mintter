@@ -363,7 +363,14 @@ export function usePublishDraft(
       context,
     ) => {
       const documentId = result.pub.document?.id
-      client.setQueryData([queryKeys.EDITOR_DRAFT, documentId], () => null)
+      client.removeQueries({queryKey: [queryKeys.EDITOR_DRAFT, documentId]})
+      client.removeQueries({
+        queryKey: [
+          queryKeys.EDITOR_DRAFT_CONTENT,
+          queryKeys.EDITOR_DRAFT,
+          documentId,
+        ],
+      })
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])
@@ -524,7 +531,11 @@ export function useDraftEditor({
       await grpcClient.drafts.getDraft({
         documentId,
       }),
-    queryKey: ['NEW_DRAFT', queryKeys.EDITOR_DRAFT, documentId],
+    queryKey: [
+      queryKeys.EDITOR_DRAFT_CONTENT,
+      queryKeys.EDITOR_DRAFT,
+      documentId,
+    ],
   })
 
   const draftStatusActor = DraftStatusContext.useActorRef()
@@ -571,6 +582,7 @@ export function useDraftEditor({
       },
       actors: {
         updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
+          // TODO: I need to convert this to another thing. because I need to check if there are changes before I send any request
           async ({input}) => {
             let currentEditorBlocks = [...editor.topLevelBlocks]
             let {changes, touchedBlocks} = compareBlocksWithMap(
@@ -609,13 +621,6 @@ export function useDraftEditor({
       },
     }),
   )
-
-  useEffect(() => {
-    if (state.matches('fetching') && backendDraft.status == 'success') {
-      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
-    }
-    /* eslint-disable */
-  }, [backendDraft.status])
 
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
@@ -709,6 +714,13 @@ export function useDraftEditor({
     },
   })
 
+  useEffect(() => {
+    if (state.matches('fetching') && backendDraft.status == 'success') {
+      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+    }
+    /* eslint-disable */
+  }, [backendDraft.status])
+
   useListen(
     'select_all',
     () => {
@@ -721,6 +733,8 @@ export function useDraftEditor({
     },
     [editor],
   )
+
+  console.log(`== ~ state:`, state.value, editor)
 
   return {
     state,

@@ -189,7 +189,11 @@ export const draftMachine = createMachine(
         },
       }),
       updateContextAfterSave: assign(({context, event}) => {
-        if (event.output) {
+        if (event.output && typeof event.output != 'string') {
+          console.log(
+            `== ~ updateContextAfterSave:assign ~ event.output:`,
+            event.output,
+          )
           return {
             blocksMap: createBlocksMap(
               event.output.updatedDocument.children,
@@ -218,7 +222,8 @@ export const saveIndicator = createMachine(
     id: 'saveIndicator',
     initial: 'idle',
     states: {
-      idle: {
+      idle: {},
+      changed: {
         on: {
           'INDICATOR.SAVING': {
             target: 'saving',
@@ -245,7 +250,7 @@ export const saveIndicator = createMachine(
     },
     on: {
       'INDICATOR.CHANGE': {
-        target: '.idle',
+        target: '.changed',
       },
       'INDICATOR.ERROR': {
         target: '.error',
