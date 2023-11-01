@@ -744,8 +744,6 @@ export function useDraftEditor({
     [editor],
   )
 
-  console.log(`== ~ state:`, state.context, state.value, editor)
-
   return {
     state,
     send,
