@@ -1,14 +1,15 @@
 # Build from the root with `docker build . -f ./backend/cmd/mintter-site/Dockerfile`.
 FROM golang:1.20.4-alpine AS builder
 WORKDIR /code
-ARG GIT_PATH=.git
+ARG COMMIT_HASH
+ARG BRANCH
+ARG DATE
 COPY go.mod go.sum ./
 COPY third_party ./third_party
-COPY $GIT_PATH ./.git
 RUN go mod download
 COPY backend ./backend
-RUN apk add build-base git
-RUN go install ./backend/cmd/mintter-site/
+RUN apk add build-base
+RUN go install -ldflags="-X 'mintter/backend/daemon.commit=$COMMIT_HASH' -X 'mintter/backend/daemon.branch=$BRANCH' -X 'mintter/backend/daemon.date=$DATE'" ./backend/cmd/mintter-site/
 
 FROM alpine:latest
 COPY --from=builder /go/bin/mintter-site /usr/local/bin/mintter-site
