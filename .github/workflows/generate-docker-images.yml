@@ -28,6 +28,10 @@ jobs:
           && sudo apt-get update \
           && sudo apt-get install -y git \
           && git --version
+      - name: Get commit date for the triggering commit
+        run: |
+          COMMIT_DATE=$(git show -s --format="%cd" ${{ github.sha }})
+          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
 
       # Checkout the repository to the GitHub Actions runner
       - name: Set up Docker Buildx
@@ -52,7 +56,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
-            DATE=${{ github.event.commits[0].timestamp }}
+            DATE=$COMMIT_DATE
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:main
       - name: Build and push stable mintter-site
@@ -63,7 +67,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
-            DATE=${{ github.event.commits[0].timestamp }}
+            DATE=$COMMIT_DATE
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
