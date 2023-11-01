@@ -30,8 +30,6 @@ jobs:
           && git --version
 
       # Checkout the repository to the GitHub Actions runner
-      - name: Checkout
-        uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker Hub
@@ -49,7 +47,6 @@ jobs:
 
       - name: Build and push edge mintter-site
         uses: actions/checkout@v2
-        uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintter-site/Dockerfile
