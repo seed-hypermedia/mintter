@@ -32,6 +32,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+var (
+	commit string
+	branch string
+	date   string
+)
+
 // GenericHandler is to be called bay anyone wanting to register a
 // new http handler.
 type GenericHandler struct {
@@ -62,6 +68,7 @@ func setupDebugHandlers(r *Router, blobs *hyper.Storage) {
 	r.Handle("/debug/vars", http.DefaultServeMux, RoutePrefix|RouteNav)
 	r.Handle("/debug/grpc", grpcLogsHandler(), RouteNav)
 	r.Handle("/debug/buildinfo", buildInfoHandler(), RouteNav)
+	r.Handle("/debug/version", gitVersionHandler(), RouteNav)
 	r.Handle("/debug/cid/{cid}", makeBlobDebugHandler(blobs.IPFSBlockstore()), 0)
 	r.Handle("/debug/traces", eztrc.Handler(), RouteNav)
 }
@@ -193,6 +200,27 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 		next.ServeHTTP(w, r)
+	})
+}
+
+func gitVersionHandler() http.Handler {
+	type gitInfo struct {
+		Branch string `json:"branch,omitempty"`
+		Commit string `json:"commit,omitempty"`
+		Date   string `json:"date,omitempty"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var res gitInfo
+		res.Branch = branch
+		res.Commit = commit
+		res.Date = date
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			http.Error(w, "Failed to marshal git version: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 	})
 }
 

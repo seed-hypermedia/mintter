@@ -45,21 +45,14 @@ jobs:
           text: ${{ github.ref }}
           regex: 'refs/tags/[0-9]{4}\.[0-9]+\.[0-9]+$'
 
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Find out where .git folder is
-        run: |
-          echo 'github.workspace === ${{ github.workspace }}'
-          echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
-          echo 'runner.workspace === ${{ runner.workspace }}'
-          echo "RUNNER_WORKSPACE === $RUNNER_WORKSPACE"
-          ls -lrta ${{ github.workspace }}
-
       - name: Build and push edge mintter-site
         uses: docker/build-push-action@v4
         with:
           push: true
-          build-args: GIT_PATH=${{ github.workspace }}
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
+            BRANCH=${{ github.ref }}
+            DATE=${{ github.event.commits[0].timestamp }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:main
       - name: Build and push stable mintter-site
@@ -67,7 +60,10 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          build-args: GIT_PATH=${{ github.workspace }}
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
+            BRANCH=${{ github.ref }}
+            DATE=${{ github.event.commits[0].timestamp }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
