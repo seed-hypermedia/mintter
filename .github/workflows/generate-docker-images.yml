@@ -60,7 +60,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
-            DATE=$COMMIT_DATE
+            DATE=${{ env.COMMIT_DATE }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:main
       - name: Build and push stable mintter-site
@@ -71,7 +71,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ github.sha }}
             BRANCH=${{ github.ref }}
-            DATE=$COMMIT_DATE
+            DATE=${{ env.COMMIT_DATE }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
