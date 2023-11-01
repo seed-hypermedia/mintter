@@ -20,6 +20,17 @@ jobs:
   generate-docker-images:
     runs-on: ubuntu-latest
     steps:
+      - name: Force Install GIT latest
+        run: |
+          apt-get install -y software-properties-common \
+          && apt-get update \
+          && add-apt-repository -y ppa:git-core/ppa \
+          && apt-get update \
+          && apt-get install -y git
+
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker Hub
