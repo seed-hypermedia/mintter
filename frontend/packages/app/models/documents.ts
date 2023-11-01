@@ -369,14 +369,7 @@ export function usePublishDraft(
       context,
     ) => {
       const documentId = result.pub.document?.id
-      client.removeQueries({queryKey: [queryKeys.EDITOR_DRAFT, documentId]})
-      client.removeQueries({
-        queryKey: [
-          queryKeys.EDITOR_DRAFT_CONTENT,
-          queryKeys.EDITOR_DRAFT,
-          documentId,
-        ],
-      })
+      opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
       invalidate([queryKeys.GET_DRAFT_LIST])
@@ -389,10 +382,17 @@ export function usePublishDraft(
         invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }
-      opts?.onSuccess?.(result, variables, context)
 
       setTimeout(() => {
         client.removeQueries([queryKeys.EDITOR_DRAFT, result.pub.document?.id])
+        client.removeQueries({queryKey: [queryKeys.EDITOR_DRAFT, documentId]})
+        client.removeQueries({
+          queryKey: [
+            queryKeys.EDITOR_DRAFT_CONTENT,
+            queryKeys.EDITOR_DRAFT,
+            documentId,
+          ],
+        })
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
