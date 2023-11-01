@@ -47,12 +47,18 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v4
+        run: |
+          echo 'github.workspace === ${{ github.workspace }}'
+          echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
+          echo 'runner.workspace === ${{ runner.workspace }}'
+          echo "RUNNER_WORKSPACE === $RUNNER_WORKSPACE"
+          ls -lrta ${{ github.workspace }}
 
       - name: Build and push edge mintter-site
         uses: docker/build-push-action@v4
         with:
           push: true
-          build-args: GIT_PATH=$GITHUB_WORKSPACE
+          build-args: GIT_PATH=${{ github.workspace }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:main
       - name: Build and push stable mintter-site
@@ -60,7 +66,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          build-args: GIT_PATH=$GITHUB_WORKSPACE
+          build-args: GIT_PATH=${{ github.workspace }}
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
