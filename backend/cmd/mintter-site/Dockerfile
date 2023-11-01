@@ -1,9 +1,10 @@
 # Build from the root with `docker build . -f ./backend/cmd/mintter-site/Dockerfile`.
 FROM golang:1.20.4-alpine AS builder
 WORKDIR /code
+ARG GIT_PATH=.git
 COPY go.mod go.sum ./
 COPY third_party ./third_party
-COPY .git ./.git
+COPY $GIT_PATH ./.git
 RUN go mod download
 COPY backend ./backend
 RUN apk add build-base git
