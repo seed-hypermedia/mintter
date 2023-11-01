@@ -782,7 +782,27 @@ function InlineContentView({
             textDecorationLine = 'line-through'
           }
 
-          let children: any = content.text
+          // TODO: fix this hack to render soft-line breaks
+          let children: any = content.text.split('\n')
+
+          if (children.length > 1) {
+            children = children.map(
+              (l: string, i: number, a: Array<string>) => {
+                if (a.length == i - 1) {
+                  return l
+                } else {
+                  return (
+                    <>
+                      {l}
+                      <br />
+                    </>
+                  )
+                }
+              },
+            )
+          } else {
+            children = content.text
+          }
 
           if (content.styles.bold) {
             children = (
@@ -807,8 +827,7 @@ function InlineContentView({
           if (content.styles.code) {
             children = (
               <Text
-                backgroundColor="$backgroundFocus"
-                // bg="red"
+                backgroundColor="$color4"
                 fontFamily="$mono"
                 tag="code"
                 borderRadius="$2"
