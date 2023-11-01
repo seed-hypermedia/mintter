@@ -92,3 +92,13 @@
 [data-list-type='ol'] .node-blockContainer {
   display: list-item;
 }
+
+.editor code {
+  background-color: var(--color4);
+  font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  overflow: hidden;
+  font-size: 0.8em;
+  line-height: 1.5;
+  padding: 2px var(--space-7);
+}
