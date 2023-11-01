@@ -45,8 +45,11 @@ jobs:
           text: ${{ github.ref }}
           regex: 'refs/tags/[0-9]{4}\.[0-9]+\.[0-9]+$'
 
-      - name: Build and push edge mintter-site
+      - name: Checkout repo
         uses: actions/checkout@v2
+        
+      - name: Build and push edge mintter-site
+        uses: docker/build-push-action@v4
         with:
           push: true
           file: backend/cmd/mintter-site/Dockerfile
