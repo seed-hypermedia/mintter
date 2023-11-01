@@ -22,11 +22,11 @@ jobs:
     steps:
       - name: Force Install GIT latest
         run: |
-          apt-get install -y software-properties-common \
-          && apt-get update \
-          && add-apt-repository -y ppa:git-core/ppa \
-          && apt-get update \
-          && apt-get install -y git
+          sudo apt-get install -y software-properties-common \
+          && sudo apt-get update \
+          && sudo add-apt-repository -y ppa:git-core/ppa \
+          && sudo apt-get update \
+          && sudo apt-get install -y git
 
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout
