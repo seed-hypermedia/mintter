@@ -47,6 +47,7 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: Find out where .git folder is
         run: |
           echo 'github.workspace === ${{ github.workspace }}'
           echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
