@@ -124,10 +124,16 @@ export function useDeleteDraft(
     },
     onSuccess: (response, documentId, context) => {
       queryClient.invalidate([queryKeys.GET_DRAFT_LIST])
-      queryClient.client.setQueryData(
-        [queryKeys.EDITOR_DRAFT, documentId],
-        () => null,
-      )
+      queryClient.client.removeQueries({
+        queryKey: [queryKeys.EDITOR_DRAFT, documentId],
+      })
+      queryClient.client.removeQueries({
+        queryKey: [
+          queryKeys.EDITOR_DRAFT_CONTENT,
+          queryKeys.EDITOR_DRAFT,
+          documentId,
+        ],
+      })
       opts?.onSuccess?.(response, documentId, context)
     },
   })
@@ -594,6 +600,8 @@ export function useDraftEditor({
 
             let deletedBlocks = extractDeletes(input, touchedBlocks)
             let capturedChanges = [...changes, ...deletedBlocks]
+
+            console.log(`== ~ capturedChanges:`, capturedChanges)
             if (capturedChanges.length) {
               try {
                 diagnosis.append(documentId, {
@@ -606,6 +614,8 @@ export function useDraftEditor({
                   documentId,
                   changes: capturedChanges,
                 })
+
+                console.log(`== ~ mutation:`, mutation)
 
                 return mutation
               } catch (error) {
@@ -734,7 +744,7 @@ export function useDraftEditor({
     [editor],
   )
 
-  console.log(`== ~ state:`, state.value, editor)
+  console.log(`== ~ state:`, state.context, state.value, editor)
 
   return {
     state,
