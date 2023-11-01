@@ -1,5 +1,4 @@
 .bazel
-.git
 .plz-cache
 plz-out
 node_modules
