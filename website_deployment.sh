@@ -84,13 +84,13 @@ cat << BLOCK > ${workspace}/proxy/CaddyFile
 
 @version {
 	method GET HEAD OPTIONS
-	path /.well-known/version
+	path /.well-known/hypermedia-site/version
 }
 
 reverse_proxy @wellknown minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 route @version {
-    rewrite /.well-known/version /debug/buildinfo
+    rewrite /.well-known/hypermedia-site/version /debug/buildinfo
     reverse_proxy minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 }
 
