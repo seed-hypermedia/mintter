@@ -128,10 +128,14 @@ export function createReactBlockSpec<
         // Gets position of the node
         const pos =
           typeof props.getPos === 'function' ? props.getPos() : undefined
+
+        if (!pos) return null
         // Gets TipTap editor instance
         const tipTapEditor = editor._tiptapEditor
         // Gets parent blockContainer node
+
         const blockContainer = tipTapEditor.state.doc.resolve(pos!).node()
+
         // Gets block identifier
         const blockIdentifier = blockContainer.attrs.id
         // Get the block

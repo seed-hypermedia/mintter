@@ -183,7 +183,6 @@ export const draftMachine = createMachine(
         blocksMap: ({context, event}) => {
           if (event.type == 'GET.DRAFT.SUCCESS') {
             let newBm = createBlocksMap(event.draft.children, '')
-            console.log('=== setCurrentBlocksmap', {context, event, newBm})
             return newBm
           }
         },
