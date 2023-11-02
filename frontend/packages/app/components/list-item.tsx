@@ -1,7 +1,7 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
 import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
-import {ReactElement} from 'react'
+import {ComponentProps, ReactElement} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
@@ -14,7 +14,7 @@ export function ListItem({
 }: {
   accessory: ReactElement
   title: string
-  onPress: ButtonProps['onPress']
+  onPress: ButtonProps['onPress'] | ComponentProps<typeof ButtonText>['onPress']
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[]
 }) {
@@ -30,7 +30,10 @@ export function ListItem({
         group="item"
       >
         <ButtonText
-          onPress={onPress}
+          onPress={(e) => {
+            e.stopPropagation()
+            onPress?.(e)
+          }}
           fontWeight="700"
           flex={1}
           textAlign="left"
