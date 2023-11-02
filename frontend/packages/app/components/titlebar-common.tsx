@@ -726,6 +726,20 @@ export function EditDocActions({
         pubContext,
       })
     } catch (error: any) {
+      if (
+        error?.message.match('[failed_precondition]') &&
+        error?.message.match('already exists')
+      ) {
+        toast('A draft already exists for this document. Please review.')
+        navigate({
+          key: 'draft',
+          draftId: docId, // because docId and draftId are the same right now
+          contextRoute,
+          pubContext,
+        })
+        return
+      }
+
       toast.error(`Draft Error: ${error?.message}`)
     }
   }
