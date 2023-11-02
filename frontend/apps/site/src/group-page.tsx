@@ -25,7 +25,7 @@ import {getGroupView} from 'server/group'
 import {AccountAvatarLink} from './account-row'
 import Footer from './footer'
 import {GroupMetadata} from './group-metadata'
-import {OGImageMeta} from './head'
+import {BasicOGMeta, OGImageMeta} from './head'
 import {useGroupContentUrl} from './publication-page'
 import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
@@ -113,9 +113,10 @@ export function GroupPage({}: GroupPageProps) {
               content={loadedGroup.version}
             />
             <meta name="hypermedia-entity-title" content={loadedGroup.title} />
-
-            <meta property="og:title" content={loadedGroup.title} />
-            <meta property="og:description" content={loadedGroup.description} />
+            <BasicOGMeta
+              title={loadedGroup.title}
+              description={loadedGroup.description}
+            />
             {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
           </>
         ) : null}

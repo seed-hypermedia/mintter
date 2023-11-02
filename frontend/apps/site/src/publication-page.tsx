@@ -26,7 +26,7 @@ import {
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
-import {OGImageMeta} from 'src/head'
+import {BasicOGMeta, OGImageMeta} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import {ErrorPage} from './error-page'
@@ -107,8 +107,7 @@ export default function PublicationPage({
         <meta name="hypermedia-entity-id" content={pub?.document?.id} />
         <meta name="hypermedia-entity-version" content={pub?.version} />
         <meta name="hypermedia-entity-title" content={pub?.document?.title} />
-
-        <meta property="og:title" content={pub?.document?.title} />
+        <BasicOGMeta title={pub?.document?.title} />
         {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
       </Head>
       <SiteHead pageTitle={pub?.document?.title} />
