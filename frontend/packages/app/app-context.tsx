@@ -7,11 +7,11 @@ import {
 } from '@mintter/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {createContext, ReactNode, useContext, useEffect, useState} from 'react'
+import {createContext, ReactNode, useContext, useEffect} from 'react'
 import {AppIPC, Event, EventCallback} from './app-ipc'
+import {useExperiments} from './models/experiments'
 import {AppQueryClient} from './query-client'
 import {WindowUtils} from './window-utils'
-import {trpc} from '@mintter/desktop/src/trpc'
 
 export type AppPlatform = typeof process.platform
 
@@ -64,10 +64,15 @@ export function AppContextProvider({
     >
       <QueryClientProvider client={queryClient.client}>
         <StyleProvider darkMode={darkMode}>{children}</StyleProvider>
-        <ReactQueryDevtools />
+        <ReactQueryTools />
       </QueryClientProvider>
     </AppContext.Provider>
   )
+}
+
+function ReactQueryTools() {
+  const {data: experiments} = useExperiments()
+  return experiments?.developerTools ? <ReactQueryDevtools /> : null
 }
 
 export function StyleProvider({
