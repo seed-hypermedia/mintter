@@ -701,7 +701,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
     : null
   return (
     <>
-      <XStack space="$2">
+      <XStack space="$2" ai="center">
         <ContextPopover {...popoverState}>
           <PopoverTrigger asChild>
             <Button size="$2" icon={icon}>
