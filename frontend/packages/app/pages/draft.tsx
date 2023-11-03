@@ -6,7 +6,6 @@ import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
-  formattedDate,
   formattedDateMedium,
   useHeadingMarginStyles,
   useHeadingTextStyles,
@@ -18,14 +17,16 @@ import {
   MainWrapper,
   SizableText,
   Theme,
-  Tooltip,
   XStack,
   YStack,
   useStream,
 } from '@mintter/ui'
+import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useDraftEditor, useDraftTitleInput} from '../models/documents'
+import {ActorRefFrom} from 'xstate'
+import {useDraftEditor} from '../models/documents'
+import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
@@ -44,6 +45,8 @@ export default function DraftPage() {
     }
   }, [route])
 
+  const isSaved = DraftStatusContext.useSelector((s) => s.matches('saved'))
+
   let data = useDraftEditor({
     documentId: route.draftId,
     route,
@@ -59,7 +62,7 @@ export default function DraftPage() {
           <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
             <YStack id="editor-title">
               <DraftTitleInput
-                draftId={data.draft?.id}
+                draftActor={data.actor}
                 onEnter={() => {
                   data.editor?._tiptapEditor?.commands?.focus?.('start')
                 }}
@@ -80,13 +83,52 @@ export default function DraftPage() {
         <Footer>
           <XStack gap="$3" marginHorizontal="$3">
             {data.draft?.updateTime && (
-              <SizableText size="$1" color="$color9">
+              <SizableText size="$1" color={isSaved ? '$color' : '$color9'}>
                 Last update: {formattedDateMedium(data.draft.updateTime)}
               </SizableText>
             )}
           </XStack>
         </Footer>
       </ErrorBoundary>
+    )
+  }
+
+  if (data.state.matches('error')) {
+    return (
+      <MainWrapper>
+        <XStack jc="center" ai="center" f={1} backgroundColor={'$color2'}>
+          <YStack
+            space
+            theme="red"
+            backgroundColor="$color1"
+            maxWidth={500}
+            marginVertical="$7"
+            padding="$4"
+            f={1}
+            borderRadius="$4"
+          >
+            <SizableText size="$5" fontWeight="bold" color="$red10">
+              Sorry, this drafts appears to be corrupt
+            </SizableText>
+
+            <SizableText size="$2">
+              Well, this is embarrasing. for some reason we are not able to load
+              this draft due to a internal problem in the draft changes. TODO.
+            </SizableText>
+
+            <XStack jc="center">
+              <Button
+                size="$2"
+                onPress={() => {
+                  data.send({type: 'RESET.CORRUPT.DRAFT'})
+                }}
+              >
+                Reset Draft
+              </Button>
+            </XStack>
+          </YStack>
+        </XStack>
+      </MainWrapper>
     )
   }
   return <DocumentPlaceholder />
@@ -101,15 +143,16 @@ function applyTitleResize(target: HTMLTextAreaElement) {
 }
 
 function DraftTitleInput({
-  draftId,
   onEnter,
+  draftActor,
 }: {
-  draftId: string
   onEnter: () => void
+  draftActor: ActorRefFrom<typeof draftMachine>
 }) {
   const {textUnit, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
-  const {title, onTitle} = useDraftTitleInput(draftId)
+  const title = useSelector(draftActor, (s) => s.context.title || '')
+
   const input = useRef<HTMLTextAreaElement | null>(null)
   const headingMarginStyles = useHeadingMarginStyles(2, layoutUnit)
 
@@ -181,7 +224,10 @@ function DraftTitleInput({
         paddingLeft={9.6}
         defaultValue={title?.trim() || ''} // this is still a controlled input because of the value comparison in useLayoutEffect
         // value={title}
-        onChangeText={onTitle}
+        onChangeText={(title) => {
+          // TODO: change title here
+          draftActor.send({type: 'CHANGE', title})
+        }}
         placeholder="Untitled Document"
         {...headingTextStyles}
         padding={0}

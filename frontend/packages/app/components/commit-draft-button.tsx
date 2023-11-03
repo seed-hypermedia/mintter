@@ -34,7 +34,9 @@ export default function CommitDraftButton() {
 
   const mediaDialog = useMediaDialog()
   const isDaemonReady = useDaemonReady()
-  const canPublish = DraftStatusContext.useSelector((s) => !s.matches('saving'))
+  const canPublish = DraftStatusContext.useSelector(
+    (s) => s.matches('idle') || s.matches('saved'),
+  )
   const hasUpdateError = DraftStatusContext.useSelector((s) =>
     s.matches('error'),
   )
