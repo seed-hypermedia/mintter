@@ -49,7 +49,7 @@ import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {createActor, fromPromise} from 'xstate'
+import {ContextFrom, createActor, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {
   NavRoute,
@@ -60,7 +60,11 @@ import {pathNameify} from '../utils/path'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
 import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
+<<<<<<< HEAD
 import {handleDragReplace} from '@mintter/editor'
+=======
+import {useNavigate} from '../utils/useNavigate'
+>>>>>>> 1c0bbdde (fix(draft): fixing undeletable draft)
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -126,14 +130,7 @@ export function useDeleteDraft(
     onSuccess: (response, documentId, context) => {
       queryClient.invalidate([queryKeys.GET_DRAFT_LIST])
       queryClient.client.removeQueries({
-        queryKey: [queryKeys.EDITOR_DRAFT, documentId],
-      })
-      queryClient.client.removeQueries({
-        queryKey: [
-          queryKeys.EDITOR_DRAFT_CONTENT,
-          queryKeys.EDITOR_DRAFT,
-          documentId,
-        ],
+        queryKey: [queryKeys.GET_DRAFT, documentId],
       })
       opts?.onSuccess?.(response, documentId, context)
     },
@@ -273,60 +270,6 @@ export function usePublishDraft(
   return useMutation({
     ...opts,
     mutationFn: async ({draftId}: {draftId: string}) => {
-      const draft = await grpcClient.drafts.getDraft({documentId: draftId})
-      await diagnosis.append(draftId, {
-        key: 'getDraft',
-        value: hmDocument(draft),
-      })
-      if (!draft) throw new Error('no draft found')
-      let lastChildIndex = draft.children.length - 1
-      const changes: DocumentChange[] = []
-      while (true) {
-        const lastChild = draft.children[lastChildIndex]
-        if (
-          !lastChild.block?.text &&
-          !['image', 'embed', 'file', 'video'].includes(lastChild.block!.type)
-        ) {
-          if (lastChild.children.length === 0) {
-            changes.push(
-              new DocumentChange({
-                op: {
-                  case: 'deleteBlock',
-                  value: lastChild.block!.id,
-                },
-              }),
-            )
-          } else {
-            const nonEmptyChild = lastChild.children.some(
-              (block) =>
-                block.block?.text ||
-                ['image', 'embed', 'file', 'video'].includes(block.block!.type),
-            )
-            if (!nonEmptyChild) {
-              changes.push(
-                new DocumentChange({
-                  op: {
-                    case: 'deleteBlock',
-                    value: lastChild.block!.id,
-                  },
-                }),
-              )
-            } else break
-          }
-        } else break
-        lastChildIndex -= 1
-      }
-      if (changes.length) {
-        await diagnosis.append(draftId, {
-          key: 'will.updateDraft',
-          note: 'removing extra blocks before publication',
-          value: changesToJSON(changes),
-        })
-        await grpcClient.drafts.updateDraft({
-          documentId: draftId,
-          changes,
-        })
-      }
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       await diagnosis.complete(draftId, {
         key: 'did.publishDraft',
@@ -336,10 +279,7 @@ export function usePublishDraft(
       const publishedId = pub.document?.id
       if (draftGroupContext && publishedId) {
         let docTitle: string | undefined = (
-          queryClient.client.getQueryData([
-            queryKeys.EDITOR_DRAFT,
-            draftId,
-          ]) as any
+          queryClient.client.getQueryData([queryKeys.GET_DRAFT, draftId]) as any
         )?.title
         const publishPathName = draftGroupContext.pathName
           ? draftGroupContext.pathName
@@ -416,19 +356,6 @@ export function useDraftTitle(
   return draft.data?.title || undefined
 }
 
-function getTitleFromInline(children: Array<HMInlineContent>): string {
-  const topChild = children[0]
-  if (!topChild) return ''
-  return children
-    .map((inline) => {
-      if (inline.type === 'link') {
-        return getTitleFromInline(inline.content)
-      }
-      return inline.text
-    })
-    .join('')
-}
-
 type DraftChangesState = {
   moves: MoveBlockAction[]
   changed: Set<string>
@@ -445,62 +372,52 @@ type MoveBlockAction = {
 export function useDraft({
   documentId,
   ...options
-}: UseQueryOptions<EditorDraftState | null> & {
+}: UseQueryOptions<Document | null> & {
   documentId?: string
 }) {
   const grpcClient = useGRPCClient()
   const diagnosis = useDraftDiagnosis()
-  return useQuery(queryDraft(grpcClient, documentId, diagnosis, options))
+  return useQuery(queryDraft({documentId, grpcClient, diagnosis, ...options}))
 }
 
-export function queryDraft(
-  grpcClient: GRPCClient,
-  documentId: string | undefined,
-  diagnosis?: DraftDiagnosis,
-  opts?: UseQueryOptions<EditorDraftState | null>,
-) {
-  const {enabled = true, retry = false, ...restOpts} = opts || {}
+export function queryDraft({
+  documentId,
+  grpcClient,
+  diagnosis,
+  ...options
+}: {
+  documentId?: string
+  grpcClient: GRPCClient
+  diagnosis?: ReturnType<typeof useDraftDiagnosis>
+} & UseQueryOptions<Document | null>): UseQueryOptions<Document | null> {
   return {
+    enabled: !!documentId,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
+    refetchOnMount: false,
+    retry: false,
+    useErrorBoundary: false,
     queryFn: async () => {
-      let serverDraft: Document | null = null
       try {
-        serverDraft = await grpcClient.drafts.getDraft({
+        let serverDraft = await grpcClient.drafts.getDraft({
           documentId,
         })
+
         diagnosis?.append(documentId!, {
           key: 'getDraft',
           value: hmDocument(serverDraft),
         })
-      } catch (error: any) {
-        const message: string = error.message || ''
-        if (!message.includes('no draft for entity')) {
-          throw error
-        }
-        // draft will be null
-      }
-      if (!serverDraft) {
+
+        return serverDraft
+      } catch (error) {
+        diagnosis?.append(documentId!, {
+          key: 'getDraftError',
+          value: JSON.stringify(error),
+        })
+
         return null
       }
-      const topChildren = toHMBlock(serverDraft.children)
-      const draftState: EditorDraftState = {
-        children: topChildren,
-        changes: {
-          changed: new Set<string>(),
-          deleted: new Set<string>(),
-          moves: [],
-        },
-        updatedAt: serverDraft.updateTime,
-        // @ts-expect-error
-        webUrl: serverDraft.webUrl,
-        title: serverDraft.title,
-        id: serverDraft.id,
-      }
-      return draftState
     },
-    retry,
-    enabled: !!documentId && enabled,
-    ...restOpts,
+    ...options,
   }
 }
 
@@ -525,25 +442,26 @@ export function useDraftEditor({
 }) {
   const grpcClient = useGRPCClient()
   const openUrl = useOpenUrl()
-
+  const replace = useNavigate('replace')
   const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
+
   // fetch draft
-  const backendDraft = useQuery({
-    queryFn: async () =>
-      await grpcClient.drafts.getDraft({
-        documentId,
-      }),
-    queryKey: [
-      queryKeys.EDITOR_DRAFT_CONTENT,
-      queryKeys.EDITOR_DRAFT,
-      documentId,
-    ],
+  const backendDraft = useDraft({
+    documentId,
+    useErrorBoundary: false,
+    onError: (error) => {
+      console.log('=======================')
+      send({type: 'GET.DRAFT.ERROR', error})
+    },
+    retry: false,
   })
+
+  console.log(`== ~ backendDraft:`, backendDraft)
 
   const draftStatusActor = DraftStatusContext.useActorRef()
 
@@ -573,11 +491,7 @@ export function useDraftEditor({
           // @ts-expect-error
           if (event.output) {
             invalidate([queryKeys.GET_DRAFT_LIST])
-            client.setQueryData(
-              [queryKeys.GET_DRAFT_LIST, documentId],
-              // @ts-expect-error
-              event.output.updatedDocument,
-            )
+            invalidate([queryKeys.EDITOR_DRAFT, documentId])
           }
         },
         indicatorChange: () =>
@@ -586,37 +500,69 @@ export function useDraftEditor({
           draftStatusActor.send({type: 'INDICATOR.SAVING'}),
         indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
         indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
+        resetDraftAndRedirectToDraftList: () => {
+          grpcClient.drafts.deleteDraft({documentId}).then(() => {
+            replace({key: 'drafts'})
+          })
+        },
       },
       actors: {
-        updateDraft: fromPromise<UpdateDraftResponse | string, BlocksMap>(
+        updateDraft: fromPromise<
+          UpdateDraftResponse | string,
+          ContextFrom<typeof draftMachine>
+        >(
           // TODO: I need to convert this to another thing. because I need to check if there are changes before I send any request
           async ({input}) => {
             let currentEditorBlocks = [...editor.topLevelBlocks]
             let {changes, touchedBlocks} = compareBlocksWithMap(
               editor,
-              input,
+              input.blocksMap,
               currentEditorBlocks,
               '',
             )
 
-            let deletedBlocks = extractDeletes(input, touchedBlocks)
+            let deletedBlocks = extractDeletes(input.blocksMap, touchedBlocks)
+
+            if (input.draft?.title != input.title) {
+              changes = [
+                new DocumentChange({
+                  op: {
+                    case: 'setTitle',
+                    value: input.title,
+                  },
+                }),
+                ...changes,
+              ]
+            }
+
             let capturedChanges = [...changes, ...deletedBlocks]
 
-            console.log(`== ~ capturedChanges:`, capturedChanges)
             if (capturedChanges.length) {
+              diagnosis.append(documentId, {
+                key: 'will.updateDraft',
+                // note: 'regular updateDraft',
+                value: changesToJSON(capturedChanges),
+              })
               try {
-                diagnosis.append(documentId, {
-                  key: 'will.updateDraft',
-                  // note: 'regular updateDraft',
-                  value: changesToJSON(capturedChanges),
-                })
-
                 let mutation = await grpcClient.drafts.updateDraft({
                   documentId,
                   changes: capturedChanges,
                 })
 
                 console.log(`== ~ mutation:`, mutation)
+                if (mutation.updatedDocument) {
+                  console.log('== draft updates', mutation)
+                  client.setQueryData(
+                    [queryKeys.GET_DRAFT, documentId],
+                    mutation.updatedDocument,
+                  )
+                }
+
+                diagnosis.append(documentId, {
+                  key: 'did.updateDraft',
+                  // note: 'regular updateDraft',
+                  value: JSON.stringify(mutation),
+                })
 
                 return mutation
               } catch (error) {
@@ -726,8 +672,12 @@ export function useDraftEditor({
   })
 
   useEffect(() => {
-    if (state.matches('fetching') && backendDraft.status == 'success') {
-      send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+    if (state.matches('fetching')) {
+      if (backendDraft.status == 'success') {
+        send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
+      } else if (backendDraft.status == 'error') {
+        send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
+      }
     }
     /* eslint-disable */
   }, [backendDraft.status])
@@ -778,60 +728,6 @@ export function useDraftEditor({
           })
         }
       })
-    },
-  }
-}
-
-const chromiumSupportedImageMimeTypes = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/bmp',
-  'image/svg+xml',
-  'image/x-icon',
-  'image/vnd.microsoft.icon',
-  'image/apng',
-  'image/avif',
-])
-
-export function useDraftTitleInput(draftId: string) {
-  const draft = useDraft({documentId: draftId})
-  const savingDebounceTimout = useRef<any>(null)
-  const queryClient = useQueryClient()
-  const client = useGRPCClient()
-  const saveTitleMutation = useMutation({
-    mutationFn: async (title: string) => {
-      const changes: Array<DocumentChange> = [
-        new DocumentChange({
-          op: {
-            case: 'setTitle',
-            value: title,
-          },
-        }),
-      ]
-      await client.drafts.updateDraft({
-        documentId: draftId,
-        changes,
-      })
-    },
-  })
-  const title = draft.data?.title || undefined
-  return {
-    title,
-    onTitle: (inputTitle: string) => {
-      // avoid multiline values that may be pasted into the title
-      const title = inputTitle.split('\n').join(' ')
-      queryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, draftId],
-        (state: EditorDraftState | undefined) => {
-          return {...state, title}
-        },
-      )
-      clearTimeout(savingDebounceTimout.current)
-      savingDebounceTimout.current = setTimeout(() => {
-        saveTitleMutation.mutate(title)
-      }, 500)
     },
   }
 }

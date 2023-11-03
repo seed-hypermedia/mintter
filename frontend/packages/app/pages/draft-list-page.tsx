@@ -91,7 +91,9 @@ export function DraftListItem({draft}: {draft: Document}) {
       <ListItem
         title={title}
         onPointerEnter={() => {
-          queryClient.client.prefetchQuery(queryDraft(grpcClient, draft.id))
+          queryClient.client.prefetchQuery(
+            queryDraft({grpcClient, documentId: draft.id}),
+          )
         }}
         onPress={goToItem}
         accessory={<></>}

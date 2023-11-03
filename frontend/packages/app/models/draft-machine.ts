@@ -11,6 +11,7 @@ export const draftMachine = createMachine(
       blocksMap: {},
       hasChangedWhileSaving: false,
       draft: null,
+      title: '',
     },
     id: 'Draft',
     initial: 'fetching',
@@ -56,6 +57,13 @@ export const draftMachine = createMachine(
               draft: null,
             }),
           },
+          'RESET.CORRUPT.DRAFT': {
+            actions: [
+              {
+                type: 'resetDraftAndRedirectToDraftList',
+              },
+            ],
+          },
         },
       },
       ready: {
@@ -70,6 +78,11 @@ export const draftMachine = createMachine(
             on: {
               CHANGE: {
                 target: 'changed',
+                actions: [
+                  {
+                    type: 'setTitle',
+                  },
+                ],
               },
             },
           },
@@ -88,6 +101,11 @@ export const draftMachine = createMachine(
               CHANGE: {
                 target: 'changed',
                 reenter: true,
+                actions: [
+                  {
+                    type: 'setTitle',
+                  },
+                ],
               },
             },
           },
@@ -102,7 +120,7 @@ export const draftMachine = createMachine(
             ],
             invoke: {
               src: 'updateDraft',
-              input: ({context}) => context.blocksMap,
+              input: ({context}) => context,
               id: 'update-draft-actor',
               onDone: [
                 {
@@ -137,12 +155,15 @@ export const draftMachine = createMachine(
             on: {
               CHANGE: {
                 target: 'saving',
+                reenter: false,
                 actions: [
                   {
                     type: 'setHasChangedWhileSaving',
                   },
+                  {
+                    type: 'setTitle',
+                  },
                 ],
-                reenter: false,
               },
             },
           },
@@ -158,15 +179,17 @@ export const draftMachine = createMachine(
     },
     types: {
       events: {} as
-        | {type: 'CHANGE'}
+        | {type: 'CHANGE'; title?: string}
         | {type: 'RESET.DRAFT'}
-        | {type: 'GET.DRAFT.ERROR'; errorMessage: string}
+        | {type: 'RESET.CORRUPT.DRAFT'}
+        | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
         | {type: 'GET.DRAFT.SUCCESS'; draft: Document},
       context: {} as {
         blocksMap: BlocksMap
         hasChangedWhileSaving: boolean
         draft: Document | null
+        title: string
       },
     },
   },
@@ -186,13 +209,20 @@ export const draftMachine = createMachine(
             return newBm
           }
         },
+        title: ({event}) =>
+          event.type == 'GET.DRAFT.SUCCESS' ? event.draft.title : '',
+      }),
+      setTitle: assign({
+        title: ({event, context}) => {
+          if (event.type == 'CHANGE' && event.title) {
+            return event.title
+          } else {
+            return context.title
+          }
+        },
       }),
       updateContextAfterSave: assign(({context, event}) => {
         if (event.output && typeof event.output != 'string') {
-          console.log(
-            `== ~ updateContextAfterSave:assign ~ event.output:`,
-            event.output,
-          )
           return {
             blocksMap: createBlocksMap(
               event.output.updatedDocument.children,
@@ -200,11 +230,15 @@ export const draftMachine = createMachine(
             ),
             draft: event.output.updatedDocument,
             hasChangedWhileSaving: false,
+            title: event.output.updatedDocument.title,
           }
+        } else {
+          return context
         }
       }),
       setCurrentDraft: assign({
-        draft: ({event}) => event.draft,
+        draft: ({event}) =>
+          event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null,
       }),
     },
     guards: {
