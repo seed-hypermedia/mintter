@@ -234,7 +234,31 @@ export function DeveloperSettings() {
           <DeleteDraftLogs />
         </XStack>
       </SettingsSection>
+      <TestFileUpload />
     </>
+  )
+}
+
+function TestFileUpload() {
+  const upload = trpc.webImporting.importWebFile.useMutation()
+  return (
+    <Button
+      onPress={() => {
+        upload
+          .mutateAsync(
+            'https://cdn.vocab.com/articles/ll/meme-and-variation/memes_clip_image002_0000.jpg',
+          )
+          .then(({cid, type}) => {
+            toast.success(`Imported to CID: ${cid}. Type is ${type}`)
+          })
+          .catch((e) => {
+            toast.error('Failed to import this file')
+          })
+      }}
+      theme="blue"
+    >
+      Test Image Import from URL
+    </Button>
   )
 }
 

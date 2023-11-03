@@ -26,6 +26,7 @@ import {
 import {log, logFilePath} from './logger'
 import {diagnosisApi} from './app-diagnosis'
 import {welcomingApi} from './app-welcoming'
+import {uploadFile, webImportingApi} from './app-web-importing'
 
 const invalidationHandlers = new Set<(queryKey: any) => void>()
 
@@ -101,22 +102,11 @@ export function openRoute(route: NavRoute) {
   }
 }
 
-async function uploadFile(file: Blob | string) {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-    method: 'POST',
-    body: formData,
-  })
-  const data = await response.text()
-  return data
-}
-
 export const router = t.router({
   experiments: experimentsApi,
   diagnosis: diagnosisApi,
   welcoming: welcomingApi,
+  webImporting: webImportingApi,
   createAppWindow: t.procedure
     .input(
       z.object({
