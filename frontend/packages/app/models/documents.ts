@@ -389,8 +389,6 @@ export function queryDraft({
   return {
     enabled: !!documentId,
     queryKey: [queryKeys.EDITOR_DRAFT, documentId],
-    refetchOnMount: false,
-    retry: false,
     useErrorBoundary: false,
     queryFn: async () => {
       try {
@@ -449,15 +447,10 @@ export function useDraftEditor({
   // fetch draft
   const backendDraft = useDraft({
     documentId,
-    useErrorBoundary: false,
     onError: (error) => {
-      console.log('=======================')
       send({type: 'GET.DRAFT.ERROR', error})
     },
-    retry: false,
   })
-
-  console.log(`== ~ backendDraft:`, backendDraft)
 
   const draftStatusActor = DraftStatusContext.useActorRef()
 

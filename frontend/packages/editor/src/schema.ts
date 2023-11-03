@@ -7,7 +7,7 @@ import {
 import {EmbedBlock} from './embed-block'
 import {FileBlock} from './file'
 import {ImageBlock} from './image'
-import {ImagePlaceholder} from './imagePlaceholder'
+import {ImagePlaceholder} from './image-placeholder'
 import {CodeBlock} from './code-block'
 import {VideoBlock} from './video'
 
