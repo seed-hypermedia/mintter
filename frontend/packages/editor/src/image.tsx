@@ -3,7 +3,6 @@ import {toast} from '@mintter/app/toast'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   BACKEND_FILE_UPLOAD_URL,
-  BACKEND_FILE_URL,
   getCIDFromIPFSUrl,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -12,14 +11,13 @@ import {
   Form,
   Input,
   Label,
-  Popover,
   SizableText,
   Tabs,
   XStack,
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {ChangeEvent, useEffect, useState, useCallback} from 'react'
+import {ChangeEvent, useCallback, useEffect, useState} from 'react'
 import {RiImage2Line} from 'react-icons/ri'
 import {
   Block,
@@ -30,6 +28,28 @@ import {
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
 import {HMBlockSchema} from './schema'
+
+export const ImageBlock = createReactBlockSpec({
+  type: 'image',
+  propSchema: {
+    ...defaultProps,
+    url: {
+      default: '',
+    },
+    name: {
+      default: '',
+    },
+  },
+  containsInlineContent: true,
+  // @ts-ignore
+  render: ({
+    block,
+    editor,
+  }: {
+    block: Block<HMBlockSchema>
+    editor: BlockNoteEditor<HMBlockSchema>
+  }) => Render(block, editor),
+})
 
 const isValidUrl = (urlString: string) => {
   try {
@@ -62,28 +82,6 @@ const uploadImageToIpfs = async (url: string) => {
     return {name: 'The file size exceeds 60 MB.'}
   }
 }
-
-export const ImageBlock = createReactBlockSpec({
-  type: 'image',
-  propSchema: {
-    ...defaultProps,
-    url: {
-      default: '',
-    },
-    name: {
-      default: '',
-    },
-  },
-  containsInlineContent: true,
-  // @ts-ignore
-  render: ({
-    block,
-    editor,
-  }: {
-    block: Block<HMBlockSchema>
-    editor: BlockNoteEditor<HMBlockSchema>
-  }) => Render(block, editor),
-})
 
 type ImageType = {
   id: string
