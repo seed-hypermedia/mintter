@@ -234,7 +234,7 @@ export function DeveloperSettings() {
           <DeleteDraftLogs />
         </XStack>
       </SettingsSection>
-      <TestFileUpload />
+      {/* <TestFileUpload /> */}
     </>
   )
 }
