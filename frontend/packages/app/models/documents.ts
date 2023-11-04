@@ -494,9 +494,29 @@ export function useDraftEditor({
         indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
         indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
         resetDraftAndRedirectToDraftList: () => {
-          grpcClient.drafts.deleteDraft({documentId}).then(() => {
-            replace({key: 'drafts'})
-          })
+          try {
+            grpcClient.drafts
+              .deleteDraft({documentId})
+              .catch((error) => {
+                diagnosis?.append(documentId!, {
+                  key: 'deleteDraft',
+                  value: `Error deleting draft ${documentId}: ${error.message}`,
+                })
+              })
+              .then(() => {
+                diagnosis?.append(documentId!, {
+                  key: 'deleteDraft',
+                  value: `Delete draft ${documentId} success`,
+                })
+              })
+          } catch (error) {
+            diagnosis?.append(documentId!, {
+              key: 'deleteDraft',
+              value: `Error deleting draft ${documentId}: ${error.message}`,
+            })
+          }
+
+          replace({key: 'drafts'})
         },
       },
       actors: {
@@ -583,15 +603,15 @@ export function useDraftEditor({
         parentId: string,
       ) {
         blocks.forEach((block, index) => {
-          if (block.type === 'imagePlaceholder' && block.props.src) {
-            editor.updateBlock(block, {
-              type: 'image',
-              props: {
-                url: block.props.src,
-                name: '',
-              },
-            })
-          }
+          // if (block.type === 'imagePlaceholder' && block.props.src) {
+          //   editor.updateBlock(block, {
+          //     type: 'image',
+          //     props: {
+          //       url: block.props.src,
+          //       name: '',
+          //     },
+          //   })
+          // }
           let embedRef = extractEmbedRefOfLink(block)
           if (embedRef) {
             editor.updateBlock(block, {
