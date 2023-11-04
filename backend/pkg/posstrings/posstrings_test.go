@@ -22,6 +22,67 @@ func TestPos(t *testing.T) {
 	fmt.Println(s2.lastValueSeqs)
 }
 
+func TestManualConformance(t *testing.T) {
+	alice := NewPositionSource("alice")
+	bob := NewPositionSource("bob")
+
+	var (
+		positions []string
+		list      []string
+	)
+
+	push := func(ps *PositionSource, s string) {
+		idx := len(list)
+
+		pos := ps.MustCreateBetween(
+			getValue(positions, idx-1),
+			"",
+		)
+
+		positions = append(positions, pos)
+		list = append(list, s)
+	}
+
+	insert := func(ps *PositionSource, s string, idx int) {
+		pos := ps.MustCreateBetween(getValue(positions, idx-1), getValue(positions, idx))
+		positions = slices.Insert(positions, idx, pos)
+		list = slices.Insert(list, idx, s)
+	}
+
+	push(alice, "h")
+	push(alice, "e")
+	push(alice, "l")
+	push(alice, "o")
+	insert(bob, "l", 2)
+	push(bob, "!")
+	push(alice, "!")
+	push(bob, "!")
+
+	wantList := []string{"h", "e", "l", "l", "o", "!", "!", "!"}
+	wantPos := []string{
+		"alice.B",
+		"alice.D",
+		"alice.D,bob.B",
+		"alice.F",
+		"alice.H",
+		"alice.H,bob.B",
+		"alice.H,bob.B1B",
+		"alice.H,bob.B1B0B",
+	}
+
+	require.Equal(t, wantList, list)
+	require.Equal(t, wantPos, positions)
+
+	require.True(t, slices.IsSorted(positions))
+}
+
+func getValue(slice []string, index int) string {
+	if index >= 0 && index < len(slice) {
+		return slice[index]
+	}
+	return ""
+}
+
 func TestFuzzRandom(t *testing.T) {
 	t.Skip("This test doesn't work properly")
 
