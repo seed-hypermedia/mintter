@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	mintterDomain   = "ln.testnet.mintter.com"
+	lndhubDomain    = "ln.testnet.mintter.com"
 	lnaddressDomain = "ln.testnet.mintter.com"
-	connectionURL   = "https://" + mintterDomain
+	connectionURL   = "https://" + lndhubDomain
 )
 
 func TestCreate(t *testing.T) {
@@ -44,7 +44,7 @@ func TestCreate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
 	identity := future.New[core.Identity]()
-	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly, mintterDomain, lnaddressDomain)
+	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly, lndhubDomain, lnaddressDomain)
 	keypair, err := core.NewKeyPairRandom()
 	require.NoError(t, err)
 	priv, pub, err := crypto.GenerateEd25519Key(nil)
@@ -60,7 +60,7 @@ func TestCreate(t *testing.T) {
 	password := hex.EncodeToString(passwordBytes)
 	require.NoError(t, err)
 	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))
-	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, mintterDomain)
+	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, lndhubDomain)
 
 	makeTestWallet(t, conn, walletsql.Wallet{
 		ID:      lndHubClient.WalletID,

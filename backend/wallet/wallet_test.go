@@ -31,7 +31,12 @@ func TestModifyWallets(t *testing.T) {
 	ctx := context.Background()
 	var err error
 	var defaultWallet walletsql.Wallet
-	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)
+	uri, err := alice.ExportWallet(ctx, "")
+	require.NoError(t, err)
+	mintterWallet, err := alice.InsertWallet(ctx, uri, "default")
+	require.NoError(t, err)
+	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 2*time.Second)
+	require.Equal(t, mintterWallet, defaultWallet)
 	require.Eventually(t, func() bool {
 		conn, release, err := alice.pool.Conn(ctx)
 		require.NoError(t, err)
@@ -54,17 +59,24 @@ func TestModifyWallets(t *testing.T) {
 
 func TestRequestLndHubInvoice(t *testing.T) {
 	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
-
+	var err error
 	alice := makeTestService(t, "alice")
 	bob := makeTestService(t, "bob")
 	ctx := context.Background()
-
+	aliceURI, err := alice.ExportWallet(ctx, "")
+	require.NoError(t, err)
+	_, err = alice.InsertWallet(ctx, aliceURI, "default")
+	require.NoError(t, err)
+	bobURI, err := bob.ExportWallet(ctx, "")
+	require.NoError(t, err)
+	_, err = bob.InsertWallet(ctx, bobURI, "default")
+	require.NoError(t, err)
 	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 5*time.Second, 1*time.Second)
 	cid := bob.net.MustGet().ID().Account().Principal()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
-	var err error
+
 	var payreq string
 	var defaultWallet walletsql.Wallet
 	require.Eventually(t, func() bool { defaultWallet, err = bob.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)

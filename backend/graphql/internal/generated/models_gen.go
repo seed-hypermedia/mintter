@@ -33,7 +33,7 @@ type DeleteWalletPayload struct {
 
 // Input to export a wallet.
 type ExportWalletInput struct {
-	// ID of the wallet to be exported.
+	// ID of the wallet to be exported. If empty, the built-in wallet will be exported.
 	ID string `json:"id"`
 }
 
@@ -174,7 +174,9 @@ type SetDefaultWalletPayload struct {
 type SetupLndHubWalletInput struct {
 	// Local name for this wallet.
 	Name string `json:"name"`
-	// Configuration URL with credentials for an LndHub wallet.
+	// Internal indicates whetehr the wallet to be inserted is the built-in lndhub wallet or an external one.
+	Internal bool `json:"internal"`
+	// Configuration URL with credentials for an LndHub wallet. Only relevant for external wallets
 	URL string `json:"url"`
 }
 

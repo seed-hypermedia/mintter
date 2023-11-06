@@ -58,7 +58,7 @@ type Client struct {
 	db              *sqlitex.Pool
 	WalletID        string
 	pubKey          *future.ReadOnly[string]
-	mintterDomain   string
+	lndhubDomain    string
 	lnaddressDomain string
 }
 
@@ -103,13 +103,13 @@ type Invoice struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity], mintterDomain, lnaddressDomain string) *Client {
+func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity], lndhubDomain, lnaddressDomain string) *Client {
 	f := future.New[string]()
 	client := Client{
 		http:            h,
 		db:              db,
 		pubKey:          f.ReadOnly,
-		mintterDomain:   mintterDomain,
+		lndhubDomain:    lndhubDomain,
 		lnaddressDomain: lnaddressDomain,
 	}
 	go func() {
@@ -134,6 +134,16 @@ func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *
 	}()
 
 	return &client
+}
+
+// GetLndhubDomain gets the lndhub domain set at creation.
+func (c *Client) GetLndhubDomain() string {
+	return c.lndhubDomain
+}
+
+// GetLndaddressDomain gets the lndaddress domain set at creation.
+func (c *Client) GetLndaddressDomain() string {
+	return c.lnaddressDomain
 }
 
 // Create creates an account or changes the nickname on already created one. If the login is a CID, then the password must
