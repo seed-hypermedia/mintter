@@ -7,7 +7,6 @@ import (
 	"mintter/backend/logging"
 	"mintter/backend/pkg/dqb"
 
-	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
@@ -44,27 +43,6 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 			}
 			defer release()
 
-			var (
-				codec     int
-				multihash []byte
-			)
-
-			if err := sqlitex.Exec(conn, qAllPublicBlobs(), func(stmt *sqlite.Stmt) error {
-				stmt.Scan(&codec, &multihash)
-
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case ch <- cid.NewCidV1(uint64(codec), multihash):
-					// Send OK.
-				}
-
-				return nil
-			}); err != nil {
-				log.Error("Failed to read db record", zap.Error(err))
-				return
-			}
-
 			// We want to provide all the entity IDs, so we convert them into raw CIDs,
 			// similar to how libp2p discovery service is doing.
 
@@ -86,7 +64,6 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 					return
 				case ch <- c:
 					log.Debug("Reproviding", zap.String("entity", e.EntitiesEID), zap.String("CID", c.String()))
-					// Send OK.
 				}
 			}
 		}()
