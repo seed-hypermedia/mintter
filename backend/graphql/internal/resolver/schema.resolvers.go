@@ -49,23 +49,6 @@ func (r *meResolver) Lnaddress(ctx context.Context, obj *generated.Me) (*string,
 	return &lnaddress, nil
 }
 
-// SetupLndHubWallet is the resolver for the setupLndHubWallet field.
-func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generated.SetupLndHubWalletInput) (*generated.SetupLndHubWalletPayload, error) {
-	lndhubWallet, err := r.svc.InsertWallet(ctx, input.URL, input.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return &generated.SetupLndHubWalletPayload{
-		Wallet: &generated.LndHubWallet{
-			APIURL:      lndhubWallet.Address,
-			Name:        lndhubWallet.Name,
-			BalanceSats: model.Satoshis(lndhubWallet.Balance),
-			ID:          lndhubWallet.ID,
-		},
-	}, nil
-}
-
 // SetDefaultWallet is the resolver for the setDefaultWallet field.
 func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated.SetDefaultWalletInput) (*generated.SetDefaultWalletPayload, error) {
 	defaultWallet, err := r.svc.SetDefaultWallet(ctx, input.ID)
@@ -116,6 +99,30 @@ func (r *mutationResolver) ExportWallet(ctx context.Context, input generated.Exp
 		return &generated.ExportWalletPayload{}, err
 	}
 	return &generated.ExportWalletPayload{Credentials: uri}, nil
+}
+
+// ImportWallet is the resolver for the importWallet field.
+func (r *mutationResolver) ImportWallet(ctx context.Context, input generated.ImportWalletInput) (*generated.ImportWalletPayload, error) {
+	lndhubWallet, err := r.svc.InsertWallet(ctx, input.URL, input.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultWallet, err := r.svc.GetDefaultWallet(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &generated.ImportWalletPayload{
+		Wallet: &generated.LndHubWallet{
+			APIURL:      lndhubWallet.Address,
+			Name:        lndhubWallet.Name,
+			BalanceSats: model.Satoshis(lndhubWallet.Balance),
+			ID:          lndhubWallet.ID,
+			IsDefault:   defaultWallet.ID == lndhubWallet.ID,
+		},
+	}, nil
+
 }
 
 // RequestInvoice is the resolver for the requestInvoice field.

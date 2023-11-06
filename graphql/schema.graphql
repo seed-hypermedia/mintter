@@ -80,11 +80,6 @@ Top-level mutations.
 """
 type Mutation {
   """
-  Configure an LndHub compatible Lightning Wallet, e.g. BlueWallet.
-  """
-  setupLndHubWallet(input: SetupLndHubWalletInput!): SetupLndHubWalletPayload!
-
-  """
   Set an existing wallet to be the default one. Initially, the first configured wallet
   automatically becomes the default one.
   """
@@ -106,6 +101,11 @@ type Mutation {
   exportWallet(input: ExportWalletInput!): ExportWalletPayload!
 
   """
+  Import wallet to use it in mintter.
+  """
+  importWallet(input: ImportWalletInput!): ImportWalletPayload!
+
+  """
   Request an invoice from a user. The user can be either a Mintter Account ID or a ln address.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
@@ -119,35 +119,6 @@ type Mutation {
   Update lnaddress' nickname.
   """
   updateNickname(input: UpdateNicknameInput!): UpdateNicknamePayload!
-}
-
-"""
-Input to setup LndHub wallet.
-"""
-input SetupLndHubWalletInput {
-  """
-  Local name for this wallet.
-  """
-  name: String!
-
-  """
-  Internal indicates whetehr the wallet to be inserted is the built-in lndhub wallet or an external one.
-  """
-  internal: Boolean!
-  """
-  Configuration URL with credentials for an LndHub wallet. Only relevant for external wallets
-  """
-  url: String!
-}
-
-"""
-Response from setting up LndHub wallet.
-"""
-type SetupLndHubWalletPayload {
-  """
-  The newly created wallet.
-  """
-  wallet: LndHubWallet!
 }
 
 """
@@ -233,6 +204,32 @@ type ExportWalletPayload {
   credentials of the exported wallet.
   """
   credentials: String!
+}
+
+
+"""
+Input to export a wallet.
+"""
+input ImportWalletInput {
+  """
+  Local name for this wallet.
+  """
+  name: String!
+
+  """
+  Credential string to connect to imported wallet service.
+  """
+  url: String!
+}
+
+"""
+Response after exporting a wallet.
+"""
+type ImportWalletPayload {
+  """
+  Stored wallet.
+  """
+  wallet: LightningWallet!
 }
 
 """
