@@ -712,7 +712,11 @@ input SetupLndHubWalletInput {
   name: String!
 
   """
-  Configuration URL with credentials for an LndHub wallet.
+  Internal indicates whetehr the wallet to be inserted is the built-in lndhub wallet or an external one.
+  """
+  internal: Boolean!
+  """
+  Configuration URL with credentials for an LndHub wallet. Only relevant for external wallets
   """
   url: String!
 }
@@ -797,7 +801,7 @@ Input to export a wallet.
 """
 input ExportWalletInput {
   """
-  ID of the wallet to be exported.
+  ID of the wallet to be exported. If empty, the built-in wallet will be exported.
   """
   id: ID!
 }
@@ -5334,7 +5338,7 @@ func (ec *executionContext) unmarshalInputSetupLndHubWalletInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "url"}
+	fieldsInOrder := [...]string{"name", "internal", "url"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5346,6 +5350,14 @@ func (ec *executionContext) unmarshalInputSetupLndHubWalletInput(ctx context.Con
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "internal":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("internal"))
+			it.Internal, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}

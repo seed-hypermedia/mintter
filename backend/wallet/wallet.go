@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -58,93 +57,22 @@ type Credentials struct {
 // it may take time in case node is offline. This is why it's initialized in a gorutine and calls to the service functions
 // will fail until the initial wallet is successfully initialized.
 func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity], mainnet bool) *Service {
-	mintterDomain := "ln.testnet.mintter.com"
+	lndhubDomain := "ln.testnet.mintter.com"
 	lnaddressDomain := "ln.testnet.mintter.com"
 	if mainnet {
-		//mintterDomain is the domain for internal lndhub calls.
-		mintterDomain = "ln.mintter.com"
+		//lndhubDomain is the domain for internal lndhub calls.
+		lndhubDomain = "ln.mintter.com"
 		lnaddressDomain = "ln.mintter.com"
 	}
 	srv := &Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me, mintterDomain, lnaddressDomain),
+			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me, lndhubDomain, lnaddressDomain),
 		},
 		net: net,
 		log: log,
 	}
 	go func() {
-		id, err := me.Await(ctx)
-		if errors.Is(err, context.Canceled) {
-			return
-		}
-		if err != nil {
-			panic(err)
-		}
-
-		login, err := func() (login string, err error) {
-			timer := time.NewTimer(time.Microsecond)
-			defer timer.Stop()
-
-			conn, release, err := db.Conn(ctx)
-			if err != nil {
-				return "", err
-			}
-			defer release()
-
-			for {
-				select {
-				case <-ctx.Done():
-					return "", ctx.Err()
-				case <-timer.C:
-					loginSignature, err := lndhubsql.GetLoginSignature(conn)
-					if err == nil {
-						return loginSignature, nil
-					}
-					if errors.Is(err, lndhubsql.ErrEmptyResult) {
-						timer.Reset(10 * time.Second)
-						continue
-					}
-
-					return "", err
-				}
-			}
-		}()
-		if err != nil {
-			if errors.Is(err, lndhubsql.ErrEmptyResult) || errors.Is(err, context.Canceled) {
-				return
-			}
-			panic(err)
-		}
-
-		credURI, err := EncodeCredentialsURL(Credentials{
-			Domain:     mintterDomain,
-			WalletType: lndhubsql.LndhubGoWalletType,
-			Login:      id.Account().String(),
-			Password:   login,
-		})
-		if err != nil {
-			panic(err)
-		}
-
-		timer := time.NewTimer(time.Microsecond)
-		defer timer.Stop()
-
-	loop:
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-timer.C:
-				if _, err := srv.InsertWallet(ctx, credURI, "Mintter Wallet"); err == nil || errors.Is(err, errAlreadyLndhubgoWallet) {
-					break loop
-				} else {
-					timer.Reset(5 * time.Minute)
-					continue
-				}
-			}
-		}
-
 		n, err := net.Await(ctx)
 		if err != nil {
 			return
@@ -400,41 +328,63 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (ret 
 // to an external app. the uri format is:
 // <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 // lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
+// If the ID is empty, then the builtin wallet is exported.
 func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, error) {
 	conn, release, err := srv.pool.Conn(ctx)
 	if err != nil {
 		return "", err
 	}
 	defer release()
+	var uri string
+	if walletID == "" {
+		loginSignature, err := lndhubsql.GetLoginSignature(conn)
+		if err != nil {
+			return "", err
+		}
+		net, ok := srv.net.Get()
+		if !ok {
+			return "", fmt.Errorf("network is not ready yet")
+		}
 
-	login, err := lndhubsql.GetLogin(conn, walletID)
-	if err != nil {
-		srv.log.Debug(err.Error())
-		return "", err
+		uri, err = EncodeCredentialsURL(Credentials{
+			Domain:     srv.lightningClient.Lndhub.GetLndhubDomain(),
+			WalletType: lndhubsql.LndhubGoWalletType,
+			Login:      net.ID().Account().Principal().String(),
+			Password:   loginSignature,
+		})
+		if err != nil {
+			return "", err
+		}
+	} else {
+		login, err := lndhubsql.GetLogin(conn, walletID)
+		if err != nil {
+			srv.log.Debug(err.Error())
+			return "", err
+		}
+		password, err := lndhubsql.GetPassword(conn, walletID)
+		if err != nil {
+			srv.log.Debug(err.Error())
+			return "", err
+		}
+		url, err := lndhubsql.GetAPIURL(conn, walletID)
+		if err != nil {
+			srv.log.Debug(err.Error())
+			return "", err
+		}
+		splitURL := strings.Split(url, "//")
+		if len(splitURL) != 2 {
+			err = fmt.Errorf("Could not export wallet, unexpected url format [%s]", url)
+			srv.log.Debug(err.Error())
+			return "", err
+		}
+		uri, err = EncodeCredentialsURL(Credentials{
+			Domain:     splitURL[1],
+			WalletType: lndhubsql.LndhubWalletType,
+			Login:      login,
+			Password:   password,
+			ID:         walletID,
+		})
 	}
-	password, err := lndhubsql.GetPassword(conn, walletID)
-	if err != nil {
-		srv.log.Debug(err.Error())
-		return "", err
-	}
-	url, err := lndhubsql.GetAPIURL(conn, walletID)
-	if err != nil {
-		srv.log.Debug(err.Error())
-		return "", err
-	}
-	splitURL := strings.Split(url, "//")
-	if len(splitURL) != 2 {
-		err = fmt.Errorf("Could not export wallet, unexpected url format [%s]", url)
-		srv.log.Debug(err.Error())
-		return "", err
-	}
-	uri, err := EncodeCredentialsURL(Credentials{
-		Domain:     splitURL[1],
-		WalletType: lndhubsql.LndhubWalletType,
-		Login:      login,
-		Password:   password,
-		ID:         walletID,
-	})
 	if err != nil {
 		srv.log.Debug("couldn't encode uri: " + err.Error())
 		return "", err

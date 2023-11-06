@@ -131,7 +131,11 @@ input SetupLndHubWalletInput {
   name: String!
 
   """
-  Configuration URL with credentials for an LndHub wallet.
+  Internal indicates whetehr the wallet to be inserted is the built-in lndhub wallet or an external one.
+  """
+  internal: Boolean!
+  """
+  Configuration URL with credentials for an LndHub wallet. Only relevant for external wallets
   """
   url: String!
 }
@@ -216,7 +220,7 @@ Input to export a wallet.
 """
 input ExportWalletInput {
   """
-  ID of the wallet to be exported.
+  ID of the wallet to be exported. If empty, the built-in wallet will be exported.
   """
   id: ID!
 }
