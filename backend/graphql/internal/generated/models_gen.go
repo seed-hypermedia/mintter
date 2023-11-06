@@ -43,6 +43,20 @@ type ExportWalletPayload struct {
 	Credentials string `json:"credentials"`
 }
 
+// Input to export a wallet.
+type ImportWalletInput struct {
+	// Local name for this wallet.
+	Name string `json:"name"`
+	// Credential string to connect to imported wallet service.
+	URL string `json:"url"`
+}
+
+// Response after exporting a wallet.
+type ImportWalletPayload struct {
+	// Stored wallet.
+	Wallet LightningWallet `json:"wallet"`
+}
+
 // Lightning Invoices
 type Invoice struct {
 	// Preimage hash of the payment.
@@ -168,22 +182,6 @@ type SetDefaultWalletInput struct {
 type SetDefaultWalletPayload struct {
 	// The new default wallet.
 	Wallet LightningWallet `json:"wallet"`
-}
-
-// Input to setup LndHub wallet.
-type SetupLndHubWalletInput struct {
-	// Local name for this wallet.
-	Name string `json:"name"`
-	// Internal indicates whetehr the wallet to be inserted is the built-in lndhub wallet or an external one.
-	Internal bool `json:"internal"`
-	// Configuration URL with credentials for an LndHub wallet. Only relevant for external wallets
-	URL string `json:"url"`
-}
-
-// Response from setting up LndHub wallet.
-type SetupLndHubWalletPayload struct {
-	// The newly created wallet.
-	Wallet *LndHubWallet `json:"wallet"`
 }
 
 // Input to update lnaddress' nickname.
