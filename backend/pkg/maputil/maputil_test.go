@@ -32,3 +32,9 @@ func TestDelete(t *testing.T) {
 		"foo":  map[string]any{},
 	}, m)
 }
+
+func TestDeleteMissing(t *testing.T) {
+	m := map[string]any{}
+	Delete(m, []string{"foo", "bar"})
+	require.Len(t, m, 0, "delete must not created nested maps")
+}

@@ -341,6 +341,53 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	require.Equal(t, hyper.SortCIDs([]cid.Cid{c2.CID, c3.CID}), draft.Decoded.(hyper.Change).Deps, "draft must have concurrent changes as deps")
 }
 
+func TestBug_UndeletableBlock_Model(t *testing.T) {
+	t.Parallel()
+
+	alice := coretest.NewTester("alice")
+	kd := must.Do2(hyper.NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now())).Blob()
+
+	var c1 hyper.Blob
+	{
+		entity := hyper.NewEntity("hm://d/foo")
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.SetCreateTime(time.Now()))
+		must.Do(model.SetTitle("Hello World!"))
+		must.Do(model.SetAuthor(alice.Account.Principal()))
+		must.Do(model.MoveBlock("b1", "", ""))
+		must.Do(model.ReplaceBlock(&documents.Block{Id: "b1", Type: "paragraph"}))
+		model.nextHLC = entity.NextTimestamp()
+		c1 = must.Do2(model.Change())
+	}
+
+	var c2 hyper.Blob
+	{
+		entity := hyper.NewEntity("hm://d/foo")
+		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
+		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model.nextHLC = entity.NextTimestamp()
+		must.Do(model.DeleteBlock("b1"))
+		c2 = must.Do2(model.Change())
+	}
+
+	want := map[string]any{
+		"moves": map[string]any{
+			"#list": map[string]any{
+				"#ins": []any{
+					map[string]any{
+						"b": "b1",
+						"p": TrashNodeID,
+						"l": "",
+					},
+				},
+			},
+		},
+	}
+
+	require.Equal(t, want, c2.Decoded.(hyper.Change).Patch, "change must have a move to trash")
+}
+
 func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.KeyPair) *docModel {
 	clock := hlc.NewClock()
 	ts := clock.Now()

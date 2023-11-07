@@ -14,12 +14,14 @@ func Set(v map[string]any, path []string, value any) {
 	v[path[len(path)-1]] = value
 }
 
+// Delete value from a nested map by path.
+// It can panic if some of the values in the path are not maps.
 func Delete(v map[string]any, path []string) {
 	for i := 0; i < len(path)-1; i++ {
 		key := path[i]
 
 		if _, ok := v[key]; !ok {
-			v[key] = make(map[string]any)
+			return
 		}
 
 		v = v[key].(map[string]any)

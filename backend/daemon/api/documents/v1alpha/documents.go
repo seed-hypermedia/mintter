@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
@@ -106,29 +105,15 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: in.ExistingDocumentId})
 	}
 
-	clock := hlc.NewClock()
-	ts := clock.Now()
-	now := ts.Time().Unix()
-
-	docid, nonce := hyper.NewUnforgeableID("hm://d/", me.Account().Principal(), nil, now)
-	eid := hyper.EntityID(docid)
-
-	entity := hyper.NewEntityWithClock(eid, clock)
-
 	del, err := api.getDelegation(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	dm, err := newDocModel(entity, me.DeviceKey(), del)
+	dm, err := createDocument(me, del)
 	if err != nil {
 		return nil, err
 	}
-
-	dm.nextHLC = ts
-	dm.patch["nonce"] = nonce
-	dm.patch["createTime"] = int(now)
-	dm.patch["owner"] = []byte(me.Account().Principal())
 
 	_, err = dm.Commit(ctx, api.blobs)
 	if err != nil {
@@ -136,7 +121,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}
 
 	return api.GetDraft(ctx, &documents.GetDraftRequest{
-		DocumentId: docid,
+		DocumentId: string(dm.e.ID()),
 	})
 }
 
@@ -287,7 +272,20 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 	oid, err := eid.CID()
 	if err != nil {
-		return nil, fmt.Errorf("failed to conver document to CID: %w", err)
+		return nil, fmt.Errorf("failed to convert document to CID: %w", err)
+	}
+
+	ch, err := api.blobs.GetDraft(ctx, eid)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ch.Patch) == 0 {
+		return nil, fmt.Errorf("nothing to publish: draft didn't change since the last publication: delete this draft or make changes to the document")
+	}
+
+	if _, ok := ch.Patch["isDraft"]; ok {
+		return nil, fmt.Errorf("BUG: nothing to publish: isDraft field wasn't removed")
 	}
 
 	c, err := api.blobs.PublishDraft(ctx, eid)
