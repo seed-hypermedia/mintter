@@ -12,13 +12,19 @@ export function getGroupView(input: string | string[] | undefined): GroupView {
 export async function prefetchGroup(
   helpers: ServerHelpers,
   groupId: string,
-  groupVersion: string,
+  groupVersion?: string,
 ) {
   if (!groupId) return null
-  const groupRecord = await helpers.group.get.fetch({
+
+  console.log('prefetching group', {
     groupId,
     version: groupVersion,
   })
+  const groupRecord = await helpers.group.get.fetch({
+    groupId,
+    version: groupVersion || '',
+  })
+  if (!groupRecord.group) return null
   const members = await helpers.group.listMembers.fetch({
     groupId,
     version: groupRecord.group?.version,
@@ -30,7 +36,10 @@ export async function prefetchGroup(
       }),
     ),
   )
-
+  console.log('prefetching group.listContent', {
+    groupId,
+    version: groupRecord.group?.version,
+  })
   const content = await helpers.group.listContent.fetch({
     groupId,
     version: groupRecord.group?.version,
@@ -45,8 +54,9 @@ export async function prefetchGroupContent(
   pathName?: string,
 ) {
   const contentPath = !pathName || pathName === '/' ? '/' : pathName
-  const {group, content} = prefetched
-  const contentItem = content.find((item) => item?.pathName === contentPath)
+  const group = prefetched?.group
+  const content = prefetched?.content
+  const contentItem = content?.find((item) => item?.pathName === contentPath)
   if (!contentItem?.docId || contentItem?.docId.type !== 'd') return null
   const publication = await helpers.publication.get.prefetch({
     documentId: createHmId('d', contentItem.docId.eid),

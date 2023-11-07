@@ -46,7 +46,6 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
                 display: 'flex',
                 alignItems: 'center',
               }} // for some reason this is needed instead of tamagui style
-              prefetch
             >
               <SizableText fontWeight="$10" size="$6">
                 {siteTitle}

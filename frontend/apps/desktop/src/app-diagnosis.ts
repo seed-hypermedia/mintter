@@ -36,6 +36,7 @@ export const diagnosisApi = t.router({
       const id = unpackHmId(input.draftId)
       if (!id) throw new Error('Invalid draftId')
       const draftPath = draftFilePath(id.eid)
+      // @ts-ignore
       const logExist: boolean = await exists(draftPath)
       if (!logExist) {
         await mkdirp(dirname(draftPath))

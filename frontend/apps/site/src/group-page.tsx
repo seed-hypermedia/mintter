@@ -26,29 +26,47 @@ import {AccountAvatarLink} from './account-row'
 import Footer from './footer'
 import {GroupMetadata} from './group-metadata'
 import {BasicOGMeta, OGImageMeta} from './head'
-import {useGroupContentUrl} from './publication-page'
+import {useGroupContentUrl} from './doc-page'
 import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
 
-export type GroupPageProps = {}
-
-export function GroupPage({}: GroupPageProps) {
+export function GroupPage() {
   const router = useRouter()
   const view = getGroupView(router.query.view)
-  const version = router.query.v ? String(router.query.v) : ''
   const siteInfo = trpc.siteInfo.get.useQuery()
-  const groupEid = router.query.groupEid
-    ? String(router.query.groupEid)
-    : siteInfo.data?.groupEid || ''
+  const queryVersion = (router.query?.versionId as string) || ''
+  const queryGroupEid = (router.query?.groupEid as string) || ''
+  const groupEid = queryGroupEid || siteInfo.data?.groupEid || ''
+  const requestedVersion = queryGroupEid
+    ? queryVersion
+    : queryVersion || siteInfo.data?.version
   const groupId = createHmId('g', groupEid)
   const group = trpc.group.get.useQuery({
     groupId,
-    version,
+    version: requestedVersion,
   })
-  const groupContent = trpc.group.listContent.useQuery({
+
+  const displayVersion = group.data?.group?.version
+  const enabledContentQuery = typeof displayVersion === 'string'
+  const groupContent = trpc.group.listContent.useQuery(
+    {
+      groupId,
+      version: displayVersion,
+    },
+    {
+      // disable content query if group is not yet loaded
+      enabled: enabledContentQuery,
+    },
+  )
+  console.log('GroupPage', {
+    displayVersion,
+    requestedVersion,
     groupId,
-    version: group?.data?.group?.version || '',
+    q: router.query,
+    content: groupContent.data,
+    enabledContent: enabledContentQuery,
+    group: group.data,
   })
 
   const loadedGroup = group.data?.group
@@ -63,7 +81,7 @@ export function GroupPage({}: GroupPageProps) {
                 <GroupContentItem
                   key={contentItem?.pathName}
                   item={contentItem}
-                  groupVersion={version}
+                  groupVersion={displayVersion}
                   group={loadedGroup}
                 />
               )
@@ -97,10 +115,9 @@ export function GroupPage({}: GroupPageProps) {
   } else {
     mainView = listView
   }
-  const groupVersion = loadedGroup?.version
   const ogImageUrl =
-    groupEid && groupVersion
-      ? `/api/content-image/g/${groupEid}/${groupVersion}/media.png`
+    groupEid && displayVersion
+      ? `/api/content-image/g/${groupEid}/${displayVersion}/media.png`
       : undefined
   return (
     <YStack flex={1}>

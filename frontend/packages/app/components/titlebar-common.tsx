@@ -616,6 +616,7 @@ export function EditDocActions({
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
+    console.log('handleEdit', docId, pubContext)
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
