@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const {withTamagui} = require('@tamagui/next-plugin')
 const {join} = require('path')
-const {withSentryConfig} = require('@sentry/nextjs')
+// const {withSentryConfig} = require('@sentry/nextjs')
 // const withBundleAnalyzer = require('@next/bundle-analyzer')
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
@@ -94,6 +94,7 @@ module.exports = function () {
         skipDefaultConversion: true,
       },
     },
+    poweredByHeader: false,
     experimental: {
       // optimizeCss: true,
       esmExternals: true,
@@ -101,6 +102,15 @@ module.exports = function () {
       legacyBrowsers: false,
       outputFileTracingRoot: join(__dirname, '../../../'),
     },
+    headers: () => [
+      {
+        source: '/(.*)',
+        headers: [
+          {key: 'Access-Control-Allow-Origin', value: '*'},
+          {key: 'Access-Control-Allow-Methods', value: 'GET'},
+        ],
+      },
+    ],
   }
 
   for (const plugin of plugins) {
@@ -119,34 +129,47 @@ module.exports = function () {
 
 // Injected content via Sentry wizard below
 
-module.exports = withSentryConfig(
-  module.exports,
-  {
-    // For all available options, see:
-    // https://github.com/getsentry/sentry-webpack-plugin#options
+// module.exports = {
+//   //   // For all available options, see:
+//   //   // https://github.com/getsentry/sentry-webpack-plugin#options
 
-    // Suppresses source map uploading logs during build
-    silent: true,
-    org: 'mintter',
-    project: 'sites',
-  },
-  {
-    // For all available options, see:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+//   //   // Suppresses source map uploading logs during build
+//   //   silent: true,
+//   //   org: 'mintter',
+//   //   project: 'sites',
+//   // }),
+//   // {
 
-    // Upload a larger set of source maps for prettier stack traces (increases build time)
-    widenClientFileUpload: true,
+//   // For all available options, see:
+//   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-    // Transpiles SDK to be compatible with IE11 (increases bundle size)
-    transpileClientSDK: true,
+//   // Upload a larger set of source maps for prettier stack traces (increases build time)
+//   widenClientFileUpload: true,
 
-    // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
-    tunnelRoute: '/monitoring',
+//   // Transpiles SDK to be compatible with IE11 (increases bundle size)
+//   transpileClientSDK: true,
 
-    // Hides source maps from generated client bundles
-    hideSourceMaps: true,
+//   // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
+//   tunnelRoute: '/monitoring',
 
-    // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true,
-  },
-)
+//   // Hides source maps from generated client bundles
+//   hideSourceMaps: true,
+
+//   // Automatically tree-shake Sentry logger statements to reduce bundle size
+//   disableLogger: true,
+
+//   // UNDO BEFORE CIMMTITING
+//   eslint: {
+//     // Warning: This allows production builds to successfully complete even if
+//     // your project has ESLint errors.
+//     ignoreDuringBuilds: true,
+//   },
+//   // UNDO BEFORE CIMMTITING
+//   typescript: {
+//     // !! WARN !!
+//     // Dangerously allow production builds to successfully complete even if
+//     // your project has type errors.
+//     // !! WARN !!
+//     // ignoreBuildErrors: true,
+//   },
+// }

@@ -401,7 +401,7 @@ function CitationPreview({citationLink}: {citationLink: HMLink}) {
   )
   if (!destUrl) return null
   return (
-    <NextLink href={destUrl} style={{textDecoration: 'none'}} prefetch>
+    <NextLink href={destUrl} style={{textDecoration: 'none'}}>
       <SizableText hoverStyle={{backgroundColor: '$backgroundColor'}}>
         {sourcePub.data?.publication?.document?.title}
       </SizableText>

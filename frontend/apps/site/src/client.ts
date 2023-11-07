@@ -71,8 +71,6 @@ console.log('⚙️ Client Config ', {
   IS_CLIENT,
 })
 
-console.log('Creating transport', grpcBaseURL)
-
 export const transport = createGrpcWebTransport({
   baseUrl: grpcBaseURL,
   httpVersion: '1.1',

@@ -126,7 +126,7 @@ export function EmbedPublication(props: StaticEmbedProps) {
       enabled: !!docId,
     },
   )
-
+  console.log('pubQuery', pub)
   const pubData = pub.data
   let embedBlocks = useMemo(() => {
     const selectedBlock =

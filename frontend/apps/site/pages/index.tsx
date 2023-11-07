@@ -1,15 +1,14 @@
 import {GetServerSideProps} from 'next'
 import {EveryPageProps} from './_app'
-import GroupPage from './g/[groupEid]'
 import {getPageProps, serverHelpers} from 'server/ssr-helpers'
 import {prefetchGroup} from 'server/group'
 import {trpc} from 'src/trpc'
 import {ErrorPage} from 'src/error-page'
-import {GroupPageProps} from 'src/group-page'
+import {GroupPage, GroupPageProps} from 'src/group-page'
 
 export default function HomePage({}: GroupPageProps) {
   const siteInfo = trpc.siteInfo.get.useQuery()
-
+  return null
   if (siteInfo.data?.groupId) {
     return <GroupPage />
   }

@@ -18,14 +18,14 @@ export async function getPageProps<AdditionalProps = {}>(
   context: any,
   props: AdditionalProps,
 ): Promise<AdditionalProps & EveryPageProps> {
-  setAllowAnyHostGetCORS(context.res)
+  // setAllowAnyHostGetCORS(context.res)
 
   const siteInfo = await prefetchSiteInfo(helpers)
   if (siteInfo?.p2pAddresses) {
-    context.res.setHeader(
-      'x-mintter-site-p2p-addresses',
-      siteInfo.p2pAddresses.join(','),
-    )
+    // context.res.setHeader(
+    //   'x-mintter-site-p2p-addresses',
+    //   siteInfo.p2pAddresses.join(','),
+    // )
   }
   return {
     ...props,

@@ -1,7 +1,7 @@
 import {getGroupDocStaticProps, siteGetStaticPaths} from 'server/static-props'
-import {GroupPage} from 'src/group-page'
+import {GroupDocPage} from 'src/group-doc-page'
 
-export default GroupPage
+export default GroupDocPage
 
 export const getStaticPaths = siteGetStaticPaths
 

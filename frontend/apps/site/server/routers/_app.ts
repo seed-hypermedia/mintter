@@ -46,6 +46,7 @@ const publicationRouter = router({
       }),
     )
     .query(async ({input}) => {
+      console.log('INTERNAL publication.get', input)
       if (!input.documentId) {
         return {publication: null}
       }
@@ -55,7 +56,7 @@ const publicationRouter = router({
           version: input.versionId || '',
         })
         .catch((e) => undefined)
-
+      console.log('resolved', resolvedPub)
       if (!resolvedPub) {
         return {publication: null}
       }
