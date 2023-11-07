@@ -5,6 +5,7 @@ import {
   Publication,
   PublicationContent,
   PublicationHeading,
+  UnpackedDocId,
   UnpackedHypermediaId,
   createHmDocLink,
   groupDocUrl,
@@ -240,7 +241,7 @@ type ContentItem = {
   publication: null | HMPublication
   pathName: string
   version: string
-  docId: string
+  docId: UnpackedDocId
 }
 
 function GroupSidebarContent({
@@ -268,7 +269,7 @@ function GroupSidebarContent({
         if (!item || !groupId?.eid) return null
         return (
           <GroupSidebarContentItem
-            key={item.docId}
+            key={item.pathName}
             item={item}
             groupId={groupId}
             groupVersion={group?.version}
