@@ -32,6 +32,33 @@ type docModel struct {
 	done       bool
 	nextHLC    hlc.Time
 	origins    map[string]cid.Cid // map of abbreviated origin hashes to actual cids; workaround, should not be necessary.
+	// Index for blocks that we've created in this change.
+	createdBlocks map[string]struct{}
+	// Blocks that we've deleted in this change.
+	deletedBlocks map[string]struct{}
+}
+
+func createDocument(owner core.Identity, delegation cid.Cid) (*docModel, error) {
+	clock := hlc.NewClock()
+	ts := clock.Now()
+	now := ts.Time().Unix()
+
+	docid, nonce := hyper.NewUnforgeableID("hm://d/", owner.Account().Principal(), nil, now)
+	eid := hyper.EntityID(docid)
+
+	entity := hyper.NewEntityWithClock(eid, clock)
+
+	dm, err := newDocModel(entity, owner.DeviceKey(), delegation)
+	if err != nil {
+		return nil, err
+	}
+
+	dm.nextHLC = ts
+	dm.patch["nonce"] = nonce
+	dm.patch["createTime"] = int(now)
+	dm.patch["owner"] = []byte(owner.Account().Principal())
+
+	return dm, nil
 }
 
 func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*docModel, error) {
@@ -40,12 +67,14 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 	}
 
 	dm := &docModel{
-		e:          e,
-		signer:     signer,
-		delegation: delegation,
-		tree:       NewTree(),
-		patch:      map[string]any{},
-		origins:    make(map[string]cid.Cid),
+		e:             e,
+		signer:        signer,
+		delegation:    delegation,
+		tree:          NewTree(),
+		patch:         map[string]any{},
+		origins:       make(map[string]cid.Cid),
+		createdBlocks: make(map[string]struct{}),
+		deletedBlocks: make(map[string]struct{}),
 	}
 
 	for _, c := range e.AppliedChanges() {
@@ -168,14 +197,23 @@ func (dm *docModel) SetTitle(title string) error {
 }
 
 func (dm *docModel) DeleteBlock(block string) error {
-	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
-	return err
+	deleted, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
+	if err != nil {
+		return err
+	}
+
+	if deleted {
+		dm.deletedBlocks[block] = struct{}{}
+	}
+
+	return nil
 }
 
 func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 	if blk.Id == "" {
 		return fmt.Errorf("blocks must have ID")
 	}
+
 	v, err := blockToMap(blk)
 	if err != nil {
 		return err
@@ -187,8 +225,23 @@ func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 }
 
 func (dm *docModel) MoveBlock(block, parent, left string) error {
-	_, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, parent, left)
-	return err
+	if parent == TrashNodeID {
+		panic("BUG: use DeleteBlock to delete a block")
+	}
+
+	firstMove := dm.tree.nodes[block] == nil
+	moved, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, parent, left)
+	if err != nil {
+		return err
+	}
+
+	if moved && firstMove {
+		dm.createdBlocks[block] = struct{}{}
+	}
+
+	delete(dm.deletedBlocks, block)
+
+	return nil
 }
 
 func (dm *docModel) Change() (hb hyper.Blob, err error) {
@@ -274,16 +327,9 @@ func (dm *docModel) cleanupPatch() {
 
 	// Handle delete turnaround. If we created the block and then removed it
 	// in the same change, then we don't want any trace of them.
-
-	for next := dm.tree.nodes[TrashNodeID].children.Front().Next(); next != nil; next = next.Next() {
-		blk, _, _ := strings.Cut(next.Value.(ShadowPosition).shadowID, "@")
-		if _, ok := touched[blk]; !ok {
-			continue
-		}
-
-		left := dm.tree.nodes[blk].pos.Prev().Value.(ShadowPosition)
-		initialLeft := dm.tree.initialLefts[blk]
-		if left.parent == TrashNodeID && initialLeft != nil && initialLeft.Value.(ShadowPosition).opid.Origin == "" {
+	for blk := range dm.deletedBlocks {
+		_, mustIgnore := dm.createdBlocks[blk]
+		if mustIgnore {
 			maputil.Delete(dm.patch, []string{"blocks", blk})
 			continue
 		}
@@ -295,10 +341,18 @@ func (dm *docModel) cleanupPatch() {
 		})
 	}
 
+	// Remove the blocks key from the patch if we end up with no blocks after cleanup.
+	if blocks, ok := dm.patch["blocks"].(map[string]any); ok {
+		if len(blocks) == 0 {
+			delete(dm.patch, "blocks")
+		}
+	}
+
 	if len(moves) == 0 {
 		return
 	}
 
+	// If we have some moves after cleaning up, add them to the patch.
 	dm.patch["moves"] = map[string]any{
 		"#list": map[string]any{
 			"#ins": moves,

@@ -9,6 +9,60 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func TestBug_UnchangedPublish(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b1", Type: "paragraph", Text: "Hello world!"}}},
+	})
+
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	require.NoError(t, err)
+
+	pub, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
+	require.Error(t, err, "publishing a draft with unchanged content must fail")
+	require.Nil(t, pub)
+}
+
+func TestBug_UndeletableBlock(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b1", Type: "paragraph", Text: "Hello world!"}}},
+	})
+
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	require.NoError(t, err)
+
+	draft2 = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
+	})
+
+	require.Len(t, draft2.Children, 0, "must have no children")
+}
+
 func TestBug_DraftsInTrustedPublicationList(t *testing.T) {
 	t.Parallel()
 

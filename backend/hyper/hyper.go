@@ -185,6 +185,28 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 	return out, nil
 }
 
+func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return ch, err
+	}
+	defer release()
+
+	res, err := hypersql.DraftsGet(conn, string(eid))
+	if err != nil {
+		return ch, err
+	}
+	if res.DraftsViewBlobID == 0 {
+		return ch, fmt.Errorf("no draft for entity %s", eid)
+	}
+
+	if err := bs.LoadBlob(ctx, cid.NewCidV1(uint64(res.DraftsViewCodec), res.DraftsViewMultihash), &ch); err != nil {
+		return ch, err
+	}
+
+	return ch, nil
+}
+
 func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {

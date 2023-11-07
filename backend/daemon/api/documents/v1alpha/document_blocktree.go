@@ -204,7 +204,7 @@ func (t *Tree) MoveLocal(time int64, idx int, block, parent, leftID string) (mov
 	id := NewOpID(time, "", idx)
 
 	if !t.maxOp.Less(id) {
-		return false, fmt.Errorf("out of order local move operation")
+		return false, fmt.Errorf("out of order local move operation: current time = %s, incoming time = %s", t.maxOp, id)
 	}
 	defer func() {
 		if moved {
