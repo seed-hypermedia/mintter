@@ -55,7 +55,7 @@ export default function CommitDraftButton() {
           documentId: draftId,
           versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
           pubContext: pubContext,
-          showFirstPublicationMessage: isFirstPublish,
+          // showFirstPublicationMessage: isFirstPublish, // disabled until gateway publish works again for fresh installations
         })
       }
       toast.success('Document Committed.')
