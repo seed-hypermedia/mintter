@@ -145,8 +145,10 @@ export function MenuItem({
   icon,
   iconAfter,
   children,
+  indented,
+  bold,
   ...props
-}: ListItemProps) {
+}: ListItemProps & {indented?: boolean; bold?: boolean}) {
   return (
     <ListItem
       hoverTheme
@@ -154,6 +156,7 @@ export function MenuItem({
       focusTheme
       paddingVertical="$2"
       paddingHorizontal="$4"
+      paddingLeft={indented ? '$8' : '$4'}
       textAlign="left"
       outlineColor="transparent"
       space="$2"
@@ -163,8 +166,9 @@ export function MenuItem({
       title={
         title ? (
           <SizableText
-            fontSize="$2"
+            fontSize="$3"
             cursor={disabled ? 'not-allowed' : 'pointer'}
+            fontWeight={bold ? 'bold' : undefined}
             userSelect="none"
           >
             {title}

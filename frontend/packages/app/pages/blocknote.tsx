@@ -4,7 +4,7 @@ import {
   HMBlockSchema,
 } from '@mintter/editor'
 import {BlockNoteView, useBlockNote} from '@mintter/editor'
-import {MainWrapper, YStack} from '@mintter/ui'
+import {YStack} from '@mintter/ui'
 
 export default function BlockNoteDemo() {
   // Creates a new editor instance.
@@ -21,11 +21,9 @@ export default function BlockNoteDemo() {
     })
 
   return (
-    <MainWrapper>
-      <YStack className="editor" maxWidth={600}>
-        <h1>BlockNote demo</h1>
-        <BlockNoteView editor={editor} />
-      </YStack>
-    </MainWrapper>
+    <YStack className="editor" maxWidth={600}>
+      <h1>BlockNote demo</h1>
+      <BlockNoteView editor={editor} />
+    </YStack>
   )
 }

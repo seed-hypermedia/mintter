@@ -1,20 +1,21 @@
-import {Role, unpackDocId, unpackHmId} from '@mintter/shared'
+import {
+  Group,
+  ListDocumentGroupsResponse,
+  ListGroupsResponse,
+  Role,
+  unpackDocId,
+  unpackHmId,
+} from '@mintter/shared'
 import {
   UseMutationOptions,
   UseQueryOptions,
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import {
-  Group,
-  ListDocumentGroupsResponse,
-  ListGroupsResponse,
-} from '@mintter/shared'
+import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
 import {queryKeys} from './query-keys'
-import {useMemo} from 'react'
-import {FieldValues, useController} from 'react-hook-form'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()

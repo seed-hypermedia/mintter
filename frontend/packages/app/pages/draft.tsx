@@ -14,7 +14,6 @@ import {
 import {
   Button,
   Input,
-  MainWrapper,
   SizableText,
   Theme,
   XStack,
@@ -31,6 +30,7 @@ import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
+import {MainWrapper} from '../components/main-wrapper'
 
 export default function DraftPage() {
   let route = useNavRoute()

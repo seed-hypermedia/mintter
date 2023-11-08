@@ -1,14 +1,14 @@
 import {XStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {WindowsLinuxTitleBar} from './titlebar-windows-linux'
-import {NavMenu, NavigationButtons} from './titlebar-common'
+import {NavMenuButton, NavigationButtons} from './titlebar-common'
 
 export default function ErrorBarWindowsLinux() {
   return (
     <WindowsLinuxTitleBar
       left={
         <XStack paddingHorizontal={0} paddingVertical="$2" space="$2">
-          <NavMenu />
+          <NavMenuButton />
           <NavigationButtons />
         </XStack>
       }

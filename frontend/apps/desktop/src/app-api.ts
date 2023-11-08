@@ -1,7 +1,7 @@
 import type {NavRoute} from '@mintter/app/utils/navigation'
 import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
-import {BACKEND_FILE_UPLOAD_URL, BACKEND_HTTP_PORT} from '@mintter/shared'
+import {BACKEND_HTTP_PORT} from '@mintter/shared'
 import {observable} from '@trpc/server/observable'
 import {
   BrowserWindow,
@@ -14,8 +14,12 @@ import {
 import {createIPCHandler} from 'electron-trpc/main'
 import {writeFile} from 'fs-extra'
 import z from 'zod'
+import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
+import {pinsApi} from './app-pins'
 import {t} from './app-trpc'
+import {uploadFile, webImportingApi} from './app-web-importing'
+import {welcomingApi} from './app-welcoming'
 import {
   createAppWindow,
   ensureFocusedWindowVisible,
@@ -24,9 +28,6 @@ import {
   getWindowsState,
 } from './app-windows'
 import {log, logFilePath} from './logger'
-import {diagnosisApi} from './app-diagnosis'
-import {welcomingApi} from './app-welcoming'
-import {uploadFile, webImportingApi} from './app-web-importing'
 
 const invalidationHandlers = new Set<(queryKey: any) => void>()
 
@@ -107,6 +108,7 @@ export const router = t.router({
   diagnosis: diagnosisApi,
   welcoming: welcomingApi,
   webImporting: webImportingApi,
+  pins: pinsApi,
   createAppWindow: t.procedure
     .input(
       z.object({

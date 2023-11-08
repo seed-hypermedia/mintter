@@ -539,7 +539,13 @@ export function BlockContentHeading({block, depth}: BlockContentProps) {
   )
 }
 
-export function PublicationHeading({children}: {children?: string}) {
+export function PublicationHeading({
+  children,
+  right,
+}: {
+  children?: string
+  right?: React.ReactNode
+}) {
   const {textUnit, debug, layoutUnit} = usePublicationContentContext()
   let headingTextStyles = useHeadingTextStyles(1, textUnit)
   let headingMarginStyles = useHeadingMarginStyles(1, layoutUnit)
@@ -548,6 +554,7 @@ export function PublicationHeading({children}: {children?: string}) {
     <YStack
       paddingHorizontal={layoutUnit / 2}
       $gtMd={{paddingHorizontal: layoutUnit}}
+      group="header"
     >
       <YStack
         padding={layoutUnit / 3}
@@ -557,17 +564,20 @@ export function PublicationHeading({children}: {children?: string}) {
         borderBottomWidth={1}
         {...headingMarginStyles}
       >
-        <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
-          <Text
-            className="content-inline"
-            fontFamily={'$body'}
-            tag="h1"
-            {...headingTextStyles}
-            maxWidth="95%"
-          >
-            {children || 'Untitled document'}
-          </Text>
-        </YStack>
+        <XStack>
+          <YStack {...blockStyles} {...debugStyles(debug, 'blue')}>
+            <Text
+              className="content-inline"
+              fontFamily={'$body'}
+              tag="h1"
+              {...headingTextStyles}
+              maxWidth="95%"
+            >
+              {children || 'Untitled document'}
+            </Text>
+          </YStack>
+          {right}
+        </XStack>
       </YStack>
     </YStack>
   )

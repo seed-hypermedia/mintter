@@ -36,8 +36,11 @@ import {
   XStack,
   YGroup,
   YStack,
+  useStream,
 } from '@mintter/ui'
 import {
+  ArrowLeftFromLine,
+  ArrowRightFromLine,
   Bookmark,
   Contact,
   Copy,
@@ -66,6 +69,7 @@ import {CloneGroupDialog} from './clone-group'
 import {useEntityTimeline} from '../models/changes'
 import {useAppContext} from '../app-context'
 import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useSidebarContext} from '../src/sidebar-context'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -640,37 +644,31 @@ function NavMenuContentUnpure({
     </Popover.Content>
   )
 }
-const NavMenuContent = memo(NavMenuContentUnpure)
 
-export function NavMenu() {
-  const popoverState = usePopoverState()
-
-  const navigate = useNavigate()
-  const spawn = useNavigate('spawn')
+export function NavMenuButton() {
+  const ctx = useSidebarContext()
+  const isLocked = useStream(ctx.isLocked)
+  const isHoverVisible = useStream(ctx.isHoverVisible)
+  let icon = Menu
+  let tooltip = 'Lock Sidebar Open'
+  if (isLocked) {
+    icon = ArrowLeftFromLine
+    tooltip = 'Close Sidebar'
+  }
+  if (!isLocked && isHoverVisible) {
+    icon = ArrowRightFromLine
+  }
   return (
     <XStack position="relative" zIndex={1000} className="no-window-drag">
-      <Popover {...popoverState} placement="bottom-start">
-        <Popover.Trigger asChild>
-          <Button size="$2" icon={Menu} chromeless />
-        </Popover.Trigger>
-
-        <NavMenuContent
-          onRoute={(route) => {
-            popoverState.onOpenChange(false)
-            setTimeout(() => {
-              // this timeout is gross. we want the menu to close and not hang open during the transition. I tried React.useTransition but it seems to act too slowly
-              if (route.key === 'settings') {
-                spawn(route)
-              } else {
-                navigate(route)
-              }
-            }, 10)
-          }}
-          onClose={() => {
-            popoverState.onOpenChange(false)
-          }}
-        />
-      </Popover>
+      <Button
+        size="$2"
+        icon={icon}
+        onMouseEnter={ctx.onMenuHover}
+        onMouseLeave={ctx.onMenuHoverLeave}
+        onPress={() => {
+          ctx.onToggleMenuLock()
+        }}
+      />
     </XStack>
   )
 }

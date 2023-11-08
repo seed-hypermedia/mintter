@@ -6,19 +6,13 @@ import {EmptyList} from '@mintter/app/components/empty-list'
 import Footer from '@mintter/app/components/footer'
 import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {Document} from '@mintter/shared'
-import {
-  Button,
-  Container,
-  MainWrapper,
-  Spinner,
-  Text,
-  YStack,
-} from '@mintter/ui'
+import {Button, Container, Spinner, Text, YStack} from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
 import {useAppContext} from '../app-context'
 import {ListItem} from '../components/list-item'
 import {queryDraft} from '../models/documents'
 import {useClickNavigate} from '../utils/useNavigate'
+import {MainWrapper} from '../components/main-wrapper'
 
 export default function DraftList() {
   let drafts = useDraftList()

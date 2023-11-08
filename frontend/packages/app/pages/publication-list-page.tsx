@@ -13,7 +13,6 @@ import {
   DialogTitle,
   Form,
   Label,
-  MainWrapper,
   SizableText,
   Spinner,
   XStack,
@@ -35,6 +34,7 @@ import {useWaitForPublication} from '../models/web-links'
 import {useDaemonReady} from '../node-status-context'
 import {useOpenUrl} from '../open-url'
 import {toast} from '../toast'
+import {MainWrapper} from '../components/main-wrapper'
 
 export function PublicationListPage({
   trustedOnly,

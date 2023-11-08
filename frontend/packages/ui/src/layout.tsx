@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {ScrollView, YStack, YStackProps, styled} from 'tamagui'
+import {ScrollView, XStack, YStack, YStackProps, styled} from 'tamagui'
 
 export const AppMain = styled(YStack, {
   flexDirection: 'column',
@@ -11,23 +11,6 @@ export const MainStyled = styled(YStack, {
   flex: 1,
   overflow: 'hidden',
 })
-
-export const MainWrapper = ({
-  children,
-  noScroll = false,
-  ...props
-}: YStackProps & {
-  noScroll?: boolean
-}) => (
-  <YStack flex={1} className="content-wrapper" {...props}>
-    {noScroll ? (
-      children
-    ) : (
-      // TODO: we cannot remove this ID here because the SlashMenu is referencing this!
-      <ScrollView id="scroll-page-wrapper">{children}</ScrollView>
-    )}
-  </YStack>
-)
 
 export const YDebug = (props) => <YStack {...props} />
 YDebug.displayName = 'YMintterDebug'

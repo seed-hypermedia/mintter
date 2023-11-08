@@ -8,14 +8,13 @@ import {useAccountPublicationList} from '@mintter/app/models/changes'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {abbreviateCid, pluralizer} from '@mintter/shared'
+import {abbreviateCid, createHmId, pluralizer} from '@mintter/shared'
 import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
   ChevronDown,
   Container,
   ListItem,
-  MainWrapper,
   Popover,
   SizableText,
   XStack,
@@ -30,6 +29,8 @@ import {useMyAccount, useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import {MainWrapper} from '../components/main-wrapper'
+import {PinAccountButton} from '../components/pin-entity'
 
 function DeviceRow({
   isOnline,
@@ -181,6 +182,7 @@ export default function AccountPage() {
             </XStack>
 
             <XStack space="$2">
+              {isMe ? null : <PinAccountButton accountId={accountId} />}
               {isMe ? (
                 <Button
                   size="$2"
@@ -247,6 +249,7 @@ export default function AccountPage() {
                   </YGroup>
                 </Popover.Content>
               </Popover>
+
               {isMe ? null : (
                 <AccountTrustButton
                   accountId={accountId}
