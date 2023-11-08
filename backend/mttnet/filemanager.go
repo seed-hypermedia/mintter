@@ -156,6 +156,11 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.ContentLength > MaxFileBytes {
+		http.Error(w, "File too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+
 	if err := r.ParseMultipartForm(MaxFileBytes); err != nil {
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		fmt.Fprintf(w, "Parse body error: %s", err.Error())
