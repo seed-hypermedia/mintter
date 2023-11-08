@@ -29,7 +29,7 @@ import (
 
 const (
 	// MaxFileBytes is the maximum file size in bytes to be uploaded.
-	MaxFileBytes = 64 * 1024 * 1024 // 64MiB
+	MaxFileBytes = 150 * 1024 * 1024 // 150 MiB.
 	// SearchTimeout is the maximum time we are searching for a file.
 	SearchTimeout = 30 * time.Second
 )
