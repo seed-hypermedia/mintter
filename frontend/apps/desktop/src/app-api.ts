@@ -76,6 +76,7 @@ export function openInitialWindows() {
       trpc.createAppWindow({
         routes: window.routes,
         routeIndex: window.routeIndex,
+        sidebarLocked: window.sidebarLocked,
         bounds: window.bounds,
         id: windowId,
       })
@@ -115,6 +116,7 @@ export const router = t.router({
         routes: z.array(z.any()), // todo, zodify NavRoute type
         routeIndex: z.number().default(0),
         id: z.string().optional(),
+        sidebarLocked: z.boolean().default(false),
         bounds: z
           .object({
             x: z.number(),

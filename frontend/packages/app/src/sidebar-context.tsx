@@ -1,5 +1,7 @@
 import {StateStream, writeableStateStream} from '@mintter/shared'
 import {PropsWithChildren, createContext, useContext, useMemo} from 'react'
+import {client} from '@mintter/desktop/src/trpc'
+import {useNavigationDispatch, useNavigationState} from '../utils/navigation'
 
 type SidebarContextValue = {
   onMenuHover: () => void
@@ -14,12 +16,16 @@ const SidebarContext = createContext<SidebarContextValue | null>(null)
 export const SidebarWidth = 300
 
 export function SidebarContextProvider(props: PropsWithChildren<{}>) {
+  const state = useNavigationState()
+  const dispatch = useNavigationDispatch()
   return (
     <SidebarContext.Provider
       value={useMemo(() => {
         const [setIsHoverVisible, isHoverVisible] =
           writeableStateStream<boolean>(false)
-        const [setIsLocked, isLocked] = writeableStateStream<boolean>(false)
+        const [setIsLocked, isLocked] = writeableStateStream<boolean>(
+          state.sidebarLocked || false,
+        )
         let closeTimeout: null | NodeJS.Timeout = null
         function onMenuHover() {
           closeTimeout && clearTimeout(closeTimeout)
@@ -32,7 +38,9 @@ export function SidebarContextProvider(props: PropsWithChildren<{}>) {
         }
         function onToggleMenuLock() {
           const wasLocked = isLocked.get()
-          setIsLocked(!wasLocked)
+          const nextIsLocked = !wasLocked
+          dispatch({type: 'sidebarLocked', value: nextIsLocked})
+          setIsLocked(nextIsLocked)
         }
         return {
           isHoverVisible,

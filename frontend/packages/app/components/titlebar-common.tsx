@@ -660,15 +660,17 @@ export function NavMenuButton() {
   }
   return (
     <XStack position="relative" zIndex={1000} className="no-window-drag">
-      <Button
-        size="$2"
-        icon={icon}
-        onMouseEnter={ctx.onMenuHover}
-        onMouseLeave={ctx.onMenuHoverLeave}
-        onPress={() => {
-          ctx.onToggleMenuLock()
-        }}
-      />
+      <Tooltip content={tooltip}>
+        <Button
+          size="$2"
+          icon={icon}
+          onMouseEnter={ctx.onMenuHover}
+          onMouseLeave={ctx.onMenuHoverLeave}
+          onPress={() => {
+            ctx.onToggleMenuLock()
+          }}
+        />
+      </Tooltip>
     </XStack>
   )
 }

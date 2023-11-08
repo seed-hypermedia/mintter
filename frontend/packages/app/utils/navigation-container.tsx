@@ -15,6 +15,7 @@ const homeRoute: HomeRoute = {key: 'home'}
 export function NavigationContainer({
   children,
   initialNav = {
+    sidebarLocked: false,
     routes: [homeRoute],
     routeIndex: 0,
     lastAction: 'replace',
@@ -27,7 +28,6 @@ export function NavigationContainer({
   const {send} = useIPC()
 
   // const confirmConnection = useConfirmConnection()
-
   useEffect(() => {
     send('windowNavState', navState)
   }, [navState, send])
