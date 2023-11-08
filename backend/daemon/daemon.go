@@ -214,6 +214,7 @@ func (l *lazyFileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 	logging.SetLogLevel("autorelay", cfg.LogLevel)
 	logging.SetLogLevel("provider.batched", cfg.LogLevel)
+	logging.SetLogLevel("dht", cfg.LogLevel)
 	a.g.Go(func() error {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
