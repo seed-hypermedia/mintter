@@ -28,6 +28,7 @@ import {
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
 import {HMBlockSchema} from './schema'
+import {MaxFileSizeB, MaxFileSizeMB} from './file'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -63,7 +64,7 @@ const uploadImageToIpfs = async (url: string) => {
   if (url.startsWith('ipfs://')) return url
   const blob = await fetch(url).then((res) => res.blob())
   const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
-  if (webFile && webFile.size <= 62914560) {
+  if (webFile && webFile.size <= MaxFileSizeB) {
     const formData = new FormData()
     formData.append('file', webFile)
 
@@ -79,7 +80,7 @@ const uploadImageToIpfs = async (url: string) => {
       return {}
     }
   } else {
-    return {name: 'The file size exceeds 60 MB.'}
+    return {name: `The file size exceeds ${MaxFileSizeMB} MB.`}
   }
 }
 
@@ -177,9 +178,8 @@ function ImageComponent({
 
   const handleDragReplace = useCallback(
     async (file: File) => {
-      if (file.size > 62914560) {
-        toast.error(`The size of ${file.name} exceeds 60 MB.`)
-        // lol, so what? lots of good files are larger than 60MB 😂
+      if (file.size > MaxFileSizeB) {
+        toast.error(`The size of ${file.name} exceeds ${MaxFileSizeMB} MB.`)
         return
       }
 
@@ -197,6 +197,7 @@ function ImageComponent({
         } as ImageType)
       } catch (error) {
         console.error(error)
+        toast.error(`Failed to add ${file.name}: ${error.message}`)
       }
       // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     },
@@ -364,7 +365,7 @@ function ImageForm({
   const popoverState = usePopoverState()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+    const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
     if (largeFileIndex > -1) {
       const largeFile = files[largeFileIndex]
       setFileName({
@@ -374,8 +375,8 @@ function ImageForm({
                 largeFile.name.length < 36
                   ? largeFile.name
                   : largeFile.name.slice(0, 32) + '...'
-              } exceeds 60 MB.`
-            : 'The image size exceeds 60 MB.',
+              } exceeds ${MaxFileSizeMB} MB.`
+            : `The image size exceeds ${MaxFileSizeMB} MB.`,
         color: 'red',
       })
       return

@@ -21,6 +21,8 @@ import {
   getBlockInfoFromPos,
 } from './blocknote'
 import {HMBlockSchema} from './schema'
+import {toast} from '@mintter/app/toast'
+import {MaxFileSizeB, MaxFileSizeMB} from './file'
 
 export const VideoBlock = createReactBlockSpec({
   type: 'video',
@@ -135,8 +137,8 @@ function VideoComponent({
   }
 
   const handleDragReplace = async (file: File) => {
-    if (file.size > 62914560) {
-      console.error(`The size of ${file.name} exceeds 60 MB.`)
+    if (file.size > MaxFileSizeB) {
+      toast.error(`The size of ${file.name} exceeds ${MaxFileSizeMB} MB.`)
       return
     }
     assign({
@@ -338,7 +340,7 @@ function VideoForm({
   const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+    const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
     if (largeFileIndex > -1) {
       const largeFile = files[largeFileIndex]
       setFileName({
@@ -348,8 +350,8 @@ function VideoForm({
                 largeFile.name.length < 36
                   ? largeFile.name
                   : largeFile.name.slice(0, 32) + '...'
-              } exceeds 60 MB.`
-            : 'The video size exceeds 60 MB.',
+              } exceeds ${MaxFileSizeMB} MB.`
+            : `The video size exceeds ${MaxFileSizeMB} MB.`,
         color: 'red',
       })
       return
