@@ -57,8 +57,8 @@ export function useConnectPeer(
       if (!peer) return undefined
       const connectionRegexp = /connect-peer\/([\w\d]+)/
       const parsedConnectUrl = peer.match(connectionRegexp)
-      let connectionDeviceId = parsedConnectUrl ? parsedConnectUrl[1] : null
-      if (!connectionDeviceId && peer.match(/^(https:\/\/)/)) {
+      let addrs = parsedConnectUrl ? [parsedConnectUrl[1]] : null
+      if (!addrs && peer.match(/^(https:\/\/)/)) {
         // in this case, the "peer" input is not https://site/connect-peer/x url, but it is a web url. So lets try to connect to this site via its well known peer id.
         const peerUrl = new URL(peer)
         peerUrl.search = ''
@@ -72,15 +72,20 @@ export function useConnectPeer(
             return null
           })
         if (wellKnownData?.peerInfo?.peerId) {
-          connectionDeviceId = wellKnownData.peerInfo.peerId
+          const {peerId} = wellKnownData.peerInfo
+          // addrs = [wellKnownData.peerInfo.peerId] // peer id is not sufficient most of the time
+          addrs = wellKnownData.peerInfo.addrs.map(
+            (addr) => `${addr}/p2p/${peerId}`,
+          )
         } else {
           throw new Error('Failed to connet to web url: ' + peer)
         }
       }
-      const addrs = connectionDeviceId
-        ? [connectionDeviceId]
-        : peer.trim().split(',')
-
+      if (!addrs) {
+        addrs = peer.trim().split(',')
+      }
+      console.log('addrs', addrs)
+      if (!addrs) throw new Error('Invalid peer address(es) provided.')
       await grpcClient.networking.connect({addrs})
       return undefined
     },
