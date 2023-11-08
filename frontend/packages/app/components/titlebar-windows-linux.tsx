@@ -26,7 +26,7 @@ import {
 import {useMemo} from 'react'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {
-  NavMenu,
+  NavMenuButton,
   NavigationButtons,
   PageActionButtons,
   PageContextControl,
@@ -71,7 +71,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
       right={<PageActionButtons {...props} />}
       left={
         <XStack paddingHorizontal={0} paddingVertical="$2" space="$2">
-          <NavMenu />
+          <NavMenuButton />
           <NavigationButtons />
           <PageContextControl {...props} />
         </XStack>

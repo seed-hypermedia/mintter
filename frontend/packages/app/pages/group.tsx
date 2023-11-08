@@ -20,7 +20,6 @@ import {
   Heading,
   Input,
   Label,
-  MainWrapper,
   Separator,
   SizableText,
   Tooltip,
@@ -32,6 +31,7 @@ import {
 import {
   ArrowUpRight,
   Pencil,
+  Pin,
   PlusCircle,
   Store,
   Trash,
@@ -69,6 +69,8 @@ import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication'
+import {MainWrapper} from '../components/main-wrapper'
+import {PinGroupButton} from '../components/pin-entity'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -147,76 +149,83 @@ export default function GroupPage() {
           <Allotment.Pane>
             <MainWrapper maxHeight={'100%'}>
               <Container>
-                <XStack gap="$2" padding="$4" paddingHorizontal={0}>
-                  <YStack gap="$3" flex={1}>
-                    <YStack gap="$3">
-                      <H1 fontWeight="bold">{group.data?.title}</H1>
-                      {siteBaseUrl && (
-                        <XStack alignItems="center" gap="$2">
-                          <Tooltip
-                            content={`Open group in the web (${syncStatus?.message(
-                              group.data,
-                            )})`}
-                          >
-                            <Button
-                              size="$2"
-                              fontFamily={'$mono'}
-                              fontSize="$4"
-                              // hoverStyle={{textDecorationLine: 'underline'}}
-                              onPress={() => {
-                                openUrl(siteBaseUrl)
-                              }}
-                              color="$blue10"
-                              icon={
-                                syncStatus &&
-                                group.data && (
-                                  <View
-                                    style={{
-                                      borderRadius: 5,
-                                      width: 10,
-                                      height: 10,
-                                      backgroundColor: syncStatus.color,
-                                    }}
-                                  />
-                                )
-                              }
+                <YStack group="header">
+                  <XStack gap="$2" padding="$4" paddingHorizontal={0}>
+                    <YStack gap="$3" flex={1}>
+                      <YStack gap="$3">
+                        <H1 fontWeight="bold">{group.data?.title}</H1>
+                        {siteBaseUrl && (
+                          <XStack alignItems="center" gap="$2">
+                            <Tooltip
+                              content={`Open group in the web (${syncStatus?.message(
+                                group.data,
+                              )})`}
                             >
-                              {hostnameStripProtocol(siteBaseUrl)}
+                              <Button
+                                size="$2"
+                                fontFamily={'$mono'}
+                                fontSize="$4"
+                                // hoverStyle={{textDecorationLine: 'underline'}}
+                                onPress={() => {
+                                  openUrl(siteBaseUrl)
+                                }}
+                                color="$blue10"
+                                icon={
+                                  syncStatus &&
+                                  group.data && (
+                                    <View
+                                      style={{
+                                        borderRadius: 5,
+                                        width: 10,
+                                        height: 10,
+                                        backgroundColor: syncStatus.color,
+                                      }}
+                                    />
+                                  )
+                                }
+                              >
+                                {hostnameStripProtocol(siteBaseUrl)}
+                              </Button>
+                            </Tooltip>
+                          </XStack>
+                        )}
+                        <XStack>
+                          <SizableText size="$5">
+                            {group.data?.description}
+                          </SizableText>
+                        </XStack>
+                      </YStack>
+                    </YStack>
+                    <YStack paddingTop="$4">
+                      <XStack gap="$3" alignItems="center">
+                        {!frontDocumentUrl && isMember && (
+                          <Tooltip content={'Create Front Document'}>
+                            <Button
+                              icon={Store}
+                              size="$2"
+                              onPress={() => {
+                                openDraft(
+                                  {groupId, pathName: '/', key: 'group'},
+                                  {
+                                    pathName: '/',
+                                    initialTitle: group?.data?.title,
+                                  },
+                                )
+                              }}
+                            >
+                              Add a Frontpage
                             </Button>
                           </Tooltip>
-                        </XStack>
-                      )}
-                      <XStack>
-                        <SizableText size="$5">
-                          {group.data?.description}
-                        </SizableText>
-                      </XStack>
-                    </YStack>
-                  </YStack>
-                  <YStack paddingTop="$4">
-                    <XStack gap="$3" alignItems="center">
-                      {!frontDocumentUrl && isMember && (
-                        <Tooltip content={'Create Front Document'}>
-                          <Button
-                            icon={Store}
-                            size="$2"
-                            onPress={() => {
-                              openDraft(
-                                {groupId, pathName: '/', key: 'group'},
-                                {
-                                  pathName: '/',
-                                  initialTitle: group?.data?.title,
-                                },
-                              )
-                            }}
-                          >
-                            Add a Frontpage
-                          </Button>
-                        </Tooltip>
-                      )}
+                        )}
 
-                      <XGroup>
-                        <XGroup.Item>
+                        <XStack
+                          gap="$2"
+                          opacity={0}
+                          $group-header-hover={{
+                            opacity: 1,
+                          }}
+                        >
+                          <PinGroupButton groupId={groupId} />
                           {isMember && (
                             <Tooltip content="Edit Group info">
                               <Button
@@ -228,11 +237,11 @@ export default function GroupPage() {
                               />
                             </Tooltip>
                           )}
-                        </XGroup.Item>
-                      </XGroup>
-                    </XStack>
-                  </YStack>
-                </XStack>
+                        </XStack>
+                      </XStack>
+                    </YStack>
+                  </XStack>
+                </YStack>
                 <YStack>
                   <XStack paddingVertical="$4" alignItems="center" gap="$3">
                     <XStack gap="$3" flex={1} alignItems="flex-end">

@@ -11,7 +11,6 @@ import {
   Button,
   Container,
   Heading,
-  MainWrapper,
   Spinner,
   Text,
   XStack,
@@ -21,6 +20,7 @@ import {
 import {PlusCircle} from '@tamagui/lucide-icons'
 import {useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
+import {MainWrapper} from '../components/main-wrapper'
 
 const PageHeading = styled(Heading, {
   color: '$gray10',

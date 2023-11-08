@@ -12,6 +12,8 @@ import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 import {DraftStatusContext} from '../models/draft-machine'
+import {AppSidebar} from '../components/sidebar'
+import {SidebarContextProvider} from '../src/sidebar-context'
 
 var PublicationList = lazy(
   () => import('@mintter/app/pages/publication-list-page'),
@@ -113,22 +115,25 @@ export default function Main({className}: {className?: string}) {
     },
     [navigate],
   )
-
+  const displaySidebar = navR.key !== 'settings'
   return (
     <YStack fullscreen className={className}>
-      <ErrorBoundary
-        key={routeKey}
-        FallbackComponent={AppErrorPage}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
-        <DraftStatusContext.Provider>
-          <TitleBar clean={isSettings} />
-          <PageComponent />
-          {!isSettings ? <QuickSwitcher /> : null}
-        </DraftStatusContext.Provider>
-      </ErrorBoundary>
+      <SidebarContextProvider>
+        <ErrorBoundary
+          key={routeKey}
+          FallbackComponent={AppErrorPage}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
+          <DraftStatusContext.Provider>
+            <TitleBar clean={isSettings} />
+            <PageComponent />
+            {!isSettings ? <QuickSwitcher /> : null}
+          </DraftStatusContext.Provider>
+        </ErrorBoundary>
+        {displaySidebar ? <AppSidebar /> : null}
+      </SidebarContextProvider>
     </YStack>
   )
 }

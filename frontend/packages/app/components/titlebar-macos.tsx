@@ -1,7 +1,7 @@
 import {TitleBarProps} from '@mintter/app/components/titlebar'
 import {TitlebarWrapper, XStack} from '@mintter/ui'
 import {
-  NavMenu,
+  NavMenuButton,
   NavigationButtons,
   PageActionButtons,
   PageContextControl,
@@ -34,7 +34,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
             className="window-drag"
             gap="$2"
           >
-            <NavMenu />
+            <NavMenuButton />
             <NavigationButtons />
             <PageContextControl {...props} />
           </XStack>

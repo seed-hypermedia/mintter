@@ -9,8 +9,6 @@ import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
-  BlockContentHeading,
-  IS_PROD_DESKTOP,
   MttLink,
   PublicationContent,
   PublicationContentContextValue,
@@ -19,18 +17,11 @@ import {
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
-import {
-  Button,
-  Heading,
-  Link,
-  MainWrapper,
-  Text,
-  XStack,
-  YStack,
-} from '@mintter/ui'
+import {Link, XStack, YStack} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
+import {useCallback, useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {useAppContext} from '../app-context'
 import {
@@ -39,16 +30,17 @@ import {
   EmbedPublication,
 } from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
+import {useAppDialog} from '../components/dialog'
+import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
+import {useExperiments} from '../models/experiments'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 import {DocumentPlaceholder} from './document-placeholder'
-import {useExperiments} from '../models/experiments'
-import {useCallback, useEffect} from 'react'
-import {useAppDialog} from '../components/dialog'
-import {FirstPublishDialog} from '../components/first-publish-dialog'
+import {MainWrapper} from '../components/main-wrapper'
+import {PinDocumentButton} from '../components/pin-entity'
 
 export function AppPublicationContentProvider({
   children,
@@ -163,9 +155,20 @@ export default function PublicationPage() {
                         replace({...route, accessory: {key: 'citations'}})
                       }}
                     >
-                      <PublicationHeading>
+                      <PublicationHeading
+                        right={
+                          <XStack
+                            gap="$2"
+                            opacity={0}
+                            $group-header-hover={{opacity: 1}}
+                          >
+                            <PinDocumentButton route={route} />
+                          </XStack>
+                        }
+                      >
                         {publication.data.document?.title}
                       </PublicationHeading>
+
                       <PublicationContent publication={publication.data} />
                     </AppPublicationContentProvider>
                   </YStack>

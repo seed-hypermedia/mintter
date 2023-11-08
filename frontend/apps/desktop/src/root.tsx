@@ -194,6 +194,8 @@ function MainApp({
         if (!queryKey) return
         if (queryKey[0] === 'trpc.experiments.get') {
           utils.experiments.get.invalidate()
+        } else if (queryKey[0] === 'trpc.pins.get') {
+          utils.pins.get.invalidate()
         } else if (queryClient.client) {
           queryClient.client.invalidateQueries(queryKey)
         }

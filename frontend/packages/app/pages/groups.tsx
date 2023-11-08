@@ -4,7 +4,6 @@ import {
   ButtonText,
   Container,
   ExternalLink,
-  MainWrapper,
   Spinner,
   Text,
   XStack,
@@ -21,6 +20,7 @@ import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/navigation'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
+import {MainWrapper} from '../components/main-wrapper'
 
 function MemberAvatarLinks({
   ownerAccountId,
