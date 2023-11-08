@@ -22,6 +22,9 @@ import {
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema} from './schema'
 
+export const MaxFileSizeMB = 150
+export const MaxFileSizeB = MaxFileSizeMB * 1024 * 1024
+
 export const FileBlock = createReactBlockSpec({
   type: 'file',
   propSchema: {
@@ -151,8 +154,8 @@ export function FileComponent({
   }
 
   const handleDragReplace = async (file: File) => {
-    if (file.size > 62914560) {
-      toast.error(`The size of ${file.name} exceeds 60 MB.`)
+    if (file.size > MaxFileSizeB) {
+      toast.error(`The size of ${file.name} exceeds ${MaxFileSizeMB} MB.`)
       return
     }
 
@@ -326,7 +329,7 @@ function FileForm({
   const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
-    const largeFileIndex = files.findIndex((file) => file.size > 62914560)
+    const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
     if (largeFileIndex > -1) {
       const largeFile = files[largeFileIndex]
       setFileName({
@@ -336,8 +339,8 @@ function FileForm({
                 largeFile.name.length < 36
                   ? largeFile.name
                   : largeFile.name.slice(0, 32) + '...'
-              } exceeds 60 MB.`
-            : 'The file size exceeds 60 MB.',
+              } exceeds ${MaxFileSizeMB} MB.`
+            : `The file size exceeds ${MaxFileSizeMB} MB.`,
         color: 'red',
       })
       return
