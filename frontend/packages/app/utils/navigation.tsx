@@ -72,14 +72,17 @@ export type ReplaceAction = {type: 'replace'; route: NavRoute}
 export type BackplaceAction = {type: 'backplace'; route: NavRoute}
 export type PopAction = {type: 'pop'}
 export type ForwardAction = {type: 'forward'}
+export type SetSidebarLockedAction = {type: 'sidebarLocked'; value: boolean}
 export type NavAction =
   | PushAction
   | ReplaceAction
   | BackplaceAction
   | PopAction
   | ForwardAction
+  | SetSidebarLockedAction
 
 export type NavState = {
+  sidebarLocked?: boolean
   routes: NavRoute[]
   routeIndex: number
   lastAction: NavAction['type']
@@ -102,12 +105,14 @@ export function navStateReducer(state: NavState, action: NavAction): NavState {
   switch (action.type) {
     case 'push':
       return {
+        ...state,
         routes: [...state.routes.slice(0, state.routeIndex + 1), action.route],
         routeIndex: state.routeIndex + 1,
         lastAction: action.type,
       }
     case 'replace':
       return {
+        ...state,
         routes: [...state.routes.slice(0, state.routeIndex), action.route],
         routeIndex: state.routeIndex,
         lastAction: action.type,
@@ -116,6 +121,7 @@ export function navStateReducer(state: NavState, action: NavAction): NavState {
     case 'backplace': {
       if (state.routeIndex === 0) {
         return {
+          ...state,
           routes: [action.route],
           routeIndex: 0,
           lastAction: action.type,
@@ -141,9 +147,15 @@ export function navStateReducer(state: NavState, action: NavAction): NavState {
     }
     case 'forward':
       return {
+        ...state,
         routes: state.routes,
         routeIndex: Math.min(state.routeIndex + 1, state.routes.length - 1),
         lastAction: action.type,
+      }
+    case 'sidebarLocked':
+      return {
+        ...state,
+        sidebarLocked: action.value,
       }
     default:
       return state

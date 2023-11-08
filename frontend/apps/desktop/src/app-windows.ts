@@ -53,6 +53,7 @@ type AppWindow = {
   routes: NavRoute[]
   routeIndex: number
   bounds: any
+  sidebarLocked: boolean
 }
 
 const userData = app.getPath('userData')
@@ -76,7 +77,10 @@ function getAWindow() {
   return window
 }
 
-const windowNavState: Record<string, {routes: any[]; routeIndex: number}> = {}
+const windowNavState: Record<
+  string,
+  {routes: any[]; routeIndex: number; sidebarLocked: boolean}
+> = {}
 
 let isExpectingQuit = false
 app.addListener('before-quit', () => {
@@ -119,6 +123,7 @@ export function dispatchFocusedWindowAppEvent(event: AppWindowEvent) {
 export function createAppWindow(input: {
   routes: NavRoute[]
   routeIndex: number
+  sidebarLocked: boolean
   id?: string | undefined
   bounds?: null | {
     x: number
@@ -182,6 +187,7 @@ export function createAppWindow(input: {
   windowNavState[windowId] = {
     routes: initRoutes,
     routeIndex: input.routeIndex,
+    sidebarLocked: input.sidebarLocked || false,
   }
 
   browserWindow.webContents.ipc.on('initWindow', (e) => {
@@ -230,6 +236,7 @@ export function createAppWindow(input: {
   setWindowState(windowId, {
     routes: initRoutes,
     routeIndex: input.routeIndex,
+    sidebarLocked: input.sidebarLocked || false,
     bounds: null,
   })
 
@@ -241,12 +248,17 @@ export function createAppWindow(input: {
   })
   browserWindow.webContents.ipc.addListener(
     'windowNavState',
-    (info, {routes, routeIndex}: NavState) => {
-      windowNavState[windowId] = {routes, routeIndex}
+    (info, {routes, routeIndex, sidebarLocked}: NavState) => {
+      windowNavState[windowId] = {
+        routes,
+        routeIndex,
+        sidebarLocked: sidebarLocked || false,
+      }
       updateWindowState(windowId, (window) => ({
         ...window,
         routes,
         routeIndex,
+        sidebarLocked: sidebarLocked || false,
       }))
     },
   )

@@ -70,7 +70,7 @@ export function AppSidebar() {
         </YGroup.Item>
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'home'}
+            active={route.key == 'home'}
             data-testid="menu-item-pubs"
             onPress={() => {
               navigate({key: 'home'})
@@ -78,11 +78,7 @@ export function AppSidebar() {
             title="Trusted Publications"
             bold
             icon={Bookmark}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 1
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         {pins.data?.trustedDocuments.map((documentId) => {
@@ -95,7 +91,7 @@ export function AppSidebar() {
                   pubContext: {key: 'trusted'},
                 })
               }}
-              disabled={
+              active={
                 route.key === 'publication' &&
                 route.documentId === documentId &&
                 route.pubContext?.key === 'trusted'
@@ -107,7 +103,7 @@ export function AppSidebar() {
         })}
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'all-publications'}
+            active={route.key == 'all-publications'}
             data-testid="menu-item-global"
             onPress={() => {
               navigate({key: 'all-publications'})
@@ -115,11 +111,7 @@ export function AppSidebar() {
             title="All Publications"
             bold
             icon={Globe}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 2
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         {pins.data?.allDocuments.map((documentId) => {
@@ -131,7 +123,7 @@ export function AppSidebar() {
                   documentId,
                 })
               }}
-              disabled={
+              active={
                 route.key === 'publication' &&
                 route.documentId === documentId &&
                 !route.pubContext
@@ -143,18 +135,14 @@ export function AppSidebar() {
         })}
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'groups'}
+            active={route.key == 'groups'}
             onPress={() => {
               navigate({key: 'groups'})
             }}
             title="Groups"
             bold
             icon={Library}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 3
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         {pins.data?.groups.map((group) => {
@@ -175,7 +163,7 @@ export function AppSidebar() {
                         },
                       })
                     }}
-                    disabled={
+                    active={
                       route.key === 'publication' &&
                       route.documentId === docId &&
                       route.pubContext?.key === 'group' &&
@@ -193,7 +181,7 @@ export function AppSidebar() {
 
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'drafts'}
+            active={route.key == 'drafts'}
             data-testid="menu-item-drafts"
             onPress={() => {
               navigate({key: 'drafts'})
@@ -201,27 +189,19 @@ export function AppSidebar() {
             icon={Draft}
             title="Drafts"
             bold
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 8
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         <YGroup.Item>
           <MenuItem
-            disabled={route.key == 'contacts'}
+            active={route.key == 'contacts'}
             onPress={() => {
               navigate({key: 'contacts'})
             }}
             icon={Contact}
             title="Accounts"
             bold
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 9
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         {pins.data?.accounts.map((accountId) => {
@@ -242,11 +222,7 @@ export function AppSidebar() {
             }}
             title="Search / Open"
             icon={Search}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; K
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
         <YGroup.Item>
@@ -257,11 +233,7 @@ export function AppSidebar() {
             cursor="pointer"
             icon={Settings}
             title="Settings"
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; ,
-              </SizableText>
-            }
+            iconAfter={null}
           />
         </YGroup.Item>
       </YGroup>
@@ -280,7 +252,7 @@ function PinnedAccount({accountId}: {accountId: string}) {
         onPress={() => {
           navigate({key: 'account', accountId})
         }}
-        disabled={route.key == 'account' && route.accountId == accountId}
+        active={route.key == 'account' && route.accountId == accountId}
         icon={User}
         title={account.data?.profile?.alias || accountId}
         iconAfter={null}
@@ -302,7 +274,7 @@ function PinnedGroup(props: {group: {groupId: string}}) {
         onPress={() => {
           navigate({key: 'group', groupId})
         }}
-        disabled={route.key == 'group' && route.groupId == groupId}
+        active={route.key == 'group' && route.groupId == groupId}
         icon={Book}
         title={group.data?.title}
         iconAfter={null}
@@ -314,11 +286,11 @@ function PinnedGroup(props: {group: {groupId: string}}) {
 function PinnedDocument({
   docId,
   onPress,
-  disabled,
+  active,
 }: {
   docId: string
   onPress: () => void
-  disabled?: boolean
+  active?: boolean
 }) {
   const doc = usePublication({id: docId})
   if (!docId) return null
@@ -326,7 +298,7 @@ function PinnedDocument({
     <YGroup.Item>
       <MenuItem
         onPress={onPress}
-        disabled={disabled}
+        active={active}
         icon={FileText}
         title={doc.data?.document?.title || docId}
         iconAfter={null}

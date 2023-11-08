@@ -36,13 +36,13 @@ export function useToggleGroupPin(groupId: string) {
       invalidate(['trpc.pins.get'])
     },
   })
-  const removePin = trpc.pins.addGroup.useMutation({
+  const removePin = trpc.pins.removeGroup.useMutation({
     onSuccess: () => {
       invalidate(['trpc.pins.get'])
     },
   })
   const pins = trpc.pins.get.useQuery()
-  const isPinned = !!pins.data?.groups.find((group) => group.groupId || groupId)
+  const isPinned = !!pins.data?.groups.find((group) => group.groupId == groupId)
   function togglePin() {
     if (isPinned) {
       removePin.mutate(groupId)
@@ -62,7 +62,8 @@ export function useToggleDocumentPin(route: PublicationRoute) {
     groupId:
       route.pubContext?.key === 'group' ? route.pubContext.groupId : undefined,
     pathName:
-      route.pubContext?.key === 'group' ? route.pubContext.pathName : undefined,
+      (route.pubContext?.key === 'group' ? route.pubContext.pathName : null) ||
+      '/',
     isTrusted: route.pubContext?.key === 'trusted',
   }
   const invalidate = useQueryInvalidator()
@@ -71,7 +72,7 @@ export function useToggleDocumentPin(route: PublicationRoute) {
       invalidate(['trpc.pins.get'])
     },
   })
-  const removePin = trpc.pins.addDocument.useMutation({
+  const removePin = trpc.pins.removeDocument.useMutation({
     onSuccess: () => {
       invalidate(['trpc.pins.get'])
     },
@@ -83,14 +84,19 @@ export function useToggleDocumentPin(route: PublicationRoute) {
   const isPinnedAll = !!pins.data?.allDocuments.find(
     (docId) => docId === route.documentId,
   )
-  const contextGroupId =
-    route.pubContext?.key === 'group' ? route.pubContext.groupId : undefined
+  const groupPubContext =
+    route.pubContext?.key === 'group' ? route.pubContext : undefined
+  const contextGroupId = groupPubContext?.groupId
   const isPinnedGroup =
-    !!contextGroupId &&
+    !!groupPubContext &&
     !!pins.data?.groups.find(
       (group) =>
         group.groupId === contextGroupId &&
-        !!group.documents.find((docId) => docId === route.documentId),
+        !!group.documents.find(
+          ({docId, pathName}) =>
+            docId === route.documentId &&
+            pathName === groupPubContext?.pathName,
+        ),
     )
   const isPinned = isPinnedTrusted || isPinnedAll || isPinnedGroup
   function togglePin() {
@@ -101,7 +107,7 @@ export function useToggleDocumentPin(route: PublicationRoute) {
     }
   }
   return {
-    isPinned: false,
+    isPinned,
     togglePin,
   }
 }
