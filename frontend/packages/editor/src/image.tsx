@@ -125,7 +125,7 @@ const Render = (
     editor.updateBlock(block.id, {
       props: {...block.props, ...newImage.props},
     })
-    editor.setTextCursorPosition(block.id, 'end')
+    // editor.setTextCursorPosition(block.id, 'end')
   }
 
   const setSelection = (isSelected: boolean) => {
@@ -198,9 +198,9 @@ function ImageComponent({
       } catch (error) {
         console.error(error)
       }
-      editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+      // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     },
-    [assign, editor],
+    [assign],
   )
 
   useEffect(() => {
@@ -425,7 +425,7 @@ function ImageForm({
         console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   const submitImage = async (url: string) => {

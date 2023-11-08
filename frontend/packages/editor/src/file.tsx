@@ -95,7 +95,7 @@ const Render = (
     editor.updateBlock(block.id, {
       props: {...block.props, ...newFile.props},
     })
-    editor.setTextCursorPosition(block.id, 'end')
+    // editor.setTextCursorPosition(block.id, 'end')
   }
 
   const setSelection = (isSelected: boolean) => {
@@ -175,7 +175,7 @@ export function FileComponent({
     } catch (error) {
       console.error(error)
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (
@@ -385,7 +385,7 @@ function FileForm({
         console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (

@@ -90,7 +90,7 @@ const Render = (
     editor.updateBlock(block.id, {
       props: {...block.props, ...newVideo.props},
     })
-    editor.setTextCursorPosition(block.id, 'end')
+    // editor.setTextCursorPosition(block.id, 'end')
   }
 
   const setSelection = (isSelected: boolean) => {
@@ -165,7 +165,7 @@ function VideoComponent({
     } catch (error) {
       console.error(error)
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   let mediaUrl = `${BACKEND_FILE_URL}/${block.props.url.replace('ipfs://', '')}`
@@ -401,7 +401,7 @@ function VideoForm({
         console.error(error)
       }
     }
-    editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
+    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   const submitVideo = async (url: string) => {
