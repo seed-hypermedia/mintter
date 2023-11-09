@@ -130,8 +130,14 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 				left = parts[0]
 			}
 
-			if err := dm.MoveBlock(block, parent, left); err != nil {
-				return fmt.Errorf("failed to replay local moves: %w", err)
+			if parent == TrashNodeID {
+				if err := dm.DeleteBlock(block); err != nil {
+					return fmt.Errorf("failed to replay a delete: %w", err)
+				}
+			} else {
+				if err := dm.MoveBlock(block, parent, left); err != nil {
+					return fmt.Errorf("failed to replay local moves: %w", err)
+				}
 			}
 		}
 	}
