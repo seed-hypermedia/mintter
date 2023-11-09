@@ -65,7 +65,7 @@ export function AppDialog({
   ContentComponent,
   isAlert,
 }: {
-  TriggerComponent: React.FC
+  TriggerComponent: React.FC<{onPress?: (e: any) => void}>
   ContentComponent: React.FC<{onClose?: () => void; isOpen?: boolean}>
   isAlert?: boolean
 }) {
@@ -75,7 +75,12 @@ export function AppDialog({
   return (
     <Component.Root onOpenChange={setIsOpen} open={isOpen}>
       <Component.Trigger asChild>
-        <TriggerComponent />
+        <TriggerComponent
+          onPress={(e) => {
+            e.preventDefault()
+            setIsOpen(true)
+          }}
+        />
       </Component.Trigger>
       <Component.Portal>
         <NavContextProvider value={nav}>
