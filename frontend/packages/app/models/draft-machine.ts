@@ -67,14 +67,14 @@ export const draftMachine = createMachine(
         },
       },
       ready: {
+        entry: [
+          {
+            type: 'focusEditor',
+          },
+        ],
         initial: 'idle',
         states: {
           idle: {
-            entry: [
-              {
-                type: 'focusEditor',
-              },
-            ],
             on: {
               CHANGE: {
                 target: 'changed',
