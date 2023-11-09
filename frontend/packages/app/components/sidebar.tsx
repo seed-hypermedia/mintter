@@ -1,16 +1,17 @@
 import {trpc} from '@mintter/desktop/src/trpc'
-import {Account, unpackHmId} from '@mintter/shared'
+import {Account} from '@mintter/shared'
 import {
+  Button,
   Draft,
   ListItem,
-  ScrollView,
+  ListItemProps,
   Separator,
   SizableText,
+  Tooltip,
   View,
   XStack,
   YGroup,
   YStack,
-  YStackProps,
   useStream,
 } from '@mintter/ui'
 import {
@@ -20,23 +21,28 @@ import {
   FileText,
   Globe,
   Library,
+  Plus,
   Search,
   Settings,
-  User,
 } from '@tamagui/lucide-icons'
+import {ReactNode, memo} from 'react'
+import {useAppContext} from '../app-context'
+import appError from '../errors'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {NavRoute, useNavRoute} from '../utils/navigation'
+import {getAvatarUrl} from '../utils/account-url'
+import {
+  NavRoute,
+  PublicationRouteContext,
+  useNavRoute,
+} from '../utils/navigation'
+import {useOpenDraft} from '../utils/open-draft'
 import {useNavigate} from '../utils/useNavigate'
-import {MenuItem} from './dropdown'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {Avatar} from './avatar'
-import {getAvatarUrl} from '../utils/account-url'
-import {memo} from 'react'
-import appError from '../errors'
-import {useAppContext} from '../app-context'
+import {CreateGroupButton} from './new-group'
 
 export const AppSidebar = memo(FullAppSidebar)
 
@@ -77,7 +83,7 @@ function FullAppSidebar() {
           <MyAccountItem account={account.data} onRoute={navigate} />
         </YGroup.Item>
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             active={route.key == 'home'}
             data-testid="menu-item-pubs"
             onPress={() => {
@@ -86,7 +92,9 @@ function FullAppSidebar() {
             title="Trusted Publications"
             bold
             icon={Bookmark}
-            iconAfter={null}
+            rightHover={[
+              <NewDocumentButton pubContext={{key: 'trusted'}} key="newDoc" />,
+            ]}
           />
         </YGroup.Item>
         {pins.data?.trustedDocuments.map((documentId) => {
@@ -110,7 +118,7 @@ function FullAppSidebar() {
           )
         })}
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             active={route.key == 'all-publications'}
             data-testid="menu-item-global"
             onPress={() => {
@@ -119,7 +127,16 @@ function FullAppSidebar() {
             title="All Publications"
             bold
             icon={Globe}
-            iconAfter={null}
+            rightHover={[
+              <NewDocumentButton pubContext={null} key="newDoc" />,
+              // <Button
+              //   theme="blue"
+              //   icon={Plus}
+              //   size="$2"
+              //   key="NewDoc"
+              //   onPress={() => {}}
+              // />,
+            ]}
           />
         </YGroup.Item>
         {pins.data?.allDocuments.map((documentId) => {
@@ -142,7 +159,7 @@ function FullAppSidebar() {
           )
         })}
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             active={route.key == 'groups'}
             onPress={() => {
               navigate({key: 'groups'})
@@ -150,14 +167,14 @@ function FullAppSidebar() {
             title="Groups"
             bold
             icon={Library}
-            iconAfter={null}
+            rightHover={[<CreateGroupButton key="newGroup" />]}
           />
         </YGroup.Item>
-        {pins.data?.groups.map((group) => {
-          return (
-            <>
-              <PinnedGroup group={group} key={group.groupId} />
-              {group.documents.map(({docId, pathName}) => {
+        {pins.data?.groups
+          .map((group) => {
+            return [
+              <PinnedGroup group={group} key={group.groupId} />,
+              ...group.documents.map(({docId, pathName}) => {
                 return (
                   <PinnedDocument
                     onPress={() => {
@@ -182,13 +199,13 @@ function FullAppSidebar() {
                     key={docId}
                   />
                 )
-              })}
-            </>
-          )
-        })}
+              }),
+            ]
+          })
+          .flat()}
 
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             active={route.key == 'drafts'}
             data-testid="menu-item-drafts"
             onPress={() => {
@@ -197,11 +214,10 @@ function FullAppSidebar() {
             icon={Draft}
             title="Drafts"
             bold
-            iconAfter={null}
           />
         </YGroup.Item>
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             active={route.key == 'contacts'}
             onPress={() => {
               navigate({key: 'contacts'})
@@ -209,7 +225,6 @@ function FullAppSidebar() {
             icon={Contact}
             title="Accounts"
             bold
-            iconAfter={null}
           />
         </YGroup.Item>
         {pins.data?.accounts.map((accountId) => {
@@ -224,28 +239,115 @@ function FullAppSidebar() {
         borderColor="$borderColor"
       >
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             onPress={() => {
               triggerFocusedWindow('openQuickSwitcher')
             }}
             title="Search / Open"
             icon={Search}
-            iconAfter={null}
           />
         </YGroup.Item>
         <YGroup.Item>
-          <MenuItem
+          <SidebarItem
             onPress={() => {
               spawn({key: 'settings'})
             }}
             cursor="pointer"
             icon={Settings}
             title="Settings"
-            iconAfter={null}
           />
         </YGroup.Item>
       </YGroup>
     </YStack>
+  )
+}
+
+function NewDocumentButton({
+  pubContext,
+  label,
+}: {
+  pubContext: PublicationRouteContext
+  label?: string
+}) {
+  const openDraft = useOpenDraft()
+  return (
+    <Tooltip content={`New ${label || 'Document'}`}>
+      <Button
+        size="$2"
+        chromeless
+        iconAfter={Plus}
+        onPress={(e) => {
+          e.preventDefault()
+          openDraft(pubContext)
+        }}
+      />
+    </Tooltip>
+  )
+}
+
+function SidebarItem({
+  disabled,
+  title,
+  icon,
+  iconAfter,
+  children,
+  indented,
+  bold,
+  active,
+  rightHover,
+  ...props
+}: ListItemProps & {
+  indented?: boolean
+  bold?: boolean
+  selected?: boolean
+  rightHover?: ReactNode[]
+}) {
+  return (
+    <View group="item">
+      <ListItem
+        hoverTheme
+        pressTheme
+        focusTheme
+        paddingVertical="$2"
+        paddingHorizontal="$4"
+        paddingLeft={indented ? '$8' : '$4'}
+        textAlign="left"
+        outlineColor="transparent"
+        space="$2"
+        backgroundColor={active ? '$blue4' : undefined}
+        hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
+        userSelect="none"
+        group="item"
+        color="$gray12"
+        cursor={active ? undefined : 'pointer'}
+        title={
+          title ? (
+            <SizableText
+              fontSize="$3"
+              color="$gray12"
+              cursor={active ? undefined : 'pointer'}
+              fontWeight={bold ? 'bold' : undefined}
+              userSelect="none"
+            >
+              {title}
+            </SizableText>
+          ) : undefined
+        }
+        icon={icon}
+        iconAfter={
+          <XStack
+            opacity={0}
+            $group-item-hover={{opacity: 1}}
+            // backgroundColor={'blue'}
+          >
+            {rightHover}
+          </XStack>
+        }
+        {...props}
+      >
+        {children}
+      </ListItem>
+    </View>
   )
 }
 
@@ -314,7 +416,7 @@ function PinnedAccount({accountId}: {accountId: string}) {
   if (!accountId) return null
   return (
     <YGroup.Item>
-      <MenuItem
+      <SidebarItem
         onPress={() => {
           navigate({key: 'account', accountId})
         }}
@@ -328,7 +430,6 @@ function PinnedAccount({accountId}: {accountId: string}) {
           />
         }
         title={account.data?.profile?.alias || accountId}
-        iconAfter={null}
         indented
       />
     </YGroup.Item>
@@ -343,14 +444,20 @@ function PinnedGroup(props: {group: {groupId: string}}) {
   if (!groupId) return null
   return (
     <YGroup.Item>
-      <MenuItem
+      <SidebarItem
         onPress={() => {
           navigate({key: 'group', groupId})
         }}
         active={route.key == 'group' && route.groupId == groupId}
         icon={Book}
         title={group.data?.title}
-        iconAfter={null}
+        rightHover={[
+          <NewDocumentButton
+            pubContext={{key: 'group', groupId, pathName: null}}
+            label="Group Document"
+            key="newDoc"
+          />,
+        ]}
       />
     </YGroup.Item>
   )
@@ -369,12 +476,11 @@ function PinnedDocument({
   if (!docId) return null
   return (
     <YGroup.Item>
-      <MenuItem
+      <SidebarItem
         onPress={onPress}
         active={active}
         icon={FileText}
         title={doc.data?.document?.title || docId}
-        iconAfter={null}
         indented
       />
     </YGroup.Item>

@@ -1,77 +1,61 @@
-import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
-import {usePublicationInContext} from '@mintter/app/models/publication'
 import {useGRPCClient} from '@mintter/app/app-context'
-import {Avatar} from '@mintter/app/components/avatar'
 import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
-import appError from '@mintter/app/errors'
+import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDraftList} from '@mintter/app/models/documents'
+import {usePublicationInContext} from '@mintter/app/models/publication'
 import {useDaemonReady} from '@mintter/app/node-status-context'
-import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
+  NavMode,
   NavRoute,
+  PublicationRouteContext,
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
 import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {getAvatarUrl} from '@mintter/app/utils/account-url'
-import {NavMode, PublicationRouteContext} from '@mintter/app/utils/navigation'
-import {Account, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
+import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
   Back,
   Button,
   ColorProp,
-  Draft,
   Forward,
-  ListItem,
   Menu,
-  Popover,
-  Separator,
-  Settings,
-  SizableText,
   TitlebarSection,
   Tooltip,
   View,
   XGroup,
   XStack,
-  YGroup,
-  YStack,
   useStream,
 } from '@mintter/ui'
 import {
   ArrowLeftFromLine,
   ArrowRightFromLine,
-  Bookmark,
-  Contact,
   Copy,
   ExternalLink,
   FilePlus2,
-  Globe,
-  Library,
   Link,
   Pencil,
-  Search,
+  Pin,
+  PinOff,
   Send,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useState} from 'react'
+import copyTextToClipboard from 'copy-text-to-clipboard'
+import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
-import {TitleBarProps} from './titlebar'
+import {useAppContext} from '../app-context'
+import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
+import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
+import {CloneGroupDialog} from './clone-group'
+import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
-import {AddGroupButton} from './new-group'
+import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
-import {useTriggerWindowEvent} from '../utils/window-events'
-import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {MenuItem} from './dropdown'
-import {useAppDialog} from './dialog'
-import {CloneGroupDialog} from './clone-group'
-import {useEntityTimeline} from '../models/changes'
-import {useAppContext} from '../app-context'
-import copyTextToClipboard from 'copy-text-to-clipboard'
-import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
+import {TitleBarProps} from './titlebar'
+import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -105,17 +89,94 @@ function NewDocumentButton() {
   )
 }
 
+export function DocOptionsButton() {
+  const route = useNavRoute()
+  if (route.key !== 'publication')
+    throw new Error(
+      'DocOptionsButton can only be rendered on publication route',
+    )
+  const pin = usePinDocument(route)
+  const menuItems: MenuItemType[] = [
+    {
+      key: 'link',
+      label: 'Copy Public Document URL',
+      icon: Link,
+      onPress: () => {
+        const id = unpackHmId(route.documentId)
+        if (!id) return
+        copyTextToClipboard(
+          createPublicWebHmUrl('d', id.eid, {version: route.versionId}),
+        )
+        toast.success('Copied Public Document URL')
+      },
+    },
+  ]
+  if (pin.isPinned) {
+    menuItems.push({
+      key: 'unpin',
+      label: 'Unpin from Sidebar',
+      icon: PinOff,
+      onPress: pin.unpin,
+    })
+  } else {
+    menuItems.push({
+      key: 'pin',
+      label: 'Pin to Sidebar',
+      icon: Pin,
+      onPress: pin.pin,
+    })
+  }
+
+  return (
+    <>
+      <OptionsDropdown menuItems={menuItems} />
+    </>
+  )
+}
+
+export function AccountOptionsButton() {
+  const route = useNavRoute()
+  if (route.key !== 'account')
+    throw new Error(
+      'AccountOptionsButton can only be rendered on account route',
+    )
+  const pin = usePinAccount(route.accountId)
+  const menuItems: MenuItemType[] = []
+  if (pin.isPinned) {
+    menuItems.push({
+      key: 'unpin',
+      label: 'Unpin from Sidebar',
+      icon: PinOff,
+      onPress: pin.unpin,
+    })
+  } else {
+    menuItems.push({
+      key: 'pin',
+      label: 'Pin to Sidebar',
+      icon: Pin,
+      onPress: pin.pin,
+    })
+  }
+
+  return (
+    <>
+      <OptionsDropdown menuItems={menuItems} />
+    </>
+  )
+}
+
 export function GroupOptionsButton() {
   const route = useNavRoute()
   const groupRoute = route.key === 'group' ? route : null
   const groupRouteVersion = groupRoute?.version
   const groupId = groupRoute?.groupId
-  if (!groupId)
+  if (!groupId || !groupRoute)
     throw new Error('GroupOptionsButton not supported in this route')
   const publish = usePublishGroupDialog()
   const myAccount = useMyAccount()
   const group = useGroup(groupId)
   const editInfo = useEditGroupInfoDialog()
+  const pin = usePinGroup(groupId)
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
   const cloneGroup = useAppDialog(CloneGroupDialog)
@@ -142,6 +203,21 @@ export function GroupOptionsButton() {
       },
     },
   ]
+  if (pin.isPinned) {
+    menuItems.push({
+      key: 'unpin',
+      label: 'Unpin from Sidebar',
+      icon: PinOff,
+      onPress: pin.unpin,
+    })
+  } else {
+    menuItems.push({
+      key: 'pin',
+      label: 'Pin to Sidebar',
+      icon: Pin,
+      onPress: pin.pin,
+    })
+  }
   // if (!isGroupOwner) return null // for now, this menu contains stuff for owners only. enable it for other people one day when it contains functionality for them
   if (isGroupOwner) {
     menuItems.push({
@@ -377,14 +453,15 @@ function CopyReferenceButton() {
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
-  const commonButtons = [<NewDocumentButton key="newDoc" />]
+  const commonButtons: ReactNode[] = []
+  // const commonButtons = [<NewDocumentButton key="newDoc" />]
   let buttonGroup = commonButtons
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />, ...commonButtons]
   } else if (route.key === 'groups') {
-    buttonGroup = [<AddGroupButton key="addGroup" />, ...commonButtons]
+    // buttonGroup = [<AddGroupButton key="addGroup" />, ...commonButtons]
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
@@ -393,6 +470,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
+      <DocOptionsButton key="docOptions" />,
       <EditDocActions
         key="editActions"
         contextRoute={route}
@@ -404,7 +482,11 @@ export function PageActionButtons(props: TitleBarProps) {
       ...commonButtons,
     ]
   } else if (route.key === 'account') {
-    buttonGroup = [<CopyReferenceButton key="copyRef" />, ...commonButtons]
+    buttonGroup = [
+      <AccountOptionsButton key="accountOptions" />,
+      <CopyReferenceButton key="copyRef" />,
+      ...commonButtons,
+    ]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }

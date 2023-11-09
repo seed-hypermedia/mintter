@@ -2,7 +2,7 @@ import {trpc} from '@mintter/desktop/src/trpc'
 import {useQueryInvalidator} from '../app-context'
 import {PublicationRoute} from '../utils/navigation'
 
-export function useToggleAccountPin(accountId: string) {
+export function usePinAccount(accountId: string) {
   const invalidate = useQueryInvalidator()
   const addPin = trpc.pins.addAccount.useMutation({
     onSuccess: () => {
@@ -26,10 +26,16 @@ export function useToggleAccountPin(accountId: string) {
   return {
     isPinned,
     togglePin,
+    pin() {
+      addPin.mutate(accountId)
+    },
+    unpin() {
+      removePin.mutate(accountId)
+    },
   }
 }
 
-export function useToggleGroupPin(groupId: string) {
+export function usePinGroup(groupId: string) {
   const invalidate = useQueryInvalidator()
   const addPin = trpc.pins.addGroup.useMutation({
     onSuccess: () => {
@@ -53,10 +59,16 @@ export function useToggleGroupPin(groupId: string) {
   return {
     isPinned,
     togglePin,
+    pin() {
+      addPin.mutate(groupId)
+    },
+    unpin() {
+      removePin.mutate(groupId)
+    },
   }
 }
 
-export function useToggleDocumentPin(route: PublicationRoute) {
+export function usePinDocument(route: PublicationRoute) {
   const pubInfo = {
     docId: route.documentId,
     groupId:
@@ -109,5 +121,11 @@ export function useToggleDocumentPin(route: PublicationRoute) {
   return {
     isPinned,
     togglePin,
+    pin() {
+      addPin.mutate(pubInfo)
+    },
+    unpin() {
+      removePin.mutate(pubInfo)
+    },
   }
 }

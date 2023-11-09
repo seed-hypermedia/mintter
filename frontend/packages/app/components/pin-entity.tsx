@@ -1,15 +1,11 @@
 import {Button, Tooltip} from '@mintter/ui'
 import {Pin, PinOff} from '@tamagui/lucide-icons'
-import {
-  useToggleAccountPin,
-  useToggleDocumentPin,
-  useToggleGroupPin,
-} from '../models/pins'
+import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {PublicationRoute} from '../utils/navigation'
 import {useState} from 'react'
 
 export function PinAccountButton({accountId}: {accountId: string}) {
-  const {isPinned, togglePin} = useToggleAccountPin(accountId)
+  const {isPinned, togglePin} = usePinAccount(accountId)
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }
@@ -50,7 +46,7 @@ function PinButton({onPress}: {onPress: () => void}) {
 }
 
 export function PinGroupButton({groupId}: {groupId: string}) {
-  const {isPinned, togglePin} = useToggleGroupPin(groupId)
+  const {isPinned, togglePin} = usePinGroup(groupId)
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }
@@ -66,7 +62,7 @@ export function PinGroupButton({groupId}: {groupId: string}) {
 }
 
 export function PinDocumentButton({route}: {route: PublicationRoute}) {
-  const {isPinned, togglePin} = useToggleDocumentPin(route)
+  const {isPinned, togglePin} = usePinDocument(route)
   if (isPinned) {
     return <UnpinButton onPress={togglePin} />
   }

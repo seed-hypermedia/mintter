@@ -5,10 +5,12 @@ import {
   ListItemProps,
   SizableText,
   SizableTextProps,
+  View,
+  XStack,
   YStack,
 } from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import {forwardRef} from 'react'
+import {ReactNode, forwardRef} from 'react'
 import {DialogOverlay} from './dialog'
 
 const Content = ({
@@ -145,11 +147,8 @@ export function MenuItem({
   icon,
   iconAfter,
   children,
-  indented,
-  bold,
-  active,
   ...props
-}: ListItemProps & {indented?: boolean; bold?: boolean; selected?: boolean}) {
+}: ListItemProps) {
   return (
     <ListItem
       hoverTheme
@@ -157,22 +156,17 @@ export function MenuItem({
       focusTheme
       paddingVertical="$2"
       paddingHorizontal="$4"
-      paddingLeft={indented ? '$8' : '$4'}
       textAlign="left"
       outlineColor="transparent"
       space="$2"
-      backgroundColor={active ? '$blue4' : undefined}
-      hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
+      opacity={disabled ? 0.5 : 1}
       userSelect="none"
-      color="$gray12"
-      cursor={active ? undefined : 'pointer'}
+      cursor={disabled ? 'not-allowed' : 'pointer'}
       title={
         title ? (
           <SizableText
-            fontSize="$3"
-            color="$gray12"
-            cursor={active ? undefined : 'pointer'}
-            fontWeight={bold ? 'bold' : undefined}
+            fontSize="$2"
+            cursor={disabled ? 'not-allowed' : 'pointer'}
             userSelect="none"
           >
             {title}
