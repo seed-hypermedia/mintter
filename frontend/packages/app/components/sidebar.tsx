@@ -1,7 +1,8 @@
 import {trpc} from '@mintter/desktop/src/trpc'
-import {unpackHmId} from '@mintter/shared'
+import {Account, unpackHmId} from '@mintter/shared'
 import {
   Draft,
+  ListItem,
   ScrollView,
   Separator,
   SizableText,
@@ -27,13 +28,19 @@ import {useAccount, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {useNavRoute} from '../utils/navigation'
+import {NavRoute, useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {MenuItem} from './dropdown'
-import {AccountDropdownItem} from './titlebar-common'
 import {useTriggerWindowEvent} from '../utils/window-events'
+import {Avatar} from './avatar'
+import {getAvatarUrl} from '../utils/account-url'
+import {memo} from 'react'
+import appError from '../errors'
+import {useAppContext} from '../app-context'
 
-export function AppSidebar() {
+export const AppSidebar = memo(FullAppSidebar)
+
+function FullAppSidebar() {
   const route = useNavRoute()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -43,6 +50,7 @@ export function AppSidebar() {
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)
   const triggerFocusedWindow = useTriggerWindowEvent()
+  const {platform} = useAppContext()
   const isVisible = isLocked || isHoverVisible
   return (
     <YStack
@@ -52,7 +60,7 @@ export function AppSidebar() {
       position="absolute"
       left={isVisible ? 0 : -(SidebarWidth - 50)}
       width={SidebarWidth}
-      top={40}
+      top={platform === 'darwin' ? 40 : 72}
       bottom={24}
       onMouseEnter={ctx.onMenuHover}
       onMouseLeave={ctx.onMenuHoverLeave}
@@ -66,7 +74,7 @@ export function AppSidebar() {
         borderColor="$borderColor"
       >
         <YGroup.Item>
-          <AccountDropdownItem account={account.data} onRoute={navigate} />
+          <MyAccountItem account={account.data} onRoute={navigate} />
         </YGroup.Item>
         <YGroup.Item>
           <MenuItem
@@ -241,6 +249,64 @@ export function AppSidebar() {
   )
 }
 
+export function MyAccountItem({
+  account,
+  onRoute,
+}: {
+  account?: Account
+  onRoute: (route: NavRoute) => void
+}) {
+  const route = useNavRoute()
+  const active = route.key == 'account' && route.accountId == account?.id
+  return (
+    <ListItem
+      hoverTheme
+      pressTheme
+      focusTheme
+      paddingVertical="$2"
+      minHeight={70}
+      paddingHorizontal="$4"
+      textAlign="left"
+      outlineColor="transparent"
+      space="$2"
+      userSelect="none"
+      backgroundColor={active ? '$blue4' : undefined}
+      hoverStyle={active ? {backgroundColor: '$blue4'} : {}}
+      cursor={active ? undefined : 'pointer'}
+      title={
+        <YStack>
+          <SizableText
+            fontSize="$2"
+            fontWeight={'bold'}
+            cursor={active ? 'not-allowed' : 'pointer'}
+            userSelect="none"
+          >
+            {account?.profile?.alias || 'Anonymous'}
+          </SizableText>
+          <SizableText size="$1" color="$9">
+            My Account
+          </SizableText>
+        </YStack>
+      }
+      onPress={() => {
+        if (!account?.id) {
+          appError('Account has not loaded.')
+          return
+        }
+        onRoute({key: 'account', accountId: account?.id})
+      }}
+      icon={
+        <Avatar
+          size={36}
+          label={account?.profile?.alias}
+          id={account?.id}
+          url={getAvatarUrl(account?.profile?.avatar)}
+        />
+      }
+    ></ListItem>
+  )
+}
+
 function PinnedAccount({accountId}: {accountId: string}) {
   const route = useNavRoute()
   const account = useAccount(accountId)
@@ -253,7 +319,14 @@ function PinnedAccount({accountId}: {accountId: string}) {
           navigate({key: 'account', accountId})
         }}
         active={route.key == 'account' && route.accountId == accountId}
-        icon={User}
+        icon={
+          <Avatar
+            size={22}
+            label={account?.data?.profile?.alias}
+            id={accountId}
+            url={getAvatarUrl(account?.data?.profile?.avatar)}
+          />
+        }
         title={account.data?.profile?.alias || accountId}
         iconAfter={null}
         indented
@@ -305,16 +378,5 @@ function PinnedDocument({
         indented
       />
     </YGroup.Item>
-  )
-}
-
-export function MainWrapper({children, ...props}: YStackProps & {}) {
-  return (
-    <XStack flex={1} {...props}>
-      {/* TODO: we cannot remove this ID here because the SlashMenu is referencing
-        this! */}
-      <AppSidebar />
-      <ScrollView id="scroll-page-wrapper">{children}</ScrollView>
-    </XStack>
   )
 }

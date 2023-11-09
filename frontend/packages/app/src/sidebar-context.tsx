@@ -7,6 +7,8 @@ type SidebarContextValue = {
   onMenuHover: () => void
   onMenuHoverLeave: () => void
   onToggleMenuLock: () => void
+  onLockSidebarOpen: () => void
+  onCloseSidebar: () => void
   isHoverVisible: StateStream<boolean>
   isLocked: StateStream<boolean>
 }
@@ -42,12 +44,23 @@ export function SidebarContextProvider(props: PropsWithChildren<{}>) {
           dispatch({type: 'sidebarLocked', value: nextIsLocked})
           setIsLocked(nextIsLocked)
         }
+        function onLockSidebarOpen() {
+          dispatch({type: 'sidebarLocked', value: true})
+          setIsLocked(true)
+        }
+        function onCloseSidebar() {
+          dispatch({type: 'sidebarLocked', value: false})
+          setIsLocked(false)
+          setIsHoverVisible(false)
+        }
         return {
           isHoverVisible,
           isLocked,
           onMenuHover,
           onMenuHoverLeave,
           onToggleMenuLock,
+          onLockSidebarOpen,
+          onCloseSidebar,
         }
       }, [])}
     >

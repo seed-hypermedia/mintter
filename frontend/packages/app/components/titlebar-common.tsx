@@ -22,6 +22,7 @@ import {Account, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
   Back,
   Button,
+  ColorProp,
   Draft,
   Forward,
   ListItem,
@@ -32,6 +33,7 @@ import {
   SizableText,
   TitlebarSection,
   Tooltip,
+  View,
   XGroup,
   XStack,
   YGroup,
@@ -53,7 +55,7 @@ import {
   Search,
   Send,
 } from '@tamagui/lucide-icons'
-import {memo, useState} from 'react'
+import {ReactNode, memo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from './titlebar'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
@@ -69,7 +71,7 @@ import {CloneGroupDialog} from './clone-group'
 import {useEntityTimeline} from '../models/changes'
 import {useAppContext} from '../app-context'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useSidebarContext} from '../src/sidebar-context'
+import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -446,231 +448,59 @@ export function NavigationButtons() {
   )
 }
 
-export function AccountDropdownItem({
-  account,
-  onRoute,
-}: {
-  account?: Account
-  onRoute: (route: NavRoute) => void
-}) {
-  const route = useNavRoute()
-  const disabled = route.key == 'account' && route.accountId == account?.id
-  return (
-    <ListItem
-      hoverTheme
-      pressTheme
-      focusTheme
-      paddingVertical="$2"
-      minHeight={70}
-      paddingHorizontal="$4"
-      textAlign="left"
-      outlineColor="transparent"
-      space="$2"
-      userSelect="none"
-      cursor={disabled ? 'not-allowed' : 'pointer'}
-      title={
-        <YStack>
-          <SizableText
-            fontSize="$2"
-            fontWeight={'bold'}
-            cursor={disabled ? 'not-allowed' : 'pointer'}
-            userSelect="none"
-          >
-            {account?.profile?.alias || 'My Profile'}
-          </SizableText>
-          <SizableText size="$1" color="$9">
-            My Profile
-          </SizableText>
-        </YStack>
-      }
-      disabled={disabled}
-      onPress={() => {
-        if (!account?.id) {
-          appError('Account has not loaded.')
-          return
-        }
-        onRoute({key: 'account', accountId: account?.id})
-      }}
-      icon={
-        <Avatar
-          size={36}
-          label={account?.profile?.alias}
-          id={account?.id}
-          url={getAvatarUrl(account?.profile?.avatar)}
-        />
-      }
-    ></ListItem>
-  )
-}
-
-function NavMenuContentUnpure({
-  onClose,
-  onRoute,
-}: {
-  onClose: () => void
-  onRoute: (route: NavRoute) => void
-}) {
-  const route = useNavRoute()
-  const {data: account} = useMyAccount()
-  const triggerFocusedWindow = useTriggerWindowEvent()
-
-  return (
-    <Popover.Content
-      padding={0}
-      elevation="$2"
-      enterStyle={{y: -10, opacity: 0}}
-      exitStyle={{y: -10, opacity: 0}}
-      elevate
-      animation={[
-        'quick',
-        {
-          opacity: {
-            overshootClamping: true,
-          },
-        },
-      ]}
-    >
-      <YGroup separator={<Separator />} elevation="$4">
-        <YGroup.Item>
-          <AccountDropdownItem account={account} onRoute={onRoute} />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            disabled={route.key == 'home'}
-            data-testid="menu-item-pubs"
-            onPress={() => {
-              onRoute({key: 'home'})
-            }}
-            title="Trusted Publications"
-            icon={Bookmark}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 1
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            disabled={route.key == 'all-publications'}
-            data-testid="menu-item-global"
-            onPress={() => {
-              onRoute({key: 'all-publications'})
-            }}
-            title="All Publications"
-            icon={Globe}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 2
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            onPress={() => {
-              onRoute({key: 'groups'})
-            }}
-            title="Groups"
-            icon={Library}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 3
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            disabled={route.key == 'drafts'}
-            data-testid="menu-item-drafts"
-            onPress={() => {
-              onRoute({key: 'drafts'})
-            }}
-            icon={Draft}
-            title="Drafts"
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 8
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            disabled={route.key == 'contacts'}
-            onPress={() => {
-              onRoute({key: 'contacts'})
-            }}
-            icon={Contact}
-            title="Contacts"
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; 9
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            onPress={() => {
-              triggerFocusedWindow('openQuickSwitcher')
-              onClose()
-            }}
-            title="Search / Open"
-            icon={Search}
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; K
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <MenuItem
-            onPress={() => {
-              onRoute({key: 'settings'})
-            }}
-            icon={Settings}
-            title="Settings"
-            iconAfter={
-              <SizableText size="$1" color="$color9">
-                &#8984; ,
-              </SizableText>
-            }
-          />
-        </YGroup.Item>
-      </YGroup>
-    </Popover.Content>
-  )
-}
-
-export function NavMenuButton() {
+export function NavMenuButton({left}: {left?: ReactNode}) {
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)
   let icon = Menu
   let tooltip = 'Lock Sidebar Open'
+  let onPress = ctx.onLockSidebarOpen
+  let key = 'lock'
+  let color: undefined | ColorProp = undefined
   if (isLocked) {
     icon = ArrowLeftFromLine
     tooltip = 'Close Sidebar'
+    onPress = ctx.onCloseSidebar
+    key = 'close'
+    color = '$color9'
   }
   if (!isLocked && isHoverVisible) {
     icon = ArrowRightFromLine
   }
   return (
-    <XStack position="relative" zIndex={1000} className="no-window-drag">
-      <Tooltip content={tooltip}>
-        <Button
-          size="$2"
-          icon={icon}
-          onMouseEnter={ctx.onMenuHover}
-          onMouseLeave={ctx.onMenuHoverLeave}
-          onPress={() => {
-            ctx.onToggleMenuLock()
-          }}
-        />
-      </Tooltip>
+    <XStack
+      marginLeft="$2"
+      // intention here is to hide the "close sidebar" button when the sidebar is locked, but the group="item" causes layout issues
+      // group="item"
+      jc="space-between"
+      width={
+        isLocked
+          ? SidebarWidth - 9 // not sure why this -9 is needed, but it makes the "close sidebar" button properly aligned with the sidebar width
+          : 'auto'
+      }
+    >
+      {left || <View />}
+      <XStack position="relative" zIndex={1000} className="no-window-drag">
+        <Tooltip
+          content={tooltip}
+          key={key} // use this key to make sure the component is unmounted when changes, to blur the button and make tooltip disappear
+        >
+          <Button
+            size="$2"
+            key={key}
+            icon={icon}
+            color={color}
+            // intention here is to hide the button when the sidebar is locked, but the group="item" causes layout issues
+            // {...(key === 'close'
+            //   ? {opacity: 0, '$group-item-hover': {opacity: 1}}
+            //   : {})}
+            chromeless={isLocked}
+            onMouseEnter={ctx.onMenuHover}
+            onMouseLeave={ctx.onMenuHoverLeave}
+            onPress={onPress}
+          />
+        </Tooltip>
+      </XStack>
     </XStack>
   )
 }
