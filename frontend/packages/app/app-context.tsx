@@ -53,6 +53,7 @@ export function AppContextProvider({
   return (
     <AppContext.Provider
       value={{
+        // platform: 'win32', // to test from macOS
         platform,
         grpcClient,
         queryClient,

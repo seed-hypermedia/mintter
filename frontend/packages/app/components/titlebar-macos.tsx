@@ -1,5 +1,5 @@
 import {TitleBarProps} from '@mintter/app/components/titlebar'
-import {TitlebarWrapper, XStack} from '@mintter/ui'
+import {TitlebarWrapper, View, XStack} from '@mintter/ui'
 import {
   NavMenuButton,
   NavigationButtons,
@@ -16,7 +16,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
   return (
     <TitlebarWrapper>
       <XStack
-        paddingHorizontal="$2"
+        paddingRight="$2"
         justifyContent="space-between"
         className="window-drag"
       >
@@ -29,12 +29,18 @@ export default function TitleBarMacos(props: TitleBarProps) {
         >
           <XStack
             flex={1}
-            paddingLeft={72} // this width to stay away from the traffic lights
+            paddingHorizontal={0}
             alignItems="flex-start"
             className="window-drag"
             gap="$2"
           >
-            <NavMenuButton />
+            <NavMenuButton
+              left={
+                <View
+                  width={72} // this width to stay away from the macOS window traffic lights
+                />
+              }
+            />
             <NavigationButtons />
             <PageContextControl {...props} />
           </XStack>

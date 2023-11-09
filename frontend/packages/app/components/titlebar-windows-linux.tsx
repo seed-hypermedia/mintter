@@ -331,7 +331,7 @@ export function SystemMenu() {
   )
 
   return (
-    <XStack className="no-window-drag">
+    <XStack className="no-window-drag" paddingLeft="$2">
       {menuItems.map((item) => (
         <Popover key={item.id} placement="bottom-start">
           <Popover.Trigger asChild>

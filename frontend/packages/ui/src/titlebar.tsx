@@ -6,6 +6,7 @@ export const TitlebarWrapper = styled(YStack, {
   className: 'window-drag',
   // theme: 'gray',
   paddingVertical: 0,
+  paddingHorizontal: 0,
   width: '100%',
   minHeight: 40,
   borderColor: 'transparent',
@@ -21,7 +22,7 @@ export const TitlebarWrapper = styled(YStack, {
 export const TitlebarRow = styled(XStack, {
   name: 'TitlebarRow',
   className: 'window-drag',
-  paddingHorizontal: '$2',
+  paddingRight: '$2',
   flex: 'none',
   flexShrink: 0,
   flexGrow: 0,
