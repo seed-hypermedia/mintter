@@ -171,6 +171,12 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 			FD:      rcmgr.Unlimited,
 			Memory:  rcmgr.Unlimited64,
 		},
+		Transient: rcmgr.ResourceLimits{
+			Streams: rcmgr.Unlimited,
+			Conns:   rcmgr.Unlimited,
+			FD:      rcmgr.Unlimited,
+			Memory:  rcmgr.Unlimited64,
+		},
 		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
 	}
 

@@ -135,6 +135,12 @@ func (r *Relay) Start() error {
 			FD:      rcmgr.Unlimited,
 			Memory:  rcmgr.Unlimited64,
 		},
+		Transient: rcmgr.ResourceLimits{
+			Streams: rcmgr.Unlimited,
+			Conns:   rcmgr.Unlimited,
+			FD:      rcmgr.Unlimited,
+			Memory:  rcmgr.Unlimited64,
+		},
 		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
 	}
 
