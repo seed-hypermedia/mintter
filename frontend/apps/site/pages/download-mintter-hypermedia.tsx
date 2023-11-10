@@ -1,13 +1,9 @@
-import {relativeFormattedDate} from '@mintter/shared'
 import {
   AppleIcon,
-  ButtonFrame,
   Button,
   LinuxIcon,
-  MainWrapper,
   PageSection,
   SizableText,
-  Square,
   View,
   WindowsIcon,
   XStack,
@@ -15,10 +11,14 @@ import {
   Group,
 } from '@mintter/ui'
 import {SiteHead} from 'src/site-head'
+import {EveryPageProps} from './_app'
+import {GetStaticProps} from 'next'
+import {getPageProps} from 'server/ssr-helpers'
+import {getSiteServerHelpers} from 'server/static-props'
 
 export default function DownloadPage(props: any) {
   return (
-    <MainWrapper>
+    <>
       <SiteHead pageTitle={`Download Mintter ${props.versionName}`} />
       <PageSection.Root>
         <PageSection.Side />
@@ -63,7 +63,7 @@ export default function DownloadPage(props: any) {
         </PageSection.Content>
         <PageSection.Side />
       </PageSection.Root>
-    </MainWrapper>
+    </>
   )
 }
 
@@ -80,7 +80,7 @@ function PlarformSection({
         padding="$4"
         alignItems="center"
         gap="$4"
-        elevate
+        elevation={1}
         borderWidth={1}
         borderColor="$color6"
         borderRadius="$3"
@@ -115,14 +115,18 @@ function extractedAsset(
 ) {
   return {name, downloadUrl: asset.browser_download_url}
 }
-export async function getStaticProps() {
+export const getStaticProps: GetStaticProps<EveryPageProps> = async (
+  context,
+) => {
   let req = await fetch(
     `https://api.github.com/repos/mintterhypermedia/mintter/releases/latest`,
   )
 
   let manifest = await req.json()
+  const {helpers} = await getSiteServerHelpers()
 
-  console.log(`== ~ getStaticProps ~ manifest:`, manifest)
+  // console.log(`== ~ getStaticProps ~ manifest:`, manifest)
+
   // example manifest.assets[].name:
   //  Mintter-2023.10.2-full.nupkg
   //  mintter-2023.10.2-win32-x64-setup.exe
@@ -142,10 +146,10 @@ export async function getStaticProps() {
   const linuxx64 = manifest.assets.find((asset: {name: string}) =>
     asset.name.match(/amd64.deb/),
   )
-  console.log(manifest)
+
   return {
     revalidate: 200, // update this every 200 seconds
-    props: {
+    props: await getPageProps(helpers, context, {
       versionName: manifest.name,
       releaseUrl: `https://github.com/MintterHypermedia/mintter/releases/tag/${manifest.tag_name}`,
       publishedAt: manifest.published_at,
@@ -167,6 +171,6 @@ export async function getStaticProps() {
           items: [extractedAsset('.deb', linuxx64)],
         },
       },
-    },
+    }),
   }
 }

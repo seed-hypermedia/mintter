@@ -354,17 +354,25 @@ const accountRouter = router({
 
 const siteInfoRouter = router({
   get: procedure.query(async () => {
-    const siteInfo = await queryClient.website.getSiteInfo({})
-    const groupId = unpackHmId(siteInfo.groupId || '')
-    const info = await queryClient.daemon.getInfo({})
-    const peerInfo = await queryClient.networking.getPeerInfo({
-      deviceId: info.deviceId,
-    })
-    return {
-      groupEid: groupId?.eid || '',
-      groupId: siteInfo.groupId,
-      version: '', // so, this will result in the site querying the latest group
-      p2pAddresses: peerInfo.addrs,
+    try {
+      const siteInfo = await queryClient.website.getSiteInfo({})
+      const groupId = unpackHmId(siteInfo.groupId || '')
+      const info = await queryClient.daemon.getInfo({})
+      const peerInfo = await queryClient.networking.getPeerInfo({
+        deviceId: info.deviceId,
+      })
+      return {
+        groupEid: groupId?.eid || '',
+        groupId: siteInfo.groupId,
+        version: '', // so, this will result in the site querying the latest group
+        p2pAddresses: peerInfo.addrs,
+      }
+    } catch (e) {
+      console.error(
+        'Error fetching site info. This is Ok during static generation when the site daemon is not available.',
+        e,
+      )
+      return null
     }
   }),
 })
