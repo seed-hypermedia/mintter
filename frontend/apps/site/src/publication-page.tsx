@@ -5,7 +5,6 @@ import {
   Publication,
   PublicationContent,
   PublicationHeading,
-  UnpackedDocId,
   UnpackedHypermediaId,
   createHmDocLink,
   groupDocUrl,
@@ -15,8 +14,6 @@ import {
 import {
   ArrowRight,
   Button,
-  Heading,
-  PageSection,
   Share,
   SideSection,
   SideSectionTitle,
@@ -31,9 +28,9 @@ import {BasicOGMeta, OGImageMeta} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import {ErrorPage} from './error-page'
-import Footer from './footer'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
+import {MainSiteLayout} from './site-layout'
 import {trpc} from './trpc'
 
 export type PublicationPageProps = {
@@ -50,24 +47,8 @@ export type PublicationPageData = {
   author?: Account | null
   editors: Array<Account | string | null> | null
 }
-let blockBorderRadius = '$3'
 
-function OpenInAppLink({url}: {url: string}) {
-  return (
-    <Button
-      onPress={() => window.open(url, '_blank')}
-      size="$2"
-      chromeless
-      icon={Share}
-    >
-      <XStack flex={1} alignItems="center">
-        <SizableText size="$2">Open in Mintter app</SizableText>
-      </XStack>
-    </Button>
-  )
-}
-
-export default function PublicationPage({
+export function PublicationPage({
   pathName,
   documentId,
   version,
@@ -78,8 +59,6 @@ export default function PublicationPage({
   version?: string | null
   contextGroup?: HMGroup | null
 }) {
-  const media = useMedia()
-
   const publication = trpc.publication.get.useQuery({
     documentId: documentId,
     versionId: version || '',
@@ -111,61 +90,64 @@ export default function PublicationPage({
         <BasicOGMeta title={pub?.document?.title} />
         {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
       </Head>
-      <SiteHead pageTitle={pub?.document?.title} />
-      <PageSection.Root>
-        <PublicationContextSidebar
-          group={contextGroup}
-          activePathName={pathName || ''}
-          // display={media.gtLg ? 'inherit' : 'none'}
-          // display="none"
-          // $gtLg={{display: 'inherit'}}
-        />
-        <PageSection.Content paddingBottom={80}>
-          {pub ? (
-            <>
-              <SitePublicationContentProvider unpackedId={pubId}>
-                {pub.document?.title ? (
-                  <PublicationHeading>{pub.document.title}</PublicationHeading>
-                ) : null}
-                <PublicationContent
-                  // paddingHorizontal={0}
-                  // $gtMd={{paddingHorizontal: '$3'}}
-                  // $gtLg={{paddingHorizontal: '$3'}}
-                  publication={pub}
+      <MainSiteLayout
+        head={<SiteHead pageTitle={pub?.document?.title} />}
+        leftSide={
+          <PublicationContextSide
+            group={contextGroup}
+            activePathName={pathName || ''}
+          />
+        }
+        rightSide={
+          <>
+            <YStack>
+              <PublicationMetadata publication={pub} pathName={pathName} />
+              <WebTipping
+                docId={documentId}
+                editors={pub?.document?.editors || []}
+              >
+                <OpenInAppLink
+                  url={createHmDocLink(documentId, pub?.version)}
                 />
-              </SitePublicationContentProvider>
-            </>
-          ) : publication.isLoading ? (
-            <PublicationPlaceholder />
-          ) : null}
-        </PageSection.Content>
-        <PageSection.Side>
-          <YStack
-            $gtLg={{
-              marginTop: 80,
-            }}
-          >
-            <PublicationMetadata publication={pub} pathName={pathName} />
-            <WebTipping
-              docId={documentId}
-              editors={pub?.document?.editors || []}
-            >
-              <OpenInAppLink url={createHmDocLink(documentId, pub?.version)} />
-            </WebTipping>
-          </YStack>
-        </PageSection.Side>
-
-        <PublicationContextSidebar
-          group={contextGroup}
-          activePathName={pathName || ''}
-          // display={media.gtLg ? 'none' : 'inherit'}
-          // display="inherit"
-          // $gtLg={{display: 'none'}}
-          // display="none"
-        />
-      </PageSection.Root>
-      <Footer />
+              </WebTipping>
+            </YStack>
+          </>
+        }
+      >
+        {pub ? (
+          <>
+            <SitePublicationContentProvider unpackedId={pubId}>
+              {pub.document?.title ? (
+                <PublicationHeading>{pub.document.title}</PublicationHeading>
+              ) : null}
+              <PublicationContent
+                // paddingHorizontal={0}
+                // $gtMd={{paddingHorizontal: '$3'}}
+                // $gtLg={{paddingHorizontal: '$3'}}
+                publication={pub}
+              />
+            </SitePublicationContentProvider>
+          </>
+        ) : publication.isLoading ? (
+          <PublicationPlaceholder />
+        ) : null}
+      </MainSiteLayout>
     </>
+  )
+}
+
+function OpenInAppLink({url}: {url: string}) {
+  return (
+    <Button
+      onPress={() => window.open(url, '_blank')}
+      size="$2"
+      chromeless
+      icon={Share}
+    >
+      <XStack flex={1} alignItems="center">
+        <SizableText size="$2">Open in Mintter app</SizableText>
+      </XStack>
+    </Button>
   )
 }
 
@@ -246,7 +228,7 @@ type ContentItem = {
   publication: null | HMPublication
   pathName: string
   version: string
-  docId: UnpackedDocId
+  docId: UnpackedHypermediaId
 }
 
 function GroupSidebarContent({
@@ -260,16 +242,8 @@ function GroupSidebarContent({
 }) {
   const groupId = group?.id ? unpackHmId(group?.id) : null
   return (
-    <SideSection
-      $gtLg={{
-        marginTop: 80,
-      }}
-    >
-      {groupId?.eid ? (
-        <XStack paddingHorizontal="$3">
-          <SideSectionTitle>Site Content:</SideSectionTitle>
-        </XStack>
-      ) : null}
+    <SideSection>
+      {groupId?.eid ? <SideSectionTitle>Site Content:</SideSectionTitle> : null}
       {content?.map((item) => {
         if (!item || !groupId?.eid) return null
         return (
@@ -286,15 +260,13 @@ function GroupSidebarContent({
   )
 }
 
-function PublicationContextSidebar({
+function PublicationContextSide({
   group,
   activePathName,
-  display,
   ...props
 }: {
   group?: HMGroup | null
   activePathName: string
-  display: any
 }) {
   const groupContent = trpc.group.listContent.useQuery(
     {
@@ -310,8 +282,6 @@ function PublicationContextSidebar({
       content={groupContent.data}
     />
   ) : null
+
   return groupSidebarContent
-  // return display != 'none' ? (
-  //   <PageSection.Side {...props}>{groupSidebarContent}</PageSection.Side>
-  // ) : null
 }

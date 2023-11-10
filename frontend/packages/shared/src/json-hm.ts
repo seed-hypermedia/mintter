@@ -1,18 +1,13 @@
 import type {
   Account,
-  Annotation,
-  Block,
-  BlockNode,
   ChangeInfo,
   Device,
-  Document,
-  Group,
+  Group_SiteInfo,
+  HMDocument,
   HMTimestamp,
   MttLink,
   Profile,
   Publication,
-  Group_SiteInfo,
-  HMDocument,
 } from '@mintter/shared'
 
 export type ServerChangeInfo = ChangeInfo
@@ -55,16 +50,6 @@ export type HMAccount = {
   id?: string
   profile?: HMProfile
   devices?: {[key: string]: HMDevice}
-}
-
-export type ServerGroup = Group
-export type HMGroup = {
-  id?: string
-  title?: string
-  description?: string
-  ownerAccountId?: string
-  createTime?: HMTimestamp
-  version?: string
 }
 
 export type ServerLink = MttLink

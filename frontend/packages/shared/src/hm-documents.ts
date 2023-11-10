@@ -144,6 +144,15 @@ export type HMDocument = {
   publishTime?: HMTimestamp
 }
 
+export type HMGroup = {
+  id?: string
+  title?: string
+  description?: string
+  ownerAccountId?: string
+  createTime?: HMTimestamp
+  version?: string
+}
+
 export type HMPublication = {
   document?: HMDocument
   version?: string

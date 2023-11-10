@@ -372,9 +372,12 @@ export function BlockNodeContent({
             backgroundColor={isHovering ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
-            $gtMd={{
-              right: isEmbed ? layoutUnit * -2.5 : layoutUnit * -2,
-            }}
+            $gtMd={
+              {
+                // disabled because it intersects with the sidebar at narrow screen widths:
+                // right: isEmbed ? layoutUnit * -1.5 : layoutUnit * -1.5,
+              }
+            }
           >
             {citations?.length ? (
               <Button
@@ -393,7 +396,7 @@ export function BlockNodeContent({
             {onCopyBlock ? (
               <Tooltip content="Copy block reference" delay={800}>
                 <Button
-                  size="$1"
+                  size="$2"
                   opacity={isHovering ? 1 : 0}
                   padding={layoutUnit / 4}
                   borderRadius={layoutUnit / 4}

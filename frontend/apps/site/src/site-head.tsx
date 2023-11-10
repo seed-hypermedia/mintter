@@ -12,8 +12,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     : 'Hypermedia Site (coming soon)'
   return (
     <PageSection.Root
-      // this prevents the head to be stretched as the other content in the page.
-      flex="none"
+    // this prevents the head to be stretched as the other content in the page.
     >
       <Head>
         <title>{pageTitle}</title>
