@@ -116,7 +116,9 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtLg ? 'inherit' : 'none'}
+          // display={media.gtLg ? 'inherit' : 'none'}
+          // display="none"
+          // $gtLg={{display: 'inherit'}}
         />
         <PageSection.Content paddingBottom={80}>
           {pub ? (
@@ -156,7 +158,10 @@ export default function PublicationPage({
         <PublicationContextSidebar
           group={contextGroup}
           activePathName={pathName || ''}
-          display={media.gtLg ? 'none' : 'inherit'}
+          // display={media.gtLg ? 'none' : 'inherit'}
+          // display="inherit"
+          // $gtLg={{display: 'none'}}
+          // display="none"
         />
       </PageSection.Root>
       <Footer />
@@ -305,8 +310,8 @@ function PublicationContextSidebar({
       content={groupContent.data}
     />
   ) : null
-
-  return display != 'none' ? (
-    <PageSection.Side {...props}>{groupSidebarContent}</PageSection.Side>
-  ) : null
+  return groupSidebarContent
+  // return display != 'none' ? (
+  //   <PageSection.Side {...props}>{groupSidebarContent}</PageSection.Side>
+  // ) : null
 }

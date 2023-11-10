@@ -1,31 +1,6 @@
-import {GetServerSideProps} from 'next'
-import {EveryPageProps} from './_app'
-import {getPageProps, serverHelpers} from 'server/ssr-helpers'
-import {prefetchGroup} from 'server/group'
-import {trpc} from 'src/trpc'
-import {ErrorPage} from 'src/error-page'
-import {GroupPage, GroupPageProps} from 'src/group-page'
+import {getGroupDocStaticProps} from 'server/static-props'
+import {GroupPage} from 'src/group-page'
 
-export default function HomePage({}: GroupPageProps) {
-  const siteInfo = trpc.siteInfo.get.useQuery()
-  return null
-  if (siteInfo.data?.groupId) {
-    return <GroupPage />
-  }
-  return (
-    <ErrorPage
-      title="Your site is ready to launch"
-      description="Use the secret setup URL to publish your group to this new site."
-    />
-  )
-}
+export default GroupPage
 
-export const getServerSideProps: GetServerSideProps<EveryPageProps> = async (
-  context,
-) => {
-  const helpers = serverHelpers({})
-  const version = (context.params?.v as string) || ''
-  const siteInfo = await helpers.siteInfo.get.fetch()
-  await prefetchGroup(helpers, siteInfo.groupId, version)
-  return {props: await getPageProps(helpers, context, {})}
-}
+export const getStaticProps = getGroupDocStaticProps

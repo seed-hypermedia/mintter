@@ -20,8 +20,13 @@ export const getGroupDocStaticProps: GetStaticProps<EveryPageProps> = async (
   const pathName = (context.params?.pathName as string) || '-'
   const versionId = (context.params?.versionId as string) || ''
   const groupEid = (context.params?.groupEid as string) || ''
-  const helpers = serverHelpers({})
-  const siteInfo = await helpers.siteInfo.get.fetch()
+  const {helpers, siteInfo} = await getSiteServerHelpers()
+  if (!siteInfo) {
+    return {
+      props: await getPageProps(helpers, context, {}),
+      revalidate: 1,
+    }
+  }
   const requestGroupId = groupEid ? createHmId('g', groupEid) : siteInfo.groupId
   const prefetchedGroup = await prefetchGroup(
     helpers,
@@ -33,35 +38,31 @@ export const getGroupDocStaticProps: GetStaticProps<EveryPageProps> = async (
   const revalidationTimeSeconds = versionId
     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change
     : 20 // 20 seconds if no version, doc may have been updated
-  console.log('======= Running getStaticProps.', {pathName, versionId})
-  console.log('------- Revalidation time (sec):', revalidationTimeSeconds)
+  // console.log('======= Running getStaticProps.', {pathName, versionId})
+  // console.log('------- Revalidation time (sec):', revalidationTimeSeconds)
   return {
     props: await getPageProps(helpers, context, {}),
     revalidate: revalidationTimeSeconds,
   }
 }
 
-// export const getGroupStaticProps: GetStaticProps<EveryPageProps> = async (
-//   context,
-// ) => {
-//   const groupEid = (context.params?.groupEid as string) || ''
-//   const versionId = (context.params?.versionId as string) || ''
-//   const helpers = serverHelpers({})
-//   const revalidationTimeSeconds = versionId
-//     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change
-//     : 20 // 20 seconds if no version, doc may have been updated
-//   return {
-//     props: await getPageProps(helpers, context, {}),
-//     revalidate: revalidationTimeSeconds,
-//   }
-// }
+export async function getSiteServerHelpers() {
+  const helpers = serverHelpers({})
+  try {
+    const siteInfo = await helpers.siteInfo.get.fetch()
+    return {helpers, siteInfo}
+  } catch (e) {
+    console.error('Error fetching site info', e)
+  }
+  return {helpers, siteInfo: undefined}
+}
 
 export const getDocStaticProps: GetStaticProps<EveryPageProps> = async (
   context,
 ) => {
   const docEid = (context.params?.docEid as string) || ''
   const versionId = (context.params?.versionId as string) || ''
-  const helpers = serverHelpers({})
+  const {helpers} = await getSiteServerHelpers()
   const docId = createHmId('d', docEid)
   await impatiently(
     helpers.publication.get.prefetch({
