@@ -7,6 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
+	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	relay_v2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	ma "github.com/multiformats/go-multiaddr"
@@ -114,6 +115,42 @@ func (r *Relay) Start() error {
 
 	opts = append(opts,
 		libp2p.ConnectionManager(cm),
+	)
+
+	// Start with the default scaling limits.
+	scalingLimits := rcmgr.DefaultLimits
+
+	// Add limits around included libp2p protocols
+	libp2p.SetDefaultServiceLimits(&scalingLimits)
+
+	// Turn the scaling limits into a concrete set of limits using `.AutoScale`. This
+	// scales the limits proportional to your system memory.
+	scaledDefaultLimits := scalingLimits.AutoScale()
+
+	// Tweak certain settings
+	cfg := rcmgr.PartialLimitConfig{
+		System: rcmgr.ResourceLimits{
+			Streams: rcmgr.Unlimited,
+			Conns:   rcmgr.Unlimited,
+			FD:      rcmgr.Unlimited,
+			Memory:  rcmgr.Unlimited64,
+		},
+		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
+	}
+
+	// Create our limits by using our cfg and replacing the default values with values from `scaledDefaultLimits`
+	limits := cfg.Build(scaledDefaultLimits)
+
+	// The resource manager expects a limiter, so we create one from our limits.
+	limiter := rcmgr.NewFixedLimiter(limits)
+
+	rm, err := rcmgr.NewResourceManager(limiter)
+	if err != nil {
+		panic(err)
+	}
+
+	opts = append(opts,
+		libp2p.ResourceManager(rm),
 	)
 
 	r.host, err = libp2p.New(opts...)
