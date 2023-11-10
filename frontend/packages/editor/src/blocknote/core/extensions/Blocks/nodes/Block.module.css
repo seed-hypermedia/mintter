@@ -214,7 +214,8 @@ NESTED BLOCKS
   border-width: 2px;
   border-radius: 5px;
   overflow: 'hidden';
-  padding: 7px;
+  padding: 16px;
+  margin-top: 12px;
   outline-width: 0;
 }
 

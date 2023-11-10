@@ -21,6 +21,7 @@ import {
 } from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema} from './schema'
+import {trpc} from '@mintter/desktop/src/trpc'
 
 export const MaxFileSizeMB = 150
 export const MaxFileSizeB = MaxFileSizeMB * 1024 * 1024
@@ -148,6 +149,7 @@ export function FileComponent({
 }) {
   const [replace, setReplace] = useState(false)
   const {saveCidAsFile} = useAppContext()
+  const upload = trpc.webImporting.importWebFile.useMutation()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)

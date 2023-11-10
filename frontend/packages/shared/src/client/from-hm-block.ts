@@ -156,6 +156,20 @@ export function fromHMBlock(
       ref: ref || '',
       ...extractContent(editorBlock.content),
     })
+
+    console.log('=== editorBlock', editorBlock, res)
+  }
+
+  if (editorBlock.type == 'imagePlaceholder') {
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'image',
+      attributes: {
+        name: editorBlock.props.name,
+      },
+      ref: '',
+      ...extractContent(editorBlock.content),
+    })
   }
 
   if (editorBlock.type === 'file') {

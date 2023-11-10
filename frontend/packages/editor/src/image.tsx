@@ -1,8 +1,10 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
+import {trpc, client} from '@mintter/desktop/src/trpc'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   BACKEND_FILE_UPLOAD_URL,
+  BACKEND_FILE_URL,
   getCIDFromIPFSUrl,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -12,6 +14,7 @@ import {
   Input,
   Label,
   SizableText,
+  Text,
   Tabs,
   XStack,
   YStack,
@@ -37,6 +40,9 @@ export const ImageBlock = createReactBlockSpec({
     url: {
       default: '',
     },
+    src: {
+      default: '',
+    },
     name: {
       default: '',
     },
@@ -60,30 +66,6 @@ const isValidUrl = (urlString: string) => {
   }
 }
 
-const uploadImageToIpfs = async (url: string) => {
-  if (url.startsWith('ipfs://')) return url
-  const blob = await fetch(url).then((res) => res.blob())
-  const webFile = new File([blob], `mintterImage.${blob.type.split('/').pop()}`)
-  if (webFile && webFile.size <= MaxFileSizeB) {
-    const formData = new FormData()
-    formData.append('file', webFile)
-
-    try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await response.text()
-      return {url: data ? `ipfs://${data}` : '', name: webFile.name}
-    } catch (error) {
-      console.error(error)
-      return {}
-    }
-  } else {
-    return {name: `The file size exceeds ${MaxFileSizeMB} MB.`}
-  }
-}
-
 type ImageType = {
   id: string
   props: {
@@ -102,8 +84,10 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [selected, setSelected] = useState(false)
+  const [isUploading, setUploading] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
+  const hasSrc = !!block.props.src
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
@@ -122,6 +106,24 @@ const Render = (
     }
   }, [selection])
 
+  useEffect(() => {
+    if (!isUploading && hasSrc) {
+      setUploading(true)
+      console.log('== UPLOADING...', block)
+      client.webImporting.importWebFile
+        .mutate(block.props.src)
+        .then(({cid}) => {
+          console.log('== UPLOADED...', block, cid)
+          editor.updateBlock(block, {
+            props: {
+              url: `ipfs://${cid}`,
+              src: '',
+            },
+          })
+        })
+    }
+  }, [hasSrc, block, isUploading])
+
   const assignFile = (newImage: ImageType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newImage.props},
@@ -131,6 +133,22 @@ const Render = (
 
   const setSelection = (isSelected: boolean) => {
     setSelected(isSelected)
+  }
+
+  if (typeof isIPFS == 'boolean' && !isIPFS) {
+    // this means we have a URL in the props.url that is not starting with `ipfs://`, which means we are uploading the image to IPFS
+    return (
+      <Button
+        contentEditable={false}
+        borderRadius={0}
+        size="$5"
+        justifyContent="flex-start"
+        backgroundColor="$color4"
+        width="100%"
+      >
+        uploading...
+      </Button>
+    )
   }
 
   return (
@@ -166,6 +184,7 @@ function ImageComponent({
   setSelected: any
 }) {
   const [replace, setReplace] = useState(false)
+  const [isDropping, setDropping] = useState(false)
 
   const {saveCidAsFile} = useAppContext()
   const saveImage = async () => {
@@ -204,23 +223,38 @@ function ImageComponent({
     [assign],
   )
 
-  useEffect(() => {
-    if (isValidUrl(block.props.url)) {
-      uploadImageToIpfs(block.props.url)
-        .then((imageData) => {
-          if (typeof imageData == 'string') {
-            // this means we got `ipfs://...`
-            assign({props: {url: imageData}} as ImageType)
-          } else if (imageData?.url) {
-            assign({props: imageData} as ImageType)
-          }
-        })
-        .catch((error) => console.log(error))
-    }
-  }, [assign, block.props.url])
-
   return (
     <YStack gap="$2">
+      {isDropping ? (
+        <XStack
+          position="absolute"
+          zIndex={100}
+          fullscreen
+          pointerEvents="none"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <XStack
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            backgroundColor="$backgroundColor"
+            borderWidth={2}
+            borderRadius="$2"
+            borderColor={'$color8'}
+          >
+            <Text fontFamily="$mono" fontSize="$3" zIndex={2}>
+              Drop to replace
+            </Text>
+          </XStack>
+          <XStack
+            opacity={0.75}
+            backgroundColor="$backgroundHover"
+            position="absolute"
+            fullscreen
+            zIndex={1}
+          />
+        </XStack>
+      ) : null}
       <YStack
         backgroundColor={selected ? '$color4' : '$color3'}
         borderColor={selected ? '$color8' : 'transparent'}
@@ -244,6 +278,7 @@ function ImageComponent({
           if (e.dataTransfer.effectAllowed === 'move') return
           e.preventDefault()
           e.stopPropagation()
+          setDropping(false)
           if (selected) setSelected(false)
           if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const file = Array.from(e.dataTransfer.files)[0]
@@ -258,11 +293,13 @@ function ImageComponent({
         onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
           e.preventDefault()
           e.stopPropagation()
+          setDropping(true)
         }}
         onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
           const relatedTarget = e.relatedTarget as HTMLElement
           e.preventDefault()
           e.stopPropagation()
+          setDropping(true)
           if (
             (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
             e.dataTransfer.effectAllowed !== 'move'
@@ -274,6 +311,7 @@ function ImageComponent({
           const relatedTarget = e.relatedTarget as HTMLElement
           e.preventDefault()
           e.stopPropagation()
+          setDropping(false)
           if (
             (!relatedTarget || !e.currentTarget.contains(relatedTarget)) &&
             e.dataTransfer.effectAllowed !== 'move'
@@ -336,7 +374,7 @@ function ImageComponent({
       </YStack>
       <InlineContent
         className="image-caption"
-        onClick={() => setSelected(false)}
+        // onClick={() => setSelected(false)}
       />
     </YStack>
   )
@@ -352,6 +390,7 @@ function ImageForm({
   editor: BlockNoteEditor<HMBlockSchema>
 }) {
   const [url, setUrl] = useState('')
+  const upload = trpc.webImporting.importWebFile.useMutation()
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
     name: string
@@ -431,11 +470,16 @@ function ImageForm({
 
   const submitImage = async (url: string) => {
     if (isValidUrl(url)) {
-      const imageData = await uploadImageToIpfs(url)
-      if (imageData?.url) {
-        assign({props: imageData} as ImageType)
-      } else if (imageData?.name)
-        setFileName({name: imageData.name, color: 'red'})
+      const imageData = await upload.mutateAsync(url)
+      if (imageData?.cid) {
+        assign({props: {url: `ipfs://${imageData}`}} as ImageType)
+      } else {
+        let imgTypeSplit = imageData.type.split('/')
+        setFileName({
+          name: `uploadedImage.${imgTypeSplit[imgTypeSplit.length - 1]}`,
+          color: 'red',
+        })
+      }
     } else setFileName({name: 'The provided URL is invalid.', color: 'red'})
   }
 
