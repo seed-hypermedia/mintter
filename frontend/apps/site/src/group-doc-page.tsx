@@ -1,7 +1,7 @@
 import {createHmId} from '@mintter/shared'
 import {Heading, Spinner} from '@mintter/ui'
 import {useRouter} from 'next/router'
-import {PublicationPage} from 'src/doc-page'
+import {PublicationPage} from 'src/publication-page'
 import {trpc} from 'src/trpc'
 import {GroupPage} from './group-page'
 

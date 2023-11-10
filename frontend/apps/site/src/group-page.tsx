@@ -1,5 +1,6 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  HMGroup,
   HMPublication,
   PublicationContent,
   UnpackedHypermediaId,
@@ -7,7 +8,6 @@ import {
   formattedDate,
   unpackHmId,
 } from '@mintter/shared'
-import {HMGroup} from '@mintter/shared/src/json-hm'
 import {
   Button,
   ButtonText,
@@ -26,10 +26,11 @@ import {AccountAvatarLink} from './account-row'
 import Footer from './footer'
 import {GroupMetadata} from './group-metadata'
 import {BasicOGMeta, OGImageMeta} from './head'
-import {useGroupContentUrl} from './doc-page'
+import {useGroupContentUrl} from './publication-page'
 import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
+import {MainSiteLayout} from './site-layout'
 
 export function GroupPage() {
   const router = useRouter()
@@ -59,15 +60,15 @@ export function GroupPage() {
       enabled: enabledContentQuery,
     },
   )
-  console.log('GroupPage', {
-    displayVersion,
-    requestedVersion,
-    groupId,
-    q: router.query,
-    content: groupContent.data,
-    enabledContent: enabledContentQuery,
-    group: group.data,
-  })
+  // console.log('GroupPage', {
+  //   displayVersion,
+  //   requestedVersion,
+  //   groupId,
+  //   q: router.query,
+  //   content: groupContent.data,
+  //   enabledContent: enabledContentQuery,
+  //   group: group.data,
+  // })
 
   const loadedGroup = group.data?.group
 
@@ -120,7 +121,7 @@ export function GroupPage() {
       ? `/api/content-image/g/${groupEid}/${displayVersion}/media.png`
       : undefined
   return (
-    <YStack flex={1}>
+    <>
       <Head>
         {loadedGroup ? (
           <>
@@ -138,34 +139,19 @@ export function GroupPage() {
           </>
         ) : null}
       </Head>
-      <SiteHead
-        pageTitle={frontPageItem?.publication?.document?.title || undefined}
-      />
-      <PageSection.Root>
-        <PageSection.Side />
-        <PageSection.Content>
-          <YStack
-          // paddingHorizontal="$3"
-          // $gtMd={{paddingHorizontal: '$4'}}
-          // gap="$2"
-          // alignItems="baseline"
-          >
-            {mainView}
-          </YStack>
-        </PageSection.Content>
-        <PageSection.Side>
-          <YStack
-            className="publication-sidenav-sticky"
-            $gtLg={{
-              marginTop: 80,
-            }}
-          >
-            <GroupMetadata group={group.data?.group} groupId={groupId} />
-          </YStack>
-        </PageSection.Side>
-      </PageSection.Root>
-      <Footer />
-    </YStack>
+      <MainSiteLayout
+        head={
+          <SiteHead
+            pageTitle={frontPageItem?.publication?.document?.title || undefined}
+          />
+        }
+        rightSide={
+          <GroupMetadata group={group.data?.group} groupId={groupId} />
+        }
+      >
+        <YStack>{mainView}</YStack>
+      </MainSiteLayout>
+    </>
   )
 }
 
@@ -301,6 +287,7 @@ function ListviewWrapper({children}: {children: ReactNode}) {
       gap="$2"
       alignItems="baseline"
       marginTop="$5"
+      paddingBottom="$4"
     >
       {children}
     </YStack>

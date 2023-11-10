@@ -74,7 +74,6 @@ export const SideContainer = styled(YStack, {
 })
 
 const PageSectionRoot = styled(Stack, {
-  flex: 1,
   position: 'relative',
   flexDirection: 'column',
   width: '100%',
@@ -86,18 +85,7 @@ const PageSectionRoot = styled(Stack, {
 })
 
 const PageSectionContent = styled(YStack, {
-  variants: {
-    show: {
-      true: {
-        display: 'inherit',
-      },
-      false: {
-        display: 'none',
-      },
-    },
-  },
   alignSelf: 'stretch',
-
   width: '100%',
   flex: 1,
   maxWidth: 720,
@@ -109,13 +97,6 @@ const PageSectionContent = styled(YStack, {
 })
 
 const PageSectionSide = styled(YStack, {
-  variants: {
-    show: {
-      true: {
-        padding: '$2',
-      },
-    },
-  },
   maxWidth: 720,
   alignSelf: 'center',
   width: '100%',
