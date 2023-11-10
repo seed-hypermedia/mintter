@@ -1,6 +1,13 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
-import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
+import {
+  Button,
+  ButtonProps,
+  ButtonText,
+  Link,
+  Tooltip,
+  XStack,
+} from '@mintter/ui'
 import {ComponentProps, ReactElement} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
@@ -73,9 +80,9 @@ export function TimeAccessory({
         fontFamily="$body"
         fontSize="$2"
         data-testid="list-item-date"
-        minWidth="10ch"
-        textAlign="right"
         onPress={onPress}
+        // alignSelf="flex-end"
+        justifyContent="flex-end"
       >
         {time ? formattedDate(time) : '...'}
       </ButtonText>

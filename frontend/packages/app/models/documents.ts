@@ -26,6 +26,7 @@ import {
   ListPublicationsResponse,
   Publication,
   fromHMBlock,
+  getBlockNodeById,
   hmDocument,
   hmPublication,
   isHypermediaScheme,
@@ -550,7 +551,10 @@ export function useDraftEditor({
 
             let capturedChanges = [...changes, ...deletedBlocks]
 
+            console.log(`== ~ capturedChanges:`, capturedChanges)
+
             if (capturedChanges.length) {
+              // capturedChanges = capturedChanges.map((i) => i.toJson())
               diagnosis.append(documentId, {
                 key: 'will.updateDraft',
                 // note: 'regular updateDraft',
@@ -559,7 +563,7 @@ export function useDraftEditor({
               try {
                 let mutation = await grpcClient.drafts.updateDraft({
                   documentId,
-                  changes: capturedChanges,
+                  changes: [...capturedChanges],
                 })
 
                 console.log(`== ~ mutation:`, mutation)
@@ -596,64 +600,8 @@ export function useDraftEditor({
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       writeEditorStream(editor.topLevelBlocks)
+      observeBlocks(editor, editor.topLevelBlocks, () => send({type: 'CHANGE'}))
       send({type: 'CHANGE'})
-
-      function observeBlocks(
-        blocks: EditorBlock<typeof hmBlockSchema>[],
-        parentId: string,
-      ) {
-        blocks.forEach((block, index) => {
-          // if (block.type === 'imagePlaceholder' && block.props.src) {
-          //   editor.updateBlock(block, {
-          //     type: 'image',
-          //     props: {
-          //       url: block.props.src,
-          //       name: '',
-          //     },
-          //   })
-          // }
-          let embedRef = extractEmbedRefOfLink(block)
-          if (embedRef) {
-            editor.updateBlock(block, {
-              type: 'embed',
-              content: [
-                {
-                  type: 'text',
-                  text: ' ',
-                  styles: {},
-                },
-              ],
-              props: {
-                ref: embedRef,
-              },
-            })
-            const {block: currentBlock, nextBlock} =
-              editor.getTextCursorPosition()
-            if (nextBlock) {
-              editor.setTextCursorPosition(nextBlock)
-            } else {
-              editor.insertBlocks(
-                [
-                  {
-                    type: 'paragraph',
-                    content: [],
-                  },
-                ],
-                currentBlock,
-                'after',
-              )
-              editor.setTextCursorPosition(
-                editor.getTextCursorPosition().nextBlock!,
-              )
-            }
-          }
-
-          if (block.children) {
-            observeBlocks(block.children, block.id)
-          }
-        })
-      }
-      observeBlocks(editor.topLevelBlocks, '')
     },
     linkExtensionOptions: {
       openOnClick: false,
@@ -1104,4 +1052,31 @@ function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
     a1.ref == a2.ref &&
     a1.language == a2.language
   )
+}
+
+function observeBlocks(
+  editor: BlockNoteEditor,
+  blocks: Array<EditorBlock<typeof hmBlockSchema>>,
+  onChange: () => void,
+) {
+  blocks.forEach((block) => {
+    if (block.type == 'image') {
+      console.log('== IMG', block)
+    }
+    if (block.type == 'imagePlaceholder' && block.props.src) {
+      console.log('== UPDATE PLACEHOLDER', block)
+      editor.updateBlock(block, {
+        type: 'image',
+        props: {
+          src: block.props.src,
+          name: block.props.name,
+        },
+      })
+      onChange()
+    }
+
+    if (block.children) {
+      observeBlocks(editor, block.children, onChange)
+    }
+  })
 }
