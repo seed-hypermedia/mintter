@@ -6,7 +6,6 @@ import {tamaguiPlugin} from '@tamagui/vite-plugin'
 const _tamaguiPlugin = tamaguiPlugin({
   components: ['@mintter/ui', 'tamagui'],
   config: './tamagui.config.ts',
-  useReactNativeWebLite: true,
   themeBuilder: {
     input: '../../packages/ui/src/themes/theme.ts',
     output: '../../packages/ui/src/themes-generated.ts',

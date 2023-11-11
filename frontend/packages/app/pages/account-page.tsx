@@ -217,7 +217,7 @@ export default function AccountPage() {
                   exitStyle={{y: -10, opacity: 0}}
                   elevate
                   animation={[
-                    'quick',
+                    'fast',
                     {
                       opacity: {
                         overshootClamping: true,

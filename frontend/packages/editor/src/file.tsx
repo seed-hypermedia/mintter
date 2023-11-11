@@ -474,7 +474,7 @@ function FileForm({
           exitStyle={{x: 0, y: -20, opacity: 0}}
           y={-10}
           animation={[
-            'quick',
+            'fast',
             {
               opacity: {
                 overshootClamping: true,

@@ -29,7 +29,7 @@ export function Tooltip({
         paddingVertical="$1"
         paddingHorizontal="$2"
         animation={[
-          'quick',
+          'fast',
           {
             opacity: {
               overshootClamping: true,

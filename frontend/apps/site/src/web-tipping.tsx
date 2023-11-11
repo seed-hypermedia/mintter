@@ -616,14 +616,14 @@ function DontationDialog({
     >
       <Dialog.Portal>
         <Dialog.Overlay
-          animation="quick"
+          animation="fast"
           opacity={0.8}
           enterStyle={{opacity: 0}}
           exitStyle={{opacity: 0}}
         />
         <Dialog.Content
           animation={[
-            'quick',
+            'fast',
             {
               opacity: {
                 overshootClamping: true,

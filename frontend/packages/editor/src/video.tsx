@@ -473,7 +473,7 @@ function VideoForm({
             enterStyle={{x: 0, y: -10, opacity: 0}}
             exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
-              'quick',
+              'fast',
               {
                 opacity: {
                   overshootClamping: true,

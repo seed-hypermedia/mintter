@@ -36,7 +36,7 @@ function AccountContent({account}: {account: HMAccount | null | undefined}) {
         elevate
         size="$4"
         bordered
-        animation="bouncy"
+        animation="fast"
         flex={1}
         height={300}
         // scale={0.9}
