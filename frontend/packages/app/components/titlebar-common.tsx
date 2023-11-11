@@ -555,7 +555,8 @@ export function NavMenuButton({left}: {left?: ReactNode}) {
       // intention here is to hide the "close sidebar" button when the sidebar is locked, but the group="item" causes layout issues
       // group="item"
       jc="space-between"
-      width={
+      width="100%"
+      maxWidth={
         isLocked
           ? SidebarWidth - 9 // not sure why this -9 is needed, but it makes the "close sidebar" button properly aligned with the sidebar width
           : 'auto'

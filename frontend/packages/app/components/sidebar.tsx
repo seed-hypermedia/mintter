@@ -66,7 +66,8 @@ function FullAppSidebar() {
       animation="fast"
       position="absolute"
       x={isVisible ? 0 : -(SidebarWidth - 50)}
-      width={SidebarWidth}
+      width="100%"
+      maxWidth={SidebarWidth}
       top={platform === 'darwin' ? 40 : 72}
       bottom={24}
       onMouseEnter={ctx.onMenuHover}
