@@ -5,7 +5,7 @@ function SidebarSpacer() {
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const sidebarSpacing = isLocked ? SidebarWidth : 0
-  return <View style={{width: sidebarSpacing}} />
+  return <View style={{maxWidth: sidebarSpacing, width: '100%'}} />
 }
 
 export function MainWrapper({children, ...props}: YStackProps & {}) {
