@@ -26,3 +26,7 @@ body {
 .split-view-view {
   height: 100%;
 }
+
+::-webkit-scrollbar {
+  display: none !important;
+}
