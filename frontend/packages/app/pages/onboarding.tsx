@@ -630,7 +630,7 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
         import.meta.env.VITE_NO_ANIMS
           ? undefined
           : [
-              'lazy',
+              'medium',
               {
                 opacity: {
                   overshootClamping: true,

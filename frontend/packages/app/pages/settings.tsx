@@ -796,7 +796,7 @@ function WalletCard({
 
   return (
     <Card
-      animation="bouncy"
+      animation="medium"
       size="$4"
       theme="green"
       width={260}

@@ -1,29 +1,7 @@
 import {createAnimations} from '@tamagui/animations-css'
 
 export const animations = createAnimations({
-  '100ms': {
-    type: 'timing',
-    duration: 100,
-  },
-  '200ms': {
-    type: 'timing',
-    duration: 200,
-  },
-  bouncy: {
-    type: 'spring',
-    damping: 10,
-    mass: 0.9,
-    stiffness: 100,
-  },
-  lazy: {
-    type: 'spring',
-    damping: 20,
-    stiffness: 60,
-  },
-  quick: {
-    type: 'spring',
-    damping: 20,
-    mass: 1.2,
-    stiffness: 250,
-  },
+  fast: 'ease-in 150ms',
+  medium: 'ease-in 300ms',
+  slow: 'ease-in 450ms',
 })

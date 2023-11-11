@@ -63,8 +63,9 @@ function FullAppSidebar() {
       backgroundColor={'$color1'}
       borderRightWidth={1}
       borderColor={'$color4'}
+      animation="fast"
       position="absolute"
-      left={isVisible ? 0 : -(SidebarWidth - 50)}
+      x={isVisible ? 0 : -(SidebarWidth - 50)}
       width={SidebarWidth}
       top={platform === 'darwin' ? 40 : 72}
       bottom={24}

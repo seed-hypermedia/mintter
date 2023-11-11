@@ -305,7 +305,7 @@ const ContextPopoverContent = styled(Popover.Content, {
   exitStyle: {y: -10, opacity: 0},
   elevate: true,
   animation: [
-    'quick',
+    'fast',
     {
       opacity: {
         overshootClamping: true,
@@ -836,7 +836,7 @@ function PublishDialogInstance({
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
-          animation="quick"
+          animation="fast"
           opacity={0.5}
           enterStyle={{opacity: 0}}
           exitStyle={{opacity: 0}}
@@ -847,7 +847,7 @@ function PublishDialogInstance({
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={[
-            'quick',
+            'fast',
             {
               opacity: {
                 overshootClamping: true,

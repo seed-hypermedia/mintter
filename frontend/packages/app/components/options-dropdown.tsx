@@ -39,9 +39,9 @@ export function OptionsDropdown({
         elevation="$2"
         enterStyle={{y: -10, opacity: 0}}
         exitStyle={{y: -10, opacity: 0}}
-        elevate
+        elevate={true}
         animation={[
-          'quick',
+          'fast',
           {
             opacity: {
               overshootClamping: true,

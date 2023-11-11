@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@mintter/prettier": "*",
-    "@tamagui/build": "1.74.21",
+    "@tamagui/build": "latest",
     "eslint-config-custom": "*"
   }
 }
