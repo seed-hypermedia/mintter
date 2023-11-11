@@ -58,6 +58,11 @@ function FullAppSidebar() {
   const triggerFocusedWindow = useTriggerWindowEvent()
   const {platform} = useAppContext()
   const isVisible = isLocked || isHoverVisible
+  let top = platform === 'darwin' ? 40 : 72
+  if (!isLocked) {
+    top += 8
+  }
+  let bottom = isLocked ? 24 : 32
   return (
     <YStack
       backgroundColor={'$color1'}
@@ -68,8 +73,11 @@ function FullAppSidebar() {
       x={isVisible ? 0 : -(SidebarWidth - 50)}
       width="100%"
       maxWidth={SidebarWidth}
-      top={platform === 'darwin' ? 40 : 72}
-      bottom={24}
+      elevation={!isLocked ? '$4' : undefined}
+      top={top}
+      bottom={bottom}
+      borderTopRightRadius={!isLocked ? '$3' : undefined}
+      borderBottomRightRadius={!isLocked ? '$3' : undefined}
       onMouseEnter={ctx.onMenuHover}
       onMouseLeave={ctx.onMenuHoverLeave}
       opacity={isVisible ? 1 : 0}

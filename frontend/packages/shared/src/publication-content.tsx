@@ -3,6 +3,7 @@ import {
   BlockNode,
   HMBlock,
   HMBlockChildrenType,
+  HMBlockCodeBlock,
   HMBlockFile,
   HMBlockNode,
   HMInlineContent,
@@ -15,30 +16,28 @@ import {
   isHypermediaScheme,
   toHMInlineContent,
   unpackHmId,
-  IS_PROD_DESKTOP,
-  HMBlockCodeBlock,
 } from '@mintter/shared'
 import {
   Button,
-  ColorProp,
-  Copy,
-  File,
   Check as CheckIcon,
   Checkbox,
   CheckboxProps,
+  ColorProp,
+  Copy,
+  File,
+  Label,
+  RadioGroup,
   SizableText,
   SizableTextProps,
+  SizeTokens,
   Text,
   TextProps,
-  Label,
   Tooltip,
   UIAvatar,
-  RadioGroup,
-  SizeTokens,
   XStack,
+  XStackProps,
   YStack,
   YStackProps,
-  XStackProps,
 } from '@mintter/ui'
 import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {
@@ -49,11 +48,11 @@ import {
   useState,
 } from 'react'
 import {HMAccount, HMGroup} from './json-hm'
-import './publication-content.css'
 import {
   contentLayoutUnit,
   contentTextUnit,
 } from './publication-content-constants'
+import './publication-content.css'
 
 export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>
@@ -343,7 +342,6 @@ export function BlockNodeContent({
   }, [blockNode.block, headingMarginStyles])
 
   const isEmbed = blockNode.block?.type == 'embed'
-
   return (
     <YStack
       className="blocknode-content"
