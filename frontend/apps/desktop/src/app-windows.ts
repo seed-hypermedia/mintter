@@ -152,12 +152,12 @@ export function createAppWindow(input: {
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#151515' : '#f9f9f9',
     frame: false,
     autoHideMenuBar: true,
-    // width: 1200,
-    // height: 800,
     ...bounds,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
+    minWidth: 800,
+    minHeight: 600,
     icon: import.meta.env.RELEASE_NIGHTLY
       ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
       : path.resolve(__dirname, '../assets/icons/icon.png'),
