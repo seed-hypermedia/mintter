@@ -192,6 +192,7 @@ export function DeveloperSettings() {
         <XStack jc="space-between">
           {enabledDevTools ? <EnabledTag /> : <View />}
           <Button
+            size="$2"
             theme={enabledDevTools ? 'red' : 'green'}
             onPress={() => {
               writeExperiments.mutate({developerTools: !enabledDevTools})
@@ -208,6 +209,7 @@ export function DeveloperSettings() {
         <XStack jc="space-between">
           {enabledPubContentDevMenu ? <EnabledTag /> : <View />}
           <Button
+            size="$2"
             theme={enabledPubContentDevMenu ? 'red' : 'green'}
             onPress={() => {
               writeExperiments.mutate({
@@ -224,6 +226,7 @@ export function DeveloperSettings() {
       <SettingsSection title="Draft Logs">
         <XStack space>
           <Button
+            size="$2"
             icon={ExternalLink}
             onPress={() => {
               openDraftLogs.mutate()
@@ -236,29 +239,6 @@ export function DeveloperSettings() {
       </SettingsSection>
       {/* <TestFileUpload /> */}
     </>
-  )
-}
-
-function TestFileUpload() {
-  const upload = trpc.webImporting.importWebFile.useMutation()
-  return (
-    <Button
-      onPress={() => {
-        upload
-          .mutateAsync(
-            'https://cdn.vocab.com/articles/ll/meme-and-variation/memes_clip_image002_0000.jpg',
-          )
-          .then(({cid, type}) => {
-            toast.success(`Imported to CID: ${cid}. Type is ${type}`)
-          })
-          .catch((e) => {
-            toast.error('Failed to import this file')
-          })
-      }}
-      theme="blue"
-    >
-      Test Image Import from URL
-    </Button>
   )
 }
 
@@ -483,15 +463,14 @@ export function ExperimentSection({
 function EnabledTag() {
   return (
     <XStack
-      backgroundColor="$blue12"
-      padding="$2"
+      padding="$1"
       paddingHorizontal="$3"
       gap="$3"
       alignItems="center"
       borderRadius="$2"
     >
-      <Check size="$1" color="$color1" />
-      <SizableText size="$1" color="$color1" fontWeight="bold">
+      <Check size="$1" color="$blue12" />
+      <SizableText size="$1" color="$blue12" fontWeight="bold">
         Enabled
       </SizableText>
     </XStack>

@@ -27,6 +27,7 @@ import {
   View,
   XGroup,
   XStack,
+  XStackProps,
   useStream,
 } from '@mintter/ui'
 import {
@@ -549,14 +550,14 @@ export function NavMenuButton({left}: {left?: ReactNode}) {
   if (!isLocked && isHoverVisible) {
     icon = ArrowRightFromLine
   }
+
   return (
     <XStack
       marginLeft="$2"
       // intention here is to hide the "close sidebar" button when the sidebar is locked, but the group="item" causes layout issues
       // group="item"
-      jc="space-between"
-      width="100%"
-      maxWidth={
+      justifyContent="space-between"
+      width={
         isLocked
           ? SidebarWidth - 9 // not sure why this -9 is needed, but it makes the "close sidebar" button properly aligned with the sidebar width
           : 'auto'
