@@ -4,6 +4,8 @@ import {useRouter} from 'next/router'
 import {PublicationPage} from 'src/publication-page'
 import {trpc} from 'src/trpc'
 import {GroupPage} from './group-page'
+import {ErrorPage} from './error-page'
+import NotFoundPage from 'pages/404'
 
 export function GroupDocPage({}) {
   const router = useRouter()
@@ -31,12 +33,13 @@ export function GroupDocPage({}) {
       enabled: !!displayVersion,
     },
   )
+
   if (isGroupPage) return <GroupPage />
-  if (!group.data?.group) return <Heading>Group not found</Heading>
+  if (!group.data?.group) return <ErrorPage title="Group not found" />
   if (groupContent.isInitialLoading) return <Spinner />
-  if (!groupContent.data) return <Heading>Not found</Heading>
+  if (!groupContent.data) return <NotFoundPage />
   const pathItem = groupContent.data.find((item) => item?.pathName === pathName)
-  if (!pathItem) return <Heading>Not found</Heading>
+  if (!pathItem) return <NotFoundPage />
   return (
     <PublicationPage
       pathName={pathName}

@@ -16,6 +16,7 @@ import {OpenInAppLink} from 'src/metadata'
 import {SiteHead} from 'src/site-head'
 import {trpc} from 'src/trpc'
 import {MainSiteLayout} from './site-layout'
+import {ErrorPage} from './error-page'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
   return (
@@ -42,6 +43,11 @@ export default function AccountPage({}: {}) {
   const router = useRouter()
   const accountId = String(router.query.accountId)
   const account = trpc.account.get.useQuery({accountId})
+  if (!account.data?.account) {
+    return (
+      <ErrorPage title="Account not found" description={`(${accountId})`} />
+    )
+  }
   return (
     <>
       <Head>
@@ -58,33 +64,9 @@ export default function AccountPage({}: {}) {
       >
         {account.data?.account ? (
           <AccountContent account={account.data.account} />
-        ) : (
-          <AccountNotFound accountId={accountId} />
-        )}
+        ) : null}
       </MainSiteLayout>
     </>
-  )
-}
-
-function AccountNotFound({accountId}: {accountId?: string}) {
-  return (
-    <YStack
-      paddingVertical="$7"
-      paddingHorizontal="$5"
-      borderRadius="$5"
-      elevation="$1"
-      borderColor="$color5"
-      borderWidth={1}
-      backgroundColor="$color3"
-      gap="$3"
-    >
-      <SizableText size="$6" fontWeight="800" textAlign="center">
-        Account not found
-      </SizableText>
-      <SizableText color="$color9" textAlign="center">
-        ({accountId})
-      </SizableText>
-    </YStack>
   )
 }
 
