@@ -1,6 +1,6 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {Button, Form, Input, Label, Tooltip} from '@mintter/ui'
-import {BookPlus, Plus} from '@tamagui/lucide-icons'
+import {Button, Form, Label} from '@mintter/ui'
+import {Plus} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {toast} from 'react-hot-toast'
@@ -83,11 +83,9 @@ function NewGroupButton(props: React.ComponentProps<typeof Button>) {
 }
 export function CreateGroupButton() {
   return (
-    <Tooltip content="Create Group">
-      <AppDialog
-        TriggerComponent={NewGroupButton}
-        ContentComponent={AddGroupForm}
-      />
-    </Tooltip>
+    <AppDialog
+      TriggerComponent={NewGroupButton}
+      ContentComponent={AddGroupForm}
+    />
   )
 }
