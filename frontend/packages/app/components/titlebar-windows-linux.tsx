@@ -23,7 +23,9 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
+import {Bookmark, Contact, Globe, Library} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
+import {useNavRoute, useNavigationDispatch} from '../utils/navigation'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {
   NavMenuButton,
@@ -38,14 +40,6 @@ import {
   MaximizeOrRestoreButton,
   MinimizeButton,
 } from './window-controls'
-import {ForceSyncRequest} from '@mintter/shared/src/client/.generated/daemon/v1alpha/daemon_pb'
-import {
-  dispatchAppNavigation,
-  useNavRoute,
-  useNavigationDispatch,
-} from '../utils/navigation'
-import {toast} from '../toast'
-import {Bookmark, Contact, Globe, Library} from '@tamagui/lucide-icons'
 
 export default function TitleBarWindows(props: TitleBarProps) {
   if (props.clean) {
@@ -413,7 +407,7 @@ type SubMenuItemElement = {
   id: string
   title: string
   onSelect: () => void
-  icon: ListItemProps['icon']
+  icon?: ListItemProps['icon']
   accelerator?: string
   disabled?: boolean
 }
