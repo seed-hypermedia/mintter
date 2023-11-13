@@ -61,15 +61,15 @@ export function LinkMenuItem(props: LinkMenuItemProps) {
         }, 1)
       }}
       ref={itemRef}
-    //   rightSection={
-    //     props.shortcut && <Badge size={'xs'}>{props.shortcut}</Badge>
-    //   }
+      //   rightSection={
+      //     props.shortcut && <Badge size={'xs'}>{props.shortcut}</Badge>
+      //   }
     >
       {/* <Stack> */}
-        {/*Might need separate classes.*/}
-        <Text size={14} weight={500}>
-          {props.name}
-        </Text>
+      {/*Might need separate classes.*/}
+      <Text size={14} weight={500}>
+        {props.name}
+      </Text>
       {/* </Stack> */}
     </Menu.Item>
   )

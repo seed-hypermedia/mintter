@@ -14,17 +14,16 @@ export function DefaultLinkMenu<BSchema extends BlockSchema>(
   const renderedItems: any[] = []
   let index = 0
 
-
   for (const item of props.items) {
-      renderedItems.push(
+    renderedItems.push(
       <LinkMenuItem
-          key={item.name}
-          name={item.name}
-          isSelected={props.keyboardHoveredItemIndex === index}
-          set={() => props.itemCallback(item, '')}
+        key={item.name}
+        name={item.name}
+        isSelected={props.keyboardHoveredItemIndex === index}
+        set={() => props.itemCallback(item, '')}
       />,
-      )
-      index++
+    )
+    index++
   }
 
   return (
