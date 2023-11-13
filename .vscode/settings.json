@@ -86,6 +86,9 @@
   "go.lintTool": "golangci-lint",
   "prettier.bracketSpacing": false,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
