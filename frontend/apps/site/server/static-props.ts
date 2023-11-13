@@ -78,3 +78,20 @@ export const getDocStaticProps: GetStaticProps<EveryPageProps> = async (
     revalidate: revalidationTimeSeconds,
   }
 }
+
+export const getAccountStaticProps: GetStaticProps<EveryPageProps> = async (
+  context,
+) => {
+  const params = context.params
+  let accountId = params?.accountId ? String(params.accountId) : undefined
+  const {helpers} = await getSiteServerHelpers()
+  await impatiently(
+    helpers.account.get.prefetch({
+      accountId,
+    }),
+  )
+  return {
+    props: await getPageProps(helpers, context, {}),
+    revalidate: 30 * 60, // 30 minutes, content doesn't change very often with this account page design
+  }
+}
