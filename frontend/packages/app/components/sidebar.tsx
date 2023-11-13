@@ -177,7 +177,14 @@ function FullAppSidebar() {
             title="Groups"
             bold
             icon={Library}
-            rightHover={[<CreateGroupButton key="newGroup" />]}
+            rightHover={[
+              <Tooltip content="New Group" key="newGroup">
+                {/* Tooltip broken without this extra child View */}
+                <View>
+                  <CreateGroupButton />
+                </View>
+              </Tooltip>,
+            ]}
           />
         </YGroup.Item>
         {pins.data?.groups
