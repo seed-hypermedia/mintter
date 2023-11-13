@@ -148,7 +148,7 @@ type PublishDocToGroupMutationInput = {
   pathName: string
 }
 export function usePublishDocToGroup(
-  opts?: UseMutationOptions<void, unknown, PublishDocToGroupMutationInput>,
+  opts?: UseMutationOptions<boolean, unknown, PublishDocToGroupMutationInput>,
 ) {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
@@ -158,13 +158,22 @@ export function usePublishDocToGroup(
       pathName,
       docId,
       version,
-    }: PublishDocToGroupMutationInput) => {
-      await grpcClient.groups.updateGroup({
-        id: groupId,
-        updatedContent: {
-          [pathName]: `${docId}?v=${version}`,
-        },
-      })
+    }: PublishDocToGroupMutationInput): Promise<boolean> => {
+      try {
+        await grpcClient.groups.updateGroup({
+          id: groupId,
+          updatedContent: {
+            [pathName]: `${docId}?v=${version}`,
+          },
+        })
+      } catch (e) {
+        if (e.message.match('nothing to update')) {
+          // the group seems to already have this exact version at this path
+          return false
+        }
+        throw e
+      }
+      return true
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)

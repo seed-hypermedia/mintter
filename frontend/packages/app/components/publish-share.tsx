@@ -9,7 +9,6 @@ import {
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
 import {usePublicationInContext} from '@mintter/app/models/publication'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
@@ -25,12 +24,10 @@ import {
 import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  UnpackedDocId,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   labelOfEntityType,
   shortenPath,
-  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -69,9 +66,9 @@ import {
 } from '@tamagui/lucide-icons'
 import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
+import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
-import CommitDraftButton from './commit-draft-button'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -177,7 +174,7 @@ function GroupPublishDialog({
                   version: input.version,
                   pathName,
                 })
-                .then(() => {
+                .then((didChange: boolean) => {
                   navigate({
                     ...pubRoute,
                     pubContext: {
@@ -186,10 +183,14 @@ function GroupPublishDialog({
                       pathName,
                     },
                   })
+                  return didChange
                 }),
               {
                 loading: 'Publishing...',
-                success: 'Published to Group',
+                success: (result) => {
+                  if (result) return 'Published to Group'
+                  else return 'Already Published Here'
+                },
                 error: 'Failed to Publish!',
               },
             )
