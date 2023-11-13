@@ -12,7 +12,7 @@ export function ErrorPage({
 }) {
   return (
     <YStack flex={1}>
-      <SiteHead pageTitle="Not Found" />
+      <SiteHead pageTitle={title} />
       <PageSection.Root>
         <PageSection.Side />
         <PageSection.Content tag="main" id="main-content" tabIndex={-1}>

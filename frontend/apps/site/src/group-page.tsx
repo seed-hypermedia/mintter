@@ -31,6 +31,8 @@ import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
 import {trpc} from './trpc'
 import {MainSiteLayout} from './site-layout'
+import NotFoundPage from 'pages/404'
+import {ErrorPage} from './error-page'
 
 export function GroupPage() {
   const router = useRouter()
@@ -60,16 +62,25 @@ export function GroupPage() {
       enabled: enabledContentQuery,
     },
   )
-  // console.log('GroupPage', {
-  //   displayVersion,
-  //   requestedVersion,
-  //   groupId,
-  //   q: router.query,
-  //   content: groupContent.data,
-  //   enabledContent: enabledContentQuery,
-  //   group: group.data,
-  // })
+  console.log('GroupPage', {
+    displayVersion,
+    requestedVersion,
+    groupId,
+    q: router.query,
+    siteInfo: siteInfo.data,
+    content: groupContent.data,
+    enabledContent: enabledContentQuery,
+    group: group.data,
+  })
 
+  if (!siteInfo.data?.groupEid) {
+    return (
+      <ErrorPage
+        title="Your site is ready to launch"
+        description="Use the secret setup URL to publish your group to this new site."
+      />
+    )
+  }
   const loadedGroup = group.data?.group
 
   const listView = (
@@ -170,7 +181,7 @@ function FrontDoc({
     | undefined
   groupTitle?: string
 }) {
-  if (!item?.publication) return <Text>Not Found</Text>
+  if (!item?.publication) return <NotFoundPage />
   const frontPageTitle = item.publication?.document?.title
   const hasFrontDocTitle = !!frontPageTitle && frontPageTitle !== groupTitle
   return (
