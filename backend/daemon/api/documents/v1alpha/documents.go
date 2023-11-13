@@ -280,12 +280,26 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	if len(ch.Patch) == 0 {
-		return nil, fmt.Errorf("nothing to publish: draft didn't change since the last publication: delete this draft or make changes to the document")
+	// The isDraft field should only be there when draft doesn't have any other content changed.
+	_, isDraft := ch.Patch["isDraft"]
+	if len(ch.Patch) > 1 && isDraft {
+		return nil, fmt.Errorf("BUG: isDraft field wasn't removed")
 	}
 
-	if _, ok := ch.Patch["isDraft"]; ok {
-		return nil, fmt.Errorf("BUG: nothing to publish: isDraft field wasn't removed")
+	// When the draft doesn't actually have meaningful changes,
+	// we don't want to fail, nor do we want to publish it,
+	// so instead we act as if we published something, but return the previous version instead,
+	// while deleting the current draft.
+	if len(ch.Patch) <= 1 && isDraft {
+		if err := api.blobs.DeleteDraft(ctx, eid); err != nil {
+			return nil, fmt.Errorf("failed to delete empty draft when publishing: %w", err)
+		}
+		prev := hyper.NewVersion(ch.Deps...)
+		return api.GetPublication(ctx, &documents.GetPublicationRequest{
+			DocumentId: in.DocumentId,
+			Version:    prev.String(),
+			LocalOnly:  true,
+		})
 	}
 
 	c, err := api.blobs.PublishDraft(ctx, eid)
