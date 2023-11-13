@@ -18,9 +18,9 @@ import {
   styled,
 } from '@mintter/ui'
 import {PlusCircle} from '@tamagui/lucide-icons'
+import {MainWrapper} from '../components/main-wrapper'
 import {useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
-import {MainWrapper} from '../components/main-wrapper'
 
 const PageHeading = styled(Heading, {
   color: '$gray10',
@@ -134,7 +134,7 @@ export default function ContactsPage() {
         <Container>
           {trustedAccounts.length ? (
             <>
-              <PageHeading>Trusted Contacts</PageHeading>
+              <PageHeading>Trusted Accounts</PageHeading>
               <YStack tag="ul" padding={0} gap="$2">
                 {trustedAccounts.map((account) => {
                   return (
@@ -146,7 +146,7 @@ export default function ContactsPage() {
                   )
                 })}
               </YStack>
-              <PageHeading marginTop="$4">Other Contacts</PageHeading>
+              <PageHeading marginTop="$4">Other Accounts</PageHeading>
             </>
           ) : null}
           <YStack tag="ul" padding={0} gap="$2">
