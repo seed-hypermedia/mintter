@@ -1,10 +1,9 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
-import {trpc, client} from '@mintter/desktop/src/trpc'
 import {usePopoverState} from '@mintter/app/use-popover-state'
+import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
   BACKEND_FILE_UPLOAD_URL,
-  BACKEND_FILE_URL,
   getCIDFromIPFSUrl,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -14,8 +13,8 @@ import {
   Input,
   Label,
   SizableText,
-  Text,
   Tabs,
+  Text,
   XStack,
   YStack,
   useTheme,
@@ -30,8 +29,8 @@ import {
   getBlockInfoFromPos,
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
-import {HMBlockSchema} from './schema'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -109,11 +108,10 @@ const Render = (
   useEffect(() => {
     if (!isUploading && hasSrc) {
       setUploading(true)
-      console.log('== UPLOADING...', block)
       client.webImporting.importWebFile
         .mutate(block.props.src)
         .then(({cid}) => {
-          console.log('== UPLOADED...', block, cid)
+          setUploading(false)
           editor.updateBlock(block, {
             props: {
               url: `ipfs://${cid}`,
@@ -135,7 +133,7 @@ const Render = (
     setSelected(isSelected)
   }
 
-  if (typeof isIPFS == 'boolean' && !isIPFS) {
+  if (hasSrc || isUploading) {
     // this means we have a URL in the props.url that is not starting with `ipfs://`, which means we are uploading the image to IPFS
     return (
       <Button

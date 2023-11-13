@@ -22,11 +22,9 @@ import {
   DocumentChange,
   GRPCClient,
   HMBlock,
-  HMInlineContent,
   ListPublicationsResponse,
   Publication,
   fromHMBlock,
-  getBlockNodeById,
   hmDocument,
   hmPublication,
   isHypermediaScheme,
@@ -36,6 +34,7 @@ import {
   unpackDocId,
   writeableStateStream,
 } from '@mintter/shared'
+import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -43,14 +42,13 @@ import {
   useMutation,
   useQueries,
   useQuery,
-  useQueryClient,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {ContextFrom, createActor, fromPromise} from 'xstate'
+import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {
   NavRoute,
@@ -58,10 +56,9 @@ import {
   useNavRoute,
 } from '../utils/navigation'
 import {pathNameify} from '../utils/path'
+import {useNavigate} from '../utils/useNavigate'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
-import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
-import {useNavigate} from '../utils/useNavigate'
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -1034,7 +1031,6 @@ function observeBlocks(
       console.log('== IMG', block)
     }
     if (block.type == 'imagePlaceholder' && block.props.src) {
-      console.log('== UPDATE PLACEHOLDER', block)
       editor.updateBlock(block, {
         type: 'image',
         props: {
