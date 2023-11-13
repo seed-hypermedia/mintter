@@ -37,7 +37,7 @@ func NewRelay(log *zap.Logger, cfgPath string) (*Relay, error) {
 
 // ID returns the p2p id of the relay in string format.
 func (r *Relay) ID() string {
-	return r.host.ID().Pretty()
+	return r.host.ID().String()
 }
 
 // ListeningAddrs returns all libp2p associated listening addresses of the relay.
@@ -164,7 +164,7 @@ func (r *Relay) Start() error {
 		return err
 	}
 
-	addresses := []zapcore.Field{zap.String("PeerID", r.host.ID().Pretty())}
+	addresses := []zapcore.Field{zap.String("PeerID", r.host.ID().String())}
 	for i, addr := range r.host.Addrs() {
 		addresses = append(addresses, zap.String("Listening Address "+strconv.FormatInt(int64(i), 10), addr.String()))
 	}
