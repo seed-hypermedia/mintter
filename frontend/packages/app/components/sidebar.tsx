@@ -233,7 +233,7 @@ function FullAppSidebar() {
               navigate({key: 'contacts'})
             }}
             icon={Contact}
-            title="Accounts"
+            title="Contacts"
             bold
           />
         </YGroup.Item>
