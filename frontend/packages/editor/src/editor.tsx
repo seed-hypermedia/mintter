@@ -7,6 +7,7 @@ import {
   HyperlinkToolbarPositioner,
   SideMenuPositioner,
   SlashMenuPositioner,
+  LinkMenuPositioner,
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
@@ -19,6 +20,7 @@ export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
       <HyperlinkToolbarPositioner editor={editor} openUrl={openUrl} />
       <SlashMenuPositioner editor={editor} />
       <SideMenuPositioner editor={editor} placement="left" />
+      <LinkMenuPositioner editor={editor} />
     </BlockNoteView>
   )
 }
