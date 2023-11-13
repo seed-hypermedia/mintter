@@ -24,15 +24,16 @@ func TestBug_UnchangedPublish(t *testing.T) {
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b1", Type: "paragraph", Text: "Hello world!"}}},
 	})
 
-	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	pub1, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 
-	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: draft.Id})
 	require.NoError(t, err)
 
-	pub, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
-	require.Error(t, err, "publishing a draft with unchanged content must fail")
-	require.Nil(t, pub)
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
+	require.NoError(t, err)
+
+	require.Equal(t, pub1.Version, pub2.Version, "unchanged draft should return the previous version when published")
 }
 
 func TestBug_UndeletableBlock(t *testing.T) {
