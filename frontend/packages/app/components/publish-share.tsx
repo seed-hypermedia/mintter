@@ -481,7 +481,7 @@ function GroupContextItem({
   const isActive =
     route.pubContext?.key === 'group' &&
     groupId === route.pubContext.groupId &&
-    path === route.pubContext.pathName
+    (path === route.pubContext.pathName || route.pubContext.pathName === '')
   const myGroups = useMyGroups()
   const isGroupMember = myGroups.data?.items?.find((groupAccount) => {
     return groupAccount.group?.id === groupId
