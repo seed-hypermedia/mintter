@@ -108,6 +108,7 @@ const Render = (
   useEffect(() => {
     if (!isUploading && hasSrc) {
       setUploading(true)
+
       client.webImporting.importWebFile
         .mutate(block.props.src)
         .then(({cid}) => {
@@ -120,7 +121,7 @@ const Render = (
           })
         })
     }
-  }, [hasSrc, block, isUploading])
+  }, [hasSrc, block, isUploading, editor])
 
   const assignFile = (newImage: ImageType) => {
     editor.updateBlock(block.id, {
@@ -770,4 +771,17 @@ function ImageForm({
       ) : null}
     </YStack>
   )
+}
+
+function urltoFile(url: string, filename: string, mimeType) {
+  var arr = url.split(','),
+    mime = arr[0]!.match(/:(.*?);/)![1],
+    bstr = atob(arr[arr.length - 1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  var file = new File([u8arr], filename, {type: mime || mimeType})
+  return Promise.resolve(file)
 }

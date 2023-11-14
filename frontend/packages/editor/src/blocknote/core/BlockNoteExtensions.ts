@@ -3,6 +3,7 @@ import {Extensions, extensions} from '@tiptap/core'
 
 import {BlockNoteEditor} from './BlockNoteEditor'
 
+import {LocalMediaPastePlugin} from '@/handle-local-media-paste-plugin'
 import {HMBlockContainer} from '@/hypermedia-block-container'
 import Link from '@/tiptap-extension-link'
 import {Bold} from '@tiptap/extension-bold'
@@ -21,6 +22,7 @@ import * as Y from 'yjs'
 import styles from './editor.module.css'
 import {BackgroundColorExtension} from './extensions/BackgroundColor/BackgroundColorExtension'
 import {BackgroundColorMark} from './extensions/BackgroundColor/BackgroundColorMark'
+import {BlockManipulationExtension} from './extensions/BlockManipulation/BlockManipulationExtension'
 import {BlockContainer, BlockGroup, Doc} from './extensions/Blocks'
 import {BlockNoteDOMAttributes} from './extensions/Blocks/api/blockTypes'
 import {CustomBlockSerializerExtension} from './extensions/Blocks/api/serialization'
@@ -31,7 +33,6 @@ import {TextColorExtension} from './extensions/TextColor/TextColorExtension'
 import {TextColorMark} from './extensions/TextColor/TextColorMark'
 import {TrailingNode} from './extensions/TrailingNode/TrailingNodeExtension'
 import UniqueID from './extensions/UniqueID/UniqueID'
-import {BlockManipulationExtension} from './extensions/BlockManipulation/BlockManipulationExtension'
 
 /**
  * Get all the Tiptap extensions BlockNote is configured with by default
@@ -95,7 +96,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
     BackgroundColorMark,
     BackgroundColorExtension,
     TextAlignmentExtension,
-
+    LocalMediaPastePlugin,
     // nodes
     Doc,
     BlockGroup.configure({
