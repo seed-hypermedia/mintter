@@ -9,6 +9,7 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/pkg/libp2px"
 	"mintter/backend/pkg/must"
 	"net"
 	"strconv"
@@ -28,7 +29,7 @@ func TestSiteInit(t *testing.T) {
 
 	// Check that we announce our hardcoded web address.
 	{
-		wantAnnounceAddrs := must.Do2(ipfs.ParseMultiaddrs(ipfs.DefaultListenAddrsDNS(site.Address.Hostname(), site.Config.P2P.Port)))
+		wantAnnounceAddrs := must.Do2(ipfs.ParseMultiaddrs(libp2px.DefaultListenAddrsDNS(site.Address.Hostname(), site.Config.P2P.Port)))
 		require.Equal(t, wantAnnounceAddrs, site.Config.P2P.AnnounceAddrs, "announce addrs don't match")
 	}
 
