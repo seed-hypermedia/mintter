@@ -152,43 +152,6 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		return nil
 	})
 
-	// Start with the default scaling limits.
-	scalingLimits := rcmgr.DefaultLimits
-
-	// Add limits around included libp2p protocols
-	libp2p.SetDefaultServiceLimits(&scalingLimits)
-
-	// Turn the scaling limits into a concrete set of limits using `.AutoScale`. This
-	// scales the limits proportional to your system memory.
-	scaledDefaultLimits := scalingLimits.AutoScale()
-
-	// Tweak certain settings
-	cfg := rcmgr.PartialLimitConfig{
-		System: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		Transient: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
-	}
-
-	// Create our limits by using our cfg and replacing the default values with values from `scaledDefaultLimits`
-	limits := cfg.Build(scaledDefaultLimits)
-
-	// The resource manager expects a limiter, so we create one from our limits.
-	limiter := rcmgr.NewFixedLimiter(limits)
-
-	rm, err := rcmgr.NewResourceManager(limiter)
-	if err != nil {
-		panic(err)
-	}
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs,      // Users must explicitly start listening.
@@ -197,7 +160,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
-		libp2p.ResourceManager(rm),
+		libp2p.ResourceManager(must.Do2(rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(rcmgr.InfiniteLimits)))),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			if ds == nil {
 				panic("BUG: must provide datastore for DHT")
