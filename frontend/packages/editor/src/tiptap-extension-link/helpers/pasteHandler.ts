@@ -2,7 +2,6 @@ import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPl
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
 import {
-  createHmDocLink,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -189,7 +188,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                 view.dispatch(
                   view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
                     activate: true,
-                    ref: link.href,
+                    ref: fullHmId || link.href,
                   }),
                 )
               }
