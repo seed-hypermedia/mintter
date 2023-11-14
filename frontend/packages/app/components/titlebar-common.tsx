@@ -4,7 +4,6 @@ import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationInContext} from '@mintter/app/models/publication'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {
   NavMode,
   NavRoute,
@@ -13,7 +12,6 @@ import {
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
-import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
@@ -27,7 +25,6 @@ import {
   View,
   XGroup,
   XStack,
-  XStackProps,
   useStream,
 } from '@mintter/ui'
 import {
@@ -35,7 +32,6 @@ import {
   ArrowRightFromLine,
   Copy,
   ExternalLink,
-  FilePlus2,
   Link,
   Pencil,
   Pin,
@@ -48,6 +44,7 @@ import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
+import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {CloneGroupDialog} from './clone-group'
 import {useAppDialog} from './dialog'
@@ -56,7 +53,6 @@ import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {DraftPublicationButtons, PageContextButton} from './publish-share'
 import {TitleBarProps} from './titlebar'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 
 function getRoutePubContext(
   route: NavRoute,
@@ -69,26 +65,26 @@ function getRoutePubContext(
   return null
 }
 
-function NewDocumentButton() {
-  const route = useNavRoute()
-  const openDraft = useOpenDraft()
-  const isDaemonReady = useDaemonReady()
-  return (
-    <Tooltip content="New Hypermedia Document – &#8984; N">
-      <Button
-        size="$2"
-        chromeless
-        disabled={!isDaemonReady}
-        iconAfter={FilePlus2}
-        onPress={(e) => {
-          e.preventDefault()
-          const pubContext = getRoutePubContext(route)
-          openDraft(pubContext)
-        }}
-      />
-    </Tooltip>
-  )
-}
+// function NewDocumentButton() {
+//   const route = useNavRoute()
+//   const openDraft = useOpenDraft()
+//   const isDaemonReady = useDaemonReady()
+//   return (
+//     <Tooltip content="New Hypermedia Document – &#8984; N">
+//       <Button
+//         size="$2"
+//         chromeless
+//         disabled={!isDaemonReady}
+//         iconAfter={FilePlus2}
+//         onPress={(e) => {
+//           e.preventDefault()
+//           const pubContext = getRoutePubContext(route)
+//           openDraft(pubContext)
+//         }}
+//       />
+//     </Tooltip>
+//   )
+// }
 
 export function DocOptionsButton() {
   const route = useNavRoute()
