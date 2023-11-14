@@ -35,7 +35,7 @@ func (s *Service) DiscoverObject(ctx context.Context, obj hyper.EntityID, ver hy
 	}
 
 	// Arbitrary number of maximum providers
-	maxProviders := 5
+	maxProviders := 15
 
 	// If we are looking for a specific version, we don't need to limit the number of providers,
 	// because we will short-circuit as soon as we found the desired version.
