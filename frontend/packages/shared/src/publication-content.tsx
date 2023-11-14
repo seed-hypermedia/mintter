@@ -345,6 +345,7 @@ export function BlockNodeContent({
   return (
     <YStack
       className="blocknode-content"
+      id={blockNode.block?.id}
       borderRadius={layoutUnit / 4}
       onHoverIn={() => (props.embedDepth ? undefined : setIsHovering(true))}
       onHoverOut={() => (props.embedDepth ? undefined : setIsHovering(false))}

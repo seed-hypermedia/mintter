@@ -1,5 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {BACKEND_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
   Button,
@@ -21,7 +22,6 @@ import {
 } from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema} from './schema'
-import {trpc} from '@mintter/desktop/src/trpc'
 
 export const MaxFileSizeMB = 150
 export const MaxFileSizeB = MaxFileSizeMB * 1024 * 1024
@@ -93,7 +93,7 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection])
+  }, [selection, editor])
 
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {
@@ -207,6 +207,27 @@ export function FileComponent({
     }
     // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
+
+  // function handleEnterWhenSelected(event: KeyboardEvent) {
+  //   if (event.key == 'Enter' && selected) {
+  //     console.log('=== IS SELECTED????', selected, block)
+  //     event.preventDefault()
+  //     let newBlock = {
+  //       id: nanoid(8),
+  //       type: 'paragraph',
+  //     }
+  //     editor.insertBlocks([newBlock], block, 'after')
+  //     // editor.setTextCursorPosition(newBlock.id, 'start')
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   window.addEventListener('keyup', handleEnterWhenSelected)
+
+  //   return () => {
+  //     window.removeEventListener('keyup', handleEnterWhenSelected)
+  //   }
+  // }, [])
 
   return (
     <YStack
