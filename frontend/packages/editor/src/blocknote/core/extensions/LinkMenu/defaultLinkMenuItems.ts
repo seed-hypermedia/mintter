@@ -1,8 +1,13 @@
-import {BlockSchema} from '../Blocks/api/blockTypes'
-import {LinkMenuItem} from './LinkMenuItem'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
-import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
+import {
+  isHypermediaScheme,
+  isPublicGatewayLink,
+  normlizeHmId,
+} from '@mintter/shared'
 import {Node} from '@tiptap/pm/model'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
+import {BlockSchema} from '../Blocks/api/blockTypes'
+import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
+import {LinkMenuItem} from './LinkMenuItem'
 
 export const getDefaultLinkMenuItems = <BSchema extends BlockSchema>() => {
   const linkMenuItems: LinkMenuItem<BSchema>[] = [
@@ -26,6 +31,10 @@ export const getDefaultLinkMenuItems = <BSchema extends BlockSchema>() => {
         }
         let tr = state.tr
         const textNode = schema.text(' ')
+        if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
+          const hmLink = normlizeHmId(ref)
+          ref = hmLink ? hmLink : ref
+        }
         const node = schema.nodes.embed.create(
           {
             ref: ref,
