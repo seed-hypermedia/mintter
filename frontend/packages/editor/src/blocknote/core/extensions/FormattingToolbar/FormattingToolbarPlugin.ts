@@ -36,7 +36,13 @@ export class FormattingToolbarView<BSchema extends BlockSchema> {
     const isEmptyTextBlock =
       !doc.textBetween(from, to).length && isTextSelection(state.selection)
 
-    return !(!view.hasFocus() || empty || isEmptyTextBlock)
+    return !(
+      !view.hasFocus() ||
+      empty ||
+      isEmptyTextBlock ||
+      // Don't show menu if node selection (image, video, file, embed)
+      isNodeSelection(state.selection)
+    )
   }
 
   constructor(
