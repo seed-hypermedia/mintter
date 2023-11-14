@@ -2,6 +2,9 @@ package relay
 
 import (
 	"encoding/hex"
+	"fmt"
+	"mintter/backend/pkg/libp2px"
+	"mintter/backend/pkg/must"
 	"strconv"
 
 	"github.com/libp2p/go-libp2p"
@@ -9,30 +12,35 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
-	relay_v2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
+	"github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	ma "github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr/net"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-// Relay is the may struct to hold all the relay operations.
+// Relay is a libp2p node that provides a Circuit Relay service.
 type Relay struct {
-	log  *zap.Logger // The logger to write messages
-	cfg  Config      // The configuration struct. Congifured via file only
-	host host.Host   // Libp2p host (ID+Addresses)
+	log  *zap.Logger
+	cfg  Config
+	host host.Host
 }
 
 // NewRelay is used to create a new relay based on both
 // configuration file (json with keys, filters, etc) and a logger.
-func NewRelay(log *zap.Logger, cfgPath string) (*Relay, error) {
-	relay := Relay{log: log}
-	cfg, err := relay.loadConfig(cfgPath)
-	if err != nil {
-		return nil, err
+func NewRelay(log *zap.Logger, cfg Config) (*Relay, error) {
+	if cfg.PrivKey == "" {
+		return nil, fmt.Errorf("config must have private key specified")
 	}
-	relay.cfg = cfg
-	return &relay, nil
+
+	return &Relay{
+		log: log,
+		cfg: cfg,
+	}, nil
+}
+
+// Host returns the underlying libp2p host.
+func (r *Relay) Host() host.Host {
+	return r.host
 }
 
 // ID returns the p2p id of the relay in string format.
@@ -50,114 +58,33 @@ func (r *Relay) Stop() error {
 	return r.host.Close()
 }
 
-// Start starts the relay non blocking. Returns nil on success an
+// Start starts the relay non blocking. Returns nil on success and
 // non empty error on error.
 func (r *Relay) Start() error {
 	keyBytes, err := hex.DecodeString(r.cfg.PrivKey)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to decode private key string: %w", err)
 	}
 	key, err := crypto.UnmarshalPrivateKey(keyBytes)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal private key: %w", err)
 	}
 
-	var opts []libp2p.Option
-
-	// generate the options from the configuration passed at init time
-
-	opts = append(opts,
+	opts := []libp2p.Option{
 		libp2p.UserAgent("MintterRelay/0.1"),
 		libp2p.Identity(key),
 		libp2p.DisableRelay(),
-		libp2p.ListenAddrStrings(r.cfg.Network.ListenAddrs...),
-	)
-
-	if len(r.cfg.Network.AnnounceAddrs) > 0 {
-		var announce []ma.Multiaddr
-		for _, s := range r.cfg.Network.AnnounceAddrs {
-			a := ma.StringCast(s)
-			announce = append(announce, a)
-		}
-		opts = append(opts,
-			libp2p.AddrsFactory(func([]ma.Multiaddr) []ma.Multiaddr {
-				return announce
-			}),
-		)
-	} else {
-		opts = append(opts,
-			libp2p.AddrsFactory(func(addrs []ma.Multiaddr) []ma.Multiaddr {
-				announce := make([]ma.Multiaddr, 0, len(addrs))
-				for _, a := range addrs {
-					if manet.IsPublicAddr(a) {
-						announce = append(announce, a)
-					}
-				}
-				return announce
-			}),
-		)
+		libp2p.EnableRelayService(relay.WithResources(r.cfg.RelayV2.Resources)),
+		libp2p.ListenAddrStrings(libp2px.DefaultListenAddrs(r.cfg.Port)...),
+		libp2px.WithPublicAddrsOnly(),
+		libp2p.ForceReachabilityPublic(),
+		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(
+			r.cfg.ConnMgr.ConnMgrLo,
+			r.cfg.ConnMgr.ConnMgrHi,
+			connmgr.WithGracePeriod(r.cfg.ConnMgr.ConnMgrGrace),
+		))),
+		libp2p.ResourceManager(must.Do2(rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(rcmgr.InfiniteLimits)))),
 	}
-
-	// Configure how many nodes will the relay accept
-	mustConnMgr := func(mgr *connmgr.BasicConnMgr, err error) *connmgr.BasicConnMgr {
-		if err != nil {
-			panic(err)
-		}
-		return mgr
-	}
-
-	cm := mustConnMgr(connmgr.NewConnManager(
-		r.cfg.ConnMgr.ConnMgrLo,
-		r.cfg.ConnMgr.ConnMgrHi,
-		connmgr.WithGracePeriod(r.cfg.ConnMgr.ConnMgrGrace),
-	))
-
-	opts = append(opts,
-		libp2p.ConnectionManager(cm),
-	)
-
-	// Start with the default scaling limits.
-	scalingLimits := rcmgr.DefaultLimits
-
-	// Add limits around included libp2p protocols
-	libp2p.SetDefaultServiceLimits(&scalingLimits)
-
-	// Turn the scaling limits into a concrete set of limits using `.AutoScale`. This
-	// scales the limits proportional to your system memory.
-	scaledDefaultLimits := scalingLimits.AutoScale()
-
-	// Tweak certain settings
-	cfg := rcmgr.PartialLimitConfig{
-		System: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		Transient: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
-	}
-
-	// Create our limits by using our cfg and replacing the default values with values from `scaledDefaultLimits`
-	limits := cfg.Build(scaledDefaultLimits)
-
-	// The resource manager expects a limiter, so we create one from our limits.
-	limiter := rcmgr.NewFixedLimiter(limits)
-
-	rm, err := rcmgr.NewResourceManager(limiter)
-	if err != nil {
-		panic(err)
-	}
-
-	opts = append(opts,
-		libp2p.ResourceManager(rm),
-	)
 
 	r.host, err = libp2p.New(opts...)
 	if err != nil {
@@ -170,17 +97,6 @@ func (r *Relay) Start() error {
 	}
 	r.log.Info("Relay information", addresses...)
 
-	acl, err := NewACL(r.host, r.cfg.ACL)
-	if err != nil {
-		return err
-	}
-
-	_, err = relay_v2.New(r.host,
-		relay_v2.WithResources(r.cfg.RelayV2.Resources),
-		relay_v2.WithACL(acl))
-	if err != nil {
-		return err
-	}
 	r.log.Info("RelayV2 is running!")
 	return nil
 }

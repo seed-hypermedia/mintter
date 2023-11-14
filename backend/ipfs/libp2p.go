@@ -2,7 +2,6 @@ package ipfs
 
 import (
 	"context"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -292,28 +291,4 @@ func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers []peer.AddrInfo) B
 // Close the node and all the underlying systems.
 func (n *Libp2p) Close() error {
 	return n.clean.Close()
-}
-
-// DefaultListenAddrs creates the default listening addresses for a given port,
-// including all the default transport. This is borrowed from Kubo.
-func DefaultListenAddrs(port int) []string {
-	portstr := strconv.Itoa(port)
-	return []string{
-		"/ip4/0.0.0.0/tcp/" + portstr,
-		"/ip6/::/tcp/" + portstr,
-		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1",
-		"/ip4/0.0.0.0/udp/" + portstr + "/quic-v1/webtransport",
-		"/ip6/::/udp/" + portstr + "/quic-v1",
-		"/ip6/::/udp/" + portstr + "/quic-v1/webtransport",
-	}
-}
-
-// DefaultListenAddrsDNS creates the default listening addresses for a DNS name and port.
-func DefaultListenAddrsDNS(hostname string, port int) []string {
-	portstr := strconv.Itoa(port)
-	return []string{
-		"/dns4/" + hostname + "/tcp/" + portstr,
-		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1",
-		"/dns4/" + hostname + "/udp/" + portstr + "/quic-v1/webtransport",
-	}
 }

@@ -13,6 +13,7 @@ import (
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
+	"mintter/backend/pkg/libp2px"
 	"mintter/backend/pkg/must"
 	"time"
 
@@ -342,7 +343,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	if n.cfg.ListenAddrs != nil {
 		addrs = append(addrs, n.cfg.ListenAddrs...)
 	} else {
-		lis := ipfs.DefaultListenAddrs(n.cfg.Port)
+		lis := libp2px.DefaultListenAddrs(n.cfg.Port)
 		for _, l := range lis {
 			addr, err := multiaddr.NewMultiaddr(l)
 			if err != nil {
