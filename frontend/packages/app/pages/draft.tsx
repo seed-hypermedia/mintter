@@ -6,7 +6,9 @@ import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
+  createPublicWebHmUrl,
   formattedDateMedium,
+  unpackDocId,
   useHeadingMarginStyles,
   useHeadingTextStyles,
   usePublicationContentContext,
@@ -24,18 +26,18 @@ import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {ActorRefFrom} from 'xstate'
+import {MainWrapper} from '../components/main-wrapper'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
 import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
-import {MainWrapper} from '../components/main-wrapper'
 
 export default function DraftPage() {
   let route = useNavRoute()
-  if (route.key != 'draft')
-    throw new Error('Draft actor must be passed to DraftPage')
+  if (route.key != 'draft') throw new Error('DraftPage must have draft route')
 
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
@@ -58,13 +60,23 @@ export default function DraftPage() {
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
-        <MainWrapper
-          backgroundColor="red"
-          onDrop={(e) => {
-            handleDrop(e)
-          }}
-        >
-          <AppPublicationContentProvider disableEmbedClick onCopyBlock={null}>
+        <MainWrapper>
+          <AppPublicationContentProvider
+            disableEmbedClick
+            onCopyBlock={(blockId: string) => {
+              if (route.key != 'draft')
+                throw new Error('DraftPage must have draft route')
+              if (!route.draftId)
+                throw new Error('draft route draftId is missing')
+              const id = unpackDocId(route.draftId)
+              if (!id?.eid)
+                throw new Error('eid could not be extracted from draft route')
+              copyUrlToClipboardWithFeedback(
+                createPublicWebHmUrl('d', id.eid, {blockRef: blockId}),
+                'Block',
+              )
+            }}
+          >
             <YStack id="editor-title">
               <DraftTitleInput
                 draftActor={data.actor}

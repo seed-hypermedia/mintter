@@ -2,10 +2,10 @@ import {error} from './logger'
 import {toast} from './toast'
 
 export async function copyUrlToClipboardWithFeedback(
-  text: string,
+  url: string,
   label: string,
 ) {
-  await copyTextToClipboard(text)
+  await copyTextToClipboard(url)
     .then(() => {
       toast.success(`${label} Link Copied to Clipboard`)
     })
