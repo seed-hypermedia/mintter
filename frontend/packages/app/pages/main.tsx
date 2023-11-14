@@ -8,12 +8,12 @@ import {Spinner, YStack} from '@mintter/ui'
 import {lazy, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {QuickSwitcher} from '../components/quick-switcher'
+import {AppSidebar} from '../components/sidebar'
+import {DraftStatusContext} from '../models/draft-machine'
+import {SidebarContextProvider} from '../src/sidebar-context'
 import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
-import {DraftStatusContext} from '../models/draft-machine'
-import {AppSidebar} from '../components/sidebar'
-import {SidebarContextProvider} from '../src/sidebar-context'
 
 var PublicationList = lazy(
   () => import('@mintter/app/pages/publication-list-page'),
@@ -115,7 +115,7 @@ export default function Main({className}: {className?: string}) {
     },
     [navigate],
   )
-  const displaySidebar = navR.key !== 'settings'
+  const routeHasSidebar = navR.key !== 'settings'
   return (
     <YStack fullscreen className={className}>
       <SidebarContextProvider>
@@ -132,7 +132,7 @@ export default function Main({className}: {className?: string}) {
             {!isSettings ? <QuickSwitcher /> : null}
           </DraftStatusContext.Provider>
         </ErrorBoundary>
-        {displaySidebar ? <AppSidebar /> : null}
+        {routeHasSidebar ? <AppSidebar /> : null}
       </SidebarContextProvider>
     </YStack>
   )
