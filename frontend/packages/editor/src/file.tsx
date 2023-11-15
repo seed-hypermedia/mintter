@@ -1,6 +1,5 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
-import {trpc} from '@mintter/desktop/src/trpc'
 import {BACKEND_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
   Button,
@@ -11,7 +10,6 @@ import {
   Tabs,
   XStack,
   YStack,
-  useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {
@@ -149,7 +147,6 @@ export function FileComponent({
 }) {
   const [replace, setReplace] = useState(false)
   const {saveCidAsFile} = useAppContext()
-  const upload = trpc.webImporting.importWebFile.useMutation()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
@@ -180,29 +177,7 @@ export function FileComponent({
     } catch (error) {
       console.error(error)
     }
-    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
-
-  // function handleEnterWhenSelected(event: KeyboardEvent) {
-  //   if (event.key == 'Enter' && selected) {
-  //     console.log('=== IS SELECTED????', selected, block)
-  //     event.preventDefault()
-  //     let newBlock = {
-  //       id: nanoid(8),
-  //       type: 'paragraph',
-  //     }
-  //     editor.insertBlocks([newBlock], block, 'after')
-  //     // editor.setTextCursorPosition(newBlock.id, 'start')
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   window.addEventListener('keyup', handleEnterWhenSelected)
-
-  //   return () => {
-  //     window.removeEventListener('keyup', handleEnterWhenSelected)
-  //   }
-  // }, [])
 
   return (
     <YStack
@@ -310,20 +285,15 @@ export function FileComponent({
       >
         <SizableText
           size="$5"
-          maxWidth="17em"
           overflow="hidden"
           textOverflow="ellipsis"
           whiteSpace="nowrap"
           userSelect="text"
+          flex={1}
         >
           {block.props.name}
         </SizableText>
-        <SizableText
-          paddingTop="$1"
-          color="$color10"
-          size="$2"
-          minWidth="4.5em"
-        >
+        <SizableText paddingTop="$1" color="$color10" size="$2">
           {formatBytes(parseInt(block.props.size))}
         </SizableText>
       </Button>
@@ -334,7 +304,6 @@ export function FileComponent({
 function FileForm({
   block,
   assign,
-  editor,
 }: {
   block: Block<HMBlockSchema>
   assign: any
@@ -349,7 +318,6 @@ function FileForm({
     color: undefined,
   })
   const [drag, setDrag] = useState(false)
-  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
@@ -411,7 +379,6 @@ function FileForm({
         console.error(error)
       }
     }
-    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (
