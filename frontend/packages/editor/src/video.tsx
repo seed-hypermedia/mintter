@@ -1,5 +1,5 @@
-import { toast } from '@mintter/app/toast'
-import { BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL } from '@mintter/shared'
+import {toast} from '@mintter/app/toast'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -12,8 +12,8 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import { ChangeEvent, PropsWithChildren, useEffect, useState } from 'react'
-import { RiVideoAddLine } from 'react-icons/ri'
+import {ChangeEvent, PropsWithChildren, useEffect, useState} from 'react'
+import {RiVideoAddLine} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -21,8 +21,8 @@ import {
   defaultProps,
   getBlockInfoFromPos,
 } from './blocknote'
-import { MaxFileSizeB, MaxFileSizeMB } from './file'
-import { HMBlockSchema } from './schema'
+import {MaxFileSizeB, MaxFileSizeMB} from './file'
+import {HMBlockSchema} from './schema'
 
 export const VideoBlock = createReactBlockSpec({
   type: 'video',
@@ -673,10 +673,14 @@ function VideoForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => {setUrl(e.nativeEvent.text); if (fileName.color) setFileName({
-                            name: 'Upload File',
-                            color: undefined,
-                          })}}
+                          onChange={(e) => {
+                            setUrl(e.nativeEvent.text)
+                            if (fileName.color)
+                              setFileName({
+                                name: 'Upload File',
+                                color: undefined,
+                              })
+                          }}
                           autoFocus={true}
                         />
                         <Form.Trigger asChild>

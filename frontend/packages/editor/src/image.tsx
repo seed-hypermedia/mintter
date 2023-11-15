@@ -1,7 +1,7 @@
-import { useAppContext } from '@mintter/app/app-context'
-import { toast } from '@mintter/app/toast'
-import { usePopoverState } from '@mintter/app/use-popover-state'
-import { client, trpc } from '@mintter/desktop/src/trpc'
+import {useAppContext} from '@mintter/app/app-context'
+import {toast} from '@mintter/app/toast'
+import {usePopoverState} from '@mintter/app/use-popover-state'
+import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
   BACKEND_FILE_UPLOAD_URL,
   getCIDFromIPFSUrl,
@@ -19,8 +19,8 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import { ChangeEvent, useCallback, useEffect, useState } from 'react'
-import { RiImage2Line } from 'react-icons/ri'
+import {ChangeEvent, useCallback, useEffect, useState} from 'react'
+import {RiImage2Line} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -28,9 +28,9 @@ import {
   defaultProps,
   getBlockInfoFromPos,
 } from './blocknote'
-import { InlineContent } from './blocknote/react'
-import { MaxFileSizeB, MaxFileSizeMB } from './file'
-import { HMBlockSchema } from './schema'
+import {InlineContent} from './blocknote/react'
+import {MaxFileSizeB, MaxFileSizeMB} from './file'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -47,7 +47,7 @@ export const ImageBlock = createReactBlockSpec({
     },
   },
   containsInlineContent: true,
-  
+
   render: ({
     block,
     editor,
@@ -735,10 +735,14 @@ function ImageForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => {setUrl(e.nativeEvent.text); if (fileName.color) setFileName({
-                            name: 'Upload File',
-                            color: undefined,
-                          })}}
+                          onChange={(e) => {
+                            setUrl(e.nativeEvent.text)
+                            if (fileName.color)
+                              setFileName({
+                                name: 'Upload File',
+                                color: undefined,
+                              })
+                          }}
                           autoFocus={true}
                         />
                         <Form.Trigger asChild>
