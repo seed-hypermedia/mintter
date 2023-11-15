@@ -378,7 +378,7 @@ function DraftContextButton({route}: {route: DraftRoute}) {
     <>
       <ContextPopover {...dialogState}>
         <PopoverTrigger asChild>
-          <Button size="$2" icon={icon}>
+          <Button size="$2" className="no-window-drag" icon={icon}>
             {title}
           </Button>
         </PopoverTrigger>
@@ -705,7 +705,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
       <XStack space="$2" ai="center">
         <ContextPopover {...popoverState}>
           <PopoverTrigger asChild>
-            <Button size="$2" icon={icon}>
+            <Button size="$2" className="no-window-drag" icon={icon}>
               {contextDestRoute ? (
                 <ButtonText
                   hoverStyle={
@@ -772,7 +772,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
         {route.versionId !== undefined ? (
           <VersionContext route={route} />
         ) : null}
-        <PublishDialogInstance
+        {/* <PublishDialogInstance
           docId={docId}
           version={docVersion}
           docTitle={publication.data?.document?.title}
@@ -780,7 +780,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
             route.pubContext?.key === 'group' ? route.pubContext : null
           }
           {...publishDialogState}
-        />
+        /> */}
       </XStack>
       {renameDialog.content}
     </>
@@ -799,6 +799,30 @@ export function PageContextButton({}: {}) {
     return <GroupContextButton route={route} />
   }
   return null
+}
+
+export function PublishToGroupButton() {
+  const route = useNavRoute()
+  const pubRoute = route.key === 'publication' ? route : null
+  const pubContext = pubRoute?.pubContext
+  const publication = usePublicationInContext({
+    documentId: pubRoute?.documentId,
+    versionId: pubRoute?.versionId,
+    pubContext: pubRoute?.pubContext,
+  })
+  const docId = pubRoute?.documentId
+  const docVersion = publication.data?.version
+  const publishDialogState = usePopoverState(false)
+  if (!pubRoute || !docVersion || !docId) return null
+  return (
+    <PublishDialogInstance
+      docId={docId}
+      version={docVersion}
+      docTitle={publication.data?.document?.title}
+      groupPubContext={pubContext?.key === 'group' ? pubContext : null}
+      {...publishDialogState}
+    />
+  )
 }
 
 function PublishDialogInstance({
@@ -831,7 +855,12 @@ function PublishDialogInstance({
     >
       <Tooltip content="Publish to Group">
         <Dialog.Trigger asChild>
-          <Button size="$2" icon={Upload} chromeless></Button>
+          <Button
+            size="$2"
+            icon={Upload}
+            className="no-window-drag"
+            chromeless
+          ></Button>
         </Dialog.Trigger>
       </Tooltip>
       <Dialog.Portal>
