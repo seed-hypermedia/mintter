@@ -1,14 +1,16 @@
 import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
 import {Extension} from '@tiptap/core'
-import {Plugin} from 'prosemirror-state'
+import {Plugin, PluginKey} from 'prosemirror-state'
 
 export const LocalMediaPastePlugin = Extension.create({
+  name: 'local-media-paste',
   addProseMirrorPlugins() {
     return [handleLocalMediaPastePlugin]
   },
 })
 
 const handleLocalMediaPastePlugin = new Plugin({
+  key: new PluginKey('pm-local-media-paste'),
   props: {
     handlePaste(view, event) {
       // console.log('== CURRENT SELECTION', view.state.selection)
