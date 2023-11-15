@@ -1,10 +1,15 @@
+import {useAppContext} from '@mintter/app/app-context'
+import {fetchWebLink} from '@mintter/app/models/web-links'
+import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
-  useAppContext,
-} from '@mintter/app/app-context'
-import { fetchWebLink } from '@mintter/app/models/web-links'
-import { usePopoverState } from '@mintter/app/use-popover-state'
-import { BlockContentEmbed, extractBlockRefOfUrl, hmIdWithVersion, isHypermediaScheme, isPublicGatewayLink, normlizeHmId } from '@mintter/shared'
-import { ErrorBlock } from '@mintter/shared/src/publication-content'
+  BlockContentEmbed,
+  extractBlockRefOfUrl,
+  hmIdWithVersion,
+  isHypermediaScheme,
+  isPublicGatewayLink,
+  normlizeHmId,
+} from '@mintter/shared'
+import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
   Button,
   Form,
@@ -14,13 +19,13 @@ import {
   Tabs,
   XStack,
   YStack,
-  useTheme
+  useTheme,
 } from '@mintter/ui'
-import { useEffect, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { RiArticleLine } from 'react-icons/ri'
-import { Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos } from '.'
-import { createReactBlockSpec } from './blocknote/react'
+import {useEffect, useState} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {RiArticleLine} from 'react-icons/ri'
+import {Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos} from '.'
+import {createReactBlockSpec} from './blocknote/react'
 
 type LinkType = null | 'basic' | 'hypermedia'
 
@@ -115,7 +120,7 @@ function EmbedComponent({
   editor,
   assign,
   selected,
-  setSelected
+  setSelected,
 }: {
   block: Block<HMBlockSchema>
   editor: BlockNoteEditor<HMBlockSchema>
@@ -235,11 +240,10 @@ function EmbedForm({
           )
           if (fullHmId) {
             assign({props: {ref: fullHmId}} as EmbedType)
-          }
-          else {
+          } else {
             setError({
               name: 'The provided url is not a hypermedia link',
-              color: 'red'
+              color: 'red',
             })
           }
           setLoading(false)
@@ -247,7 +251,7 @@ function EmbedForm({
         .catch((e) => {
           setError({
             name: 'The provided url is not a hypermedia link',
-            color: 'red'
+            color: 'red',
           })
           setLoading(false)
         })
@@ -340,7 +344,11 @@ function EmbedForm({
                   alignItems="center"
                   backgroundColor="$background"
                 >
-                  <Form alignItems="center" onSubmit={() => submitEmbed(url)} borderWidth={0}>
+                  <Form
+                    alignItems="center"
+                    onSubmit={() => submitEmbed(url)}
+                    borderWidth={0}
+                  >
                     <YStack flex={1}>
                       <XStack>
                         <Input
@@ -359,10 +367,14 @@ function EmbedForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => {setUrl(e.nativeEvent.text); if (error.color) setError({
-                            name: '',
-                            color: undefined,
-                          })}}
+                          onChange={(e) => {
+                            setUrl(e.nativeEvent.text)
+                            if (error.color)
+                              setError({
+                                name: '',
+                                color: undefined,
+                              })
+                          }}
                           autoFocus={true}
                         />
                         <Form.Trigger asChild>
@@ -378,8 +390,14 @@ function EmbedForm({
                             }}
                           >
                             {loading ? (
-                              <Spinner size="small" color="$green9" paddingHorizontal="$3"/>
-                            ) : "Embed"}
+                              <Spinner
+                                size="small"
+                                color="$green9"
+                                paddingHorizontal="$3"
+                              />
+                            ) : (
+                              'Embed'
+                            )}
                           </Button>
                         </Form.Trigger>
                       </XStack>
