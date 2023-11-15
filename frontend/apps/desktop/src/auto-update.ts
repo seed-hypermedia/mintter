@@ -123,8 +123,8 @@ function setup() {
     })
   })
 
-  autoUpdater.on('update-not-available', ({version}: any) => {
-    log.debug('[MAIN][AUTO-UPDATE]: update not available')
+  autoUpdater.on('update-not-available', (event: any) => {
+    log.debug('[MAIN][AUTO-UPDATE]: update not available', event)
   })
 
   // let progressPercentTimeout = null
