@@ -1,9 +1,9 @@
 import {queryKeys} from '@mintter/app/models/query-keys'
 import {Device} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
+import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
-import {useGRPCClient, useQueryInvalidator} from '../app-context'
 
 export function useContactsList() {
   const grpcClient = useGRPCClient()
@@ -48,7 +48,10 @@ export function useAccountWithDevices(accountId: string) {
 }
 
 export function useConnectPeer(
-  opts: UseMutationOptions<undefined, void, string | undefined>,
+  opts: UseMutationOptions<undefined, void, string | undefined> & {
+    syncImmediately?: boolean
+    aggressiveInvalidation?: boolean
+  } = {},
 ) {
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
@@ -84,15 +87,26 @@ export function useConnectPeer(
       if (!addrs) {
         addrs = peer.trim().split(',')
       }
-      console.log('addrs', addrs)
       if (!addrs) throw new Error('Invalid peer address(es) provided.')
       await grpcClient.networking.connect({addrs})
+      if (opts.syncImmediately) {
+        await grpcClient.daemon.forceSync({})
+      }
       return undefined
     },
+    ...opts,
     onSuccess: (data, ...rest) => {
+      if (opts.aggressiveInvalidation) {
+        // invalidate frequently for 2 minutes while initial sync completes
+        const invalidationInterval = setInterval(() => {
+          invalidate([])
+        }, 4_000)
+        setTimeout(() => {
+          clearInterval(invalidationInterval)
+        }, 120_000)
+      }
       invalidate([queryKeys.GET_PEERS])
       opts?.onSuccess?.(data, ...rest)
     },
-    ...opts,
   })
 }

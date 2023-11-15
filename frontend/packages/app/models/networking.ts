@@ -1,5 +1,4 @@
 import {ConnectError} from '@connectrpc/connect'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import appError from '@mintter/app/errors'
 import {ConnectionStatus, GRPCClient, PeerInfo} from '@mintter/shared'
 import {
@@ -7,9 +6,9 @@ import {
   UseQueryOptions,
   useQuery,
 } from '@tanstack/react-query'
+import {useEffect, useRef, useState} from 'react'
 import {useGRPCClient} from '../app-context'
 import {queryKeys} from './query-keys'
-import {useEffect, useRef, useState} from 'react'
 import {WebLinkMeta, fetchWebLinkMeta} from './web-links'
 
 export function useIsOnline() {
@@ -117,7 +116,7 @@ function queryPeerInfo(
         err.metadata,
       )
     },
-    // refetchInterval: 2000,
+    refetchInterval: 1500,
     // refetchIntervalInBackground: true,
   }
 }
