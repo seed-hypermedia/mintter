@@ -1,9 +1,5 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {
-  useAppContext,
-  useListen,
-  useQueryInvalidator,
-} from '@mintter/app/app-context'
+import {useAppContext, useQueryInvalidator} from '@mintter/app/app-context'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 import {trpc} from '@mintter/desktop/src/trpc'
@@ -644,19 +640,6 @@ export function useDraftEditor({
     }
     /* eslint-disable */
   }, [backendDraft.status])
-
-  useListen(
-    'select_all',
-    () => {
-      if (editor) {
-        if (!editor?._tiptapEditor.isFocused) {
-          editor.focus()
-        }
-        editor?._tiptapEditor.commands.selectAll()
-      }
-    },
-    [editor],
-  )
 
   return {
     state,

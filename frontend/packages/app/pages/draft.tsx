@@ -53,7 +53,25 @@ export default function DraftPage() {
     route,
   })
 
-  if (state.matches('ready')) {
+  useEffect(() => {
+    function handleSelectAll(event: KeyboardEvent) {
+      if (event.key == 'a' && event.metaKey) {
+        if (data.editor) {
+          event.preventDefault()
+          data.editor._tiptapEditor.commands.focus()
+          data.editor._tiptapEditor.commands.selectAll()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleSelectAll)
+
+    return () => {
+      window.removeEventListener('keydown', handleSelectAll)
+    }
+  }, [])
+
+  if (data.state.matches('ready')) {
     return (
       <ErrorBoundary
         FallbackComponent={DraftError}
@@ -84,7 +102,6 @@ export default function DraftPage() {
                 }}
               />
             </YStack>
-
             <HMEditorContainer>
               {editor && <HyperMediaEditorView editor={editor} />}
             </HMEditorContainer>
