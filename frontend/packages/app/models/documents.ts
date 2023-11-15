@@ -627,7 +627,7 @@ export function useDraftEditor({
 
   useEffect(() => {
     if (state.matches('fetching')) {
-      if (backendDraft.status == 'success') {
+      if (backendDraft.status == 'success' && backendDraft.data) {
         send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
       } else if (backendDraft.status == 'error') {
         send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})

@@ -1,7 +1,7 @@
 import {Document} from '@mintter/shared'
-import {ActorRefFrom, StateFrom, assign, createMachine} from 'xstate'
-import {BlocksMap, BlocksMapIten, createBlocksMap} from './documents'
 import {createActorContext} from '@xstate/react'
+import {StateFrom, assign, createMachine, raise} from 'xstate'
+import {BlocksMap, createBlocksMap} from './documents'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
 
@@ -15,23 +15,27 @@ export const draftMachine = createMachine(
     },
     id: 'Draft',
     initial: 'fetching',
-    states: {
-      fetching: {
-        on: {
-          'GET.DRAFT.ERROR': {
-            target: 'error',
+    on: {
+      'GET.DRAFT.SUCCESS': {
+        target: '.mountingEditor',
+        actions: [
+          {
+            type: 'setCurrentDraft',
           },
-          'GET.DRAFT.SUCCESS': {
-            target: 'mountingEditor',
-            actions: [
-              {
-                type: 'setCurrentDraft',
-              },
-            ],
+        ],
+      },
+      'GET.DRAFT.ERROR': {
+        target: '.error',
+      },
+    },
+    states: {
+      fetching: {},
+      mountingEditor: {
+        on: {
+          'FINISH.MOUNT': {
+            target: 'ready',
           },
         },
-      },
-      mountingEditor: {
         entry: [
           {
             type: 'populateEditor',
@@ -39,12 +43,8 @@ export const draftMachine = createMachine(
           {
             type: 'setCurrentBlocksmap',
           },
+          raise({type: 'FINISH.MOUNT'}),
         ],
-        after: {
-          20: {
-            target: 'ready',
-          },
-        },
       },
       error: {
         entry: [{type: 'indicatorError'}],
@@ -184,7 +184,8 @@ export const draftMachine = createMachine(
         | {type: 'RESET.CORRUPT.DRAFT'}
         | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
-        | {type: 'GET.DRAFT.SUCCESS'; draft: Document},
+        | {type: 'GET.DRAFT.SUCCESS'; draft: Document}
+        | {type: 'FINISH.MOUNT'},
       context: {} as {
         blocksMap: BlocksMap
         hasChangedWhileSaving: boolean
@@ -237,8 +238,10 @@ export const draftMachine = createMachine(
         }
       }),
       setCurrentDraft: assign({
-        draft: ({event}) =>
-          event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null,
+        draft: ({event, context}) => {
+          console.log('=== setCurrentDraft', event, context)
+          return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
+        },
       }),
     },
     guards: {
