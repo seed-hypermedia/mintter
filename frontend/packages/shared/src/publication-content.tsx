@@ -1046,11 +1046,14 @@ export function getBlockNodeById(
 }
 
 export function BlockContentFile({block}: {block: HMBlockFile}) {
+  const [hovered, setHover] = useState(false)
   const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
     <YStack
       // backgroundColor="$color3"
       borderColor="$color6"
+      onHoverIn={() => setHover(true)}
+      onHoverOut={() => setHover(false)}
       borderWidth={1}
       borderRadius={layoutUnit / 4}
       padding={layoutUnit / 2}
@@ -1059,7 +1062,6 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
-      group="fileblock"
     >
       <XStack
         borderWidth={0}
@@ -1067,37 +1069,33 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
         alignItems="center"
         space
         flex={1}
+        width="100%"
       >
         <File size={18} />
 
         <SizableText
           size="$5"
-          maxWidth="17em"
+          // maxWidth="17em"
           overflow="hidden"
           textOverflow="ellipsis"
           whiteSpace="nowrap"
           userSelect="text"
+          backgroundColor="red"
           flex={1}
         >
           {block.attributes.name}
         </SizableText>
         {block.attributes.size && (
-          <SizableText
-            paddingTop="$1"
-            color="$color10"
-            size="$2"
-            minWidth="4.5em"
-          >
+          <SizableText paddingTop="$1" color="$color10" size="$2">
             {formatBytes(parseInt(block.attributes.size))}
           </SizableText>
         )}
-        <XStack flex={1} />
+
         <Tooltip content={`Download ${block.attributes.name}`}>
           <Button
-            opacity={0}
-            $group-fileblock-hover={{
-              opacity: 1,
-            }}
+            position="absolute"
+            right={0}
+            opacity={hovered ? 1 : 0}
             size="$2"
             onPress={() => {
               saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
