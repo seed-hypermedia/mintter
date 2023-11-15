@@ -20,7 +20,7 @@ export const DialogContent = styled(YStack, {
   width: '90vw',
   maxWidth: '500px',
   maxHeight: '85vh',
-  padding: '$6',
+  padding: '$4',
   display: 'flex',
   gap: '$4',
   borderWidth: 0,
