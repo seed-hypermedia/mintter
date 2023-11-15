@@ -248,7 +248,7 @@ function BlockNodeMarker({
   block,
   childrenType,
   index = 0,
-  start,
+  start = '1',
 }: {
   block: Block
   childrenType?: string
@@ -267,11 +267,12 @@ function BlockNodeMarker({
             fontSize: textUnit * 0.7,
           } satisfies SizableTextProps)
         : {},
-    [childrenType, textUnit],
+    [childrenType, textUnit, layoutUnit],
   )
   let marker
 
   if (childrenType == 'ol') {
+    console.log('== NUMBERR', {index, start, conv: Number(start)})
     marker = `${index + Number(start)}.`
   }
 
