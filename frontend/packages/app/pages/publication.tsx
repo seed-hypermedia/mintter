@@ -32,15 +32,14 @@ import {
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
+import {MainWrapper} from '../components/main-wrapper'
+import {PinDocumentButton} from '../components/pin-entity'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useExperiments} from '../models/experiments'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
-import {DocumentPlaceholder} from './document-placeholder'
-import {MainWrapper} from '../components/main-wrapper'
-import {PinDocumentButton} from '../components/pin-entity'
 
 export function AppPublicationContentProvider({
   children,
@@ -230,7 +229,9 @@ export default function PublicationPage() {
     )
   }
 
-  return <DocumentPlaceholder />
+  return null
+  // TODO: show loading only if it takes more than 1 second to load the publication
+  // return <DocumentPlaceholder />
 }
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
