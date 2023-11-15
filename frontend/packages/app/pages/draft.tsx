@@ -32,7 +32,6 @@ import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useOpenDraft} from '../utils/open-draft'
-import {DocumentPlaceholder} from './document-placeholder'
 import {AppPublicationContentProvider} from './publication'
 
 export default function DraftPage() {
@@ -145,7 +144,14 @@ export default function DraftPage() {
       </MainWrapper>
     )
   }
-  return <DocumentPlaceholder />
+
+  // console.log('=== DATA', data.state.value)
+
+  // if (data.state.matches('waiting')) {
+  //   return <DocumentPlaceholder />
+  // }
+
+  return null
 }
 
 function applyTitleResize(target: HTMLTextAreaElement) {

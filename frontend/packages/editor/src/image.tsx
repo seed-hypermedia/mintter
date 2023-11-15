@@ -103,7 +103,7 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection])
+  }, [selection, tiptapEditor, block.id])
 
   useEffect(() => {
     if (!isUploading && hasSrc) {
