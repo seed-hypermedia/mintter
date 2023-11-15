@@ -69,6 +69,7 @@ import toast from 'react-hot-toast'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
+import {Slash} from './slash'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -587,7 +588,7 @@ function ContextButton({
   )
 }
 
-function VersionContext({route}: {route: NavRoute}) {
+export function VersionContext({route}: {route: NavRoute}) {
   let exactVersion: string | null = null
   let fullUrl: string | null = null
   const navigate = useNavigate()
@@ -631,39 +632,44 @@ function VersionContext({route}: {route: NavRoute}) {
   if (!unpackedId || !exactVersion || !fullUrl) return null
   return (
     <>
-      <Tooltip
-        content={`You are viewing the exact version: @${exactVersion.slice(
-          -6,
-        )}. Click to Copy Version URL`}
-      >
-        <ButtonText
-          hoverStyle={{textDecorationLine: 'underline'}}
-          onPress={() => {
-            if (!unpackedId || !exactVersion || !fullUrl) return
-            copyUrlToClipboardWithFeedback(
-              fullUrl,
-              `Exact ${labelOfEntityType(unpackedId.type)} Version`,
-            )
-          }}
-          color={'$color10'}
-          fontFamily={'$mono'}
-          fontSize="$2"
+      <Slash />
+      <XStack gap="$2" ai="center">
+        <Tooltip
+          content={`You are viewing the exact version: @${exactVersion.slice(
+            -6,
+          )}. Click to Copy Version URL`}
         >
-          @{exactVersion.slice(-6)}
-        </ButtonText>
-      </Tooltip>
-      {routeWithoutVersion ? (
-        <Tooltip content={`View ${latestVersionLabel}`}>
-          <Button
-            size="$2"
-            chromeless
+          <ButtonText
+            hoverStyle={{textDecorationLine: 'underline'}}
+            className="no-window-drag"
             onPress={() => {
-              routeWithoutVersion && navigate(routeWithoutVersion)
+              if (!unpackedId || !exactVersion || !fullUrl) return
+              copyUrlToClipboardWithFeedback(
+                fullUrl,
+                `Exact ${labelOfEntityType(unpackedId.type)} Version`,
+              )
             }}
-            icon={X}
-          />
+            color={'$color10'}
+            fontFamily={'$mono'}
+            fontSize="$2"
+          >
+            @{exactVersion.slice(-6)}
+          </ButtonText>
         </Tooltip>
-      ) : null}
+        {routeWithoutVersion ? (
+          <Tooltip content={`View ${latestVersionLabel}`}>
+            <Button
+              size="$1"
+              className="no-window-drag"
+              chromeless
+              onPress={() => {
+                routeWithoutVersion && navigate(routeWithoutVersion)
+              }}
+              icon={X}
+            />
+          </Tooltip>
+        ) : null}
+      </XStack>
     </>
   )
 }
@@ -769,9 +775,6 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
             </YStack>
           </ContextPopoverContent>
         </ContextPopover>
-        {route.versionId !== undefined ? (
-          <VersionContext route={route} />
-        ) : null}
         {/* <PublishDialogInstance
           docId={docId}
           version={docVersion}

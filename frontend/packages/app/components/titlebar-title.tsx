@@ -11,7 +11,6 @@ import {
   FontSizeTokens,
   Globe,
   Pencil,
-  SizableText,
   Spinner,
   TitleText,
   XStack,
@@ -20,7 +19,8 @@ import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
-import {PageContextButton} from './publish-share'
+import {PageContextButton, VersionContext} from './publish-share'
+import {Slash} from './slash'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -104,6 +104,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
         <PageContextButton />
         <Slash />
         <PublicationTitle route={route} />
+        <VersionContext route={route} />
       </>
     )
   }
@@ -117,14 +118,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     )
   }
   return null
-}
-
-function Slash() {
-  return (
-    <SizableText color="$color8" fontSize="$6" userSelect="none">
-      /
-    </SizableText>
-  )
 }
 
 export function Title({size}: {size?: FontSizeTokens}) {
