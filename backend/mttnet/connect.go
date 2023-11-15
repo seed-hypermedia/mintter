@@ -18,7 +18,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
-	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
 )
@@ -58,7 +57,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return fmt.Errorf("failed to connect to peer %s: %w", info.ID, err)
 	}
 
-	if err := n.checkMintterProtocolVersion(ctx, info.ID, n.protocol.version); err != nil {
+	if err := n.checkMintterProtocolVersion(ctx, info.ID, n.protocol.version, true); err != nil {
 		return err
 	}
 
@@ -84,26 +83,26 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	return nil
 }
 
-func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	defer cancel()
-
-	var protos []protocol.ID
-	if err := retry.Exponential(ctx, 50*time.Millisecond, func(ctx context.Context) error {
-		protos, err = n.p2p.Peerstore().GetProtocols(pid)
-		if err != nil {
-			return fmt.Errorf("failed to check mintter protocol version: %w", err)
-		}
-
-		if len(protos) > 0 {
-			return nil
-		}
-
-		return fmt.Errorf("peer %s doesn't support any protocols", pid.String())
-	}); err != nil {
-		return err
+func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, desiredVersion string, localCall bool) (err error) {
+	protos, err := n.p2p.Peerstore().GetProtocols(pid)
+	if err != nil {
+		return fmt.Errorf("failed to check mintter protocol version: %w", err)
 	}
-
+	fmt.Printf("Peer %s local call: %t, has protocols: %d\n", pid.String(), localCall, len(protos))
+	protocol := protocol.ConvertFromStrings([]string{n.protocol.prefix + desiredVersion})
+	if len(protos) == 0 {
+		_, err = n.p2p.NewStream(ctx, pid, protocol...)
+		if err != nil {
+			fmt.Println("After zero protocols, failed to open a new stream")
+		}
+		return fmt.Errorf("peer %s doesn't support any protocols", pid.String())
+	}
+	_, err = n.p2p.NewStream(ctx, pid, protocol...)
+	if err != nil {
+		fmt.Println("After more than zero protocols, failed to open a new stream")
+	} else {
+		fmt.Println("After more than zero protocols, successfully open a new stream")
+	}
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
 	var isMintter bool
 	for _, p := range protos {
@@ -181,7 +180,7 @@ func (srv *rpcMux) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 
 	log := n.log.With(zap.String("peer", pid.String()))
 
-	if err := n.checkMintterProtocolVersion(ctx, pid, srv.Node.protocol.version); err != nil {
+	if err := n.checkMintterProtocolVersion(ctx, pid, srv.Node.protocol.version, false); err != nil {
 		return nil, err
 	}
 

@@ -23,7 +23,7 @@ require (
 	github.com/ipld/go-codec-dagpb v1.6.0
 	github.com/ipld/go-ipld-prime v0.21.0
 	github.com/klauspost/compress v1.17.2
-	github.com/libp2p/go-libp2p v0.32.1
+	github.com/libp2p/go-libp2p v0.32.2-0.20231114185332-5a419b2a0327
 	github.com/libp2p/go-libp2p-gostream v0.6.0
 	github.com/libp2p/go-libp2p-kad-dht v0.25.1
 	github.com/libp2p/go-libp2p-record v0.2.0
