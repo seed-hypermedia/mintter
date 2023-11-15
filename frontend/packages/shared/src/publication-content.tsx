@@ -1080,7 +1080,6 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
           textOverflow="ellipsis"
           whiteSpace="nowrap"
           userSelect="text"
-          backgroundColor="red"
           flex={1}
         >
           {block.attributes.name}
