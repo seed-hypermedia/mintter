@@ -680,7 +680,9 @@ function ConnectSite(props: OnboardingStepProps) {
           size="$4"
           disabled={!isDaemonReady}
           onPress={() => {
-            const fullDomain = /^https?:\/\//.test(siteDomain)
+            const domainToUse =
+              siteDomain === '' ? SuggestedSites[0] : siteDomain
+            const fullDomain = /^https?:\/\//.test(domainToUse)
               ? siteDomain
               : `https://${siteDomain}`
             connectPeer.mutate(fullDomain)
