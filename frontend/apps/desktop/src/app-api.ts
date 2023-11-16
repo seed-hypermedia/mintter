@@ -13,6 +13,7 @@ import {
 } from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import {writeFile} from 'fs-extra'
+import {decompressFromEncodedURIComponent} from 'lz-string'
 import z from 'zod'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
@@ -235,9 +236,29 @@ export function handleUrlOpen(url: string) {
       ensureFocusedWindowVisible()
       dispatchFocusedWindowAppEvent({
         key: 'connectPeer',
-        peer: connectionDeviceId,
+        connectionString: connectionDeviceId,
       })
       return
+    }
+
+    if (!hmId?.navRoute) {
+      const connectionRegexp = /connect\/([\w\-\+]+)/
+      const parsedConnectUrl = url.match(connectionRegexp)
+      const connectInfoEncoded = parsedConnectUrl ? parsedConnectUrl[1] : null
+      if (connectInfoEncoded) {
+        ensureFocusedWindowVisible()
+        const connectInfoJSON =
+          decompressFromEncodedURIComponent(connectInfoEncoded)
+        const connectInfo = JSON.parse(connectInfoJSON)
+        dispatchFocusedWindowAppEvent({
+          key: 'connectPeer',
+          connectionString: connectInfo.a
+            .map((shortAddr: string) => `${shortAddr}/p2p/${connectInfo.d}`)
+            .join(','),
+          name: connectInfo.n,
+        })
+        return
+      }
     }
 
     dialog.showErrorBox('Invalid URL', `We could not parse this URL: ${url}`)

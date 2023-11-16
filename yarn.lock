@@ -4693,6 +4693,7 @@ __metadata:
     graphql-request: 6.0.0
     happy-dom: 7.8.1
     jsdom: 22.1.0
+    lz-string: ^1.5.0
     prettier: 3.0.2
     react: 18.2.0
     react-dom: 18.2.0
@@ -4892,6 +4893,7 @@ __metadata:
     is-plain-object: 5.0.0
     js-video-url-parser: 0.5.1
     long: 5.2.3
+    lz-string: ^1.5.0
     nanoid: 4.0.2
     next: 13.5.6
     next-transpile-modules: 10.0.1
