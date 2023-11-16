@@ -1,7 +1,7 @@
-import {defineConfig, loadEnv} from 'vite'
 import {sentryVitePlugin} from '@sentry/vite-plugin'
-import tsConfigPaths from 'vite-tsconfig-paths'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
+import {defineConfig, loadEnv} from 'vite'
+import tsConfigPaths from 'vite-tsconfig-paths'
 
 const _tamaguiPlugin = tamaguiPlugin({
   components: ['@mintter/ui', 'tamagui'],
@@ -46,7 +46,7 @@ export default defineConfig(({command, mode}) => {
         ? [
             tsConfigPaths(),
             sentryVitePlugin({
-              authToken: process.env.MINTTER_SENTRY_AUTH_TOKEN,
+              authToken: process.env.SENTRY_AUTH_TOKEN,
               org: 'mintter',
               project: 'electron',
               telemetry: false,
