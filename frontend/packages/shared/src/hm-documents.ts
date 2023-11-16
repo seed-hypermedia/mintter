@@ -117,6 +117,15 @@ export type HMBlockCodeBlock = HMBlockBase & {
   }
 }
 
+export type HMBlockNostr = HMBlockBase & {
+  type: 'nostr'
+  ref: string
+  attributes: {
+    name?: string
+    text?: string
+  }
+}
+
 export type HMBlock =
   | HMBlockParagraph
   | HMBlockHeading
@@ -126,6 +135,7 @@ export type HMBlock =
   | HMBlockEmbed
   | HMBlockCode
   | HMBlockCodeBlock
+  | HMBlockNostr
 
 export type HMBlockNode = {
   block: HMBlock

@@ -188,6 +188,26 @@ export function fromHMBlock(
     })
   }
 
+  if (editorBlock.type === 'nostr') {
+    let ref = editorBlock.props.url
+
+    if (ref && !ref?.startsWith('http') && !ref?.startsWith('ipfs://')) {
+      ref = `ipfs://${editorBlock.props.url}`
+    }
+
+    res = new ServerBlock({
+      id: editorBlock.id,
+      type: 'file',
+      attributes: {
+        subType: 'nostr:note',
+        name: editorBlock.props.name,
+        size: editorBlock.props.size,
+        text: editorBlock.props.text,
+      },
+      ref: ref || '',
+    })
+  }
+
   if (editorBlock.type == 'video') {
     let ref = editorBlock.props.url
 
