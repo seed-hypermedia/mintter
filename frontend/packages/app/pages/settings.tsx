@@ -516,12 +516,12 @@ const EXPERIMENTS: ExperimentType[] = [
     description:
       'When opening a Web URL from the Quick Switcher, automatically convert to a Hypermedia Document.',
   },
-  // {
-  //   key: 'nostr',
-  //   label: 'Nostr?',
-  //   emoji: '🍀',
-  //   description: 'It is your lucky day.',
-  // },
+  {
+    key: 'nostr',
+    label: 'Nostr',
+    emoji: '🍀',
+    description: 'It is your lucky day.',
+  },
 ]
 
 function ExperimentsSettings({}: {}) {

@@ -5,11 +5,13 @@ import {
   HMBlockFile,
   HMBlockHeading,
   HMBlockImage,
+  HMBlockNostr,
   HMBlockParagraph,
   HMBlockVideo,
   HMInlineContent,
   HMStyles,
 } from '../hm-documents'
+import {getCIDFromIPFSUrl} from '../utils'
 import {
   Annotation,
   Block,
@@ -272,20 +274,38 @@ export function toHMBlock(
     }
 
     if (serverBlock.block?.type === 'file') {
-      res = {
-        type: 'file',
-        id: serverBlock.block.id,
-        props: {
-          url: serverBlock.block.ref,
-          name: serverBlock.block.attributes.name,
-          size: serverBlock.block.attributes.size,
-          textAlignment: 'left',
-          childrenType: extractChildrenType(
-            serverBlock.block.attributes.childrenType,
-          ),
-        },
-        children: [],
-      } satisfies HMBlockFile
+      console.log(serverBlock.block)
+      if (serverBlock.block.attributes.subType?.startsWith('nostr:')) {
+        res = {
+          type: 'nostr',
+          id: serverBlock.block.id,
+          props: {
+            url: getCIDFromIPFSUrl(serverBlock.block.ref),
+            name: serverBlock.block.attributes.name,
+            size: serverBlock.block.attributes.size,
+            textAlignment: 'left',
+            childrenType: extractChildrenType(
+              serverBlock.block.attributes.childrenType,
+            ),
+          },
+          children: [],
+        } satisfies HMBlockNostr
+      } else {
+        res = {
+          type: 'file',
+          id: serverBlock.block.id,
+          props: {
+            url: serverBlock.block.ref,
+            name: serverBlock.block.attributes.name,
+            size: serverBlock.block.attributes.size,
+            textAlignment: 'left',
+            childrenType: extractChildrenType(
+              serverBlock.block.attributes.childrenType,
+            ),
+          },
+          children: [],
+        } satisfies HMBlockFile
+      }
     }
 
     if (serverBlock.block?.type === 'video') {

@@ -10,6 +10,7 @@ import {
   RiFile2Fill,
   RiHeading,
   RiImage2Fill,
+  RiMessage2Fill,
   RiText,
   RiVideoAddFill,
 } from 'react-icons/ri'
@@ -103,6 +104,19 @@ export const slashMenuItems = [
         type: 'embed',
         props: {
           ref: '',
+        },
+      } as PartialBlock<HMBlockSchema>),
+  },
+  {
+    name: 'Nostr',
+    aliases: ['nostr', 'note', 'event'],
+    icon: <RiMessage2Fill size={18} />,
+    hint: 'Insert a nostr note',
+    execute: (editor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'nostr',
+        props: {
+          url: '',
         },
       } as PartialBlock<HMBlockSchema>),
   },
