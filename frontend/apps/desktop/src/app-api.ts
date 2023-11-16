@@ -1,5 +1,5 @@
 import type {NavRoute} from '@mintter/app/utils/navigation'
-import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
+import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {BACKEND_HTTP_PORT} from '@mintter/shared'
 import {observable} from '@trpc/server/observable'
@@ -17,6 +17,7 @@ import {decompressFromEncodedURIComponent} from 'lz-string'
 import z from 'zod'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
+import {grpcClient} from './app-grpc'
 import {pinsApi} from './app-pins'
 import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
@@ -225,9 +226,16 @@ const trpcHandlers = createIPCHandler({router, windows: []})
 
 export type AppRouter = typeof router
 
-export function handleUrlOpen(url: string) {
+setTimeout(() => {
+  console.log('========')
+  handleUrlOpen(
+    'hm://g/dR6mwPR1VzsKMth8rjSJ1q/testing-republish?v=bafy2bzaceaven52gkdjj267772znf6yygiii3d4zioxrc6xylp3bphodjhiu4',
+  )
+}, 10_000)
+
+export async function handleUrlOpen(url: string) {
   log('[Deep Link Open]: ', url)
-  const hmId = unpackHmIdWithAppRoute(url)
+  const hmId = await resolveHmIdToAppRoute(url, grpcClient)
   if (!hmId?.navRoute) {
     const connectionRegexp = /connect-peer\/([\w\d]+)/
     const parsedConnectUrl = url.match(connectionRegexp)
