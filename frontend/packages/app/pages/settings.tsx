@@ -1,10 +1,10 @@
-import {useMyAccount} from '@mintter/app/models/accounts'
-import {useDaemonInfo} from '@mintter/app/models/daemon'
-import {usePeerInfo} from '@mintter/app/models/networking'
-import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
-import {ObjectKeys} from '@mintter/app/utils/object-keys'
-import {trpc} from '@mintter/desktop/src/trpc'
-import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
+import { useMyAccount } from '@mintter/app/models/accounts'
+import { useDaemonInfo } from '@mintter/app/models/daemon'
+import { usePeerInfo } from '@mintter/app/models/networking'
+import { useInvoicesBywallet, useWallets } from '@mintter/app/models/payments'
+import { ObjectKeys } from '@mintter/app/utils/object-keys'
+import { trpc } from '@mintter/desktop/src/trpc'
+import { APP_VERSION, LightningWallet, Profile } from '@mintter/shared'
 import {
   ArrowDownRight,
   Button,
@@ -33,18 +33,18 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Trash} from '@tamagui/lucide-icons'
+import { Trash } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ReactNode, useMemo, useState} from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import {useGRPCClient, useIPC} from '../app-context'
-import {AvatarForm} from '../components/avatar-form'
-import {useEditProfileDialog} from '../components/edit-profile-dialog'
-import {TableList} from '../components/table-list'
-import {useExperiments, useWriteExperiments} from '../models/experiments'
-import {useExportWallet} from '../models/payments'
-import {useOpenUrl} from '../open-url'
-import {getAvatarUrl} from '../utils/account-url'
+import { useGRPCClient, useIPC } from '../app-context'
+import { AvatarForm } from '../components/avatar-form'
+import { useEditProfileDialog } from '../components/edit-profile-dialog'
+import { TableList } from '../components/table-list'
+import { useExperiments, useWriteExperiments } from '../models/experiments'
+import { useExportWallet } from '../models/payments'
+import { useOpenUrl } from '../open-url'
+import { getAvatarUrl } from '../utils/account-url'
 
 export default function Settings() {
   return (
@@ -491,12 +491,12 @@ const EXPERIMENTS: ExperimentType[] = [
     description:
       'When opening a Web URL from the Quick Switcher, automatically convert to a Hypermedia Document.',
   },
-  // {
-  //   key: 'nostr',
-  //   label: 'Nostr?',
-  //   emoji: '🍀',
-  //   description: 'It is your lucky day.',
-  // },
+  {
+    key: 'nostr',
+    label: 'Nostr',
+    emoji: '🍀',
+    description: 'It is your lucky day.',
+  },
 ]
 
 function ExperimentsSettings({}: {}) {

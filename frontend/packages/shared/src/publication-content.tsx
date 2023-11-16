@@ -1,4 +1,5 @@
 import {
+  BACKEND_HTTP_URL,
   Block,
   BlockNode,
   HMBlock,
@@ -37,9 +38,10 @@ import {
   XStack,
   XStackProps,
   YStack,
-  YStackProps,
+  YStackProps
 } from '@mintter/ui'
-import {AlertCircle, Book} from '@tamagui/lucide-icons'
+import { AlertCircle, Book } from '@tamagui/lucide-icons'
+import { nip19, nip21, validateEvent, verifySignature } from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
@@ -47,7 +49,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {HMAccount, HMGroup} from './json-hm'
+import { RiCheckFill, RiCloseCircleLine, RiRefreshLine } from 'react-icons/ri'
+import { HMAccount, HMGroup } from './json-hm'
 import {
   contentLayoutUnit,
   contentTextUnit,
@@ -475,7 +478,11 @@ function BlockContent(props: BlockContentProps) {
   }
 
   if (props.block.type == 'file') {
-    return <BlockContentFile block={props.block} />
+    if (props.block.attributes.subType?.startsWith('nostr:')) {
+      return <BlockContentNostr block={props.block} />
+    } else {
+      return <BlockContentFile block={props.block} />
+    }
   }
 
   if (props.block.type == 'embed') {
@@ -1105,6 +1112,85 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
             Download
           </Button>
         </Tooltip>
+      </XStack>
+    </YStack>
+  )
+}
+
+export function BlockContentNostr({block}: {block: HMBlockFile}) {
+  const {layoutUnit} = usePublicationContentContext()
+  const name = block.attributes.name ?? ''
+  const nostrNpud = nip19.npubEncode(name) ?? ''
+
+  const [verified, setVerified] = useState<boolean>()
+  const [content, setContent] = useState<string>()
+
+  const uri = `nostr:${nostrNpud}`
+  const header = `${nostrNpud.slice(0, 6)}...${nostrNpud.slice(-6)}`
+  
+  if (block.ref && block.ref !== '' && (content === undefined || verified === undefined)) {
+    const cid = getCIDFromIPFSUrl(block.ref)
+    fetch(`${BACKEND_HTTP_URL}/ipfs/${cid}`, {
+      method: 'GET'
+    }).then((response) => {
+      if (response) {
+        response.text().then((text) => {
+          if (text) {
+            const fileEvent = JSON.parse(text)     
+            if (content === undefined) setContent(fileEvent.content)       
+            if (verified === undefined && validateEvent(fileEvent)) {
+              setVerified(verifySignature(fileEvent))
+            }
+          }
+        })
+      }
+    })
+  }
+
+  return (
+    <YStack
+      // backgroundColor="$color3"
+      borderColor="$color6"
+      borderWidth={1}
+      borderRadius={layoutUnit / 4}
+      padding={layoutUnit / 2}
+      overflow="hidden"
+      width="100%"
+      hoverStyle={{
+        backgroundColor: '$backgroundHover',
+      }}
+    >
+      <XStack justifyContent='space-between'>
+        <SizableText
+          size="$5"
+          maxWidth="17em"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          userSelect="text"
+          flex={1}
+        >
+          {"Public Key: "}
+          {nip21.test(uri) ? (
+            <a href={uri}>
+              {header}
+            </a>
+          ) : (
+            { header }
+          )}
+        </SizableText>
+        <Tooltip content={verified === undefined ? "" : (verified ? "Signature verified" : "Invalid signature")}>
+          <Button
+            size="$2"
+            theme={verified === undefined ? "blue" : (verified ? "green" : "orange")}
+            icon={verified === undefined ? RiRefreshLine : (verified ? RiCheckFill : RiCloseCircleLine)}
+          />
+        </Tooltip>
+      </XStack>
+      <XStack justifyContent='space-between'>
+        <Text size="$6" fontWeight="bold">
+          {content}
+        </Text>
       </XStack>
     </YStack>
   )

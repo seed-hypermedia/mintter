@@ -1,24 +1,23 @@
 import { BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL } from '@mintter/shared'
 import {
   Button,
+  Card,
   Form,
+  H2,
   Input,
-  Label,
+  Paragraph,
   Popover,
   SizableText,
-  Text,
   Tabs,
+  Text,
+  Tooltip,
   XStack,
   YStack,
-  useTheme,
-  Card,
-  H2,
-  Paragraph,
-  H1,
-  Tooltip
+  useTheme
 } from '@mintter/ui'
-import { ChangeEvent, PropsWithChildren, useEffect, useState } from 'react'
-import { RiMessage2Fill, RiCheckFill, RiCloseCircleLine } from 'react-icons/ri'
+import { Event as NostrEvent, nip19, nip21, relayInit, validateEvent, verifySignature } from 'nostr-tools'
+import { useEffect, useState } from 'react'
+import { RiCheckFill, RiCloseCircleLine, RiMessage2Fill, RiRefreshLine } from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -27,7 +26,14 @@ import {
   getBlockInfoFromPos,
 } from './blocknote'
 import { HMBlockSchema } from './schema'
-import { Event as NostrEvent, validateEvent, verifySignature, nip21, nip19 } from 'nostr-tools'
+
+export const RELAY_LIST = [
+  'wss://relayable.org',
+  'wss://brb.io',
+  'wss://nos.lol',
+  'wss://relay.damus.io',
+  'wss://soloco.nl'
+]
 
 export const NostrBlock = createReactBlockSpec({
   type: 'nostr',
@@ -36,7 +42,13 @@ export const NostrBlock = createReactBlockSpec({
     name: {
       default: '',
     },
-    ref: {
+    url: {
+      default: '',
+    },
+    text: {
+      default: '',
+    },
+    size: {
       default: '',
     },
     defaultOpen: {
@@ -58,8 +70,10 @@ export const NostrBlock = createReactBlockSpec({
 type NostrType = {
   id: string
   props: {
+    url: string
     name: string
-    ref: string
+    text: string
+    size: string
   }
   children: []
   content: []
@@ -142,12 +156,24 @@ function NostrComponent({
   const [content, setContent] = useState<string>()
 
   const uri = `nostr:${nostrNpud}`
-  const header = `${block.props.name.slice(0, 6)}...${block.props.name.slice(-6)}`
+  const header = `${nostrNpud.slice(0, 6)}...${nostrNpud.slice(-6)}`
 
-  const event: NostrEvent = JSON.parse(block.props.ref ?? "{}")
-  if (content === undefined) setContent(event.content)
-  if (verified === undefined && validateEvent(event)) {
-    setVerified(verifySignature(event))
+  if (block.props.name && block.props.name !== '') {
+    fetch(`${BACKEND_FILE_URL}/${block.props.url}`, {
+      method: 'GET'
+    }).then((response) => {
+      if (response) {
+        response.text().then((text) => {
+          if (text) {
+            const fileEvent = JSON.parse(text)
+            if (content === undefined) setContent(fileEvent.content)
+            if (verified === undefined && validateEvent(fileEvent)) {
+              setVerified(verifySignature(fileEvent))
+            }
+          }
+        })
+      }
+    })
   }
 
   return (
@@ -175,12 +201,14 @@ function NostrComponent({
           onPress={() =>
             assign({
               props: {
+                url: '',
                 name: '',
-                ref: ''
+                size: '0',
+                text: ''
               },
               children: [],
               content: [],
-              type: 'nostr',
+              type: 'file',
             } as NostrType)
           }
           hoverStyle={{
@@ -214,8 +242,8 @@ function NostrComponent({
                 <Tooltip content={verified ? "Signature verified" : "Invalid signature"}>
                   <Button
                     size="$2"
-                    theme={verified ? "green" : "orange"}
-                    icon={verified ? RiCheckFill : RiCloseCircleLine}
+                    theme={verified === undefined ? "blue" : (verified ? "green" : "orange")}
+                    icon={verified === undefined ? RiRefreshLine : (verified ? RiCheckFill : RiCloseCircleLine)}
                   />
                 </Tooltip>
               </XStack>
@@ -239,8 +267,10 @@ function NostrForm({
   assign: any
   editor: BlockNoteEditor<HMBlockSchema>
 }) {
-  const [nostr, setNostr] = useState('')
-  const [tabState, setTabState] = useState('manual')
+  const [rawNote, setRawNote] = useState('')
+  const [note, setNote] = useState<NostrEvent>()
+  const [nevent, setNevent] = useState('')
+  const [tabState, setTabState] = useState('search')
   const [state, setState] = useState<{
     name: string | undefined
     color: string | undefined
@@ -250,24 +280,125 @@ function NostrForm({
   })
   const theme = useTheme()
 
-  const submitNote = async () => {
-    const event: NostrEvent = JSON.parse(nostr)
-    if (isValidEvent(event)) {
-      setState({ name: undefined, color: undefined })
-      assign({
-        props: { name: event.pubkey, ref: nostr }
-      })
-    } else {
-      setState({ name: 'The provided note is invalid or not supported.', color: 'red' })
+  useEffect(() => {
+    if (note) ingestNote(note)
+  }, [note])
+
+  const delay = async (t = 100): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, t))
+  }
+
+  const searchRelay = async (relayUrl: string, noteId: string): Promise<void> => {
+    const relay = relayInit(relayUrl)
+    relay.on('connect', () => {
+      setState({ name: `Searching in ${relayUrl}`, color: 'green' })
+    })
+    relay.on('error', () => {
+      throw new Error()
+    })
+
+    await relay.connect()
+
+    await delay(1000)
+
+    const sub = relay.sub([
+      {
+        ids: [noteId]
+      }
+    ])
+
+    sub.on('event', async (event) => {
+      if (event.id === noteId) {
+        setNote(event)
+        sub.unsub()
+      }
+    })
+    sub.on('eose', () => {
+      sub.unsub()
+    })
+
+    await delay(10000)
+
+    if (!note) {
+      sub.unsub()
+      throw new Error()
     }
+  }
+
+  const searchNote = async () => {
+    setState({ name: 'Connecting...', color: 'green' })
+    const decodedBech32 = nip19.decode(nevent)
+    let noteId = ''
+    let relayListIndex = 0
+    let relays = RELAY_LIST.sort(() => Math.random() - 0.5)
+
+    if (decodedBech32.type === 'nevent') {
+      noteId = decodedBech32.data.id
+      relays = [
+        ...decodedBech32.data.relays ?? [],
+        ...RELAY_LIST,
+      ]
+    } else if (decodedBech32.type === 'note') {
+      noteId = decodedBech32.data
+    }
+
+    const tryRelay = async () => {
+      searchRelay(RELAY_LIST[relayListIndex], noteId)
+        .catch(() => {
+          relayListIndex = relayListIndex + 1
+          if (relayListIndex < RELAY_LIST.length) {
+            tryRelay()
+          } else {
+            setState({ name: "Can't find the note in relays.", color: 'red' })
+          }
+        })
+    }
+
+    if (noteId !== '') tryRelay()
+  }
+  
+  const submitNote = async (raw: string = rawNote) => {
+    const event: NostrEvent = JSON.parse(raw)
+    setNote(event)
   }
 
   const isValidEvent = (event: NostrEvent) => {
     try {
-      return validateEvent(event) && event.kind === 1 && verifySignature(event)
+      return validateEvent(event) && verifySignature(event)
     } catch (e) {
-      console.log(e)
+      console.log(JSON.stringify(e))
       return false
+    }
+  }
+
+  const ingestNote = async (event: NostrEvent): Promise<void> => {
+    if (isValidEvent(event)) {
+      const blobData = [JSON.stringify(event)];
+      const blob = new Blob(blobData, { type: "text/plain" });
+      
+      const formData = new FormData();
+      formData.append("file", blob, event.id);
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.text()
+      if (response.status !== 201) {
+        throw new Error(data)
+      }
+
+      setState({ name: undefined, color: undefined })
+      assign({
+        props: { 
+          url: data,
+          name: event.id,
+          text: event.content,
+          size: blob.size
+        }
+      })
+    } else {
+      setState({ name: 'The provided note is invalid or not supported.', color: 'red' })
     }
   }
 
@@ -339,6 +470,21 @@ function NostrForm({
               >
                 <Tabs.Tab
                   unstyled
+                  value="search"
+                  paddingHorizontal="$4"
+                  paddingVertical="$2"
+                  borderBottomLeftRadius={0}
+                  borderBottomRightRadius={0}
+                  borderBottomWidth={tabState == 'search' ? '$1' : '$0'}
+                  hoverStyle={{
+                    backgroundColor: '$borderColorHover',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <SizableText size="$2">Search</SizableText>
+                </Tabs.Tab>
+                <Tabs.Tab
+                  unstyled
                   value="manual"
                   paddingHorizontal="$4"
                   paddingVertical="$2"
@@ -353,6 +499,65 @@ function NostrForm({
                   <SizableText size="$2">Manual</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
+              <Tabs.Content value="search">
+                <XStack
+                  padding="$4"
+                  alignItems="center"
+                  backgroundColor="$background"
+                >
+                  <Form
+                    alignItems="center"
+                    onSubmit={() => searchNote()}
+                    borderWidth={0}
+                  >
+                    <YStack flex={1}>
+                      <XStack>
+                        <Input
+                          width={360}
+                          marginRight="$3"
+                          borderColor="$color8"
+                          borderWidth="$0.5"
+                          borderRadius="$3"
+                          size="$3.5"
+                          placeholder="Input nevent or note1"
+                          focusStyle={{
+                            borderColor: '$colorFocus',
+                            outlineWidth: 0,
+                          }}
+                          hoverStyle={{
+                            borderColor: '$colorFocus',
+                            outlineWidth: 0,
+                          }}
+                          onChange={(e) => setNevent(e.nativeEvent.text)}
+                        />
+                        <Form.Trigger asChild>
+                          <Button
+                            flex={0}
+                            flexShrink={0}
+                            borderRadius="$3"
+                            size="$3.5"
+                            theme={'green'}
+                            focusStyle={{
+                              outlineWidth: 0,
+                            }}
+                          >
+                            Search
+                          </Button>
+                        </Form.Trigger>
+                      </XStack>
+                      {state.name && (
+                        <SizableText
+                          size="$2"
+                          color={state.color}
+                          paddingTop="$2"
+                        >
+                          {state.name}
+                        </SizableText>
+                      )}
+                    </YStack>
+                  </Form>
+                </XStack>
+              </Tabs.Content>
               <Tabs.Content value="manual">
                 <XStack
                   padding="$4"
@@ -373,7 +578,7 @@ function NostrForm({
                           borderWidth="$0.5"
                           borderRadius="$3"
                           size="$3.5"
-                          placeholder="Input nostr note"
+                          placeholder="Input JSON note"
                           focusStyle={{
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
@@ -382,7 +587,7 @@ function NostrForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => setNostr(e.nativeEvent.text)}
+                          onChange={(e) => setRawNote(e.nativeEvent.text)}
                         />
                         <Form.Trigger asChild>
                           <Button
