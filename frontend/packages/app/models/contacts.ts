@@ -1,6 +1,7 @@
 import {queryKeys} from '@mintter/app/models/query-keys'
 import {Device} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
+import {decompressFromEncodedURIComponent} from 'lz-string'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
@@ -58,9 +59,19 @@ export function useConnectPeer(
   return useMutation<undefined, void, string | undefined>({
     mutationFn: async (peer: string | undefined) => {
       if (!peer) return undefined
-      const connectionRegexp = /connect-peer\/([\w\d]+)/
-      const parsedConnectUrl = peer.match(connectionRegexp)
-      let addrs = parsedConnectUrl ? [parsedConnectUrl[1]] : null
+      const parsedConnectPeerUrl = peer.match(/connect-peer\/([\w\d]+)/) // old format, still supported for now
+      const parsedConnectUrl = peer.match(/hypermedia-connect\/([\w\-\+]+)/)
+      let addrs = parsedConnectPeerUrl ? [parsedConnectPeerUrl[1]] : null
+      if (!addrs && parsedConnectUrl?.[1]) {
+        // new format
+        const jsonConnectInfo = decompressFromEncodedURIComponent(
+          parsedConnectUrl[1],
+        )
+        const connectInfo = JSON.parse(jsonConnectInfo)
+        addrs = connectInfo.a.map(
+          (shortAddr: string) => `${shortAddr}/p2p/${connectInfo.d}`,
+        )
+      }
       if (!addrs && peer.match(/^(https:\/\/)/)) {
         // in this case, the "peer" input is not https://site/connect-peer/x url, but it is a web url. So lets try to connect to this site via its well known peer id.
         const peerUrl = new URL(peer)
