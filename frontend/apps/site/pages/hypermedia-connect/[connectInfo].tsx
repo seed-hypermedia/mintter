@@ -37,7 +37,7 @@ export default function ConnectPeerPage() {
         gap="$3"
       >
         <SizableText size="$5" fontWeight="800">
-          Connect to "{alias}" on Mintter Hypermedia
+          Connect to &quot;{alias}&quot; on Mintter Hypermedia
         </SizableText>
         <SizableText>1. Download the app and set up your account:</SizableText>
         <XStack>

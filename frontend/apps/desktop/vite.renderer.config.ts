@@ -45,7 +45,7 @@ export default defineConfig(({command, mode}) => {
   if (command == 'build') {
     config.plugins.push(
       sentryVitePlugin({
-        authToken: process.env.MINTTER_SENTRY_AUTH_TOKEN,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
         org: 'mintter',
         project: 'electron',
         telemetry: false,
