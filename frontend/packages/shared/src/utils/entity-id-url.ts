@@ -106,6 +106,7 @@ export type UnpackedHypermediaId = {
   id: string
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
   eid: string
+  groupPathName: string | null
   version: string | null
   blockRef: string | null
   hostname: string | null
@@ -123,6 +124,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       id: hypermediaId,
       type,
       eid,
+      groupPathName: parsed?.path[2] || null,
       version,
       blockRef: parsed?.fragment || null,
       hostname: null,
@@ -139,6 +141,7 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
       id: hypermediaId,
       type,
       eid,
+      groupPathName: parsed?.path[3] || null,
       version,
       blockRef: parsed?.fragment || null,
       hostname,
@@ -210,6 +213,22 @@ export function createHmDocLink(
   blockRef?: string | null,
 ): string {
   let res = documentId
+  if (version) res += `?v=${version}`
+  if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
+  return res
+}
+
+export function createHmGroupDocLink(
+  groupId: string,
+  pathName: string,
+  version?: string | null,
+  blockRef?: string | null,
+): string {
+  let res = groupId
+  if (pathName) {
+    if (pathName === '/') res += '/-'
+    else res += `/${pathName}`
+  }
   if (version) res += `?v=${version}`
   if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res

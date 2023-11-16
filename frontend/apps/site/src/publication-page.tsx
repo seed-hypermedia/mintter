@@ -7,6 +7,7 @@ import {
   PublicationHeading,
   UnpackedHypermediaId,
   createHmDocLink,
+  createHmGroupDocLink,
   groupDocUrl,
   unpackHmId,
 } from '@mintter/shared'
@@ -14,13 +15,10 @@ import {
 import {
   ArrowRight,
   Button,
-  Share,
   SideSection,
   SideSectionTitle,
   SizableText,
-  XStack,
   YStack,
-  useMedia,
 } from '@mintter/ui'
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
@@ -28,6 +26,7 @@ import {BasicOGMeta, OGImageMeta} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import {ErrorPage} from './error-page'
+import {OpenInAppLink} from './metadata'
 import {PublicationMetadata} from './publication-metadata'
 import {SiteHead} from './site-head'
 import {MainSiteLayout} from './site-layout'
@@ -107,7 +106,15 @@ export function PublicationPage({
                 editors={pub?.document?.editors || []}
               >
                 <OpenInAppLink
-                  url={createHmDocLink(documentId, pub?.version)}
+                  url={
+                    contextGroup?.id && pathName
+                      ? createHmGroupDocLink(
+                          contextGroup.id,
+                          pathName,
+                          contextGroup.version,
+                        )
+                      : createHmDocLink(documentId, pub?.version)
+                  }
                 />
               </WebTipping>
             </YStack>
@@ -133,21 +140,6 @@ export function PublicationPage({
         ) : null}
       </MainSiteLayout>
     </>
-  )
-}
-
-function OpenInAppLink({url}: {url: string}) {
-  return (
-    <Button
-      onPress={() => window.open(url, '_blank')}
-      size="$2"
-      chromeless
-      icon={Share}
-    >
-      <XStack flex={1} alignItems="center">
-        <SizableText size="$2">Open in Mintter app</SizableText>
-      </XStack>
-    </Button>
   )
 }
 
