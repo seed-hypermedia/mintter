@@ -226,13 +226,6 @@ const trpcHandlers = createIPCHandler({router, windows: []})
 
 export type AppRouter = typeof router
 
-setTimeout(() => {
-  console.log('========')
-  handleUrlOpen(
-    'hm://g/dR6mwPR1VzsKMth8rjSJ1q/testing-republish?v=bafy2bzaceaven52gkdjj267772znf6yygiii3d4zioxrc6xylp3bphodjhiu4',
-  )
-}, 10_000)
-
 export async function handleUrlOpen(url: string) {
   log('[Deep Link Open]: ', url)
   const hmId = await resolveHmIdToAppRoute(url, grpcClient)
