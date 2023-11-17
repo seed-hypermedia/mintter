@@ -211,6 +211,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ariakit/core@npm:0.3.4":
+  version: 0.3.4
+  resolution: "@ariakit/core@npm:0.3.4"
+  checksum: c815ce7443a9a1398bf2dffe12a0f51b1efbd63e76c21423e874c13afb08ce0884739b80805b3f4d54a15ea8147434e47d863173fd4d65f006b9f6cfdbabb056
+  languageName: node
+  linkType: hard
+
+"@ariakit/react-core@npm:0.3.5":
+  version: 0.3.5
+  resolution: "@ariakit/react-core@npm:0.3.5"
+  dependencies:
+    "@ariakit/core": 0.3.4
+    "@floating-ui/dom": ^1.0.0
+    use-sync-external-store: ^1.2.0
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 519dd1c7d5bfb52f881b8a78769372e2d54d3252a38226539f1aaed732c3b83947c0328d8eabc5e30d809ffec8bd575e7df6775cdc2b3d13e797d0721c794d25
+  languageName: node
+  linkType: hard
+
+"@ariakit/react@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "@ariakit/react@npm:0.3.5"
+  dependencies:
+    "@ariakit/react-core": 0.3.5
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: b888f8464f382f2ad24473f408252e5d6599673b8ee326243082457c5debecc5d96f88d93ee6cbf71508a918cf596b607ae6188580b1360ce8effb49bb2ffded
+  languageName: node
+  linkType: hard
+
 "@aw-web-design/x-default-browser@npm:1.4.126":
   version: 1.4.126
   resolution: "@aw-web-design/x-default-browser@npm:1.4.126"
@@ -3597,7 +3630,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/dom@npm:^1.2.1, @floating-ui/dom@npm:^1.5.1":
+"@floating-ui/dom@npm:^1.0.0, @floating-ui/dom@npm:^1.2.1, @floating-ui/dom@npm:^1.5.1":
   version: 1.5.3
   resolution: "@floating-ui/dom@npm:1.5.3"
   dependencies:
@@ -4674,7 +4707,6 @@ __metadata:
     "@mintter/shared": "*"
     "@mintter/ui": "*"
     "@radix-ui/react-dropdown-menu": 2.0.5
-    "@radix-ui/react-navigation-menu": 1.1.3
     "@tamagui/lucide-icons": 1.74.21
     "@tamagui/vite-plugin": 1.74.21
     "@tanstack/react-query": 4.33.0
@@ -4712,6 +4744,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/desktop@workspace:frontend/apps/desktop"
   dependencies:
+    "@ariakit/react": ^0.3.5
     "@connectrpc/connect-web": ^1.1.3
     "@electron-forge/cli": 6.4.1
     "@electron-forge/maker-deb": 6.4.1
@@ -4742,6 +4775,7 @@ __metadata:
     electron-trpc: 0.5.2
     eslint-config-custom: "*"
     fs-extra: 11.1.1
+    match-sorter: ^6.3.1
     react: 18.2.0
     react-devtools: 4.28.0
     react-dom: 18.2.0
@@ -5690,39 +5724,6 @@ __metadata:
     "@types/react-dom":
       optional: true
   checksum: 938623497ffa4dc5290e572dc80bd0b36af910adfe15632290b6e081543e9a7158db954ccced0c9ab0f68bac512dfb772c057a55ece0e1d1e20633cd21057afe
-  languageName: node
-  linkType: hard
-
-"@radix-ui/react-navigation-menu@npm:1.1.3":
-  version: 1.1.3
-  resolution: "@radix-ui/react-navigation-menu@npm:1.1.3"
-  dependencies:
-    "@babel/runtime": ^7.13.10
-    "@radix-ui/primitive": 1.0.1
-    "@radix-ui/react-collection": 1.0.3
-    "@radix-ui/react-compose-refs": 1.0.1
-    "@radix-ui/react-context": 1.0.1
-    "@radix-ui/react-direction": 1.0.1
-    "@radix-ui/react-dismissable-layer": 1.0.4
-    "@radix-ui/react-id": 1.0.1
-    "@radix-ui/react-presence": 1.0.1
-    "@radix-ui/react-primitive": 1.0.3
-    "@radix-ui/react-use-callback-ref": 1.0.1
-    "@radix-ui/react-use-controllable-state": 1.0.1
-    "@radix-ui/react-use-layout-effect": 1.0.1
-    "@radix-ui/react-use-previous": 1.0.1
-    "@radix-ui/react-visually-hidden": 1.0.3
-  peerDependencies:
-    "@types/react": "*"
-    "@types/react-dom": "*"
-    react: ^16.8 || ^17.0 || ^18.0
-    react-dom: ^16.8 || ^17.0 || ^18.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-  checksum: 006b3df72fcbad1eb8db7ca157fed6c6517e036c4725c5b5083eadf7046429a5d23fbe4dde7acee5a2bfdcb71ba53ecbf859f1b5a2b33eac93e6e5410bc2d7e1
   languageName: node
   linkType: hard
 
@@ -23879,6 +23880,16 @@ __metadata:
   bin:
     marked: bin/marked.js
   checksum: fff8741a1dc7313f32bea221079a3d6ff55cd485170fade8841b77b48c89ad5b96676e645636e73e50f4b5b6d65cf9d8821072afb16173822505949df2407ffe
+  languageName: node
+  linkType: hard
+
+"match-sorter@npm:^6.3.1":
+  version: 6.3.1
+  resolution: "match-sorter@npm:6.3.1"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+    remove-accents: 0.4.2
+  checksum: a4b02b676ac4ce64a89a091539ee4a70a802684713bcf06f2b70787927f510fe8a2adc849f9288857a90906083ad303467e530e8723b4a9756df9994fc164550
   languageName: node
   linkType: hard
 

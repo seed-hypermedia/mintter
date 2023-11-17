@@ -355,7 +355,7 @@ export function useHostGroup(hostname: string) {
 
 type AddGroupMemberMutationInput = {
   groupId: string
-  newMemberAccount: string
+  members: Array<string>
 }
 
 export function useAddGroupMember(
@@ -364,13 +364,13 @@ export function useAddGroupMember(
   const grpcClient = useGRPCClient()
   const invalidate = useQueryInvalidator()
   return useMutation({
-    mutationFn: async ({
-      groupId,
-      newMemberAccount,
-    }: AddGroupMemberMutationInput) => {
+    mutationFn: async ({groupId, members}: AddGroupMemberMutationInput) => {
+      let updatedMembers = {}
+      members.forEach((id) => (updatedMembers[id] = Role.EDITOR))
+
       await grpcClient.groups.updateGroup({
         id: groupId,
-        updatedMembers: {[newMemberAccount]: Role.EDITOR},
+        updatedMembers,
       })
     },
     onSuccess: (result, input, context) => {
