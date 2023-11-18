@@ -1,5 +1,5 @@
 import type {NavRoute} from '@mintter/app/utils/navigation'
-import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
+import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {BACKEND_HTTP_PORT} from '@mintter/shared'
 import {observable} from '@trpc/server/observable'
@@ -13,9 +13,11 @@ import {
 } from 'electron'
 import {createIPCHandler} from 'electron-trpc/main'
 import {writeFile} from 'fs-extra'
+import {decompressFromEncodedURIComponent} from 'lz-string'
 import z from 'zod'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
+import {grpcClient} from './app-grpc'
 import {pinsApi} from './app-pins'
 import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
@@ -224,9 +226,9 @@ const trpcHandlers = createIPCHandler({router, windows: []})
 
 export type AppRouter = typeof router
 
-export function handleUrlOpen(url: string) {
+export async function handleUrlOpen(url: string) {
   log('[Deep Link Open]: ', url)
-  const hmId = unpackHmIdWithAppRoute(url)
+  const hmId = await resolveHmIdToAppRoute(url, grpcClient)
   if (!hmId?.navRoute) {
     const connectionRegexp = /connect-peer\/([\w\d]+)/
     const parsedConnectUrl = url.match(connectionRegexp)
@@ -235,9 +237,29 @@ export function handleUrlOpen(url: string) {
       ensureFocusedWindowVisible()
       dispatchFocusedWindowAppEvent({
         key: 'connectPeer',
-        peer: connectionDeviceId,
+        connectionString: connectionDeviceId,
       })
       return
+    }
+
+    if (!hmId?.navRoute) {
+      const connectionRegexp = /connect\/([\w\-\+]+)/
+      const parsedConnectUrl = url.match(connectionRegexp)
+      const connectInfoEncoded = parsedConnectUrl ? parsedConnectUrl[1] : null
+      if (connectInfoEncoded) {
+        ensureFocusedWindowVisible()
+        const connectInfoJSON =
+          decompressFromEncodedURIComponent(connectInfoEncoded)
+        const connectInfo = JSON.parse(connectInfoJSON)
+        dispatchFocusedWindowAppEvent({
+          key: 'connectPeer',
+          connectionString: connectInfo.a
+            .map((shortAddr: string) => `${shortAddr}/p2p/${connectInfo.d}`)
+            .join(','),
+          name: connectInfo.n,
+        })
+        return
+      }
     }
 
     dialog.showErrorBox('Invalid URL', `We could not parse this URL: ${url}`)

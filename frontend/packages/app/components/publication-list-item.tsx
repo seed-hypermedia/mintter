@@ -101,11 +101,31 @@ export function PublicationListItem({
 
           <XStack>
             {publication.document?.editors.length ? (
-              unique(publication.document?.editors).map((editor) => (
-                <AccountLinkAvatar accountId={editor} key={editor} />
+              unique(publication.document?.editors).map((editor, idx) => (
+                <XStack
+                  zIndex={idx + 1}
+                  key={editor}
+                  borderColor="$background"
+                  backgroundColor="$background"
+                  borderWidth={2}
+                  borderRadius={100}
+                  marginLeft={-8}
+                  animation="fast"
+                >
+                  <AccountLinkAvatar accountId={editor} />
+                </XStack>
               ))
             ) : publication.document?.author ? (
-              <AccountLinkAvatar accountId={publication.document?.author} />
+              <XStack
+                borderColor="$background"
+                backgroundColor="$background"
+                borderWidth={2}
+                borderRadius={100}
+                marginLeft={-8}
+                animation="fast"
+              >
+                <AccountLinkAvatar accountId={publication.document?.author} />
+              </XStack>
             ) : null}
           </XStack>
           <TimeAccessory

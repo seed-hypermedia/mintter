@@ -1,5 +1,5 @@
-import {createGrpcWebTransport} from '@connectrpc/connect-web'
 import type {Interceptor} from '@connectrpc/connect'
+import {createGrpcWebTransport} from '@connectrpc/connect-web'
 import {AppContextProvider, StyleProvider} from '@mintter/app/app-context'
 import {AppIPC} from '@mintter/app/app-ipc'
 import {AppErrorContent, RootAppError} from '@mintter/app/components/app-error'
@@ -72,13 +72,16 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     const enabledLogMessages = new Set<string>([
       // 'Accounts.ListAccounts',
       // 'Groups.GetGroup',
-      // 'Groups.ListContent',
+      'Groups.ListContent',
       // etc.. add the messages you need to see here, please comment out before committing!
     ])
     const messageName: string = req.method.name
     const serviceLabel = req.service.typeName.split('.').at(-1)
     const request = req.message
     const response = result?.message
+    if (serviceLabel === 'Daemon' && messageName === 'GetInfo') return result
+    if (serviceLabel === 'Networking' && messageName === 'GetPeerInfo')
+      return result
     if (enabledLogMessages.has(`${serviceLabel}.${messageName}`)) {
       logger.log(`🔃 to ${serviceLabel}.${req.method.name} `, request, response)
     } else {

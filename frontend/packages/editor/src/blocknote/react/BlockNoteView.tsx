@@ -9,6 +9,7 @@ import {HyperlinkToolbarPositioner} from './HyperlinkToolbar/components/Hyperlin
 import {SideMenuPositioner} from './SideMenu/components/SideMenuPositioner'
 import {SlashMenuPositioner} from './SlashMenu/components/SlashMenuPositioner'
 import {darkDefaultTheme, lightDefaultTheme} from './defaultThemes'
+import {LinkMenuPositioner} from './LinkMenu/components/LinkMenuPositioner'
 
 // Renders the editor as well as all menus & toolbars using default styles.
 function BaseBlockNoteView<BSchema extends BlockSchema>(
@@ -35,6 +36,7 @@ function BaseBlockNoteView<BSchema extends BlockSchema>(
           <HyperlinkToolbarPositioner editor={props.editor} />
           <SlashMenuPositioner editor={props.editor} />
           <SideMenuPositioner editor={props.editor} />
+          <LinkMenuPositioner editor={props.editor} />
         </>
       )}
     </EditorContent>

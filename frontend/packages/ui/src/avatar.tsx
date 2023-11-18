@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {useMemo} from 'react'
-import {Avatar, SizableText, Text, View, XStack} from 'tamagui'
+import {Avatar, SizableText, XStack} from 'tamagui'
 
 export function UIAvatar({
   url,
@@ -30,7 +30,7 @@ export function UIAvatar({
 
   let avatar = (
     <Avatar circular size={size} alignItems="center" justifyContent="center">
-      {url && (
+      {url ? (
         <Avatar.Image
           source={{
             uri: url,
@@ -38,7 +38,7 @@ export function UIAvatar({
             height: size,
           }}
         />
-      )}
+      ) : null}
       <Avatar.Fallback
         delayMs={600}
         backgroundColor={color || avatarColor}

@@ -1,4 +1,3 @@
-import {Onboarding} from './pages/onboarding'
 import {ConnectionStatus} from '@mintter/shared'
 import {
   ReactNode,
@@ -10,6 +9,7 @@ import {
 } from 'react'
 import {useDaemonInfo} from './models/daemon'
 import {usePeerInfo} from './models/networking'
+import {Onboarding} from './pages/onboarding'
 
 type PeerInfoValue = {
   addrs: Array<string>
@@ -30,6 +30,9 @@ let Provider = daemonContext.Provider
 export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let infoQuery = useDaemonInfo()
   let peerInfoQuery = usePeerInfo(infoQuery.data?.deviceId)
+  const [completedOnboarding, setCompletedOnboarding] = useState<
+    boolean | null
+  >(null)
 
   let value = useMemo(
     () => ({
@@ -40,12 +43,28 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     [peerInfoQuery],
   )
 
-  if (infoQuery.data === null) {
-    return <Onboarding />
+  useEffect(() => {
+    if (infoQuery.data === null) {
+      setCompletedOnboarding(false)
+    } else if (infoQuery.data !== null && completedOnboarding === null) {
+      setCompletedOnboarding(true)
+    }
+  }, [infoQuery.data, completedOnboarding])
+
+  if (completedOnboarding) {
+    return <Provider value={value}>{children}</Provider>
   }
 
-  if (infoQuery.status == 'success') {
-    return <Provider value={value}>{children}</Provider>
+  if (completedOnboarding === false) {
+    return (
+      <Provider value={value}>
+        <Onboarding
+          onComplete={() => {
+            setCompletedOnboarding(true)
+          }}
+        />
+      </Provider>
+    )
   }
 
   return null

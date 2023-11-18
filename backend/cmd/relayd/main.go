@@ -4,47 +4,49 @@ package main
 import (
 	"flag"
 	"mintter/backend/cmd/relayd/relay"
-	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/burdiyan/go/mainutil"
 	logging "github.com/ipfs/go-log/v2"
 )
 
 func main() {
-	var log = logging.Logger("relay")
+	mainutil.Run(run)
+}
 
-	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
-	loglevel := flag.String("loglevel", "info", "defines the log level {DEBUG | INFO(default) | WARN | ERROR | DPANIC | PANIC | FATAL}")
+func run() error {
+	ctx := mainutil.TrapSignals()
+
+	var (
+		log      = logging.Logger("mintter/relay")
+		cfgPath  = flag.String("config", "", "json configuration file; empty uses the default configuration")
+		loglevel = flag.String("loglevel", "info", "defines the log level {DEBUG | INFO(default) | WARN | ERROR | DPANIC | PANIC | FATAL}")
+	)
+
 	flag.Parse()
 
 	lvl, err := logging.LevelFromString(*loglevel)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	logging.SetAllLoggers(lvl)
 
-	relay, err := relay.NewRelay(log.Desugar(), *cfgPath)
+	cfg, err := relay.LoadConfig(*cfgPath)
 	if err != nil {
-		panic(err)
+		return err
+	}
+
+	relay, err := relay.NewRelay(log.Desugar(), cfg)
+	if err != nil {
+		return err
 	}
 
 	if err := relay.Start(); err != nil {
-		panic(err)
+		return err
 	}
 
-	sigs := make(chan os.Signal, 1)
+	<-ctx.Done()
+	log.Info("Signal captured, shutting down gracefully...")
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	done := make(chan bool, 1)
-
-	go func() {
-		<-sigs
-		log.Desugar().Info("Signal captured, shutting down gracefully...")
-		done <- true
-	}()
-	<-done
-	log.Desugar().Info("Exited normally")
+	return relay.Stop()
 }

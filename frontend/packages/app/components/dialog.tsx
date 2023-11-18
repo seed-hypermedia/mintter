@@ -1,4 +1,13 @@
-import {AlertDialog, Dialog, XStack, YStack, styled} from '@mintter/ui'
+import {
+  AlertDialog,
+  Button,
+  Dialog,
+  Unspaced,
+  XStack,
+  YStack,
+  styled,
+} from '@mintter/ui'
+import {X} from '@tamagui/lucide-icons'
 import {FC, useMemo, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'
 
@@ -20,7 +29,7 @@ export const DialogContent = styled(YStack, {
   width: '90vw',
   maxWidth: '500px',
   maxHeight: '85vh',
-  padding: '$6',
+  padding: '$4',
   display: 'flex',
   gap: '$4',
   borderWidth: 0,
@@ -38,6 +47,23 @@ export const DialogFooter = styled(XStack, {
 export const DialogTitle = styled(Dialog.Title, {
   fontSize: '$7',
 })
+
+export function DialogCloseButton() {
+  return (
+    <Unspaced>
+      <Dialog.Close asChild>
+        <Button
+          position="absolute"
+          top="$3"
+          right="$3"
+          size="$2"
+          circular
+          icon={X}
+        />
+      </Dialog.Close>
+    </Unspaced>
+  )
+}
 
 export const DialogDescription = Dialog.Description
 

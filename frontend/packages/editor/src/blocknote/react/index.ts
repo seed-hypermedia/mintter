@@ -33,6 +33,10 @@ export * from './SlashMenu/components/SlashMenuItem'
 export * from './SlashMenu/components/SlashMenuPositioner'
 export * from './SlashMenu/defaultReactSlashMenuItems'
 
+export * from './LinkMenu/components/DefaultLinkMenu'
+export * from './LinkMenu/components/LinkMenuItem'
+export * from './LinkMenu/components/LinkMenuPositioner'
+
 export * from './SharedComponents/Toolbar/components/Toolbar'
 export * from './SharedComponents/Toolbar/components/ToolbarButton'
 export * from './SharedComponents/Toolbar/components/ToolbarDropdown'

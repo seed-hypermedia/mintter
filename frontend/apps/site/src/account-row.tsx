@@ -1,5 +1,5 @@
 import {abbreviateCid} from '@mintter/shared'
-import {Avatar, SizableText, UIAvatar, XStack} from '@mintter/ui'
+import {SizableText, UIAvatar, XStack} from '@mintter/ui'
 import Link from 'next/link'
 import {cidURL} from './ipfs'
 import {trpc} from './trpc'

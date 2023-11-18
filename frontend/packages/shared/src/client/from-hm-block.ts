@@ -156,8 +156,6 @@ export function fromHMBlock(
       ref: ref || '',
       ...extractContent(editorBlock.content),
     })
-
-    console.log('=== editorBlock', editorBlock, res)
   }
 
   if (editorBlock.type == 'imagePlaceholder') {

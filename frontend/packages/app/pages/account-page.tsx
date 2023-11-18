@@ -1,4 +1,3 @@
-import {useAccountGroups} from '@mintter/app/models/groups'
 import {Avatar} from '@mintter/app/components/avatar'
 import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
@@ -6,9 +5,10 @@ import {PublicationListItem} from '@mintter/app/components/publication-list-item
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useAccountPublicationList} from '@mintter/app/models/changes'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
+import {useAccountGroups} from '@mintter/app/models/groups'
 import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {abbreviateCid, createHmId, pluralizer} from '@mintter/shared'
+import {abbreviateCid, pluralizer} from '@mintter/shared'
 import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
@@ -21,16 +21,17 @@ import {
   YGroup,
   YStack,
 } from '@mintter/ui'
-import {CheckCircle, Pencil, PlusCircle, XCircle} from '@tamagui/lucide-icons'
-import {ReactNode, useState} from 'react'
+import {Pencil} from '@tamagui/lucide-icons'
+import {ReactNode} from 'react'
+import {AccountTrustButton} from '../components/account-trust'
 import {MenuItem} from '../components/dropdown'
-import {copyLinkMenuItem} from '../components/list-item'
-import {useMyAccount, useSetTrusted} from '../models/accounts'
-import {getAvatarUrl} from '../utils/account-url'
-import {useNavigate} from '../utils/useNavigate'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
+import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
+import {useMyAccount} from '../models/accounts'
+import {getAvatarUrl} from '../utils/account-url'
+import {useNavigate} from '../utils/useNavigate'
 
 function DeviceRow({
   isOnline,
@@ -103,44 +104,6 @@ function AccountDocuments({
         )
       })}
     </Section>
-  )
-}
-
-function AccountTrustButton({
-  accountId,
-  isTrusted,
-}: {
-  accountId: string
-  isTrusted?: boolean
-}) {
-  const [hovering, setHovering] = useState(false)
-  const setTrusted = useSetTrusted()
-  if (!isTrusted) {
-    return (
-      <Button
-        size="$2"
-        icon={PlusCircle}
-        onPress={() => {
-          setTrusted.mutate({accountId, isTrusted: true})
-        }}
-      >
-        Trust Account
-      </Button>
-    )
-  }
-  return (
-    <Button
-      size="$2"
-      theme={hovering ? 'red' : 'green'}
-      icon={hovering ? XCircle : CheckCircle}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onPress={() => {
-        setTrusted.mutate({accountId, isTrusted: false})
-      }}
-    >
-      {hovering ? 'Untrust Account' : 'Trusted Account'}
-    </Button>
   )
 }
 

@@ -1,7 +1,7 @@
+import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
 import {
-  createHmDocLink,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -143,62 +143,23 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               }),
             ),
           )
+
+          view.dispatch(
+            view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+              activate: true,
+              ref: nativeHyperLink,
+            }),
+          )
           return true
         }
 
-        // if (nativeHyperLink && selection.empty) {
-        //   const placeholder = '...'
-        //   options.editor.commands.insertContent(
-        //     // we annotate with data-fresh so the link will async load the title
-        //     `<a href="${nativeHyperLink}">${placeholder}</a>`,
-        //   )
-
-        //   let currentBlock = findBlock(selection)
-        //   if (currentBlock) {
-        //     console.log('PASTE BLOCK HERE', currentBlock, options.editor)
-        //     // insertBlocks(
-        //     //   [
-        //     //     {
-        //     //       type: 'embed',
-        //     //       ref: nativeHyperLink,
-        //     //     },
-        //     //   ],
-        //     //   currentBlock.node.attrs.id,
-        //     //   'after',
-        //     //   options.editor,
-        //     // )
-        //   }
-
-        //   // const {$from, $to} = selection
-        //   // const schema = view.state.schema
-        //   // setTimeout(() => {
-        //   //   if ($from.sameParent($to) && $from.parent.isTextblock) {
-        //   //     const tr = view.state.tr
-        //   //     tr.replaceWith(
-        //   //       $from.pos,
-        //   //       $to.pos + placeholder.length,
-        //   //       schema.text('doc title', [
-        //   //         schema.marks.link.create({href: nativeHyperLink}),
-        //   //       ]),
-        //   //     )
-        //   //     view.dispatch(tr)
-        //   //   }
-        //   // }, 1000)
-
-        //   return true
-        // }
-
         if (link && selection.empty) {
-          // TODO: insert a link placeholder here
           let tr = view.state.tr
           if (!tr.selection.empty) tr.deleteSelection()
           tr.setMeta('link-placeholder', {
             add: {link, pos: tr.selection.from},
           })
           view.dispatch(tr)
-          // options.editor.commands.insertContent(
-          //   `<a href="${link.href}">${link.href}</a>`,
-          // )
 
           fetchWebLink(options.client, link.href)
             .then((res) => {
@@ -222,6 +183,15 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   )
                   .setMeta('link-placeholder', {remove: {link}}),
               )
+
+              if (fullHmId) {
+                view.dispatch(
+                  view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+                    activate: true,
+                    ref: fullHmId || link.href,
+                  }),
+                )
+              }
             })
             .catch((err) => {
               let tr = view.state.tr
@@ -240,6 +210,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   .setMeta('link-placeholder', {remove: {link}}),
               )
             })
+
           return true
         }
 

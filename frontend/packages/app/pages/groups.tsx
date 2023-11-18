@@ -9,18 +9,19 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {
   ListItem,
   TimeAccessory,
   copyLinkMenuItem,
 } from '../components/list-item'
+import {MainWrapper} from '../components/main-wrapper'
 import {useGroupMembers, useGroups} from '../models/groups'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/navigation'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'
-import {MainWrapper} from '../components/main-wrapper'
 
 function MemberAvatarLinks({
   ownerAccountId,
@@ -29,13 +30,66 @@ function MemberAvatarLinks({
   groupMembers: Record<string, Role>
   ownerAccountId: string
 }) {
+  let totalEditors = useMemo(() => {
+    return Object.keys(groupMembers).filter((m) => m != ownerAccountId)
+  }, [groupMembers, ownerAccountId])
+
+  let editors =
+    totalEditors.length > 3 ? totalEditors.slice(0, 2) : totalEditors
+
+  // let restEditors = totalEditors.length > 3 ? totalEditors.slice(2) : []
   return (
     <XStack>
-      <AccountLinkAvatar accountId={ownerAccountId} />
-      {Object.keys(groupMembers).map((accountId) => {
-        if (accountId == ownerAccountId) return null
-        return <AccountLinkAvatar accountId={accountId} key={accountId} />
+      <XStack
+        borderColor="$background"
+        backgroundColor="$background"
+        borderWidth={2}
+        borderRadius={100}
+        marginLeft={-8}
+        animation="fast"
+      >
+        <AccountLinkAvatar accountId={ownerAccountId} />
+      </XStack>
+      {editors.map((accountId, idx) => {
+        return (
+          <XStack
+            zIndex={idx + 1}
+            key={accountId}
+            borderColor="$background"
+            backgroundColor="$background"
+            borderWidth={2}
+            borderRadius={100}
+            marginLeft={-8}
+            animation="fast"
+          >
+            <AccountLinkAvatar accountId={accountId} />
+          </XStack>
+        )
       })}
+      {totalEditors.length > editors.length ? (
+        <XStack
+          zIndex={editors.length}
+          borderColor="$background"
+          backgroundColor="$background"
+          borderWidth={2}
+          borderRadius={100}
+          marginLeft={-8}
+          animation="fast"
+          width={24}
+          height={24}
+          ai="center"
+          jc="center"
+        >
+          <Text
+            fontSize={10}
+            fontFamily="$body"
+            fontWeight="bold"
+            color="$color10"
+          >
+            +{totalEditors.length - editors.length - 1}
+          </Text>
+        </XStack>
+      ) : null}
     </XStack>
   )
 }
@@ -47,6 +101,7 @@ function SiteUrlButton({group}: {group: Group}) {
   return (
     <ButtonText
       color="$blue10"
+      size="$2"
       hoverStyle={{textDecorationLine: 'underline'}}
       fontFamily={'$mono'}
       onPress={(e) => {
@@ -70,7 +125,7 @@ function GroupListItem({group}: {group: Group}) {
     <ListItem
       title={group.title}
       accessory={
-        <XStack gap="$4">
+        <XStack gap="$4" ai="center">
           <SiteUrlButton group={group} />
           {groupMembers.data?.members ? (
             <MemberAvatarLinks

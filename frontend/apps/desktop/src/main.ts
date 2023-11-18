@@ -1,3 +1,4 @@
+import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
@@ -9,15 +10,19 @@ import {
   openInitialWindows,
   trpc,
 } from './app-api'
+import {createAppMenu} from './app-menu'
 import {initPaths} from './app-paths'
+import autoUpdate from './auto-update'
 import {startMainDaemon} from './daemon'
 import {saveCidAsFile} from './save-cid-as-file'
-import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
-import {createAppMenu} from './app-menu'
 
 const OS_REGISTER_SCHEME = 'hm'
 
 if (IS_PROD_DESKTOP) {
+  if (squirrelStartup) {
+    app.quit()
+  }
+
   if (process.defaultApp) {
     if (process.argv.length >= 2) {
       app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME, process.execPath, [
@@ -27,23 +32,15 @@ if (IS_PROD_DESKTOP) {
   } else {
     app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
   }
-
-  if (squirrelStartup) {
-    app.quit()
-  }
 }
 
 initPaths()
 
-const mainDaemon = startMainDaemon()
+startMainDaemon()
 
 Menu.setApplicationMenu(createAppMenu())
 
-// // check for updates Powered by the free and open-source
-// updater({
-//   updateInterval: '1 hour',
-//   repo: 'mintterteam/mintter',
-// })
+autoUpdate()
 
 //Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
 log.initialize({

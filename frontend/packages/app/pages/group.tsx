@@ -1,7 +1,10 @@
+import * as Ariakit from '@ariakit/react'
+import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
 import {
   Document,
   Group,
+  Profile,
   PublicationContent,
   Role,
   formattedDate,
@@ -23,35 +26,49 @@ import {
   Separator,
   SizableText,
   Tooltip,
+  UIAvatar,
   View,
-  XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {
   ArrowUpRight,
   Pencil,
-  Pin,
   PlusCircle,
   Store,
   Trash,
+  X,
 } from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import clsx from 'clsx'
+import {matchSorter} from 'match-sorter'
+import {
+  forwardRef,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {toast} from 'react-hot-toast'
+import {AccountCard} from '../components/account-card'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
+import '../components/accounts-combobox.css'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
 import {copyLinkMenuItem} from '../components/list-item'
+import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
+import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
-import {useAccount, useMyAccount} from '../models/accounts'
+import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
@@ -69,8 +86,6 @@ import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
 import {AppPublicationContentProvider} from './publication'
-import {MainWrapper} from '../components/main-wrapper'
-import {PinGroupButton} from '../components/pin-entity'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -270,16 +285,26 @@ export default function GroupPage() {
                           </XStack>
                         </YStack>
                       ) : null}
-                      <XStack paddingVertical="$2" gap="$2">
+                      <XStack paddingVertical="$2">
                         {Object.entries(groupMembers.data?.members || {}).map(
-                          ([memberId, role]) => {
+                          ([memberId, role], idx) => {
                             if (role === Role.OWNER) return null
                             return (
-                              <AccountLinkAvatar
-                                size={24}
-                                accountId={memberId}
+                              <XStack
+                                zIndex={idx + 1}
                                 key={memberId}
-                              />
+                                borderColor="$background"
+                                backgroundColor="$background"
+                                borderWidth={2}
+                                borderRadius={100}
+                                marginLeft={-8}
+                                animation="fast"
+                              >
+                                <AccountLinkAvatar
+                                  size={24}
+                                  accountId={memberId}
+                                />
+                              </XStack>
                             )
                           },
                         )}
@@ -557,6 +582,14 @@ function normalizeAccountId(accountId: string) {
   if (fromUrl && fromUrl.type === 'a') return fromUrl.eid
 }
 
+type AccountListItem = {
+  id: string
+  profile?: Profile
+  alias?: string
+  devices: any
+  isTrusted: boolean
+}
+
 function InviteMemberDialog({
   input,
   onClose,
@@ -564,30 +597,89 @@ function InviteMemberDialog({
   input: {groupId: string}
   onClose: () => void
 }) {
-  const [memberId, setMemberId] = useState('')
   const addMember = useAddGroupMember()
+  const accounts = useAllAccounts(true)
+
+  const accountsMap = useMemo(
+    () =>
+      accounts.status == 'success'
+        ? accounts.data.accounts.reduce((acc, current) => {
+            if (current.profile?.alias) {
+              acc[current.id] = {...current, alias: current.profile?.alias}
+            }
+
+            return acc
+          }, {})
+        : {},
+    [accounts.status, accounts.data],
+  )
+  let accountsListValues = Object.values(accountsMap)
+
+  const [selectedMembers, setMemberSelection] = useState<Array<string>>([])
+  const [value, setValue] = useState('')
+  const searchValue = useDeferredValue(value)
+
+  const matches = useMemo(() => {
+    return matchSorter(accountsListValues, searchValue, {
+      // baseSort: (a, b) => (a.index < b.index ? -1 : 1),
+      keys: ['id', 'alias'],
+    })
+      .slice(0, 10)
+      .map((v: any) => v.id)
+  }, [accountsListValues, searchValue])
+
   return (
     <>
       <Form
         onSubmit={() => {
-          const normalized = normalizeAccountId(memberId)
-          if (!normalized) {
-            toast.error('Invalid account ID')
+          if (!selectedMembers.length) {
+            toast.error('Empty selection')
             return
           }
+
           addMember
             .mutateAsync({
               groupId: input.groupId,
-              newMemberAccount: normalized,
+              members: selectedMembers,
             })
             .then(() => {
               onClose()
+              toast.success('Members added to group')
+            })
+            .catch((error) => {
+              toast.error('Error when adding members: ', error)
             })
         }}
       >
         <DialogTitle>Add Group Editor</DialogTitle>
-        <Label>Account Id</Label>
-        <Input value={memberId} onChangeText={setMemberId} />
+        <div className="wrapper">
+          <Label>Contacts</Label>
+          <TagInput
+            label="Accounts"
+            id="combobox-id"
+            value={value}
+            onChange={setValue}
+            values={selectedMembers}
+            onValuesChange={setMemberSelection}
+            placeholder="Search by alias..."
+            accountsMap={accountsMap}
+          >
+            {matches.map((value) => (
+              <TagInputItem
+                key={value}
+                value={value}
+                account={accountsMap[value]}
+              />
+            ))}
+            <TagInputItem
+              onClick={() => {
+                setMemberSelection((values) => [...values, value])
+              }}
+            >
+              Add &quot;{value}&quot;
+            </TagInputItem>
+          </TagInput>
+        </div>
         <DialogDescription>
           Search for member alias, or paste member ID
         </DialogDescription>
@@ -596,6 +688,27 @@ function InviteMemberDialog({
         </Form.Trigger>
       </Form>
     </>
+  )
+}
+
+function SelectedAccount() {
+  return (
+    <XStack
+      ai="center"
+      space="$1"
+      padding="$1"
+      borderRadius="$2"
+      backgroundColor="$backgroundFocus"
+    >
+      <UIAvatar label="demo" />
+      <SizableText size="$2">demo</SizableText>
+      <Button
+        chromeless
+        size="$0.5"
+        icon={X}
+        hoverStyle={{backgroundColor: '$color7'}}
+      />
+    </XStack>
   )
 }
 
@@ -708,3 +821,198 @@ function ChangesFooterItem({route}: {route: GroupRoute}) {
 //     </AccessoryContainer>
 //   )
 // }
+
+export interface TagInputProps extends Omit<Ariakit.ComboboxProps, 'onChange'> {
+  label: string
+  value?: string
+  onChange?: (value: string) => void
+  defaultValue?: string
+  values?: Array<string>
+  onValuesChange?: (values: Array<string>) => void
+  defaultValues?: Array<AccountListItem>
+  accountsMap: Record<string, AccountListItem>
+}
+
+export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
+  function TagInput(props, ref) {
+    const {
+      label,
+      defaultValue,
+      value,
+      onChange,
+      defaultValues,
+      values,
+      onValuesChange,
+      children,
+      accountsMap,
+      ...comboboxProps
+    } = props
+
+    const comboboxRef = useRef<HTMLInputElement>(null)
+    const defaultComboboxId = useId()
+    const comboboxId = comboboxProps.id || defaultComboboxId
+
+    const combobox = Ariakit.useComboboxStore({
+      value,
+      defaultValue,
+      setValue: onChange,
+      resetValueOnHide: true,
+    })
+
+    const select = Ariakit.useSelectStore<any>({
+      combobox,
+      value: values,
+      defaultValue: defaultValues,
+      setValue: onValuesChange,
+    })
+
+    const composite = Ariakit.useCompositeStore({
+      defaultActiveId: comboboxId,
+    })
+
+    const selectedValues = select.useState('value')
+
+    // Reset the combobox value whenever an item is checked or unchecked.
+    useEffect(() => combobox.setValue(''), [selectedValues, combobox])
+
+    const toggleValueFromSelectedValues = (value: string) => {
+      select.setValue((prevSelectedValues) => {
+        const index = prevSelectedValues.indexOf(value)
+        if (index !== -1) {
+          return prevSelectedValues.filter((v: string) => v != value)
+        }
+        return [...prevSelectedValues, value]
+      })
+    }
+
+    const onItemClick = (value: string) => () => {
+      toggleValueFromSelectedValues(value)
+    }
+
+    const onItemKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        event.currentTarget.click()
+      }
+    }
+
+    const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key !== 'Backspace') return
+      const {selectionStart, selectionEnd} = event.currentTarget
+      const isCaretAtTheBeginning = selectionStart === 0 && selectionEnd === 0
+      if (!isCaretAtTheBeginning) return
+      select.setValue((values) => {
+        if (!values.length) return values
+        return values.slice(0, values.length - 1)
+      })
+      combobox.hide()
+    }
+
+    return (
+      <Ariakit.Composite
+        store={composite}
+        role="grid"
+        aria-label={label}
+        className="tag-grid"
+        onClick={() => comboboxRef.current?.focus()}
+      >
+        <Ariakit.CompositeRow role="row" className="tag-row">
+          {selectedValues.map((value) => {
+            let account = accountsMap[value]
+            return (
+              <AccountCard accountId={value} key={value}>
+                <Ariakit.CompositeItem
+                  role="gridcell"
+                  className="tag"
+                  onClick={onItemClick(value)}
+                  onKeyDown={onItemKeyDown}
+                  onFocus={combobox.hide}
+                >
+                  <UIAvatar
+                    label={account?.alias}
+                    id={value}
+                    url={account?.profile?.avatar}
+                  />
+                  <SizableText size="$3">
+                    {account?.alias
+                      ? account.alias
+                      : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
+                  </SizableText>
+                  {/* <span className="tag-remove"></span> */}
+                  <X size={12} className="tag-remove" />
+                </Ariakit.CompositeItem>
+              </AccountCard>
+            )
+          })}
+          <div role="gridcell">
+            <Ariakit.CompositeItem
+              id={comboboxId}
+              className={clsx('combobox', comboboxProps.className)}
+              render={
+                <CompositeInput
+                  ref={comboboxRef}
+                  onKeyDown={onInputKeyDown}
+                  render={
+                    <Ariakit.Combobox
+                      ref={ref}
+                      store={combobox}
+                      autoSelect
+                      {...comboboxProps}
+                    />
+                  }
+                />
+              }
+            />
+          </div>
+          <Ariakit.ComboboxPopover
+            store={combobox}
+            portal
+            sameWidth
+            gutter={8}
+            className="popover"
+            render={<Ariakit.SelectList store={select} />}
+          >
+            {children}
+          </Ariakit.ComboboxPopover>
+        </Ariakit.CompositeRow>
+      </Ariakit.Composite>
+    )
+  },
+)
+
+export interface TagInputItemProps extends Ariakit.SelectItemProps {
+  children?: React.ReactNode
+  account?: AccountListItem
+}
+
+export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
+  function TagInputItem(props, ref) {
+    let label = useMemo(() => {
+      if (!props.account)
+        return (
+          `${props.value?.slice(0, 5)}...${props.value?.slice(-5)}` || 'account'
+        )
+
+      return (
+        props.account.alias ||
+        `${props.value?.slice(0, 5)}...${props.value?.slice(-5)}` ||
+        'account'
+      )
+    }, [props.account, props.value])
+    return (
+      <Ariakit.SelectItem
+        ref={ref}
+        {...props}
+        className={clsx('combobox-item', props.className)}
+        render={<Ariakit.ComboboxItem render={props.render} />}
+      >
+        <Ariakit.SelectItemCheck />
+        <UIAvatar
+          label={props.account?.alias}
+          id={props.value}
+          url={props.account?.profile?.avatar}
+        />
+        <SizableText size="$3">{props.children || label}</SizableText>
+      </Ariakit.SelectItem>
+    )
+  },
+)

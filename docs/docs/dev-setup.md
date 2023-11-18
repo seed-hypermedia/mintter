@@ -72,7 +72,21 @@ Eventually we might be able to setup all of this be configured with Nix.
 Internally, none of us uses Windows for development, but we _do_ build _for_ Windows _on_ Windows machines in CI. You can inspect the corresponding GitHub Actions workflow definitions to find out what needs to be installed to compile the project.
 
 
-### Running Web Site
+## Running App
+
+To run the app, by default it will run on the test network:
+
+```
+./dev run-desktop
+```
+
+You can also run against the production network:
+
+```
+MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
+```
+
+## Running Web Site
 
 #### 1. Run the Daemon
 
@@ -89,7 +103,7 @@ In the Mintter directory, start by running `yarn`. Then:
 
 ```
 HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site
-``````
+```
 
 ### Debugging Data
 

@@ -1,48 +1,27 @@
 import {createHmId} from '@mintter/shared'
+import {HMAccount} from '@mintter/shared/src/json-hm'
 import {
   Avatar,
   Card,
   H2,
-  PageSection,
   Paragraph,
   SizableText,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {cidURL} from 'src/ipfs'
 import Head from 'next/head'
-import {SiteHead} from 'src/site-head'
-import Footer from './footer'
 import {useRouter} from 'next/router'
-import {trpc} from 'src/trpc'
+import {cidURL} from 'src/ipfs'
 import {OpenInAppLink} from 'src/metadata'
-import {HMAccount} from '@mintter/shared/src/json-hm'
+import {SiteHead} from 'src/site-head'
+import {trpc} from 'src/trpc'
+import {MainSiteLayout} from './site-layout'
+import {ErrorPage} from './error-page'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
-  // return (
-  //   <XStack alignItems="center" gap="$3">
-  //     {avatar && (
-  //       <Avatar circular size={64}>
-  //         <Avatar.Image src={cidURL(avatar)} />
-  //         <Avatar.Fallback backgroundColor="$color6" />
-  //       </Avatar>
-  //     )}
-  //     <SizableText>{bio}</SizableText>
-  //   </XStack>
-  // )
   return (
     <XStack>
-      <Card
-        elevate
-        size="$4"
-        bordered
-        animation="fast"
-        flex={1}
-        height={300}
-        // scale={0.9}
-        // hoverStyle={{scale: 0.925}}
-        // pressStyle={{scale: 0.875}}
-      >
+      <Card elevate size="$4" bordered animation="fast" flex={1} height={300}>
         <Card.Header padded>
           <H2>{account?.profile?.alias}</H2>
           <Paragraph theme="alt2">{account?.profile?.bio}</Paragraph>
@@ -55,36 +34,20 @@ function AccountContent({account}: {account: HMAccount | null | undefined}) {
             </YStack>
           )}
         </Card.Header>
-        <Card.Footer padded>
-          {/* <XStack flex={1} />
-        <Button borderRadius="$10">Purchase</Button> */}
-        </Card.Footer>
-        {/* <Card.Background>
-        <Image
-          alt="Avatar image"
-          resizeMode="contain"
-          alignSelf="center"
-          source={{
-            // width: 300,
-            // height: 300,
-            // uri: account?.profile?.avatar,
-            uri: 'https://placehold.co/600x400',
-          }}
-        />
-      </Card.Background> */}
       </Card>
     </XStack>
   )
-}
-
-function isEmptyObject(obj: unknown) {
-  return JSON.stringify(obj) === '{}'
 }
 
 export default function AccountPage({}: {}) {
   const router = useRouter()
   const accountId = String(router.query.accountId)
   const account = trpc.account.get.useQuery({accountId})
+  if (!account.data?.account) {
+    return (
+      <ErrorPage title="Account not found" description={`(${accountId})`} />
+    )
+  }
   return (
     <>
       <Head>
@@ -95,44 +58,15 @@ export default function AccountPage({}: {}) {
           />
         )}
       </Head>
-      <SiteHead pageTitle="Account Profile" />
-      <PageSection.Root>
-        <PageSection.Side />
-        <PageSection.Content tag="main" id="main-content" tabIndex={-1}>
-          {account.data?.account ? (
-            <AccountContent account={account.data.account} />
-          ) : (
-            <AccountNotFound accountId={accountId} />
-          )}
-        </PageSection.Content>
-        <PageSection.Side>
-          <OpenInAppLink url={createHmId('a', accountId)} />
-        </PageSection.Side>
-      </PageSection.Root>
-      <Footer />
+      <MainSiteLayout
+        rightSide={<OpenInAppLink url={createHmId('a', accountId)} />}
+        head={<SiteHead pageTitle="Account Profile" />}
+      >
+        {account.data?.account ? (
+          <AccountContent account={account.data.account} />
+        ) : null}
+      </MainSiteLayout>
     </>
-  )
-}
-
-function AccountNotFound({accountId}: {accountId?: string}) {
-  return (
-    <YStack
-      paddingVertical="$7"
-      paddingHorizontal="$5"
-      borderRadius="$5"
-      elevation="$1"
-      borderColor="$color5"
-      borderWidth={1}
-      backgroundColor="$color3"
-      gap="$3"
-    >
-      <SizableText size="$6" fontWeight="800" textAlign="center">
-        Account not found
-      </SizableText>
-      <SizableText color="$color9" textAlign="center">
-        ({accountId})
-      </SizableText>
-    </YStack>
   )
 }
 

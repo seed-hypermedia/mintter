@@ -321,7 +321,7 @@ function PostToGroupDialog({
   const prevItem =
     input.groupPubContext.pathName &&
     groupContent.data?.content?.[input.groupPubContext.pathName]
-  const prevItemId = prevItem ? unpackHmId(prevItem) : null
+  // const prevItemId = prevItem ? unpackHmId(prevItem) : null
   const navigate = useNavigate()
   return (
     <>
@@ -330,42 +330,52 @@ function PostToGroupDialog({
         Replace &quot;{input.groupPubContext?.pathName}
         &quot; with this version?
       </DialogDescription>
-      <Button
-        iconAfter={publish.isLoading ? <Spinner /> : null}
-        onPress={() => {
-          if (!input.groupPubContext.pathName) {
-            onClose()
-            return
-          }
-          publish
-            .mutateAsync({
-              docId: input.docId,
-              groupId: input.groupPubContext.groupId,
-              pathName: input.groupPubContext.pathName,
-              version: input.changeId,
-            })
-            .then(() => {
+      <YStack gap="$1">
+        <Button
+          theme="green"
+          iconAfter={publish.isLoading ? <Spinner /> : null}
+          onPress={() => {
+            if (!input.groupPubContext.pathName) {
               onClose()
-              navigate({
-                key: 'publication',
-                documentId: input.docId,
-                pubContext: input.groupPubContext,
-                accessory: {key: 'versions'},
+              return
+            }
+            publish
+              .mutateAsync({
+                docId: input.docId,
+                groupId: input.groupPubContext.groupId,
+                pathName: input.groupPubContext.pathName,
+                version: input.changeId,
               })
-              toast.success('Group version updated')
-            })
-            .catch((e) => {
-              console.error(e)
-              toast.error('Something went wrong')
-            })
-        }}
-      >
-        Publish Version
-      </Button>
+              .then(() => {
+                onClose()
+                navigate({
+                  key: 'publication',
+                  documentId: input.docId,
+                  pubContext: input.groupPubContext,
+                  accessory: {key: 'versions'},
+                })
+                toast.success('Group version updated')
+              })
+              .catch((e) => {
+                console.error(e)
+                toast.error('Something went wrong')
+              })
+          }}
+        >
+          Publish Version
+        </Button>
+        <Button
+          chromeless
+          size="$2"
+          onPress={() => {
+            onClose()
+          }}
+        >
+          Cancel
+        </Button>
+      </YStack>
     </>
   )
-
-  return
 }
 
 function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
@@ -435,7 +445,7 @@ export function EntityVersionsAccessory({
   if (!id) return null
   return (
     <>
-      <AccessoryContainer title="Versions">
+      <AccessoryContainer>
         <PostToGroup.Provider
           value={
             groupPubContext && docId && isInPostableContext

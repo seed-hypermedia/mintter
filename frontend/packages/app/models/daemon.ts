@@ -11,8 +11,10 @@ import {queryKeys} from './query-keys'
 
 function queryDaemonInfo(
   grpcClient: GRPCClient,
+  opts: UseQueryOptions<Info | null> | FetchQueryOptions<Info | null> = {},
 ): UseQueryOptions<Info | null> | FetchQueryOptions<Info | null> {
   return {
+    ...opts,
     queryKey: [queryKeys.GET_DAEMON_INFO],
     queryFn: async () => {
       try {
@@ -24,12 +26,13 @@ function queryDaemonInfo(
       }
       return null
     },
+    refetchInterval: 1500,
     useErrorBoundary: false,
   }
 }
-export function useDaemonInfo() {
+export function useDaemonInfo(opts: UseQueryOptions<Info | null> = {}) {
   const grpcClient = useGRPCClient()
-  return useQuery(queryDaemonInfo(grpcClient))
+  return useQuery(queryDaemonInfo(grpcClient, opts))
 }
 
 export function useMnemonics() {

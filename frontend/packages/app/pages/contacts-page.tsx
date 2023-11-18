@@ -18,9 +18,10 @@ import {
   styled,
 } from '@mintter/ui'
 import {PlusCircle} from '@tamagui/lucide-icons'
+import {AccountCard} from '../components/account-card'
+import {MainWrapper} from '../components/main-wrapper'
 import {useSetTrusted} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
-import {MainWrapper} from '../components/main-wrapper'
 
 const PageHeading = styled(Heading, {
   color: '$gray10',
@@ -40,45 +41,47 @@ function ContactItem({
   const alias = account.profile?.alias
   const setTrusted = useSetTrusted()
   return (
-    <Button
-      chromeless
-      theme="gray"
-      tag="li"
-      gap="$4"
-      onPress={() => {
-        navigate({key: 'account', accountId: account.id})
-      }}
-    >
-      <XStack alignItems="center" gap="$4" flex={1}>
-        <Avatar
-          size={36}
-          id={account.id}
-          label={account.profile?.alias}
-          url={getAvatarUrl(account.profile?.avatar)}
-        />
-        {alias ? (
-          <Text fontWeight="700" fontFamily="$body">
-            {alias}
-          </Text>
-        ) : (
-          <Text fontFamily="$body" fontWeight="bold" color="muted">
-            {account.id.slice(0, 5)}...{account.id.slice(-5)}
-          </Text>
+    <AccountCard accountId={account.id}>
+      <Button
+        chromeless
+        theme="gray"
+        tag="li"
+        gap="$4"
+        onPress={() => {
+          navigate({key: 'account', accountId: account.id})
+        }}
+      >
+        <XStack alignItems="center" gap="$4" flex={1}>
+          <Avatar
+            size={36}
+            id={account.id}
+            label={account.profile?.alias}
+            url={getAvatarUrl(account.profile?.avatar)}
+          />
+          {alias ? (
+            <Text fontWeight="700" fontFamily="$body">
+              {alias}
+            </Text>
+          ) : (
+            <Text fontFamily="$body" fontWeight="bold" color="muted">
+              {account.id.slice(0, 5)}...{account.id.slice(-5)}
+            </Text>
+          )}
+        </XStack>
+        {!isTrusted && (
+          <Button
+            onPress={(e) => {
+              e.stopPropagation()
+              setTrusted.mutate({accountId: account.id, isTrusted: true})
+            }}
+            icon={PlusCircle}
+          >
+            Trust
+          </Button>
         )}
-      </XStack>
-      {!isTrusted && (
-        <Button
-          onPress={(e) => {
-            e.stopPropagation()
-            setTrusted.mutate({accountId: account.id, isTrusted: true})
-          }}
-          icon={PlusCircle}
-        >
-          Trust
-        </Button>
-      )}
-      <OnlineIndicator online={isConnected} />
-    </Button>
+        <OnlineIndicator online={isConnected} />
+      </Button>
+    </AccountCard>
   )
 }
 
@@ -134,7 +137,7 @@ export default function ContactsPage() {
         <Container>
           {trustedAccounts.length ? (
             <>
-              <PageHeading>Trusted Contacts</PageHeading>
+              <PageHeading>Trusted Accounts</PageHeading>
               <YStack tag="ul" padding={0} gap="$2">
                 {trustedAccounts.map((account) => {
                   return (
@@ -146,7 +149,7 @@ export default function ContactsPage() {
                   )
                 })}
               </YStack>
-              <PageHeading marginTop="$4">Other Contacts</PageHeading>
+              <PageHeading marginTop="$4">Other Accounts</PageHeading>
             </>
           ) : null}
           <YStack tag="ul" padding={0} gap="$2">

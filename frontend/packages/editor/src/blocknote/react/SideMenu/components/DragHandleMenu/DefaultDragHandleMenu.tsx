@@ -1,16 +1,14 @@
-import {BlockSchema} from '@/blocknote/core'
-
+import {updateGroup} from '@/block-utils'
+import {BlockNoteEditor, HMBlockSchema} from '@/index'
+import {Box, Menu} from '@mantine/core'
+import {Forward, XStack} from '@mintter/ui'
+import {RefreshCcw} from '@tamagui/lucide-icons'
+import {useCallback, useRef, useState} from 'react'
+import {RiHeading, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
+import {CopyLinkToBlockButton} from './DefaultButtons/CopyLinkToBlockButton'
 import {RemoveBlockButton} from './DefaultButtons/RemoveBlockButton'
 import {DragHandleMenu, DragHandleMenuProps} from './DragHandleMenu'
-import {useCallback, useRef, useState} from 'react'
 import {DragHandleMenuItem} from './DragHandleMenuItem'
-import {Menu, Box} from '@mantine/core'
-import {BlockTypeDropdown} from '@/blocknote/react/FormattingToolbar/components/DefaultDropdowns/BlockTypeDropdown'
-import {HiChevronRight} from 'react-icons/hi'
-import {Forward, SizableText, XStack} from '@mintter/ui'
-import {RiHeading, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
-import {BlockNoteEditor, HMBlockSchema} from '@/index'
-import {updateGroup} from '@/block-utils'
 
 export const DefaultDragHandleMenu = <BSchema extends HMBlockSchema>(
   props: DragHandleMenuProps<BSchema>,
@@ -18,6 +16,7 @@ export const DefaultDragHandleMenu = <BSchema extends HMBlockSchema>(
   <DragHandleMenu>
     <RemoveBlockButton {...props}>Delete</RemoveBlockButton>
     <TurnIntoMenu {...props} />
+    <CopyLinkToBlockButton {...props} />
   </DragHandleMenu>
 )
 
@@ -53,12 +52,13 @@ function TurnIntoMenu(props: DragHandleMenuProps<HMBlockSchema>) {
     >
       <Menu opened={opened} position="right">
         <Menu.Target>
-          <div style={{display: 'flex', alignItems: 'center'}}>
+          <XStack gap="$2">
+            <RefreshCcw size={14} />
             <div style={{flex: 1}}>Turn into</div>
             <Box style={{display: 'flex', alignItems: 'center'}}>
               <Forward size={12} />
             </Box>
-          </div>
+          </XStack>
         </Menu.Target>
         <Menu.Dropdown
           onMouseLeave={startMenuCloseTimer}

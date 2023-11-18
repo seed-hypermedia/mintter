@@ -1,10 +1,9 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
-import {trpc, client} from '@mintter/desktop/src/trpc'
 import {usePopoverState} from '@mintter/app/use-popover-state'
+import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
   BACKEND_FILE_UPLOAD_URL,
-  BACKEND_FILE_URL,
   getCIDFromIPFSUrl,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -14,8 +13,8 @@ import {
   Input,
   Label,
   SizableText,
-  Text,
   Tabs,
+  Text,
   XStack,
   YStack,
   useTheme,
@@ -30,8 +29,8 @@ import {
   getBlockInfoFromPos,
 } from './blocknote'
 import {InlineContent} from './blocknote/react'
-import {HMBlockSchema} from './schema'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
+import {HMBlockSchema} from './schema'
 
 export const ImageBlock = createReactBlockSpec({
   type: 'image',
@@ -48,7 +47,7 @@ export const ImageBlock = createReactBlockSpec({
     },
   },
   containsInlineContent: true,
-  // @ts-ignore
+
   render: ({
     block,
     editor,
@@ -104,16 +103,16 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection])
+  }, [selection, tiptapEditor, block.id])
 
   useEffect(() => {
     if (!isUploading && hasSrc) {
       setUploading(true)
-      console.log('== UPLOADING...', block)
+
       client.webImporting.importWebFile
         .mutate(block.props.src)
         .then(({cid}) => {
-          console.log('== UPLOADED...', block, cid)
+          setUploading(false)
           editor.updateBlock(block, {
             props: {
               url: `ipfs://${cid}`,
@@ -122,7 +121,7 @@ const Render = (
           })
         })
     }
-  }, [hasSrc, block, isUploading])
+  }, [hasSrc, block, isUploading, editor])
 
   const assignFile = (newImage: ImageType) => {
     editor.updateBlock(block.id, {
@@ -135,10 +134,11 @@ const Render = (
     setSelected(isSelected)
   }
 
-  if (typeof isIPFS == 'boolean' && !isIPFS) {
+  if (hasSrc || isUploading) {
     // this means we have a URL in the props.url that is not starting with `ipfs://`, which means we are uploading the image to IPFS
     return (
       <Button
+        // @ts-ignore
         contentEditable={false}
         borderRadius={0}
         size="$5"
@@ -401,7 +401,7 @@ function ImageForm({
   })
   const [drag, setDrag] = useState(false)
   const theme = useTheme()
-  const popoverState = usePopoverState()
+  const popoverState = usePopoverState(true)
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
@@ -735,7 +735,15 @@ function ImageForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => setUrl(e.nativeEvent.text)}
+                          onChange={(e) => {
+                            setUrl(e.nativeEvent.text)
+                            if (fileName.color)
+                              setFileName({
+                                name: 'Upload File',
+                                color: undefined,
+                              })
+                          }}
+                          autoFocus={true}
                         />
                         <Form.Trigger asChild>
                           <Button
@@ -772,4 +780,17 @@ function ImageForm({
       ) : null}
     </YStack>
   )
+}
+
+function urltoFile(url: string, filename: string, mimeType) {
+  var arr = url.split(','),
+    mime = arr[0]!.match(/:(.*?);/)![1],
+    bstr = atob(arr[arr.length - 1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  var file = new File([u8arr], filename, {type: mime || mimeType})
+  return Promise.resolve(file)
 }

@@ -9,7 +9,6 @@ import {
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
 import {usePublicationInContext} from '@mintter/app/models/publication'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
@@ -25,12 +24,10 @@ import {
 import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  UnpackedDocId,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   labelOfEntityType,
   shortenPath,
-  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {
@@ -69,9 +66,10 @@ import {
 } from '@tamagui/lucide-icons'
 import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
+import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
-import CommitDraftButton from './commit-draft-button'
+import {Slash} from './slash'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -177,7 +175,7 @@ function GroupPublishDialog({
                   version: input.version,
                   pathName,
                 })
-                .then(() => {
+                .then((didChange: boolean) => {
                   navigate({
                     ...pubRoute,
                     pubContext: {
@@ -186,10 +184,14 @@ function GroupPublishDialog({
                       pathName,
                     },
                   })
+                  return didChange
                 }),
               {
                 loading: 'Publishing...',
-                success: 'Published to Group',
+                success: (result) => {
+                  if (result) return 'Published to Group'
+                  else return 'Already Published Here'
+                },
                 error: 'Failed to Publish!',
               },
             )
@@ -377,7 +379,7 @@ function DraftContextButton({route}: {route: DraftRoute}) {
     <>
       <ContextPopover {...dialogState}>
         <PopoverTrigger asChild>
-          <Button size="$2" icon={icon}>
+          <Button size="$2" className="no-window-drag" icon={icon}>
             {title}
           </Button>
         </PopoverTrigger>
@@ -480,7 +482,7 @@ function GroupContextItem({
   const isActive =
     route.pubContext?.key === 'group' &&
     groupId === route.pubContext.groupId &&
-    path === route.pubContext.pathName
+    (path === route.pubContext.pathName || route.pubContext.pathName === '')
   const myGroups = useMyGroups()
   const isGroupMember = myGroups.data?.items?.find((groupAccount) => {
     return groupAccount.group?.id === groupId
@@ -586,7 +588,7 @@ function ContextButton({
   )
 }
 
-function VersionContext({route}: {route: NavRoute}) {
+export function VersionContext({route}: {route: NavRoute}) {
   let exactVersion: string | null = null
   let fullUrl: string | null = null
   const navigate = useNavigate()
@@ -630,39 +632,44 @@ function VersionContext({route}: {route: NavRoute}) {
   if (!unpackedId || !exactVersion || !fullUrl) return null
   return (
     <>
-      <Tooltip
-        content={`You are viewing the exact version: @${exactVersion.slice(
-          -6,
-        )}. Click to Copy Version URL`}
-      >
-        <ButtonText
-          hoverStyle={{textDecorationLine: 'underline'}}
-          onPress={() => {
-            if (!unpackedId || !exactVersion || !fullUrl) return
-            copyUrlToClipboardWithFeedback(
-              fullUrl,
-              `Exact ${labelOfEntityType(unpackedId.type)} Version`,
-            )
-          }}
-          color={'$color10'}
-          fontFamily={'$mono'}
-          fontSize="$2"
+      <Slash />
+      <XStack gap="$2" ai="center">
+        <Tooltip
+          content={`You are viewing the exact version: @${exactVersion.slice(
+            -6,
+          )}. Click to Copy Version URL`}
         >
-          @{exactVersion.slice(-6)}
-        </ButtonText>
-      </Tooltip>
-      {routeWithoutVersion ? (
-        <Tooltip content={`View ${latestVersionLabel}`}>
-          <Button
-            size="$2"
-            chromeless
+          <ButtonText
+            hoverStyle={{textDecorationLine: 'underline'}}
+            className="no-window-drag"
             onPress={() => {
-              routeWithoutVersion && navigate(routeWithoutVersion)
+              if (!unpackedId || !exactVersion || !fullUrl) return
+              copyUrlToClipboardWithFeedback(
+                fullUrl,
+                `Exact ${labelOfEntityType(unpackedId.type)} Version`,
+              )
             }}
-            icon={X}
-          />
+            color={'$color10'}
+            fontFamily={'$mono'}
+            fontSize="$2"
+          >
+            @{exactVersion.slice(-6)}
+          </ButtonText>
         </Tooltip>
-      ) : null}
+        {routeWithoutVersion ? (
+          <Tooltip content={`View ${latestVersionLabel}`}>
+            <Button
+              size="$1"
+              className="no-window-drag"
+              chromeless
+              onPress={() => {
+                routeWithoutVersion && navigate(routeWithoutVersion)
+              }}
+              icon={X}
+            />
+          </Tooltip>
+        ) : null}
+      </XStack>
     </>
   )
 }
@@ -704,7 +711,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
       <XStack space="$2" ai="center">
         <ContextPopover {...popoverState}>
           <PopoverTrigger asChild>
-            <Button size="$2" icon={icon}>
+            <Button size="$2" className="no-window-drag" icon={icon}>
               {contextDestRoute ? (
                 <ButtonText
                   hoverStyle={
@@ -768,10 +775,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
             </YStack>
           </ContextPopoverContent>
         </ContextPopover>
-        {route.versionId !== undefined ? (
-          <VersionContext route={route} />
-        ) : null}
-        <PublishDialogInstance
+        {/* <PublishDialogInstance
           docId={docId}
           version={docVersion}
           docTitle={publication.data?.document?.title}
@@ -779,7 +783,7 @@ function PublicationContextButton({route}: {route: PublicationRoute}) {
             route.pubContext?.key === 'group' ? route.pubContext : null
           }
           {...publishDialogState}
-        />
+        /> */}
       </XStack>
       {renameDialog.content}
     </>
@@ -798,6 +802,30 @@ export function PageContextButton({}: {}) {
     return <GroupContextButton route={route} />
   }
   return null
+}
+
+export function PublishToGroupButton() {
+  const route = useNavRoute()
+  const pubRoute = route.key === 'publication' ? route : null
+  const pubContext = pubRoute?.pubContext
+  const publication = usePublicationInContext({
+    documentId: pubRoute?.documentId,
+    versionId: pubRoute?.versionId,
+    pubContext: pubRoute?.pubContext,
+  })
+  const docId = pubRoute?.documentId
+  const docVersion = publication.data?.version
+  const publishDialogState = usePopoverState(false)
+  if (!pubRoute || !docVersion || !docId) return null
+  return (
+    <PublishDialogInstance
+      docId={docId}
+      version={docVersion}
+      docTitle={publication.data?.document?.title}
+      groupPubContext={pubContext?.key === 'group' ? pubContext : null}
+      {...publishDialogState}
+    />
+  )
 }
 
 function PublishDialogInstance({
@@ -830,7 +858,12 @@ function PublishDialogInstance({
     >
       <Tooltip content="Publish to Group">
         <Dialog.Trigger asChild>
-          <Button size="$2" icon={Upload} chromeless></Button>
+          <Button
+            size="$2"
+            icon={Upload}
+            className="no-window-drag"
+            chromeless
+          ></Button>
         </Dialog.Trigger>
       </Tooltip>
       <Dialog.Portal>

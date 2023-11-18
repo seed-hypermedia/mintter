@@ -3,6 +3,7 @@ import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {
   GRPCClient,
   HYPERMEDIA_SCHEME,
@@ -14,15 +15,14 @@ import {Spinner, YStack} from '@mintter/ui'
 import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
+import {useGRPCClient} from '../app-context'
 import {useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
-import './quick-switcher.css'
-import {useListenAppEvent} from '../utils/window-events'
-import {trpc} from '@mintter/desktop/src/trpc'
 import {importWebCapture} from '../models/web-importer'
-import {useGRPCClient} from '../app-context'
 import {AppQueryClient} from '../query-client'
-import {NavRoute} from '../utils/navigation'
+import {NavRoute, resolveHmIdToAppRoute} from '../utils/navigation'
+import {useListenAppEvent} from '../utils/window-events'
+import './quick-switcher.css'
 
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
@@ -127,8 +127,8 @@ export function QuickSwitcher() {
             <Command.Item
               key="mtt-link"
               value={search}
-              onSelect={() => {
-                const searched = unpackHmIdWithAppRoute(search)
+              onSelect={async () => {
+                const searched = await resolveHmIdToAppRoute(search, grpcClient)
                 if (
                   (searched?.scheme === HYPERMEDIA_SCHEME ||
                     searched?.hostname === 'hyper.media') &&

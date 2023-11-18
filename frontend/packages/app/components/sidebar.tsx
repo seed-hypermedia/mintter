@@ -25,7 +25,7 @@ import {
   Search,
   Settings,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo} from 'react'
+import {ReactNode, memo, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {useAccount, useMyAccount} from '../models/accounts'
@@ -41,10 +41,13 @@ import {
 import {useOpenDraft} from '../utils/open-draft'
 import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
+import {AccountCard} from './account-card'
 import {Avatar} from './avatar'
 import {CreateGroupButton} from './new-group'
 
 export const AppSidebar = memo(FullAppSidebar)
+
+const HoverRegionWidth = 30
 
 function FullAppSidebar() {
   const route = useNavRoute()
@@ -59,216 +62,252 @@ function FullAppSidebar() {
   const {platform} = useAppContext()
   const isVisible = isLocked || isHoverVisible
   let top = platform === 'darwin' ? 40 : 72
+  let bottom = 24
   if (!isLocked) {
     top += 8
+    bottom += 8
   }
-  let bottom = isLocked ? 24 : 32
+  const isFocused = useIsWindowFocused({
+    onBlur: () => ctx.onMenuHoverLeave(),
+  })
+  const isWindowTooNarrowForHoverSidebar = useIsWindowNarrowForHoverSidebar()
   return (
-    <YStack
-      backgroundColor={'$color1'}
-      borderRightWidth={1}
-      borderColor={'$color4'}
-      animation="fast"
-      position="absolute"
-      x={isVisible ? 0 : -(SidebarWidth - 50)}
-      width="100%"
-      maxWidth={SidebarWidth}
-      elevation={!isLocked ? '$4' : undefined}
-      top={top}
-      bottom={bottom}
-      borderTopRightRadius={!isLocked ? '$3' : undefined}
-      borderBottomRightRadius={!isLocked ? '$3' : undefined}
-      onMouseEnter={ctx.onMenuHover}
-      onMouseLeave={ctx.onMenuHoverLeave}
-      opacity={isVisible ? 1 : 0}
-      overflow="scroll"
-    >
-      <YGroup
-        separator={<Separator />}
-        borderRadius={0}
-        borderBottomWidth={1}
-        borderColor="$borderColor"
+    <>
+      {isFocused && !isLocked && !isWindowTooNarrowForHoverSidebar ? (
+        <YStack
+          position="absolute"
+          left={-20} // this -20 is to make sure the rounded radius is not visible on the edge
+          borderRadius={'$3'}
+          backgroundColor={'$color11'}
+          width={HoverRegionWidth + 20} // this 20 is to make sure the rounded radius is not visible on the edge
+          top={top}
+          opacity={0}
+          hoverStyle={{
+            opacity: 0.1,
+          }}
+          bottom={bottom}
+          cursor="pointer"
+          onMouseEnter={ctx.onMenuHoverDelayed}
+          onMouseLeave={ctx.onMenuHoverLeave}
+          onPress={ctx.onMenuHover}
+        />
+      ) : null}
+      <YStack
+        backgroundColor={'$color1'}
+        borderRightWidth={1}
+        borderColor={'$color4'}
+        animation="fast"
+        position="absolute"
+        x={isVisible ? 0 : -SidebarWidth}
+        width="100%"
+        maxWidth={SidebarWidth}
+        elevation={!isLocked ? '$4' : undefined}
+        top={top}
+        bottom={bottom}
+        borderTopRightRadius={!isLocked ? '$3' : undefined}
+        borderBottomRightRadius={!isLocked ? '$3' : undefined}
+        onMouseEnter={ctx.onMenuHover}
+        onMouseLeave={ctx.onMenuHoverLeave}
+        opacity={isVisible ? 1 : 0}
+        overflow="scroll"
       >
-        <YGroup.Item>
-          <MyAccountItem account={account.data} onRoute={navigate} />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'home'}
-            data-testid="menu-item-pubs"
-            onPress={() => {
-              navigate({key: 'home'})
-            }}
-            title="Trusted Publications"
-            bold
-            icon={Bookmark}
-            rightHover={[
-              <NewDocumentButton pubContext={{key: 'trusted'}} key="newDoc" />,
-            ]}
-          />
-        </YGroup.Item>
-        {pins.data?.trustedDocuments.map((documentId) => {
-          return (
-            <PinnedDocument
+        <YGroup
+          separator={<Separator />}
+          borderRadius={0}
+          borderBottomWidth={1}
+          borderColor="$borderColor"
+        >
+          <YGroup.Item>
+            <MyAccountItem account={account.data} onRoute={navigate} />
+          </YGroup.Item>
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'home'}
+              data-testid="menu-item-pubs"
               onPress={() => {
-                navigate({
-                  key: 'publication',
-                  documentId,
-                  pubContext: {key: 'trusted'},
-                })
+                navigate({key: 'home'})
               }}
-              active={
-                route.key === 'publication' &&
-                route.documentId === documentId &&
-                route.pubContext?.key === 'trusted'
-              }
-              docId={documentId}
-              key={documentId}
+              title="Trusted Publications"
+              bold
+              icon={Bookmark}
+              rightHover={[
+                <NewDocumentButton
+                  pubContext={{key: 'trusted'}}
+                  key="newDoc"
+                />,
+              ]}
             />
-          )
-        })}
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'all-publications'}
-            data-testid="menu-item-global"
-            onPress={() => {
-              navigate({key: 'all-publications'})
-            }}
-            title="All Publications"
-            bold
-            icon={Globe}
-            rightHover={[
-              <NewDocumentButton pubContext={null} key="newDoc" />,
-              // <Button
-              //   theme="blue"
-              //   icon={Plus}
-              //   size="$2"
-              //   key="NewDoc"
-              //   onPress={() => {}}
-              // />,
-            ]}
-          />
-        </YGroup.Item>
-        {pins.data?.allDocuments.map((documentId) => {
-          return (
-            <PinnedDocument
+          </YGroup.Item>
+          {pins.data?.trustedDocuments.map((documentId) => {
+            return (
+              <PinnedDocument
+                onPress={() => {
+                  navigate({
+                    key: 'publication',
+                    documentId,
+                    pubContext: {key: 'trusted'},
+                  })
+                }}
+                active={
+                  route.key === 'publication' &&
+                  route.documentId === documentId &&
+                  route.pubContext?.key === 'trusted'
+                }
+                docId={documentId}
+                key={documentId}
+              />
+            )
+          })}
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'all-publications'}
+              data-testid="menu-item-global"
               onPress={() => {
-                navigate({
-                  key: 'publication',
-                  documentId,
-                })
+                navigate({key: 'all-publications'})
               }}
-              active={
-                route.key === 'publication' &&
-                route.documentId === documentId &&
-                !route.pubContext
-              }
-              docId={documentId}
-              key={documentId}
+              title="All Publications"
+              bold
+              icon={Globe}
+              rightHover={[
+                <NewDocumentButton pubContext={null} key="newDoc" />,
+                // <Button
+                //   theme="blue"
+                //   icon={Plus}
+                //   size="$2"
+                //   key="NewDoc"
+                //   onPress={() => {}}
+                // />,
+              ]}
             />
-          )
-        })}
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'groups'}
-            onPress={() => {
-              navigate({key: 'groups'})
-            }}
-            title="Groups"
-            bold
-            icon={Library}
-            rightHover={[<CreateGroupButton key="newGroup" />]}
-          />
-        </YGroup.Item>
-        {pins.data?.groups
-          .map((group) => {
-            return [
-              <PinnedGroup group={group} key={group.groupId} />,
-              ...group.documents.map(({docId, pathName}) => {
-                return (
-                  <PinnedDocument
-                    onPress={() => {
-                      navigate({
-                        key: 'publication',
-                        documentId: docId,
-                        pubContext: {
-                          key: 'group',
-                          groupId: group.groupId,
-                          pathName: pathName || '/',
-                        },
-                      })
-                    }}
-                    active={
-                      route.key === 'publication' &&
-                      route.documentId === docId &&
-                      route.pubContext?.key === 'group' &&
-                      route.pubContext.groupId === group.groupId &&
-                      route.pubContext.pathName === pathName
-                    }
-                    docId={docId}
-                    key={docId}
-                  />
-                )
-              }),
-            ]
-          })
-          .flat()}
+          </YGroup.Item>
+          {pins.data?.allDocuments.map((documentId) => {
+            return (
+              <PinnedDocument
+                onPress={() => {
+                  navigate({
+                    key: 'publication',
+                    documentId,
+                  })
+                }}
+                active={
+                  route.key === 'publication' &&
+                  route.documentId === documentId &&
+                  !route.pubContext
+                }
+                docId={documentId}
+                key={documentId}
+              />
+            )
+          })}
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'groups'}
+              onPress={() => {
+                navigate({key: 'groups'})
+              }}
+              title="Groups"
+              bold
+              icon={Library}
+              rightHover={[
+                <Tooltip content="New Group" key="newGroup">
+                  {/* Tooltip broken without this extra child View */}
+                  <View>
+                    <CreateGroupButton />
+                  </View>
+                </Tooltip>,
+              ]}
+            />
+          </YGroup.Item>
+          {pins.data?.groups
+            .map((group) => {
+              return [
+                <PinnedGroup group={group} key={group.groupId} />,
+                ...group.documents.map(({docId, pathName}) => {
+                  return (
+                    <PinnedDocument
+                      onPress={() => {
+                        navigate({
+                          key: 'publication',
+                          documentId: docId,
+                          pubContext: {
+                            key: 'group',
+                            groupId: group.groupId,
+                            pathName: pathName || '/',
+                          },
+                        })
+                      }}
+                      active={
+                        route.key === 'publication' &&
+                        route.documentId === docId &&
+                        route.pubContext?.key === 'group' &&
+                        route.pubContext.groupId === group.groupId &&
+                        route.pubContext.pathName === pathName
+                      }
+                      docId={docId}
+                      key={docId}
+                    />
+                  )
+                }),
+              ]
+            })
+            .flat()}
 
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'drafts'}
-            data-testid="menu-item-drafts"
-            onPress={() => {
-              navigate({key: 'drafts'})
-            }}
-            icon={Draft}
-            title="Drafts"
-            bold
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            active={route.key == 'contacts'}
-            onPress={() => {
-              navigate({key: 'contacts'})
-            }}
-            icon={Contact}
-            title="Contacts"
-            bold
-          />
-        </YGroup.Item>
-        {pins.data?.accounts.map((accountId) => {
-          return <PinnedAccount accountId={accountId} key={accountId} />
-        })}
-      </YGroup>
-      <View f={1} minHeight={20} />
-      <YGroup
-        separator={<Separator />}
-        borderRadius={0}
-        borderTopWidth={1}
-        borderColor="$borderColor"
-      >
-        <YGroup.Item>
-          <SidebarItem
-            onPress={() => {
-              triggerFocusedWindow('openQuickSwitcher')
-            }}
-            title="Search / Open"
-            icon={Search}
-          />
-        </YGroup.Item>
-        <YGroup.Item>
-          <SidebarItem
-            onPress={() => {
-              spawn({key: 'settings'})
-            }}
-            cursor="pointer"
-            icon={Settings}
-            title="Settings"
-          />
-        </YGroup.Item>
-      </YGroup>
-    </YStack>
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'drafts'}
+              data-testid="menu-item-drafts"
+              onPress={() => {
+                navigate({key: 'drafts'})
+              }}
+              icon={Draft}
+              title="Drafts"
+              bold
+            />
+          </YGroup.Item>
+          <YGroup.Item>
+            <SidebarItem
+              active={route.key == 'contacts'}
+              onPress={() => {
+                navigate({key: 'contacts'})
+              }}
+              icon={Contact}
+              title="Contacts"
+              bold
+            />
+          </YGroup.Item>
+          {pins.data?.accounts.map((accountId) => {
+            return <PinnedAccount accountId={accountId} key={accountId} />
+          })}
+        </YGroup>
+        <View f={1} minHeight={20} />
+        <YGroup
+          separator={<Separator />}
+          borderRadius={0}
+          borderTopWidth={1}
+          borderColor="$borderColor"
+        >
+          <YGroup.Item>
+            <SidebarItem
+              onPress={() => {
+                triggerFocusedWindow('openQuickSwitcher')
+              }}
+              title="Search / Open"
+              icon={Search}
+            />
+          </YGroup.Item>
+          <YGroup.Item>
+            <SidebarItem
+              onPress={() => {
+                spawn({key: 'settings'})
+              }}
+              cursor="pointer"
+              icon={Settings}
+              title="Settings"
+            />
+          </YGroup.Item>
+        </YGroup>
+      </YStack>
+    </>
   )
 }
 
@@ -293,6 +332,50 @@ function NewDocumentButton({
       />
     </Tooltip>
   )
+}
+
+export const useIsWindowFocused = ({
+  onFocus,
+  onBlur,
+}: {
+  onFocus?: () => void
+  onBlur?: () => void
+}): boolean => {
+  const [isFocused, setIsFocused] = useState(document.hasFocus())
+  useEffect(() => {
+    const handleFocus = () => {
+      onFocus?.()
+      setIsFocused(true)
+    }
+    const handleBlur = () => {
+      onBlur?.()
+      setIsFocused(false)
+    }
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('blur', handleBlur)
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [])
+  return isFocused
+}
+
+function useIsWindowNarrowForHoverSidebar() {
+  const [
+    isWindowTooNarrowForHoverSidebar,
+    setIsWindowTooNarrowForHoverSidebar,
+  ] = useState(window.innerWidth < 820)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWindowTooNarrowForHoverSidebar(window.innerWidth < 820)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+  return isWindowTooNarrowForHoverSidebar
 }
 
 function SidebarItem({
@@ -426,22 +509,24 @@ function PinnedAccount({accountId}: {accountId: string}) {
   if (!accountId) return null
   return (
     <YGroup.Item>
-      <SidebarItem
-        onPress={() => {
-          navigate({key: 'account', accountId})
-        }}
-        active={route.key == 'account' && route.accountId == accountId}
-        icon={
-          <Avatar
-            size={22}
-            label={account?.data?.profile?.alias}
-            id={accountId}
-            url={getAvatarUrl(account?.data?.profile?.avatar)}
-          />
-        }
-        title={account.data?.profile?.alias || accountId}
-        indented
-      />
+      <AccountCard accountId={accountId}>
+        <SidebarItem
+          onPress={() => {
+            navigate({key: 'account', accountId})
+          }}
+          active={route.key == 'account' && route.accountId == accountId}
+          icon={
+            <Avatar
+              size={22}
+              label={account?.data?.profile?.alias}
+              id={accountId}
+              url={getAvatarUrl(account?.data?.profile?.avatar)}
+            />
+          }
+          title={account.data?.profile?.alias || accountId}
+          indented
+        />
+      </AccountCard>
     </YGroup.Item>
   )
 }

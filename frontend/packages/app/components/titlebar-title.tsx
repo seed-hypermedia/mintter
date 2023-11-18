@@ -19,6 +19,8 @@ import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
+import {PageContextButton, VersionContext} from './publish-share'
+import {Slash} from './slash'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -76,7 +78,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     )
   }
   if (route.key === 'group') {
-    return null
+    return <PageContextButton />
   }
   if (route.key === 'drafts') {
     return (
@@ -97,10 +99,23 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   }
 
   if (route.key === 'publication') {
-    return <PublicationTitle route={route} />
+    return (
+      <>
+        <PageContextButton />
+        <Slash />
+        <PublicationTitle route={route} />
+        <VersionContext route={route} />
+      </>
+    )
   }
   if (route.key === 'draft') {
-    return <DraftTitle route={route} />
+    return (
+      <>
+        <PageContextButton />
+        <Slash />
+        <DraftTitle route={route} />
+      </>
+    )
   }
   return null
 }
@@ -169,7 +184,6 @@ function DraftTitle({
   const displayTitle = title ?? 'Untitled Document'
   return (
     <>
-      <Pencil size={12} />
       <TitleText data-testid="titlebar-title" size={size}>
         {displayTitle}
       </TitleText>

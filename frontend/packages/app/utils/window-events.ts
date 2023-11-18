@@ -9,7 +9,7 @@ export type AppWindowSimpleEvent =
 
 export type AppWindowEvent =
   | AppWindowSimpleEvent
-  | {key: 'connectPeer'; peer: string}
+  | {key: 'connectPeer'; connectionString: string; name?: string}
 
 export function useListenAppEvent(
   eventKey: AppWindowSimpleEvent,

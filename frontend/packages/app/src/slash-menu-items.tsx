@@ -5,6 +5,7 @@ import {
   insertOrUpdateBlock,
 } from '@mintter/editor'
 import {
+  RiArticleFill,
   RiCodeBoxFill,
   RiFile2Fill,
   RiHeading,
@@ -16,17 +17,9 @@ import {
 
 export const slashMenuItems = [
   {
-    name: 'Paragraph',
-    aliases: ['p'],
-    icon: <RiText size={18} />,
-    execute: (editor) =>
-      insertOrUpdateBlock(editor, {
-        type: 'paragraph',
-      } as PartialBlock<HMBlockSchema>),
-  },
-  {
     name: 'Heading',
     aliases: ['h', 'heading1', 'subheading'],
+    group: 'Text blocks',
     icon: <RiHeading size={18} />,
     execute: (editor) =>
       insertOrUpdateBlock(editor, {
@@ -35,10 +28,35 @@ export const slashMenuItems = [
       } as PartialBlock<HMBlockSchema>),
   },
   {
+    name: 'Paragraph',
+    aliases: ['p'],
+    group: 'Text blocks',
+    icon: <RiText size={18} />,
+    execute: (editor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'paragraph',
+      } as PartialBlock<HMBlockSchema>),
+  },
+  {
+    name: 'Code Block',
+    aliases: ['code', 'pre', 'code-block', 'codeBlock'],
+    group: 'Text blocks',
+    icon: <RiCodeBoxFill size={18} />,
+    hint: 'Insert a Code Block',
+    execute: (editor: BlockNoteEditor) =>
+      insertOrUpdateBlock(editor, {
+        type: 'codeBlock',
+        props: {
+          language: '',
+        },
+      } as PartialBlock<HMBlockSchema>),
+  },
+  {
     name: 'Image',
     aliases: ['image', 'img', 'picture'],
+    group: 'Media blocks',
     icon: <RiImage2Fill size={18} />,
-    hint: 'Insert a Image',
+    hint: 'Insert an Image',
     execute: (editor) =>
       insertOrUpdateBlock(editor, {
         type: 'image',
@@ -50,8 +68,9 @@ export const slashMenuItems = [
   {
     name: 'Video',
     aliases: ['video', 'vid', 'media'],
+    group: 'Media blocks',
     icon: <RiVideoAddFill size={18} />,
-    hint: 'Insert a video',
+    hint: 'Insert a Video',
     execute: (editor) =>
       insertOrUpdateBlock(editor, {
         type: 'video',
@@ -63,6 +82,7 @@ export const slashMenuItems = [
   {
     name: 'File',
     aliases: ['file', 'folder'],
+    group: 'Media blocks',
     icon: <RiFile2Fill size={18} />,
     hint: 'Insert a File',
     execute: (editor) =>
@@ -74,15 +94,16 @@ export const slashMenuItems = [
       } as PartialBlock<HMBlockSchema>),
   },
   {
-    name: 'Code Block',
-    aliases: ['code', 'pre', 'code-block', 'codeBlock'],
-    icon: <RiCodeBoxFill size={18} />,
-    hint: 'Insert a Code Block',
-    execute: (editor: BlockNoteEditor) =>
+    name: 'Embed',
+    aliases: ['embed', 'card'],
+    group: 'Media blocks',
+    icon: <RiArticleFill size={18} />,
+    hint: 'Insert an Embed',
+    execute: (editor) =>
       insertOrUpdateBlock(editor, {
-        type: 'codeBlock',
+        type: 'embed',
         props: {
-          language: '',
+          ref: '',
         },
       } as PartialBlock<HMBlockSchema>),
   },

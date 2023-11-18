@@ -1,5 +1,6 @@
 import {ReactNode, useEffect, useMemo, useReducer} from 'react'
 import {useIPC} from '../app-context'
+import {useConfirmConnection} from '../components/contacts-prompt'
 import {
   HomeRoute,
   NavContextProvider,
@@ -7,7 +8,6 @@ import {
   navStateReducer,
   setAppNavDispatch,
 } from './navigation'
-import {useConfirmConnection} from '../components/contacts-prompt'
 import {AppWindowEvent} from './window-events'
 
 const homeRoute: HomeRoute = {key: 'home'}
@@ -72,7 +72,7 @@ function ConnectionConfirmer() {
   useEffect(() => {
     return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
       if (typeof event === 'object' && event.key === 'connectPeer') {
-        confirmConnection.open(event.peer)
+        confirmConnection.open(event)
       }
     })
   }, [])

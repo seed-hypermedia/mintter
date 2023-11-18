@@ -31,7 +31,7 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Get commit date for the triggering commit
         run: |
           COMMIT_DATE=$(git show -s --format="%cd" ${{ github.sha }})
@@ -116,13 +116,15 @@ jobs:
           push: true
           file: backend/cmd/relayd/Dockerfile
           tags: mintter/relayd:latest
-          
+
       - name: Build and push edge nextjs
         uses: docker/build-push-action@v4
         with:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:main
+          build-args: |
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
       - name: Build and push stable nextjs
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -130,3 +132,5 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
+          build-args: |
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"

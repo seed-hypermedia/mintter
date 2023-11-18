@@ -1,10 +1,11 @@
-import {Buffer} from 'buffer'
-import {createContext, useContext} from 'react'
+import {GRPCClient, unpackDocId} from '@mintter/shared'
 import {
-  createHmId,
   UnpackedHypermediaId,
+  createHmId,
   unpackHmId,
 } from '@mintter/shared/src/utils/entity-id-url'
+import {Buffer} from 'buffer'
+import {createContext, useContext} from 'react'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -252,4 +253,53 @@ export function unpackHmIdWithAppRoute(
   const hmIds = unpackHmId(hmId)
   if (!hmIds) return null
   return {...hmIds, navRoute: appRouteOfId(hmIds)}
+}
+
+export async function resolveHmIdToAppRoute(
+  hmId: string,
+  grpcClient: GRPCClient,
+): Promise<null | (UnpackedHypermediaId & {navRoute?: NavRoute})> {
+  const hmIds = unpackHmId(hmId)
+  if (hmIds?.type === 'g' && hmIds.eid && hmIds.groupPathName) {
+    const groupId = createHmId('g', hmIds.eid)
+    const contentPathName =
+      hmIds.groupPathName === '-' ? '/' : hmIds.groupPathName
+    const content = await grpcClient.groups.listContent({
+      id: groupId,
+      version: hmIds.version || '',
+    })
+    const resolvedDocIdWithVersion = content.content[contentPathName]
+    const doc = unpackDocId(resolvedDocIdWithVersion)
+    let isVersionLatest = false
+    if (hmIds.version) {
+      const latestContent = await grpcClient.groups.listContent({
+        id: groupId,
+      })
+      const resolvedLatestDocIdWithVersion =
+        latestContent.content[contentPathName]
+      const latestDoc = unpackDocId(resolvedLatestDocIdWithVersion)
+      if (latestDoc?.version && doc?.version === latestDoc?.version) {
+        isVersionLatest = true
+      }
+    }
+    if (resolvedDocIdWithVersion && doc?.eid) {
+      return {
+        ...hmIds,
+        navRoute: {
+          key: 'publication',
+          documentId: createHmId('d', doc.eid),
+          versionId: isVersionLatest ? undefined : doc.version || undefined,
+          pubContext: {
+            key: 'group',
+            groupId: createHmId('g', hmIds.eid),
+            pathName: contentPathName,
+          },
+        },
+      }
+    }
+  }
+  if (!hmIds) return null
+  const navRoute = appRouteOfId(hmIds)
+  if (!navRoute) return null
+  return {...hmIds, navRoute}
 }

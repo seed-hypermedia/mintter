@@ -2,9 +2,9 @@ import {MintterIcon} from '@mintter/app/components/mintter-icon'
 import appError from '@mintter/app/errors'
 import {useSetProfile} from '@mintter/app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@mintter/app/models/daemon'
+import {trpc} from '@mintter/desktop/src/trpc'
 import {Profile as ProfileType} from '@mintter/shared'
 import {
-  AnimatePresence,
   Button,
   ButtonProps,
   Copy,
@@ -18,7 +18,10 @@ import {
   ParagraphProps,
   Prev,
   Reload,
+  Select,
+  Separator,
   SizableText,
+  Spinner,
   StepWrapper as StyledStepWrapper,
   TextArea,
   Tooltip,
@@ -33,53 +36,38 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   useRef,
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import {trpc} from '@mintter/desktop/src/trpc'
+import {useConnectPeer} from '../models/contacts'
+import {useDaemonReady} from '../node-status-context'
 
 const CONTENT_MAX_WIDTH = 500
 
-export function Onboarding() {
+export function Onboarding({onComplete}: {onComplete: () => void}) {
   return (
-    <OnboardingProvider>
+    <OnboardingProvider onComplete={onComplete}>
       <OnboardingSteps />
     </OnboardingProvider>
   )
 }
 
 export function OnboardingSteps() {
-  let obValue = useOnboarding()
-
-  let direction = obValue.state.direction
-  const enterVariant = direction == 1 ? 'isRight' : 'isLeft'
-  const exitVariant = direction === 1 ? 'isLeft' : 'isRight'
+  let ctx = useOnboarding()
+  const key = ctx.state.key
+  let direction = ctx.state.direction
   return (
     <>
-      {obValue.state.key == 'welcome' && (
-        <Welcome key={obValue.state.key} {...obValue} />
-      )}
-      {obValue.state.key == 'add new device' && (
-        <NewDevice key={obValue.state.key} {...obValue} />
-      )}
-      {obValue.state.key == 'create new account' && (
-        <Mnemonics key={obValue.state.key} {...obValue} />
-      )}
-      {obValue.state.key == 'profile' && (
-        <Profile key={obValue.state.key} {...obValue} />
-      )}
-      {obValue.state.key == 'analytics' && (
-        <Analytics key={obValue.state.key} {...obValue} />
-      )}
-      {obValue.state.key == 'account created' && (
-        <Complete key={obValue.state.key} />
-      )}
-      {obValue.state.key == 'device complete' && (
-        <Complete key={obValue.state.key} />
-      )}
+      {key == 'welcome' && <Welcome key={key} {...ctx} />}
+      {key == 'add new device' && <NewDevice key={key} {...ctx} />}
+      {key == 'create new account' && <Mnemonics key={key} {...ctx} />}
+      {key == 'profile' && <Profile key={key} {...ctx} />}
+      {key == 'analytics' && <Analytics key={key} {...ctx} />}
+      {key == 'connect site' && <ConnectSite key={key} {...ctx} />}
     </>
   )
 }
@@ -352,7 +340,7 @@ function Mnemonics(props: OnboardingStepProps) {
           </YStack>
         </YStack>
       </XStack>
-      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         <NextButton onPress={handleSubmit}>NEXT</NextButton>
       </XStack>
@@ -474,7 +462,7 @@ function NewDevice(props: OnboardingStepProps) {
           </YStack>
         </YStack>
       </XStack>
-      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         <NextButton onPress={handleSubmit}>NEXT</NextButton>
       </XStack>
@@ -555,7 +543,7 @@ function Profile(props: OnboardingStepProps) {
           </YStack>
         </YStack>
       </XStack>
-      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <NextButton onPress={onSubmit}>NEXT</NextButton>
       </XStack>
     </StepWrapper>
@@ -585,7 +573,7 @@ function Analytics(props: OnboardingStepProps) {
           </YStack>
         </YStack>
       </XStack>
-      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         <NextButton onPress={() => props.send('NEXT')}>NEXT</NextButton>
       </XStack>
@@ -593,26 +581,114 @@ function Analytics(props: OnboardingStepProps) {
   )
 }
 
-function Complete() {
+const SuggestedSites = ['mintter.com', 'hyper.media']
+
+function ConnectSite(props: OnboardingStepProps) {
+  const isDaemonReady = useDaemonReady()
+  const connectPeer = useConnectPeer({
+    syncImmediately: true,
+    aggressiveInvalidation: true,
+    onSuccess: () => {
+      props.complete()
+    },
+    onError: (e, peer) => {
+      console.error(e)
+      toast.error('Failed to connect to ' + peer)
+    },
+  })
+  const [siteDomain, setSiteDomain] = useState(SuggestedSites[0])
+  const [customSite, setCustomSite] = useState(false)
+  const customDomainInput = useRef(null)
+  useEffect(() => {
+    if (customSite) {
+      customDomainInput.current?.focus()
+    }
+  }, [customSite])
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
-        <StepTitleSection step="complete">
-          <H1>You are Ready!</H1>
+        <StepTitleSection step="site">
+          <H2>Connect</H2>
+          <H1>First Site</H1>
         </StepTitleSection>
 
         <YStack flex={2}>
           <YStack gap="$5" width={440}>
             <StepParagraph width={360}>
-              You just created your Mintter account. Please share it with others
-              and help us spread the word.
+              Choose the domain to sync your first content from. You will
+              connect to more sites later as you discover them.
+            </StepParagraph>
+
+            {customSite ? (
+              <Input
+                ref={customDomainInput}
+                value={siteDomain}
+                onChangeText={setSiteDomain}
+                placeholder={SuggestedSites[0]}
+              />
+            ) : (
+              <Select
+                value={siteDomain}
+                onValueChange={(value) => {
+                  if (value === 'custom domain') {
+                    setSiteDomain('')
+                    setCustomSite(true)
+                  } else {
+                    setSiteDomain(value)
+                  }
+                }}
+              >
+                <Select.Trigger>
+                  <Select.Value placeholder="..." />
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Viewport>
+                    {SuggestedSites.map((suggestedDomain, index) => (
+                      <Select.Item
+                        key={suggestedDomain}
+                        index={index}
+                        value={suggestedDomain}
+                      >
+                        <Select.ItemText>{suggestedDomain}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                    <Separator />
+                    <Select.Item
+                      index={SuggestedSites.length}
+                      value="custom domain"
+                    >
+                      <Select.ItemText>Custom Domain...</Select.ItemText>
+                    </Select.Item>
+                  </Select.Viewport>
+                  <Select.ScrollDownButton />
+                </Select.Content>
+              </Select>
+            )}
+            <StepParagraph>
+              Or you can skip this step, create content locally, and share with
+              peers you connect to.
             </StepParagraph>
           </YStack>
         </YStack>
       </XStack>
-      <XStack alignItems="center" justifyContent="flex-start" gap="$4">
-        <NextButton size="$4" onPress={() => window.location.reload()}>
-          Open Mintter App
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
+        {connectPeer.isLoading || !isDaemonReady ? <Spinner /> : null}
+        <Button onPress={() => props.complete()} size="$4">
+          Skip
+        </Button>
+        <NextButton
+          size="$4"
+          disabled={!isDaemonReady}
+          onPress={() => {
+            const domainToUse =
+              siteDomain === '' ? SuggestedSites[0] : siteDomain
+            const fullDomain = /^https?:\/\//.test(domainToUse)
+              ? siteDomain
+              : `https://${siteDomain}`
+            connectPeer.mutate(fullDomain)
+          }}
+        >
+          Connect Site
         </NextButton>
       </XStack>
     </StepWrapper>
@@ -727,7 +803,7 @@ let machine = {
     'add new device': {
       on: {
         NEXT: {
-          target: 'device complete',
+          target: 'connect site',
         },
         PREV: {
           target: 'welcome',
@@ -744,7 +820,7 @@ let machine = {
         },
       },
     },
-    'device complete': {
+    'connect site': {
       final: true,
     },
     profile: {
@@ -760,14 +836,13 @@ let machine = {
     analytics: {
       on: {
         NEXT: {
-          target: 'account created',
+          target: 'connect site',
         },
         PREV: {
           target: 'profile',
         },
       },
     },
-    'account created': {},
   },
 }
 
@@ -793,6 +868,7 @@ type OBAction = 'NEXT' | 'PREV' | 'NEW_DEVICE' | 'NEW_ACCOUNT'
 type OBContext = {
   state: OBState
   send: (action: OBAction) => void
+  complete: () => void
 }
 
 let OnboardingContext = createContext<null | OBContext>(null)
@@ -803,9 +879,11 @@ export function OnboardingProvider({
     key: 'welcome',
     direction: 1,
   },
+  onComplete,
 }: {
   children: ReactNode
   initialStep?: OBState
+  onComplete: () => void
 }) {
   let [state, send] = useReducer(transition, initialStep)
   const writeIsProbablyNewAccount =
@@ -813,6 +891,7 @@ export function OnboardingProvider({
   let value = useMemo(
     () => ({
       state,
+      complete: onComplete,
       send: (action: OBAction) => {
         if (action === 'NEW_ACCOUNT') {
           writeIsProbablyNewAccount.mutate(true)

@@ -1,10 +1,10 @@
 import {StateStream, writeableStateStream} from '@mintter/shared'
 import {PropsWithChildren, createContext, useContext, useMemo} from 'react'
-import {client} from '@mintter/desktop/src/trpc'
 import {useNavigationDispatch, useNavigationState} from '../utils/navigation'
 
 type SidebarContextValue = {
   onMenuHover: () => void
+  onMenuHoverDelayed: () => void
   onMenuHoverLeave: () => void
   onToggleMenuLock: () => void
   onLockSidebarOpen: () => void
@@ -29,14 +29,25 @@ export function SidebarContextProvider(props: PropsWithChildren<{}>) {
           state.sidebarLocked || false,
         )
         let closeTimeout: null | NodeJS.Timeout = null
+        let hoverOpenTimeout: null | NodeJS.Timeout = null
         function onMenuHover() {
           closeTimeout && clearTimeout(closeTimeout)
           setIsHoverVisible(true)
         }
+        function onMenuHoverDelayed() {
+          closeTimeout && clearTimeout(closeTimeout)
+          hoverOpenTimeout && clearTimeout(hoverOpenTimeout)
+          hoverOpenTimeout = setTimeout(() => {
+            hoverOpenTimeout && clearTimeout(hoverOpenTimeout)
+            closeTimeout && clearTimeout(closeTimeout)
+            setIsHoverVisible(true)
+          }, 300)
+        }
         function onMenuHoverLeave() {
+          hoverOpenTimeout && clearTimeout(hoverOpenTimeout)
           closeTimeout = setTimeout(() => {
             setIsHoverVisible(false)
-          }, 300)
+          }, 250)
         }
         function onToggleMenuLock() {
           const wasLocked = isLocked.get()
@@ -57,6 +68,7 @@ export function SidebarContextProvider(props: PropsWithChildren<{}>) {
           isHoverVisible,
           isLocked,
           onMenuHover,
+          onMenuHoverDelayed,
           onMenuHoverLeave,
           onToggleMenuLock,
           onLockSidebarOpen,

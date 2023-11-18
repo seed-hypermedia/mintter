@@ -1,9 +1,5 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {
-  useAppContext,
-  useListen,
-  useQueryInvalidator,
-} from '@mintter/app/app-context'
+import {useAppContext, useQueryInvalidator} from '@mintter/app/app-context'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 import {trpc} from '@mintter/desktop/src/trpc'
@@ -22,11 +18,9 @@ import {
   DocumentChange,
   GRPCClient,
   HMBlock,
-  HMInlineContent,
   ListPublicationsResponse,
   Publication,
   fromHMBlock,
-  getBlockNodeById,
   hmDocument,
   hmPublication,
   isHypermediaScheme,
@@ -36,6 +30,7 @@ import {
   unpackDocId,
   writeableStateStream,
 } from '@mintter/shared'
+import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
 import {
   FetchQueryOptions,
   UseMutationOptions,
@@ -43,14 +38,13 @@ import {
   useMutation,
   useQueries,
   useQuery,
-  useQueryClient,
 } from '@tanstack/react-query'
 import {Editor, Extension, findParentNode} from '@tiptap/core'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
 import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
-import {ContextFrom, createActor, fromPromise} from 'xstate'
+import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
 import {
   NavRoute,
@@ -58,10 +52,9 @@ import {
   useNavRoute,
 } from '../utils/navigation'
 import {pathNameify} from '../utils/path'
+import {useNavigate} from '../utils/useNavigate'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
-import {UpdateDraftResponse} from '@mintter/shared/src/client/.generated/documents/v1alpha/documents_pb'
-import {useNavigate} from '../utils/useNavigate'
 
 export function usePublicationList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
@@ -630,7 +623,7 @@ export function useDraftEditor({
 
   useEffect(() => {
     if (state.matches('fetching')) {
-      if (backendDraft.status == 'success') {
+      if (backendDraft.status == 'success' && backendDraft.data) {
         send({type: 'GET.DRAFT.SUCCESS', draft: backendDraft.data})
       } else if (backendDraft.status == 'error') {
         send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
@@ -638,19 +631,6 @@ export function useDraftEditor({
     }
     /* eslint-disable */
   }, [backendDraft.status])
-
-  useListen(
-    'select_all',
-    () => {
-      if (editor) {
-        if (!editor?._tiptapEditor.isFocused) {
-          editor.focus()
-        }
-        editor?._tiptapEditor.commands.selectAll()
-      }
-    },
-    [editor],
-  )
 
   return {
     state,
@@ -1034,7 +1014,6 @@ function observeBlocks(
       console.log('== IMG', block)
     }
     if (block.type == 'imagePlaceholder' && block.props.src) {
-      console.log('== UPDATE PLACEHOLDER', block)
       editor.updateBlock(block, {
         type: 'image',
         props: {

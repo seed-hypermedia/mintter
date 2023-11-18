@@ -5,6 +5,7 @@ package logging
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
@@ -58,7 +59,9 @@ func DefaultConfig() Config {
 
 // ListLogNames of the underlying IPFS global logger.
 func ListLogNames() []string {
-	return log.GetSubsystems()
+	logs := log.GetSubsystems()
+	sort.Strings(logs)
+	return logs
 }
 
 // GetGlobalConfig returns globel logging configuration.

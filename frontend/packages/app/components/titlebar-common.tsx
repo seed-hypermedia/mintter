@@ -4,7 +4,6 @@ import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationInContext} from '@mintter/app/models/publication'
-import {useDaemonReady} from '@mintter/app/node-status-context'
 import {
   NavMode,
   NavRoute,
@@ -13,7 +12,6 @@ import {
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
-import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
@@ -27,7 +25,6 @@ import {
   View,
   XGroup,
   XStack,
-  XStackProps,
   useStream,
 } from '@mintter/ui'
 import {
@@ -35,7 +32,6 @@ import {
   ArrowRightFromLine,
   Copy,
   ExternalLink,
-  FilePlus2,
   Link,
   Pencil,
   Pin,
@@ -48,47 +44,15 @@ import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
+import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {CloneGroupDialog} from './clone-group'
 import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
-import {DraftPublicationButtons, PageContextButton} from './publish-share'
+import {DraftPublicationButtons, PublishToGroupButton} from './publish-share'
 import {TitleBarProps} from './titlebar'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
-
-function getRoutePubContext(
-  route: NavRoute,
-): PublicationRouteContext | undefined {
-  if (route.key === 'publication') return route.pubContext
-  if (route.key === 'draft') return route.pubContext
-  if (route.key === 'group')
-    return {key: 'group', groupId: route.groupId, pathName: ''}
-
-  return null
-}
-
-function NewDocumentButton() {
-  const route = useNavRoute()
-  const openDraft = useOpenDraft()
-  const isDaemonReady = useDaemonReady()
-  return (
-    <Tooltip content="New Hypermedia Document – &#8984; N">
-      <Button
-        size="$2"
-        chromeless
-        disabled={!isDaemonReady}
-        iconAfter={FilePlus2}
-        onPress={(e) => {
-          e.preventDefault()
-          const pubContext = getRoutePubContext(route)
-          openDraft(pubContext)
-        }}
-      />
-    </Tooltip>
-  )
-}
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -454,24 +418,23 @@ function CopyReferenceButton() {
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
-  const commonButtons: ReactNode[] = []
-  // const commonButtons = [<NewDocumentButton key="newDoc" />]
-  let buttonGroup = commonButtons
+  let buttonGroup: ReactNode[] = []
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'contacts') {
-    buttonGroup = [<ContactsPrompt key="addContact" />, ...commonButtons]
+    buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
-    // buttonGroup = [<AddGroupButton key="addGroup" />, ...commonButtons]
+    // buttonGroup = [<AddGroupButton key="addGroup" />]
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
       <CopyReferenceButton key="copyRef" />,
-      ...commonButtons,
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
       <DocOptionsButton key="docOptions" />,
+      <PublishToGroupButton key="publishDialog" />,
+      <CopyReferenceButton key="copyRef" />,
       <EditDocActions
         key="editActions"
         contextRoute={route}
@@ -479,14 +442,11 @@ export function PageActionButtons(props: TitleBarProps) {
         docId={route.documentId}
         baseVersion={route.versionId}
       />,
-      <CopyReferenceButton key="copyRef" />,
-      ...commonButtons,
     ]
   } else if (route.key === 'account') {
     buttonGroup = [
       <AccountOptionsButton key="accountOptions" />,
       <CopyReferenceButton key="copyRef" />,
-      ...commonButtons,
     ]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
@@ -494,9 +454,7 @@ export function PageActionButtons(props: TitleBarProps) {
 
 export function PageContextControl(props: TitleBarProps) {
   return (
-    <XStack className="no-window-drag">
-      <PageContextButton />
-    </XStack>
+    <XStack className="no-window-drag">{/* <PageContextButton /> */}</XStack>
   )
 }
 

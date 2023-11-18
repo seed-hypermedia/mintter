@@ -10,7 +10,6 @@ import {
   Tabs,
   XStack,
   YStack,
-  useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {
@@ -21,7 +20,6 @@ import {
 } from './blocknote/core'
 import {createReactBlockSpec} from './blocknote/react'
 import {HMBlockSchema} from './schema'
-import {trpc} from '@mintter/desktop/src/trpc'
 
 export const MaxFileSizeMB = 150
 export const MaxFileSizeB = MaxFileSizeMB * 1024 * 1024
@@ -93,7 +91,7 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection])
+  }, [selection, editor])
 
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {
@@ -149,7 +147,6 @@ export function FileComponent({
 }) {
   const [replace, setReplace] = useState(false)
   const {saveCidAsFile} = useAppContext()
-  const upload = trpc.webImporting.importWebFile.useMutation()
 
   const saveFile = async () => {
     await saveCidAsFile(block.props.url, block.props.name)
@@ -180,7 +177,6 @@ export function FileComponent({
     } catch (error) {
       console.error(error)
     }
-    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (
@@ -289,20 +285,15 @@ export function FileComponent({
       >
         <SizableText
           size="$5"
-          maxWidth="17em"
           overflow="hidden"
           textOverflow="ellipsis"
           whiteSpace="nowrap"
           userSelect="text"
+          flex={1}
         >
           {block.props.name}
         </SizableText>
-        <SizableText
-          paddingTop="$1"
-          color="$color10"
-          size="$2"
-          minWidth="4.5em"
-        >
+        <SizableText paddingTop="$1" color="$color10" size="$2">
           {formatBytes(parseInt(block.props.size))}
         </SizableText>
       </Button>
@@ -313,7 +304,6 @@ export function FileComponent({
 function FileForm({
   block,
   assign,
-  editor,
 }: {
   block: Block<HMBlockSchema>
   assign: any
@@ -328,7 +318,6 @@ function FileForm({
     color: undefined,
   })
   const [drag, setDrag] = useState(false)
-  const theme = useTheme()
 
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
@@ -390,7 +379,6 @@ function FileForm({
         console.error(error)
       }
     }
-    // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
   return (

@@ -1,3 +1,4 @@
+import {toast} from '@mintter/app/toast'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
@@ -20,9 +21,8 @@ import {
   defaultProps,
   getBlockInfoFromPos,
 } from './blocknote'
-import {HMBlockSchema} from './schema'
-import {toast} from '@mintter/app/toast'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
+import {HMBlockSchema} from './schema'
 
 export const VideoBlock = createReactBlockSpec({
   type: 'video',
@@ -673,7 +673,15 @@ function VideoForm({
                             borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          onChange={(e) => setUrl(e.nativeEvent.text)}
+                          onChange={(e) => {
+                            setUrl(e.nativeEvent.text)
+                            if (fileName.color)
+                              setFileName({
+                                name: 'Upload File',
+                                color: undefined,
+                              })
+                          }}
+                          autoFocus={true}
                         />
                         <Form.Trigger asChild>
                           <Button

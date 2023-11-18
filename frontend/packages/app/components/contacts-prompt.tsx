@@ -1,12 +1,21 @@
-import {Button, Spinner, TextArea, XStack} from '@mintter/ui'
-import {ComponentProps, useState} from 'react'
-import {toast} from 'react-hot-toast'
-import {AppDialog, DialogTitle, DialogDescription, useAppDialog} from './dialog'
-import {UserPlus} from '@tamagui/lucide-icons'
-import {AccessURLRow} from './url'
-import {useDaemonInfo} from '../models/daemon'
 import {HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@mintter/shared'
+import {Button, Spinner, TextArea, XStack} from '@mintter/ui'
+import {UserPlus} from '@tamagui/lucide-icons'
+import {compressToEncodedURIComponent} from 'lz-string'
+import {ComponentProps, useMemo, useState} from 'react'
+import {toast} from 'react-hot-toast'
+import {useMyAccount} from '../models/accounts'
 import {useConnectPeer} from '../models/contacts'
+import {useDaemonInfo} from '../models/daemon'
+import {usePeerInfo} from '../models/networking'
+import {
+  AppDialog,
+  DialogCloseButton,
+  DialogDescription,
+  DialogTitle,
+  useAppDialog,
+} from './dialog'
+import {AccessURLRow} from './url'
 
 function AddConnectionButton(props: ComponentProps<typeof Button>) {
   return (
@@ -15,16 +24,26 @@ function AddConnectionButton(props: ComponentProps<typeof Button>) {
     </Button>
   )
 }
-function AddConnectionForm(props: {
+function AddConnectionForm({
+  input,
+  onClose,
+}: {
   onClose: () => void
-  input?: string | undefined
+  input: true | {connectionString?: string; name?: string | undefined}
 }) {
-  const [peer, setPeer] = useState('')
+  const [peerText, setPeer] = useState('')
   const daemonInfo = useDaemonInfo()
+  const account = useMyAccount()
   const deviceId = daemonInfo.data?.deviceId
+  const peerInfo = usePeerInfo(deviceId)
+
+  const connectionString =
+    typeof input === 'object' ? input.connectionString : undefined
+  const name = typeof input === 'object' ? input?.name : undefined
+
   const connect = useConnectPeer({
     onSuccess: () => {
-      props.onClose()
+      onClose()
       toast.success('Connection Added')
     },
     onError: (err) => {
@@ -32,32 +51,55 @@ function AddConnectionForm(props: {
       toast.error('Connection Error : ' + err?.rawMessage)
     },
   })
+
+  const connectInfo = useMemo(
+    () => {
+      if (!deviceId || !peerInfo.data?.addrs?.length) return null
+      return compressToEncodedURIComponent(
+        JSON.stringify({
+          a: peerInfo.data?.addrs.map((addr) => {
+            return addr.split('/p2p/').slice(0, -1).join('/p2p/')
+          }),
+          n: account.data?.profile?.alias,
+          d: deviceId,
+        }),
+      )
+    },
+    // @eslint-ignore-next-line
+    [
+      deviceId,
+      peerInfo.data?.addrs?.length, // explicitly using addrs length because the address list is being polled and frequently changes order, which does not affect connecivity
+      account.data?.profile?.alias,
+    ],
+  )
   return (
     <>
       <DialogTitle>Add Connection</DialogTitle>
+      <DialogCloseButton />
 
-      {props.input ? (
+      {name && connectionString ? (
         <>
           <DialogDescription>
-            Confirm connection to &quot;{props.input.slice(0, 6)}...
-            {props.input.slice(-6)}&quot;
+            {name
+              ? `Confirm connection to "${name}"`
+              : 'Confirm peer connection'}
           </DialogDescription>
         </>
       ) : (
         <>
           <DialogDescription>
-            Share your device connection URL with your friends:
+            Share your device connection URL with your friends:{' '}
           </DialogDescription>
           {deviceId && (
             <AccessURLRow
-              url={`${HYPERMEDIA_PUBLIC_WEB_GATEWAY}/connect-peer/${deviceId}`}
+              url={`${HYPERMEDIA_PUBLIC_WEB_GATEWAY}/hypermedia-connect/${connectInfo}`}
             />
           )}
           <DialogDescription>
             Paste other people&apos;s connection URL here:
           </DialogDescription>
           <TextArea
-            value={peer}
+            value={peerText}
             onChangeText={setPeer}
             multiline
             numberOfLines={4}
@@ -70,8 +112,8 @@ function AddConnectionForm(props: {
       )}
       <XStack jc="space-between">
         <Button
-          onPress={() => connect.mutate(props.input ? props.input : peer)}
-          disabled={!peer && !props.input}
+          onPress={() => connect.mutate(connectionString || peerText)}
+          disabled={!peerText && !connectionString}
           icon={UserPlus}
         >
           Connect to Peer
@@ -83,7 +125,10 @@ function AddConnectionForm(props: {
 }
 
 export function useConfirmConnection() {
-  return useAppDialog<string>(AddConnectionForm)
+  return useAppDialog<{
+    connectionString: string
+    name?: string | undefined
+  }>(AddConnectionForm)
 }
 export function useAddConnection() {
   return null
