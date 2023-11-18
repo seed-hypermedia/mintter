@@ -1,6 +1,6 @@
 // @ts-nocheck
-import {SizableText, XStack, YStack} from 'tamagui'
 import * as React from 'react'
+import {SizableText, XStack, YStack} from 'tamagui'
 
 export function PanelCard({
   title,

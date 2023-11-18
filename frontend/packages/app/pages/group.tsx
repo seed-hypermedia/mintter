@@ -53,7 +53,9 @@ import {
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
+import {AccountCard} from '../components/account-card'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
+import '../components/accounts-combobox.css'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
@@ -83,7 +85,6 @@ import {useOpenDraft} from '../utils/open-draft'
 import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
-import './accounts-combobox.css'
 import {AppPublicationContentProvider} from './publication'
 
 export default function GroupPage() {
@@ -815,8 +816,8 @@ export interface TagInputProps extends Omit<Ariakit.ComboboxProps, 'onChange'> {
   onChange?: (value: string) => void
   defaultValue?: string
   values?: Array<string>
-  onValuesChange?: (values: string[]) => void
-  defaultValues?: AccountListItem[]
+  onValuesChange?: (values: Array<string>) => void
+  defaultValues?: Array<AccountListItem>
   accountsMap: Record<string, AccountListItem>
 }
 
@@ -846,7 +847,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
       resetValueOnHide: true,
     })
 
-    const select = Ariakit.useSelectStore({
+    const select = Ariakit.useSelectStore<any>({
       combobox,
       value: values,
       defaultValue: defaultValues,
@@ -866,13 +867,13 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
       select.setValue((prevSelectedValues) => {
         const index = prevSelectedValues.indexOf(value)
         if (index !== -1) {
-          return prevSelectedValues.filter((v) => v !== value)
+          return prevSelectedValues.filter((v: string) => v != value)
         }
         return [...prevSelectedValues, value]
       })
     }
 
-    const onItemClick = (value: string) => (event: React.MouseEvent) => {
+    const onItemClick = (value: string) => () => {
       toggleValueFromSelectedValues(value)
     }
 
@@ -906,24 +907,28 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
           {selectedValues.map((value) => {
             let account = accountsMap[value]
             return (
-              <Ariakit.CompositeItem
-                key={value}
-                role="gridcell"
-                className="tag"
-                onClick={onItemClick(value)}
-                onKeyDown={onItemKeyDown}
-                onFocus={combobox.hide}
-              >
-                <UIAvatar
-                  label={account?.alias}
-                  id={value}
-                  url={account?.profile?.avatar}
-                />
-                <SizableText size="$2">
-                  {account?.alias ? account.alias : value.substring(0, 12)}
-                </SizableText>
-                <span className="tag-remove">⌫</span>
-              </Ariakit.CompositeItem>
+              <AccountCard accountId={value} key={value}>
+                <Ariakit.CompositeItem
+                  role="gridcell"
+                  className="tag"
+                  onClick={onItemClick(value)}
+                  onKeyDown={onItemKeyDown}
+                  onFocus={combobox.hide}
+                >
+                  <UIAvatar
+                    label={account?.alias}
+                    id={value}
+                    url={account?.profile?.avatar}
+                  />
+                  <SizableText size="$3">
+                    {account?.alias
+                      ? account.alias
+                      : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
+                  </SizableText>
+                  {/* <span className="tag-remove"></span> */}
+                  <X size={12} className="tag-remove" />
+                </Ariakit.CompositeItem>
+              </AccountCard>
             )
           })}
           <div role="gridcell">
@@ -970,9 +975,16 @@ export interface TagInputItemProps extends Ariakit.SelectItemProps {
 export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
   function TagInputItem(props, ref) {
     let label = useMemo(() => {
-      if (!props.account) return props.value?.substring(0, 12) || 'account'
+      if (!props.account)
+        return (
+          `${props.value?.slice(0, 5)}...${props.value?.slice(-5)}` || 'account'
+        )
 
-      return props.account.alias || props.value?.substring(0, 12) || 'account'
+      return (
+        props.account.alias ||
+        `${props.value?.slice(0, 5)}...${props.value?.slice(-5)}` ||
+        'account'
+      )
     }, [props.account, props.value])
     return (
       <Ariakit.SelectItem
@@ -987,7 +999,7 @@ export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
           id={props.value}
           url={props.account?.profile?.avatar}
         />
-        <SizableText size="$2">{props.children || label}</SizableText>
+        <SizableText size="$3">{props.children || label}</SizableText>
       </Ariakit.SelectItem>
     )
   },
