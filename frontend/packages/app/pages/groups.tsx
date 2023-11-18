@@ -37,7 +37,7 @@ function MemberAvatarLinks({
   let editors =
     totalEditors.length > 3 ? totalEditors.slice(0, 2) : totalEditors
 
-  let restEditors = totalEditors.length > 3 ? totalEditors.slice(2) : []
+  // let restEditors = totalEditors.length > 3 ? totalEditors.slice(2) : []
   return (
     <XStack>
       <XStack
@@ -101,6 +101,7 @@ function SiteUrlButton({group}: {group: Group}) {
   return (
     <ButtonText
       color="$blue10"
+      size="$2"
       hoverStyle={{textDecorationLine: 'underline'}}
       fontFamily={'$mono'}
       onPress={(e) => {
@@ -124,7 +125,7 @@ function GroupListItem({group}: {group: Group}) {
     <ListItem
       title={group.title}
       accessory={
-        <XStack gap="$4">
+        <XStack gap="$4" ai="center">
           <SiteUrlButton group={group} />
           {groupMembers.data?.members ? (
             <MemberAvatarLinks
