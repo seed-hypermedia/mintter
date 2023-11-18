@@ -1,5 +1,5 @@
-import {appStore} from './app-store'
 import z from 'zod'
+import {appStore} from './app-store'
 import {t} from './app-trpc'
 
 const EXPERIMENTS_STORAGE_KEY = 'Experiments-v001'
@@ -9,6 +9,7 @@ const experimentsZ = z.object({
   nostr: z.boolean().optional(),
   developerTools: z.boolean().optional(),
   pubContentDevMenu: z.boolean().optional(),
+  commenting: z.boolean().optional(),
 })
 type Experiments = z.infer<typeof experimentsZ>
 let experimentsState: Experiments = appStore.get(EXPERIMENTS_STORAGE_KEY) || {}

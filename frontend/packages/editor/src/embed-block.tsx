@@ -1,7 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {useOpenUrl} from '@mintter/app/open-url'
-
 import {
   BlockContentEmbed,
   extractBlockRefOfUrl,
@@ -10,7 +9,6 @@ import {
   isPublicGatewayLink,
   normlizeHmId,
   unpackHmId,
-  useHover,
 } from '@mintter/shared'
 import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
@@ -150,7 +148,6 @@ function EmbedComponent({
   selected: boolean
   setSelected: any
 }) {
-  let {hover, ...hoverProps} = useHover()
   return (
     <YStack gap="$2" position="relative">
       <YStack
@@ -162,15 +159,12 @@ function EmbedComponent({
         hoverStyle={{
           backgroundColor: '$color4',
         }}
-        // padding="$2"
         // @ts-ignore
         contentEditable={false}
         className={block.type}
-        {...hoverProps}
+        group="item"
       >
-        {hover ? (
-          <EmbedControl block={block} editor={editor} assign={assign} />
-        ) : null}
+        <EmbedControl block={block} editor={editor} assign={assign} />
         {block.props.ref && (
           <ErrorBoundary FallbackComponent={EmbedError}>
             <BlockContentEmbed
@@ -221,6 +215,8 @@ function EmbedControl({
       zIndex={100}
       width="100%"
       justifyContent="flex-end"
+      opacity={0}
+      $group-item-hover={{opacity: 1}}
     >
       <XStack
         padding="$2"

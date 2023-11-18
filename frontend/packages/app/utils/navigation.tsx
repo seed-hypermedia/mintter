@@ -22,6 +22,17 @@ export type EntityVersionsAccessory = {key: 'versions'}
 export type PublicationCitationsAccessory = {key: 'citations'}
 export type PublicationCommentsAccessory = {key: 'comments'}
 
+export type CommentRoute = {
+  key: 'comment'
+  commentId?: string
+  showThread?: boolean
+}
+export type CommentDraftRoute = {
+  key: 'comment-draft'
+  commentId?: string
+  showThread?: boolean
+}
+
 export type GroupVariant = {
   key: 'group'
   groupId: string
@@ -69,6 +80,8 @@ export type NavRoute =
   | PublicationRoute
   | DraftRoute
   | DocumentsRoute
+  | CommentRoute
+  | CommentDraftRoute
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
@@ -247,6 +260,11 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
     navRoute = {
       key: 'account',
       accountId: id.eid,
+    }
+  } else if (id?.type === 'c') {
+    navRoute = {
+      key: 'comment',
+      commentId: createHmId('c', id.eid),
     }
   }
   return navRoute

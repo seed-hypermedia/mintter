@@ -55,6 +55,7 @@ const enabledLogMessages = new Set<string>([
   // 'Accounts.ListAccounts',
   // 'Groups.GetGroup',
   // 'Groups.ListContent',
+  // 'Comments.ListComments',
   // etc.. add the messages you need to see here, please comment out before committing!
 ])
 const hiddenLogMessages = new Set<string>([
@@ -193,6 +194,8 @@ function MainApp({
           utils.experiments.get.invalidate()
         } else if (value[0] === 'trpc.pins.get') {
           utils.pins.get.invalidate()
+        } else if (value[0] === 'trpc.comments.getCommentDrafts') {
+          utils.comments.getCommentDrafts.invalidate()
         } else if (queryClient.client) {
           queryClient.client.invalidateQueries(value)
         }

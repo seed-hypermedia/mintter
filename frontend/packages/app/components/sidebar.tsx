@@ -292,7 +292,7 @@ function FullAppSidebar() {
           <YGroup.Item>
             <SidebarItem
               onPress={() => {
-                spawn({key: 'settings'})
+                navigate({key: 'settings'})
               }}
               cursor="pointer"
               icon={Settings}

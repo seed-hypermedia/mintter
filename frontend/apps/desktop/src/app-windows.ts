@@ -1,6 +1,7 @@
 import appError from '@mintter/app/errors'
 import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
+import {getRouteWindowType} from '@mintter/app/utils/window-types'
 import {BrowserWindow, app, nativeTheme} from 'electron'
 import path from 'path'
 import {appStore} from './app-store'
@@ -137,17 +138,35 @@ export function createAppWindow(input: {
   const windowId = input.id || `window.${windowIdCount++}.${Date.now()}`
   const win = getAWindow()
   const prevWindowBounds = win?.getBounds()
+  const initRoutes = input?.routes || [{key: 'home'}]
+  const initRouteIndex = input?.routeIndex || 0
+  const initActiveRoute = initRoutes[initRouteIndex]
+  const windowType = getRouteWindowType(initActiveRoute)
   const bounds = input.bounds
     ? input.bounds
     : prevWindowBounds
     ? {
         ...prevWindowBounds,
+        width: Math.max(
+          windowType.minWidth,
+          Math.min(
+            prevWindowBounds.width,
+            windowType.maxWidth || windowType.minWidth,
+          ),
+        ),
+        height: Math.max(
+          windowType.minHeight,
+          Math.min(
+            prevWindowBounds.height,
+            windowType.maxHeight || windowType.minHeight,
+          ),
+        ),
         x: prevWindowBounds.x + 60,
         y: prevWindowBounds.y + 60,
       }
     : {
-        width: 1200,
-        height: 800,
+        width: windowType.minWidth,
+        height: windowType.minWidth,
       }
   const browserWindow = new BrowserWindow({
     show: false,
@@ -158,8 +177,10 @@ export function createAppWindow(input: {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: windowType.minWidth,
+    minHeight: windowType.minHeight,
+    maxWidth: windowType.maxWidth,
+    maxHeight: windowType.maxHeight,
     icon: import.meta.env.RELEASE_NIGHTLY
       ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
       : path.resolve(__dirname, '../assets/icons/icon.png'),
@@ -183,16 +204,15 @@ export function createAppWindow(input: {
     },
   )
 
-  const initRoutes = input?.routes || [{key: 'documents'}]
-
   windowNavState[windowId] = {
     routes: initRoutes,
-    routeIndex: input.routeIndex,
+    routeIndex: initRouteIndex,
     sidebarLocked: input.sidebarLocked || true,
   }
 
   browserWindow.webContents.ipc.on('initWindow', (e) => {
     e.returnValue = {
+      windowType,
       navState: windowNavState[windowId],
       daemonState: getDaemonState(),
       windowId,

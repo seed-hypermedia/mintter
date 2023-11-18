@@ -172,6 +172,15 @@ export type HMPublication = {
   version?: string
 }
 
+export type HMComment = {
+  id: string
+  target?: string
+  repliedComment?: string
+  author?: string
+  content?: Array<HMBlockNode>
+  createTime?: HMTimestamp
+}
+
 export type InlineEmbedAnnotation = {
   type: 'embed'
   starts: number[]
@@ -227,3 +236,12 @@ export type TextAnnotation =
   | StrikeAnnotation
   | ColorAnnotation
   | InlineEmbedAnnotation
+
+export type HMCommentDraft = {
+  blocks: HMBlockNode[]
+  targetDocEid: string
+  targetDocVersion: string
+  targetCommentId: string | null
+  publishTime: number | null
+  commentId: string
+}

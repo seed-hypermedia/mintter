@@ -1,13 +1,17 @@
 import {startTransition, useCallback} from 'react'
-import {encodeRouteToPath} from './route-encoding'
-import {NavMode, useNavigationDispatch, NavRoute} from './navigation'
 import {useIPC} from '../app-context'
+import {NavMode, NavRoute, useNavigationDispatch} from './navigation'
+import {encodeRouteToPath} from './route-encoding'
+import {getRouteWindowType, getWindowType} from './window-types'
 
-export function useNavigate(mode: NavMode = 'push') {
+export function useNavigate(requestedMode: NavMode = 'push') {
   const dispatch = useNavigationDispatch()
   const {invoke} = useIPC()
   return useCallback(
     (route: NavRoute) => {
+      const routeWindowType = getRouteWindowType(route)
+      const mode =
+        routeWindowType.key === getWindowType() ? requestedMode : 'spawn'
       startTransition(() => {
         if (mode === 'spawn') {
           const path = encodeRouteToPath(route)
@@ -21,7 +25,7 @@ export function useNavigate(mode: NavMode = 'push') {
         }
       })
     },
-    [dispatch, invoke, mode],
+    [dispatch, invoke, requestedMode],
   )
 }
 

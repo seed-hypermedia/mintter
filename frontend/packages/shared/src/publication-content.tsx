@@ -1,4 +1,4 @@
-import {Timestamp} from '@bufbuild/protobuf'
+import {PartialMessage, Timestamp} from '@bufbuild/protobuf'
 import {
   BACKEND_HTTP_URL,
   Block,
@@ -44,7 +44,7 @@ import {
   YStack,
   YStackProps,
 } from '@mintter/ui'
-import {AlertCircle, Book} from '@tamagui/lucide-icons'
+import {AlertCircle, Book, Reply} from '@tamagui/lucide-icons'
 import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
 import {
   PropsWithChildren,
@@ -66,6 +66,7 @@ export type EntityComponentsRecord = {
   GroupCard: React.FC<EntityComponentProps>
   PublicationCard: React.FC<EntityComponentProps>
   PublicationContent: React.FC<EntityComponentProps>
+  CommentCard: React.FC<EntityComponentProps>
 }
 
 export type PublicationContentContextValue = {
@@ -77,6 +78,7 @@ export type PublicationContentContextValue = {
   onCitationClick?: () => void
   disableEmbedClick?: boolean
   onCopyBlock: null | ((blockId: string) => void)
+  onReplyBlock?: null | ((blockId: string) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -220,19 +222,33 @@ export function PublicationContent({
       $gtMd={{paddingHorizontal: layoutUnit}}
       {...props}
     >
-      <BlockNodeList childrenType={'group'}>
-        {displayBlocks?.length &&
-          displayBlocks?.map((bn, idx) => (
-            <BlockNodeContent
-              key={bn.block?.id}
-              blockNode={bn}
-              depth={1}
-              childrenType="group"
-              index={idx}
-            />
-          ))}
-      </BlockNodeList>
+      <BlocksContent blocks={displayBlocks} />
     </YStack>
+  )
+}
+
+export function BlocksContent({
+  blocks,
+}: {
+  blocks:
+    | (BlockNode[] & PartialMessage<BlockNode>[])
+    | HMBlockNode[]
+    | undefined
+}) {
+  if (!blocks) return null
+  return (
+    <BlockNodeList childrenType={'group'}>
+      {blocks?.length &&
+        blocks?.map((bn, idx) => (
+          <BlockNodeContent
+            key={bn.block?.id}
+            blockNode={bn}
+            depth={1}
+            childrenType="group"
+            index={idx}
+          />
+        ))}
+    </BlockNodeList>
   )
 }
 
@@ -323,7 +339,8 @@ export function BlockNodeContent({
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
 
-  const {onCitationClick, onCopyBlock, debug} = usePublicationContentContext()
+  const {onCitationClick, onCopyBlock, onReplyBlock, debug} =
+    usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
@@ -416,6 +433,25 @@ export function BlockNodeContent({
                       onCopyBlock(blockNode.block.id)
                     } else {
                       console.error('onCopyBlock Error: no blockId available')
+                    }
+                  }}
+                />
+              </Tooltip>
+            ) : null}
+            {onReplyBlock ? (
+              <Tooltip content="Reply to block" delay={800}>
+                <Button
+                  size="$2"
+                  opacity={hover ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  chromeless
+                  icon={Reply}
+                  onPress={() => {
+                    if (blockNode.block?.id) {
+                      onReplyBlock(blockNode.block.id)
+                    } else {
+                      console.error('onReplyBlock Error: no blockId available')
                     }
                   }}
                 />
@@ -946,6 +982,9 @@ export function BlockContentEmbed(props: BlockContentProps) {
       default:
         return <EmbedTypes.PublicationContent {...props} {...id} />
     }
+  }
+  if (id?.type == 'c') {
+    return <EmbedTypes.CommentCard {...props} {...id} />
   }
   return <BlockContentUnknown {...props} />
 }

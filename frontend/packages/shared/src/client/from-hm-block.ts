@@ -1,5 +1,5 @@
 import {Block as EditorBlock, Styles, hmBlockSchema} from '@mintter/editor'
-import {Block as ServerBlock} from '@mintter/shared'
+import {Block as ServerBlock} from '@mintter/shared/src/client/grpc-types'
 import {
   ColorAnnotation,
   HMInlineContent,

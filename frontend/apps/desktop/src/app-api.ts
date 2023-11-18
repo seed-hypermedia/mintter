@@ -15,6 +15,7 @@ import {createIPCHandler} from 'electron-trpc/main'
 import {writeFile} from 'fs-extra'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import z from 'zod'
+import {commentsApi} from './app-comments'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
 import {grpcClient} from './app-grpc'
@@ -112,6 +113,7 @@ export const router = t.router({
   welcoming: welcomingApi,
   webImporting: webImportingApi,
   pins: pinsApi,
+  comments: commentsApi,
   createAppWindow: t.procedure
     .input(
       z.object({
