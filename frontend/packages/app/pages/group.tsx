@@ -285,16 +285,26 @@ export default function GroupPage() {
                           </XStack>
                         </YStack>
                       ) : null}
-                      <XStack paddingVertical="$2" gap="$2">
+                      <XStack paddingVertical="$2">
                         {Object.entries(groupMembers.data?.members || {}).map(
-                          ([memberId, role]) => {
+                          ([memberId, role], idx) => {
                             if (role === Role.OWNER) return null
                             return (
-                              <AccountLinkAvatar
-                                size={24}
-                                accountId={memberId}
+                              <XStack
+                                zIndex={idx + 1}
                                 key={memberId}
-                              />
+                                borderColor="$background"
+                                backgroundColor="$background"
+                                borderWidth={2}
+                                borderRadius={100}
+                                marginLeft={-8}
+                                animation="fast"
+                              >
+                                <AccountLinkAvatar
+                                  size={24}
+                                  accountId={memberId}
+                                />
+                              </XStack>
                             )
                           },
                         )}
