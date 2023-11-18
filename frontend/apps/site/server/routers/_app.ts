@@ -19,6 +19,21 @@ function errWrap<V>(failable: Promise<V>) {
   })
 }
 
+const walletsRouter = router({
+  getAccountsAvailable: procedure
+    .input(z.array(z.string().or(z.undefined()).or(z.null())))
+    .query(async ({input}) => {
+      let url = 'https://ln.mintter.com/v2/check'
+      input.forEach((editor, index) => {
+        url += `${index === 0 ? '?' : '&'}user=${editor}`
+      })
+      const res = await fetch(url)
+      const output = await res.json()
+      console.log('hello', input, output)
+      return output.existing_users || []
+    }),
+})
+
 const publicationRouter = router({
   getPathInfo: procedure
     .input(
@@ -379,6 +394,7 @@ export const appRouter = router({
   account: accountRouter,
   group: groupRouter,
   siteInfo: siteInfoRouter,
+  wallets: walletsRouter,
 })
 
 export type AppRouter = typeof appRouter

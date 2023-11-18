@@ -9,13 +9,13 @@ import {
   SideSection,
   SizableText,
   SizeTokens,
+  Spinner,
   Text,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
-import {AccountRow} from 'src/account-row'
 import Link from 'next/link'
 import React, {
   PropsWithChildren,
@@ -27,6 +27,8 @@ import React, {
 } from 'react'
 import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
+import {AccountRow} from 'src/account-row'
+import {trpc} from './trpc'
 
 const options: {value: string; label: string; sats: number | null}[] = [
   {value: '100', label: '100 sats', sats: 100},
@@ -156,11 +158,13 @@ function SplitRow({
   id,
   percentage,
   dispatchSplit,
+  canReceive,
 }: {
   sats: number
   id: string
   percentage: number
   dispatchSplit?: React.Dispatch<SplitAction>
+  canReceive: boolean
 }) {
   const [isHovering, setIsHovering] = useState<boolean>(false)
   const displayIncrementButton = isHovering || isTouchDevice
@@ -206,7 +210,11 @@ function SplitRow({
             </XGroup.Item>
           </XGroup>
         ) : null}
-        <Text>{sats} Sats</Text>
+        {canReceive ? (
+          <Text>{sats} Sats</Text>
+        ) : (
+          <Text color="$color8">No Lightning Wallet</Text>
+        )}
       </XStack>
     </XStack>
   )
@@ -235,7 +243,7 @@ function RadioGroupItemWithLabel({
   )
 }
 
-type InvoiceSplit = {id: string; percentage: number}[]
+type InvoiceSplit = {id: string; percentage: number; canReceive: boolean}[]
 
 type SplitAction = {
   type: 'incrementPercentage'
@@ -286,15 +294,27 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
   return state
 }
 
+function useRecipientsQuery(recipients: Array<HMAccount | string | null>) {
+  return trpc.wallets.getAccountsAvailable.useQuery(
+    recipients.map((recipient) => {
+      if (typeof recipient === 'string') return recipient
+      if (!recipient) return null
+      return recipient.id
+    }),
+  )
+}
+
 function CreateInvoiceStep({
   onInvoice,
   onComplete,
   editors,
   docId,
+  validRecipients,
 }: {
   onInvoice: (invoice: InternalInvoice) => void
   onComplete: (complete: boolean) => void
   editors: Array<HMAccount | string | null>
+  validRecipients: string[]
   docId: string
 }) {
   let [amount, setAmount] = useState(100)
@@ -306,11 +326,14 @@ function CreateInvoiceStep({
         return editorId
       })
       .filter((editorId) => !!editorId)
-    let equalPercentage = editorIds.length
+    let equalPercentage = validRecipients.length
       ? editorsOverallPercentage / editorIds.length
       : editorsOverallPercentage
-    return editorIds.map((id) => ({id, percentage: equalPercentage}))
-  }, [editors])
+    return editorIds.map((id) => {
+      const canReceive = !!id && validRecipients.indexOf(id) !== -1
+      return {id, canReceive, percentage: equalPercentage}
+    })
+  }, [editors, validRecipients])
   let [split, dispatchSplit] = useReducer(splitReducer, initialSplit)
   let computed = useMemo(() => {
     let remainderSats = amount
@@ -366,7 +389,7 @@ function CreateInvoiceStep({
         })
     }
   }
-
+  const noRecipients = validRecipients?.length === 0
   return (
     <>
       <Dialog.Title>Donate to Authors</Dialog.Title>
@@ -380,12 +403,12 @@ function CreateInvoiceStep({
           icon={X}
         />
       </Dialog.Close>
-      <Dialog.Description>
-        By making a payment, you are supporting the publisher and its editors,
-        helping to fund their work and ensure the ongoing success of the
-        publication.
-      </Dialog.Description>
-      <YStack gap="$4">
+      <YStack gap="$4" marginTop="$4">
+        <Dialog.Description>
+          By making a payment, you are supporting the publisher and its editors,
+          helping to fund their work and ensure the ongoing success of the
+          publication.
+        </Dialog.Description>
         <Dialog.Description>
           Payments are made using the instant and global Bitcoin Lightning
           network. All amounts are in{' '}
@@ -396,60 +419,78 @@ function CreateInvoiceStep({
             Satoshis
           </Link>
         </Dialog.Description>
-        <AmountForm amount={amount} onAmount={setAmount} />
-
-        <YStack
-          borderRadius="$3"
-          padding="$3"
-          gap="$3"
-          borderWidth={1}
-          borderColor={'$gray8'}
-        >
-          <Text fontSize="$6" fontWeight="bold">
-            Distribution Overview
-          </Text>
-          {computed.computedSplit.map((splitRow) => {
-            return (
-              <SplitRow
-                key={splitRow.id}
-                {...splitRow}
-                dispatchSplit={
-                  computed.computedSplit.length > 1 ? dispatchSplit : undefined
-                }
-              />
-            )
-          })}
-
-          <XStack overflow="hidden">
-            <YStack width={600}>
-              <Text flex={1}>Transaction Fee</Text>
-            </YStack>
-            <YStack>
-              <Text>{computed.serviceFeeSats} Sats</Text>
-            </YStack>
-          </XStack>
-          <Separator />
-          <XStack overflow="hidden">
-            <YStack width={600}>
-              <Text color="$green11" flex={1}>
-                Payment Total
-              </Text>
-            </YStack>
-            <YStack>
-              <Text color="$green11">{computed.total} Sats</Text>
-            </YStack>
-          </XStack>
-        </YStack>
-        <XStack justifyContent="center">
-          <Button
-            theme="green"
-            onPress={() => {
-              createInvoice()
-            }}
-            icon={Zap}
+        {!noRecipients ? (
+          <AmountForm amount={amount} onAmount={setAmount} />
+        ) : null}
+        {!noRecipients ? (
+          <YStack
+            borderRadius="$3"
+            padding="$3"
+            gap="$3"
+            borderWidth={1}
+            borderColor={'$gray8'}
           >
-            Start Bitcoin Donation
-          </Button>
+            <Text fontSize="$6" fontWeight="bold">
+              Distribution Overview
+            </Text>
+            {computed.computedSplit.map(
+              (splitRow: {
+                id: string
+                canReceive: boolean
+                sats: number
+                percentage: number
+              }) => {
+                return (
+                  <SplitRow
+                    key={splitRow.id}
+                    {...splitRow}
+                    dispatchSplit={
+                      computed.computedSplit.length > 1
+                        ? dispatchSplit
+                        : undefined
+                    }
+                  />
+                )
+              },
+            )}
+
+            <XStack overflow="hidden">
+              <YStack width={600}>
+                <Text flex={1}>Transaction Fee</Text>
+              </YStack>
+              <YStack>
+                <Text>{computed.serviceFeeSats} Sats</Text>
+              </YStack>
+            </XStack>
+            <Separator />
+            <XStack overflow="hidden">
+              <YStack width={600}>
+                <Text color="$green11" flex={1}>
+                  Payment Total
+                </Text>
+              </YStack>
+              <YStack>
+                <Text color="$green11">{computed.total} Sats</Text>
+              </YStack>
+            </XStack>
+          </YStack>
+        ) : null}
+        <XStack justifyContent="center">
+          {noRecipients ? (
+            <SizableText color="$color10">
+              No Lightning Recipients Available
+            </SizableText>
+          ) : (
+            <Button
+              theme="green"
+              onPress={() => {
+                createInvoice()
+              }}
+              icon={Zap}
+            >
+              Start Bitcoin Donation
+            </Button>
+          )}
         </XStack>
       </YStack>
     </>
@@ -582,13 +623,18 @@ function DontationDialog({
 }) {
   let [invoice, setInvoice] = useState<InternalInvoice | null>(null)
   let [completion, setCompletion] = useState<boolean>(false)
-  let content = (
+  const validRecipients = useRecipientsQuery(editors)
+
+  let content = validRecipients.data ? (
     <CreateInvoiceStep
       onInvoice={setInvoice}
       docId={docId}
       editors={editors}
+      validRecipients={validRecipients.data}
       onComplete={setCompletion}
     />
+  ) : (
+    <Spinner />
   )
   if (completion) {
     content = (

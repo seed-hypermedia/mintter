@@ -25,6 +25,7 @@ import {
   Separator,
   Share,
   SizableText,
+  Spinner,
   Tabs,
   TabsContentProps,
   Tooltip,
@@ -43,6 +44,7 @@ import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {TableList} from '../components/table-list'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {useExportWallet} from '../models/payments'
+import {useWalletOptIn} from '../models/wallet'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 
@@ -662,14 +664,12 @@ const TabsContent = (props: TabsContentProps) => {
   )
 }
 
-function WalletsSettings() {
-  const {data: wallets} = useWallets()
-  const [wallet, setWallet] = useState<string | undefined>(undefined)
+function ExistingWallets({wallets}: {wallets: LightningWallet[]}) {
+  const [wallet, setWallet] = useState<string | undefined>(wallets[0]?.id)
   const {data: invoices} = useInvoicesBywallet(wallet)
-
   return (
     <YStack gap="$5">
-      <Heading>Wallets</Heading>
+      <Heading>Sponsorship Wallets</Heading>
       <ScrollView horizontal>
         <XStack gap="$6" overflow="visible">
           {wallets?.map((cw) => (
@@ -769,6 +769,31 @@ function WalletsSettings() {
       </TableList>
     </YStack>
   )
+}
+
+function NoWallets() {
+  const optIn = useWalletOptIn()
+  return (
+    <YStack gap="$4">
+      <Heading>Sponsorship Wallets</Heading>
+      <SizableText>No Lightning Wallet</SizableText>
+      <Button
+        onPress={() => {
+          optIn.mutate()
+        }}
+      >
+        Enable Lightning Sponsorship
+      </Button>
+      {optIn.isLoading ? <Spinner /> : null}
+    </YStack>
+  )
+}
+
+function WalletsSettings() {
+  const {data: wallets, isLoading: isLoadingWallets} = useWallets()
+  if (isLoadingWallets) return null
+  if (wallets?.length) return <ExistingWallets wallets={wallets} />
+  return <NoWallets />
 }
 
 function WalletCard({
