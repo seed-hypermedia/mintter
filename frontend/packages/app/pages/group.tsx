@@ -604,7 +604,9 @@ function InviteMemberDialog({
     () =>
       accounts.status == 'success'
         ? accounts.data.accounts.reduce((acc, current) => {
-            acc[current.id] = {...current, alias: current.profile?.alias}
+            if (current.profile?.alias) {
+              acc[current.id] = {...current, alias: current.profile?.alias}
+            }
 
             return acc
           }, {})
