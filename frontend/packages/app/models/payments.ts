@@ -8,6 +8,7 @@ import {
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
+  UseMutationOptions,
   UseQueryOptions,
   useMutation,
   useQuery,
@@ -120,19 +121,8 @@ let exportWalletMutationQuery = gql`
   }
 `
 
-export function mutationExportWallet(opts = {}) {
+export function mutationExportWallet(opts: UseMutationOptions = {}) {
   return {
-    // mutationFn: async (walletId: string) => {
-    //   let req: Mutation = await request(
-    //     BACKEND_GRAPHQL_ENDPOINT,
-    //     exportWalletMutationQuery,
-    //     {
-    //       id: walletId,
-    //     },
-    //   )
-
-    //   return req.exportWallet
-    // },
     mutationFn: async (input: ExportWalletInput) => {
       try {
         let req: Mutation = await request(

@@ -44,6 +44,7 @@ import {
 } from 'react'
 import toast from 'react-hot-toast'
 import {useConnectPeer} from '../models/contacts'
+import {useWalletOptIn} from '../models/wallet'
 import {useDaemonReady} from '../node-status-context'
 
 const CONTENT_MAX_WIDTH = 500
@@ -67,6 +68,7 @@ export function OnboardingSteps() {
       {key == 'create new account' && <Mnemonics key={key} {...ctx} />}
       {key == 'profile' && <Profile key={key} {...ctx} />}
       {key == 'analytics' && <Analytics key={key} {...ctx} />}
+      {key == 'wallet' && <Wallet key={key} {...ctx} />}
       {key == 'connect site' && <ConnectSite key={key} {...ctx} />}
     </>
   )
@@ -581,6 +583,45 @@ function Analytics(props: OnboardingStepProps) {
   )
 }
 
+function Wallet(props: OnboardingStepProps) {
+  const optIn = useWalletOptIn({
+    onError: (e) => {
+      toast.error(e.message)
+    },
+  })
+  return (
+    <StepWrapper>
+      <XStack flex={1} gap="$10">
+        <StepTitleSection step="wallet">
+          <H2>Sponsorship</H2>
+          <H1>Wallet</H1>
+        </StepTitleSection>
+        <YStack flex={2}>
+          <YStack gap="$5" maxWidth={500}>
+            <StepParagraph>
+              Opt in to receiving lightning payments
+            </StepParagraph>
+            <XStack>
+              <Button
+                onPress={() => {
+                  optIn.mutate()
+                }}
+              >
+                Accept Lightning Payments
+              </Button>
+            </XStack>
+          </YStack>
+        </YStack>
+      </XStack>
+      <XStack alignItems="center" justifyContent="flex-end" gap="$4">
+        {optIn.isLoading ? <Spinner /> : null}
+        <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
+        <NextButton onPress={() => props.send('NEXT')}>NEXT</NextButton>
+      </XStack>
+    </StepWrapper>
+  )
+}
+
 const SuggestedSites = ['mintter.com', 'hyper.media']
 
 function ConnectSite(props: OnboardingStepProps) {
@@ -826,10 +867,20 @@ let machine = {
     profile: {
       on: {
         NEXT: {
-          target: 'analytics',
+          target: 'wallet',
         },
         PREV: {
           target: 'create new account',
+        },
+      },
+    },
+    wallet: {
+      on: {
+        NEXT: {
+          target: 'analytics',
+        },
+        PREV: {
+          target: 'profile',
         },
       },
     },
