@@ -317,7 +317,7 @@ function NostrForm({
       sub.unsub()
     })
 
-    await delay(10000)
+    await delay(4000)
 
     if (!note) {
       sub.unsub()
