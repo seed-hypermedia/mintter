@@ -445,7 +445,7 @@ export function EntityVersionsAccessory({
   if (!id) return null
   return (
     <>
-      <AccessoryContainer title="Versions">
+      <AccessoryContainer>
         <PostToGroup.Provider
           value={
             groupPubContext && docId && isInPostableContext
