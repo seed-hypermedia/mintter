@@ -53,7 +53,6 @@ import {
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
-import {AccountCard} from '../components/account-card'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
 import {EntityVersionsAccessory} from '../components/changes-list'
@@ -919,28 +918,29 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
           {selectedValues.map((value) => {
             let account = accountsMap[value]
             return (
-              <AccountCard accountId={value} key={value}>
-                <Ariakit.CompositeItem
-                  role="gridcell"
-                  className="tag"
-                  onClick={onItemClick(value)}
-                  onKeyDown={onItemKeyDown}
-                  onFocus={combobox.hide}
-                >
-                  <UIAvatar
-                    label={account?.alias}
-                    id={value}
-                    url={account?.profile?.avatar}
-                  />
-                  <SizableText size="$3">
-                    {account?.alias
-                      ? account.alias
-                      : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
-                  </SizableText>
-                  {/* <span className="tag-remove"></span> */}
-                  <X size={12} className="tag-remove" />
-                </Ariakit.CompositeItem>
-              </AccountCard>
+              // <AccountCard accountId={value} key={value}>
+              <Ariakit.CompositeItem
+                key={value}
+                role="gridcell"
+                className="tag"
+                onClick={onItemClick(value)}
+                onKeyDown={onItemKeyDown}
+                onFocus={combobox.hide}
+              >
+                <UIAvatar
+                  label={account?.alias}
+                  id={value}
+                  url={account?.profile?.avatar}
+                />
+                <SizableText size="$3">
+                  {account?.alias
+                    ? account.alias
+                    : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
+                </SizableText>
+                {/* <span className="tag-remove"></span> */}
+                <X size={12} className="tag-remove" />
+              </Ariakit.CompositeItem>
+              // </AccountCard>
             )
           })}
           <div role="gridcell">

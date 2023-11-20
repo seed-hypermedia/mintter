@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React from 'react'
-import {SizableText, Tooltip as TTooltip, TooltipProps} from 'tamagui'
+import {Tooltip as TTooltip, Text, TooltipProps} from 'tamagui'
 
 export function Tooltip({
   children,
@@ -38,9 +38,15 @@ export function Tooltip({
         ]}
       >
         <TTooltip.Arrow />
-        <SizableText size="$1" margin={0} padding={0} lineHeight="$1">
+        <Text
+          fontSize="$1"
+          fontFamily="$body"
+          margin={0}
+          padding={0}
+          lineHeight="$1"
+        >
           {content}
-        </SizableText>
+        </Text>
       </TTooltip.Content>
     </TTooltip>
   )
