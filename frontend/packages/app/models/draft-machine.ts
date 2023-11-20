@@ -12,10 +12,19 @@ export const draftMachine = createMachine(
       hasChangedWhileSaving: false,
       draft: null,
       title: '',
+      errorMessage: '',
     },
     id: 'Draft',
     initial: 'fetching',
     on: {
+      // 'GET.DRAFT.SUCCESS': {
+      //   target: '.error',
+      //   actions: [
+      //     {
+      //       type: 'setError',
+      //     },
+      //   ],
+      // },
       'GET.DRAFT.SUCCESS': {
         target: '.mountingEditor',
         actions: [
@@ -26,6 +35,14 @@ export const draftMachine = createMachine(
       },
       'GET.DRAFT.ERROR': {
         target: '.error',
+        actions: [
+          {
+            type: 'setError',
+          },
+        ],
+      },
+      'SAVE.ON.EXIT': {
+        target: '.ready.saving',
       },
     },
     states: {
@@ -185,12 +202,14 @@ export const draftMachine = createMachine(
         | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
         | {type: 'GET.DRAFT.SUCCESS'; draft: Document}
-        | {type: 'FINISH.MOUNT'},
+        | {type: 'FINISH.MOUNT'}
+        | {type: 'SAVE.ON.EXIT'},
       context: {} as {
         blocksMap: BlocksMap
         hasChangedWhileSaving: boolean
         draft: Document | null
         title: string
+        errorMessage: string
       },
     },
   },
@@ -241,6 +260,12 @@ export const draftMachine = createMachine(
         draft: ({event, context}) => {
           console.log('=== setCurrentDraft', event, context)
           return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
+        },
+      }),
+      setError: assign({
+        errorMessage: ({event}) => {
+          console.log('== ERROR', event)
+          return 'ERROR: '
         },
       }),
     },

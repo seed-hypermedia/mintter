@@ -103,7 +103,11 @@ export default function DraftPage() {
               />
             </YStack>
             <HMEditorContainer>
-              {editor && <HyperMediaEditorView editor={editor} />}
+              {data.state.context.draft &&
+              data.editor &&
+              data.editor.topLevelBlocks.length ? (
+                <HyperMediaEditorView editor={data.editor} />
+              ) : null}
             </HMEditorContainer>
           </AppPublicationContentProvider>
           {documentId ? (

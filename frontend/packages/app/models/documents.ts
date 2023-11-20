@@ -467,7 +467,9 @@ export function useDraftEditor({
           ) {
             let editorBlocks = toHMBlock(event.draft.children)
             const tiptap = editor?._tiptapEditor
+            editor.removeBlocks(editor.topLevelBlocks)
             editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+
             // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
             setGroupTypes(tiptap, editorBlocks)
           }
@@ -507,6 +509,7 @@ export function useDraftEditor({
                   key: 'deleteDraft',
                   value: `Delete draft ${documentId} success`,
                 })
+                invalidate([queryKeys.GET_DRAFT_LIST])
               })
           } catch (error) {
             diagnosis?.append(documentId!, {
@@ -524,71 +527,13 @@ export function useDraftEditor({
           ContextFrom<typeof draftMachine>
         >(
           // TODO: I need to convert this to another thing. because I need to check if there are changes before I send any request
-          async ({input}) => {
-            let currentEditorBlocks = [...editor.topLevelBlocks]
-            let {changes, touchedBlocks} = compareBlocksWithMap(
+          async ({input}) =>
+            updateDraft({
               editor,
-              input.blocksMap,
-              currentEditorBlocks,
-              '',
-            )
-
-            let deletedBlocks = extractDeletes(input.blocksMap, touchedBlocks)
-
-            if (input.draft?.title != input.title) {
-              changes = [
-                new DocumentChange({
-                  op: {
-                    case: 'setTitle',
-                    value: input.title,
-                  },
-                }),
-                ...changes,
-              ]
-            }
-
-            let capturedChanges = [...changes, ...deletedBlocks]
-
-            console.log(`== ~ capturedChanges:`, capturedChanges)
-
-            if (capturedChanges.length) {
-              // capturedChanges = capturedChanges.map((i) => i.toJson())
-              diagnosis.append(documentId, {
-                key: 'will.updateDraft',
-                // note: 'regular updateDraft',
-                value: changesToJSON(capturedChanges),
-              })
-              try {
-                let mutation = await grpcClient.drafts.updateDraft({
-                  documentId,
-                  changes: [...capturedChanges],
-                })
-
-                console.log(`== ~ mutation:`, mutation)
-                if (mutation.updatedDocument) {
-                  console.log('== draft updates', mutation)
-                  client.setQueryData(
-                    [queryKeys.GET_DRAFT, documentId],
-                    mutation.updatedDocument,
-                  )
-                }
-
-                diagnosis.append(documentId, {
-                  key: 'did.updateDraft',
-                  // note: 'regular updateDraft',
-                  value: JSON.stringify(mutation),
-                })
-
-                return mutation
-              } catch (error) {
-                return Promise.reject(JSON.stringify(error))
-              }
-            }
-
-            return Promise.resolve(
-              'No changes applied. Reaching this should be impossible!',
-            )
-          },
+              blocksMap: input.blocksMap,
+              title: input.title,
+              draft: input.draft,
+            }),
         ),
       },
     }),
@@ -597,9 +542,13 @@ export function useDraftEditor({
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      writeEditorStream(editor.topLevelBlocks)
-      observeBlocks(editor, editor.topLevelBlocks, () => send({type: 'CHANGE'}))
-      send({type: 'CHANGE'})
+      if (!state.matches('mountingEditor')) {
+        writeEditorStream(editor.topLevelBlocks)
+        observeBlocks(editor, editor.topLevelBlocks, () =>
+          send({type: 'CHANGE'}),
+        )
+        send({type: 'CHANGE'})
+      }
     },
     linkExtensionOptions: {
       openOnClick: false,
@@ -613,7 +562,6 @@ export function useDraftEditor({
     // },
     blockSchema: hmBlockSchema,
     slashMenuItems,
-
     _tiptapOptions: {
       extensions: [
         Extension.create({
@@ -638,8 +586,88 @@ export function useDraftEditor({
         send({type: 'GET.DRAFT.ERROR', error: backendDraft.error})
       }
     }
+
+    return () => {
+      if (state.matches({ready: 'changed'})) {
+        updateDraft({
+          editor,
+          draft: state.context.draft,
+          blocksMap: state.context.blocksMap,
+          title: state.context.title,
+        }).then(() => {
+          invalidate([queryKeys.GET_DRAFT_LIST])
+          invalidate([queryKeys.EDITOR_DRAFT, documentId])
+        })
+      }
+    }
     /* eslint-disable */
   }, [backendDraft.status])
+
+  async function updateDraft({editor, blocksMap, draft, title}) {
+    let currentEditorBlocks = [...editor.topLevelBlocks]
+    let {changes, touchedBlocks} = compareBlocksWithMap(
+      editor,
+      blocksMap,
+      currentEditorBlocks,
+      '',
+    )
+
+    let deletedBlocks = extractDeletes(blocksMap, touchedBlocks)
+
+    if (draft?.title != title) {
+      changes = [
+        new DocumentChange({
+          op: {
+            case: 'setTitle',
+            value: title,
+          },
+        }),
+        ...changes,
+      ]
+    }
+
+    let capturedChanges = [...changes, ...deletedBlocks]
+
+    console.log(`== ~ capturedChanges:`, capturedChanges)
+
+    if (capturedChanges.length) {
+      // capturedChanges = capturedChanges.map((i) => i.toJson())
+      diagnosis.append(documentId, {
+        key: 'will.updateDraft',
+        // note: 'regular updateDraft',
+        value: changesToJSON(capturedChanges),
+      })
+      try {
+        let mutation = await grpcClient.drafts.updateDraft({
+          documentId,
+          changes: [...capturedChanges],
+        })
+
+        console.log(`== ~ mutation:`, mutation)
+        if (mutation.updatedDocument) {
+          console.log('== draft updates', mutation)
+          client.setQueryData(
+            [queryKeys.GET_DRAFT, documentId],
+            mutation.updatedDocument,
+          )
+        }
+
+        diagnosis.append(documentId, {
+          key: 'did.updateDraft',
+          // note: 'regular updateDraft',
+          value: JSON.stringify(mutation),
+        })
+
+        return mutation
+      } catch (error) {
+        return Promise.reject(JSON.stringify(error))
+      }
+    }
+
+    return Promise.resolve(
+      'No changes applied. Reaching this should be impossible!',
+    )
+  }
 
   return {
     state,
