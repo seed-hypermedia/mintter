@@ -41,7 +41,6 @@ import {
 import {useOpenDraft} from '../utils/open-draft'
 import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
-import {AccountCard} from './account-card'
 import {Avatar} from './avatar'
 import {CreateGroupButton} from './new-group'
 
@@ -509,24 +508,24 @@ function PinnedAccount({accountId}: {accountId: string}) {
   if (!accountId) return null
   return (
     <YGroup.Item>
-      <AccountCard accountId={accountId}>
-        <SidebarItem
-          onPress={() => {
-            navigate({key: 'account', accountId})
-          }}
-          active={route.key == 'account' && route.accountId == accountId}
-          icon={
-            <Avatar
-              size={22}
-              label={account?.data?.profile?.alias}
-              id={accountId}
-              url={getAvatarUrl(account?.data?.profile?.avatar)}
-            />
-          }
-          title={account.data?.profile?.alias || accountId}
-          indented
-        />
-      </AccountCard>
+      {/* <AccountCard accountId={accountId}> */}
+      <SidebarItem
+        onPress={() => {
+          navigate({key: 'account', accountId})
+        }}
+        active={route.key == 'account' && route.accountId == accountId}
+        icon={
+          <Avatar
+            size={22}
+            label={account?.data?.profile?.alias}
+            id={accountId}
+            url={getAvatarUrl(account?.data?.profile?.avatar)}
+          />
+        }
+        title={account.data?.profile?.alias || accountId}
+        indented
+      />
+      {/* </AccountCard> */}
     </YGroup.Item>
   )
 }

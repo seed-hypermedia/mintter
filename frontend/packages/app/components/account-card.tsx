@@ -1,3 +1,4 @@
+// tamagui-ignore
 import * as Ariakit from '@ariakit/react'
 import {UIAvatar, XStack, YStack} from '@mintter/ui'
 import {SizableText} from 'tamagui'
@@ -8,9 +9,11 @@ import {PinAccountButton} from './pin-entity'
 export function AccountCard({
   accountId,
   children,
+  hideActions = false,
 }: {
   accountId?: string
   children: React.ReactNode
+  hideActions?: boolean
 }) {
   let account = useAccount(accountId)
   return accountId && account.status == 'success' ? (
@@ -46,7 +49,7 @@ export function AccountCard({
                 url={account.data.profile?.avatar}
                 label={account.data.profile?.alias || accountId}
               />
-              {accountId ? (
+              {accountId && !hideActions ? (
                 <XStack alignItems="flex-end" gap="$3">
                   <PinAccountButton accountId={accountId} />
                   <AccountTrustButton

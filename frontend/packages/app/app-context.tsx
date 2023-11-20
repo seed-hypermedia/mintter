@@ -77,6 +77,7 @@ export function StyleProvider({
   darkMode,
   ...rest
 }: Omit<TamaguiProviderProps, 'config'> & {darkMode: boolean}) {
+  console.log(`== ~ tamaguiConfig:`, tamaguiConfig)
   return (
     <TamaguiProvider
       // @ts-ignore
