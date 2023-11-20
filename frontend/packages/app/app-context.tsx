@@ -1,16 +1,12 @@
 import {GRPCClient} from '@mintter/shared'
-import {
-  config as tamaguiConfig,
-  TamaguiProvider,
-  TamaguiProviderProps,
-  Theme,
-} from '@mintter/ui'
+import {TamaguiProvider, TamaguiProviderProps} from '@mintter/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {createContext, ReactNode, useContext, useEffect} from 'react'
+import {ReactNode, createContext, useContext, useEffect} from 'react'
 import {AppIPC, Event, EventCallback} from './app-ipc'
 import {useExperiments} from './models/experiments'
 import {AppQueryClient} from './query-client'
+import tamaguiConfig from './tamagui.config'
 import {WindowUtils} from './window-utils'
 
 export type AppPlatform = typeof process.platform
@@ -85,11 +81,13 @@ export function StyleProvider({
     <TamaguiProvider
       // @ts-ignore
       config={tamaguiConfig}
+      // disableInjectCSS
+      // disableRootThemeClass
       className={darkMode ? 'mintter-app-dark' : 'mintter-app-light'}
       defaultTheme={darkMode ? 'dark' : 'light'}
       {...rest}
     >
-      <Theme>{children}</Theme>
+      {children}
     </TamaguiProvider>
   )
 }
