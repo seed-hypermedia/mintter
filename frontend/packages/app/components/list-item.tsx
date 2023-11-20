@@ -18,8 +18,6 @@ export function ListItem({
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[]
 }) {
-  // const [isHovering, setIsHovering] = useState(false)
-
   return (
     <>
       <Button

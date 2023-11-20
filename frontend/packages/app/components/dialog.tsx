@@ -5,48 +5,52 @@ import {
   Unspaced,
   XStack,
   YStack,
-  styled,
+  YStackProps,
 } from '@mintter/ui'
 import {X} from '@tamagui/lucide-icons'
 import {FC, useMemo, useState} from 'react'
 import {NavContextProvider, useNavigation} from '../utils/navigation'
 
-export const DialogOverlay = styled(Dialog.Overlay, {
-  // @ts-expect-error
-  zIndex: '$max', // for somer reason this is required for the overlay to go behind the DialogContent. maybe because of the DialogContent position:fixed below
-})
+export function DialogOverlay(props) {
+  // for somer reason this is required for the overlay to go behind the DialogContent. maybe because of the DialogContent position:fixed below
+  return <Dialog.Overlay zIndex="$max" {...props} />
+}
 
-export const DialogContent = styled(YStack, {
-  backgroundColor: '$base-background-normal',
-  borderRadius: 6,
-  boxShadow:
-    'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
-  // @ts-expect-error
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '90vw',
-  maxWidth: '500px',
-  maxHeight: '85vh',
-  padding: '$4',
-  display: 'flex',
-  gap: '$4',
-  borderWidth: 0,
-})
+export function DialogContent(props: YStackProps) {
+  return (
+    <YStack
+      backgroundColor={'$base-background-normal'}
+      borderRadius={6}
+      boxShadow={
+        'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px'
+      }
+      // @ts-expect-error
+      position={'fixed'}
+      top={'50%'}
+      left={'50%'}
+      transform={'translate(-50%, -50%)'}
+      width={'90vw'}
+      maxWidth={'500px'}
+      maxHeight={'85vh'}
+      padding={'$4'}
+      display={'flex'}
+      gap={'$4'}
+      borderWidth={0}
+      {...props}
+    />
+  )
+}
 
-export const AlertDialogContent = styled(AlertDialog.Content, {
-  borderWidth: 0,
-})
+export function AlertDialogContent(props) {
+  return <AlertDialog.Content borderWidth={0} {...props} />
+}
 
-export const DialogFooter = styled(XStack, {
-  justifyContent: 'flex-end',
-  gap: '$4',
-})
-
-export const DialogTitle = styled(Dialog.Title, {
-  fontSize: '$7',
-})
+export function DialogFooter(props) {
+  return <XStack justifyContent="flex-end" gap="$4" {...props} />
+}
+export function DialogTitle(props) {
+  return <Dialog.Title fontSize="$7" {...props} />
+}
 
 export function DialogCloseButton() {
   return (
