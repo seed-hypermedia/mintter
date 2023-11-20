@@ -81,6 +81,7 @@ export function StyleProvider({
     <TamaguiProvider
       // @ts-ignore
       config={tamaguiConfig}
+      // TODO: find a way to add this props without breaking all the styles
       // disableInjectCSS
       // disableRootThemeClass
       className={darkMode ? 'mintter-app-dark' : 'mintter-app-light'}
