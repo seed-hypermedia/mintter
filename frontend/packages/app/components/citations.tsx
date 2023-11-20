@@ -1,11 +1,6 @@
 import {CitationLink, useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {
-  formattedDate,
-  formattedDateLong,
-  formattedDateMedium,
-  pluralS,
-} from '@mintter/shared'
+import {formattedDateMedium, pluralS} from '@mintter/shared'
 import {PanelCard} from '@mintter/ui'
 import {useAccount} from '../models/accounts'
 import {useDocTextContent, usePublication} from '../models/documents'
@@ -26,7 +21,6 @@ function CitationItem({link}: {link: CitationLink}) {
 
   const docTextContent = useDocTextContent(pub.data)
 
-  console.log(`== ~ CitationItem ~ docTextContent:`, docTextContent)
   return (
     <PanelCard
       title={pub.data?.document?.title}

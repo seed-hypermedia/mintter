@@ -1,6 +1,7 @@
 import {
   AppleIcon,
   Button,
+  Group,
   LinuxIcon,
   PageSection,
   SizableText,
@@ -8,13 +9,12 @@ import {
   WindowsIcon,
   XStack,
   YStack,
-  Group,
 } from '@mintter/ui'
-import {SiteHead} from 'src/site-head'
-import {EveryPageProps} from './_app'
 import {GetStaticProps} from 'next'
 import {getPageProps} from 'server/ssr-helpers'
 import {getSiteServerHelpers} from 'server/static-props'
+import {SiteHead} from 'src/site-head'
+import {EveryPageProps} from './_app'
 
 export default function DownloadPage(props: any) {
   return (
@@ -124,8 +124,6 @@ export const getStaticProps: GetStaticProps<EveryPageProps> = async (
 
   let manifest = await req.json()
   const {helpers} = await getSiteServerHelpers()
-
-  // console.log(`== ~ getStaticProps ~ manifest:`, manifest)
 
   // example manifest.assets[].name:
   //  Mintter-2023.10.2-full.nupkg

@@ -368,7 +368,6 @@ function VideoForm({
       })
       const data = await response.text()
 
-      console.log(`== ~ handleUpload ~ data:`, data)
       assign({
         props: {url: data ? `ipfs://${data}` : '', name: name},
       } as VideoType)

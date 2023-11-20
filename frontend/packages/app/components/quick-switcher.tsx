@@ -140,7 +140,6 @@ export function QuickSwitcher() {
                   search.startsWith('http://') ||
                   search.startsWith('https://')
                 ) {
-                  console.log('== ~ QuickSwitcher ~ Querying Web URL', search)
                   setActionPromise(
                     handleUrl(queryClient, grpcClient, search)
                       .then((navRoute) => {
