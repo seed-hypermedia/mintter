@@ -1,6 +1,9 @@
 import {IS_PROD_DESKTOP} from '@mintter/shared'
 import {MessageBoxOptions, app, autoUpdater, dialog, shell} from 'electron'
 import log from 'electron-log/main'
+import {appStore} from './app-store'
+
+const AUTOUPDATE_KEY = 'Update-v001'
 
 export function defaultCheckForUpdates() {
   log.debug('[MAIN][AUTO-UPDATE]: checking for Updates')
@@ -13,36 +16,43 @@ export function defaultCheckForUpdates() {
 }
 
 export function linuxCheckForUpdates() {
-  log.debug('[MAIN][AUTO-UPDATE]: checking for Updates')
-  // ipcMain.emit(ipcMainEvents.CHECK_FOR_UPDATES_START)
-  try {
-    fetch(
-      `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/${app.getVersion()}`,
-    ).then((res) => {
-      if (res) {
-        log.debug('[MAIN][AUTO-UPDATE]: LINUX NEED TO UPDATE', res)
-        const dialogOpts: MessageBoxOptions = {
-          type: 'info',
-          buttons: ['Go and Download', 'Close'],
-          title: 'Application Update',
-          message: 'New release available',
-          detail:
-            'A new version is available. Go and Download the new version!',
-        }
+  if (shouldCheckForUpdate()) {
+    log.debug('[MAIN][AUTO-UPDATE]: checking for Updates')
+    // ipcMain.emit(ipcMainEvents.CHECK_FOR_UPDATES_START)
+    try {
+      fetch(
+        `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/${app.getVersion()}`,
+      ).then((res) => {
+        if (res) {
+          log.debug('[MAIN][AUTO-UPDATE]: LINUX NEED TO UPDATE', res)
+          const dialogOpts: MessageBoxOptions = {
+            type: 'info',
+            buttons: ['Go and Download', 'Close'],
+            title: 'Application Update',
+            message: 'New release available',
+            detail:
+              'A new version is available. Go and Download the new version!',
+          }
 
-        dialog.showMessageBox(dialogOpts).then((returnValue: any) => {
-          log.debug('[MAIN][AUTO-UPDATE]: Quit and Install')
-          if (returnValue.response === 0)
-            shell.openExternal(
-              'https://github.com/MintterHypermedia/mintter/releases/latest',
-            )
-        })
-      } else {
-        log.debug('[MAIN][AUTO-UPDATE]: LINUX IS UPDATED', res)
-      }
-    })
-  } catch (error) {}
-  // ipcMain.emit(ipcMainEvents.CHECK_FOR_UPDATES_END)
+          dialog.showMessageBox(dialogOpts).then((returnValue: any) => {
+            log.debug('[MAIN][AUTO-UPDATE]: Quit and Install')
+            if (returnValue.response === 0)
+              shell.openExternal(
+                'https://github.com/MintterHypermedia/mintter/releases/latest',
+              )
+          })
+        } else {
+          log.debug('[MAIN][AUTO-UPDATE]: LINUX IS UPDATED', res)
+        }
+      })
+    } catch (error) {}
+    // ipcMain.emit(ipcMainEvents.CHECK_FOR_UPDATES_END)
+  } else {
+    log.debug(
+      '[MAIN][AUTO-UPDATE]: NO NEED TO CHECK FOR UPDATES YET:',
+      appStore.get(AUTOUPDATE_KEY),
+    )
+  }
 }
 
 export default function autoUpdate() {
@@ -73,7 +83,7 @@ export default function autoUpdate() {
 
 // ======================================
 
-let feedback = false
+// let feedback = false
 
 function isAutoUpdateSupported() {
   // TODO: we need to enable a setting so people can disable auto-updates
@@ -141,4 +151,53 @@ function setup() {
   //   }
   //   progressPercentTimeout = setTimeout(logDownloadProgress, 2000)
   // })
+}
+
+fetch(
+  `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/2023.11.4`,
+)
+  .then((res) => {
+    console.log('== AUTOUPDATE THEN', res.body)
+  })
+  .catch((res) => {
+    console.log('== AUTOUPDATE CATCH', res)
+  })
+  .finally(() => {
+    console.log('== AUTOUPDATE FINALLY')
+  })
+
+function shouldCheckForUpdate() {
+  // Convert date strings to Date objects
+  const storedDate = appStore.get(AUTOUPDATE_KEY) as string
+  log.debug('[MAIN][AUTO-UPDATE]: SHOULD UPDATE INIT', storedDate)
+  const currentDate = new Date()
+  if (storedDate) {
+    const prevDate = storedDate ? new Date(storedDate) : new Date()
+
+    // Calculate the difference in milliseconds
+    // @ts-expect-error
+    const timeDifference = currentDate - prevDate
+
+    // Calculate the number of milliseconds in a day
+    const oneDayInMilliseconds = 24 * 60 * 60 * 1000
+
+    // Check if the new date is at least one day later than the previous date
+    log.debug(
+      '[MAIN][AUTO-UPDATE]: SHOULD UPDATE?',
+      timeDifference >= oneDayInMilliseconds,
+    )
+    return timeDifference >= oneDayInMilliseconds
+  } else {
+    log.debug('[MAIN][AUTO-UPDATE]: SHOULD UPDATE NOTHING STORED')
+    storeCurrentDate(currentDate)
+    return true
+  }
+}
+
+function storeCurrentDate(date: Date) {
+  date.setHours(0)
+  date.setMinutes(0)
+  date.setSeconds(0, 0)
+
+  appStore.set(AUTOUPDATE_KEY, date.toISOString())
 }
