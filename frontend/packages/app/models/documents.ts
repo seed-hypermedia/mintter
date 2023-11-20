@@ -485,6 +485,7 @@ export function useDraftEditor({
           draftStatusActor.send({type: 'INDICATOR.SAVING'}),
         indicatorSaved: () => draftStatusActor.send({type: 'INDICATOR.SAVED'}),
         indicatorError: () => draftStatusActor.send({type: 'INDICATOR.ERROR'}),
+        indicatorIdle: () => draftStatusActor.send({type: 'INDICATOR.IDLE'}),
         resetDraftAndRedirectToDraftList: () => {
           try {
             grpcClient.drafts
@@ -533,13 +534,14 @@ export function useDraftEditor({
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
-      if (!state.matches('mountingEditor')) {
-        writeEditorStream(editor.topLevelBlocks)
-        observeBlocks(editor, editor.topLevelBlocks, () =>
-          send({type: 'CHANGE'}),
-        )
-        send({type: 'CHANGE'})
-      }
+      writeEditorStream(editor.topLevelBlocks)
+      observeBlocks(
+        editor,
+        editor.topLevelBlocks,
+        () => {},
+        // send({type: 'CHANGE'}),
+      )
+      send({type: 'CHANGE'})
     },
     linkExtensionOptions: {
       openOnClick: false,
@@ -619,8 +621,6 @@ export function useDraftEditor({
 
     let capturedChanges = [...changes, ...deletedBlocks]
 
-    console.log(`== ~ capturedChanges:`, capturedChanges)
-
     if (capturedChanges.length) {
       // capturedChanges = capturedChanges.map((i) => i.toJson())
       diagnosis.append(documentId, {
@@ -633,8 +633,6 @@ export function useDraftEditor({
           documentId,
           changes: [...capturedChanges],
         })
-
-        console.log(`== ~ mutation:`, mutation)
         if (mutation.updatedDocument) {
           console.log('== draft updates', mutation)
           client.setQueryData(
@@ -655,9 +653,7 @@ export function useDraftEditor({
       }
     }
 
-    return Promise.resolve(
-      'No changes applied. Reaching this should be impossible!',
-    )
+    return Promise.resolve('No changes applied.')
   }
 
   return {
