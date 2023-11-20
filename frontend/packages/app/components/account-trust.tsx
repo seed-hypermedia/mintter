@@ -1,7 +1,6 @@
-import {Button, Tooltip} from '@mintter/ui'
+import {Button, Tooltip, useHover} from '@mintter/ui'
 
 import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
-import {useState} from 'react'
 import {useSetTrusted} from '../models/accounts'
 
 export function AccountTrustButton({
@@ -13,11 +12,11 @@ export function AccountTrustButton({
   isTrusted?: boolean
   iconOnly?: boolean
 }) {
-  const [hovering, setHovering] = useState(false)
+  const {hover, ...hoverProps} = useHover()
   const setTrusted = useSetTrusted()
   let label = !isTrusted
     ? 'Trust Account'
-    : hovering
+    : hover
     ? 'Untrust Account'
     : 'Trusted Account'
   if (!isTrusted) {
@@ -39,13 +38,12 @@ export function AccountTrustButton({
     <Tooltip content={label}>
       <Button
         size="$2"
-        theme={hovering ? 'red' : 'green'}
-        icon={hovering ? XCircle : CheckCircle}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
+        theme={hover ? 'red' : 'green'}
+        icon={hover ? XCircle : CheckCircle}
         onPress={() => {
           setTrusted.mutate({accountId, isTrusted: false})
         }}
+        {...hoverProps}
       >
         {!iconOnly ? label : null}
       </Button>

@@ -11,65 +11,85 @@ import {
   Button,
   Container,
   Heading,
+  HeadingProps,
   Spinner,
   Text,
   XStack,
   YStack,
-  styled,
+  useHover,
 } from '@mintter/ui'
-import {PlusCircle} from '@tamagui/lucide-icons'
-import {AccountCard} from '../components/account-card'
+import {AccountTrustButton} from '../components/account-trust'
 import {MainWrapper} from '../components/main-wrapper'
-import {useSetTrusted} from '../models/accounts'
+import {PinAccountButton} from '../components/pin-entity'
 import {getAvatarUrl} from '../utils/account-url'
 
-const PageHeading = styled(Heading, {
-  color: '$gray10',
-  fontSize: '$7',
-  fontWeight: 'normal',
-})
+function PageHeading(props: HeadingProps) {
+  return (
+    <Heading
+      color="$gray10"
+      fontSize="$7"
+      fontWeight="normal"
+      marginTop="$6"
+      marginBottom="$4"
+      {...props}
+    />
+  )
+}
 
-function ContactItem({
-  account,
-  isTrusted,
-}: {
-  account: Account
-  isTrusted: boolean
-}) {
+function ContactItem({account}: {account: Account; isTrusted: boolean}) {
   const navigate = useNavigate()
   const isConnected = useAccountIsConnected(account)
   const alias = account.profile?.alias
-  const setTrusted = useSetTrusted()
+  const {hover, ...hoverProps} = useHover()
   return (
-    <AccountCard accountId={account.id}>
-      <Button
-        chromeless
-        theme="gray"
-        tag="li"
-        gap="$4"
-        onPress={() => {
-          navigate({key: 'account', accountId: account.id})
-        }}
-      >
-        <XStack alignItems="center" gap="$4" flex={1}>
-          <Avatar
-            size={36}
-            id={account.id}
-            label={account.profile?.alias}
-            url={getAvatarUrl(account.profile?.avatar)}
+    // <AccountCard accountId={account.id} hideActions>
+    <Button
+      chromeless
+      theme="gray"
+      tag="li"
+      // gap="$4"
+      onPress={() => {
+        navigate({key: 'account', accountId: account.id})
+      }}
+      {...hoverProps}
+    >
+      <XStack alignItems="center" gap="$4" flex={1}>
+        <Avatar
+          size={36}
+          id={account.id}
+          label={account.profile?.alias}
+          url={getAvatarUrl(account.profile?.avatar)}
+        />
+        {alias ? (
+          <Text fontWeight="700" fontFamily="$body">
+            {alias}
+          </Text>
+        ) : (
+          <Text fontFamily="$body" fontWeight="bold" color="muted">
+            {account.id.slice(0, 5)}...{account.id.slice(-5)}
+          </Text>
+        )}
+      </XStack>
+      {hover ? (
+        <XStack
+          alignItems="flex-end"
+          gap="$3"
+          onPress={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          <PinAccountButton accountId={account.id} />
+          <AccountTrustButton
+            iconOnly
+            accountId={account.id}
+            isTrusted={account.isTrusted}
           />
-          {alias ? (
-            <Text fontWeight="700" fontFamily="$body">
-              {alias}
-            </Text>
-          ) : (
-            <Text fontFamily="$body" fontWeight="bold" color="muted">
-              {account.id.slice(0, 5)}...{account.id.slice(-5)}
-            </Text>
-          )}
         </XStack>
-        {!isTrusted && (
+      ) : null}
+      {/* {!isTrusted && (
           <Button
+            chromeless
+            size="$2"
             onPress={(e) => {
               e.stopPropagation()
               setTrusted.mutate({accountId: account.id, isTrusted: true})
@@ -78,10 +98,10 @@ function ContactItem({
           >
             Trust
           </Button>
-        )}
-        <OnlineIndicator online={isConnected} />
-      </Button>
-    </AccountCard>
+        )} */}
+      <OnlineIndicator online={isConnected} />
+    </Button>
+    // </AccountCard>
   )
 }
 
@@ -149,7 +169,7 @@ export default function ContactsPage() {
                   )
                 })}
               </YStack>
-              <PageHeading marginTop="$4">Other Accounts</PageHeading>
+              <PageHeading>Other Accounts</PageHeading>
             </>
           ) : null}
           <YStack tag="ul" padding={0} gap="$2">

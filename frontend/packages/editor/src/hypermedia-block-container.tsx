@@ -24,13 +24,12 @@ import {
   HMBlockChildrenType,
   unpackHmId,
 } from '@mintter/shared'
-import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {Button, Copy, SizableText, useHover, XStack} from '@mintter/ui'
 import {
   NodeViewContent,
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import {useState} from 'react'
 import {mergeCSSClasses} from './blocknote'
 import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import BlockAttributes from './blocknote/core/extensions/Blocks/nodes/BlockAttributes'
@@ -158,7 +157,7 @@ export const HMBlockContainer = Node.create<{
     const domAttributes = this.options.domAttributes?.blockContainer || {}
 
     const Container = (props: NodeViewProps) => {
-      let [hovered, setHovered] = useState(false)
+      let {hover, ...hoverProps} = useHover()
       let blockId = props.node.attrs.id
 
       return (
@@ -166,7 +165,7 @@ export const HMBlockContainer = Node.create<{
           data-id={blockId}
           className={mergeCSSClasses(
             styles.blockOuter,
-            hovered ? 'block-container-hovered' : '',
+            hover ? 'block-container-hovered' : '',
           )}
           data-node-type="block-outer"
         >
@@ -176,12 +175,11 @@ export const HMBlockContainer = Node.create<{
             style={{position: 'relative'}}
             className={mergeCSSClasses(styles.block, domAttributes.class)}
             data-node-type={this.name}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            {...hoverProps}
           >
             <NodeViewContent />
 
-            <BlockHelper blockId={blockId} active={hovered} />
+            <BlockHelper blockId={blockId} active={hover} />
           </div>
         </NodeViewWrapper>
       )

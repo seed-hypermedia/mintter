@@ -53,7 +53,6 @@ import {
   View,
   XStack,
   YStack,
-  styled,
 } from '@mintter/ui'
 import {
   Book,
@@ -296,31 +295,42 @@ function ContextPopover({...props}) {
     />
   )
 }
-const ContextPopoverContent = styled(Popover.Content, {
-  padding: '$2',
-  name: 'ContextPopoverContent',
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  backgroundColor: '$background',
-  elevation: '$2',
-  enterStyle: {y: -10, opacity: 0},
-  exitStyle: {y: -10, opacity: 0},
-  elevate: true,
-  animation: [
-    'fast',
-    {
-      opacity: {
-        overshootClamping: true,
-      },
-    },
-  ],
-})
 
-const ContextPopoverArrow = styled(Popover.Arrow, {
-  name: 'ContextPopoverArrow',
-  borderWidth: 1,
-  backgroundColor: '$borderColor',
-})
+export function ContextPopoverContent(props) {
+  return (
+    <Popover.Content
+      padding={'$2'}
+      name={'ContextPopoverContent'}
+      borderWidth={1}
+      borderColor={'$borderColor'}
+      backgroundColor={'$background'}
+      elevation={'$2'}
+      enterStyle={{y: -10, opacity: 0}}
+      exitStyle={{y: -10, opacity: 0}}
+      elevate
+      animation={[
+        'fast',
+        {
+          opacity: {
+            overshootClamping: true,
+          },
+        },
+      ]}
+      {...props}
+    />
+  )
+}
+
+function ContextPopoverArrow(props) {
+  return (
+    <Popover.Arrow
+      name="ContextPopoverArrow"
+      borderWidth={1}
+      backgroundColor="$borderColor"
+      {...props}
+    />
+  )
+}
 
 function GroupContextButton({route}: {route: GroupRoute}) {
   const group = useGroup(route.groupId)

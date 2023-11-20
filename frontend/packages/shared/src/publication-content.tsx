@@ -38,6 +38,7 @@ import {
   XStackProps,
   YStack,
   YStackProps,
+  useHover,
 } from '@mintter/ui'
 import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {
@@ -313,7 +314,7 @@ export function BlockNodeContent({
 }) {
   const {layoutUnit} = usePublicationContentContext()
   const headingMarginStyles = useHeadingMarginStyles(depth, layoutUnit)
-  const [isHovering, setIsHovering] = useState(false)
+  const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
 
   const {onCitationClick, onCopyBlock, debug} = usePublicationContentContext()
@@ -348,8 +349,10 @@ export function BlockNodeContent({
       className="blocknode-content"
       id={blockNode.block?.id}
       borderRadius={layoutUnit / 4}
-      onHoverIn={() => (props.embedDepth ? undefined : setIsHovering(true))}
-      onHoverOut={() => (props.embedDepth ? undefined : setIsHovering(false))}
+      onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
+      onHoverOut={() =>
+        props.embedDepth ? undefined : hoverProps.onHoverOut()
+      }
     >
       <XStack
         padding={isEmbed ? 0 : layoutUnit / 3}
@@ -369,7 +372,7 @@ export function BlockNodeContent({
             position="absolute"
             top={layoutUnit / 4}
             right={0}
-            backgroundColor={isHovering ? '$background' : 'transparent'}
+            backgroundColor={hover ? '$background' : 'transparent'}
             borderRadius={layoutUnit / 4}
             // flexDirection="row-reverse"
             $gtMd={
@@ -397,7 +400,7 @@ export function BlockNodeContent({
               <Tooltip content="Copy block reference" delay={800}>
                 <Button
                   size="$2"
-                  opacity={isHovering ? 1 : 0}
+                  opacity={hover ? 1 : 0}
                   padding={layoutUnit / 4}
                   borderRadius={layoutUnit / 4}
                   chromeless
@@ -419,10 +422,10 @@ export function BlockNodeContent({
         <BlockNodeList
           paddingLeft={layoutUnit}
           onHoverIn={() =>
-            props.embedDepth ? undefined : setIsHovering(false)
+            props.embedDepth ? undefined : hoverProps.onHoverIn()
           }
           onHoverOut={() =>
-            props.embedDepth ? undefined : setIsHovering(true)
+            props.embedDepth ? undefined : hoverProps.onHoverOut()
           }
           childrenType={childrenType as HMBlockChildrenType}
           start={props.start}
@@ -1047,14 +1050,13 @@ export function getBlockNodeById(
 }
 
 export function BlockContentFile({block}: {block: HMBlockFile}) {
-  const [hovered, setHover] = useState(false)
+  const {hover, ...hoverProps} = useHover()
   const {layoutUnit, saveCidAsFile} = usePublicationContentContext()
   return (
     <YStack
       // backgroundColor="$color3"
       borderColor="$color6"
-      onHoverIn={() => setHover(true)}
-      onHoverOut={() => setHover(false)}
+      {...hoverProps}
       borderWidth={1}
       borderRadius={layoutUnit / 4}
       padding={layoutUnit / 2}
@@ -1095,7 +1097,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
           <Button
             position="absolute"
             right={0}
-            opacity={hovered ? 1 : 0}
+            opacity={hover ? 1 : 0}
             size="$2"
             onPress={() => {
               saveCidAsFile(getCIDFromIPFSUrl(block.ref), block.attributes.name)
