@@ -1,7 +1,7 @@
-import 'raf/polyfill'
 import '@tamagui/core/reset.css'
 import '@tamagui/font-inter/css/400.css'
 import '@tamagui/font-inter/css/700.css'
+import 'raf/polyfill'
 import '../styles/styles.css'
 
 if (!global.setImmediate || !globalThis['setImmediate']) {
@@ -11,6 +11,7 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
+import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
 import {
   DehydratedState,
   Hydrate,
@@ -18,16 +19,18 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
 
-import Head from 'next/head'
-import React, {startTransition} from 'react'
+import {TamaguiProvider} from '@mintter/ui'
 import type {AppProps} from 'next/app'
-import {useMemo, useState} from 'react'
-import {trpc} from '../src/trpc'
-import {TamaguiProvider, Theme} from '@mintter/ui'
-import tamaguiConfig from '../tamagui.config'
+import Head from 'next/head'
+import React, {startTransition, useMemo, useState} from 'react'
 import {Toaster} from 'react-hot-toast'
+import {trpc} from '../src/trpc'
+import tamaguiConfig from '../tamagui.config'
+
+if (process.env.NODE_ENV === 'production') {
+  require('../public/tamagui.css')
+}
 
 export default trpc.withTRPC(App)
 

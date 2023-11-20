@@ -37,17 +37,23 @@ const plugins = [
   //   openAnalyzer: process.env.ANALYZE === 'true',
   // }),
   withTamagui({
+    themeBuilder: {
+      input: '../../packages/ui/src/themes/theme.ts',
+      output: '../../packages/ui/src/themes-generated.ts',
+    },
     config: './tamagui.config.ts',
-    components: ['@mintter/ui', 'tamagui'],
+    components: ['tamagui', '@mintter/ui'],
     importsWhitelist: ['constants.js', 'colors.js'],
+    outputCSS:
+      process.env.NODE_ENV === 'production' ? './public/tamagui.css' : null,
     logTimings: true,
     disableExtraction,
     // This is important if you have a shared package like in the create-tamagui template to ignore components for other distributions (like components for the app not be compiled here)
-    // shouldExtract: (path) => {
-    //   if (path.includes(join('packages', 'app'))) {
-    //     return true
-    //   }
-    // },
+    shouldExtract: (path) => {
+      if (path.includes(join('packages', 'app'))) {
+        return true
+      }
+    },
     // Advanced:
 
     // adds mini-css-extract and css-minimizer-plugin, can fix issues with unique configurations
@@ -58,16 +64,16 @@ const plugins = [
     // experiment - reduced bundle size react-native-web
     useReactNativeWebLite: false, // if enabled dont need excludeReactNativeWebExports
     excludeReactNativeWebExports: [
+      'VirtualizedList',
       'Switch',
       'ProgressBar',
       'Picker',
       'CheckBox',
       'Touchable',
+      'Animated',
+      'FlatList',
+      'Modal',
     ],
-    themeBuilder: {
-      input: '../../packages/ui/src/themes/theme.ts',
-      output: '../../packages/ui/src/themes-generated.ts',
-    },
   }),
 ]
 
