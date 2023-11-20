@@ -1,6 +1,6 @@
 import {Document} from '@mintter/shared'
 import {createActorContext} from '@xstate/react'
-import {StateFrom, assign, createMachine, raise} from 'xstate'
+import {StateFrom, assign, createMachine} from 'xstate'
 import {BlocksMap, createBlocksMap} from './documents'
 
 export type DraftMachineState = StateFrom<typeof draftMachine>
@@ -60,8 +60,14 @@ export const draftMachine = createMachine(
           {
             type: 'setCurrentBlocksmap',
           },
-          raise({type: 'FINISH.MOUNT'}),
+          // raise({type: 'FINISH.MOUNT'}),
         ],
+        after: {
+          // we need this to avoid saving right after loading the editor. fucking annoying
+          1: {
+            target: 'ready',
+          },
+        },
       },
       error: {
         entry: [{type: 'indicatorError'}],
@@ -93,14 +99,16 @@ export const draftMachine = createMachine(
         states: {
           idle: {
             on: {
-              CHANGE: {
-                target: 'changed',
-                actions: [
-                  {
-                    type: 'setTitle',
-                  },
-                ],
-              },
+              CHANGE: [
+                {
+                  target: 'changed',
+                  actions: [
+                    {
+                      type: 'setTitle',
+                    },
+                  ],
+                },
+              ],
             },
           },
           changed: {
@@ -145,10 +153,19 @@ export const draftMachine = createMachine(
                   guard: 'didChangeWhileSaving',
                   reenter: true,
                   actions: [
-                    {type: 'onSaveSuccess'},
-                    {type: 'indicatorSaved'},
+                    // {type: 'onSaveSuccess'},
+                    // {type: 'indicatorSaved'},
                     {
                       type: 'updateContextAfterSave',
+                    },
+                  ],
+                },
+                {
+                  target: 'idle',
+                  guard: ({event}) => typeof event.output == 'string',
+                  actions: [
+                    {
+                      type: 'indicatorIdle',
                     },
                   ],
                 },
@@ -282,6 +299,7 @@ export const saveIndicator = createMachine(
   {
     id: 'saveIndicator',
     initial: 'idle',
+
     states: {
       idle: {},
       changed: {
@@ -316,6 +334,9 @@ export const saveIndicator = createMachine(
       'INDICATOR.ERROR': {
         target: '.error',
       },
+      'INDICATOR.IDLE': {
+        target: '.idle',
+      },
     },
     onDone: [{target: '.idle'}],
     types: {
@@ -323,7 +344,8 @@ export const saveIndicator = createMachine(
         | {type: 'INDICATOR.CHANGE'}
         | {type: 'INDICATOR.SAVING'}
         | {type: 'INDICATOR.SAVED'}
-        | {type: 'INDICATOR.ERROR'},
+        | {type: 'INDICATOR.ERROR'}
+        | {type: 'INDICATOR.IDLE'},
     },
   },
   {
