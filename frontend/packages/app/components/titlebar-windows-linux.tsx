@@ -26,6 +26,7 @@ import {
 import {Bookmark, Contact, Globe, Library} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {useNavRoute, useNavigationDispatch} from '../utils/navigation'
+import {useOpenDraft} from '../utils/open-draft'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {
   NavMenuButton,
@@ -136,6 +137,7 @@ export function WindowsLinuxTitleBar({
 }
 
 export function SystemMenu() {
+  const createDraft = useOpenDraft('spawn')
   const {hide, close} = useWindowUtils()
   const spawn = useNavigate('spawn')
   const push = useNavigate('push')
@@ -192,7 +194,7 @@ export function SystemMenu() {
             id: 'newdocument',
             title: 'New Document',
             accelerator: 'Ctrl+N',
-            onSelect: () => spawn({key: 'home'}),
+            onSelect: () => createDraft(),
             icon: AddSquare,
           },
           {
