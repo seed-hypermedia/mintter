@@ -1,7 +1,7 @@
-import type {ForgeConfig} from '@electron-forge/shared-types'
+import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
 import {MakerSquirrel} from '@electron-forge/maker-squirrel'
 import {MakerZIP} from '@electron-forge/maker-zip'
-import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
+import type {ForgeConfig} from '@electron-forge/shared-types'
 // import {MakerRpm} from '@electron-forge/maker-rpm'
 import {VitePlugin} from '@electron-forge/plugin-vite'
 import path from 'path'
@@ -32,8 +32,6 @@ const daemonBinaryPath = path.join(
   // TODO: parametrize this for each platform
   `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
 )
-
-console.log(`===== ~ daemonBinaryPath:`, daemonBinaryPath)
 
 let iconsPath = process.env.CI
   ? path.resolve(__dirname, 'assets', 'icons-nightly', 'icon')
