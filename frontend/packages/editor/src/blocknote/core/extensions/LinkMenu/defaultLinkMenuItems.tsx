@@ -12,6 +12,7 @@ import {LinkMenuItem} from './LinkMenuItem'
 export function getLinkMenuItems(
   isLoading: boolean,
   isHmLink: boolean,
+  media?: string,
   originalRef?: string,
 ) {
   const linkMenuItems: LinkMenuItem[] = [
@@ -47,59 +48,15 @@ export function getLinkMenuItems(
           const {state, schema, view} = editor._tiptapEditor
           const {doc, selection} = state
           if (!selection.empty) return
-          const {$from} = selection
-          const block = getBlockInfoFromPos(doc, selection.$anchor.pos)
           let tr = state.tr
-          const textNode = schema.text(' ')
           const node = schema.nodes.embed.create(
             {
               ref: ref,
             },
-            textNode,
+            schema.text(' '),
           )
 
-          if (block.contentNode.content.childCount > 1) {
-            const $pos = state.doc.resolve($from.pos)
-            let originalStartContent = state.doc.cut(
-              $pos.start(),
-              originalRef
-                ? $pos.pos - originalRef.length
-                : $pos.pos - ref.length,
-            )
-            let originalLastContent = state.doc.cut($pos.pos, $pos.end())
-            const originalContent: Node[] = []
-            originalStartContent.descendants((node) => {
-              if (node.type.name === 'text') originalContent.push(node)
-            })
-            originalLastContent.descendants((node) => {
-              if (node.type.name === 'text') originalContent.push(node)
-            })
-            const originalNode = schema.node(
-              block.contentType,
-              block.contentNode.attrs,
-              originalContent,
-            )
-
-            const newBlock =
-              state.schema.nodes['blockContainer'].createAndFill()!
-            const nextBlockPos = $pos.end() + 2
-            const nextBlockContentPos = nextBlockPos + 2
-            tr = tr.insert(nextBlockPos, newBlock)
-            const $nextBlockPos = state.doc.resolve(nextBlockContentPos)
-            tr = tr.replaceWith(
-              $nextBlockPos.before($nextBlockPos.depth),
-              nextBlockContentPos + 1,
-              node,
-            )
-            tr = tr.replaceWith(
-              $pos.before($pos.depth),
-              $pos.end(),
-              originalNode,
-            )
-          } else {
-            tr = tr.replaceWith($from.before($from.depth), $from.pos, node)
-          }
-          view.dispatch(tr)
+          splitOriginalNode(editor, originalRef ? originalRef : ref, node)
 
           const {block: currentBlock, nextBlock} =
             editor.getTextCursorPosition()
@@ -124,14 +81,78 @@ export function getLinkMenuItems(
               )
             }
           } else {
-            editor.setTextCursorPosition(block, 'end')
+            editor.setTextCursorPosition(
+              getBlockInfoFromPos(doc, selection.$anchor.pos).id,
+              'end',
+            )
           }
         },
       }
 
       linkMenuItems.unshift(embedItem)
+    } else if (media) {
+      const mediaItem = {
+        name: `Convert to ${media.charAt(0).toUpperCase() + media.slice(1)}`,
+        disabled: false,
+        icon: undefined,
+        execute: (editor: BlockNoteEditor, ref: string) => {
+          const {state, schema} = editor._tiptapEditor
+          const {selection} = state
+          if (!selection.empty) return
+          const node = schema.nodes[media].create({
+            url: ref,
+          })
+          splitOriginalNode(editor, originalRef ? originalRef : ref, node)
+        },
+      }
+
+      linkMenuItems.unshift(mediaItem)
     }
   }
 
   return linkMenuItems
+}
+
+function splitOriginalNode(editor: BlockNoteEditor, ref: string, node: Node) {
+  const {state, schema, view} = editor._tiptapEditor
+  const {doc, selection} = state
+  const {$from} = selection
+  const block = getBlockInfoFromPos(doc, selection.$anchor.pos)
+  let tr = state.tr
+
+  if (block.contentNode.content.childCount > 1) {
+    const $pos = state.doc.resolve($from.pos)
+    let originalStartContent = state.doc.cut(
+      $pos.start(),
+      $pos.pos - ref.length,
+    )
+    let originalLastContent = state.doc.cut($pos.pos, $pos.end())
+    const originalContent: Node[] = []
+    originalStartContent.descendants((childNode) => {
+      if (childNode.type.name === 'text') originalContent.push(childNode)
+    })
+    originalLastContent.descendants((childNode) => {
+      if (childNode.type.name === 'text') originalContent.push(childNode)
+    })
+    const originalNode = schema.node(
+      block.contentType,
+      block.contentNode.attrs,
+      originalContent,
+    )
+
+    const newBlock = state.schema.nodes['blockContainer'].createAndFill()!
+    const nextBlockPos = $pos.end() + 2
+    const nextBlockContentPos = nextBlockPos + 2
+    tr = tr.insert(nextBlockPos, newBlock)
+    const $nextBlockPos = state.doc.resolve(nextBlockContentPos)
+    tr = tr.replaceWith(
+      $nextBlockPos.before($nextBlockPos.depth),
+      nextBlockContentPos + 1,
+      node,
+    )
+    tr = tr.replaceWith($pos.before($pos.depth), $pos.end(), originalNode)
+  } else {
+    tr = tr.replaceWith($from.before($from.depth), $from.pos, node)
+  }
+  view.dispatch(tr)
 }

@@ -407,14 +407,12 @@ function VideoForm({
 
   const submitVideo = async (url: string) => {
     if (isValidUrl(url)) {
-      let embedUrl = ''
-      ;('https://www.youtube.com/embed')
+      let embedUrl = 'https://www.youtube.com/embed/'
       if (url.includes('youtu.be')) {
         const urlArray = url.split('/')
-        embedUrl =
-          'https://www.youtube.com/embed/' + urlArray[urlArray.length - 1]
+        embedUrl = embedUrl + urlArray[urlArray.length - 1]
       } else if (url.includes('youtube')) {
-        embedUrl = 'https://www.youtube.com/embed/' + url.split('=')[1]
+        embedUrl = embedUrl + url.split('=')[1]
       } else if (url.includes('vimeo')) {
         const urlArray = url.split('/')
         embedUrl =
