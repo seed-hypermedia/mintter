@@ -6,7 +6,7 @@ import {
   useAllAccounts,
 } from '@mintter/app/models/accounts'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Account} from '@mintter/shared'
+import {Account, useHover} from '@mintter/shared'
 import {
   Button,
   Container,
@@ -16,7 +16,6 @@ import {
   Text,
   XStack,
   YStack,
-  useHover,
 } from '@mintter/ui'
 import {AccountTrustButton} from '../components/account-trust'
 import {MainWrapper} from '../components/main-wrapper'

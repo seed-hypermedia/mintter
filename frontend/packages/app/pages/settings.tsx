@@ -4,7 +4,7 @@ import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
 import {trpc} from '@mintter/desktop/src/trpc'
-import {APP_VERSION, LightningWallet, Profile} from '@mintter/shared'
+import {APP_VERSION, LightningWallet, Profile, useHover} from '@mintter/shared'
 import {
   ArrowDownRight,
   Button,
@@ -32,7 +32,6 @@ import {
   XGroup,
   XStack,
   YStack,
-  useHover,
 } from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
