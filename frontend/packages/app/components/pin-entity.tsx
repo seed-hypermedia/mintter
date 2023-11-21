@@ -1,4 +1,4 @@
-import {Button, Tooltip, useHover} from '@mintter/ui'
+import {Button, ButtonProps, Tooltip, useHover} from '@mintter/ui'
 import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {PublicationRoute} from '../utils/navigation'
@@ -21,7 +21,7 @@ export function PinAccountButton({accountId}: {accountId: string}) {
   )
 }
 
-function UnpinButton({onPress}: {onPress: () => void}) {
+export function UnpinButton({onPress}: {onPress: ButtonProps['onPress']}) {
   const {hover, ...hoverProps} = useHover()
   return (
     <Tooltip content="Unpin from Sidebar">

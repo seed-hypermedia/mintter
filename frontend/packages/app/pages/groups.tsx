@@ -9,6 +9,7 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Pin, PinOff} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import {
@@ -18,6 +19,7 @@ import {
 } from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {useGroupMembers, useGroups} from '../models/groups'
+import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
 import {GroupRoute} from '../utils/navigation'
 import {hostnameStripProtocol} from '../utils/site-hostname'
@@ -118,6 +120,7 @@ function GroupListItem({group}: {group: Group}) {
   const spawn = useNavigate('spawn')
   const groupMembers = useGroupMembers(group.id)
   const groupRoute: GroupRoute = {key: 'group', groupId: group.id}
+  const {isPinned, togglePin} = usePinGroup(group.id)
   const goToItem = (e: any) => {
     navigate(groupRoute, e)
   }
@@ -148,6 +151,12 @@ function GroupListItem({group}: {group: Group}) {
           onPress: () => {
             spawn(groupRoute)
           },
+        },
+        {
+          label: isPinned ? 'Unpin Group' : 'Pin Group',
+          key: 'pin',
+          icon: isPinned ? PinOff : Pin,
+          onPress: togglePin,
         },
       ]}
     />

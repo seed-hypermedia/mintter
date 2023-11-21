@@ -79,13 +79,23 @@ function AddGroupForm({
 }
 
 function NewGroupButton(props: React.ComponentProps<typeof Button>) {
-  return <Button size="$2" iconAfter={Plus} {...props} />
+  return (
+    <Button chromeless size="$2" icon={Plus} {...props}>
+      {props.children}
+    </Button>
+  )
 }
-export function CreateGroupButton() {
+
+export function CreateGroupButton({
+  triggerLabel = '',
+}: {
+  triggerLabel?: string
+}) {
   return (
     <AppDialog
       TriggerComponent={NewGroupButton}
       ContentComponent={AddGroupForm}
+      triggerLabel={triggerLabel}
     />
   )
 }

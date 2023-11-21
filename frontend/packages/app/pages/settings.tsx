@@ -32,6 +32,7 @@ import {
   XGroup,
   XStack,
   YStack,
+  useHover,
 } from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -366,8 +367,9 @@ function InfoListItem({
 }) {
   const openUrl = useOpenUrl()
   const values = Array.isArray(value) ? value : [value]
+  const {hover, ...hoverProps} = useHover()
   return (
-    <TableList.Item>
+    <TableList.Item {...hoverProps}>
       <SizableText size="$1" flex={0} minWidth={140} width={140}>
         {label}:
       </SizableText>
@@ -390,6 +392,7 @@ function InfoListItem({
       {!!value && copyable ? (
         <Tooltip content={`Copy ${label}`}>
           <Button
+            opacity={hover ? 1 : 0}
             size="$2"
             marginLeft="$2"
             icon={Copy}
@@ -403,6 +406,7 @@ function InfoListItem({
       {!!value && openable ? (
         <Tooltip content={`Open ${label}`}>
           <Button
+            opacity={hover ? 1 : 0}
             size="$2"
             marginLeft="$2"
             icon={ExternalLink}
@@ -553,7 +557,7 @@ function DeviceItem({id}: {id: string}) {
 
       <InfoListItem
         label="Device Address"
-        value={data?.addrs.join(',')}
+        value={data?.addrs.sort().join(', ')}
         copyable
       />
     </TableList>
