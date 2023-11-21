@@ -1,6 +1,5 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {fetchWebLink} from '@mintter/app/models/web-links'
-import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   BlockContentEmbed,
   extractBlockRefOfUrl,
@@ -14,6 +13,7 @@ import {
   Button,
   Form,
   Input,
+  Popover,
   SizableText,
   Spinner,
   Tabs,
@@ -39,6 +39,10 @@ export const EmbedBlock = createReactBlockSpec({
     ref: {
       default: '',
     },
+    defaultOpen: {
+      values: ['false', 'true'],
+      default: 'true',
+    },
   },
   containsInlineContent: true,
 
@@ -60,6 +64,8 @@ type EmbedType = {
   content: []
   type: string
 }
+
+const boolRegex = new RegExp('true')
 
 const Render = (
   block: Block<HMBlockSchema>,
@@ -84,7 +90,7 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection])
+  }, [selection, editor, block.id, tiptapEditor])
 
   const assignEmbed = (newEmbed: EmbedType) => {
     editor.updateBlock(block.id, {
@@ -107,7 +113,12 @@ const Render = (
           setSelected={setSelection}
         />
       ) : editor.isEditable ? (
-        <EmbedForm block={block} assign={assignEmbed} editor={editor} />
+        <EmbedForm
+          block={block}
+          assign={assignEmbed}
+          editor={editor}
+          selected={selected}
+        />
       ) : (
         <></>
       )}
@@ -205,10 +216,12 @@ function EmbedForm({
   block,
   assign,
   editor,
+  selected = false,
 }: {
   block: Block<HMBlockSchema>
   assign: any
   editor: BlockNoteEditor<HMBlockSchema>
+  selected: boolean
 }) {
   const [url, setUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -221,7 +234,6 @@ function EmbedForm({
     color: undefined,
   })
   const theme = useTheme()
-  const popoverState = usePopoverState()
   const {queryClient} = useAppContext()
 
   function submitEmbed(url: string) {
@@ -266,158 +278,158 @@ function EmbedForm({
       borderWidth={0}
       outlineWidth={0}
     >
-      {popoverState.open ? (
-        <XStack
-          backgroundColor="transparent"
-          fullscreen
-          zIndex={9998}
-          style={{position: 'fixed'}}
-          onPress={() => popoverState.onOpenChange(false)}
-        />
-      ) : null}
-      <Button
-        icon={<RiArticleLine fill={theme.color12.get()} />}
-        borderRadius={0}
+      <Popover
+        placement="bottom"
         size="$5"
-        justifyContent="flex-start"
-        backgroundColor="$color3"
-        hoverStyle={{
-          backgroundColor: '$color4',
-        }}
-        onPress={() => popoverState.onOpenChange(!popoverState.open)}
+        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
+        stayInFrame
       >
-        Add an Embed
-      </Button>
-
-      {popoverState.open ? (
-        <>
-          <YStack
-            position="absolute"
-            zIndex={9999}
-            padding={0}
-            elevation="$3"
-            overflow="hidden"
-            borderRadius="$5"
-            shadowColor="$shadowColor"
-            opacity={1}
-            left="50%"
-            top={24}
-            x="-50%"
+        <Popover.Trigger asChild>
+          <Button
+            icon={<RiArticleLine fill={theme.color12.get()} />}
+            borderRadius={0}
+            size="$5"
+            justifyContent="flex-start"
+            backgroundColor="$color3"
+            hoverStyle={{
+              backgroundColor: '$color4',
+            }}
           >
-            <Tabs
-              value={tabState}
-              onValueChange={setTabState}
-              orientation="horizontal"
-              flexDirection="column"
-              width={500}
-              elevate
+            Add an Embed
+          </Button>
+        </Popover.Trigger>
+        <Popover.Content
+          padding={0}
+          elevation="$3"
+          overflow="hidden"
+          size="$5"
+          borderRadius="$5"
+          shadowColor="$shadowColor"
+          opacity={1}
+          enterStyle={{x: 0, y: -10, opacity: 0}}
+          exitStyle={{x: 0, y: -10, opacity: 0}}
+          animation={[
+            'fast',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+        >
+          <Tabs
+            value={tabState}
+            onValueChange={setTabState}
+            orientation="horizontal"
+            flexDirection="column"
+            width={500}
+            elevate
+          >
+            <Tabs.List
+              marginBottom="$-0.5"
+              backgroundColor="$background"
+              borderBottomColor="$color8"
+              borderBottomWidth="$1"
+              borderBottomLeftRadius={0}
+              borderBottomRightRadius={0}
+              borderRadius={0}
             >
-              <Tabs.List
-                marginBottom="$-0.5"
-                backgroundColor="$background"
-                borderBottomColor="$color8"
-                borderBottomWidth="$1"
+              <Tabs.Tab
+                unstyled
+                value="embed"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
                 borderBottomLeftRadius={0}
                 borderBottomRightRadius={0}
-                borderRadius={0}
+                borderBottomWidth={'$1'}
+                hoverStyle={{
+                  backgroundColor: '$backgroundHover',
+                  cursor: 'pointer',
+                }}
               >
-                <Tabs.Tab
-                  unstyled
-                  value="embed"
-                  paddingHorizontal="$4"
-                  paddingVertical="$2"
-                  borderBottomLeftRadius={0}
-                  borderBottomRightRadius={0}
-                  borderBottomWidth={'$1'}
-                  hoverStyle={{
-                    backgroundColor: '$backgroundHover',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <SizableText size="$2">Embed</SizableText>
-                </Tabs.Tab>
-              </Tabs.List>
+                <SizableText size="$2">Embed</SizableText>
+              </Tabs.Tab>
+            </Tabs.List>
 
-              <Tabs.Content value="embed">
-                <XStack
-                  padding="$4"
+            <Tabs.Content value="embed">
+              <XStack
+                padding="$4"
+                alignItems="center"
+                backgroundColor="$background"
+              >
+                <Form
                   alignItems="center"
-                  backgroundColor="$background"
+                  onSubmit={() => submitEmbed(url)}
+                  borderWidth={0}
                 >
-                  <Form
-                    alignItems="center"
-                    onSubmit={() => submitEmbed(url)}
-                    borderWidth={0}
-                  >
-                    <YStack flex={1}>
-                      <XStack>
-                        <Input
-                          width={360}
-                          marginRight="$3"
-                          borderColor="$color8"
-                          borderWidth="$0.5"
+                  <YStack flex={1}>
+                    <XStack>
+                      <Input
+                        width={360}
+                        marginRight="$3"
+                        borderColor="$color8"
+                        borderWidth="$0.5"
+                        borderRadius="$3"
+                        size="$3.5"
+                        placeholder="Input embed link..."
+                        focusStyle={{
+                          borderColor: '$colorFocus',
+                          outlineWidth: 0,
+                        }}
+                        hoverStyle={{
+                          borderColor: '$colorFocus',
+                          outlineWidth: 0,
+                        }}
+                        onChange={(e) => {
+                          setUrl(e.nativeEvent.text)
+                          if (error.color)
+                            setError({
+                              name: '',
+                              color: undefined,
+                            })
+                        }}
+                        autoFocus={true}
+                      />
+                      <Form.Trigger asChild>
+                        <Button
+                          flex={0}
+                          flexShrink={0}
                           borderRadius="$3"
                           size="$3.5"
-                          placeholder="Input embed link..."
+                          theme={error.color === 'red' ? 'gray' : 'green'}
+                          disabled={error.color === 'red' ? true : false}
                           focusStyle={{
-                            borderColor: '$colorFocus',
                             outlineWidth: 0,
                           }}
-                          hoverStyle={{
-                            borderColor: '$colorFocus',
-                            outlineWidth: 0,
-                          }}
-                          onChange={(e) => {
-                            setUrl(e.nativeEvent.text)
-                            if (error.color)
-                              setError({
-                                name: '',
-                                color: undefined,
-                              })
-                          }}
-                          autoFocus={true}
-                        />
-                        <Form.Trigger asChild>
-                          <Button
-                            flex={0}
-                            flexShrink={0}
-                            borderRadius="$3"
-                            size="$3.5"
-                            theme={error.color === 'red' ? 'gray' : 'green'}
-                            disabled={error.color === 'red' ? true : false}
-                            focusStyle={{
-                              outlineWidth: 0,
-                            }}
-                          >
-                            {loading ? (
-                              <Spinner
-                                size="small"
-                                color="$green9"
-                                paddingHorizontal="$3"
-                              />
-                            ) : (
-                              'Embed'
-                            )}
-                          </Button>
-                        </Form.Trigger>
-                      </XStack>
-                      {error.name && (
-                        <SizableText
-                          size="$2"
-                          color={error.color}
-                          paddingTop="$2"
                         >
-                          {error.name}
-                        </SizableText>
-                      )}
-                    </YStack>
-                  </Form>
-                </XStack>
-              </Tabs.Content>
-            </Tabs>
-          </YStack>
-        </>
-      ) : null}
+                          {loading ? (
+                            <Spinner
+                              size="small"
+                              color="$green9"
+                              paddingHorizontal="$3"
+                            />
+                          ) : (
+                            'Embed'
+                          )}
+                        </Button>
+                      </Form.Trigger>
+                    </XStack>
+                    {error.name && (
+                      <SizableText
+                        size="$2"
+                        color={error.color}
+                        paddingTop="$2"
+                      >
+                        {error.name}
+                      </SizableText>
+                    )}
+                  </YStack>
+                </Form>
+              </XStack>
+            </Tabs.Content>
+          </Tabs>
+        </Popover.Content>
+      </Popover>
     </YStack>
   )
 }

@@ -63,8 +63,8 @@
 }
 
 .video-iframe {
-  width: calc(100% - var(--space-9));
-  height: calc(100% - var(--space-9));
+  width: calc(100%);
+  height: calc(100%);
 }
 .image-caption {
   font-size: 0.75em;

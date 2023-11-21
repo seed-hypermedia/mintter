@@ -91,7 +91,7 @@ const Render = (
         setSelected(false)
       }
     }
-  }, [selection, editor])
+  }, [selection, editor, block.id, tiptapEditor])
 
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {
@@ -124,7 +124,12 @@ const Render = (
           setSelected={setSelection}
         />
       ) : editor.isEditable ? (
-        <FileForm block={block} assign={assignFile} editor={editor} />
+        <FileForm
+          block={block}
+          assign={assignFile}
+          editor={editor}
+          selected={selected}
+        />
       ) : (
         <></>
       )}
@@ -304,10 +309,12 @@ export function FileComponent({
 function FileForm({
   block,
   assign,
+  selected = false,
 }: {
   block: Block<HMBlockSchema>
   assign: any
   editor: BlockNoteEditor<HMBlockSchema>
+  selected: boolean
 }) {
   const [tabState, setTabState] = useState('upload')
   const [fileName, setFileName] = useState<{
@@ -392,7 +399,7 @@ function FileForm({
       <Popover
         placement="bottom"
         size="$5"
-        defaultOpen={boolRegex.test(block.props.defaultOpen)}
+        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
         stayInFrame
       >
         <Popover.Trigger asChild>
