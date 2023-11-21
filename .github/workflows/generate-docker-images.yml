@@ -123,8 +123,6 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:main
-          build-args: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
@@ -135,7 +133,5 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
-          build-args: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
