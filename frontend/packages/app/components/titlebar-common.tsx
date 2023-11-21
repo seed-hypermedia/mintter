@@ -431,12 +431,14 @@ function NewDocumentButton({
       <Button
         size="$2"
         chromeless
-        iconAfter={Plus}
+        icon={Plus}
         onPress={(e) => {
           e.preventDefault()
           openDraft(pubContext)
         }}
-      />
+      >
+        New Document
+      </Button>
     </Tooltip>
   )
 }
@@ -456,7 +458,9 @@ export function PageActionButtons(props: TitleBarProps) {
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
-    buttonGroup = [<CreateGroupButton key="addGroup" />]
+    buttonGroup = [
+      <CreateGroupButton key="addGroup" triggerLabel="New Group" />,
+    ]
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,

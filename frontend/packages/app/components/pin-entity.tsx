@@ -1,8 +1,7 @@
-import {Button, Tooltip} from '@mintter/ui'
-import {Pin, PinOff} from '@tamagui/lucide-icons'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
-import {PublicationRoute} from '../utils/navigation'
-import {useState} from 'react'
+import { Button, ButtonProps, Tooltip, useHover } from '@mintter/ui'
+import { Pin, PinOff } from '@tamagui/lucide-icons'
+import { usePinAccount, usePinDocument, usePinGroup } from '../models/pins'
+import { PublicationRoute } from '../utils/navigation'
 
 export function PinAccountButton({accountId}: {accountId: string}) {
   const {isPinned, togglePin} = usePinAccount(accountId)
@@ -20,18 +19,17 @@ export function PinAccountButton({accountId}: {accountId: string}) {
   )
 }
 
-function UnpinButton({onPress}: {onPress: () => void}) {
-  const [isHovering, setIsHovering] = useState(false)
+export function UnpinButton({onPress, ...props}: {onPress: ButtonProps['onPress']; key?: any}) {
+  const {hover, ...hoverProps} = useHover()
   return (
-    <Tooltip content="Unpin from Sidebar">
+    <Tooltip content="Unpin from Sidebar" key={props.key}>
       <Button
-        icon={isHovering ? PinOff : Pin}
+        icon={hover ? PinOff : Pin}
         size="$2"
-        theme={isHovering ? 'red' : undefined}
+        theme={hover ? 'red' : undefined}
         onPress={onPress}
         chromeless
-        onHoverIn={() => setIsHovering(true)}
-        onHoverOut={() => setIsHovering(false)}
+        {...hoverProps}
       />
     </Tooltip>
   )

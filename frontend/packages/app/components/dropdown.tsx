@@ -5,12 +5,10 @@ import {
   ListItemProps,
   SizableText,
   SizableTextProps,
-  View,
-  XStack,
   YStack,
 } from '@mintter/ui'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import {ReactNode, forwardRef} from 'react'
+import {forwardRef} from 'react'
 import {DialogOverlay} from './dialog'
 
 const Content = ({
@@ -153,6 +151,7 @@ export function MenuItem({
     <ListItem
       hoverTheme
       pressTheme
+      size="$2"
       focusTheme
       paddingVertical="$2"
       paddingHorizontal="$4"

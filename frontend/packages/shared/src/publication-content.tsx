@@ -19,6 +19,7 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  ButtonFrame,
   Check as CheckIcon,
   Checkbox,
   CheckboxProps,
@@ -989,29 +990,39 @@ export function ErrorBlock({
   message: string
   debugData?: any
 }) {
+  let [open, toggleOpen] = useState(false)
   return (
-    <YStack
-      // @ts-ignore
-      contentEditable={false}
-      userSelect="none"
-      backgroundColor="$red5"
-      borderColor="$red8"
-      borderWidth={1}
-      padding="$4"
-      paddingVertical="$2"
-      borderRadius="$4"
-      gap="$2"
+    <Tooltip
+      content={debugData ? (open ? 'Hide debug Data' : 'Show debug data') : ''}
     >
-      <XStack gap="$2">
-        <AlertCircle size={18} color="$red10" />
-        <Text fontFamily="$body">{message}</Text>
-      </XStack>
-      {debugData ? (
-        <pre>
-          <code>{JSON.stringify(debugData, null, 3)}</code>
-        </pre>
-      ) : null}
-    </YStack>
+      <YStack>
+        <ButtonFrame theme="red" gap="$2" onPress={() => toggleOpen((v) => !v)}>
+          <SizableText flex={1} color="$red10">
+            Error
+          </SizableText>
+          <AlertCircle color="$red10" size={12} />
+        </ButtonFrame>
+        {open ? (
+          <XStack
+            padding="$2"
+            borderRadius="$3"
+            margin="$2"
+            backgroundColor="$backgroundHover"
+          >
+            <Text tag="pre" wordWrap="break-word" width="100%" fontSize={12}>
+              <Text
+                tag="code"
+                fontSize={12}
+                backgroundColor="transparent"
+                fontFamily="$mono"
+              >
+                {JSON.stringify(debugData, null, 4)}
+              </Text>
+            </Text>
+          </XStack>
+        ) : null}
+      </YStack>
+    </Tooltip>
   )
 }
 
