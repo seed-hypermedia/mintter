@@ -1,10 +1,13 @@
-import {Badge, createStyles, Menu, Stack, Text} from '@mantine/core'
+import {createStyles, Menu, Text} from '@mantine/core'
 import {useEffect, useRef} from 'react'
 
 const MIN_LEFT_MARGIN = 5
 
 export type LinkMenuItemProps = {
   name: string
+  icon?: JSX.Element
+  hint?: string
+  disabled: boolean
   isSelected: boolean
   set: () => void
 }
@@ -52,7 +55,9 @@ export function LinkMenuItem(props: LinkMenuItemProps) {
   return (
     <Menu.Item
       className={classes.root}
+      icon={props.icon}
       onClick={props.set}
+      disabled={props.disabled}
       closeMenuOnClick={false}
       // Ensures an item selected with both mouse & keyboard doesn't get deselected on mouse leave.
       onMouseLeave={() => {
@@ -70,7 +75,8 @@ export function LinkMenuItem(props: LinkMenuItemProps) {
       <Text size={14} weight={500}>
         {props.name}
       </Text>
-      {/* </Stack> */}
+      {/* <Text size={10}>{props.hint}</Text>
+      </Stack> */}
     </Menu.Item>
   )
 }

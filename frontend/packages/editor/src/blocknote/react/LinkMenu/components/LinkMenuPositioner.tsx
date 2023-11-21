@@ -4,13 +4,12 @@ import {
   DefaultBlockSchema,
   LinkMenuProsemirrorPlugin,
   LinkMenuState,
-  getDefaultLinkMenuItems,
 } from '@/blocknote/core'
 import Tippy from '@tippyjs/react'
 import {FC, useEffect, useMemo, useRef, useState} from 'react'
 
-import {DefaultLinkMenu} from './DefaultLinkMenu'
 import {LinkMenuItem} from '@/blocknote/core/extensions/LinkMenu/LinkMenuItem'
+import {DefaultLinkMenu} from './DefaultLinkMenu'
 
 export type LinkMenuProps<BSchema extends BlockSchema = DefaultBlockSchema> =
   Pick<LinkMenuProsemirrorPlugin<BSchema, any>, 'itemCallback'> &
@@ -27,7 +26,7 @@ export const LinkMenuPositioner = <
 }) => {
   const [show, setShow] = useState<boolean>(false)
   const [ref, setRef] = useState<string>('')
-  const items = getDefaultLinkMenuItems<BSchema>()
+  const [items, setItems] = useState<LinkMenuItem<BSchema>[]>([])
   const [keyboardHoveredItemIndex, setKeyboardHoveredItemIndex] =
     useState<number>()
   const scroller = useRef<HTMLElement | null>(null)
@@ -43,11 +42,13 @@ export const LinkMenuPositioner = <
     return props.editor.linkMenu.onUpdate((linkMenuState) => {
       setShow(linkMenuState.show)
       setRef(linkMenuState.ref)
+      // @ts-ignore
+      setItems(linkMenuState.items)
       setKeyboardHoveredItemIndex(linkMenuState.keyboardHoveredItemIndex)
 
       referencePos.current = linkMenuState.referencePos
     })
-  }, [props.editor])
+  }, [props.editor, props.editor.linkMenu])
 
   const getReferenceClientRect = useMemo(
     () => {
@@ -76,7 +77,13 @@ export const LinkMenuPositioner = <
         />
       )
     },
-    [keyboardHoveredItemIndex, props.editor.linkMenu, props.linkMenu, ref], // eslint-disable-line
+    [
+      keyboardHoveredItemIndex,
+      props.editor.linkMenu,
+      props.linkMenu,
+      ref,
+      items,
+    ], // eslint-disable-line
   )
 
   return (

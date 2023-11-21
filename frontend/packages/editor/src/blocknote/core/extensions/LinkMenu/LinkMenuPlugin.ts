@@ -1,12 +1,12 @@
-import {EditorState, Plugin, PluginKey, PluginView} from 'prosemirror-state'
-import {BlockNoteEditor} from '../../BlockNoteEditor'
-import {EventEmitter} from '../../shared/EventEmitter'
-import {Block, BlockSchema} from '../Blocks/api/blockTypes'
-import {BaseUiElementState} from '../../shared/BaseUiElementTypes'
-import {EditorView} from 'prosemirror-view'
-import {LinkMenuItem} from './LinkMenuItem'
 import {Decoration, DecorationSet} from '@tiptap/pm/view'
+import {EditorState, Plugin, PluginKey} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
+import {BaseUiElementState} from '../../shared/BaseUiElementTypes'
+import {EventEmitter} from '../../shared/EventEmitter'
+import {BlockSchema} from '../Blocks/api/blockTypes'
 import {findBlock} from '../Blocks/helpers/findBlock'
+import {LinkMenuItem} from './LinkMenuItem'
 
 export const linkMenuPluginKey = new PluginKey('LinkMenuPlugin')
 
@@ -134,7 +134,7 @@ export class LinkMenuProsemirrorPlugin<
   public readonly plugin: Plugin
   public readonly itemCallback: (item: MenuItem, ref: string) => void
 
-  constructor(editor: BlockNoteEditor<BSchema>, items: MenuItem[]) {
+  constructor(editor: BlockNoteEditor<BSchema>) {
     super()
     const links = setupLinkMenu<MenuItem, BSchema>(
       editor,
@@ -142,7 +142,6 @@ export class LinkMenuProsemirrorPlugin<
         this.emit('update', state)
       },
       linkMenuPluginKey,
-      items,
     )
     this.plugin = links.plugin
     this.itemCallback = links.itemCallback
@@ -161,7 +160,6 @@ export const setupLinkMenu = <
   updateLinkMenu: (linkMenuState: LinkMenuState<MenuItem>) => void,
 
   pluginKey: PluginKey,
-  items: MenuItem[],
 ) => {
   let linkPluginView: LinkMenuView<MenuItem, BSchema>
 
@@ -201,11 +199,14 @@ export const setupLinkMenu = <
             return prev
           }
 
+          const items = transaction.getMeta(pluginKey)?.items
+          const ref = transaction.getMeta(pluginKey)?.ref
+
           // Checks if the menu should be shown.
           if (transaction.getMeta(pluginKey)?.activate) {
             return {
               active: true,
-              ref: transaction.getMeta(pluginKey)?.ref,
+              ref: ref,
               items: items,
               keyboardHoveredItemIndex: 0,
               decorationId: `id_${Math.floor(Math.random() * 0xffffffff)}`,
@@ -218,6 +219,8 @@ export const setupLinkMenu = <
           }
 
           const next = {...prev}
+          if (items) next.items = items
+          if (ref) next.ref = ref
 
           // Hides the menu
           if (
