@@ -31,6 +31,7 @@ import appError from '../errors'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
+import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {getAvatarUrl} from '../utils/account-url'
 import {
@@ -43,6 +44,7 @@ import {useNavigate} from '../utils/useNavigate'
 import {useTriggerWindowEvent} from '../utils/window-events'
 import {Avatar} from './avatar'
 import {CreateGroupButton} from './new-group'
+import {UnpinButton} from './pin-entity'
 
 export const AppSidebar = memo(FullAppSidebar)
 
@@ -224,6 +226,11 @@ function FullAppSidebar() {
                 ...group.documents.map(({docId, pathName}) => {
                   return (
                     <PinnedDocument
+                      pubContext={{
+                        key: 'group',
+                        groupId: group.groupId,
+                        pathName: pathName || '/',
+                      }}
                       onPress={() => {
                         navigate({
                           key: 'publication',
@@ -427,11 +434,7 @@ function SidebarItem({
         }
         icon={icon}
         iconAfter={
-          <XStack
-            opacity={0}
-            $group-item-hover={{opacity: 1}}
-            // backgroundColor={'blue'}
-          >
+          <XStack opacity={0} $group-item-hover={{opacity: 1}}>
             {rightHover}
           </XStack>
         }
@@ -505,6 +508,7 @@ function PinnedAccount({accountId}: {accountId: string}) {
   const route = useNavRoute()
   const account = useAccount(accountId)
   const navigate = useNavigate()
+  let {togglePin} = usePinAccount(accountId)
   if (!accountId) return null
   return (
     <YGroup.Item>
@@ -524,6 +528,15 @@ function PinnedAccount({accountId}: {accountId: string}) {
         }
         title={account.data?.profile?.alias || accountId}
         indented
+        rightHover={[
+          <UnpinButton
+            key="pin"
+            onPress={(e) => {
+              e.stopPropagation()
+              togglePin()
+            }}
+          />,
+        ]}
       />
       {/* </AccountCard> */}
     </YGroup.Item>
@@ -535,6 +548,7 @@ function PinnedGroup(props: {group: {groupId: string}}) {
   const navigate = useNavigate()
   const {groupId} = props.group
   const group = useGroup(groupId)
+  const {togglePin} = usePinGroup(groupId)
   if (!groupId) return null
   return (
     <YGroup.Item>
@@ -546,6 +560,13 @@ function PinnedGroup(props: {group: {groupId: string}}) {
         icon={Book}
         title={group.data?.title}
         rightHover={[
+          <UnpinButton
+            key="pin"
+            onPress={(e) => {
+              e.stopPropagation()
+              togglePin()
+            }}
+          />,
           <NewDocumentButton
             pubContext={{key: 'group', groupId, pathName: null}}
             label="Group Document"
@@ -561,12 +582,19 @@ function PinnedDocument({
   docId,
   onPress,
   active,
+  pubContext,
 }: {
   docId: string
   onPress: () => void
   active?: boolean
+  pubContext?: PublicationRouteContext
 }) {
   const doc = usePublication({id: docId})
+  const {togglePin} = usePinDocument({
+    key: 'publication',
+    documentId: docId,
+    pubContext,
+  })
   if (!docId) return null
   return (
     <YGroup.Item>
@@ -576,6 +604,15 @@ function PinnedDocument({
         icon={FileText}
         title={doc.data?.document?.title || docId}
         indented
+        rightHover={[
+          <UnpinButton
+            key="pin"
+            onPress={(e) => {
+              e.stopPropagation()
+              togglePin()
+            }}
+          />,
+        ]}
       />
     </YGroup.Item>
   )
