@@ -38,14 +38,13 @@ import {getBlockInfoFromPos} from './extensions/Blocks/helpers/getBlockInfoFromP
 import {HMBlockSchema, hmBlockSchema} from '@/schema'
 import {FormattingToolbarProsemirrorPlugin} from './extensions/FormattingToolbar/FormattingToolbarPlugin'
 import {HyperlinkToolbarProsemirrorPlugin} from './extensions/HyperlinkToolbar/HyperlinkToolbarPlugin'
+import {LinkMenuProsemirrorPlugin} from './extensions/LinkMenu/LinkMenuPlugin'
 import {SideMenuProsemirrorPlugin} from './extensions/SideMenu/SideMenuPlugin'
 import {BaseSlashMenuItem} from './extensions/SlashMenu/BaseSlashMenuItem'
 import {SlashMenuProsemirrorPlugin} from './extensions/SlashMenu/SlashMenuPlugin'
 import {getDefaultSlashMenuItems} from './extensions/SlashMenu/defaultSlashMenuItems'
 import {UniqueID} from './extensions/UniqueID/UniqueID'
 import {mergeCSSClasses} from './shared/utils'
-import {LinkMenuProsemirrorPlugin} from './extensions/LinkMenu/LinkMenuPlugin'
-import {getDefaultLinkMenuItems} from './extensions/LinkMenu/defaultLinkMenuItems'
 
 export type BlockNoteEditorOptions<BSchema extends BlockSchema> = {
   // TODO: Figure out if enableBlockNoteExtensions/disableHistoryExtension are needed and document them.
@@ -181,10 +180,7 @@ export class BlockNoteEditor<BSchema extends BlockSchema = HMBlockSchema> {
         getDefaultSlashMenuItems(newOptions.blockSchema),
     )
     this.hyperlinkToolbar = new HyperlinkToolbarProsemirrorPlugin(this)
-    this.linkMenu = new LinkMenuProsemirrorPlugin(
-      this,
-      getDefaultLinkMenuItems<BSchema>(),
-    )
+    this.linkMenu = new LinkMenuProsemirrorPlugin(this)
 
     const extensions = getBlockNoteExtensions<BSchema>({
       editor: this,

@@ -1,9 +1,8 @@
 import {createStyles, Menu} from '@mantine/core'
-import * as _ from 'lodash'
 
+import {BlockSchema} from '@/blocknote/core'
 import {LinkMenuItem} from './LinkMenuItem'
 import {LinkMenuProps} from './LinkMenuPositioner'
-import {BlockSchema} from '@/blocknote/core'
 
 export function DefaultLinkMenu<BSchema extends BlockSchema>(
   props: LinkMenuProps<BSchema>,
@@ -19,6 +18,9 @@ export function DefaultLinkMenu<BSchema extends BlockSchema>(
       <LinkMenuItem
         key={item.name}
         name={item.name}
+        icon={item.icon}
+        hint={item.hint}
+        disabled={item.disabled}
         isSelected={props.keyboardHoveredItemIndex === index}
         set={() => props.itemCallback(item, '')}
       />,
