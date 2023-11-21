@@ -141,7 +141,7 @@ function EmbedComponent({
         hoverStyle={{
           backgroundColor: '$color4',
         }}
-        padding="$2"
+        // padding="$2"
         // @ts-ignore
         contentEditable={false}
         className={block.type}
