@@ -36,6 +36,7 @@ import {
   Pencil,
   Pin,
   PinOff,
+  Plus,
   Send,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -46,9 +47,11 @@ import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
+import {useOpenDraft} from '../utils/open-draft'
 import {CloneGroupDialog} from './clone-group'
 import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
+import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {DraftPublicationButtons, PublishToGroupButton} from './publish-share'
@@ -415,20 +418,58 @@ function CopyReferenceButton() {
   )
 }
 
+function NewDocumentButton({
+  pubContext,
+  label,
+}: {
+  pubContext: PublicationRouteContext
+  label?: string
+}) {
+  const openDraft = useOpenDraft('push')
+  return (
+    <Tooltip content={`New ${label || 'Document'}`}>
+      <Button
+        size="$2"
+        chromeless
+        iconAfter={Plus}
+        onPress={(e) => {
+          e.preventDefault()
+          openDraft(pubContext)
+        }}
+      />
+    </Tooltip>
+  )
+}
+
 export function PageActionButtons(props: TitleBarProps) {
   const route = useNavRoute()
 
   let buttonGroup: ReactNode[] = []
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
+  } else if (route.key === 'drafts') {
+    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
+  } else if (route.key === 'all-publications') {
+    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
+  } else if (route.key === 'home') {
+    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
-    // buttonGroup = [<AddGroupButton key="addGroup" />]
+    buttonGroup = [<CreateGroupButton key="addGroup" />]
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
       <CopyReferenceButton key="copyRef" />,
+      <NewDocumentButton
+        key="newDocument"
+        label="Group Document"
+        pubContext={{
+          key: 'group',
+          groupId: route.groupId,
+          pathName: null,
+        }}
+      />,
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
