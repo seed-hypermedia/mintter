@@ -159,6 +159,10 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           let tr = view.state.tr
           if (!tr.selection.empty) tr.deleteSelection()
 
+          const isVideo = ['youtu.be', 'youtube', 'vimeo'].some((value) =>
+            link.href.includes(value),
+          )
+
           const pos = selection.$from.pos
 
           view.dispatch(
@@ -179,38 +183,65 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             }),
           )
 
-          fetchWebLink(options.client, link.href)
-            .then((res) => {
-              if (res) {
-                const fullHmId = hmIdWithVersion(
-                  res?.hmId,
-                  res?.hmVersion,
-                  extractBlockRefOfUrl(link.href),
-                )
+          if (isVideo) {
+            const url = link.href
+            let videoUrl = 'https://www.youtube.com/embed/'
+            if (url.includes('youtu.be')) {
+              const urlArray = url.split('/')
+              videoUrl = videoUrl + urlArray[urlArray.length - 1]
+            } else if (url.includes('youtube')) {
+              videoUrl = videoUrl + url.split('=')[1]
+            } else if (url.includes('vimeo')) {
+              const urlArray = url.split('/')
+              videoUrl =
+                'https://player.vimeo.com/video/' +
+                urlArray[urlArray.length - 1]
+            }
+            view.dispatch(
+              view.state.tr.setMeta(linkMenuPluginKey, {
+                ref: videoUrl,
+                items: getLinkMenuItems(false, false, 'video', link.href),
+              }),
+            )
+          } else {
+            fetchWebLink(options.client, link.href)
+              .then((res) => {
+                if (res) {
+                  const fullHmId = hmIdWithVersion(
+                    res?.hmId,
+                    res?.hmVersion,
+                    extractBlockRefOfUrl(link.href),
+                  )
 
-                if (fullHmId) {
+                  if (fullHmId) {
+                    view.dispatch(
+                      view.state.tr.setMeta(linkMenuPluginKey, {
+                        ref: fullHmId,
+                        items: getLinkMenuItems(
+                          false,
+                          true,
+                          undefined,
+                          link.href,
+                        ),
+                      }),
+                    )
+                  }
+                } else {
                   view.dispatch(
                     view.state.tr.setMeta(linkMenuPluginKey, {
-                      ref: fullHmId,
-                      items: getLinkMenuItems(false, true, link.href),
+                      items: getLinkMenuItems(false, false),
                     }),
                   )
                 }
-              } else {
+              })
+              .catch((err) => {
                 view.dispatch(
                   view.state.tr.setMeta(linkMenuPluginKey, {
                     items: getLinkMenuItems(false, false),
                   }),
                 )
-              }
-            })
-            .catch((err) => {
-              view.dispatch(
-                view.state.tr.setMeta(linkMenuPluginKey, {
-                  items: getLinkMenuItems(false, false),
-                }),
-              )
-            })
+              })
+          }
 
           return true
         }
