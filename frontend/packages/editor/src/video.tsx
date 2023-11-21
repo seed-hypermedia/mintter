@@ -308,7 +308,7 @@ function VideoWrapper({
       hoverStyle={{
         backgroundColor: '$color4',
       }}
-      padding="$2"
+      // padding="$2"
       paddingBottom="56.25%"
       position="relative"
       height={0}
