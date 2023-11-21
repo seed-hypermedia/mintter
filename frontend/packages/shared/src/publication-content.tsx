@@ -16,6 +16,7 @@ import {
   isHypermediaScheme,
   toHMInlineContent,
   unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {
   Button,
@@ -39,7 +40,6 @@ import {
   XStackProps,
   YStack,
   YStackProps,
-  useHover,
 } from '@mintter/ui'
 import {AlertCircle, Book} from '@tamagui/lucide-icons'
 import {
