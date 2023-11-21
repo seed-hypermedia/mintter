@@ -125,6 +125,9 @@ jobs:
           tags: mintter/sitegw:main
           build-args: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
       - name: Build and push stable nextjs
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
         uses: docker/build-push-action@v4
@@ -134,3 +137,5 @@ jobs:
           tags: mintter/sitegw:latest
           build-args: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
