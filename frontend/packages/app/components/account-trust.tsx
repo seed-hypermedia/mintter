@@ -1,5 +1,6 @@
 import {Button, Tooltip} from '@mintter/ui'
 
+import {useHover} from '@mintter/shared'
 import {CheckCircle, PlusCircle, XCircle} from '@tamagui/lucide-icons'
 import {useState} from 'react'
 import {useSetTrusted} from '../models/accounts'

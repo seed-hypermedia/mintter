@@ -1,12 +1,12 @@
-import {Avatar} from '@mintter/app/components/avatar'
+import { Avatar } from '@mintter/app/components/avatar'
 import Footer from '@mintter/app/components/footer'
-import {OnlineIndicator} from '@mintter/app/components/indicator'
+import { OnlineIndicator } from '@mintter/app/components/indicator'
 import {
   useAccountIsConnected,
   useAllAccounts,
 } from '@mintter/app/models/accounts'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Account} from '@mintter/shared'
+import { useNavigate } from '@mintter/app/utils/useNavigate'
+import { Account } from '@mintter/shared'
 import {
   Button,
   Container,
@@ -17,11 +17,11 @@ import {
   YStack,
   styled,
 } from '@mintter/ui'
-import {PlusCircle} from '@tamagui/lucide-icons'
-import {AccountCard} from '../components/account-card'
-import {MainWrapper} from '../components/main-wrapper'
-import {useSetTrusted} from '../models/accounts'
-import {getAvatarUrl} from '../utils/account-url'
+import { PlusCircle } from '@tamagui/lucide-icons'
+import { AccountCard } from '../components/account-card'
+import { MainWrapper } from '../components/main-wrapper'
+import { useSetTrusted } from '../models/accounts'
+import { getAvatarUrl } from '../utils/account-url'
 
 const PageHeading = styled(Heading, {
   color: '$gray10',

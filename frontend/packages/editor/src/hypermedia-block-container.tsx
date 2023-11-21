@@ -23,6 +23,7 @@ import {
   createPublicWebHmUrl,
   HMBlockChildrenType,
   unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {Button, Copy, SizableText, XStack} from '@mintter/ui'
 import {

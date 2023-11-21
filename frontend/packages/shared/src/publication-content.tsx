@@ -16,6 +16,7 @@ import {
   isHypermediaScheme,
   toHMInlineContent,
   unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {
   Button,
