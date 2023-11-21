@@ -1,3 +1,4 @@
+import {getLinkMenuItems} from '@/blocknote/core'
 import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
@@ -148,6 +149,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
               activate: true,
               ref: nativeHyperLink,
+              items: getLinkMenuItems(false, true),
             }),
           )
           return true
@@ -156,58 +158,57 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         if (link && selection.empty) {
           let tr = view.state.tr
           if (!tr.selection.empty) tr.deleteSelection()
-          tr.setMeta('link-placeholder', {
-            add: {link, pos: tr.selection.from},
-          })
-          view.dispatch(tr)
+
+          const pos = selection.$from.pos
+
+          view.dispatch(
+            tr.insertText(link.href, pos).addMark(
+              pos,
+              pos + link.href.length,
+              options.editor.schema.mark('link', {
+                href: link.href,
+              }),
+            ),
+          )
+
+          view.dispatch(
+            view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+              activate: true,
+              ref: link.href,
+              items: getLinkMenuItems(true, false),
+            }),
+          )
 
           fetchWebLink(options.client, link.href)
             .then((res) => {
-              let tr = view.state.tr
-              let pos = findPlaceholder(view.state, link.href)
-              if (!pos) return null
-              const fullHmId = hmIdWithVersion(
-                res?.hmId,
-                res?.hmVersion,
-                extractBlockRefOfUrl(link.href),
-              )
-              view.dispatch(
-                tr
-                  .insertText(link.href, pos)
-                  .addMark(
-                    pos,
-                    pos + link.href.length,
-                    options.editor.schema.mark('link', {
-                      href: fullHmId || link.href,
+              if (res) {
+                const fullHmId = hmIdWithVersion(
+                  res?.hmId,
+                  res?.hmVersion,
+                  extractBlockRefOfUrl(link.href),
+                )
+
+                if (fullHmId) {
+                  view.dispatch(
+                    view.state.tr.setMeta(linkMenuPluginKey, {
+                      ref: fullHmId,
+                      items: getLinkMenuItems(false, true, link.href),
                     }),
                   )
-                  .setMeta('link-placeholder', {remove: {link}}),
-              )
-
-              if (fullHmId) {
+                }
+              } else {
                 view.dispatch(
-                  view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
-                    activate: true,
-                    ref: fullHmId || link.href,
+                  view.state.tr.setMeta(linkMenuPluginKey, {
+                    items: getLinkMenuItems(false, false),
                   }),
                 )
               }
             })
             .catch((err) => {
-              let tr = view.state.tr
-              let pos = findPlaceholder(view.state, link.href)
-              if (!pos) return null
               view.dispatch(
-                tr
-                  .insertText(link.href, pos)
-                  .addMark(
-                    pos,
-                    pos + link.href.length,
-                    options.editor.schema.mark('link', {
-                      href: link.href,
-                    }),
-                  )
-                  .setMeta('link-placeholder', {remove: {link}}),
+                view.state.tr.setMeta(linkMenuPluginKey, {
+                  items: getLinkMenuItems(false, false),
+                }),
               )
             })
 
