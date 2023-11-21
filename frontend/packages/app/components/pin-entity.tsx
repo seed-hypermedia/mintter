@@ -1,4 +1,5 @@
-import { Button, ButtonProps, Tooltip, useHover } from '@mintter/ui'
+import { useHover } from '@mintter/shared'
+import { Button, ButtonProps, Tooltip } from '@mintter/ui'
 import { Pin, PinOff } from '@tamagui/lucide-icons'
 import { usePinAccount, usePinDocument, usePinGroup } from '../models/pins'
 import { PublicationRoute } from '../utils/navigation'

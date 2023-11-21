@@ -18,7 +18,6 @@ import {
   styled,
 } from '@mintter/ui'
 import { PlusCircle } from '@tamagui/lucide-icons'
-import { AccountCard } from '../components/account-card'
 import { MainWrapper } from '../components/main-wrapper'
 import { useSetTrusted } from '../models/accounts'
 import { getAvatarUrl } from '../utils/account-url'
@@ -41,7 +40,7 @@ function ContactItem({
   const alias = account.profile?.alias
   const setTrusted = useSetTrusted()
   return (
-    <AccountCard accountId={account.id}>
+    // <AccountCard accountId={account.id}>
       <Button
         chromeless
         theme="gray"
@@ -81,7 +80,7 @@ function ContactItem({
         )}
         <OnlineIndicator online={isConnected} />
       </Button>
-    </AccountCard>
+    // </AccountCard>
   )
 }
 
