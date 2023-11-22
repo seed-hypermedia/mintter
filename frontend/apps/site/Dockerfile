@@ -2,6 +2,8 @@
 # docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
 
 FROM node:20-alpine AS builder
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    cat /run/secrets/SENTRY_AUTH_TOKEN
 RUN apk add git
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
@@ -14,7 +16,6 @@ ENV NODE_ENV production
 ENV NEXT_PUBLIC_LN_HOST https://ln.mintter.com
 ENV GRPC_HOST http://minttersite:56001
 ENV MINTTER_SENTRY_SITES https://47c66bd7a6d64db68a59c03f2337e475@o4504088793841664.ingest.sentry.io/4505527493328896
-ENV SENTRY_AUTH_TOKEN ${SENTRY_AUTH_TOKEN}
 RUN yarn site:prod
 
 
