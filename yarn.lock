@@ -4623,7 +4623,7 @@ __metadata:
     "@mintter/prettier": "*"
     "@mintter/shared": "*"
     "@mintter/ui": "*"
-    "@sentry/nextjs": ^7.81.1
+    "@sentry/nextjs": 7.81.1
     "@tamagui/lucide-icons": 1.75.9
     "@tamagui/next-plugin": 1.75.9
     "@tamagui/next-theme": 1.75.9
@@ -6520,7 +6520,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/nextjs@npm:^7.81.1":
+"@sentry/nextjs@npm:7.81.1":
   version: 7.81.1
   resolution: "@sentry/nextjs@npm:7.81.1"
   dependencies:
