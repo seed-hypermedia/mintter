@@ -123,10 +123,8 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:main
-          build-args: |
+          secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Build and push stable nextjs
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
@@ -135,7 +133,5 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
-          build-args: |
+          secrets: |
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
