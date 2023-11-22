@@ -1,7 +1,8 @@
 import * as Ariakit from '@ariakit/react'
-import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
+import { CompositeInput } from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
 import {
+  BACKEND_FILE_URL,
   Document,
   Group,
   Profile,
@@ -23,13 +24,15 @@ import {
   Heading,
   Input,
   Label,
+  ListItem,
   Separator,
   SizableText,
   Tooltip,
   UIAvatar,
   View,
   XStack,
-  YStack,
+  YGroup,
+  YStack
 } from '@mintter/ui'
 import {
   ArrowUpRight,
@@ -39,10 +42,9 @@ import {
   Trash,
   X,
 } from '@tamagui/lucide-icons'
-import {Allotment} from 'allotment'
+import { Allotment } from 'allotment'
 import 'allotment/dist/style.css'
-import clsx from 'clsx'
-import {matchSorter} from 'match-sorter'
+import { matchSorter } from 'match-sorter'
 import {
   forwardRef,
   useDeferredValue,
@@ -52,25 +54,25 @@ import {
   useRef,
   useState,
 } from 'react'
-import {toast} from 'react-hot-toast'
-import {AccountCard} from '../components/account-card'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
+import { toast } from 'react-hot-toast'
+import { AccountCard } from '../components/account-card'
+import { AccountLinkAvatar } from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
-import {EntityVersionsAccessory} from '../components/changes-list'
-import {useAppDialog} from '../components/dialog'
-import {useEditGroupInfoDialog} from '../components/edit-group-info'
-import {FooterButton} from '../components/footer'
-import {AppLinkText} from '../components/link'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper} from '../components/main-wrapper'
-import {OptionsDropdown} from '../components/options-dropdown'
-import {PinGroupButton} from '../components/pin-entity'
-import {PublicationListItem} from '../components/publication-list-item'
-import {EditDocActions} from '../components/titlebar-common'
-import {VersionChangesInfo} from '../components/version-changes-info'
-import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
-import {useAllChanges} from '../models/changes'
-import {useDraftList, usePublication} from '../models/documents'
+import { EntityVersionsAccessory } from '../components/changes-list'
+import { useAppDialog } from '../components/dialog'
+import { useEditGroupInfoDialog } from '../components/edit-group-info'
+import { FooterButton } from '../components/footer'
+import { AppLinkText } from '../components/link'
+import { copyLinkMenuItem } from '../components/list-item'
+import { MainWrapper } from '../components/main-wrapper'
+import { OptionsDropdown } from '../components/options-dropdown'
+import { PinGroupButton } from '../components/pin-entity'
+import { PublicationListItem } from '../components/publication-list-item'
+import { EditDocActions } from '../components/titlebar-common'
+import { VersionChangesInfo } from '../components/version-changes-info'
+import { useAccount, useAllAccounts, useMyAccount } from '../models/accounts'
+import { useAllChanges } from '../models/changes'
+import { useDraftList, usePublication } from '../models/documents'
 import {
   useAddGroupMember,
   useGroup,
@@ -79,13 +81,13 @@ import {
   useRemoveDocFromGroup,
   useRenameGroupDoc,
 } from '../models/groups'
-import {useOpenUrl} from '../open-url'
-import {GroupRoute, useNavRoute} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
-import {pathNameify} from '../utils/path'
-import {hostnameStripProtocol} from '../utils/site-hostname'
-import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication'
+import { useOpenUrl } from '../open-url'
+import { GroupRoute, useNavRoute } from '../utils/navigation'
+import { useOpenDraft } from '../utils/open-draft'
+import { pathNameify } from '../utils/path'
+import { hostnameStripProtocol } from '../utils/site-hostname'
+import { useNavigate } from '../utils/useNavigate'
+import { AppPublicationContentProvider } from './publication'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -652,11 +654,11 @@ function InviteMemberDialog({
         }}
       >
         <DialogTitle>Add Group Editor</DialogTitle>
-        <div className="wrapper">
+
+        <YStack paddingVertical="$3" gap="$2">
           <Label>Contacts</Label>
           <TagInput
             label="Accounts"
-            id="combobox-id"
             value={value}
             onChange={setValue}
             values={selectedMembers}
@@ -671,17 +673,19 @@ function InviteMemberDialog({
                 account={accountsMap[value]}
               />
             ))}
-            <TagInputItem
-              onClick={() => {
-                setMemberSelection((values) => [...values, value])
-              }}
-            >
-              Add &quot;{value}&quot;
-            </TagInputItem>
+            {matches.length == 0 ? (
+              <TagInputItem
+                onClick={() => {
+                  setMemberSelection((values) => [...values, value])
+                }}
+              >
+                Add &quot;{value}&quot;
+              </TagInputItem>
+            ) : null}
           </TagInput>
-        </div>
-        <DialogDescription>
-          Search for member alias, or paste member ID
+        </YStack>
+        <DialogDescription gap="$3">
+          <SizableText>Search for member alias, or paste member ID</SizableText>
         </DialogDescription>
         <Form.Trigger asChild>
           <Button>Add Member</Button>
@@ -914,11 +918,24 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
         aria-label={label}
         className="tag-grid"
         onClick={() => comboboxRef.current?.focus()}
+        render={
+          <XStack
+            // borderColor="$borderColor"
+            // borderWidth={1}
+            borderRadius="$2"
+            padding="$1"
+            backgroundColor="white"
+          />
+        }
       >
-        <Ariakit.CompositeRow role="row" className="tag-row">
+        <Ariakit.CompositeRow
+          role="row"
+          render={<XStack gap="$1" width="100%" flexWrap="wrap" />}
+        >
           {selectedValues.map((value) => {
             let account = accountsMap[value]
             return (
+<<<<<<< HEAD
               <AccountCard accountId={value} key={value}>
                 <Ariakit.CompositeItem
                   role="gridcell"
@@ -941,12 +958,49 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                   <X size={12} className="tag-remove" />
                 </Ariakit.CompositeItem>
               </AccountCard>
+=======
+              // <AccountCard accountId={value} key={value}>
+              <Ariakit.CompositeItem
+                key={value}
+                role="gridcell"
+                onClick={onItemClick(value)}
+                onKeyDown={onItemKeyDown}
+                onFocus={combobox.hide}
+                render={
+                  <XStack
+                    gap="$2"
+                    padding="$1.5"
+                    borderRadius="$1"
+                    backgroundColor="$backgroundFocus"
+                    borderColor="$borderColor"
+                    alignItems="center"
+                    hoverStyle={{
+                      cursor: 'pointer',
+                      backgroundColor: '$color7',
+                    }}
+                  />
+                }
+              >
+                <UIAvatar
+                  label={account?.alias}
+                  id={value}
+                  url={`${BACKEND_FILE_URL}/${account.profile?.avatar}`}
+                />
+                <SizableText size="$3">
+                  {account?.alias
+                    ? account.alias
+                    : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
+                </SizableText>
+                {/* <span className="tag-remove"></span> */}
+                <X size={12} />
+              </Ariakit.CompositeItem>
+              // </AccountCard>
+>>>>>>> c7f67a714 (frontend: improve styles group editor autocomplete)
             )
           })}
-          <div role="gridcell">
+          <YStack role="gridcell" flex={1}>
             <Ariakit.CompositeItem
               id={comboboxId}
-              className={clsx('combobox', comboboxProps.className)}
               render={
                 <CompositeInput
                   ref={comboboxRef}
@@ -956,20 +1010,31 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                       ref={ref}
                       store={combobox}
                       autoSelect
+                      className="combobox"
                       {...comboboxProps}
                     />
                   }
                 />
               }
             />
-          </div>
+          </YStack>
           <Ariakit.ComboboxPopover
             store={combobox}
             portal
             sameWidth
             gutter={8}
-            className="popover"
-            render={<Ariakit.SelectList store={select} />}
+            render={
+              <Ariakit.SelectList
+                store={select}
+                render={
+                  <YGroup
+                    zIndex={100000}
+                    backgroundColor="$background"
+                    separator={<Separator />}
+                  />
+                }
+              />
+            }
           >
             {children}
           </Ariakit.ComboboxPopover>
@@ -1002,17 +1067,57 @@ export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
       <Ariakit.SelectItem
         ref={ref}
         {...props}
-        className={clsx('combobox-item', props.className)}
-        render={<Ariakit.ComboboxItem render={props.render} />}
+        render={
+          <Ariakit.ComboboxItem
+            render={
+              <TagInputItemContent
+                className="combobox-item"
+                render={props.render}
+              />
+            }
+          />
+        }
       >
-        <Ariakit.SelectItemCheck />
-        <UIAvatar
-          label={props.account?.alias}
-          id={props.value}
-          url={props.account?.profile?.avatar}
-        />
-        <SizableText size="$3">{props.children || label}</SizableText>
+        <XStack gap="$2" flex={1}>
+          <Ariakit.SelectItemCheck />
+          <UIAvatar
+            label={props.account?.alias}
+            id={props.value}
+            url={`${BACKEND_FILE_URL}/${props.account?.profile?.avatar}`}
+          />
+          <XStack flex={1}>
+            <SizableText size="$3" color="currentColor">
+              {props.children || label}
+            </SizableText>
+          </XStack>
+        </XStack>
       </Ariakit.SelectItem>
     )
   },
 )
+
+const TagInputItemContent = forwardRef<any, any>(
+  function TagInputItemContent(props, ref) {
+    let {render, children, ...restProps} = props
+
+    return (
+      <YGroup.Item>
+        <ListItem ref={ref} {...restProps} className="combobox-item">
+          {render ? render : children}
+        </ListItem>
+      </YGroup.Item>
+    )
+  },
+)
+
+const CustomInput = forwardRef(function CustomInput(props, ref) {
+  return (
+    <Input
+      ref={ref}
+      flex={1}
+      width="100%"
+      borderColor="transparent"
+      {...props}
+    />
+  )
+})
