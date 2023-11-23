@@ -1,4 +1,5 @@
 import {createHmId, unpackDocId, unpackHmId} from '@mintter/shared'
+import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 import {
   hmAccount,
   hmChangeInfo,
@@ -6,11 +7,9 @@ import {
   hmLink,
   hmPublication,
 } from '@mintter/shared/src/to-json-hm'
+import {queryClient} from 'src/client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
-import {queryClient} from 'src/client'
-import {Timestamp} from '@bufbuild/protobuf'
-import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 
 function errWrap<V>(failable: Promise<V>) {
   return failable.catch((e) => {
@@ -46,7 +45,6 @@ const publicationRouter = router({
       }),
     )
     .query(async ({input}) => {
-      console.log('INTERNAL publication.get', input)
       if (!input.documentId) {
         return {publication: null}
       }
@@ -56,7 +54,6 @@ const publicationRouter = router({
           version: input.versionId || '',
         })
         .catch((e) => undefined)
-      console.log('resolved', resolvedPub)
       if (!resolvedPub) {
         return {publication: null}
       }
