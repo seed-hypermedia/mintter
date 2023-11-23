@@ -38,6 +38,7 @@
     "@trpc/client": "10.40.0",
     "@trpc/react-query": "10.40.0",
     "@trpc/server": "10.40.0",
+    "cheerio": "^1.0.0-rc.12",
     "console-log-colors": "0.4.0",
     "electron-log": "beta",
     "electron-squirrel-startup": "1.0.0",
