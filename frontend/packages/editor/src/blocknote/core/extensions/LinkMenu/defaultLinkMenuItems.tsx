@@ -10,10 +10,10 @@ import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 import {LinkMenuItem} from './LinkMenuItem'
 
 export function getLinkMenuItems(
-  isLoading: boolean,
-  isHmLink: boolean,
-  media?: string,
-  originalRef?: string,
+  isLoading: boolean, // true is spinner needs to be shown
+  isHmLink: boolean, // true if the link is an embeddable link
+  media?: string, // type of media block if link points to a media file
+  originalRef?: string, // the inserted link into the editor. needed to correctly replace the link with block
 ) {
   const linkMenuItems: LinkMenuItem[] = [
     {
@@ -56,7 +56,7 @@ export function getLinkMenuItems(
             schema.text(' '),
           )
 
-          splitOriginalNode(editor, originalRef ? originalRef : ref, node)
+          insertNode(editor, originalRef ? originalRef : ref, node)
 
           const {block: currentBlock, nextBlock} =
             editor.getTextCursorPosition()
@@ -99,10 +99,14 @@ export function getLinkMenuItems(
           const {state, schema} = editor._tiptapEditor
           const {selection} = state
           if (!selection.empty) return
-          const node = schema.nodes[media].create({
-            url: ref,
-          })
-          splitOriginalNode(editor, originalRef ? originalRef : ref, node)
+          const node = schema.nodes[media].create(
+            media === 'video'
+              ? {
+                  url: ref,
+                }
+              : {src: ref},
+          )
+          insertNode(editor, originalRef ? originalRef : ref, node)
         },
       }
 
@@ -113,13 +117,14 @@ export function getLinkMenuItems(
   return linkMenuItems
 }
 
-function splitOriginalNode(editor: BlockNoteEditor, ref: string, node: Node) {
+function insertNode(editor: BlockNoteEditor, ref: string, node: Node) {
   const {state, schema, view} = editor._tiptapEditor
   const {doc, selection} = state
   const {$from} = selection
   const block = getBlockInfoFromPos(doc, selection.$anchor.pos)
   let tr = state.tr
 
+  // If inserted link inline with other text (child count will be more than 1)
   if (block.contentNode.content.childCount > 1) {
     const $pos = state.doc.resolve($from.pos)
     let originalStartContent = state.doc.cut(
