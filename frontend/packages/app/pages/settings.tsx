@@ -3,7 +3,7 @@ import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
-import {trpc} from '@mintter/desktop/src/trpc'
+import {client, trpc} from '@mintter/desktop/src/trpc'
 import {APP_VERSION, LightningWallet, Profile, useHover} from '@mintter/shared'
 import {
   ArrowDownRight,
@@ -237,8 +237,28 @@ export function DeveloperSettings() {
           <DeleteDraftLogs />
         </XStack>
       </SettingsSection>
-      {/* <TestFileUpload /> */}
+      {/* <TestURLCheck /> */}
     </>
+  )
+}
+
+function TestURLCheck() {
+  return (
+    <Button
+      onPress={() => {
+        client.webImporting.checkWebUrl
+          // .mutate('https://mintter.com')
+          .mutate('http://localhost:3000/mintter-software-release-process')
+          .then((response) => {
+            toast(JSON.stringify(response))
+          })
+          .catch((e) => {
+            toast.error(e.message)
+          })
+      }}
+    >
+      Test URL Check
+    </Button>
   )
 }
 

@@ -113,6 +113,7 @@ const createNextConfig = function () {
         headers: [
           {key: 'Access-Control-Allow-Origin', value: '*'},
           {key: 'Access-Control-Allow-Methods', value: 'GET'},
+          {key: 'X-Hypermedia-Site', value: 'true'},
         ],
       },
     ],
