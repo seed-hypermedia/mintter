@@ -77,7 +77,35 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		if err != nil {
 			return
 		}
+
 		n.SetInvoicer(srv)
+		// Check if the user already had a lndhub wallet (reusing db)
+		// if not, then Auth will simply fail.
+		conn, release, err := db.Conn(ctx)
+		if err != nil {
+			panic(err)
+		}
+		defer release()
+		defaultWallet, err := walletsql.GetDefaultWallet(conn)
+		if err != nil {
+			log.Warn("Problem getting default wallet", zap.Error(err))
+		}
+		if defaultWallet.Type == lndhubsql.LndhubGoWalletType {
+			srv.lightningClient.Lndhub.WalletID = defaultWallet.ID
+			return
+		}
+		wallets, err := walletsql.ListWallets(conn, 1)
+		if err != nil {
+			log.Warn("Could not get if db already had wallets", zap.Error(err))
+		}
+
+		for _, w := range wallets {
+			if w.Type == lndhubsql.LndhubGoWalletType {
+				srv.lightningClient.Lndhub.WalletID = w.ID
+				return
+			}
+		}
+		log.Info("None of the wallets already in db is lndhub compatible.", zap.Int("Number of wallets", len(wallets)))
 	}()
 
 	return srv
@@ -573,7 +601,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if amountSats == nil || *amountSats == 0 {
 		invoice, err := lndhub.DecodeInvoice(payReq)
 		if err != nil {
-			publicError := fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice", payReq)
+			publicError := fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 compatible invoice", payReq)
 			srv.log.Debug(publicError.Error(), zap.String("msg", err.Error()))
 			return "", publicError
 		}
