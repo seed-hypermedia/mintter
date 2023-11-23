@@ -10,7 +10,7 @@
 .combobox {
   font-family: var(--f-fa);
   appearance: none;
-  height: 2.5rem;
+  height: 2rem;
   /* width: 250px;  */
   border-radius: 0.375rem;
   border-style: none;
