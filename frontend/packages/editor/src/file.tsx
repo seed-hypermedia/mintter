@@ -1,5 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
+import {client} from '@mintter/desktop/src/trpc'
 import {BACKEND_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
   Button,
@@ -33,6 +34,9 @@ export const FileBlock = createReactBlockSpec({
       default: '',
     },
     name: {
+      default: '',
+    },
+    src: {
       default: '',
     },
     defaultOpen: {
@@ -73,8 +77,10 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [selected, setSelected] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
+  const hasSrc = !!block.props.src
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
@@ -93,6 +99,28 @@ const Render = (
     }
   }, [selection, editor, block.id, tiptapEditor])
 
+  useEffect(() => {
+    if (!uploading && hasSrc) {
+      setUploading(true)
+      const name = block.props.src.split('/')
+
+      client.webImporting.importWebFile
+        .mutate(block.props.src)
+        .then(({cid, size}) => {
+          setUploading(false)
+          console.log(cid)
+          editor.updateBlock(block, {
+            props: {
+              url: `ipfs://${cid}`,
+              size: size,
+              src: '',
+              name: name[name.length - 1],
+            },
+          })
+        })
+    }
+  }, [hasSrc, block, uploading, editor])
+
   const assignFile = (newFile: FileType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newFile.props},
@@ -102,6 +130,23 @@ const Render = (
 
   const setSelection = (isSelected: boolean) => {
     setSelected(isSelected)
+  }
+
+  if (hasSrc || uploading) {
+    // this means we have a URL in the props.url that is not starting with `ipfs://`, which means we are uploading the image to IPFS
+    return (
+      <Button
+        // @ts-ignore
+        contentEditable={false}
+        borderRadius={0}
+        size="$5"
+        justifyContent="flex-start"
+        backgroundColor="$color4"
+        width="100%"
+      >
+        uploading...
+      </Button>
+    )
   }
 
   return (
