@@ -65,7 +65,7 @@ func GetWallet(conn *sqlite.Conn, walletID string) (Wallet, error) {
 func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 	var resultArray []Wallet
 
-	res, err := listWallets(conn, "", -1)
+	res, err := listWallets(conn, "", int64(limit))
 	if err != nil {
 		return resultArray, err
 	}
