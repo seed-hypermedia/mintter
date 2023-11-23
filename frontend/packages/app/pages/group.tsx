@@ -1,5 +1,5 @@
 import * as Ariakit from '@ariakit/react'
-import { CompositeInput } from '@ariakit/react-core/composite/composite-input'
+import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
 import {
   BACKEND_FILE_URL,
@@ -32,7 +32,7 @@ import {
   View,
   XStack,
   YGroup,
-  YStack
+  YStack,
 } from '@mintter/ui'
 import {
   ArrowUpRight,
@@ -42,9 +42,9 @@ import {
   Trash,
   X,
 } from '@tamagui/lucide-icons'
-import { Allotment } from 'allotment'
+import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import { matchSorter } from 'match-sorter'
+import {matchSorter} from 'match-sorter'
 import {
   forwardRef,
   useDeferredValue,
@@ -54,25 +54,24 @@ import {
   useRef,
   useState,
 } from 'react'
-import { toast } from 'react-hot-toast'
-import { AccountCard } from '../components/account-card'
-import { AccountLinkAvatar } from '../components/account-link-avatar'
+import {toast} from 'react-hot-toast'
+import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
-import { EntityVersionsAccessory } from '../components/changes-list'
-import { useAppDialog } from '../components/dialog'
-import { useEditGroupInfoDialog } from '../components/edit-group-info'
-import { FooterButton } from '../components/footer'
-import { AppLinkText } from '../components/link'
-import { copyLinkMenuItem } from '../components/list-item'
-import { MainWrapper } from '../components/main-wrapper'
-import { OptionsDropdown } from '../components/options-dropdown'
-import { PinGroupButton } from '../components/pin-entity'
-import { PublicationListItem } from '../components/publication-list-item'
-import { EditDocActions } from '../components/titlebar-common'
-import { VersionChangesInfo } from '../components/version-changes-info'
-import { useAccount, useAllAccounts, useMyAccount } from '../models/accounts'
-import { useAllChanges } from '../models/changes'
-import { useDraftList, usePublication } from '../models/documents'
+import {EntityVersionsAccessory} from '../components/changes-list'
+import {useAppDialog} from '../components/dialog'
+import {useEditGroupInfoDialog} from '../components/edit-group-info'
+import {FooterButton} from '../components/footer'
+import {AppLinkText} from '../components/link'
+import {copyLinkMenuItem} from '../components/list-item'
+import {MainWrapper} from '../components/main-wrapper'
+import {OptionsDropdown} from '../components/options-dropdown'
+import {PinGroupButton} from '../components/pin-entity'
+import {PublicationListItem} from '../components/publication-list-item'
+import {EditDocActions} from '../components/titlebar-common'
+import {VersionChangesInfo} from '../components/version-changes-info'
+import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
+import {useAllChanges} from '../models/changes'
+import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
   useGroup,
@@ -81,13 +80,13 @@ import {
   useRemoveDocFromGroup,
   useRenameGroupDoc,
 } from '../models/groups'
-import { useOpenUrl } from '../open-url'
-import { GroupRoute, useNavRoute } from '../utils/navigation'
-import { useOpenDraft } from '../utils/open-draft'
-import { pathNameify } from '../utils/path'
-import { hostnameStripProtocol } from '../utils/site-hostname'
-import { useNavigate } from '../utils/useNavigate'
-import { AppPublicationContentProvider } from './publication'
+import {useOpenUrl} from '../open-url'
+import {GroupRoute, useNavRoute} from '../utils/navigation'
+import {useOpenDraft} from '../utils/open-draft'
+import {pathNameify} from '../utils/path'
+import {hostnameStripProtocol} from '../utils/site-hostname'
+import {useNavigate} from '../utils/useNavigate'
+import {AppPublicationContentProvider} from './publication'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -942,30 +941,6 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
             let avatar =
               account && account.profile?.avatar ? account.profile.avatar : '?'
             return (
-<<<<<<< HEAD
-              <AccountCard accountId={value} key={value}>
-                <Ariakit.CompositeItem
-                  role="gridcell"
-                  className="tag"
-                  onClick={onItemClick(value)}
-                  onKeyDown={onItemKeyDown}
-                  onFocus={combobox.hide}
-                >
-                  <UIAvatar
-                    label={account?.alias}
-                    id={value}
-                    url={account?.profile?.avatar}
-                  />
-                  <SizableText size="$3">
-                    {account?.alias
-                      ? account.alias
-                      : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
-                  </SizableText>
-                  {/* <span className="tag-remove"></span> */}
-                  <X size={12} className="tag-remove" />
-                </Ariakit.CompositeItem>
-              </AccountCard>
-=======
               // <AccountCard accountId={value} key={value}>
               <Ariakit.CompositeItem
                 key={value}
@@ -1005,7 +980,6 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                 <X size={12} />
               </Ariakit.CompositeItem>
               // </AccountCard>
->>>>>>> c7f67a714 (frontend: improve styles group editor autocomplete)
             )
           })}
           <YStack role="gridcell" flex={1}>
