@@ -676,7 +676,10 @@ function InviteMemberDialog({
             {matches.length == 0 ? (
               <TagInputItem
                 onClick={() => {
-                  setMemberSelection((values) => [...values, value])
+                  let unpackedId = unpackHmId(value)
+                  if (unpackedId && unpackedId.type == 'a') {
+                    setMemberSelection((values) => [...values, unpackedId.eid])
+                  }
                 }}
               >
                 Add &quot;{value}&quot;
@@ -934,6 +937,10 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
         >
           {selectedValues.map((value) => {
             let account = accountsMap[value]
+            let alias =
+              account && account.profile?.alias ? account.profile.alias : value
+            let avatar =
+              account && account.profile?.avatar ? account.profile.avatar : '?'
             return (
 <<<<<<< HEAD
               <AccountCard accountId={value} key={value}>
@@ -970,6 +977,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                   <XStack
                     gap="$2"
                     padding="$1.5"
+                    minHeight="2rem"
                     borderRadius="$1"
                     backgroundColor="$backgroundFocus"
                     borderColor="$borderColor"
@@ -982,14 +990,16 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                 }
               >
                 <UIAvatar
-                  label={account?.alias}
+                  label={alias}
                   id={value}
-                  url={`${BACKEND_FILE_URL}/${account.profile?.avatar}`}
+                  url={avatar ? `${BACKEND_FILE_URL}/${avatar}` : undefined}
                 />
                 <SizableText size="$3">
-                  {account?.alias
-                    ? account.alias
-                    : `${value?.slice(0, 5)}...${value?.slice(-5)}`}
+                  {alias
+                    ? alias
+                    : value.length > 20
+                    ? `${value?.slice(0, 5)}...${value?.slice(-5)}`
+                    : value}
                 </SizableText>
                 {/* <span className="tag-remove"></span> */}
                 <X size={12} />
