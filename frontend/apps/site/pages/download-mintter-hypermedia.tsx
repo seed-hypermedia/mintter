@@ -133,10 +133,10 @@ export const getStaticProps: GetStaticProps<EveryPageProps> = async (
   //  mintter-desktop_2023.10.2_amd64.deb
 
   const macOSarm64 = manifest.assets.find((asset: {name: string}) =>
-    asset.name.match(/darwin-arm64/),
+    asset.name.match(/arm64.dmg/),
   )
   const macOSx64 = manifest.assets.find((asset: {name: string}) =>
-    asset.name.match(/darwin-x64/),
+    asset.name.match(/x64.dmg/),
   )
   const win32x64 = manifest.assets.find((asset: {name: string}) =>
     asset.name.match(/win32-x64/),
