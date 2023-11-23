@@ -6,6 +6,7 @@ import {
   inlineContentToNodes,
 } from '../../../api/nodeConversions/nodeConversions'
 
+import {HMBlockChildrenType} from '@mintter/shared'
 import {mergeCSSClasses} from '../../../shared/utils'
 import {
   BlockNoteDOMAttributes,
@@ -16,7 +17,6 @@ import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
 import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
-import {HMBlockChildrenType} from '@mintter/shared'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -497,33 +497,42 @@ export const BlockContainer = Node.create<{
             const selectionAtBlockStart =
               state.selection.$anchor.parentOffset === 0
 
+            const isParagraph = blockInfo.contentType.name === 'paragraph'
+
             if (selectionAtBlockStart) {
-              if (blockInfo.contentType.name === 'image') {
-                let tr = state.tr
-                const selection = NodeSelection.create(
-                  state.doc,
-                  blockInfo.startPos,
-                )
-                tr = tr.setSelection(selection)
-                view.dispatch(tr)
-                return true
-              }
-              if (!prevBlockInfo) return false
-              if (
-                ['file', 'embed', 'video'].includes(
-                  prevBlockInfo.contentType.name,
-                ) ||
-                (prevBlockInfo.contentType.name === 'image' &&
-                  prevBlockInfo.contentNode.attrs.url.length === 0)
-              ) {
-                let tr = state.tr
-                const selection = NodeSelection.create(
-                  state.doc,
-                  prevBlockInfo.startPos,
-                )
-                tr = tr.setSelection(selection)
-                view.dispatch(tr)
-                return true
+              if (isParagraph) {
+                if (blockInfo.contentType.name === 'image') {
+                  let tr = state.tr
+                  const selection = NodeSelection.create(
+                    state.doc,
+                    blockInfo.startPos,
+                  )
+                  tr = tr.setSelection(selection)
+                  view.dispatch(tr)
+                  return true
+                }
+                if (!prevBlockInfo) return false
+                if (
+                  ['file', 'embed', 'video'].includes(
+                    prevBlockInfo.contentType.name,
+                  ) ||
+                  (prevBlockInfo.contentType.name === 'image' &&
+                    prevBlockInfo.contentNode.attrs.url.length === 0)
+                ) {
+                  let tr = state.tr
+                  const selection = NodeSelection.create(
+                    state.doc,
+                    prevBlockInfo.startPos,
+                  )
+                  tr = tr.setSelection(selection)
+                  view.dispatch(tr)
+                  return true
+                }
+              } else {
+                return commands.BNUpdateBlock(state.selection.from, {
+                  type: 'paragraph',
+                  props: {},
+                })
               }
             }
 
