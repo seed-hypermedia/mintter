@@ -76,7 +76,7 @@ export const webImportingApi = t.router({
       const charset = charsetPart ? charsetPart.split('=')[1] : null
       const headers = Object.fromEntries(res.headers.entries())
       let metaTags = {}
-      if (headers['x-hypermedia-site']) {
+      if (headers['x-hypermedia-site'] && mimeType === 'text/html') {
         const res = await fetch(input, {})
         const html = await res.text()
         metaTags = extractMetaTags(html)

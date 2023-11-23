@@ -247,8 +247,8 @@ function TestURLCheck() {
     <Button
       onPress={() => {
         client.webImporting.checkWebUrl
-          // .mutate('https://mintter.com')
-          .mutate('http://localhost:3000/mintter-software-release-process')
+          .mutate('https://gabo.es')
+          // .mutate('http://localhost:3000/mintter-software-release-process')
           .then((response) => {
             toast(JSON.stringify(response))
           })
