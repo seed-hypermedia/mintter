@@ -1,8 +1,8 @@
+import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
 import http from 'http'
 import https from 'https'
 import z from 'zod'
 import {t} from './app-trpc'
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
 
 export async function uploadFile(file: Blob | string) {
   const formData = new FormData()
@@ -44,6 +44,6 @@ export const webImportingApi = t.router({
   importWebFile: t.procedure.input(z.string()).mutation(async ({input}) => {
     const file = await downloadFile(input)
     const uploadedCID = await uploadFile(file)
-    return {cid: uploadedCID, type: file.type}
+    return {cid: uploadedCID, type: file.type, size: file.size}
   }),
 })

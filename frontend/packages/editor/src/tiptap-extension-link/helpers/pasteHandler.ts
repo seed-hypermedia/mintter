@@ -163,6 +163,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             link.href.includes(value),
           )
 
+          const isMedia = checkMediaUrl(link.href)
+
           const pos = selection.$from.pos
 
           view.dispatch(
@@ -183,64 +185,85 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             }),
           )
 
-          if (isVideo) {
-            const url = link.href
-            let videoUrl = 'https://www.youtube.com/embed/'
-            if (url.includes('youtu.be')) {
-              const urlArray = url.split('/')
-              videoUrl = videoUrl + urlArray[urlArray.length - 1]
-            } else if (url.includes('youtube')) {
-              videoUrl = videoUrl + url.split('=')[1]
-            } else if (url.includes('vimeo')) {
-              const urlArray = url.split('/')
-              videoUrl =
-                'https://player.vimeo.com/video/' +
-                urlArray[urlArray.length - 1]
-            }
-            view.dispatch(
-              view.state.tr.setMeta(linkMenuPluginKey, {
-                ref: videoUrl,
-                items: getLinkMenuItems(false, false, 'video', link.href),
-              }),
-            )
-          } else {
-            fetchWebLink(options.client, link.href)
-              .then((res) => {
-                if (res) {
-                  const fullHmId = hmIdWithVersion(
-                    res?.hmId,
-                    res?.hmVersion,
-                    extractBlockRefOfUrl(link.href),
-                  )
-
-                  if (fullHmId) {
-                    view.dispatch(
-                      view.state.tr.setMeta(linkMenuPluginKey, {
-                        ref: fullHmId,
-                        items: getLinkMenuItems(
-                          false,
-                          true,
-                          undefined,
-                          link.href,
-                        ),
-                      }),
+          switch (isMedia) {
+            case 1:
+              view.dispatch(
+                view.state.tr.setMeta(linkMenuPluginKey, {
+                  ref: link.href,
+                  items: getLinkMenuItems(false, false, 'image', link.href),
+                }),
+              )
+              break
+            case 2:
+              view.dispatch(
+                view.state.tr.setMeta(linkMenuPluginKey, {
+                  ref: link.href,
+                  items: getLinkMenuItems(false, false, 'file', link.href),
+                }),
+              )
+              break
+            case 3:
+              const url = link.href
+              let videoUrl = 'https://www.youtube.com/embed/'
+              if (url.includes('youtu.be')) {
+                const urlArray = url.split('/')
+                videoUrl = videoUrl + urlArray[urlArray.length - 1]
+              } else if (url.includes('youtube')) {
+                videoUrl = videoUrl + url.split('=')[1]
+              } else if (url.includes('vimeo')) {
+                const urlArray = url.split('/')
+                videoUrl =
+                  'https://player.vimeo.com/video/' +
+                  urlArray[urlArray.length - 1]
+              }
+              view.dispatch(
+                view.state.tr.setMeta(linkMenuPluginKey, {
+                  ref: videoUrl,
+                  items: getLinkMenuItems(false, false, 'video', link.href),
+                }),
+              )
+              break
+            case 0:
+              fetchWebLink(options.client, link.href)
+                .then((res) => {
+                  if (res) {
+                    const fullHmId = hmIdWithVersion(
+                      res?.hmId,
+                      res?.hmVersion,
+                      extractBlockRefOfUrl(link.href),
                     )
+
+                    if (fullHmId) {
+                      view.dispatch(
+                        view.state.tr.setMeta(linkMenuPluginKey, {
+                          ref: fullHmId,
+                          items: getLinkMenuItems(
+                            false,
+                            true,
+                            undefined,
+                            link.href,
+                          ),
+                        }),
+                      )
+                      return true
+                    }
                   }
-                } else {
                   view.dispatch(
                     view.state.tr.setMeta(linkMenuPluginKey, {
                       items: getLinkMenuItems(false, false),
                     }),
                   )
-                }
-              })
-              .catch((err) => {
-                view.dispatch(
-                  view.state.tr.setMeta(linkMenuPluginKey, {
-                    items: getLinkMenuItems(false, false),
-                  }),
-                )
-              })
+                })
+                .catch((err) => {
+                  view.dispatch(
+                    view.state.tr.setMeta(linkMenuPluginKey, {
+                      items: getLinkMenuItems(false, false),
+                    }),
+                  )
+                })
+              break
+            default:
+              break
           }
 
           return true
@@ -306,6 +329,17 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
     if (!decos) return null
     let found = decos.find(null, null, (spec) => spec.link.href == url)
     return found.length ? found[0].from : null
+  }
+
+  function checkMediaUrl(url: string) {
+    if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) return 1
+    else if (url.match(/\.(pdf|xml|csv)$/) != null) return 2
+    else if (
+      ['youtu.be', 'youtube', 'vimeo'].some((value) => url.includes(value))
+    ) {
+      return 3
+    }
+    return 0
   }
 
   return pastePlugin
