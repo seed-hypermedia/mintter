@@ -1,4 +1,5 @@
 import {toast} from '@mintter/app/toast'
+import {client} from '@mintter/desktop/src/trpc'
 import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
@@ -29,6 +30,9 @@ export const VideoBlock = createReactBlockSpec({
   propSchema: {
     ...defaultProps,
     url: {
+      default: '',
+    },
+    src: {
       default: '',
     },
     name: {
@@ -68,8 +72,10 @@ const Render = (
   editor: BlockNoteEditor<HMBlockSchema>,
 ) => {
   const [selected, setSelected] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const tiptapEditor = editor._tiptapEditor
   const selection = tiptapEditor.state.selection
+  const hasSrc = !!block.props.src
 
   useEffect(() => {
     const selectedNode = getBlockInfoFromPos(
@@ -88,6 +94,24 @@ const Render = (
     }
   }, [selection, block.id, tiptapEditor])
 
+  useEffect(() => {
+    if (!uploading && hasSrc) {
+      setUploading(true)
+
+      client.webImporting.importWebFile
+        .mutate(block.props.src)
+        .then(({cid}) => {
+          setUploading(false)
+          editor.updateBlock(block, {
+            props: {
+              url: `ipfs://${cid}`,
+              src: '',
+            },
+          })
+        })
+    }
+  }, [hasSrc, block, uploading, editor])
+
   const assignFile = (newVideo: VideoType) => {
     editor.updateBlock(block.id, {
       props: {...block.props, ...newVideo.props},
@@ -97,6 +121,23 @@ const Render = (
 
   const setSelection = (isSelected: boolean) => {
     setSelected(isSelected)
+  }
+
+  if (hasSrc || uploading) {
+    // this means we have a URL in the props.url that is not starting with `ipfs://`, which means we are uploading the image to IPFS
+    return (
+      <Button
+        // @ts-ignore
+        contentEditable={false}
+        borderRadius={0}
+        size="$5"
+        justifyContent="flex-start"
+        backgroundColor="$color4"
+        width="100%"
+      >
+        uploading...
+      </Button>
+    )
   }
 
   return (
@@ -138,7 +179,9 @@ function VideoComponent({
 
   const getSourceType = (name: string) => {
     const nameArray = name.split('.')
-    return `video/${nameArray[nameArray.length - 1]}`
+    return nameArray[nameArray.length - 1]
+      ? `video/${nameArray[nameArray.length - 1]}`
+      : undefined
   }
 
   const handleDragReplace = async (file: File) => {

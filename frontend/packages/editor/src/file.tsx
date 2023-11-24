@@ -107,7 +107,6 @@ const Render = (
         .mutate(block.props.src)
         .then(({cid, size}) => {
           setUploading(false)
-          console.log(cid)
           editor.updateBlock(block, {
             props: {
               url: `ipfs://${cid}`,

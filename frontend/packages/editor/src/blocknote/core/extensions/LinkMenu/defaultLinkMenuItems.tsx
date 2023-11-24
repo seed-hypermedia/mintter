@@ -100,13 +100,28 @@ export function getLinkMenuItems(
           const {state, schema} = editor._tiptapEditor
           const {selection} = state
           if (!selection.empty) return
-          const node = schema.nodes[media].create(
-            media === 'video'
-              ? {
-                  url: ref,
-                }
-              : {src: ref, name: fileName},
-          )
+          let embedUrl = ''
+          if (media === 'video') {
+            let videoUrl = ''
+            if (ref.includes('youtu.be')) {
+              const urlArray = ref.split('/')
+              videoUrl =
+                'https://www.youtube.com/embed/' + urlArray[urlArray.length - 1]
+            } else if (ref.includes('youtube')) {
+              videoUrl = 'https://www.youtube.com/embed/' + ref.split('=')[1]
+            } else if (ref.includes('vimeo')) {
+              const urlArray = ref.split('/')
+              videoUrl =
+                'https://player.vimeo.com/video/' +
+                urlArray[urlArray.length - 1]
+            }
+            embedUrl = videoUrl
+          }
+          const node = schema.nodes[media].create({
+            url: embedUrl ? embedUrl : '',
+            src: embedUrl ? '' : ref,
+            name: fileName ? fileName : '',
+          })
           insertNode(editor, originalRef ? originalRef : ref, node)
         },
       }
