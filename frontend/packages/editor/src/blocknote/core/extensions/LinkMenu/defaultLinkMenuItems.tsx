@@ -14,6 +14,7 @@ export function getLinkMenuItems(
   isHmLink: boolean, // true if the link is an embeddable link
   media?: string, // type of media block if link points to a media file
   originalRef?: string, // the inserted link into the editor. needed to correctly replace the link with block
+  fileName?: string, // file name if any
 ) {
   const linkMenuItems: LinkMenuItem[] = [
     {
@@ -104,7 +105,7 @@ export function getLinkMenuItems(
               ? {
                   url: ref,
                 }
-              : {src: ref},
+              : {src: ref, name: fileName},
           )
           insertNode(editor, originalRef ? originalRef : ref, node)
         },
