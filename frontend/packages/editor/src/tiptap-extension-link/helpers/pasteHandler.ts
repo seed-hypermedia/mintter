@@ -2,6 +2,7 @@ import {getLinkMenuItems} from '@/blocknote/core'
 import {linkMenuPluginKey} from '@/blocknote/core/extensions/LinkMenu/LinkMenuPlugin'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
+import {client} from '@mintter/desktop/src/trpc'
 import {
   extractBlockRefOfUrl,
   hmIdWithVersion,
@@ -211,28 +212,21 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               )
               break
             case 3:
-              const url = link.href
-              let videoUrl = 'https://www.youtube.com/embed/'
-              if (url.includes('youtu.be')) {
-                const urlArray = url.split('/')
-                videoUrl = videoUrl + urlArray[urlArray.length - 1]
-              } else if (url.includes('youtube')) {
-                videoUrl = videoUrl + url.split('=')[1]
-              } else if (url.includes('vimeo')) {
-                const urlArray = url.split('/')
-                videoUrl =
-                  'https://player.vimeo.com/video/' +
-                  urlArray[urlArray.length - 1]
-              }
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
-                  ref: videoUrl,
-                  items: getLinkMenuItems(false, false, 'video', link.href),
+                  ref: link.href,
+                  items: getLinkMenuItems(
+                    false,
+                    false,
+                    'video',
+                    link.href,
+                    fileName,
+                  ),
                 }),
               )
               break
             case 0:
-              fetchWebLink(options.client, link.href)
+              const embedPromise = fetchWebLink(options.client, link.href)
                 .then((res) => {
                   if (res) {
                     const fullHmId = hmIdWithVersion(
@@ -256,20 +250,49 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       return true
                     }
                   }
-                  view.dispatch(
-                    view.state.tr.setMeta(linkMenuPluginKey, {
-                      items: getLinkMenuItems(false, false),
-                    }),
-                  )
                 })
                 .catch((err) => {
-                  view.dispatch(
-                    view.state.tr.setMeta(linkMenuPluginKey, {
-                      items: getLinkMenuItems(false, false),
-                    }),
-                  )
+                  console.log(err)
                 })
-              break
+              const mediaPromise = client.webImporting.checkWebUrl
+                .mutate(link.href)
+                .then((response) => {
+                  if (response && response.contentType) {
+                    let type = response.contentType.split('/')[0]
+                    if (type === 'application') type = 'file'
+                    if (['image', 'video', 'file'].includes(type)) {
+                      view.dispatch(
+                        view.state.tr.setMeta(linkMenuPluginKey, {
+                          ref: link.href,
+                          items: getLinkMenuItems(
+                            false,
+                            false,
+                            type,
+                            link.href,
+                          ),
+                        }),
+                      )
+                      return true
+                    }
+                  }
+                })
+                .catch((err) => {
+                  console.log(err)
+                })
+              Promise.all([embedPromise, mediaPromise])
+                .then((results) => {
+                  const [embedResult, mediaResult] = results
+                  if (!embedResult && !mediaResult) {
+                    view.dispatch(
+                      view.state.tr.setMeta(linkMenuPluginKey, {
+                        items: getLinkMenuItems(false, false),
+                      }),
+                    )
+                  }
+                })
+                .catch((err) => {
+                  console.log(err)
+                })
             default:
               break
           }
@@ -340,14 +363,15 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
   }
 
   function checkMediaUrl(url: string): [number, string] {
-    const hasExtension = url.match(/[^/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/)
-    if (hasExtension) {
-      const extensionArray = hasExtension[0].split('.')
+    const matchResult = url.match(/[^/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/)
+    if (matchResult) {
+      const extensionArray = matchResult[0].split('.')
       const extension = extensionArray[extensionArray.length - 1]
-      if (['png', 'jpg', 'jpeg'].includes(extension))
-        return [1, hasExtension[0]]
+      if (['png', 'jpg', 'jpeg'].includes(extension)) return [1, matchResult[0]]
       else if (['pdf', 'xml', 'csv'].includes(extension))
-        return [2, hasExtension[0]]
+        return [2, matchResult[0]]
+      else if (['mp4', 'webm', 'ogg'].includes(extension))
+        return [3, matchResult[0]]
     } else if (
       ['youtu.be', 'youtube', 'vimeo'].some((value) => url.includes(value))
     ) {
