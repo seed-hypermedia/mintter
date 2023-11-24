@@ -102,7 +102,6 @@ const Render = (
   useEffect(() => {
     if (!uploading && hasSrc) {
       setUploading(true)
-      const name = block.props.src.split('/')
 
       client.webImporting.importWebFile
         .mutate(block.props.src)
@@ -112,9 +111,8 @@ const Render = (
           editor.updateBlock(block, {
             props: {
               url: `ipfs://${cid}`,
-              size: size,
+              size: size.toString(),
               src: '',
-              name: name[name.length - 1],
             },
           })
         })

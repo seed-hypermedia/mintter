@@ -159,11 +159,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           let tr = view.state.tr
           if (!tr.selection.empty) tr.deleteSelection()
 
-          const isVideo = ['youtu.be', 'youtube', 'vimeo'].some((value) =>
-            link.href.includes(value),
-          )
-
-          const isMedia = checkMediaUrl(link.href)
+          const [mediaCase, fileName] = checkMediaUrl(link.href)
 
           const pos = selection.$from.pos
 
@@ -185,12 +181,18 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             }),
           )
 
-          switch (isMedia) {
+          switch (mediaCase) {
             case 1:
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
                   ref: link.href,
-                  items: getLinkMenuItems(false, false, 'image', link.href),
+                  items: getLinkMenuItems(
+                    false,
+                    false,
+                    'image',
+                    link.href,
+                    fileName,
+                  ),
                 }),
               )
               break
@@ -198,7 +200,13 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
                   ref: link.href,
-                  items: getLinkMenuItems(false, false, 'file', link.href),
+                  items: getLinkMenuItems(
+                    false,
+                    false,
+                    'file',
+                    link.href,
+                    fileName,
+                  ),
                 }),
               )
               break
@@ -331,15 +339,21 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
     return found.length ? found[0].from : null
   }
 
-  function checkMediaUrl(url: string) {
-    if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) return 1
-    else if (url.match(/\.(pdf|xml|csv)$/) != null) return 2
-    else if (
+  function checkMediaUrl(url: string): [number, string] {
+    const hasExtension = url.match(/[^/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/)
+    if (hasExtension) {
+      const extensionArray = hasExtension[0].split('.')
+      const extension = extensionArray[extensionArray.length - 1]
+      if (['png', 'jpg', 'jpeg'].includes(extension))
+        return [1, hasExtension[0]]
+      else if (['pdf', 'xml', 'csv'].includes(extension))
+        return [2, hasExtension[0]]
+    } else if (
       ['youtu.be', 'youtube', 'vimeo'].some((value) => url.includes(value))
     ) {
-      return 3
+      return [3, '']
     }
-    return 0
+    return [0, '']
   }
 
   return pastePlugin
