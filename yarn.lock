@@ -2669,6 +2669,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@electron-forge/maker-rpm@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "@electron-forge/maker-rpm@npm:7.1.0"
+  dependencies:
+    "@electron-forge/maker-base": 7.1.0
+    "@electron-forge/shared-types": 7.1.0
+    electron-installer-redhat: ^3.2.0
+  dependenciesMeta:
+    electron-installer-redhat:
+      optional: true
+  checksum: ea49fd08902993bfad519e7f9648d406c5f768881bc1a41070667ae25493eec8de399788e929e50d71592baaf3e1a34cc0ab87cbcbba36306564af251845c880
+  languageName: node
+  linkType: hard
+
 "@electron-forge/maker-squirrel@npm:6.4.1":
   version: 6.4.1
   resolution: "@electron-forge/maker-squirrel@npm:6.4.1"
@@ -4576,6 +4590,7 @@ __metadata:
     "@electron-forge/cli": 6.4.1
     "@electron-forge/maker-deb": 6.4.1
     "@electron-forge/maker-dmg": ^7.1.0
+    "@electron-forge/maker-rpm": ^7.1.0
     "@electron-forge/maker-squirrel": 6.4.1
     "@electron-forge/maker-zip": 6.4.1
     "@electron-forge/plugin-vite": 6.4.1
@@ -15779,6 +15794,23 @@ __metadata:
   bin:
     electron-installer-dmg: bin/electron-installer-dmg.js
   checksum: 59006b5a560bf08096d970a44b429c218cb3b0c99144d8f276a354af66312c6cb215b177e4411a833013754a0033c28b2c2dadf5cd2b1dfee7c8b6b6dbdc9dae
+  languageName: node
+  linkType: hard
+
+"electron-installer-redhat@npm:^3.2.0":
+  version: 3.4.0
+  resolution: "electron-installer-redhat@npm:3.4.0"
+  dependencies:
+    "@malept/cross-spawn-promise": ^1.0.0
+    debug: ^4.1.1
+    electron-installer-common: ^0.10.2
+    fs-extra: ^9.0.0
+    lodash: ^4.17.15
+    word-wrap: ^1.2.3
+    yargs: ^16.0.2
+  bin:
+    electron-installer-redhat: src/cli.js
+  conditions: (os=darwin | os=linux)
   languageName: node
   linkType: hard
 

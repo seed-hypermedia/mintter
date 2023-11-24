@@ -1,4 +1,5 @@
 import {MakerDeb, MakerDebConfig} from '@electron-forge/maker-deb'
+import {MakerRpm} from '@electron-forge/maker-rpm'
 import {MakerSquirrel} from '@electron-forge/maker-squirrel'
 import {MakerZIP} from '@electron-forge/maker-zip'
 import type {ForgeConfig} from '@electron-forge/shared-types'
@@ -47,6 +48,7 @@ const commonLinuxConfig: MakerDebConfig = {
     mimeType: ['x-scheme-handler/hm'],
     version,
     bin: 'Mintter',
+    homepage: 'https://mintter.com',
   },
 }
 
@@ -95,6 +97,7 @@ const config: ForgeConfig = {
         format: 'ULFO',
       },
     },
+    new MakerRpm(commonLinuxConfig),
   ],
   plugins: [
     // {
