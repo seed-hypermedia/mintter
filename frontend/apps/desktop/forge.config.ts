@@ -90,13 +90,6 @@ const config: ForgeConfig = {
       // certificateFile: process.env.WINDOWS_PFX_FILE,
       // certificatePassword: process.env.WINDOWS_PFX_PASSWORD,
     }),
-    {
-      name: '@electron-forge/maker-dmg',
-      config: {
-        background: './assets/dmg-background.png',
-        format: 'ULFO',
-      },
-    },
     new MakerRpm(commonLinuxConfig),
   ],
   plugins: [
@@ -133,6 +126,30 @@ const config: ForgeConfig = {
     }),
   ],
   publishers: [],
+}
+
+function buildDMGMaybe() {
+  if (process.platform !== 'darwin') {
+    console.log(
+      `[FORGE CONFIG]: 🍎 The platform we are building is not 'darwin'. skipping (platform: ${process.platform})`,
+    )
+    return
+  }
+
+  if (!process.env.CI) {
+    console.log(`[FORGE CONFIG]: 🤖 Not in CI, skipping sign and notarization`)
+    return
+  }
+
+  console.log(`[FORGE CONFIG]: 🎉 adding DMG maker to the config.`)
+
+  config.makers?.push({
+    name: '@electron-forge/maker-dmg',
+    config: {
+      background: './assets/dmg-background.png',
+      format: 'ULFO',
+    },
+  })
 }
 
 function notarizeMaybe() {
@@ -182,5 +199,6 @@ function notarizeMaybe() {
 }
 
 notarizeMaybe()
+buildDMGMaybe()
 
 module.exports = config

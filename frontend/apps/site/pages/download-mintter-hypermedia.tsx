@@ -145,6 +145,9 @@ export const getStaticProps: GetStaticProps<EveryPageProps> = async (
     asset.name.match(/amd64.deb/),
   )
 
+  const linuxRpm = manifest.assets.find((asset: {name: string}) =>
+    asset.name.match(/.rpm/),
+  )
   return {
     revalidate: 200, // update this every 200 seconds
     props: await getPageProps(helpers, context, {
@@ -166,7 +169,10 @@ export const getStaticProps: GetStaticProps<EveryPageProps> = async (
         },
         linux: {
           name: 'Linux',
-          items: [extractedAsset('.deb', linuxx64)],
+          items: [
+            extractedAsset('.deb', linuxx64),
+            extractedAsset('.rpm', linuxRpm),
+          ],
         },
       },
     }),
