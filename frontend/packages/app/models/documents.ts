@@ -626,7 +626,11 @@ export function useDraftEditor({
       diagnosis.append(documentId, {
         key: 'will.updateDraft',
         // note: 'regular updateDraft',
-        value: changesToJSON(capturedChanges),
+        value: {
+          changes: changesToJSON(capturedChanges),
+          blocksMap,
+          editorState: currentEditorBlocks,
+        },
       })
       try {
         let mutation = await grpcClient.drafts.updateDraft({
