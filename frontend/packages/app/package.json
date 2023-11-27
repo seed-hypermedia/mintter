@@ -22,7 +22,7 @@
     "@mintter/shared": "*",
     "@mintter/ui": "*",
     "@radix-ui/react-dropdown-menu": "2.0.5",
-    "@tamagui/lucide-icons": "1.75.9",
+    "@tamagui/lucide-icons": "1.79.1",
     "@tanstack/react-query": "4.33.0",
     "@tanstack/react-query-devtools": "4.33.0",
     "@tiptap/core": "2.0.3",
@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@mintter/prettier": "*",
-    "@tamagui/vite-plugin": "1.75.9",
+    "@tamagui/vite-plugin": "1.79.1",
     "@types/node": "^20.6.5",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
