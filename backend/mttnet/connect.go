@@ -93,13 +93,14 @@ func (n *Node) checkMintterProtocolVersion(ctx context.Context, pid peer.ID, des
 	if len(protos) == 0 {
 		_, err = n.p2p.NewStream(ctx, pid, protocol...)
 		if err != nil {
-			fmt.Println("After zero protocols, failed to open a new stream")
+			fmt.Println("After zero protocols, failed to open a new stream: " + err.Error())
 		}
+		fmt.Println("After zero protocols, we could open a new stream!")
 		return fmt.Errorf("peer %s doesn't support any protocols", pid.String())
 	}
 	_, err = n.p2p.NewStream(ctx, pid, protocol...)
 	if err != nil {
-		fmt.Println("After more than zero protocols, failed to open a new stream")
+		fmt.Println("After more than zero protocols, failed to open a new stream: " + err.Error())
 	} else {
 		fmt.Println("After more than zero protocols, successfully open a new stream")
 	}
