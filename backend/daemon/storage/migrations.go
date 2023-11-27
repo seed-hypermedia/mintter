@@ -68,6 +68,187 @@ var migrations = []migration{
 			DELETE FROM kv WHERE key = 'last_reindex_time';
 		`))
 	}},
+	{Version: "2023-11-17.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		oldResources := mustCount(conn, "lookup WHERE type = unicode('r')")
+		oldPublicKeys := mustCount(conn, "lookup WHERE type = unicode('p')")
+		oldTrustedAccounts := mustCount(conn, "trusted_accounts")
+		oldDrafts := mustCount(conn, "drafts")
+
+		err := sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE accounts;
+			DROP TABLE blob_attrs;
+			DROP TABLE heads;
+			DROP VIEW key_delegations;
+			DROP VIEW key_delegations_view;
+			DROP VIEW change_deps;
+
+			DROP VIEW public_keys;
+			CREATE TABLE public_keys (
+				id INTEGER PRIMARY KEY,
+				principal BLOB UNIQUE NOT NULL
+			);
+			
+			INSERT INTO public_keys (id, principal)
+			SELECT id, value FROM lookup WHERE type = unicode('p');
+
+			CREATE TABLE structural_blobs (
+				id INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				type TEXT NOT NULL,
+				ts INTEGER,
+				author INTEGER REFERENCES public_keys (id),
+				resource INTEGER REFERENCES resources (id)
+			) WITHOUT ROWID;
+			CREATE INDEX structural_blobs_by_author ON structural_blobs (author) WHERE author IS NOT NULL;
+			CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource) WHERE resource IS NOT NULL;
+
+			CREATE TABLE key_delegations (
+				id INTEGER PRIMARY KEY REFERENCES blobs (id) NOT NULL,
+				issuer INTEGER REFERENCES public_keys (id),
+				delegate INTEGER REFERENCES public_keys (id)
+			) WITHOUT ROWID;
+			CREATE INDEX key_delegations_by_issuer ON key_delegations (issuer, delegate);
+			CREATE INDEX key_delegations_by_delegate ON key_delegations (delegate, issuer);
+
+			CREATE TABLE resources (
+				id INTEGER PRIMARY KEY,
+				iri TEXT UNIQUE NOT NULL,
+				owner INTEGER REFERENCES public_keys (id),
+				create_time INTEGER
+			);
+			CREATE INDEX resources_by_owner ON resources (owner) WHERE owner IS NOT NULL;
+			INSERT INTO resources (iri) SELECT value FROM lookup WHERE type = unicode('r');
+
+			DROP TABLE blob_links;
+			CREATE TABLE blob_links (
+				source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES blobs (id) NOT NULL,
+				type TEXT NOT NULL,
+				PRIMARY KEY (source, target, type)
+			) WITHOUT ROWID;
+			CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, source, type);
+
+			CREATE TABLE resource_links (
+				source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES resources (id) NOT NULL,
+				type TEXT NOT NULL,
+				is_pinned INTEGER NOT NULL DEFAULT (0),
+				meta BLOB
+			);
+			CREATE INDEX resource_links_by_source ON resource_links (source, is_pinned, target);
+			CREATE INDEX resource_links_by_target ON resource_links (target);
+
+			ALTER TABLE trusted_accounts RENAME TO trusted_accounts_old;
+
+			CREATE TABLE trusted_accounts (
+				id INTEGER PRIMARY KEY REFERENCES public_keys (id) NOT NULL
+			) WITHOUT ROWID;
+
+			INSERT INTO trusted_accounts (id)
+			SELECT id FROM public_keys
+			WHERE principal IN (
+				SELECT value FROM lookup
+				JOIN trusted_accounts_old ON trusted_accounts_old.id = lookup.id
+			);
+
+			DROP TABLE trusted_accounts_old;
+			DROP TABLE changes;
+			DROP VIEW changes_view;
+
+			CREATE VIEW change_deps AS
+			SELECT
+				source AS child,
+				target AS parent
+			FROM blob_links
+			WHERE type = 'change/dep';
+
+			DROP VIEW drafts_view;
+			DROP INDEX drafts_by_blob;
+			DROP INDEX drafts_unique;
+			ALTER TABLE drafts RENAME TO drafts_old;
+			CREATE TABLE drafts (
+				resource INTEGER REFERENCES resources (id) NOT NULL,
+				blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				PRIMARY KEY (resource, blob)
+			) WITHOUT ROWID;
+			CREATE INDEX drafts_by_blob ON drafts (blob);
+			CREATE UNIQUE INDEX drafts_unique ON drafts (resource);
+			INSERT INTO drafts (resource, blob)
+			SELECT resources.id, drafts_old.blob
+			FROM drafts_old
+			JOIN lookup ON lookup.id = drafts_old.entity
+			JOIN resources ON resources.iri = lookup.value;
+			DROP TABLE drafts_old;
+			
+			CREATE VIEW drafts_view AS
+			SELECT
+				drafts.resource AS resource_id,
+				drafts.blob AS blob_id,
+				resources.iri AS resource,
+				blobs.codec AS codec,
+				blobs.multihash AS multihash
+			FROM drafts
+			JOIN resources ON resources.id = drafts.resource
+			JOIN blobs ON blobs.id = drafts.blob;
+			
+			DROP VIEW entities;
+			DROP TABLE lookup;
+
+			CREATE VIEW key_delegations_view AS
+			SELECT
+				kd.id AS blob,
+				blobs.codec AS blob_codec,
+				blobs.multihash AS blob_multihash,
+				iss.principal AS issuer,
+				del.principal AS delegate
+			FROM key_delegations kd
+			JOIN blobs ON blobs.id = kd.id
+			JOIN public_keys iss ON iss.id = kd.issuer
+			JOIN public_keys del ON del.id = kd.delegate;
+
+			CREATE VIEW structural_blobs_view AS
+			SELECT
+				structural_blobs.type AS blob_type,
+				structural_blobs.id AS blob_id,
+				structural_blobs.resource AS resource_id,
+				structural_blobs.ts AS ts,
+				resources.iri AS resource,
+				blobs.codec AS codec,
+				blobs.multihash AS multihash,
+				blobs.data AS data,
+				blobs.size AS size
+			FROM structural_blobs
+			JOIN blobs ON blobs.id = structural_blobs.id
+			JOIN resources ON structural_blobs.resource = resources.id;
+
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+		if err != nil {
+			return err
+		}
+
+		newResources := mustCount(conn, "resources")
+		newPublicKeys := mustCount(conn, "public_keys")
+		newTrustedAccounts := mustCount(conn, "trusted_accounts")
+		newDrafts := mustCount(conn, "drafts")
+
+		if oldResources != newResources {
+			return fmt.Errorf("resources count mismatch: %d != %d", oldResources, newResources)
+		}
+
+		if oldPublicKeys != newPublicKeys {
+			return fmt.Errorf("public keys count mismatch: %d != %d", oldPublicKeys, newPublicKeys)
+		}
+
+		if oldTrustedAccounts != newTrustedAccounts {
+			return fmt.Errorf("trusted accounts count mismatch: %d != %d", oldTrustedAccounts, newTrustedAccounts)
+		}
+
+		if oldDrafts != newDrafts {
+			return fmt.Errorf("drafts count mismatch: %d != %d", oldDrafts, newDrafts)
+		}
+
+		return nil
+	}},
 }
 
 const (
@@ -293,4 +474,21 @@ func loadDeviceKeyFromFile(dir string) (kp core.KeyPair, err error) {
 	}
 
 	return core.NewKeyPair(pk)
+}
+
+func mustCount(conn *sqlite.Conn, table string) (count int) {
+	count = -1
+	err := sqlitex.Exec(conn, "SELECT COUNT() FROM "+table, func(stmt *sqlite.Stmt) error {
+		count = stmt.ColumnInt(0)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	if count == -1 {
+		panic("BUG: must have count")
+	}
+
+	return count
 }

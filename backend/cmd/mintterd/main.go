@@ -12,6 +12,7 @@ import (
 
 	"mintter/backend/config"
 	"mintter/backend/daemon"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/logging"
 
 	"github.com/burdiyan/go/mainutil"
@@ -67,7 +68,7 @@ func main() {
 			defer sentry.Flush(2 * time.Second)
 		}
 
-		dir, err := daemon.InitRepo(cfg.Base.DataDir, nil)
+		dir, err := storage.InitRepo(cfg.Base.DataDir, nil)
 		if err != nil {
 			return err
 		}

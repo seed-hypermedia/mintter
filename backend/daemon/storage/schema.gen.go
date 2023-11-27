@@ -6,60 +6,20 @@ import (
 	"mintter/backend/pkg/sqlitegen"
 )
 
-// Table accounts.
-const (
-	Accounts          sqlitegen.Table  = "accounts"
-	AccountsEntity    sqlitegen.Column = "accounts.entity"
-	AccountsPublicKey sqlitegen.Column = "accounts.public_key"
-)
-
-// Table accounts. Plain strings.
-const (
-	T_Accounts          = "accounts"
-	C_AccountsEntity    = "accounts.entity"
-	C_AccountsPublicKey = "accounts.public_key"
-)
-
-// Table blob_attrs.
-const (
-	BlobAttrs         sqlitegen.Table  = "blob_attrs"
-	BlobAttrsAnchor   sqlitegen.Column = "blob_attrs.anchor"
-	BlobAttrsBlob     sqlitegen.Column = "blob_attrs.blob"
-	BlobAttrsExtra    sqlitegen.Column = "blob_attrs.extra"
-	BlobAttrsIsLookup sqlitegen.Column = "blob_attrs.is_lookup"
-	BlobAttrsKey      sqlitegen.Column = "blob_attrs.key"
-	BlobAttrsTs       sqlitegen.Column = "blob_attrs.ts"
-	BlobAttrsValue    sqlitegen.Column = "blob_attrs.value"
-	BlobAttrsValuePtr sqlitegen.Column = "blob_attrs.value_ptr"
-)
-
-// Table blob_attrs. Plain strings.
-const (
-	T_BlobAttrs         = "blob_attrs"
-	C_BlobAttrsAnchor   = "blob_attrs.anchor"
-	C_BlobAttrsBlob     = "blob_attrs.blob"
-	C_BlobAttrsExtra    = "blob_attrs.extra"
-	C_BlobAttrsIsLookup = "blob_attrs.is_lookup"
-	C_BlobAttrsKey      = "blob_attrs.key"
-	C_BlobAttrsTs       = "blob_attrs.ts"
-	C_BlobAttrsValue    = "blob_attrs.value"
-	C_BlobAttrsValuePtr = "blob_attrs.value_ptr"
-)
-
 // Table blob_links.
 const (
 	BlobLinks       sqlitegen.Table  = "blob_links"
-	BlobLinksRel    sqlitegen.Column = "blob_links.rel"
 	BlobLinksSource sqlitegen.Column = "blob_links.source"
 	BlobLinksTarget sqlitegen.Column = "blob_links.target"
+	BlobLinksType   sqlitegen.Column = "blob_links.type"
 )
 
 // Table blob_links. Plain strings.
 const (
 	T_BlobLinks       = "blob_links"
-	C_BlobLinksRel    = "blob_links.rel"
 	C_BlobLinksSource = "blob_links.source"
 	C_BlobLinksTarget = "blob_links.target"
+	C_BlobLinksType   = "blob_links.type"
 )
 
 // Table blobs.
@@ -98,96 +58,38 @@ const (
 	C_ChangeDepsParent = "change_deps.parent"
 )
 
-// Table changes.
-const (
-	Changes        sqlitegen.Table  = "changes"
-	ChangesAuthor  sqlitegen.Column = "changes.author"
-	ChangesBlob    sqlitegen.Column = "changes.blob"
-	ChangesEntity  sqlitegen.Column = "changes.entity"
-	ChangesHLCTime sqlitegen.Column = "changes.hlc_time"
-)
-
-// Table changes. Plain strings.
-const (
-	T_Changes        = "changes"
-	C_ChangesAuthor  = "changes.author"
-	C_ChangesBlob    = "changes.blob"
-	C_ChangesEntity  = "changes.entity"
-	C_ChangesHLCTime = "changes.hlc_time"
-)
-
-// Table changes_view.
-const (
-	ChangesView          sqlitegen.Table  = "changes_view"
-	ChangesViewBlobID    sqlitegen.Column = "changes_view.blob_id"
-	ChangesViewCodec     sqlitegen.Column = "changes_view.codec"
-	ChangesViewData      sqlitegen.Column = "changes_view.data"
-	ChangesViewEntity    sqlitegen.Column = "changes_view.entity"
-	ChangesViewEntityID  sqlitegen.Column = "changes_view.entity_id"
-	ChangesViewHLCTime   sqlitegen.Column = "changes_view.hlc_time"
-	ChangesViewMultihash sqlitegen.Column = "changes_view.multihash"
-	ChangesViewSize      sqlitegen.Column = "changes_view.size"
-)
-
-// Table changes_view. Plain strings.
-const (
-	T_ChangesView          = "changes_view"
-	C_ChangesViewBlobID    = "changes_view.blob_id"
-	C_ChangesViewCodec     = "changes_view.codec"
-	C_ChangesViewData      = "changes_view.data"
-	C_ChangesViewEntity    = "changes_view.entity"
-	C_ChangesViewEntityID  = "changes_view.entity_id"
-	C_ChangesViewHLCTime   = "changes_view.hlc_time"
-	C_ChangesViewMultihash = "changes_view.multihash"
-	C_ChangesViewSize      = "changes_view.size"
-)
-
 // Table drafts.
 const (
-	Drafts       sqlitegen.Table  = "drafts"
-	DraftsBlob   sqlitegen.Column = "drafts.blob"
-	DraftsEntity sqlitegen.Column = "drafts.entity"
+	Drafts         sqlitegen.Table  = "drafts"
+	DraftsBlob     sqlitegen.Column = "drafts.blob"
+	DraftsResource sqlitegen.Column = "drafts.resource"
 )
 
 // Table drafts. Plain strings.
 const (
-	T_Drafts       = "drafts"
-	C_DraftsBlob   = "drafts.blob"
-	C_DraftsEntity = "drafts.entity"
+	T_Drafts         = "drafts"
+	C_DraftsBlob     = "drafts.blob"
+	C_DraftsResource = "drafts.resource"
 )
 
 // Table drafts_view.
 const (
-	DraftsView          sqlitegen.Table  = "drafts_view"
-	DraftsViewBlobID    sqlitegen.Column = "drafts_view.blob_id"
-	DraftsViewCodec     sqlitegen.Column = "drafts_view.codec"
-	DraftsViewEntity    sqlitegen.Column = "drafts_view.entity"
-	DraftsViewEntityID  sqlitegen.Column = "drafts_view.entity_id"
-	DraftsViewMultihash sqlitegen.Column = "drafts_view.multihash"
+	DraftsView           sqlitegen.Table  = "drafts_view"
+	DraftsViewBlobID     sqlitegen.Column = "drafts_view.blob_id"
+	DraftsViewCodec      sqlitegen.Column = "drafts_view.codec"
+	DraftsViewMultihash  sqlitegen.Column = "drafts_view.multihash"
+	DraftsViewResource   sqlitegen.Column = "drafts_view.resource"
+	DraftsViewResourceID sqlitegen.Column = "drafts_view.resource_id"
 )
 
 // Table drafts_view. Plain strings.
 const (
-	T_DraftsView          = "drafts_view"
-	C_DraftsViewBlobID    = "drafts_view.blob_id"
-	C_DraftsViewCodec     = "drafts_view.codec"
-	C_DraftsViewEntity    = "drafts_view.entity"
-	C_DraftsViewEntityID  = "drafts_view.entity_id"
-	C_DraftsViewMultihash = "drafts_view.multihash"
-)
-
-// Table entities.
-const (
-	Entities    sqlitegen.Table  = "entities"
-	EntitiesEID sqlitegen.Column = "entities.eid"
-	EntitiesID  sqlitegen.Column = "entities.id"
-)
-
-// Table entities. Plain strings.
-const (
-	T_Entities    = "entities"
-	C_EntitiesEID = "entities.eid"
-	C_EntitiesID  = "entities.id"
+	T_DraftsView           = "drafts_view"
+	C_DraftsViewBlobID     = "drafts_view.blob_id"
+	C_DraftsViewCodec      = "drafts_view.codec"
+	C_DraftsViewMultihash  = "drafts_view.multihash"
+	C_DraftsViewResource   = "drafts_view.resource"
+	C_DraftsViewResourceID = "drafts_view.resource_id"
 )
 
 // Table group_sites.
@@ -216,35 +118,19 @@ const (
 	C_GroupSitesURL            = "group_sites.url"
 )
 
-// Table heads.
-const (
-	Heads         sqlitegen.Table  = "heads"
-	HeadsBlob     sqlitegen.Column = "heads.blob"
-	HeadsName     sqlitegen.Column = "heads.name"
-	HeadsResource sqlitegen.Column = "heads.resource"
-)
-
-// Table heads. Plain strings.
-const (
-	T_Heads         = "heads"
-	C_HeadsBlob     = "heads.blob"
-	C_HeadsName     = "heads.name"
-	C_HeadsResource = "heads.resource"
-)
-
 // Table key_delegations.
 const (
 	KeyDelegations         sqlitegen.Table  = "key_delegations"
-	KeyDelegationsBlob     sqlitegen.Column = "key_delegations.blob"
 	KeyDelegationsDelegate sqlitegen.Column = "key_delegations.delegate"
+	KeyDelegationsID       sqlitegen.Column = "key_delegations.id"
 	KeyDelegationsIssuer   sqlitegen.Column = "key_delegations.issuer"
 )
 
 // Table key_delegations. Plain strings.
 const (
 	T_KeyDelegations         = "key_delegations"
-	C_KeyDelegationsBlob     = "key_delegations.blob"
 	C_KeyDelegationsDelegate = "key_delegations.delegate"
+	C_KeyDelegationsID       = "key_delegations.id"
 	C_KeyDelegationsIssuer   = "key_delegations.issuer"
 )
 
@@ -282,22 +168,6 @@ const (
 	C_KVValue = "kv.value"
 )
 
-// Table lookup.
-const (
-	Lookup      sqlitegen.Table  = "lookup"
-	LookupID    sqlitegen.Column = "lookup.id"
-	LookupType  sqlitegen.Column = "lookup.type"
-	LookupValue sqlitegen.Column = "lookup.value"
-)
-
-// Table lookup. Plain strings.
-const (
-	T_Lookup      = "lookup"
-	C_LookupID    = "lookup.id"
-	C_LookupType  = "lookup.type"
-	C_LookupValue = "lookup.value"
-)
-
 // Table public_keys.
 const (
 	PublicKeys          sqlitegen.Table  = "public_keys"
@@ -312,6 +182,44 @@ const (
 	C_PublicKeysPrincipal = "public_keys.principal"
 )
 
+// Table resource_links.
+const (
+	ResourceLinks         sqlitegen.Table  = "resource_links"
+	ResourceLinksIsPinned sqlitegen.Column = "resource_links.is_pinned"
+	ResourceLinksMeta     sqlitegen.Column = "resource_links.meta"
+	ResourceLinksSource   sqlitegen.Column = "resource_links.source"
+	ResourceLinksTarget   sqlitegen.Column = "resource_links.target"
+	ResourceLinksType     sqlitegen.Column = "resource_links.type"
+)
+
+// Table resource_links. Plain strings.
+const (
+	T_ResourceLinks         = "resource_links"
+	C_ResourceLinksIsPinned = "resource_links.is_pinned"
+	C_ResourceLinksMeta     = "resource_links.meta"
+	C_ResourceLinksSource   = "resource_links.source"
+	C_ResourceLinksTarget   = "resource_links.target"
+	C_ResourceLinksType     = "resource_links.type"
+)
+
+// Table resources.
+const (
+	Resources           sqlitegen.Table  = "resources"
+	ResourcesCreateTime sqlitegen.Column = "resources.create_time"
+	ResourcesID         sqlitegen.Column = "resources.id"
+	ResourcesIRI        sqlitegen.Column = "resources.iri"
+	ResourcesOwner      sqlitegen.Column = "resources.owner"
+)
+
+// Table resources. Plain strings.
+const (
+	T_Resources           = "resources"
+	C_ResourcesCreateTime = "resources.create_time"
+	C_ResourcesID         = "resources.id"
+	C_ResourcesIRI        = "resources.iri"
+	C_ResourcesOwner      = "resources.owner"
+)
+
 // Table sqlite_sequence.
 const (
 	SQLiteSequence     sqlitegen.Table  = "sqlite_sequence"
@@ -324,6 +232,54 @@ const (
 	T_SQLiteSequence     = "sqlite_sequence"
 	C_SQLiteSequenceName = "sqlite_sequence.name"
 	C_SQLiteSequenceSeq  = "sqlite_sequence.seq"
+)
+
+// Table structural_blobs.
+const (
+	StructuralBlobs         sqlitegen.Table  = "structural_blobs"
+	StructuralBlobsAuthor   sqlitegen.Column = "structural_blobs.author"
+	StructuralBlobsID       sqlitegen.Column = "structural_blobs.id"
+	StructuralBlobsResource sqlitegen.Column = "structural_blobs.resource"
+	StructuralBlobsTs       sqlitegen.Column = "structural_blobs.ts"
+	StructuralBlobsType     sqlitegen.Column = "structural_blobs.type"
+)
+
+// Table structural_blobs. Plain strings.
+const (
+	T_StructuralBlobs         = "structural_blobs"
+	C_StructuralBlobsAuthor   = "structural_blobs.author"
+	C_StructuralBlobsID       = "structural_blobs.id"
+	C_StructuralBlobsResource = "structural_blobs.resource"
+	C_StructuralBlobsTs       = "structural_blobs.ts"
+	C_StructuralBlobsType     = "structural_blobs.type"
+)
+
+// Table structural_blobs_view.
+const (
+	StructuralBlobsView           sqlitegen.Table  = "structural_blobs_view"
+	StructuralBlobsViewBlobID     sqlitegen.Column = "structural_blobs_view.blob_id"
+	StructuralBlobsViewBlobType   sqlitegen.Column = "structural_blobs_view.blob_type"
+	StructuralBlobsViewCodec      sqlitegen.Column = "structural_blobs_view.codec"
+	StructuralBlobsViewData       sqlitegen.Column = "structural_blobs_view.data"
+	StructuralBlobsViewMultihash  sqlitegen.Column = "structural_blobs_view.multihash"
+	StructuralBlobsViewResource   sqlitegen.Column = "structural_blobs_view.resource"
+	StructuralBlobsViewResourceID sqlitegen.Column = "structural_blobs_view.resource_id"
+	StructuralBlobsViewSize       sqlitegen.Column = "structural_blobs_view.size"
+	StructuralBlobsViewTs         sqlitegen.Column = "structural_blobs_view.ts"
+)
+
+// Table structural_blobs_view. Plain strings.
+const (
+	T_StructuralBlobsView           = "structural_blobs_view"
+	C_StructuralBlobsViewBlobID     = "structural_blobs_view.blob_id"
+	C_StructuralBlobsViewBlobType   = "structural_blobs_view.blob_type"
+	C_StructuralBlobsViewCodec      = "structural_blobs_view.codec"
+	C_StructuralBlobsViewData       = "structural_blobs_view.data"
+	C_StructuralBlobsViewMultihash  = "structural_blobs_view.multihash"
+	C_StructuralBlobsViewResource   = "structural_blobs_view.resource"
+	C_StructuralBlobsViewResourceID = "structural_blobs_view.resource_id"
+	C_StructuralBlobsViewSize       = "structural_blobs_view.size"
+	C_StructuralBlobsViewTs         = "structural_blobs_view.ts"
 )
 
 // Table trusted_accounts.
@@ -367,19 +323,9 @@ const (
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
-		AccountsEntity:                  {Table: Accounts, SQLType: "INTEGER"},
-		AccountsPublicKey:               {Table: Accounts, SQLType: "INTEGER"},
-		BlobAttrsAnchor:                 {Table: BlobAttrs, SQLType: "TEXT"},
-		BlobAttrsBlob:                   {Table: BlobAttrs, SQLType: "INTEGER"},
-		BlobAttrsExtra:                  {Table: BlobAttrs, SQLType: ""},
-		BlobAttrsIsLookup:               {Table: BlobAttrs, SQLType: "INTEGER"},
-		BlobAttrsKey:                    {Table: BlobAttrs, SQLType: "TEXT"},
-		BlobAttrsTs:                     {Table: BlobAttrs, SQLType: "INTEGER"},
-		BlobAttrsValue:                  {Table: BlobAttrs, SQLType: ""},
-		BlobAttrsValuePtr:               {Table: BlobAttrs, SQLType: "INTEGER"},
-		BlobLinksRel:                    {Table: BlobLinks, SQLType: "TEXT"},
 		BlobLinksSource:                 {Table: BlobLinks, SQLType: "INTEGER"},
 		BlobLinksTarget:                 {Table: BlobLinks, SQLType: "INTEGER"},
+		BlobLinksType:                   {Table: BlobLinks, SQLType: "TEXT"},
 		BlobsCodec:                      {Table: Blobs, SQLType: "INTEGER"},
 		BlobsData:                       {Table: Blobs, SQLType: "BLOB"},
 		BlobsID:                         {Table: Blobs, SQLType: "INTEGER"},
@@ -388,27 +334,13 @@ var Schema = sqlitegen.Schema{
 		BlobsSize:                       {Table: Blobs, SQLType: "INTEGER"},
 		ChangeDepsChild:                 {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangeDepsParent:                {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangesAuthor:                   {Table: Changes, SQLType: "INTEGER"},
-		ChangesBlob:                     {Table: Changes, SQLType: "INTEGER"},
-		ChangesEntity:                   {Table: Changes, SQLType: "INTEGER"},
-		ChangesHLCTime:                  {Table: Changes, SQLType: "INTEGER"},
-		ChangesViewBlobID:               {Table: ChangesView, SQLType: "INTEGER"},
-		ChangesViewCodec:                {Table: ChangesView, SQLType: "INTEGER"},
-		ChangesViewData:                 {Table: ChangesView, SQLType: "BLOB"},
-		ChangesViewEntity:               {Table: ChangesView, SQLType: "BLOB"},
-		ChangesViewEntityID:             {Table: ChangesView, SQLType: "INTEGER"},
-		ChangesViewHLCTime:              {Table: ChangesView, SQLType: "INTEGER"},
-		ChangesViewMultihash:            {Table: ChangesView, SQLType: "BLOB"},
-		ChangesViewSize:                 {Table: ChangesView, SQLType: "INTEGER"},
 		DraftsBlob:                      {Table: Drafts, SQLType: "INTEGER"},
-		DraftsEntity:                    {Table: Drafts, SQLType: "INTEGER"},
+		DraftsResource:                  {Table: Drafts, SQLType: "INTEGER"},
 		DraftsViewBlobID:                {Table: DraftsView, SQLType: "INTEGER"},
 		DraftsViewCodec:                 {Table: DraftsView, SQLType: "INTEGER"},
-		DraftsViewEntity:                {Table: DraftsView, SQLType: "BLOB"},
-		DraftsViewEntityID:              {Table: DraftsView, SQLType: "INTEGER"},
 		DraftsViewMultihash:             {Table: DraftsView, SQLType: "BLOB"},
-		EntitiesEID:                     {Table: Entities, SQLType: "BLOB"},
-		EntitiesID:                      {Table: Entities, SQLType: "INTEGER"},
+		DraftsViewResource:              {Table: DraftsView, SQLType: "TEXT"},
+		DraftsViewResourceID:            {Table: DraftsView, SQLType: "INTEGER"},
 		GroupSitesGroupID:               {Table: GroupSites, SQLType: "TEXT"},
 		GroupSitesHLCOrigin:             {Table: GroupSites, SQLType: "TEXT"},
 		GroupSitesHLCTime:               {Table: GroupSites, SQLType: "INTEGER"},
@@ -417,12 +349,9 @@ var Schema = sqlitegen.Schema{
 		GroupSitesLastSyncTime:          {Table: GroupSites, SQLType: "INTEGER"},
 		GroupSitesRemoteVersion:         {Table: GroupSites, SQLType: "TEXT"},
 		GroupSitesURL:                   {Table: GroupSites, SQLType: "TEXT"},
-		HeadsBlob:                       {Table: Heads, SQLType: "INTEGER"},
-		HeadsName:                       {Table: Heads, SQLType: "TEXT"},
-		HeadsResource:                   {Table: Heads, SQLType: "INTEGER"},
-		KeyDelegationsBlob:              {Table: KeyDelegations, SQLType: "INTEGER"},
-		KeyDelegationsDelegate:          {Table: KeyDelegations, SQLType: ""},
-		KeyDelegationsIssuer:            {Table: KeyDelegations, SQLType: ""},
+		KeyDelegationsDelegate:          {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsID:                {Table: KeyDelegations, SQLType: "INTEGER"},
+		KeyDelegationsIssuer:            {Table: KeyDelegations, SQLType: "INTEGER"},
 		KeyDelegationsViewBlob:          {Table: KeyDelegationsView, SQLType: "INTEGER"},
 		KeyDelegationsViewBlobCodec:     {Table: KeyDelegationsView, SQLType: "INTEGER"},
 		KeyDelegationsViewBlobMultihash: {Table: KeyDelegationsView, SQLType: "BLOB"},
@@ -430,13 +359,33 @@ var Schema = sqlitegen.Schema{
 		KeyDelegationsViewIssuer:        {Table: KeyDelegationsView, SQLType: "BLOB"},
 		KVKey:                           {Table: KV, SQLType: "TEXT"},
 		KVValue:                         {Table: KV, SQLType: "TEXT"},
-		LookupID:                        {Table: Lookup, SQLType: "INTEGER"},
-		LookupType:                      {Table: Lookup, SQLType: "INTEGER"},
-		LookupValue:                     {Table: Lookup, SQLType: ""},
 		PublicKeysID:                    {Table: PublicKeys, SQLType: "INTEGER"},
 		PublicKeysPrincipal:             {Table: PublicKeys, SQLType: "BLOB"},
+		ResourceLinksIsPinned:           {Table: ResourceLinks, SQLType: "INTEGER"},
+		ResourceLinksMeta:               {Table: ResourceLinks, SQLType: "BLOB"},
+		ResourceLinksSource:             {Table: ResourceLinks, SQLType: "INTEGER"},
+		ResourceLinksTarget:             {Table: ResourceLinks, SQLType: "INTEGER"},
+		ResourceLinksType:               {Table: ResourceLinks, SQLType: "TEXT"},
+		ResourcesCreateTime:             {Table: Resources, SQLType: "INTEGER"},
+		ResourcesID:                     {Table: Resources, SQLType: "INTEGER"},
+		ResourcesIRI:                    {Table: Resources, SQLType: "TEXT"},
+		ResourcesOwner:                  {Table: Resources, SQLType: "INTEGER"},
 		SQLiteSequenceName:              {Table: SQLiteSequence, SQLType: ""},
 		SQLiteSequenceSeq:               {Table: SQLiteSequence, SQLType: ""},
+		StructuralBlobsAuthor:           {Table: StructuralBlobs, SQLType: "INTEGER"},
+		StructuralBlobsID:               {Table: StructuralBlobs, SQLType: "INTEGER"},
+		StructuralBlobsResource:         {Table: StructuralBlobs, SQLType: "INTEGER"},
+		StructuralBlobsTs:               {Table: StructuralBlobs, SQLType: "INTEGER"},
+		StructuralBlobsType:             {Table: StructuralBlobs, SQLType: "TEXT"},
+		StructuralBlobsViewBlobID:       {Table: StructuralBlobsView, SQLType: "INTEGER"},
+		StructuralBlobsViewBlobType:     {Table: StructuralBlobsView, SQLType: "TEXT"},
+		StructuralBlobsViewCodec:        {Table: StructuralBlobsView, SQLType: "INTEGER"},
+		StructuralBlobsViewData:         {Table: StructuralBlobsView, SQLType: "BLOB"},
+		StructuralBlobsViewMultihash:    {Table: StructuralBlobsView, SQLType: "BLOB"},
+		StructuralBlobsViewResource:     {Table: StructuralBlobsView, SQLType: "TEXT"},
+		StructuralBlobsViewResourceID:   {Table: StructuralBlobsView, SQLType: "INTEGER"},
+		StructuralBlobsViewSize:         {Table: StructuralBlobsView, SQLType: "INTEGER"},
+		StructuralBlobsViewTs:           {Table: StructuralBlobsView, SQLType: "INTEGER"},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
 		WalletsAddress:                  {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:                  {Table: Wallets, SQLType: "INTEGER"},

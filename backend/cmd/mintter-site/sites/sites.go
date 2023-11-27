@@ -288,43 +288,24 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 		return nil, fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
 	}
 
+	groupOwner, err := storage.GetKV(conn, keySiteOwner)
+	if err != nil || groupOwner == "" {
+		return nil, fmt.Errorf("error getting group owner on the site, is the site initialized?: %w", err)
+	}
+
 	var role groups.Role
-	{
-		edb, err := hypersql.LookupEnsure(conn, storage.LookupResource, groupID)
+	if groupOwner == callerAccount.String() {
+		role = groups.Role_OWNER
+	} else {
+		r, err := hypersql.GetGroupRole(conn, groupID, "hm://a/"+callerAccount.String())
 		if err != nil {
-			return nil, fmt.Errorf("couldn't get group (%s) resource: %w", groupID, err)
+			return nil, err
 		}
-
-		owner, err := storage.GetKV(conn, keySiteOwner)
-		if err != nil || owner == "" {
-			return nil, fmt.Errorf("error getting owner on the site, is the site initialized?: %w", err)
-		}
-
-		if owner == callerAccount.String() {
-			role = groups.Role_OWNER
-		} else {
-			groupOwner, err := hypersql.ResourceGetOwner(conn, edb)
-			if err != nil {
-				return nil, fmt.Errorf("couldn't get the owner of the group %s: %w", groupID, err)
-			}
-
-			pkdb, err := hypersql.LookupEnsure(conn, storage.LookupPublicKey, callerAccount)
-			if err != nil {
-				return nil, fmt.Errorf("couldn't get member entity for account [%s]: %w", callerAccount.String(), err)
-			}
-
-			// See if the caller is in the owner's group
-			r, err := hypersql.GroupGetRole(conn, edb, groupOwner, pkdb)
-			if err != nil {
-				return nil, fmt.Errorf("couldn't get role of member %s in group %s: %w", callerAccount.String(), groupID, err)
-			}
-
-			role = groups.Role(r)
-		}
+		role = groups.Role(r)
 	}
 
 	if role != groups.Role_OWNER && role != groups.Role_EDITOR {
-		return nil, status.Errorf(codes.PermissionDenied, "Caller [%s] does not have enough permissions to publish to this site.", callerAccount.String())
+		return nil, status.Errorf(codes.PermissionDenied, "Caller %q does not have enough permissions to publish to this site.", callerAccount.String())
 	}
 
 	blobs, err := ws.blobs.Await(ctx)

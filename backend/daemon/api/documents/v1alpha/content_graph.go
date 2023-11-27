@@ -22,14 +22,17 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 
 	targetEntity := in.DocumentId
 
-	var backlinks []hypersql.BacklinksForEntityResult
+	var backlinks []hypersql.BacklinksForDocumentResult
 	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
 		edb, err := hypersql.EntitiesLookupID(conn, targetEntity)
 		if err != nil {
 			return err
 		}
+		if edb.ResourcesID == 0 {
+			return status.Error(codes.NotFound, "document not found")
+		}
 
-		list, err := hypersql.BacklinksForEntity(conn, edb.EntitiesID)
+		list, err := hypersql.BacklinksForDocument(conn, edb.ResourcesID)
 		backlinks = list
 		return err
 	}); err != nil {
@@ -41,8 +44,8 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 	}
 
 	for i, link := range backlinks {
-		var ld hyper.LinkData
-		if err := json.Unmarshal(link.BlobAttrsExtra, &ld); err != nil {
+		var ld hyper.DocLinkMeta
+		if err := json.Unmarshal(link.ResourceLinksMeta, &ld); err != nil {
 			return nil, fmt.Errorf("failed to decode link data: %w", err)
 		}
 
@@ -50,8 +53,8 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 
 		resp.Links[i] = &documents.Link{
 			Source: &documents.LinkNode{
-				DocumentId: link.EntitiesEID,
-				BlockId:    link.BlobAttrsAnchor,
+				DocumentId: link.ResourcesIRI,
+				BlockId:    ld.Anchor,
 				Version:    src.String(),
 			},
 			Target: &documents.LinkNode{

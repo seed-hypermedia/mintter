@@ -4,6 +4,7 @@ package storage
 import (
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/logging"
 	"mintter/backend/pkg/future"
 	"path/filepath"
 
@@ -18,6 +19,26 @@ type Dir struct {
 
 	device core.KeyPair
 	me     future.Value[core.Identity]
+}
+
+// InitRepo initializes the storage directory.
+// Device can be nil in which case a random new device key will be generated.
+func InitRepo(dataDir string, device crypto.PrivKey) (r *Dir, err error) {
+	log := logging.New("mintter/repo", "debug")
+	if device == nil {
+		r, err = New(dataDir, log)
+	} else {
+		r, err = NewWithDeviceKey(dataDir, log, device)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to init storage: %w", err)
+	}
+
+	if err := r.Migrate(); err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 // New creates a new storage directory.

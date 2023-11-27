@@ -10,6 +10,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	"mintter/backend/daemon"
+	"mintter/backend/daemon/storage"
 	"os"
 
 	"github.com/burdiyan/go/mainutil"
@@ -38,7 +39,7 @@ func run() error {
 		return err
 	}
 
-	dir, err := daemon.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped())
+	dir, err := storage.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped())
 	if err != nil {
 		return err
 	}

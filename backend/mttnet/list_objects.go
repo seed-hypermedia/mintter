@@ -25,7 +25,7 @@ func (srv *rpcMux) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 		}
 
 		for _, l := range list {
-			eid := hyper.EntityID(l.ChangesViewEntity)
+			eid := hyper.EntityID(l.StructuralBlobsViewResource)
 			obj, ok := objs[eid]
 			if !ok {
 				obj = &p2p.Object{
@@ -34,7 +34,7 @@ func (srv *rpcMux) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 				objs[eid] = obj
 			}
 
-			c := cid.NewCidV1(uint64(l.ChangesViewCodec), l.ChangesViewMultihash)
+			c := cid.NewCidV1(uint64(l.StructuralBlobsViewCodec), l.StructuralBlobsViewMultihash)
 			obj.ChangeIds = append(obj.ChangeIds, c.String())
 		}
 

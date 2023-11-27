@@ -20,6 +20,7 @@ func init() {
 		"KV",
 		"HLC",
 		"URL",
+		"IRI",
 	)
 }
 

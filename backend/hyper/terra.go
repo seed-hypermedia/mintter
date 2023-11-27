@@ -40,6 +40,7 @@ func init() {
 const (
 	TypeKeyDelegation BlobType = "KeyDelegation"
 	TypeChange        BlobType = "Change"
+	TypeDagPB         BlobType = "DagPB"
 )
 
 // Delegation purposes.
@@ -121,6 +122,12 @@ func (kd KeyDelegation) Blob() Blob {
 }
 
 // Change for a Mintter mutable Entity.
+
+const (
+	ActionCreate = "Create"
+	ActionUpdate = "Update"
+)
+
 type Change struct {
 	// Type is always the same (see constants).
 	Type BlobType `refmt:"@type"`

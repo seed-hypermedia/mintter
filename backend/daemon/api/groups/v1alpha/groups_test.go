@@ -499,17 +499,23 @@ func TestGroupNonMembers(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	aliceGroups, err := alice.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+		AccountId: alice.me.MustGet().Account().Principal().String(),
+	})
+	require.NoError(t, err)
+	require.Len(t, aliceGroups.Items, 1, "alice must be an owner of her group on her own device")
+
 	syncBlobs(t, alice, bob)
 
 	groupList, err := bob.ListGroups(ctx, &groups.ListGroupsRequest{})
 	require.NoError(t, err)
 	require.Len(t, groupList.Groups, 1, "bob must have alice's group")
 
-	aliceGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
+	aliceGroups, err = bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
 		AccountId: alice.me.MustGet().Account().String(),
 	})
 	require.NoError(t, err)
-	require.Len(t, aliceGroups.Items, 1, "alice must be an owner of her group on bob's device")
+	require.Len(t, aliceGroups.Items, 1, "alice must belong to her own group on bob's device")
 	testutil.ProtoEqual(t, group, aliceGroups.Items[0].Group, "alice's group must match alice's group")
 
 	bobGroups, err := bob.ListAccountGroups(ctx, &groups.ListAccountGroupsRequest{
@@ -521,15 +527,17 @@ func TestGroupNonMembers(t *testing.T) {
 
 func syncBlobs(t *testing.T, src, target *Server) {
 	ctx := context.Background()
-	ch, err := src.blobs.IPFSBlockstore().AllKeysChan(ctx)
+	srcKeys, err := src.blobs.IPFSBlockstore().AllKeysChan(ctx)
 	require.NoError(t, err)
 
-	for c := range ch {
-		blk, err := src.blobs.IPFSBlockstore().Get(ctx, c)
+	srcBS := src.blobs.IPFSBlockstore()
+	targetBS := target.blobs.IPFSBlockstore()
+
+	for c := range srcKeys {
+		blk, err := srcBS.Get(ctx, c)
 		require.NoError(t, err)
-		hb, err := hyper.DecodeBlob(blk.Cid(), blk.RawData())
-		require.NoError(t, err)
-		require.NoError(t, target.blobs.SaveBlob(ctx, hb))
+
+		require.NoError(t, targetBS.Put(ctx, blk))
 	}
 }
 

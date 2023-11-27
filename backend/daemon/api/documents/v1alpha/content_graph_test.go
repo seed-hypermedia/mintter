@@ -47,9 +47,7 @@ func TestBacklinks(t *testing.T) {
 					Type:   "link",
 					Starts: []int32{0},
 					Ends:   []int32{5},
-					Attributes: map[string]string{
-						"url": pub.Document.Id + "?v=" + pub.Version + "#b1",
-					},
+					Ref:    pub.Document.Id + "?v=" + pub.Version + "#b1",
 				},
 			},
 		}}},
@@ -63,9 +61,7 @@ func TestBacklinks(t *testing.T) {
 					Type:   "link",
 					Starts: []int32{0},
 					Ends:   []int32{5},
-					Attributes: map[string]string{
-						"url": pub.Document.Id + "?v=" + pub.Version,
-					},
+					Ref:    pub.Document.Id + "?v=" + pub.Version,
 				},
 			},
 		}}},
@@ -122,6 +118,7 @@ func TestBacklinks(t *testing.T) {
 		},
 	}
 
+	require.Equal(t, len(want.Links), len(cits.Links), "number of links must match")
 	diff := cmp.Diff(makeSet(want.Links), makeSet(cits.Links), testutil.ExportedFieldsFilter())
 	if diff != "" {
 		t.Fatal(diff)

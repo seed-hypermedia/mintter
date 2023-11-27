@@ -2,73 +2,12 @@ package hypersql
 
 import (
 	"fmt"
-	"mintter/backend/daemon/storage"
 	"mintter/backend/pkg/dqb"
+	"mintter/backend/pkg/maybe"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 )
-
-// LookupInsert is a query to insert lookup values.
-func LookupInsert(conn *sqlite.Conn, ltype int, value any) (id int64, err error) {
-	const q = `INSERT INTO lookup (type, value) VALUES (?, ?) RETURNING id;`
-
-	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
-		id = stmt.ColumnInt64(0)
-		return nil
-	}, ltype, value); err != nil {
-		return 0, err
-	}
-
-	if id == 0 {
-		return 0, fmt.Errorf("failed to insert lookup value")
-	}
-
-	return id, nil
-}
-
-// LookupGet find the ID of the lookup value.
-func LookupGet(conn *sqlite.Conn, ltype int, value any) (id int64, err error) {
-	const q = "SELECT id FROM lookup WHERE type = ? AND value = ?;"
-
-	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
-		id = stmt.ColumnInt64(0)
-		return nil
-	}, ltype, value); err != nil {
-		return 0, err
-	}
-
-	return id, nil
-}
-
-// LookupEnsure makes sure lookup value exists and returns its ID.
-func LookupEnsure(conn *sqlite.Conn, ltype int, value any) (id int64, err error) {
-	id, err = LookupGet(conn, ltype, value)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get lookup value: %w", err)
-	}
-
-	if id != 0 {
-		return id, nil
-	}
-
-	return LookupInsert(conn, ltype, value)
-}
-
-var qAttrInsert = `INSERT INTO ` + storage.BlobAttrs.String() + ` (
-	` + storage.BlobAttrsBlob.ShortName() + `,
-	` + storage.BlobAttrsKey.ShortName() + `,
-	` + storage.BlobAttrsAnchor.ShortName() + `,
-	` + storage.BlobAttrsIsLookup.ShortName() + `,
-	` + storage.BlobAttrsValue.ShortName() + `,
-	` + storage.BlobAttrsExtra.ShortName() + `,
-	` + storage.BlobAttrsTs.ShortName() + `
-) VALUES (?, ?, ?, ?, ?, ?, ?);`
-
-// BlobAttrsInsert inserts blob attribute.
-func BlobAttrsInsert(conn *sqlite.Conn, blob int64, key, anchor string, isLookup bool, value, extra any, ts int64) error {
-	return sqlitex.Exec(conn, qAttrInsert, nil, blob, key, anchor, isLookup, value, extra, ts)
-}
 
 // IsResourceOwner checks if the account is the owner of the resource.
 func IsResourceOwner(conn *sqlite.Conn, resource, account int64) (bool, error) {
@@ -82,20 +21,8 @@ func IsResourceOwner(conn *sqlite.Conn, resource, account int64) (bool, error) {
 
 // ResourceGetOwner returns the owner of the resource.
 func ResourceGetOwner(conn *sqlite.Conn, resource int64) (int64, error) {
-	const q = `
-		SELECT
-			blob_attrs.value_ptr
-		FROM changes
-		JOIN blob_attrs ON blob_attrs.blob = changes.blob
-		WHERE changes.entity = :entity
-		AND blob_attrs.key = 'resource/owner'
-		AND blob_attrs.value_ptr IS NOT NULL`
-
 	var owner int64
-	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
-		if owner != 0 {
-			return fmt.Errorf("more than one owner resource owner found")
-		}
+	if err := sqlitex.Exec(conn, qResourceGetOwner(), func(stmt *sqlite.Stmt) error {
 		owner = stmt.ColumnInt64(0)
 		return nil
 	}, resource); err != nil {
@@ -109,56 +36,62 @@ func ResourceGetOwner(conn *sqlite.Conn, resource int64) (int64, error) {
 	return owner, nil
 }
 
-// GroupListMembers return the list of group members.
-func GroupListMembers(conn *sqlite.Conn, resource, owner int64, fn func(principal []byte, role int64) error) error {
-	const q = `
-		SELECT
-			lookup.value AS principal,
-			blob_attrs.extra AS role
-		FROM changes
-		JOIN blob_attrs ON blob_attrs.blob = changes.blob
-		JOIN lookup ON lookup.id = blob_attrs.value_ptr
-		WHERE changes.entity = :entity
-		AND changes.author = :owner
-		AND blob_attrs.key = 'group/member'
-		AND blob_attrs.value_ptr IS NOT NULL
-	`
+var qResourceGetOwner = dqb.Str(`
+	SELECT owner FROM resources WHERE id = ?;
+`)
 
-	return sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
-		principal := stmt.ColumnBytes(0)
-		role := stmt.ColumnInt64(1)
-		return fn(principal, role)
-	}, resource, owner)
-}
-
-// GroupGetRole returns the role of the member in the group.
-func GroupGetRole(conn *sqlite.Conn, resource, owner, member int64) (int64, error) {
-	const q = `
-		SELECT
-			blob_attrs.extra AS role
-		FROM changes
-		JOIN blob_attrs ON blob_attrs.blob = changes.blob
-		JOIN lookup ON lookup.id = blob_attrs.value_ptr
-		WHERE changes.entity = :entity
-		AND changes.author = :owner
-		AND blob_attrs.key = 'group/member'
-		AND blob_attrs.value_ptr IS NOT NULL
-		AND blob_attrs.value_ptr = :member
-		ORDER BY blob_attrs.ts DESC
-		LIMIT 1
-	`
-
-	var role int64
-
-	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
-		role = stmt.ColumnInt64(0)
-		return nil
-	}, resource, owner, member); err != nil {
+// GetGroupRole returns the role of the member in the group.
+func GetGroupRole(conn *sqlite.Conn, group, memberEID string) (int64, error) {
+	groupDB, err := EntitiesLookupID(conn, group)
+	if err != nil {
 		return 0, err
+	}
+	if groupDB.ResourcesID == 0 {
+		return 0, fmt.Errorf("group %s not found", group)
+	}
+
+	memberDB, err := EntitiesLookupID(conn, memberEID)
+	if err != nil {
+		return 0, err
+	}
+	if memberDB.ResourcesID == 0 {
+		return 0, fmt.Errorf("group member %s not found", memberEID)
+	}
+
+	var (
+		role  int64
+		found bool
+	)
+	if err := sqlitex.Exec(conn, qGetGroupRole(), func(stmt *sqlite.Stmt) error {
+		role = stmt.ColumnInt64(0)
+		found = true
+		return nil
+	}, memberDB.ResourcesID, groupDB.ResourcesID); err != nil {
+		return 0, err
+	}
+
+	if !found {
+		return 0, fmt.Errorf("group %s has no member %s", group, memberEID)
+	}
+
+	if role == 0 {
+		return 0, fmt.Errorf("group %s has invalid role for member %s", group, memberEID)
 	}
 
 	return role, nil
 }
+
+var qGetGroupRole = dqb.Str(`
+	SELECT
+		resource_links.meta->>'r',
+		MAX(structural_blobs.ts)
+	FROM structural_blobs
+	JOIN resource_links ON resource_links.source = structural_blobs.id
+		AND resource_links.type = 'group/member'
+		AND resource_links.target = :member
+	WHERE structural_blobs.resource = :group
+	GROUP BY structural_blobs.resource;
+`)
 
 // SitesInsertOrIgnore inserts a site if it doesn't exist.
 func SitesInsertOrIgnore(conn *sqlite.Conn, group, baseURL string, hlc int64, origin string) error {
@@ -175,15 +108,6 @@ var qSitesInsertOrIgnore = dqb.Str(`
 	WHERE (hlc_time, hlc_origin) < (excluded.hlc_time, excluded.hlc_origin);
 `)
 
-// AccountsInsertOrIgnore inserts an account if it doesn't exist.
-func AccountsInsertOrIgnore(conn *sqlite.Conn, entity, publicKey int64) error {
-	return sqlitex.Exec(conn, qAccountsInsertOrIgnore(), nil, entity, publicKey)
-}
-
-var qAccountsInsertOrIgnore = dqb.Str(`
-	INSERT OR IGNORE INTO accounts (entity, public_key) VALUES (?, ?);
-`)
-
 // CheckEntityHasChanges checks if the entity has any changes in our database.
 func CheckEntityHasChanges(conn *sqlite.Conn, entity int64) (bool, error) {
 	var hasChanges bool
@@ -198,5 +122,139 @@ func CheckEntityHasChanges(conn *sqlite.Conn, entity int64) (bool, error) {
 }
 
 var qCheckEntityHasChanges = dqb.Str(`
-	SELECT 1 FROM changes WHERE entity = ? LIMIT 1;
+	SELECT 1 FROM structural_blobs WHERE resource = ? AND structural_blobs.type = 'Change' LIMIT 1;
+`)
+
+// StructuralBlobsInsert inserts a structural blob.
+func StructuralBlobsInsert(conn *sqlite.Conn, id int64, blobType string, author, resource, ts maybe.Value[int64]) error {
+	if id == 0 {
+		return fmt.Errorf("must specify blob ID")
+	}
+
+	return sqlitex.Exec(conn, qStructuralBlobsInsert(), nil, id, blobType, author.Any(), resource.Any(), ts.Any())
+}
+
+var qStructuralBlobsInsert = dqb.Str(`
+	INSERT INTO structural_blobs (id, type, author, resource, ts)
+	VALUES (?, ?, ?, ?, ?);
+`)
+
+// ResourcesMaybeSetOwner sets the owner of a resource if it's not set.
+func ResourcesMaybeSetOwner(conn *sqlite.Conn, id, owner int64) (updated bool, err error) {
+	if id == 0 {
+		return false, fmt.Errorf("must specify resource ID")
+	}
+
+	if owner == 0 {
+		return false, fmt.Errorf("must specify owner ID")
+	}
+
+	if err := sqlitex.Exec(conn, qResourcesMaybeSetOwner(), nil, owner, id); err != nil {
+		return false, err
+	}
+
+	return conn.Changes() > 0, nil
+}
+
+var qResourcesMaybeSetOwner = dqb.Str(`
+	UPDATE resources
+	SET owner = ?
+	WHERE id = ?
+	AND owner IS NULL;
+`)
+
+// ResourcesMaybeSetTimestamp sets the timestamp of a resource if it's not set.
+func ResourcesMaybeSetTimestamp(conn *sqlite.Conn, id, ts int64) (updated bool, err error) {
+	if id == 0 {
+		return false, fmt.Errorf("must specify resource ID")
+	}
+
+	if ts == 0 {
+		return false, fmt.Errorf("must specify timestamp")
+	}
+
+	if err := sqlitex.Exec(conn, qResourcesMaybeSetTimestamp(), nil, ts, id); err != nil {
+		return false, err
+	}
+
+	return conn.Changes() > 0, nil
+}
+
+var qResourcesMaybeSetTimestamp = dqb.Str(`
+	UPDATE resources
+	SET create_time = ?
+	WHERE id = ?
+	AND create_time IS NULL;
+`)
+
+// ResourcesUpdateMetadata updates metadata of a resource, unless it's already there.
+func ResourcesUpdateMetadata(conn *sqlite.Conn, id, owner, createTime int64) (updated bool, err error) {
+	if id == 0 {
+		return false, fmt.Errorf("must specify resource IRI")
+	}
+
+	if err := sqlitex.Exec(conn, qResourcesUpdateMetadata(), nil, maybe.Any(owner), maybe.Any(createTime), id); err != nil {
+		return false, err
+	}
+
+	return conn.Changes() > 0, nil
+}
+
+var qResourcesUpdateMetadata = dqb.Str(`
+	UPDATE resources
+	SET owner = ?,
+		create_time = ?
+	WHERE id = ?
+	AND (owner IS NULL OR create_time IS NULL);
+`)
+
+// KeyDelegationsInsertOrIgnore inserts a key delegation.
+func KeyDelegationsInsertOrIgnore(conn *sqlite.Conn, id, issuer, delegate int64) error {
+	if id == 0 {
+		return fmt.Errorf("must have ID")
+	}
+
+	if issuer == 0 {
+		return fmt.Errorf("must have issuer ID")
+	}
+
+	if delegate == 0 {
+		return fmt.Errorf("must have delegate ID")
+	}
+
+	return sqlitex.Exec(conn, qKeyDelegationsInsert(), nil, id, issuer, delegate)
+}
+
+var qKeyDelegationsInsert = dqb.Str(`INSERT OR IGNORE INTO key_delegations (id, issuer, delegate) VALUES (?, ?, ?);`)
+
+// ResourceLinksInsert inserts a resource link.
+func ResourceLinksInsert(conn *sqlite.Conn, sourceBlob, targetResource int64, ltype string, isPinned bool, meta []byte) error {
+	return sqlitex.Exec(conn, qResourceLinksInsert(), nil, sourceBlob, targetResource, ltype, isPinned, maybe.AnySlice(meta))
+}
+
+var qResourceLinksInsert = dqb.Str(`
+	INSERT INTO resource_links (source, target, type, is_pinned, meta)
+	VALUES (?, ?, ?, ?, ?);
+`)
+
+// GroupListMembers lists all the members of a group.
+func GroupListMembers(conn *sqlite.Conn, resource, owner int64, fn func(principal []byte, role int64) error) error {
+	return sqlitex.Exec(conn, qGroupListMembers(), func(stmt *sqlite.Stmt) error {
+		principal := stmt.ColumnBytes(0)
+		role := stmt.ColumnInt64(1)
+		return fn(principal, role)
+	}, resource, owner)
+}
+
+var qGroupListMembers = dqb.Str(`
+	SELECT
+		public_keys.principal AS principal,
+		resource_links.meta->>'r' AS role
+	FROM structural_blobs
+	JOIN resource_links ON resource_links.source = structural_blobs.id
+	JOIN resources ON resources.id = resource_links.target
+	JOIN public_keys ON public_keys.id = resources.owner
+	WHERE structural_blobs.resource = :group
+	AND structural_blobs.author = :owner
+	AND resource_links.type = 'group/member';
 `)
