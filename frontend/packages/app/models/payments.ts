@@ -44,6 +44,11 @@ function queryWallets():
         return []
       }
     },
+    retry: true,
+    retryOnMount: true,
+    retryDelay(failureCount, error) {
+      return failureCount * 2_000
+    },
   }
 }
 
