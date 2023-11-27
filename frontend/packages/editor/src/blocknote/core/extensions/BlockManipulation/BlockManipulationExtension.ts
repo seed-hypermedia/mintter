@@ -1,9 +1,9 @@
 import {Extension} from '@tiptap/core'
-import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
-import {Node} from 'prosemirror-model'
-import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 import {ResolvedPos} from '@tiptap/pm/model'
 import {EditorView} from '@tiptap/pm/view'
+import {Node} from 'prosemirror-model'
+import {NodeSelection, Plugin, PluginKey} from 'prosemirror-state'
+import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 
 export const BlockManipulationExtension = Extension.create({
   name: 'BlockManupulation',
