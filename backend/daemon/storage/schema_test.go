@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
 	"crawshaw.io/sqlite"
@@ -75,84 +74,4 @@ func introspectSchema(t *testing.T, conn *sqlite.Conn) {
 		return nil
 	})
 	require.NoError(t, err)
-}
-
-func introspectSchema2(t *testing.T, conn *sqlite.Conn) {
-	// This code was written with the help of ChatGPT,
-	// so it's not the most optimal thing in the world.
-
-	stmt := conn.Prep("SELECT name FROM sqlite_master WHERE type = 'table';")
-
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if !hasRow {
-			require.NoError(t, stmt.Finalize())
-			break
-		}
-
-		tableName := stmt.ColumnText(0)
-
-		foreignKeysStmt := conn.Prep(fmt.Sprintf("PRAGMA foreign_key_list(%s);", tableName))
-
-		for {
-			hasRow, err := foreignKeysStmt.Step()
-			if err != nil {
-				log.Fatal(err)
-			}
-			if !hasRow {
-				require.NoError(t, foreignKeysStmt.Finalize())
-				break
-			}
-
-			from := foreignKeysStmt.ColumnText(3)
-
-			indexesStmt := conn.Prep(fmt.Sprintf("PRAGMA index_list(%s);", tableName))
-
-			var found bool
-			for {
-				hasRow, err := indexesStmt.Step()
-				if err != nil {
-					log.Fatal(err)
-				}
-				if !hasRow {
-					require.NoError(t, indexesStmt.Finalize())
-					break
-				}
-
-				indexName := indexesStmt.ColumnText(1)
-
-				// We are only interested in the first column in case of a compound index.
-				indexColumnsStmt := conn.Prep(fmt.Sprintf("SELECT * FROM pragma_index_info('%s') WHERE seqno = 0;", indexName))
-
-				for {
-					hasRow, err := indexColumnsStmt.Step()
-					if err != nil {
-						log.Fatal(err)
-					}
-					if !hasRow {
-						require.NoError(t, indexColumnsStmt.Finalize())
-						break
-					}
-
-					columnName := indexColumnsStmt.ColumnText(2)
-					if columnName == from {
-						found = true
-						require.NoError(t, indexColumnsStmt.Finalize())
-						break
-					}
-				}
-				if found {
-					require.NoError(t, indexesStmt.Finalize())
-					break
-				}
-			}
-
-			if !found {
-				t.Errorf("Table %q foreign key on column %q is not covered by any index", tableName, from)
-			}
-		}
-	}
 }

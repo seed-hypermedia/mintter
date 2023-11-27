@@ -121,13 +121,13 @@ func (kd KeyDelegation) Blob() Blob {
 	return hb
 }
 
-// Change for a Mintter mutable Entity.
-
+// Actions for entity changes.
 const (
 	ActionCreate = "Create"
 	ActionUpdate = "Update"
 )
 
+// Change for a Mintter mutable Entity.
 type Change struct {
 	// Type is always the same (see constants).
 	Type BlobType `refmt:"@type"`
