@@ -945,14 +945,14 @@ export function EmbedContentGroup({group}: {group: HMGroup}) {
         <Book size={36} />
       </XStack>
       <YStack justifyContent="center" flex={1}>
-        <Text size="$1" opacity={0.5} flex={0}>
+        <Text fontSize="$1" opacity={0.5} flex={0}>
           Group
         </Text>
         <YStack gap="$2">
-          <Text size="$6" fontWeight="bold">
+          <Text fontSize="$6" fontWeight="bold">
             {group?.title}
           </Text>
-          <Text size="$2">{group?.description}</Text>
+          <Text fontSize="$2">{group?.description}</Text>
         </YStack>
       </YStack>
     </XStack>

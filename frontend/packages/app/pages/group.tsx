@@ -28,7 +28,6 @@ import {
   Separator,
   SizableText,
   Tooltip,
-  UIAvatar,
   View,
   XStack,
   YStack,
@@ -57,6 +56,7 @@ import {toast} from 'react-hot-toast'
 import {YGroup} from 'tamagui'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
+import {Avatar} from '../components/avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
@@ -93,7 +93,7 @@ export default function GroupPage() {
   if (route.key !== 'group') throw new Error('Group page needs group route')
   const {groupId, version} = route
   const group = useGroup(groupId, version, {
-    refetchInterval: 5_000,
+    // refetchInterval: 5_000,
   })
   const groupContent = useGroupContent(groupId, version)
   const latestGroupContent = useGroupContent(groupId)
@@ -618,7 +618,9 @@ function InviteMemberDialog({
 
   const [selectedMembers, setMemberSelection] = useState<Array<string>>([])
   const [value, setValue] = useState('')
+
   const searchValue = useDeferredValue(value)
+  console.log(`== ~ value:`, {value, searchValue})
 
   const matches = useMemo(() => {
     return matchSorter(accountsListValues, searchValue, {
@@ -628,6 +630,8 @@ function InviteMemberDialog({
       .slice(0, 10)
       .map((v: any) => v.id)
   }, [accountsListValues, searchValue])
+
+  console.log(`== ~ matches ~ matches:`, matches)
 
   return (
     <>
@@ -694,27 +698,6 @@ function InviteMemberDialog({
         </Form.Trigger>
       </Form>
     </>
-  )
-}
-
-function SelectedAccount() {
-  return (
-    <XStack
-      ai="center"
-      space="$1"
-      padding="$1"
-      borderRadius="$2"
-      backgroundColor="$backgroundFocus"
-    >
-      <UIAvatar label="demo" />
-      <SizableText size="$2">demo</SizableText>
-      <Button
-        chromeless
-        size="$0.5"
-        icon={X}
-        hoverStyle={{backgroundColor: '$color7'}}
-      />
-    </XStack>
   )
 }
 
@@ -938,8 +921,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
             let account = accountsMap[value]
             let alias =
               account && account.profile?.alias ? account.profile.alias : value
-            let avatar =
-              account && account.profile?.avatar ? account.profile.avatar : '?'
+            let avatar = account.profile?.avatar
             return (
               // <AccountCard accountId={value} key={value}>
               <Ariakit.CompositeItem
@@ -964,7 +946,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                   />
                 }
               >
-                <UIAvatar
+                <Avatar
                   label={alias}
                   id={value}
                   url={avatar ? `${BACKEND_FILE_URL}/${avatar}` : undefined}
@@ -1064,10 +1046,14 @@ export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
       >
         <XStack gap="$2" flex={1}>
           <Ariakit.SelectItemCheck />
-          <UIAvatar
+          <Avatar
             label={props.account?.alias}
             id={props.value}
-            url={`${BACKEND_FILE_URL}/${props.account?.profile?.avatar}`}
+            url={
+              props.account?.profile?.avatar
+                ? `${BACKEND_FILE_URL}/${props.account?.profile?.avatar}`
+                : undefined
+            }
           />
           <XStack flex={1}>
             <SizableText size="$3" color="currentColor">
