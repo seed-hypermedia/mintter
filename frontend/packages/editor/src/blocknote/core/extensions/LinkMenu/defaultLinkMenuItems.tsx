@@ -58,6 +58,35 @@ export function getLinkMenuItems(
           )
 
           insertNode(editor, originalRef ? originalRef : ref, node)
+
+          const {block: currentBlock, nextBlock} =
+            editor.getTextCursorPosition()
+
+          if (currentBlock.type === 'embed') {
+            if (nextBlock) {
+              editor.setTextCursorPosition(nextBlock, 'end')
+            } else {
+              editor.insertBlocks(
+                [
+                  {
+                    type: 'paragraph',
+                    content: [],
+                  },
+                ],
+                currentBlock,
+                'after',
+              )
+              editor.setTextCursorPosition(
+                editor.getTextCursorPosition().nextBlock!,
+                'end',
+              )
+            }
+          } else {
+            editor.setTextCursorPosition(
+              getBlockInfoFromPos(doc, selection.$anchor.pos).id,
+              'end',
+            )
+          }
         },
       }
 
