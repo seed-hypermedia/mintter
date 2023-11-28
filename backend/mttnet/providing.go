@@ -2,10 +2,12 @@ package mttnet
 
 import (
 	"context"
+	"math/rand"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
 	"mintter/backend/pkg/dqb"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/provider"
@@ -51,7 +53,10 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 				log.Error("Failed to list entities", zap.Error(err))
 				return
 			}
-
+			log.Debug("Start reproviding", zap.Int("Number of entities", len(entities)))
+			// Since reproviding takes long AND is has throttle limits, we are better off randomizing it.
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r.Shuffle(len(entities), func(i, j int) { entities[i], entities[j] = entities[j], entities[i] })
 			for _, e := range entities {
 				c, err := hyper.EntityID(e.EntitiesEID).CID()
 				if err != nil {
@@ -61,11 +66,13 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 
 				select {
 				case <-ctx.Done():
+					log.Debug("Reproviding context cancelled")
 					return
 				case ch <- c:
-					log.Debug("Reproviding", zap.String("entity", e.EntitiesEID), zap.String("CID", c.String()))
+					// Send OK.
 				}
 			}
+			log.Debug("Finish reproviding", zap.Int("Number of entities", len(entities)))
 		}()
 		return ch, nil
 	}
