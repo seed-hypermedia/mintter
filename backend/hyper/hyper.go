@@ -82,25 +82,30 @@ func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
 	}
 	defer release()
 
-	codec, hash := ipfs.DecodeCID(blob.CID)
-
 	return sqlitex.WithTx(conn, func() error {
-		id, exists, err := bs.bs.putBlock(conn, 0, uint64(codec), hash, blob.Data)
-		if err != nil {
-			return err
-		}
-
-		// No need to index if exists.
-		if exists {
-			return nil
-		}
-
-		if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
-			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
-		}
-
-		return nil
+		_, err := bs.saveBlob(conn, blob)
+		return err
 	})
+}
+
+// saveBlob must be called within a transaction.
+func (bs *Storage) saveBlob(conn *sqlite.Conn, blob Blob) (id int64, err error) {
+	codec, hash := ipfs.DecodeCID(blob.CID)
+	id, exists, err := bs.bs.putBlock(conn, 0, uint64(codec), hash, blob.Data)
+	if err != nil {
+		return 0, err
+	}
+
+	// No need to index if exists.
+	if exists {
+		return id, nil
+	}
+
+	if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
+		return 0, fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
+	}
+
+	return id, nil
 }
 
 // SetAccountTrust sets an account to trusted.
@@ -136,32 +141,25 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	}
 	defer release()
 
-	codec, hash := ipfs.DecodeCID(blob.CID)
-
 	return sqlitex.WithTx(conn, func() error {
-		id, exists, err := bs.bs.putBlock(conn, 0, uint64(codec), hash, blob.Data)
+		id, err := bs.saveBlob(conn, blob)
 		if err != nil {
 			return err
 		}
 
-		// No need to index if exists.
-		if exists {
-			return nil
-		}
-
-		if err := bs.indexBlob(conn, id, blob.CID, blob.Decoded); err != nil {
-			return fmt.Errorf("failed to index blob %s: %w", blob.CID, err)
+		if id == 0 {
+			panic("BUG: saveDraft: didn't save draft blob for some reason")
 		}
 
 		resp, err := hypersql.EntitiesLookupID(conn, string(eid))
 		if err != nil {
 			return err
 		}
-		if resp.EntitiesID == 0 {
-			panic("BUG: failed to lookup entity after inserting the blob")
+		if resp.ResourcesID == 0 {
+			panic("BUG: saveDraft: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.ResourcesID, id)
 	})
 }
 
@@ -179,7 +177,7 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 
 	out := make([]EntityID, len(resp))
 	for i, r := range resp {
-		out[i] = EntityID(r.EntitiesEID)
+		out[i] = EntityID(r.ResourcesIRI)
 	}
 
 	return out, nil
@@ -288,11 +286,11 @@ func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
 		if err != nil {
 			return err
 		}
-		if edb.EntitiesID == 0 {
+		if edb.ResourcesID == 0 {
 			return fmt.Errorf("no such entity: %s", eid)
 		}
 
-		if err := hypersql.ChangesDeleteForEntity(conn, edb.EntitiesID); err != nil {
+		if err := hypersql.ChangesDeleteForEntity(conn, edb.ResourcesID); err != nil {
 			return err
 		}
 
@@ -341,11 +339,11 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 		if err != nil {
 			return err
 		}
-		if resp.EntitiesID == 0 {
-			panic("BUG: failed to lookup entity after inserting the blob")
+		if resp.ResourcesID == 0 {
+			panic("BUG: replaceDraft: failed to lookup entity after inserting the blob")
 		}
 
-		return hypersql.DraftsInsert(conn, resp.EntitiesID, id)
+		return hypersql.DraftsInsert(conn, resp.ResourcesID, id)
 	})
 }
 
@@ -523,11 +521,11 @@ func (b *indexingBlockStore) checkEntityExists(ctx context.Context, eid EntityID
 		return false, err
 	}
 
-	if res.EntitiesID == 0 {
+	if res.ResourcesID == 0 {
 		return false, nil
 	}
 
-	return hypersql.CheckEntityHasChanges(conn, res.EntitiesID)
+	return hypersql.CheckEntityHasChanges(conn, res.ResourcesID)
 }
 
 // The following methods are wrapped

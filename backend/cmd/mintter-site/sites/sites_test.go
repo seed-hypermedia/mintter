@@ -6,6 +6,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	"mintter/backend/daemon"
+	"mintter/backend/daemon/storage"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/ipfs"
@@ -121,7 +122,7 @@ func makeTestSite(t *testing.T, name string) *App {
 	user := coretest.NewTester(name)
 
 	cfg := testConfig(t)
-	dir, err := daemon.InitRepo(cfg.Base.DataDir, user.Device.Wrapped())
+	dir, err := storage.InitRepo(cfg.Base.DataDir, user.Device.Wrapped())
 	require.NoError(t, err)
 
 	app, err := Load(ctx, "http://127.0.0.1:"+strconv.Itoa(cfg.HTTP.Port), cfg, dir)

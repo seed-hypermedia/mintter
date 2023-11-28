@@ -4,26 +4,13 @@ CREATE TABLE kv (
     value TEXT
 ) WITHOUT ROWID;
 
--- Lookup values that are used in other tables
--- as integers to reduce the database size.
--- Using a single table for different types of values,
--- to allow polymorphic foreign keys in other tables.
--- TODO(burdiyan): eventually this table would need periodic cleanup,
--- because when values get unreferenced they will remain in the table anyway.
-CREATE TABLE lookup (
+-- Stores the public keys that we know about.
+-- The public key is stored in a principal encoding,
+-- which is `<pub-key-type-multicodec><pub-key-bytes>`.
+CREATE TABLE public_keys (
     id INTEGER PRIMARY KEY,
-    -- Type of the value.
-    -- See Lookup* constants in schema.go file for possible options.
-    -- We use unicode code points to make it easier to write queries.
-    type INTEGER NOT NULL,
-    value NOT NULL
+    principal BLOB UNIQUE NOT NULL
 );
-
--- Using hash of the value to reduce the size of the index.
--- We additionally have a covering index by type and value.
-CREATE UNIQUE INDEX lookup_value_unique ON lookup (sha1(value));
-
-CREATE INDEX lookup_by_type ON lookup (type, value);
 
 -- Stores the content of IPFS blobs.
 CREATE TABLE blobs (
@@ -48,141 +35,137 @@ CREATE TABLE blobs (
     insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 );
 
-CREATE VIEW public_keys AS
-SELECT
-    id,
-    value AS principal
-FROM lookup
-WHERE type = unicode('p');
-
--- Stores the accounts that used marked as trusted.
-CREATE TABLE trusted_accounts (
-    -- Account that we trust. Lookup value must be of type public key.
-    id INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (id)
+-- Stores some relevant attributes for structural blobs,
+-- which are those blobs that we can understand more deeply than just an opaque blob.
+CREATE TABLE structural_blobs (
+    id INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    -- Type of the structural blob.
+    type TEXT NOT NULL,
+    -- For structural blobs that have timestamps,
+    -- this is the UNIX timestamp in microseconds.
+    ts INTEGER,
+    -- For structural blobs that have a clear author,
+    -- this is the public key of the author.
+    author INTEGER REFERENCES public_keys (id),
+    -- For blobs that refer to some hypermedia resource
+    -- this is the reference to the resource.
+    resource INTEGER REFERENCES resources (id)
 ) WITHOUT ROWID;
 
-CREATE VIEW entities AS
+CREATE INDEX structural_blobs_by_author ON structural_blobs (author) WHERE author IS NOT NULL;
+CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource) WHERE resource IS NOT NULL;
+
+-- View of structural blobs with dereferences foreign keys.
+CREATE VIEW structural_blobs_view AS
 SELECT
-    id,
-    value AS eid
-FROM lookup
-WHERE type = unicode('r');
-
--- Changes to the Hypermedia Entities.
-CREATE TABLE changes (
-    -- Entity being changed.
-    entity INTEGER REFERENCES lookup (id) NOT NULL,
-    -- Blob ID of the change.
-    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    -- HLC timestamp of the change.
-    hlc_time INTEGER NOT NULL,
-    -- Author of the change.
-    author INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (entity, blob)
-) WITHOUT ROWID;
-
-CREATE INDEX changes_by_entity ON changes (blob, entity);
-CREATE INDEX changes_by_author ON changes (author);
-
--- View of changes with dereferences foreign keys.
-CREATE VIEW changes_view AS
-SELECT
-    changes.blob AS blob_id,
-    changes.entity AS entity_id,
-    changes.hlc_time AS hlc_time,
-    entities.eid AS entity,
+    structural_blobs.type AS blob_type,
+    structural_blobs.id AS blob_id,
+    structural_blobs.resource AS resource_id,
+    structural_blobs.ts AS ts,
+    resources.iri AS resource,
     blobs.codec AS codec,
     blobs.multihash AS multihash,
     blobs.data AS data,
     blobs.size AS size
-FROM changes
-JOIN blobs ON blobs.id = changes.blob
-JOIN entities ON changes.entity = entities.id;
+FROM structural_blobs
+JOIN blobs ON blobs.id = structural_blobs.id
+JOIN resources ON structural_blobs.resource = resources.id;
+
+-- Stores extra information for key delegation blobs.
+CREATE TABLE key_delegations (
+    id INTEGER PRIMARY KEY REFERENCES blobs (id) NOT NULL,
+    issuer INTEGER REFERENCES public_keys (id),
+    delegate INTEGER REFERENCES public_keys (id)
+) WITHOUT ROWID;
+
+CREATE INDEX key_delegations_by_issuer ON key_delegations (issuer, delegate);
+CREATE INDEX key_delegations_by_delegate ON key_delegations (delegate, issuer);
+
+CREATE VIEW key_delegations_view AS
+SELECT
+    kd.id AS blob,
+    blobs.codec AS blob_codec,
+    blobs.multihash AS blob_multihash,
+    iss.principal AS issuer,
+    del.principal AS delegate
+FROM key_delegations kd
+JOIN blobs ON blobs.id = kd.id
+JOIN public_keys iss ON iss.id = kd.issuer
+JOIN public_keys del ON del.id = kd.delegate;
+
+-- Stores hypermedia resources.
+-- All resources are identified by an IRI[iri],
+-- might have an owner identified by a public key.
+--
+-- [iri]: https://en.wikipedia.org/wiki/Internationalized_Resource_Identifier
+CREATE TABLE resources (
+    id INTEGER PRIMARY KEY,
+    iri TEXT UNIQUE NOT NULL,
+    owner INTEGER REFERENCES public_keys (id),
+    -- For resource that we can infer a creation time.
+    -- Stored as unix timestamp in *seconds*.
+    create_time INTEGER
+);
+
+CREATE INDEX resources_by_owner ON resources (owner) WHERE owner IS NOT NULL;
+
+-- Stores content-addressable links between blobs.
+-- Links are typed (rel) and directed.
+CREATE TABLE blob_links (
+    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    target INTEGER REFERENCES blobs (id) NOT NULL,
+    type TEXT NOT NULL,
+    PRIMARY KEY (source, target, type)
+) WITHOUT ROWID;
+
+CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, source, type);
+
+-- Stores links from blobs to resources.
+-- Resource links can be open-ended or pinned.
+-- Pinned links point to a specific version of the resource.
+-- Version is determined by the has of one or multiple blobs.
+-- Non-pinned links point to the latest version of the resource we can find.
+-- Extra metadata can be stored along with the link, probably in JSON format.
+CREATE TABLE resource_links (
+    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    target INTEGER REFERENCES resources (id) NOT NULL,
+    type TEXT NOT NULL,
+    is_pinned INTEGER NOT NULL DEFAULT (0),
+    meta BLOB
+);
+
+CREATE INDEX resource_links_by_source ON resource_links (source, is_pinned, target);
+CREATE INDEX resource_links_by_target ON resource_links (target);
+
+-- Stores the accounts that used marked as trusted.
+CREATE TABLE trusted_accounts (
+    id INTEGER PRIMARY KEY REFERENCES public_keys (id) NOT NULL
+) WITHOUT ROWID;
 
 -- Draft changes. Only one draft is allowed for now.
 CREATE TABLE drafts (
-    entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
+    resource INTEGER REFERENCES resources (id) NOT NULL,
     blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (entity, blob)
+    PRIMARY KEY (resource, blob)
 ) WITHOUT ROWID;
 
 CREATE INDEX drafts_by_blob ON drafts (blob);
 
 -- Index to ensure only one draft is allowed. Defining it separately,
 -- so it's easier to drop eventually without a complex migration.
-CREATE UNIQUE INDEX drafts_unique ON drafts (entity);
+CREATE UNIQUE INDEX drafts_unique ON drafts (resource);
 
 -- View of drafts with dereferenced foreign keys.
 CREATE VIEW drafts_view AS
 SELECT
-    drafts.entity AS entity_id,
+    drafts.resource AS resource_id,
     drafts.blob AS blob_id,
-    entities.eid AS entity,
+    resources.iri AS resource,
     blobs.codec AS codec,
     blobs.multihash AS multihash
 FROM drafts
-JOIN entities ON entities.id = drafts.entity
+JOIN resources ON resources.id = drafts.resource
 JOIN blobs ON blobs.id = drafts.blob;
-
-CREATE TABLE blob_links (
-    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    target INTEGER REFERENCES blobs (id) NOT NULL,
-    rel TEXT NOT NULL,
-    PRIMARY KEY (source, rel, target)
-) WITHOUT ROWID;
-
-CREATE UNIQUE INDEX blob_links_by_rel ON blob_links (rel, source, target);
-CREATE UNIQUE INDEX blob_links_by_target ON blob_links (target, rel, source);
-
-CREATE TABLE blob_attrs (
-    blob INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    key TEXT NOT NULL,
-    anchor TEXT NOT NULL DEFAULT (''),
-    is_lookup INTEGER NOT NULL DEFAULT (0),
-    value,
-    extra,
-    ts INTEGER NOT NULL,
-    value_ptr INTEGER REFERENCES lookup (id) GENERATED ALWAYS AS (IIF(is_lookup = 1, value, NULL)) VIRTUAL
-);
-
-CREATE INDEX blob_attrs_by_key ON blob_attrs (key, blob);
-CREATE INDEX blob_attrs_by_blob ON blob_attrs (blob, key);
-CREATE INDEX blob_attrs_by_value ON blob_attrs (value_ptr, key) WHERE value_ptr IS NOT NULL;
-
-CREATE VIEW key_delegations AS
-SELECT
-    blob AS blob,
-    MAX(IIF(key = 'kd/issuer', value_ptr, NULL)) AS issuer,
-    MAX(IIF(key = 'kd/delegate', value_ptr, NULL)) AS delegate
-FROM blob_attrs
-WHERE key IN ('kd/issuer', 'kd/delegate')
-GROUP BY blob;
-
--- View of key delegations dereferencing foreign keys.
-CREATE VIEW key_delegations_view AS
-SELECT
-    kd.blob AS blob,
-    blobs.codec AS blob_codec,
-    blobs.multihash AS blob_multihash,
-    iss.principal AS issuer,
-    del.principal AS delegate
-FROM key_delegations kd
-JOIN blobs ON blobs.id = kd.blob
-JOIN public_keys iss ON iss.id = kd.issuer
-JOIN public_keys del ON del.id = kd.delegate;
-
--- Stores head blobs for each resource.
--- Each named head can have more than one blob,
--- so there can be multiple rows for each resource and name.
-CREATE TABLE heads (
-    resource INTEGER REFERENCES lookup (id) NOT NULL,
-    name TEXT NOT NULL,
-    blob INTEGER REFERENCES blobs (id) NOT NULL,
-    PRIMARY KEY (resource, name, blob)
-) WITHOUT ROWID;
-
-CREATE INDEX heads_by_blob ON heads (blob);
 
 -- View for dependency links between changes.
 CREATE VIEW change_deps AS
@@ -190,7 +173,7 @@ SELECT
     source AS child,
     target AS parent
 FROM blob_links
-WHERE rel = 'change/dep';
+WHERE type = 'change/dep';
 
 -- Stores Lightning wallets both externals (imported wallets like bluewallet
 -- based on lndhub) and internals (based on the LND embedded node).
@@ -229,14 +212,3 @@ CREATE TABLE group_sites (
     last_sync_error TEXT NOT NULL DEFAULT (''),
     PRIMARY KEY (group_id)
 );
-
--- Stores mapping between account public keys
--- and their entity IDs.
-CREATE TABLE accounts (
-    entity INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-    public_key INTEGER REFERENCES lookup (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (entity, public_key)
-);
-
--- Index to query entity ID of an account public key.
-CREATE INDEX accounts_by_key ON accounts (public_key, entity);
