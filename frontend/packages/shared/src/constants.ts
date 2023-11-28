@@ -41,5 +41,9 @@ export const BACKEND_GRAPHQL_ENDPOINT = `${BACKEND_HOSTNAME}:${BACKEND_HTTP_PORT
 // this is injected by Vite, so it indicates if we are in the production build of the DESKTOP app
 export const IS_PROD_DESKTOP = !!import.meta.env?.PROD
 
+export const LIGHTNING_SERVER_URL = IS_PROD_DESKTOP
+  ? 'https://ln.mintter.com'
+  : 'https://ln.testnet.mintter.com'
+
 export const MINTTER_SENTRY_DESKTOP_DSN = import.meta.env
   ?.VITE_MINTTER_SENTRY_DESKTOP

@@ -76,7 +76,7 @@ export default function Settings() {
         </Tabs.Tab>
         <Tabs.Tab value="wallets" data-testid="tab-wallets" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
-            Wallets
+            Sponsorship
           </SizableText>
         </Tabs.Tab>
         <Tabs.Tab value="experimental" data-testid="tab-experimental">
@@ -772,19 +772,25 @@ function ExistingWallets({wallets}: {wallets: LightningWallet[]}) {
 }
 
 function NoWallets() {
-  const optIn = useWalletOptIn()
+  const {optIn, walletCheck} = useWalletOptIn()
+  const isLoading = optIn.isLoading || walletCheck.isLoading
   return (
     <YStack gap="$4">
       <Heading>Sponsorship Wallets</Heading>
-      <SizableText>No Lightning Wallet</SizableText>
-      <Button
-        onPress={() => {
-          optIn.mutate()
-        }}
-      >
-        Enable Lightning Sponsorship
-      </Button>
-      {optIn.isLoading ? <Spinner /> : null}
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <>
+          <SizableText>No Lightning Wallet</SizableText>
+          <Button
+            onPress={() => {
+              optIn.mutate()
+            }}
+          >
+            Enable Lightning Sponsorship
+          </Button>
+        </>
+      )}
     </YStack>
   )
 }
