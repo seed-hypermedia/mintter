@@ -15,4 +15,9 @@ if (process.env.NODE_ENV == 'production') {
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: true,
   })
+} else {
+  console.log(
+    '=== SENTRY SETUP: NODE_ENV is not set to production',
+    process.env.NODE_ENV,
+  )
 }
