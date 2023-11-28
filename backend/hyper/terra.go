@@ -40,6 +40,7 @@ func init() {
 const (
 	TypeKeyDelegation BlobType = "KeyDelegation"
 	TypeChange        BlobType = "Change"
+	TypeDagPB         BlobType = "DagPB"
 )
 
 // Delegation purposes.
@@ -119,6 +120,12 @@ func (kd KeyDelegation) Blob() Blob {
 	}
 	return hb
 }
+
+// Actions for entity changes.
+const (
+	ActionCreate = "Create"
+	ActionUpdate = "Update"
+)
 
 // Change for a Mintter mutable Entity.
 type Change struct {

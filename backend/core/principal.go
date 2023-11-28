@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/binary"
 	"fmt"
+	"unsafe"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -63,6 +64,12 @@ func (p Principal) String() string {
 		panic(err)
 	}
 	return s
+}
+
+// UnsafeString casts raw bytes to a without copying.
+// Useful for using as map key.
+func (p Principal) UnsafeString() string {
+	return unsafe.String(&p[0], len(p))
 }
 
 // Verify implements Verifier.

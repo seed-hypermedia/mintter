@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"mintter/backend/cmd/mintter-site/sites"
-	"mintter/backend/daemon"
+	"mintter/backend/daemon/storage"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/peterbourgon/ff/v3"
@@ -59,7 +59,7 @@ Flags:
 			return err
 		}
 
-		dir, err := daemon.InitRepo(cfg.Base.DataDir, nil)
+		dir, err := storage.InitRepo(cfg.Base.DataDir, nil)
 		if err != nil {
 			return err
 		}

@@ -72,6 +72,9 @@ func (eid EntityID) TrimPrefix(prefix string) string {
 	return strings.TrimPrefix(string(eid), prefix)
 }
 
+// String representation of the entity ID.
+func (eid EntityID) String() string { return string(eid) }
+
 // Entity is our CRDT mutable object.
 type Entity struct {
 	id      EntityID
@@ -353,7 +356,7 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 	if err != nil {
 		return err
 	}
-	if edb.EntitiesID == 0 {
+	if edb.ResourcesID == 0 {
 		return status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
@@ -364,15 +367,15 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.ChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.BlobsData, buf)
 		if err != nil {
 			return err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.ChangesViewCodec), change.ChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.BlobsCodec), change.BlobsMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
-			return fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
+			return fmt.Errorf("forEachChange: failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
 
 		if err := fn(chcid, ch); err != nil {
@@ -401,11 +404,11 @@ func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err
 	if err != nil {
 		return nil, err
 	}
-	if edb.EntitiesID == 0 {
+	if edb.ResourcesID == 0 {
 		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
-	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.EntitiesID)
+	heads, err := hypersql.ChangesGetPublicHeadsJSON(conn, edb.ResourcesID)
 	if err != nil {
 		return nil, err
 	}
@@ -427,11 +430,11 @@ func (bs *Storage) LoadTrustedEntity(ctx context.Context, eid EntityID) (e *Enti
 	if err != nil {
 		return nil, err
 	}
-	if edb.EntitiesID == 0 {
+	if edb.ResourcesID == 0 {
 		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
 	}
 
-	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, edb.EntitiesID)
+	heads, err := hypersql.ChangesGetTrustedHeadsJSON(conn, edb.ResourcesID)
 	if err != nil {
 		return nil, err
 	}
@@ -568,15 +571,15 @@ func (bs *Storage) loadFromHeads(conn *sqlite.Conn, eid EntityID, heads localHea
 	entity := NewEntity(eid)
 	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
 	for _, change := range changes {
-		buf, err = bs.bs.decoder.DecodeAll(change.ChangesViewData, buf)
+		buf, err = bs.bs.decoder.DecodeAll(change.StructuralBlobsViewData, buf)
 		if err != nil {
 			return nil, err
 		}
 
-		chcid := cid.NewCidV1(uint64(change.ChangesViewCodec), change.ChangesViewMultihash)
+		chcid := cid.NewCidV1(uint64(change.StructuralBlobsViewCodec), change.StructuralBlobsViewMultihash)
 		var ch Change
 		if err := cbornode.DecodeInto(buf, &ch); err != nil {
-			return nil, fmt.Errorf("failed to decode change %s for entity %s: %w", chcid, eid, err)
+			return nil, fmt.Errorf("loadFromHeads: failed to decode change %s for entity %s: %w", chcid, eid, err)
 		}
 
 		if err := entity.ApplyChange(chcid, ch); err != nil {
@@ -635,4 +638,13 @@ func NewUnforgeableID(prefix string, author core.Principal, nonce []byte, ts int
 	// We don't use full hash digest here, to make our IDs shorter.
 	// But it should have enough collision resistance for our purpose.
 	return prefix + base[len(base)-hashSize:], nonce
+}
+
+func verifyUnforgeableID(id EntityID, prefix int, owner core.Principal, nonce []byte, ts int64) error {
+	id2, _ := NewUnforgeableID(string(id[:prefix]), owner, nonce, ts)
+	if id2 != string(id) {
+		return fmt.Errorf("failed to verify unforgeable ID want=%q got=%q", id, id2)
+	}
+
+	return nil
 }

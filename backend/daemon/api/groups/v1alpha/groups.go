@@ -16,6 +16,7 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/maputil"
@@ -674,11 +675,11 @@ func (srv *Server) ListMembers(ctx context.Context, in *groups.ListMembersReques
 		if err != nil {
 			return err
 		}
-		if edb.EntitiesID == 0 {
+		if edb.ResourcesID == 0 {
 			return fmt.Errorf("group %q not found", in.Id)
 		}
 
-		owner, err := hypersql.ResourceGetOwner(conn, edb.EntitiesID)
+		owner, err := hypersql.ResourceGetOwner(conn, edb.ResourcesID)
 		if err != nil {
 			return err
 		}
@@ -690,7 +691,7 @@ func (srv *Server) ListMembers(ctx context.Context, in *groups.ListMembersReques
 
 		resp.OwnerAccountId = core.Principal(ownerPub.PublicKeysPrincipal).String()
 
-		return hypersql.GroupListMembers(conn, edb.EntitiesID, owner, func(principal []byte, role int64) error {
+		return hypersql.GroupListMembers(conn, edb.ResourcesID, owner, func(principal []byte, role int64) error {
 			if resp.Members == nil {
 				resp.Members = make(map[string]groups.Role)
 			}
@@ -720,43 +721,25 @@ func (srv *Server) ListDocumentGroups(ctx context.Context, in *groups.ListDocume
 	resp := &groups.ListDocumentGroupsResponse{}
 
 	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		const q = `
-			SELECT
-				lookup.value AS entity,
-				blobs.codec AS codec,
-				blobs.multihash AS hash,
-				blob_attrs.anchor AS anchor,
-				blob_attrs.extra AS extra,
-				blob_attrs.ts AS ts
-			FROM blob_attrs
-			JOIN changes ON changes.blob = blob_attrs.blob
-			JOIN lookup ON lookup.id = changes.entity
-			JOIN blobs ON blob_attrs.blob = blobs.id
-			WHERE blob_attrs.key = 'group/content'
-			AND blob_attrs.value_ptr IS NOT NULL
-			AND blob_attrs.value_ptr = :document
-		`
-
 		edb, err := hypersql.EntitiesLookupID(conn, in.DocumentId)
 		if err != nil {
 			return err
 		}
-		if edb.EntitiesID == 0 {
+		if edb.ResourcesID == 0 {
 			return fmt.Errorf("document %q not found: make sure to specify fully-qualified entity ID", in.DocumentId)
 		}
 
-		if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+		if err := sqlitex.Exec(conn, qListDocumentGroups(), func(stmt *sqlite.Stmt) error {
 			var (
 				entity string
 				codec  int64
 				hash   []byte
-				anchor string
 				extra  []byte
 				ts     int64
 			)
-			stmt.Scan(&entity, &codec, &hash, &anchor, &extra, &ts)
+			stmt.Scan(&entity, &codec, &hash, &extra, &ts)
 
-			var ld hyper.LinkData
+			var ld hyper.DocLinkMeta
 			if err := json.Unmarshal(extra, &ld); err != nil {
 				return err
 			}
@@ -780,13 +763,13 @@ func (srv *Server) ListDocumentGroups(ctx context.Context, in *groups.ListDocume
 				GroupId:    entity,
 				ChangeId:   cid.NewCidV1(uint64(codec), hash).String(),
 				ChangeTime: timestamppb.New(time.UnixMicro(ts)),
-				Path:       anchor,
+				Path:       ld.Anchor,
 				RawUrl:     rawURL,
 			}
 
 			resp.Items = append(resp.Items, item)
 			return nil
-		}, edb.EntitiesID); err != nil {
+		}, edb.ResourcesID); err != nil {
 			return err
 		}
 
@@ -797,6 +780,21 @@ func (srv *Server) ListDocumentGroups(ctx context.Context, in *groups.ListDocume
 
 	return resp, nil
 }
+
+var qListDocumentGroups = dqb.Str(`
+	SELECT
+		resources.iri AS entity,
+		blobs.codec AS codec,
+		blobs.multihash AS hash,
+		resource_links.meta AS meta,
+		structural_blobs.ts AS ts
+	FROM resource_links
+	JOIN structural_blobs ON structural_blobs.id = resource_links.source
+	JOIN blobs ON blobs.id = structural_blobs.id
+	JOIN resources ON resources.id = structural_blobs.resource
+	WHERE resource_links.type = 'group/content'
+	AND resource_links.target = :document
+`)
 
 // ListAccountGroups lists groups that an account belongs to.
 func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccountGroupsRequest) (*groups.ListAccountGroupsResponse, error) {
@@ -812,34 +810,15 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 	resp := &groups.ListAccountGroupsResponse{}
 
 	if err := srv.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		accdb, err := hypersql.PublicKeysLookupID(conn, acc)
+		accdb, err := hypersql.EntitiesLookupID(conn, "hm://a/"+acc.String())
 		if err != nil {
 			return err
 		}
-
-		if accdb.PublicKeysID == 0 {
+		if accdb.ResourcesID == 0 {
 			return fmt.Errorf("account %q not found", in.AccountId)
 		}
 
-		// This query assumes that we've indexed only valid changes,
-		// i.e. group members are only mutated by the owner.
-		// TODO(burdiyan): support member removals and make sure to query
-		// only valid changes.
-		const q = `
-			SELECT
-				lookup.value AS entity,
-				blob_attrs.extra AS role,
-				MAX(blob_attrs.ts) AS ts
-			FROM blob_attrs
-			JOIN changes ON changes.blob = blob_attrs.blob
-			JOIN lookup ON lookup.id = changes.entity
-			WHERE blob_attrs.key = 'group/member'
-			AND blob_attrs.value_ptr IS NOT NULL
-			AND blob_attrs.value_ptr = :member
-			GROUP BY changes.entity
-		`
-
-		if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+		if err := sqlitex.Exec(conn, qListAccountGroups(), func(stmt *sqlite.Stmt) error {
 			var (
 				group string
 				role  int64
@@ -861,7 +840,7 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 			})
 
 			return nil
-		}, accdb.PublicKeysID); err != nil {
+		}, accdb.ResourcesID); err != nil {
 			return err
 		}
 
@@ -872,6 +851,23 @@ func (srv *Server) ListAccountGroups(ctx context.Context, in *groups.ListAccount
 
 	return resp, nil
 }
+
+// This query assumes that we've indexed only valid changes,
+// i.e. group members are only mutated by the owner.
+// TODO(burdiyan): support member removals and make sure to query
+// only valid changes.
+var qListAccountGroups = dqb.Str(`
+	SELECT
+		resources.iri AS entity,
+		resource_links.meta->>'r' AS role,
+		MAX(structural_blobs.ts) AS ts
+	FROM resource_links
+	JOIN structural_blobs ON structural_blobs.id = resource_links.source
+	JOIN resources ON resources.id = structural_blobs.resource
+	WHERE resource_links.type = 'group/member'
+	AND resource_links.target = :member
+	GROUP BY structural_blobs.resource
+`)
 
 func (srv *Server) groupToProto(ctx context.Context, e *hyper.Entity) (*groups.Group, error) {
 	createTime, ok := e.AppliedChanges()[0].Data.Patch["createTime"].(int)

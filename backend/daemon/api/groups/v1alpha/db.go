@@ -112,7 +112,7 @@ func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn f
 	if err != nil {
 		return err
 	}
-	if gdb.EntitiesID == 0 {
+	if gdb.ResourcesID == 0 {
 		return status.Errorf(codes.NotFound, "group %s not found", group)
 	}
 
@@ -126,61 +126,65 @@ func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn f
 
 		c := cid.NewCidV1(uint64(codec), multihash)
 		return fn(c)
-	}, gdb.EntitiesID)
+	}, gdb.ResourcesID)
 }
 
-/*
-group_blobs = group_changes + transitive blobs
-+
-for each group_blob get attrs with resource values and no extra->v
-+
-
-
-*/
-
+// The goal of this query is to collect all the blobs that belong to the resource,
+// and collect all the linked blobs from referenced resources.
+// The complexity comes from the fact that some links are unpinned, so we need to collect
+// all the blobs we know from the referenced resource.
+// This is one of those cases where imperative code would probably be more clear than the declarative SQL.
+// The logic of this query is roughly expressed by pseudocode as:
+//
+//	# Kind 0 means Resource.
+//	# Kind 1 means Blob.
+//	enqueue(:group, kind=0)
+//	for item in queue.pop():
+//	    if item is visited:
+//	        continue
+//	    if item.kind == 0:
+//	        # Enqueue all the blobs of the given resource.
+//	        for blob in item.resource:
+//	            enqueue(blob, kind=1)
+//	    if item.kind == 1:
+//	        for blob_link in item.blob.links:
+//	            enqueue(blob_links.target, kind=1)
+//	        for resource_link in item.blob.resource_links:
+//	            # We don't care about pinned links,
+//	            # because they would be already covered
+//	            # by blob_links above.
+//	            if resource_link.is_pinned:
+//	                continue
+//	            enqueue(resource_link.target, kind=0)
 var qCollectBlobs = dqb.Str(`
-	WITH RECURSIVE
-		group_blobs (blob) AS (
-			SELECT blob
-			FROM blob_attrs
-			WHERE key = 'resource/id'
-			AND value_ptr IS NOT NULL AND value_ptr = :group
-			-- Get changes for documents linked without version.
-			UNION 
-			SELECT changes.blob
-			FROM group_blobs
-			JOIN blob_attrs
-				ON blob_attrs.blob = group_blobs.blob
-				AND blob_attrs.key = 'group/content'
-				AND blob_attrs.extra->'v' IS NULL
-				AND blob_attrs.value_ptr IS NOT NULL
-			JOIN changes ON changes.entity = blob_attrs.value_ptr
-			-- Get changes for authors
-			UNION
-			SELECT changes.blob
-			FROM group_blobs
-			JOIN blob_attrs
-				ON blob_attrs.blob = group_blobs.blob
-				AND blob_attrs.key = 'group/member'
-				AND blob_attrs.value_ptr IS NOT NULL
-			JOIN accounts ON accounts.public_key = blob_attrs.value_ptr
-			JOIN changes ON changes.entity = accounts.entity
-			-- Get blob links.
-			UNION
-			SELECT blob_links.target
-			FROM group_blobs
-			JOIN blob_links ON blob_links.source = group_blobs.blob
-		)
+	WITH RECURSIVE selected (id, kind) AS (
+		SELECT :group, 0
+		UNION
+		SELECT blob_links.target, 1
+		FROM selected
+		JOIN blob_links ON blob_links.source = selected.id AND selected.kind = 1
+		UNION
+		SELECT resource_links.target, 0
+		FROM selected
+		JOIN resource_links ON resource_links.source = selected.id
+			AND selected.kind = 1
+			AND resource_links.is_pinned = 0
+		UNION
+		SELECT structural_blobs.id, 1
+		FROM selected
+		JOIN structural_blobs ON structural_blobs.resource = selected.id
+			AND selected.kind = 0
+	)
 	SELECT
-		blobs.id AS id,
-		blobs.codec AS codec,
-		blobs.multihash AS multihash
-	FROM group_blobs
-	JOIN blobs ON blobs.id = group_blobs.blob
-	ORDER BY blobs.id ASC;
+		blobs.id,
+		blobs.codec,
+		blobs.multihash
+	FROM selected
+	JOIN blobs ON blobs.id = selected.id AND selected.kind = 1
+	ORDER BY blobs.id;
 `)
 
-// ListSites returns the list of sites we know about.
+// ListSiteGroups returns the list of sites we know about.
 func (db *DB) ListSiteGroups(ctx context.Context) ([]string, error) {
 	conn, release, err := db.db.Conn(ctx)
 	if err != nil {
