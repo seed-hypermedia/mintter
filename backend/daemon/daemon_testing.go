@@ -5,6 +5,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
+	"mintter/backend/daemon/storage"
 	"mintter/backend/testutil"
 	"testing"
 
@@ -26,7 +27,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 
 	u := coretest.NewTester(name)
 
-	repo, err := InitRepo(cfg.Base.DataDir, u.Device.Wrapped())
+	repo, err := storage.InitRepo(cfg.Base.DataDir, u.Device.Wrapped())
 	require.NoError(t, err)
 
 	app, err := Load(ctx, cfg, repo)

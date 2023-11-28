@@ -27,7 +27,6 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/boxo/exchange/offline"
-	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.opentelemetry.io/otel"
@@ -251,26 +250,6 @@ func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 // Wait will block until the app is shut down.
 func (a *App) Wait() error {
 	return a.g.Wait()
-}
-
-// InitRepo initializes the storage directory.
-// Device can be nil in which case a random new device key will be generated.
-func InitRepo(dataDir string, device crypto.PrivKey) (r *storage.Dir, err error) {
-	log := logging.New("mintter/repo", "debug")
-	if device == nil {
-		r, err = storage.New(dataDir, log)
-	} else {
-		r, err = storage.NewWithDeviceKey(dataDir, log, device)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to init storage: %w", err)
-	}
-
-	if err := r.Migrate(); err != nil {
-		return nil, err
-	}
-
-	return r, nil
 }
 
 func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {

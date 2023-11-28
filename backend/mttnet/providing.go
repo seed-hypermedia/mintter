@@ -58,9 +58,9 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 			r := rand.New(rand.NewSource(time.Now().UnixNano()))
 			r.Shuffle(len(entities), func(i, j int) { entities[i], entities[j] = entities[j], entities[i] })
 			for _, e := range entities {
-				c, err := hyper.EntityID(e.EntitiesEID).CID()
+				c, err := hyper.EntityID(e.ResourcesIRI).CID()
 				if err != nil {
-					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.EntitiesEID))
+					log.Warn("BadEntityID", zap.Error(err), zap.String("entity", e.ResourcesIRI))
 					return
 				}
 
@@ -69,7 +69,8 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 					log.Debug("Reproviding context cancelled")
 					return
 				case ch <- c:
-					// Send OK.
+					// Send
+					log.Debug("Reproviding", zap.String("entity", e.ResourcesIRI), zap.String("CID", c.String()))
 				}
 			}
 			log.Debug("Finish reproviding", zap.Int("Number of entities", len(entities)))
