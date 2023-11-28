@@ -2,7 +2,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.content-inline,
-.content-inline * {
+.block-paragraph .content-inline,
+.block-paragraph .content-inline * {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
 }
