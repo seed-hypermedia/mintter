@@ -6,6 +6,7 @@ import {
   Document,
   Group,
   Profile,
+  Publication,
   PublicationContent,
   Role,
   formattedDate,
@@ -74,6 +75,7 @@ import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
+  useFullGroupContent,
   useGroup,
   useGroupContent,
   useGroupMembers,
@@ -95,7 +97,7 @@ export default function GroupPage() {
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,
   })
-  const groupContent = useGroupContent(groupId, version)
+  const groupContent = useFullGroupContent(groupId, version)
   const latestGroupContent = useGroupContent(groupId)
   // const groupMembers = useGroupMembers(groupId, version)
   const groupMembers = useGroupMembers(groupId)
@@ -387,34 +389,31 @@ export default function GroupPage() {
                   </XStack>
                 )}
                 <YStack paddingVertical="$4" gap="$4">
-                  {Object.entries(groupContent.data?.content || {}).map(
-                    ([pathName, hmUrl]) => {
-                      const docId = unpackDocId(hmUrl)
-                      if (!docId) return null
-                      if (pathName === '/') return null
+                  {//Object.entries(groupContent.data?.content || {})
+                  groupContent.data?.items.map(({key, pub, id}) => {
+                    if (key === '/') return null
 
-                      const latestEntry =
-                        latestGroupContent.data?.content?.[pathName]
-                      const latestDocId = latestEntry
-                        ? unpackDocId(latestEntry)
-                        : null
+                    const latestEntry = latestGroupContent.data?.content?.[key]
+                    const latestDocId = latestEntry
+                      ? unpackDocId(latestEntry)
+                      : null
 
-                      return (
-                        <GroupContentItem
-                          key={pathName}
-                          docId={docId?.docId}
-                          groupId={groupId}
-                          version={docId?.version || undefined}
-                          latestVersion={latestDocId?.version || undefined}
-                          hasDraft={drafts.data?.documents.find(
-                            (d) => d.id == docId.docId,
-                          )}
-                          userRole={myMemberRole}
-                          pathName={pathName}
-                        />
-                      )
-                    },
-                  )}
+                    return (
+                      <GroupContentItem
+                        key={key}
+                        docId={id.qid}
+                        groupId={groupId}
+                        version={id?.version || undefined}
+                        latestVersion={latestDocId?.version || undefined}
+                        hasDraft={drafts.data?.documents.find(
+                          (d) => d.id == id.qid,
+                        )}
+                        pub={pub}
+                        userRole={myMemberRole}
+                        pathName={key}
+                      />
+                    )
+                  })}
                 </YStack>
               </Container>
             </MainWrapper>
@@ -500,6 +499,7 @@ function GroupContentItem({
   groupId,
   pathName,
   userRole,
+  pub,
 }: {
   docId: string
   version?: string
@@ -508,11 +508,11 @@ function GroupContentItem({
   groupId: string
   pathName: string
   userRole: Role
+  pub: Publication | undefined
 }) {
   const removeDoc = useRemoveDocFromGroup()
-  const pub = usePublication({id: docId, version})
   const renameDialog = useAppDialog(RenamePubDialog)
-  if (!pub.data) return null
+  if (!pub) return null
   const memberMenuItems = [
     {
       label: 'Remove from Group',
@@ -529,7 +529,7 @@ function GroupContentItem({
         renameDialog.open({
           pathName,
           groupId,
-          docTitle: pub.data.document?.title || '',
+          docTitle: pub.document?.title || '',
         })
       },
       key: 'rename',
@@ -538,14 +538,14 @@ function GroupContentItem({
   return (
     <>
       <PublicationListItem
-        publication={pub.data}
+        publication={pub}
         hasDraft={hasDraft}
         pathName={pathName}
         onPathNamePress={() => {
           renameDialog.open({
             pathName,
             groupId,
-            docTitle: pub.data.document?.title || '',
+            docTitle: pub.document?.title || '',
           })
         }}
         pubContext={{key: 'group', groupId, pathName}}

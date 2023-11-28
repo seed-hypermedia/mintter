@@ -106,6 +106,7 @@ export type UnpackedHypermediaId = {
   id: string
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES
   eid: string
+  qid: string
   groupPathName: string | null
   version: string | null
   blockRef: string | null
@@ -120,8 +121,10 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const eid = parsed?.path[1]
     const version = parsed?.query.v
     if (!type) return null
+    const qid = createHmId(type, eid)
     return {
       id: hypermediaId,
+      qid,
       type,
       eid,
       groupPathName: parsed?.path[2] || null,
@@ -137,8 +140,10 @@ export function unpackHmId(hypermediaId: string): UnpackedHypermediaId | null {
     const version = parsed?.query.v
     let hostname = parsed?.path[0]
     if (!type) return null
+    const qid = createHmId(type, eid)
     return {
       id: hypermediaId,
+      qid,
       type,
       eid,
       groupPathName: parsed?.path[3] || null,
