@@ -236,6 +236,20 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     )
 
                     if (fullHmId) {
+                      if (res.hmTitle) {
+                        view.dispatch(
+                          view.state.tr
+                            .deleteRange(pos, pos + link.href.length)
+                            .insertText(res.hmTitle, pos)
+                            .addMark(
+                              pos,
+                              pos + res.hmTitle.length,
+                              options.editor.schema.mark('link', {
+                                href: link.href,
+                              }),
+                            ),
+                        )
+                      }
                       view.dispatch(
                         view.state.tr.setMeta(linkMenuPluginKey, {
                           ref: fullHmId,
