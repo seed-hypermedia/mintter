@@ -45,5 +45,5 @@ export const LIGHTNING_SERVER_URL = IS_PROD_DESKTOP
   ? 'https://ln.mintter.com'
   : 'https://ln.testnet.mintter.com'
 
-export const MINTTER_SENTRY_DESKTOP_DSN = import.meta.env
+export const HM_SENTRY_DESKTOP_DSN = import.meta.env
   ?.VITE_MINTTER_SENTRY_DESKTOP
