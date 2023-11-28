@@ -507,7 +507,9 @@ async function checkInvoice(invoice: InternalInvoice) {
   const userId = invoice.split[0]?.id
   if (!userId) throw new Error('Invalid invoice, no user id')
   const res = await fetch(
-    `https://ln.mintter.com/v2/invoicemeta/${invoice.hash}?user=${userId}`,
+    `${process.env.NEXT_PUBLIC_LN_HOST || ''}/v2/invoicemeta/${
+      invoice.hash
+    }?user=${userId}`,
   )
   // @juligasa this response returns a 404 before the invoice is paid. after the invoice is paid the output looks like this:
   // {

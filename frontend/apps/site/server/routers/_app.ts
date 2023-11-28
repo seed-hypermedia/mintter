@@ -23,7 +23,7 @@ const walletsRouter = router({
   getAccountsAvailable: procedure
     .input(z.array(z.string().or(z.undefined()).or(z.null())))
     .query(async ({input}) => {
-      let url = 'https://ln.mintter.com/v2/check'
+      let url = `${process.env.NEXT_PUBLIC_LN_HOST || ''}/v2/check`
       input.forEach((editor, index) => {
         url += `${index === 0 ? '?' : '&'}user=${editor}`
       })

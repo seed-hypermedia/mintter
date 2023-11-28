@@ -584,7 +584,7 @@ function Analytics(props: OnboardingStepProps) {
 }
 
 function Wallet(props: OnboardingStepProps) {
-  const optIn = useWalletOptIn({
+  const {optIn, wallets} = useWalletOptIn({
     onError: (e) => {
       toast.error(e.message)
     },
@@ -597,24 +597,28 @@ function Wallet(props: OnboardingStepProps) {
           <H1>Wallet</H1>
         </StepTitleSection>
         <YStack flex={2}>
-          <YStack gap="$5" maxWidth={500}>
-            <StepParagraph>
-              Opt in to receiving lightning payments
-            </StepParagraph>
-            <XStack>
-              <Button
-                onPress={() => {
-                  optIn.mutate()
-                }}
-              >
-                Accept Lightning Payments
-              </Button>
-            </XStack>
-          </YStack>
+          {wallets.data?.length && wallets.data?.length > 0 ? (
+            <StepParagraph>Your wallet is ready to use!</StepParagraph>
+          ) : wallets.data?.length === 0 ? (
+            <YStack gap="$5" maxWidth={500}>
+              <StepParagraph>
+                Opt in to receiving lightning payments
+              </StepParagraph>
+              <XStack>
+                <Button
+                  onPress={() => {
+                    optIn.mutate()
+                  }}
+                >
+                  Accept Lightning Payments
+                </Button>
+              </XStack>
+            </YStack>
+          ) : null}
         </YStack>
       </XStack>
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
-        {optIn.isLoading ? <Spinner /> : null}
+        {optIn.isLoading || optIn.isLoading ? <Spinner /> : null}
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         <NextButton onPress={() => props.send('NEXT')}>NEXT</NextButton>
       </XStack>

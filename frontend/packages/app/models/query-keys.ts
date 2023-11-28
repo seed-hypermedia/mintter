@@ -55,6 +55,8 @@ export const queryKeys = {
   CHANGE: 'CHANGE', //, changeId: string
   ALL_ENTITY_CHANGES: 'ALL_ENTITY_CHANGES', //, entityId: string
   DOCUMENT_TEXT_CONTENT: 'DOCUMENT_TEXT_CONTENT',
+
+  LIGHTNING_ACCOUNT_CHECK: 'LIGHTNING_ACCOUNT_CHECK', //, accountId: string
 } as const
 
 export function labelOfQueryKey(key: QueryKey) {
