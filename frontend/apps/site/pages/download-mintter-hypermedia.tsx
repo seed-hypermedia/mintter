@@ -113,7 +113,11 @@ function extractedAsset(
   name: string,
   asset: {url: string; browser_download_url: string},
 ) {
-  return {name, downloadUrl: asset.browser_download_url}
+  if (asset) {
+    return {name, downloadUrl: asset.browser_download_url}
+  }
+
+  return false
 }
 export const getStaticProps: GetStaticProps<EveryPageProps> = async (
   context,
@@ -172,7 +176,7 @@ export const getStaticProps: GetStaticProps<EveryPageProps> = async (
           items: [
             extractedAsset('.deb', linuxx64),
             extractedAsset('.rpm', linuxRpm),
-          ],
+          ].filter(Boolean),
         },
       },
     }),
