@@ -53,6 +53,7 @@ type Pool struct {
 
 	free   chan *sqlite.Conn
 	closed chan struct{}
+	file   string
 
 	all map[*sqlite.Conn]context.CancelFunc
 
@@ -76,6 +77,7 @@ func Open(uri string, flags sqlite.OpenFlags, poolSize int) (pool *Pool, err err
 		checkReset: true,
 		free:       make(chan *sqlite.Conn, poolSize),
 		closed:     make(chan struct{}),
+		file:       uri,
 	}
 	defer func() {
 		// If an error occurred, call Close outside the lock so this doesn't deadlock.
@@ -107,6 +109,11 @@ func Open(uri string, flags sqlite.OpenFlags, poolSize int) (pool *Pool, err err
 	}
 
 	return p, nil
+}
+
+// File returns the path to the database file that was used to create the pool.
+func (p *Pool) File() string {
+	return p.file
 }
 
 // ForEach applies fn to all connections in the pool. Can be used to enable some

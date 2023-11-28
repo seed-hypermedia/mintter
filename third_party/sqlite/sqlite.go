@@ -127,6 +127,7 @@ func openConn(path string, flags ...OpenFlags) (*Conn, error) {
 		// A pointer to unlockNote is retained by C,
 		// so we allocate it on the C heap.
 		unlockNote: C.unlock_note_alloc(),
+		file:       path,
 	}
 
 	cpath := C.CString(path)
@@ -176,6 +177,11 @@ func openConn(path string, flags ...OpenFlags) (*Conn, error) {
 	conn.SetBusyTimeout(10 * time.Second)
 
 	return conn, nil
+}
+
+// File returns the path to the database file that was used to open the connection.
+func (conn *Conn) File() string {
+	return conn.file
 }
 
 // Close closes the database connection using sqlite3_close and finalizes
