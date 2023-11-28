@@ -1,4 +1,4 @@
-import {IS_PROD_DESKTOP, MINTTER_SENTRY_DESKTOP_DSN} from '@mintter/shared'
+import {HM_SENTRY_DESKTOP_DSN, IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
@@ -52,7 +52,7 @@ log.initialize({
 if (IS_PROD_DESKTOP) {
   Sentry.init({
     debug: true,
-    dsn: MINTTER_SENTRY_DESKTOP_DSN,
+    dsn: HM_SENTRY_DESKTOP_DSN,
     transportOptions: {
       // The maximum number of days to keep an event in the queue.
       maxQueueAgeDays: 30,

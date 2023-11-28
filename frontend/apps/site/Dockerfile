@@ -7,16 +7,15 @@ ARG SENTRY_AUTH_TOKEN
 RUN apk add git
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
-ENV SENTRY_AUTH_TOKEN $SENTRY_AUTH_TOKEN
 COPY . .
 # RUN rm -rf ./frontend/apps/desktop
-RUN yarn install 
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 ENV NEXT_PUBLIC_LN_HOST https://ln.mintter.com
-
 ENV GRPC_HOST http://minttersite:56001
-ENV MINTTER_SENTRY_SITES https://47c66bd7a6d64db68a59c03f2337e475@o4504088793841664.ingest.sentry.io/4505527493328896
+ENV SENTRY_AUTH_TOKEN $SENTRY_AUTH_TOKEN
+ENV HM_SENTRY_SITE_DSN https://47c66bd7a6d64db68a59c03f2337e475@o4504088793841664.ingest.sentry.io/4505527493328896
+RUN yarn install 
 RUN yarn site:prod
 
 
