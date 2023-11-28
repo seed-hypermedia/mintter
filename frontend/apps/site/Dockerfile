@@ -2,8 +2,7 @@
 # docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
 
 FROM node:20-alpine AS builder
-# RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-#     cat /run/secrets/SENTRY_AUTH_TOKEN
+
 ARG SENTRY_AUTH_TOKEN
 RUN apk add git
 WORKDIR /app
