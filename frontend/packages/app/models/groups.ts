@@ -3,6 +3,8 @@ import {
   ListDocumentGroupsResponse,
   ListGroupsResponse,
   Role,
+  UnpackedHypermediaId,
+  createHmId,
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
@@ -10,11 +12,13 @@ import {
   UseMutationOptions,
   UseQueryOptions,
   useMutation,
+  useQueries,
   useQuery,
 } from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {useMyAccount} from './accounts'
+import {queryPublication} from './documents'
 import {queryKeys} from './query-keys'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
@@ -260,6 +264,55 @@ export function useGroupContent(
     },
     enabled: !!groupId,
   })
+}
+
+export function useFullGroupContent(
+  groupId?: string | undefined,
+  version?: string,
+) {
+  const groupContent = useGroupContent(groupId, version)
+  const grpcClient = useGRPCClient()
+  const contentEntries: (readonly [string, UnpackedHypermediaId])[] = []
+  Object.entries(groupContent.data?.content || {}).forEach(
+    ([pathName, fullContentId]) => {
+      const id = unpackHmId(fullContentId)
+      if (id) {
+        contentEntries.push([pathName, id])
+      }
+    },
+  )
+  const contentQueries = useQueries({
+    queries: contentEntries.map(([contentKey, contentId]) => {
+      const docId = createHmId('d', contentId.eid)
+      return queryPublication(
+        grpcClient,
+        docId,
+        contentId.version || undefined,
+        false,
+      )
+    }),
+  })
+  return {
+    ...groupContent,
+    data: {
+      items: contentEntries
+        .map(([contentKey, contentId], i) => {
+          const pub = contentQueries.find((pubQuery) => {
+            return (
+              pubQuery.data?.document?.id === contentId.qid &&
+              pubQuery.data?.version === contentId.version
+            )
+          })
+          return {key: contentKey, pub: pub?.data, id: contentId}
+        })
+        .sort((a, b) => {
+          const timeA = a.pub?.document?.updateTime?.seconds || 0n
+          const timeB = b.pub?.document?.updateTime?.seconds || 0n
+          return Number(timeB - timeA)
+        }),
+      content: groupContent.data?.content,
+    },
+  }
 }
 
 export function useInvertedGroupContent(
