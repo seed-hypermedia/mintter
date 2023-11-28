@@ -1,3 +1,8 @@
 .blocknode-list {
   -webkit-font-smoothing: antialiased;
 }
+
+.content-inline,
+.content-inline * {
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+}

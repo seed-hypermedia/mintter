@@ -507,7 +507,7 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
     >
       <Text
         className="content-inline"
-        fontFamily={ffSerif ? '$editorBody' : '$body'}
+        // fontFamily={ffSerif ? '$editorBody' : '$body'}
         {...inlineContentSize(textUnit)}
       >
         <InlineContentView inline={inline} />
@@ -530,7 +530,7 @@ export function BlockContentHeading({block, depth}: BlockContentProps) {
     >
       <Text
         className="content-inline"
-        fontFamily={ffSerif ? '$editorBody' : '$body'}
+        // fontFamily={ffSerif ? '$editorBody' : '$body'}
         tag={tag}
         {...headingTextStyles}
         maxWidth="95%"
