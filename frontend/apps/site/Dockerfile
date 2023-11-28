@@ -2,14 +2,17 @@
 # docker run -e HM_BASE_URL=http://127.0.0.1:56001 -e GRPC_HOST=http://127.0.0.1:56001 -it -p 3000:3000 --rm --name nextjs nextjs-docker:latest
 
 FROM node:20-alpine AS builder
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    cat /run/secrets/SENTRY_AUTH_TOKEN
+RUN --mount=type=secret,id=sentry_auth_token \
+    cat /run/secrets/sentry_auth_token
+
 RUN apk add git
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 COPY . .
 # RUN rm -rf ./frontend/apps/desktop
+RUN --mount=type=secret,id=sentry_auth_token \
+    cat /run/secrets/sentry_auth_token
 RUN yarn install 
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
@@ -23,7 +26,8 @@ FROM node:20-alpine AS production
 COPY --from=builder /app/frontend/apps/site/.next/standalone .
 COPY --from=builder /app/frontend/apps/site/.next/static ./frontend/apps/site/.next/static
 COPY --from=builder /app/frontend/apps/site/public ./frontend/apps/site/public
-
+RUN --mount=type=secret,id=sentry_auth_token \
+    cat /run/secrets/sentry_auth_token
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs

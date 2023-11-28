@@ -124,7 +124,7 @@ jobs:
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:main
           secrets: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}"
 
       - name: Build and push stable nextjs
         if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
@@ -134,4 +134,4 @@ jobs:
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
           secrets: |
-            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}"
