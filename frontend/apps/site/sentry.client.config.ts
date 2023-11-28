@@ -28,4 +28,9 @@ if (process.env.NODE_ENV == 'production') {
       }),
     ],
   })
+} else {
+  console.log(
+    '=== SENTRY SETUP: NODE_ENV is not set to production',
+    process.env.NODE_ENV,
+  )
 }
