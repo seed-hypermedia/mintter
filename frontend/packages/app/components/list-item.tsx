@@ -19,31 +19,29 @@ export function ListItem({
   menuItems?: (MenuItemType | null)[]
 }) {
   return (
-    <>
-      <Button
-        onPointerEnter={onPointerEnter}
-        // onPointerLeave={() => setIsHovering(false)}
-        chromeless
-        onPress={onPress}
-        group="item"
-        maxWidth={900}
-        f={1}
+    <Button
+      onPointerEnter={onPointerEnter}
+      // onPointerLeave={() => setIsHovering(false)}
+      chromeless
+      onPress={onPress}
+      group="item"
+      maxWidth={900}
+      f={1}
+    >
+      <ButtonText
+        onPress={(e) => {
+          e.stopPropagation()
+          onPress?.(e)
+        }}
+        fontWeight="700"
+        flex={1}
+        textAlign="left"
       >
-        <ButtonText
-          onPress={(e) => {
-            e.stopPropagation()
-            onPress?.(e)
-          }}
-          fontWeight="700"
-          flex={1}
-          textAlign="left"
-        >
-          {title}
-        </ButtonText>
-        {accessory}
-        <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
-      </Button>
-    </>
+        {title}
+      </ButtonText>
+      {accessory}
+      <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
+    </Button>
   )
 }
 

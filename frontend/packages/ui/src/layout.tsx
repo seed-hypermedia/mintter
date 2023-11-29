@@ -23,6 +23,7 @@ export const MainWrapper = forwardRef(function MainWrapper(
   ref,
 ) {
   return (
+    // @ts-expect-error
     <YStack flex={1} className="content-wrapper" {...props} ref={ref}>
       {noScroll ? (
         children
