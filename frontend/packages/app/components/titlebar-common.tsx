@@ -274,9 +274,10 @@ export function useFullReferenceUrl(
           matchedPrettyPath === '/' ? '' : matchedPrettyPath
         const groupVersion = contextGroup.data?.version
         let sitePrettyUrl = `${hostname}/${displayPrettyPath}`
-        if (groupVersion) {
-          sitePrettyUrl += `?v=${groupVersion}`
-        }
+        // Version is temporarily disabled
+        // if (groupVersion) {
+        //   sitePrettyUrl += `?v=${groupVersion}`
+        // }
         return {
           url: sitePrettyUrl,
           label: 'Site Document',
