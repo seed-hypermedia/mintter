@@ -40,10 +40,10 @@ import {
   XStack,
   XStackProps,
   YStack,
-  YStackProps
+  YStackProps,
 } from '@mintter/ui'
-import { AlertCircle, Book } from '@tamagui/lucide-icons'
-import { nip19, nip21, validateEvent, verifySignature } from 'nostr-tools'
+import {AlertCircle, Book} from '@tamagui/lucide-icons'
+import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
 import {
   PropsWithChildren,
   createContext,
@@ -51,8 +51,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { RiCheckFill, RiCloseCircleLine, RiRefreshLine } from 'react-icons/ri'
-import { HMAccount, HMGroup } from './json-hm'
+import {RiCheckFill, RiCloseCircleLine, RiRefreshLine} from 'react-icons/ri'
+import {HMAccount, HMGroup} from './json-hm'
 import {
   contentLayoutUnit,
   contentTextUnit,
@@ -1139,17 +1139,21 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
 
   const uri = `nostr:${nostrNpud}`
   const header = `${nostrNpud.slice(0, 6)}...${nostrNpud.slice(-6)}`
-  
-  if (block.ref && block.ref !== '' && (content === undefined || verified === undefined)) {
+
+  if (
+    block.ref &&
+    block.ref !== '' &&
+    (content === undefined || verified === undefined)
+  ) {
     const cid = getCIDFromIPFSUrl(block.ref)
     fetch(`${BACKEND_HTTP_URL}/ipfs/${cid}`, {
-      method: 'GET'
+      method: 'GET',
     }).then((response) => {
       if (response) {
         response.text().then((text) => {
           if (text) {
-            const fileEvent = JSON.parse(text)     
-            if (content === undefined) setContent(fileEvent.content)       
+            const fileEvent = JSON.parse(text)
+            if (content === undefined) setContent(fileEvent.content)
             if (verified === undefined && validateEvent(fileEvent)) {
               setVerified(verifySignature(fileEvent))
             }
@@ -1172,7 +1176,7 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
         backgroundColor: '$backgroundHover',
       }}
     >
-      <XStack justifyContent='space-between'>
+      <XStack justifyContent="space-between">
         <SizableText
           size="$5"
           maxWidth="17em"
@@ -1182,24 +1186,35 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
           userSelect="text"
           flex={1}
         >
-          {"Public Key: "}
-          {nip21.test(uri) ? (
-            <a href={uri}>
-              {header}
-            </a>
-          ) : (
-            { header }
-          )}
+          {'Public Key: '}
+          {nip21.test(uri) ? <a href={uri}>{header}</a> : {header}}
         </SizableText>
-        <Tooltip content={verified === undefined ? "" : (verified ? "Signature verified" : "Invalid signature")}>
+        <Tooltip
+          content={
+            verified === undefined
+              ? ''
+              : verified
+              ? 'Signature verified'
+              : 'Invalid signature'
+          }
+        >
           <Button
             size="$2"
-            theme={verified === undefined ? "blue" : (verified ? "green" : "orange")}
-            icon={verified === undefined ? RiRefreshLine : (verified ? RiCheckFill : RiCloseCircleLine)}
+            disabled
+            theme={
+              verified === undefined ? 'blue' : verified ? 'green' : 'orange'
+            }
+            icon={
+              verified === undefined
+                ? RiRefreshLine
+                : verified
+                ? RiCheckFill
+                : RiCloseCircleLine
+            }
           />
         </Tooltip>
       </XStack>
-      <XStack justifyContent='space-between'>
+      <XStack justifyContent="space-between">
         <Text size="$6" fontWeight="bold">
           {content}
         </Text>

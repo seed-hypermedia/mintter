@@ -518,9 +518,9 @@ const EXPERIMENTS: ExperimentType[] = [
   },
   {
     key: 'nostr',
-    label: 'Nostr',
+    label: 'Nostr Embeds',
     emoji: '🍀',
-    description: 'It is your lucky day.',
+    description: 'Embed Nostr notes into documents for permanent referencing.',
   },
 ]
 

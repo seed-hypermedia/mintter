@@ -1,10 +1,10 @@
-import { createStyles, Menu } from '@mantine/core'
+import {createStyles, Menu} from '@mantine/core'
 import * as _ from 'lodash'
 
-import { BlockSchema } from '@/blocknote/core'
-import { trpc } from '@mintter/desktop/src/trpc'
-import { SlashMenuItem } from './SlashMenuItem'
-import { SlashMenuProps } from './SlashMenuPositioner'
+import {BlockSchema} from '@/blocknote/core'
+import {trpc} from '@mintter/desktop/src/trpc'
+import {SlashMenuItem} from './SlashMenuItem'
+import {SlashMenuProps} from './SlashMenuPositioner'
 
 export function DefaultSlashMenu<BSchema extends BlockSchema>(
   props: SlashMenuProps<BSchema>,
@@ -16,6 +16,7 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
   let index = 0
 
   const groups = _.groupBy(props.filteredItems, (i) => i.group)
+  const showNostr = trpc.experiments.get.useQuery().data?.nostr
 
   _.forEach(groups, (groupedItems) => {
     renderedItems.push(
@@ -23,8 +24,6 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
         {groupedItems[0].group}
       </Menu.Label>,
     )
-
-    const showNostr = trpc.experiments.get.useQuery().data?.nostr
 
     for (const item of groupedItems) {
       if (item.name !== 'Nostr' || showNostr) {
@@ -70,4 +69,3 @@ export function DefaultSlashMenu<BSchema extends BlockSchema>(
     </Menu>
   )
 }
-
