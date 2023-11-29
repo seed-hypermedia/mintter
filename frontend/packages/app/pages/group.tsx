@@ -2,6 +2,7 @@ import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
 import {
+  Account,
   BACKEND_FILE_URL,
   Document,
   Group,
@@ -390,30 +391,35 @@ export default function GroupPage() {
                 )}
                 <YStack paddingVertical="$4" gap="$4">
                   {//Object.entries(groupContent.data?.content || {})
-                  groupContent.data?.items.map(({key, pub, id}) => {
-                    if (key === '/') return null
+                  groupContent.data?.items.map(
+                    ({key, pub, author, editors, id}) => {
+                      if (key === '/') return null
 
-                    const latestEntry = latestGroupContent.data?.content?.[key]
-                    const latestDocId = latestEntry
-                      ? unpackDocId(latestEntry)
-                      : null
+                      const latestEntry =
+                        latestGroupContent.data?.content?.[key]
+                      const latestDocId = latestEntry
+                        ? unpackDocId(latestEntry)
+                        : null
 
-                    return (
-                      <GroupContentItem
-                        key={key}
-                        docId={id.qid}
-                        groupId={groupId}
-                        version={id?.version || undefined}
-                        latestVersion={latestDocId?.version || undefined}
-                        hasDraft={drafts.data?.documents.find(
-                          (d) => d.id == id.qid,
-                        )}
-                        pub={pub}
-                        userRole={myMemberRole}
-                        pathName={key}
-                      />
-                    )
-                  })}
+                      return (
+                        <GroupContentItem
+                          key={key}
+                          docId={id.qid}
+                          groupId={groupId}
+                          version={id?.version || undefined}
+                          latestVersion={latestDocId?.version || undefined}
+                          hasDraft={drafts.data?.documents.find(
+                            (d) => d.id == id.qid,
+                          )}
+                          pub={pub}
+                          userRole={myMemberRole}
+                          editors={editors}
+                          author={author}
+                          pathName={key}
+                        />
+                      )
+                    },
+                  )}
                 </YStack>
               </Container>
             </MainWrapper>
@@ -500,6 +506,8 @@ function GroupContentItem({
   pathName,
   userRole,
   pub,
+  editors,
+  author,
 }: {
   docId: string
   version?: string
@@ -509,6 +517,8 @@ function GroupContentItem({
   pathName: string
   userRole: Role
   pub: Publication | undefined
+  editors: Array<Account | string | undefined>
+  author: Account | string | undefined
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const renameDialog = useAppDialog(RenamePubDialog)
@@ -539,6 +549,8 @@ function GroupContentItem({
     <>
       <PublicationListItem
         publication={pub}
+        editors={editors}
+        author={author}
         hasDraft={hasDraft}
         pathName={pathName}
         onPathNamePress={() => {
