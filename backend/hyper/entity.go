@@ -384,7 +384,7 @@ var qForEachComment = dqb.Str(`
 `)
 
 func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c cid.Cid, ch Change) error) (err error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg19")
 	if err != nil {
 		return err
 	}
@@ -505,7 +505,7 @@ var qLoadEntityAll = dqb.Str(`
 // LoadEntity from the database. If not found returns nil result and nil error.
 // It returns the latest version as per the owner of the entity.
 func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg20")
 	if err != nil {
 		return nil, err
 	}
@@ -647,7 +647,7 @@ func (bs *Storage) LoadDraftEntity(ctx context.Context, eid EntityID) (*Entity, 
 
 // FindDraft for a given entity.
 func (bs *Storage) FindDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg22")
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -670,7 +670,7 @@ func (bs *Storage) LoadEntityFromHeads(ctx context.Context, eid EntityID, heads 
 		return nil, fmt.Errorf("must specify heads to load: %s", eid)
 	}
 
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg23")
 	if err != nil {
 		return nil, err
 	}

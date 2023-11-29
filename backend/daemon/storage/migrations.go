@@ -358,7 +358,7 @@ func (d *Dir) migrate(currentVersion string) error {
 			}
 			defer db.Close()
 
-			conn, release, err := db.Conn(context.Background())
+			conn, release, err := db.Conn(context.Background(), "dbg10")
 			if err != nil {
 				return err
 			}

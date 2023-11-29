@@ -81,7 +81,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		n.SetInvoicer(srv)
 		// Check if the user already had a lndhub wallet (reusing db)
 		// if not, then Auth will simply fail.
-		conn, release, err := db.Conn(ctx)
+		conn, release, err := db.Conn(ctx, "dbg55")
 		if err != nil {
 			panic(err)
 		}

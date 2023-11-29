@@ -147,7 +147,7 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	require.NoError(t, identity.Resolve(u.Identity))
 
-	conn, release, err := db.Conn(context.Background())
+	conn, release, err := db.Conn(context.Background(), "dbg54")
 	require.NoError(t, err)
 	defer release()
 

@@ -143,7 +143,8 @@ func (p *Pool) ForEach(fn func(conn *sqlite.Conn) error) error {
 // defer release()
 // // Use conn normally.
 // ```
-func (p *Pool) Conn(ctx context.Context) (*sqlite.Conn, context.CancelFunc, error) {
+func (p *Pool) Conn(ctx context.Context, reference ...string) (*sqlite.Conn, context.CancelFunc, error) {
+	fmt.Printf("Getting db Connection with reference: %s\n", reference)
 	conn := p.Get(ctx)
 	if conn == nil {
 		err := ctx.Err()
@@ -154,7 +155,7 @@ func (p *Pool) Conn(ctx context.Context) (*sqlite.Conn, context.CancelFunc, erro
 		panic("unable to get connection: probably using a closed pool " + err.Error())
 	}
 
-	return conn, func() { p.Put(conn) }, nil
+	return conn, func() { p.Put(conn); fmt.Printf("Closed db Connection with reference: %s\n", reference) }, nil
 }
 
 // Get returns an SQLite connection from the Pool.

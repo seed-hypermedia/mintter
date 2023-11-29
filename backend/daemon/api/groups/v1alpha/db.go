@@ -98,7 +98,7 @@ var qGetSite = dqb.Str(`
 
 // ForEachRelatedBlob collects all the related blobs for a given group and calls fn on each CID.
 func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn func(c cid.Cid) error) error {
-	conn, release, err := db.db.Conn(ctx)
+	conn, release, err := db.db.Conn(ctx, "dbg6")
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ var QCollectBlobs = dqb.Str(`
 
 // ListSiteGroups returns the list of sites we know about.
 func (db *DB) ListSiteGroups(ctx context.Context) ([]string, error) {
-	conn, release, err := db.db.Conn(ctx)
+	conn, release, err := db.db.Conn(ctx, "dbg7")
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ var qListSiteGroups = dqb.Str(`
 `)
 
 func (db *DB) queryOne(ctx context.Context, sql string, args []any, outs []any) error {
-	conn, release, err := db.db.Conn(ctx)
+	conn, release, err := db.db.Conn(ctx, "dbg8")
 	if err != nil {
 		return err
 	}

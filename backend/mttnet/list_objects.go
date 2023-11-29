@@ -53,7 +53,7 @@ func (srv *rpcMux) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 // ListBlobs lists all the blobs that the node has.
 func (srv *rpcMux) ListBlobs(_ *p2p.ListBlobsRequest, stream p2p.P2P_ListBlobsServer) error {
 	ctx := stream.Context()
-	conn, release, err := srv.Node.db.Conn(ctx)
+	conn, release, err := srv.Node.db.Conn(ctx, "dbg50")
 	if err != nil {
 		return err
 	}

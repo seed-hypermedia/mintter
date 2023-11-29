@@ -38,7 +38,7 @@ type indexer struct {
 
 // Reindex forces deletes all the information derived from the blobs and reindexes them.
 func (bs *indexer) Reindex(ctx context.Context) (err error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg38")
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (bs *indexer) reindex(conn *sqlite.Conn) (err error) {
 
 // MaybeReindex will trigger reindexing if it's needed.
 func (bs *indexer) MaybeReindex(ctx context.Context) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg39")
 	if err != nil {
 		return err
 	}

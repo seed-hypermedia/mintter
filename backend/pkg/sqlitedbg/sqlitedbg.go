@@ -69,7 +69,7 @@ func Exec[T *sqlitex.Pool | *sqlite.Conn](db T, w io.Writer, query string) {
 
 // ExecPool is the same as Exec but uses the connection pool.
 func ExecPool(db *sqlitex.Pool, w io.Writer, query string) {
-	conn, release, err := db.Conn(context.Background())
+	conn, release, err := db.Conn(context.Background(), "dbg53")
 	if err != nil {
 		panic(err)
 	}

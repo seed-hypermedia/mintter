@@ -59,7 +59,7 @@ func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
 
 // Query allows to execute raw SQLite queries.
 func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) (err error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg24")
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (bs *Storage) Query(ctx context.Context, fn func(conn *sqlite.Conn) error) 
 
 // SaveBlob into the internal storage. Index if necessary.
 func (bs *Storage) SaveBlob(ctx context.Context, blob Blob) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg25")
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (bs *Storage) saveBlob(conn *sqlite.Conn, blob Blob) (id int64, err error) 
 
 // SetAccountTrust sets an account to trusted.
 func (bs *Storage) SetAccountTrust(ctx context.Context, acc []byte) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg26")
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (bs *Storage) SetAccountTrust(ctx context.Context, acc []byte) error {
 
 // UnsetAccountTrust untrust the provided account.
 func (bs *Storage) UnsetAccountTrust(ctx context.Context, acc []byte) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg27")
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (bs *Storage) UnsetAccountTrust(ctx context.Context, acc []byte) error {
 }
 
 func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg28")
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 
 // ListEntities returns a list of entities matching the pattern.
 func (bs *Storage) ListEntities(ctx context.Context, pattern string) ([]EntityID, error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg29")
 	if err != nil {
 		return nil, err
 	}
@@ -220,8 +220,35 @@ var qListTrustedEntitites = dqb.Str(`
 	ORDER BY resources.id
 `)
 
-func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err error) {
+// ListTrustedEntities returns a list of entities matching the pattern owned by trusted accounts.
+func (bs *Storage) ListTrustedEntities(ctx context.Context, pattern string) ([]EntityID, error) {
 	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	var out []EntityID
+	if err := sqlitex.Exec(conn, qListTrustedEntitites(), func(stmt *sqlite.Stmt) error {
+		out = append(out, EntityID(stmt.ColumnText(0)))
+		return nil
+	}, pattern); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+var qListTrustedEntitites = dqb.Str(`
+	SELECT resources.iri
+	FROM trusted_accounts
+	JOIN resources ON resources.owner = trusted_accounts.id
+	WHERE resources.iri GLOB :prefix
+	ORDER BY resources.id
+`)
+
+func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err error) {
+	conn, release, err := bs.db.Conn(ctx, "dbg30")
 	if err != nil {
 		return ch, err
 	}
@@ -243,7 +270,7 @@ func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err e
 }
 
 func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg31")
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -278,7 +305,7 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 }
 
 func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg32")
 	if err != nil {
 		return err
 	}
@@ -312,7 +339,7 @@ func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
 }
 
 func (bs *Storage) DeleteEntity(ctx context.Context, eid EntityID) error {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg33")
 	if err != nil {
 		return err
 	}
@@ -344,7 +371,7 @@ func (bs *Storage) ReplaceDraftBlob(ctx context.Context, eid EntityID, old cid.C
 		return fmt.Errorf("BUG: can't replace: old CID is not defined")
 	}
 
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg34")
 	if err != nil {
 		return err
 	}
@@ -586,7 +613,7 @@ func (b *indexingBlockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 }
 
 func (b *indexingBlockStore) checkEntityExists(ctx context.Context, eid EntityID) (exists bool, err error) {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg35")
 	if err != nil {
 		return false, err
 	}
@@ -610,7 +637,7 @@ func (b *indexingBlockStore) checkEntityExists(ctx context.Context, eid EntityID
 // from the outside are indexed.
 
 func (b *indexingBlockStore) Put(ctx context.Context, block blocks.Block) error {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg36")
 	if err != nil {
 		return err
 	}
@@ -637,7 +664,7 @@ func (b *indexingBlockStore) Put(ctx context.Context, block blocks.Block) error 
 
 // PutMany implements blockstore.Blockstore interface.
 func (b *indexingBlockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg37")
 	if err != nil {
 		return err
 	}

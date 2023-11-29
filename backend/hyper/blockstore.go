@@ -48,7 +48,7 @@ func newBlockstore(db *sqlitex.Pool) *blockStore {
 
 // Has implements blockstore.Blockstore interface.
 func (b *blockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg12")
 	if err != nil {
 		return false, err
 	}
@@ -72,7 +72,7 @@ func (b *blockStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
 
 // Get implements blockstore.Blockstore interface.
 func (b *blockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg13")
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (b *blockStore) decompress(data []byte, originalSize int) ([]byte, error) {
 
 // GetSize implements blockstore.Blockstore interface.
 func (b *blockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg14")
 	if err != nil {
 		return 0, err
 	}
@@ -203,7 +203,7 @@ func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash 
 
 // DeleteBlock implements blockstore.Blockstore interface.
 func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg15")
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) (oldid int64, err
 func (b *blockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 	c := make(chan cid.Cid, 10) // The buffer is arbitrary.
 
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg16")
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (b *blockStore) HashOnRead(bool) {
 }
 
 func (b *blockStore) withConn(ctx context.Context, fn func(*sqlite.Conn) error) error {
-	conn, release, err := b.db.Conn(ctx)
+	conn, release, err := b.db.Conn(ctx, "dbg17")
 	if err != nil {
 		return err
 	}

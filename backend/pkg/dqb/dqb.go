@@ -48,7 +48,7 @@ func (q *Queries) Str(s string) LazyQuery {
 // Test tests all the queries in the storage with a given connection
 // by preparing them. This makes sure the queries are valid according to the DB schema.
 func (q *Queries) Test(db *sqlitex.Pool) error {
-	conn, release, err := db.Conn(context.Background())
+	conn, release, err := db.Conn(context.Background(), "dbg52")
 	if err != nil {
 		return err
 	}

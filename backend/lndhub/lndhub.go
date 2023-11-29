@@ -154,7 +154,7 @@ func (c *Client) GetLndaddressDomain() string {
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg40")
 	if err != nil {
 		return resp, err
 	}
@@ -193,7 +193,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	}
 	var resp createResponse
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg41")
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
 func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg42")
 	if err != nil {
 		return "", err
 	}
@@ -270,7 +270,7 @@ func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
 func (c *Client) Auth(ctx context.Context) (string, error) {
 	var resp authResponse
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg43")
 	if err != nil {
 		return "", err
 	}
@@ -311,7 +311,7 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 		Btc btcBalance `mapstructure:"BTC"`
 	}
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg44")
 	if err != nil {
 		return 0, err
 	}
@@ -337,7 +337,7 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 
 // ListPaidInvoices returns a list of outgoing invoices.
 func (c *Client) ListPaidInvoices(ctx context.Context) ([]Invoice, error) {
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg45")
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func (c *Client) ListPaidInvoices(ctx context.Context) ([]Invoice, error) {
 
 // ListReceivedInvoices returns a list of incoming invoices.
 func (c *Client) ListReceivedInvoices(ctx context.Context) ([]Invoice, error) {
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg46")
 	if err != nil {
 		return nil, err
 	}
@@ -412,7 +412,7 @@ func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string
 
 	var resp createLocalInvoiceResponse
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg47")
 	if err != nil {
 		return "", err
 	}
@@ -452,7 +452,7 @@ func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, am
 
 	var resp requestRemoteInvoiceResponse
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg48")
 	if err != nil {
 		return "", err
 	}
@@ -498,7 +498,7 @@ func (c *Client) PayInvoice(ctx context.Context, payReq string, sats uint64) err
 		Amount  uint64 `json:"amount"`
 	}
 
-	conn, release, err := c.db.Conn(ctx)
+	conn, release, err := c.db.Conn(ctx, "dbg49")
 	if err != nil {
 		return err
 	}
