@@ -1,3 +1,4 @@
+import {WebLinkMeta} from '@mintter/app/models/web-links'
 import {
   isHypermediaScheme,
   isPublicGatewayLink,
@@ -9,13 +10,21 @@ import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 import {LinkMenuItem} from './LinkMenuItem'
 
-export function getLinkMenuItems(
-  isLoading: boolean, // true is spinner needs to be shown
-  isHmLink: boolean, // true if the link is an embeddable link
-  media?: string, // type of media block if link points to a media file
-  originalRef?: string, // the inserted link into the editor. needed to correctly replace the link with block
-  fileName?: string, // file name if any
-) {
+export function getLinkMenuItems({
+  isLoading,
+  isHmLink,
+  media,
+  originalRef,
+  fileName,
+  linkMeta,
+}: {
+  isLoading: boolean // true is spinner needs to be shown
+  isHmLink: boolean // true if the link is an embeddable link
+  media?: string // type of media block if link points to a media file
+  originalRef?: string // the inserted link into the editor. needed to correctly replace the link with block
+  fileName?: string // file name if any
+  linkMeta?: WebLinkMeta // fetch link meta result
+}) {
   const linkMenuItems: LinkMenuItem[] = [
     {
       name: 'Dismiss',
@@ -58,36 +67,34 @@ export function getLinkMenuItems(
           )
 
           insertNode(editor, originalRef ? originalRef : ref, node)
-
-          const {block: currentBlock, nextBlock} =
-            editor.getTextCursorPosition()
-
-          if (currentBlock.type === 'embed') {
-            if (nextBlock) {
-              editor.setTextCursorPosition(nextBlock, 'end')
-            } else {
-              editor.insertBlocks(
-                [
-                  {
-                    type: 'paragraph',
-                    content: [],
-                  },
-                ],
-                currentBlock,
-                'after',
-              )
-              editor.setTextCursorPosition(
-                editor.getTextCursorPosition().nextBlock!,
-                'end',
-              )
-            }
-          } else {
-            editor.setTextCursorPosition(
-              getBlockInfoFromPos(doc, selection.$anchor.pos).id,
-              'end',
-            )
-          }
         },
+      }
+
+      if (linkMeta && linkMeta.hmTitle && linkMeta.hmId && !linkMeta.blockRef) {
+        const titleItem = {
+          name: `Insert link as "${linkMeta.hmTitle}"`,
+          disabled: false,
+          icon: undefined,
+          execute: (editor: BlockNoteEditor, ref: string) => {
+            const {state, schema, view} = editor._tiptapEditor
+            const {selection} = state
+            const pos = selection.from - originalRef!.length
+            view.dispatch(
+              view.state.tr
+                .deleteRange(pos, pos + originalRef!.length)
+                .insertText(linkMeta.hmTitle!, pos)
+                .addMark(
+                  pos,
+                  pos + linkMeta.hmTitle!.length,
+                  schema.mark('link', {
+                    href: originalRef,
+                  }),
+                ),
+            )
+          },
+        }
+
+        linkMenuItems.unshift(titleItem)
       }
 
       linkMenuItems.unshift(embedItem)

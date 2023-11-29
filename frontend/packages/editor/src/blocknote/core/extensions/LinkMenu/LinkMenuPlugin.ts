@@ -284,7 +284,6 @@ export const setupLinkMenu = <
                 selectedItemIndexChanged: keyboardHoveredItemIndex - 1,
               }),
             )
-            return true
           }
 
           // Moves the keyboard selection to the next item.
@@ -294,7 +293,6 @@ export const setupLinkMenu = <
                 selectedItemIndexChanged: keyboardHoveredItemIndex + 1,
               }),
             )
-            return true
           }
 
           // Selects an item and closes the menu.
@@ -309,17 +307,14 @@ export const setupLinkMenu = <
               // })
               .run()
             items[keyboardHoveredItemIndex].execute(editor, ref)
-
-            return true
           }
 
           // Closes the menu.
           if (event.key === 'Escape') {
             deactivate(view)
-            return true
           }
 
-          return false
+          return true
         },
 
         // Setup decorator on the currently active item (link).
