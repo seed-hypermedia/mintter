@@ -4625,7 +4625,7 @@ __metadata:
     react-dom: 18.2.0
     react-error-boundary: 4.0.11
     react-hot-toast: 2.4.1
-    tamagui: latest
+    tamagui: 1.79.1
     vite: 4.4.9
     vite-tsconfig-paths: 4.2.0
     xvfb-maybe: 0.2.1
@@ -21448,8 +21448,8 @@ __metadata:
     node-gyp: ^9.3.1
     prettier: 3.0.2
     sort-package-json: 2.5.1
-    superjson: ^1.13.3
-    tamagui: latest
+    superjson: 1.13.3
+    tamagui: 1.79.1
     ts-node: 10.9.1
     turbo: 1.10.14
     typescript: 5.2.2
@@ -27082,7 +27082,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superjson@npm:^1.10.0, superjson@npm:^1.13.3":
+"superjson@npm:1.13.3, superjson@npm:^1.10.0":
   version: 1.13.3
   resolution: "superjson@npm:1.13.3"
   dependencies:
@@ -27249,7 +27249,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tamagui@npm:1.79.1, tamagui@npm:latest":
+"tamagui@npm:1.79.1":
   version: 1.79.1
   resolution: "tamagui@npm:1.79.1"
   dependencies:
@@ -30060,9 +30060,9 @@ __metadata:
   linkType: hard
 
 "xstate@npm:beta":
-  version: 5.0.0-beta.48
-  resolution: "xstate@npm:5.0.0-beta.48"
-  checksum: 06b250e864fc88beea41f1e54fb68ec298e3a685e01cc9adf9f6ae6b8af80d78ac08e35c3dd284e841630bc141c1636e1f3191cb36a779d45f425890f5c86770
+  version: 5.0.0-beta.49
+  resolution: "xstate@npm:5.0.0-beta.49"
+  checksum: 6d477e534f1cb2e833620c183d8ebb12b10fd19baedd4c770f44b29a956969161ea9c3f67b34813cf0f75e3351eef777f5169b6fd761d5945ab213e24205685f
   languageName: node
   linkType: hard
 
