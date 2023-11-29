@@ -29,12 +29,12 @@ import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {FormInput} from '../components/form-input'
 import {copyLinkMenuItem} from '../components/list-item'
+import {MainWrapper} from '../components/main-wrapper'
 import {queryPublication, useCreatePublication} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {useDaemonReady} from '../node-status-context'
 import {useOpenUrl} from '../open-url'
 import {toast} from '../toast'
-import {MainWrapper} from '../components/main-wrapper'
 
 export function PublicationListPage({
   trustedOnly,

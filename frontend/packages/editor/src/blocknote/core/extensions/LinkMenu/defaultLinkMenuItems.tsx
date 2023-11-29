@@ -1,3 +1,4 @@
+import {youtubeParser} from '@/utils'
 import {
   isHypermediaScheme,
   isPublicGatewayLink,
@@ -103,12 +104,13 @@ export function getLinkMenuItems(
           let embedUrl = ''
           if (media === 'video') {
             let videoUrl = ''
-            if (ref.includes('youtu.be')) {
-              const urlArray = ref.split('/')
-              videoUrl =
-                'https://www.youtube.com/embed/' + urlArray[urlArray.length - 1]
-            } else if (ref.includes('youtube')) {
-              videoUrl = 'https://www.youtube.com/embed/' + ref.split('=')[1]
+            if (ref.includes('youtu.be') || ref.includes('youtube')) {
+              let ytId = youtubeParser(ref)
+              if (ytId) {
+                videoUrl = `https://www.youtube.com/embed/${ytId}`
+              } else {
+                videoUrl = ''
+              }
             } else if (ref.includes('vimeo')) {
               const urlArray = ref.split('/')
               videoUrl =
