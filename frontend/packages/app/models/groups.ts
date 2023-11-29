@@ -17,7 +17,7 @@ import {
 } from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
-import {useMyAccount} from './accounts'
+import {useAllAccounts, useMyAccount} from './accounts'
 import {queryPublication} from './documents'
 import {queryKeys} from './query-keys'
 
@@ -292,6 +292,14 @@ export function useFullGroupContent(
       )
     }),
   })
+  const accounts = useAllAccounts()
+  function lookupAccount(accountId: string | undefined) {
+    return (
+      (accountId &&
+        accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
+      accountId
+    )
+  }
   return {
     ...groupContent,
     data: {
@@ -303,7 +311,13 @@ export function useFullGroupContent(
               pubQuery.data?.version === contentId.version
             )
           })
-          return {key: contentKey, pub: pub?.data, id: contentId}
+          return {
+            key: contentKey,
+            pub: pub?.data,
+            author: lookupAccount(pub?.data?.document?.author),
+            editors: pub?.data?.document?.editors?.map(lookupAccount) || [],
+            id: contentId,
+          }
         })
         .sort((a, b) => {
           const timeA = a.pub?.document?.updateTime?.seconds || 0n
