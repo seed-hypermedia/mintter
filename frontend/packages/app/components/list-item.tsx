@@ -26,6 +26,8 @@ export function ListItem({
         chromeless
         onPress={onPress}
         group="item"
+        maxWidth={900}
+        f={1}
       >
         <ButtonText
           onPress={(e) => {

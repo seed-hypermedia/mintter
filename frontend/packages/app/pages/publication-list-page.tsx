@@ -1,7 +1,7 @@
 import {EmptyList} from '@mintter/app/components/empty-list'
 import Footer from '@mintter/app/components/footer'
 import {PublicationListItem} from '@mintter/app/components/publication-list-item'
-import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
+import {useDraftList} from '@mintter/app/models/documents'
 import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {
   Button,
@@ -15,13 +15,17 @@ import {
   Label,
   SizableText,
   Spinner,
+  TamaguiElement,
+  View,
   XStack,
   YStack,
 } from '@mintter/ui'
+import {Virtuoso} from 'react-virtuoso'
 
 import {zodResolver} from '@hookform/resolvers/zod'
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {z} from 'zod'
 import {useAppContext} from '../app-context'
@@ -29,12 +33,16 @@ import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {FormInput} from '../components/form-input'
 import {copyLinkMenuItem} from '../components/list-item'
-import {queryPublication, useCreatePublication} from '../models/documents'
+import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
+import {
+  queryPublication,
+  useCreatePublication,
+  usePublicationFullList,
+} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {useDaemonReady} from '../node-status-context'
 import {useOpenUrl} from '../open-url'
 import {toast} from '../toast'
-import {MainWrapper} from '../components/main-wrapper'
 
 export function PublicationListPage({
   trustedOnly,
@@ -43,67 +51,116 @@ export function PublicationListPage({
   trustedOnly: boolean
   empty?: React.ReactNode
 }) {
-  let publications = usePublicationList({trustedOnly})
+  let publications = usePublicationFullList({trustedOnly})
   let drafts = useDraftList()
   let {queryClient, grpcClient} = useAppContext()
   let openDraft = useOpenDraft('push')
-  const pubs = publications.data?.publications
+  const items = publications.data
 
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
-
-  if (pubs) {
-    if (pubs.length) {
+  const container = useRef<TamaguiElement>(null)
+  const virtuoso = useRef(null)
+  const [dimensions, setDimensions] = useState({height: 0, width: 0})
+  const handleContainer = useCallback((node: TamaguiElement | null) => {
+    container.current = node
+    setDimensions({
+      height: node?.offsetHeight,
+      width: node?.offsetWidth,
+    })
+  }, [])
+  useEffect(() => {
+    function handleResize() {
+      const node = container.current
+      setDimensions({
+        height: node?.offsetHeight,
+        width: node?.offsetWidth,
+      })
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+  if (items) {
+    if (items.length) {
       return (
         <>
-          <MainWrapper>
-            <Container>
-              {pubs.map((publication) => {
-                const docId = publication.document?.id
-                if (!docId) return null
-                return (
-                  <PublicationListItem
-                    pubContext={trustedOnly ? {key: 'trusted'} : null}
-                    openRoute={{
-                      key: 'publication',
-                      documentId: docId,
-                      pubContext: trustedOnly ? {key: 'trusted'} : null,
-                    }}
-                    key={publication.document?.id}
-                    hasDraft={drafts.data?.documents.find(
-                      (d) => d.id == publication.document?.id,
-                    )}
-                    onPointerEnter={() => {
-                      if (publication.document?.id) {
-                        queryClient.client.prefetchQuery(
-                          queryPublication(
-                            grpcClient,
-                            publication.document.id,
-                            publication.version,
+          <MainWrapperNoScroll>
+            <YStack f={1} ref={handleContainer}>
+              <Virtuoso
+                ref={virtuoso}
+                style={{
+                  height: dimensions.height,
+                  display: 'flex',
+                  overflowY: 'scroll',
+                  overflowX: 'hidden',
+                }}
+                increaseViewportBy={{
+                  top: 800,
+                  bottom: 800,
+                }}
+                components={{
+                  Header: () => <View style={{height: 30}} />,
+                  Footer: () => <View style={{height: 30}} />,
+                }}
+                id="scroll-page-wrapper"
+                totalCount={items.length}
+                itemContent={(index) => {
+                  const {publication, author, editors} = items[index]
+                  const docId = publication.document?.id
+                  if (!docId) return null
+                  return (
+                    <XStack
+                      key={publication.document?.id}
+                      jc="center"
+                      width={dimensions.width}
+                    >
+                      <PublicationListItem
+                        pubContext={trustedOnly ? {key: 'trusted'} : null}
+                        openRoute={{
+                          key: 'publication',
+                          documentId: docId,
+                          pubContext: trustedOnly ? {key: 'trusted'} : null,
+                        }}
+                        hasDraft={drafts.data?.documents.find(
+                          (d) => d.id == publication.document?.id,
+                        )}
+                        onPointerEnter={() => {
+                          if (publication.document?.id) {
+                            queryClient.client.prefetchQuery(
+                              queryPublication(
+                                grpcClient,
+                                publication.document.id,
+                                publication.version,
+                              ),
+                            )
+                          }
+                        }}
+                        publication={publication}
+                        author={author}
+                        editors={editors}
+                        menuItems={[
+                          copyLinkMenuItem(
+                            idToUrl(docId, undefined, publication.version),
+                            'Publication',
                           ),
-                        )
-                      }
-                    }}
-                    publication={publication}
-                    menuItems={[
-                      copyLinkMenuItem(
-                        idToUrl(docId, undefined, publication.version),
-                        'Publication',
-                      ),
-                      {
-                        key: 'delete',
-                        label: 'Delete Publication',
-                        icon: Delete,
-                        onPress: () => {
-                          deleteDialog.open(docId)
-                        },
-                      },
-                    ]}
-                  />
-                )
-              })}
-            </Container>
-            {deleteDialog.content}
-          </MainWrapper>
+                          {
+                            key: 'delete',
+                            label: 'Delete Publication',
+                            icon: Delete,
+                            onPress: () => {
+                              deleteDialog.open(docId)
+                            },
+                          },
+                        ]}
+                      />
+                    </XStack>
+                  )
+                }}
+              />
+              {deleteDialog.content}
+            </YStack>
+          </MainWrapperNoScroll>
           <Footer />
         </>
       )
