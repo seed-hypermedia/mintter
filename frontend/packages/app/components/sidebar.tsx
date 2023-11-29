@@ -110,7 +110,7 @@ function FullAppSidebar() {
         onMouseEnter={ctx.onMenuHover}
         onMouseLeave={ctx.onMenuHoverLeave}
         opacity={isVisible ? 1 : 0}
-        overflow="scroll"
+        overflow="auto" // why does Tamagui/TS not agree that this is an acceptable value? IT WORKS!
       >
         <YGroup
           separator={<Separator />}

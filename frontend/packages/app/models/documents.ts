@@ -53,6 +53,7 @@ import {
 } from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
+import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
 <<<<<<< HEAD
@@ -91,6 +92,30 @@ export function usePublicationList(
       }
     },
   })
+}
+
+export function usePublicationFullList(
+  opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
+) {
+  const pubList = usePublicationList(opts)
+  const accounts = useAllAccounts()
+  const data = useMemo(() => {
+    function lookupAccount(accountId: string | undefined) {
+      return (
+        (accountId &&
+          accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
+        accountId
+      )
+    }
+    return pubList.data?.publications.map((pub) => {
+      return {
+        publication: pub,
+        author: lookupAccount(pub?.document?.author),
+        editors: pub?.document?.editors?.map(lookupAccount) || [],
+      }
+    })
+  }, [pubList.data, accounts.data])
+  return {...pubList, data}
 }
 
 export function useDraftList() {

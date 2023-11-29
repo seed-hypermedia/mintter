@@ -4,16 +4,14 @@ import {
   useNavRoute,
 } from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
-import {Document, Publication, shortenPath} from '@mintter/shared'
+import {Account, Document, Publication, shortenPath} from '@mintter/shared'
 import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
 import {NavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {AccountLinkAvatar} from './account-link-avatar'
-import {ListItem, MenuItemType, TimeAccessory} from './list-item'
+import {BaseAccountLinkAvatar} from './account-link-avatar'
+import {ListItem, TimeAccessory} from './list-item'
+import {MenuItemType} from './options-dropdown'
 
-function unique(keys: string[]) {
-  return Array.from(new Set(keys))
-}
 export function getDocumentTitle(document?: Document) {
   let res = document?.title || 'Untitled Document'
   return shortenPath(res)
@@ -28,6 +26,8 @@ export function PublicationListItem({
   pathName,
   openRoute,
   onPathNamePress,
+  author,
+  editors,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
@@ -38,6 +38,8 @@ export function PublicationListItem({
   onPointerEnter?: () => void
   openRoute: NavRoute
   onPathNamePress?: () => void
+  author: Account | string | undefined
+  editors: (string | Account | undefined)[]
 }) {
   const spawn = useNavigate('spawn')
   const title = getDocumentTitle(publication.document)
@@ -98,35 +100,33 @@ export function PublicationListItem({
               {shortenPath(pathName)}
             </ButtonText>
           )}
-
           <XStack>
-            {publication.document?.editors.length ? (
-              unique(publication.document?.editors).map((editor, idx) => (
-                <XStack
-                  zIndex={idx + 1}
-                  key={editor}
-                  borderColor="$background"
-                  backgroundColor="$background"
-                  borderWidth={2}
-                  borderRadius={100}
-                  marginLeft={-8}
-                  animation="fast"
-                >
-                  <AccountLinkAvatar accountId={editor} />
-                </XStack>
-              ))
-            ) : publication.document?.author ? (
-              <XStack
-                borderColor="$background"
-                backgroundColor="$background"
-                borderWidth={2}
-                borderRadius={100}
-                marginLeft={-8}
-                animation="fast"
-              >
-                <AccountLinkAvatar accountId={publication.document?.author} />
-              </XStack>
-            ) : null}
+            {editors.length
+              ? editors.map((editor, idx) => {
+                  const editorId =
+                    typeof editor === 'string' ? editor : editor?.id
+                  if (!editorId) return null
+                  const account =
+                    typeof editor === 'string' ? undefined : editor
+                  return (
+                    <XStack
+                      zIndex={idx + 1}
+                      key={editorId}
+                      borderColor="$background"
+                      backgroundColor="$background"
+                      borderWidth={2}
+                      borderRadius={100}
+                      marginLeft={-8}
+                      animation="fast"
+                    >
+                      <BaseAccountLinkAvatar
+                        accountId={editorId}
+                        account={account}
+                      />
+                    </XStack>
+                  )
+                })
+              : null}
           </XStack>
           <TimeAccessory
             time={publication.document?.updateTime}

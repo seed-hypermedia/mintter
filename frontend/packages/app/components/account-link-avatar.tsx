@@ -2,6 +2,7 @@ import {Avatar} from '@mintter/app/components/avatar'
 import appError from '@mintter/app/errors'
 import {useAccount} from '@mintter/app/models/accounts'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {Account} from '@mintter/shared'
 import {Button, FontSizeTokens, Tooltip, YStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
 import {getAvatarUrl} from '../utils/account-url'
@@ -32,24 +33,45 @@ export function AccountLinkAvatar({
   accountId?: string
   size?: FontSizeTokens | number
 }) {
-  const navigate = useNavigate()
   const account = useAccount(accountId)
+  if (!accountId) return null
+  return (
+    <BaseAccountLinkAvatar
+      account={account.data}
+      size={size}
+      accountId={accountId}
+      error={!!account.error}
+    />
+  )
+}
 
-  let content = account.data?.profile ? (
+export function BaseAccountLinkAvatar({
+  account,
+  accountId,
+  size = 20,
+  error,
+}: {
+  account: Account | undefined
+  accountId: string
+  size?: FontSizeTokens | number
+  error?: boolean
+}) {
+  const navigate = useNavigate()
+  let content = account?.profile ? (
     <Avatar
       size={size}
-      label={account.data.profile.alias}
-      id={account.data.id}
-      url={getAvatarUrl(account.data?.profile?.avatar)}
+      label={account.profile.alias}
+      id={account.id}
+      url={getAvatarUrl(account.profile?.avatar)}
     />
   ) : (
     <>
-      <Avatar size="$1" label={'?'} id={accountId!} />
-      {account.error ? <ErrorDot /> : null}
+      <Avatar size={size} label={'?'} id={accountId!} />
+      {error ? <ErrorDot /> : null}
     </>
   )
   return (
-    <Tooltip content={account.data?.profile?.alias || account.data?.id || ''}>
+    <Tooltip content={account?.profile?.alias || accountId || ''}>
       <Button
         id="avatar"
         className="no-window-drag"

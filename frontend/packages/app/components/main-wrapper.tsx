@@ -18,3 +18,12 @@ export function MainWrapper({children, ...props}: YStackProps & {}) {
     </XStack>
   )
 }
+
+export function MainWrapperNoScroll({children, ...props}: YStackProps & {}) {
+  return (
+    <XStack flex={1} {...props}>
+      <SidebarSpacer />
+      {children}
+    </XStack>
+  )
+}

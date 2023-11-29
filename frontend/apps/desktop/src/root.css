@@ -27,6 +27,9 @@ body {
   height: 100%;
 }
 
-::-webkit-scrollbar {
-  display: none !important;
+/* ::-webkit-scrollbar {
+  display: none;
+} */
+#scroll-page-wrapper::-webkit-scrollbar {
+  display: auto;
 }
