@@ -101,7 +101,7 @@ export function PublicationListItem({
             </ButtonText>
           )}
           <XStack>
-            {editors.length
+            {editors && editors.length
               ? editors.map((editor, idx) => {
                   const editorId =
                     typeof editor === 'string' ? editor : editor?.id
