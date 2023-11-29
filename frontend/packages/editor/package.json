@@ -42,7 +42,7 @@
     "hast-util-from-dom": "4.2.0",
     "linkifyjs": "4.1.1",
     "nanoid": "4.0.2",
-    "nostr-tools": "^1.16.0",
+    "nostr-tools": "1.16.0",
     "prosemirror-state": "1.4.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
