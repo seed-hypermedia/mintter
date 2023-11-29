@@ -24,6 +24,7 @@ import {
 } from './blocknote'
 import {MaxFileSizeB, MaxFileSizeMB} from './file'
 import {HMBlockSchema} from './schema'
+import {youtubeParser} from './utils'
 
 export const VideoBlock = createReactBlockSpec({
   type: 'video',
@@ -458,15 +459,19 @@ function VideoForm({
   const submitVideo = async (url: string) => {
     if (isValidUrl(url)) {
       let embedUrl = 'https://www.youtube.com/embed/'
-      if (url.includes('youtu.be')) {
-        const urlArray = url.split('/')
-        embedUrl = embedUrl + urlArray[urlArray.length - 1]
-      } else if (url.includes('youtube')) {
-        embedUrl = embedUrl + url.split('=')[1]
+      if (url.includes('youtu.be') || url.includes('youtube')) {
+        let ytId = youtubeParser(url)
+        if (ytId) {
+          embedUrl = embedUrl + ytId
+        } else {
+          setFileName({name: `Unsupported Youtube Url:${url}`, color: 'red'})
+          return
+        }
       } else if (url.includes('vimeo')) {
         const urlArray = url.split('/')
-        embedUrl =
-          'https://player.vimeo.com/video/' + urlArray[urlArray.length - 1]
+        embedUrl = `https://player.vimeo.com/video/${
+          urlArray[urlArray.length - 1]
+        }`
       } else {
         setFileName({name: 'Unsupported video source.', color: 'red'})
         return

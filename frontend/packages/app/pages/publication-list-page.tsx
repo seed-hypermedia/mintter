@@ -1,6 +1,5 @@
 import {EmptyList} from '@mintter/app/components/empty-list'
 import Footer from '@mintter/app/components/footer'
-import {PublicationListItem} from '@mintter/app/components/publication-list-item'
 import {useDraftList} from '@mintter/app/models/documents'
 import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {
@@ -34,6 +33,7 @@ import {useAppDialog} from '../components/dialog'
 import {FormInput} from '../components/form-input'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
+import {PublicationListItem} from '../components/publication-list-item'
 import {
   queryPublication,
   useCreatePublication,
