@@ -617,8 +617,8 @@ function InviteMemberDialog({
     () =>
       accounts.status == 'success'
         ? accounts.data.accounts.reduce((acc, current) => {
-            if (current.profile?.alias) {
-              acc[current.id] = {...current, alias: current.profile?.alias}
+            if (current?.profile?.alias) {
+              acc[current.id] = {...current, alias: current?.profile?.alias}
             }
 
             return acc
@@ -932,8 +932,8 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
           {selectedValues.map((value) => {
             let account = accountsMap[value]
             let alias =
-              account && account.profile?.alias ? account.profile.alias : value
-            let avatar = account.profile?.avatar
+              account && account?.profile?.alias ? account.profile.alias : value
+            let avatar = account?.profile?.avatar
             return (
               // <AccountCard accountId={value} key={value}>
               <Ariakit.CompositeItem
