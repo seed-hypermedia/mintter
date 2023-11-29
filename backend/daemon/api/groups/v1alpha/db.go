@@ -27,14 +27,8 @@ func NewSQLiteDB(db *sqlitex.Pool) *DB {
 	return &DB{db: db}
 }
 
-// RecordSiteSync updates the last sync time of a site.
+// RecordGroupSiteSync updates the last sync time of a site.
 func (db *DB) RecordGroupSiteSync(ctx context.Context, group string, now time.Time, syncErr error, info *groups.PublicSiteInfo) error {
-	conn, release, err := db.db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
 	nowts := now.Unix()
 
 	var errmsg string
@@ -47,15 +41,17 @@ func (db *DB) RecordGroupSiteSync(ctx context.Context, group string, now time.Ti
 		remoteVersion = info.GroupVersion
 	}
 
-	if err := sqlitex.Exec(conn, qRecordGroupSiteSync(), nil, errmsg, remoteVersion, nowts, group); err != nil {
-		return err
-	}
+	return db.db.WithTx(ctx, func(conn *sqlite.Conn) error {
+		if err := sqlitex.Exec(conn, qRecordGroupSiteSync(), nil, errmsg, remoteVersion, nowts, group); err != nil {
+			return err
+		}
 
-	if conn.Changes() == 0 {
-		return fmt.Errorf("group site %s couldn't update: not found", group)
-	}
+		if conn.Changes() == 0 {
+			return fmt.Errorf("group site %s couldn't update: not found", group)
+		}
 
-	return nil
+		return nil
+	})
 }
 
 var qRecordGroupSiteSync = dqb.Str(`

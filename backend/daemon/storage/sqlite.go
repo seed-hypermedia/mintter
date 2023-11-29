@@ -94,7 +94,20 @@ func MakeTestDB(t testing.TB) *sqlitex.Pool {
 }
 
 // SetKV sets a key-value pair in the database.
-func SetKV(conn *sqlite.Conn, key, value string, replace bool) error {
+func SetKV[T *sqlite.Conn | *sqlitex.Pool](ctx context.Context, db T, key, value string, replace bool) error {
+	var conn *sqlite.Conn
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+		conn = c
+	}
+
 	if replace {
 		return sqlitex.Exec(conn, "INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?);", nil, key, value)
 	}
@@ -103,7 +116,20 @@ func SetKV(conn *sqlite.Conn, key, value string, replace bool) error {
 }
 
 // GetKV gets a key-value pair from the database.
-func GetKV(conn *sqlite.Conn, key string) (string, error) {
+func GetKV[T *sqlite.Conn | *sqlitex.Pool](ctx context.Context, db T, key string) (string, error) {
+	var conn *sqlite.Conn
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(ctx)
+		if err != nil {
+			return "", err
+		}
+		defer release()
+		conn = c
+	}
+
 	var value string
 	err := sqlitex.Exec(conn, "SELECT value FROM kv WHERE key = ?;", func(stmt *sqlite.Stmt) error {
 		value = stmt.ColumnText(0)
