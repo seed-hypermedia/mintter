@@ -25,6 +25,8 @@ var qAllPublicBlobs = dqb.Str(`
 	AND drafts.blob IS NULL;
 `)
 
+var randSrc = rand.NewSource(time.Now().UnixNano())
+
 func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
 	// except those which are marked as draft changes.
@@ -43,19 +45,19 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 				log.Error("Failed to open db connection", zap.Error(err))
 				return
 			}
-			defer release()
 
 			// We want to provide all the entity IDs, so we convert them into raw CIDs,
 			// similar to how libp2p discovery service is doing.
 
 			entities, err := hypersql.EntitiesListByPrefix(conn, "*")
+			release()
 			if err != nil {
 				log.Error("Failed to list entities", zap.Error(err))
 				return
 			}
 			log.Debug("Start reproviding", zap.Int("Number of entities", len(entities)))
 			// Since reproviding takes long AND is has throttle limits, we are better off randomizing it.
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r := rand.New(randSrc) //nolint:gosec
 			r.Shuffle(len(entities), func(i, j int) { entities[i], entities[j] = entities[j], entities[i] })
 			for _, e := range entities {
 				c, err := hyper.EntityID(e.ResourcesIRI).CID()
