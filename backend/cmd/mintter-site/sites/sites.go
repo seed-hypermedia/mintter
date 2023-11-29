@@ -22,6 +22,7 @@ import (
 	rpcpeer "google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -125,13 +126,7 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		return nil, err
 	}
 
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	groupID, err := storage.GetKV(conn, keySiteGroup)
+	groupID, err := storage.GetKV(ctx, db, keySiteGroup)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get group id from the db: %w", err)
 	}
@@ -205,23 +200,23 @@ func (ws *Website) InitializeServer(ctx context.Context, in *groups.InitializeSe
 		return nil, err
 	}
 
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
+	if err := db.WithTx(ctx, func(conn *sqlite.Conn) error {
+		_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
+		if err != nil {
+			return err
+		}
+
+		if err := storage.SetKV(ctx, conn, keySiteGroup, in.GroupId, false); err != nil {
+			return fmt.Errorf("failed to save group ID")
+		}
+
+		if err := storage.SetKV(ctx, conn, keySiteOwner, owner.String(), false); err != nil {
+			return fmt.Errorf("failed to save owner")
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
-	}
-	defer release()
-
-	_, err = hypersql.EntitiesInsertOrIgnore(conn, in.GroupId)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := storage.SetKV(conn, keySiteGroup, in.GroupId, false); err != nil {
-		return nil, fmt.Errorf("failed to save group ID")
-	}
-
-	if err := storage.SetKV(conn, keySiteOwner, owner.String(), false); err != nil {
-		return nil, fmt.Errorf("failed to save owner")
 	}
 
 	return &groups.InitializeServerResponse{}, nil
@@ -235,13 +230,7 @@ func (ws *Website) GetGroupID(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return "", fmt.Errorf("Failed to get db connection: %w", err)
-	}
-	defer release()
-
-	groupID, err := storage.GetKV(conn, keySiteGroup)
+	groupID, err := storage.GetKV(ctx, db, keySiteGroup)
 	if err != nil {
 		return "", err
 	}
@@ -276,32 +265,32 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 	if err != nil {
 		return nil, err
 	}
-	conn, release, err := db.Conn(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get db connection: %w", err)
-	}
-	defer release()
-
-	// Get the owner's view of the list of members.
-	groupID, err := storage.GetKV(conn, keySiteGroup)
-	if err != nil || groupID == "" {
-		return nil, fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
-	}
-
-	groupOwner, err := storage.GetKV(conn, keySiteOwner)
-	if err != nil || groupOwner == "" {
-		return nil, fmt.Errorf("error getting group owner on the site, is the site initialized?: %w", err)
-	}
 
 	var role groups.Role
-	if groupOwner == callerAccount.String() {
-		role = groups.Role_OWNER
-	} else {
-		r, err := hypersql.GetGroupRole(conn, groupID, "hm://a/"+callerAccount.String())
-		if err != nil {
-			return nil, err
+	if err := db.WithSave(ctx, func(conn *sqlite.Conn) error {
+		// Get the owner's view of the list of members.
+		groupID, err := storage.GetKV(ctx, conn, keySiteGroup)
+		if err != nil || groupID == "" {
+			return fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
 		}
-		role = groups.Role(r)
+
+		groupOwner, err := storage.GetKV(ctx, conn, keySiteOwner)
+		if err != nil || groupOwner == "" {
+			return fmt.Errorf("error getting group owner on the site, is the site initialized?: %w", err)
+		}
+
+		if groupOwner == callerAccount.String() {
+			role = groups.Role_OWNER
+		} else {
+			r, err := hypersql.GetGroupRole(conn, groupID, "hm://a/"+callerAccount.String())
+			if err != nil {
+				return err
+			}
+			role = groups.Role(r)
+		}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	if role != groups.Role_OWNER && role != groups.Role_EDITOR {
