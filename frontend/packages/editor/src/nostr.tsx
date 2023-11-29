@@ -1,4 +1,4 @@
-import { BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL } from '@mintter/shared'
+import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
   Card,
@@ -13,11 +13,23 @@ import {
   Tooltip,
   XStack,
   YStack,
-  useTheme
+  useTheme,
 } from '@mintter/ui'
-import { Event as NostrEvent, nip19, nip21, relayInit, validateEvent, verifySignature } from 'nostr-tools'
-import { useEffect, useState } from 'react'
-import { RiCheckFill, RiCloseCircleLine, RiMessage2Fill, RiRefreshLine } from 'react-icons/ri'
+import {
+  Event as NostrEvent,
+  nip19,
+  nip21,
+  relayInit,
+  validateEvent,
+  verifySignature,
+} from 'nostr-tools'
+import {useEffect, useState} from 'react'
+import {
+  RiCheckFill,
+  RiCloseCircleLine,
+  RiMessage2Fill,
+  RiRefreshLine,
+} from 'react-icons/ri'
 import {
   Block,
   BlockNoteEditor,
@@ -25,14 +37,14 @@ import {
   defaultProps,
   getBlockInfoFromPos,
 } from './blocknote'
-import { HMBlockSchema } from './schema'
+import {HMBlockSchema} from './schema'
 
 export const RELAY_LIST = [
   'wss://relayable.org',
   'wss://brb.io',
   'wss://nos.lol',
   'wss://relay.damus.io',
-  'wss://soloco.nl'
+  'wss://soloco.nl',
 ]
 
 export const NostrBlock = createReactBlockSpec({
@@ -109,8 +121,8 @@ const Render = (
 
   const assignNostr = (newNostr: NostrType) => {
     editor.updateBlock(block.id, {
-      props: { ...block.props, ...newNostr.props },
-      content: newNostr.content
+      props: {...block.props, ...newNostr.props},
+      content: newNostr.content,
     })
     editor.setTextCursorPosition(block.id, 'end')
   }
@@ -160,7 +172,7 @@ function NostrComponent({
 
   if (block.props.name && block.props.name !== '') {
     fetch(`${BACKEND_FILE_URL}/${block.props.url}`, {
-      method: 'GET'
+      method: 'GET',
     }).then((response) => {
       if (response) {
         response.text().then((text) => {
@@ -204,7 +216,7 @@ function NostrComponent({
                 url: '',
                 name: '',
                 size: '0',
-                text: ''
+                text: '',
               },
               children: [],
               content: [],
@@ -219,31 +231,36 @@ function NostrComponent({
         </Button>
       ) : null}
       <XStack>
-        <Card
-          elevate
-          size="$4"
-          bordered
-          animation="bouncy"
-          flex={1}
-        >
+        <Card elevate size="$4" bordered animation="bouncy" flex={1}>
           <Card.Header padded>
             <H2 marginTop={12}>
-              <XStack justifyContent='space-between'>
+              <XStack justifyContent="space-between">
                 <Text>
-                  {"Public Key: "}
-                  {nip21.test(uri) ? (
-                    <a href={uri}>
-                      {header}
-                    </a>
-                  ) : (
-                    { header }
-                  )}
+                  {'Public Key: '}
+                  {nip21.test(uri) ? <a href={uri}>{header}</a> : {header}}
                 </Text>
-                <Tooltip content={verified ? "Signature verified" : "Invalid signature"}>
+                <Tooltip
+                  content={
+                    verified ? 'Signature verified' : 'Invalid signature'
+                  }
+                >
                   <Button
                     size="$2"
-                    theme={verified === undefined ? "blue" : (verified ? "green" : "orange")}
-                    icon={verified === undefined ? RiRefreshLine : (verified ? RiCheckFill : RiCloseCircleLine)}
+                    disabled
+                    theme={
+                      verified === undefined
+                        ? 'blue'
+                        : verified
+                        ? 'green'
+                        : 'orange'
+                    }
+                    icon={
+                      verified === undefined
+                        ? RiRefreshLine
+                        : verified
+                        ? RiCheckFill
+                        : RiCloseCircleLine
+                    }
                   />
                 </Tooltip>
               </XStack>
@@ -288,10 +305,13 @@ function NostrForm({
     await new Promise((resolve) => setTimeout(resolve, t))
   }
 
-  const searchRelay = async (relayUrl: string, noteId: string): Promise<void> => {
+  const searchRelay = async (
+    relayUrl: string,
+    noteId: string,
+  ): Promise<void> => {
     const relay = relayInit(relayUrl)
     relay.on('connect', () => {
-      setState({ name: `Searching in ${relayUrl}`, color: 'green' })
+      setState({name: `Searching in ${relayUrl}`, color: 'green'})
     })
     relay.on('error', () => {
       throw new Error()
@@ -303,8 +323,8 @@ function NostrForm({
 
     const sub = relay.sub([
       {
-        ids: [noteId]
-      }
+        ids: [noteId],
+      },
     ])
 
     sub.on('event', async (event) => {
@@ -326,7 +346,7 @@ function NostrForm({
   }
 
   const searchNote = async () => {
-    setState({ name: 'Connecting...', color: 'green' })
+    setState({name: 'Connecting...', color: 'green'})
     const decodedBech32 = nip19.decode(nevent)
     let noteId = ''
     let relayListIndex = 0
@@ -334,29 +354,25 @@ function NostrForm({
 
     if (decodedBech32.type === 'nevent') {
       noteId = decodedBech32.data.id
-      relays = [
-        ...decodedBech32.data.relays ?? [],
-        ...RELAY_LIST,
-      ]
+      relays = [...(decodedBech32.data.relays ?? []), ...RELAY_LIST]
     } else if (decodedBech32.type === 'note') {
       noteId = decodedBech32.data
     }
 
     const tryRelay = async () => {
-      searchRelay(RELAY_LIST[relayListIndex], noteId)
-        .catch(() => {
-          relayListIndex = relayListIndex + 1
-          if (relayListIndex < RELAY_LIST.length) {
-            tryRelay()
-          } else {
-            setState({ name: "Can't find the note in relays.", color: 'red' })
-          }
-        })
+      searchRelay(RELAY_LIST[relayListIndex], noteId).catch(() => {
+        relayListIndex = relayListIndex + 1
+        if (relayListIndex < RELAY_LIST.length) {
+          tryRelay()
+        } else {
+          setState({name: "Can't find the note in relays.", color: 'red'})
+        }
+      })
     }
 
     if (noteId !== '') tryRelay()
   }
-  
+
   const submitNote = async (raw: string = rawNote) => {
     const event: NostrEvent = JSON.parse(raw)
     setNote(event)
@@ -373,11 +389,11 @@ function NostrForm({
 
   const ingestNote = async (event: NostrEvent): Promise<void> => {
     if (isValidEvent(event)) {
-      const blobData = [JSON.stringify(event)];
-      const blob = new Blob(blobData, { type: "text/plain" });
-      
-      const formData = new FormData();
-      formData.append("file", blob, event.id);
+      const blobData = [JSON.stringify(event)]
+      const blob = new Blob(blobData, {type: 'text/plain'})
+
+      const formData = new FormData()
+      formData.append('file', blob, event.id)
       const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
@@ -388,17 +404,20 @@ function NostrForm({
         throw new Error(data)
       }
 
-      setState({ name: undefined, color: undefined })
+      setState({name: undefined, color: undefined})
       assign({
-        props: { 
+        props: {
           url: data,
           name: event.id,
           text: event.content,
-          size: blob.size
-        }
+          size: blob.size,
+        },
       })
     } else {
-      setState({ name: 'The provided note is invalid or not supported.', color: 'red' })
+      setState({
+        name: 'The provided note is invalid or not supported.',
+        color: 'red',
+      })
     }
   }
 
@@ -435,8 +454,8 @@ function NostrForm({
             borderRadius="$5"
             shadowColor="$shadowColor"
             opacity={1}
-            enterStyle={{ x: 0, y: -10, opacity: 0 }}
-            exitStyle={{ x: 0, y: -10, opacity: 0 }}
+            enterStyle={{x: 0, y: -10, opacity: 0}}
+            exitStyle={{x: 0, y: -10, opacity: 0}}
             animation={[
               'quick',
               {
