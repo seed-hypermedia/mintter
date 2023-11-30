@@ -16,7 +16,7 @@ import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {useGRPCClient} from '../app-context'
-import {useContactsList} from '../models/contacts'
+import {useConnectPeer, useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
@@ -27,13 +27,28 @@ import './quick-switcher.css'
 function useURLHandler() {
   const experiments = trpc.experiments.get.useQuery()
   const webQuery = trpc.webQuery.useMutation()
+  const connect = useConnectPeer({
+    onSuccess: () => {
+      // toast.success('Connection Added')
+      console.log('peer connected.')
+    },
+    onError: (err) => {
+      console.error('Peer Connect Error:', err)
+      // toast.error('Connection Error : ' + err?.rawMessage)
+    },
+  })
   return async (
     queryClient: AppQueryClient,
     grpcClient: GRPCClient,
     search: string,
   ): Promise<NavRoute | null> => {
+    const httpSearch = /^https?:\/\//.test(search)
+      ? search
+      : `https://${search}`
+
+    connect.mutate(httpSearch)
     if (experiments.data?.webImporting) {
-      const webResult = await webQuery.mutateAsync({webUrl: search})
+      const webResult = await webQuery.mutateAsync({webUrl: httpSearch})
       if (webResult.hypermedia) {
         const unpacked = unpackHmIdWithAppRoute(
           `${webResult.hypermedia.id}?v=${webResult.hypermedia.version}`,
@@ -56,9 +71,9 @@ function useURLHandler() {
         documentId,
       }
     } else {
-      const result = await fetchWebLink(queryClient, search)
-      console.log('🌐 Queried Web URL Result', search, result)
-      const blockRef = extractBlockRefOfUrl(search)
+      const result = await fetchWebLink(queryClient, httpSearch)
+      console.log('🌐 Queried Web URL Result', httpSearch, result)
+      const blockRef = extractBlockRefOfUrl(httpSearch)
       const fullHmId = hmIdWithVersion(
         result?.hmId,
         result?.hmVersion,
@@ -111,7 +126,7 @@ export function QuickSwitcher() {
       <Command.Input
         value={search}
         onValueChange={setSearch}
-        placeholder="Search Drafts and Publications..."
+        placeholder="Query URL, Search Documents, Groups, Accounts..."
         disabled={!!actionPromise}
       />
       {actionPromise ? (
@@ -123,7 +138,8 @@ export function QuickSwitcher() {
           <Command.Empty>No results found.</Command.Empty>
           {(isHypermediaScheme(search) ||
             search.startsWith('http://') ||
-            search.startsWith('https://')) && (
+            search.startsWith('https://') ||
+            search.includes('.')) && (
             <Command.Item
               key="mtt-link"
               value={search}
@@ -138,7 +154,8 @@ export function QuickSwitcher() {
                   navigate(searched?.navRoute)
                 } else if (
                   search.startsWith('http://') ||
-                  search.startsWith('https://')
+                  search.startsWith('https://') ||
+                  search.includes('.')
                 ) {
                   setActionPromise(
                     handleUrl(queryClient, grpcClient, search)

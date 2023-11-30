@@ -277,7 +277,6 @@ function BlockNodeMarker({
   let marker
 
   if (childrenType == 'ol') {
-    console.log('== NUMBERR', {index, start, conv: Number(start)})
     marker = `${index + Number(start)}.`
   }
 
