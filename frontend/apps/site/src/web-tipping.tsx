@@ -180,7 +180,7 @@ function SplitRow({
         <Text color="$gray10">– {Math.round(percentage * 1000) / 10}%</Text>
       </XStack>
       <XStack gap="$2">
-        {dispatchSplit ? (
+        {dispatchSplit && canReceive ? (
           <XGroup opacity={displayIncrementButton ? 1 : 0} size="$2">
             <XGroup.Item>
               <Button
@@ -253,6 +253,7 @@ type SplitAction = {
 let editorsOverallPercentage = 0.99
 
 function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
+  const availRecipients = state.filter((s) => s.canReceive)
   if (action.type === 'incrementPercentage') {
     const prevTarget = state.find((s) => s.id === action.id)
     if (!prevTarget) return state
@@ -270,16 +271,18 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
       !state.filter((s) => s.id !== action.id).find((s) => s.percentage !== 0)
     ) {
       return state.map((s) => {
+        if (!s.canReceive) return s
         if (s.id === action.id) {
-          return {id: s.id, percentage: nextPercentage}
+          return {...s, id: s.id, percentage: nextPercentage}
         }
-        const percentage = nextRemainderPercentage / (state.length - 1)
-        return {id: s.id, percentage}
+        const percentage =
+          nextRemainderPercentage / (availRecipients.length - 1)
+        return {...s, id: s.id, percentage}
       })
     }
     return state.map((s) => {
       if (s.id === action.id) {
-        return {id: s.id, percentage: nextPercentage}
+        return {...s, id: s.id, percentage: nextPercentage}
       }
 
       // these split the remainder based on their ratio from the previous remainder
@@ -288,7 +291,7 @@ function splitReducer(state: InvoiceSplit, action: SplitAction): InvoiceSplit {
           ? 0
           : s.percentage / prevRemainderPercentage
       const percentage = prevRatioExcludingTarget * nextRemainderPercentage
-      return {id: s.id, percentage}
+      return {...s, id: s.id, percentage}
     })
   }
   return state
@@ -327,14 +330,16 @@ function CreateInvoiceStep({
       })
       .filter((editorId) => !!editorId)
     let equalPercentage = validRecipients.length
-      ? editorsOverallPercentage / editorIds.length
+      ? editorsOverallPercentage / validRecipients.length
       : editorsOverallPercentage
     return editorIds.map((id) => {
       const canReceive = !!id && validRecipients.indexOf(id) !== -1
+      if (!canReceive) return {id, canReceive, percentage: 0}
       return {id, canReceive, percentage: equalPercentage}
     })
   }, [editors, validRecipients])
   let [split, dispatchSplit] = useReducer(splitReducer, initialSplit)
+  console.log({initialSplit, split})
   let computed = useMemo(() => {
     let remainderSats = amount
     let remainderPercent = 1
@@ -342,7 +347,7 @@ function CreateInvoiceStep({
       let sats = Math.floor(amount * splitRow.percentage)
       remainderSats -= sats
       remainderPercent -= splitRow.percentage
-      return {...splitRow, sats}
+      return {...splitRow, sats, percentage: sats / amount}
     })
     // TO DO: handle edge case where remainderSats is 0 but the actual service fee should be at least 1 sat
     return {
