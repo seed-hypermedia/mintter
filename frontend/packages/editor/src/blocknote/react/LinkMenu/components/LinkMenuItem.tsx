@@ -1,4 +1,4 @@
-import {createStyles, Menu, Text} from '@mantine/core'
+import {Box, createStyles, Menu, Text} from '@mantine/core'
 import {useEffect, useRef} from 'react'
 
 const MIN_LEFT_MARGIN = 5
@@ -72,9 +72,12 @@ export function LinkMenuItem(props: LinkMenuItemProps) {
     >
       {/* <Stack> */}
       {/*Might need separate classes.*/}
-      <Text size={14} weight={500}>
-        {props.name}
-      </Text>
+      <Box w={400}>
+        <Text size={14} weight={500} truncate="end">
+          {props.name}
+        </Text>
+      </Box>
+
       {/* <Text size={10}>{props.hint}</Text>
       </Stack> */}
     </Menu.Item>
