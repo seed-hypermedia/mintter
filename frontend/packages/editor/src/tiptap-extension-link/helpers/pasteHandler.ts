@@ -150,7 +150,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
               activate: true,
               ref: nativeHyperLink,
-              items: getLinkMenuItems(false, true),
+              items: getLinkMenuItems({isLoading: false, isHmLink: true}),
             }),
           )
           return true
@@ -178,7 +178,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
               activate: true,
               ref: link.href,
-              items: getLinkMenuItems(true, false),
+              items: getLinkMenuItems({isLoading: true, isHmLink: false}),
             }),
           )
 
@@ -187,13 +187,13 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
                   ref: link.href,
-                  items: getLinkMenuItems(
-                    false,
-                    false,
-                    'image',
-                    link.href,
-                    fileName,
-                  ),
+                  items: getLinkMenuItems({
+                    isLoading: false,
+                    isHmLink: false,
+                    media: 'image',
+                    originalRef: link.href,
+                    fileName: fileName,
+                  }),
                 }),
               )
               break
@@ -201,13 +201,13 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
                   ref: link.href,
-                  items: getLinkMenuItems(
-                    false,
-                    false,
-                    'file',
-                    link.href,
-                    fileName,
-                  ),
+                  items: getLinkMenuItems({
+                    isLoading: false,
+                    isHmLink: false,
+                    media: 'file',
+                    originalRef: link.href,
+                    fileName: fileName,
+                  }),
                 }),
               )
               break
@@ -215,13 +215,13 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               view.dispatch(
                 view.state.tr.setMeta(linkMenuPluginKey, {
                   ref: link.href,
-                  items: getLinkMenuItems(
-                    false,
-                    false,
-                    'video',
-                    link.href,
-                    fileName,
-                  ),
+                  items: getLinkMenuItems({
+                    isLoading: false,
+                    isHmLink: false,
+                    media: 'video',
+                    originalRef: link.href,
+                    fileName: fileName,
+                  }),
                 }),
               )
               break
@@ -239,12 +239,12 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       view.dispatch(
                         view.state.tr.setMeta(linkMenuPluginKey, {
                           ref: fullHmId,
-                          items: getLinkMenuItems(
-                            false,
-                            true,
-                            undefined,
-                            link.href,
-                          ),
+                          items: getLinkMenuItems({
+                            isLoading: false,
+                            isHmLink: true,
+                            originalRef: link.href,
+                            linkMeta: res.hmTitle ? res : undefined,
+                          }),
                         }),
                       )
                       return true
@@ -264,12 +264,12 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       view.dispatch(
                         view.state.tr.setMeta(linkMenuPluginKey, {
                           ref: link.href,
-                          items: getLinkMenuItems(
-                            false,
-                            false,
-                            type,
-                            link.href,
-                          ),
+                          items: getLinkMenuItems({
+                            isLoading: false,
+                            isHmLink: false,
+                            media: type,
+                            originalRef: link.href,
+                          }),
                         }),
                       )
                       return true
@@ -285,7 +285,10 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   if (!embedResult && !mediaResult) {
                     view.dispatch(
                       view.state.tr.setMeta(linkMenuPluginKey, {
-                        items: getLinkMenuItems(false, false),
+                        items: getLinkMenuItems({
+                          isLoading: false,
+                          isHmLink: false,
+                        }),
                       }),
                     )
                   }
