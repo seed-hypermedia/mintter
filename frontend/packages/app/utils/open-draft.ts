@@ -1,11 +1,11 @@
+import {useQueryInvalidator} from '@mintter/app/app-context'
 import {queryKeys} from '@mintter/app/models/query-keys'
-import {toast} from 'react-hot-toast'
+import {PublicationRouteContext} from '@mintter/app/utils/navigation'
 import {DocumentChange, GRPCClient} from '@mintter/shared'
+import {useGRPCClient} from '../app-context'
+import appError from '../errors'
 import {DraftRoute, NavMode, useNavRoute} from './navigation'
 import {useNavigate} from './useNavigate'
-import {useQueryInvalidator} from '@mintter/app/app-context'
-import {useGRPCClient} from '../app-context'
-import {PublicationRouteContext} from '@mintter/app/utils/navigation'
 
 async function createDraft(
   grpcClient: GRPCClient,
@@ -53,8 +53,7 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
         navigate(draftRoute)
       })
       .catch((err) => {
-        console.error(err)
-        toast.error('Failed to create new draft')
+        appError('Error when creating draft from menu', {error: err})
       })
   }
   return openNewDraft

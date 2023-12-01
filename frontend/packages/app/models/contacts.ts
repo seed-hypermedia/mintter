@@ -3,6 +3,7 @@ import {Device} from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {decompressFromEncodedURIComponent} from 'lz-string'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import appError from '../errors'
 import {useAccount} from './accounts'
 import {useConnectedPeers} from './networking'
 
@@ -81,8 +82,8 @@ export function useConnectPeer(
         const peerWellKnown = peerUrl.toString()
         const wellKnownData = await fetch(peerWellKnown)
           .then((res) => res.json())
-          .catch((err) => {
-            console.error('Connect Error:', err)
+          .catch((error) => {
+            appError(`Error fetching peer wellKnown`, {error})
             return null
           })
         if (wellKnownData?.peerInfo?.peerId) {

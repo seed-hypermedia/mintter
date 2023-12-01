@@ -10,8 +10,6 @@ import {
   Delete,
   DialogDescription,
   DialogTitle,
-  Form,
-  Label,
   SizableText,
   Spinner,
   TamaguiElement,
@@ -21,27 +19,17 @@ import {
 } from '@mintter/ui'
 import {Virtuoso} from 'react-virtuoso'
 
-import {zodResolver} from '@hookform/resolvers/zod'
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useCallback, useEffect, useRef, useState} from 'react'
-import {useForm} from 'react-hook-form'
-import {z} from 'zod'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
-import {FormInput} from '../components/form-input'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
-import {
-  queryPublication,
-  useCreatePublication,
-  usePublicationFullList,
-} from '../models/documents'
+import {queryPublication, usePublicationFullList} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
-import {useDaemonReady} from '../node-status-context'
-import {useOpenUrl} from '../open-url'
 import {toast} from '../toast'
 
 export function PublicationListPage({
@@ -272,72 +260,12 @@ function PublishedFirstDocDialog({
   )
 }
 
-const newDocFields = z.object({
-  title: z.string(),
-})
-type NewGroupFields = z.infer<typeof newDocFields>
-
-export function CreateFirstDocForm({
-  onSuccess,
-}: {
-  onSuccess: (docId: string) => void
-}) {
-  const {
-    control,
-    handleSubmit,
-    setFocus,
-    formState: {errors},
-  } = useForm<NewGroupFields>({
-    resolver: zodResolver(newDocFields),
-    defaultValues: {
-      title: `Hello, World`,
-    },
-  })
-  const openUrl = useOpenUrl()
-  const createPublication = useCreatePublication()
-  const isDaemonReady = useDaemonReady()
-  if (!isDaemonReady) return <Spinner />
-  return (
-    <YStack>
-      <Button
-        onPress={() => {
-          openUrl('https://hyper.media/d/FHD735zUfVznrESN5s9JMz')
-        }}
-      >
-        Open Welcome Document
-      </Button>
-      <Form
-        onSubmit={handleSubmit(async (values) =>
-          createPublication.mutateAsync(values.title).then((docId) => {
-            toast.success('Published Document')
-            onSuccess(docId)
-          }),
-        )}
-      >
-        <Label htmlFor="title">Title</Label>
-        <FormInput placeholder={'Group Name'} control={control} name="title" />
-        <Form.Trigger>
-          <Button>Create Document</Button>
-        </Form.Trigger>
-      </Form>
-    </YStack>
-  )
-}
-
 export default function TrustedPublicationList() {
   const successDialog = useAppDialog(PublishedFirstDocDialog)
 
   return (
     <>
-      <PublicationListPage
-        trustedOnly={true}
-        // // disabled welcome experience
-        // empty={
-        //   <CreateFirstDocForm
-        //     onSuccess={(docId) => successDialog.open({docId})}
-        //   />
-        // }
-      />
+      <PublicationListPage trustedOnly={true} />
       {successDialog.content}
     </>
   )

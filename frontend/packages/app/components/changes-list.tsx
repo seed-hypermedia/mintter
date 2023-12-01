@@ -22,6 +22,7 @@ import {
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext, useMemo} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
+import appError from '../errors'
 import {
   useGroup,
   useGroupContent,
@@ -356,9 +357,10 @@ function PostToGroupDialog({
                 })
                 toast.success('Group version updated')
               })
-              .catch((e) => {
-                console.error(e)
-                toast.error('Something went wrong')
+              .catch((error) => {
+                appError(`Error when publishing to group: ${error?.message}`, {
+                  error,
+                })
               })
           }}
         >

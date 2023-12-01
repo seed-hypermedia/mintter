@@ -1,8 +1,8 @@
+import {fetchWebLink} from '@mintter/app/models/web-links'
+import {AppQueryClient} from '@mintter/app/query-client'
 import {extractBlockRefOfUrl, hmIdWithVersion} from '@mintter/shared'
 import {EditorView} from '@tiptap/pm/view'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {AppQueryClient} from '@mintter/app/query-client'
-import {fetchWebLink} from '@mintter/app/models/web-links'
 
 export const hypermediaPluginKey = new PluginKey('hypermedia-link')
 
@@ -103,7 +103,7 @@ async function checkHyperLink(
       })
     }
   } catch (error) {
-    console.error('CHECK LINK ERROR:', error)
+    console.error(`Editor: hm-link check error: ${error}`)
   }
 
   return

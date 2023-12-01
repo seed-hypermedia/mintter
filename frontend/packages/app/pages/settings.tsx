@@ -42,6 +42,7 @@ import {useGRPCClient, useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {TableList} from '../components/table-list'
+import appError from '../errors'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
@@ -813,8 +814,7 @@ function WalletCard({
     try {
       let res = await mutation.mutateAsync({id: wallet.id})
       if (!res) {
-        toast.error('Error: ExportWallet error')
-        console.error('Error: ExportWallet error')
+        appError('Error: ExportWallet error')
       } else {
         copyTextToClipboard(res.credentials)
         toast.success('Wallet Exported and copied to your clipboard', {
@@ -822,8 +822,7 @@ function WalletCard({
         })
       }
     } catch (error) {
-      toast.error(`Error: ExportWallet error: ${JSON.stringify(error)}`)
-      console.error('Error: ExportWallet error', error)
+      appError(`Error: ExportWallet error: ${error}`, {error})
     }
   }
 

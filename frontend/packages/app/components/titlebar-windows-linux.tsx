@@ -315,6 +315,7 @@ export function SystemMenu() {
       },
     ],
     [
+      createDraft,
       close,
       hide,
       invoke,

@@ -222,7 +222,7 @@ export function FileComponent({
         },
       } as FileType)
     } catch (error) {
-      console.error(error)
+      console.error(`Editor: file upload error (FileComponent): ${error}`)
     }
   }
 
@@ -404,7 +404,7 @@ function FileForm({
         },
       } as FileType)
     } catch (error) {
-      console.error(error)
+      console.error(`Editor: file upload error (FileForm): ${error}`)
     }
     for (let i = files.length - 1; i > 0; i--) {
       const {name} = files[i]
@@ -425,7 +425,7 @@ function FileForm({
           },
         } as FileType)
       } catch (error) {
-        console.error(error)
+        console.error(`Editor: file upload error (FileForm forloop): ${error}`)
       }
     }
   }

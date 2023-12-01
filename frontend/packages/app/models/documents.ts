@@ -23,9 +23,6 @@ import {
   fromHMBlock,
   hmDocument,
   hmPublication,
-  isHypermediaScheme,
-  isPublicGatewayLink,
-  normlizeHmId,
   toHMBlock,
   unpackDocId,
   writeableStateStream,
@@ -713,63 +710,6 @@ function generateBlockId(length: number = 8): string {
     result += characters.charAt(Math.floor(Math.random() * characters.length))
   }
   return result
-}
-
-export function useCreatePublication() {
-  const invalidate = useQueryInvalidator()
-  const client = useGRPCClient()
-  return useMutation({
-    mutationFn: async (title: string) => {
-      const draft = await client.drafts.createDraft({})
-      const blockId = generateBlockId()
-      await client.drafts.updateDraft({
-        documentId: draft.id,
-        changes: [
-          new DocumentChange({
-            op: {
-              case: 'setTitle',
-              value: title,
-            },
-          }),
-          new DocumentChange({
-            op: {
-              case: 'moveBlock',
-              value: {
-                blockId,
-                leftSibling: '',
-                parent: '',
-              },
-            },
-          }),
-          new DocumentChange({
-            op: {
-              case: 'replaceBlock',
-              value: {id: blockId, type: 'paragraph', text: title},
-            },
-          }),
-        ],
-      })
-      await client.drafts.publishDraft({documentId: draft.id})
-      return draft.id
-    },
-    onSuccess: (draftId) => {
-      invalidate([queryKeys.GET_PUBLICATION_LIST])
-      invalidate([queryKeys.ENTITY_TIMELINE, draftId])
-    },
-  })
-}
-
-function extractEmbedRefOfLink(block: any): false | string {
-  if (block.content.length == 1) {
-    let leaf = block.content[0]
-    if (leaf.type == 'link') {
-      if (isPublicGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
-        const hmLink = normlizeHmId(leaf.href)
-        if (hmLink) return hmLink
-      }
-    }
-  }
-  return false
 }
 
 function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {

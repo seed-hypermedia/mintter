@@ -214,7 +214,9 @@ function VideoComponent({
         props: {url: data ? `ipfs://${data}` : '', name: file.name},
       } as VideoType)
     } catch (error) {
-      console.error(error)
+      console.error(
+        `Editor: video upload error (VideoComponent): video: ${file.name} error: ${error}`,
+      )
     }
     // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
@@ -240,7 +242,12 @@ function VideoComponent({
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           const file = Array.from(e.dataTransfer.files)[0]
           if (!file.type.includes('video/')) {
-            console.error(`The dragged file is not a video.`)
+            console.error(
+              `Editor: the element dragged is not a video: ${file.type}`,
+            )
+            toast.error(
+              `Editor: the element dragged is not a video: ${file.type}`,
+            )
             return
           }
           handleDragReplace(file)
@@ -423,7 +430,7 @@ function VideoForm({
         props: {url: data ? `ipfs://${data}` : '', name: name},
       } as VideoType)
     } catch (error) {
-      console.error(error)
+      console.error(`Editor: video upload error (VideoForm): ${error.message}`)
     }
     for (let i = files.length - 1; i > 0; i--) {
       const {name} = files[i]
@@ -450,7 +457,9 @@ function VideoForm({
           'after',
         )
       } catch (error) {
-        console.error(error)
+        console.error(
+          `Editor: video upload error (VideoForm): ${error.message}`,
+        )
       }
     }
     // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')

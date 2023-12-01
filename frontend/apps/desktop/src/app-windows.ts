@@ -1,3 +1,4 @@
+import appError from '@mintter/app/errors'
 import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {BrowserWindow, app, nativeTheme} from 'electron'
@@ -37,9 +38,10 @@ export function ensureFocusedWindowVisible() {
     if (focusedWindow.isMinimized()) focusedWindow.restore()
     focusedWindow.focus()
   } else {
-    console.error(
-      'did not have the focused window. we should create a window or refocus another window from allWindows',
-    )
+    let mssg =
+      'did not have the focused window. we should create a window or refocus another window from allWindows'
+    appError(mssg)
+    console.error(mssg)
   }
 }
 

@@ -4,6 +4,7 @@ import {UserPlus} from '@tamagui/lucide-icons'
 import {compressToEncodedURIComponent} from 'lz-string'
 import {ComponentProps, useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
+import appError from '../errors'
 import {useMyAccount} from '../models/accounts'
 import {useConnectPeer} from '../models/contacts'
 import {useDaemonInfo} from '../models/daemon'
@@ -46,9 +47,8 @@ function AddConnectionForm({
       onClose()
       toast.success('Connection Added')
     },
-    onError: (err) => {
-      console.error('Connect Error:', err)
-      toast.error('Connection Error : ' + err?.rawMessage)
+    onError: (error) => {
+      appError(`Connect to peer error: ${error?.rawMessage}`, {error})
     },
   })
 

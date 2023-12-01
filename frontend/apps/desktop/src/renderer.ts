@@ -25,9 +25,9 @@
  *  });
  * ```
  */
+import {IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/renderer'
 import './root.tsx'
-import {IS_PROD_DESKTOP} from '@mintter/shared'
 
 if (IS_PROD_DESKTOP) {
   Sentry.init({

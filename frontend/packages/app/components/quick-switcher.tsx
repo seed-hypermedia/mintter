@@ -16,6 +16,7 @@ import {Command} from 'cmdk'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {useGRPCClient} from '../app-context'
+import appError from '../errors'
 import {useConnectPeer, useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import {importWebCapture} from '../models/web-importer'
@@ -165,9 +166,8 @@ export function QuickSwitcher() {
                           navigate(navRoute)
                         }
                       })
-                      .catch((e) => {
-                        console.error('🚨 Failed to fetch web link', search, e)
-                        toast.error('Failed to open link.')
+                      .catch((error) => {
+                        appError(`QwickSwitcher Error: ${error}`, {error})
                       })
                       .finally(() => {
                         setActionPromise(null)

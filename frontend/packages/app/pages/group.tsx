@@ -71,6 +71,7 @@ import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
+import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useAllChanges} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
@@ -151,9 +152,10 @@ export default function GroupPage() {
               .then(() => {
                 toast.success('Removed front document')
               })
-              .catch((e) => {
-                console.error(e)
-                toast.error('Failed to remove front document: ' + e.message)
+              .catch((error) => {
+                appError(`Failed to remove front document: ${error?.message}`, {
+                  error,
+                })
               })
           },
         }

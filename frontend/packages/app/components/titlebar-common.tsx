@@ -43,6 +43,7 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
+import appError from '../errors'
 import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
@@ -659,7 +660,7 @@ export function EditDocActions({
         return
       }
 
-      toast.error(`Draft Error: ${error?.message}`)
+      appError(`Draft Error: ${error?.message}`, {error})
     }
   }
 
