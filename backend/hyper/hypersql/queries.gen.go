@@ -653,12 +653,13 @@ LIMIT 1`
 }
 
 type EntitiesListByPrefixResult struct {
-	ResourcesID  int64
-	ResourcesIRI string
+	ResourcesID    int64
+	ResourcesIRI   string
+	ResourcesOwner int64
 }
 
 func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
-	const query = `SELECT resources.id, resources.iri
+	const query = `SELECT resources.id, resources.iri, resources.owner
 FROM resources
 WHERE resources.iri GLOB :prefix
 ORDER BY resources.id`
@@ -671,8 +672,9 @@ ORDER BY resources.id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, EntitiesListByPrefixResult{
-			ResourcesID:  stmt.ColumnInt64(0),
-			ResourcesIRI: stmt.ColumnText(1),
+			ResourcesID:    stmt.ColumnInt64(0),
+			ResourcesIRI:   stmt.ColumnText(1),
+			ResourcesOwner: stmt.ColumnInt64(2),
 		})
 
 		return nil

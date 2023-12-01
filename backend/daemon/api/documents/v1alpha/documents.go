@@ -482,6 +482,58 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	return resp, nil
 }
 
+// ListAccountPublications implements the corresponding gRPC method.
+func (api *Server) ListAccountPublications(ctx context.Context, in *documents.ListAccountPublicationsRequest) (*documents.ListPublicationsResponse, error) {
+	if in.AccountId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify account ID to list publications for")
+	}
+
+	acc, err := core.DecodePrincipal(in.AccountId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid account ID: %v", err)
+	}
+
+	var accID int64
+	var list []hypersql.EntitiesListByPrefixResult
+	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
+		list, err = hypersql.EntitiesListByPrefix(conn, "hm://d/*")
+		if err != nil {
+			return err
+		}
+
+		dbAccount, err := hypersql.PublicKeysLookupID(conn, acc)
+		if err != nil {
+			return err
+		}
+
+		accID = dbAccount.PublicKeysID
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	out := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, 0, len(list)),
+	}
+
+	for _, x := range list {
+		if x.ResourcesOwner != accID {
+			continue
+		}
+
+		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
+			DocumentId: x.ResourcesIRI,
+		})
+		if err != nil {
+			continue
+		}
+
+		out.Publications = append(out.Publications, pub)
+	}
+
+	return out, nil
+}
+
 func (api *Server) getMe() (core.Identity, error) {
 	me, ok := api.me.Get()
 	if !ok {

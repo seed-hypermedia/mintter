@@ -305,6 +305,8 @@ type PublicationsClient interface {
 	DeletePublication(ctx context.Context, in *DeletePublicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists stored publications. Only the most recent versions show up.
 	ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
+	// Lists publications owned by a given account.
+	ListAccountPublications(ctx context.Context, in *ListAccountPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
 }
 
 type publicationsClient struct {
@@ -342,6 +344,15 @@ func (c *publicationsClient) ListPublications(ctx context.Context, in *ListPubli
 	return out, nil
 }
 
+func (c *publicationsClient) ListAccountPublications(ctx context.Context, in *ListAccountPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
+	out := new(ListPublicationsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Publications/ListAccountPublications", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PublicationsServer is the server API for Publications service.
 // All implementations should embed UnimplementedPublicationsServer
 // for forward compatibility
@@ -352,6 +363,8 @@ type PublicationsServer interface {
 	DeletePublication(context.Context, *DeletePublicationRequest) (*emptypb.Empty, error)
 	// Lists stored publications. Only the most recent versions show up.
 	ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error)
+	// Lists publications owned by a given account.
+	ListAccountPublications(context.Context, *ListAccountPublicationsRequest) (*ListPublicationsResponse, error)
 }
 
 // UnimplementedPublicationsServer should be embedded to have forward compatible implementations.
@@ -366,6 +379,9 @@ func (UnimplementedPublicationsServer) DeletePublication(context.Context, *Delet
 }
 func (UnimplementedPublicationsServer) ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPublications not implemented")
+}
+func (UnimplementedPublicationsServer) ListAccountPublications(context.Context, *ListAccountPublicationsRequest) (*ListPublicationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAccountPublications not implemented")
 }
 
 // UnsafePublicationsServer may be embedded to opt out of forward compatibility for this service.
@@ -433,6 +449,24 @@ func _Publications_ListPublications_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Publications_ListAccountPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccountPublicationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PublicationsServer).ListAccountPublications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Publications/ListAccountPublications",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PublicationsServer).ListAccountPublications(ctx, req.(*ListAccountPublicationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Publications_ServiceDesc is the grpc.ServiceDesc for Publications service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -451,6 +485,10 @@ var Publications_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPublications",
 			Handler:    _Publications_ListPublications_Handler,
+		},
+		{
+			MethodName: "ListAccountPublications",
+			Handler:    _Publications_ListAccountPublications_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

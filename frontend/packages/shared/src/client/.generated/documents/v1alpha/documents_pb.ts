@@ -722,6 +722,63 @@ export class ListPublicationsResponse extends Message<ListPublicationsResponse> 
 }
 
 /**
+ * Request for listing publications owned by a given account.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListAccountPublicationsRequest
+ */
+export class ListAccountPublicationsRequest extends Message<ListAccountPublicationsRequest> {
+  /**
+   * Optional. Number of results per page. Default is defined by the server.
+   *
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize = 0;
+
+  /**
+   * Optional. Value from next_page_token obtains from a previous response.
+   *
+   * @generated from field: string page_token = 2;
+   */
+  pageToken = "";
+
+  /**
+   * Required. Account ID to list publications for.
+   *
+   * @generated from field: string account_id = 3;
+   */
+  accountId = "";
+
+  constructor(data?: PartialMessage<ListAccountPublicationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListAccountPublicationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListAccountPublicationsRequest | PlainMessage<ListAccountPublicationsRequest> | undefined, b: ListAccountPublicationsRequest | PlainMessage<ListAccountPublicationsRequest> | undefined): boolean {
+    return proto3.util.equals(ListAccountPublicationsRequest, a, b);
+  }
+}
+
+/**
  * State of the document after publication.
  *
  * @generated from message com.mintter.documents.v1alpha.Publication

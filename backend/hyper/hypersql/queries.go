@@ -205,6 +205,7 @@ func generateQueries() error {
 			"SELECT", qb.Results(
 				s.ResourcesID,
 				s.ResourcesIRI,
+				s.ResourcesOwner,
 			), '\n',
 			"FROM", s.Resources, '\n',
 			"WHERE", s.ResourcesIRI, "GLOB", qb.Var("prefix", sgen.TypeText), '\n',

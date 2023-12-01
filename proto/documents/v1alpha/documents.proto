@@ -140,6 +140,9 @@ service Publications {
 
   // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
+
+  // Lists publications owned by a given account.
+  rpc ListAccountPublications(ListAccountPublicationsRequest) returns (ListPublicationsResponse);
 }
 
 // Request for getting a single publication.
@@ -185,6 +188,18 @@ message ListPublicationsResponse {
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
+}
+
+// Request for listing publications owned by a given account.
+message ListAccountPublicationsRequest {
+  // Optional. Number of results per page. Default is defined by the server.
+  int32 page_size = 1;
+
+  // Optional. Value from next_page_token obtains from a previous response.
+  string page_token = 2;
+
+  // Required. Account ID to list publications for.
+  string account_id = 3;
 }
 
 // === Types ===
