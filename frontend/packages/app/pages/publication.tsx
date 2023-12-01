@@ -37,7 +37,6 @@ import {PinDocumentButton} from '../components/pin-entity'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
-import appError from '../errors'
 import {useExperiments} from '../models/experiments'
 import {usePublicationInContext} from '../models/publication'
 import {useOpenUrl} from '../open-url'
@@ -117,7 +116,7 @@ export default function PublicationPage() {
     if (showFirstPublicationMessage && pubVersion) {
       firstPubDialog.open({route, version: pubVersion})
     }
-  }, [showFirstPublicationMessage, route, pubVersion])
+  }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
   if (publication.data) {
     return (
@@ -125,7 +124,6 @@ export default function PublicationPage() {
         FallbackComponent={AppErrorPage}
         onReset={() => publication.refetch()}
       >
-        <button onClick={() => appError('Fake Error!')}>fake error</button>
         {firstPubDialog.content}
         <CitationsProvider
           documentId={docId}
