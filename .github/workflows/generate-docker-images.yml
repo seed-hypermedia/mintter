@@ -94,20 +94,6 @@ jobs:
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
-      - name: Build and push edge mintterd
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          file: backend/cmd/mintterd/Dockerfile
-          tags: mintter/mintterd:main
-      - name: Build and push stable mintterd
-        if: startsWith(github.ref, 'refs/tags/') && steps.check-tag.outputs.match
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          file: backend/cmd/mintterd/Dockerfile
-          tags: mintter/mintterd:latest
-
       - name: Build and push edge monitord
         uses: docker/build-push-action@v4
         with:
