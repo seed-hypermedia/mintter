@@ -268,7 +268,7 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	entities, err := srv.blobs.ListEntities(ctx, "hm://a/")
+	entities, err := srv.blobs.ListEntities(ctx, "hm://a/*")
 	if err != nil {
 		return nil, err
 	}

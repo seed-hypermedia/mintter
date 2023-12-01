@@ -249,6 +249,26 @@ var migrations = []migration{
 
 		return nil
 	}},
+	{Version: "2023-11-30.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			DROP TABLE IF EXISTS blob_links;
+			DROP INDEX IF EXISTS blob_backlinks;
+			CREATE TABLE IF NOT EXISTS blob_links (
+				source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES blobs (id) NOT NULL,
+				type TEXT NOT NULL,
+				PRIMARY KEY (source, type, target)
+			) WITHOUT ROWID;
+			CREATE UNIQUE INDEX IF NOT EXISTS blob_backlinks ON blob_links (target, type, source);
+			
+			DROP INDEX IF EXISTS structural_blobs_by_author;
+			DROP INDEX IF EXISTS structural_blobs_by_resource;
+			CREATE INDEX IF NOT EXISTS structural_blobs_by_author ON structural_blobs (author, resource) WHERE author IS NOT NULL;
+			CREATE INDEX IF NOT EXISTS structural_blobs_by_resource ON structural_blobs (resource, author) WHERE resource IS NOT NULL;
+			
+			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
 }
 
 const (

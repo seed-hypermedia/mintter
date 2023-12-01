@@ -16,11 +16,10 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/maputil"
-	"mintter/backend/pkg/slicex"
 	"net/http"
 	"net/url"
 	"strings"
@@ -326,7 +325,7 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 		}
 
 		if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
-			Blobs: slicex.Map(missingOnSite, cid.Cid.String),
+			Blobs: colx.SliceMap(missingOnSite, cid.Cid.String),
 		}); err != nil {
 			return fmt.Errorf("failed to push blobs to the site: %w", err)
 		}
@@ -447,7 +446,7 @@ func addrInfoFromProto(in *groups.PeerInfo) (ai peer.AddrInfo, err error) {
 		return ai, err
 	}
 
-	addrs, err := slicex.MapE(in.Addrs, multiaddr.NewMultiaddr)
+	addrs, err := colx.SliceMapErr(in.Addrs, multiaddr.NewMultiaddr)
 	if err != nil {
 		return ai, fmt.Errorf("failed to parse peer info addrs: %w", err)
 	}
@@ -533,7 +532,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	for k, v := range in.UpdatedContent {
 		oldv, ok := e.Get("content", k)
 		if !ok || oldv.(string) != v {
-			maputil.Set(patch, []string{"content", k}, v)
+			colx.ObjectSet(patch, []string{"content", k}, v)
 		}
 	}
 
@@ -541,7 +540,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		if v == groups.Role_ROLE_UNSPECIFIED {
 			return nil, status.Errorf(codes.Unimplemented, "removing members is not implemented yet")
 		}
-		maputil.Set(patch, []string{"members", k}, int64(v))
+		colx.ObjectSet(patch, []string{"members", k}, int64(v))
 	}
 
 	del, err := srv.getDelegation(ctx)
@@ -590,7 +589,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 
 // ListGroups lists groups.
 func (srv *Server) ListGroups(ctx context.Context, in *groups.ListGroupsRequest) (*groups.ListGroupsResponse, error) {
-	entities, err := srv.blobs.ListEntities(ctx, "hm://g/")
+	entities, err := srv.blobs.ListEntities(ctx, "hm://g/*")
 	if err != nil {
 		return nil, err
 	}

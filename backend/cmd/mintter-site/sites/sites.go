@@ -13,8 +13,8 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/slicex"
 	"net/http"
 	"sync"
 
@@ -137,7 +137,7 @@ func (ws *Website) GetSiteInfo(ctx context.Context, in *groups.GetSiteInfoReques
 		PeerInfo: &groups.PeerInfo{
 			PeerId:    ai.ID.String(),
 			AccountId: n.ID().Account().Principal().String(),
-			Addrs:     slicex.Map(ai.Addrs, multiaddr.Multiaddr.String),
+			Addrs:     colx.SliceMap(ai.Addrs, multiaddr.Multiaddr.String),
 		},
 		GroupId: groupID,
 	}

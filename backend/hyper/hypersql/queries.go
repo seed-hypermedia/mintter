@@ -195,6 +195,7 @@ func generateQueries() error {
 		qb.MakeQuery(s.Schema, "EntitiesLookupID", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				s.ResourcesID,
+				s.ResourcesOwner,
 			), '\n',
 			"FROM", s.Resources, '\n',
 			"WHERE", s.ResourcesIRI, "=", qb.Var("entities_eid", sgen.TypeText), '\n',
@@ -303,22 +304,6 @@ deps (blob) AS (
 SELECT json_group_array(blob) AS heads
 FROM non_drafts
 WHERE blob NOT IN deps`,
-		},
-		sgen.QueryTemplate{
-			Name: "ChangesGetTrustedHeadsJSON",
-			Kind: sgen.QueryKindSingle,
-			Inputs: []sgen.GoSymbol{
-				{Name: "entity", Type: sgen.TypeInt},
-			},
-			Outputs: []sgen.GoSymbol{
-				{Name: "Heads", Type: sgen.TypeBytes},
-			},
-			SQL: `SELECT json_group_array(` + s.C_StructuralBlobsID + `) AS heads
-		FROM ` + s.T_StructuralBlobs + `
-		LEFT JOIN ` + s.T_Drafts + ` ON ` + s.C_DraftsResource + ` = ` + s.C_StructuralBlobsResource + ` AND ` + s.C_StructuralBlobsID + ` = ` + s.C_DraftsBlob + `
-		JOIN ` + s.T_TrustedAccounts + ` ON ` + s.C_TrustedAccountsID + ` = ` + s.C_StructuralBlobsAuthor + `
-		WHERE ` + s.C_StructuralBlobsResource + ` = :entity
-		AND ` + s.C_DraftsBlob + ` IS NULL`,
 		},
 		qb.MakeQuery(s.Schema, "ChangesDeleteForEntity", sgen.QueryKindExec,
 			"DELETE FROM", s.Blobs, '\n',

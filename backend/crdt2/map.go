@@ -2,10 +2,10 @@ package crdt2
 
 import (
 	"math"
-	"mintter/backend/pkg/maps"
 	"sort"
 
 	"github.com/tidwall/btree"
+	"golang.org/x/exp/maps"
 )
 
 type Map struct {

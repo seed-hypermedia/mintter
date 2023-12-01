@@ -1,4 +1,4 @@
-package maputil
+package colx
 
 import (
 	"testing"
@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSet(t *testing.T) {
+func TestObjectSet(t *testing.T) {
 	m := map[string]any{}
 
-	Set(m, []string{"foo", "bar", "baz"}, "Hello")
+	ObjectSet(m, []string{"foo", "bar", "baz"}, "Hello")
 
 	require.Equal(t, map[string]any{
 		"foo": map[string]any{
@@ -20,12 +20,12 @@ func TestSet(t *testing.T) {
 	}, m)
 }
 
-func TestDelete(t *testing.T) {
+func TestObjectDelete(t *testing.T) {
 	m := map[string]any{}
 
-	Set(m, []string{"foo", "bar", "baz"}, "Hello")
-	Set(m, []string{"name"}, "Alice")
-	Delete(m, []string{"foo", "bar"})
+	ObjectSet(m, []string{"foo", "bar", "baz"}, "Hello")
+	ObjectSet(m, []string{"name"}, "Alice")
+	ObjectDelete(m, []string{"foo", "bar"})
 
 	require.Equal(t, map[string]any{
 		"name": "Alice",
@@ -33,8 +33,8 @@ func TestDelete(t *testing.T) {
 	}, m)
 }
 
-func TestDeleteMissing(t *testing.T) {
+func TestObjectDeleteMissing(t *testing.T) {
 	m := map[string]any{}
-	Delete(m, []string{"foo", "bar"})
+	ObjectDelete(m, []string{"foo", "bar"})
 	require.Len(t, m, 0, "delete must not created nested maps")
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
+	"mintter/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -163,16 +164,20 @@ func (bs *Storage) SaveDraftBlob(ctx context.Context, eid EntityID, blob Blob) e
 	})
 }
 
-func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID, error) {
+// ListEntities returns a list of entities matching the pattern.
+func (bs *Storage) ListEntities(ctx context.Context, pattern string) ([]EntityID, error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	resp, err := hypersql.EntitiesListByPrefix(conn, prefix+"*")
+	resp, err := hypersql.EntitiesListByPrefix(conn, pattern)
 	if err != nil {
 		return nil, err
+	}
+	if len(resp) == 0 {
+		return nil, nil
 	}
 
 	out := make([]EntityID, len(resp))
@@ -182,6 +187,33 @@ func (bs *Storage) ListEntities(ctx context.Context, prefix string) ([]EntityID,
 
 	return out, nil
 }
+
+// ListTrustedEntities returns a list of entities matching the pattern owned by trusted accounts.
+func (bs *Storage) ListTrustedEntities(ctx context.Context, pattern string) ([]EntityID, error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	var out []EntityID
+	if err := sqlitex.Exec(conn, qListTrustedEntitites(), func(stmt *sqlite.Stmt) error {
+		out = append(out, EntityID(stmt.ColumnText(0)))
+		return nil
+	}, pattern); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+var qListTrustedEntitites = dqb.Str(`
+	SELECT resources.iri
+	FROM trusted_accounts
+	JOIN resources ON resources.owner = trusted_accounts.id
+	WHERE resources.iri GLOB :prefix
+	ORDER BY resources.id
+`)
 
 func (bs *Storage) GetDraft(ctx context.Context, eid EntityID) (ch Change, err error) {
 	conn, release, err := bs.db.Conn(ctx)

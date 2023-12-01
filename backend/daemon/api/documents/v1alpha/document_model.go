@@ -8,7 +8,7 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
-	"mintter/backend/pkg/maputil"
+	"mintter/backend/pkg/colx"
 	"sort"
 	"strings"
 	"time"
@@ -225,7 +225,7 @@ func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 		return err
 	}
 
-	maputil.Set(dm.patch, []string{"blocks", blk.Id, "#map"}, v)
+	colx.ObjectSet(dm.patch, []string{"blocks", blk.Id, "#map"}, v)
 
 	return nil
 }
@@ -336,7 +336,7 @@ func (dm *docModel) cleanupPatch() {
 	for blk := range dm.deletedBlocks {
 		_, mustIgnore := dm.createdBlocks[blk]
 		if mustIgnore {
-			maputil.Delete(dm.patch, []string{"blocks", blk})
+			colx.ObjectDelete(dm.patch, []string{"blocks", blk})
 			continue
 		}
 

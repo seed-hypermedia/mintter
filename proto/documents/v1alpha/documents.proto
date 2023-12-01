@@ -151,11 +151,8 @@ message GetPublicationRequest {
   string version = 2;
 
   // Optional. If true, only local publications will be found. False by default.
+  // Deprecated: use [Entities.DiscoverEntity] API explicitly instead.
   bool local_only = 3;
-
-  // Optional. If true, the returned publication version will be the last change made by a
-  // trusted contact. If false (default) then the returned version will be de latest available.
-  bool trusted_only = 4;
 }
 
 // Request for deleting a publication.
@@ -173,9 +170,9 @@ message ListPublicationsRequest {
   // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
 
-  // Optional. Whether to return trusted publications only
-  // or including all publications regardless of the trusted state
-  // By default, it returns all publications (trusted_only = false)
+  // Optional. When provided, the response will only contain
+  // publications *owned* (created) by trusted accounts of this node.
+  // By default, it returns all the publications (trusted_only = false)
   bool trusted_only = 3;
 }
 

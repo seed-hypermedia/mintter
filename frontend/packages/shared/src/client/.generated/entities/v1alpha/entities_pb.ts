@@ -208,6 +208,13 @@ export class Change extends Message<Change> {
   deps: string[] = [];
 
   /**
+   * IDs of other changes that depend on this change.
+   *
+   * @generated from field: repeated string children = 6;
+   */
+  children: string[] = [];
+
+  /**
    * Indicates whether this changes comes from a trusted peer of ours.
    *
    * @generated from field: bool is_trusted = 5;
@@ -226,6 +233,7 @@ export class Change extends Message<Change> {
     { no: 2, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "create_time", kind: "message", T: Timestamp },
     { no: 4, name: "deps", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "children", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 5, name: "is_trusted", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
@@ -260,32 +268,48 @@ export class EntityTimeline extends Message<EntityTimeline> {
   id = "";
 
   /**
+   * Account ID of the owner of the entity.
+   *
+   * @generated from field: string owner = 2;
+   */
+  owner = "";
+
+  /**
    * The set of changes for the entity keyed by change ID.
    *
-   * @generated from field: map<string, com.mintter.entities.v1alpha.Change> changes = 2;
+   * @generated from field: map<string, com.mintter.entities.v1alpha.Change> changes = 3;
    */
   changes: { [key: string]: Change } = {};
 
   /**
    * The sorted list of change IDs by time.
    *
-   * @generated from field: repeated string changes_by_time = 3;
+   * @generated from field: repeated string changes_by_time = 4;
    */
   changesByTime: string[] = [];
 
   /**
-   * The latest version of the entity we know about.
+   * The set of changes that has no dependencies.
+   * Normally there should only be one root,
+   * but just in case it's defined as a list.
    *
-   * @generated from field: string latest_public_version = 4;
+   * @generated from field: repeated string roots = 5;
    */
-  latestPublicVersion = "";
+  roots: string[] = [];
 
   /**
-   * The latest version of the entity from our trusted peers.
+   * The set of leaf changes considering the entire DAG.
    *
-   * @generated from field: string latest_trusted_version = 5;
+   * @generated from field: repeated string heads = 6;
    */
-  latestTrustedVersion = "";
+  heads: string[] = [];
+
+  /**
+   * The set of author versions/variants sorted by timestamp.
+   *
+   * @generated from field: repeated com.mintter.entities.v1alpha.AuthorVersion author_versions = 7;
+   */
+  authorVersions: AuthorVersion[] = [];
 
   constructor(data?: PartialMessage<EntityTimeline>) {
     super();
@@ -296,10 +320,12 @@ export class EntityTimeline extends Message<EntityTimeline> {
   static readonly typeName = "com.mintter.entities.v1alpha.EntityTimeline";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "changes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: Change} },
-    { no: 3, name: "changes_by_time", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-    { no: 4, name: "latest_public_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "latest_trusted_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "owner", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "changes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: Change} },
+    { no: 4, name: "changes_by_time", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "roots", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 6, name: "heads", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "author_versions", kind: "message", T: AuthorVersion, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): EntityTimeline {
@@ -316,6 +342,73 @@ export class EntityTimeline extends Message<EntityTimeline> {
 
   static equals(a: EntityTimeline | PlainMessage<EntityTimeline> | undefined, b: EntityTimeline | PlainMessage<EntityTimeline> | undefined): boolean {
     return proto3.util.equals(EntityTimeline, a, b);
+  }
+}
+
+/**
+ * Set of heads from a given author.
+ *
+ * @generated from message com.mintter.entities.v1alpha.AuthorVersion
+ */
+export class AuthorVersion extends Message<AuthorVersion> {
+  /**
+   * Account ID of the author.
+   *
+   * @generated from field: string author = 1;
+   */
+  author = "";
+
+  /**
+   * The set of leaf changes from that author.
+   *
+   * @generated from field: repeated string heads = 2;
+   */
+  heads: string[] = [];
+
+  /**
+   * The version string corresponding to the author's variant.
+   * I.e. same as heads but concatenated with a '.' delimiter.
+   *
+   * @generated from field: string version = 3;
+   */
+  version = "";
+
+  /**
+   * The timestamp of the author's version.
+   * For compound versions the greatest timestamp is used.
+   *
+   * @generated from field: google.protobuf.Timestamp version_time = 4;
+   */
+  versionTime?: Timestamp;
+
+  constructor(data?: PartialMessage<AuthorVersion>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.entities.v1alpha.AuthorVersion";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "heads", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "version_time", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AuthorVersion {
+    return new AuthorVersion().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AuthorVersion {
+    return new AuthorVersion().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AuthorVersion {
+    return new AuthorVersion().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AuthorVersion | PlainMessage<AuthorVersion> | undefined, b: AuthorVersion | PlainMessage<AuthorVersion> | undefined): boolean {
+    return proto3.util.equals(AuthorVersion, a, b);
   }
 }
 

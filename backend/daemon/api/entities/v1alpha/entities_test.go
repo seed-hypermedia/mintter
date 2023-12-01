@@ -10,10 +10,12 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -71,33 +73,55 @@ func TestEntityTimeline(t *testing.T) {
 	t.Parallel()
 
 	alice := coretest.NewTester("alice")
+
 	db := storage.MakeTestDB(t)
 	blobs := hyper.NewStorage(db, zap.NewNop())
 	api := NewServer(blobs, nil)
 	ctx := context.Background()
-	del := must.Do2(daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now()))
+	aliceDelegation := must.Do2(daemon.Register(ctx, blobs, alice.Account, alice.Device.PublicKey, time.Now()))
+
+	bob := coretest.NewTester("bob")
+	bobDelegation := must.Do2(daemon.Register(ctx, blobs, bob.Account, bob.Device.PublicKey, time.Now()))
 
 	e := hyper.NewEntity("fake-obj")
 
-	c1, err := e.CreateChange(e.NextTimestamp(), alice.Account, del, map[string]any{
+	c1, err := e.CreateChange(e.NextTimestamp(), alice.Account, aliceDelegation, map[string]any{
 		"name": "Alice",
 	})
 	require.NoError(t, err)
 	require.NoError(t, blobs.SaveBlob(ctx, c1))
 
-	c2, err := e.CreateChange(e.NextTimestamp(), alice.Account, del, map[string]any{
+	c2, err := e.CreateChange(e.NextTimestamp(), alice.Account, aliceDelegation, map[string]any{
 		"country": "Wonderland",
 	})
 	require.NoError(t, err)
 	require.NoError(t, blobs.SaveBlob(ctx, c2))
 
+	// Bob creates a change off of the first change from Alice, which creates a new head.
+	c3, err := hyper.NewChange(e.ID(), []cid.Cid{c1.CID}, e.NextTimestamp(), bob.Device, bobDelegation, map[string]any{
+		"country": "Mordor",
+	})
+	require.NoError(t, err)
+	require.NoError(t, blobs.SaveBlob(ctx, c3))
+	require.NoError(t, e.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
+
+	// Alice also creates a fork from c1.
+	c4, err := hyper.NewChange(e.ID(), []cid.Cid{c1.CID}, e.NextTimestamp(), alice.Device, aliceDelegation, map[string]any{
+		"lastName": "Liddell",
+	})
+	require.NoError(t, err)
+	require.NoError(t, blobs.SaveBlob(ctx, c4))
+	require.NoError(t, e.ApplyChange(c4.CID, c4.Decoded.(hyper.Change)))
+
 	want := &entities.EntityTimeline{
-		Id: string(e.ID()),
+		Id:    string(e.ID()),
+		Owner: alice.Account.String(),
 		Changes: map[string]*entities.Change{
 			c1.CID.String(): {
 				Id:         c1.CID.String(),
 				Author:     alice.Account.String(),
 				CreateTime: timestamppb.New(c1.Decoded.(hyper.Change).HLCTime.Time()),
+				Children:   []string{c2.CID.String(), c3.CID.String(), c4.CID.String()},
 				IsTrusted:  true,
 			},
 			c2.CID.String(): {
@@ -107,10 +131,38 @@ func TestEntityTimeline(t *testing.T) {
 				Deps:       []string{c1.CID.String()},
 				IsTrusted:  true,
 			},
+			c3.CID.String(): {
+				Id:         c3.CID.String(),
+				Author:     bob.Account.String(),
+				CreateTime: timestamppb.New(c3.Decoded.(hyper.Change).HLCTime.Time()),
+				Deps:       []string{c1.CID.String()},
+				IsTrusted:  true,
+			},
+			c4.CID.String(): {
+				Id:         c4.CID.String(),
+				Author:     alice.Account.String(),
+				CreateTime: timestamppb.New(c4.Decoded.(hyper.Change).HLCTime.Time()),
+				Deps:       []string{c1.CID.String()},
+				IsTrusted:  true,
+			},
 		},
-		LatestPublicVersion:  c2.CID.String(),
-		LatestTrustedVersion: c2.CID.String(),
-		ChangesByTime:        []string{c1.CID.String(), c2.CID.String()},
+		Roots:         []string{c1.CID.String()},
+		ChangesByTime: []string{c1.CID.String(), c2.CID.String(), c3.CID.String(), c4.CID.String()},
+		Heads:         []string{c2.CID.String(), c3.CID.String(), c4.CID.String()},
+		AuthorVersions: []*entities.AuthorVersion{
+			{
+				Author:      alice.Account.String(),
+				Heads:       []string{c2.CID.String(), c4.CID.String()},
+				Version:     strings.Join([]string{c2.CID.String(), c4.CID.String()}, "."),
+				VersionTime: timestamppb.New(c4.Decoded.(hyper.Change).HLCTime.Time()),
+			},
+			{
+				Author:      bob.Account.String(),
+				Heads:       []string{c3.CID.String()},
+				Version:     c3.CID.String(),
+				VersionTime: timestamppb.New(c3.Decoded.(hyper.Change).HLCTime.Time()),
+			},
+		},
 	}
 
 	timeline, err := api.GetEntityTimeline(ctx, &entities.GetEntityTimelineRequest{Id: string(e.ID())})

@@ -9,12 +9,14 @@ import (
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
+	"mintter/backend/pkg/colx"
+	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
-	"mintter/backend/pkg/maps"
-	"sort"
+	"strconv"
 	"strings"
 
 	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -107,93 +109,136 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 		return nil, errutil.MissingArgument("id")
 	}
 
+	// Prepare the response that will be filled in later.
 	out := &entities.EntityTimeline{
-		Id: in.Id,
+		Id:      in.Id,
+		Changes: make(map[string]*entities.Change),
 	}
 
+	// Initialize some lookup tables and indexes.
+	var (
+		// Lookup for short database IDs to CID strings.
+		changeLookup = make(map[int64]string)
+
+		// Lookup for short database IDs to account IDs.
+		accountLookup = make(map[int64]string)
+
+		accounts colx.SmallSet[string]
+
+		// Set of leaf changes in the entire DAG.
+		heads colx.SmallSet[string]
+
+		headsByAuthor = make(map[string]*colx.SmallSet[string])
+
+		// Queue for doing tree traversal to find author heads.
+		queue [][]string
+	)
+
 	if err := api.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		eid, err := hypersql.EntitiesLookupID(conn, in.Id)
+		edb, err := hypersql.EntitiesLookupID(conn, in.Id)
 		if err != nil {
 			return err
 		}
-		if eid.ResourcesID == 0 {
+		if edb.ResourcesID == 0 {
 			return errutil.NotFound("no such entity %s", in.Id)
 		}
 
-		changes, err := hypersql.ChangesInfoForEntity(conn, eid.ResourcesID)
-		if err != nil {
-			return err
-		}
-		if len(changes) == 0 {
-			return errutil.NotFound("no changes for entity %s", in.Id)
-		}
+		// Process all the changes and their deps.
+		if err := sqlitex.Exec(conn, qGetEntityTimeline(), func(stmt *sqlite.Stmt) error {
+			var (
+				idShort     = stmt.ColumnInt64(0)
+				codec       = stmt.ColumnInt64(1)
+				hash        = stmt.ColumnBytesUnsafe(2)
+				ts          = stmt.ColumnInt64(3)
+				isTrusted   = stmt.ColumnInt(4)
+				authorID    = stmt.ColumnInt64(5)
+				authorBytes = stmt.ColumnBytesUnsafe(6)
+				deps        = stmt.ColumnText(7)
+			)
 
-		out.Changes = make(map[string]*entities.Change, len(changes))
+			idLong := cid.NewCidV1(uint64(codec), hash).String()
+			changeLookup[idShort] = idLong
 
-		heads := map[string]struct{}{}
-		for _, ch := range changes {
-			c := cid.NewCidV1(uint64(ch.BlobsCodec), ch.BlobsMultihash)
-			cs := c.String()
-			chpb := &entities.Change{
-				Id:         cs,
-				Author:     core.Principal(ch.PublicKeysPrincipal).String(),
-				CreateTime: timestamppb.New(hlc.Unpack(ch.StructuralBlobsTs).Time()),
-				IsTrusted:  ch.IsTrusted > 0,
+			// The database query already sorts by timestamp,
+			// so we can just append.
+			out.ChangesByTime = append(out.ChangesByTime, idLong)
+
+			author, ok := accountLookup[authorID]
+			if !ok {
+				author = core.Principal(authorBytes).String()
+				accountLookup[authorID] = author
 			}
-			heads[cs] = struct{}{}
-			out.ChangesByTime = append(out.ChangesByTime, cs)
 
-			deps, err := hypersql.ChangesGetDeps(conn, ch.StructuralBlobsID)
-			if err != nil {
-				return err
+			accounts.Put(author)
+
+			if _, ok := headsByAuthor[author]; !ok {
+				headsByAuthor[author] = &colx.SmallSet[string]{}
 			}
-			if len(deps) > 0 {
-				chpb.Deps = make([]string, len(deps))
-				for i, d := range deps {
-					ds := cid.NewCidV1(uint64(d.BlobsCodec), d.BlobsMultihash).String()
-					delete(heads, ds)
-					chpb.Deps[i] = ds
+
+			change := &entities.Change{
+				Id:         idLong,
+				Author:     author,
+				CreateTime: timestamppb.New(hlc.Unpack(ts).Time()),
+				IsTrusted:  isTrusted > 0,
+			}
+
+			if deps == "" {
+				out.Roots = append(out.Roots, idLong)
+			} else {
+				depsShort := strings.Fields(deps)
+				change.Deps = make([]string, len(depsShort))
+				for i, depShort := range depsShort {
+					depInt, err := strconv.Atoi(depShort)
+					if err != nil {
+						return fmt.Errorf("failed to parse dep %q as int: %w", depShort, err)
+					}
+					depLong, ok := changeLookup[int64(depInt)]
+					if !ok {
+						return fmt.Errorf("missing causal dependency lookup %q for change %q", depShort, idLong)
+					}
+
+					change.Deps[i] = depLong
+					out.Changes[depLong].Children = append(out.Changes[depLong].Children, idLong)
+					heads.Delete(depLong)
 				}
 			}
-			out.Changes[cs] = chpb
+
+			heads.Put(idLong)
+			out.Changes[idLong] = change
+
+			// Iterate over author heads, and find path to the current change
+			// if found remove the head
+			// in the end add this change to the authors head
+			authorHeads := headsByAuthor[author]
+			for _, head := range authorHeads.Slice() {
+				if isDescendant(out, queue, head, idLong) {
+					authorHeads.Delete(head)
+				}
+			}
+
+			authorHeads.Put(idLong)
+			return nil
+		}, edb.ResourcesID); err != nil {
+			return err
 		}
-		publicHeads := maps.Keys(heads)
-		sort.Strings(publicHeads)
 
-		trusted := make(map[string]struct{}, len(publicHeads))
-		queue := slices.Clone(publicHeads)
-		for len(queue) > 0 {
-			c := queue[0]
-			queue = queue[1:]
-
-			ch := out.Changes[c]
-			if ch.IsTrusted {
-				trusted[c] = struct{}{}
-				continue
-			}
-
-			queue = append(queue, ch.Deps...)
+		owner, ok := accountLookup[edb.ResourcesOwner]
+		if !ok {
+			return fmt.Errorf("BUG: missing owner for entity %q after processing the timeline", in.Id)
 		}
 
-		trustedHeads := maps.Keys(trusted)
-		sort.Strings(trustedHeads)
+		out.Owner = owner
+		out.Heads = sortChanges(out, heads.Slice())
 
-		out.LatestPublicVersion = strings.Join(publicHeads, ".")
-		out.LatestTrustedVersion = strings.Join(trustedHeads, ".")
-
-		slices.SortFunc(out.ChangesByTime, func(a, b string) int {
-			at, bt := out.Changes[a].CreateTime.AsTime(), out.Changes[b].CreateTime.AsTime()
-
-			if at.Equal(bt) {
-				return 0
+		for _, author := range accounts.Slice() {
+			av := &entities.AuthorVersion{
+				Author: author,
+				Heads:  sortChanges(out, headsByAuthor[author].Slice()),
 			}
-
-			if at.Before(bt) {
-				return -1
-			}
-
-			return +1
-		})
+			av.Version = strings.Join(av.Heads, ".")
+			av.VersionTime = out.Changes[av.Heads[len(av.Heads)-1]].CreateTime
+			out.AuthorVersions = append(out.AuthorVersions, av)
+		}
 
 		return nil
 	}); err != nil {
@@ -201,6 +246,73 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 	}
 
 	return out, nil
+}
+
+var qGetEntityTimeline = dqb.Str(`
+	SELECT
+		structural_blobs.id,
+		blobs.codec,
+		blobs.multihash,
+		structural_blobs.ts,
+		trusted_accounts.id > 0 AS is_trusted,
+		public_keys.id AS author_id,
+		public_keys.principal AS author,
+		group_concat(change_deps.parent, ' ') AS deps
+	FROM structural_blobs
+	JOIN blobs ON blobs.id = structural_blobs.id
+	JOIN public_keys ON public_keys.id = structural_blobs.author
+	LEFT JOIN change_deps ON change_deps.child = structural_blobs.id
+	LEFT JOIN drafts ON (drafts.resource, drafts.blob) = (structural_blobs.resource, structural_blobs.id)
+	LEFT JOIN trusted_accounts ON trusted_accounts.id = structural_blobs.author
+	WHERE structural_blobs.resource IS NOT NULL
+		AND structural_blobs.type = 'Change'
+		AND structural_blobs.resource = :resource
+		AND drafts.blob IS NULL
+	GROUP BY change_deps.child
+	ORDER BY structural_blobs.ts
+`)
+
+func sortChanges(timeline *entities.EntityTimeline, heads []string) []string {
+	slices.SortFunc(heads, func(a, b string) int {
+		aa := timeline.Changes[a]
+		bb := timeline.Changes[b]
+
+		at := aa.CreateTime.AsTime()
+		bt := bb.CreateTime.AsTime()
+
+		if at.Equal(bt) {
+			return strings.Compare(aa.Author, bb.Author)
+		}
+
+		if at.Before(bt) {
+			return -1
+		}
+
+		return +1
+	})
+
+	return heads
+}
+
+func isDescendant(timeline *entities.EntityTimeline, queue [][]string, parent, descendant string) bool {
+	queue = queue[:0]
+	queue = append(queue, timeline.Changes[parent].Children)
+
+	for len(queue) > 0 {
+		nodes := queue[len(queue)-1]
+		queue = queue[:len(queue)-1]
+		for _, node := range nodes {
+			if node == descendant {
+				return true
+			}
+			children := timeline.Changes[node].Children
+			if len(children) > 0 {
+				queue = append(queue, children)
+			}
+		}
+	}
+
+	return false
 }
 
 // DiscoverEntity implements the Entities server.

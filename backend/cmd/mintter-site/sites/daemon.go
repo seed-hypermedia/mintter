@@ -11,9 +11,9 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/libp2px"
-	"mintter/backend/pkg/slicex"
 	"net/url"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -44,7 +44,7 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 		return nil, fmt.Errorf("address URL must not have a path: %s", address)
 	}
 
-	cfg.P2P.AnnounceAddrs, err = slicex.MapE(libp2px.DefaultListenAddrsDNS(u.Hostname(), cfg.P2P.Port), multiaddr.NewMultiaddr)
+	cfg.P2P.AnnounceAddrs, err = colx.SliceMapErr(libp2px.DefaultListenAddrsDNS(u.Hostname(), cfg.P2P.Port), multiaddr.NewMultiaddr)
 	if err != nil {
 		panic(fmt.Errorf("failed to parse announce addresses: %w", err))
 	}

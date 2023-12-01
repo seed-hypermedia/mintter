@@ -533,18 +533,11 @@ export class GetPublicationRequest extends Message<GetPublicationRequest> {
 
   /**
    * Optional. If true, only local publications will be found. False by default.
+   * Deprecated: use [Entities.DiscoverEntity] API explicitly instead.
    *
    * @generated from field: bool local_only = 3;
    */
   localOnly = false;
-
-  /**
-   * Optional. If true, the returned publication version will be the last change made by a
-   * trusted contact. If false (default) then the returned version will be de latest available.
-   *
-   * @generated from field: bool trusted_only = 4;
-   */
-  trustedOnly = false;
 
   constructor(data?: PartialMessage<GetPublicationRequest>) {
     super();
@@ -557,7 +550,6 @@ export class GetPublicationRequest extends Message<GetPublicationRequest> {
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "local_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 4, name: "trusted_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPublicationRequest {
@@ -640,9 +632,9 @@ export class ListPublicationsRequest extends Message<ListPublicationsRequest> {
   pageToken = "";
 
   /**
-   * Optional. Whether to return trusted publications only
-   * or including all publications regardless of the trusted state
-   * By default, it returns all publications (trusted_only = false)
+   * Optional. When provided, the response will only contain
+   * publications *owned* (created) by trusted accounts of this node.
+   * By default, it returns all the publications (trusted_only = false)
    *
    * @generated from field: bool trusted_only = 3;
    */
