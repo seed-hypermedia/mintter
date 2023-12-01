@@ -62,7 +62,7 @@ export function createAppMenu() {
           label: 'New Window',
           accelerator: 'CmdOrCtrl+Shift+n',
           click: () => {
-            trpc.createAppWindow({routes: [{key: 'home'}]})
+            trpc.createAppWindow({routes: [{key: 'documents'}]})
           },
         },
         {type: 'separator'},
@@ -100,18 +100,10 @@ export function createAppMenu() {
         {type: 'separator'},
         {
           id: 'route_pubs',
-          label: 'Publications',
+          label: 'Documents',
           accelerator: 'CmdOrCtrl+1',
           click: () => {
-            openRoute({key: 'home'})
-          },
-        },
-        {
-          id: 'route_pubs',
-          label: 'All Publications',
-          accelerator: 'CmdOrCtrl+2',
-          click: () => {
-            openRoute({key: 'all-publications'})
+            openRoute({key: 'documents'})
           },
         },
         {

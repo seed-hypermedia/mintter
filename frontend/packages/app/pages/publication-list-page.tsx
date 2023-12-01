@@ -10,18 +10,21 @@ import {
   Delete,
   DialogDescription,
   DialogTitle,
+  Separator,
   SizableText,
   Spinner,
   TamaguiElement,
   View,
+  XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {Virtuoso} from 'react-virtuoso'
 
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
+import {Bookmark, Globe, Pencil} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {ComponentProps, useCallback, useEffect, useRef, useState} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
@@ -31,14 +34,40 @@ import {PublicationListItem} from '../components/publication-list-item'
 import {queryPublication, usePublicationFullList} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {toast} from '../toast'
+import {useNavRoute} from '../utils/navigation'
+import {useNavigate} from '../utils/useNavigate'
 
-export function PublicationListPage({
-  trustedOnly,
-  empty,
+function ToggleGroupItem({
+  label,
+  icon,
+  active,
+  onPress,
 }: {
-  trustedOnly: boolean
-  empty?: React.ReactNode
+  label: string
+  icon: ComponentProps<typeof Button>['icon'] | undefined
+  active: boolean
+  onPress: () => void
 }) {
+  return (
+    <XGroup.Item>
+      <Button
+        icon={icon}
+        backgroundColor={active ? '$color7' : undefined}
+        onPress={onPress}
+      >
+        {label}
+      </Button>
+    </XGroup.Item>
+  )
+}
+
+export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
+  const route = useNavRoute()
+  if (route.key !== 'documents') throw new Error('invalid route')
+  const trustedOnly = route.tab === 'trusted'
+  const draftsOnly = route.tab === 'drafts'
+  const allDocs = route.tab == null
+  const replace = useNavigate('replace')
   let publications = usePublicationFullList({trustedOnly})
   let drafts = useDraftList()
   let {queryClient, grpcClient} = useAppContext()
@@ -88,7 +117,60 @@ export function PublicationListPage({
                   bottom: 800,
                 }}
                 components={{
-                  Header: () => <View style={{height: 30}} />,
+                  Header: () => (
+                    <XStack jc="center">
+                      <YStack
+                        alignItems="flex-start"
+                        f={1}
+                        maxWidth={898}
+                        paddingVertical="$4"
+                      >
+                        <XGroup
+                          separator={<Separator backgroundColor={'red'} />}
+                        >
+                          <ToggleGroupItem
+                            label="Trusted Creators"
+                            icon={Bookmark}
+                            active={trustedOnly}
+                            onPress={() => {
+                              if (!trustedOnly) {
+                                replace({
+                                  ...route,
+                                  tab: 'trusted',
+                                })
+                              }
+                            }}
+                          />
+                          <ToggleGroupItem
+                            label="All Creators"
+                            icon={Globe}
+                            active={allDocs}
+                            onPress={() => {
+                              if (!allDocs) {
+                                replace({
+                                  ...route,
+                                  tab: null,
+                                })
+                              }
+                            }}
+                          />
+                          <ToggleGroupItem
+                            label="My Drafts"
+                            icon={Pencil}
+                            active={draftsOnly}
+                            onPress={() => {
+                              if (!draftsOnly) {
+                                replace({
+                                  ...route,
+                                  tab: 'drafts',
+                                })
+                              }
+                            }}
+                          />
+                        </XGroup>
+                      </YStack>
+                    </XStack>
+                  ),
                   Footer: () => <View style={{height: 30}} />,
                 }}
                 id="scroll-page-wrapper"
@@ -205,7 +287,7 @@ export function PublicationListPage({
   )
 }
 
-function PublishedFirstDocDialog({
+export function PublishedFirstDocDialog({
   input,
   onClose,
 }: {

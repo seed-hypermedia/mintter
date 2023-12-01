@@ -453,9 +453,7 @@ export function PageActionButtons(props: TitleBarProps) {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'drafts') {
     buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
-  } else if (route.key === 'all-publications') {
-    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
-  } else if (route.key === 'home') {
+  } else if (route.key === 'documents') {
     buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]

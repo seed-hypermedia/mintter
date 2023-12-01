@@ -2,7 +2,7 @@ import {ReactNode, useEffect, useMemo, useReducer} from 'react'
 import {useIPC} from '../app-context'
 import {useConfirmConnection} from '../components/contacts-prompt'
 import {
-  HomeRoute,
+  DocumentsRoute,
   NavContextProvider,
   NavState,
   navStateReducer,
@@ -10,7 +10,7 @@ import {
 } from './navigation'
 import {AppWindowEvent} from './window-events'
 
-const homeRoute: HomeRoute = {key: 'home'}
+const homeRoute: DocumentsRoute = {key: 'documents'}
 
 export function NavigationContainer({
   children,

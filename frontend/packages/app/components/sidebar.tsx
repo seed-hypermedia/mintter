@@ -2,7 +2,6 @@ import {trpc} from '@mintter/desktop/src/trpc'
 import {Account} from '@mintter/shared'
 import {
   Button,
-  Draft,
   ListItem,
   ListItemProps,
   Separator,
@@ -16,10 +15,8 @@ import {
 } from '@mintter/ui'
 import {
   Book,
-  Bookmark,
   Contact,
   FileText,
-  Globe,
   Library,
   Plus,
   Search,
@@ -123,52 +120,14 @@ function FullAppSidebar() {
           </YGroup.Item>
           <YGroup.Item>
             <SidebarItem
-              active={route.key == 'home'}
-              data-testid="menu-item-pubs"
-              onPress={() => {
-                navigate({key: 'home'})
-              }}
-              title="Trusted Publications"
-              bold
-              icon={Bookmark}
-              rightHover={[
-                <NewDocumentButton
-                  pubContext={{key: 'trusted'}}
-                  key="newDoc"
-                />,
-              ]}
-            />
-          </YGroup.Item>
-          {pins.data?.trustedDocuments.map((documentId) => {
-            return (
-              <PinnedDocument
-                onPress={() => {
-                  navigate({
-                    key: 'publication',
-                    documentId,
-                    pubContext: {key: 'trusted'},
-                  })
-                }}
-                active={
-                  route.key === 'publication' &&
-                  route.documentId === documentId &&
-                  route.pubContext?.key === 'trusted'
-                }
-                docId={documentId}
-                key={documentId}
-              />
-            )
-          })}
-          <YGroup.Item>
-            <SidebarItem
-              active={route.key == 'all-publications'}
+              active={route.key == 'documents'}
               data-testid="menu-item-global"
               onPress={() => {
-                navigate({key: 'all-publications'})
+                navigate({key: 'documents'})
               }}
-              title="All Publications"
+              title="Documents"
               bold
-              icon={Globe}
+              icon={FileText}
               rightHover={[
                 <NewDocumentButton pubContext={null} key="newDoc" />,
                 // <Button
@@ -258,7 +217,7 @@ function FullAppSidebar() {
             })
             .flat()}
 
-          <YGroup.Item>
+          {/* <YGroup.Item>
             <SidebarItem
               active={route.key == 'drafts'}
               data-testid="menu-item-drafts"
@@ -269,7 +228,7 @@ function FullAppSidebar() {
               title="Drafts"
               bold
             />
-          </YGroup.Item>
+          </YGroup.Item> */}
           <YGroup.Item>
             <SidebarItem
               active={route.key == 'contacts'}

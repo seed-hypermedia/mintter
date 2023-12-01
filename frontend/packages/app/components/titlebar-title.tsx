@@ -9,13 +9,12 @@ import {
 import {
   ErrorIcon,
   FontSizeTokens,
-  Globe,
   Pencil,
   Spinner,
   TitleText,
   XStack,
 } from '@mintter/ui'
-import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
+import {Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
 import {NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
@@ -27,7 +26,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
 
   useEffect(() => {
     async function getTitleOfRoute(route: NavRoute): Promise<string> {
-      if (route.key === 'home') return 'Publications'
+      if (route.key === 'documents') return 'Documents'
       if (route.key === 'drafts') return 'Drafts'
       if (route.key === 'contacts') return 'Contacts'
       return '?'
@@ -39,22 +38,12 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     })
   }, [route])
 
-  if (route.key === 'home') {
+  if (route.key === 'documents') {
     return (
       <>
-        <Bookmark size={12} />
+        <FileText size={12} />
         <TitleText size={size} data-testid="titlebar-title">
-          Publications
-        </TitleText>
-      </>
-    )
-  }
-  if (route.key === 'all-publications') {
-    return (
-      <>
-        <Globe size={12} />
-        <TitleText data-testid="titlebar-title" size={size}>
-          All Publications
+          Documents
         </TitleText>
       </>
     )

@@ -23,7 +23,7 @@ import {
   XStack,
   YGroup,
 } from '@mintter/ui'
-import {Bookmark, Contact, Globe, Library} from '@tamagui/lucide-icons'
+import {Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useMemo} from 'react'
 import {useNavRoute, useNavigationDispatch} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
@@ -201,7 +201,7 @@ export function SystemMenu() {
             id: 'newwindow',
             title: 'New Window',
             accelerator: 'Ctrl+Shift+N',
-            onSelect: () => spawn({key: 'home'}),
+            onSelect: () => spawn({key: 'documents'}),
             icon: AddSquare,
           },
           {
@@ -258,20 +258,12 @@ export function SystemMenu() {
             onSelect: () => navDispatch({type: 'forward'}),
           },
           {
-            id: 'publications',
-            title: 'Publications',
+            id: 'documents',
+            title: 'Documents',
             accelerator: 'Ctrl+1',
-            onSelect: () => push({key: 'home'}),
-            icon: Bookmark,
-            disabled: route.key == 'home',
-          },
-          {
-            id: 'allpublications',
-            title: 'All Publications',
-            accelerator: 'Ctrl+2',
-            onSelect: () => push({key: 'all-publications'}),
-            icon: Globe,
-            disabled: route.key == 'all-publications',
+            onSelect: () => push({key: 'documents'}),
+            icon: FileText,
+            disabled: route.key == 'documents',
           },
           {
             id: 'groups',

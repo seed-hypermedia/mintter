@@ -9,8 +9,10 @@ import {createContext, useContext} from 'react'
 
 global.Buffer = global.Buffer || Buffer
 
-export type HomeRoute = {key: 'home'}
-export type GlobalPublications = {key: 'all-publications'}
+export type DocumentsRoute = {
+  key: 'documents'
+  tab?: null | 'trusted' | 'drafts'
+}
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 
@@ -57,7 +59,6 @@ export type GroupRoute = {
   accessory?: null | EntityVersionsAccessory
 }
 export type NavRoute =
-  | HomeRoute
   | ContactsRoute
   | AccountRoute
   | SettingsRoute
@@ -66,7 +67,7 @@ export type NavRoute =
   | PublicationRoute
   | DraftsRoute
   | DraftRoute
-  | GlobalPublications
+  | DocumentsRoute
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
@@ -205,7 +206,7 @@ export function useNavRoute() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavRoute must be used within a NavigationProvider')
-  return nav.state.routes[nav.state.routeIndex] || {key: 'home'}
+  return nav.state.routes[nav.state.routeIndex] || {key: 'documents'}
 }
 
 export function useNavigationState() {

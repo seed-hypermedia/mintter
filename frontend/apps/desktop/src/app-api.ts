@@ -70,7 +70,7 @@ info('App UserData: ', userData)
 export function openInitialWindows() {
   const windowsState = getWindowsState()
   if (!Object.keys(windowsState).length) {
-    trpc.createAppWindow({routes: [{key: 'home'}]})
+    trpc.createAppWindow({routes: [{key: 'documents'}]})
     return
   }
   try {
@@ -85,7 +85,7 @@ export function openInitialWindows() {
     })
   } catch (error) {
     info(`[MAIN]: openInitialWindows Error: ${JSON.stringify(error)}`)
-    trpc.createAppWindow({routes: [{key: 'home'}]})
+    trpc.createAppWindow({routes: [{key: 'documents'}]})
     return
   }
 }
