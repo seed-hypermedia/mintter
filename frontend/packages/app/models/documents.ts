@@ -993,7 +993,8 @@ function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
     a1.url == a2.url &&
     a1.size == a2.size &&
     a1.ref == a2.ref &&
-    a1.language == a2.language
+    a1.language == a2.language &&
+    a1.display == a2.display
   )
 }
 

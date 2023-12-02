@@ -1,3 +1,4 @@
+import {Timestamp} from '@bufbuild/protobuf'
 import {
   BACKEND_HTTP_URL,
   Block,
@@ -12,6 +13,7 @@ import {
   MttLink,
   Publication,
   formatBytes,
+  formattedDate,
   getCIDFromIPFSUrl,
   idToUrl,
   isHypermediaScheme,
@@ -63,6 +65,7 @@ export type EntityComponentsRecord = {
   AccountCard: React.FC<EntityComponentProps>
   GroupCard: React.FC<EntityComponentProps>
   PublicationCard: React.FC<EntityComponentProps>
+  PublicationContent: React.FC<EntityComponentProps>
 }
 
 export type PublicationContentContextValue = {
@@ -939,7 +942,12 @@ export function BlockContentEmbed(props: BlockContentProps) {
     return <EmbedTypes.GroupCard {...props} {...id} />
   }
   if (id?.type == 'd') {
-    return <EmbedTypes.PublicationCard {...props} {...id} />
+    switch (props.block.attributes.display) {
+      case 'card':
+        return <EmbedTypes.PublicationCard {...props} {...id} />
+      default:
+        return <EmbedTypes.PublicationContent {...props} {...id} />
+    }
   }
   return <BlockContentUnknown {...props} />
 }
@@ -1305,6 +1313,75 @@ function RadioGroupItemWithLabel(props: {value: string; label: string}) {
       <Label size="$1" htmlFor={id}>
         {props.label}
       </Label>
+    </XStack>
+  )
+}
+
+export function PublicationCardView({
+  title,
+  textContent,
+  editors,
+  AvatarComponent,
+  date,
+}: {
+  title?: string
+  textContent?: string
+  editors?: Array<string>
+  AvatarComponent: React.FC<{accountId?: string}>
+  date?: Timestamp
+}) {
+  return (
+    <XStack padding="$2">
+      <YStack flex={1} gap="$2">
+        <SizableText
+          size="$7"
+          fontWeight="bold"
+          textAlign="left"
+          textOverflow="ellipsis"
+          whiteSpace="nowrap"
+          overflow="hidden"
+        >
+          {title}
+        </SizableText>
+        {/* the maxHeight here is defined by the lineHeight of the content,
+        so if we change the size of the text we need to change the maxHeight too */}
+        <YStack overflow="hidden" maxHeight={20 * 3}>
+          <SizableText>{textContent}</SizableText>
+        </YStack>
+        <XStack gap="$3" ai="center">
+          <EditorsAvatars editors={editors} AvatarComponent={AvatarComponent} />
+          {date ? (
+            <SizableText size="$1">{formattedDate(date)}</SizableText>
+          ) : null}
+        </XStack>
+      </YStack>
+    </XStack>
+  )
+}
+
+function EditorsAvatars({
+  editors,
+  AvatarComponent,
+}: {
+  editors?: Array<string>
+  AvatarComponent: React.FC<{accountId?: string}>
+}) {
+  return (
+    <XStack marginLeft={6}>
+      {editors?.map((editor, idx) => (
+        <XStack
+          zIndex={idx + 1}
+          key={editor}
+          borderColor="$color4"
+          backgroundColor="$color4"
+          borderWidth={2}
+          borderRadius={100}
+          marginLeft={-8}
+          animation="fast"
+        >
+          <AvatarComponent accountId={editor} />
+        </XStack>
+      ))}
     </XStack>
   )
 }

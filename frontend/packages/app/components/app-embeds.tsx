@@ -1,10 +1,11 @@
 import {
-  BlockContentProps,
   BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
   EmbedContentAccount,
   EmbedContentGroup,
+  EntityComponentProps,
+  PublicationCardView,
   blockStyles,
   createHmId,
   getBlockNodeById,
@@ -16,15 +17,16 @@ import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
+import {getAvatarUrl} from '../utils/account-url'
 import {unpackHmIdWithAppRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import {Avatar} from './avatar'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
   let spawn = useNavigate('spawn')
   return (
     <YStack
-      // @ts-expect-error
       contentEditable={false}
       userSelect="none"
       {...blockStyles}
@@ -56,7 +58,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   )
 }
 
-export function EmbedPublication(props: BlockContentProps) {
+export function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = usePublication({
     id: docId,
@@ -107,7 +109,49 @@ export function EmbedPublication(props: BlockContentProps) {
   )
 }
 
-export function EmbedGroup(props: BlockContentProps) {
+export function EmbedPublicationCard(props: EntityComponentProps) {
+  const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
+  const pub = usePublication({
+    id: docId,
+    version: props.version || undefined,
+    enabled: !!docId,
+  })
+
+  let textContent = useMemo(() => {
+    if (pub.data?.document?.children) {
+      let content = ''
+      pub.data?.document?.children.forEach((bn) => {
+        content += bn.block?.text + ' '
+      })
+      return content
+    }
+  }, [pub.data])
+
+  return (
+    <EmbedWrapper hmRef={props.id}>
+      <PublicationCardView
+        title={pub.data?.document?.title}
+        textContent={textContent}
+        editors={pub.data?.document?.editors || []}
+        AvatarComponent={AvatarComponent}
+        date={pub.data?.document?.updateTime}
+      />
+    </EmbedWrapper>
+  )
+}
+
+function AvatarComponent({accountId}: {accountId: string}) {
+  let {data: account} = useAccount(accountId)
+  return (
+    <Avatar
+      label={account?.profile?.alias}
+      id={accountId}
+      url={getAvatarUrl(account?.profile?.avatar)}
+    />
+  )
+}
+
+export function EmbedGroup(props: EntityComponentProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = useGroup(groupId, props.version || undefined)
 
@@ -119,7 +163,7 @@ export function EmbedGroup(props: BlockContentProps) {
   ) : null
 }
 
-export function EmbedAccount(props: BlockContentProps) {
+export function EmbedAccount(props: EntityComponentProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = useAccount(accountId)
 
