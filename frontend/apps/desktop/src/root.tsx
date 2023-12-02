@@ -47,45 +47,35 @@ function wrapLogger(logFn: (...args: any[]) => void) {
   }
 }
 
+const securitySensitiveMethods = new Set([
+  'Daemon.Register',
+  'Daemon.GenMnemonic',
+])
+const enabledLogMessages = new Set<string>([
+  // 'Accounts.ListAccounts',
+  // 'Groups.GetGroup',
+  // 'Groups.ListContent',
+  // etc.. add the messages you need to see here, please comment out before committing!
+])
+const hiddenLogMessages = new Set<string>([
+  'Daemon.GetInfo',
+  'Networking.GetPeerInfo',
+])
 const loggingInterceptor: Interceptor = (next) => async (req) => {
+  const serviceLabel = req.service.typeName.split('.').at(-1)
+  const methodFullname = `${serviceLabel}.${req.method.name}`
+  const isSensitive = securitySensitiveMethods.has(methodFullname)
   try {
     const result = await next(req)
     if (
-      req.method.name === 'Register' &&
-      req.service.typeName === 'com.mintter.daemon.v1alpha.Daemon'
+      enabledLogMessages.has(methodFullname) &&
+      !hiddenLogMessages.has(methodFullname)
     ) {
-      logger.log(
-        `🔃 to ${req.method.name} `,
-        `${req.message.mnemonic.length} words HIDDEN FROM LOGS`,
-        // @ts-ignore
-        result?.message,
-      )
-      return result
-    }
-    if (
-      req.method.name === 'GenMnemonic' &&
-      req.service.typeName === 'com.mintter.daemon.v1alpha.Daemon'
-    ) {
-      logger.log(`🔃 to ${req.method.name} `, req.message, 'HIDDEN FROM LOGS')
-      return result
-    }
-    const enabledLogMessages = new Set<string>([
-      // 'Accounts.ListAccounts',
-      // 'Groups.GetGroup',
-      'Groups.ListContent',
-      // etc.. add the messages you need to see here, please comment out before committing!
-    ])
-    const messageName: string = req.method.name
-    const serviceLabel = req.service.typeName.split('.').at(-1)
-    const request = req.message
-    const response = result?.message
-    if (serviceLabel === 'Daemon' && messageName === 'GetInfo') return result
-    if (serviceLabel === 'Networking' && messageName === 'GetPeerInfo')
-      return result
-    if (enabledLogMessages.has(`${serviceLabel}.${messageName}`)) {
-      logger.log(`🔃 to ${serviceLabel}.${req.method.name} `, request, response)
-    } else {
-      logger.log(`🔃 to ${serviceLabel}.${req.method.name} `)
+      const request = req.message
+      const response = result?.message
+      logger.log(`🔃 to ${methodFullname}`, request, response)
+    } else if (!hiddenLogMessages.has(methodFullname)) {
+      logger.log(`🔃 to ${methodFullname}`)
     }
     return result
   } catch (e) {
@@ -93,7 +83,11 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     if (e.message.match('stream.getReader is not a function')) {
       error = new Error('RPC broken, try running yarn and ./dev gen')
     }
-    logger.error(`🚨 to ${req.method.name} `, req.message, error)
+    if (isSensitive) {
+      logger.error(`🚨 to ${methodFullname} `, 'HIDDEN FROM LOGS', error)
+      throw error
+    }
+    logger.error(`🚨 to ${methodFullname} `, req.message, error)
     throw error
   }
 }
