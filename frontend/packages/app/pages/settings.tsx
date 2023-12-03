@@ -605,8 +605,8 @@ function AppSettings() {
         />
         <Separator />
         <InfoListItem
-          label="Log File"
-          value={appInfo?.logFilePath}
+          label="Log Directory"
+          value={appInfo?.loggingDir}
           copyable
           openable
         />

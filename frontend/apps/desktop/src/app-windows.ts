@@ -5,7 +5,7 @@ import {BrowserWindow, app, nativeTheme} from 'electron'
 import path from 'path'
 import {appStore} from './app-store'
 import {getDaemonState, subscribeDaemonState} from './daemon'
-import {childLogger, log, warn} from './logger'
+import {childLogger, info, warn} from './logger'
 
 let windowIdCount = 1
 
@@ -59,7 +59,7 @@ type AppWindow = {
 }
 
 const userData = app.getPath('userData')
-log('App UserData: ', userData)
+info('App UserData: ', userData)
 
 const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
 
@@ -170,9 +170,9 @@ export function createAppWindow(input: {
     },
   })
 
-  log('[MAIN:API]: window created')
+  info('[MAIN:API]: window created')
 
-  const windowLogger = childLogger({logId: windowId})
+  const windowLogger = childLogger(windowId)
   browserWindow.webContents.on(
     'console-message',
     (e, level, message, line, sourceId) => {

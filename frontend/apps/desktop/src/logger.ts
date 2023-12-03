@@ -1,37 +1,111 @@
-import * as logger from 'electron-log'
+import * as legacyLogger from 'electron-log'
+import {existsSync, rmSync} from 'fs'
+import {join} from 'path'
+import winston from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
+import {APP_USER_DATA_PATH} from './app-paths'
 
-export const logFilePath = logger.transports.file.getFile().path
+export const legacyLogsFilePath = legacyLogger.transports.file.getFile().path
 
-console.log('== Logs will be written here: ', logFilePath)
+if (existsSync(legacyLogsFilePath)) {
+  // throw away legacy logs for security reasons
+  rmSync(legacyLogsFilePath)
+}
 
-export function log(...input: any[]) {
-  console.log(...input)
-  logger.log(...input)
+export const loggingDir = join(APP_USER_DATA_PATH, 'logs')
+
+const winstonLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {nodeEnv: process.env.NODE_ENV || ''},
+  transports: [
+    new DailyRotateFile({
+      level: 'info',
+      dirname: loggingDir,
+      filename: '%DATE%.log',
+      datePattern: 'YYYY-MM-DD-HH',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d',
+    }),
+    new DailyRotateFile({
+      level: 'error',
+      dirname: loggingDir,
+      filename: '%DATE%.error.log',
+      datePattern: 'YYYY-MM-DD-HH',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '180d',
+    }),
+  ],
+})
+
+if (process.env.NODE_ENV !== 'production') {
+  winstonLogger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  )
+}
+
+console.log('== Logs will be written in: ', loggingDir)
+
+export function info(...input: any[]) {
+  winstonLogger.log({level: 'info', message: JSON.stringify(input)})
 }
 
 export function debug(...input: any[]) {
-  console.debug(...input)
-  logger.debug(...input)
+  winstonLogger.log({level: 'debug', message: JSON.stringify(input)})
 }
 
 export function warn(...input: any[]) {
-  console.warn(...input)
-  logger.warn(...input)
+  winstonLogger.log({level: 'warn', message: JSON.stringify(input)})
 }
 
 export function error(...input: any[]) {
-  console.error(...input)
-  logger.error(...input)
+  winstonLogger.log({level: 'error', message: JSON.stringify(input)})
 }
 
 export function verbose(...input: any[]) {
-  console.log(...input)
-  logger.verbose(...input)
+  winstonLogger.log({level: 'debug', message: JSON.stringify(input)})
 }
 
-export function silly(...input: any[]) {
-  console.log(...input)
-  logger.silly(...input)
+export function childLogger(context: string) {
+  return {
+    info(...input: any[]) {
+      winstonLogger.log({
+        level: 'info',
+        message: JSON.stringify(input),
+        meta: {context},
+      })
+    },
+    debug(...input: any[]) {
+      winstonLogger.log({
+        level: 'debug',
+        message: JSON.stringify(input),
+        meta: {context},
+      })
+    },
+    warn(...input: any[]) {
+      winstonLogger.log({
+        level: 'warn',
+        message: JSON.stringify(input),
+        meta: {context},
+      })
+    },
+    error(...input: any[]) {
+      winstonLogger.log({
+        level: 'error',
+        message: JSON.stringify(input),
+        meta: {context},
+      })
+    },
+    verbose(...input: any[]) {
+      winstonLogger.log({
+        level: 'debug',
+        message: JSON.stringify(input),
+        meta: {context},
+      })
+    },
+  }
 }
-
-export const childLogger = logger.create
