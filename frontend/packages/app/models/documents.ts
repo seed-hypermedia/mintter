@@ -50,7 +50,7 @@ import {
 } from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
-import {useAllAccounts, useMyAccount} from './accounts'
+import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {queryKeys} from './query-keys'
 
@@ -87,10 +87,8 @@ export function usePublicationFullList(
 ) {
   const pubList = usePublicationList(opts)
   const accounts = useAllAccounts()
-  const myAccount = useMyAccount()
   const data = useMemo(() => {
     function lookupAccount(accountId: string | undefined) {
-      if (accountId === myAccount.data?.id) return myAccount.data
       return (
         (accountId &&
           accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
