@@ -387,9 +387,9 @@ func TestPeriodicSync(t *testing.T) {
 
 		bacc := must.Do2(b.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
-		require.Len(t, accs.Accounts, 1, msg)
-		bacc.IsTrusted = accs.Accounts[0].IsTrusted // just bc they synced they dont trust each other
-		testutil.ProtoEqual(t, bacc, accs.Accounts[0], "a must fetch b's account fully")
+		require.Len(t, accs.Accounts, 2, msg)       // our own account is also listed. It's always first.
+		bacc.IsTrusted = accs.Accounts[1].IsTrusted // just bc they synced they dont trust each other
+		testutil.ProtoEqual(t, bacc, accs.Accounts[1], "a must fetch b's account fully")
 	}
 
 	checkListAccounts(t, alice, bob, "alice to bob")
