@@ -96,3 +96,6 @@ whats-new.txt
 # The pattern is like that to colocate files together,
 # and allow any file extension to keep editor working.
 scratch.*.*
+
+# pixi environments
+.pixi
