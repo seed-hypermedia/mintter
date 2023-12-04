@@ -8,7 +8,7 @@ import {
   BlockNoteEditor,
   Block as EditorBlock,
   createHypermediaDocLinkPlugin,
-  handleDragReplace,
+  handleDragMedia,
   hmBlockSchema,
   useBlockNote,
 } from '@mintter/editor'
@@ -698,15 +698,21 @@ export function useDraftEditor({
         event.dataTransfer.files?.[0] ||
         null
       if (!file) return
-      handleDragReplace(file).then((props) => {
-        if (chromiumSupportedImageMimeTypes.has(file.type)) {
+      handleDragMedia(file).then((props) => {
+        if (chromiumSupportedImageMimeTypes.has(file!.type)) {
           editor?._tiptapEditor.commands.insertContent({
             type: 'image',
             id: generateBlockId(),
             attrs: props,
             text: '',
           })
-          // todo: support video type
+        } else if (chromiumSupportedVideoMimeTypes.has(file!.type)) {
+          editor?._tiptapEditor.commands.insertContent({
+            type: 'video',
+            id: generateBlockId(),
+            attrs: props,
+            text: '',
+          })
         } else {
           editor?._tiptapEditor.commands.insertContent({
             type: 'file',
@@ -716,6 +722,63 @@ export function useDraftEditor({
           })
         }
       })
+    },
+  }
+}
+
+const chromiumSupportedImageMimeTypes = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+  'image/apng',
+  'image/avif',
+])
+
+const chromiumSupportedVideoMimeTypes = new Set(['video/mp4', 'video/webm'])
+
+export function useDraftTitleInput(draftId: string) {
+  const draft = useDraft({documentId: draftId})
+  const savingDebounceTimout = useRef<any>(null)
+  const queryClient = useQueryClient()
+  const client = useGRPCClient()
+  const saveTitleMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const changes: Array<DocumentChange> = [
+        new DocumentChange({
+          op: {
+            case: 'setTitle',
+            value: title,
+          },
+        }),
+      ]
+      await client.drafts.updateDraft({
+        documentId: draftId,
+        changes,
+      })
+    },
+  })
+  const title = draft.data?.title || undefined
+  return {
+    title,
+    onTitle: (inputTitle: string) => {
+      // avoid multiline values that may be pasted into the title
+      const title = inputTitle.split('\n').join(' ')
+      queryClient.setQueryData(
+        [queryKeys.EDITOR_DRAFT, draftId],
+        (state: EditorDraftState | undefined) => {
+          return {...state, title}
+        },
+      )
+      clearTimeout(savingDebounceTimout.current)
+      savingDebounceTimout.current = setTimeout(() => {
+        saveTitleMutation.mutate(title)
+      }, 500)
     },
   }
 }

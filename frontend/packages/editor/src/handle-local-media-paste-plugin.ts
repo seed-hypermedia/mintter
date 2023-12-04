@@ -69,11 +69,12 @@ const handleLocalMediaPastePlugin = new Plugin({
             // return true
             uploadMedia(file)
               .then((data) => {
-                const {name} = file
+                const {name, size} = file
 
                 const node = view.state.schema.nodes.file.create({
                   url: data,
                   name: name,
+                  size: size,
                 })
 
                 view.dispatch(

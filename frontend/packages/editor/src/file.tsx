@@ -179,31 +179,6 @@ const Render = (
   )
 }
 
-export async function handleDragReplace(file: File) {
-  if (file.size > 62914560) {
-    toast.error(`The size of ${file.name} exceeds 60 MB.`)
-    return null
-  }
-
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await response.text()
-    return {
-      url: data ? `ipfs://${data}` : '',
-      name: file.name,
-      size: file.size.toString(),
-    } as FileType['props']
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 export function FileComponent({
   block,
   editor,

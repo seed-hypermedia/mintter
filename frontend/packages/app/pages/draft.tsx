@@ -47,6 +47,7 @@ export default function DraftPage() {
   }, [route])
 
   const isSaved = DraftStatusContext.useSelector((s) => s.matches('saved'))
+  const [drag, setDrag] = useState(false)
 
   let data = useDraftEditor({
     documentId: route.draftId,
@@ -77,7 +78,39 @@ export default function DraftPage() {
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
-        <MainWrapper>
+        <MainWrapper
+        // @ts-ignore
+        // onDragEnter={(e: React.DragEvent<HTMLDivElement>) => {
+        //   const relatedTarget = e.relatedTarget as HTMLElement
+        //   e.preventDefault()
+        //   setDrag(true)
+        //   e.dataTransfer.effectAllowed = 'move'
+        //   // console.log(
+        //   //   relatedTarget,
+        //   //   e.currentTarget,
+        //   //   e.currentTarget.contains(relatedTarget),
+        //   // )
+        //   // if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+        //   //   setDrag(true)
+        //   //   e.dataTransfer.effectAllowed = 'move'
+        //   // }
+        // }}
+        // onDragLeave={(e: React.DragEvent<HTMLDivElement>) => {
+        //   const relatedTarget = e.relatedTarget as HTMLElement
+        //   e.preventDefault()
+        //   // if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+        //   //   setDrag(false)
+        //   // }
+        //   setDrag(false)
+        // }}
+        // onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
+        //   e.preventDefault()
+        // }}
+        // onDrop={(e: React.DragEvent<HTMLDivElement>) => {
+        //   console.log(e.dataTransfer.effectAllowed)
+        //   data.handleDrop(e)
+        // }}
+        >
           <AppPublicationContentProvider
             disableEmbedClick
             onCopyBlock={(blockId: string) => {
@@ -98,7 +131,7 @@ export default function DraftPage() {
               <DraftTitleInput
                 draftActor={data.actor}
                 onEnter={() => {
-                  editor?._tiptapEditor?.commands?.focus?.('start')
+                  data.editor?._tiptapEditor?.commands?.focus?.('start')
                 }}
               />
             </YStack>
@@ -111,7 +144,10 @@ export default function DraftPage() {
             </HMEditorContainer>
           </AppPublicationContentProvider>
           {documentId ? (
-            <DraftDevTools draftId={documentId} editorState={editorStream} />
+            <DraftDevTools
+              draftId={documentId}
+              editorState={data.editorStream}
+            />
           ) : null}
         </MainWrapper>
         <Footer>

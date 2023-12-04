@@ -19,6 +19,7 @@ import {Strike} from '@tiptap/extension-strike'
 import {Text} from '@tiptap/extension-text'
 import {Underline} from '@tiptap/extension-underline'
 import * as Y from 'yjs'
+import {DragExtension} from './extensions/Drag/DragExtension'
 import styles from './editor.module.css'
 import {BackgroundColorExtension} from './extensions/BackgroundColor/BackgroundColorExtension'
 import {BackgroundColorMark} from './extensions/BackgroundColor/BackgroundColorMark'
@@ -83,6 +84,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
 
     // block manupulations:
     BlockManipulationExtension,
+    DragExtension,
 
     // marks:
     Bold,
