@@ -24,9 +24,6 @@ import {
   fromHMBlock,
   hmDocument,
   hmPublication,
-  isHypermediaScheme,
-  isPublicGatewayLink,
-  normlizeHmId,
   toHMBlock,
   unpackDocId,
   writeableStateStream,
@@ -723,60 +720,6 @@ export function useDraftEditor({
   }
 }
 
-const chromiumSupportedImageMimeTypes = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/bmp',
-  'image/svg+xml',
-  'image/x-icon',
-  'image/vnd.microsoft.icon',
-  'image/apng',
-  'image/avif',
-])
-
-export function useDraftTitleInput(draftId: string) {
-  const draft = useDraft({documentId: draftId})
-  const savingDebounceTimout = useRef<any>(null)
-  const queryClient = useQueryClient()
-  const client = useGRPCClient()
-  const saveTitleMutation = useMutation({
-    mutationFn: async (title: string) => {
-      const changes: Array<DocumentChange> = [
-        new DocumentChange({
-          op: {
-            case: 'setTitle',
-            value: title,
-          },
-        }),
-      ]
-      await client.drafts.updateDraft({
-        documentId: draftId,
-        changes,
-      })
-    },
-  })
-  const title = draft.data?.title || undefined
-  return {
-    title,
-    onTitle: (inputTitle: string) => {
-      // avoid multiline values that may be pasted into the title
-      const title = inputTitle.split('\n').join(' ')
-      queryClient.setQueryData(
-        [queryKeys.EDITOR_DRAFT, draftId],
-        (state: EditorDraftState | undefined) => {
-          return {...state, title}
-        },
-      )
-      clearTimeout(savingDebounceTimout.current)
-      savingDebounceTimout.current = setTimeout(() => {
-        saveTitleMutation.mutate(title)
-      }, 500)
-    },
-  }
-}
-
 export type HyperDocsEditor = Exclude<
   ReturnType<typeof useDraftEditor>['editor'],
   null
@@ -794,63 +737,6 @@ function generateBlockId(length: number = 8): string {
     result += characters.charAt(Math.floor(Math.random() * characters.length))
   }
   return result
-}
-
-export function useCreatePublication() {
-  const invalidate = useQueryInvalidator()
-  const client = useGRPCClient()
-  return useMutation({
-    mutationFn: async (title: string) => {
-      const draft = await client.drafts.createDraft({})
-      const blockId = generateBlockId()
-      await client.drafts.updateDraft({
-        documentId: draft.id,
-        changes: [
-          new DocumentChange({
-            op: {
-              case: 'setTitle',
-              value: title,
-            },
-          }),
-          new DocumentChange({
-            op: {
-              case: 'moveBlock',
-              value: {
-                blockId,
-                leftSibling: '',
-                parent: '',
-              },
-            },
-          }),
-          new DocumentChange({
-            op: {
-              case: 'replaceBlock',
-              value: {id: blockId, type: 'paragraph', text: title},
-            },
-          }),
-        ],
-      })
-      await client.drafts.publishDraft({documentId: draft.id})
-      return draft.id
-    },
-    onSuccess: (draftId) => {
-      invalidate([queryKeys.GET_PUBLICATION_LIST])
-      invalidate([queryKeys.ENTITY_TIMELINE, draftId])
-    },
-  })
-}
-
-function extractEmbedRefOfLink(block: any): false | string {
-  if (block.content.length == 1) {
-    let leaf = block.content[0]
-    if (leaf.type == 'link') {
-      if (isPublicGatewayLink(leaf.href) || isHypermediaScheme(leaf.href)) {
-        const hmLink = normlizeHmId(leaf.href)
-        if (hmLink) return hmLink
-      }
-    }
-  }
-  return false
 }
 
 function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
@@ -1134,7 +1020,8 @@ function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
     a1.url == a2.url &&
     a1.size == a2.size &&
     a1.ref == a2.ref &&
-    a1.language == a2.language
+    a1.language == a2.language &&
+    a1.display == a2.display
   )
 }
 

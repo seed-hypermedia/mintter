@@ -4,14 +4,12 @@ import {
   BACKEND_P2P_PORT,
 } from '@mintter/shared'
 import {spawn} from 'child_process'
-import {color} from 'console-log-colors'
 import {app} from 'electron'
 import {join} from 'path'
 import {APP_USER_DATA_PATH} from './app-paths'
-import {childLogger, log} from './logger'
-import {getAllWindows} from './app-windows'
+import {childLogger, info} from './logger'
 
-const logger = childLogger(color.cyan('Go Daemon'))
+const logger = childLogger('Go Daemon')
 
 const LLVM_TRIPLES = {
   'darwin/x64': 'x86_64-apple-darwin',
@@ -150,7 +148,7 @@ export function startMainDaemon() {
   })
 
   app.addListener('will-quit', () => {
-    log('App will quit')
+    info('App will quit')
     expectingDaemonClose = true
     daemonProcess.kill()
   })

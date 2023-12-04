@@ -1,9 +1,9 @@
 import {Avatar} from '@mintter/app/components/avatar'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
-import {FontSizeTokens, Stack, Tooltip} from '@mintter/ui'
+import {Stack, Tooltip} from '@mintter/ui'
 import {ChangeEvent} from 'react'
-import toast from 'react-hot-toast'
+import appError from '../errors'
 
 export function AvatarForm({
   url,
@@ -21,9 +21,8 @@ export function AvatarForm({
     if (!file) return
     handleUpload(file)
       .then(() => {})
-      .catch((e) => {
-        console.error(e)
-        toast.error('Failed to upload avatar. ' + e.message)
+      .catch((error) => {
+        appError(`Failed to upload avatar: ${e.message}`, {error})
       })
       .finally(() => {
         event.target.value = ''

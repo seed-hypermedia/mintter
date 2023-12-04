@@ -5,16 +5,15 @@ import {
   Input,
   SizableText,
   Spinner,
-  Text,
   YStack,
 } from '@mintter/ui'
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'
 import {toast} from 'react-hot-toast'
 import {usePublishGroupToSite} from '../models/groups'
-import {DialogDescription, DialogTitle, useAppDialog} from './dialog'
-import {useNavigate} from '../utils/useNavigate'
 import {useOpenUrl} from '../open-url'
+import {useNavigate} from '../utils/useNavigate'
+import {DialogDescription, DialogTitle, useAppDialog} from './dialog'
 
 function ErrorBox({children}: {children: ReactNode}) {
   return (
@@ -118,7 +117,11 @@ function PublishGroupDialog({
         mutator={publishToSite}
         onSubmit={() => {
           publishToSite
-            .mutateAsync({groupId: input.groupId, setupUrl})
+            .mutateAsync({
+              groupId: input.groupId,
+              setupUrl:
+                'http://127.0.0.1:3000/secret-invite/bCuxcJX0D3_89Ec-NdryaA',
+            })
             .then(() => {
               onClose()
               toast.success('Published group to site, congrats!')

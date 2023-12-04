@@ -2,6 +2,15 @@
 import {useMemo} from 'react'
 import {Avatar, SizableText, XStack} from 'tamagui'
 
+export type UIAvatarProps = {
+  url?: string
+  size?: number
+  color?: string
+  label?: string
+  id?: string
+  onPress?: () => void
+}
+
 export function UIAvatar({
   url,
   id,
@@ -9,14 +18,7 @@ export function UIAvatar({
   size = 20,
   color,
   onPress,
-}: {
-  url?: string
-  size?: number
-  color?: string
-  label?: string
-  id?: string
-  onPress?: () => void
-}) {
+}: UIAvatarProps) {
   let avatarColor = useMemo(
     () => (id ? getRandomColor(id) : color ? color : '$blue8'),
     [id, color],

@@ -1,6 +1,7 @@
 import {HMTimestamp} from './utils'
 
 export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
+export type HMEmbedDisplay = 'content' | 'card'
 
 export type HMStyles = {
   bold?: true
@@ -108,6 +109,9 @@ export type HMBlockVideo = HMBlockBase & {
 export type HMBlockEmbed = HMBlockBase & {
   type: 'embed'
   ref: string
+  attributes: {
+    display?: 'content' | 'card'
+  }
 }
 
 export type HMBlockCodeBlock = HMBlockBase & {

@@ -231,7 +231,9 @@ export function fromHMBlock(
       ref: editorBlock.props.ref,
       text: '',
       annotations: [],
-      attributes: {},
+      attributes: {
+        display: editorBlock.props.display,
+      },
     })
   }
 

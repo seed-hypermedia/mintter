@@ -1,10 +1,11 @@
+import appError from '@mintter/app/errors'
 import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {BrowserWindow, app, nativeTheme} from 'electron'
 import path from 'path'
 import {appStore} from './app-store'
 import {getDaemonState, subscribeDaemonState} from './daemon'
-import {childLogger, log, warn} from './logger'
+import {childLogger, info, warn} from './logger'
 
 let windowIdCount = 1
 
@@ -37,9 +38,10 @@ export function ensureFocusedWindowVisible() {
     if (focusedWindow.isMinimized()) focusedWindow.restore()
     focusedWindow.focus()
   } else {
-    console.error(
-      'did not have the focused window. we should create a window or refocus another window from allWindows',
-    )
+    let mssg =
+      'did not have the focused window. we should create a window or refocus another window from allWindows'
+    appError(mssg)
+    console.error(mssg)
   }
 }
 
@@ -57,7 +59,7 @@ type AppWindow = {
 }
 
 const userData = app.getPath('userData')
-log('App UserData: ', userData)
+info('App UserData: ', userData)
 
 const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
 
@@ -168,9 +170,9 @@ export function createAppWindow(input: {
     },
   })
 
-  log('[MAIN:API]: window created')
+  info('[MAIN:API]: window created')
 
-  const windowLogger = childLogger({logId: windowId})
+  const windowLogger = childLogger(windowId)
   browserWindow.webContents.on(
     'console-message',
     (e, level, message, line, sourceId) => {

@@ -224,6 +224,33 @@ export function FileComponent({
     await saveCidAsFile(block.props.url, block.props.name)
   }
 
+  const handleDragReplace = async (file: File) => {
+    if (file.size > MaxFileSizeB) {
+      toast.error(`The size of ${file.name} exceeds ${MaxFileSizeMB} MB.`)
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.text()
+      assign({
+        props: {
+          url: data ? `ipfs://${data}` : '',
+          name: file.name,
+          size: file.size.toString(),
+        },
+      } as FileType)
+    } catch (error) {
+      console.error(`Editor: file upload error (FileComponent): ${error}`)
+    }
+  }
+
   return (
     <YStack
       // @ts-ignore
@@ -418,7 +445,7 @@ function FileForm({
         },
       } as FileType)
     } catch (error) {
-      console.error(error)
+      console.error(`Editor: file upload error (FileForm): ${error}`)
     }
     for (let i = files.length - 1; i > 0; i--) {
       const {name} = files[i]
@@ -439,7 +466,7 @@ function FileForm({
           },
         } as FileType)
       } catch (error) {
-        console.error(error)
+        console.error(`Editor: file upload error (FileForm forloop): ${error}`)
       }
     }
   }

@@ -195,7 +195,7 @@ function Mnemonics(props: OnboardingStepProps) {
       copyTextToClipboard(mnemonics.data.join(' '))
       toast.success('Words copied to your clipboard!')
     } else {
-      console.error(
+      appError(
         `Mnemonics: No mnemonics to copy: ${JSON.stringify(mnemonics.data)}`,
       )
     }
@@ -636,9 +636,8 @@ function ConnectSite(props: OnboardingStepProps) {
     onSuccess: () => {
       props.complete()
     },
-    onError: (e, peer) => {
-      console.error(e)
-      toast.error('Failed to connect to ' + peer)
+    onError: (error, peer) => {
+      appError(`Failed to connect to ${peer}`, {error})
     },
   })
   const [siteDomain, setSiteDomain] = useState(SuggestedSites[0])

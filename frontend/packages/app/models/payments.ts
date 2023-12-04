@@ -8,12 +8,13 @@ import {
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
-  UseMutationOptions,
+  MutationOptions,
   UseQueryOptions,
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
 import {gql, request} from 'graphql-request'
+import appError from '../errors'
 
 const getWalletsQuery = gql`
   query getWallets {
@@ -41,7 +42,7 @@ function queryWallets():
         )
         return req.me.wallets ?? []
       } catch (error) {
-        console.error(`queryWallets error: ${JSON.stringify(error)}`)
+        appError(`queryWallets error: ${JSON.stringify(error)}`, {error})
         return []
       }
     },
@@ -102,7 +103,9 @@ function queryInvoicesByWallet(
         console.log('🚀 ~ file: payments.ts:95 ~ queryFn: ~ req:', req)
         return req.payments
       } catch (error) {
-        console.error(`queryInvoicesByWallet error: ${JSON.stringify(error)}`)
+        appError(`queryInvoicesByWallet error: ${JSON.stringify(error)}`, {
+          error,
+        })
         return {received: [], sent: []}
       }
     },
@@ -121,7 +124,9 @@ let exportWalletMutationQuery = gql`
   }
 `
 
-export function mutationExportWallet(opts: UseMutationOptions = {}) {
+export function mutationExportWallet(
+  opts: MutationOptions<{credentials: string}, unknown, ExportWalletInput> = {},
+) {
   return {
     mutationFn: async (input: ExportWalletInput) => {
       try {
@@ -132,10 +137,13 @@ export function mutationExportWallet(opts: UseMutationOptions = {}) {
         )
 
         return req.exportWallet
-      } catch (error) {}
+      } catch (error) {
+        appError(`Error exporting wallet`, {error})
+        return {credentials: ''}
+      }
     },
     ...opts,
-  }
+  } satisfies MutationOptions<{credentials: string}, unknown, {id: string}>
 }
 
 export function useExportWallet() {

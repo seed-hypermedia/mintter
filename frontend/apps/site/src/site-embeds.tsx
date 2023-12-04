@@ -1,29 +1,29 @@
+import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {
+  BlockNodeContent,
+  BlockNodeList,
   EmbedContentAccount,
   EmbedContentGroup,
+  EntityComponentProps,
   ErrorBlock,
-  BlockNodeContent,
-  StaticEmbedProps,
-  BlockNodeList,
+  PublicationCardView,
   PublicationContentProvider,
-  UnpackedDocId,
   UnpackedHypermediaId,
   blockStyles,
+  contentLayoutUnit,
+  contentTextUnit,
   createHmId,
   createPublicWebHmUrl,
   getBlockNodeById,
   isHypermediaScheme,
   unpackHmId,
   usePublicationContentContext,
-  contentLayoutUnit,
-  contentTextUnit,
 } from '@mintter/shared'
-import {Spinner, YStack} from '@mintter/ui'
-import {NextLink} from 'src/next-link'
+import {Spinner, UIAvatar, YStack} from '@mintter/ui'
 import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
+import {NextLink} from 'src/next-link'
 import {trpc} from './trpc'
-import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 
 export function SitePublicationContentProvider({
   children,
@@ -38,11 +38,13 @@ export function SitePublicationContentProvider({
       showDevMenu={process.env.NODE_ENV == 'development'}
       debugTop={-80}
       layoutUnit={contentLayoutUnit}
+      textUnit={contentTextUnit}
       debug={false}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,
-        PublicationCard: EmbedPublication,
+        PublicationContent: EmbedPublicationContent,
+        PublicationCard: EmbedPublicationCard,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -115,7 +117,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   )
 }
 
-export function EmbedPublication(props: StaticEmbedProps) {
+export function EmbedPublicationContent(props: EntityComponentProps) {
   const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
   const pub = trpc.publication.get.useQuery(
     {
@@ -126,7 +128,6 @@ export function EmbedPublication(props: StaticEmbedProps) {
       enabled: !!docId,
     },
   )
-  console.log('pubQuery', pub)
   const pubData = pub.data
   let embedBlocks = useMemo(() => {
     const selectedBlock =
@@ -171,7 +172,61 @@ export function EmbedPublication(props: StaticEmbedProps) {
   )
 }
 
-export function EmbedGroup(props: StaticEmbedProps) {
+export function EmbedPublicationCard(props: EntityComponentProps) {
+  const docId = props.type == 'd' ? createHmId('d', props.eid) : undefined
+  const pub = trpc.publication.get.useQuery(
+    {
+      documentId: docId,
+      versionId: props.version || undefined,
+    },
+    {
+      enabled: !!docId,
+    },
+  )
+
+  const pubData = pub.data
+
+  let textContent = useMemo(() => {
+    if (pubData?.publication?.document?.children?.length) {
+      let content = ''
+      pubData?.publication?.document?.children.forEach((bn) => {
+        content += bn.block.text + ' '
+      })
+      return content
+    }
+  }, [pubData])
+
+  if (pub.isLoading) return <Spinner />
+  if (pub.error) return <ErrorBlock message={pub.error.message} />
+
+  return (
+    <EmbedWrapper hmRef={props.id}>
+      <PublicationCardView
+        title={pubData?.publication?.document?.title}
+        textContent={textContent}
+        editors={pubData?.publication?.document?.editors}
+        AvatarComponent={AvatarComponent}
+      />
+    </EmbedWrapper>
+  )
+}
+
+function AvatarComponent({accountId}: {accountId?: string}) {
+  let {data} = trpc.account.get.useQuery({accountId})
+  return (
+    <UIAvatar
+      label={data?.account?.profile?.alias}
+      id={accountId}
+      url={
+        data?.account?.profile?.avatar
+          ? `/ipfs/${data?.account?.profile?.avatar}`
+          : undefined
+      }
+    />
+  )
+}
+
+export function EmbedGroup(props: EntityComponentProps) {
   const groupId = props.type == 'g' ? createHmId('g', props.eid) : undefined
   const groupQuery = trpc.group.get.useQuery({groupId, version: ''})
 
@@ -187,7 +242,7 @@ export function EmbedGroup(props: StaticEmbedProps) {
   )
 }
 
-export function EmbedAccount(props: StaticEmbedProps) {
+export function EmbedAccount(props: EntityComponentProps) {
   const accountId = props.type == 'a' ? props.eid : undefined
   const accountQuery = trpc.account.get.useQuery({accountId})
   const account = accountQuery.data?.account

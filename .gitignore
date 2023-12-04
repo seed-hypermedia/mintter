@@ -91,3 +91,11 @@ whats-new.txt
 
 # tamagui
 **/.tamagui/*
+
+# Scratchpad files for local notes and stuff.
+# The pattern is like that to colocate files together,
+# and allow any file extension to keep editor working.
+scratch.*.*
+
+# pixi environments
+.pixi

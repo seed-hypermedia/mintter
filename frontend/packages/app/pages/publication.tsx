@@ -14,6 +14,8 @@ import {
   PublicationContentContextValue,
   PublicationContentProvider,
   PublicationHeading,
+  contentLayoutUnit,
+  contentTextUnit,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
@@ -27,7 +29,8 @@ import {useAppContext} from '../app-context'
 import {
   EmbedAccount,
   EmbedGroup,
-  EmbedPublication,
+  EmbedPublicationCard,
+  EmbedPublicationContent,
 } from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
@@ -53,10 +56,14 @@ export function AppPublicationContentProvider({
   return (
     <PublicationContentProvider
       showDevMenu={experiments.data?.pubContentDevMenu}
+      layoutUnit={contentLayoutUnit}
+      textUnit={contentTextUnit}
+      debug={false}
       entityComponents={{
         AccountCard: EmbedAccount,
         GroupCard: EmbedGroup,
-        PublicationCard: EmbedPublication,
+        PublicationCard: EmbedPublicationCard,
+        PublicationContent: EmbedPublicationContent,
       }}
       onLinkClick={(href, e) => {
         e.preventDefault()
@@ -116,7 +123,7 @@ export default function PublicationPage() {
     if (showFirstPublicationMessage && pubVersion) {
       firstPubDialog.open({route, version: pubVersion})
     }
-  }, [showFirstPublicationMessage, route, pubVersion])
+  }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
   if (publication.data) {
     return (

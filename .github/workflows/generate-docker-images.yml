@@ -94,6 +94,7 @@ jobs:
           file: backend/cmd/mintter-site/Dockerfile
           tags: mintter/mintter-site:latest
 
+<<<<<<< HEAD
       - name: Build and push edge mintterd
         uses: docker/build-push-action@v4
         with:
@@ -108,6 +109,8 @@ jobs:
           file: backend/cmd/mintterd/Dockerfile
           tags: mintter/mintterd:latest
 
+=======
+>>>>>>> main
       - name: Build and push edge monitord
         uses: docker/build-push-action@v4
         with:

@@ -20,6 +20,7 @@ import {
 import {AccountTrustButton} from '../components/account-trust'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
+import {useMyAccount} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
 
 function PageHeading(props: HeadingProps) {
@@ -119,8 +120,11 @@ function ErrorPage({}: {error: any}) {
 
 export default function ContactsPage() {
   const contacts = useAllAccounts(true)
+  const myAccount = useMyAccount()
   const allAccounts = contacts.data?.accounts || []
-  const trustedAccounts = allAccounts.filter((account) => account.isTrusted)
+  const trustedAccounts = allAccounts.filter(
+    (account) => account.isTrusted && account.id !== myAccount.data?.id,
+  )
   const untrustedAccounts = allAccounts.filter((account) => !account.isTrusted)
   if (contacts.isLoading) {
     return (

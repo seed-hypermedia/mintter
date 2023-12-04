@@ -20,6 +20,7 @@ export function linuxCheckForUpdates() {
     log.debug('[MAIN][AUTO-UPDATE]: checking for Updates')
     // ipcMain.emit(ipcMainEvents.CHECK_FOR_UPDATES_START)
     try {
+      // TODO: change this to fetch THE LATEST version and compare it with `app.getVersion()`
       fetch(
         `https://update.electronjs.org/MintterHypermedia/mintter/darwin-x64/${app.getVersion()}`,
       ).then((res) => {

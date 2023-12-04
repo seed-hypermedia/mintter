@@ -216,8 +216,12 @@ function ImageComponent({
           props: {url: data ? `ipfs://${data}` : '', name: file.name},
         } as ImageType)
       } catch (error) {
-        console.error(error)
-        toast.error(`Failed to add ${file.name}: ${error.message}`)
+        console.error(
+          `Editor: image upload error (ImageComponent): file: ${file.name} error: ${error}`,
+        )
+        toast.error(
+          `Editor(Image): Failed to add ${file.name}: ${error.message}`,
+        )
       }
       // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
     },
@@ -439,7 +443,7 @@ function ImageForm({
         props: {url: data ? `ipfs://${data}` : '', name: name},
       } as ImageType)
     } catch (error) {
-      console.error(error)
+      console.error(`Editor: image upload error (ImageForm): ${error}`)
     }
     for (let i = files.length - 1; i > 0; i--) {
       const {name} = files[i]
@@ -466,7 +470,9 @@ function ImageForm({
           'after',
         )
       } catch (error) {
-        console.error(error)
+        console.error(
+          `Editor: image upload error (ImageForm): file: ${name} error: ${error}`,
+        )
       }
     }
     // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')

@@ -7,21 +7,31 @@ import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
+  unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
   Button,
   Form,
   Input,
+  Label,
   Popover,
+  Reload,
   SizableText,
   Spinner,
   Tabs,
+  Theme,
+  ToggleGroup,
+  Tooltip,
+  XGroup,
   XStack,
+  YGroup,
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {useEffect, useState} from 'react'
+import {MoreHorizontal} from '@tamagui/lucide-icons'
+import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {RiArticleLine} from 'react-icons/ri'
 import {Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos} from '.'
@@ -42,6 +52,10 @@ export const EmbedBlock = createReactBlockSpec({
     defaultOpen: {
       values: ['false', 'true'],
       default: 'true',
+    },
+    display: {
+      values: ['content', 'card'], // TODO: convert HMEmbedDisplay type to array items
+      default: 'content',
     },
   },
   containsInlineContent: true,
@@ -139,7 +153,7 @@ function EmbedComponent({
   selected: boolean
   setSelected: any
 }) {
-  const [replace, setReplace] = useState(false)
+  let {hover, ...hoverProps} = useHover()
 
   return (
     <YStack gap="$2">
@@ -156,37 +170,10 @@ function EmbedComponent({
         // @ts-ignore
         contentEditable={false}
         className={block.type}
-        onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(true)
-        }}
-        onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-          setReplace(false)
-        }}
+        {...hoverProps}
       >
-        {replace ? (
-          <Button
-            position="absolute"
-            top="$1.5"
-            right="$1.5"
-            zIndex="$4"
-            size="$1"
-            width={60}
-            onPress={() =>
-              assign({
-                props: {
-                  ref: '',
-                },
-                children: [],
-                content: [],
-                type: 'embed',
-              } as EmbedType)
-            }
-            hoverStyle={{
-              backgroundColor: '$backgroundTransparent',
-            }}
-          >
-            replace
-          </Button>
+        {hover ? (
+          <EmbedControl block={block} editor={editor} assign={assign} />
         ) : (
           <></>
         )}
@@ -199,6 +186,7 @@ function EmbedComponent({
                 text: ' ',
                 attributes: {
                   childrenType: 'group',
+                  display: block.props.display,
                 },
                 annotations: [],
                 ref: block.props.ref,
@@ -209,6 +197,123 @@ function EmbedComponent({
         )}
       </YStack>
     </YStack>
+  )
+}
+
+function EmbedControl({
+  block,
+  editor,
+  assign,
+}: {
+  block: Block<HMBlockSchema>
+  editor: BlockNoteEditor<HMBlockSchema>
+  assign: any
+}) {
+  let isDocument = useMemo(() => {
+    if (block.props.ref) {
+      let unpackedRef = unpackHmId(block.props.ref)
+      return !unpackedRef?.blockRef
+    }
+    return false
+  }, [block.props.ref])
+
+  return (
+    <XGroup position="absolute" top="$1.5" right="$1.5" zIndex="$4" size="$1">
+      <XGroup.Item>
+        <Tooltip content="replace">
+          <Button
+            size="$2"
+            onPress={() => {
+              assign({
+                props: {
+                  ref: '',
+                },
+                children: [],
+                content: [],
+                type: 'embed',
+              } as EmbedType)
+            }}
+            hoverStyle={{
+              backgroundColor: '$backgroundTransparent',
+            }}
+            icon={Reload}
+          />
+        </Tooltip>
+      </XGroup.Item>
+      {isDocument ? (
+        <XGroup.Item>
+          <Popover placement="bottom-end" animation="fast">
+            <Popover.Trigger asChild>
+              <Button size="$2" icon={MoreHorizontal} />
+            </Popover.Trigger>
+            <Popover.Content
+              padding={0}
+              elevation="$2"
+              enterStyle={{y: -10, opacity: 0}}
+              exitStyle={{y: -10, opacity: 0}}
+              elevate={true}
+              animation={[
+                'fast',
+                {
+                  opacity: {
+                    overshootClamping: true,
+                  },
+                },
+              ]}
+            >
+              <YGroup>
+                <YGroup.Item>
+                  <Theme name="mint">
+                    <XStack
+                      alignItems="center"
+                      justifyContent="center"
+                      space="$2"
+                      padding="$2"
+                    >
+                      <Label
+                        paddingRight="$0"
+                        justifyContent="flex-end"
+                        size="$1"
+                        htmlFor="embed-display"
+                      >
+                        Display
+                      </Label>
+
+                      <ToggleGroup
+                        orientation="horizontal"
+                        id="embed-display"
+                        type="single"
+                        size="$1"
+                        value={block.props.display}
+                        disableDeactivation
+                        onValueChange={(display) => {
+                          assign({props: {display}})
+                        }}
+                      >
+                        <ToggleGroup.Item
+                          active={block.props.display == 'content'}
+                          value="content"
+                          aria-label="Content display"
+                        >
+                          <SizableText size="$1">content</SizableText>
+                        </ToggleGroup.Item>
+                        <ToggleGroup.Item
+                          active={block.props.display == 'card'}
+                          value="card"
+                          aria-label="Card display"
+                        >
+                          <SizableText size="$1">card</SizableText>
+                        </ToggleGroup.Item>
+                      </ToggleGroup>
+                    </XStack>
+                  </Theme>
+                </YGroup.Item>
+              </YGroup>
+            </Popover.Content>
+          </Popover>
+        </XGroup.Item>
+      ) : null}
+    </XGroup>
   )
 }
 

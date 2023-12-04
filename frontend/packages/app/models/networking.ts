@@ -56,8 +56,8 @@ export function useIsGatewayConnected() {
             setTimeout(() => resolve(), 2_000),
           )
         })
-        .catch((e) => {
-          console.error('Unexpected checkGatewayConnected Error', e)
+        .catch((error) => {
+          appError('Unexpected checkGatewayConnected Error', {error})
         })
         .finally(() => {
           start()
@@ -146,8 +146,8 @@ export function useIsHMUrlReady(webUrl: string | null, timeoutSeconds = 120) {
             setReadyMeta(res)
           }
         })
-        .catch((e) => {
-          console.error('Unexpected fetchWebLinkMeta Error', e)
+        .catch((error) => {
+          appError('Unexpected fetchWebLinkMeta Error', {error})
         })
         .finally(() => {
           if (isReadyRef.current) return

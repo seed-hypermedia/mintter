@@ -277,30 +277,18 @@ func (srv *Server) SetAccountTrust(ctx context.Context, in *accounts.SetAccountT
 
 // ListAccounts implements the corresponding gRPC method.
 func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	me, err := srv.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	entities, err := srv.blobs.ListEntities(ctx, "hm://a/")
 	if err != nil {
 		return nil, err
 	}
 
-	mine := hyper.EntityID("hm://a/" + me.Account().String())
-
 	resp := &accounts.ListAccountsResponse{
-		Accounts: make([]*accounts.Account, 0, len(entities)-1), // all except our own account.
+		Accounts: make([]*accounts.Account, 0, len(entities)),
 	}
 
 	for _, e := range entities {
-		aid := e
-		if aid == mine {
-			continue
-		}
-
 		draft, err := srv.GetAccount(ctx, &accounts.GetAccountRequest{
-			Id: aid.TrimPrefix("hm://a/"),
+			Id: e.TrimPrefix("hm://a/"),
 		})
 		if err != nil {
 			continue

@@ -17,6 +17,7 @@ import {
 } from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import appError from '../errors'
 import {useAllAccounts, useMyAccount} from './accounts'
 import {queryPublication} from './documents'
 import {queryKeys} from './query-keys'
@@ -75,20 +76,25 @@ export function useCreateGroup(
       members?: string[]
       content?: Record<string, string>
     }) => {
-      const group = await grpcClient.groups.createGroup({
-        description,
-        title,
-      })
-      if (content || members) {
-        await grpcClient.groups.updateGroup({
-          id: group.id,
-          updatedContent: content,
-          updatedMembers: members
-            ? Object.fromEntries(members.map((m) => [m, Role.EDITOR]))
-            : undefined,
+      try {
+        const group = await grpcClient.groups.createGroup({
+          description,
+          title,
         })
+        if (content || members) {
+          await grpcClient.groups.updateGroup({
+            id: group.id,
+            updatedContent: content,
+            updatedMembers: members
+              ? Object.fromEntries(members.map((m) => [m, Role.EDITOR]))
+              : undefined,
+          })
+        }
+        return group.id
+      } catch (error) {
+        appError(`Error: createGroup: ${error?.message}`, {error})
+        return error
       }
-      return group.id
     },
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
