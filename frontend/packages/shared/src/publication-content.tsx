@@ -943,7 +943,7 @@ export function BlockContentEmbed(props: BlockContentProps) {
     return <EmbedTypes.GroupCard {...props} {...id} />
   }
   if (id?.type == 'd') {
-    switch (props.block.attributes.display) {
+    switch (props.block.attributes?.display || 'content') {
       case 'card':
         return <EmbedTypes.PublicationCard {...props} {...id} />
       default:

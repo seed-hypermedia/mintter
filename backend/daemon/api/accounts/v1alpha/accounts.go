@@ -156,15 +156,6 @@ func getDelegation(ctx context.Context, me core.Identity, blobs *hyper.Storage) 
 	return out, nil
 }
 
-func (srv *Server) getDelegation(ctx context.Context) (cid.Cid, error) {
-	me, err := srv.getMe()
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	return getDelegation(ctx, me, srv.blobs)
-}
-
 // UpdateProfile implements the corresponding gRPC method.
 func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
 	me, err := srv.getMe()
