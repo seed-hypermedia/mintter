@@ -1,10 +1,9 @@
 import {useQueryInvalidator} from '@mintter/app/app-context'
 import {queryKeys} from '@mintter/app/models/query-keys'
-import {PublicationRouteContext} from '@mintter/app/utils/navigation'
 import {DocumentChange, GRPCClient} from '@mintter/shared'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
-import {DraftRoute, NavMode, useNavRoute} from './navigation'
+import {DraftRoute, GroupVariant, NavMode, useNavRoute} from './navigation'
 import {useNavigate} from './useNavigate'
 
 async function createDraft(
@@ -31,22 +30,22 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
   const invalidate = useQueryInvalidator()
   const grpcClient = useGRPCClient()
   function openNewDraft(
-    pubContext?: PublicationRouteContext | undefined,
+    groupVariant?: GroupVariant | undefined,
     opts?: {pathName?: string | null; initialTitle?: string},
   ) {
-    const destPubContext: PublicationRouteContext =
-      pubContext?.key === 'group'
-        ? {
-            ...pubContext,
-            pathName: opts?.pathName || null,
-          }
-        : pubContext || null
+    // const destVariant: PublicationVariant =
+    //   pubContext?.key === 'group'
+    //     ? {
+    //         ...pubContext,
+    //         pathName: opts?.pathName || null,
+    //       }
+    //     : pubContext || null
     createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
-          pubContext: destPubContext,
+          // variant: destVariant,
           contextRoute: route,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])

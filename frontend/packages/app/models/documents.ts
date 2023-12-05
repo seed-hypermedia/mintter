@@ -43,11 +43,7 @@ import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {
-  NavRoute,
-  PublicationRouteContext,
-  useNavRoute,
-} from '../utils/navigation'
+import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
@@ -169,16 +165,14 @@ export function useDeletePublication(
 export function usePublication({
   id,
   version,
-  trustedOnly,
   ...options
 }: UseQueryOptions<Publication> & {
   id?: string
   version?: string
-  trustedOnly?: boolean
 }) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    ...queryPublication(grpcClient, id, version, trustedOnly),
+    ...queryPublication(grpcClient, id, version),
     ...options,
   })
 }
@@ -187,10 +181,9 @@ export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
-  trustedOnly?: boolean,
 ): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
   return {
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId, trustedOnly],
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
     enabled: !!documentId,
     // retry: false, // to test error handling faster
     // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
@@ -198,7 +191,6 @@ export function queryPublication(
     // about 15 seconds total right now
     queryFn: () =>
       grpcClient.publications.getPublication({
-        trustedOnly,
         documentId,
         version: versionId,
       }),
@@ -262,7 +254,7 @@ function changesToJSON(changes: DocumentChange[]) {
 
 export function usePublishDraft(
   opts?: UseMutationOptions<
-    {pub: Publication; pubContext: PublicationRouteContext},
+    {pub: Publication; groupVariant?: GroupVariant},
     unknown,
     {
       draftId: string
@@ -274,9 +266,10 @@ export function usePublishDraft(
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
-  const draftPubContext = draftRoute?.pubContext
-  const draftGroupContext =
-    draftPubContext?.key === 'group' ? draftPubContext : undefined
+  // const draftPubContext = draftRoute?.pubContext
+  // const draftGroupContext =
+  //   draftPubContext?.key === 'group' ? draftPubContext : undefined
+  const draftGroupContext = undefined
   const {client, invalidate} = useAppContext().queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
@@ -1021,5 +1014,18 @@ function observeBlocks(
     if (block.children) {
       observeBlocks(editor, block.children, onChange)
     }
+  })
+}
+
+export function useAccountPublications(accountId: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryKey: [queryKeys.GET_ACCOUNT_PUBLICATIONS, accountId],
+    queryFn: async () => {
+      const result = await grpcClient.publications.listAccountPublications({
+        accountId,
+      })
+      return result
+    },
   })
 }

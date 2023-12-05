@@ -37,30 +37,6 @@ import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
-function ToggleGroupItem({
-  label,
-  icon,
-  active,
-  onPress,
-}: {
-  label: string
-  icon: ComponentProps<typeof Button>['icon'] | undefined
-  active: boolean
-  onPress: () => void
-}) {
-  return (
-    <XGroup.Item>
-      <Button
-        icon={icon}
-        backgroundColor={active ? '$color7' : undefined}
-        onPress={onPress}
-      >
-        {label}
-      </Button>
-    </XGroup.Item>
-  )
-}
-
 export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
@@ -284,6 +260,31 @@ export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
       </MainWrapper>
       <Footer />
     </>
+  )
+}
+
+function ToggleGroupItem({
+  label,
+  icon,
+  active,
+  onPress,
+}: {
+  label: string
+  icon: ComponentProps<typeof Button>['icon'] | undefined
+  active: boolean
+  onPress: () => void
+}) {
+  return (
+    <XGroup.Item>
+      <Button
+        disabled={active}
+        icon={icon}
+        backgroundColor={active ? '$color7' : undefined}
+        onPress={onPress}
+      >
+        {label}
+      </Button>
+    </XGroup.Item>
   )
 }
 

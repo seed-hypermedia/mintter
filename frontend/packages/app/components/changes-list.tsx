@@ -106,7 +106,7 @@ function ChangeItem({
       key: 'publication',
       documentId: entityId,
       versionId: change.id,
-      pubContext: navRoute.pubContext,
+      // pubContext: navRoute.pubContext,
       accessory: {key: 'versions'},
     }
   }
@@ -394,19 +394,21 @@ function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
 export function EntityVersionsAccessory({
   id,
   activeVersion,
+  variantVersion,
 }: {
   id?: UnpackedHypermediaId | null
-  activeVersion: string
+  activeVersion: string | undefined
+  variantVersion: string | undefined
 }) {
   const {data} = useEntityTimeline(id?.id)
   const computed = useMemo(() => {
-    const activeVersionChanges: TimelineChange[] = []
-    activeVersion
+    const variantVersionChanges: TimelineChange[] = []
+    variantVersion
       ?.split('.')
       .map((chId) => data?.allChanges[chId])
-      .forEach((ch) => ch && activeVersionChanges.push(ch))
+      .forEach((ch) => ch && variantVersionChanges.push(ch))
     const prevChanges: TimelineChange[] = []
-    let walkLeafVersions = activeVersionChanges
+    let walkLeafVersions = variantVersionChanges
     while (walkLeafVersions?.length) {
       const nextLeafVersions: TimelineChange[] = []
       for (const change of walkLeafVersions) {
@@ -421,17 +423,18 @@ export function EntityVersionsAccessory({
       walkLeafVersions = nextLeafVersions
     }
     const nextVersionChangeIds = new Set<string>()
-    activeVersionChanges.forEach((ch) =>
+    variantVersionChanges.forEach((ch) =>
       ch.citations.forEach((citingId) => nextVersionChangeIds.add(citingId)),
     )
-    const nextVersionChanges = [...nextVersionChangeIds]
-      .map((changeId) => data?.allChanges[changeId])
-      .filter(Boolean) as TimelineChange[]
-    return {
-      activeVersionChanges,
-      prevChanges: deduplicatedChanges(prevChanges),
-      nextChanges: deduplicatedChanges(nextVersionChanges),
-    }
+    return [...variantVersionChanges, ...deduplicatedChanges(prevChanges)]
+    // const nextVersionChanges = [...nextVersionChangeIds]
+    //   .map((changeId) => data?.allChanges[changeId])
+    //   .filter(Boolean) as TimelineChange[]
+    // return {
+    //   activeVersionChanges,
+    //   prevChanges: deduplicatedChanges(prevChanges),
+    //   nextChanges: deduplicatedChanges(nextVersionChanges),
+    // }
   }, [data, activeVersion])
   const route = useNavRoute()
   const pubContext = route?.key === 'publication' ? route.pubContext : undefined
@@ -457,12 +460,12 @@ export function EntityVersionsAccessory({
               : null
           }
         >
-          <NextChangesList
+          {/* <NextChangesList
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
-          />
-          <ActiveChangesList
+          /> */}
+          {/* <ActiveChangesList
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
@@ -471,7 +474,26 @@ export function EntityVersionsAccessory({
             changeset={computed}
             id={id}
             activeVersion={activeVersion}
-          />
+          /> */}
+
+          <YStack
+            paddingHorizontal="$4"
+            paddingBottom="$6"
+            borderBottomColor="$borderColor"
+            borderBottomWidth={1}
+          >
+            {computed.map((item, index) => {
+              return (
+                <ChangeItem
+                  prevListedChange={computed[index - 1]}
+                  entityId={id.id}
+                  key={item.change.id}
+                  change={item.change}
+                  activeVersion={activeVersion}
+                />
+              )
+            })}
+          </YStack>
         </PostToGroup.Provider>
       </AccessoryContainer>
       {postToGroup.content}

@@ -8,9 +8,9 @@ import {
 } from '@mintter/shared'
 import {useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
+import {useGRPCClient} from '../app-context'
 import {useDocumentVersions, usePublicationList} from './documents'
 import {queryKeys} from './query-keys'
-import {useGRPCClient} from '../app-context'
 
 function createDocChangesQuery(
   grpcClient: GRPCClient,
@@ -81,7 +81,7 @@ export function useEntityTimeline(entityId?: string) {
           allChanges[depId]?.citations.push(changeId)
         })
       })
-      return {allChanges}
+      return {allChanges, authorVersions: rawTimeline.authorVersions}
     },
     queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
     enabled: !!entityId,
@@ -249,20 +249,5 @@ export function useAllPublicationChanges() {
       publication: pub,
       changes: resultQueries[pubIndex]?.data?.changes,
     })),
-  }
-}
-
-export function useAccountPublicationList(accountId: string) {
-  const allPubs = useAllPublicationChanges()
-  return {
-    ...allPubs,
-    data: useMemo(() => {
-      const accountPubs = allPubs.data
-        .filter((pub) => {
-          return pub.changes?.find((change) => change.author === accountId)
-        })
-        .map((pub) => pub.publication)
-      return accountPubs
-    }, [allPubs.data, accountId]),
   }
 }

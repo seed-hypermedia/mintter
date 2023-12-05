@@ -20,21 +20,22 @@ export type EntityVersionsAccessory = {key: 'versions'}
 export type PublicationCitationsAccessory = {key: 'citations'}
 export type PublicationCommentsAccessory = {key: 'comments'}
 
-export type GroupPublicationRouteContext = {
+export type GroupVariant = {
   key: 'group'
   groupId: string
   pathName: string | null
 }
-export type PublicationRouteContext =
-  | null
-  | {key: 'trusted'}
-  | GroupPublicationRouteContext
+export type AuthorsVariant = {
+  key: 'authors'
+  authors: string[]
+}
+export type PublicationVariant = null | AuthorsVariant | GroupVariant
 
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
-  pubContext?: PublicationRouteContext
+  variant?: PublicationVariant
   blockId?: string
   accessory?:
     | null
@@ -47,7 +48,7 @@ export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
   draftId?: string
-  pubContext?: PublicationRouteContext
+  variant?: GroupVariant | null
   contextRoute?: NavRoute
 }
 export type SettingsRoute = {key: 'settings'}
@@ -290,7 +291,7 @@ export async function resolveHmIdToAppRoute(
           key: 'publication',
           documentId: createHmId('d', doc.eid),
           versionId: isVersionLatest ? undefined : doc.version || undefined,
-          pubContext: {
+          variant: {
             key: 'group',
             groupId: createHmId('g', hmIds.eid),
             pathName: contentPathName,

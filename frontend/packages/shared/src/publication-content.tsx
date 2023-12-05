@@ -576,8 +576,6 @@ export function PublicationHeading({
         padding={layoutUnit / 3}
         marginBottom={layoutUnit}
         paddingBottom={layoutUnit / 2}
-        borderBottomColor="$color6"
-        borderBottomWidth={1}
         {...headingMarginStyles}
       >
         <XStack>

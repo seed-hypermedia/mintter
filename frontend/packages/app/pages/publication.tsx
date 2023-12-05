@@ -1,4 +1,3 @@
-import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
 import {AppErrorPage} from '@mintter/app/components/app-error'
 import {CitationsAccessory} from '@mintter/app/components/citations'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
@@ -10,22 +9,25 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
   MttLink,
+  Publication,
   PublicationContent,
   PublicationContentContextValue,
   PublicationContentProvider,
   PublicationHeading,
   contentLayoutUnit,
   contentTextUnit,
+  formattedDateMedium,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
-import {Link, XStack, YStack} from '@mintter/ui'
+import {ButtonText, Link, Separator, Text, XStack, YStack} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useCallback, useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {useAppContext} from '../app-context'
+import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {
   EmbedAccount,
   EmbedGroup,
@@ -40,8 +42,9 @@ import {PinDocumentButton} from '../components/pin-entity'
 import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
+import {useAccounts} from '../models/accounts'
 import {useExperiments} from '../models/experiments'
-import {usePublicationInContext} from '../models/publication'
+import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 
 export function AppPublicationContentProvider({
@@ -85,6 +88,78 @@ export function AppPublicationContentProvider({
   )
 }
 
+function PublicationPageMeta({publication}: {publication: Publication}) {
+  const editors = useAccounts(publication.document?.editors || [])
+  const navigate = useNavigate()
+  return (
+    <YStack
+      ai="flex-start"
+      paddingHorizontal="$3"
+      borderBottomColor="$color6"
+      borderBottomWidth={1}
+      paddingBottom="$4"
+    >
+      <XStack separator={<Separator vertical />} flexWrap="wrap">
+        <XStack marginHorizontal="$4" gap="$2" ai="center" paddingVertical="$2">
+          <XStack ai="center" marginLeft={8}>
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map((editorAccount, idx) => (
+                <XStack
+                  zIndex={idx + 1}
+                  key={editorAccount?.id}
+                  borderColor="$background"
+                  backgroundColor="$background"
+                  borderWidth={2}
+                  borderRadius={100}
+                  marginLeft={-8}
+                >
+                  <BaseAccountLinkAvatar
+                    account={editorAccount}
+                    accountId={editorAccount?.id}
+                  />
+                </XStack>
+              ))}
+          </XStack>
+          <Text fontWeight={'bold'}>
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map((account, index) => [
+                account ? (
+                  <ButtonText
+                    key={account.id}
+                    fontWeight={'bold'}
+                    onPress={() => {
+                      navigate({key: 'account', accountId: account.id})
+                    }}
+                    hoverStyle={{
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    {account.profile?.alias}
+                  </ButtonText>
+                ) : null,
+                index !== editors.length - 1
+                  ? index === editors.length - 2
+                    ? ' & '
+                    : ', '
+                  : null,
+              ])
+              .filter(Boolean)}
+          </Text>
+        </XStack>
+        <XStack ai="center">
+          <Text marginHorizontal="$4" color="$color10" verticalAlign="middle">
+            {formattedDateMedium(publication.document?.publishTime)}
+          </Text>
+        </XStack>
+      </XStack>
+    </YStack>
+  )
+}
+
 export default function PublicationPage() {
   const route = useNavRoute()
   if (route.key !== 'publication')
@@ -98,10 +173,10 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const publication = usePublicationInContext({
+  const publication = usePublicationVariant({
     documentId: docId,
     versionId: route.versionId,
-    pubContext: route.pubContext,
+    variant: route.variant,
   })
 
   const {data: changes} = useDocChanges(
@@ -118,7 +193,7 @@ export default function PublicationPage() {
   })
 
   const showFirstPublicationMessage = route.showFirstPublicationMessage
-  const pubVersion = publication.data?.version
+  const pubVersion = publication.data?.publication?.version
   useEffect(() => {
     if (showFirstPublicationMessage && pubVersion) {
       firstPubDialog.open({route, version: pubVersion})
@@ -172,15 +247,23 @@ export default function PublicationPage() {
                           </XStack>
                         }
                       >
-                        {publication.data.document?.title}
+                        {publication.data?.publication?.document?.title}
                       </PublicationHeading>
-
-                      <PublicationContent publication={publication.data} />
+                      {publication.data?.publication ? (
+                        <>
+                          <PublicationPageMeta
+                            publication={publication.data?.publication}
+                          />
+                          <PublicationContent
+                            publication={publication.data?.publication}
+                          />
+                        </>
+                      ) : null}
                     </AppPublicationContentProvider>
                   </YStack>
-                  {route.versionId && (
+                  {/* {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />
-                  )}
+                  )} */}
                 </MainWrapper>
               </YStack>
             </Allotment.Pane>
@@ -188,7 +271,8 @@ export default function PublicationPage() {
               (accessoryKey == 'versions' ? (
                 <EntityVersionsAccessory
                   id={unpackDocId(docId)}
-                  activeVersion={publication.data.version}
+                  variantVersion={publication.data?.variantVersion}
+                  activeVersion={publication.data?.publication?.version}
                 />
               ) : (
                 <CitationsAccessory docId={docId} />
@@ -196,8 +280,10 @@ export default function PublicationPage() {
           </Allotment>
           <Footer>
             <XStack gap="$3" marginHorizontal="$3">
-              {publication.data?.version && (
-                <VersionChangesInfo version={publication.data?.version} />
+              {publication.data?.publication?.version && (
+                <VersionChangesInfo
+                  version={publication.data?.publication?.version}
+                />
               )}
             </XStack>
 
@@ -241,37 +327,37 @@ export default function PublicationPage() {
   // return <DocumentPlaceholder />
 }
 
-function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const route = useNavRoute()
-  const pubRoute = route.key === 'publication' ? route : undefined
-  const pubContext = pubRoute?.pubContext
-  const pub = usePublicationInContext({documentId: docId, pubContext})
+// function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+//   const route = useNavRoute()
+//   const pubRoute = route.key === 'publication' ? route : undefined
+//   const pubContext = pubRoute?.pubContext
+//   const pub = usePublicationVariant({documentId: docId, pubContext})
 
-  const navigate = useNavigate()
-  const pubAccessory = route.key === 'publication' ? route.accessory : undefined
-  if (pub.isLoading) return null
-  if (version === pub?.data?.version) return null
-  if (pub?.data?.version) return null
-  return (
-    <AppBanner
-      onPress={() => {
-        navigate({
-          key: 'publication',
-          documentId: docId,
-          accessory: pubAccessory,
-          pubContext,
-        })
-      }}
-    >
-      <BannerText>
-        There is a newer{' '}
-        {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
-        Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
-        here to go to latest →
-      </BannerText>
-    </AppBanner>
-  )
-}
+//   const navigate = useNavigate()
+//   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
+//   if (pub.isLoading) return null
+//   if (version === pub?.data?.version) return null
+//   if (pub?.data?.version) return null
+//   return (
+//     <AppBanner
+//       onPress={() => {
+//         navigate({
+//           key: 'publication',
+//           documentId: docId,
+//           accessory: pubAccessory,
+//           pubContext,
+//         })
+//       }}
+//     >
+//       <BannerText>
+//         There is a newer{' '}
+//         {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
+//         Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
+//         here to go to latest →
+//       </BannerText>
+//     </AppBanner>
+//   )
+// }
 
 function usePublicationCitations(docId?: string) {
   return useDocCitations(docId)

@@ -3,7 +3,6 @@ import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {PublicationListItem} from '@mintter/app/components/publication-list-item'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
-import {useAccountPublicationList} from '@mintter/app/models/changes'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {toast} from '@mintter/app/toast'
@@ -30,6 +29,7 @@ import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
 import {useMyAccount} from '../models/accounts'
+import {useAccountPublications} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -76,15 +76,14 @@ function AccountDocuments({
   accountId: string
   isTrusted?: boolean
 }) {
-  const list = useAccountPublicationList(accountId)
+  const list = useAccountPublications(accountId)
   return (
     <Section>
-      {list.data?.map((pub) => {
+      {list.data?.publications.map((pub) => {
         const docId = pub.document?.id
         if (!docId) return null
         return (
           <PublicationListItem
-            pubContext={isTrusted ? {key: 'trusted'} : null}
             key={docId}
             publication={pub}
             hasDraft={undefined}
@@ -98,7 +97,10 @@ function AccountDocuments({
               key: 'publication',
               documentId: pub.document?.id!,
               versionId: pub.version,
-              pubContext: isTrusted ? {key: 'trusted'} : null,
+              variant: {
+                key: 'authors',
+                authors: [accountId],
+              },
             }}
           />
         )
