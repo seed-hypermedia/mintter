@@ -2,7 +2,6 @@ import {AppErrorPage} from '@mintter/app/components/app-error'
 import {CitationsAccessory} from '@mintter/app/components/citations'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
-import {useDocChanges} from '@mintter/app/models/changes'
 import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
@@ -43,6 +42,7 @@ import {useFullReferenceUrl} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
+import {useDocHistory} from '../models/changes'
 import {useExperiments} from '../models/experiments'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
@@ -179,9 +179,6 @@ export default function PublicationPage() {
     variant: route.variant,
   })
 
-  const {data: changes} = useDocChanges(
-    publication.status == 'success' ? docId : undefined,
-  )
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
@@ -199,6 +196,8 @@ export default function PublicationPage() {
       firstPubDialog.open({route, version: pubVersion})
     }
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
+
+  const displayVersion = publication.data?.publication?.version
 
   if (publication.data) {
     return (
@@ -280,26 +279,16 @@ export default function PublicationPage() {
           </Allotment>
           <Footer>
             <XStack gap="$3" marginHorizontal="$3">
-              {publication.data?.publication?.version && (
-                <VersionChangesInfo
-                  version={publication.data?.publication?.version}
-                />
+              {displayVersion && (
+                <VersionChangesInfo version={displayVersion} />
               )}
             </XStack>
 
-            <FooterButton
-              active={accessoryKey === 'versions'}
-              label={`${changes?.changes?.length} ${pluralS(
-                changes?.changes?.length,
-                'Version',
-              )}`}
-              icon={History}
-              onPress={() => {
-                if (route.accessory?.key === 'versions')
-                  return replace({...route, accessory: null})
-                replace({...route, accessory: {key: 'versions'}})
-              }}
-            />
+            {publication.data?.variantVersion && (
+              <PublicationVersionsFooterButton
+                variantVersion={publication.data?.variantVersion}
+              />
+            )}
 
             {citations?.links?.length ? (
               <FooterButton
@@ -325,6 +314,33 @@ export default function PublicationPage() {
   return null
   // TODO: show loading only if it takes more than 1 second to load the publication
   // return <DocumentPlaceholder />
+}
+
+function PublicationVersionsFooterButton({
+  variantVersion,
+}: {
+  variantVersion: string
+}) {
+  const route = useNavRoute()
+  if (route.key !== 'publication')
+    throw new Error('Publication page expects publication actor')
+  const docId = route?.documentId
+  const accessory = route?.accessory
+  const accessoryKey = accessory?.key
+  const replace = useNavigate('replace')
+  const changes = useDocHistory(docId, variantVersion)
+  return (
+    <FooterButton
+      active={accessoryKey === 'versions'}
+      label={`${changes?.length} ${pluralS(changes?.length, 'Version')}`}
+      icon={History}
+      onPress={() => {
+        if (route.accessory?.key === 'versions')
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'versions'}})
+      }}
+    />
+  )
 }
 
 // function OutOfDateBanner({docId, version}: {docId: string; version: string}) {

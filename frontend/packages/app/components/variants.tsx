@@ -13,7 +13,6 @@ import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   DraftRoute,
-  GroupRoute,
   NavContextProvider,
   NavRoute,
   PublicationRoute,
@@ -307,6 +306,7 @@ export function ContextPopoverContent(props) {
   return (
     <Popover.Content
       padding={0}
+      width={350}
       name={'ContextPopoverContent'}
       borderWidth={1}
       borderColor={'$borderColor'}
@@ -336,19 +336,6 @@ function ContextPopoverArrow(props) {
       backgroundColor="$borderColor"
       {...props}
     />
-  )
-}
-
-function GroupContextButton({route}: {route: GroupRoute}) {
-  const group = useGroup(route.groupId)
-  if (!group.data) return null
-  return (
-    <>
-      <Button size="$2" icon={Book} disabled>
-        {group.data.title}
-      </Button>
-      <VersionContext route={route} />
-    </>
   )
 }
 
@@ -541,7 +528,7 @@ function GroupVariantItem({
           </SizableText>
           {path === '/' || path == null ? null : (
             <ButtonText
-              fontSize={10}
+              fontSize="$1"
               color="$color11"
               disabled={!isPathPressable}
               onPress={
@@ -560,7 +547,7 @@ function GroupVariantItem({
                   : {}
               }
             >
-              /{shortenPath(path)}
+              {shortenPath(path)}
             </ButtonText>
           )}
         </YStack>
@@ -735,7 +722,7 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           </PopoverTrigger>
           <ContextPopoverContent>
             <ContextPopoverArrow />
-            <YStack>
+            <YStack alignSelf="stretch">
               <SizableText
                 size="$3"
                 marginVertical="$2"
@@ -831,10 +818,24 @@ function GroupVariantState({
   isOpen: boolean
 }) {
   const group = useGroup(variant.groupId)
+  const navigate = useNavigate()
   return (
     <XStack gap="$2" ai="center">
       <Book size={16} />
-      <SizableText>{group.data?.title}</SizableText>
+      <ButtonText
+        disabled={!isOpen}
+        hoverStyle={{
+          textDecorationLine: isOpen ? 'underline' : null,
+        }}
+        onPress={() => {
+          navigate({
+            key: 'group',
+            groupId: variant.groupId,
+          })
+        }}
+      >
+        {group.data?.title}
+      </ButtonText>
     </XStack>
   )
 }
@@ -884,7 +885,7 @@ function AuthorVariantItem({
 }) {
   const authorsVariant = route.variant?.key === 'authors' ? route.variant : null
   const author = useAccount(authorVersion.author)
-  const replace = useNavigate('replace')
+  const navigate = useNavigate()
   const activeAuthors =
     authorsVariant?.authors ||
     (publication?.document?.author && !route.variant
@@ -897,8 +898,9 @@ function AuthorVariantItem({
       padding="$1"
       paddingHorizontal="$2"
       onPress={() => {
-        replace({
+        navigate({
           ...route,
+          versionId: undefined,
           variant: {
             key: 'authors',
             authors: [authorVersion.author],
@@ -910,7 +912,7 @@ function AuthorVariantItem({
         <XStack gap="$2" f={1} ai="center">
           <UIAvatar
             id={authorVersion.author}
-            size={32}
+            size={28}
             url={
               author.data?.profile?.avatar &&
               `${BACKEND_FILE_URL}/${author.data?.profile?.avatar}`
@@ -918,8 +920,10 @@ function AuthorVariantItem({
             label={author.data?.profile?.alias || authorVersion.author}
           />
           <YStack>
-            <SizableText>{author.data?.profile?.alias}</SizableText>
-            <SizableText color="$color11">
+            <SizableText color={isActive ? '$blue11' : '$color'}>
+              {author.data?.profile?.alias}
+            </SizableText>
+            <SizableText color="$color11" size="$1">
               {formattedDateMedium(authorVersion.versionTime)}
             </SizableText>
           </YStack>
@@ -1029,9 +1033,6 @@ export function PageContextButton({}: {}) {
   }
   if (route.key === 'publication') {
     return <PublicationVariants route={route} />
-  }
-  if (route.key === 'group') {
-    return <GroupContextButton route={route} />
   }
   return null
 }

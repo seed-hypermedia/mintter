@@ -636,7 +636,7 @@ export function EditDocActions({
           key: 'draft',
           draftId: docId,
           contextRoute,
-          // pubContext,
+          variant: variant?.key === 'group' ? variant : undefined,
         })
         return
       }
@@ -648,7 +648,7 @@ export function EditDocActions({
         key: 'draft',
         draftId: draft.id,
         contextRoute,
-        // pubContext,
+        variant: variant?.key === 'group' ? variant : undefined,
       })
     } catch (error: any) {
       if (
@@ -660,7 +660,7 @@ export function EditDocActions({
           key: 'draft',
           draftId: docId, // because docId and draftId are the same right now
           contextRoute,
-          // pubContext,
+          variant: variant?.key === 'group' ? variant : undefined,
         })
         return
       }

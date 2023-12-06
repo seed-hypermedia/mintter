@@ -1,9 +1,9 @@
-import {Publication, unpackDocId} from '@mintter/shared'
+import {Publication, unpackHmId} from '@mintter/shared'
 import {UseQueryOptions} from '@tanstack/react-query'
 import {PublicationVariant} from '../utils/navigation'
 import {useEntityTimeline} from './changes'
 import {usePublication} from './documents'
-import {useGroupContent} from './groups'
+import {useDocumentGroups} from './groups'
 
 export function usePublicationVariant({
   documentId,
@@ -15,32 +15,43 @@ export function usePublicationVariant({
   versionId?: string
   variant?: undefined | PublicationVariant
 }) {
-  console.log('usePubVariant', {documentId, versionId, variant})
   const groupVariant = variant?.key === 'group' ? variant : undefined
   const authorVariant = variant?.key === 'authors' ? variant : undefined
-  const groupVariantId = groupVariant ? groupVariant.groupId : undefined
-  const groupContentQuery = useGroupContent(groupVariantId)
+  const docGroups = useDocumentGroups(documentId, {enabled: !!groupVariant})
   const timelineQuery = useEntityTimeline(documentId)
   let queryVariantVersion: undefined | string = undefined
   let queryDocumentId = documentId
-  const groupContent = groupContentQuery.data?.content
-  console.log({groupContent})
-  if (groupVariant && groupContent && !groupContentQuery.isPreviousData) {
-    const contentURL =
-      groupVariant.pathName && groupContent[groupVariant.pathName]
-    if (!contentURL) {
-      // throw new Error(
-      //   `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
-      // )
-      queryDocumentId = undefined
-    }
-    const groupItem = contentURL ? unpackDocId(contentURL) : null
-    if (groupItem?.docId === documentId) {
-      queryVariantVersion = groupItem?.version || undefined
+  if (groupVariant && docGroups.data && !docGroups.isPreviousData) {
+    const docGroupEntry = docGroups.data?.find(
+      (d) =>
+        d.groupId === groupVariant.groupId && d.path === groupVariant.pathName,
+    )
+    const groupEntryId =
+      typeof docGroupEntry?.rawUrl === 'string'
+        ? unpackHmId(docGroupEntry?.rawUrl)
+        : null
+    if (groupEntryId?.version) {
+      queryVariantVersion = groupEntryId?.version
     } else {
-      // the document is not actually in the group. so we should not query for anything.
-      // this probably happens as a race condition sometimes while publishing
+      throw new Error(
+        `Could not determine version for doc "${documentId}" in group "${groupVariant.groupId}" with name "${groupVariant.pathName}"`,
+      )
     }
+    // const contentURL =
+    //   groupVariant.pathName && groupContent[groupVariant.pathName]
+    // if (!contentURL) {
+    //   // throw new Error(
+    //   //   `Group ${groupContextId} does not contain path "${groupContext.pathName}"`,
+    //   // )
+    //   queryDocumentId = undefined
+    // }
+    // const groupItem = contentURL ? unpackDocId(contentURL) : null
+    // if (groupItem?.docId === documentId) {
+    //   queryVariantVersion = groupItem?.version || undefined
+    // } else {
+    //   // the document is not actually in the group. so we should not query for anything.
+    //   // this probably happens as a race condition sometimes while publishing
+    // }
   } else if (authorVariant) {
     const variantAuthor = authorVariant.authors[0]
     if (authorVariant.authors.length !== 1 || !variantAuthor)

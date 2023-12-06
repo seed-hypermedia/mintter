@@ -1,16 +1,16 @@
 import {useAccount} from '@mintter/app/models/accounts'
-import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
+import {TimelineChange} from '@mintter/app/models/changes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Change,
   createPublicWebHmUrl,
   formattedDateLong,
-  pluralS,
   unpackHmId,
 } from '@mintter/shared'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
+  ButtonText,
   Copy,
   DialogDescription,
   DialogTitle,
@@ -20,9 +20,10 @@ import {
   YStack,
 } from '@mintter/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
-import {createContext, useContext, useMemo} from 'react'
+import {createContext, useContext} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import appError from '../errors'
+import {useDocHistory} from '../models/changes'
 import {
   useGroup,
   useGroupContent,
@@ -60,34 +61,30 @@ function ChangeItem({
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
-  const openAccount = () => {
+  const openAccount = (e) => {
+    e.stopPropagation()
     navigate({key: 'account', accountId: change.author})
   }
   const navRoute = useNavRoute()
-  const isActive = activeVersion === change.id
+  const isActive = new Set(activeVersion?.split('.') || []).has(change.id)
   const shouldDisplayAuthorName =
     !prevListedChange || change.author !== prevListedChange.change.author
   const changeTimeText = (
-    <SizableText
-      size="$2"
-      textAlign="left"
-      fontWeight={isActive ? 'bold' : 'normal'}
-    >
+    <SizableText size="$2" textAlign="left">
       {change.createTime ? formattedDateLong(change.createTime) : null}
     </SizableText>
   )
   const topRow = shouldDisplayAuthorName ? (
-    <XStack>
-      <Button
-        size="$2"
-        alignItems="center"
-        justifyContent="flex-start"
-        chromeless
+    <XStack paddingTop="$2" gap="$2">
+      <AccountLinkAvatar accountId={author?.data?.id} size={24} />
+      <ButtonText
         onPress={openAccount}
-        icon={<AccountLinkAvatar accountId={author?.data?.id} size={20} />}
+        hoverStyle={{
+          textDecorationLine: 'underline',
+        }}
       >
         {author?.data?.profile?.alias || change.author}
-      </Button>
+      </ButtonText>
     </XStack>
   ) : (
     <XStack paddingLeft={35}>{changeTimeText}</XStack>
@@ -106,7 +103,7 @@ function ChangeItem({
       key: 'publication',
       documentId: entityId,
       versionId: change.id,
-      // pubContext: navRoute.pubContext,
+      variant: navRoute.variant,
       accessory: {key: 'versions'},
     }
   }
@@ -155,25 +152,26 @@ function ChangeItem({
   }
   return (
     <XStack
-      marginTop={shouldDisplayAuthorName ? '$4' : undefined}
       ai="center"
       gap="$2"
       group="item"
+      borderRadius={'$2'}
+      paddingHorizontal="$2"
+      paddingVertical="$1"
+      marginBottom="$1"
+      backgroundColor={isActive ? '$blue5' : 'transparent'}
     >
       <YStack
         f={1}
         overflow="hidden"
-        borderRadius="$2"
-        backgroundColor={isActive ? '$backgroundHover' : 'transparent'}
         hoverStyle={{
           cursor: 'pointer',
-          backgroundColor: isActive ? '$green4' : '$backgroundHover',
         }}
         onPress={() => {
           destRoute && navigate(destRoute)
         }}
         disabled={!destRoute}
-        paddingHorizontal="$4"
+        padding="$1"
         position="relative"
       >
         {topRow}
@@ -187,121 +185,6 @@ function ChangeItem({
       </YStack>
       <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
     </XStack>
-  )
-}
-
-function PrevChangesList({
-  changeset: {prevChanges},
-  id,
-  activeVersion,
-}: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
-}) {
-  if (!prevChanges.length) return null
-  return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>Previous Versions</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {prevChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={prevChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
-  )
-}
-
-function ActiveChangesList({
-  changeset: {activeVersionChanges, nextChanges, prevChanges},
-  id,
-  activeVersion,
-}: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
-}) {
-  let subheading = prevChanges.length === 0 ? 'Original Version' : null
-  if (!subheading) {
-    subheading =
-      activeVersionChanges.length > 1 ? 'Selected Versions' : 'Selected Version'
-  }
-  return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>{subheading}</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {activeVersionChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={activeVersionChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
-  )
-}
-
-function NextChangesList({
-  changeset: {nextChanges},
-  id,
-  activeVersion,
-}: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
-}) {
-  if (!nextChanges.length) return null
-  return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>{pluralS(nextChanges.length, 'Next Version')}</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {nextChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={nextChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
   )
 }
 
@@ -380,17 +263,6 @@ function PostToGroupDialog({
   )
 }
 
-function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
-  const seenChanges = new Set<string>()
-  const deduplicated: TimelineChange[] = []
-  changes.forEach((ch) => {
-    if (seenChanges.has(ch.change.id)) return
-    seenChanges.add(ch.change.id)
-    deduplicated.push(ch)
-  })
-  return deduplicated
-}
-
 export function EntityVersionsAccessory({
   id,
   activeVersion,
@@ -400,62 +272,27 @@ export function EntityVersionsAccessory({
   activeVersion: string | undefined
   variantVersion: string | undefined
 }) {
-  const {data} = useEntityTimeline(id?.id)
-  const computed = useMemo(() => {
-    const variantVersionChanges: TimelineChange[] = []
-    variantVersion
-      ?.split('.')
-      .map((chId) => data?.allChanges[chId])
-      .forEach((ch) => ch && variantVersionChanges.push(ch))
-    const prevChanges: TimelineChange[] = []
-    let walkLeafVersions = variantVersionChanges
-    while (walkLeafVersions?.length) {
-      const nextLeafVersions: TimelineChange[] = []
-      for (const change of walkLeafVersions) {
-        change?.change.deps?.map((depChangeId) => {
-          const depChange = data?.allChanges[depChangeId]
-          if (depChange) {
-            prevChanges.push(depChange)
-            nextLeafVersions.push(depChange)
-          }
-        })
-      }
-      walkLeafVersions = nextLeafVersions
-    }
-    const nextVersionChangeIds = new Set<string>()
-    variantVersionChanges.forEach((ch) =>
-      ch.citations.forEach((citingId) => nextVersionChangeIds.add(citingId)),
-    )
-    return [...variantVersionChanges, ...deduplicatedChanges(prevChanges)]
-    // const nextVersionChanges = [...nextVersionChangeIds]
-    //   .map((changeId) => data?.allChanges[changeId])
-    //   .filter(Boolean) as TimelineChange[]
-    // return {
-    //   activeVersionChanges,
-    //   prevChanges: deduplicatedChanges(prevChanges),
-    //   nextChanges: deduplicatedChanges(nextVersionChanges),
-    // }
-  }, [data, activeVersion])
+  const changes = useDocHistory(id?.id, variantVersion)
   const route = useNavRoute()
-  const pubContext = route?.key === 'publication' ? route.pubContext : undefined
+  const pubContext = route?.key === 'publication' ? route.variant : undefined
   const docId = route?.key === 'publication' ? route.documentId : undefined
-  const groupPubContext = pubContext?.key === 'group' ? pubContext : null
+  const groupVariant = pubContext?.key === 'group' ? pubContext : null
   const myGroups = useMyGroups()
   const isInPostableContext =
-    groupPubContext &&
+    groupVariant &&
     myGroups.data?.items?.find(
-      (item) => item.group?.id === groupPubContext?.groupId,
+      (item) => item.group?.id === groupVariant?.groupId,
     )
   const postToGroup = useAppDialog(PostToGroupDialog)
   if (!id) return null
   return (
     <>
-      <AccessoryContainer>
+      <AccessoryContainer title="Variant History">
         <PostToGroup.Provider
           value={
-            groupPubContext && docId && isInPostableContext
+            groupVariant && docId && isInPostableContext
               ? (changeId) => {
-                  postToGroup.open({groupPubContext, changeId, docId})
+                  postToGroup.open({groupVariant, changeId, docId})
                 }
               : null
           }
@@ -478,14 +315,15 @@ export function EntityVersionsAccessory({
 
           <YStack
             paddingHorizontal="$4"
+            paddingVertical="$2"
             paddingBottom="$6"
             borderBottomColor="$borderColor"
             borderBottomWidth={1}
           >
-            {computed.map((item, index) => {
+            {changes.map((item, index) => {
               return (
                 <ChangeItem
-                  prevListedChange={computed[index - 1]}
+                  prevListedChange={changes[index - 1]}
                   entityId={id.id}
                   key={item.change.id}
                   change={item.change}

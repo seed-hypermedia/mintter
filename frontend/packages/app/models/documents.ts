@@ -254,7 +254,11 @@ function changesToJSON(changes: DocumentChange[]) {
 
 export function usePublishDraft(
   opts?: UseMutationOptions<
-    {pub: Publication; groupVariant?: GroupVariant},
+    {
+      pub: Publication
+      groupVariant?: GroupVariant | null | undefined
+      isFirstPublish: boolean
+    },
     unknown,
     {
       draftId: string
@@ -266,55 +270,63 @@ export function usePublishDraft(
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
-  // const draftPubContext = draftRoute?.pubContext
-  // const draftGroupContext =
-  //   draftPubContext?.key === 'group' ? draftPubContext : undefined
-  const draftGroupContext = undefined
+  const groupVariant = draftRoute?.variant
   const {client, invalidate} = useAppContext().queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
     ...opts,
-    mutationFn: async ({draftId}: {draftId: string}) => {
+    mutationFn: async ({
+      draftId,
+    }: {
+      draftId: string
+    }): Promise<{
+      pub: Publication
+      groupVariant?: GroupVariant | null | undefined
+      isFirstPublish: boolean
+    }> => {
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
+      console.log('==== publishd', pub)
       await diagnosis.complete(draftId, {
         key: 'did.publishDraft',
         value: hmPublication(pub),
       })
       const isFirstPublish = await markDocPublish.mutateAsync(draftId)
       const publishedId = pub.document?.id
-      if (draftGroupContext && publishedId) {
+      console.log({groupVariant, publishedId})
+      if (!publishedId)
+        throw new Error('Could not get ID of published document')
+      if (groupVariant) {
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([queryKeys.GET_DRAFT, draftId]) as any
         )?.title
-        const publishPathName = draftGroupContext.pathName
-          ? draftGroupContext.pathName
+        const publishPathName = groupVariant.pathName
+          ? groupVariant.pathName
           : getDefaultShortname(docTitle, publishedId)
+        console.log('will publish to', {publishPathName})
         if (publishPathName) {
           await grpcClient.groups.updateGroup({
-            id: draftGroupContext.groupId,
+            id: groupVariant.groupId,
             updatedContent: {
               [publishPathName]: `${publishedId}?v=${pub.version}`,
             },
           })
+          console.log('did updateGroup?!')
           return {
             isFirstPublish,
             pub,
-            pubContext: {
+            groupVariant: {
               key: 'group',
-              groupId: draftGroupContext.groupId,
+              groupId: groupVariant.groupId,
               pathName: publishPathName,
             },
           }
         }
       }
-      return {isFirstPublish, pub, pubContext: draftPubContext}
+      return {isFirstPublish, pub, groupVariant}
     },
-    onSuccess: (
-      result: {pub: Publication; pubContext: PublicationRouteContext},
-      variables,
-      context,
-    ) => {
+    onSuccess: (result, variables, context) => {
       const documentId = result.pub.document?.id
+      console.log('== onSuccess', result)
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
@@ -323,9 +335,9 @@ export function usePublishDraft(
       invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
-      if (draftGroupContext) {
-        invalidate([queryKeys.GET_GROUP, draftGroupContext.groupId])
-        invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
+      if (groupVariant) {
+        invalidate([queryKeys.GET_GROUP, groupVariant.groupId])
+        invalidate([queryKeys.GET_GROUP_CONTENT, groupVariant.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }
 
@@ -653,7 +665,6 @@ export function useDraftEditor({
           changes: [...capturedChanges],
         })
         if (mutation.updatedDocument) {
-          console.log('== draft updates', mutation)
           client.setQueryData(
             [queryKeys.GET_DRAFT, documentId],
             mutation.updatedDocument,

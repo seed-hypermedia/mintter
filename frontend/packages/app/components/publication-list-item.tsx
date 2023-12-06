@@ -66,7 +66,7 @@ export function PublicationListItem({
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
-                    // variant,
+                    variant: variant?.key === 'group' ? variant : undefined,
                   },
                   e,
                 )

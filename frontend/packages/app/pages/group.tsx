@@ -362,7 +362,7 @@ export default function GroupPage() {
                       ) : null}
                       <EditDocActions
                         contextRoute={route}
-                        pubContext={{
+                        variant={{
                           key: 'group',
                           groupId,
                           pathName: '/',
@@ -379,7 +379,7 @@ export default function GroupPage() {
                             spawn({
                               key: 'publication',
                               documentId: frontPageId?.docId,
-                              pubContext: {
+                              variant: {
                                 key: 'group',
                                 groupId,
                                 pathName: '/',
@@ -562,7 +562,7 @@ function GroupContentItem({
             docTitle: pub.document?.title || '',
           })
         }}
-        pubContext={{key: 'group', groupId, pathName}}
+        variant={{key: 'group', groupId, pathName}}
         menuItems={[
           copyLinkMenuItem(
             idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
@@ -574,7 +574,7 @@ function GroupContentItem({
           key: 'publication',
           documentId: docId,
           ...(latestVersion === version
-            ? {pubContext: {key: 'group', groupId, pathName}}
+            ? {variant: {key: 'group', groupId, pathName}}
             : {versionId: version}),
         }}
       />

@@ -9,15 +9,17 @@ import {
   ErrorIcon,
   FontSizeTokens,
   Pencil,
+  SizableText,
   Spinner,
   TitleText,
   XStack,
 } from '@mintter/ui'
-import {Contact, FileText, Library} from '@tamagui/lucide-icons'
+import {Book, Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
-import {NavRoute} from '../utils/navigation'
+import {useGroup} from '../models/groups'
+import {GroupRoute, NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
-import {PageContextButton, VersionContext} from './variants'
+import {VersionContext} from './variants'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -67,7 +69,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'group') {
     return (
       <>
-        <PageContextButton />
+        <GroupTitle route={route} />
         <VersionContext route={route} />
       </>
     )
@@ -110,6 +112,17 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     )
   }
   return null
+}
+
+function GroupTitle({route}: {route: GroupRoute}) {
+  const group = useGroup(route.groupId)
+  if (!group.data) return null
+  return (
+    <XStack ai="center" gap="$2">
+      <Book size="$1" />
+      <SizableText>{group.data.title}</SizableText>
+    </XStack>
+  )
 }
 
 export function Title({size}: {size?: FontSizeTokens}) {

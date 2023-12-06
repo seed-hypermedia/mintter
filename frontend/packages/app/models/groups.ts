@@ -8,6 +8,7 @@ import {
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
+import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {
   UseMutationOptions,
   UseQueryOptions,
@@ -369,29 +370,36 @@ export function useGroupMembers(groupId: string, version?: string | undefined) {
   })
 }
 
-export function useDocumentGroups(documentId?: string) {
+export function useDocumentGroups(
+  documentId?: string,
+  opts?: UseQueryOptions<unknown, unknown, ListDocumentGroupsResponse_Item[]>,
+) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    enabled: !!documentId,
+    ...opts,
+    enabled: !!documentId && opts?.enabled !== false,
     queryKey: [queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId],
     queryFn: async () => {
       const result = await grpcClient.groups.listDocumentGroups({
         documentId,
       })
+      console.log('ListDocumentGroups raw', result)
       const resultMap = new Map<
         string,
         ListDocumentGroupsResponse['items'][number]
       >()
       for (const item of result.items) {
+        const itemKey = `${item.groupId}-${item.path}`
         if (item.changeTime?.seconds === undefined) continue
-        if (resultMap.has(`${item.groupId}-${item.path}`)) {
-          const prevItem = resultMap.get(item.groupId)
+        if (resultMap.has(itemKey)) {
+          const prevItem = resultMap.get(itemKey)
           if (!prevItem?.changeTime?.seconds) continue
           if (prevItem?.changeTime?.seconds > item.changeTime?.seconds) continue
         }
-        resultMap.set(`${item.groupId}-${item.path}`, item)
+        resultMap.set(itemKey, item)
       }
-      return Array.from(resultMap.values())
+      const output = Array.from(resultMap.values())
+      return output
     },
   })
 }
