@@ -99,6 +99,7 @@ export default function GroupPage() {
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,
   })
+  const latestGroup = useGroup(groupId, undefined, {})
   const groupContent = useFullGroupContent(groupId, version)
   const latestGroupContent = useGroupContent(groupId)
   // const groupMembers = useGroupMembers(groupId, version)
@@ -430,6 +431,7 @@ export default function GroupPage() {
             <EntityVersionsAccessory
               id={entityId}
               activeVersion={group.data?.version}
+              variantVersion={latestGroup.data?.version}
             />
           ) : null}
         </Allotment>
@@ -1093,15 +1095,3 @@ const TagInputItemContent = forwardRef<any, any>(
     )
   },
 )
-
-const CustomInput = forwardRef(function CustomInput(props, ref) {
-  return (
-    <Input
-      ref={ref}
-      flex={1}
-      width="100%"
-      borderColor="transparent"
-      {...props}
-    />
-  )
-})
