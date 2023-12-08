@@ -334,7 +334,7 @@ export function toHMBlock(
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
-          display: serverBlock.block.attributes.display || 'content',
+          view: serverBlock.block.attributes.view || 'content',
         },
         children: [],
       }

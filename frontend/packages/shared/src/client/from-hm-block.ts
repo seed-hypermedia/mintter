@@ -232,7 +232,7 @@ export function fromHMBlock(
       text: '',
       annotations: [],
       attributes: {
-        display: editorBlock.props.display,
+        view: editorBlock.props.view,
       },
     })
   }
