@@ -47,6 +47,7 @@
     "@manypkg/cli": "0.19.2",
     "@nderscore/tamagui-typescript-plugin": "0.5.4",
     "@tamagui/cli": "latest",
+    "@tanstack/react-virtual": "beta",
     "check-dependency-version-consistency": "4.1.0",
     "cross-env": "7.0.3",
     "electron-squirrel-startup": "1.0.0",

@@ -1,4 +1,11 @@
-import {ScrollView, View, XStack, YStackProps, useStream} from '@mintter/ui'
+import {
+  ScrollView,
+  View,
+  XStack,
+  YStack,
+  YStackProps,
+  useStream,
+} from '@mintter/ui'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 
 function SidebarSpacer() {
@@ -23,7 +30,7 @@ export function MainWrapperNoScroll({children, ...props}: YStackProps & {}) {
   return (
     <XStack flex={1} {...props}>
       <SidebarSpacer />
-      {children}
+      <YStack f={1}>{children}</YStack>
     </XStack>
   )
 }

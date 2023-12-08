@@ -25,6 +25,7 @@ export function NavigationContainer({
   initialNav?: NavState
 }) {
   const [navState, dispatch] = useReducer(navStateReducer, initialNav)
+  console.log('navState', navState)
   const {send} = useIPC()
 
   // const confirmConnection = useConfirmConnection()

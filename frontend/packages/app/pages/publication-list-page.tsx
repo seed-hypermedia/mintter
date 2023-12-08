@@ -10,28 +10,27 @@ import {
   Delete,
   DialogDescription,
   DialogTitle,
+  ScrollView,
   Separator,
   SizableText,
   Spinner,
-  TamaguiElement,
-  View,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Virtuoso} from 'react-virtuoso'
 
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
 import {Globe, Pencil, Verified} from '@tamagui/lucide-icons'
+import {useVirtualizer} from '@tanstack/react-virtual'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, useCallback, useEffect, useRef, useState} from 'react'
+import {ComponentProps, useMemo, useRef} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
-import {queryPublication, usePublicationFullList} from '../models/documents'
+import {usePublicationFullList} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
@@ -48,165 +47,153 @@ export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
   let drafts = useDraftList()
   let {queryClient, grpcClient} = useAppContext()
   let openDraft = useOpenDraft('push')
+  console.log(route.tab)
   const items = publications.data
-
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
-  const container = useRef<TamaguiElement>(null)
-  const virtuoso = useRef(null)
-  const [dimensions, setDimensions] = useState({height: 0, width: 0})
-  const handleContainer = useCallback((node: TamaguiElement | null) => {
-    container.current = node
-    setDimensions({
-      height: node?.offsetHeight,
-      width: node?.offsetWidth,
+  const rowItems = useMemo(() => {
+    return items?.map((item) => {
+      const {publication} = item
+      const docId = publication.document?.id
+      const pubContext = trustedOnly ? {key: 'trusted'} : null
+      const menuItems = [
+        copyLinkMenuItem(
+          idToUrl(docId, undefined, publication.version),
+          'Publication',
+        ),
+        {
+          key: 'delete',
+          label: 'Delete Publication',
+          icon: Delete,
+          onPress: () => {
+            console.log('delete pub', docId)
+            deleteDialog.open(docId)
+          },
+        },
+      ]
+      const hasDraft = drafts.data?.documents.find((d) => d.id == docId)
+      const openRoute = {
+        key: 'publication',
+        documentId: docId,
+        pubContext: trustedOnly ? {key: 'trusted'} : null,
+      }
+      return {...item, pubContext, menuItems, hasDraft, openRoute}
     })
-  }, [])
-  useEffect(() => {
-    function handleResize() {
-      const node = container.current
-      setDimensions({
-        height: node?.offsetHeight,
-        width: node?.offsetWidth,
-      })
-    }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-  if (items) {
-    if (items.length) {
+  }, [items, drafts.data])
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+  const scrollContainer = useRef<Element>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: rowItems?.length || 0,
+    getScrollElement: () => scrollContainer.current,
+    estimateSize: () => 42,
+    overscan: 50,
+  })
+  if (rowItems) {
+    if (rowItems.length) {
       return (
         <>
           <MainWrapperNoScroll>
-            <YStack f={1} ref={handleContainer}>
-              <Virtuoso
-                ref={virtuoso}
-                style={{
-                  height: dimensions.height,
-                  display: 'flex',
-                  overflowY: 'scroll',
-                  overflowX: 'hidden',
-                }}
-                increaseViewportBy={{
-                  top: 800,
-                  bottom: 800,
-                }}
-                components={{
-                  Header: () => (
-                    <XStack jc="center">
-                      <YStack
-                        alignItems="flex-start"
-                        f={1}
-                        maxWidth={898}
-                        paddingVertical="$4"
-                      >
-                        <XGroup
-                          separator={<Separator backgroundColor={'red'} />}
-                        >
-                          <ToggleGroupItem
-                            label="Trusted Creators"
-                            icon={Verified}
-                            active={trustedOnly}
-                            onPress={() => {
-                              if (!trustedOnly) {
-                                replace({
-                                  ...route,
-                                  tab: 'trusted',
-                                })
-                              }
-                            }}
-                          />
-                          <ToggleGroupItem
-                            label="All Creators"
-                            icon={Globe}
-                            active={allDocs}
-                            onPress={() => {
-                              if (!allDocs) {
-                                replace({
-                                  ...route,
-                                  tab: null,
-                                })
-                              }
-                            }}
-                          />
-                          <ToggleGroupItem
-                            label="My Drafts"
-                            icon={Pencil}
-                            active={draftsOnly}
-                            onPress={() => {
-                              if (!draftsOnly) {
-                                replace({
-                                  ...route,
-                                  tab: 'drafts',
-                                })
-                              }
-                            }}
-                          />
-                        </XGroup>
-                      </YStack>
-                    </XStack>
-                  ),
-                  Footer: () => <View style={{height: 30}} />,
-                }}
-                id="scroll-page-wrapper"
-                totalCount={items.length}
-                itemContent={(index) => {
-                  const {publication, author, editors} = items[index]
-                  const docId = publication.document?.id
-                  if (!docId) return null
-                  return (
-                    <XStack
-                      key={publication.document?.id}
-                      jc="center"
-                      width={dimensions.width}
-                    >
-                      <PublicationListItem
-                        pubContext={trustedOnly ? {key: 'trusted'} : null}
-                        openRoute={{
-                          key: 'publication',
-                          documentId: docId,
-                          pubContext: trustedOnly ? {key: 'trusted'} : null,
-                        }}
-                        hasDraft={drafts.data?.documents.find(
-                          (d) => d.id == publication.document?.id,
-                        )}
-                        onPointerEnter={() => {
-                          if (publication.document?.id) {
-                            queryClient.client.prefetchQuery(
-                              queryPublication(
-                                grpcClient,
-                                publication.document.id,
-                                publication.version,
-                              ),
-                            )
-                          }
-                        }}
-                        publication={publication}
-                        author={author}
-                        editors={editors}
-                        menuItems={[
-                          copyLinkMenuItem(
-                            idToUrl(docId, undefined, publication.version),
-                            'Publication',
-                          ),
-                          {
-                            key: 'delete',
-                            label: 'Delete Publication',
-                            icon: Delete,
-                            onPress: () => {
-                              deleteDialog.open(docId)
-                            },
-                          },
-                        ]}
-                      />
-                    </XStack>
-                  )
-                }}
-              />
-              {deleteDialog.content}
-            </YStack>
+            <XStack jc="center">
+              <YStack
+                alignItems="flex-start"
+                f={1}
+                maxWidth={898}
+                paddingVertical="$4"
+              >
+                <XGroup separator={<Separator backgroundColor={'red'} />}>
+                  <ToggleGroupItem
+                    label="Trusted Creators"
+                    icon={Verified}
+                    active={trustedOnly}
+                    onPress={() => {
+                      if (!trustedOnly) {
+                        replace({
+                          ...route,
+                          tab: 'trusted',
+                        })
+                      }
+                    }}
+                  />
+                  <ToggleGroupItem
+                    label="All Creators"
+                    icon={Globe}
+                    active={allDocs}
+                    onPress={() => {
+                      if (!allDocs) {
+                        replace({
+                          ...route,
+                          tab: null,
+                        })
+                      }
+                    }}
+                  />
+                  <ToggleGroupItem
+                    label="My Drafts"
+                    icon={Pencil}
+                    active={draftsOnly}
+                    onPress={() => {
+                      if (!draftsOnly) {
+                        replace({
+                          ...route,
+                          tab: 'drafts',
+                        })
+                      }
+                    }}
+                  />
+                </XGroup>
+              </YStack>
+            </XStack>
+            <ScrollView
+              key={route.tab}
+              ref={scrollContainer}
+              f={1}
+              contentContainerStyle={{height: rowVirtualizer.getTotalSize()}}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const {
+                  publication,
+                  author,
+                  editors,
+                  pubContext,
+                  menuItems,
+                  hasDraft,
+                  openRoute,
+                } = rowItems[virtualRow.index]
+                const docId = publication.document?.id
+                return (
+                  <XStack
+                    key={docId}
+                    jc="center"
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    width={'100%'}
+                    height={virtualRow.size}
+                    transform={[{translateY: virtualRow.start}]}
+                  >
+                    <PublicationListItem
+                      pubContext={pubContext}
+                      openRoute={openRoute}
+                      hasDraft={hasDraft}
+                      // onPointerEnter={() => {
+                      //   queryClient.client.prefetchQuery(
+                      //     queryPublication(
+                      //       grpcClient,
+                      //       publication.document.id,
+                      //       publication.version,
+                      //     ),
+                      //   )
+                      // }}
+                      publication={publication}
+                      author={author}
+                      editors={editors}
+                      menuItems={menuItems}
+                    />
+                  </XStack>
+                )
+              })}
+            </ScrollView>
           </MainWrapperNoScroll>
+          {deleteDialog.content}
           <Footer />
         </>
       )

@@ -9835,6 +9835,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/react-virtual@npm:beta":
+  version: 3.0.0-beta.68
+  resolution: "@tanstack/react-virtual@npm:3.0.0-beta.68"
+  dependencies:
+    "@tanstack/virtual-core": 3.0.0-beta.68
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: e8d4110fde9eb7e27b7067a300ac8bb08622a19b7c25a3b1b313b61e76093f1c500a90723011584971a0f5c4c7832df0c90276d4cf2d43f06281199636e50c4a
+  languageName: node
+  linkType: hard
+
+"@tanstack/virtual-core@npm:3.0.0-beta.68":
+  version: 3.0.0-beta.68
+  resolution: "@tanstack/virtual-core@npm:3.0.0-beta.68"
+  checksum: f06898afc6501e6a6240425f2bdbd0e2dc637f4f58cb4a9e13fca7e8e25b93be25543559c53b243bf70e386302844f419d9110010db964916a523495db114f51
+  languageName: node
+  linkType: hard
+
 "@tippyjs/react@npm:4.2.6":
   version: 4.2.6
   resolution: "@tippyjs/react@npm:4.2.6"
@@ -22312,6 +22331,7 @@ __metadata:
     "@nderscore/tamagui-typescript-plugin": 0.5.4
     "@storybook/nextjs": 7.0.26
     "@tamagui/cli": latest
+    "@tanstack/react-virtual": beta
     babel-plugin-react-native-web: 0.19.9
     check-dependency-version-consistency: 4.1.0
     concurrently: 8.2.1

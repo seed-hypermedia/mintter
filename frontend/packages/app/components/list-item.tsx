@@ -1,7 +1,7 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
-import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
-import {ComponentProps, ReactElement} from 'react'
+import {Button, ButtonProps, ButtonText, Link, Tooltip, View} from '@mintter/ui'
+import {ComponentProps, ReactElement, useEffect, useState} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
@@ -18,6 +18,10 @@ export function ListItem({
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[]
 }) {
+  const [menu, setMenu] = useState(<View style={{width: 18}} />)
+  useEffect(() => {
+    setMenu(<OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />)
+  }, [menuItems])
   return (
     <Button
       onPointerEnter={onPointerEnter}
@@ -40,7 +44,7 @@ export function ListItem({
         {title}
       </ButtonText>
       {accessory}
-      <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
+      {menu}
     </Button>
   )
 }
