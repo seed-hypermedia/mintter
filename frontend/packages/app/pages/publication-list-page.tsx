@@ -13,23 +13,20 @@ import {
   Separator,
   SizableText,
   Spinner,
-  TamaguiElement,
-  View,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Virtuoso} from 'react-virtuoso'
 
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
 import {Globe, Pencil, Verified} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, useCallback, useEffect, useRef, useState} from 'react'
+import {ComponentProps, memo} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useAppDialog} from '../components/dialog'
 import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
+import {MainWrapper} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
 import {queryPublication, usePublicationFullList} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
@@ -37,176 +34,129 @@ import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 
-export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
+export const PublicationListPage = memo(PublicationListPageUnmemo)
+
+export function PublicationListPageUnmemo({empty}: {empty?: React.ReactNode}) {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
   const trustedOnly = route.tab === 'trusted'
   const draftsOnly = route.tab === 'drafts'
   const allDocs = route.tab == null
   const replace = useNavigate('replace')
-  let publications = usePublicationFullList({trustedOnly})
-  let drafts = useDraftList()
-  let {queryClient, grpcClient} = useAppContext()
-  let openDraft = useOpenDraft('push')
+  const publications = usePublicationFullList({trustedOnly})
+  const drafts = useDraftList()
+  const {queryClient, grpcClient} = useAppContext()
+  const openDraft = useOpenDraft('push')
   const items = publications.data
 
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
-  const container = useRef<TamaguiElement>(null)
-  const virtuoso = useRef(null)
-  const [dimensions, setDimensions] = useState({height: 0, width: 0})
-  const handleContainer = useCallback((node: TamaguiElement | null) => {
-    container.current = node
-    setDimensions({
-      height: node?.offsetHeight,
-      width: node?.offsetWidth,
-    })
-  }, [])
-  useEffect(() => {
-    function handleResize() {
-      const node = container.current
-      setDimensions({
-        height: node?.offsetHeight,
-        width: node?.offsetWidth,
-      })
-    }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
+
   if (items) {
     if (items.length) {
       return (
         <>
-          <MainWrapperNoScroll>
-            <YStack f={1} ref={handleContainer}>
-              <Virtuoso
-                ref={virtuoso}
-                style={{
-                  height: dimensions.height,
-                  display: 'flex',
-                  overflowY: 'scroll',
-                  overflowX: 'hidden',
-                }}
-                increaseViewportBy={{
-                  top: 800,
-                  bottom: 800,
-                }}
-                components={{
-                  Header: () => (
-                    <XStack jc="center">
-                      <YStack
-                        alignItems="flex-start"
-                        f={1}
-                        maxWidth={898}
-                        paddingVertical="$4"
-                      >
-                        <XGroup
-                          separator={<Separator backgroundColor={'red'} />}
-                        >
-                          <ToggleGroupItem
-                            label="Trusted Creators"
-                            icon={Verified}
-                            active={trustedOnly}
-                            onPress={() => {
-                              if (!trustedOnly) {
-                                replace({
-                                  ...route,
-                                  tab: 'trusted',
-                                })
-                              }
-                            }}
-                          />
-                          <ToggleGroupItem
-                            label="All Creators"
-                            icon={Globe}
-                            active={allDocs}
-                            onPress={() => {
-                              if (!allDocs) {
-                                replace({
-                                  ...route,
-                                  tab: null,
-                                })
-                              }
-                            }}
-                          />
-                          <ToggleGroupItem
-                            label="My Drafts"
-                            icon={Pencil}
-                            active={draftsOnly}
-                            onPress={() => {
-                              if (!draftsOnly) {
-                                replace({
-                                  ...route,
-                                  tab: 'drafts',
-                                })
-                              }
-                            }}
-                          />
-                        </XGroup>
-                      </YStack>
-                    </XStack>
-                  ),
-                  Footer: () => <View style={{height: 30}} />,
-                }}
-                id="scroll-page-wrapper"
-                totalCount={items.length}
-                itemContent={(index) => {
-                  const {publication, author, editors} = items[index]
-                  const docId = publication.document?.id
-                  if (!docId) return null
-                  return (
-                    <XStack
-                      key={publication.document?.id}
-                      jc="center"
-                      width={dimensions.width}
-                    >
-                      <PublicationListItem
-                        pubContext={trustedOnly ? {key: 'trusted'} : null}
-                        openRoute={{
-                          key: 'publication',
-                          documentId: docId,
-                          pubContext: trustedOnly ? {key: 'trusted'} : null,
-                        }}
-                        hasDraft={drafts.data?.documents.find(
-                          (d) => d.id == publication.document?.id,
-                        )}
-                        onPointerEnter={() => {
-                          if (publication.document?.id) {
-                            queryClient.client.prefetchQuery(
-                              queryPublication(
-                                grpcClient,
-                                publication.document.id,
-                                publication.version,
-                              ),
-                            )
-                          }
-                        }}
-                        publication={publication}
-                        author={author}
-                        editors={editors}
-                        menuItems={[
-                          copyLinkMenuItem(
-                            idToUrl(docId, undefined, publication.version),
-                            'Publication',
+          <MainWrapper>
+            <XStack jc="center">
+              <YStack
+                alignItems="flex-start"
+                f={1}
+                maxWidth={898}
+                paddingVertical="$4"
+              >
+                <XGroup separator={<Separator backgroundColor={'red'} />}>
+                  <ToggleGroupItem
+                    label="Trusted Creators"
+                    icon={Verified}
+                    active={trustedOnly}
+                    onPress={() => {
+                      if (!trustedOnly) {
+                        replace({
+                          ...route,
+                          tab: 'trusted',
+                        })
+                      }
+                    }}
+                  />
+                  <ToggleGroupItem
+                    label="All Creators"
+                    icon={Globe}
+                    active={allDocs}
+                    onPress={() => {
+                      if (!allDocs) {
+                        replace({
+                          ...route,
+                          tab: null,
+                        })
+                      }
+                    }}
+                  />
+                  <ToggleGroupItem
+                    label="My Drafts"
+                    icon={Pencil}
+                    active={draftsOnly}
+                    onPress={() => {
+                      if (!draftsOnly) {
+                        replace({
+                          ...route,
+                          tab: 'drafts',
+                        })
+                      }
+                    }}
+                  />
+                </XGroup>
+              </YStack>
+            </XStack>
+            <Container>
+              {items.map((item) => {
+                const {publication, author, editors} = item
+                const docId = publication.document?.id
+                if (!docId) return null
+                return (
+                  <PublicationListItem
+                    key={docId}
+                    pubContext={trustedOnly ? {key: 'trusted'} : null}
+                    openRoute={{
+                      key: 'publication',
+                      documentId: docId,
+                      pubContext: trustedOnly ? {key: 'trusted'} : null,
+                    }}
+                    hasDraft={drafts.data?.documents.find(
+                      (d) => d.id == publication.document?.id,
+                    )}
+                    onPointerEnter={() => {
+                      if (publication.document?.id) {
+                        queryClient.client.prefetchQuery(
+                          queryPublication(
+                            grpcClient,
+                            publication.document.id,
+                            publication.version,
                           ),
-                          {
-                            key: 'delete',
-                            label: 'Delete Publication',
-                            icon: Delete,
-                            onPress: () => {
-                              deleteDialog.open(docId)
-                            },
-                          },
-                        ]}
-                      />
-                    </XStack>
-                  )
-                }}
-              />
-              {deleteDialog.content}
-            </YStack>
-          </MainWrapperNoScroll>
+                        )
+                      }
+                    }}
+                    publication={publication}
+                    author={author}
+                    editors={editors}
+                    menuItems={[
+                      copyLinkMenuItem(
+                        idToUrl(docId, undefined, publication.version),
+                        'Publication',
+                      ),
+                      {
+                        key: 'delete',
+                        label: 'Delete Publication',
+                        icon: Delete,
+                        onPress: () => {
+                          deleteDialog.open(docId)
+                        },
+                      },
+                    ]}
+                  />
+                )
+              })}
+            </Container>
+            {deleteDialog.content}
+          </MainWrapper>
           <Footer />
         </>
       )
