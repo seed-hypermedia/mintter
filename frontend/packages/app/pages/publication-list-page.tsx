@@ -22,7 +22,7 @@ import {
 import {Virtuoso} from 'react-virtuoso'
 
 import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
-import {Bookmark, Globe, Pencil} from '@tamagui/lucide-icons'
+import {Globe, Pencil, Verified} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, useCallback, useEffect, useRef, useState} from 'react'
 import {useAppContext} from '../app-context'
@@ -106,7 +106,7 @@ export function PublicationListPage({empty}: {empty?: React.ReactNode}) {
                         >
                           <ToggleGroupItem
                             label="Trusted Creators"
-                            icon={Bookmark}
+                            icon={Verified}
                             active={trustedOnly}
                             onPress={() => {
                               if (!trustedOnly) {
