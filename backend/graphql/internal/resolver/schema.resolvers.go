@@ -110,7 +110,8 @@ func (r *mutationResolver) ImportWallet(ctx context.Context, input generated.Imp
 
 	defaultWallet, err := r.svc.GetDefaultWallet(ctx)
 	if err != nil {
-		return nil, err
+		r.svc.DeleteWallet(ctx, lndhubWallet.ID)
+		return nil, fmt.Errorf("Reverting wallet import: %w", err)
 	}
 
 	return &generated.ImportWalletPayload{
