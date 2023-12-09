@@ -43,6 +43,9 @@ type Service struct {
 	// peerSyncTimeout defines the timeout for syncing with one peer.
 	peerSyncTimeout time.Duration
 
+	// burstSync attempts to sync all peers at once, creating CPU overhead.
+	burstSync bool
+
 	log     *zap.Logger
 	db      *sqlitex.Pool
 	blobs   *hyper.Storage
@@ -103,6 +106,12 @@ func (s *Service) SetPeerSyncTimeout(d time.Duration) {
 	if d != 0 {
 		s.peerSyncTimeout = d
 	}
+}
+
+// SetBurstSync sets wether or not syncing in bursts (CPU intense)
+// or spawn routines throughout the syncing interval
+func (s *Service) SetBurstSync(b bool) {
+	s.burstSync = b
 }
 
 // Start the syncing service which will periodically perform global sync loop.
@@ -194,6 +203,18 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	var wg sync.WaitGroup
 	wg.Add(len(delegations))
 
+	// In order not to create a CPU overhead we spread sync routines throughout the
+	// syncing interval
+	roundSleep := time.Microsecond * 0
+	const numSlots = 100
+	every := 1
+
+	if !s.burstSync {
+		roundSleep = (s.syncInterval * 85 / 100) / numSlots
+		if len(delegations) > numSlots {
+			every = 1 + len(delegations)/numSlots
+		}
+	}
 	for i, del := range delegations {
 		go func(i int, del hypersql.KeyDelegationsListAllResult) {
 			var err error
@@ -221,6 +242,9 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 				err = errors.Join(err, fmt.Errorf("failed to sync objects: %w", xerr))
 			}
 		}(i, del)
+		if i%every == 0 {
+			time.Sleep(roundSleep)
+		}
 	}
 
 	wg.Wait()

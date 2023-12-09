@@ -60,7 +60,7 @@ func NewServer(me *future.ReadOnly[core.Identity], log *zap.Logger, db *DB, blob
 
 // StartPeriodicSync starts periodic sync of sites.
 // It will block until the provided context is canceled.
-func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration) error {
+func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration, burst bool) error {
 	t := time.NewTimer(warmup)
 	defer t.Stop()
 
@@ -86,7 +86,7 @@ func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-t.C:
-			if err := srv.scheduleSiteWorkers(ctx, &wg, siteWorkers, interval); err != nil {
+			if err := srv.scheduleSiteWorkers(ctx, &wg, siteWorkers, interval, burst); err != nil {
 				return err
 			}
 			t.Reset(interval)
@@ -100,15 +100,28 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 	wg *sync.WaitGroup,
 	siteWorkers map[string]context.CancelFunc,
 	interval time.Duration,
+	burst bool,
 ) error {
 	groups, err := srv.db.ListSiteGroups(ctx)
 	if err != nil {
 		return err
 	}
+	// In order not to create a CPU overhead we spread sync routines throughout the
+	// syncing interval
+	roundSleep := time.Microsecond * 0
+	const numSlots = 100
+	every := 1
+
+	if !burst {
+		roundSleep = (interval * 70 / 100) / numSlots
+		if len(groups) > numSlots {
+			every = 1 + len(groups)/numSlots
+		}
+	}
 
 	// TODO(burdiyan): handle removing sites and stopping workers.
 	// It's currently not possible anyways.
-	for _, group := range groups {
+	for i, group := range groups {
 		if _, ok := siteWorkers[group]; ok {
 			continue
 		}
@@ -156,6 +169,9 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 				}
 			}
 		}(group)
+		if i%every == 0 {
+			time.Sleep(roundSleep)
+		}
 	}
 
 	return nil

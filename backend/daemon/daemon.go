@@ -178,7 +178,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	if !cfg.Syncing.NoPull {
 		a.g.Go(func() error {
-			return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval)
+			return a.RPC.Groups.StartPeriodicSync(ctx, cfg.Syncing.WarmupDuration, cfg.Syncing.Interval, false)
 		})
 	}
 
