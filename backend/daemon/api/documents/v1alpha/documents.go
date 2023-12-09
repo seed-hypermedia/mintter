@@ -523,6 +523,7 @@ func (api *Server) ListAccountPublications(ctx context.Context, in *documents.Li
 
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: x.ResourcesIRI,
+			LocalOnly: true,
 		})
 		if err != nil {
 			continue
