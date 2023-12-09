@@ -277,9 +277,9 @@ export function SystemMenu() {
             id: 'drafts',
             title: 'Drafts',
             accelerator: 'Ctrl+8',
-            onSelect: () => push({key: 'drafts'}),
+            onSelect: () => push({key: 'documents', tab: 'drafts'}),
             icon: Draft,
-            disabled: route.key == 'drafts',
+            disabled: route.key == 'documents' && route.tab === 'drafts',
           },
           {
             id: 'contacts',

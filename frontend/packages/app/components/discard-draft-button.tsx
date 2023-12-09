@@ -28,7 +28,7 @@ export default function DiscardDraftButton() {
                 if (contextRoute) {
                   backplace(contextRoute)
                 } else {
-                  backplace({key: 'drafts'})
+                  backplace({key: 'documents', tab: 'drafts'})
                 }
               },
             })

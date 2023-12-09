@@ -537,7 +537,7 @@ export function useDraftEditor({
             })
           }
 
-          replace({key: 'drafts'})
+          replace({key: 'documents', tab: 'drafts'})
         },
       },
       actors: {

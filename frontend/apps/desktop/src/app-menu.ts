@@ -119,7 +119,7 @@ export function createAppMenu() {
           label: 'Drafts',
           accelerator: 'CmdOrCtrl+8',
           click: () => {
-            openRoute({key: 'drafts'})
+            openRoute({key: 'documents', tab: 'drafts'})
           },
         },
         {

@@ -16,7 +16,6 @@ import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
 var Documents = lazy(() => import('@mintter/app/pages/documents'))
-var DraftList = lazy(() => import('@mintter/app/pages/draft-list-page'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
 var Group = lazy(() => import('@mintter/app/pages/group'))
@@ -48,11 +47,6 @@ function getPageComponent(navRoute: NavRoute) {
     case 'group':
       return {
         PageComponent: Group,
-        Fallback: BaseLoading,
-      }
-    case 'drafts':
-      return {
-        PageComponent: DraftList,
         Fallback: BaseLoading,
       }
     case 'contacts':

@@ -222,7 +222,7 @@ function FullAppSidebar() {
               active={route.key == 'drafts'}
               data-testid="menu-item-drafts"
               onPress={() => {
-                navigate({key: 'drafts'})
+                navigate({key: 'documents', tab: 'drafts' })
               }}
               icon={Draft}
               title="Drafts"

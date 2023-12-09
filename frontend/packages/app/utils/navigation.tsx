@@ -45,7 +45,6 @@ export type PublicationRoute = {
     | PublicationCommentsAccessory
   showFirstPublicationMessage?: boolean
 }
-export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
   draftId?: string
@@ -67,7 +66,6 @@ export type NavRoute =
   | GroupsRoute
   | GroupRoute
   | PublicationRoute
-  | DraftsRoute
   | DraftRoute
   | DocumentsRoute
 
