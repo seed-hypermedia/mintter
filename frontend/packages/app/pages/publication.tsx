@@ -39,7 +39,6 @@ import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinDocumentButton} from '../components/pin-entity'
 import {useFullReferenceUrl} from '../components/titlebar-common'
-import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
@@ -278,12 +277,6 @@ export default function PublicationPage() {
               ))}
           </Allotment>
           <Footer>
-            <XStack gap="$3" marginHorizontal="$3">
-              {displayVersion && (
-                <VersionChangesInfo version={displayVersion} />
-              )}
-            </XStack>
-
             {publication.data?.variantVersion && (
               <PublicationVersionsFooterButton
                 variantVersion={publication.data?.variantVersion}
