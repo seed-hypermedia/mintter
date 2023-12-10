@@ -70,7 +70,6 @@ import {OptionsDropdown} from '../components/options-dropdown'
 import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar-common'
-import {VersionChangesInfo} from '../components/version-changes-info'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -436,11 +435,6 @@ export default function GroupPage() {
           ) : null}
         </Allotment>
         <Footer>
-          <XStack gap="$3" marginHorizontal="$3">
-            {group.data?.version && (
-              <VersionChangesInfo version={group.data?.version} />
-            )}
-          </XStack>
           <ChangesFooterItem route={route} />
         </Footer>
         {inviteMember.content}
