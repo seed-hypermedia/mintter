@@ -19,7 +19,15 @@ import {
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
-import {ButtonText, Link, Separator, Text, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  ButtonText,
+  Link,
+  Separator,
+  Text,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
@@ -43,6 +51,7 @@ import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useExperiments} from '../models/experiments'
+import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 
@@ -90,6 +99,11 @@ export function AppPublicationContentProvider({
 function PublicationPageMeta({publication}: {publication: Publication}) {
   const editors = useAccounts(publication.document?.editors || [])
   const navigate = useNavigate()
+  const docGroups = useCurrentDocumentGroups(publication.document?.id)
+  const selectedGroups = docGroups.data?.filter((groupItem) => {
+    const groupItemId = unpackDocId(groupItem.rawUrl)
+    return !!groupItemId?.version && groupItemId.version === publication.version
+  })
   return (
     <YStack
       ai="flex-start"
@@ -154,8 +168,39 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
             {formattedDateMedium(publication.document?.publishTime)}
           </Text>
         </XStack>
+        {selectedGroups?.length ? (
+          <XStack gap="$2" marginHorizontal="$4" ai="center" flexWrap="wrap">
+            {selectedGroups.map((selectedGroup) => (
+              <PublicationGroup
+                key={selectedGroup.groupId}
+                groupId={selectedGroup.groupId}
+              />
+            ))}
+          </XStack>
+        ) : null}
       </XStack>
     </YStack>
+  )
+}
+
+function PublicationGroup({groupId}: {groupId: string}) {
+  const group = useGroup(groupId)
+  const navigate = useNavigate()
+  if (!group.data?.title) return null
+  return (
+    <Button
+      chromeless
+      borderColor="$color8"
+      size="$2"
+      onPress={() => {
+        navigate({
+          key: 'group',
+          groupId,
+        })
+      }}
+    >
+      {group.data.title}
+    </Button>
   )
 }
 
