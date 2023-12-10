@@ -160,7 +160,7 @@ function GroupPublishDialog({
   const draftRoute = route.key === 'draft' ? route : null
   const pubRoute = route.key === 'publication' ? route : null
   const publishToGroup = usePublishDocToGroup()
-  if (!myGroups) return <Spinner />
+  if (!myGroups.data || !selectedGroupId) return <Spinner />
   return (
     <Form
       onSubmit={() => {
