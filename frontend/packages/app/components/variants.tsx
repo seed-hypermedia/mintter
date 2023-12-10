@@ -912,7 +912,7 @@ function AuthorVariantItem({
   const isOwner =
     !!publication?.document?.author &&
     publication.document.author === authorVersion.author
-  const canPressCheck = activeAuthors.length > 1 || !isActive
+  const canPressCheck = activeAuthors.length > 1 || !isVariantActive
   return (
     <Button
       backgroundColor={'transparent'}
