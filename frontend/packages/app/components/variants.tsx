@@ -3,7 +3,6 @@ import {useMyAccount} from '@mintter/app/models/accounts'
 import {getDefaultShortname, useDraftTitle} from '@mintter/app/models/documents'
 import {
   useAccountGroups,
-  useDocumentGroups,
   useGroup,
   useMyGroups,
   usePublishDocToGroup,
@@ -70,6 +69,7 @@ import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
+import {useCurrentDocumentGroups} from '../models/groups'
 import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
@@ -684,12 +684,6 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   })
   const {variant} = route
   const groupVariant = variant?.key === 'group' ? variant : null
-  const contextGroup = useGroup(groupVariant?.groupId)
-  let icon = Globe
-  let title = ''
-  const docId = route.documentId
-  const docVersion = route.versionId || publication.data?.publication?.version
-  const docGroups = useDocumentGroups(route.documentId)
   const [variantTab, setVariantTab] = useState(
     groupVariant ? 'groups' : 'authors',
   )
@@ -962,8 +956,7 @@ function GroupVariants({route}: {route: PublicationRoute}) {
   if (route.key !== 'publication') throw new Error('Uh')
   const {variant} = route
   const groupVariant = variant?.key === 'group' ? variant : null
-  const docGroups = useDocumentGroups(route.documentId)
-  // return <SizableText>Groups</SizableText>
+  const docGroups = useCurrentDocumentGroups(route.documentId)
   return (
     <YStack gap="$2" padding="$2">
       {docGroups.data?.map((docGroup) => {
@@ -972,13 +965,6 @@ function GroupVariants({route}: {route: PublicationRoute}) {
             groupId={docGroup.groupId}
             path={docGroup.path}
             route={route}
-            onPathPress={() => {
-              // renameDialog.open({
-              //   groupId: docGroup.groupId,
-              //   pathName: docGroup.path,
-              //   docTitle: publication.data?.document?.title || '',
-              // })
-            }}
             key={`${docGroup.groupId}-${docGroup.path}`}
           />
         )

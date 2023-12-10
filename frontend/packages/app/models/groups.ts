@@ -1,4 +1,5 @@
 import {
+  GRPCClient,
   Group,
   ListDocumentGroupsResponse,
   ListGroupsResponse,
@@ -260,17 +261,34 @@ export function useRenameGroupDoc(
   })
 }
 
-export function useGroupContent(
+function getGroupContentQuery(
+  grpcClient: GRPCClient,
   groupId?: string | undefined,
-  version?: string,
+  version?: string | undefined,
 ) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
+  return {
     queryKey: [queryKeys.GET_GROUP_CONTENT, groupId, version],
     queryFn: async () => {
       return await grpcClient.groups.listContent({id: groupId, version})
     },
     enabled: !!groupId,
+  }
+}
+
+export function useGroupContent(
+  groupId?: string | undefined,
+  version?: string,
+) {
+  const grpcClient = useGRPCClient()
+  return useQuery(getGroupContentQuery(grpcClient, groupId, version))
+}
+
+export function useGroupsContent(groupIds: string[]) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: groupIds.map((groupId) =>
+      getGroupContentQuery(grpcClient, groupId),
+    ),
   })
 }
 
@@ -384,7 +402,6 @@ export function useDocumentGroups(
       const result = await grpcClient.groups.listDocumentGroups({
         documentId,
       })
-      console.log('ListDocumentGroups raw', result)
       const resultMap = new Map<
         string,
         ListDocumentGroupsResponse['items'][number]
@@ -403,6 +420,34 @@ export function useDocumentGroups(
       return output
     },
   })
+}
+
+export function useCurrentDocumentGroups(
+  documentId?: string,
+  opts?: UseQueryOptions<unknown, unknown, ListDocumentGroupsResponse_Item[]>,
+) {
+  const docGroupsQuery = useDocumentGroups(documentId, opts)
+  const referencedGroupIds = new Set<string>()
+  docGroupsQuery.data?.forEach((item) => {
+    referencedGroupIds.add(item.groupId)
+  })
+  const groupsToQuery = [...referencedGroupIds]
+  const groupsContentQuery = useGroupsContent(groupsToQuery)
+  return {
+    ...docGroupsQuery,
+    data: docGroupsQuery.data?.filter((item) => {
+      const {groupId, path} = item
+      const groupContent = groupsContentQuery.find((contentQuery, index) => {
+        const queriedGroupId = groupsToQuery[index]
+        return groupId === queriedGroupId
+      })?.data
+      const pathURL = groupContent?.content?.[path]
+      if (!pathURL) return false
+      const currentPathDocId = unpackDocId(pathURL)
+      if (!currentPathDocId?.docId) return false
+      return currentPathDocId.docId === documentId
+    }),
+  }
 }
 
 export function useAccountGroups(accountId?: string) {
