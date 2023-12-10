@@ -5,8 +5,10 @@ import {
   Change,
   createPublicWebHmUrl,
   formattedDateLong,
+  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
+import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
@@ -25,6 +27,7 @@ import {copyTextToClipboard} from '../copy-to-clipboard'
 import appError from '../errors'
 import {useDocHistory} from '../models/changes'
 import {
+  useCurrentDocumentGroups,
   useGroup,
   useGroupContent,
   useMyGroups,
@@ -42,22 +45,18 @@ import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
-type ComputedChangeset = {
-  activeVersionChanges: TimelineChange[]
-  prevChanges: TimelineChange[]
-  nextChanges: TimelineChange[]
-}
-
 function ChangeItem({
   change,
   prevListedChange,
   entityId,
   activeVersion,
+  activeGroups,
 }: {
   change: Change
   prevListedChange?: TimelineChange
   entityId: string
   activeVersion?: string
+  activeGroups?: ListDocumentGroupsResponse_Item[] | undefined
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
@@ -175,7 +174,9 @@ function ChangeItem({
         position="relative"
       >
         {topRow}
-
+        {activeGroups?.length ? (
+          <ActiveChangeGroups activeGroups={activeGroups} />
+        ) : null}
         {dateRow && (
           <XStack gap="$2">
             <XStack width={28} />
@@ -188,6 +189,47 @@ function ChangeItem({
   )
 }
 
+function ActiveChangeGroups({
+  activeGroups,
+}: {
+  activeGroups: ListDocumentGroupsResponse_Item[]
+}) {
+  return (
+    <XStack gap="$2" flexWrap="wrap" margin="$1" marginTop={0} marginLeft={34}>
+      {activeGroups.map((group) => (
+        <ActiveGroupButton key={group.groupId} groupItem={group} />
+      ))}
+    </XStack>
+  )
+}
+function ActiveGroupButton({
+  groupItem,
+}: {
+  groupItem: ListDocumentGroupsResponse_Item
+}) {
+  const group = useGroup(groupItem.groupId)
+  const navigate = useNavigate()
+  if (!group.data?.title) return null
+  return (
+    <Button
+      chromeless
+      size="$1"
+      theme="blue"
+      paddingHorizontal="$2"
+      borderColor="$blue11"
+      color="$blue11"
+      hoverStyle={{
+        borderColor: '$blue8',
+      }}
+      onPress={(e) => {
+        e.stopPropagation()
+        navigate({key: 'group', groupId: groupItem.groupId})
+      }}
+    >
+      {group.data?.title}
+    </Button>
+  )
+}
 function PostToGroupDialog({
   input,
   onClose,
@@ -284,6 +326,7 @@ export function EntityVersionsAccessory({
       (item) => item.group?.id === groupVariant?.groupId,
     )
   const postToGroup = useAppDialog(PostToGroupDialog)
+  const currentGroups = useCurrentDocumentGroups(docId)
   if (!id) return null
   return (
     <>
@@ -321,12 +364,17 @@ export function EntityVersionsAccessory({
             borderBottomWidth={1}
           >
             {changes.map((item, index) => {
+              const activeGroups = currentGroups.data?.filter((groupEntry) => {
+                const docId = unpackDocId(groupEntry.rawUrl)
+                return !!docId?.version && item.change.id === docId?.version
+              })
               return (
                 <ChangeItem
                   prevListedChange={changes[index - 1]}
                   entityId={id.id}
                   key={item.change.id}
                   change={item.change}
+                  activeGroups={activeGroups}
                   activeVersion={activeVersion}
                 />
               )
