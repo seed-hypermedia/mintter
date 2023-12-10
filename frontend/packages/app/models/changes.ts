@@ -110,8 +110,9 @@ export function useEntityTimeline(entityId?: string) {
       const rawTimeline = await grpcClient.entities.getEntityTimeline({
         id: entityId || '',
       })
+      const timelineEntries = Object.entries(rawTimeline.changes)
       const allChanges: Record<string, TimelineChange> = {}
-      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+      timelineEntries.forEach(([changeId, change]) => {
         allChanges[changeId] = {
           deps: change.deps,
           citations: [],
@@ -119,12 +120,16 @@ export function useEntityTimeline(entityId?: string) {
           id: change.id,
         }
       })
-      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+      timelineEntries.forEach(([changeId, change]) => {
         change.deps.forEach((depId) => {
           allChanges[depId]?.citations.push(changeId)
         })
       })
-      return {allChanges, authorVersions: rawTimeline.authorVersions}
+      return {
+        allChanges,
+        authorVersions: rawTimeline.authorVersions,
+        timelineEntries,
+      }
     },
     queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
     enabled: !!entityId,
@@ -259,18 +264,6 @@ export function useChange(changeId?: string) {
       }),
     queryKey: [queryKeys.CHANGE, changeId],
     enabled: !!changeId,
-  })
-}
-
-export function useAllChanges(entityId?: string) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
-    queryFn: () =>
-      grpcClient.entities.getEntityTimeline({
-        id: entityId || '',
-      }),
-    queryKey: [queryKeys.ALL_ENTITY_CHANGES, entityId],
-    enabled: !!entityId,
   })
 }
 

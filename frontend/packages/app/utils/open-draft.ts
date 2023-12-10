@@ -33,19 +33,12 @@ export function useOpenDraft(navigateMode: NavMode = 'spawn') {
     groupVariant?: GroupVariant | undefined,
     opts?: {pathName?: string | null; initialTitle?: string},
   ) {
-    // const destVariant: PublicationVariant =
-    //   pubContext?.key === 'group'
-    //     ? {
-    //         ...pubContext,
-    //         pathName: opts?.pathName || null,
-    //       }
-    //     : pubContext || null
     createDraft(grpcClient, opts?.initialTitle)
       .then((docId: string) => {
         const draftRoute: DraftRoute = {
           key: 'draft',
           draftId: docId,
-          // variant: destVariant,
+          variant: groupVariant,
           contextRoute: route,
         }
         invalidate([queryKeys.GET_DRAFT_LIST])

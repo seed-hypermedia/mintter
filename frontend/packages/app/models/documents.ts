@@ -285,14 +285,12 @@ export function usePublishDraft(
       isFirstPublish: boolean
     }> => {
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
-      console.log('==== publishd', pub)
       await diagnosis.complete(draftId, {
         key: 'did.publishDraft',
         value: hmPublication(pub),
       })
       const isFirstPublish = await markDocPublish.mutateAsync(draftId)
       const publishedId = pub.document?.id
-      console.log({groupVariant, publishedId})
       if (!publishedId)
         throw new Error('Could not get ID of published document')
       if (groupVariant) {
@@ -302,7 +300,6 @@ export function usePublishDraft(
         const publishPathName = groupVariant.pathName
           ? groupVariant.pathName
           : getDefaultShortname(docTitle, publishedId)
-        console.log('will publish to', {publishPathName})
         if (publishPathName) {
           await grpcClient.groups.updateGroup({
             id: groupVariant.groupId,
@@ -310,7 +307,6 @@ export function usePublishDraft(
               [publishPathName]: `${publishedId}?v=${pub.version}`,
             },
           })
-          console.log('did updateGroup?!')
           return {
             isFirstPublish,
             pub,
@@ -326,7 +322,7 @@ export function usePublishDraft(
     },
     onSuccess: (result, variables, context) => {
       const documentId = result.pub.document?.id
-      console.log('== onSuccess', result)
+      const {groupVariant} = result
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
@@ -338,6 +334,7 @@ export function usePublishDraft(
       if (groupVariant) {
         invalidate([queryKeys.GET_GROUP, groupVariant.groupId])
         invalidate([queryKeys.GET_GROUP_CONTENT, groupVariant.groupId])
+        invalidate([queryKeys.ENTITY_TIMELINE, groupVariant.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }
 

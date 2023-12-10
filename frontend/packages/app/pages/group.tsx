@@ -73,7 +73,7 @@ import {EditDocActions} from '../components/titlebar-common'
 import {VersionChangesInfo} from '../components/version-changes-info'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
-import {useAllChanges} from '../models/changes'
+import {useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -789,13 +789,9 @@ const GroupStatus = {
 } as const
 
 function ChangesFooterItem({route}: {route: GroupRoute}) {
-  const changes = useAllChanges(route.groupId)
-  const count = useMemo(
-    () => Object.keys(changes?.data?.changes || {}).length || 0,
-    [changes.data],
-  )
+  const timeline = useEntityTimeline(route.groupId)
+  const count = timeline.data?.timelineEntries.length || 0
   const replace = useNavigate('replace')
-  // if (route.accessory?.key !== 'versions') return null
   return (
     <FooterButton
       active={route.accessory?.key === 'versions'}
