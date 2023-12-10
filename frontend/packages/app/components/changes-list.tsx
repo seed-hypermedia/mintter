@@ -35,7 +35,7 @@ import {
 } from '../models/groups'
 import {toast} from '../toast'
 import {
-  GroupPublicationRouteContext,
+  GroupVariant,
   NavRoute,
   unpackHmIdWithAppRoute,
   useNavRoute,
@@ -44,6 +44,72 @@ import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
+
+export function EntityVersionsAccessory({
+  id,
+  activeVersion,
+  variantVersion,
+}: {
+  id?: UnpackedHypermediaId | null
+  activeVersion: string | undefined
+  variantVersion: string | undefined
+}) {
+  const changes = useDocHistory(id?.id, variantVersion)
+  const route = useNavRoute()
+  const pubContext = route?.key === 'publication' ? route.variant : undefined
+  const docId = route?.key === 'publication' ? route.documentId : undefined
+  const groupVariant = pubContext?.key === 'group' ? pubContext : null
+  const myGroups = useMyGroups()
+  const isInPostableContext =
+    groupVariant &&
+    myGroups.data?.items?.find(
+      (item) => item.group?.id === groupVariant?.groupId,
+    )
+  const postToGroup = useAppDialog(PostToGroupDialog)
+  const currentGroups = useCurrentDocumentGroups(docId)
+  if (!id) return null
+  return (
+    <>
+      <AccessoryContainer title="Variant History">
+        <PostToGroup.Provider
+          value={
+            groupVariant && docId && isInPostableContext
+              ? (changeId) => {
+                  postToGroup.open({groupVariant, changeId, docId})
+                }
+              : null
+          }
+        >
+          <YStack
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            paddingBottom="$6"
+            borderBottomColor="$borderColor"
+            borderBottomWidth={1}
+          >
+            {changes.map((item, index) => {
+              const activeGroups = currentGroups.data?.filter((groupEntry) => {
+                const docId = unpackDocId(groupEntry.rawUrl)
+                return !!docId?.version && item.change.id === docId?.version
+              })
+              return (
+                <ChangeItem
+                  prevListedChange={changes[index - 1]}
+                  entityId={id.id}
+                  key={item.change.id}
+                  change={item.change}
+                  activeGroups={activeGroups}
+                  activeVersion={activeVersion}
+                />
+              )
+            })}
+          </YStack>
+        </PostToGroup.Provider>
+      </AccessoryContainer>
+      {postToGroup.content}
+    </>
+  )
+}
 
 function ChangeItem({
   change,
@@ -230,30 +296,31 @@ function ActiveGroupButton({
     </Button>
   )
 }
+
 function PostToGroupDialog({
   input,
   onClose,
 }: {
   input: {
-    groupPubContext: GroupPublicationRouteContext
+    groupVariant: GroupVariant
     changeId: string
     docId: string
   }
   onClose: () => void
 }) {
-  const group = useGroup(input.groupPubContext.groupId)
-  const groupContent = useGroupContent(input.groupPubContext.groupId)
+  const group = useGroup(input.groupVariant.groupId)
+  const groupContent = useGroupContent(input.groupVariant.groupId)
   const publish = usePublishDocToGroup()
   const prevItem =
-    input.groupPubContext.pathName &&
-    groupContent.data?.content?.[input.groupPubContext.pathName]
+    input.groupVariant.pathName &&
+    groupContent.data?.content?.[input.groupVariant.pathName]
   // const prevItemId = prevItem ? unpackHmId(prevItem) : null
   const navigate = useNavigate()
   return (
     <>
       <DialogTitle>Update &quot;{group.data?.title}&quot;</DialogTitle>
       <DialogDescription>
-        Replace &quot;{input.groupPubContext?.pathName}
+        Replace &quot;{input.groupVariant?.pathName}
         &quot; with this version?
       </DialogDescription>
       <YStack gap="$1">
@@ -261,15 +328,15 @@ function PostToGroupDialog({
           theme="green"
           iconAfter={publish.isLoading ? <Spinner /> : null}
           onPress={() => {
-            if (!input.groupPubContext.pathName) {
+            if (!input.groupVariant.pathName) {
               onClose()
               return
             }
             publish
               .mutateAsync({
                 docId: input.docId,
-                groupId: input.groupPubContext.groupId,
-                pathName: input.groupPubContext.pathName,
+                groupId: input.groupVariant.groupId,
+                pathName: input.groupVariant.pathName,
                 version: input.changeId,
               })
               .then(() => {
@@ -277,7 +344,7 @@ function PostToGroupDialog({
                 navigate({
                   key: 'publication',
                   documentId: input.docId,
-                  pubContext: input.groupPubContext,
+                  variant: input.groupVariant,
                   accessory: {key: 'versions'},
                 })
                 toast.success('Group version updated')
@@ -301,88 +368,6 @@ function PostToGroupDialog({
           Cancel
         </Button>
       </YStack>
-    </>
-  )
-}
-
-export function EntityVersionsAccessory({
-  id,
-  activeVersion,
-  variantVersion,
-}: {
-  id?: UnpackedHypermediaId | null
-  activeVersion: string | undefined
-  variantVersion: string | undefined
-}) {
-  const changes = useDocHistory(id?.id, variantVersion)
-  const route = useNavRoute()
-  const pubContext = route?.key === 'publication' ? route.variant : undefined
-  const docId = route?.key === 'publication' ? route.documentId : undefined
-  const groupVariant = pubContext?.key === 'group' ? pubContext : null
-  const myGroups = useMyGroups()
-  const isInPostableContext =
-    groupVariant &&
-    myGroups.data?.items?.find(
-      (item) => item.group?.id === groupVariant?.groupId,
-    )
-  const postToGroup = useAppDialog(PostToGroupDialog)
-  const currentGroups = useCurrentDocumentGroups(docId)
-  if (!id) return null
-  return (
-    <>
-      <AccessoryContainer title="Variant History">
-        <PostToGroup.Provider
-          value={
-            groupVariant && docId && isInPostableContext
-              ? (changeId) => {
-                  postToGroup.open({groupVariant, changeId, docId})
-                }
-              : null
-          }
-        >
-          {/* <NextChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          /> */}
-          {/* <ActiveChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          />
-          <PrevChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          /> */}
-
-          <YStack
-            paddingHorizontal="$4"
-            paddingVertical="$2"
-            paddingBottom="$6"
-            borderBottomColor="$borderColor"
-            borderBottomWidth={1}
-          >
-            {changes.map((item, index) => {
-              const activeGroups = currentGroups.data?.filter((groupEntry) => {
-                const docId = unpackDocId(groupEntry.rawUrl)
-                return !!docId?.version && item.change.id === docId?.version
-              })
-              return (
-                <ChangeItem
-                  prevListedChange={changes[index - 1]}
-                  entityId={id.id}
-                  key={item.change.id}
-                  change={item.change}
-                  activeGroups={activeGroups}
-                  activeVersion={activeVersion}
-                />
-              )
-            })}
-          </YStack>
-        </PostToGroup.Provider>
-      </AccessoryContainer>
-      {postToGroup.content}
     </>
   )
 }

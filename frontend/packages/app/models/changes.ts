@@ -67,21 +67,9 @@ export function useDocHistory(docId?: string, variantVersion?: string) {
         // @ts-ignore
         return dateB - dateA
       })
-    // return [...variantVersionChanges, ...deduplicatedChanges(prevChanges)]
   }, [data, variantVersion])
   return changes
 }
-
-// function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
-//   const seenChanges = new Set<string>()
-//   const deduplicated: TimelineChange[] = []
-//   changes.forEach((ch) => {
-//     if (seenChanges.has(ch.change.id)) return
-//     seenChanges.add(ch.change.id)
-//     deduplicated.push(ch)
-//   })
-//   return deduplicated
-// }
 
 export type SmartChangeInfo = ChangeInfo & {
   webPubs: WebPublicationRecord[]

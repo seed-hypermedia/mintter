@@ -190,6 +190,7 @@ export function usePublishDocToGroup(
     onSuccess: (result, input, context) => {
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.GET_GROUP_CONTENT, input.groupId])
+      invalidate([queryKeys.ENTITY_TIMELINE, input.groupId])
       invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, input.docId])
     },
   })
