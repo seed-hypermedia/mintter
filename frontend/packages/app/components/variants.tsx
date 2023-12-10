@@ -856,27 +856,36 @@ function AuthorVariantState({
   publication: Publication | undefined
 }) {
   const authorsVariant = variant?.key === 'authors' ? variant : undefined
-  if (authorsVariant?.authors && authorsVariant.authors.length > 1)
-    throw new Error('Multi-author variant not supported yet')
-  const author =
+  const authors =
     variant?.key === 'group'
       ? undefined
-      : authorsVariant?.authors[0] || publication?.document?.author
-  const account = useAccount(author)
-  if (!author) return <SizableText>!?</SizableText>
+      : authorsVariant?.authors || [publication?.document?.author]
+  const firstAccount = useAccount(authors?.[0])
+  if (!authors) return <SizableText>Variant</SizableText>
   return (
     <XStack gap="$2" ai="center">
-      <UIAvatar
-        id={author}
-        size={20}
-        url={
-          account.data?.profile?.avatar &&
-          `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
-        }
-        label={account.data?.profile?.alias || author}
-      />
-      <SizableText>{account.data?.profile?.alias}</SizableText>
+      {authors.map(
+        (author) => author && <AuthorIcon key={author} author={author} />,
+      )}
+      {authors.length === 1 ? (
+        <SizableText>{firstAccount.data?.profile?.alias}</SizableText>
+      ) : null}
     </XStack>
+  )
+}
+
+function AuthorIcon({author}: {author: string}) {
+  const account = useAccount(author)
+  return (
+    <UIAvatar
+      id={author}
+      size={20}
+      url={
+        account.data?.profile?.avatar &&
+        `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
+      }
+      label={account.data?.profile?.alias || author}
+    />
   )
 }
 
@@ -903,10 +912,12 @@ function AuthorVariantItem({
   const isOwner =
     !!publication?.document?.author &&
     publication.document.author === authorVersion.author
+  const canPressCheck = activeAuthors.length > 1 || !isActive
   return (
     <Button
       backgroundColor={'transparent'}
       padding="$1"
+      group="item"
       paddingHorizontal="$2"
       onPress={() => {
         navigate({
@@ -953,8 +964,40 @@ function AuthorVariantItem({
             </SizableText>
           </YStack>
         </XStack>
-
-        <Check color={isVariantActive ? '$blue11' : 'transparent'} size="$1" />
+        <Button
+          size="$2"
+          chromeless
+          paddingHorizontal="$1"
+          onPress={(e) => {
+            if (!canPressCheck) return
+            e.stopPropagation()
+            const newAuthors = isVariantActive
+              ? activeAuthors.filter((a) => a !== authorVersion.author)
+              : [...activeAuthors, authorVersion.author]
+            navigate({
+              ...route,
+              versionId: undefined,
+              variant: {
+                key: 'authors',
+                authors: newAuthors,
+              },
+            })
+          }}
+          borderColor="transparent"
+          disabled={!canPressCheck}
+          minWidth={30}
+          hoverStyle={{
+            borderColor: canPressCheck ? '$color11' : 'transparent',
+          }}
+          $group-item-hover={{
+            borderColor: canPressCheck ? '$color8' : 'transparent',
+          }}
+        >
+          <Check
+            color={isVariantActive ? '$blue11' : 'transparent'}
+            size="$1"
+          />
+        </Button>
       </XStack>
     </Button>
   )

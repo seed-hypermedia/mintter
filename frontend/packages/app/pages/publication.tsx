@@ -24,6 +24,7 @@ import {
   ButtonText,
   Link,
   Separator,
+  SizableText,
   Text,
   XStack,
   YStack,
@@ -118,24 +119,27 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
             {editors
               .map((editor) => editor.data)
               .filter(Boolean)
-              .map((editorAccount, idx) => (
-                <XStack
-                  zIndex={idx + 1}
-                  key={editorAccount?.id}
-                  borderColor="$background"
-                  backgroundColor="$background"
-                  borderWidth={2}
-                  borderRadius={100}
-                  marginLeft={-8}
-                >
-                  <BaseAccountLinkAvatar
-                    account={editorAccount}
-                    accountId={editorAccount?.id}
-                  />
-                </XStack>
-              ))}
+              .map(
+                (editorAccount, idx) =>
+                  editorAccount?.id && (
+                    <XStack
+                      zIndex={idx + 1}
+                      key={editorAccount?.id}
+                      borderColor="$background"
+                      backgroundColor="$background"
+                      borderWidth={2}
+                      borderRadius={100}
+                      marginLeft={-8}
+                    >
+                      <BaseAccountLinkAvatar
+                        account={editorAccount}
+                        accountId={editorAccount?.id}
+                      />
+                    </XStack>
+                  ),
+              )}
           </XStack>
-          <Text fontWeight={'bold'}>
+          <SizableText flexWrap="wrap">
             {editors
               .map((editor) => editor.data)
               .filter(Boolean)
@@ -154,14 +158,16 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
                     {account.profile?.alias}
                   </ButtonText>
                 ) : null,
-                index !== editors.length - 1
-                  ? index === editors.length - 2
-                    ? ' & '
-                    : ', '
-                  : null,
+                index !== editors.length - 1 ? (
+                  index === editors.length - 2 ? (
+                    <Text fontWeight={'bold'}>{' & '}</Text>
+                  ) : (
+                    <Text fontWeight={'bold'}>{', '}</Text>
+                  )
+                ) : null,
               ])
               .filter(Boolean)}
-          </Text>
+          </SizableText>
         </XStack>
         <XStack ai="center">
           <Text marginHorizontal="$4" color="$color10" verticalAlign="middle">

@@ -53,14 +53,20 @@ export function usePublicationVariant({
     //   // this probably happens as a race condition sometimes while publishing
     // }
   } else if (authorVariant) {
-    const variantAuthor = authorVariant.authors[0]
-    if (authorVariant.authors.length !== 1 || !variantAuthor)
-      throw new Error('Authors variant must have exactly one author')
-    const authorVersion = timelineQuery.data?.authorVersions.find(
-      (authorVersion) => authorVersion.author === variantAuthor,
+    const variantAuthors = new Set(authorVariant.authors)
+    // if (authorVariant.authors.length !== 1 || !variantAuthor)
+    //   throw new Error('Authors variant must have exactly one author')
+    const authorVersions = timelineQuery.data?.authorVersions.filter(
+      (authorVersion) => variantAuthors.has(authorVersion.author),
     )
-    if (authorVersion) {
-      queryVariantVersion = authorVersion.version
+    const activeChanges = new Set()
+    authorVersions?.forEach((versionItem) => {
+      versionItem.version.split('.').forEach((changeId) => {
+        activeChanges.add(changeId)
+      })
+    })
+    if (activeChanges.size) {
+      queryVariantVersion = [...activeChanges].join('.')
     } else {
       queryDocumentId = undefined
     }
