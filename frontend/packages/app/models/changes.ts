@@ -34,45 +34,54 @@ export function useDocChanges(docId?: string) {
 export function useDocHistory(docId?: string, variantVersion?: string) {
   const {data} = useEntityTimeline(docId)
   const changes = useMemo(() => {
+    const allVariantChanges = new Set<string>()
     const variantVersionChanges: TimelineChange[] = []
     variantVersion
       ?.split('.')
       .map((chId) => data?.allChanges[chId])
-      .forEach((ch) => ch && variantVersionChanges.push(ch))
-    const prevChanges: TimelineChange[] = []
+      .forEach((ch) => {
+        if (!ch) return
+        variantVersionChanges.push(ch)
+        allVariantChanges.add(ch.id)
+      })
     let walkLeafVersions = variantVersionChanges
     while (walkLeafVersions?.length) {
       const nextLeafVersions: TimelineChange[] = []
       for (const change of walkLeafVersions) {
         change?.change.deps?.map((depChangeId) => {
+          allVariantChanges.add(depChangeId)
           const depChange = data?.allChanges[depChangeId]
           if (depChange) {
-            prevChanges.push(depChange)
             nextLeafVersions.push(depChange)
           }
         })
       }
       walkLeafVersions = nextLeafVersions
     }
-    const nextVersionChangeIds = new Set<string>()
-    variantVersionChanges.forEach((ch) =>
-      ch.citations.forEach((citingId) => nextVersionChangeIds.add(citingId)),
-    )
-    return [...variantVersionChanges, ...deduplicatedChanges(prevChanges)]
+    return [...allVariantChanges]
+      .map((changeId) => data?.allChanges[changeId])
+      .filter(Boolean)
+      .sort((a, b) => {
+        let dateA = a?.change.createTime ? a.change.createTime.toDate() : 0
+        let dateB = b?.change.createTime ? b.change.createTime.toDate() : 1
+        // @ts-ignore
+        return dateB - dateA
+      })
+    // return [...variantVersionChanges, ...deduplicatedChanges(prevChanges)]
   }, [data, variantVersion])
   return changes
 }
 
-function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
-  const seenChanges = new Set<string>()
-  const deduplicated: TimelineChange[] = []
-  changes.forEach((ch) => {
-    if (seenChanges.has(ch.change.id)) return
-    seenChanges.add(ch.change.id)
-    deduplicated.push(ch)
-  })
-  return deduplicated
-}
+// function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
+//   const seenChanges = new Set<string>()
+//   const deduplicated: TimelineChange[] = []
+//   changes.forEach((ch) => {
+//     if (seenChanges.has(ch.change.id)) return
+//     seenChanges.add(ch.change.id)
+//     deduplicated.push(ch)
+//   })
+//   return deduplicated
+// }
 
 export type SmartChangeInfo = ChangeInfo & {
   webPubs: WebPublicationRecord[]
