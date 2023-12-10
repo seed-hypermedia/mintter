@@ -900,6 +900,9 @@ function AuthorVariantItem({
   const isVariantActive = new Set(activeAuthors).has(authorVersion.author)
   const isActive =
     !!publication?.version && publication?.version === authorVersion.version
+  const isOwner =
+    !!publication?.document?.author &&
+    publication.document.author === authorVersion.author
   return (
     <Button
       backgroundColor={'transparent'}
@@ -928,9 +931,23 @@ function AuthorVariantItem({
             label={author.data?.profile?.alias || authorVersion.author}
           />
           <YStack>
-            <SizableText color={isActive ? '$blue11' : '$color'}>
-              {author.data?.profile?.alias}
-            </SizableText>
+            <XStack gap="$2" ai="center">
+              <SizableText color={isActive ? '$blue11' : '$color'}>
+                {author.data?.profile?.alias}
+              </SizableText>
+              {isOwner ? (
+                <XStack
+                  borderWidth={1}
+                  borderColor="$color8"
+                  paddingHorizontal="$1"
+                  borderRadius="$2"
+                >
+                  <SizableText size="$1" color="$color10">
+                    Owner
+                  </SizableText>
+                </XStack>
+              ) : null}
+            </XStack>
             <SizableText color="$color11" size="$1">
               {formattedDateMedium(authorVersion.versionTime)}
             </SizableText>
