@@ -28,6 +28,7 @@ import {
   formattedDateMedium,
   labelOfEntityType,
   shortenPath,
+  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
 import {AuthorVersion} from '@mintter/shared/src/client/.generated/entities/v1alpha/entities_pb'
@@ -474,16 +475,22 @@ function GroupVariantItem({
   path,
   route,
   onPathPress,
+  activeVersion,
+  fullUrl,
 }: {
   groupId: string
   path: string | null
   route: PublicationRoute | DraftRoute
   onPathPress?: (() => void) | undefined
+  activeVersion?: string
+  fullUrl: string
 }) {
   const replaceRoute = useNavigate('replace')
   const group = useGroup(groupId)
   const pubRoute = route.key === 'publication' ? route : null
-  const isActive =
+  const fullDocId = unpackDocId(fullUrl)
+  const isActive = !!activeVersion && activeVersion === fullDocId?.version
+  const isActiveVariant =
     pubRoute?.variant?.key === 'group' &&
     groupId === pubRoute.variant.groupId &&
     (path === pubRoute.variant.pathName || pubRoute.variant.pathName === '')
@@ -491,7 +498,7 @@ function GroupVariantItem({
   const isGroupMember = myGroups.data?.items?.find((groupAccount) => {
     return groupAccount.group?.id === groupId
   })
-  const isPathPressable = isActive && isGroupMember && onPathPress
+  const isPathPressable = isActiveVariant && isGroupMember && onPathPress
   return (
     <Button
       size="$3"
@@ -501,7 +508,7 @@ function GroupVariantItem({
       flex={1}
       minHeight={50}
       color={isActive ? '$blue11' : '$color12'}
-      disabled={isActive}
+      disabled={isActiveVariant}
       onPress={() => {
         if (pubRoute) {
           replaceRoute({
@@ -552,7 +559,7 @@ function GroupVariantItem({
           )}
         </YStack>
         <View style={{minWidth: 22}}>
-          {isActive && <Check size="$1" color="$blue11" />}
+          {isActiveVariant && <Check size="$1" color="$blue11" />}
         </View>
       </XStack>
     </Button>
@@ -745,7 +752,12 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
                   {
                     label: 'Groups',
                     key: 'groups',
-                    element: <GroupVariants route={route} />,
+                    element: (
+                      <GroupVariants
+                        route={route}
+                        publication={publication.data?.publication}
+                      />
+                    ),
                   },
                 ]}
               />
@@ -885,7 +897,9 @@ function AuthorVariantItem({
     (publication?.document?.author && !route.variant
       ? [publication?.document?.author]
       : [])
-  const isActive = new Set(activeAuthors).has(authorVersion.author)
+  const isVariantActive = new Set(activeAuthors).has(authorVersion.author)
+  const isActive =
+    !!publication?.version && publication?.version === authorVersion.version
   return (
     <Button
       backgroundColor={'transparent'}
@@ -923,7 +937,7 @@ function AuthorVariantItem({
           </YStack>
         </XStack>
 
-        <Check color={isActive ? '$blue11' : 'transparent'} size="$1" />
+        <Check color={isVariantActive ? '$blue11' : 'transparent'} size="$1" />
       </XStack>
     </Button>
   )
@@ -952,10 +966,14 @@ function AuthorVariants({
   )
 }
 
-function GroupVariants({route}: {route: PublicationRoute}) {
+function GroupVariants({
+  route,
+  publication,
+}: {
+  route: PublicationRoute
+  publication: Publication | undefined
+}) {
   if (route.key !== 'publication') throw new Error('Uh')
-  const {variant} = route
-  const groupVariant = variant?.key === 'group' ? variant : null
   const docGroups = useCurrentDocumentGroups(route.documentId)
   return (
     <YStack gap="$2" padding="$2">
@@ -965,6 +983,8 @@ function GroupVariants({route}: {route: PublicationRoute}) {
             groupId={docGroup.groupId}
             path={docGroup.path}
             route={route}
+            activeVersion={publication?.version}
+            fullUrl={docGroup.rawUrl}
             key={`${docGroup.groupId}-${docGroup.path}`}
           />
         )
