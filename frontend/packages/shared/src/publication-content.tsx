@@ -577,8 +577,6 @@ export function PublicationHeading({
         padding={layoutUnit / 3}
         marginBottom={layoutUnit}
         paddingBottom={layoutUnit / 2}
-        borderBottomColor="$color6"
-        borderBottomWidth={1}
         {...headingMarginStyles}
       >
         <XStack>
@@ -943,7 +941,7 @@ export function BlockContentEmbed(props: BlockContentProps) {
     return <EmbedTypes.GroupCard {...props} {...id} />
   }
   if (id?.type == 'd') {
-    switch (props.block.attributes?.display || 'content') {
+    switch (props.block.attributes?.view || 'content') {
       case 'card':
         return <EmbedTypes.PublicationCard {...props} {...id} />
       default:
@@ -955,7 +953,7 @@ export function BlockContentEmbed(props: BlockContentProps) {
 
 export function EmbedContentGroup({group}: {group: HMGroup}) {
   return (
-    <XStack gap="$3" padding="$4" alignItems="flex-start">
+    <XStack gap="$3" padding="$2" alignItems="flex-start">
       <XStack paddingVertical="$3">
         <Book size={36} />
       </XStack>

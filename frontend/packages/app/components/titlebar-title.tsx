@@ -1,6 +1,5 @@
-import {AccountLinkAvatar} from '@mintter/app/components/account-link-avatar'
 import {useDraftTitle} from '@mintter/app/models/documents'
-import {usePublicationInContext} from '@mintter/app/models/publication'
+import {usePublicationVariant} from '@mintter/app/models/publication'
 import {
   DraftRoute,
   PublicationRoute,
@@ -9,25 +8,25 @@ import {
 import {
   ErrorIcon,
   FontSizeTokens,
-  Globe,
   Pencil,
+  SizableText,
   Spinner,
   TitleText,
   XStack,
 } from '@mintter/ui'
-import {Bookmark, Contact, Library} from '@tamagui/lucide-icons'
+import {Book, Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
-import {NavRoute} from '../utils/navigation'
+import {useGroup} from '../models/groups'
+import {GroupRoute, NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
-import {PageContextButton, VersionContext} from './publish-share'
-import {Slash} from './slash'
+import {VersionContext} from './variants'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
 
   useEffect(() => {
     async function getTitleOfRoute(route: NavRoute): Promise<string> {
-      if (route.key === 'home') return 'Publications'
+      if (route.key === 'documents') return 'Documents'
       if (route.key === 'drafts') return 'Drafts'
       if (route.key === 'contacts') return 'Contacts'
       return '?'
@@ -39,22 +38,12 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     })
   }, [route])
 
-  if (route.key === 'home') {
+  if (route.key === 'documents') {
     return (
       <>
-        <Bookmark size={12} />
-        <TitleText size={size} data-testid="titlebar-title">
-          Publications
-        </TitleText>
-      </>
-    )
-  }
-  if (route.key === 'all-publications') {
-    return (
-      <>
-        <Globe size={12} />
-        <TitleText data-testid="titlebar-title" size={size}>
-          All Publications
+        <FileText size={12} />
+        <TitleText size={size} fontWeight="bold" data-testid="titlebar-title">
+          Documents
         </TitleText>
       </>
     )
@@ -78,7 +67,12 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     )
   }
   if (route.key === 'group') {
-    return <PageContextButton />
+    return (
+      <>
+        <GroupTitle route={route} />
+        <VersionContext route={route} />
+      </>
+    )
   }
   if (route.key === 'drafts') {
     return (
@@ -101,8 +95,8 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'publication') {
     return (
       <>
-        <PageContextButton />
-        <Slash />
+        {/* <PageContextButton />
+        <Slash /> */}
         <PublicationTitle route={route} />
         <VersionContext route={route} />
       </>
@@ -111,8 +105,8 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   if (route.key === 'draft') {
     return (
       <>
-        <PageContextButton />
-        <Slash />
+        {/* <PageContextButton />
+        <Slash /> */}
         <DraftTitle route={route} />
       </>
     )
@@ -120,16 +114,26 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   return null
 }
 
+function GroupTitle({route}: {route: GroupRoute}) {
+  const group = useGroup(route.groupId)
+  if (!group.data) return null
+  return (
+    <XStack ai="center" gap="$2">
+      <Book size="$1" />
+      <SizableText>{group.data.title}</SizableText>
+    </XStack>
+  )
+}
+
 export function Title({size}: {size?: FontSizeTokens}) {
   return (
     <XStack
       gap="$2"
-      alignItems="center"
-      margin="auto"
+      alignItems="flex-start"
       marginVertical={0}
       paddingHorizontal="$4"
-      flex={1}
-      justifyContent="center"
+      justifyContent="flex-start"
+      ai="center"
     >
       <TitleContent size={size} />
     </XStack>
@@ -143,30 +147,21 @@ function PublicationTitle({
   route: PublicationRoute
   size?: FontSizeTokens
 }) {
-  let pub = usePublicationInContext({
+  let pub = usePublicationVariant({
     documentId: route.documentId,
     versionId: route.versionId,
-    pubContext: route.pubContext,
+    variant: route.variant,
     enabled: !!route.documentId,
   })
   if (pub.error) {
     return <ErrorIcon />
   }
-  const document = pub.data?.document
+  const document = pub.data?.publication?.document
   return (
     <>
-      <TitleText data-testid="titlebar-title" size={size}>
+      <TitleText fontWeight="bold" data-testid="titlebar-title" size={size}>
         {pub.isInitialLoading ? <Spinner /> : getDocumentTitle(document)}
       </TitleText>
-      <XStack gap={0} data-tauri-drag-region>
-        {document?.editors.length === 0 ? (
-          <AccountLinkAvatar accountId={document?.author} />
-        ) : (
-          document?.editors.map((editor) => (
-            <AccountLinkAvatar accountId={editor} key={editor} />
-          ))
-        )}
-      </XStack>
     </>
   )
 }

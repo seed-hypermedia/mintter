@@ -1,6 +1,9 @@
-package maputil
+package colx
 
-func Set(v map[string]any, path []string, value any) {
+// Object in this file means an open-ended map (like a JavaScript object).
+
+// ObjectSet sets a value in a nested map by path.
+func ObjectSet(v map[string]any, path []string, value any) {
 	for i := 0; i < len(path)-1; i++ {
 		key := path[i]
 
@@ -14,9 +17,9 @@ func Set(v map[string]any, path []string, value any) {
 	v[path[len(path)-1]] = value
 }
 
-// Delete value from a nested map by path.
+// ObjectDelete value from a nested map by path.
 // It can panic if some of the values in the path are not maps.
-func Delete(v map[string]any, path []string) {
+func ObjectDelete(v map[string]any, path []string) {
 	for i := 0; i < len(path)-1; i++ {
 		key := path[i]
 
@@ -30,7 +33,8 @@ func Delete(v map[string]any, path []string) {
 	delete(v, path[len(path)-1])
 }
 
-func Get(v map[string]any, path []string) (value any, ok bool) {
+// ObjectGet gets a value from a nested map by path.
+func ObjectGet(v map[string]any, path []string) (value any, ok bool) {
 	if v == nil {
 		return nil, false
 	}

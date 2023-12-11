@@ -16,11 +16,10 @@ import (
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/maputil"
-	"mintter/backend/pkg/slicex"
 	"net/http"
 	"net/url"
 	"strings"
@@ -61,7 +60,7 @@ func NewServer(me *future.ReadOnly[core.Identity], log *zap.Logger, db *DB, blob
 
 // StartPeriodicSync starts periodic sync of sites.
 // It will block until the provided context is canceled.
-func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration) error {
+func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.Duration, burst bool) error {
 	t := time.NewTimer(warmup)
 	defer t.Stop()
 
@@ -87,7 +86,7 @@ func (srv *Server) StartPeriodicSync(ctx context.Context, warmup, interval time.
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-t.C:
-			if err := srv.scheduleSiteWorkers(ctx, &wg, siteWorkers, interval); err != nil {
+			if err := srv.scheduleSiteWorkers(ctx, &wg, siteWorkers, interval, burst); err != nil {
 				return err
 			}
 			t.Reset(interval)
@@ -101,15 +100,28 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 	wg *sync.WaitGroup,
 	siteWorkers map[string]context.CancelFunc,
 	interval time.Duration,
+	burst bool,
 ) error {
 	groups, err := srv.db.ListSiteGroups(ctx)
 	if err != nil {
 		return err
 	}
+	// In order not to create a CPU overhead we spread sync routines throughout the
+	// syncing interval
+	roundSleep := time.Microsecond * 0
+	const numSlots = 100
+	every := 1
+
+	if !burst {
+		roundSleep = (interval * 70 / 100) / numSlots
+		if len(groups) > numSlots {
+			every = 1 + len(groups)/numSlots
+		}
+	}
 
 	// TODO(burdiyan): handle removing sites and stopping workers.
 	// It's currently not possible anyways.
-	for _, group := range groups {
+	for i, group := range groups {
 		if _, ok := siteWorkers[group]; ok {
 			continue
 		}
@@ -157,6 +169,9 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 				}
 			}
 		}(group)
+		if i%every == 0 {
+			time.Sleep(roundSleep)
+		}
 	}
 
 	return nil
@@ -326,7 +341,7 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 		}
 
 		if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
-			Blobs: slicex.Map(missingOnSite, cid.Cid.String),
+			Blobs: colx.SliceMap(missingOnSite, cid.Cid.String),
 		}); err != nil {
 			return fmt.Errorf("failed to push blobs to the site: %w", err)
 		}
@@ -447,7 +462,7 @@ func addrInfoFromProto(in *groups.PeerInfo) (ai peer.AddrInfo, err error) {
 		return ai, err
 	}
 
-	addrs, err := slicex.MapE(in.Addrs, multiaddr.NewMultiaddr)
+	addrs, err := colx.SliceMapErr(in.Addrs, multiaddr.NewMultiaddr)
 	if err != nil {
 		return ai, fmt.Errorf("failed to parse peer info addrs: %w", err)
 	}
@@ -533,7 +548,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	for k, v := range in.UpdatedContent {
 		oldv, ok := e.Get("content", k)
 		if !ok || oldv.(string) != v {
-			maputil.Set(patch, []string{"content", k}, v)
+			colx.ObjectSet(patch, []string{"content", k}, v)
 		}
 	}
 
@@ -541,7 +556,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 		if v == groups.Role_ROLE_UNSPECIFIED {
 			return nil, status.Errorf(codes.Unimplemented, "removing members is not implemented yet")
 		}
-		maputil.Set(patch, []string{"members", k}, int64(v))
+		colx.ObjectSet(patch, []string{"members", k}, int64(v))
 	}
 
 	del, err := srv.getDelegation(ctx)
@@ -590,7 +605,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 
 // ListGroups lists groups.
 func (srv *Server) ListGroups(ctx context.Context, in *groups.ListGroupsRequest) (*groups.ListGroupsResponse, error) {
-	entities, err := srv.blobs.ListEntities(ctx, "hm://g/")
+	entities, err := srv.blobs.ListEntities(ctx, "hm://g/*")
 	if err != nil {
 		return nil, err
 	}

@@ -1,23 +1,24 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Document, formattedDate, formattedDateMedium} from '@mintter/shared'
 import {
   AlertCircle,
   Button,
-  SizableText,
   Spinner,
   Tooltip,
   YStack,
   YStackProps,
 } from '@mintter/ui'
 import {Check} from '@tamagui/lucide-icons'
+import {PropsWithChildren} from 'react'
 import {useGRPCClient} from '../app-context'
-import {useDraft, usePublishDraft} from '../models/documents'
+import {useMyAccount} from '../models/accounts'
+import {usePublishDraft} from '../models/documents'
+import {DraftStatusContext} from '../models/draft-machine'
+import {useGroup} from '../models/groups'
 import {useDaemonReady} from '../node-status-context'
 import {toast} from '../toast'
+import {AuthorsVariant} from '../utils/navigation'
 import {useMediaDialog} from './media-dialog'
-import {DraftStatusContext} from '../models/draft-machine'
-import {PropsWithChildren, useState} from 'react'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -28,9 +29,15 @@ export default function CommitDraftButton() {
   const navReplace = useNavigate('replace')
   const navBack = useNavigate('backplace')
   const grpcClient = useGRPCClient()
-
-  const groupRouteContext =
-    route.pubContext?.key === 'group' ? route.pubContext : null
+  const myAccount = useMyAccount()
+  const myAuthorVariant: AuthorsVariant | null = myAccount.data?.id
+    ? {
+        key: 'authors',
+        authors: [myAccount.data.id],
+      }
+    : null
+  const groupVariant = route.variant
+  const group = useGroup(groupVariant?.groupId)
 
   const mediaDialog = useMediaDialog()
   const isDaemonReady = useDaemonReady()
@@ -41,20 +48,21 @@ export default function CommitDraftButton() {
     s.matches('error'),
   )
   const publish = usePublishDraft({
-    onSuccess: ({pub: publishedDoc, pubContext, isFirstPublish}) => {
+    onSuccess: ({pub: publishedDoc, groupVariant}) => {
       if (!publishedDoc || !draftId) return
       if (
         route.contextRoute?.key === 'group' &&
-        pubContext?.key === 'group' &&
-        pubContext.pathName === '/'
+        groupVariant?.key === 'group' &&
+        groupVariant.pathName === '/'
       ) {
         navBack(route.contextRoute)
       } else {
+        console.log('HELLOOOO', groupVariant)
         navReplace({
           key: 'publication',
           documentId: draftId,
           versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
-          pubContext: pubContext,
+          variant: groupVariant || myAuthorVariant,
           // showFirstPublicationMessage: isFirstPublish, // disabled until gateway publish works again for fresh installations
         })
       }
@@ -97,7 +105,9 @@ export default function CommitDraftButton() {
           }}
           theme="green"
         >
-          {groupRouteContext ? 'Commit to Group' : 'Commit'}
+          {groupVariant
+            ? `Commit to ${group.data?.title || 'Group'}`
+            : 'Commit'}
         </Button>
       ) : null}
     </>

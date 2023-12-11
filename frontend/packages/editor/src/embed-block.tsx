@@ -1,5 +1,8 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {fetchWebLink} from '@mintter/app/models/web-links'
+import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
+import {useNavigate} from '@mintter/app/utils/useNavigate'
+
 import {
   BlockContentEmbed,
   extractBlockRefOfUrl,
@@ -15,28 +18,22 @@ import {
   Button,
   Form,
   Input,
-  Label,
   Popover,
-  Reload,
+  Select,
   SizableText,
   Spinner,
   Tabs,
-  Theme,
-  ToggleGroup,
   Tooltip,
-  XGroup,
   XStack,
-  YGroup,
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {MoreHorizontal} from '@tamagui/lucide-icons'
+import {Check, ChevronDown, ExternalLink} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {RiArticleLine} from 'react-icons/ri'
 import {Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos} from '.'
 import {createReactBlockSpec} from './blocknote/react'
-
 type LinkType = null | 'basic' | 'hypermedia'
 
 function EmbedError() {
@@ -53,7 +50,7 @@ export const EmbedBlock = createReactBlockSpec({
       values: ['false', 'true'],
       default: 'true',
     },
-    display: {
+    view: {
       values: ['content', 'card'], // TODO: convert HMEmbedDisplay type to array items
       default: 'content',
     },
@@ -73,6 +70,7 @@ type EmbedType = {
   id: string
   props: {
     ref: string
+    display?: 'content' | 'card'
   }
   children: []
   content: []
@@ -154,9 +152,8 @@ function EmbedComponent({
   setSelected: any
 }) {
   let {hover, ...hoverProps} = useHover()
-
   return (
-    <YStack gap="$2">
+    <YStack gap="$2" position="relative">
       <YStack
         backgroundColor={selected ? '$color4' : '$color3'}
         borderColor={selected ? '$color8' : 'transparent'}
@@ -174,9 +171,7 @@ function EmbedComponent({
       >
         {hover ? (
           <EmbedControl block={block} editor={editor} assign={assign} />
-        ) : (
-          <></>
-        )}
+        ) : null}
         {block.props.ref && (
           <ErrorBoundary FallbackComponent={EmbedError}>
             <BlockContentEmbed
@@ -186,7 +181,7 @@ function EmbedComponent({
                 text: ' ',
                 attributes: {
                   childrenType: 'group',
-                  display: block.props.display,
+                  view: block.props.view,
                 },
                 annotations: [],
                 ref: block.props.ref,
@@ -212,108 +207,101 @@ function EmbedControl({
   let isDocument = useMemo(() => {
     if (block.props.ref) {
       let unpackedRef = unpackHmId(block.props.ref)
-      return !unpackedRef?.blockRef
+      return unpackedRef?.type == 'd' && !unpackedRef?.blockRef
     }
     return false
   }, [block.props.ref])
 
-  return (
-    <XGroup position="absolute" top="$1.5" right="$1.5" zIndex="$4" size="$1">
-      <XGroup.Item>
-        <Tooltip content="replace">
-          <Button
-            size="$2"
-            onPress={() => {
-              assign({
-                props: {
-                  ref: '',
-                },
-                children: [],
-                content: [],
-                type: 'embed',
-              } as EmbedType)
-            }}
-            hoverStyle={{
-              backgroundColor: '$backgroundTransparent',
-            }}
-            icon={Reload}
-          />
-        </Tooltip>
-      </XGroup.Item>
-      {isDocument ? (
-        <XGroup.Item>
-          <Popover placement="bottom-end" animation="fast">
-            <Popover.Trigger asChild>
-              <Button size="$2" icon={MoreHorizontal} />
-            </Popover.Trigger>
-            <Popover.Content
-              padding={0}
-              elevation="$2"
-              enterStyle={{y: -10, opacity: 0}}
-              exitStyle={{y: -10, opacity: 0}}
-              elevate={true}
-              animation={[
-                'fast',
-                {
-                  opacity: {
-                    overshootClamping: true,
-                  },
-                },
-              ]}
-            >
-              <YGroup>
-                <YGroup.Item>
-                  <Theme name="mint">
-                    <XStack
-                      alignItems="center"
-                      justifyContent="center"
-                      space="$2"
-                      padding="$2"
-                    >
-                      <Label
-                        paddingRight="$0"
-                        justifyContent="flex-end"
-                        size="$1"
-                        htmlFor="embed-display"
-                      >
-                        Display
-                      </Label>
+  const spawn = useNavigate('spawn')
 
-                      <ToggleGroup
-                        orientation="horizontal"
-                        id="embed-display"
-                        type="single"
-                        size="$1"
-                        value={block.props.display}
-                        disableDeactivation
-                        onValueChange={(display) => {
-                          assign({props: {display}})
-                        }}
-                      >
-                        <ToggleGroup.Item
-                          active={block.props.display == 'content'}
-                          value="content"
-                          aria-label="Content display"
-                        >
-                          <SizableText size="$1">content</SizableText>
-                        </ToggleGroup.Item>
-                        <ToggleGroup.Item
-                          active={block.props.display == 'card'}
-                          value="card"
-                          aria-label="Card display"
-                        >
-                          <SizableText size="$1">card</SizableText>
-                        </ToggleGroup.Item>
-                      </ToggleGroup>
-                    </XStack>
-                  </Theme>
-                </YGroup.Item>
-              </YGroup>
-            </Popover.Content>
-          </Popover>
-        </XGroup.Item>
-      ) : null}
-    </XGroup>
+  const idRoute = block.props.ref
+    ? unpackHmIdWithAppRoute(block.props.ref)
+    : null
+  const navRoute = idRoute?.navRoute
+
+  return (
+    <XStack
+      position="absolute"
+      x={0}
+      y={0}
+      zIndex={100}
+      width="100%"
+      justifyContent="flex-end"
+    >
+      <XStack
+        padding="$2"
+        gap="$2"
+        alignItems="center"
+        justifyContent="flex-end"
+      >
+        <XStack
+          position="absolute"
+          width="100%"
+          top={0}
+          left={0}
+          height="100%"
+          opacity={0.7}
+          backgroundColor="$color4"
+          // backgroundColor={'red'}
+        />
+        {navRoute ? (
+          <Tooltip content="Open in a new window">
+            <Button
+              size="$1"
+              iconAfter={<ExternalLink />}
+              backgroundColor="$backgroundStrong"
+              onPress={() => {
+                spawn(navRoute)
+              }}
+            />
+          </Tooltip>
+        ) : null}
+        {isDocument ? (
+          <Select
+            id="view"
+            size="$2"
+            value={block.props.view}
+            onValueChange={(view) => {
+              assign({props: {view}})
+            }}
+          >
+            <Select.Trigger width={220}>
+              <XStack
+                gap="$1"
+                alignItems="center"
+                paddingVertical="$1"
+                paddingHorizontal="$2"
+                backgroundColor="$background"
+                borderRadius="$1"
+                hoverStyle={{
+                  backgroundColor: '$backgroundFocus',
+                  cursor: 'pointer',
+                }}
+              >
+                <SizableText size="$1">View</SizableText>
+                <ChevronDown size={12} />
+              </XStack>
+            </Select.Trigger>
+            <Select.Content zIndex={200000}>
+              <Select.Viewport disableScroll minWidth={200}>
+                <Select.Item index={1} value="content" gap="$2" minWidth={100}>
+                  <Select.ItemText>Content</Select.ItemText>
+                  <Select.ItemIndicator marginLeft="auto">
+                    <Check size={16} />
+                  </Select.ItemIndicator>
+                </Select.Item>
+                <Select.Item index={2} value="card" gap="$2" minWidth={100}>
+                  <Select.ItemText>Card</Select.ItemText>
+                  <Select.ItemIndicator>
+                    <Check size={16} />
+                  </Select.ItemIndicator>
+                </Select.Item>
+              </Select.Viewport>
+            </Select.Content>
+          </Select>
+        ) : null}
+      </XStack>
+    </XStack>
   )
 }
 

@@ -3,7 +3,6 @@ import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {PublicationListItem} from '@mintter/app/components/publication-list-item'
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
-import {useAccountPublicationList} from '@mintter/app/models/changes'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {toast} from '@mintter/app/toast'
@@ -22,14 +21,15 @@ import {
   YStack,
 } from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
-import {ReactNode} from 'react'
+import {ReactNode, useMemo} from 'react'
 import {AccountTrustButton} from '../components/account-trust'
 import {MenuItem} from '../components/dropdown'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
-import {useMyAccount} from '../models/accounts'
+import {useAllAccounts, useMyAccount} from '../models/accounts'
+import {useAccountPublications} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -69,36 +69,52 @@ function Section({children}: {children: ReactNode}) {
   )
 }
 
-function AccountDocuments({
-  accountId,
-  isTrusted,
-}: {
-  accountId: string
-  isTrusted?: boolean
-}) {
-  const list = useAccountPublicationList(accountId)
+function AccountDocuments({accountId}: {accountId: string}) {
+  const list = useAccountPublications(accountId)
+  const accounts = useAllAccounts()
+  const data = useMemo(() => {
+    function lookupAccount(accountId: string | undefined) {
+      return (
+        (accountId &&
+          accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
+        accountId
+      )
+    }
+    return list.data?.publications.map((pub) => {
+      return {
+        publication: pub,
+        author: lookupAccount(pub?.document?.author),
+        editors: pub?.document?.editors?.map(lookupAccount) || [],
+      }
+    })
+  }, [list.data, accounts.data])
   return (
     <Section>
-      {list.data?.map((pub) => {
-        const docId = pub.document?.id
+      {data?.map((item) => {
+        const {publication, author, editors} = item
+        const docId = publication.document?.id
         if (!docId) return null
         return (
           <PublicationListItem
-            pubContext={isTrusted ? {key: 'trusted'} : null}
             key={docId}
-            publication={pub}
+            publication={publication}
             hasDraft={undefined}
+            author={author}
+            editors={editors}
             menuItems={[
               copyLinkMenuItem(
-                idToUrl(docId, undefined, pub.version),
+                idToUrl(docId, undefined, publication.version),
                 'Publication',
               ),
             ]}
             openRoute={{
               key: 'publication',
-              documentId: pub.document?.id!,
-              versionId: pub.version,
-              pubContext: isTrusted ? {key: 'trusted'} : null,
+              documentId: docId,
+              versionId: publication.version,
+              variant: {
+                key: 'authors',
+                authors: [accountId],
+              },
             }}
           />
         )
@@ -247,10 +263,7 @@ export default function AccountPage() {
             ) : null}
           </Section>
 
-          <AccountDocuments
-            isTrusted={account.isTrusted}
-            accountId={accountId}
-          />
+          <AccountDocuments accountId={accountId} />
         </Container>
       </MainWrapper>
       <Footer />

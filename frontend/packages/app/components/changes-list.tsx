@@ -1,16 +1,18 @@
 import {useAccount} from '@mintter/app/models/accounts'
-import {TimelineChange, useEntityTimeline} from '@mintter/app/models/changes'
+import {TimelineChange} from '@mintter/app/models/changes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Change,
   createPublicWebHmUrl,
   formattedDateLong,
-  pluralS,
+  unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
+import {ListDocumentGroupsResponse_Item} from '@mintter/shared/src/client/.generated/groups/v1alpha/groups_pb'
 import {UnpackedHypermediaId} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
+  ButtonText,
   Copy,
   DialogDescription,
   DialogTitle,
@@ -20,10 +22,12 @@ import {
   YStack,
 } from '@mintter/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
-import {createContext, useContext, useMemo} from 'react'
+import {createContext, useContext} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import appError from '../errors'
+import {useDocHistory} from '../models/changes'
 import {
+  useCurrentDocumentGroups,
   useGroup,
   useGroupContent,
   useMyGroups,
@@ -31,7 +35,7 @@ import {
 } from '../models/groups'
 import {toast} from '../toast'
 import {
-  GroupPublicationRouteContext,
+  GroupVariant,
   NavRoute,
   unpackHmIdWithAppRoute,
   useNavRoute,
@@ -41,10 +45,70 @@ import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
-type ComputedChangeset = {
-  activeVersionChanges: TimelineChange[]
-  prevChanges: TimelineChange[]
-  nextChanges: TimelineChange[]
+export function EntityVersionsAccessory({
+  id,
+  activeVersion,
+  variantVersion,
+}: {
+  id?: UnpackedHypermediaId | null
+  activeVersion: string | undefined
+  variantVersion: string | undefined
+}) {
+  const changes = useDocHistory(id?.id, variantVersion)
+  const route = useNavRoute()
+  const pubContext = route?.key === 'publication' ? route.variant : undefined
+  const docId = route?.key === 'publication' ? route.documentId : undefined
+  const groupVariant = pubContext?.key === 'group' ? pubContext : null
+  const myGroups = useMyGroups()
+  const isInPostableContext =
+    groupVariant &&
+    myGroups.data?.items?.find(
+      (item) => item.group?.id === groupVariant?.groupId,
+    )
+  const postToGroup = useAppDialog(PostToGroupDialog)
+  const currentGroups = useCurrentDocumentGroups(docId)
+  if (!id) return null
+  return (
+    <>
+      <AccessoryContainer title="Variant History">
+        <PostToGroup.Provider
+          value={
+            groupVariant && docId && isInPostableContext
+              ? (changeId) => {
+                  postToGroup.open({groupVariant, changeId, docId})
+                }
+              : null
+          }
+        >
+          <YStack
+            paddingHorizontal="$4"
+            paddingVertical="$2"
+            paddingBottom="$6"
+            borderBottomColor="$borderColor"
+            borderBottomWidth={1}
+          >
+            {changes.map((item, index) => {
+              const activeGroups = currentGroups.data?.filter((groupEntry) => {
+                const docId = unpackDocId(groupEntry.rawUrl)
+                return !!docId?.version && item.change.id === docId?.version
+              })
+              return (
+                <ChangeItem
+                  prevListedChange={changes[index - 1]}
+                  entityId={id.id}
+                  key={item.change.id}
+                  change={item.change}
+                  activeGroups={activeGroups}
+                  activeVersion={activeVersion}
+                />
+              )
+            })}
+          </YStack>
+        </PostToGroup.Provider>
+      </AccessoryContainer>
+      {postToGroup.content}
+    </>
+  )
 }
 
 function ChangeItem({
@@ -52,42 +116,40 @@ function ChangeItem({
   prevListedChange,
   entityId,
   activeVersion,
+  activeGroups,
 }: {
   change: Change
   prevListedChange?: TimelineChange
   entityId: string
   activeVersion?: string
+  activeGroups?: ListDocumentGroupsResponse_Item[] | undefined
 }) {
   const author = useAccount(change.author)
   const navigate = useNavigate()
-  const openAccount = () => {
+  const openAccount = (e) => {
+    e.stopPropagation()
     navigate({key: 'account', accountId: change.author})
   }
   const navRoute = useNavRoute()
-  const isActive = activeVersion === change.id
+  const isActive = new Set(activeVersion?.split('.') || []).has(change.id)
   const shouldDisplayAuthorName =
     !prevListedChange || change.author !== prevListedChange.change.author
   const changeTimeText = (
-    <SizableText
-      size="$2"
-      textAlign="left"
-      fontWeight={isActive ? 'bold' : 'normal'}
-    >
+    <SizableText size="$2" textAlign="left">
       {change.createTime ? formattedDateLong(change.createTime) : null}
     </SizableText>
   )
   const topRow = shouldDisplayAuthorName ? (
-    <XStack>
-      <Button
-        size="$2"
-        alignItems="center"
-        justifyContent="flex-start"
-        chromeless
+    <XStack paddingTop="$2" gap="$2">
+      <AccountLinkAvatar accountId={author?.data?.id} size={24} />
+      <ButtonText
         onPress={openAccount}
-        icon={<AccountLinkAvatar accountId={author?.data?.id} size={20} />}
+        hoverStyle={{
+          textDecorationLine: 'underline',
+        }}
       >
         {author?.data?.profile?.alias || change.author}
-      </Button>
+      </ButtonText>
     </XStack>
   ) : (
     <XStack paddingLeft={35}>{changeTimeText}</XStack>
@@ -106,7 +168,7 @@ function ChangeItem({
       key: 'publication',
       documentId: entityId,
       versionId: change.id,
-      pubContext: navRoute.pubContext,
+      variant: navRoute.variant,
       accessory: {key: 'versions'},
     }
   }
@@ -155,29 +217,32 @@ function ChangeItem({
   }
   return (
     <XStack
-      marginTop={shouldDisplayAuthorName ? '$4' : undefined}
       ai="center"
       gap="$2"
       group="item"
+      borderRadius={'$2'}
+      paddingHorizontal="$2"
+      paddingVertical="$1"
+      marginBottom="$1"
+      backgroundColor={isActive ? '$blue5' : 'transparent'}
     >
       <YStack
         f={1}
         overflow="hidden"
-        borderRadius="$2"
-        backgroundColor={isActive ? '$backgroundHover' : 'transparent'}
         hoverStyle={{
           cursor: 'pointer',
-          backgroundColor: isActive ? '$green4' : '$backgroundHover',
         }}
         onPress={() => {
           destRoute && navigate(destRoute)
         }}
         disabled={!destRoute}
-        paddingHorizontal="$4"
+        padding="$1"
         position="relative"
       >
         {topRow}
-
+        {activeGroups?.length ? (
+          <ActiveChangeGroups activeGroups={activeGroups} />
+        ) : null}
         {dateRow && (
           <XStack gap="$2">
             <XStack width={28} />
@@ -190,118 +255,45 @@ function ChangeItem({
   )
 }
 
-function PrevChangesList({
-  changeset: {prevChanges},
-  id,
-  activeVersion,
+function ActiveChangeGroups({
+  activeGroups,
 }: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
+  activeGroups: ListDocumentGroupsResponse_Item[]
 }) {
-  if (!prevChanges.length) return null
   return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>Previous Versions</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {prevChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={prevChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
+    <XStack gap="$2" flexWrap="wrap" margin="$1" marginTop={0} marginLeft={34}>
+      {activeGroups.map((group) => (
+        <ActiveGroupButton key={group.groupId} groupItem={group} />
+      ))}
+    </XStack>
   )
 }
-
-function ActiveChangesList({
-  changeset: {activeVersionChanges, nextChanges, prevChanges},
-  id,
-  activeVersion,
+function ActiveGroupButton({
+  groupItem,
 }: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
+  groupItem: ListDocumentGroupsResponse_Item
 }) {
-  let subheading = prevChanges.length === 0 ? 'Original Version' : null
-  if (!subheading) {
-    subheading =
-      activeVersionChanges.length > 1 ? 'Selected Versions' : 'Selected Version'
-  }
+  const group = useGroup(groupItem.groupId)
+  const navigate = useNavigate()
+  if (!group.data?.title) return null
   return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>{subheading}</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {activeVersionChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={activeVersionChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
-  )
-}
-
-function NextChangesList({
-  changeset: {nextChanges},
-  id,
-  activeVersion,
-}: {
-  changeset: ComputedChangeset
-  id: UnpackedHypermediaId
-  activeVersion: string
-}) {
-  if (!nextChanges.length) return null
-  return (
-    <>
-      <XStack paddingHorizontal="$4" paddingVertical="$3">
-        <SizableText>{pluralS(nextChanges.length, 'Next Version')}</SizableText>
-      </XStack>
-      <YStack
-        paddingHorizontal="$4"
-        paddingBottom="$6"
-        borderBottomColor="$borderColor"
-        borderBottomWidth={1}
-      >
-        {nextChanges.map((item, index) => {
-          return (
-            <ChangeItem
-              prevListedChange={nextChanges[index - 1]}
-              entityId={id.id}
-              key={item.change.id}
-              change={item.change}
-              activeVersion={activeVersion}
-            />
-          )
-        })}
-      </YStack>
-    </>
+    <Button
+      chromeless
+      size="$1"
+      theme="blue"
+      paddingHorizontal="$2"
+      borderColor="$blue11"
+      color="$blue11"
+      hoverStyle={{
+        borderColor: '$blue8',
+      }}
+      onPress={(e) => {
+        e.stopPropagation()
+        navigate({key: 'group', groupId: groupItem.groupId})
+      }}
+    >
+      {group.data?.title}
+    </Button>
   )
 }
 
@@ -310,25 +302,25 @@ function PostToGroupDialog({
   onClose,
 }: {
   input: {
-    groupPubContext: GroupPublicationRouteContext
+    groupVariant: GroupVariant
     changeId: string
     docId: string
   }
   onClose: () => void
 }) {
-  const group = useGroup(input.groupPubContext.groupId)
-  const groupContent = useGroupContent(input.groupPubContext.groupId)
+  const group = useGroup(input.groupVariant.groupId)
+  const groupContent = useGroupContent(input.groupVariant.groupId)
   const publish = usePublishDocToGroup()
   const prevItem =
-    input.groupPubContext.pathName &&
-    groupContent.data?.content?.[input.groupPubContext.pathName]
+    input.groupVariant.pathName &&
+    groupContent.data?.content?.[input.groupVariant.pathName]
   // const prevItemId = prevItem ? unpackHmId(prevItem) : null
   const navigate = useNavigate()
   return (
     <>
       <DialogTitle>Update &quot;{group.data?.title}&quot;</DialogTitle>
       <DialogDescription>
-        Replace &quot;{input.groupPubContext?.pathName}
+        Replace &quot;{input.groupVariant?.pathName}
         &quot; with this version?
       </DialogDescription>
       <YStack gap="$1">
@@ -336,15 +328,15 @@ function PostToGroupDialog({
           theme="green"
           iconAfter={publish.isLoading ? <Spinner /> : null}
           onPress={() => {
-            if (!input.groupPubContext.pathName) {
+            if (!input.groupVariant.pathName) {
               onClose()
               return
             }
             publish
               .mutateAsync({
                 docId: input.docId,
-                groupId: input.groupPubContext.groupId,
-                pathName: input.groupPubContext.pathName,
+                groupId: input.groupVariant.groupId,
+                pathName: input.groupVariant.pathName,
                 version: input.changeId,
               })
               .then(() => {
@@ -352,7 +344,7 @@ function PostToGroupDialog({
                 navigate({
                   key: 'publication',
                   documentId: input.docId,
-                  pubContext: input.groupPubContext,
+                  variant: input.groupVariant,
                   accessory: {key: 'versions'},
                 })
                 toast.success('Group version updated')
@@ -376,105 +368,6 @@ function PostToGroupDialog({
           Cancel
         </Button>
       </YStack>
-    </>
-  )
-}
-
-function deduplicatedChanges(changes: TimelineChange[]): TimelineChange[] {
-  const seenChanges = new Set<string>()
-  const deduplicated: TimelineChange[] = []
-  changes.forEach((ch) => {
-    if (seenChanges.has(ch.change.id)) return
-    seenChanges.add(ch.change.id)
-    deduplicated.push(ch)
-  })
-  return deduplicated
-}
-
-export function EntityVersionsAccessory({
-  id,
-  activeVersion,
-}: {
-  id?: UnpackedHypermediaId | null
-  activeVersion: string
-}) {
-  const {data} = useEntityTimeline(id?.id)
-  const computed = useMemo(() => {
-    const activeVersionChanges: TimelineChange[] = []
-    activeVersion
-      ?.split('.')
-      .map((chId) => data?.allChanges[chId])
-      .forEach((ch) => ch && activeVersionChanges.push(ch))
-    const prevChanges: TimelineChange[] = []
-    let walkLeafVersions = activeVersionChanges
-    while (walkLeafVersions?.length) {
-      const nextLeafVersions: TimelineChange[] = []
-      for (const change of walkLeafVersions) {
-        change?.change.deps?.map((depChangeId) => {
-          const depChange = data?.allChanges[depChangeId]
-          if (depChange) {
-            prevChanges.push(depChange)
-            nextLeafVersions.push(depChange)
-          }
-        })
-      }
-      walkLeafVersions = nextLeafVersions
-    }
-    const nextVersionChangeIds = new Set<string>()
-    activeVersionChanges.forEach((ch) =>
-      ch.citations.forEach((citingId) => nextVersionChangeIds.add(citingId)),
-    )
-    const nextVersionChanges = [...nextVersionChangeIds]
-      .map((changeId) => data?.allChanges[changeId])
-      .filter(Boolean) as TimelineChange[]
-    return {
-      activeVersionChanges,
-      prevChanges: deduplicatedChanges(prevChanges),
-      nextChanges: deduplicatedChanges(nextVersionChanges),
-    }
-  }, [data, activeVersion])
-  const route = useNavRoute()
-  const pubContext = route?.key === 'publication' ? route.pubContext : undefined
-  const docId = route?.key === 'publication' ? route.documentId : undefined
-  const groupPubContext = pubContext?.key === 'group' ? pubContext : null
-  const myGroups = useMyGroups()
-  const isInPostableContext =
-    groupPubContext &&
-    myGroups.data?.items?.find(
-      (item) => item.group?.id === groupPubContext?.groupId,
-    )
-  const postToGroup = useAppDialog(PostToGroupDialog)
-  if (!id) return null
-  return (
-    <>
-      <AccessoryContainer>
-        <PostToGroup.Provider
-          value={
-            groupPubContext && docId && isInPostableContext
-              ? (changeId) => {
-                  postToGroup.open({groupPubContext, changeId, docId})
-                }
-              : null
-          }
-        >
-          <NextChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          />
-          <ActiveChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          />
-          <PrevChangesList
-            changeset={computed}
-            id={id}
-            activeVersion={activeVersion}
-          />
-        </PostToGroup.Provider>
-      </AccessoryContainer>
-      {postToGroup.content}
     </>
   )
 }

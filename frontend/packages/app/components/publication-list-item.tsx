@@ -1,12 +1,9 @@
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
-import {
-  PublicationRouteContext,
-  useNavRoute,
-} from '@mintter/app/utils/navigation'
+import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
 import {Account, Document, Publication, shortenPath} from '@mintter/shared'
 import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
-import {NavRoute} from '../utils/navigation'
+import {NavRoute, PublicationVariant} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
 import {ListItem, TimeAccessory} from './list-item'
@@ -20,7 +17,7 @@ export function getDocumentTitle(document?: Document) {
 export function PublicationListItem({
   publication,
   hasDraft,
-  pubContext,
+  variant,
   menuItems,
   onPointerEnter,
   pathName,
@@ -32,7 +29,7 @@ export function PublicationListItem({
   publication: Publication
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
-  pubContext: PublicationRouteContext
+  variant?: PublicationVariant
   menuItems?: (MenuItemType | null)[]
   pathName?: string
   onPointerEnter?: () => void
@@ -69,7 +66,7 @@ export function PublicationListItem({
                     key: 'draft',
                     draftId: hasDraft.id,
                     contextRoute: route,
-                    pubContext,
+                    variant: variant?.key === 'group' ? variant : undefined,
                   },
                   e,
                 )

@@ -1,8 +1,10 @@
-import {ReactNode, useEffect, useMemo, useReducer} from 'react'
+import {writeableStateStream} from '@mintter/shared'
+import {ReactNode, useEffect, useMemo} from 'react'
 import {useIPC} from '../app-context'
 import {useConfirmConnection} from '../components/contacts-prompt'
 import {
-  HomeRoute,
+  DocumentsRoute,
+  NavAction,
   NavContextProvider,
   NavState,
   navStateReducer,
@@ -10,7 +12,7 @@ import {
 } from './navigation'
 import {AppWindowEvent} from './window-events'
 
-const homeRoute: HomeRoute = {key: 'home'}
+const homeRoute: DocumentsRoute = {key: 'documents'}
 
 export function NavigationContainer({
   children,
@@ -24,43 +26,45 @@ export function NavigationContainer({
   children: ReactNode
   initialNav?: NavState
 }) {
-  const [navState, dispatch] = useReducer(navStateReducer, initialNav)
+  const navigation = useMemo(() => {
+    const [updateNavState, navState] = writeableStateStream(initialNav)
+    return {
+      dispatch(action: NavAction) {
+        updateNavState(navStateReducer(navState.get(), action))
+      },
+      state: navState,
+    }
+  }, [])
   const {send} = useIPC()
 
   // const confirmConnection = useConfirmConnection()
   useEffect(() => {
-    send('windowNavState', navState)
-  }, [navState, send])
+    return navigation.state.subscribe(() => {
+      send('windowNavState', navigation.state.get())
+    })
+  }, [navigation, send])
 
   useEffect(() => {
     // @ts-expect-error
     return window.appWindowEvents?.subscribe((event: AppWindowEvent) => {
       if (event === 'back') {
-        dispatch({type: 'pop'})
+        navigation.dispatch({type: 'pop'})
       }
       if (event === 'forward') {
-        dispatch({type: 'forward'})
+        navigation.dispatch({type: 'forward'})
       }
     })
   }, [])
 
   useEffect(() => {
-    setAppNavDispatch(dispatch)
+    setAppNavDispatch(navigation.dispatch)
     return () => {
       setAppNavDispatch(null)
     }
   }, [])
 
-  let value = useMemo(
-    () => ({
-      state: navState,
-      dispatch,
-    }),
-    [navState],
-  )
-
   return (
-    <NavContextProvider value={value}>
+    <NavContextProvider value={navigation}>
       {children}
       <ConnectionConfirmer />
     </NavContextProvider>

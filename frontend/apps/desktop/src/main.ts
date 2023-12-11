@@ -125,7 +125,7 @@ if (!gotTheLock) {
     if (BrowserWindow.getAllWindows().length === 0) {
       log.debug('[MAIN]: will open the home window')
       trpc.createAppWindow({
-        routes: [{key: 'home'}],
+        routes: [{key: 'documents'}],
       })
     }
   })

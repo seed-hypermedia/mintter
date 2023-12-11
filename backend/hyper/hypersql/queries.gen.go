@@ -618,11 +618,12 @@ RETURNING resources.id AS entities_id`
 }
 
 type EntitiesLookupIDResult struct {
-	ResourcesID int64
+	ResourcesID    int64
+	ResourcesOwner int64
 }
 
 func EntitiesLookupID(conn *sqlite.Conn, entities_eid string) (EntitiesLookupIDResult, error) {
-	const query = `SELECT resources.id
+	const query = `SELECT resources.id, resources.owner
 FROM resources
 WHERE resources.iri = :entities_eid
 LIMIT 1`
@@ -639,6 +640,7 @@ LIMIT 1`
 		}
 
 		out.ResourcesID = stmt.ColumnInt64(0)
+		out.ResourcesOwner = stmt.ColumnInt64(1)
 		return nil
 	}
 
@@ -651,12 +653,13 @@ LIMIT 1`
 }
 
 type EntitiesListByPrefixResult struct {
-	ResourcesID  int64
-	ResourcesIRI string
+	ResourcesID    int64
+	ResourcesIRI   string
+	ResourcesOwner int64
 }
 
 func EntitiesListByPrefix(conn *sqlite.Conn, prefix string) ([]EntitiesListByPrefixResult, error) {
-	const query = `SELECT resources.id, resources.iri
+	const query = `SELECT resources.id, resources.iri, resources.owner
 FROM resources
 WHERE resources.iri GLOB :prefix
 ORDER BY resources.id`
@@ -669,8 +672,9 @@ ORDER BY resources.id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, EntitiesListByPrefixResult{
-			ResourcesID:  stmt.ColumnInt64(0),
-			ResourcesIRI: stmt.ColumnText(1),
+			ResourcesID:    stmt.ColumnInt64(0),
+			ResourcesIRI:   stmt.ColumnText(1),
+			ResourcesOwner: stmt.ColumnInt64(2),
 		})
 
 		return nil
@@ -916,41 +920,6 @@ WHERE blob NOT IN deps`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: ChangesGetPublicHeadsJSON: %w", err)
-	}
-
-	return out, err
-}
-
-type ChangesGetTrustedHeadsJSONResult struct {
-	Heads []byte
-}
-
-func ChangesGetTrustedHeadsJSON(conn *sqlite.Conn, entity int64) (ChangesGetTrustedHeadsJSONResult, error) {
-	const query = `SELECT json_group_array(structural_blobs.id) AS heads
-		FROM structural_blobs
-		LEFT JOIN drafts ON drafts.resource = structural_blobs.resource AND structural_blobs.id = drafts.blob
-		JOIN trusted_accounts ON trusted_accounts.id = structural_blobs.author
-		WHERE structural_blobs.resource = :entity
-		AND drafts.blob IS NULL`
-
-	var out ChangesGetTrustedHeadsJSONResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":entity", entity)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("ChangesGetTrustedHeadsJSON: more than one result return for a single-kind query")
-		}
-
-		out.Heads = stmt.ColumnBytes(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangesGetTrustedHeadsJSON: %w", err)
 	}
 
 	return out, err

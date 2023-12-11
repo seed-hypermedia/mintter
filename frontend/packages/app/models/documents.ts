@@ -44,11 +44,7 @@ import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
-import {
-  NavRoute,
-  PublicationRouteContext,
-  useNavRoute,
-} from '../utils/navigation'
+import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
 import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
@@ -170,16 +166,14 @@ export function useDeletePublication(
 export function usePublication({
   id,
   version,
-  trustedOnly,
   ...options
 }: UseQueryOptions<Publication> & {
   id?: string
   version?: string
-  trustedOnly?: boolean
 }) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    ...queryPublication(grpcClient, id, version, trustedOnly),
+    ...queryPublication(grpcClient, id, version),
     ...options,
   })
 }
@@ -188,10 +182,9 @@ export function queryPublication(
   grpcClient: GRPCClient,
   documentId?: string,
   versionId?: string,
-  trustedOnly?: boolean,
 ): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
   return {
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId, trustedOnly],
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
     enabled: !!documentId,
     // retry: false, // to test error handling faster
     // default is 5. the backend waits ~1s for discovery, so we retry for a little while in case document is on its way.
@@ -199,7 +192,6 @@ export function queryPublication(
     // about 15 seconds total right now
     queryFn: () =>
       grpcClient.publications.getPublication({
-        trustedOnly,
         documentId,
         version: versionId,
       }),
@@ -263,7 +255,11 @@ function changesToJSON(changes: DocumentChange[]) {
 
 export function usePublishDraft(
   opts?: UseMutationOptions<
-    {pub: Publication; pubContext: PublicationRouteContext},
+    {
+      pub: Publication
+      groupVariant?: GroupVariant | null | undefined
+      isFirstPublish: boolean
+    },
     unknown,
     {
       draftId: string
@@ -275,14 +271,20 @@ export function usePublishDraft(
   const grpcClient = useGRPCClient()
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
-  const draftPubContext = draftRoute?.pubContext
-  const draftGroupContext =
-    draftPubContext?.key === 'group' ? draftPubContext : undefined
+  const groupVariant = draftRoute?.variant
   const {client, invalidate} = useAppContext().queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
     ...opts,
-    mutationFn: async ({draftId}: {draftId: string}) => {
+    mutationFn: async ({
+      draftId,
+    }: {
+      draftId: string
+    }): Promise<{
+      pub: Publication
+      groupVariant?: GroupVariant | null | undefined
+      isFirstPublish: boolean
+    }> => {
       const pub = await grpcClient.drafts.publishDraft({documentId: draftId})
       await diagnosis.complete(draftId, {
         key: 'did.publishDraft',
@@ -290,16 +292,18 @@ export function usePublishDraft(
       })
       const isFirstPublish = await markDocPublish.mutateAsync(draftId)
       const publishedId = pub.document?.id
-      if (draftGroupContext && publishedId) {
+      if (!publishedId)
+        throw new Error('Could not get ID of published document')
+      if (groupVariant) {
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([queryKeys.GET_DRAFT, draftId]) as any
         )?.title
-        const publishPathName = draftGroupContext.pathName
-          ? draftGroupContext.pathName
+        const publishPathName = groupVariant.pathName
+          ? groupVariant.pathName
           : getDefaultShortname(docTitle, publishedId)
         if (publishPathName) {
           await grpcClient.groups.updateGroup({
-            id: draftGroupContext.groupId,
+            id: groupVariant.groupId,
             updatedContent: {
               [publishPathName]: `${publishedId}?v=${pub.version}`,
             },
@@ -307,22 +311,19 @@ export function usePublishDraft(
           return {
             isFirstPublish,
             pub,
-            pubContext: {
+            groupVariant: {
               key: 'group',
-              groupId: draftGroupContext.groupId,
+              groupId: groupVariant.groupId,
               pathName: publishPathName,
             },
           }
         }
       }
-      return {isFirstPublish, pub, pubContext: draftPubContext}
+      return {isFirstPublish, pub, groupVariant}
     },
-    onSuccess: (
-      result: {pub: Publication; pubContext: PublicationRouteContext},
-      variables,
-      context,
-    ) => {
+    onSuccess: (result, variables, context) => {
       const documentId = result.pub.document?.id
+      const {groupVariant} = result
       opts?.onSuccess?.(result, variables, context)
       invalidate([queryKeys.GET_PUBLICATION_LIST])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
@@ -331,9 +332,10 @@ export function usePublishDraft(
       invalidate([queryKeys.PUBLICATION_CHANGES, documentId])
       invalidate([queryKeys.ENTITY_TIMELINE, documentId])
       invalidate([queryKeys.PUBLICATION_CITATIONS])
-      if (draftGroupContext) {
-        invalidate([queryKeys.GET_GROUP, draftGroupContext.groupId])
-        invalidate([queryKeys.GET_GROUP_CONTENT, draftGroupContext.groupId])
+      if (groupVariant) {
+        invalidate([queryKeys.GET_GROUP, groupVariant.groupId])
+        invalidate([queryKeys.GET_GROUP_CONTENT, groupVariant.groupId])
+        invalidate([queryKeys.ENTITY_TIMELINE, groupVariant.groupId])
         invalidate([queryKeys.GET_GROUPS_FOR_DOCUMENT, documentId])
       }
 
@@ -533,7 +535,7 @@ export function useDraftEditor({
             })
           }
 
-          replace({key: 'drafts'})
+          replace({key: 'documents', tab: 'drafts'})
         },
       },
       actors: {
@@ -661,7 +663,6 @@ export function useDraftEditor({
           changes: [...capturedChanges],
         })
         if (mutation.updatedDocument) {
-          console.log('== draft updates', mutation)
           client.setQueryData(
             [queryKeys.GET_DRAFT, documentId],
             mutation.updatedDocument,
@@ -1084,7 +1085,7 @@ function isBlockAttributesEqual(b1: Block, b2: Block): boolean {
     a1.size == a2.size &&
     a1.ref == a2.ref &&
     a1.language == a2.language &&
-    a1.display == a2.display
+    a1.view == a2.view
   )
 }
 
@@ -1111,5 +1112,18 @@ function observeBlocks(
     if (block.children) {
       observeBlocks(editor, block.children, onChange)
     }
+  })
+}
+
+export function useAccountPublications(accountId: string) {
+  const grpcClient = useGRPCClient()
+  return useQuery({
+    queryKey: [queryKeys.GET_ACCOUNT_PUBLICATIONS, accountId],
+    queryFn: async () => {
+      const result = await grpcClient.publications.listAccountPublications({
+        accountId,
+      })
+      return result
+    },
   })
 }

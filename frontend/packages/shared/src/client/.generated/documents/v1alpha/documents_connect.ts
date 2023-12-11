@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -121,6 +121,17 @@ export const Publications = {
     listPublications: {
       name: "ListPublications",
       I: ListPublicationsRequest,
+      O: ListPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Lists publications owned by a given account.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Publications.ListAccountPublications
+     */
+    listAccountPublications: {
+      name: "ListAccountPublications",
+      I: ListAccountPublicationsRequest,
       O: ListPublicationsResponse,
       kind: MethodKind.Unary,
     },

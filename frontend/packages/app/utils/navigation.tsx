@@ -1,16 +1,19 @@
-import {GRPCClient, unpackDocId} from '@mintter/shared'
+import {GRPCClient, StateStream, unpackDocId} from '@mintter/shared'
 import {
   UnpackedHypermediaId,
   createHmId,
   unpackHmId,
 } from '@mintter/shared/src/utils/entity-id-url'
+import {useStream, useStreamSelector} from '@mintter/ui'
 import {Buffer} from 'buffer'
 import {createContext, useContext} from 'react'
 
 global.Buffer = global.Buffer || Buffer
 
-export type HomeRoute = {key: 'home'}
-export type GlobalPublications = {key: 'all-publications'}
+export type DocumentsRoute = {
+  key: 'documents'
+  tab?: null | 'trusted' | 'drafts'
+}
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
 
@@ -18,21 +21,22 @@ export type EntityVersionsAccessory = {key: 'versions'}
 export type PublicationCitationsAccessory = {key: 'citations'}
 export type PublicationCommentsAccessory = {key: 'comments'}
 
-export type GroupPublicationRouteContext = {
+export type GroupVariant = {
   key: 'group'
   groupId: string
   pathName: string | null
 }
-export type PublicationRouteContext =
-  | null
-  | {key: 'trusted'}
-  | GroupPublicationRouteContext
+export type AuthorsVariant = {
+  key: 'authors'
+  authors: string[]
+}
+export type PublicationVariant = null | AuthorsVariant | GroupVariant
 
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
-  pubContext?: PublicationRouteContext
+  variant?: PublicationVariant
   blockId?: string
   accessory?:
     | null
@@ -41,11 +45,10 @@ export type PublicationRoute = {
     | PublicationCommentsAccessory
   showFirstPublicationMessage?: boolean
 }
-export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {
   key: 'draft'
   draftId?: string
-  pubContext?: PublicationRouteContext
+  variant?: GroupVariant | null
   contextRoute?: NavRoute
 }
 export type SettingsRoute = {key: 'settings'}
@@ -57,16 +60,14 @@ export type GroupRoute = {
   accessory?: null | EntityVersionsAccessory
 }
 export type NavRoute =
-  | HomeRoute
   | ContactsRoute
   | AccountRoute
   | SettingsRoute
   | GroupsRoute
   | GroupRoute
   | PublicationRoute
-  | DraftsRoute
   | DraftRoute
-  | GlobalPublications
+  | DocumentsRoute
 
 export type PushAction = {type: 'push'; route: NavRoute}
 export type ReplaceAction = {type: 'replace'; route: NavRoute}
@@ -89,7 +90,7 @@ export type NavState = {
   lastAction: NavAction['type']
 }
 export type NavigationContext = {
-  state: NavState
+  state: StateStream<NavState>
   dispatch: (action: NavAction) => void
 }
 
@@ -205,14 +206,17 @@ export function useNavRoute() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavRoute must be used within a NavigationProvider')
-  return nav.state.routes[nav.state.routeIndex] || {key: 'home'}
+  return useStreamSelector(
+    nav.state,
+    (state) => state.routes[state.routeIndex] || {key: 'documents'},
+  )
 }
 
 export function useNavigationState() {
   const nav = useContext(NavContext)
   if (!nav)
     throw new Error('useNavigation must be used within a NavigationProvider')
-  return nav.state
+  return useStream(nav.state)
 }
 
 export function useNavigationDispatch() {
@@ -289,7 +293,7 @@ export async function resolveHmIdToAppRoute(
           key: 'publication',
           documentId: createHmId('d', doc.eid),
           versionId: isVersionLatest ? undefined : doc.version || undefined,
-          pubContext: {
+          variant: {
             key: 'group',
             groupId: createHmId('g', hmIds.eid),
             pathName: contentPathName,

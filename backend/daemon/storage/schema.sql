@@ -52,8 +52,8 @@ CREATE TABLE structural_blobs (
     resource INTEGER REFERENCES resources (id)
 ) WITHOUT ROWID;
 
-CREATE INDEX structural_blobs_by_author ON structural_blobs (author) WHERE author IS NOT NULL;
-CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource) WHERE resource IS NOT NULL;
+CREATE INDEX structural_blobs_by_author ON structural_blobs (author, resource) WHERE author IS NOT NULL;
+CREATE INDEX structural_blobs_by_resource ON structural_blobs (resource, author) WHERE resource IS NOT NULL;
 
 -- View of structural blobs with dereferences foreign keys.
 CREATE VIEW structural_blobs_view AS
@@ -115,10 +115,10 @@ CREATE TABLE blob_links (
     source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
     target INTEGER REFERENCES blobs (id) NOT NULL,
     type TEXT NOT NULL,
-    PRIMARY KEY (source, target, type)
+    PRIMARY KEY (source, type, target)
 ) WITHOUT ROWID;
 
-CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, source, type);
+CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, type, source);
 
 -- Stores links from blobs to resources.
 -- Resource links can be open-ended or pinned.

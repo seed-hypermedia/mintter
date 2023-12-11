@@ -48,5 +48,4 @@ export const TitleText = styled(SizableText, {
   padding: 0,
   margin: 0,
   textTransform: 'none',
-  fontWeight: '700',
 })

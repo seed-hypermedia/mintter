@@ -8,9 +8,9 @@ import {
 } from '@mintter/shared'
 import {useQueries, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
+import {useGRPCClient} from '../app-context'
 import {useDocumentVersions, usePublicationList} from './documents'
 import {queryKeys} from './query-keys'
-import {useGRPCClient} from '../app-context'
 
 function createDocChangesQuery(
   grpcClient: GRPCClient,
@@ -29,6 +29,46 @@ function createDocChangesQuery(
 export function useDocChanges(docId?: string) {
   const grpcClient = useGRPCClient()
   return useQuery(createDocChangesQuery(grpcClient, docId))
+}
+
+export function useDocHistory(docId?: string, variantVersion?: string) {
+  const {data} = useEntityTimeline(docId)
+  const changes = useMemo(() => {
+    const allVariantChanges = new Set<string>()
+    const variantVersionChanges: TimelineChange[] = []
+    variantVersion
+      ?.split('.')
+      .map((chId) => data?.allChanges[chId])
+      .forEach((ch) => {
+        if (!ch) return
+        variantVersionChanges.push(ch)
+        allVariantChanges.add(ch.id)
+      })
+    let walkLeafVersions = variantVersionChanges
+    while (walkLeafVersions?.length) {
+      const nextLeafVersions: TimelineChange[] = []
+      for (const change of walkLeafVersions) {
+        change?.change.deps?.map((depChangeId) => {
+          allVariantChanges.add(depChangeId)
+          const depChange = data?.allChanges[depChangeId]
+          if (depChange) {
+            nextLeafVersions.push(depChange)
+          }
+        })
+      }
+      walkLeafVersions = nextLeafVersions
+    }
+    return [...allVariantChanges]
+      .map((changeId) => data?.allChanges[changeId])
+      .filter(Boolean)
+      .sort((a, b) => {
+        let dateA = a?.change.createTime ? a.change.createTime.toDate() : 0
+        let dateB = b?.change.createTime ? b.change.createTime.toDate() : 1
+        // @ts-ignore
+        return dateB - dateA
+      })
+  }, [data, variantVersion])
+  return changes
 }
 
 export type SmartChangeInfo = ChangeInfo & {
@@ -67,8 +107,9 @@ export function useEntityTimeline(entityId?: string) {
       const rawTimeline = await grpcClient.entities.getEntityTimeline({
         id: entityId || '',
       })
+      const timelineEntries = Object.entries(rawTimeline.changes)
       const allChanges: Record<string, TimelineChange> = {}
-      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+      timelineEntries.forEach(([changeId, change]) => {
         allChanges[changeId] = {
           deps: change.deps,
           citations: [],
@@ -76,12 +117,16 @@ export function useEntityTimeline(entityId?: string) {
           id: change.id,
         }
       })
-      Object.entries(rawTimeline.changes).forEach(([changeId, change]) => {
+      timelineEntries.forEach(([changeId, change]) => {
         change.deps.forEach((depId) => {
           allChanges[depId]?.citations.push(changeId)
         })
       })
-      return {allChanges}
+      return {
+        allChanges,
+        authorVersions: rawTimeline.authorVersions,
+        timelineEntries,
+      }
     },
     queryKey: [queryKeys.ENTITY_TIMELINE, entityId],
     enabled: !!entityId,
@@ -219,18 +264,6 @@ export function useChange(changeId?: string) {
   })
 }
 
-export function useAllChanges(entityId?: string) {
-  const grpcClient = useGRPCClient()
-  return useQuery({
-    queryFn: () =>
-      grpcClient.entities.getEntityTimeline({
-        id: entityId || '',
-      }),
-    queryKey: [queryKeys.ALL_ENTITY_CHANGES, entityId],
-    enabled: !!entityId,
-  })
-}
-
 export function useAllPublicationChanges() {
   const allPublications = usePublicationList({trustedOnly: false})
   const pubs = allPublications?.data?.publications || []
@@ -249,20 +282,5 @@ export function useAllPublicationChanges() {
       publication: pub,
       changes: resultQueries[pubIndex]?.data?.changes,
     })),
-  }
-}
-
-export function useAccountPublicationList(accountId: string) {
-  const allPubs = useAllPublicationChanges()
-  return {
-    ...allPubs,
-    data: useMemo(() => {
-      const accountPubs = allPubs.data
-        .filter((pub) => {
-          return pub.changes?.find((change) => change.author === accountId)
-        })
-        .map((pub) => pub.publication)
-      return accountPubs
-    }, [allPubs.data, accountId]),
   }
 }

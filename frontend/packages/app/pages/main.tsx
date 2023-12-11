@@ -15,13 +15,7 @@ import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
 
-var PublicationList = lazy(
-  () => import('@mintter/app/pages/publication-list-page'),
-)
-const AllPublicationList = lazy(
-  () => import('@mintter/app/pages/all-publications'),
-)
-var DraftList = lazy(() => import('@mintter/app/pages/draft-list-page'))
+var Documents = lazy(() => import('@mintter/app/pages/documents'))
 var Account = lazy(() => import('@mintter/app/pages/account-page'))
 var Contacts = lazy(() => import('@mintter/app/pages/contacts-page'))
 var Group = lazy(() => import('@mintter/app/pages/group'))
@@ -40,9 +34,9 @@ function BaseLoading() {
 
 function getPageComponent(navRoute: NavRoute) {
   switch (navRoute.key) {
-    case 'home':
+    case 'documents':
       return {
-        PageComponent: PublicationList,
+        PageComponent: Documents,
         Fallback: BaseLoading,
       }
     case 'groups':
@@ -53,11 +47,6 @@ function getPageComponent(navRoute: NavRoute) {
     case 'group':
       return {
         PageComponent: Group,
-        Fallback: BaseLoading,
-      }
-    case 'drafts':
-      return {
-        PageComponent: DraftList,
         Fallback: BaseLoading,
       }
     case 'contacts':
@@ -83,11 +72,6 @@ function getPageComponent(navRoute: NavRoute) {
     case 'settings':
       return {
         PageComponent: Settings,
-        Fallback: BaseLoading,
-      }
-    case 'all-publications':
-      return {
-        PageComponent: AllPublicationList,
         Fallback: BaseLoading,
       }
     default:

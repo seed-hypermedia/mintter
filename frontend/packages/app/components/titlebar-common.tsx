@@ -3,11 +3,10 @@ import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDraftList} from '@mintter/app/models/documents'
-import {usePublicationInContext} from '@mintter/app/models/publication'
+import {usePublicationVariant} from '@mintter/app/models/publication'
 import {
   NavMode,
   NavRoute,
-  PublicationRouteContext,
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
@@ -48,6 +47,7 @@ import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
+import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {CloneGroupDialog} from './clone-group'
 import {useAppDialog} from './dialog'
@@ -55,8 +55,12 @@ import {useEditGroupInfoDialog} from './edit-group-info'
 import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
-import {DraftPublicationButtons, PublishToGroupButton} from './publish-share'
 import {TitleBarProps} from './titlebar'
+import {
+  DraftPublicationButtons,
+  PublicationVariants,
+  PublishToGroupButton,
+} from './variants'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -224,22 +228,20 @@ export function useFullReferenceUrl(
 ): {label: string; url: string} | null {
   const pubRoute = route.key === 'publication' ? route : null
   const groupRoute = route.key === 'group' ? route : null
-  const pub = usePublicationInContext({
+  const pub = usePublicationVariant({
     documentId: pubRoute?.documentId,
     versionId: pubRoute?.versionId,
-    pubContext: pubRoute?.pubContext,
+    variant: pubRoute?.variant,
     enabled: !!pubRoute?.documentId,
   })
-  const contextGroupId =
-    pubRoute?.pubContext?.key === 'group'
-      ? pubRoute.pubContext.groupId
-      : undefined
-  const contextGroup = useGroup(contextGroupId)
+  const variantGroupId =
+    pubRoute?.variant?.key === 'group' ? pubRoute.variant.groupId : undefined
+  const variantGroup = useGroup(variantGroupId)
   const routeGroupId = groupRoute?.groupId
   const pubRouteDocId = pubRoute?.documentId
-  const group = useGroup(contextGroupId || routeGroupId)
+  const group = useGroup(variantGroupId || routeGroupId)
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
-  const invertedGroupContent = useInvertedGroupContent(contextGroupId)
+  const invertedGroupContent = useInvertedGroupContent(variantGroupId)
 
   // let redirectedContext: undefined | PublicationRouteContext = undefined
 
@@ -265,15 +267,17 @@ export function useFullReferenceUrl(
     const docId = unpackHmId(pubRoute.documentId)
     if (!docId) return null
 
-    let hostname = contextGroupId ? group.data?.siteInfo?.baseUrl : undefined
+    let hostname = variantGroupId ? group.data?.siteInfo?.baseUrl : undefined
 
-    if (hostname && pub.data?.version && contextGroupId) {
+    const entityVersion = pub.data?.publication?.version
+
+    if (hostname && entityVersion && variantGroupId) {
       const matchedPrettyPath =
-        invertedGroupContent.data?.[docId.eid]?.[pub.data?.version]
+        invertedGroupContent.data?.[docId.eid]?.[entityVersion]
       if (matchedPrettyPath && !pubRoute.versionId) {
         const displayPrettyPath =
           matchedPrettyPath === '/' ? '' : matchedPrettyPath
-        const groupVersion = contextGroup.data?.version
+        const groupVersion = variantGroup.data?.version
         let sitePrettyUrl = `${hostname}/${displayPrettyPath}`
         // Version is temporarily disabled
         // if (groupVersion) {
@@ -284,9 +288,8 @@ export function useFullReferenceUrl(
           label: 'Site Document',
         }
       }
-      if (hostname && entityTimeline.data) {
-        const linkVersion = pub.data?.version
-        const linkChangeIds = linkVersion.split('.')
+      if (hostname && entityTimeline.data && entityVersion) {
+        const linkChangeIds = entityVersion.split('.')
         const allChanges = entityTimeline.data.allChanges
         const explicitlyHostedChangeIds = new Set(
           Object.keys(invertedGroupContent.data?.[docId.eid] || {})
@@ -326,7 +329,7 @@ export function useFullReferenceUrl(
     }
     return {
       url: createPublicWebHmUrl('d', docId.eid, {
-        version: pub.data?.version,
+        version: pub.data?.publication?.version,
         hostname,
       }),
       label: hostname ? 'Site Version' : 'Doc Version',
@@ -421,10 +424,10 @@ function CopyReferenceButton() {
 }
 
 function NewDocumentButton({
-  pubContext,
+  groupVariant,
   label,
 }: {
-  pubContext: PublicationRouteContext
+  groupVariant?: GroupVariant
   label?: string
 }) {
   const openDraft = useOpenDraft('push')
@@ -436,7 +439,7 @@ function NewDocumentButton({
         icon={Plus}
         onPress={(e) => {
           e.preventDefault()
-          openDraft(pubContext)
+          openDraft(groupVariant)
         }}
       >
         New Document
@@ -452,11 +455,13 @@ export function PageActionButtons(props: TitleBarProps) {
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
   } else if (route.key === 'drafts') {
-    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
-  } else if (route.key === 'all-publications') {
-    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
-  } else if (route.key === 'home') {
-    buttonGroup = [<NewDocumentButton key="newDocument" pubContext={null} />]
+    buttonGroup = [
+      <NewDocumentButton key="newDocument" groupVariant={undefined} />,
+    ]
+  } else if (route.key === 'documents') {
+    buttonGroup = [
+      <NewDocumentButton key="newDocument" groupVariant={undefined} />,
+    ]
   } else if (route.key === 'contacts') {
     buttonGroup = [<ContactsPrompt key="addContact" />]
   } else if (route.key === 'groups') {
@@ -470,7 +475,7 @@ export function PageActionButtons(props: TitleBarProps) {
       <NewDocumentButton
         key="newDocument"
         label="Group Document"
-        pubContext={{
+        groupVariant={{
           key: 'group',
           groupId: route.groupId,
           pathName: null,
@@ -479,13 +484,14 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
+      <PublicationVariants key="pubContext" route={route} />,
       <DocOptionsButton key="docOptions" />,
       <PublishToGroupButton key="publishDialog" />,
       <CopyReferenceButton key="copyRef" />,
       <EditDocActions
         key="editActions"
         contextRoute={route}
-        pubContext={route.pubContext || null}
+        variant={route.variant || null}
         docId={route.documentId}
         baseVersion={route.versionId}
       />,
@@ -598,22 +604,22 @@ export function EditDocActions({
   docId,
   contextRoute,
   navMode = 'replace',
-  pubContext,
+  variant,
   baseVersion,
 }: {
   docId: string
   navMode?: NavMode
   contextRoute: NavRoute
-  pubContext: PublicationRouteContext
+  variant: PublicationVariant
   baseVersion?: string
 }) {
-  const pub = usePublicationInContext({
+  const pub = usePublicationVariant({
     documentId: docId,
     versionId: baseVersion,
-    pubContext,
+    variant,
     enabled: !!docId,
   })
-  const pubVersion = pub.data?.version
+  const pubVersion = pub.data?.publication?.version
   const draftList = useDraftList()
   const navigate = useNavigate(navMode)
 
@@ -623,7 +629,6 @@ export function EditDocActions({
   const grpcClient = useGRPCClient()
 
   async function handleEdit() {
-    console.log('handleEdit', docId, pubContext)
     try {
       if (hasExistingDraft) {
         // todo, careful! this only works because draftId is docId right now
@@ -631,7 +636,7 @@ export function EditDocActions({
           key: 'draft',
           draftId: docId,
           contextRoute,
-          pubContext,
+          variant: variant?.key === 'group' ? variant : undefined,
         })
         return
       }
@@ -643,7 +648,7 @@ export function EditDocActions({
         key: 'draft',
         draftId: draft.id,
         contextRoute,
-        pubContext,
+        variant: variant?.key === 'group' ? variant : undefined,
       })
     } catch (error: any) {
       if (
@@ -655,7 +660,7 @@ export function EditDocActions({
           key: 'draft',
           draftId: docId, // because docId and draftId are the same right now
           contextRoute,
-          pubContext,
+          variant: variant?.key === 'group' ? variant : undefined,
         })
         return
       }

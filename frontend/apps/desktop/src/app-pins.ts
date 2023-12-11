@@ -1,8 +1,8 @@
-import {appStore} from './app-store'
 import z from 'zod'
+import {appStore} from './app-store'
 import {t} from './app-trpc'
 
-const PINS_STORAGE_KEY = 'Pins-v001'
+const PINS_STORAGE_KEY = 'Pins-v002'
 
 type PinsState = {
   accounts: string[]

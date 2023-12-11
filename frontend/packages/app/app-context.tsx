@@ -2,7 +2,7 @@ import {GRPCClient} from '@mintter/shared'
 import {TamaguiProvider, TamaguiProviderProps} from '@mintter/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {ReactNode, createContext, useContext, useEffect} from 'react'
+import {ReactNode, createContext, useContext, useEffect, useMemo} from 'react'
 import {AppIPC, Event, EventCallback} from './app-ipc'
 import {useExperiments} from './models/experiments'
 import {AppQueryClient} from './query-client'
@@ -44,21 +44,23 @@ export function AppContextProvider({
   saveCidAsFile: (cid: string, name: string) => Promise<void>
   darkMode: boolean
 }) {
+  const appCtx = useMemo(
+    () => ({
+      // platform: 'win32', // to test from macOS
+      platform,
+      grpcClient,
+      queryClient,
+      ipc,
+      externalOpen,
+      windowUtils,
+      saveCidAsFile,
+    }),
+    [],
+  )
   if (!queryClient)
     throw new Error('queryClient is required for AppContextProvider')
   return (
-    <AppContext.Provider
-      value={{
-        // platform: 'win32', // to test from macOS
-        platform,
-        grpcClient,
-        queryClient,
-        ipc,
-        externalOpen,
-        windowUtils,
-        saveCidAsFile,
-      }}
-    >
+    <AppContext.Provider value={appCtx}>
       <QueryClientProvider client={queryClient.client}>
         <StyleProvider darkMode={darkMode}>{children}</StyleProvider>
         <ReactQueryTools />

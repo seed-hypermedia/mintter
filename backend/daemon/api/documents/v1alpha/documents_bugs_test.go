@@ -83,10 +83,6 @@ func TestBug_DraftsInTrustedPublicationList(t *testing.T) {
 	require.Error(t, err, "must fail asking for doc ID that only has a draft")
 	require.Nil(t, pub)
 
-	pub, err = api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id, TrustedOnly: true})
-	require.Error(t, err, "must fail asking for doc ID that only has a draft when requested trusted version")
-	require.Nil(t, pub)
-
 	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{TrustedOnly: false})
 	require.NoError(t, err)
 	require.Len(t, pubs.Publications, 0, "must have no publications")

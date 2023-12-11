@@ -110,7 +110,7 @@ export type HMBlockEmbed = HMBlockBase & {
   type: 'embed'
   ref: string
   attributes: {
-    display?: 'content' | 'card'
+    view?: 'content' | 'card'
   }
 }
 

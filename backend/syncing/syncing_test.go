@@ -83,7 +83,7 @@ func TestSyncWithList(t *testing.T) {
 
 	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().PeerID(), entityID))
 
-	list, err := bob.Blobs.ListEntities(ctx, "")
+	list, err := bob.Blobs.ListEntities(ctx, "*")
 	require.NoError(t, err)
 
 	require.Len(t, list, 3, "bob must have synced only one entity from alice") // 3 = bob's account + alice's account + alice's entity

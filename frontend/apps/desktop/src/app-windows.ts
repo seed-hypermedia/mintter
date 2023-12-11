@@ -61,7 +61,7 @@ type AppWindow = {
 const userData = app.getPath('userData')
 info('App UserData: ', userData)
 
-const WINDOW_STATE_STORAGE_KEY = 'WindowState-v002'
+const WINDOW_STATE_STORAGE_KEY = 'WindowState-v003'
 
 let windowsState =
   (appStore.get(WINDOW_STATE_STORAGE_KEY) as Record<string, AppWindow>) ||
@@ -183,7 +183,7 @@ export function createAppWindow(input: {
     },
   )
 
-  const initRoutes = input?.routes || [{key: 'home'}]
+  const initRoutes = input?.routes || [{key: 'documents'}]
 
   windowNavState[windowId] = {
     routes: initRoutes,

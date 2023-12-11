@@ -1,31 +1,41 @@
-import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
 import {AppErrorPage} from '@mintter/app/components/app-error'
 import {CitationsAccessory} from '@mintter/app/components/citations'
 import {CitationsProvider} from '@mintter/app/components/citations-context'
 import Footer, {FooterButton} from '@mintter/app/components/footer'
-import {useDocChanges} from '@mintter/app/models/changes'
 import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   BACKEND_FILE_URL,
   MttLink,
+  Publication,
   PublicationContent,
   PublicationContentContextValue,
   PublicationContentProvider,
   PublicationHeading,
   contentLayoutUnit,
   contentTextUnit,
+  formattedDateMedium,
   pluralS,
   unpackDocId,
 } from '@mintter/shared'
-import {Link, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  ButtonText,
+  Link,
+  Separator,
+  SizableText,
+  Text,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {History} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useCallback, useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {useAppContext} from '../app-context'
+import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {
   EmbedAccount,
   EmbedGroup,
@@ -38,10 +48,12 @@ import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinDocumentButton} from '../components/pin-entity'
 import {useFullReferenceUrl} from '../components/titlebar-common'
-import {VersionChangesInfo} from '../components/version-changes-info'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
+import {useAccounts} from '../models/accounts'
+import {useDocHistory} from '../models/changes'
 import {useExperiments} from '../models/experiments'
-import {usePublicationInContext} from '../models/publication'
+import {useCurrentDocumentGroups, useGroup} from '../models/groups'
+import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
 
 export function AppPublicationContentProvider({
@@ -85,6 +97,119 @@ export function AppPublicationContentProvider({
   )
 }
 
+function PublicationPageMeta({publication}: {publication: Publication}) {
+  const editors = useAccounts(publication.document?.editors || [])
+  const navigate = useNavigate()
+  const docGroups = useCurrentDocumentGroups(publication.document?.id)
+  const selectedGroups = docGroups.data?.filter((groupItem) => {
+    const groupItemId = unpackDocId(groupItem.rawUrl)
+    return !!groupItemId?.version && groupItemId.version === publication.version
+  })
+  return (
+    <YStack
+      ai="flex-start"
+      paddingHorizontal="$3"
+      borderBottomColor="$color6"
+      borderBottomWidth={1}
+      paddingBottom="$4"
+    >
+      <XStack separator={<Separator vertical />} flexWrap="wrap">
+        <XStack marginHorizontal="$4" gap="$2" ai="center" paddingVertical="$2">
+          <XStack ai="center" marginLeft={8}>
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map(
+                (editorAccount, idx) =>
+                  editorAccount?.id && (
+                    <XStack
+                      zIndex={idx + 1}
+                      key={editorAccount?.id}
+                      borderColor="$background"
+                      backgroundColor="$background"
+                      borderWidth={2}
+                      borderRadius={100}
+                      marginLeft={-8}
+                    >
+                      <BaseAccountLinkAvatar
+                        account={editorAccount}
+                        accountId={editorAccount?.id}
+                      />
+                    </XStack>
+                  ),
+              )}
+          </XStack>
+          <SizableText flexWrap="wrap">
+            {editors
+              .map((editor) => editor.data)
+              .filter(Boolean)
+              .map((account, index) => [
+                account ? (
+                  <ButtonText
+                    key={account.id}
+                    fontWeight={'bold'}
+                    onPress={() => {
+                      navigate({key: 'account', accountId: account.id})
+                    }}
+                    hoverStyle={{
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    {account.profile?.alias}
+                  </ButtonText>
+                ) : null,
+                index !== editors.length - 1 ? (
+                  index === editors.length - 2 ? (
+                    <Text fontWeight={'bold'}>{' & '}</Text>
+                  ) : (
+                    <Text fontWeight={'bold'}>{', '}</Text>
+                  )
+                ) : null,
+              ])
+              .filter(Boolean)}
+          </SizableText>
+        </XStack>
+        <XStack ai="center">
+          <Text marginHorizontal="$4" color="$color10" verticalAlign="middle">
+            {formattedDateMedium(publication.document?.publishTime)}
+          </Text>
+        </XStack>
+        {selectedGroups?.length ? (
+          <XStack gap="$2" marginHorizontal="$4" ai="center" flexWrap="wrap">
+            {selectedGroups.map((selectedGroup) => (
+              <PublicationGroup
+                key={selectedGroup.groupId}
+                groupId={selectedGroup.groupId}
+              />
+            ))}
+          </XStack>
+        ) : null}
+      </XStack>
+    </YStack>
+  )
+}
+
+function PublicationGroup({groupId}: {groupId: string}) {
+  const group = useGroup(groupId)
+  const navigate = useNavigate()
+  if (!group.data?.title) return null
+  return (
+    <Button
+      chromeless
+      borderColor="$color8"
+      size="$2"
+      onPress={() => {
+        navigate({
+          key: 'group',
+          groupId,
+        })
+      }}
+    >
+      {group.data.title}
+    </Button>
+  )
+}
+
 export default function PublicationPage() {
   const route = useNavRoute()
   if (route.key !== 'publication')
@@ -98,15 +223,12 @@ export default function PublicationPage() {
     throw new Error(
       `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const publication = usePublicationInContext({
+  const publication = usePublicationVariant({
     documentId: docId,
     versionId: route.versionId,
-    pubContext: route.pubContext,
+    variant: route.variant,
   })
 
-  const {data: changes} = useDocChanges(
-    publication.status == 'success' ? docId : undefined,
-  )
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )
@@ -118,12 +240,14 @@ export default function PublicationPage() {
   })
 
   const showFirstPublicationMessage = route.showFirstPublicationMessage
-  const pubVersion = publication.data?.version
+  const pubVersion = publication.data?.publication?.version
   useEffect(() => {
     if (showFirstPublicationMessage && pubVersion) {
       firstPubDialog.open({route, version: pubVersion})
     }
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
+
+  const displayVersion = publication.data?.publication?.version
 
   if (publication.data) {
     return (
@@ -172,15 +296,23 @@ export default function PublicationPage() {
                           </XStack>
                         }
                       >
-                        {publication.data.document?.title}
+                        {publication.data?.publication?.document?.title}
                       </PublicationHeading>
-
-                      <PublicationContent publication={publication.data} />
+                      {publication.data?.publication ? (
+                        <>
+                          <PublicationPageMeta
+                            publication={publication.data?.publication}
+                          />
+                          <PublicationContent
+                            publication={publication.data?.publication}
+                          />
+                        </>
+                      ) : null}
                     </AppPublicationContentProvider>
                   </YStack>
-                  {route.versionId && (
+                  {/* {route.versionId && (
                     <OutOfDateBanner docId={docId} version={route.versionId} />
-                  )}
+                  )} */}
                 </MainWrapper>
               </YStack>
             </Allotment.Pane>
@@ -188,32 +320,19 @@ export default function PublicationPage() {
               (accessoryKey == 'versions' ? (
                 <EntityVersionsAccessory
                   id={unpackDocId(docId)}
-                  activeVersion={publication.data.version}
+                  variantVersion={publication.data?.variantVersion}
+                  activeVersion={publication.data?.publication?.version}
                 />
               ) : (
                 <CitationsAccessory docId={docId} />
               ))}
           </Allotment>
           <Footer>
-            <XStack gap="$3" marginHorizontal="$3">
-              {publication.data?.version && (
-                <VersionChangesInfo version={publication.data?.version} />
-              )}
-            </XStack>
-
-            <FooterButton
-              active={accessoryKey === 'versions'}
-              label={`${changes?.changes?.length} ${pluralS(
-                changes?.changes?.length,
-                'Version',
-              )}`}
-              icon={History}
-              onPress={() => {
-                if (route.accessory?.key === 'versions')
-                  return replace({...route, accessory: null})
-                replace({...route, accessory: {key: 'versions'}})
-              }}
-            />
+            {publication.data?.variantVersion && (
+              <PublicationVersionsFooterButton
+                variantVersion={publication.data?.variantVersion}
+              />
+            )}
 
             {citations?.links?.length ? (
               <FooterButton
@@ -241,37 +360,64 @@ export default function PublicationPage() {
   // return <DocumentPlaceholder />
 }
 
-function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+function PublicationVersionsFooterButton({
+  variantVersion,
+}: {
+  variantVersion: string
+}) {
   const route = useNavRoute()
-  const pubRoute = route.key === 'publication' ? route : undefined
-  const pubContext = pubRoute?.pubContext
-  const pub = usePublicationInContext({documentId: docId, pubContext})
-
-  const navigate = useNavigate()
-  const pubAccessory = route.key === 'publication' ? route.accessory : undefined
-  if (pub.isLoading) return null
-  if (version === pub?.data?.version) return null
-  if (pub?.data?.version) return null
+  if (route.key !== 'publication')
+    throw new Error('Publication page expects publication actor')
+  const docId = route?.documentId
+  const accessory = route?.accessory
+  const accessoryKey = accessory?.key
+  const replace = useNavigate('replace')
+  const changes = useDocHistory(docId, variantVersion)
   return (
-    <AppBanner
+    <FooterButton
+      active={accessoryKey === 'versions'}
+      label={`${changes?.length} ${pluralS(changes?.length, 'Version')}`}
+      icon={History}
       onPress={() => {
-        navigate({
-          key: 'publication',
-          documentId: docId,
-          accessory: pubAccessory,
-          pubContext,
-        })
+        if (route.accessory?.key === 'versions')
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'versions'}})
       }}
-    >
-      <BannerText>
-        There is a newer{' '}
-        {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
-        Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
-        here to go to latest →
-      </BannerText>
-    </AppBanner>
+    />
   )
 }
+
+// function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+//   const route = useNavRoute()
+//   const pubRoute = route.key === 'publication' ? route : undefined
+//   const pubContext = pubRoute?.pubContext
+//   const pub = usePublicationVariant({documentId: docId, pubContext})
+
+//   const navigate = useNavigate()
+//   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
+//   if (pub.isLoading) return null
+//   if (version === pub?.data?.version) return null
+//   if (pub?.data?.version) return null
+//   return (
+//     <AppBanner
+//       onPress={() => {
+//         navigate({
+//           key: 'publication',
+//           documentId: docId,
+//           accessory: pubAccessory,
+//           pubContext,
+//         })
+//       }}
+//     >
+//       <BannerText>
+//         There is a newer{' '}
+//         {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
+//         Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
+//         here to go to latest →
+//       </BannerText>
+//     </AppBanner>
+//   )
+// }
 
 function usePublicationCitations(docId?: string) {
   return useDocCitations(docId)

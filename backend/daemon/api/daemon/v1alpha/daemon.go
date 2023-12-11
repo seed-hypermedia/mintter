@@ -127,7 +127,7 @@ func Register(ctx context.Context, bs *hyper.Storage, account core.KeyPair, devi
 	}
 
 	if err = bs.SetAccountTrust(ctx, account.Principal()); err != nil {
-		return blob.CID, fmt.Errorf("Could not set own account to trusted: " + err.Error())
+		return blob.CID, fmt.Errorf("could not set own account to trusted: " + err.Error())
 	}
 	return blob.CID, nil
 }

@@ -70,10 +70,9 @@ import {OptionsDropdown} from '../components/options-dropdown'
 import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
 import {EditDocActions} from '../components/titlebar-common'
-import {VersionChangesInfo} from '../components/version-changes-info'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
-import {useAllChanges} from '../models/changes'
+import {useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
 import {
   useAddGroupMember,
@@ -99,6 +98,7 @@ export default function GroupPage() {
   const group = useGroup(groupId, version, {
     // refetchInterval: 5_000,
   })
+  const latestGroup = useGroup(groupId, undefined, {})
   const groupContent = useFullGroupContent(groupId, version)
   const latestGroupContent = useGroupContent(groupId)
   // const groupMembers = useGroupMembers(groupId, version)
@@ -362,7 +362,7 @@ export default function GroupPage() {
                       ) : null}
                       <EditDocActions
                         contextRoute={route}
-                        pubContext={{
+                        variant={{
                           key: 'group',
                           groupId,
                           pathName: '/',
@@ -379,7 +379,7 @@ export default function GroupPage() {
                             spawn({
                               key: 'publication',
                               documentId: frontPageId?.docId,
-                              pubContext: {
+                              variant: {
                                 key: 'group',
                                 groupId,
                                 pathName: '/',
@@ -430,15 +430,11 @@ export default function GroupPage() {
             <EntityVersionsAccessory
               id={entityId}
               activeVersion={group.data?.version}
+              variantVersion={latestGroup.data?.version}
             />
           ) : null}
         </Allotment>
         <Footer>
-          <XStack gap="$3" marginHorizontal="$3">
-            {group.data?.version && (
-              <VersionChangesInfo version={group.data?.version} />
-            )}
-          </XStack>
           <ChangesFooterItem route={route} />
         </Footer>
         {inviteMember.content}
@@ -562,7 +558,7 @@ function GroupContentItem({
             docTitle: pub.document?.title || '',
           })
         }}
-        pubContext={{key: 'group', groupId, pathName}}
+        variant={{key: 'group', groupId, pathName}}
         menuItems={[
           copyLinkMenuItem(
             idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
@@ -574,7 +570,7 @@ function GroupContentItem({
           key: 'publication',
           documentId: docId,
           ...(latestVersion === version
-            ? {pubContext: {key: 'group', groupId, pathName}}
+            ? {variant: {key: 'group', groupId, pathName}}
             : {versionId: version}),
         }}
       />
@@ -787,13 +783,9 @@ const GroupStatus = {
 } as const
 
 function ChangesFooterItem({route}: {route: GroupRoute}) {
-  const changes = useAllChanges(route.groupId)
-  const count = useMemo(
-    () => Object.keys(changes?.data?.changes || {}).length || 0,
-    [changes.data],
-  )
+  const timeline = useEntityTimeline(route.groupId)
+  const count = timeline.data?.timelineEntries.length || 0
   const replace = useNavigate('replace')
-  // if (route.accessory?.key !== 'versions') return null
   return (
     <FooterButton
       active={route.accessory?.key === 'versions'}
@@ -1093,15 +1085,3 @@ const TagInputItemContent = forwardRef<any, any>(
     )
   },
 )
-
-const CustomInput = forwardRef(function CustomInput(props, ref) {
-  return (
-    <Input
-      ref={ref}
-      flex={1}
-      width="100%"
-      borderColor="transparent"
-      {...props}
-    />
-  )
-})

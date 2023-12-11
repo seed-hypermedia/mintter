@@ -533,18 +533,11 @@ export class GetPublicationRequest extends Message<GetPublicationRequest> {
 
   /**
    * Optional. If true, only local publications will be found. False by default.
+   * Deprecated: use [Entities.DiscoverEntity] API explicitly instead.
    *
    * @generated from field: bool local_only = 3;
    */
   localOnly = false;
-
-  /**
-   * Optional. If true, the returned publication version will be the last change made by a
-   * trusted contact. If false (default) then the returned version will be de latest available.
-   *
-   * @generated from field: bool trusted_only = 4;
-   */
-  trustedOnly = false;
 
   constructor(data?: PartialMessage<GetPublicationRequest>) {
     super();
@@ -557,7 +550,6 @@ export class GetPublicationRequest extends Message<GetPublicationRequest> {
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "local_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 4, name: "trusted_only", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPublicationRequest {
@@ -640,9 +632,9 @@ export class ListPublicationsRequest extends Message<ListPublicationsRequest> {
   pageToken = "";
 
   /**
-   * Optional. Whether to return trusted publications only
-   * or including all publications regardless of the trusted state
-   * By default, it returns all publications (trusted_only = false)
+   * Optional. When provided, the response will only contain
+   * publications *owned* (created) by trusted accounts of this node.
+   * By default, it returns all the publications (trusted_only = false)
    *
    * @generated from field: bool trusted_only = 3;
    */
@@ -726,6 +718,63 @@ export class ListPublicationsResponse extends Message<ListPublicationsResponse> 
 
   static equals(a: ListPublicationsResponse | PlainMessage<ListPublicationsResponse> | undefined, b: ListPublicationsResponse | PlainMessage<ListPublicationsResponse> | undefined): boolean {
     return proto3.util.equals(ListPublicationsResponse, a, b);
+  }
+}
+
+/**
+ * Request for listing publications owned by a given account.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListAccountPublicationsRequest
+ */
+export class ListAccountPublicationsRequest extends Message<ListAccountPublicationsRequest> {
+  /**
+   * Optional. Number of results per page. Default is defined by the server.
+   *
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize = 0;
+
+  /**
+   * Optional. Value from next_page_token obtains from a previous response.
+   *
+   * @generated from field: string page_token = 2;
+   */
+  pageToken = "";
+
+  /**
+   * Required. Account ID to list publications for.
+   *
+   * @generated from field: string account_id = 3;
+   */
+  accountId = "";
+
+  constructor(data?: PartialMessage<ListAccountPublicationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListAccountPublicationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page_size", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "page_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListAccountPublicationsRequest {
+    return new ListAccountPublicationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListAccountPublicationsRequest | PlainMessage<ListAccountPublicationsRequest> | undefined, b: ListAccountPublicationsRequest | PlainMessage<ListAccountPublicationsRequest> | undefined): boolean {
+    return proto3.util.equals(ListAccountPublicationsRequest, a, b);
   }
 }
 

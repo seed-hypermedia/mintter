@@ -1,7 +1,5 @@
-import {EmptyList} from '@mintter/app/components/empty-list'
 import Footer from '@mintter/app/components/footer'
 import {useDraftList} from '@mintter/app/models/documents'
-import {useOpenDraft} from '@mintter/app/utils/open-draft'
 import {
   Button,
   ButtonText,
@@ -10,202 +8,137 @@ import {
   Delete,
   DialogDescription,
   DialogTitle,
-  SizableText,
+  Separator,
   Spinner,
-  TamaguiElement,
-  View,
+  XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Virtuoso} from 'react-virtuoso'
 
-import {createPublicWebHmUrl, idToUrl, unpackHmId} from '@mintter/shared'
+import {
+  Document,
+  createPublicWebHmUrl,
+  idToUrl,
+  unpackHmId,
+} from '@mintter/shared'
+import {Globe, Pencil, Trash, Verified} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {ComponentProps, memo} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
+import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
 import {useAppDialog} from '../components/dialog'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper, MainWrapperNoScroll} from '../components/main-wrapper'
+import {EmptyList} from '../components/empty-list'
+import {ListItem, copyLinkMenuItem} from '../components/list-item'
+import {MainWrapper} from '../components/main-wrapper'
 import {PublicationListItem} from '../components/publication-list-item'
-import {queryPublication, usePublicationFullList} from '../models/documents'
+import {
+  queryDraft,
+  queryPublication,
+  usePublicationFullList,
+} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {toast} from '../toast'
+import {DraftRoute, useNavRoute} from '../utils/navigation'
+import {useOpenDraft} from '../utils/open-draft'
+import {useClickNavigate, useNavigate} from '../utils/useNavigate'
 
-export function PublicationListPage({
-  trustedOnly,
-  empty,
-}: {
-  trustedOnly: boolean
-  empty?: React.ReactNode
-}) {
-  let publications = usePublicationFullList({trustedOnly})
-  let drafts = useDraftList()
-  let {queryClient, grpcClient} = useAppContext()
-  let openDraft = useOpenDraft('push')
-  const items = publications.data
+export const PublicationListPage = memo(PublicationListPageUnmemo)
 
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
-  const container = useRef<TamaguiElement>(null)
-  const virtuoso = useRef(null)
-  const [dimensions, setDimensions] = useState({height: 0, width: 0})
-  const handleContainer = useCallback((node: TamaguiElement | null) => {
-    container.current = node
-    setDimensions({
-      height: node?.offsetHeight,
-      width: node?.offsetWidth,
-    })
-  }, [])
-  useEffect(() => {
-    function handleResize() {
-      const node = container.current
-      setDimensions({
-        height: node?.offsetHeight,
-        width: node?.offsetWidth,
-      })
-    }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-  if (items) {
-    if (items.length) {
-      return (
-        <>
-          <MainWrapperNoScroll>
-            <YStack f={1} ref={handleContainer}>
-              <Virtuoso
-                ref={virtuoso}
-                style={{
-                  height: dimensions.height,
-                  display: 'flex',
-                  overflowY: 'scroll',
-                  overflowX: 'hidden',
-                }}
-                increaseViewportBy={{
-                  top: 800,
-                  bottom: 800,
-                }}
-                components={{
-                  Header: () => <View style={{height: 30}} />,
-                  Footer: () => <View style={{height: 30}} />,
-                }}
-                id="scroll-page-wrapper"
-                totalCount={items.length}
-                itemContent={(index) => {
-                  const {publication, author, editors} = items[index]
-                  const docId = publication.document?.id
-                  if (!docId) return null
-                  return (
-                    <XStack
-                      key={publication.document?.id}
-                      jc="center"
-                      width={dimensions.width}
-                    >
-                      <PublicationListItem
-                        pubContext={trustedOnly ? {key: 'trusted'} : null}
-                        openRoute={{
-                          key: 'publication',
-                          documentId: docId,
-                          pubContext: trustedOnly ? {key: 'trusted'} : null,
-                        }}
-                        hasDraft={drafts.data?.documents.find(
-                          (d) => d.id == publication.document?.id,
-                        )}
-                        onPointerEnter={() => {
-                          if (publication.document?.id) {
-                            queryClient.client.prefetchQuery(
-                              queryPublication(
-                                grpcClient,
-                                publication.document.id,
-                                publication.version,
-                              ),
-                            )
-                          }
-                        }}
-                        publication={publication}
-                        author={author}
-                        editors={editors}
-                        menuItems={[
-                          copyLinkMenuItem(
-                            idToUrl(docId, undefined, publication.version),
-                            'Publication',
-                          ),
-                          {
-                            key: 'delete',
-                            label: 'Delete Publication',
-                            icon: Delete,
-                            onPress: () => {
-                              deleteDialog.open(docId)
-                            },
-                          },
-                        ]}
-                      />
-                    </XStack>
-                  )
-                }}
-              />
-              {deleteDialog.content}
-            </YStack>
-          </MainWrapperNoScroll>
-          <Footer />
-        </>
-      )
-    } else {
-      return (
-        <>
-          <MainWrapper>
-            <Container>
-              {empty || (
-                <EmptyList
-                  description="You have no Publications yet."
-                  action={() => {
-                    openDraft()
-                  }}
-                />
-              )}
-            </Container>
-          </MainWrapper>
-          <Footer />
-        </>
-      )
-    }
-  }
+export function PublicationListPageUnmemo() {
+  const route = useNavRoute()
+  if (route.key !== 'documents') throw new Error('invalid route')
+  const trustedOnly = route.tab === 'trusted'
+  const draftsOnly = route.tab === 'drafts'
+  const allDocs = route.tab == null
+  const replace = useNavigate('replace')
 
-  if (publications.error) {
-    return (
-      <MainWrapper>
-        <Container>
-          <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
-            <SizableText fontFamily="$body" fontWeight="700" fontSize="$6">
-              Publication List Error
-            </SizableText>
-            <SizableText fontFamily="$body" fontSize="$4">
-              {JSON.stringify(publications.error)}
-            </SizableText>
-            <Button theme="yellow" onPress={() => publications.refetch()}>
-              try again
-            </Button>
-          </YStack>
-        </Container>
-      </MainWrapper>
-    )
-  }
+  let content = <PublicationsList trustedOnly={false} key="all" />
+  if (trustedOnly)
+    content = <PublicationsList trustedOnly={true} key="trusted" />
+  if (draftsOnly) content = <DraftsList />
 
   return (
     <>
       <MainWrapper>
         <Container>
-          <Spinner />
+          <XStack>
+            <XGroup separator={<Separator backgroundColor={'red'} />}>
+              <ToggleGroupItem
+                label="Trusted Creators"
+                icon={Verified}
+                active={trustedOnly}
+                onPress={() => {
+                  if (!trustedOnly) {
+                    replace({
+                      ...route,
+                      tab: 'trusted',
+                    })
+                  }
+                }}
+              />
+              <ToggleGroupItem
+                label="All Creators"
+                icon={Globe}
+                active={allDocs}
+                onPress={() => {
+                  if (!allDocs) {
+                    replace({
+                      ...route,
+                      tab: null,
+                    })
+                  }
+                }}
+              />
+              <ToggleGroupItem
+                label="My Drafts"
+                icon={Pencil}
+                active={draftsOnly}
+                onPress={() => {
+                  if (!draftsOnly) {
+                    replace({
+                      ...route,
+                      tab: 'drafts',
+                    })
+                  }
+                }}
+              />
+            </XGroup>
+          </XStack>
         </Container>
+        {content}
       </MainWrapper>
       <Footer />
     </>
   )
 }
 
-function PublishedFirstDocDialog({
+function ToggleGroupItem({
+  label,
+  icon,
+  active,
+  onPress,
+}: {
+  label: string
+  icon: ComponentProps<typeof Button>['icon'] | undefined
+  active: boolean
+  onPress: () => void
+}) {
+  return (
+    <XGroup.Item>
+      <Button
+        disabled={active}
+        icon={icon}
+        backgroundColor={active ? '$color7' : undefined}
+        onPress={onPress}
+      >
+        {label}
+      </Button>
+    </XGroup.Item>
+  )
+}
+
+export function PublishedFirstDocDialog({
   input,
   onClose,
 }: {
@@ -260,13 +193,124 @@ function PublishedFirstDocDialog({
   )
 }
 
-export default function TrustedPublicationList() {
-  const successDialog = useAppDialog(PublishedFirstDocDialog)
+function PublicationsList({trustedOnly}: {trustedOnly: boolean}) {
+  const publications = usePublicationFullList({trustedOnly})
+  const drafts = useDraftList()
+  const {queryClient, grpcClient} = useAppContext()
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
 
+  const items = publications.data
+  if (!items) return <Spinner />
+  return (
+    <Container>
+      {items?.map((item) => {
+        const {publication, author, editors} = item
+        const docId = publication.document?.id
+        if (!docId) return null
+        return (
+          <PublicationListItem
+            key={docId}
+            openRoute={{
+              key: 'publication',
+              documentId: docId,
+            }}
+            hasDraft={drafts.data?.documents.find(
+              (d) => d.id == publication.document?.id,
+            )}
+            onPointerEnter={() => {
+              if (publication.document?.id) {
+                queryClient.client.prefetchQuery(
+                  queryPublication(
+                    grpcClient,
+                    publication.document.id,
+                    publication.version,
+                  ),
+                )
+              }
+            }}
+            publication={publication}
+            author={author}
+            editors={editors}
+            menuItems={[
+              copyLinkMenuItem(
+                idToUrl(docId, undefined, publication.version),
+                'Publication',
+              ),
+              {
+                key: 'delete',
+                label: 'Delete Publication',
+                icon: Delete,
+                onPress: () => {
+                  deleteDialog.open(docId)
+                },
+              },
+            ]}
+          />
+        )
+      })}
+      {deleteDialog.content}
+    </Container>
+  )
+}
+
+function DraftsList() {
+  const drafts = useDraftList()
+  const openDraft = useOpenDraft('push')
+  return (
+    <Container>
+      {drafts.isInitialLoading ? (
+        <Spinner />
+      ) : drafts.data?.documents.length ? (
+        <YStack>
+          {drafts.data.documents.map((draft) => (
+            <DraftListItem key={draft.id} draft={draft} />
+          ))}
+        </YStack>
+      ) : (
+        <EmptyList
+          description="You have no current Drafts."
+          action={() => {
+            openDraft()
+          }}
+        />
+      )}
+    </Container>
+  )
+}
+
+function DraftListItem({draft}: {draft: Document}) {
+  let title = draft.title || 'Untitled Document'
+  const deleteDialog = useDeleteDraftDialog()
+  const navigate = useClickNavigate()
+  const {queryClient, grpcClient} = useAppContext()
+  if (!draft.id) throw new Error('DraftListItem requires an id')
+  const draftRoute: DraftRoute = {key: 'draft', draftId: draft.id}
+  const goToItem = (e: any) => {
+    navigate(draftRoute, e)
+  }
   return (
     <>
-      <PublicationListPage trustedOnly={true} />
-      {successDialog.content}
+      <ListItem
+        title={title}
+        onPointerEnter={() => {
+          queryClient.client.prefetchQuery(
+            queryDraft({grpcClient, documentId: draft.id}),
+          )
+        }}
+        onPress={goToItem}
+        accessory={<></>}
+        menuItems={[
+          {
+            label: 'Delete Draft',
+            key: 'delete',
+            icon: Trash,
+            onPress: () => {
+              deleteDialog.open({draftId: draft.id})
+            },
+          },
+        ]}
+      />
+      {deleteDialog.content}
     </>
   )
 }

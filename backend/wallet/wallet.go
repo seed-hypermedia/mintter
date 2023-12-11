@@ -89,6 +89,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		defaultWallet, err := walletsql.GetDefaultWallet(conn)
 		if err != nil {
 			log.Warn("Problem getting default wallet", zap.Error(err))
+			return
 		}
 		if defaultWallet.Type == lndhubsql.LndhubGoWalletType {
 			srv.lightningClient.Lndhub.WalletID = defaultWallet.ID
@@ -97,6 +98,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		wallets, err := walletsql.ListWallets(conn, 1)
 		if err != nil {
 			log.Warn("Could not get if db already had wallets", zap.Error(err))
+			return
 		}
 
 		for _, w := range wallets {

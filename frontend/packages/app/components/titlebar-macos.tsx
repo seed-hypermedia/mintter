@@ -21,7 +21,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
         className="window-drag"
       >
         <XStack
-          flex={1}
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
@@ -50,7 +49,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
         </XStack>
         <XStack
           className="window-drag"
-          flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}
           flexBasis={0}

@@ -59,6 +59,9 @@ message Change {
   // IDs of other changes this change depends on.
   repeated string deps = 4;
 
+  // IDs of other changes that depend on this change.
+  repeated string children = 6;
+
   // Indicates whether this changes comes from a trusted peer of ours.
   bool is_trusted = 5;
 }
@@ -68,15 +71,40 @@ message EntityTimeline {
   // The ID of the entity.
   string id = 1;
 
+  // Account ID of the owner of the entity.
+  string owner = 2;
+
   // The set of changes for the entity keyed by change ID.
-  map<string, Change> changes = 2;
+  map<string, Change> changes = 3;
 
   // The sorted list of change IDs by time.
-  repeated string changes_by_time = 3;
+  repeated string changes_by_time = 4;
 
-  // The latest version of the entity we know about.
-  string latest_public_version = 4;
+  // The set of changes that has no dependencies.
+  // Normally there should only be one root,
+  // but just in case it's defined as a list.
+  repeated string roots = 5;
 
-  // The latest version of the entity from our trusted peers.
-  string latest_trusted_version = 5;
+  // The set of leaf changes considering the entire DAG.
+  repeated string heads = 6;
+
+  // The set of author versions/variants sorted by timestamp.
+  repeated AuthorVersion author_versions = 7;
+}
+
+// Set of heads from a given author.
+message AuthorVersion {
+  // Account ID of the author.
+  string author = 1;
+
+  // The set of leaf changes from that author.
+  repeated string heads = 2;
+
+  // The version string corresponding to the author's variant.
+  // I.e. same as heads but concatenated with a '.' delimiter.
+  string version = 3;
+
+  // The timestamp of the author's version.
+  // For compound versions the greatest timestamp is used.
+  google.protobuf.Timestamp version_time = 4;
 }
