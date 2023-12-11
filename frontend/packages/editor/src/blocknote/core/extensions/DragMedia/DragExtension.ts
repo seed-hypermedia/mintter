@@ -1,14 +1,15 @@
+import {HMBlockSchema} from '@/schema'
 import {toast} from '@mintter/app/toast'
 import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
-import {Editor, Extension} from '@tiptap/core'
-import {Node} from 'prosemirror-model'
+import {Extension} from '@tiptap/core'
 import {Plugin, PluginKey} from 'prosemirror-state'
+import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 
 const PLUGIN_KEY = new PluginKey(`drop-plugin`)
 
 export interface DragOptions {
-  editor: Editor
+  editor: BlockNoteEditor<HMBlockSchema>
 }
 
 export const DragExtension = Extension.create<DragOptions>({
@@ -38,8 +39,10 @@ export const DragExtension = Extension.create<DragOptions>({
             },
             drop: (view, event) => {
               const data = event.dataTransfer
+
               if (data) {
                 const files: File[] = []
+
                 if (data.files.length) {
                   for (let i = 0; i < data.files.length; i++) {
                     files.push(data.files[i])
@@ -52,66 +55,97 @@ export const DragExtension = Extension.create<DragOptions>({
                     }
                   }
                 }
+
                 if (files) {
-                  files.reverse()
-                  files.forEach((file) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    const pos = this.editor.view.posAtCoords({
-                      left: event.clientX,
-                      top: event.clientY,
-                    })
-                    if (pos && pos.inside !== -1) {
-                      handleDragMedia(file).then((props) => {
-                        if (!props) return false
-                        const {state} = view
-                        const blockInfo = getBlockInfoFromPos(
-                          state.doc,
-                          pos.pos,
-                        )
-                        let node: Node
-                        if (chromiumSupportedImageMimeTypes.has(file!.type)) {
-                          node = state.schema.nodes.image.create({
-                            url: props?.url,
-                            name: props?.name,
-                          })
-                        } else if (
-                          chromiumSupportedVideoMimeTypes.has(file!.type)
-                        ) {
-                          node = state.schema.nodes.video.create({
-                            url: props?.url,
-                            name: props?.name,
-                          })
-                        } else {
-                          node = state.schema.nodes.file.create({
-                            ...props,
+                  const pos = this.editor.view.posAtCoords({
+                    left: event.clientX,
+                    top: event.clientY,
+                  })
+
+                  let lastId: string
+
+                  // using reduce so files get inserted sequentially
+                  files
+                    .reduce((previousPromise, file, index) => {
+                      return previousPromise.then(() => {
+                        event.preventDefault()
+                        event.stopPropagation()
+
+                        if (pos && pos.inside !== -1) {
+                          return handleDragMedia(file).then((props) => {
+                            if (!props) return false
+
+                            const {state} = view
+                            let blockNode
+                            let newId
+
+                            if (
+                              chromiumSupportedImageMimeTypes.has(file.type)
+                            ) {
+                              newId = generateBlockId()
+                              blockNode = {
+                                id: newId,
+                                type: 'image',
+                                props: {
+                                  url: props.url,
+                                  name: props.name,
+                                },
+                              }
+                            } else if (
+                              chromiumSupportedVideoMimeTypes.has(file.type)
+                            ) {
+                              newId = generateBlockId()
+                              blockNode = {
+                                id: newId,
+                                type: 'video',
+                                props: {
+                                  url: props.url,
+                                  name: props.name,
+                                },
+                              }
+                            } else {
+                              newId = generateBlockId()
+                              blockNode = {
+                                id: newId,
+                                type: 'file',
+                                props: {
+                                  ...props,
+                                },
+                              }
+                            }
+
+                            const blockInfo = getBlockInfoFromPos(
+                              state.doc,
+                              pos.pos,
+                            )
+
+                            if (index === 0) {
+                              this.options.editor.insertBlocks(
+                                [blockNode],
+                                blockInfo.id,
+                                blockInfo.node.textContent ? 'after' : 'before',
+                              )
+                            } else {
+                              this.options.editor.insertBlocks(
+                                [blockNode],
+                                lastId,
+                                'after',
+                              )
+                            }
+
+                            lastId = newId
                           })
                         }
-                        if (blockInfo.node.textContent) {
-                          const $pos = state.doc.resolve(pos.pos)
-                          const nextBlockPos = $pos.end() + 2
-                          view.dispatch(
-                            state.tr.replaceWith(
-                              nextBlockPos,
-                              nextBlockPos,
-                              node,
-                            ),
-                          )
-                        } else
-                          view.dispatch(
-                            state.tr.replaceWith(
-                              pos.pos - 1,
-                              pos.pos - 1,
-                              node,
-                            ),
-                          )
                       })
-                    }
-                  })
+                    }, Promise.resolve())
+                    .then(() => true)
+
                   return true
                 }
+
                 return false
               }
+
               return false
             },
           },
@@ -157,6 +191,16 @@ export async function handleDragMedia(file: File) {
     console.log(error.message)
     toast.error('Failed to upload file.')
   }
+}
+
+function generateBlockId(length: number = 8): string {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length))
+  }
+  return result
 }
 
 const chromiumSupportedImageMimeTypes = new Set([
