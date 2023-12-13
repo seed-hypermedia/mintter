@@ -195,34 +195,7 @@ func (bs *Storage) ListEntities(ctx context.Context, pattern string) ([]EntityID
 
 // ListTrustedEntities returns a list of entities matching the pattern owned by trusted accounts.
 func (bs *Storage) ListTrustedEntities(ctx context.Context, pattern string) ([]EntityID, error) {
-	conn, release, err := bs.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	var out []EntityID
-	if err := sqlitex.Exec(conn, qListTrustedEntitites(), func(stmt *sqlite.Stmt) error {
-		out = append(out, EntityID(stmt.ColumnText(0)))
-		return nil
-	}, pattern); err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-var qListTrustedEntitites = dqb.Str(`
-	SELECT resources.iri
-	FROM trusted_accounts
-	JOIN resources ON resources.owner = trusted_accounts.id
-	WHERE resources.iri GLOB :prefix
-	ORDER BY resources.id
-`)
-
-// ListTrustedEntities returns a list of entities matching the pattern owned by trusted accounts.
-func (bs *Storage) ListTrustedEntities(ctx context.Context, pattern string) ([]EntityID, error) {
-	conn, release, err := bs.db.Conn(ctx)
+	conn, release, err := bs.db.Conn(ctx, "dbg21")
 	if err != nil {
 		return nil, err
 	}
