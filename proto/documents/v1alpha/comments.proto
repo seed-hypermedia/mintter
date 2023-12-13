@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package com.mintter.documents.v1alpha;
+
+import "./documents/proto";
+import "google/protobuf/timestamp.proto";
+
+// Comments service allows users to add comments to documents.
+service Comments {
+}
+
+/*
+
+- Are comment target URLs pinned?
+- 
+
+*/
+
+message PostCommentRequest {
+  // The URI of the target resource which the comment is attached to.
+  string target_resource = 1;
+
+  // The ID of the root comment in this discussion.
+  // For initial comments this field is empty.
+  string root_comment = 2;
+
+  // The ID of the comment to which this comment is a reply.
+  // For initial comments this field is empty.
+  string parent_comment = 3;
+
+  // Content of the comment.
+  repeated BlockNode content = 4;
+}
+
+// Comment is a unit of discussion.
+// The initial comment is posted targeting an existing hypermedia resource.
+// Replies are posted targeting the initial root comment,
+// additionally linking to the most recent comment in the thread.
+message Comment {
+  // ID of the current comment.
+  string id = 1;
+
+  // The URI of the target resource which the comment is attached to.
+  // For initial comments this is normally a Hypermedia Document, but potentially can be anything.
+  // For replies this should be the ID of the initial root comment that started the thread.
+  string target = 2;
+
+  // The ID of the comment to which this comment is a reply.
+  // For initial comments this field is empty.
+  string in_reply_to_comment = 4;
+
+  // Account ID of the author of the comment.
+  string author = 5;
+
+  // Content of the comment.
+  repeated BlockNode content = 6;
+
+  // Timestamp when the comment was created.
+  google.protobuf.Timestamp create_time = 7;
+}
+l
