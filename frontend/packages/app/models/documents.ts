@@ -1004,7 +1004,7 @@ function observeBlocks(
   blocks: Array<EditorBlock<typeof hmBlockSchema>>,
   onChange: () => void,
 ) {
-  blocks.forEach((block) => {
+  blocks.forEach((block, index) => {
     if (block.type == 'image') {
       console.log('== IMG', block)
     }
@@ -1021,6 +1021,22 @@ function observeBlocks(
 
     if (block.children) {
       observeBlocks(editor, block.children, onChange)
+    }
+
+    if (
+      index === blocks.length - 1 &&
+      ['image', 'video', 'file', 'embed'].includes(block.type)
+    ) {
+      editor.insertBlocks(
+        [
+          {
+            type: 'paragraph',
+          },
+        ],
+        block.id,
+        'after',
+      )
+      editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
     }
   })
 }
