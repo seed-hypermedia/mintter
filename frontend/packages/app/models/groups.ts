@@ -35,6 +35,20 @@ export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   })
 }
 
+function createGroupQuery(
+  grpcClient: GRPCClient,
+  groupId: string | undefined,
+  version: string | undefined,
+) {
+  return {
+    queryKey: [queryKeys.GET_GROUP, groupId, version],
+    queryFn: async () => {
+      const group = await grpcClient.groups.getGroup({id: groupId, version})
+      return group
+    },
+  }
+}
+
 export function useGroup(
   groupId: string | undefined,
   version?: string | undefined,
@@ -42,13 +56,18 @@ export function useGroup(
 ) {
   const grpcClient = useGRPCClient()
   return useQuery({
-    queryKey: [queryKeys.GET_GROUP, groupId, version],
-    queryFn: async () => {
-      const group = await grpcClient.groups.getGroup({id: groupId, version})
-      return group
-    },
+    ...createGroupQuery(grpcClient, groupId, version),
     enabled: !!groupId,
     ...opts,
+  })
+}
+
+export function useSelectedGroups(groupIds: string[]) {
+  const grpcClient = useGRPCClient()
+  return useQueries({
+    queries: groupIds.map((groupId) =>
+      createGroupQuery(grpcClient, groupId, undefined),
+    ),
   })
 }
 
@@ -172,6 +191,7 @@ export function usePublishDocToGroup(
       version,
     }: PublishDocToGroupMutationInput): Promise<boolean> => {
       try {
+        console.log('updating group', {groupId, pathName, docId, version})
         await grpcClient.groups.updateGroup({
           id: groupId,
           updatedContent: {

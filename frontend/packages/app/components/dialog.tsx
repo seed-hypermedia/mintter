@@ -142,7 +142,11 @@ export function AppDialog({
 }
 
 export function useAppDialog<DialogInput>(
-  DialogContentComponent: FC<{onClose: () => void; input: DialogInput}>,
+  DialogContentComponent: FC<{
+    onClose: () => void
+    input: DialogInput
+    onOpenState: {onOpenChange: (isOpen: boolean) => void}
+  }>,
   options?: {isAlert?: boolean; onClose?: () => void},
 ) {
   const [openState, setOpenState] = useState<null | DialogInput>(null)
@@ -178,6 +182,14 @@ export function useAppDialog<DialogInput>(
                 {openState && (
                   <DialogContentComponent
                     input={openState}
+                    dialogState={{
+                      onOpenChange: (isOpen: boolean) => {
+                        if (!isOpen) {
+                          setOpenState(null)
+                          onClose?.()
+                        }
+                      },
+                    }}
                     onClose={() => {
                       setOpenState(null)
                       onClose?.()

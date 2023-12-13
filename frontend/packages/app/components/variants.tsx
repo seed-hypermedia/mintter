@@ -48,12 +48,14 @@ import {
   Popover,
   PopoverTrigger,
   Select,
+  Separator,
   SizableText,
   Spinner,
   Text,
   Tooltip,
   UIAvatar,
   View,
+  XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -75,6 +77,7 @@ import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
+import {EditDocButton} from './edit-doc-button'
 import {Slash} from './slash'
 
 export function RenameShortnameDialog({
@@ -134,17 +137,18 @@ export function RenameShortnameDialog({
   )
 }
 
-function GroupPublishDialog({
+export function GroupPublishDialog({
   input,
   dialogState,
 }: {
   input: {
     docId: string
     version: string | undefined
-    editDraftId?: string | undefined
     docTitle: string | undefined
   }
-  dialogState: DialogProps
+  dialogState: {
+    onOpenChange: (isOpen: boolean) => void
+  }
 }) {
   const account = useMyAccount()
   const accountId = account.data?.id
@@ -170,7 +174,7 @@ function GroupPublishDialog({
           toast.error('Please select a group')
           return
         }
-        if (pubRoute && input.version && !input.editDraftId) {
+        if (pubRoute && input.version) {
           // we are in a publication and we are expected to immediately put this in the group
           toast
             .promise(
@@ -697,83 +701,94 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   const popoverState = usePopoverState(false, (isOpen) => {
     if (isOpen) setVariantTab(groupVariant ? 'groups' : 'authors')
   })
-  const navigate = useNavigate()
-  const publishDialogState = usePopoverState(false, (isOpen) => {
-    isOpen && popoverState.onOpenChange(false)
-  })
   const renameDialog = useAppDialog(RenamePubDialog)
-  const contextDestRoute: NavRoute | null = groupVariant?.groupId
-    ? {
-        key: 'group',
-        groupId: groupVariant.groupId,
-      }
-    : null
+  const myAccount = useMyAccount()
+  const myGroups = useAccountGroups(myAccount.data?.id)
+  const variantAuthors =
+    variant?.key === 'authors' || !variant
+      ? variant?.authors || [publication.data?.publication?.document?.author]
+      : null
+  const isAuthorVariantEditable =
+    !!variantAuthors &&
+    !!myAccount.data?.id &&
+    variantAuthors.indexOf(myAccount.data.id) !== -1
+  const isGroupVariantEditable =
+    !!groupVariant &&
+    !!myGroups.data?.items?.find(
+      (item) => item.group?.id === groupVariant.groupId,
+    )
+  const showEditButton = isAuthorVariantEditable || isGroupVariantEditable
   return (
     <>
-      <XStack space="$2" ai="center">
-        <ContextPopover {...popoverState}>
-          <PopoverTrigger asChild>
-            <Button size="$2" className="no-window-drag">
-              <VariantState
-                variant={variant}
-                isOpen={popoverState.open}
-                publication={publication.data?.publication}
-              />
-            </Button>
-          </PopoverTrigger>
-          <ContextPopoverContent>
-            <ContextPopoverArrow />
-            <YStack alignSelf="stretch">
-              <SizableText
-                size="$3"
-                marginVertical="$2"
-                padding="$2"
-                paddingHorizontal="$4"
-                fontWeight="bold"
-              >
-                Select Variant
-              </SizableText>
-              <TabsView
-                value={variantTab}
-                onValue={(tab) => {
-                  setVariantTab(tab)
-                }}
-                tabs={[
-                  {
-                    label: 'Authors',
-                    key: 'authors',
-                    element: (
-                      <AuthorVariants
-                        route={route}
-                        publication={publication.data?.publication}
-                      />
-                    ),
-                  },
-                  {
-                    label: 'Groups',
-                    key: 'groups',
-                    element: (
-                      <GroupVariants
-                        route={route}
-                        publication={publication.data?.publication}
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </YStack>
-          </ContextPopoverContent>
-        </ContextPopover>
-        {/* <PublishDialogInstance
-          docId={docId}
-          version={docVersion}
-          docTitle={publication.data?.document?.title}
-          groupVariant={
-            route.pubContext?.key === 'group' ? route.pubContext : null
-          }
-          {...publishDialogState}
-        /> */}
-      </XStack>
+      <XGroup separator={<Separator vertical />}>
+        <XGroup.Item>
+          <ContextPopover {...popoverState}>
+            <PopoverTrigger asChild>
+              <Button size="$2" className="no-window-drag">
+                <VariantState
+                  variant={variant}
+                  isOpen={popoverState.open}
+                  publication={publication.data?.publication}
+                />
+              </Button>
+            </PopoverTrigger>
+            <ContextPopoverContent>
+              <ContextPopoverArrow />
+              <YStack alignSelf="stretch">
+                <SizableText
+                  size="$3"
+                  marginVertical="$2"
+                  padding="$2"
+                  paddingHorizontal="$4"
+                  fontWeight="bold"
+                >
+                  Select Variant
+                </SizableText>
+                <TabsView
+                  value={variantTab}
+                  onValue={(tab) => {
+                    setVariantTab(tab)
+                  }}
+                  tabs={[
+                    {
+                      label: 'Authors',
+                      key: 'authors',
+                      element: (
+                        <AuthorVariants
+                          route={route}
+                          publication={publication.data?.publication}
+                        />
+                      ),
+                    },
+                    {
+                      label: 'Groups',
+                      key: 'groups',
+                      element: (
+                        <GroupVariants
+                          route={route}
+                          publication={publication.data?.publication}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+              </YStack>
+            </ContextPopoverContent>
+          </ContextPopover>
+        </XGroup.Item>
+        {showEditButton && (
+          <XGroup.Item>
+            <EditDocButton
+              key="editActions"
+              contextRoute={route}
+              variant={route.variant || null}
+              docId={route.documentId}
+              baseVersion={route.versionId}
+              editLabel="Edit"
+            />
+          </XGroup.Item>
+        )}
+      </XGroup>
       {renameDialog.content}
     </>
   )
@@ -1035,6 +1050,10 @@ function GroupVariants({
 }) {
   if (route.key !== 'publication') throw new Error('Uh')
   const docGroups = useCurrentDocumentGroups(route.documentId)
+
+  const publishDialogState = usePopoverState(false, (isOpen) => {
+    // isOpen && popoverState.onOpenChange(false)
+  })
   return (
     <YStack gap="$2" padding="$2">
       {docGroups.data?.map((docGroup) => {
@@ -1049,6 +1068,13 @@ function GroupVariants({
           />
         )
       })}
+      <PublishDialogInstance
+        docId={route.documentId}
+        version={publication?.version}
+        docTitle={publication?.document?.title}
+        groupVariant={route.variant?.key === 'group' ? route.variant : null}
+        {...publishDialogState}
+      />
     </YStack>
   )
 }
@@ -1103,31 +1129,31 @@ export function PageContextButton({}: {}) {
   return null
 }
 
-export function PublishToGroupButton() {
-  const route = useNavRoute()
-  const pubRoute = route.key === 'publication' ? route : null
-  const variant = pubRoute?.variant
-  const publication = usePublicationVariant({
-    documentId: pubRoute?.documentId,
-    versionId: pubRoute?.versionId,
-    variant,
-  })
-  const docId = pubRoute?.documentId
-  const docVersion = publication.data?.publication?.version
-  const publishDialogState = usePopoverState(false)
-  if (!pubRoute || !docVersion || !docId) return null
-  return (
-    <PublishDialogInstance
-      docId={docId}
-      version={docVersion}
-      docTitle={publication.data?.publication?.document?.title}
-      groupVariant={variant?.key === 'group' ? variant : null}
-      {...publishDialogState}
-    />
-  )
-}
+// export function PublishToGroupButton() {
+//   const route = useNavRoute()
+//   const pubRoute = route.key === 'publication' ? route : null
+//   const variant = pubRoute?.variant
+//   const publication = usePublicationVariant({
+//     documentId: pubRoute?.documentId,
+//     versionId: pubRoute?.versionId,
+//     variant,
+//   })
+//   const docId = pubRoute?.documentId
+//   const docVersion = publication.data?.publication?.version
+//   const publishDialogState = usePopoverState(false)
+//   if (!pubRoute || !docVersion || !docId) return null
+//   return (
+//     <PublishDialogInstance
+//       docId={docId}
+//       version={docVersion}
+//       docTitle={publication.data?.publication?.document?.title}
+//       groupVariant={variant?.key === 'group' ? variant : null}
+//       {...publishDialogState}
+//     />
+//   )
+// }
 
-function PublishDialogInstance({
+export function PublishDialogInstance({
   closePopover,
   docId,
   version,
@@ -1155,16 +1181,11 @@ function PublishDialogInstance({
         }
       }}
     >
-      <Tooltip content="Publish to Group">
-        <Dialog.Trigger asChild>
-          <Button
-            size="$2"
-            icon={Upload}
-            className="no-window-drag"
-            chromeless
-          ></Button>
-        </Dialog.Trigger>
-      </Tooltip>
+      <Dialog.Trigger asChild>
+        <Button size="$2" icon={Upload} className="no-window-drag" chromeless>
+          Publish to Group...
+        </Button>
+      </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"

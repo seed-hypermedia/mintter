@@ -1,17 +1,13 @@
-import {useGRPCClient} from '@mintter/app/app-context'
 import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
-import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {
-  NavMode,
   NavRoute,
   useNavRoute,
   useNavigationDispatch,
   useNavigationState,
 } from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {
   Back,
@@ -42,12 +38,11 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
-import appError from '../errors'
 import {useEntityTimeline} from '../models/changes'
 import {useGroup, useInvertedGroupContent} from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {GroupVariant, PublicationVariant} from '../utils/navigation'
+import {GroupVariant} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {CloneGroupDialog} from './clone-group'
 import {useAppDialog} from './dialog'
@@ -56,11 +51,7 @@ import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {TitleBarProps} from './titlebar'
-import {
-  DraftPublicationButtons,
-  PublicationVariants,
-  PublishToGroupButton,
-} from './variants'
+import {DraftPublicationButtons, PublicationVariants} from './variants'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -484,17 +475,17 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
-      <PublicationVariants key="pubContext" route={route} />,
-      <DocOptionsButton key="docOptions" />,
-      <PublishToGroupButton key="publishDialog" />,
-      <CopyReferenceButton key="copyRef" />,
-      <EditDocActions
-        key="editActions"
-        contextRoute={route}
-        variant={route.variant || null}
-        docId={route.documentId}
-        baseVersion={route.versionId}
-      />,
+      <DocOptionsButton key="options" />,
+      <PublicationVariants key="variants" route={route} />,
+      // <PublishToGroupButton key="publishDialog" />,
+      // <CopyReferenceButton key="copyRef" />,
+      // <EditDocButton
+      //   key="editActions"
+      //   contextRoute={route}
+      //   variant={route.variant || null}
+      //   docId={route.documentId}
+      //   baseVersion={route.versionId}
+      // />,
     ]
   } else if (route.key === 'account') {
     buttonGroup = [
@@ -597,88 +588,5 @@ export function NavMenuButton({left}: {left?: ReactNode}) {
         </Tooltip>
       </XStack>
     </XStack>
-  )
-}
-
-export function EditDocActions({
-  docId,
-  contextRoute,
-  navMode = 'replace',
-  variant,
-  baseVersion,
-}: {
-  docId: string
-  navMode?: NavMode
-  contextRoute: NavRoute
-  variant: PublicationVariant
-  baseVersion?: string
-}) {
-  const pub = usePublicationVariant({
-    documentId: docId,
-    versionId: baseVersion,
-    variant,
-    enabled: !!docId,
-  })
-  const pubVersion = pub.data?.publication?.version
-  const draftList = useDraftList()
-  const navigate = useNavigate(navMode)
-
-  const hasExistingDraft = draftList.data?.documents.some(
-    (draft) => draft.id == docId,
-  )
-  const grpcClient = useGRPCClient()
-
-  async function handleEdit() {
-    try {
-      if (hasExistingDraft) {
-        // todo, careful! this only works because draftId is docId right now
-        navigate({
-          key: 'draft',
-          draftId: docId,
-          contextRoute,
-          variant: variant?.key === 'group' ? variant : undefined,
-        })
-        return
-      }
-      let draft = await grpcClient.drafts.createDraft({
-        existingDocumentId: docId,
-        version: baseVersion || pubVersion,
-      })
-      navigate({
-        key: 'draft',
-        draftId: draft.id,
-        contextRoute,
-        variant: variant?.key === 'group' ? variant : undefined,
-      })
-    } catch (error: any) {
-      if (
-        error?.message.match('[failed_precondition]') &&
-        error?.message.match('already exists')
-      ) {
-        toast('A draft already exists for this document. Please review.')
-        navigate({
-          key: 'draft',
-          draftId: docId, // because docId and draftId are the same right now
-          contextRoute,
-          variant: variant?.key === 'group' ? variant : undefined,
-        })
-        return
-      }
-
-      appError(`Draft Error: ${error?.message}`, {error})
-    }
-  }
-
-  return (
-    <>
-      <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
-        <Button
-          size="$2"
-          theme={hasExistingDraft ? 'yellow' : undefined}
-          onPress={() => handleEdit()}
-          iconAfter={Pencil}
-        />
-      </Tooltip>
-    </>
   )
 }

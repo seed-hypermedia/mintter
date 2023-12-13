@@ -61,6 +61,7 @@ import '../components/accounts-combobox.css'
 import {Avatar} from '../components/avatar'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {useAppDialog} from '../components/dialog'
+import {EditDocButton} from '../components/edit-doc-button'
 import {useEditGroupInfoDialog} from '../components/edit-group-info'
 import {FooterButton} from '../components/footer'
 import {AppLinkText} from '../components/link'
@@ -69,7 +70,6 @@ import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
 import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
-import {EditDocActions} from '../components/titlebar-common'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -360,7 +360,7 @@ export default function GroupPage() {
                           menuItems={frontDocMenuItems}
                         />
                       ) : null}
-                      <EditDocActions
+                      <EditDocButton
                         contextRoute={route}
                         variant={{
                           key: 'group',

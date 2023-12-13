@@ -3,29 +3,43 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   AlertCircle,
   Button,
+  Popover,
+  Separator,
+  SizableText,
   Spinner,
   Tooltip,
+  XGroup,
+  XStack,
+  YGroup,
   YStack,
   YStackProps,
 } from '@mintter/ui'
-import {Check} from '@tamagui/lucide-icons'
+import {Check, ChevronDown} from '@tamagui/lucide-icons'
 import {PropsWithChildren} from 'react'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount} from '../models/accounts'
-import {usePublishDraft} from '../models/documents'
+import {useDraftTitle, usePublishDraft} from '../models/documents'
 import {DraftStatusContext} from '../models/draft-machine'
-import {useGroup} from '../models/groups'
+import {
+  useAccountGroups,
+  useDocumentGroups,
+  useGroup,
+  useSelectedGroups,
+} from '../models/groups'
 import {useDaemonReady} from '../node-status-context'
 import {toast} from '../toast'
-import {AuthorsVariant} from '../utils/navigation'
+import {usePopoverState} from '../use-popover-state'
+import {AuthorsVariant, DraftRoute, GroupVariant} from '../utils/navigation'
+import {useAppDialog} from './dialog'
 import {useMediaDialog} from './media-dialog'
+import {GroupPublishDialog} from './variants'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
   if (route.key !== 'draft')
     throw new Error('DraftPublicationButtons requires draft route')
   const draftId = route.key == 'draft' ? route.draftId : null
-
+  const draftRoute: DraftRoute = route
   const navReplace = useNavigate('replace')
   const navBack = useNavigate('backplace')
   const grpcClient = useGRPCClient()
@@ -72,44 +86,162 @@ export default function CommitDraftButton() {
       toast.error('Failed to publish: ' + e.message)
     },
   })
-
+  const publishPopover = usePopoverState()
+  const authorGroups = useAccountGroups(myAccount.data?.id)
+  const docGroups = useDocumentGroups(draftId || undefined)
+  const authorGroupsSet = new Set(
+    authorGroups.data?.items.map((g) => g.group?.id).filter(Boolean),
+  )
+  const publishableGroupItems = docGroups.data?.filter((docGroup) => {
+    return authorGroupsSet.has(docGroup.groupId)
+  })
+  const publishableGroupQueries = useSelectedGroups(
+    publishableGroupItems?.map((item) => item.groupId) || [],
+  )
+  const publishableGroups = publishableGroupItems?.map((item) => {
+    return {
+      groupId: item.groupId,
+      group: publishableGroupQueries.find((g) => g.data?.id === item.groupId)
+        ?.data,
+      path: item.path,
+      isActive:
+        !!groupVariant &&
+        item.groupId === groupVariant.groupId &&
+        item.path === groupVariant.pathName,
+    }
+  })
+  const isAuthorVariant = !groupVariant
+  function setVariant(variant: GroupVariant | null) {
+    navReplace({...draftRoute, variant})
+  }
+  const publishDialogState = usePopoverState(false)
+  const publishToGroupDialog = useAppDialog(GroupPublishDialog)
+  const draftTitle = useDraftTitle({documentId: draftId || undefined})
   if (route.key != 'draft' || !draftId) return null
-
   return (
     <>
       {mediaDialog.content}
+      {publishToGroupDialog.content}
       <SaveIndicatorStatus />
-      {!hasUpdateError ? (
-        <Button
-          size="$2"
-          disabled={!isDaemonReady || !canPublish}
-          opacity={!canPublish ? 0.5 : 1}
-          onPress={() => {
-            grpcClient.drafts.getDraft({documentId: draftId}).then((draft) => {
-              const hasEmptyMedia = draft.children.find((block) => {
-                return (
-                  block.block &&
-                  ['image', 'video', 'file'].includes(block.block.type) &&
-                  !block.block.ref
-                )
-              })
-              if (hasEmptyMedia) {
-                mediaDialog.open({
-                  draftId,
-                  publish,
-                })
-              } else {
-                publish.mutate({draftId})
-              }
-            })
-          }}
-          theme="green"
-        >
-          {groupVariant
-            ? `Commit to ${group.data?.title || 'Group'}`
-            : 'Commit'}
-        </Button>
-      ) : null}
+      <XGroup separator={<Separator vertical />}>
+        <XGroup.Item>
+          {!hasUpdateError ? (
+            <Button
+              size="$2"
+              disabled={!isDaemonReady || !canPublish}
+              opacity={!canPublish ? 0.5 : 1}
+              onPress={() => {
+                grpcClient.drafts
+                  .getDraft({documentId: draftId})
+                  .then((draft) => {
+                    const hasEmptyMedia = draft.children.find((block) => {
+                      return (
+                        block.block &&
+                        ['image', 'video', 'file'].includes(block.block.type) &&
+                        !block.block.ref
+                      )
+                    })
+                    if (hasEmptyMedia) {
+                      mediaDialog.open({
+                        draftId,
+                        publish,
+                      })
+                    } else {
+                      publish.mutate({draftId})
+                    }
+                  })
+              }}
+              theme="green"
+            >
+              {groupVariant
+                ? `Publish to ${group.data?.title || 'Group'}`
+                : 'Publish'}
+            </Button>
+          ) : null}
+        </XGroup.Item>
+        <Popover {...publishPopover} placement="bottom-end" allowFlip>
+          <XGroup.Item>
+            <Popover.Trigger asChild>
+              <Button theme="green" size="$2" icon={ChevronDown} />
+            </Popover.Trigger>
+          </XGroup.Item>
+
+          <Popover.Content
+            borderWidth={1}
+            backgroundColor={'transparent'}
+            borderColor="$borderColor"
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+            elevate
+            animation={[
+              'fast',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+          >
+            <Popover.Arrow // why is this not working?
+              borderWidth={1}
+              borderColor="$borderColor"
+              backgroundColor={'black'}
+            />
+            <YStack>
+              <SizableText>Publish to Author Variant</SizableText>
+              <YGroup>
+                <YGroup.Item>
+                  <Button
+                    onPress={() => {
+                      setVariant(null)
+                    }}
+                  >
+                    <XStack>
+                      {myAccount?.data?.profile?.alias}
+                      <Check color={isAuthorVariant ? 'blue' : 'transparent'} />
+                    </XStack>
+                  </Button>
+                </YGroup.Item>
+              </YGroup>
+              <SizableText>Publish to Group Variant</SizableText>
+              <YGroup separator={<Separator />}>
+                {publishableGroups?.map(({group, groupId, path, isActive}) => {
+                  return (
+                    <YGroup.Item key={`${groupId}-${path}`}>
+                      <Button
+                        onPress={() => {
+                          setVariant({
+                            key: 'group',
+                            groupId,
+                            pathName: path,
+                          })
+                        }}
+                      >
+                        <XStack>
+                          <YStack>
+                            <SizableText>{group?.title || groupId}</SizableText>
+                            <SizableText>{path}</SizableText>
+                          </YStack>
+                          <Check color={isActive ? 'blue' : 'transparent'} />
+                        </XStack>
+                      </Button>
+                    </YGroup.Item>
+                  )
+                })}
+              </YGroup>
+              <YStack padding="$2" alignSelf="stretch">
+                <Button
+                  onPress={() => {
+                    publishToGroupDialog.open({})
+                  }}
+                >
+                  Publish to Group
+                </Button>
+              </YStack>
+            </YStack>
+          </Popover.Content>
+        </Popover>
+      </XGroup>
     </>
   )
 }
