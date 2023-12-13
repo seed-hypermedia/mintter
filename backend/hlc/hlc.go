@@ -120,6 +120,11 @@ func (ht Time) Before(other Time) bool {
 	return ht.wall < other.wall
 }
 
+// String implements fmt.Stringer.
+func (ht Time) String() string {
+	return ht.Time().UTC().Format(time.RFC3339Nano)
+}
+
 // Equal checks whether this timestamp is semantically equal to the other.
 func (ht Time) Equal(other Time) bool {
 	return ht.wall == other.wall && ht.counter == other.counter

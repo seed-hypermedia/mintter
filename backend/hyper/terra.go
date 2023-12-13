@@ -34,6 +34,10 @@ func init() {
 	cbornode.RegisterCborType(hlcAtlas)
 	cbornode.RegisterCborType(KeyDelegation{})
 	cbornode.RegisterCborType(Change{})
+	cbornode.RegisterCborType(Comment{})
+	cbornode.RegisterCborType(Block{})
+	cbornode.RegisterCborType(Annotation{})
+	cbornode.RegisterCborType(CommentBlock{})
 }
 
 // Available types.
@@ -41,6 +45,7 @@ const (
 	TypeKeyDelegation BlobType = "KeyDelegation"
 	TypeChange        BlobType = "Change"
 	TypeDagPB         BlobType = "DagPB"
+	TypeComment       BlobType = "Comment"
 )
 
 // Delegation purposes.
@@ -82,7 +87,7 @@ func NewKeyDelegation(issuer core.KeyPair, delegate core.PublicKey, validFrom ti
 
 	data, err := cbornode.DumpObject(d)
 	if err != nil {
-		return kd, fmt.Errorf("failed to encode signing bytes: %w", err)
+		return kd, fmt.Errorf("failed to encode signing bytes for key delegation: %w", err)
 	}
 
 	sig, err := issuer.Sign(data)
@@ -137,7 +142,7 @@ type Change struct {
 
 	// Delegation points to the blob where we can get the Account ID
 	// on which behalf this blob is signed.
-	Delegation cid.Cid `refmt:"delegation,omitempty"` // points to the delegation where we can get the account id
+	Delegation cid.Cid `refmt:"delegation"` // points to the delegation where we can get the account id
 
 	// Action is an option machine-readable description of an action that Change describes.
 	Action string `refmt:"action,omitempty"`
@@ -168,6 +173,50 @@ type Change struct {
 	Sig core.Signature `refmt:"sig,omitempty"`
 }
 
+// NewChange creates a new Change blob.
+func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
+	// Make sure deps field is not present in the patch if there're no deps.
+	if len(deps) == 0 {
+		deps = nil
+	}
+
+	if len(patch) == 0 {
+		return hb, fmt.Errorf("new changes must have a patch: nothing to update")
+	}
+
+	SortCIDs(deps)
+
+	ch := Change{
+		Type:       TypeChange,
+		Entity:     eid,
+		Deps:       deps,
+		Delegation: delegation,
+		HLCTime:    ts,
+		Patch:      patch,
+		Signer:     signer.Principal(),
+	}
+	for _, o := range opts {
+		o(&ch)
+	}
+
+	sigdata, err := cbornode.DumpObject(ch)
+	if err != nil {
+		return hb, fmt.Errorf("failed to encode signing bytes for change %w", err)
+	}
+
+	ch.Sig, err = signer.Sign(sigdata)
+	if err != nil {
+		return hb, fmt.Errorf("failed to sign change: %w", err)
+	}
+
+	hb, err = EncodeBlob(ch)
+	if err != nil {
+		return hb, err
+	}
+
+	return hb, nil
+}
+
 // Verify change signature.
 func (ch Change) Verify() error {
 	sig := ch.Sig
@@ -175,7 +224,7 @@ func (ch Change) Verify() error {
 
 	data, err := cbornode.DumpObject(ch)
 	if err != nil {
-		return fmt.Errorf("failed to encoding signing bytes to verify key delegation: %w", err)
+		return fmt.Errorf("failed to encoding signing bytes to verify change blob: %w", err)
 	}
 
 	if err := ch.Signer.Verify(data, sig); err != nil {
@@ -183,4 +232,91 @@ func (ch Change) Verify() error {
 	}
 
 	return nil
+}
+
+// Comment is a signed blob representing a comment or a reply.
+type Comment struct {
+	Type           BlobType       `refmt:"@type"`
+	Delegation     cid.Cid        `refmt:"delegation"`
+	Target         string         `refmt:"target,omitempty"`
+	ThreadRoot     cid.Cid        `refmt:"threadRoot,omitempty"`
+	RepliedComment cid.Cid        `refmt:"repliedComment,omitempty"`
+	HLCTime        hlc.Time       `refmt:"hlcTime"`
+	Body           []CommentBlock `refmt:"body"`
+	Signer         core.Principal `refmt:"signer,omitempty"`
+	Sig            core.Signature `refmt:"sig,omitempty"`
+}
+
+// NewComment creates a new Comment blob.
+func NewComment(target string, threadRoot, repliedComment cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, body []CommentBlock) (hb Blob, err error) {
+	c := Comment{
+		Type:           TypeComment,
+		Delegation:     delegation,
+		Target:         target,
+		ThreadRoot:     threadRoot,
+		RepliedComment: repliedComment,
+		HLCTime:        ts,
+		Body:           body,
+		Signer:         signer.Principal(),
+	}
+
+	sigdata, err := cbornode.DumpObject(c)
+	if err != nil {
+		return hb, fmt.Errorf("failed to encode signing bytes for comment %w", err)
+	}
+
+	c.Sig, err = signer.Sign(sigdata)
+	if err != nil {
+		return hb, fmt.Errorf("failed to sign change: %w", err)
+	}
+
+	hb, err = EncodeBlob(c)
+	if err != nil {
+		return hb, err
+	}
+
+	return hb, nil
+}
+
+// Verify comment signature.
+func (c Comment) Verify() error {
+	sig := c.Sig
+	c.Sig = nil
+
+	data, err := cbornode.DumpObject(c)
+	if err != nil {
+		return fmt.Errorf("failed to encoding signing bytes to verify comment blob: %w", err)
+	}
+
+	if err := c.Signer.Verify(data, sig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Block is a block of text with annotations.
+type Block struct {
+	ID          string            `refmt:"id,omitempty"` // Omitempty when used in Documents.
+	Type        string            `refmt:"type,omitempty"`
+	Text        string            `refmt:"text,omitempty"`
+	Ref         string            `refmt:"ref,omitempty"`
+	Attributes  map[string]string `refmt:"attributes,omitempty"`
+	Annotations []Annotation      `refmt:"annotations,omitempty"`
+}
+
+// Annotation is a range of text that has a type and attributes.
+type Annotation struct {
+	Type       string            `refmt:"type"`
+	Ref        string            `refmt:"ref,omitempty"`
+	Attributes map[string]string `refmt:"attributes,omitempty"`
+	Starts     []int32           `refmt:"starts,omitempty"`
+	Ends       []int32           `refmt:"ends,omitempty"`
+}
+
+// CommentBlock is a block of text with annotations.
+type CommentBlock struct {
+	Block
+
+	Children []CommentBlock
 }

@@ -321,49 +321,67 @@ func SortCIDs(cids []cid.Cid) []cid.Cid {
 	return cids
 }
 
-// NewChange creates a new Change blob.
-func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
-	// Make sure deps field is not present in the patch if there're no deps.
-	if len(deps) == 0 {
-		deps = nil
-	}
-
-	if len(patch) == 0 {
-		return hb, fmt.Errorf("new changes must have a patch: nothing to update")
-	}
-
-	SortCIDs(deps)
-
-	ch := Change{
-		Type:       TypeChange,
-		Entity:     eid,
-		Deps:       deps,
-		Delegation: delegation,
-		HLCTime:    ts,
-		Patch:      patch,
-		Signer:     signer.Principal(),
-	}
-	for _, o := range opts {
-		o(&ch)
-	}
-
-	sigdata, err := cbornode.DumpObject(ch)
+func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c cid.Cid, cmt Comment) error) (err error) {
+	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
-		return hb, fmt.Errorf("failed to encode signing bytes for change %w", err)
+		return err
 	}
+	defer release()
 
-	ch.Sig, err = signer.Sign(sigdata)
+	defer sqlitex.Save(conn)(&err)
+
+	rdb, err := hypersql.EntitiesLookupID(conn, target)
 	if err != nil {
-		return hb, fmt.Errorf("failed to sign change: %w", err)
+		return err
+	}
+	if rdb.ResourcesID == 0 {
+		return fmt.Errorf("resource %s not found: make sure resource ID doesn't have any additional parameters", target)
 	}
 
-	hb, err = EncodeBlob(ch)
+	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
+	err = sqlitex.Exec(conn, qForEachComment(), func(stmt *sqlite.Stmt) error {
+		var (
+			codec = stmt.ColumnInt64(0)
+			hash  = stmt.ColumnBytesUnsafe(1)
+			data  = stmt.ColumnBytesUnsafe(2)
+		)
+
+		buf, err = bs.bs.decoder.DecodeAll(data, buf)
+		if err != nil {
+			return err
+		}
+
+		chcid := cid.NewCidV1(uint64(codec), hash)
+		var cmt Comment
+		if err := cbornode.DecodeInto(buf, &cmt); err != nil {
+			return fmt.Errorf("forEachComment: failed to decode comment %s for target %s: %w", chcid, target, err)
+		}
+
+		if err := fn(chcid, cmt); err != nil {
+			return err
+		}
+
+		buf = buf[:0] // reset the slice reusing the backing array
+
+		return nil
+	}, rdb.ResourcesID)
 	if err != nil {
-		return hb, err
+		return err
 	}
 
-	return hb, nil
+	return nil
 }
+
+var qForEachComment = dqb.Str(`
+	SELECT
+		blobs.codec,
+		blobs.multihash,
+		blobs.data
+	FROM resource_links
+	JOIN blobs ON blobs.id = resource_links.source
+	WHERE resource_links.target = :resource
+	AND resource_links.type = 'comment/target';
+`)
 
 func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c cid.Cid, ch Change) error) (err error) {
 	conn, release, err := bs.db.Conn(ctx)

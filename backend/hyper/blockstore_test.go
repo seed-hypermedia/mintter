@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/daemon/storage"
+	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
 	"testing"
@@ -62,6 +63,26 @@ func TestGet_Missing(t *testing.T) {
 	size, err := bs.GetSize(context.Background(), c)
 	require.True(t, format.IsNotFound(err))
 	require.Equal(t, 0, size)
+
+	{
+		conn, release, err := bs.db.Conn(context.Background())
+		require.NoError(t, err)
+		_, err = hypersql.BlobsInsert(conn, 0, c.Hash(), int64(c.Prefix().Codec), nil, -1)
+		require.NoError(t, err)
+		release()
+
+		got, err := bs.Get(context.Background(), c)
+		require.Nil(t, got)
+		require.True(t, format.IsNotFound(err))
+
+		ok, err := bs.Has(context.Background(), c)
+		require.False(t, ok)
+		require.NoError(t, err)
+
+		size, err := bs.GetSize(context.Background(), c)
+		require.True(t, format.IsNotFound(err))
+		require.Equal(t, 0, size)
+	}
 }
 
 func TestHashOnRead(t *testing.T) {
