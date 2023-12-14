@@ -54,7 +54,21 @@ export const SlashMenuPositioner = <
         return undefined
       }
 
-      return () => referencePos.current!
+      const boundingRect = referencePos.current!
+      const newRect = {
+        top: boundingRect.top,
+        right: boundingRect.right,
+        bottom: boundingRect.bottom,
+        left: boundingRect.left,
+        width: boundingRect.width,
+        height: boundingRect.height,
+      }
+      if (boundingRect.bottom > 290) {
+        if (boundingRect.bottom > 800) newRect.top = 240
+        else newRect.top = 260
+      }
+
+      return () => newRect as DOMRect
     },
     [referencePos.current], // eslint-disable-line
   )
