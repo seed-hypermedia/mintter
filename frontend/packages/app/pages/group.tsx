@@ -31,7 +31,9 @@ import {
   SizableText,
   Tooltip,
   View,
+  XGroup,
   XStack,
+  YGroup,
   YStack,
 } from '@mintter/ui'
 import {
@@ -55,7 +57,6 @@ import {
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
-import {YGroup} from 'tamagui'
 import {AccountLinkAvatar} from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
 import {Avatar} from '../components/avatar'
@@ -360,17 +361,19 @@ export default function GroupPage() {
                           menuItems={frontDocMenuItems}
                         />
                       ) : null}
-                      <EditDocButton
-                        contextRoute={route}
-                        variant={{
-                          key: 'group',
-                          groupId,
-                          pathName: '/',
-                        }}
-                        docId={frontPageId?.docId}
-                        baseVersion={frontPageId?.version || undefined}
-                        navMode="push"
-                      />
+                      <XGroup>
+                        <EditDocButton
+                          contextRoute={route}
+                          variant={{
+                            key: 'group',
+                            groupId,
+                            pathName: '/',
+                          }}
+                          docId={frontPageId?.docId}
+                          baseVersion={frontPageId?.version || undefined}
+                          navMode="push"
+                        />
+                      </XGroup>
                       <Tooltip content="Open in New Window">
                         <Button
                           icon={ArrowUpRight}
