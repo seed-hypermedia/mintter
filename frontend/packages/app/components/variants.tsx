@@ -65,6 +65,7 @@ import {
   CheckCheck,
   ChevronDown,
   ChevronUp,
+  Pencil,
   Upload,
   X,
 } from '@tamagui/lucide-icons'
@@ -73,11 +74,12 @@ import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useCurrentDocumentGroups} from '../models/groups'
+import {getAccountName} from '../pages/account-page'
 import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
-import {EditDocButton} from './edit-doc-button'
+import {EditDocButton, useEditDraft} from './edit-doc-button'
 import {Slash} from './slash'
 
 export function RenameShortnameDialog({
@@ -139,16 +141,15 @@ export function RenameShortnameDialog({
 
 export function GroupPublishDialog({
   input,
-  dialogState,
+  onClose,
 }: {
   input: {
     docId: string
-    version: string | undefined
-    docTitle: string | undefined
+    version?: string | undefined
+    docTitle?: string | undefined
+    onComplete?: () => void
   }
-  dialogState: {
-    onOpenChange: (isOpen: boolean) => void
-  }
+  onClose: () => void
 }) {
   const account = useMyAccount()
   const accountId = account.data?.id
@@ -206,7 +207,8 @@ export function GroupPublishDialog({
               },
             )
             .finally(() => {
-              dialogState.onOpenChange?.(false)
+              onClose()
+              input.onComplete?.()
             })
         } else if (draftRoute) {
           // we are in a draft and we are only setting the group ID and pathName in the route
@@ -218,7 +220,8 @@ export function GroupPublishDialog({
               pathName,
             },
           })
-          dialogState.onOpenChange?.(false)
+          onClose()
+          input.onComplete?.()
         }
       }}
     >
@@ -247,9 +250,8 @@ export function GroupPublishDialog({
               </YStack>
             </Select.ScrollUpButton>
             <Select.Viewport
-              // to do animations:
-              animation="quick"
-              animateOnly={['transform', 'opacity']}
+              animation="fast"
+              // animateOnly={['transform', 'opacity']}
               enterStyle={{opacity: 0, y: -10}}
               exitStyle={{opacity: 0, y: 10}}
               minWidth={200}
@@ -721,8 +723,8 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   return (
     <>
       <XGroup separator={<Separator vertical />}>
-        <XGroup.Item>
-          <ContextPopover {...popoverState}>
+        <ContextPopover {...popoverState}>
+          <XGroup.Item>
             <PopoverTrigger asChild>
               <Button size="$2" className="no-window-drag">
                 <VariantState
@@ -732,61 +734,61 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
                 />
               </Button>
             </PopoverTrigger>
-            <ContextPopoverContent>
-              <ContextPopoverArrow />
-              <YStack alignSelf="stretch">
-                <SizableText
-                  size="$3"
-                  marginVertical="$2"
-                  padding="$2"
-                  paddingHorizontal="$4"
-                  fontWeight="bold"
-                >
-                  Select Variant
-                </SizableText>
-                <TabsView
-                  value={variantTab}
-                  onValue={(tab) => {
-                    setVariantTab(tab)
-                  }}
-                  tabs={[
-                    {
-                      label: 'Authors',
-                      key: 'authors',
-                      element: (
-                        <AuthorVariants
-                          route={route}
-                          publication={publication.data?.publication}
-                        />
-                      ),
-                    },
-                    {
-                      label: 'Groups',
-                      key: 'groups',
-                      element: (
-                        <GroupVariants
-                          route={route}
-                          publication={publication.data?.publication}
-                        />
-                      ),
-                    },
-                  ]}
-                />
-              </YStack>
-            </ContextPopoverContent>
-          </ContextPopover>
-        </XGroup.Item>
-        {showEditButton && (
-          <XGroup.Item>
-            <EditDocButton
-              key="editActions"
-              contextRoute={route}
-              variant={route.variant || null}
-              docId={route.documentId}
-              baseVersion={route.versionId}
-              editLabel="Edit"
-            />
           </XGroup.Item>
+          <ContextPopoverContent>
+            <ContextPopoverArrow />
+            <YStack alignSelf="stretch">
+              <SizableText
+                size="$3"
+                marginVertical="$2"
+                padding="$2"
+                paddingHorizontal="$4"
+                fontWeight="bold"
+              >
+                Select Variant
+              </SizableText>
+              <TabsView
+                value={variantTab}
+                onValue={(tab) => {
+                  setVariantTab(tab)
+                }}
+                tabs={[
+                  {
+                    label: 'Authors',
+                    key: 'authors',
+                    element: (
+                      <AuthorVariants
+                        route={route}
+                        publication={publication.data?.publication}
+                      />
+                    ),
+                  },
+                  {
+                    label: 'Groups',
+                    key: 'groups',
+                    element: (
+                      <GroupVariants
+                        route={route}
+                        publication={publication.data?.publication}
+                        onCloseVariantPopover={() => {
+                          popoverState.onOpenChange(false)
+                        }}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </YStack>
+          </ContextPopoverContent>
+        </ContextPopover>
+        {showEditButton && (
+          <EditDocButton
+            key="editActions"
+            contextRoute={route}
+            variant={route.variant || null}
+            docId={route.documentId}
+            baseVersion={route.versionId}
+          />
         )}
       </XGroup>
       {renameDialog.content}
@@ -883,7 +885,7 @@ function AuthorVariantState({
         (author) => author && <AuthorIcon key={author} author={author} />,
       )}
       {authors.length === 1 ? (
-        <SizableText>{firstAccount.data?.profile?.alias}</SizableText>
+        <SizableText>{getAccountName(firstAccount.data?.profile)}</SizableText>
       ) : null}
     </XStack>
   )
@@ -899,7 +901,7 @@ function AuthorIcon({author}: {author: string}) {
         account.data?.profile?.avatar &&
         `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
       }
-      label={account.data?.profile?.alias || author}
+      label={getAccountName(account.data?.profile) || author}
     />
   )
 }
@@ -959,7 +961,7 @@ function AuthorVariantItem({
           <YStack>
             <XStack gap="$2" ai="center">
               <SizableText color={isActive ? '$blue11' : '$color'}>
-                {author.data?.profile?.alias}
+                {getAccountName(author.data?.profile)}
               </SizableText>
               {isOwner ? (
                 <XStack
@@ -1027,6 +1029,16 @@ function AuthorVariants({
 }) {
   if (route.key !== 'publication') throw new Error('Uh')
   const timeline = useEntityTimeline(route.documentId)
+  const myAccount = useMyAccount()
+  const myVersion = timeline.data?.authorVersions.find(
+    (authorVersion) => authorVersion.author === myAccount.data?.id,
+  )
+  const {handleEdit, hasExistingDraft} = useEditDraft(route.documentId, {
+    version: publication?.version,
+    contextRoute: route,
+    variant: route.variant,
+    navMode: 'push',
+  })
   return (
     <YStack gap="$2" padding="$2">
       {timeline.data?.authorVersions.map((authorVersion) => (
@@ -1037,6 +1049,17 @@ function AuthorVariants({
           publication={publication}
         />
       ))}
+      {myVersion ? null : (
+        <Button
+          size="$2"
+          onPress={handleEdit}
+          theme={hasExistingDraft ? 'yellow' : undefined}
+          chromeless
+          icon={Pencil}
+        >
+          {hasExistingDraft ? 'Edit Variant Draft' : 'Create Variant'}
+        </Button>
+      )}
     </YStack>
   )
 }
@@ -1044,16 +1067,16 @@ function AuthorVariants({
 function GroupVariants({
   route,
   publication,
+  onCloseVariantPopover,
 }: {
   route: PublicationRoute
   publication: Publication | undefined
+  onCloseVariantPopover: () => void
 }) {
   if (route.key !== 'publication') throw new Error('Uh')
   const docGroups = useCurrentDocumentGroups(route.documentId)
 
-  const publishDialogState = usePopoverState(false, (isOpen) => {
-    // isOpen && popoverState.onOpenChange(false)
-  })
+  const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
   return (
     <YStack gap="$2" padding="$2">
       {docGroups.data?.map((docGroup) => {
@@ -1068,13 +1091,25 @@ function GroupVariants({
           />
         )
       })}
-      <PublishDialogInstance
-        docId={route.documentId}
-        version={publication?.version}
-        docTitle={publication?.document?.title}
-        groupVariant={route.variant?.key === 'group' ? route.variant : null}
-        {...publishDialogState}
-      />
+      <Button
+        size="$2"
+        onPress={() => {
+          onCloseVariantPopover()
+          publishToGroupDialog.open({
+            docId: route.documentId,
+            version: publication?.version,
+            docTitle: publication?.document?.title,
+            onComplete: () => {
+              publishToGroupDialog.close()
+            },
+          })
+        }}
+        chromeless
+        icon={Upload}
+      >
+        Publish to Group...
+      </Button>
+      {publishToGroupDialog.content}
     </YStack>
   )
 }

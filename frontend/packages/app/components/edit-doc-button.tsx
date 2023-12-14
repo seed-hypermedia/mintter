@@ -3,34 +3,26 @@ import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {NavMode, NavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Button, Tooltip} from '@mintter/ui'
+import {Button, Tooltip, XGroup} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import toast from 'react-hot-toast'
 import appError from '../errors'
 import {PublicationVariant} from '../utils/navigation'
 
-export function EditDocButton({
-  docId,
-  contextRoute,
-  navMode = 'replace',
-  variant,
-  baseVersion,
-  editLabel,
-}: {
-  docId: string
-  navMode?: NavMode
-  contextRoute: NavRoute
-  variant: PublicationVariant
-  baseVersion?: string
-  editLabel?: string
-}) {
-  const pub = usePublicationVariant({
-    documentId: docId,
-    versionId: baseVersion,
+export function useEditDraft(
+  docId: string,
+  {
+    version,
+    navMode,
+    contextRoute,
     variant,
-    enabled: !!docId,
-  })
-  const pubVersion = pub.data?.publication?.version
+  }: {
+    version: string | undefined
+    navMode?: NavMode
+    contextRoute: NavRoute
+    variant?: PublicationVariant
+  },
+) {
   const draftList = useDraftList()
   const navigate = useNavigate(navMode)
 
@@ -53,7 +45,7 @@ export function EditDocButton({
       }
       let draft = await grpcClient.drafts.createDraft({
         existingDocumentId: docId,
-        version: baseVersion || pubVersion,
+        version,
       })
       navigate({
         key: 'draft',
@@ -79,18 +71,49 @@ export function EditDocButton({
       appError(`Draft Error: ${error?.message}`, {error})
     }
   }
+  return {hasExistingDraft, handleEdit}
+}
+
+export function EditDocButton({
+  docId,
+  contextRoute,
+  navMode = 'replace',
+  variant,
+  baseVersion,
+}: {
+  docId: string
+  navMode?: NavMode
+  contextRoute: NavRoute
+  variant: PublicationVariant
+  baseVersion?: string
+}) {
+  const pub = usePublicationVariant({
+    documentId: docId,
+    versionId: baseVersion,
+    variant,
+    enabled: !!docId,
+  })
+  const pubVersion = pub.data?.publication?.version
+  const {hasExistingDraft, handleEdit} = useEditDraft(docId, {
+    version: baseVersion || pubVersion,
+    variant,
+    navMode,
+    contextRoute,
+  })
 
   return (
     <>
       <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
-        <Button
-          size="$2"
-          theme={hasExistingDraft ? 'yellow' : undefined}
-          onPress={() => handleEdit()}
-          icon={Pencil}
-        >
-          {hasExistingDraft ? 'Resume Editing' : 'Edit'}
-        </Button>
+        <XGroup.Item>
+          <Button
+            size="$2"
+            theme={hasExistingDraft ? 'yellow' : undefined}
+            onPress={() => handleEdit()}
+            icon={Pencil}
+          >
+            {hasExistingDraft ? 'Resume Editing' : 'Edit'}
+          </Button>
+        </XGroup.Item>
       </Tooltip>
     </>
   )

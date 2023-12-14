@@ -1,5 +1,6 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {BACKEND_FILE_URL, Group} from '@mintter/shared'
 import {
   AlertCircle,
   Button,
@@ -8,13 +9,14 @@ import {
   SizableText,
   Spinner,
   Tooltip,
+  UIAvatar,
   XGroup,
   XStack,
   YGroup,
   YStack,
   YStackProps,
 } from '@mintter/ui'
-import {Check, ChevronDown} from '@tamagui/lucide-icons'
+import {Check, ChevronDown, Upload} from '@tamagui/lucide-icons'
 import {PropsWithChildren} from 'react'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount} from '../models/accounts'
@@ -71,7 +73,6 @@ export default function CommitDraftButton() {
       ) {
         navBack(route.contextRoute)
       } else {
-        console.log('HELLOOOO', groupVariant)
         navReplace({
           key: 'publication',
           documentId: draftId,
@@ -98,24 +99,27 @@ export default function CommitDraftButton() {
   const publishableGroupQueries = useSelectedGroups(
     publishableGroupItems?.map((item) => item.groupId) || [],
   )
+  let isPublishableGroupActiveVariant = false
   const publishableGroups = publishableGroupItems?.map((item) => {
+    const isActive =
+      !!groupVariant &&
+      item.groupId === groupVariant.groupId &&
+      item.path === groupVariant.pathName
+    if (isActive) isPublishableGroupActiveVariant = true
     return {
       groupId: item.groupId,
       group: publishableGroupQueries.find((g) => g.data?.id === item.groupId)
         ?.data,
       path: item.path,
-      isActive:
-        !!groupVariant &&
-        item.groupId === groupVariant.groupId &&
-        item.path === groupVariant.pathName,
+      isActive,
     }
   })
+  const newGroupVariant = isPublishableGroupActiveVariant ? null : groupVariant
   const isAuthorVariant = !groupVariant
   function setVariant(variant: GroupVariant | null) {
     navReplace({...draftRoute, variant})
   }
-  const publishDialogState = usePopoverState(false)
-  const publishToGroupDialog = useAppDialog(GroupPublishDialog)
+  const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
   const draftTitle = useDraftTitle({documentId: draftId || undefined})
   if (route.key != 'draft' || !draftId) return null
   return (
@@ -168,7 +172,7 @@ export default function CommitDraftButton() {
 
           <Popover.Content
             borderWidth={1}
-            backgroundColor={'transparent'}
+            // backgroundColor={'transparent'}
             borderColor="$borderColor"
             enterStyle={{y: -10, opacity: 0}}
             exitStyle={{y: -10, opacity: 0}}
@@ -196,8 +200,23 @@ export default function CommitDraftButton() {
                       setVariant(null)
                     }}
                   >
-                    <XStack>
-                      {myAccount?.data?.profile?.alias}
+                    <XStack jc="space-between" f={1}>
+                      <XStack gap="$2">
+                        <UIAvatar
+                          id={myAccount.data?.id || ''}
+                          size={20}
+                          url={
+                            myAccount.data?.profile?.avatar &&
+                            `${BACKEND_FILE_URL}/${myAccount.data?.profile?.avatar}`
+                          }
+                          label={
+                            myAccount.data?.profile?.alias || myAccount.data?.id
+                          }
+                        />
+                        <SizableText>
+                          {myAccount?.data?.profile?.alias}
+                        </SizableText>
+                      </XStack>
                       <Check color={isAuthorVariant ? 'blue' : 'transparent'} />
                     </XStack>
                   </Button>
@@ -205,37 +224,44 @@ export default function CommitDraftButton() {
               </YGroup>
               <SizableText>Publish to Group Variant</SizableText>
               <YGroup separator={<Separator />}>
+                {newGroupVariant ? (
+                  <UnpublishedGroupPublicationItem variant={newGroupVariant} />
+                ) : null}
                 {publishableGroups?.map(({group, groupId, path, isActive}) => {
                   return (
-                    <YGroup.Item key={`${groupId}-${path}`}>
-                      <Button
-                        onPress={() => {
-                          setVariant({
-                            key: 'group',
-                            groupId,
-                            pathName: path,
-                          })
-                        }}
-                      >
-                        <XStack>
-                          <YStack>
-                            <SizableText>{group?.title || groupId}</SizableText>
-                            <SizableText>{path}</SizableText>
-                          </YStack>
-                          <Check color={isActive ? 'blue' : 'transparent'} />
-                        </XStack>
-                      </Button>
-                    </YGroup.Item>
+                    <GroupPublicationItem
+                      key={`${groupId}-${path}`}
+                      isActive={isActive}
+                      path={path}
+                      groupId={groupId}
+                      group={group}
+                      onPress={() => {
+                        if (isActive) return
+                        setVariant({
+                          key: 'group',
+                          groupId,
+                          pathName: path,
+                        })
+                      }}
+                    />
                   )
                 })}
               </YGroup>
               <YStack padding="$2" alignSelf="stretch">
                 <Button
                   onPress={() => {
-                    publishToGroupDialog.open({})
+                    publishPopover.onOpenChange(false)
+                    publishToGroupDialog.open({
+                      docId: draftId,
+                      docTitle: draftTitle,
+                      onComplete: () => {},
+                    })
                   }}
+                  icon={Upload}
+                  size="$2"
+                  chromeless
                 >
-                  Publish to Group
+                  Publish to Group...
                 </Button>
               </YStack>
             </YStack>
@@ -243,6 +269,48 @@ export default function CommitDraftButton() {
         </Popover>
       </XGroup>
     </>
+  )
+}
+
+function UnpublishedGroupPublicationItem({variant}: {variant: GroupVariant}) {
+  const group = useGroup(variant.groupId)
+  return (
+    <GroupPublicationItem
+      group={group.data}
+      path={variant.pathName || undefined}
+      groupId={variant.groupId}
+      isActive={true}
+    />
+  )
+}
+
+function GroupPublicationItem({
+  isActive,
+  path,
+  groupId,
+  onPress,
+  group,
+}: {
+  isActive?: boolean
+  path?: string
+  groupId?: string
+  onPress?: () => void
+  group: Group | undefined
+}) {
+  return (
+    <YGroup.Item>
+      <Button onPress={onPress}>
+        <XStack f={1} jc="space-between" ai="center">
+          <YStack>
+            <SizableText>{group?.title || groupId}</SizableText>
+            <SizableText fontSize="$2" color="$color10">
+              {path}
+            </SizableText>
+          </YStack>
+          <Check color={isActive ? 'blue' : 'transparent'} />
+        </XStack>
+      </Button>
+    </YGroup.Item>
   )
 }
 

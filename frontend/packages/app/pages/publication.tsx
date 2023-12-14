@@ -55,6 +55,7 @@ import {useExperiments} from '../models/experiments'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
+import {getAccountName} from './account-page'
 
 export function AppPublicationContentProvider({
   children,
@@ -155,7 +156,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
                       textDecorationLine: 'underline',
                     }}
                   >
-                    {account.profile?.alias}
+                    {getAccountName(account.profile)}
                   </ButtonText>
                 ) : null,
                 index !== editors.length - 1 ? (

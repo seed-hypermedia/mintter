@@ -90,14 +90,18 @@ export function EntityVersionsAccessory({
             {changes.map((item, index) => {
               const activeGroups = currentGroups.data?.filter((groupEntry) => {
                 const docId = unpackDocId(groupEntry.rawUrl)
-                return !!docId?.version && item.change.id === docId?.version
+                return (
+                  item && !!docId?.version && item.change.id === docId?.version
+                )
               })
+              const change = item?.change
+              if (!change) return null
               return (
                 <ChangeItem
                   prevListedChange={changes[index - 1]}
                   entityId={id.id}
-                  key={item.change.id}
-                  change={item.change}
+                  key={change.id}
+                  change={change}
                   activeGroups={activeGroups}
                   activeVersion={activeVersion}
                 />

@@ -7,7 +7,7 @@ import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
 import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {abbreviateCid, pluralizer} from '@mintter/shared'
+import {Profile, abbreviateCid, pluralizer} from '@mintter/shared'
 import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
 import {
   Button,
@@ -123,6 +123,11 @@ function AccountDocuments({accountId}: {accountId: string}) {
   )
 }
 
+export function getAccountName(profile: Profile | undefined) {
+  if (!profile) return ''
+  return profile.alias || 'Untitled Account'
+}
+
 export default function AccountPage() {
   const route = useNavRoute()
   const nav = useNavigate('push')
@@ -156,7 +161,7 @@ export default function AccountPage() {
                 size="$5"
                 fontWeight="700"
               >
-                {account.profile?.alias || 'Untitled Account'}
+                {getAccountName(account.profile)}
               </SizableText>
             </XStack>
 
