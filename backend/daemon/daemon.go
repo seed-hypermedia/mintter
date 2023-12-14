@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -253,7 +254,12 @@ func (a *App) Wait() error {
 }
 
 func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
-	pool, err := storage.OpenSQLite(path, 0, 16)
+	poolSize := int(float64(runtime.NumCPU()) / 2)
+	if poolSize == 0 {
+		poolSize = 2
+	}
+
+	pool, err := storage.OpenSQLite(path, 0, poolSize)
 	if err != nil {
 		return nil, err
 	}

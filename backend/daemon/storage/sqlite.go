@@ -6,6 +6,7 @@ import (
 	"mintter/backend/testutil"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -45,6 +46,8 @@ func openSQLite(uri string, flags sqlite.OpenFlags, poolSize int, prelude ...str
 				return err
 			}
 		}
+
+		conn.SetBusyTimeout(time.Minute * 3)
 
 		return nil
 	}); err != nil {
