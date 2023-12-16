@@ -206,13 +206,18 @@ function PublicationsList({trustedOnly}: {trustedOnly: boolean}) {
       {items?.map((item) => {
         const {publication, author, editors} = item
         const docId = publication.document?.id
-        if (!docId) return null
+        const docOwner = publication.document?.author
+        if (!docId || !docOwner) return null
         return (
           <PublicationListItem
             key={docId}
             openRoute={{
               key: 'publication',
               documentId: docId,
+              variant: {
+                key: 'authors',
+                authors: [docOwner],
+              },
             }}
             hasDraft={drafts.data?.documents.find(
               (d) => d.id == publication.document?.id,

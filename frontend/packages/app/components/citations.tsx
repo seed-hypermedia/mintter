@@ -3,12 +3,14 @@ import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {formattedDateMedium, pluralS} from '@mintter/shared'
 import {PanelCard} from '@mintter/ui'
 import {useAccount} from '../models/accounts'
+import {useEntityTimeline} from '../models/changes'
 import {useDocTextContent, usePublication} from '../models/documents'
+import {PublicationRoute} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 
 function CitationItem({link}: {link: CitationLink}) {
-  if (!link.source?.documentId) throw 'Invalid citation'
+  if (!link.source || !link.source.documentId) throw 'Invalid citation'
   const spawn = useNavigate('spawn')
 
   const pub = usePublication({
@@ -16,11 +18,23 @@ function CitationItem({link}: {link: CitationLink}) {
     version: link.source.version,
     enabled: !!link.source?.documentId,
   })
-
+  const versionChanges = new Set(link.source.version.split('.'))
+  const timeline = useEntityTimeline(link.source.documentId)
+  const authors = new Set(
+    timeline.data?.timelineEntries
+      .filter(([changeId]) => versionChanges.has(changeId))
+      .map(([changeId, change]) => change.author),
+  )
   let {data: account} = useAccount(pub.data?.document?.author)
 
   const docTextContent = useDocTextContent(pub.data)
-
+  const destRoute: PublicationRoute = {
+    key: 'publication',
+    documentId: link.source.documentId,
+    versionId: link.source.version,
+    blockId: link.source?.blockId,
+    variant: {key: 'authors', authors: [...authors]},
+  }
   return (
     <PanelCard
       title={pub.data?.document?.title}
@@ -28,14 +42,7 @@ function CitationItem({link}: {link: CitationLink}) {
       author={account}
       date={formattedDateMedium(pub.data?.document?.createTime)}
       onPress={() => {
-        const sourceDocId = link.source?.documentId
-        if (!sourceDocId) return
-        spawn({
-          key: 'publication',
-          documentId: sourceDocId,
-          versionId: link.source?.version,
-          blockId: link.source?.blockId,
-        })
+        spawn(destRoute)
       }}
       avatar={
         <AccountLinkAvatar accountId={pub.data?.document?.author} size={24} />

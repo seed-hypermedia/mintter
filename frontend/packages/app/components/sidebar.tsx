@@ -1,4 +1,3 @@
-import {trpc} from '@mintter/desktop/src/trpc'
 import {Account} from '@mintter/shared'
 import {
   Button,
@@ -28,12 +27,21 @@ import appError from '../errors'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
-import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
+import {
+  arrayMatch,
+  usePinAccount,
+  usePinDocument,
+  usePinGroup,
+  usePins,
+} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
+import {toast} from '../toast'
 import {getAvatarUrl} from '../utils/account-url'
 import {
   NavRoute,
   PublicationRouteContext,
+  PublicationVariant,
+  useGroupDocRouteResolver,
   useNavRoute,
 } from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
@@ -52,7 +60,7 @@ function FullAppSidebar() {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const account = useMyAccount()
-  const pins = trpc.pins.get.useQuery()
+  const pins = usePins()
   const ctx = useSidebarContext()
   const isLocked = useStream(ctx.isLocked)
   const isHoverVisible = useStream(ctx.isHoverVisible)
@@ -69,6 +77,7 @@ function FullAppSidebar() {
     onBlur: () => ctx.onMenuHoverLeave(),
   })
   const isWindowTooNarrowForHoverSidebar = useIsWindowNarrowForHoverSidebar()
+  const resolveGroupRoute = useGroupDocRouteResolver()
   return (
     <>
       {isFocused && !isLocked && !isWindowTooNarrowForHoverSidebar ? (
@@ -140,22 +149,35 @@ function FullAppSidebar() {
               ]}
             />
           </YGroup.Item>
-          {pins.data?.allDocuments.map((documentId) => {
+          {pins.data?.documents.map((pin) => {
             return (
               <PinnedDocument
                 onPress={() => {
                   navigate({
                     key: 'publication',
-                    documentId,
+                    documentId: pin.docId,
+                    variant: {
+                      key: 'authors',
+                      authors: pin.authors,
+                    },
                   })
                 }}
                 active={
                   route.key === 'publication' &&
-                  route.documentId === documentId &&
-                  !route.pubContext
+                  route.documentId === pin.docId &&
+                  arrayMatch(
+                    pin.authors,
+                    route.variant?.key === 'authors'
+                      ? route.variant.authors
+                      : [],
+                  )
                 }
-                docId={documentId}
-                key={documentId}
+                variant={{
+                  key: 'authors',
+                  authors: pin.authors,
+                }}
+                docId={pin.docId}
+                key={`${pin.docId}.${pin.authors.join('.')}`}
               />
             )
           })}
@@ -182,34 +204,38 @@ function FullAppSidebar() {
             .map((group) => {
               return [
                 <PinnedGroup group={group} key={group.groupId} />,
-                ...group.documents.map(({docId, pathName}) => {
+                ...group.documents.map((pin) => {
+                  if (!pin) return null
+                  const {pathName, docId, docVersion} = pin
                   return (
                     <PinnedDocument
-                      pubContext={{
+                      variant={{
                         key: 'group',
                         groupId: group.groupId,
                         pathName: pathName || '/',
                       }}
-                      onPress={() => {
-                        navigate({
-                          key: 'publication',
-                          documentId: docId,
-                          pubContext: {
-                            key: 'group',
-                            groupId: group.groupId,
-                            pathName: pathName || '/',
-                          },
-                        })
+                      onPress={async () => {
+                        const route = await resolveGroupRoute(
+                          group.groupId,
+                          pathName || '/',
+                        )
+                        if (route) {
+                          navigate(route)
+                        } else {
+                          toast.error(
+                            `"${pathName}" not found in latest version of group`,
+                          )
+                        }
                       }}
                       active={
                         route.key === 'publication' &&
-                        route.documentId === docId &&
-                        route.pubContext?.key === 'group' &&
-                        route.pubContext.groupId === group.groupId &&
-                        route.pubContext.pathName === pathName
+                        route.variant?.key === 'group' &&
+                        route.variant.groupId === group.groupId &&
+                        route.variant.pathName === pathName
                       }
                       docId={docId}
-                      key={docId}
+                      docVersion={docVersion}
+                      key={pathName}
                     />
                   )
                 }),
@@ -539,20 +565,22 @@ function PinnedGroup(props: {group: {groupId: string}}) {
 
 function PinnedDocument({
   docId,
+  docVersion,
   onPress,
   active,
-  pubContext,
+  variant,
 }: {
   docId: string
+  docVersion?: string
   onPress: () => void
   active?: boolean
-  pubContext?: PublicationRouteContext
+  variant: PublicationVariant
 }) {
-  const doc = usePublication({id: docId})
+  const doc = usePublication({id: docId, version: docVersion})
   const {togglePin} = usePinDocument({
     key: 'publication',
     documentId: docId,
-    pubContext,
+    variant,
   })
   if (!docId) return null
   return (

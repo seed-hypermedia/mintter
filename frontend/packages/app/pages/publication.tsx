@@ -47,7 +47,10 @@ import {useAppDialog} from '../components/dialog'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinDocumentButton} from '../components/pin-entity'
-import {useFullReferenceUrl} from '../components/titlebar-common'
+import {
+  CopyReferenceButton,
+  useFullReferenceUrl,
+} from '../components/titlebar-common'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
@@ -294,6 +297,7 @@ export default function PublicationPage() {
                             $group-header-hover={{opacity: 1}}
                           >
                             <PinDocumentButton route={route} />
+                            <CopyReferenceButton />
                           </XStack>
                         }
                       >
@@ -386,40 +390,4 @@ function PublicationVersionsFooterButton({
       }}
     />
   )
-}
-
-// function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-//   const route = useNavRoute()
-//   const pubRoute = route.key === 'publication' ? route : undefined
-//   const pubContext = pubRoute?.pubContext
-//   const pub = usePublicationVariant({documentId: docId, pubContext})
-
-//   const navigate = useNavigate()
-//   const pubAccessory = route.key === 'publication' ? route.accessory : undefined
-//   if (pub.isLoading) return null
-//   if (version === pub?.data?.version) return null
-//   if (pub?.data?.version) return null
-//   return (
-//     <AppBanner
-//       onPress={() => {
-//         navigate({
-//           key: 'publication',
-//           documentId: docId,
-//           accessory: pubAccessory,
-//           pubContext,
-//         })
-//       }}
-//     >
-//       <BannerText>
-//         There is a newer{' '}
-//         {pubContext?.key === 'trusted' ? 'trusted version' : 'version'} of this
-//         Publication{pubContext?.key === 'group' ? ' in this group' : ''}. Click
-//         here to go to latest →
-//       </BannerText>
-//     </AppBanner>
-//   )
-// }
-
-function usePublicationCitations(docId?: string) {
-  return useDocCitations(docId)
 }

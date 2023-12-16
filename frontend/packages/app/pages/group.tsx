@@ -546,6 +546,8 @@ function GroupContentItem({
       key: 'rename',
     },
   ]
+  const ownerId = pub.document?.author
+  if (!ownerId) return null
   return (
     <>
       <PublicationListItem
@@ -574,7 +576,10 @@ function GroupContentItem({
           documentId: docId,
           ...(latestVersion === version
             ? {variant: {key: 'group', groupId, pathName}}
-            : {versionId: version}),
+            : {
+                versionId: version,
+                variant: {key: 'authors', authors: [ownerId]},
+              }),
         }}
       />
       {renameDialog.content}

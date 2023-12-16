@@ -375,7 +375,7 @@ function getReferenceUrlOfRoute(
   return null
 }
 
-function CopyReferenceButton() {
+export function CopyReferenceButton() {
   const [shouldOpen, setShouldOpen] = useState(false)
   const route = useNavRoute()
   const reference = useFullReferenceUrl(route)

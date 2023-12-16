@@ -7,6 +7,7 @@ import {
 import {useStream, useStreamSelector} from '@mintter/ui'
 import {Buffer} from 'buffer'
 import {createContext, useContext} from 'react'
+import {useGRPCClient} from '../app-context'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -30,13 +31,13 @@ export type AuthorsVariant = {
   key: 'authors'
   authors: string[]
 }
-export type PublicationVariant = null | AuthorsVariant | GroupVariant
+export type PublicationVariant = AuthorsVariant | GroupVariant
 
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
-  variant?: PublicationVariant
+  variant: PublicationVariant
   blockId?: string
   accessory?:
     | null
@@ -257,6 +258,28 @@ export function unpackHmIdWithAppRoute(
   const hmIds = unpackHmId(hmId)
   if (!hmIds) return null
   return {...hmIds, navRoute: appRouteOfId(hmIds)}
+}
+
+export function useGroupDocRouteResolver() {
+  const grpcClient = useGRPCClient()
+  return async (
+    groupId: string,
+    pathName: string,
+  ): Promise<PublicationRoute | undefined> => {
+    const content = await grpcClient.groups.listContent({id: groupId})
+    const pathUrl = content.content[pathName]
+    const pathId = pathUrl && unpackDocId(pathUrl)
+    if (!pathId) return undefined
+    return {
+      key: 'publication',
+      documentId: pathId.docId,
+      variant: {
+        key: 'group',
+        groupId,
+        pathName,
+      },
+    }
+  }
 }
 
 export async function resolveHmIdToAppRoute(

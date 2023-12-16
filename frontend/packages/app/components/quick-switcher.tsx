@@ -65,11 +65,18 @@ function useURLHandler() {
       toast('Importing from the web')
       const imported = await importWebCapture(webResult, grpcClient)
       const documentId = imported.published.document?.id
+      const ownerId = imported.published.document?.author
       if (!documentId)
         throw new Error('Conversion succeeded but documentId is not here')
+      if (!ownerId)
+        throw new Error('Conversion succeeded but ownerId is not here')
       return {
         key: 'publication',
         documentId,
+        variant: {
+          key: 'authors',
+          authors: [ownerId],
+        },
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
@@ -242,9 +249,10 @@ export function QuickSwitcher() {
 
           {publications?.publications.map((publication) => {
             const docId = publication.document?.id
+            const ownerId = publication.document?.author
             const title = publication.document?.title || 'Untitled Publication'
 
-            if (!docId || !title) return null
+            if (!docId || !title || !ownerId) return null
 
             return (
               <Command.Item
@@ -255,6 +263,7 @@ export function QuickSwitcher() {
                   navigate({
                     key: 'publication',
                     documentId: docId,
+                    variant: {key: 'authors', authors: [ownerId]},
                     // versionId not included here, we will navigate to the latest version in the global context
                   })
                 }}

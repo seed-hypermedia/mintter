@@ -2,22 +2,23 @@ import z from 'zod'
 import {appStore} from './app-store'
 import {t} from './app-trpc'
 
-const PINS_STORAGE_KEY = 'Pins-v002'
+const PINS_STORAGE_KEY = 'Pins-v003'
 
 type PinsState = {
   accounts: string[]
-  trustedDocuments: string[]
-  allDocuments: string[]
+  documents: {
+    docId: string
+    authors: string[]
+  }[]
   groups: {
     groupId: string
-    documents: {docId: string; pathName?: string}[]
+    documents: {pathName?: string}[]
   }[]
 }
 
 let pins: PinsState = (appStore.get(PINS_STORAGE_KEY) as PinsState) || {
   accounts: [],
-  trustedDocuments: [],
-  allDocuments: [],
+  documents: [],
   groups: [],
 }
 
@@ -63,97 +64,108 @@ export const pinsApi = t.router({
     })
     return undefined
   }),
+  addGroupDocument: t.procedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        pathName: z.string(),
+      }),
+    )
+    .mutation(async ({input}) => {
+      const prevGroup = pins.groups.find(
+        (group) => input.groupId === group.groupId,
+      )
+      let updatedGroup = prevGroup || {groupId: input.groupId, documents: []}
+      const prevPinnedDoc = updatedGroup.documents.find(
+        (pin) => pin.pathName === input.pathName,
+      )
+      if (!prevPinnedDoc) {
+        updatedGroup = {
+          ...updatedGroup,
+          documents: [...updatedGroup.documents, {pathName: input.pathName}],
+        }
+      }
+      if (prevGroup) {
+        await writePins({
+          ...pins,
+          groups: pins.groups.map((group) => {
+            if (group.groupId === input.groupId) return updatedGroup
+            return group
+          }),
+        })
+      } else if (updatedGroup) {
+        await writePins({...pins, groups: [...pins.groups, updatedGroup]})
+      }
+    }),
   addDocument: t.procedure
     .input(
       z.object({
         docId: z.string(),
-        groupId: z.string().optional(),
-        pathName: z.string().optional(),
-        isTrusted: z.boolean().optional(),
+        authors: z.array(z.string()),
       }),
     )
     .mutation(async ({input}) => {
-      if (input.groupId) {
-        let groups = pins.groups
-        if (!groups.find((group) => group.groupId === input.groupId)) {
-          groups = [
-            ...groups,
-            {
-              groupId: input.groupId,
-              documents: [{docId: input.docId, pathName: input.pathName}],
-            },
-          ]
-        } else {
-          groups = groups.map((group) => {
-            if (group.groupId === input.groupId) {
-              return {
-                ...group,
-                documents: [
-                  ...group.documents,
-                  {pathName: input.pathName, docId: input.docId},
-                ],
-              }
-            }
-            return group
-          })
-        }
-        await writePins({...pins, groups})
-      } else if (input.isTrusted) {
+      const prevDoc = pins.documents.find(
+        (doc) =>
+          doc.docId === input.docId && arrayMatch(doc.authors, input.authors),
+      )
+      if (!prevDoc) {
         await writePins({
           ...pins,
-          trustedDocuments: addToList(pins.trustedDocuments, input.docId),
-        })
-      } else {
-        await writePins({
-          ...pins,
-          allDocuments: addToList(pins.trustedDocuments, input.docId),
+          documents: [
+            ...pins.documents,
+            {docId: input.docId, authors: input.authors},
+          ],
         })
       }
+    }),
+  removeGroupDocument: t.procedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        pathName: z.string(),
+      }),
+    )
+    .mutation(async ({input}) => {
+      await writePins({
+        ...pins,
+        groups: pins.groups.map((groupPins) => {
+          if (groupPins.groupId !== input.groupId) return groupPins
+          return {
+            ...groupPins,
+            documents: groupPins.documents.filter(
+              (p) => p.pathName !== input.pathName,
+            ),
+          }
+        }),
+      })
     }),
   removeDocument: t.procedure
     .input(
       z.object({
         docId: z.string(),
-        groupId: z.string().optional(),
-        pathName: z.string().optional(),
-        isTrusted: z.boolean().optional(),
+        authors: z.array(z.string()),
       }),
     )
     .mutation(async ({input}) => {
-      if (input.groupId) {
-        await writePins({
-          ...pins,
-          groups: pins.groups.map((group) => {
-            if (group.groupId === input.groupId) {
-              return {
-                ...group,
-                documents: group.documents.filter(
-                  (pin) =>
-                    pin.docId !== input.docId &&
-                    pin.pathName !== input.pathName,
-                ),
-              }
-            }
-            return group
-          }),
-        })
-      } else if (input.isTrusted) {
-        await writePins({
-          ...pins,
-          trustedDocuments: pins.trustedDocuments.filter(
-            (pin) => pin !== input.docId,
-          ),
-        })
-      } else {
-        await writePins({
-          ...pins,
-          allDocuments: pins.allDocuments.filter((pin) => pin !== input.docId),
-        })
-      }
+      await writePins({
+        ...pins,
+        documents: pins.documents.filter(
+          (doc) =>
+            doc.docId !== input.docId ||
+            !arrayMatch(doc.authors, input.authors),
+        ),
+      })
     }),
 })
 
-function addToList(list: string[], item: string) {
-  if (list.indexOf(item) !== -1) return list
-  return [...list, item]
+function arrayMatch(a: string[], b: string[]) {
+  const sortedB = b.slice().sort()
+  return (
+    a.length === b.length &&
+    a
+      .slice()
+      .sort()
+      .every((val, index) => val === sortedB[index])
+  )
 }

@@ -69,8 +69,8 @@ function PublishGroupDialog({
     <>
       <DialogDescription>
         Your group can be published to the web. You will need to set up a web
-        server using our{' '}
-        <ButtonText
+        server using our self-hosting guide
+        {/* <ButtonText // todo, fix this and include a valid group variant
           textDecorationLine="underline"
           onPress={() => {
             spawn({
@@ -80,7 +80,7 @@ function PublishGroupDialog({
           }}
         >
           self-hosting guide.
-        </ButtonText>
+        </ButtonText> */}
       </DialogDescription>
     </>
   )
