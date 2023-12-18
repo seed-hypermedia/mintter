@@ -243,10 +243,10 @@ export default function GroupPage() {
 
                         <XStack
                           gap="$2"
-                          opacity={0}
-                          $group-header-hover={{
-                            opacity: 1,
-                          }}
+                          // opacity={0}
+                          // $group-header-hover={{
+                          //   opacity: 1,
+                          // }}
                         >
                           <CopyReferenceButton />
                           <PinGroupButton groupId={groupId} />
