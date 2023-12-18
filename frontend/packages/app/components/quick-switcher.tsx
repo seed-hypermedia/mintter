@@ -84,7 +84,7 @@ function useURLHandler() {
       console.log('🌐 Queried Web URL Result', httpSearch, result)
       const blockRef = extractBlockRefOfUrl(httpSearch)
       const fullHmId = hmIdWithVersion(
-        result?.hmUrl,
+        result?.hmUrl || result?.hmId,
         result?.hmVersion,
         blockRef,
       )
