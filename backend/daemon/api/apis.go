@@ -41,6 +41,7 @@ func New(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	LogLevel string,
 ) Server {
 	doSync := func() error {
 		s, ok := sync.Get()
@@ -57,14 +58,14 @@ func New(
 		return nil
 	}
 
-	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node})
+	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, LogLevel)
 	return Server{
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
 		Documents:  documentsSrv,
 		Networking: networking.NewServer(blobs, node),
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
-		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", "debug"), groups.NewSQLiteDB(db), blobs, node),
+		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", LogLevel), groups.NewSQLiteDB(db), blobs, node),
 	}
 }
 

@@ -122,7 +122,7 @@ func makeTestSite(t *testing.T, name string) *App {
 	user := coretest.NewTester(name)
 
 	cfg := testConfig(t)
-	dir, err := storage.InitRepo(cfg.Base.DataDir, user.Device.Wrapped())
+	dir, err := storage.InitRepo(cfg.Base.DataDir, user.Device.Wrapped(), "debug")
 	require.NoError(t, err)
 
 	app, err := Load(ctx, "http://127.0.0.1:"+strconv.Itoa(cfg.HTTP.Port), cfg, dir)

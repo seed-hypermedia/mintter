@@ -158,7 +158,7 @@ func (srv *Server) scheduleSiteWorkers(ctx context.Context,
 					logFunc := log.Debug
 					err := srv.syncGroupSite(ctx, group, interval)
 					if err != nil {
-						logFunc = log.Error
+						logFunc = log.Warn
 					}
 					logFunc("SiteSyncRoundFinished",
 						zap.Duration("duration", time.Since(start)),

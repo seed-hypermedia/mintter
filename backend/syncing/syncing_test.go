@@ -103,7 +103,7 @@ func makeTestNode(t *testing.T, name string) testNode {
 	cfg.NoRelay = true
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
-	n, err := mttnet.New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	n, err := mttnet.New(cfg, db, blobs, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), "debug")
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

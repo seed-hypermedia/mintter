@@ -140,7 +140,8 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 	clean.Add(bitswap)
 
 	// TODO(burdiyan): find a better reproviding strategy than naive provide-everything.
-	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(db))
+
+	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(db, log.Level().String()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize providing: %w", err)
 	}
