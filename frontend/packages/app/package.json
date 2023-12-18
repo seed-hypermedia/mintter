@@ -25,6 +25,7 @@
     "@tamagui/lucide-icons": "1.79.1",
     "@tanstack/react-query": "4.33.0",
     "@tanstack/react-query-devtools": "4.33.0",
+    "@tanstack/react-table": "^8.11.0",
     "@tiptap/core": "2.0.3",
     "@tiptap/pm": "2.0.3",
     "@tiptap/react": "2.0.3",
@@ -39,6 +40,7 @@
     "react-hook-form": "7.46.1",
     "react-hot-toast": "2.4.1",
     "react-icons": "4.9.0",
+    "react-virtual": "^2.10.4",
     "xstate": "beta",
     "zod": "3.22.2"
   },

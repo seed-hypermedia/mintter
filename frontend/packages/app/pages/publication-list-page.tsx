@@ -5,38 +5,37 @@ import {
   ButtonText,
   Container,
   Copy,
-  Delete,
   DialogDescription,
   DialogTitle,
   Separator,
+  SizableText,
   Spinner,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
-
 import {
-  Document,
-  createPublicWebHmUrl,
-  idToUrl,
-  unpackHmId,
-} from '@mintter/shared'
+  Row,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import {useVirtual} from 'react-virtual'
+
+import {Document, createPublicWebHmUrl, unpackHmId} from '@mintter/shared'
 import {Globe, Pencil, Trash, Verified} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, memo} from 'react'
+import {ComponentProps, memo, useMemo, useRef} from 'react'
 import {useAppContext} from '../app-context'
+import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
 import {useAppDialog} from '../components/dialog'
 import {EmptyList} from '../components/empty-list'
-import {ListItem, copyLinkMenuItem} from '../components/list-item'
+import {ListItem, TimeAccessory} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
-import {PublicationListItem} from '../components/publication-list-item'
-import {
-  queryDraft,
-  queryPublication,
-  usePublicationFullList,
-} from '../models/documents'
+import {queryDraft, usePublicationFullList} from '../models/documents'
 import {useWaitForPublication} from '../models/web-links'
 import {toast} from '../toast'
 import {DraftRoute, useNavRoute} from '../utils/navigation'
@@ -63,7 +62,7 @@ export function PublicationListPageUnmemo() {
       <MainWrapper>
         <Container>
           <XStack>
-            <XGroup separator={<Separator backgroundColor={'red'} />}>
+            <XGroup separator={<Separator />}>
               <ToggleGroupItem
                 label="Trusted Creators"
                 icon={Verified}
@@ -199,60 +198,132 @@ function PublicationsList({trustedOnly}: {trustedOnly: boolean}) {
   const {queryClient, grpcClient} = useAppContext()
   const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
 
-  const items = publications.data
+  const items = useMemo(
+    () =>
+      publications.data?.map((item) => ({
+        id: `${item.publication.document!.id}-${item.publication.version}`,
+        title: item.publication.document!.title,
+        author: item.author,
+        editors: item.editors,
+        updatedAt: item.publication.document?.updateTime,
+      })) || [],
+    [publications.data],
+  )
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        cell: (info) => <SizableText>{info.getValue()}</SizableText>,
+      },
+      // {
+      //   accessorKey: 'author',
+      // },
+      {
+        accessorKey: 'editors',
+        cell: (info) => {
+          let editors = info.getValue()
+          return (
+            <XStack>
+              {editors && editors.length
+                ? editors.map((editor, idx) => {
+                    const editorId =
+                      typeof editor === 'string' ? editor : editor?.id
+                    if (!editorId) return null
+                    const account =
+                      typeof editor === 'string' ? undefined : editor
+                    return (
+                      <XStack
+                        zIndex={idx + 1}
+                        key={editorId}
+                        borderColor="$background"
+                        backgroundColor="$background"
+                        borderWidth={2}
+                        borderRadius={100}
+                        marginLeft={-8}
+                        animation="fast"
+                      >
+                        <BaseAccountLinkAvatar
+                          accountId={editorId}
+                          account={account}
+                        />
+                      </XStack>
+                    )
+                  })
+                : null}
+            </XStack>
+          )
+        },
+      },
+      {
+        accessorKey: 'updateAt',
+        cell: (info) => (
+          <TimeAccessory time={info.getValue()} onPress={() => {}} />
+        ),
+      },
+    ],
+    [],
+  )
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    debugTable: true,
+  })
+
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  const {rows} = table.getRowModel()
+  const rowVirtualizer = useVirtual({
+    parentRef: tableContainerRef,
+    size: rows.length,
+    overscan: 10,
+  })
+  const {virtualItems: virtualRows, totalSize} = rowVirtualizer
+
+  const paddingTop = virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0
+  const paddingBottom =
+    virtualRows.length > 0
+      ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
+      : 0
+
   if (!items) return <Spinner />
   return (
-    <Container>
-      {items?.map((item) => {
-        const {publication, author, editors} = item
-        const docId = publication.document?.id
-        const docOwner = publication.document?.author
-        if (!docId || !docOwner) return null
-        return (
-          <PublicationListItem
-            key={docId}
-            openRoute={{
-              key: 'publication',
-              documentId: docId,
-              variant: {
-                key: 'authors',
-                authors: [docOwner],
-              },
-            }}
-            hasDraft={drafts.data?.documents.find(
-              (d) => d.id == publication.document?.id,
-            )}
-            onPointerEnter={() => {
-              if (publication.document?.id) {
-                queryClient.client.prefetchQuery(
-                  queryPublication(
-                    grpcClient,
-                    publication.document.id,
-                    publication.version,
-                  ),
-                )
-              }
-            }}
-            publication={publication}
-            author={author}
-            editors={editors}
-            menuItems={[
-              copyLinkMenuItem(
-                idToUrl(docId, undefined, publication.version),
-                'Publication',
-              ),
-              {
-                key: 'delete',
-                label: 'Delete Publication',
-                icon: Delete,
-                onPress: () => {
-                  deleteDialog.open(docId)
-                },
-              },
-            ]}
-          />
-        )
-      })}
+    <Container ref={tableContainerRef}>
+      <table>
+        <tbody>
+          {paddingTop > 0 && (
+            <tr id="top-row">
+              <td style={{height: `${paddingTop}px`}} />
+            </tr>
+          )}
+          {virtualRows.map((virtualRow) => {
+            const row = rows[virtualRow.index] as Row<any>
+            return (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  return (
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+          {paddingBottom > 0 && (
+            <tr id="bottom-row">
+              <td style={{height: `${paddingBottom}px`}} />
+            </tr>
+          )}
+        </tbody>
+      </table>
+
       {deleteDialog.content}
     </Container>
   )

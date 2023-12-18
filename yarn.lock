@@ -4821,6 +4821,7 @@ __metadata:
     "@tamagui/vite-plugin": 1.79.1
     "@tanstack/react-query": 4.33.0
     "@tanstack/react-query-devtools": 4.33.0
+    "@tanstack/react-table": ^8.11.0
     "@tiptap/core": 2.0.3
     "@tiptap/pm": 2.0.3
     "@tiptap/react": 2.0.3
@@ -4843,6 +4844,7 @@ __metadata:
     react-hook-form: 7.46.1
     react-hot-toast: 2.4.1
     react-icons: 4.9.0
+    react-virtual: ^2.10.4
     typescript: 5.2.2
     vitest: 0.34.2
     xstate: beta
@@ -4872,6 +4874,7 @@ __metadata:
     "@sentry/electron": 4.7.0
     "@sentry/vite-plugin": latest
     "@tamagui/vite-plugin": latest
+    "@tanstack/react-table": ^8.11.0
     "@trpc/client": 10.40.0
     "@trpc/react-query": 10.40.0
     "@trpc/server": 10.40.0
@@ -6205,6 +6208,13 @@ __metadata:
   dependencies:
     "@babel/runtime": ^7.13.10
   checksum: aeec13b234a946052512d05239067d2d63422f9ec70bf2fe7acfd6b9196693fc33fbaf43c2667c167f777d90a095c6604eb487e0bce79e230b6df0f6cacd6a55
+  languageName: node
+  linkType: hard
+
+"@reach/observe-rect@npm:^1.1.0":
+  version: 1.2.0
+  resolution: "@reach/observe-rect@npm:1.2.0"
+  checksum: 7dd903eeaad0e22c6d973bd26265d91eadba56ab5134701ceb3e85214db75339fae94aa7e8b88a65e8daa64bc7cf1b915d4ffcdfd324466b561dc6adc3c6e070
   languageName: node
   linkType: hard
 
@@ -9839,6 +9849,25 @@ __metadata:
     react-native:
       optional: true
   checksum: b3cf4afa427435e464e077b3f23c891e38e5f78873518f15c1d061ad55f1464d6241ecd92d796a5dbc9412b4fd7eb30b01f2a9cfc285ee9f30dfdd2ca0ecaf4b
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-table@npm:^8.11.0":
+  version: 8.11.0
+  resolution: "@tanstack/react-table@npm:8.11.0"
+  dependencies:
+    "@tanstack/table-core": 8.11.0
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 97201e16e830b7224d4cb7a477519b5e64c1580c9c9541527c8622216f8bace03b932a419904a30b1a62c88c3c9d7d2b7f66314650abd1eb91effd257a2f7b01
+  languageName: node
+  linkType: hard
+
+"@tanstack/table-core@npm:8.11.0":
+  version: 8.11.0
+  resolution: "@tanstack/table-core@npm:8.11.0"
+  checksum: c65184511f5a9c4bd7eba169081d91e3310ddc35557dd1c0f425f650bde9b46f8b81393b46be8e2d8008dd6464f9b39096918ebce12824fa4ddcb3143a70f00c
   languageName: node
   linkType: hard
 
@@ -25751,6 +25780,17 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: b317c3763f37a89621bbafd0e6e2d068e7876790a5ae77f497adfd6ba9334ceea138c8a0b7d907bae0f79c765cb24e8b2ca2b8033b4144c0bce28571a3658921
+  languageName: node
+  linkType: hard
+
+"react-virtual@npm:^2.10.4":
+  version: 2.10.4
+  resolution: "react-virtual@npm:2.10.4"
+  dependencies:
+    "@reach/observe-rect": ^1.1.0
+  peerDependencies:
+    react: ^16.6.3 || ^17.0.0
+  checksum: 1bebc741b01057829a7d7f29256114caecf0597d41b187cb41e75af77f24a87c780bc1a81ec11205b78ee2e9c801fc5e36b20a9e1ab7ddc70a18dd95417795f8
   languageName: node
   linkType: hard
 

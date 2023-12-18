@@ -36,6 +36,7 @@
     "@mintter/ui": "*",
     "@sentry/electron": "4.7.0",
     "@sentry/vite-plugin": "latest",
+    "@tanstack/react-table": "^8.11.0",
     "@trpc/client": "10.40.0",
     "@trpc/react-query": "10.40.0",
     "@trpc/server": "10.40.0",
