@@ -228,22 +228,23 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             case 0:
               const embedPromise = fetchWebLink(options.client, link.href)
                 .then((res) => {
+                  console.log('fetchWebLink response', res)
                   if (res) {
-                    const fullHmId = hmIdWithVersion(
-                      res?.hmId,
+                    const fullHmUrl = hmIdWithVersion(
+                      res?.hmUrl || res?.hmId,
                       res?.hmVersion,
                       extractBlockRefOfUrl(link.href),
                     )
 
-                    if (fullHmId) {
+                    if (fullHmUrl) {
                       view.dispatch(
                         view.state.tr.setMeta(linkMenuPluginKey, {
-                          ref: fullHmId,
+                          ref: fullHmUrl,
                           items: getLinkMenuItems({
                             isLoading: false,
                             isHmLink: true,
                             originalRef: link.href,
-                            linkMeta: res.hmTitle ? res : undefined,
+                            linkMeta: res,
                           }),
                         }),
                       )

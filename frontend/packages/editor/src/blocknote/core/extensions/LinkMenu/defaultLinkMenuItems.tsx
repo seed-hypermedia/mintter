@@ -5,7 +5,8 @@ import {
   isPublicGatewayLink,
   normlizeHmId,
 } from '@mintter/shared'
-import {Spinner} from '@mintter/ui'
+import {Link, Spinner} from '@mintter/ui'
+import {FileText, Globe, SquareAsterisk} from '@tamagui/lucide-icons'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
@@ -28,9 +29,9 @@ export function getLinkMenuItems({
 }) {
   const linkMenuItems: LinkMenuItem[] = [
     {
-      name: 'Dismiss',
+      name: 'Web Link',
       disabled: false,
-      icon: undefined,
+      icon: <Globe size={18} />,
       execute: (editor: BlockNoteEditor, ref: string) => {},
     },
   ]
@@ -45,11 +46,12 @@ export function getLinkMenuItems({
 
     linkMenuItems.unshift(loadingItem)
   } else {
-    if (isHmLink) {
-      const embedItem = {
-        name: 'Embed',
+    if (isHmLink && linkMeta && linkMeta.hmTitle) {
+      console.log('link menu linkMeta', linkMeta)
+      linkMenuItems.unshift({
+        name: `Embed "${linkMeta.hmTitle}"`,
         disabled: false,
-        icon: undefined,
+        icon: <FileText size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
           if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
             const hmId = normlizeHmId(ref)
@@ -68,13 +70,38 @@ export function getLinkMenuItems({
 
           insertNode(editor, originalRef || ref, node)
         },
-      }
+      })
+
+      linkMenuItems.unshift({
+        name: `Insert "${linkMeta.hmTitle}" as Card`,
+        disabled: false,
+        icon: <SquareAsterisk size={18} />,
+        execute: (editor: BlockNoteEditor, ref: string) => {
+          if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
+            const hmId = normlizeHmId(ref)
+            if (!hmId) return
+            ref = hmId
+          }
+          const {state, schema} = editor._tiptapEditor
+          const {selection} = state
+          if (!selection.empty) return
+          const node = schema.nodes.embed.create(
+            {
+              ref: ref,
+              view: 'card',
+            },
+            schema.text(' '),
+          )
+
+          insertNode(editor, originalRef || ref, node)
+        },
+      })
 
       if (linkMeta && linkMeta.hmTitle && linkMeta.hmId && !linkMeta.blockRef) {
-        const titleItem = {
-          name: `Insert link as "${linkMeta.hmTitle}"`,
+        linkMenuItems.unshift({
+          name: `Link as "${linkMeta.hmTitle}"`,
           disabled: false,
-          icon: undefined,
+          icon: <Link size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
             const hmId = normlizeHmId(ref)
             const {state, schema, view} = editor._tiptapEditor
@@ -93,12 +120,8 @@ export function getLinkMenuItems({
                 ),
             )
           },
-        }
-
-        linkMenuItems.unshift(titleItem)
+        })
       }
-
-      linkMenuItems.unshift(embedItem)
     } else if (media) {
       const mediaItem = {
         name: `Convert to ${media.charAt(0).toUpperCase() + media.slice(1)}`,
