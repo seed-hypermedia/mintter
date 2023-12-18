@@ -36,6 +36,7 @@ import {
   usePinGroup,
   usePins,
 } from '../models/pins'
+import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {toast} from '../toast'
 import {getAvatarUrl} from '../utils/account-url'
@@ -465,7 +466,7 @@ export function MyAccountItem({
             cursor={active ? 'not-allowed' : 'pointer'}
             userSelect="none"
           >
-            {account?.profile?.alias || 'Anonymous'}
+            {getAccountName(account?.profile)}
           </SizableText>
           <SizableText size="$1" color="$9">
             My Account
