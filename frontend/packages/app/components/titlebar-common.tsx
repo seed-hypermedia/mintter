@@ -445,10 +445,6 @@ export function PageActionButtons(props: TitleBarProps) {
   let buttonGroup: ReactNode[] = []
   if (route.key === 'draft') {
     buttonGroup = [<DraftPublicationButtons key="draftPublication" />]
-  } else if (route.key === 'drafts') {
-    buttonGroup = [
-      <NewDocumentButton key="newDocument" groupVariant={undefined} />,
-    ]
   } else if (route.key === 'documents') {
     buttonGroup = [
       <NewDocumentButton key="newDocument" groupVariant={undefined} />,
@@ -474,8 +470,8 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
-      <DocOptionsButton key="options" />,
       <PublicationVariants key="variants" route={route} />,
+      <DocOptionsButton key="options" />,
     ]
   } else if (route.key === 'account') {
     buttonGroup = [<AccountOptionsButton key="accountOptions" />]
