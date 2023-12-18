@@ -217,7 +217,7 @@ function FullAppSidebar() {
                       }}
                       onPress={async () => {
                         const resolved = await resolveId(
-                          `hm://g/${group.groupId}/${pathName}`,
+                          `${group.groupId}/${pathName}`,
                         )
                         if (resolved?.navRoute) {
                           navigate(resolved.navRoute)

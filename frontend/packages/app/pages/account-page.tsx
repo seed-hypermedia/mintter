@@ -28,6 +28,7 @@ import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {copyLinkMenuItem} from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinAccountButton} from '../components/pin-entity'
+import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
 import {useAccountPublications} from '../models/documents'
 import {getAvatarUrl} from '../utils/account-url'
@@ -166,6 +167,7 @@ export default function AccountPage() {
             </XStack>
 
             <XStack space="$2">
+              <CopyReferenceButton />
               {isMe ? null : <PinAccountButton accountId={accountId} />}
               {isMe ? (
                 <Button

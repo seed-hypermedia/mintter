@@ -462,7 +462,6 @@ export function PageActionButtons(props: TitleBarProps) {
   } else if (route.key === 'group') {
     buttonGroup = [
       <GroupOptionsButton key="groupOptions" />,
-      <CopyReferenceButton key="copyRef" />,
       <NewDocumentButton
         key="newDocument"
         label="Group Document"
@@ -477,21 +476,9 @@ export function PageActionButtons(props: TitleBarProps) {
     buttonGroup = [
       <DocOptionsButton key="options" />,
       <PublicationVariants key="variants" route={route} />,
-      // <PublishToGroupButton key="publishDialog" />,
-      // <CopyReferenceButton key="copyRef" />,
-      // <EditDocButton
-      //   key="editActions"
-      //   contextRoute={route}
-      //   variant={route.variant || null}
-      //   docId={route.documentId}
-      //   baseVersion={route.versionId}
-      // />,
     ]
   } else if (route.key === 'account') {
-    buttonGroup = [
-      <AccountOptionsButton key="accountOptions" />,
-      <CopyReferenceButton key="copyRef" />,
-    ]
+    buttonGroup = [<AccountOptionsButton key="accountOptions" />]
   }
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }

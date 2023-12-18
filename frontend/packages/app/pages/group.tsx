@@ -71,6 +71,7 @@ import {MainWrapper} from '../components/main-wrapper'
 import {OptionsDropdown} from '../components/options-dropdown'
 import {PinGroupButton} from '../components/pin-entity'
 import {PublicationListItem} from '../components/publication-list-item'
+import {CopyReferenceButton} from '../components/titlebar-common'
 import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -247,6 +248,7 @@ export default function GroupPage() {
                             opacity: 1,
                           }}
                         >
+                          <CopyReferenceButton />
                           <PinGroupButton groupId={groupId} />
                           {isMember && (
                             <Tooltip content="Edit Group info">
