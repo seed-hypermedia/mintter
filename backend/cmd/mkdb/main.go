@@ -39,12 +39,12 @@ func run() error {
 		return err
 	}
 
-	dir, err := storage.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped())
+	dir, err := storage.InitRepo(cfg.Base.DataDir, alice.Device.Wrapped(), cfg.LogLevel)
 	if err != nil {
 		return err
 	}
 
-	app, err := daemon.Load(ctx, cfg, dir)
+	app, err := daemon.Load(ctx, cfg, dir, "debug")
 	if err != nil {
 		return err
 	}

@@ -174,7 +174,7 @@ func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.No
 		NoRelay:        true,
 		BootstrapPeers: nil,
 		NoMetrics:      true,
-	}, db, blobs, u.Identity, zap.NewNop())
+	}, db, blobs, u.Identity, zap.NewNop(), "debug")
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

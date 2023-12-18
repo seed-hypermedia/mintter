@@ -70,7 +70,7 @@ func Default() Config {
 	return Config{
 		Base: Base{
 			DataDir:  "~/.mtt",
-			LogLevel: "debug",
+			LogLevel: "info",
 		},
 		HTTP: HTTP{
 			Port: 55001,

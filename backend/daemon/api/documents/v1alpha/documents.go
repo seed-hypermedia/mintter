@@ -40,12 +40,12 @@ type Server struct {
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, LogLevel string) *Server {
 	srv := &Server{
 		db:    db,
 		me:    me,
 		disc:  disc,
-		blobs: hyper.NewStorage(db, logging.New("mintter/hyper", "debug")),
+		blobs: hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
 	}
 
 	return srv
@@ -523,7 +523,7 @@ func (api *Server) ListAccountPublications(ctx context.Context, in *documents.Li
 
 		pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: x.ResourcesIRI,
-			LocalOnly: true,
+			LocalOnly:  true,
 		})
 		if err != nil {
 			continue

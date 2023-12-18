@@ -23,8 +23,8 @@ type Dir struct {
 
 // InitRepo initializes the storage directory.
 // Device can be nil in which case a random new device key will be generated.
-func InitRepo(dataDir string, device crypto.PrivKey) (r *Dir, err error) {
-	log := logging.New("mintter/repo", "debug")
+func InitRepo(dataDir string, device crypto.PrivKey, logLevel string) (r *Dir, err error) {
+	log := logging.New("mintter/repo", logLevel)
 	if device == nil {
 		r, err = New(dataDir, log)
 	} else {

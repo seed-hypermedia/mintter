@@ -79,7 +79,7 @@ type App struct {
 // To shut down the app gracefully cancel the provided context and call Wait().
 func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...interface{}) (a *App, err error) {
 	a = &App{
-		log:     logging.New("mintter/daemon", "debug"),
+		log:     logging.New("mintter/daemon", cfg.LogLevel),
 		Storage: r,
 	}
 	a.g, ctx = errgroup.WithContext(ctx)
@@ -119,24 +119,24 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		return nil, err
 	}
 
-	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", "debug"))
+	a.Blobs = hyper.NewStorage(a.DB, logging.New("mintter/hyper", cfg.LogLevel))
 	if err := a.Blobs.MaybeReindex(ctx); err != nil {
 		return nil, fmt.Errorf("failed to reindex database: %w", err)
 	}
 
 	me := a.Storage.Identity()
 
-	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs, extraOpts...)
+	a.Net, err = initNetwork(&a.clean, a.g, me, cfg.P2P, a.DB, a.Blobs, cfg.LogLevel, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, me, a.Net)
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.Blobs, me, a.Net, cfg.LogLevel)
 	if err != nil {
 		return nil, err
 	}
 
-	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
+	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", cfg.LogLevel), a.DB, a.Net, me, cfg.Lndhub.Mainnet)
 
 	extraHTTPHandlers := []GenericHandler{}
 	for _, extra := range extraOpts {
@@ -144,7 +144,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 			extraHTTPHandlers = append(extraHTTPHandlers, httpHandler)
 		}
 	}
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, extraOpts...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.LogLevel, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 			e = offline.Exchange(bs)
 		}
 
-		files := mttnet.NewFileManager(logging.New("mintter/file-manager", "debug"), bs, e, n.Provider())
+		files := mttnet.NewFileManager(logging.New("mintter/file-manager", cfg.LogLevel), bs, e, n.Provider())
 		if err := fm.fm.Resolve(files); err != nil {
 			return err
 		}
@@ -211,8 +211,8 @@ func (l *lazyFileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
-	logging.SetLogLevel("autorelay", "info")
-	logging.SetLogLevel("provider.batched", "debug")
+	logging.SetLogLevel("autorelay", cfg.LogLevel)
+	logging.SetLogLevel("provider.batched", cfg.LogLevel)
 	a.g.Go(func() error {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
@@ -276,6 +276,7 @@ func initNetwork(
 	cfg config.P2P,
 	db *sqlitex.Pool,
 	blobs *hyper.Storage,
+	LogLevel string,
 	extraServers ...interface{},
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
@@ -298,7 +299,7 @@ func initNetwork(
 			return err
 		}
 
-		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", "debug"), extraServers...)
+		n, err := mttnet.New(cfg, db, blobs, id, logging.New("mintter/network", LogLevel), extraServers...)
 		if err != nil {
 			return err
 		}
@@ -333,6 +334,7 @@ func initSyncing(
 	blobs *hyper.Storage,
 	me *future.ReadOnly[core.Identity],
 	net *future.ReadOnly[*mttnet.Node],
+	LogLevel string,
 ) (*future.ReadOnly[*syncing.Service], error) {
 	f := future.New[*syncing.Service]()
 
@@ -358,7 +360,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, blobs, node.Bitswap(), node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", LogLevel), id, db, blobs, node.Bitswap(), node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -398,6 +400,7 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	LogLevel string,
 	extras ...interface{},
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
@@ -413,7 +416,7 @@ func initGRPC(
 	}
 	srv = grpc.NewServer(opts...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet)
+	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, LogLevel)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

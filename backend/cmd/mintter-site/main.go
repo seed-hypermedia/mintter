@@ -59,7 +59,7 @@ Flags:
 			return err
 		}
 
-		dir, err := storage.InitRepo(cfg.Base.DataDir, nil)
+		dir, err := storage.InitRepo(cfg.Base.DataDir, nil, cfg.LogLevel)
 		if err != nil {
 			return err
 		}

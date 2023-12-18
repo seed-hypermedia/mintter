@@ -27,12 +27,12 @@ var qAllPublicBlobs = dqb.Str(`
 
 var randSrc = rand.NewSource(time.Now().UnixNano())
 
-func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
+func makeProvidingStrategy(db *sqlitex.Pool, logLevel string) provider.KeyChanFunc {
 	// This providing strategy returns all the CID known to the blockstore
 	// except those which are marked as draft changes.
 	// TODO(burdiyan): this is a temporary solution during the braking change.
 
-	log := logging.New("mintter/reprovider", "debug")
+	log := logging.New("mintter/reprovider", logLevel)
 
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
 		ch := make(chan cid.Cid, 30) // arbitrary buffer
@@ -55,7 +55,7 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 				log.Error("Failed to list entities", zap.Error(err))
 				return
 			}
-			log.Debug("Start reproviding", zap.Int("Number of entities", len(entities)))
+			log.Info("Start reproviding", zap.Int("Number of entities", len(entities)))
 			// Since reproviding takes long AND is has throttle limits, we are better off randomizing it.
 			r := rand.New(randSrc) //nolint:gosec
 			r.Shuffle(len(entities), func(i, j int) { entities[i], entities[j] = entities[j], entities[i] })
@@ -68,14 +68,14 @@ func makeProvidingStrategy(db *sqlitex.Pool) provider.KeyChanFunc {
 
 				select {
 				case <-ctx.Done():
-					log.Debug("Reproviding context cancelled")
+					log.Info("Reproviding context cancelled")
 					return
 				case ch <- c:
 					// Send
 					log.Debug("Reproviding", zap.String("entity", e.ResourcesIRI), zap.String("CID", c.String()))
 				}
 			}
-			log.Debug("Finish reproviding", zap.Int("Number of entities", len(entities)))
+			log.Info("Finish reproviding", zap.Int("Number of entities", len(entities)))
 		}()
 		return ch, nil
 	}

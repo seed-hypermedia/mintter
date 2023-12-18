@@ -27,7 +27,7 @@ func TestDBMigrateManual(t *testing.T) {
 		return
 	}
 
-	dir, err := storage.InitRepo("/tmp/mintter-db-migrate-test", nil)
+	dir, err := storage.InitRepo("/tmp/mintter-db-migrate-test", nil, "debug")
 	require.NoError(t, err)
 
 	_ = dir
