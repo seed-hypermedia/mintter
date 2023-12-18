@@ -1,7 +1,6 @@
 import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 
 export function OGImageMeta({url}: {url: string}) {
-  return null // temporarily removed support due to issues on server
   return (
     <>
       <meta property="og:image" content={url} />
