@@ -129,17 +129,15 @@ export function useDeleteDraft(
 ) {
   const {queryClient} = useAppContext()
   const grpcClient = useGRPCClient()
-
+  const invalidate = useQueryInvalidator()
   return useMutation({
     ...opts,
     mutationFn: async (documentId) => {
       await grpcClient.drafts.deleteDraft({documentId})
     },
     onSuccess: (response, documentId, context) => {
-      queryClient.invalidate([queryKeys.GET_DRAFT_LIST])
-      queryClient.client.removeQueries({
-        queryKey: [queryKeys.GET_DRAFT, documentId],
-      })
+      invalidate([queryKeys.GET_DRAFT_LIST])
+      queryClient.client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
       opts?.onSuccess?.(response, documentId, context)
     },
   })
@@ -241,7 +239,6 @@ function useDraftDiagnosis() {
     },
   }
 }
-type DraftDiagnosis = ReturnType<typeof useDraftDiagnosis>
 
 function changesToJSON(changes: DocumentChange[]) {
   return changes.map((change) => {
@@ -271,7 +268,7 @@ export function usePublishDraft(
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
   const groupVariant = draftRoute?.variant
-  const {client, invalidate} = useAppContext().queryClient
+  const {client, invalidate} = queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
     ...opts,
@@ -295,7 +292,10 @@ export function usePublishDraft(
         throw new Error('Could not get ID of published document')
       if (groupVariant) {
         let docTitle: string | undefined = (
-          queryClient.client.getQueryData([queryKeys.GET_DRAFT, draftId]) as any
+          queryClient.client.getQueryData([
+            queryKeys.EDITOR_DRAFT,
+            draftId,
+          ]) as any
         )?.title
         const publishPathName = groupVariant.pathName
           ? groupVariant.pathName
@@ -339,15 +339,7 @@ export function usePublishDraft(
       }
 
       setTimeout(() => {
-        client.removeQueries([queryKeys.EDITOR_DRAFT, result.pub.document?.id])
-        client.removeQueries({queryKey: [queryKeys.EDITOR_DRAFT, documentId]})
-        client.removeQueries({
-          queryKey: [
-            queryKeys.EDITOR_DRAFT_CONTENT,
-            queryKeys.EDITOR_DRAFT,
-            documentId,
-          ],
-        })
+        client.removeQueries([queryKeys.EDITOR_DRAFT, documentId])
         // otherwise it will re-query for a draft that no longer exists and an error happens
       }, 250)
     },
@@ -663,7 +655,7 @@ export function useDraftEditor({
         })
         if (mutation.updatedDocument) {
           client.setQueryData(
-            [queryKeys.GET_DRAFT, documentId],
+            [queryKeys.EDITOR_DRAFT, documentId],
             mutation.updatedDocument,
           )
         }
