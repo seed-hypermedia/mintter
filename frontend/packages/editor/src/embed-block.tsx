@@ -1,7 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {fetchWebLink} from '@mintter/app/models/web-links'
-import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
-import {useNavigate} from '@mintter/app/utils/useNavigate'
+import {useOpenUrl} from '@mintter/app/open-url'
 
 import {
   BlockContentEmbed,
@@ -212,12 +211,7 @@ function EmbedControl({
     return false
   }, [block.props.ref])
 
-  const spawn = useNavigate('spawn')
-
-  const idRoute = block.props.ref
-    ? unpackHmIdWithAppRoute(block.props.ref)
-    : null
-  const navRoute = idRoute?.navRoute
+  const openUrl = useOpenUrl()
 
   return (
     <XStack
@@ -244,18 +238,18 @@ function EmbedControl({
           backgroundColor="$color4"
           // backgroundColor={'red'}
         />
-        {navRoute ? (
-          <Tooltip content="Open in a new window">
-            <Button
-              size="$1"
-              iconAfter={<ExternalLink />}
-              backgroundColor="$backgroundStrong"
-              onPress={() => {
-                spawn(navRoute)
-              }}
-            />
-          </Tooltip>
-        ) : null}
+
+        <Tooltip content="Open in a new window">
+          <Button
+            size="$1"
+            iconAfter={<ExternalLink />}
+            backgroundColor="$backgroundStrong"
+            onPress={() => {
+              openUrl(block.props.ref, true)
+            }}
+          />
+        </Tooltip>
+
         {isDocument ? (
           <Select
             id="view"

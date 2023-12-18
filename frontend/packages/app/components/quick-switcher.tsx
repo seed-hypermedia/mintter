@@ -1,7 +1,6 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
 import {fetchWebLink} from '@mintter/app/models/web-links'
-import {unpackHmIdWithAppRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
@@ -21,7 +20,12 @@ import {useConnectPeer, useContactsList} from '../models/contacts'
 import {useGroups} from '../models/groups'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
-import {NavRoute, resolveHmIdToAppRoute} from '../utils/navigation'
+import {
+  NavRoute,
+  isHttpUrl,
+  resolveHmIdToAppRoute,
+  useHmIdToAppRouteResolver,
+} from '../utils/navigation'
 import {useListenAppEvent} from '../utils/window-events'
 import './quick-switcher.css'
 
@@ -38,22 +42,19 @@ function useURLHandler() {
       // toast.error('Connection Error : ' + err?.rawMessage)
     },
   })
+  const resolveHmUrl = useHmIdToAppRouteResolver()
   return async (
     queryClient: AppQueryClient,
     grpcClient: GRPCClient,
     search: string,
   ): Promise<NavRoute | null> => {
-    const httpSearch = /^https?:\/\//.test(search)
-      ? search
-      : `https://${search}`
+    const httpSearch = isHttpUrl(search) ? search : `https://${search}`
 
     connect.mutate(httpSearch)
     if (experiments.data?.webImporting) {
       const webResult = await webQuery.mutateAsync({webUrl: httpSearch})
       if (webResult.hypermedia) {
-        const unpacked = unpackHmIdWithAppRoute(
-          `${webResult.hypermedia.id}?v=${webResult.hypermedia.version}`,
-        )
+        const unpacked = await resolveHmUrl(webResult.hypermedia.url)
         if (unpacked?.navRoute) return unpacked.navRoute
         console.log(
           'Failed to open this hypermedia content',
@@ -83,13 +84,12 @@ function useURLHandler() {
       console.log('🌐 Queried Web URL Result', httpSearch, result)
       const blockRef = extractBlockRefOfUrl(httpSearch)
       const fullHmId = hmIdWithVersion(
-        result?.hmId,
+        result?.hmUrl,
         result?.hmVersion,
         blockRef,
       )
       if (!fullHmId) throw new Error('Failed to fetch web link')
-      const queried =
-        result?.hmId == null ? null : unpackHmIdWithAppRoute(fullHmId)
+      const queried = await resolveHmUrl(fullHmId)
       if (queried?.navRoute) {
         return queried?.navRoute
       }

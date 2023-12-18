@@ -3,6 +3,7 @@ import {TimelineChange} from '@mintter/app/models/changes'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   Change,
+  createHmId,
   createPublicWebHmUrl,
   formattedDateLong,
   unpackDocId,
@@ -33,13 +34,9 @@ import {
   useMyGroups,
   usePublishDocToGroup,
 } from '../models/groups'
+import {useOpenUrl} from '../open-url'
 import {toast} from '../toast'
-import {
-  GroupVariant,
-  NavRoute,
-  unpackHmIdWithAppRoute,
-  useNavRoute,
-} from '../utils/navigation'
+import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'
 import {useAppDialog} from './dialog'
@@ -205,16 +202,18 @@ function ChangeItem({
       label: 'Copy Link to Version',
     })
   }
-  const newWindowRouteWUrl = publicWebUrl
-    ? unpackHmIdWithAppRoute(publicWebUrl)
-    : undefined
-  const newWindowRoute = newWindowRouteWUrl?.navRoute
-  if (newWindowRoute) {
+  const open = useOpenUrl()
+  if (parsedEntityId) {
     menuItems.push({
       key: 'openNewWindow',
       icon: ArrowUpRight,
       onPress: () => {
-        spawn(newWindowRoute)
+        open(
+          createHmId(parsedEntityId.type, parsedEntityId.eid, {
+            version: change.id,
+          }),
+          true,
+        )
       },
       label: 'Open in New Window',
     })

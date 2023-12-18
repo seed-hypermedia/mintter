@@ -1,22 +1,14 @@
 import {createHmId} from '@mintter/shared'
 import {HMAccount} from '@mintter/shared/src/json-hm'
-import {
-  Avatar,
-  Card,
-  H2,
-  Paragraph,
-  SizableText,
-  XStack,
-  YStack,
-} from '@mintter/ui'
+import {Avatar, Card, H2, Paragraph, XStack, YStack} from '@mintter/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
 import {cidURL} from 'src/ipfs'
 import {OpenInAppLink} from 'src/metadata'
 import {SiteHead} from 'src/site-head'
 import {trpc} from 'src/trpc'
-import {MainSiteLayout} from './site-layout'
 import {ErrorPage} from './error-page'
+import {MainSiteLayout} from './site-layout'
 
 function AccountContent({account}: {account: HMAccount | null | undefined}) {
   return (
@@ -52,10 +44,13 @@ export default function AccountPage({}: {}) {
     <>
       <Head>
         {accountId && (
-          <meta
-            name="hypermedia-entity-id"
-            content={createHmId('a', accountId!)}
-          />
+          <>
+            <meta
+              name="hypermedia-entity-id"
+              content={createHmId('a', accountId!)}
+            />
+            <meta name="hypermedia-url" content={createHmId('a', accountId!)} />
+          </>
         )}
       </Head>
       <MainSiteLayout

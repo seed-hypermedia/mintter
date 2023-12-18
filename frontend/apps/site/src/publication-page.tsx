@@ -8,6 +8,7 @@ import {
   UnpackedHypermediaId,
   createHmDocLink,
   createHmGroupDocLink,
+  createHmId,
   groupDocUrl,
   unpackHmId,
 } from '@mintter/shared'
@@ -80,10 +81,24 @@ export function PublicationPage({
       </ErrorPage>
     )
   }
+  const contextGroupId = contextGroup?.id ? unpackHmId(contextGroup?.id) : null
   return (
     <>
       <Head>
         <meta name="hypermedia-entity-id" content={pub?.document?.id} />
+        {pubId && (
+          <meta
+            name="hypermedia-url"
+            content={
+              contextGroupId
+                ? createHmId('g', contextGroupId.eid, {
+                    version: contextGroup?.version,
+                    groupPathName: pathName,
+                  })
+                : createHmId('d', pubId.eid, {version: pubVersion})
+            }
+          />
+        )}
         <meta name="hypermedia-entity-version" content={pub?.version} />
         <meta name="hypermedia-entity-title" content={pub?.document?.title} />
         <BasicOGMeta title={pub?.document?.title} />

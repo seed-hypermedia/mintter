@@ -46,6 +46,7 @@ import toast from 'react-hot-toast'
 import {useConnectPeer} from '../models/contacts'
 import {useWalletOptIn} from '../models/wallet'
 import {useDaemonReady} from '../node-status-context'
+import {isHttpUrl} from '../utils/navigation'
 
 const CONTENT_MAX_WIDTH = 500
 
@@ -726,7 +727,7 @@ function ConnectSite(props: OnboardingStepProps) {
           onPress={() => {
             const domainToUse =
               siteDomain === '' ? SuggestedSites[0] : siteDomain
-            const fullDomain = /^https?:\/\//.test(domainToUse)
+            const fullDomain = isHttpUrl(domainToUse)
               ? siteDomain
               : `https://${siteDomain}`
             connectPeer.mutate(fullDomain)

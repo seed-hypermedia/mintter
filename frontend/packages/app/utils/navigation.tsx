@@ -252,6 +252,10 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
   return navRoute
 }
 
+export function isHttpUrl(url: string) {
+  return /^https?:\/\//.test(url)
+}
+
 export function unpackHmIdWithAppRoute(
   hmId: string,
 ): (UnpackedHypermediaId & {navRoute?: NavRoute}) | null {
@@ -260,25 +264,16 @@ export function unpackHmIdWithAppRoute(
   return {...hmIds, navRoute: appRouteOfId(hmIds)}
 }
 
-export function useGroupDocRouteResolver() {
+export function useHmIdToAppRouteResolver() {
   const grpcClient = useGRPCClient()
-  return async (
-    groupId: string,
-    pathName: string,
-  ): Promise<PublicationRoute | undefined> => {
-    const content = await grpcClient.groups.listContent({id: groupId})
-    const pathUrl = content.content[pathName]
-    const pathId = pathUrl && unpackDocId(pathUrl)
-    if (!pathId) return undefined
-    return {
-      key: 'publication',
-      documentId: pathId.docId,
-      variant: {
-        key: 'group',
-        groupId,
-        pathName,
-      },
-    }
+  return (
+    hmId: string,
+  ): Promise<null | (UnpackedHypermediaId & {navRoute?: NavRoute})> => {
+    return resolveHmIdToAppRoute(hmId, grpcClient).catch((e) => {
+      console.error(e)
+      // toast.error('Failed to resolve ID to app route')
+      return null
+    })
   }
 }
 

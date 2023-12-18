@@ -1,8 +1,8 @@
 import {AppQueryClient} from '@mintter/app/query-client'
-import {useQuery} from '@tanstack/react-query'
-import {queryKeys} from './query-keys'
 import {extractBlockRefOfUrl} from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'
+import {queryKeys} from './query-keys'
 
 function parseHTML(html: string): Document {
   const parser = new DOMParser()
@@ -16,6 +16,7 @@ function extractMetaTagValue(doc: Document, name: string): string | null {
 
 export type WebLinkMeta = {
   hmId: string | null
+  hmUrl: string | null
   hmVersion: string | null
   hmTitle: string | null
   blockRef: string | null
@@ -60,9 +61,11 @@ export async function fetchWebLinkMeta(
     const htmlData = await webResponse.text()
     const doc = parseHTML(htmlData)
     const hmId = extractMetaTagValue(doc, 'hypermedia-entity-id')
+    const hmUrl = extractMetaTagValue(doc, 'hypermedia-entity-url')
     const hmVersion = extractMetaTagValue(doc, 'hypermedia-entity-version')
     const hmTitle = extractMetaTagValue(doc, 'hypermedia-entity-title')
     return {
+      hmUrl,
       hmId,
       hmVersion,
       hmTitle,

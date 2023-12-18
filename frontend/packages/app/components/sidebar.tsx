@@ -41,7 +41,7 @@ import {
   NavRoute,
   PublicationRouteContext,
   PublicationVariant,
-  useGroupDocRouteResolver,
+  useHmIdToAppRouteResolver,
   useNavRoute,
 } from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
@@ -77,7 +77,7 @@ function FullAppSidebar() {
     onBlur: () => ctx.onMenuHoverLeave(),
   })
   const isWindowTooNarrowForHoverSidebar = useIsWindowNarrowForHoverSidebar()
-  const resolveGroupRoute = useGroupDocRouteResolver()
+  const resolveId = useHmIdToAppRouteResolver()
   return (
     <>
       {isFocused && !isLocked && !isWindowTooNarrowForHoverSidebar ? (
@@ -215,12 +215,11 @@ function FullAppSidebar() {
                         pathName: pathName || '/',
                       }}
                       onPress={async () => {
-                        const route = await resolveGroupRoute(
-                          group.groupId,
-                          pathName || '/',
+                        const resolved = await resolveId(
+                          `hm://g/${group.groupId}/${pathName}`,
                         )
-                        if (route) {
-                          navigate(route)
+                        if (resolved?.navRoute) {
+                          navigate(resolved.navRoute)
                         } else {
                           toast.error(
                             `"${pathName}" not found in latest version of group`,

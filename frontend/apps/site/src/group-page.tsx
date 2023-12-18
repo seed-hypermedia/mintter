@@ -8,31 +8,22 @@ import {
   formattedDate,
   unpackHmId,
 } from '@mintter/shared'
-import {
-  Button,
-  ButtonText,
-  Heading,
-  PageSection,
-  Text,
-  View,
-  YStack,
-} from '@mintter/ui'
+import {Button, ButtonText, Heading, View, YStack} from '@mintter/ui'
 import Head from 'next/head'
 import {useRouter} from 'next/router'
+import NotFoundPage from 'pages/404'
 import {ReactElement, ReactNode} from 'react'
 import {GestureResponderEvent} from 'react-native'
 import {getGroupView} from 'server/group'
 import {AccountAvatarLink} from './account-row'
-import Footer from './footer'
+import {ErrorPage} from './error-page'
 import {GroupMetadata} from './group-metadata'
 import {BasicOGMeta, OGImageMeta} from './head'
 import {useGroupContentUrl} from './publication-page'
 import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
-import {trpc} from './trpc'
 import {MainSiteLayout} from './site-layout'
-import NotFoundPage from 'pages/404'
-import {ErrorPage} from './error-page'
+import {trpc} from './trpc'
 
 export function GroupPage() {
   const router = useRouter()
@@ -62,16 +53,6 @@ export function GroupPage() {
       enabled: enabledContentQuery,
     },
   )
-  console.log('GroupPage', {
-    displayVersion,
-    requestedVersion,
-    groupId,
-    q: router.query,
-    siteInfo: siteInfo.data,
-    content: groupContent.data,
-    enabledContent: enabledContentQuery,
-    group: group.data,
-  })
 
   if (!siteInfo.data?.groupEid) {
     return (
@@ -137,6 +118,12 @@ export function GroupPage() {
         {loadedGroup ? (
           <>
             <meta name="hypermedia-entity-id" content={loadedGroup.id} />
+            <meta
+              name="hypermedia-url"
+              content={createHmId('g', groupEid, {
+                version: loadedGroup.version,
+              })}
+            />
             <meta
               name="hypermedia-entity-version"
               content={loadedGroup.version}

@@ -56,9 +56,15 @@ export function groupDocUrl(
 export function createHmId(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   id: string,
-  opts?: {version?: string | null; blockRef?: string | null; id?: string},
+  opts?: {
+    version?: string | null
+    blockRef?: string | null
+    id?: string
+    groupPathName?: string | null
+  },
 ) {
   let outputUrl = `${HYPERMEDIA_SCHEME}://${type}/${id}`
+  if (opts?.groupPathName) outputUrl += `/${opts.groupPathName}`
   if (opts?.version) outputUrl += `?v=${opts.version}`
   if (opts?.blockRef) outputUrl += `#${opts.blockRef}`
   return outputUrl
@@ -252,7 +258,8 @@ export function hmIdWithVersion(
   const unpacked = unpackHmId(hmId)
   if (!unpacked) return null
   return createHmId(unpacked.type, unpacked.eid, {
-    version,
+    groupPathName: unpacked.groupPathName,
+    version: version || unpacked.version,
     blockRef,
   })
 }

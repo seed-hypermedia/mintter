@@ -165,8 +165,13 @@ export const router = t.router({
       const hmIdRegex = /<meta\s+name="hypermedia-entity-id"\s+content="(.*?)"/
       const hmIdMatch = htmlValue.match(hmIdRegex)
       const hmId = hmIdMatch ? hmIdMatch[1] : null
+
+      const hmUrlRegex = /<meta\s+name="hypermedia-url"\s+content="(.*?)"/
+      const hmUrlMatch = htmlValue.match(hmUrlRegex)
+      const hmUrl = hmUrlMatch ? hmUrlMatch[1] : null
+
       if (hmId && hmVersion) {
-        return {hypermedia: {id: hmId, version: hmVersion}}
+        return {hypermedia: {id: hmId, version: hmVersion, url: hmUrl}}
       }
 
       const png = await new Promise<Buffer>((resolve, reject) => {

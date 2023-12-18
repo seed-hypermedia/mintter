@@ -17,14 +17,15 @@ import {PropsWithChildren, useMemo} from 'react'
 import {useAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
+import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
-import {unpackHmIdWithAppRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
   let spawn = useNavigate('spawn')
+  const open = useOpenUrl()
   return (
     <YStack
       contentEditable={false}
@@ -45,10 +46,7 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
       onPress={
         !disableEmbedClick
           ? () => {
-              const unpacked = unpackHmIdWithAppRoute(props.hmRef)
-              if (unpacked?.navRoute && unpacked?.scheme === 'hm') {
-                spawn(unpacked?.navRoute)
-              }
+              open(props.hmRef, true)
             }
           : undefined
       }
