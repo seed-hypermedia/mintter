@@ -1,4 +1,4 @@
-import {Account} from '@mintter/shared'
+import {Account, BACKEND_FILE_URL} from '@mintter/shared'
 import {
   Button,
   ListItem,
@@ -7,6 +7,7 @@ import {
   SizableText,
   Spinner,
   Tooltip,
+  UIAvatar,
   View,
   XStack,
   YGroup,
@@ -25,7 +26,7 @@ import {
 import {ReactNode, memo, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
-import {useAccount, useMyAccount} from '../models/accounts'
+import {useAccount, useAccounts, useMyAccount} from '../models/accounts'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {
@@ -163,6 +164,7 @@ function FullAppSidebar() {
                     },
                   })
                 }}
+                authors={pin.authors}
                 active={
                   route.key === 'publication' &&
                   route.documentId === pin.docId &&
@@ -568,12 +570,14 @@ function PinnedDocument({
   docVersion,
   onPress,
   active,
+  authors,
   variant,
 }: {
   docId: string
   docVersion?: string | null
   onPress: () => void
   active?: boolean
+  authors?: string[]
   variant: PublicationVariant
 }) {
   const doc = usePublication({id: docId, version: docVersion || undefined})
@@ -582,13 +586,46 @@ function PinnedDocument({
     documentId: docId,
     variant,
   })
+  const authorAccountsQuery = useAccounts(authors || [])
+  const authorAccounts = authorAccountsQuery
+    .map((query) => query.data)
+    .filter(Boolean)
   if (!docId) return null
   return (
     <YGroup.Item>
       <SidebarItem
         onPress={onPress}
         active={active}
-        icon={FileText}
+        icon={
+          authorAccounts.length ? (
+            <XStack>
+              {authorAccounts.map((account, idx) => {
+                if (!account) return null
+
+                return (
+                  <XStack
+                    zIndex={idx + 1}
+                    marginLeft={-8}
+                    borderColor="$background"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderRadius={100}
+                    key={account.id}
+                  >
+                    <UIAvatar
+                      id={account.id}
+                      size={22}
+                      url={`${BACKEND_FILE_URL}/${account?.profile?.avatar}`}
+                      label={account.profile?.alias || account.id}
+                    />
+                  </XStack>
+                )
+              })}
+            </XStack>
+          ) : (
+            FileText
+          )
+        }
         title={doc.data?.document?.title || <Spinner />}
         indented
         rightHover={[
