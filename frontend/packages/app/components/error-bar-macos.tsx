@@ -1,12 +1,17 @@
 import {TitlebarWrapper, XStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
+import {ErrorBarProps} from './error-bar'
 import {NavMenuButton, NavigationButtons} from './titlebar-common'
 
-export default function ErrorBar() {
+export default function ErrorBar({isSidebarLocked}: ErrorBarProps) {
   return (
     <TitlebarWrapper>
-      <XStack paddingHorizontal="$2" jc="space-between">
-        <XStack paddingLeft={72} gap="$2" alignItems="center">
+      <XStack jc="space-between">
+        <XStack
+          paddingLeft={isSidebarLocked ? 0 : 72}
+          gap="$2"
+          alignItems="center"
+        >
           <NavMenuButton />
           <NavigationButtons />
         </XStack>

@@ -13,7 +13,7 @@ global.Buffer = global.Buffer || Buffer
 
 export type DocumentsRoute = {
   key: 'documents'
-  tab?: null | 'trusted' | 'drafts'
+  tab?: null | 'all' | 'trusted' | 'drafts'
 }
 export type ContactsRoute = {key: 'contacts'}
 export type AccountRoute = {key: 'account'; accountId: string}
@@ -254,14 +254,6 @@ export function appRouteOfId(id: UnpackedHypermediaId): NavRoute | undefined {
 
 export function isHttpUrl(url: string) {
   return /^https?:\/\//.test(url)
-}
-
-export function unpackHmIdWithAppRoute(
-  hmId: string,
-): (UnpackedHypermediaId & {navRoute?: NavRoute}) | null {
-  const hmIds = unpackHmId(hmId)
-  if (!hmIds) return null
-  return {...hmIds, navRoute: appRouteOfId(hmIds)}
 }
 
 export function useHmIdToAppRouteResolver() {

@@ -1,11 +1,21 @@
-import {Button, Heading, SizableText, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  Heading,
+  SizableText,
+  XStack,
+  YStack,
+  useStream,
+} from '@mintter/ui'
 import {FallbackProps} from 'react-error-boundary'
+import {useSidebarContext} from '../src/sidebar-context'
 import {ErrorBar} from './error-bar'
 
 export function AppErrorPage({error, resetErrorBoundary}: FallbackProps) {
+  const ctx = useSidebarContext()
+  const isLocked = useStream(ctx.isLocked)
   return (
     <YStack flex={1}>
-      <ErrorBar />
+      <ErrorBar isSidebarLocked={isLocked} />
       <AppErrorContent
         message={error.message}
         resetErrorBoundary={resetErrorBoundary}

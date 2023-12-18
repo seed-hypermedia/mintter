@@ -4,7 +4,9 @@ import {lazy} from 'react'
 var ErrorBarMacos = lazy(() => import('./error-bar-macos'))
 var ErrorBarWindowsLinux = lazy(() => import('./error-bar-windows-linux'))
 
-export interface ErrorBarProps {}
+export type ErrorBarProps = {
+  isSidebarLocked: boolean
+}
 
 export function ErrorBar(props: ErrorBarProps) {
   const {platform} = useAppContext()

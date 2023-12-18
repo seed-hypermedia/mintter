@@ -48,9 +48,9 @@ export const PublicationListPage = memo(PublicationListPageUnmemo)
 export function PublicationListPageUnmemo() {
   const route = useNavRoute()
   if (route.key !== 'documents') throw new Error('invalid route')
-  const trustedOnly = route.tab === 'trusted'
+  const trustedOnly = route.tab === 'trusted' || route.tab == null
   const draftsOnly = route.tab === 'drafts'
-  const allDocs = route.tab == null
+  const allDocs = route.tab === 'all'
   const replace = useNavigate('replace')
 
   let content = <PublicationsList trustedOnly={false} key="all" />
@@ -85,7 +85,7 @@ export function PublicationListPageUnmemo() {
                   if (!allDocs) {
                     replace({
                       ...route,
-                      tab: null,
+                      tab: 'all',
                     })
                   }
                 }}

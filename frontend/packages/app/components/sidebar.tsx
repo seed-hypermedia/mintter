@@ -5,6 +5,7 @@ import {
   ListItemProps,
   Separator,
   SizableText,
+  Spinner,
   Tooltip,
   View,
   XStack,
@@ -570,12 +571,12 @@ function PinnedDocument({
   variant,
 }: {
   docId: string
-  docVersion?: string
+  docVersion?: string | null
   onPress: () => void
   active?: boolean
   variant: PublicationVariant
 }) {
-  const doc = usePublication({id: docId, version: docVersion})
+  const doc = usePublication({id: docId, version: docVersion || undefined})
   const {togglePin} = usePinDocument({
     key: 'publication',
     documentId: docId,
@@ -588,7 +589,7 @@ function PinnedDocument({
         onPress={onPress}
         active={active}
         icon={FileText}
-        title={doc.data?.document?.title || docId}
+        title={doc.data?.document?.title || <Spinner />}
         indented
         rightHover={[
           <UnpinButton
