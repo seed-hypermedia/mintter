@@ -46,7 +46,7 @@ jobs:
             arch: arm64
             goarch: arm64
             daemon_name: aarch64-apple-darwin
-          - os: ubuntu-20.04-m
+          - os: ubuntu-20.04
             arch: x64
             goarch: amd64
             daemon_name: x86_64-unknown-linux-gnu
