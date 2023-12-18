@@ -1036,7 +1036,7 @@ function AuthorVariants({
   const {handleEdit, hasExistingDraft} = useEditDraft(route.documentId, {
     version: publication?.version,
     contextRoute: route,
-    variant: route.variant,
+    variant: undefined, // this will result in author variant
     navMode: 'push',
   })
   return (
