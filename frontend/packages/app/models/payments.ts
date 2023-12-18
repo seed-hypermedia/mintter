@@ -42,7 +42,6 @@ function queryWallets():
         )
         return req.me.wallets ?? []
       } catch (error) {
-        appError(`queryWallets error: ${JSON.stringify(error)}`, {error})
         return []
       }
     },
