@@ -723,6 +723,15 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   return (
     <>
       <XGroup separator={<Separator vertical />}>
+        {showEditButton && (
+          <EditDocButton
+            key="editActions"
+            contextRoute={route}
+            variant={route.variant || null}
+            docId={route.documentId}
+            baseVersion={route.versionId}
+          />
+        )}
         <ContextPopover {...popoverState}>
           <XGroup.Item>
             <PopoverTrigger asChild>
@@ -781,15 +790,6 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
             </YStack>
           </ContextPopoverContent>
         </ContextPopover>
-        {showEditButton && (
-          <EditDocButton
-            key="editActions"
-            contextRoute={route}
-            variant={route.variant || null}
-            docId={route.documentId}
-            baseVersion={route.versionId}
-          />
-        )}
       </XGroup>
       {renameDialog.content}
     </>
