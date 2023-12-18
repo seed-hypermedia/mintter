@@ -8,7 +8,6 @@ import {
 import {
   ErrorIcon,
   FontSizeTokens,
-  Pencil,
   SizableText,
   Spinner,
   TitleText,
@@ -39,12 +38,21 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   }, [route])
 
   if (route.key === 'documents') {
+    let subtitle: string | null = null
+    if (route.tab === 'drafts') {
+      subtitle = '- Drafts'
+    } else if (route.tab === 'all') {
+      subtitle = '- All Publications'
+    } else {
+      subtitle = '- Trusted Publications'
+    }
     return (
       <>
         <FileText size={12} />
         <TitleText size={size} fontWeight="bold" data-testid="titlebar-title">
           Documents
         </TitleText>
+        <SizableText>{subtitle}</SizableText>
       </>
     )
   }
@@ -74,16 +82,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </>
     )
   }
-  if (route.key === 'drafts') {
-    return (
-      <>
-        <Pencil size={12} />
-        <TitleText data-testid="titlebar-title" size={size}>
-          Drafts
-        </TitleText>
-      </>
-    )
-  }
   if (route.key === 'account') {
     return (
       <TitleText data-testid="titlebar-title" size={size}>
@@ -91,7 +89,6 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       </TitleText>
     )
   }
-
   if (route.key === 'publication') {
     return (
       <>
@@ -119,7 +116,7 @@ function GroupTitle({route}: {route: GroupRoute}) {
   if (!group.data) return null
   return (
     <XStack ai="center" gap="$2">
-      <Book size="$1" />
+      <Book size={16} />
       <SizableText>{group.data.title}</SizableText>
     </XStack>
   )
