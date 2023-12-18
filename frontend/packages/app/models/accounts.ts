@@ -28,7 +28,10 @@ function getAccountQuery(grpcClient: GRPCClient, accountId?: string) {
   return {
     enabled: !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
-    queryFn: () => grpcClient.accounts.getAccount({id: accountId}),
+    queryFn: () =>
+      grpcClient.accounts.getAccount({id: accountId}).catch((e) => {
+        return null
+      }),
     useErrorBoundary: () => false,
   }
 }
