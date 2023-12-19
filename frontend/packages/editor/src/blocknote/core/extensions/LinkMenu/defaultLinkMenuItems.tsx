@@ -46,34 +46,11 @@ export function getLinkMenuItems({
 
     linkMenuItems.unshift(loadingItem)
   } else {
-    if (isHmLink && linkMeta && linkMeta.hmTitle) {
-      console.log('link menu linkMeta', linkMeta)
+    if (isHmLink) {
       linkMenuItems.unshift({
-        name: `Embed "${linkMeta.hmTitle}"`,
-        disabled: false,
-        icon: <FileText size={18} />,
-        execute: (editor: BlockNoteEditor, ref: string) => {
-          if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
-            const hmId = normlizeHmId(ref)
-            if (!hmId) return
-            ref = hmId
-          }
-          const {state, schema} = editor._tiptapEditor
-          const {selection} = state
-          if (!selection.empty) return
-          const node = schema.nodes.embed.create(
-            {
-              ref: ref,
-            },
-            schema.text(' '),
-          )
-
-          insertNode(editor, originalRef || ref, node)
-        },
-      })
-
-      linkMenuItems.unshift({
-        name: `Insert "${linkMeta.hmTitle}" as Card`,
+        name: `Insert ${
+          linkMeta && linkMeta.hmTitle ? '"' + linkMeta.hmTitle + '"' : 'link'
+        } as Card`,
         disabled: false,
         icon: <SquareAsterisk size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
@@ -89,6 +66,32 @@ export function getLinkMenuItems({
             {
               ref: ref,
               view: 'card',
+            },
+            schema.text(' '),
+          )
+
+          insertNode(editor, originalRef || ref, node)
+        },
+      })
+
+      linkMenuItems.unshift({
+        name: `Embed ${
+          linkMeta && linkMeta.hmTitle ? '"' + linkMeta.hmTitle + '"' : 'link'
+        }`,
+        disabled: false,
+        icon: <FileText size={18} />,
+        execute: (editor: BlockNoteEditor, ref: string) => {
+          if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
+            const hmId = normlizeHmId(ref)
+            if (!hmId) return
+            ref = hmId
+          }
+          const {state, schema} = editor._tiptapEditor
+          const {selection} = state
+          if (!selection.empty) return
+          const node = schema.nodes.embed.create(
+            {
+              ref: ref,
             },
             schema.text(' '),
           )
