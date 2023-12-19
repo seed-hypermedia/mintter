@@ -59,7 +59,7 @@
     "superjson": "1.13.3",
     "tamagui": "1.79.1",
     "ts-node": "10.9.1",
-    "turbo": "1.10.14",
+    "turbo": "1.11.2",
     "typescript": "5.2.2"
   },
   "devDependencies": {
