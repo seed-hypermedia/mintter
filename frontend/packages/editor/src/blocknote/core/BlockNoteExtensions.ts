@@ -84,7 +84,10 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
 
     // block manupulations:
     BlockManipulationExtension,
-    DragExtension,
+    DragExtension.configure({
+      // @ts-ignore
+      editor: opts.editor,
+    }),
 
     // marks:
     Bold,
