@@ -27,6 +27,7 @@ import {BlockContainer, BlockGroup, Doc} from './extensions/Blocks'
 import {BlockNoteDOMAttributes} from './extensions/Blocks/api/blockTypes'
 import {CustomBlockSerializerExtension} from './extensions/Blocks/api/serialization'
 import blockStyles from './extensions/Blocks/nodes/Block.module.css'
+import {DragExtension} from './extensions/DragMedia/DragExtension'
 import {Placeholder} from './extensions/Placeholder/PlaceholderExtension'
 import {TextAlignmentExtension} from './extensions/TextAlignment/TextAlignmentExtension'
 import {TextColorExtension} from './extensions/TextColor/TextColorExtension'
@@ -83,6 +84,7 @@ export const getBlockNoteExtensions = <BSchema extends HMBlockSchema>(opts: {
 
     // block manupulations:
     BlockManipulationExtension,
+    DragExtension,
 
     // marks:
     Bold,
