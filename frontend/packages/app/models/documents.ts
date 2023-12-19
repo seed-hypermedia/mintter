@@ -81,15 +81,14 @@ export function usePublicationList(
 export function usePublicationFullList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
 ) {
+  console.log('usePublicationFullList', opts?.trustedOnly)
   const pubList = usePublicationList(opts)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
+    console.log('rememoize usePublicationFullList')
     function lookupAccount(accountId: string | undefined) {
-      return (
-        (accountId &&
-          accounts.data?.accounts.find((acc) => acc.id === accountId)) ||
-        accountId
-      )
+      if (!accountId) return undefined
+      return accounts.data?.accounts.find((acc) => acc.id === accountId)
     }
     return pubList.data?.publications.map((pub) => {
       return {
