@@ -533,16 +533,20 @@ export function useDraftEditor({
         updateDraft: fromPromise<
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
-        >(
-          // TODO: I need to convert this to another thing. because I need to check if there are changes before I send any request
-          async ({input}) =>
-            updateDraft({
-              editor,
-              blocksMap: input.blocksMap,
-              title: input.title,
-              draft: input.draft,
-            }),
-        ),
+        >(async ({input}) => {
+          // delay the time we save to the backend to force editor changes.
+          await delay(0)
+          return updateDraft({
+            editor,
+            blocksMap: input.blocksMap,
+            title: input.title,
+            draft: input.draft,
+          })
+        }),
+      },
+      delays: {
+        // This is the time the machine waits after the last keystroke event before starting to save.
+        autosaveTimeout: 500,
       },
     }),
   )
@@ -1047,5 +1051,11 @@ export function useAccountPublications(accountId: string) {
       })
       return result
     },
+  })
+}
+
+function delay(time: number) {
+  return new Promise((res) => {
+    setTimeout(res, time)
   })
 }

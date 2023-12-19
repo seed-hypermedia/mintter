@@ -275,7 +275,6 @@ export const draftMachine = createMachine(
       }),
       setCurrentDraft: assign({
         draft: ({event, context}) => {
-          console.log('=== setCurrentDraft', event, context)
           return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
         },
       }),
@@ -288,9 +287,6 @@ export const draftMachine = createMachine(
     },
     guards: {
       didChangeWhileSaving: ({context}) => context.hasChangedWhileSaving,
-    },
-    delays: {
-      autosaveTimeout: 500,
     },
   },
 )
