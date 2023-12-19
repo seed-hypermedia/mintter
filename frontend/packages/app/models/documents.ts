@@ -1019,16 +1019,20 @@ function observeBlocks(
       index === blocks.length - 1 &&
       ['image', 'video', 'file', 'embed'].includes(block.type)
     ) {
-      editor.insertBlocks(
-        [
-          {
-            type: 'paragraph',
-          },
-        ],
-        block.id,
-        'after',
-      )
-      editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
+      const cursorPos = editor.getTextCursorPosition()
+      if (cursorPos.nextBlock && cursorPos.block.type !== 'paragraph') {
+        console.log('here', cursorPos, block)
+        editor.insertBlocks(
+          [
+            {
+              type: 'paragraph',
+            },
+          ],
+          block.id,
+          'after',
+        )
+        editor.setTextCursorPosition(cursorPos.nextBlock)
+      }
     }
   })
 }
