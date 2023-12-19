@@ -37,51 +37,80 @@ export const DragExtension = Extension.create<DragOptions>({
               return false
             },
             drop: (view, event) => {
-              let file: File | null =
-                event.dataTransfer?.items?.[0]?.getAsFile() ||
-                event.dataTransfer?.files?.[0] ||
-                null
-              if (!file) return false
-              event.preventDefault()
-              event.stopPropagation()
-              const pos = this.editor.view.posAtCoords({
-                left: event.clientX,
-                top: event.clientY,
-              })
-              if (pos && pos.inside !== -1) {
-                handleDragMedia(file).then((props) => {
-                  if (!props) return false
-                  const {state} = view
-                  const blockInfo = getBlockInfoFromPos(state.doc, pos.pos)
-                  let node: Node
-                  console.log(blockInfo, blockInfo.node.textContent)
-                  if (chromiumSupportedImageMimeTypes.has(file!.type)) {
-                    node = state.schema.nodes.image.create({
-                      url: props?.url,
-                      name: props?.name,
-                    })
-                  } else if (chromiumSupportedVideoMimeTypes.has(file!.type)) {
-                    node = state.schema.nodes.video.create({
-                      url: props?.url,
-                      name: props?.name,
-                    })
-                  } else {
-                    node = state.schema.nodes.file.create({
-                      ...props,
-                    })
+              const data = event.dataTransfer
+              if (data) {
+                const files: File[] = []
+                if (data.files.length) {
+                  for (let i = 0; i < data.files.length; i++) {
+                    files.push(data.files[i])
                   }
-                  if (blockInfo.node.textContent) {
-                    const $pos = state.doc.resolve(pos.pos)
-                    const nextBlockPos = $pos.end() + 2
-                    view.dispatch(
-                      state.tr.replaceWith(nextBlockPos, nextBlockPos, node),
-                    )
-                  } else
-                    view.dispatch(
-                      state.tr.replaceWith(pos.pos - 1, pos.pos - 1, node),
-                    )
+                } else if (data.items.length) {
+                  for (let i = 0; i < data.items.length; i++) {
+                    const item = data.items[i].getAsFile()
+                    if (item) {
+                      files.push(item)
+                    }
+                  }
+                }
+                if (files) {
+                  files.reverse()
+                  files.forEach((file) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    const pos = this.editor.view.posAtCoords({
+                      left: event.clientX,
+                      top: event.clientY,
+                    })
+                    if (pos && pos.inside !== -1) {
+                      handleDragMedia(file).then((props) => {
+                        if (!props) return false
+                        const {state} = view
+                        const blockInfo = getBlockInfoFromPos(
+                          state.doc,
+                          pos.pos,
+                        )
+                        let node: Node
+                        if (chromiumSupportedImageMimeTypes.has(file!.type)) {
+                          node = state.schema.nodes.image.create({
+                            url: props?.url,
+                            name: props?.name,
+                          })
+                        } else if (
+                          chromiumSupportedVideoMimeTypes.has(file!.type)
+                        ) {
+                          node = state.schema.nodes.video.create({
+                            url: props?.url,
+                            name: props?.name,
+                          })
+                        } else {
+                          node = state.schema.nodes.file.create({
+                            ...props,
+                          })
+                        }
+                        if (blockInfo.node.textContent) {
+                          const $pos = state.doc.resolve(pos.pos)
+                          const nextBlockPos = $pos.end() + 2
+                          view.dispatch(
+                            state.tr.replaceWith(
+                              nextBlockPos,
+                              nextBlockPos,
+                              node,
+                            ),
+                          )
+                        } else
+                          view.dispatch(
+                            state.tr.replaceWith(
+                              pos.pos - 1,
+                              pos.pos - 1,
+                              node,
+                            ),
+                          )
+                      })
+                    }
+                  })
                   return true
-                })
+                }
+                return false
               }
               return false
             },
