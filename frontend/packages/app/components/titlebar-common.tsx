@@ -39,7 +39,11 @@ import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
-import {useGroup, useInvertedGroupContent} from '../models/groups'
+import {
+  useCanEditGroup,
+  useGroup,
+  useInvertedGroupContent,
+} from '../models/groups'
 import {usePinAccount, usePinDocument, usePinGroup} from '../models/pins'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {GroupVariant} from '../utils/navigation'
@@ -422,6 +426,8 @@ function NewDocumentButton({
   label?: string
 }) {
   const openDraft = useOpenDraft('push')
+  const canEdit = useCanEditGroup(groupVariant?.groupId)
+  if (groupVariant && !canEdit) return null
   return (
     <Tooltip content={`New ${label || 'Document'}`}>
       <Button

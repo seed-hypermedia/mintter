@@ -14,7 +14,9 @@ import {useConnectedPeers} from './networking'
 
 export function useAccount(accountId?: string) {
   const grpcClient = useGRPCClient()
-  return useQuery<Account, ConnectError>(getAccountQuery(grpcClient, accountId))
+  return useQuery<Account | null, ConnectError>(
+    getAccountQuery(grpcClient, accountId),
+  )
 }
 
 export function useAccounts(accountIds: string[]) {
