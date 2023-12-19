@@ -69,7 +69,7 @@ import {
   Upload,
   X,
 } from '@tamagui/lucide-icons'
-import {useEffect, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -910,10 +910,12 @@ function AuthorVariantItem({
   authorVersion,
   route,
   publication,
+  isMerged,
 }: {
   authorVersion: AuthorVersion
   route: PublicationRoute
   publication: Publication | undefined
+  isMerged?: boolean
 }) {
   const authorsVariant = route.variant?.key === 'authors' ? route.variant : null
   const author = useAccount(authorVersion.author)
@@ -960,20 +962,50 @@ function AuthorVariantItem({
           />
           <YStack>
             <XStack gap="$2" ai="center">
-              <SizableText color={isActive ? '$blue11' : '$color'}>
+              <SizableText
+                color={isActive ? '$blue11' : isMerged ? '$color10' : '$color'}
+              >
                 {getAccountName(author.data?.profile)}
               </SizableText>
-              {isOwner ? (
-                <XStack
-                  borderWidth={1}
-                  borderColor="$color8"
-                  paddingHorizontal="$1"
-                  borderRadius="$2"
+              {isMerged ? (
+                <Tooltip
+                  content={`${getAccountName(
+                    author.data?.profile,
+                  )}'s latest changes have been merged into the current variant`}
                 >
-                  <SizableText size="$1" color="$color10">
-                    Owner
-                  </SizableText>
-                </XStack>
+                  <XStack>
+                    <Check size={16} color={'$color10'} />
+                  </XStack>
+                </Tooltip>
+              ) : null}
+              {isActive && !isVariantActive ? (
+                <Tooltip
+                  content={`${getAccountName(
+                    author.data?.profile,
+                  )} has the exact same version that you see now`}
+                >
+                  <XStack>
+                    <Check size={16} color={'$blue11'} />
+                  </XStack>
+                </Tooltip>
+              ) : null}
+              {isOwner ? (
+                <Tooltip
+                  content={`${getAccountName(
+                    author.data?.profile,
+                  )} created this document and controls the default variant`}
+                >
+                  <XStack
+                    borderWidth={1}
+                    borderColor="$color8"
+                    paddingHorizontal="$1"
+                    borderRadius="$2"
+                  >
+                    <SizableText size="$1" color="$color10">
+                      Owner
+                    </SizableText>
+                  </XStack>
+                </Tooltip>
               ) : null}
             </XStack>
             <SizableText color="$color11" size="$1">
@@ -1039,6 +1071,35 @@ function AuthorVariants({
     variant: undefined, // this will result in author variant
     navMode: 'push',
   })
+  const allChanges = timeline.data?.allChanges
+  const thisVersion = publication?.version
+  const authorVersions = timeline.data?.authorVersions
+  const authorVersionsMergedMap = useMemo(() => {
+    const map: Record<string, boolean> = Object.fromEntries(
+      authorVersions?.map((authorVersion) => {
+        if (authorVersion.version === thisVersion)
+          return [authorVersion.version, false]
+        const authorChanges = new Set(authorVersion.version.split('.'))
+        const matchedChanges = new Set()
+        let walkChanges = new Set(thisVersion?.split('.') || [])
+        while (walkChanges.size && matchedChanges.size < authorChanges.size) {
+          const stepDeps = new Set<string>()
+          walkChanges.forEach((changeId) => {
+            const change = allChanges?.[changeId]
+            if (!change) return
+            if (authorChanges.has(changeId)) matchedChanges.add(changeId)
+            else change.deps.forEach((changeDep) => stepDeps.add(changeDep))
+          })
+          walkChanges = stepDeps
+        }
+        return [
+          authorVersion.version,
+          matchedChanges.size === authorChanges.size,
+        ]
+      }) || [],
+    )
+    return map
+  }, [allChanges, thisVersion, authorVersions])
   return (
     <YStack gap="$2" padding="$2">
       {timeline.data?.authorVersions.map((authorVersion) => (
@@ -1047,6 +1108,7 @@ function AuthorVariants({
           route={route}
           authorVersion={authorVersion}
           publication={publication}
+          isMerged={authorVersionsMergedMap[authorVersion.version]}
         />
       ))}
       {myVersion ? null : (
