@@ -63,9 +63,8 @@ export const SlashMenuPositioner = <
         width: boundingRect.width,
         height: boundingRect.height,
       }
-      if (boundingRect.bottom > 290) {
-        if (boundingRect.bottom > 800) newRect.top = 240
-        else newRect.top = 260
+      if (boundingRect.bottom > window.innerHeight) {
+        newRect.top = window.innerHeight / 2.15
       }
 
       return () => newRect as DOMRect

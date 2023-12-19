@@ -307,6 +307,8 @@ export const blockNoteToMantineTheme = (theme: Theme): MantineThemeOverride => {
             {
               position: 'relative',
               '.mantine-Menu-item': {
+                height: '6vh',
+                maxHeight: '55px',
                 // Icon
                 '.mantine-Menu-itemIcon': {
                   backgroundColor: theme.colors.tooltip.background,

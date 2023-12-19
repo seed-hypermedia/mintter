@@ -58,6 +58,7 @@ export function SlashMenuItem(props: SlashMenuItemProps) {
       icon={props.icon}
       onClick={props.set}
       closeMenuOnClick={false}
+      key={props.name}
       // Ensures an item selected with both mouse & keyboard doesn't get deselected on mouse leave.
       onMouseLeave={() => {
         setTimeout(() => {
