@@ -36,7 +36,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	}
 
 	log := n.log.With(zap.String("peer", info.ID.String()))
-	ctx, cancel := context.WithTimeout(ctx, 7*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
 	defer cancel()
 
 	log.Debug("ConnectStarted")
