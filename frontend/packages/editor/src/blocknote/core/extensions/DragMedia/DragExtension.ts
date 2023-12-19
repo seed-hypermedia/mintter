@@ -1,11 +1,17 @@
 import {toast} from '@mintter/app/toast'
 import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
-import {Extension} from '@tiptap/core'
+import {Editor, Extension} from '@tiptap/core'
+import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
+import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
 
 const PLUGIN_KEY = new PluginKey(`drop-plugin`)
 
-export const DragExtension = Extension.create({
+export interface DragOptions {
+  editor: Editor
+}
+
+export const DragExtension = Extension.create<DragOptions>({
   name: 'drag',
 
   addProseMirrorPlugins() {
@@ -14,66 +20,70 @@ export const DragExtension = Extension.create({
         key: PLUGIN_KEY,
         props: {
           handleDOMEvents: {
-            dragstart: (view, event) => {
+            dragstart: (_, event) => {
               event.preventDefault()
-              console.log('start', event)
-              if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
               return false
             },
-            dragleave: (view, event) => {
+            dragleave: (_, event) => {
               event.preventDefault()
-              console.log('leave', event)
               return false
             },
-            dragend: (view, event) => {
+            dragend: (_, event) => {
               event.preventDefault()
-              console.log('end', event)
               return false
             },
-            dragover: (view, event) => {
+            dragover: (_, event) => {
               event.preventDefault()
               return false
             },
             drop: (view, event) => {
-              event.preventDefault()
-              console.log(
-                event.dataTransfer?.files.item(0),
-                event.dataTransfer?.items,
-              )
               let file: File | null =
                 event.dataTransfer?.items?.[0]?.getAsFile() ||
                 event.dataTransfer?.files?.[0] ||
                 null
-              console.log(file, event)
-              if (!file) return
-              handleDragMedia(file).then((props) => {
-                if (!props) return false
-                if (chromiumSupportedImageMimeTypes.has(file!.type)) {
-                  let tr = view.state.tr
-                  const node = view.state.schema.nodes.image.create({
-                    url: props?.url,
-                    name: props?.name,
-                  })
-                  tr = tr.insert(view.state.selection.$anchor.pos - 1, node)
-                  view.dispatch(tr)
-                } else if (chromiumSupportedVideoMimeTypes.has(file!.type)) {
-                  let tr = view.state.tr
-                  const node = view.state.schema.nodes.video.create({
-                    url: props?.url,
-                    name: props?.name,
-                  })
-                  tr = tr.insert(view.state.selection.$anchor.pos - 1, node)
-                  view.dispatch(tr)
-                } else {
-                  let tr = view.state.tr
-                  const node = view.state.schema.nodes.file.create({
-                    ...props,
-                  })
-                  tr = tr.insert(view.state.selection.$anchor.pos - 1, node)
-                  view.dispatch(tr)
-                }
-                return true
+              if (!file) return false
+              event.preventDefault()
+              event.stopPropagation()
+              const pos = this.editor.view.posAtCoords({
+                left: event.clientX,
+                top: event.clientY,
               })
+              if (pos && pos.inside !== -1) {
+                handleDragMedia(file).then((props) => {
+                  if (!props) return false
+                  const {state} = view
+                  const blockInfo = getBlockInfoFromPos(state.doc, pos.pos)
+                  let node: Node
+                  console.log(blockInfo, blockInfo.node.textContent)
+                  if (chromiumSupportedImageMimeTypes.has(file!.type)) {
+                    node = state.schema.nodes.image.create({
+                      url: props?.url,
+                      name: props?.name,
+                    })
+                  } else if (chromiumSupportedVideoMimeTypes.has(file!.type)) {
+                    node = state.schema.nodes.video.create({
+                      url: props?.url,
+                      name: props?.name,
+                    })
+                  } else {
+                    node = state.schema.nodes.file.create({
+                      ...props,
+                    })
+                  }
+                  if (blockInfo.node.textContent) {
+                    const $pos = state.doc.resolve(pos.pos)
+                    const nextBlockPos = $pos.end() + 2
+                    view.dispatch(
+                      state.tr.replaceWith(nextBlockPos, nextBlockPos, node),
+                    )
+                  } else
+                    view.dispatch(
+                      state.tr.replaceWith(pos.pos - 1, pos.pos - 1, node),
+                    )
+                  return true
+                })
+              }
+              return false
             },
           },
         },
