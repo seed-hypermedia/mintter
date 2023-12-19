@@ -30,7 +30,7 @@ export function PublicationListItem({
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
   variant?: PublicationVariant
-  menuItems?: (MenuItemType | null)[]
+  menuItems?: () => (MenuItemType | null)[]
   pathName?: string
   onPointerEnter?: () => void
   openRoute: NavRoute
@@ -133,8 +133,8 @@ export function PublicationListItem({
           />
         </XStack>
       }
-      menuItems={[
-        ...(menuItems || []),
+      menuItems={() => [
+        ...(menuItems?.() || []),
         {
           key: 'spawn',
           label: 'Open in New Window',

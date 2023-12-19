@@ -1,7 +1,7 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong} from '@mintter/shared'
-import {Button, ButtonProps, ButtonText, Link, Tooltip} from '@mintter/ui'
-import {ComponentProps, ReactElement} from 'react'
+import {Button, ButtonProps, ButtonText, Link, Tooltip, View} from '@mintter/ui'
+import {ComponentProps, ReactElement, useState} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
@@ -16,11 +16,19 @@ export function ListItem({
   title: string
   onPress: ButtonProps['onPress'] | ComponentProps<typeof ButtonText>['onPress']
   onPointerEnter?: () => void
-  menuItems?: (MenuItemType | null)[]
+  menuItems?: (MenuItemType | null)[] | (() => (MenuItemType | null)[])
 }) {
+  const [currentMenuItems, setMenuItems] = useState(
+    typeof menuItems === 'function' ? undefined : menuItems,
+  )
   return (
     <Button
-      onPointerEnter={onPointerEnter}
+      onPointerEnter={() => {
+        onPointerEnter?.()
+        if (!currentMenuItems && typeof menuItems === 'function') {
+          setMenuItems(menuItems())
+        }
+      }}
       // onPointerLeave={() => setIsHovering(false)}
       chromeless
       onPress={onPress}
@@ -40,7 +48,11 @@ export function ListItem({
         {title}
       </ButtonText>
       {accessory}
-      <OptionsDropdown hiddenUntilItemHover menuItems={menuItems} />
+      {currentMenuItems ? (
+        <OptionsDropdown hiddenUntilItemHover menuItems={currentMenuItems} />
+      ) : (
+        <View width={20} />
+      )}
     </Button>
   )
 }

@@ -1,5 +1,5 @@
 import {useDeleteDraft} from '@mintter/app/models/documents'
-import {AlertDialog, Button, XStack} from '@mintter/ui'
+import {AlertDialog, Button, XStack, YStack} from '@mintter/ui'
 import {useAppDialog} from './dialog'
 
 export function useDeleteDraftDialog() {
@@ -17,7 +17,7 @@ function DeleteDraftDialog({
     onSuccess: input.onSuccess,
   })
   return (
-    <>
+    <YStack space backgroundColor="$background" padding="$4" borderRadius="$3">
       <AlertDialog.Title>Discard Draft</AlertDialog.Title>
       <AlertDialog.Description>
         Permanently delete this draft document?
@@ -46,6 +46,6 @@ function DeleteDraftDialog({
           </Button>
         </AlertDialog.Action>
       </XStack>
-    </>
+    </YStack>
   )
 }
