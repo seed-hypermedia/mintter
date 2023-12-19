@@ -297,6 +297,15 @@ function getGroupContentQuery(
   }
 }
 
+export function useCanEditGroup(groupId: string | undefined) {
+  const myAccount = useMyAccount()
+  const groups = useAccountGroups(myAccount.data?.id)
+  if (!groupId) return false
+  return !!groups.data?.items?.find(
+    (item) => !!item.group?.id && item.group.id === groupId,
+  )
+}
+
 export function useGroupContent(
   groupId?: string | undefined,
   version?: string,

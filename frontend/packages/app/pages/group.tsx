@@ -364,17 +364,19 @@ export default function GroupPage() {
                         />
                       ) : null}
                       <XGroup>
-                        <EditDocButton
-                          contextRoute={route}
-                          variant={{
-                            key: 'group',
-                            groupId,
-                            pathName: '/',
-                          }}
-                          docId={frontPageId?.docId}
-                          baseVersion={frontPageId?.version || undefined}
-                          navMode="push"
-                        />
+                        {isMember && (
+                          <EditDocButton
+                            contextRoute={route}
+                            variant={{
+                              key: 'group',
+                              groupId,
+                              pathName: '/',
+                            }}
+                            docId={frontPageId?.docId}
+                            baseVersion={frontPageId?.version || undefined}
+                            navMode="push"
+                          />
+                        )}
                       </XGroup>
                       <Tooltip content="Open in New Window">
                         <Button

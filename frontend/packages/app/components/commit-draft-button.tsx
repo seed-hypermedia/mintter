@@ -17,7 +17,7 @@ import {
   YStackProps,
 } from '@mintter/ui'
 import {Check, ChevronDown, Upload} from '@tamagui/lucide-icons'
-import {PropsWithChildren} from 'react'
+import {PropsWithChildren, useEffect} from 'react'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount} from '../models/accounts'
 import {useDraftTitle, usePublishDraft} from '../models/documents'
@@ -89,6 +89,17 @@ export default function CommitDraftButton() {
   })
   const publishPopover = usePopoverState()
   const authorGroups = useAccountGroups(myAccount.data?.id)
+  useEffect(() => {
+    if (
+      authorGroups.data?.items &&
+      groupVariant &&
+      !authorGroups.data.items.find((authorGroup) => {
+        return authorGroup.group?.id === groupVariant.groupId
+      })
+    ) {
+      navReplace({...draftRoute, variant: null})
+    }
+  }, [authorGroups.data?.items, groupVariant, draftRoute])
   const docGroups = useDocumentGroups(draftId || undefined)
   const authorGroupsSet = new Set(
     authorGroups.data?.items.map((g) => g.group?.id).filter(Boolean),
