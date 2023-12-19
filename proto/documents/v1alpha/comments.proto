@@ -2,52 +2,76 @@ syntax = "proto3";
 
 package com.mintter.documents.v1alpha;
 
-import "./documents/proto";
+import "documents/v1alpha/documents.proto";
 import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
 
 // Comments service allows users to add comments to documents.
 service Comments {
+  // Creates a new comment.
+  rpc CreateComment(CreateCommentRequest) returns (Comment);
+
+  // Lists comments for a given target.
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
 }
 
-/*
+// Request to create a comment.
+message CreateCommentRequest {
+  // Required. The URI of the target hypermedia resource which is being commented.
+  // For initial comments this is normally a Hypermedia Document, but potentially can be anything.
+  // For replies this should be the ID of the initial root comment that has started the conversation tread,
+  // i.e. direct replies, and replies to replies should all have the same root comment as target.
+  string target = 1;
 
-- Are comment target URLs pinned?
-- 
+  // Optional. Only required for replies.
+  // The ID of the comment to which this comment will be a reply.
+  string replied_comment = 2;
 
-*/
-
-message PostCommentRequest {
-  // The URI of the target resource which the comment is attached to.
-  string target_resource = 1;
-
-  // The ID of the root comment in this discussion.
-  // For initial comments this field is empty.
-  string root_comment = 2;
-
-  // The ID of the comment to which this comment is a reply.
-  // For initial comments this field is empty.
-  string parent_comment = 3;
-
-  // Content of the comment.
+  // Required. Content of the comment.
   repeated BlockNode content = 4;
+}
+
+// Request to list comments.
+message ListCommentsRequest {
+  // Required. The URI of the target resource for which comments should be listed.
+  string target = 1;
+
+  // Optional. Flag to omit replies from the result. By default replies are included.
+  bool omit_replies = 2;
+
+  // Optional. The maximum number of comments to return.
+  int32 page_size = 3;
+
+  // Optional. The page token obtained from a previous request (if any).
+  string page_token = 4;
+}
+
+message ListCommentsResponse {
+  // List of comments.
+  repeated Comment comments = 1;
+
+  // Token to retrieve the next page of comments (if necessary).
+  string next_page_token = 2;
 }
 
 // Comment is a unit of discussion.
 // The initial comment is posted targeting an existing hypermedia resource.
-// Replies are posted targeting the initial root comment,
-// additionally linking to the most recent comment in the thread.
+// Replies are posted targeting the initial root comment.
+// Replies also link to some other comment they are replying to.
 message Comment {
   // ID of the current comment.
   string id = 1;
 
   // The URI of the target resource which the comment is attached to.
   // For initial comments this is normally a Hypermedia Document, but potentially can be anything.
-  // For replies this should be the ID of the initial root comment that started the thread.
+  // For replies this should be the ID of the initial root comment that has started the conversation tread,
+  // i.e. direct replies, and replies to replies should all have the same root comment as target.
   string target = 2;
 
   // The ID of the comment to which this comment is a reply.
   // For initial comments this field is empty.
-  string in_reply_to_comment = 4;
+  string replied_comment = 4;
 
   // Account ID of the author of the comment.
   string author = 5;
@@ -58,4 +82,3 @@ message Comment {
   // Timestamp when the comment was created.
   google.protobuf.Timestamp create_time = 7;
 }
-l
