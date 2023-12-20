@@ -5,14 +5,20 @@ import {
   BlockNoteView,
   FormattingToolbarPositioner,
   HyperlinkToolbarPositioner,
+  LinkMenuPositioner,
   SideMenuPositioner,
   SlashMenuPositioner,
-  LinkMenuPositioner,
 } from './blocknote'
 import './blocknote/core/style.css'
 import './editor.css'
 
-export function HyperMediaEditorView({editor}: {editor: HyperDocsEditor}) {
+export function HyperMediaEditorView({
+  editor,
+  editable = true,
+}: {
+  editor: HyperDocsEditor
+  editable: boolean
+}) {
   const openUrl = useOpenUrl()
   return (
     <BlockNoteView editor={editor}>

@@ -3026,8 +3026,8 @@ __metadata:
   linkType: hard
 
 "@electron/packager@npm:^18.0.0":
-  version: 18.1.2
-  resolution: "@electron/packager@npm:18.1.2"
+  version: 18.1.3
+  resolution: "@electron/packager@npm:18.1.3"
   dependencies:
     "@electron/asar": ^3.2.1
     "@electron/get": ^3.0.0
@@ -3051,7 +3051,7 @@ __metadata:
     yargs-parser: ^21.1.1
   bin:
     electron-packager: bin/electron-packager.js
-  checksum: a1ffc4b9f872a9e5c910e901990b6206d9ba2324341a8eba084973c09099f5815bff180b738307337ef95a52775e563e2e68941174860e9972e40765860e2530
+  checksum: 9d8f7158ce67743b9f124fc39e353ba6679f6a435395816edd8ba9f91236574e7f69048f41ff6322eee700b0e6e1f6d71a28222245c30fd65857160cb7a2740a
   languageName: node
   linkType: hard
 
@@ -4840,6 +4840,7 @@ __metadata:
     cmdk: 0.1.21
     copy-text-to-clipboard: 3.1.0
     eslint-config-custom: "*"
+    fast-deep-equal: ^3.1.3
     graphql-request: 6.0.0
     happy-dom: 7.8.1
     jsdom: 22.1.0
@@ -6663,14 +6664,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry-internal/tracing@npm:7.88.0":
-  version: 7.88.0
-  resolution: "@sentry-internal/tracing@npm:7.88.0"
+"@sentry-internal/tracing@npm:7.89.0":
+  version: 7.89.0
+  resolution: "@sentry-internal/tracing@npm:7.89.0"
   dependencies:
-    "@sentry/core": 7.88.0
-    "@sentry/types": 7.88.0
-    "@sentry/utils": 7.88.0
-  checksum: 3b0e6e8e491d0355987e6286f10d5f374fedf19eda8202b2b698a0416a94e0dd9e837a8415fef9f355691162e5b7383a698fd29ceeb14fd5249611d158063d6a
+    "@sentry/core": 7.89.0
+    "@sentry/types": 7.89.0
+    "@sentry/utils": 7.89.0
+  checksum: 010b5b6d9b836f1d27d6902213d345aa5582922106a97d2e65ca59bb203903be2118f1fa47e6fd27b7133eeef4aec2c325c8afa84bad53d801e6c8a76b48be98
   languageName: node
   linkType: hard
 
@@ -6851,13 +6852,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:7.88.0":
-  version: 7.88.0
-  resolution: "@sentry/core@npm:7.88.0"
+"@sentry/core@npm:7.89.0":
+  version: 7.89.0
+  resolution: "@sentry/core@npm:7.89.0"
   dependencies:
-    "@sentry/types": 7.88.0
-    "@sentry/utils": 7.88.0
-  checksum: 3b6c68c8595ae8d0be5d773c35f7c8f118de02ffb01c729b21815c209308785e870e9ea0b89141562d62a5e3331a1bf59c9a9905a8fa23d3b0db72a9dfb746a6
+    "@sentry/types": 7.89.0
+    "@sentry/utils": 7.89.0
+  checksum: aae3abf4b175e4811c948247111f250db377c1cf2728c47e61b37f13abf8b90b401620e391c636afccb9fd420c00ae9592f695caa191ac43ca9bd0559b1ff51f
   languageName: node
   linkType: hard
 
@@ -6946,15 +6947,15 @@ __metadata:
   linkType: hard
 
 "@sentry/node@npm:^7.60.0":
-  version: 7.88.0
-  resolution: "@sentry/node@npm:7.88.0"
+  version: 7.89.0
+  resolution: "@sentry/node@npm:7.89.0"
   dependencies:
-    "@sentry-internal/tracing": 7.88.0
-    "@sentry/core": 7.88.0
-    "@sentry/types": 7.88.0
-    "@sentry/utils": 7.88.0
+    "@sentry-internal/tracing": 7.89.0
+    "@sentry/core": 7.89.0
+    "@sentry/types": 7.89.0
+    "@sentry/utils": 7.89.0
     https-proxy-agent: ^5.0.0
-  checksum: 3e1de05632dd499499e4f0724bf2fd29bc86e6687bab725d2660fe8f5d8086f934aa7517684a2036b0741129b3de872274c8df309dece32f152e078b74bec5e9
+  checksum: 502185b911b29baf2d033c8e9e975933e8305f99c60b1c8fff99bb6fce125b9b70851b06e9ca6430c27c8ffbb747ff2a71eda68cbce36dfed1df4e816f91a8b7
   languageName: node
   linkType: hard
 
@@ -7025,10 +7026,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:7.88.0":
-  version: 7.88.0
-  resolution: "@sentry/types@npm:7.88.0"
-  checksum: 2a54d814e3750e612fb072b5a3f7da71c827f8acfce8a9df189c6e1ca778419a3c1fe580e92b30a31a76c3f1f2663100022653ff85cf41bb6f25b4b2196d6cc6
+"@sentry/types@npm:7.89.0":
+  version: 7.89.0
+  resolution: "@sentry/types@npm:7.89.0"
+  checksum: 802f367c741df12831e979acf0b946355ecc6498555e59017a283774f42488bc7e2a133c8782fc755571a029d599eb63ae5b35cb831cac44a06b3429ecdc6776
   languageName: node
   linkType: hard
 
@@ -7061,12 +7062,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/utils@npm:7.88.0, @sentry/utils@npm:^7.60.0":
-  version: 7.88.0
-  resolution: "@sentry/utils@npm:7.88.0"
+"@sentry/utils@npm:7.89.0, @sentry/utils@npm:^7.60.0":
+  version: 7.89.0
+  resolution: "@sentry/utils@npm:7.89.0"
   dependencies:
-    "@sentry/types": 7.88.0
-  checksum: 3f9f8e94619036cc845a903598612e9422770ed0617295902678c463e93e974ba1ba0afb8514d90c41facd70be9c6d0014a94b2ad76f996958af7e6b4d839f53
+    "@sentry/types": 7.89.0
+  checksum: 81513458415043c6be8591ac47f267618b79f631d76d35df35352bc1eba5b4657912a08b412b37b446e5ee5880609eff0ba0aebfe5546a9fa4f1a05ce507d638
   languageName: node
   linkType: hard
 
@@ -10317,12 +10318,12 @@ __metadata:
   linkType: hard
 
 "@types/eslint@npm:*":
-  version: 8.44.9
-  resolution: "@types/eslint@npm:8.44.9"
+  version: 8.56.0
+  resolution: "@types/eslint@npm:8.56.0"
   dependencies:
     "@types/estree": "*"
     "@types/json-schema": "*"
-  checksum: 6f8889e94e67a5e43c15f5a2530798f864ace08c270bfb3f153cb705da4e30a80e0e9a0fc05317c8642c8dda909d528968172089eb4d52aca9f212761df25d90
+  checksum: 8eca14c1ca8a4dbbcbf6bed67775db9dd2f9947802d6da39fa0c4c297a1e5465e898332232bb51980586a9a45b1b21bc13fd79fcc81adcd4c86062372e9bab6d
   languageName: node
   linkType: hard
 
@@ -11530,13 +11531,13 @@ __metadata:
   linkType: hard
 
 "algoliasearch-helper@npm:^3.10.0":
-  version: 3.16.0
-  resolution: "algoliasearch-helper@npm:3.16.0"
+  version: 3.16.1
+  resolution: "algoliasearch-helper@npm:3.16.1"
   dependencies:
     "@algolia/events": ^4.0.1
   peerDependencies:
     algoliasearch: ">= 3.1 < 6"
-  checksum: e024ad33c65d1eb7a31290bcf0bec37f2485154364e90ada45e07242ac35155313fe913fabd08cdb4d69e2794cc7d09dda03878566cea286cfac8fd4cc61f33f
+  checksum: 3aee78b786d6eaa5f14ccf9565c358de88d81b17feef6b28b976b1416ff990ac4e01f2c39ba146601103d23b596d7517399c155ea3ca518bd89b5d9b522c92df
   languageName: node
   linkType: hard
 
@@ -18884,8 +18885,8 @@ __metadata:
   linkType: hard
 
 "html-webpack-plugin@npm:^5.5.0":
-  version: 5.5.4
-  resolution: "html-webpack-plugin@npm:5.5.4"
+  version: 5.6.0
+  resolution: "html-webpack-plugin@npm:5.6.0"
   dependencies:
     "@types/html-minifier-terser": ^6.0.0
     html-minifier-terser: ^6.0.2
@@ -18893,8 +18894,14 @@ __metadata:
     pretty-error: ^4.0.0
     tapable: ^2.0.0
   peerDependencies:
+    "@rspack/core": 0.x || 1.x
     webpack: ^5.20.0
-  checksum: b49befb73d67a3716fd0e6f7776b108d2b0b7050fb8221f05cd114cbae13c03150a13b7cdf5e76170be040ce7936a1cf76f7a4bfd9ebe1552b72d7889a74c374
+  peerDependenciesMeta:
+    "@rspack/core":
+      optional: true
+    webpack:
+      optional: true
+  checksum: 32a6e41da538e798fd0be476637d7611a5e8a98a3508f031996e9eb27804dcdc282cb01f847cf5d066f21b49cfb8e21627fcf977ffd0c9bea81cf80e5a65070d
   languageName: node
   linkType: hard
 

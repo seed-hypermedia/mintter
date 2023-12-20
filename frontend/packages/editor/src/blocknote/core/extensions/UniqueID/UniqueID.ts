@@ -290,5 +290,5 @@ const UniqueID = Extension.create({
   },
 })
 
-export {UniqueID, UniqueID as default}
+export {UniqueID as default, UniqueID}
 //# sourceMappingURL=tiptap-extension-unique-id.esm.js.map

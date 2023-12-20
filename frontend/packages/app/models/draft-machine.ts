@@ -183,6 +183,7 @@ export const draftMachine = createMachine(
               onError: [
                 {
                   target: 'saveError',
+                  actions: [{type: 'indicatorError'}],
                 },
               ],
             },
@@ -204,7 +205,44 @@ export const draftMachine = createMachine(
           saveError: {
             on: {
               'RESET.DRAFT': {
-                target: '#Draft.fetching',
+                target: 'resetting',
+              },
+              'RESTORE.DRAFT': {
+                target: 'restoring',
+              },
+            },
+          },
+          restoring: {
+            invoke: {
+              src: 'restoreDraft',
+              id: 'restore-draft',
+              input: ({context}) => context,
+              onDone: {
+                actions: [
+                  {
+                    type: 'reload',
+                  },
+                ],
+              },
+              onError: {
+                target: 'saveError',
+              },
+            },
+          },
+          resetting: {
+            invoke: {
+              src: 'resetDraft',
+              id: 'reset-draft',
+              input: (context) => context,
+              onDone: {
+                actions: [
+                  {
+                    type: 'reload',
+                  },
+                ],
+              },
+              onError: {
+                target: 'saveError',
               },
             },
           },
@@ -215,6 +253,7 @@ export const draftMachine = createMachine(
       events: {} as
         | {type: 'CHANGE'; title?: string}
         | {type: 'RESET.DRAFT'}
+        | {type: 'RESTORE.DRAFT'}
         | {type: 'RESET.CORRUPT.DRAFT'}
         | {type: 'GET.DRAFT.ERROR'; error: any}
         | {type: 'GET.DRAFT.RETRY'}
@@ -243,6 +282,7 @@ export const draftMachine = createMachine(
         blocksMap: ({context, event}) => {
           if (event.type == 'GET.DRAFT.SUCCESS') {
             let newBm = createBlocksMap(event.draft.children, '')
+            console.log('== setCurrentBlocksmap', {context, event, newBm})
             return newBm
           }
         },
@@ -258,6 +298,9 @@ export const draftMachine = createMachine(
           }
         },
       }),
+      reload: () => {
+        window.location.reload()
+      },
       updateContextAfterSave: assign(({context, event}) => {
         if (event.output && typeof event.output != 'string') {
           return {
@@ -275,6 +318,7 @@ export const draftMachine = createMachine(
       }),
       setCurrentDraft: assign({
         draft: ({event, context}) => {
+          console.log('== setCurrentDraft', {context, event})
           return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
         },
       }),

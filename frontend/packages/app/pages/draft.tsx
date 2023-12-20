@@ -15,6 +15,7 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  ErrorIcon,
   Input,
   SizableText,
   Theme,
@@ -94,6 +95,46 @@ export default function DraftPage() {
               )
             }}
           >
+            {data.state.matches({ready: 'saveError'}) ? (
+              <Theme name="red">
+                <XStack padding="$4">
+                  <XStack
+                    flex={1}
+                    paddingHorizontal="$4"
+                    paddingVertical="$2"
+                    borderRadius="$3"
+                    backgroundColor="$backgroundFocus"
+                    alignItems="center"
+                    gap="$4"
+                    borderColor="$color6"
+                    borderWidth={1}
+                  >
+                    <ErrorIcon size={12} />
+                    <XStack flex={1}>
+                      <SizableText>
+                        Your draft is in a corrupt state.
+                      </SizableText>
+                    </XStack>
+                    <XStack gap="$2">
+                      <Button
+                        size="$2"
+                        theme="red"
+                        onPress={() => data.send({type: 'RESTORE.DRAFT'})}
+                      >
+                        restore
+                      </Button>
+                      <Button
+                        size="$2"
+                        theme="red"
+                        onPress={() => data.send({type: 'RESET.DRAFT'})}
+                      >
+                        reset
+                      </Button>
+                    </XStack>
+                  </XStack>
+                </XStack>
+              </Theme>
+            ) : null}
             <YStack id="editor-title">
               <DraftTitleInput
                 draftActor={data.actor}
@@ -106,7 +147,10 @@ export default function DraftPage() {
               {data.state.context.draft &&
               data.editor &&
               data.editor.topLevelBlocks.length ? (
-                <HyperMediaEditorView editor={data.editor} />
+                <HyperMediaEditorView
+                  editable={!data.state.matches({ready: 'saveError'})}
+                  editor={data.editor}
+                />
               ) : null}
             </HMEditorContainer>
           </AppPublicationContentProvider>
