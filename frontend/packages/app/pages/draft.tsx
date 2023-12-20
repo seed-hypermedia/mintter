@@ -97,7 +97,7 @@ export default function DraftPage() {
           >
             {data.state.matches({ready: 'saveError'}) ? (
               <Theme name="red">
-                <XStack padding="$4">
+                <XStack padding="$4" position="sticky" top={0} zIndex={100}>
                   <XStack
                     flex={1}
                     paddingHorizontal="$4"
