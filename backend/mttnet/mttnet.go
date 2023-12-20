@@ -37,6 +37,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
 
@@ -141,7 +142,11 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 
 	// TODO(burdiyan): find a better reproviding strategy than naive provide-everything.
 
-	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(db, log.Level().String()))
+	logLevel := ""
+	if log.Level() != zapcore.InvalidLevel { // Usually test with zap.NewNop()
+		logLevel = log.Level().String()
+	}
+	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(db, logLevel))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize providing: %w", err)
 	}
