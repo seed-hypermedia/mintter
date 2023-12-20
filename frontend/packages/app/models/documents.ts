@@ -449,6 +449,7 @@ export function useDraftEditor({
   const queryClient = useAppContext().queryClient
   const {invalidate, client} = queryClient
   const diagnosis = useDraftDiagnosis()
+  const deleteDraft = useDeleteDraft({})
   const [writeEditorStream, editorStream] = useRef(
     writeableStateStream<any>(null),
   ).current
@@ -473,9 +474,12 @@ export function useDraftEditor({
           ) {
             let editorBlocks = toHMBlock(event.draft.children)
             const tiptap = editor?._tiptapEditor
-            editor.removeBlocks(editor.topLevelBlocks)
+            // editor.removeBlocks(editor.topLevelBlocks)
+            console.log('== REPLACING BLOCKS', {
+              current: editor.topLevelBlocks,
+              new: editorBlocks,
+            })
             editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
-
             // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
             setGroupTypes(tiptap, editorBlocks)
           }
@@ -487,6 +491,7 @@ export function useDraftEditor({
           }
         },
         onSaveSuccess: ({event}) => {
+          console.log('== onSaveSuccess', event)
           // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
           // @ts-expect-error
           if (event.output) {
@@ -532,19 +537,118 @@ export function useDraftEditor({
         updateDraft: fromPromise<
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
-        >(
-          // TODO: I need to convert this to another thing. because I need to check if there are changes before I send any request
-          async ({input}) =>
-            updateDraft({
-              editor,
-              blocksMap: input.blocksMap,
-              title: input.title,
-              draft: input.draft,
-            }),
-        ),
+        >(async ({input}) => {
+          // delay the time we save to the backend to force editor changes.
+          // await delay(0)
+          return updateDraft({
+            editor,
+            blocksMap: input.blocksMap,
+            title: input.title,
+            draft: input.draft,
+          })
+        }),
+        restoreDraft: fromPromise<
+          UpdateDraftResponse | string,
+          ContextFrom<typeof draftMachine>
+        >(async ({input}) => {
+          console.log('== RESTORING', input)
+          const prevDraft = input.draft
+          const prevBlocksMap = input.blocksMap
+          try {
+            // delete draft
+            await grpcClient.drafts.deleteDraft({documentId})
+            // create new draft
+            const newDraft = await grpcClient.drafts.createDraft({
+              existingDocumentId: documentId,
+            })
+
+            const newBlocksMap = createBlocksMap(newDraft.children, '')
+            // prevDraft is the final result I want
+            //
+            console.log('== compare prev Draft!', {
+              prevDraft,
+              prevBlocksMap,
+              newDraft,
+            })
+
+            let {changes, touchedBlocks} = compareDraftWithMap(
+              newBlocksMap,
+              prevDraft!.children,
+              '',
+            )
+
+            let deletedBlocks = extractDeletes(newBlocksMap, touchedBlocks)
+
+            // TODO: update title too
+
+            let capturedChanges = [...changes, ...deletedBlocks]
+
+            if (capturedChanges.length) {
+              // capturedChanges = capturedChanges.map((i) => i.toJson())
+              diagnosis.append(documentId, {
+                key: 'will.restoreDraft',
+                // note: 'regular updateDraft',
+                value: {
+                  changes: changesToJSON(capturedChanges),
+                  newBlocksMap,
+                  // prevDraft,
+                },
+              })
+              try {
+                let mutation = await grpcClient.drafts.updateDraft({
+                  documentId,
+                  changes: capturedChanges,
+                })
+                if (mutation.updatedDocument) {
+                  client.setQueryData(
+                    [queryKeys.EDITOR_DRAFT, documentId],
+                    mutation.updatedDocument,
+                  )
+                }
+
+                diagnosis.append(documentId, {
+                  key: 'did.restoredDraft',
+                  // note: 'regular updateDraft',
+                  value: JSON.stringify(mutation),
+                })
+
+                return mutation
+              } catch (error) {
+                return Promise.reject(JSON.stringify(error))
+              }
+            }
+          } catch (error) {
+            console.log('RESTORE ERROR', error)
+            throw new Error(`Error restoring: ${JSON.stringify(error)}`)
+          }
+        }),
+        resetDraft: fromPromise<
+          UpdateDraftResponse | string,
+          ContextFrom<typeof draftMachine>
+        >(async ({input}) => {
+          try {
+            // delete draft
+            await grpcClient.drafts.deleteDraft({documentId})
+            // create new draft
+            const newDraft = await grpcClient.drafts.createDraft({
+              existingDocumentId: documentId,
+            })
+
+            return newDraft
+          } catch (error) {
+            console.log('RESET ERROR', error)
+            throw new Error(`Error resetting: ${JSON.stringify(error)}`)
+          }
+        }),
+      },
+      delays: {
+        // This is the time the machine waits after the last keystroke event before starting to save.
+        autosaveTimeout: 500,
       },
     }),
   )
+
+  console.log(`== ~ machine state:`, state.value)
 
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
@@ -635,6 +739,13 @@ export function useDraftEditor({
     }
 
     let capturedChanges = [...changes, ...deletedBlocks]
+
+    console.log(`== ~ updateDraft ~ capturedChanges:`, {
+      capturedChanges,
+      changes,
+      touchedBlocks,
+      currentEditorBlocks,
+    })
 
     if (capturedChanges.length) {
       // capturedChanges = capturedChanges.map((i) => i.toJson())
@@ -829,7 +940,7 @@ export function compareBlocksWithMap(
     // compare replace
     let prevBlockState = blocksMap[block.id]
 
-    const childGroup = getBlockGroup(block.id)
+    const childGroup = getBlockGroup(editor, block.id)
 
     if (childGroup) {
       // @ts-expect-error
@@ -903,7 +1014,7 @@ export function compareBlocksWithMap(
     }
   })
 
-  function getBlockGroup(blockId: BlockIdentifier) {
+  function getBlockGroup(editor: BlockNoteEditor, blockId: BlockIdentifier) {
     const tiptap = editor?._tiptapEditor
     if (tiptap) {
       const id = typeof blockId === 'string' ? blockId : blockId.id
@@ -936,6 +1047,104 @@ export function compareBlocksWithMap(
 
     return undefined
   }
+
+  return {
+    changes,
+    touchedBlocks,
+  }
+}
+
+export function compareDraftWithMap(
+  blocksMap: BlocksMap,
+  blockNodes: Document['children'],
+  parentId: string,
+) {
+  let changes: Array<DocumentChange> = []
+  let touchedBlocks: Array<string> = []
+
+  // iterate over editor blocks
+  blockNodes.forEach((bn, idx) => {
+    if (bn.block) {
+      // add blockid to the touchedBlocks list to capture deletes later
+      touchedBlocks.push(bn.block.id)
+
+      // compare replace
+      let prevBlockState = blocksMap[bn.block.id]
+
+      // TODO: get block group
+
+      let currentBlockState = bn.block
+
+      if (!prevBlockState) {
+        const serverBlock = currentBlockState
+
+        // add moveBlock change by default to all blocks
+        changes.push(
+          new DocumentChange({
+            op: {
+              case: 'moveBlock',
+              value: {
+                blockId: bn.block.id,
+                leftSibling:
+                  idx > 0 && blockNodes[idx - 1]
+                    ? blockNodes[idx - 1].block!.id
+                    : '',
+                parent: parentId,
+              },
+            },
+          }),
+          new DocumentChange({
+            op: {
+              case: 'replaceBlock',
+              value: serverBlock,
+            },
+          }),
+        )
+      } else {
+        let left =
+          idx > 0 && blockNodes[idx - 1] ? blockNodes[idx - 1].block!.id : ''
+        if (
+          prevBlockState.left !== left ||
+          prevBlockState.parent !== parentId
+        ) {
+          changes.push(
+            new DocumentChange({
+              op: {
+                case: 'moveBlock',
+                value: {
+                  blockId: bn.block.id,
+                  leftSibling: left,
+                  parent: parentId,
+                },
+              },
+            }),
+          )
+        }
+
+        if (!isBlocksEqual(prevBlockState.block, currentBlockState)) {
+          // this means is a new block and we need to also add a replaceBlock change
+          changes.push(
+            new DocumentChange({
+              op: {
+                case: 'replaceBlock',
+                value: currentBlockState,
+              },
+            }),
+          )
+        }
+      }
+
+      if (bn.children.length) {
+        let nestedResults = compareDraftWithMap(
+          blocksMap,
+          bn.children,
+          bn.block.id,
+        )
+        changes = [...changes, ...nestedResults.changes]
+        touchedBlocks = [...touchedBlocks, ...nestedResults.touchedBlocks]
+      }
+    }
+  })
 
   return {
     changes,
