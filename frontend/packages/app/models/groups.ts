@@ -21,18 +21,32 @@ import {useMemo} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import appError from '../errors'
 import {useAllAccounts, useMyAccount} from './accounts'
-import {queryPublication} from './documents'
+import {queryPublication, sortDocuments} from './documents'
+
 import {queryKeys} from './query-keys'
 
 export function useGroups(opts?: UseQueryOptions<ListGroupsResponse>) {
   const grpcClient = useGRPCClient()
-  return useQuery({
+  const groupsQuery = useQuery({
     ...opts,
     queryKey: [queryKeys.GET_GROUPS],
     queryFn: async () => {
       return await grpcClient.groups.listGroups({})
     },
   })
+
+  return useMemo(() => {
+    return {
+      ...groupsQuery,
+      data: {
+        ...groupsQuery.data,
+        groups:
+          groupsQuery.data?.groups?.sort((a, b) =>
+            sortDocuments(a.updateTime, b.updateTime),
+          ) || [],
+      },
+    }
+  }, [groupsQuery])
 }
 
 function createGroupQuery(

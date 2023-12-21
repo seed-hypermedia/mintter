@@ -73,12 +73,20 @@ export function copyLinkMenuItem(
 export function TimeAccessory({
   time,
   onPress,
+  tooltipLabel,
 }: {
   time: Timestamp | undefined
   onPress: (e) => void
+  tooltipLabel?: string
 }) {
   return (
-    <Tooltip content={formattedDateLong(time)}>
+    <Tooltip
+      content={
+        tooltipLabel
+          ? `${tooltipLabel} ${formattedDateLong(time)}`
+          : formattedDateLong(time)
+      }
+    >
       <ButtonText
         fontFamily="$body"
         fontSize="$2"

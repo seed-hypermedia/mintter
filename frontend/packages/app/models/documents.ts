@@ -207,7 +207,7 @@ export function useDocumentVersions(
   })
 }
 // TODO: Duplicate (apps/site/server/routers/_app.ts#~187)
-function sortDocuments(a?: Timestamp, b?: Timestamp) {
+export function sortDocuments(a?: Timestamp, b?: Timestamp) {
   let dateA = a ? a.toDate() : 0
   let dateB = b ? b.toDate() : 1
 

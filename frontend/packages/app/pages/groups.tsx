@@ -115,6 +115,7 @@ function SiteUrlButton({group}: {group: Group}) {
     </ButtonText>
   )
 }
+
 function GroupListItem({group}: {group: Group}) {
   const navigate = useClickNavigate()
   const spawn = useNavigate('spawn')
@@ -138,7 +139,11 @@ function GroupListItem({group}: {group: Group}) {
           ) : (
             <AccountLinkAvatar accountId={group.ownerAccountId} />
           )}
-          <TimeAccessory time={group.createTime} onPress={goToItem} />
+          <TimeAccessory
+            tooltipLabel="Last update:"
+            time={group.updateTime}
+            onPress={goToItem}
+          />
         </XStack>
       }
       onPress={goToItem}
