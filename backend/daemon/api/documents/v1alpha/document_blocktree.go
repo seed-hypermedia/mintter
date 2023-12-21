@@ -296,7 +296,7 @@ func (t *Tree) findLeftCurrent(parent, left string) (*list.List, *list.Element, 
 func (t *Tree) findLeftShadow(parent, leftShadow string) (*list.List, *list.Element, error) {
 	n, ok := t.nodes[parent]
 	if !ok {
-		return nil, nil, fmt.Errorf("node %s is not in the tree", parent)
+		return nil, nil, fmt.Errorf("node %q is not in the tree", parent)
 	}
 
 	if n.children == nil {
@@ -312,7 +312,7 @@ func (t *Tree) findLeftShadow(parent, leftShadow string) (*list.List, *list.Elem
 		}
 	}
 	if el == nil {
-		return nil, nil, fmt.Errorf("failed to find node %s under parent %s", leftShadow, parent)
+		return nil, nil, fmt.Errorf("failed to find node %q under parent %q", leftShadow, parent)
 	}
 
 	return n.children, el, nil

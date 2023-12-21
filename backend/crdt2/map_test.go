@@ -107,3 +107,26 @@ func TestAtomicMapValues(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, want["wonderland"], got)
 }
+
+func TestMapValueGet(t *testing.T) {
+	m := NewMap()
+
+	ok := m.ApplyPatch(3, "alice", map[string]any{
+		"name": "Alice",
+		"address": map[string]any{
+			"wonderland": map[string]any{
+				"#map": map[string]any{
+					"country": "Wonderland",
+				},
+			},
+		},
+	})
+	require.True(t, ok)
+
+	v, ok := m.Get("address", "wonderland")
+	require.True(t, ok)
+
+	require.Equal(t, map[string]any{
+		"country": "Wonderland",
+	}, v.(map[string]any))
+}

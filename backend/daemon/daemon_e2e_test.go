@@ -119,8 +119,6 @@ func TestDaemonListPublications(t *testing.T) {
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 
 	// Carol will be the DHT server

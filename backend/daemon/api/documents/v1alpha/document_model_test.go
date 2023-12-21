@@ -18,6 +18,41 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDocument_IgnoreRedundantReplaces(t *testing.T) {
+	alice := coretest.NewTester("alice")
+	db := storage.MakeTestDB(t)
+	blobs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
+	ctx := context.Background()
+
+	dm := newTestDocModel(t, blobs, alice.Account, alice.Device)
+	require.NoError(t, dm.ReplaceBlock(&documents.Block{
+		Id:   "b1",
+		Type: "statement",
+		Text: "Hello World",
+	}))
+
+	hb, err := dm.Change()
+	require.NoError(t, err)
+	require.NoError(t, blobs.SaveBlob(ctx, hb))
+
+	entity, err := blobs.LoadEntity(ctx, dm.e.ID())
+	require.NoError(t, err)
+	require.NotNil(t, entity)
+
+	dm, err = newDocModel(entity, alice.Device, dm.delegation)
+	require.NoError(t, err)
+	dm.nextHLC = entity.NextTimestamp()
+
+	require.NoError(t, dm.ReplaceBlock(&documents.Block{
+		Id:   "b1",
+		Type: "statement",
+		Text: "Hello World",
+	}))
+
+	_, err = dm.Change()
+	require.Error(t, err)
+}
+
 func TestDocument_LoadingDrafts(t *testing.T) {
 	alice := coretest.NewTester("alice")
 	db := storage.MakeTestDB(t)
