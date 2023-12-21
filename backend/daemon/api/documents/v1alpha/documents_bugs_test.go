@@ -9,6 +9,50 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func TestBug_CorruptedDraftWithMultipleNestedMoves(t *testing.T) {
+	t.Skip("TODO(burdiyan): fix this test after implementing state-based update API")
+
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	// Initial state. 3 blocks, one after the other.
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b1", Type: "paragraph", Text: "Block 1"}}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2", LeftSibling: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b2", Type: "paragraph", Text: "Block 2"}}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b3", LeftSibling: "b2"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{Id: "b3", Type: "paragraph", Text: "Block 3"}}},
+	})
+
+	// Commit the current state.
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	require.NoError(t, err)
+
+	// Indent the last two blocks.
+	updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2", Parent: "b1"}}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b3", Parent: "b1", LeftSibling: "b2"}}},
+	})
+
+	// Unindent the last two blocks.
+	updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2", Parent: "", LeftSibling: "b1"}}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b3", Parent: "", LeftSibling: "b2"}}},
+	})
+
+	_, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.Error(t, err, "after unindenting there's no meaningful changes so publish must fail")
+}
+
 func TestBug_UnchangedPublish(t *testing.T) {
 	t.Parallel()
 
