@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
+import { Message, proto3, StringValue, Timestamp } from "@bufbuild/protobuf";
 
 /**
  * Request to create a new draft.
@@ -1154,6 +1154,112 @@ export class Annotation extends Message<Annotation> {
 
   static equals(a: Annotation | PlainMessage<Annotation> | undefined, b: Annotation | PlainMessage<Annotation> | undefined): boolean {
     return proto3.util.equals(Annotation, a, b);
+  }
+}
+
+/**
+ * Description of a document update.
+ *
+ * @generated from message com.mintter.documents.v1alpha.DocumentUpdate
+ */
+export class DocumentUpdate extends Message<DocumentUpdate> {
+  /**
+   * Optional. New title of the document if it was changed.
+   *
+   * @generated from field: google.protobuf.StringValue title = 1;
+   */
+  title?: string;
+
+  /**
+   * Optional. New state for changed blocks.
+   *
+   * @generated from field: map<string, com.mintter.documents.v1alpha.Block> updated_blocks = 2;
+   */
+  updatedBlocks: { [key: string]: Block } = {};
+
+  /**
+   * Required. Snapshot of the entire block hierarchy of the document.
+   *
+   * @generated from field: repeated com.mintter.documents.v1alpha.DocumentUpdate.OutlineBlock outline = 3;
+   */
+  outline: DocumentUpdate_OutlineBlock[] = [];
+
+  constructor(data?: PartialMessage<DocumentUpdate>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.DocumentUpdate";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "title", kind: "message", T: StringValue },
+    { no: 2, name: "updated_blocks", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "message", T: Block} },
+    { no: 3, name: "outline", kind: "message", T: DocumentUpdate_OutlineBlock, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentUpdate {
+    return new DocumentUpdate().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DocumentUpdate {
+    return new DocumentUpdate().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DocumentUpdate {
+    return new DocumentUpdate().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DocumentUpdate | PlainMessage<DocumentUpdate> | undefined, b: DocumentUpdate | PlainMessage<DocumentUpdate> | undefined): boolean {
+    return proto3.util.equals(DocumentUpdate, a, b);
+  }
+}
+
+/**
+ * Content block without the actual content, only IDs.
+ *
+ * @generated from message com.mintter.documents.v1alpha.DocumentUpdate.OutlineBlock
+ */
+export class DocumentUpdate_OutlineBlock extends Message<DocumentUpdate_OutlineBlock> {
+  /**
+   * ID of the content block.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * Child blocks, if any.
+   *
+   * @generated from field: repeated com.mintter.documents.v1alpha.DocumentUpdate.OutlineBlock children = 2;
+   */
+  children: DocumentUpdate_OutlineBlock[] = [];
+
+  constructor(data?: PartialMessage<DocumentUpdate_OutlineBlock>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.DocumentUpdate.OutlineBlock";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "children", kind: "message", T: DocumentUpdate_OutlineBlock, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentUpdate_OutlineBlock {
+    return new DocumentUpdate_OutlineBlock().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DocumentUpdate_OutlineBlock {
+    return new DocumentUpdate_OutlineBlock().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DocumentUpdate_OutlineBlock {
+    return new DocumentUpdate_OutlineBlock().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DocumentUpdate_OutlineBlock | PlainMessage<DocumentUpdate_OutlineBlock> | undefined, b: DocumentUpdate_OutlineBlock | PlainMessage<DocumentUpdate_OutlineBlock> | undefined): boolean {
+    return proto3.util.equals(DocumentUpdate_OutlineBlock, a, b);
   }
 }
 

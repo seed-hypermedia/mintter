@@ -4,6 +4,7 @@ package com.mintter.documents.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
 
@@ -311,4 +312,25 @@ message Annotation {
   // End offsets of possibly disjoint spans of text for which this annotation is applied.
   // Must be sorted and have the same number of items as `starts` list.
   repeated int32 ends = 4;
+}
+
+// Description of a document update.
+message DocumentUpdate {
+  // Content block without the actual content, only IDs.
+  message OutlineBlock {
+    // ID of the content block.
+    string id = 1;
+
+    // Child blocks, if any.
+    repeated OutlineBlock children = 2;
+  }
+
+  // Optional. New title of the document if it was changed.
+  google.protobuf.StringValue title = 1;
+
+  // Optional. New state for changed blocks.
+  map<string, Block> updated_blocks = 2;
+
+  // Required. Snapshot of the entire block hierarchy of the document.
+  repeated OutlineBlock outline = 3;
 }
