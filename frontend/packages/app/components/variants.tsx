@@ -723,15 +723,6 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   return (
     <>
       <XGroup separator={<Separator vertical />}>
-        {showEditButton && (
-          <EditDocButton
-            key="editActions"
-            contextRoute={route}
-            variant={route.variant || null}
-            docId={route.documentId}
-            baseVersion={route.versionId}
-          />
-        )}
         <ContextPopover {...popoverState}>
           <XGroup.Item>
             <PopoverTrigger asChild>
@@ -790,6 +781,15 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
             </YStack>
           </ContextPopoverContent>
         </ContextPopover>
+        {showEditButton && (
+          <EditDocButton
+            key="editActions"
+            contextRoute={route}
+            variant={route.variant || null}
+            docId={route.documentId}
+            baseVersion={route.versionId}
+          />
+        )}
       </XGroup>
       {renameDialog.content}
     </>
@@ -846,6 +846,7 @@ function GroupVariantState({
     <XStack gap="$2" ai="center">
       <Book size={16} />
       <ButtonText
+        size="$2"
         disabled={!isOpen}
         hoverStyle={{
           textDecorationLine: isOpen ? 'underline' : null,
@@ -885,7 +886,9 @@ function AuthorVariantState({
         (author) => author && <AuthorIcon key={author} author={author} />,
       )}
       {authors.length === 1 ? (
-        <SizableText>{getAccountName(firstAccount.data?.profile)}</SizableText>
+        <SizableText size="$2">
+          {getAccountName(firstAccount.data?.profile)}
+        </SizableText>
       ) : null}
     </XStack>
   )
