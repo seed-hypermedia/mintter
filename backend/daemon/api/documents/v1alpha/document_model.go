@@ -9,6 +9,7 @@ import (
 	"mintter/backend/hlc"
 	"mintter/backend/hyper"
 	"mintter/backend/pkg/colx"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -220,12 +221,17 @@ func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 		return fmt.Errorf("blocks must have ID")
 	}
 
-	v, err := blockToMap(blk)
+	blockMap, err := blockToMap(blk)
 	if err != nil {
 		return err
 	}
 
-	colx.ObjectSet(dm.patch, []string{"blocks", blk.Id, "#map"}, v)
+	oldBlock, ok := dm.e.Get("blocks", blk.Id)
+	if ok && reflect.DeepEqual(oldBlock, blockMap) {
+		return nil
+	}
+
+	colx.ObjectSet(dm.patch, []string{"blocks", blk.Id, "#map"}, blockMap)
 
 	return nil
 }

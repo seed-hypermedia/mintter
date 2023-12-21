@@ -24,6 +24,17 @@ func (hs *HashSet[T]) Put(v T) {
 	hs.m[v] = struct{}{}
 }
 
+// PutMany adds multiple values to the set.
+func (hs *HashSet[T]) PutMany(v []T) {
+	if hs.m == nil {
+		hs.m = make(map[T]struct{})
+	}
+
+	for _, x := range v {
+		hs.m[x] = struct{}{}
+	}
+}
+
 // Delete removes v from the set.
 func (hs *HashSet[T]) Delete(v T) {
 	if hs.m == nil {
