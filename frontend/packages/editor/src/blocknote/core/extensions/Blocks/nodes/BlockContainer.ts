@@ -1,6 +1,12 @@
 import {mergeAttributes, Node} from '@tiptap/core'
 import {Fragment, Node as PMNode, Slice} from 'prosemirror-model'
-import {NodeSelection, TextSelection} from 'prosemirror-state'
+import {
+  NodeSelection,
+  Plugin,
+  PluginKey,
+  TextSelection,
+} from 'prosemirror-state'
+import {Decoration, DecorationSet} from 'prosemirror-view'
 import {
   blockToNode,
   inlineContentToNodes,
@@ -17,6 +23,25 @@ import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
 import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
+
+const SelectionPluginKey = new PluginKey('blueRect')
+
+const SelectionPlugin = new Plugin({
+  key: SelectionPluginKey,
+  state: {
+    init() {
+      return DecorationSet.empty
+    },
+    apply(tr, oldState) {
+      return tr.getMeta(SelectionPluginKey) || oldState
+    },
+  },
+  props: {
+    decorations(state) {
+      return this.getState(state)
+    },
+  },
+})
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -472,7 +497,7 @@ export const BlockContainer = Node.create<{
   },
 
   addProseMirrorPlugins() {
-    return [PreviousBlockTypePlugin()]
+    return [PreviousBlockTypePlugin(), SelectionPlugin]
   },
 
   addKeyboardShortcuts() {
@@ -728,6 +753,40 @@ export const BlockContainer = Node.create<{
           type: 'numberedListItem',
           props: {},
         }),
+      'Shift-ArrowLeft': () => {
+        const {state, view} = this.editor
+        const {selection} = state
+        const {id: selectedId} = getBlockInfoFromPos(
+          state.doc,
+          selection.from - 1,
+        )
+        if (selection.from <= 3) {
+          return false
+        }
+        if (selection.from === selection.$from.start()) {
+          let currentPos = selection.from - 1
+          let currentNode = state.doc.resolve(currentPos).parent
+          let {id: currentId} = getBlockInfoFromPos(state.doc, currentPos)
+          while (
+            selectedId === currentId ||
+            ['blockContainer', 'blockGroup'].includes(currentNode.type.name)
+          ) {
+            currentPos--
+            currentNode = state.doc.resolve(currentPos).parent
+            currentId = getBlockInfoFromPos(state.doc, currentPos).id
+          }
+          const decoration = Decoration.widget(currentPos, () => {
+            const span = document.createElement('span')
+            span.style.backgroundColor = 'blue'
+            span.style.width = '10px'
+            span.style.height = '10px'
+            return span
+          })
+          const decorationSet = DecorationSet.create(state.doc, [decoration])
+          view.dispatch(state.tr.setMeta(SelectionPluginKey, decorationSet))
+        }
+        return false
+      },
     }
   },
 })
