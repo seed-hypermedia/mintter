@@ -149,7 +149,7 @@ export default function CommitDraftButton() {
           {!hasUpdateError ? (
             <Button
               size="$2"
-              disabled={!isDaemonReady || !canPublish}
+              disabled={!isDaemonReady || !canPublish || hasUpdateError}
               opacity={!canPublish ? 0.5 : 1}
               onPress={() => {
                 grpcClient.drafts
@@ -181,11 +181,13 @@ export default function CommitDraftButton() {
           ) : null}
         </XGroup.Item>
         <ContextPopover {...publishPopover}>
-          <XGroup.Item>
-            <Popover.Trigger asChild>
-              <Button theme="green" size="$2" icon={ChevronDown} />
-            </Popover.Trigger>
-          </XGroup.Item>
+          {hasUpdateError ? null : (
+            <XGroup.Item>
+              <Popover.Trigger asChild>
+                <Button theme="green" size="$2" icon={ChevronDown} />
+              </Popover.Trigger>
+            </XGroup.Item>
+          )}
 
           <ContextPopoverContent>
             <ContextPopoverArrow />
@@ -317,13 +319,8 @@ function SaveIndicatorStatus() {
   if (state.matches('error')) {
     return (
       <StatusWrapper alignItems="flex-end">
-        <Tooltip content="An error ocurred while trying to save the latest changes. please reload to make sure you do not loose any data.">
-          <Button
-            theme="red"
-            size="$2"
-            icon={<AlertCircle />}
-            onPress={() => window.location.reload()}
-          >
+        <Tooltip content="An error ocurred while trying to save the latest changes.">
+          <Button theme="red" size="$2" icon={<AlertCircle />} disabled>
             Error
           </Button>
         </Tooltip>
