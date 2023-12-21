@@ -551,7 +551,6 @@ export function useDraftEditor({
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
         >(async ({input}) => {
-          console.log('== RESTORING', input)
           const prevDraft = input.draft
           const prevBlocksMap = input.blocksMap
           try {
@@ -594,32 +593,32 @@ export function useDraftEditor({
                   // prevDraft,
                 },
               })
-              try {
-                let mutation = await grpcClient.drafts.updateDraft({
+
+              return await grpcClient.drafts
+                .updateDraft({
                   documentId,
                   changes: capturedChanges,
                 })
-                if (mutation.updatedDocument) {
-                  client.setQueryData(
-                    [queryKeys.EDITOR_DRAFT, documentId],
-                    mutation.updatedDocument,
-                  )
-                }
+                .then((res) => {
+                  if (res.updatedDocument) {
+                    client.setQueryData(
+                      [queryKeys.EDITOR_DRAFT, documentId],
+                      res.updatedDocument,
+                    )
+                  }
 
-                diagnosis.append(documentId, {
-                  key: 'did.restoredDraft',
-                  // note: 'regular updateDraft',
-                  value: JSON.stringify(mutation),
+                  diagnosis.append(documentId, {
+                    key: 'did.restoredDraft',
+                    // note: 'regular updateDraft',
+                    value: JSON.stringify(res),
+                  })
+
+                  return res
                 })
-
-                return mutation
-              } catch (error) {
-                return Promise.reject(JSON.stringify(error))
-              }
             }
           } catch (error) {
             console.log('RESTORE ERROR', error)
-            throw new Error(`Error restoring: ${JSON.stringify(error)}`)
+            return Promise.reject(`Error restoring: ${JSON.stringify(error)}`)
           }
         }),
         resetDraft: fromPromise<
