@@ -233,8 +233,6 @@ export default function PublicationPage() {
     variant: route.variant,
   })
 
-  console.log(`== ~ PublicationPage ~ publication:`, publication)
-
   const {data: citations} = useDocCitations(
     publication.status == 'success' ? docId : undefined,
   )

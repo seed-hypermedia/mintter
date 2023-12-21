@@ -661,8 +661,6 @@ export function useDraftEditor({
     }),
   )
 
-  console.log(`== ~ machine state:`, state.value)
-
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
@@ -752,13 +750,6 @@ export function useDraftEditor({
     }
 
     let capturedChanges = [...changes, ...deletedBlocks]
-
-    console.log(`== ~ updateDraft ~ capturedChanges:`, {
-      capturedChanges,
-      changes,
-      touchedBlocks,
-      currentEditorBlocks,
-    })
 
     if (capturedChanges.length) {
       // capturedChanges = capturedChanges.map((i) => i.toJson())

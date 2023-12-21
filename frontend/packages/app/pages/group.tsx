@@ -642,7 +642,6 @@ function InviteMemberDialog({
   const [value, setValue] = useState('')
 
   const searchValue = useDeferredValue(value)
-  console.log(`== ~ value:`, {value, searchValue})
 
   const matches = useMemo(() => {
     return matchSorter(accountsListValues, searchValue, {
@@ -652,8 +651,6 @@ function InviteMemberDialog({
       .slice(0, 10)
       .map((v: any) => v.id)
   }, [accountsListValues, searchValue])
-
-  console.log(`== ~ matches ~ matches:`, matches)
 
   return (
     <>
