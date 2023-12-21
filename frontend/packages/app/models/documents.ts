@@ -48,6 +48,7 @@ import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
+import {useGroupContent} from './groups'
 import {queryKeys} from './query-keys'
 
 export function usePublicationList(
@@ -267,6 +268,16 @@ export function usePublishDraft(
   const route = useNavRoute()
   const draftRoute = route.key === 'draft' ? route : undefined
   const groupVariant = draftRoute?.variant
+  const groupVariantContent = useGroupContent(
+    groupVariant?.key === 'group' ? groupVariant.groupId : undefined,
+  )
+  const prevGroupVariantUrl =
+    groupVariant && groupVariant.pathName
+      ? groupVariantContent.data?.content?.[groupVariant.pathName]
+      : undefined
+  const prevGroupVariantId = prevGroupVariantUrl
+    ? unpackDocId(prevGroupVariantUrl)
+    : undefined
   const {client, invalidate} = queryClient
   const diagnosis = useDraftDiagnosis()
   return useMutation({
@@ -289,7 +300,10 @@ export function usePublishDraft(
       const publishedId = pub.document?.id
       if (!publishedId)
         throw new Error('Could not get ID of published document')
-      if (groupVariant) {
+      const groupVariantChanged =
+        publishedId !== prevGroupVariantId?.docId ||
+        pub.version !== prevGroupVariantId?.version
+      if (groupVariant && groupVariantChanged) {
         let docTitle: string | undefined = (
           queryClient.client.getQueryData([
             queryKeys.EDITOR_DRAFT,
