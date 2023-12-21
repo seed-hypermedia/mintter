@@ -275,6 +275,10 @@ func (dm *docModel) Change() (hb hyper.Blob, err error) {
 		action = "Create"
 	}
 
+	if len(dm.patch) == 0 {
+		dm.patch["isDraft"] = true
+	}
+
 	// Make sure to remove the dummy field created in the initial draft change.
 	if len(dm.patch) > 1 {
 		delete(dm.patch, "isDraft")
@@ -321,8 +325,10 @@ func (dm *docModel) cleanupPatch() {
 		curLeft := dm.tree.nodes[n.id].pos.Prev().Value.(ShadowPosition)
 		oldPos := dm.tree.initialLefts[n.id]
 		if oldPos != nil {
-			oldLeft := oldPos.Value.(ShadowPosition)
-			if curLeft.parent == oldLeft.parent && curLeft.shadowID == oldLeft.shadowID {
+			op := oldPos.Value.(ShadowPosition)
+			oldParent := op.parent
+			oldLeft := op.BlockID()
+			if curLeft.parent == oldParent && curLeft.BlockID() == oldLeft {
 				continue
 			}
 		}

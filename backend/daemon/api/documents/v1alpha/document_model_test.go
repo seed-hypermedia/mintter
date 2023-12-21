@@ -49,8 +49,10 @@ func TestDocument_IgnoreRedundantReplaces(t *testing.T) {
 		Text: "Hello World",
 	}))
 
-	_, err = dm.Change()
-	require.Error(t, err)
+	hb, err = dm.Change()
+	require.NoError(t, err)
+	patch := hb.Decoded.(hyper.Change).Patch
+	require.Equal(t, map[string]any{"isDraft": true}, patch)
 }
 
 func TestDocument_LoadingDrafts(t *testing.T) {

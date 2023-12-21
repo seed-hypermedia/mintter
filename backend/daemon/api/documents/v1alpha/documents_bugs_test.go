@@ -10,7 +10,7 @@ import (
 )
 
 func TestBug_CorruptedDraftWithMultipleNestedMoves(t *testing.T) {
-	t.Skip("TODO(burdiyan): fix this test after implementing state-based update API")
+	// t.Skip("TODO(burdiyan): fix this test after implementing state-based update API")
 
 	t.Parallel()
 
@@ -49,8 +49,9 @@ func TestBug_CorruptedDraftWithMultipleNestedMoves(t *testing.T) {
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b3", Parent: "", LeftSibling: "b2"}}},
 	})
 
-	_, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.Error(t, err, "after unindenting there's no meaningful changes so publish must fail")
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.Equal(t, pub.Version, pub2.Version, "ineffectual publish must return previous version")
 }
 
 func TestBug_UnchangedPublish(t *testing.T) {

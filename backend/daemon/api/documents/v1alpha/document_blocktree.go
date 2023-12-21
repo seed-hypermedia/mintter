@@ -331,6 +331,19 @@ type ShadowPosition struct {
 	list     *list.List
 }
 
+// BlockID placed on this position.
+func (sp ShadowPosition) BlockID() string {
+	if sp.shadowID == "" {
+		return ""
+	}
+
+	block, _, ok := strings.Cut(sp.shadowID, "@")
+	if !ok {
+		panic("BUG: bad shadow ID " + sp.shadowID)
+	}
+	return block
+}
+
 type TreeIterator struct {
 	t     *Tree
 	stack []*TreeNode
