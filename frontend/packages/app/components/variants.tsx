@@ -1,6 +1,6 @@
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
-import {getDefaultShortname, useDraftTitle} from '@mintter/app/models/documents'
+import {getDefaultShortname} from '@mintter/app/models/documents'
 import {
   useAccountGroups,
   useGroup,
@@ -11,7 +11,6 @@ import {usePublicationVariant} from '@mintter/app/models/publication'
 import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
-  DraftRoute,
   NavContextProvider,
   NavRoute,
   PublicationRoute,
@@ -42,7 +41,6 @@ import {
   DialogTitle,
   Fieldset,
   Form,
-  Globe,
   Input,
   Label,
   Popover,
@@ -51,7 +49,6 @@ import {
   Separator,
   SizableText,
   Spinner,
-  Text,
   Tooltip,
   UIAvatar,
   View,
@@ -61,15 +58,19 @@ import {
 } from '@mintter/ui'
 import {
   Book,
-  Bookmark,
-  CheckCheck,
   ChevronDown,
   ChevronUp,
   Pencil,
   Upload,
   X,
 } from '@tamagui/lucide-icons'
-import {useEffect, useMemo, useState} from 'react'
+import {
+  ComponentProps,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
@@ -297,15 +298,33 @@ export function GroupPublishDialog({
   )
 }
 
-function ContextPopover({...props}) {
+export function ContextPopover({...props}) {
   return (
     <Popover
       size="$5"
       allowFlip={true}
-      placement="bottom-end"
+      placement="bottom-start"
       keepChildrenMounted={true}
       {...props}
     />
+  )
+}
+
+export function ContextPopoverTitle({
+  children,
+  ...props
+}: PropsWithChildren<ComponentProps<typeof SizableText>>) {
+  return (
+    <SizableText
+      marginTop="$2"
+      size="$3"
+      padding="$2"
+      paddingHorizontal="$4"
+      fontWeight="bold"
+      {...props}
+    >
+      {children}
+    </SizableText>
   )
 }
 
@@ -335,7 +354,7 @@ export function ContextPopoverContent(props) {
   )
 }
 
-function ContextPopoverArrow(props) {
+export function ContextPopoverArrow(props) {
   return (
     <Popover.Arrow
       name="ContextPopoverArrow"
@@ -346,165 +365,27 @@ function ContextPopoverArrow(props) {
   )
 }
 
-function DraftContextButton({route}: {route: DraftRoute}) {
-  const dialogState = usePopoverState(false)
-  const account = useMyAccount()
-  const nav = useNavigate('replace')
-  const groups = useAccountGroups(account?.data?.id)
-  const draftTitle = useDraftTitle({documentId: route.draftId})
-  const groupVariant = route.variant?.key === 'group' ? route.variant : null
-  const myPublishableGroups = groups.data?.items
-  const selectedGroup = groupVariant
-    ? myPublishableGroups?.find(
-        (item) => item.group?.id === groupVariant.groupId,
-      )
-    : undefined
-  let icon = Globe
-  let title = ''
-  if (route.variant?.key === 'trusted') {
-    icon = Bookmark
-  } else if (route.variant?.key === 'group' && selectedGroup) {
-    icon = Book
-    title = selectedGroup.group?.title || ''
-  }
-  const [isListingGroups, setIsListingGroups] = useState(false)
-  let displayPathName =
-    route.variant?.key === 'group' ? route.variant?.pathName : undefined
-  if (!displayPathName && route.draftId) {
-    displayPathName = getDefaultShortname(draftTitle, route.draftId)
-  }
-  useEffect(() => {
-    if (
-      !selectedGroup &&
-      myPublishableGroups &&
-      route.variant?.key === 'group'
-    ) {
-      nav({...route, variant: null})
-    }
-  }, [selectedGroup, myPublishableGroups, route])
-  const shortRename = useAppDialog(RenameShortnameDialog)
-  const draftId = route.draftId
-  if (!draftId) return null
-  return (
-    <>
-      <ContextPopover {...dialogState}>
-        <PopoverTrigger asChild>
-          <Button size="$2" className="no-window-drag" icon={icon}>
-            {title}
-          </Button>
-        </PopoverTrigger>
-        <ContextPopoverContent>
-          <ContextPopoverArrow />
-          <YStack space="$2">
-            {groupVariant ? (
-              <>
-                <SizableText size="$2">Committing to Group:</SizableText>
-                <GroupVariantItem
-                  groupId={groupVariant.groupId}
-                  path={displayPathName || null}
-                  onPathPress={() => {
-                    if (!groupVariant.pathName) return
-                    shortRename.open({
-                      draftId,
-                      groupId: groupVariant.groupId,
-                      pathName: groupVariant.pathName,
-                      docTitle: draftTitle,
-                    })
-                  }}
-                  route={route}
-                />
-              </>
-            ) : null}
-
-            <ContextButton
-              icon={Globe}
-              name="Publish Independently"
-              route={{...route, variant: null}}
-              isActive={route.variant?.key !== 'group'}
-            />
-            <Button
-              size="$3"
-              icon={Book}
-              onPress={() => {
-                nav({...route, variant: null})
-                setIsListingGroups((is) => !is)
-              }}
-              justifyContent="flex-start"
-              color={'$color11'}
-              chromeless
-              iconAfter={isListingGroups ? ChevronUp : ChevronDown}
-            >
-              Publish to Group...
-            </Button>
-            {isListingGroups &&
-              (groups.data?.items?.length === 0 ? (
-                <Text>You have no groups yet</Text>
-              ) : (
-                groups.data?.items?.map((item) => {
-                  const groupId = item.group?.id
-                  if (!groupId) return null
-                  const isActive =
-                    groupVariant?.key === 'group' &&
-                    selectedGroup?.group?.id === groupId &&
-                    groupId === groupVariant.groupId
-                  return (
-                    <Button
-                      key={groupId}
-                      size="$2"
-                      marginHorizontal="$2"
-                      justifyContent="flex-start"
-                      icon={Book}
-                      onPress={() => {
-                        setIsListingGroups(false)
-                        nav({
-                          ...route,
-                          variant: {key: 'group', groupId, pathName: ''},
-                        })
-                      }}
-                      iconAfter={isActive ? CheckCheck : undefined}
-                    >
-                      {item.group?.title}
-                    </Button>
-                  )
-                })
-              ))}
-          </YStack>
-        </ContextPopoverContent>
-      </ContextPopover>
-      {shortRename.content}
-    </>
-  )
-}
-
-function GroupVariantItem({
+export function GroupVariantItem({
   groupId,
   path,
-  route,
+  onPress,
   onPathPress,
-  activeVersion,
-  fullUrl,
+  isActive,
+  isVersionMatched,
 }: {
   groupId: string
   path: string | null
-  route: PublicationRoute | DraftRoute
+  onPress?: () => void
   onPathPress?: (() => void) | undefined
-  activeVersion?: string
-  fullUrl: string
+  isActive?: boolean
+  isVersionMatched?: boolean
 }) {
-  const replaceRoute = useNavigate('replace')
   const group = useGroup(groupId)
-  const pubRoute = route.key === 'publication' ? route : null
-  const fullDocId = unpackDocId(fullUrl)
-  const isActive = !!activeVersion && activeVersion === fullDocId?.version
-  const isActiveVariant =
-    pubRoute?.variant?.key === 'group' &&
-    groupId === pubRoute.variant.groupId &&
-    (path === pubRoute.variant.pathName || pubRoute.variant.pathName === '')
   const myGroups = useMyGroups()
   const isGroupMember = myGroups.data?.items?.find((groupAccount) => {
     return groupAccount.group?.id === groupId
   })
-  const isPathPressable = isActiveVariant && isGroupMember && onPathPress
+  const isPathPressable = isActive && isGroupMember && onPathPress
   return (
     <Button
       size="$3"
@@ -513,29 +394,15 @@ function GroupVariantItem({
       backgroundColor="transparent"
       flex={1}
       minHeight={50}
-      color={isActive ? '$blue11' : '$color12'}
-      disabled={isActiveVariant}
-      onPress={() => {
-        if (pubRoute) {
-          replaceRoute({
-            ...pubRoute,
-            variant: {
-              key: 'group',
-              groupId: groupId,
-              pathName: path,
-            },
-            versionId: undefined,
-          })
-        } else {
-          throw new Error('borken')
-        }
-      }}
+      color={isVersionMatched ? '$blue11' : '$color12'}
+      disabled={isActive}
+      onPress={onPress}
     >
       <XStack gap="$4" jc="space-between" flex={1} ai="center" mr={-8}>
         <YStack alignItems="flex-start">
           <SizableText
             fontSize={path === '/' ? '$3' : '$2'}
-            color={isActive ? '$blue11' : '$color12'}
+            color={isVersionMatched ? '$blue11' : '$color12'}
           >
             {group.data?.title}
           </SizableText>
@@ -565,42 +432,8 @@ function GroupVariantItem({
           )}
         </YStack>
         <View style={{minWidth: 22}}>
-          {isActiveVariant && <Check size="$1" color="$blue11" />}
+          {isActive && <Check size="$1" color="$blue11" />}
         </View>
-      </XStack>
-    </Button>
-  )
-}
-
-function ContextButton({
-  name,
-  route,
-  icon,
-  isActive,
-}: {
-  name: string
-  icon: typeof Globe
-  isActive: boolean
-  route: NavRoute
-}) {
-  const replaceRoute = useNavigate('replace')
-  return (
-    <Button
-      size="$3"
-      icon={icon}
-      onPress={() => {
-        replaceRoute(route)
-      }}
-      justifyContent="flex-start"
-      color={isActive ? '$blue11' : '$color11'}
-      chromeless
-      aria-selected={isActive}
-    >
-      <XStack space mr={-8} ai="center" jc="space-between" f={1}>
-        <SizableText color={isActive ? '$blue11' : '$color11'}>
-          {name}
-        </SizableText>
-        <Check color={isActive ? '$blue11' : 'transparent'} size="$1" />
       </XStack>
     </Button>
   )
@@ -738,15 +571,9 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
           <ContextPopoverContent>
             <ContextPopoverArrow />
             <YStack alignSelf="stretch">
-              <SizableText
-                size="$3"
-                marginVertical="$2"
-                padding="$2"
-                paddingHorizontal="$4"
-                fontWeight="bold"
-              >
+              <ContextPopoverTitle marginVertical="$2">
                 Select Variant
-              </SizableText>
+              </ContextPopoverTitle>
               <TabsView
                 value={variantTab}
                 onValue={(tab) => {
@@ -1138,21 +965,42 @@ function GroupVariants({
   publication: Publication | undefined
   onCloseVariantPopover: () => void
 }) {
-  if (route.key !== 'publication') throw new Error('Uh')
+  if (route.key !== 'publication')
+    throw new Error('GroupVariants only for publication route')
   const docGroups = useCurrentDocumentGroups(route.documentId)
-
+  const replaceRoute = useNavigate('replace')
   const publishToGroupDialog = useAppDialog(GroupPublishDialog, {})
   return (
     <YStack gap="$2" padding="$2">
       {docGroups.data?.map((docGroup) => {
+        const fullDocId = unpackDocId(docGroup.rawUrl)
+
         return (
           <GroupVariantItem
             groupId={docGroup.groupId}
             path={docGroup.path}
-            route={route}
-            activeVersion={publication?.version}
-            fullUrl={docGroup.rawUrl}
+            isVersionMatched={
+              !!publication?.version &&
+              publication?.version === fullDocId?.version
+            }
+            isActive={
+              route?.variant?.key === 'group' &&
+              docGroup.groupId === route.variant.groupId &&
+              (docGroup.path === route.variant.pathName ||
+                route.variant.pathName === '')
+            }
             key={`${docGroup.groupId}-${docGroup.path}`}
+            onPress={() => {
+              replaceRoute({
+                ...route,
+                variant: {
+                  key: 'group',
+                  groupId: docGroup.groupId,
+                  pathName: docGroup.path,
+                },
+                versionId: undefined,
+              })
+            }}
           />
         )
       })}
@@ -1220,38 +1068,11 @@ function TabsView({
 
 export function PageContextButton({}: {}) {
   const route = useNavRoute()
-  if (route.key === 'draft') {
-    return <DraftContextButton route={route} />
-  }
   if (route.key === 'publication') {
     return <PublicationVariants route={route} />
   }
   return null
 }
-
-// export function PublishToGroupButton() {
-//   const route = useNavRoute()
-//   const pubRoute = route.key === 'publication' ? route : null
-//   const variant = pubRoute?.variant
-//   const publication = usePublicationVariant({
-//     documentId: pubRoute?.documentId,
-//     versionId: pubRoute?.versionId,
-//     variant,
-//   })
-//   const docId = pubRoute?.documentId
-//   const docVersion = publication.data?.publication?.version
-//   const publishDialogState = usePopoverState(false)
-//   if (!pubRoute || !docVersion || !docId) return null
-//   return (
-//     <PublishDialogInstance
-//       docId={docId}
-//       version={docVersion}
-//       docTitle={publication.data?.publication?.document?.title}
-//       groupVariant={variant?.key === 'group' ? variant : null}
-//       {...publishDialogState}
-//     />
-//   )
-// }
 
 export function PublishDialogInstance({
   closePopover,

@@ -1,6 +1,6 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {BACKEND_FILE_URL, Group} from '@mintter/shared'
+import {BACKEND_FILE_URL} from '@mintter/shared'
 import {
   AlertCircle,
   Button,
@@ -12,7 +12,6 @@ import {
   UIAvatar,
   XGroup,
   XStack,
-  YGroup,
   YStack,
   YStackProps,
 } from '@mintter/ui'
@@ -34,7 +33,14 @@ import {usePopoverState} from '../use-popover-state'
 import {AuthorsVariant, DraftRoute, GroupVariant} from '../utils/navigation'
 import {useAppDialog} from './dialog'
 import {useMediaDialog} from './media-dialog'
-import {GroupPublishDialog} from './variants'
+import {
+  ContextPopover,
+  ContextPopoverArrow,
+  ContextPopoverContent,
+  ContextPopoverTitle,
+  GroupPublishDialog,
+  GroupVariantItem,
+} from './variants'
 
 export default function CommitDraftButton() {
   const route = useNavRoute()
@@ -174,78 +180,72 @@ export default function CommitDraftButton() {
             </Button>
           ) : null}
         </XGroup.Item>
-        <Popover {...publishPopover} placement="bottom-end" allowFlip>
+        <ContextPopover {...publishPopover}>
           <XGroup.Item>
             <Popover.Trigger asChild>
               <Button theme="green" size="$2" icon={ChevronDown} />
             </Popover.Trigger>
           </XGroup.Item>
 
-          <Popover.Content
-            borderWidth={1}
-            // backgroundColor={'transparent'}
-            borderColor="$borderColor"
-            enterStyle={{y: -10, opacity: 0}}
-            exitStyle={{y: -10, opacity: 0}}
-            elevate
-            animation={[
-              'fast',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-          >
-            <Popover.Arrow // why is this not working?
-              borderWidth={1}
-              borderColor="$borderColor"
-              backgroundColor={'black'}
-            />
-            <YStack>
-              <SizableText>Publish to Author Variant</SizableText>
-              <YGroup>
-                <YGroup.Item>
-                  <Button
-                    onPress={() => {
-                      setVariant(null)
-                    }}
-                  >
-                    <XStack jc="space-between" f={1}>
-                      <XStack gap="$2">
-                        <UIAvatar
-                          id={myAccount.data?.id || ''}
-                          size={20}
-                          url={
-                            myAccount.data?.profile?.avatar &&
-                            `${BACKEND_FILE_URL}/${myAccount.data?.profile?.avatar}`
-                          }
-                          label={
-                            myAccount.data?.profile?.alias || myAccount.data?.id
-                          }
-                        />
-                        <SizableText>
-                          {myAccount?.data?.profile?.alias}
-                        </SizableText>
-                      </XStack>
-                      <Check color={isAuthorVariant ? 'blue' : 'transparent'} />
+          <ContextPopoverContent>
+            <ContextPopoverArrow />
+
+            <YStack alignSelf="stretch">
+              <ContextPopoverTitle>
+                Publish to Author Variant
+              </ContextPopoverTitle>
+              <YStack gap="$2" padding="$2">
+                <Button
+                  padding="$2"
+                  paddingHorizontal="$2"
+                  size="$3"
+                  backgroundColor="transparent"
+                  onPress={() => {
+                    setVariant(null)
+                  }}
+                >
+                  <XStack jc="space-between" f={1} gap="$4" ai="center">
+                    <XStack gap="$2" f={1} ai="center">
+                      <UIAvatar
+                        id={myAccount.data?.id || ''}
+                        size={28}
+                        url={
+                          myAccount.data?.profile?.avatar &&
+                          `${BACKEND_FILE_URL}/${myAccount.data?.profile?.avatar}`
+                        }
+                        label={
+                          myAccount.data?.profile?.alias || myAccount.data?.id
+                        }
+                      />
+                      <SizableText size="$3">
+                        {myAccount?.data?.profile?.alias}
+                      </SizableText>
                     </XStack>
-                  </Button>
-                </YGroup.Item>
-              </YGroup>
-              <SizableText>Publish to Group Variant</SizableText>
-              <YGroup separator={<Separator />}>
+                    <Check
+                      size="$1"
+                      color={isAuthorVariant ? '$blue11' : 'transparent'}
+                    />
+                  </XStack>
+                </Button>
+              </YStack>
+              <ContextPopoverTitle>
+                Publish to Group Variant
+              </ContextPopoverTitle>
+              <YStack gap="$2" padding="$2">
                 {newGroupVariant ? (
-                  <UnpublishedGroupPublicationItem variant={newGroupVariant} />
+                  <GroupVariantItem
+                    isActive
+                    groupId={newGroupVariant.groupId}
+                    path={newGroupVariant.pathName || ''}
+                  />
                 ) : null}
                 {publishableGroups?.map(({group, groupId, path, isActive}) => {
                   return (
-                    <GroupPublicationItem
+                    <GroupVariantItem
                       key={`${groupId}-${path}`}
                       isActive={isActive}
                       path={path}
                       groupId={groupId}
-                      group={group}
                       onPress={() => {
                         if (isActive) return
                         setVariant({
@@ -257,7 +257,7 @@ export default function CommitDraftButton() {
                     />
                   )
                 })}
-              </YGroup>
+              </YStack>
               <YStack padding="$2" alignSelf="stretch">
                 <Button
                   onPress={() => {
@@ -276,52 +276,10 @@ export default function CommitDraftButton() {
                 </Button>
               </YStack>
             </YStack>
-          </Popover.Content>
-        </Popover>
+          </ContextPopoverContent>
+        </ContextPopover>
       </XGroup>
     </>
-  )
-}
-
-function UnpublishedGroupPublicationItem({variant}: {variant: GroupVariant}) {
-  const group = useGroup(variant.groupId)
-  return (
-    <GroupPublicationItem
-      group={group.data}
-      path={variant.pathName || undefined}
-      groupId={variant.groupId}
-      isActive={true}
-    />
-  )
-}
-
-function GroupPublicationItem({
-  isActive,
-  path,
-  groupId,
-  onPress,
-  group,
-}: {
-  isActive?: boolean
-  path?: string
-  groupId?: string
-  onPress?: () => void
-  group: Group | undefined
-}) {
-  return (
-    <YGroup.Item>
-      <Button onPress={onPress}>
-        <XStack f={1} jc="space-between" ai="center">
-          <YStack>
-            <SizableText>{group?.title || groupId}</SizableText>
-            <SizableText fontSize="$2" color="$color10">
-              {path}
-            </SizableText>
-          </YStack>
-          <Check color={isActive ? 'blue' : 'transparent'} />
-        </XStack>
-      </Button>
-    </YGroup.Item>
   )
 }
 
