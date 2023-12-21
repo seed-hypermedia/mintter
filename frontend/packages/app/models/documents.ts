@@ -539,13 +539,7 @@ export function useDraftEditor({
           ContextFrom<typeof draftMachine>
         >(async ({input}) => {
           // delay the time we save to the backend to force editor changes.
-          await delay(0)
-          console.log('== saving', {
-            editor,
-            blocksMap: input.blocksMap,
-            title: input.title,
-            draft: input.draft,
-          })
+          // await delay(0)
           return updateDraft({
             editor,
             blocksMap: input.blocksMap,
@@ -557,7 +551,6 @@ export function useDraftEditor({
           UpdateDraftResponse | string,
           ContextFrom<typeof draftMachine>
         >(async ({input}) => {
-          console.log('== RESTORING', input)
           const prevDraft = input.draft
           const prevBlocksMap = input.blocksMap
           try {
@@ -600,32 +593,32 @@ export function useDraftEditor({
                   // prevDraft,
                 },
               })
-              try {
-                let mutation = await grpcClient.drafts.updateDraft({
+
+              return await grpcClient.drafts
+                .updateDraft({
                   documentId,
                   changes: capturedChanges,
                 })
-                if (mutation.updatedDocument) {
-                  client.setQueryData(
-                    [queryKeys.EDITOR_DRAFT, documentId],
-                    mutation.updatedDocument,
-                  )
-                }
+                .then((res) => {
+                  if (res.updatedDocument) {
+                    client.setQueryData(
+                      [queryKeys.EDITOR_DRAFT, documentId],
+                      res.updatedDocument,
+                    )
+                  }
 
-                diagnosis.append(documentId, {
-                  key: 'did.restoredDraft',
-                  // note: 'regular updateDraft',
-                  value: JSON.stringify(mutation),
+                  diagnosis.append(documentId, {
+                    key: 'did.restoredDraft',
+                    // note: 'regular updateDraft',
+                    value: JSON.stringify(res),
+                  })
+
+                  return res
                 })
-
-                return mutation
-              } catch (error) {
-                return Promise.reject(JSON.stringify(error))
-              }
             }
           } catch (error) {
             console.log('RESTORE ERROR', error)
-            throw new Error(`Error restoring: ${JSON.stringify(error)}`)
+            return Promise.reject(`Error restoring: ${JSON.stringify(error)}`)
           }
         }),
         resetDraft: fromPromise<
@@ -1233,20 +1226,16 @@ function observeBlocks(
       index === blocks.length - 1 &&
       ['image', 'video', 'file', 'embed'].includes(block.type)
     ) {
-      const cursorPos = editor.getTextCursorPosition()
-      if (cursorPos.nextBlock && cursorPos.block.type !== 'paragraph') {
-        console.log('here', cursorPos, block)
-        editor.insertBlocks(
-          [
-            {
-              type: 'paragraph',
-            },
-          ],
-          block.id,
-          'after',
-        )
-        editor.setTextCursorPosition(cursorPos.nextBlock)
-      }
+      editor.insertBlocks(
+        [
+          {
+            type: 'paragraph',
+          },
+        ],
+        block.id,
+        'after',
+      )
+      editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
     }
   })
 }
@@ -1261,11 +1250,5 @@ export function useAccountPublications(accountId: string) {
       })
       return result
     },
-  })
-}
-
-function delay(time: number) {
-  return new Promise((res) => {
-    setTimeout(res, time)
   })
 }

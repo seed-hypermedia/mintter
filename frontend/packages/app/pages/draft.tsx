@@ -112,17 +112,25 @@ export default function DraftPage() {
                     <ErrorIcon size={12} />
                     <XStack flex={1}>
                       <SizableText>
-                        Your draft is in a corrupt state.
+                        Your draft is in a corrupt state. Need to restore or
+                        reset
                       </SizableText>
                     </XStack>
-                    <XStack gap="$2">
-                      <Button
-                        size="$2"
-                        theme="red"
-                        onPress={() => data.send({type: 'RESTORE.DRAFT'})}
-                      >
-                        restore
-                      </Button>
+                    <XStack gap="$2" ai="center">
+                      {data.state.context.restoreTries == 0 ? (
+                        <Button
+                          size="$2"
+                          theme="red"
+                          onPress={() => data.send({type: 'RESTORE.DRAFT'})}
+                        >
+                          restore
+                        </Button>
+                      ) : (
+                        <SizableText size="$2" fontWeight="600">
+                          Restore failed
+                        </SizableText>
+                      )}
+
                       <Button
                         size="$2"
                         theme="red"

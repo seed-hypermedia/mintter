@@ -13,6 +13,7 @@ export const draftMachine = createMachine(
       draft: null,
       title: '',
       errorMessage: '',
+      restoreTries: 0,
     },
     id: 'Draft',
     initial: 'fetching',
@@ -209,6 +210,11 @@ export const draftMachine = createMachine(
               },
               'RESTORE.DRAFT': {
                 target: 'restoring',
+                actions: [
+                  {
+                    type: 'incrementRestoreTries',
+                  },
+                ],
               },
             },
           },
@@ -266,6 +272,7 @@ export const draftMachine = createMachine(
         draft: Document | null
         title: string
         errorMessage: string
+        restoreTries: number
       },
     },
   },
@@ -327,6 +334,9 @@ export const draftMachine = createMachine(
           console.log('== ERROR', event)
           return 'ERROR: '
         },
+      }),
+      incrementRestoreTries: assign({
+        restoreTries: ({context}) => context.restoreTries + 1,
       }),
     },
     guards: {
