@@ -5,7 +5,7 @@ import {
 } from '@mintter/shared'
 import {spawn} from 'child_process'
 import {app} from 'electron'
-import {join} from 'path'
+import path, {join} from 'path'
 import {APP_USER_DATA_PATH} from './app-paths'
 import {childLogger, info} from './logger'
 
@@ -38,7 +38,10 @@ const prodDaemonBinaryPath = join(
   `mintterd-${getPlatformTriple()}`,
 )
 
-const userDataDir = join(APP_USER_DATA_PATH, 'daemon')
+const userDataDir =
+  process.env.NODE_ENV == 'development'
+    ? join(path.resolve('../../..'), 'db.local')
+    : join(APP_USER_DATA_PATH, 'daemon')
 
 let goDaemonExecutablePath =
   process.env.NODE_ENV == 'development'

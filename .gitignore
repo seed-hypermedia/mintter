@@ -4,6 +4,7 @@
 
 # Local output for hacking.
 tmp
+db.local
 
 !.vscode
 
