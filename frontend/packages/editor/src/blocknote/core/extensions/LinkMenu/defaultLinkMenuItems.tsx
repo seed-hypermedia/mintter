@@ -1,12 +1,11 @@
 import {youtubeParser} from '@/utils'
-import {WebLinkMeta} from '@mintter/app/models/web-links'
 import {
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
 } from '@mintter/shared'
 import {Link, Spinner} from '@mintter/ui'
-import {FileText, Globe, SquareAsterisk} from '@tamagui/lucide-icons'
+import {FileText, Globe, SquareAsterisk, XCircle} from '@tamagui/lucide-icons'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
@@ -18,20 +17,25 @@ export function getLinkMenuItems({
   media,
   originalRef,
   fileName,
-  linkMeta,
+  docTitle,
 }: {
   isLoading: boolean // true is spinner needs to be shown
   isHmLink: boolean // true if the link is an embeddable link
   media?: string // type of media block if link points to a media file
   originalRef?: string // the inserted link into the editor. needed to correctly replace the link with block
   fileName?: string // file name if any
-  linkMeta?: WebLinkMeta // fetch link meta result
+  docTitle?: string | null // document title if any
 }) {
   const linkMenuItems: LinkMenuItem[] = [
     {
-      name: 'Web Link',
+      name: docTitle && docTitle !== originalRef ? 'Web Link' : 'Dismiss',
       disabled: false,
-      icon: <Globe size={18} />,
+      icon:
+        docTitle && docTitle !== originalRef ? (
+          <Globe size={18} />
+        ) : (
+          <XCircle size={18} />
+        ),
       execute: (editor: BlockNoteEditor, ref: string) => {},
     },
   ]
@@ -48,9 +52,7 @@ export function getLinkMenuItems({
   } else {
     if (isHmLink) {
       linkMenuItems.unshift({
-        name: `Insert ${
-          linkMeta && linkMeta.hmTitle ? '"' + linkMeta.hmTitle + '"' : 'link'
-        } as Card`,
+        name: `Insert ${docTitle ? '"' + docTitle + '"' : 'link'} as Card`,
         disabled: false,
         icon: <SquareAsterisk size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
@@ -75,9 +77,7 @@ export function getLinkMenuItems({
       })
 
       linkMenuItems.unshift({
-        name: `Embed ${
-          linkMeta && linkMeta.hmTitle ? '"' + linkMeta.hmTitle + '"' : 'link'
-        }`,
+        name: `Embed ${docTitle ? '"' + docTitle + '"' : 'link'}`,
         disabled: false,
         icon: <FileText size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
@@ -100,9 +100,9 @@ export function getLinkMenuItems({
         },
       })
 
-      if (linkMeta && linkMeta.hmTitle && linkMeta.hmId && !linkMeta.blockRef) {
+      if (docTitle && docTitle !== originalRef) {
         linkMenuItems.unshift({
-          name: `Link as "${linkMeta.hmTitle}"`,
+          name: `Link as "${docTitle}"`,
           disabled: false,
           icon: <Link size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
@@ -113,10 +113,10 @@ export function getLinkMenuItems({
             view.dispatch(
               view.state.tr
                 .deleteRange(pos, pos + originalRef!.length)
-                .insertText(linkMeta.hmTitle!, pos)
+                .insertText(docTitle!, pos)
                 .addMark(
                   pos,
-                  pos + linkMeta.hmTitle!.length,
+                  pos + docTitle!.length,
                   schema.mark('link', {
                     href: hmId || originalRef,
                   }),

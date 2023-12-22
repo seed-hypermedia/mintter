@@ -4,11 +4,14 @@ import {fetchWebLink} from '@mintter/app/models/web-links'
 import {AppQueryClient} from '@mintter/app/query-client'
 import {client} from '@mintter/desktop/src/trpc'
 import {
+  GRPCClient,
+  HYPERMEDIA_SCHEME,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
+  unpackHmId,
 } from '@mintter/shared'
 import {Editor} from '@tiptap/core'
 import {Mark, MarkType} from '@tiptap/pm/model'
@@ -19,6 +22,7 @@ import {nanoid} from 'nanoid'
 
 type PasteHandlerOptions = {
   client: AppQueryClient
+  grpcClient: GRPCClient
   editor: Editor
   type: MarkType
   linkOnPaste?: boolean
@@ -83,6 +87,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           })
         })
 
+        textContent = textContent.trim()
+
         const hasPastedLink = pastedLinkMarks.length > 0
         const link = find(textContent).find(
           (item) => item.isLink && item.value === textContent,
@@ -91,6 +97,11 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         const nativeHyperLink =
           isHypermediaScheme(textContent) || isPublicGatewayLink(textContent)
             ? normlizeHmId(textContent)
+            : null
+
+        const unpackedHmId =
+          isHypermediaScheme(textContent) || isPublicGatewayLink(textContent)
+            ? unpackHmId(textContent)
             : null
 
         if (!selection.empty && options.linkOnPaste) {
@@ -133,26 +144,87 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           return false
         }
 
-        if (selection.empty && nativeHyperLink) {
+        if (selection.empty && unpackedHmId?.eid && unpackedHmId.type) {
           let tr = view.state.tr
           let pos = tr.selection.from
-          view.dispatch(
-            tr.insertText(nativeHyperLink, pos).addMark(
-              pos,
-              pos + nativeHyperLink.length,
-              options.editor.schema.mark('link', {
-                href: nativeHyperLink,
-              }),
-            ),
-          )
+          let normalizedHmUrl = `${HYPERMEDIA_SCHEME}://${unpackedHmId.type}/${unpackedHmId.eid}`
+          if (unpackedHmId?.groupPathName)
+            normalizedHmUrl += `/${unpackedHmId.groupPathName}`
+          if (unpackedHmId?.version)
+            normalizedHmUrl += `?v=${unpackedHmId.version}`
+          if (unpackedHmId?.blockRef)
+            normalizedHmUrl += `#${unpackedHmId.blockRef}`
 
-          view.dispatch(
-            view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
-              activate: true,
-              ref: nativeHyperLink,
-              items: getLinkMenuItems({isLoading: false, isHmLink: true}),
-            }),
-          )
+          options.grpcClient.publications
+            .getPublication({
+              documentId: unpackedHmId.qid,
+              version: unpackedHmId.version ? unpackedHmId.version : undefined,
+            })
+            .then((publication) => {
+              const title = publication.document?.title
+              if (title) {
+                view.dispatch(
+                  tr.insertText(title, pos).addMark(
+                    pos,
+                    pos + title.length,
+                    options.editor.schema.mark('link', {
+                      href: normalizedHmUrl,
+                    }),
+                  ),
+                )
+
+                view.dispatch(
+                  view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+                    activate: true,
+                    ref: normalizedHmUrl,
+                    items: getLinkMenuItems({
+                      isLoading: false,
+                      isHmLink: true,
+                      originalRef: title,
+                      docTitle: title,
+                    }),
+                  }),
+                )
+              } else {
+                view.dispatch(
+                  tr.insertText(normalizedHmUrl, pos).addMark(
+                    pos,
+                    pos + normalizedHmUrl.length,
+                    options.editor.schema.mark('link', {
+                      href: normalizedHmUrl,
+                    }),
+                  ),
+                )
+
+                view.dispatch(
+                  view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+                    activate: true,
+                    ref: normalizedHmUrl,
+                    items: getLinkMenuItems({isLoading: false, isHmLink: true}),
+                  }),
+                )
+              }
+            })
+            .catch((err) => {
+              view.dispatch(
+                tr.insertText(normalizedHmUrl, pos).addMark(
+                  pos,
+                  pos + normalizedHmUrl.length,
+                  options.editor.schema.mark('link', {
+                    href: normalizedHmUrl,
+                  }),
+                ),
+              )
+
+              view.dispatch(
+                view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
+                  activate: true,
+                  ref: normalizedHmUrl,
+                  items: getLinkMenuItems({isLoading: false, isHmLink: true}),
+                }),
+              )
+            })
+
           return true
         }
 
@@ -244,7 +316,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                             isLoading: false,
                             isHmLink: true,
                             originalRef: link.href,
-                            linkMeta: res,
+                            docTitle: res.hmTitle,
                           }),
                         }),
                       )

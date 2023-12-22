@@ -676,6 +676,7 @@ export function useDraftEditor({
     linkExtensionOptions: {
       openOnClick: false,
       queryClient,
+      grpcClient,
       openUrl,
     },
 
