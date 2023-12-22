@@ -78,29 +78,33 @@ func (eid EntityID) String() string { return string(eid) }
 
 // Entity is our CRDT mutable object.
 type Entity struct {
-	id      EntityID
-	changes []ParsedBlob[Change]
-	applied map[cid.Cid]int
-	heads   map[cid.Cid]struct{}
-	state   *crdt2.Map
-	clock   *hlc.Clock
+	id           EntityID
+	changes      []ParsedBlob[Change]
+	applied      map[cid.Cid]int
+	heads        map[cid.Cid]struct{}
+	state        *crdt2.Map
+	maxClock     *hlc.Clock
+	actorsIntern map[string]string
+	vectorClock  map[string]hlc.Time
 }
 
 // NewEntity creates a new entity with a given ID.
 func NewEntity(id EntityID) *Entity {
 	return &Entity{
-		id:      id,
-		applied: make(map[cid.Cid]int),
-		heads:   make(map[cid.Cid]struct{}),
-		state:   crdt2.NewMap(),
-		clock:   hlc.NewClock(),
+		id:           id,
+		applied:      make(map[cid.Cid]int),
+		heads:        make(map[cid.Cid]struct{}),
+		state:        crdt2.NewMap(),
+		maxClock:     hlc.NewClock(),
+		actorsIntern: make(map[string]string),
+		vectorClock:  make(map[string]hlc.Time),
 	}
 }
 
 // NewEntityWithClock creates a new entity with a provided clock.
 func NewEntityWithClock(id EntityID, clock *hlc.Clock) *Entity {
 	e := NewEntity(id)
-	e.clock = clock
+	e.maxClock = clock
 	return e
 }
 
@@ -114,7 +118,7 @@ func (e *Entity) Get(path ...string) (value any, ok bool) {
 
 // LastChangeTime is max time tracked in the HLC.
 func (e *Entity) LastChangeTime() hlc.Time {
-	return e.clock.Max()
+	return e.maxClock.Max()
 }
 
 // AppliedChanges returns the map of applied changes.
@@ -188,7 +192,24 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 		return fmt.Errorf("change is already applied")
 	}
 
-	if ch.HLCTime.Before(e.clock.Max()) {
+	var actor string
+	{
+		au := ch.Signer.UnsafeString()
+		a, ok := e.actorsIntern[au]
+		if !ok {
+			e.actorsIntern[au] = au
+			a = au
+		}
+		actor = a
+	}
+
+	if ch.HLCTime.Before(e.vectorClock[actor]) {
+		return fmt.Errorf("applying change '%s' violates causal order", c)
+	}
+
+	e.vectorClock[actor] = ch.HLCTime
+
+	if ch.HLCTime.Before(e.maxClock.Max()) {
 		return fmt.Errorf("applying change %s out of causal order", c)
 	}
 
@@ -200,7 +221,7 @@ func (e *Entity) ApplyChange(c cid.Cid, ch Change) error {
 	}
 
 	e.state.ApplyPatch(ch.HLCTime.Pack(), OriginFromCID(c), ch.Patch)
-	e.clock.Track(ch.HLCTime)
+	e.maxClock.Track(ch.HLCTime)
 	e.changes = append(e.changes, ParsedBlob[Change]{c, ch})
 	e.applied[c] = len(e.changes) - 1
 	e.heads[c] = struct{}{}
@@ -224,7 +245,7 @@ func OriginFromCID(c cid.Cid) string {
 
 // NextTimestamp returns the next timestamp from the HLC.
 func (e *Entity) NextTimestamp() hlc.Time {
-	return e.clock.Now()
+	return e.maxClock.Now()
 }
 
 // ChangeOption is a functional option for creating Changes.
@@ -513,7 +534,7 @@ func (bs *Storage) LoadDraft(ctx context.Context, eid EntityID) (*Draft, error) 
 		return nil, nil
 	}
 
-	entity.clock.Track(ch.HLCTime)
+	entity.maxClock.Track(ch.HLCTime)
 
 	return &Draft{
 		Entity: entity,
