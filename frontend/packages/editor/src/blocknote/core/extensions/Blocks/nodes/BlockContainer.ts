@@ -24,7 +24,8 @@ import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
 
-const SelectionPluginKey = new PluginKey('blueRect')
+const SelectionPluginKey = new PluginKey('selectionPluginKey')
+const ClickPluginKey = new PluginKey('clickPluginKey')
 
 const SelectionPlugin = new Plugin({
   key: SelectionPluginKey,
@@ -39,6 +40,53 @@ const SelectionPlugin = new Plugin({
   props: {
     decorations(state) {
       return this.getState(state)
+    },
+  },
+})
+
+const ClickPlugin = new Plugin({
+  key: ClickPluginKey,
+  props: {
+    handleDOMEvents: {
+      mousedown(view, event) {
+        if (event.shiftKey && event.button === 0) {
+          const {state} = view
+          const editorBoundingBox = (
+            view.dom.firstChild! as HTMLElement
+          ).getBoundingClientRect()
+          const coords = {
+            left: editorBoundingBox.left + editorBoundingBox.width / 2, // take middle of editor
+            top: event.clientY,
+          }
+          let pos = view.posAtCoords(coords)
+          if (!pos) {
+            return undefined
+          }
+          const {selection} = state
+          const {id: selectedId} = getBlockInfoFromPos(
+            state.doc,
+            selection.from,
+          )
+          const selectedPos = state.doc.resolve(selection.from)
+          const nodePos = state.doc.resolve(pos.pos)
+          if (
+            selectedPos.start() === selection.from &&
+            pos.pos === nodePos.end()
+          ) {
+            const decoration = Decoration.widget(nodePos.pos, () => {
+              const span = document.createElement('span')
+              span.style.backgroundColor = 'blue'
+              span.style.width = '10px'
+              span.style.height = '10px'
+              return span
+            })
+            const decorationSet = DecorationSet.create(state.doc, [decoration])
+            view.dispatch(state.tr.setMeta(SelectionPluginKey, decorationSet))
+          }
+          return false
+        }
+        return false
+      },
     },
   },
 })
@@ -497,7 +545,7 @@ export const BlockContainer = Node.create<{
   },
 
   addProseMirrorPlugins() {
-    return [PreviousBlockTypePlugin(), SelectionPlugin]
+    return [PreviousBlockTypePlugin(), SelectionPlugin, ClickPlugin]
   },
 
   addKeyboardShortcuts() {
