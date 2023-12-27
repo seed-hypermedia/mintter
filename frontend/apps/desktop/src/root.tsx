@@ -171,6 +171,7 @@ function MainApp({
   const daemonState = useGoDaemonState()
   const grpcClient = useMemo(() => createGRPCClient(transport), [])
   const windowUtils = useWindowUtils(ipc)
+  const utils = trpc.useContext()
 
   useListenAppEvent('triggerPeerSync', () => {
     grpcClient.daemon
@@ -183,18 +184,18 @@ function MainApp({
         toast.error('Sync failed!')
       })
   })
-  const utils = trpc.useContext()
 
   useEffect(() => {
     const sub = client.queryInvalidation.subscribe(undefined, {
-      onData: (queryKey: unknown[]) => {
-        if (!queryKey) return
-        if (queryKey[0] === 'trpc.experiments.get') {
+      onData: (value: unknown[]) => {
+        console.log('== client.queryInvalidation.subscribe', value)
+        if (!value) return
+        if (value[0] === 'trpc.experiments.get') {
           utils.experiments.get.invalidate()
-        } else if (queryKey[0] === 'trpc.pins.get') {
+        } else if (value[0] === 'trpc.pins.get') {
           utils.pins.get.invalidate()
         } else if (queryClient.client) {
-          queryClient.client.invalidateQueries(queryKey)
+          queryClient.client.invalidateQueries(value)
         }
       },
     })
@@ -262,7 +263,7 @@ function MainApp({
     )
   }
 
-  if (daemonState?.t === 'error') {
+  if (daemonState?.t == 'error') {
     return (
       <StyleProvider darkMode={darkMode}>
         <AppErrorContent message={daemonState?.message} />

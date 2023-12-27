@@ -111,10 +111,7 @@ function queryPeerInfo(
     retry: true,
     queryFn: () => grpcClient.networking.getPeerInfo({deviceId: deviceId}),
     onError: (err) => {
-      appError(
-        `queryPeerInfo Error code ${err.code}: ${err.message}`,
-        err.metadata,
-      )
+      console.error(`queryPeerInfo Error: `, err)
     },
     refetchInterval: 1500,
     // refetchIntervalInBackground: true,

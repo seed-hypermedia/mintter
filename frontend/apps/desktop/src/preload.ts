@@ -1,11 +1,11 @@
 import {contextBridge, ipcRenderer} from 'electron'
 import {exposeElectronTRPC} from 'electron-trpc/main'
 // import directly from this deep path for shared/utils/stream! Bad things happen if you try to directly import from @mintter/shared
+import {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {
   eventStream,
   writeableStateStream,
 } from '@mintter/shared/src/utils/stream'
-import {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {GoDaemonState} from './daemon'
 
 process.once('loaded', async () => {
