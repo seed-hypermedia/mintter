@@ -7,6 +7,8 @@ import {Profile as ProfileType} from '@mintter/shared'
 import {
   Button,
   ButtonProps,
+  Check,
+  Checkbox,
   Copy,
   ErrorIcon,
   Fieldset,
@@ -125,6 +127,8 @@ function Mnemonics(props: OnboardingStepProps) {
   const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
   const [error, setError] = useState('')
   const mnemonics = useMnemonics()
+  const [check1, setCheck1] = useState(false)
+  const [check2, setCheck2] = useState(false)
 
   const register = useAccountRegistration({
     onError: () => {
@@ -275,50 +279,80 @@ function Mnemonics(props: OnboardingStepProps) {
                 </SizableText>
               </XStack>
             ) : (
-              <XStack
-                padding="$2"
-                space
-                backgroundColor="$background"
-                borderRadius="$5"
-                elevation="$3"
-                minHeight={130}
-                borderColor="$backgroundHover"
-                borderWidth="$0.5"
-                alignItems="flex-start"
-              >
-                <SizableText
+              <>
+                <XStack
                   padding="$2"
-                  fontFamily="$mono"
-                  fontSize={18}
-                  fontWeight="700"
-                  display="block"
-                  id="mnemonics"
+                  space
+                  backgroundColor="$background"
+                  borderRadius="$5"
+                  elevation="$3"
+                  minHeight={130}
+                  borderColor="$backgroundHover"
+                  borderWidth="$0.5"
+                  alignItems="flex-start"
                 >
-                  {mnemonics.data?.join(' ')}
-                </SizableText>
-                <XStack>
-                  <Tooltip content="regenerate words">
-                    <Button
-                      id="btn-reload-mnemonics"
-                      flex={0}
-                      flexShrink={0}
-                      icon={Reload}
-                      onPress={() => mnemonics.refetch()}
-                      size="$2"
-                    />
-                  </Tooltip>
-                  <Tooltip content="Copy words to clipboard">
-                    <Button
-                      id="btn-copy-mnemonics"
-                      flex={0}
-                      flexShrink={0}
-                      icon={Copy}
-                      onPress={onCopy}
-                      size="$2"
-                    />
-                  </Tooltip>
+                  <SizableText
+                    padding="$2"
+                    fontFamily="$mono"
+                    fontSize={18}
+                    fontWeight="700"
+                    display="block"
+                    id="mnemonics"
+                  >
+                    {mnemonics.data?.join(' ')}
+                  </SizableText>
+                  <XStack>
+                    <Tooltip content="regenerate words">
+                      <Button
+                        id="btn-reload-mnemonics"
+                        flex={0}
+                        flexShrink={0}
+                        icon={Reload}
+                        onPress={() => mnemonics.refetch()}
+                        size="$2"
+                      />
+                    </Tooltip>
+                    <Tooltip content="Copy words to clipboard">
+                      <Button
+                        id="btn-copy-mnemonics"
+                        flex={0}
+                        flexShrink={0}
+                        icon={Copy}
+                        onPress={onCopy}
+                        size="$2"
+                      />
+                    </Tooltip>
+                  </XStack>
                 </XStack>
-              </XStack>
+                <XStack gap="$2">
+                  <Checkbox
+                    checked={check1}
+                    onCheckedChange={(v) => setCheck1(!!v)}
+                  >
+                    <Checkbox.Indicator>
+                      <Check />
+                    </Checkbox.Indicator>
+                  </Checkbox>
+                  <SizableText fontWeight="bold">
+                    I have stored my 12-word recovery phrase in a safe place.
+                  </SizableText>
+                </XStack>
+                <XStack gap="$2">
+                  <Checkbox
+                    checked={check2}
+                    onCheckedChange={(v) => setCheck2(!!v)}
+                  >
+                    <Checkbox.Indicator>
+                      <Check />
+                    </Checkbox.Indicator>
+                  </Checkbox>
+                  <SizableText fontWeight="bold" color="$red10">
+                    I understand that after this point I will not be able to
+                    recover my 12-word recovery phrase. Mintter cannot help me
+                    recover them if I lose it.
+                  </SizableText>
+                </XStack>
+              </>
             )}
             <XStack>
               <Button
@@ -345,7 +379,17 @@ function Mnemonics(props: OnboardingStepProps) {
       </XStack>
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
-        <NextButton onPress={handleSubmit}>NEXT</NextButton>
+        {useOwnSeed ? (
+          <NextButton onPress={handleSubmit}>NEXT</NextButton>
+        ) : (
+          <NextButton
+            onPress={handleSubmit}
+            disabled={!check1 && !check2}
+            opacity={check1 && check2 ? 1 : 0.1}
+          >
+            NEXT
+          </NextButton>
+        )}
       </XStack>
     </StepWrapper>
   )
