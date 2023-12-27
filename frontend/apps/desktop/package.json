@@ -64,7 +64,7 @@
     "@mintter/prettier": "*",
     "@playwright/test": "1.37.1",
     "@tamagui/vite-plugin": "latest",
-    "@types/react": "18.2.20",
+    "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",
     "electron": "26.0.0",
