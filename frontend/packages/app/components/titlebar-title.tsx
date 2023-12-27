@@ -15,8 +15,9 @@ import {
 } from '@mintter/ui'
 import {Book, Contact, FileText, Library} from '@tamagui/lucide-icons'
 import {useEffect} from 'react'
+import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
-import {GroupRoute, NavRoute} from '../utils/navigation'
+import {AccountRoute, GroupRoute, NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
 import {VersionContext} from './variants'
 
@@ -28,12 +29,15 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
       if (route.key === 'documents') return 'Documents'
       if (route.key === 'drafts') return 'Drafts'
       if (route.key === 'contacts') return 'Contacts'
-      return '?'
+      if (route.key === 'groups') return 'Groups'
+      console.log(`== ~ getTitleOfRoute ~ route:`, route)
+      return ''
     }
     getTitleOfRoute(route).then((title) => {
       // we set the window title so the window manager knows the title in the Window menu
       // @ts-ignore
       window.document.title = title
+      // window.windowInfo.setTitle(title)
     })
   }, [route])
 
@@ -84,9 +88,9 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   }
   if (route.key === 'account') {
     return (
-      <TitleText data-testid="titlebar-title" size={size}>
-        Account Profile
-      </TitleText>
+      <>
+        <AccountProfileTitle route={route} size={size} />
+      </>
     )
   }
   if (route.key === 'publication') {
@@ -111,9 +115,35 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   return null
 }
 
+function AccountProfileTitle({
+  route,
+  size,
+}: {
+  route: AccountRoute
+  size?: FontSizeTokens
+}) {
+  const account = useAccount(route.accountId)
+
+  useWindowTitle(
+    account.data.profile.alias
+      ? `Account Profile: ${account.data.profile.alias}`
+      : 'Account Profile',
+  )
+
+  return (
+    <TitleText data-testid="titlebar-title" size={size}>
+      {account.data.profile.alias
+        ? `Account Profile: ${account.data.profile.alias}`
+        : 'Account Profile'}
+    </TitleText>
+  )
+}
+
 function GroupTitle({route}: {route: GroupRoute}) {
   const group = useGroup(route.groupId)
+  useWindowTitle(group.data?.title ? `Group: ${group.data?.title}` : undefined)
   if (!group.data) return null
+
   return (
     <XStack ai="center" gap="$2">
       <Book size={16} />
@@ -150,6 +180,13 @@ function PublicationTitle({
     variant: route.variant,
     enabled: !!route.documentId,
   })
+
+  useWindowTitle(
+    pub.data?.publication?.document
+      ? `Publication: ${getDocumentTitle(pub.data?.publication?.document)}`
+      : undefined,
+  )
+
   if (pub.error) {
     return <ErrorIcon />
   }
@@ -174,6 +211,7 @@ function DraftTitle({
     documentId: route.draftId,
   })
   const displayTitle = title ?? 'Untitled Document'
+  useWindowTitle(displayTitle ? `Draft: ${displayTitle}` : undefined)
   return (
     <>
       <TitleText data-testid="titlebar-title" size={size}>
@@ -181,4 +219,12 @@ function DraftTitle({
       </TitleText>
     </>
   )
+}
+
+function useWindowTitle(title?: string) {
+  useEffect(() => {
+    if (title) {
+      window.document.title = title
+    }
+  }, [title])
 }
