@@ -25,6 +25,7 @@ import {
   SizableText,
   Spinner,
   StepWrapper as StyledStepWrapper,
+  Tabs,
   TextArea,
   Tooltip,
   XStack,
@@ -215,50 +216,155 @@ function Mnemonics(props: OnboardingStepProps) {
         </StepTitleSection>
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
-            <StepParagraph>
-              Please save these words securely! This will allow you to recreate
-              your account and recover associated funds:
-            </StepParagraph>
-            {useOwnSeed ? (
-              <YStack gap="$2">
-                <XStack
-                  backgroundColor="$backgroundHover"
-                  borderRadius="$5"
-                  elevation="$3"
-                >
-                  <TextArea
-                    autoFocus
-                    fontSize={18}
-                    flex={1}
-                    id="mnemonics-input"
-                    placeholder={
-                      'Add your 12 mnemonics words \n(food barrel buzz, ...)'
-                    }
+            <Tabs
+              defaultValue="generated"
+              orientation="horizontal"
+              flexDirection="column"
+              onValueChange={(newVal: string) => {
+                if (newVal == 'ownwords') {
+                  setUseOwnSeed(true)
+                } else {
+                  setUseOwnSeed(false)
+                }
+              }}
+            >
+              <Tabs.List>
+                <Tabs.Tab value="generated" flex={1}>
+                  <SizableText>Generate new words</SizableText>
+                </Tabs.Tab>
+                <Tabs.Tab value="ownwords" flex={1}>
+                  <SizableText>Use my own words</SizableText>
+                </Tabs.Tab>
+              </Tabs.List>
+              <Tabs.Content value="generated" paddingVertical="$4">
+                <YStack gap="$4">
+                  <StepParagraph>
+                    Please save these words securely! This will allow you to
+                    recreate your account and recover associated funds:
+                  </StepParagraph>
+
+                  <XStack
+                    padding="$2"
+                    space
+                    backgroundColor="$background"
+                    borderRadius="$5"
+                    elevation="$3"
                     minHeight={130}
-                    onChangeText={setOwnSeed}
-                    fontFamily="$mono"
-                    fontWeight="500"
                     borderColor="$backgroundHover"
                     borderWidth="$0.5"
-                  />
-                </XStack>
-                {error || register.status == 'error' ? (
-                  <XStack
-                    alignItems="center"
-                    gap="$2"
-                    backgroundColor="$red10"
-                    borderRadius="$1"
-                    paddingHorizontal="$4"
-                    paddingVertical={0}
+                    alignItems="flex-start"
                   >
-                    <ErrorIcon size={12} color="$red1" />
-                    <SizableText size="$1" fontWeight="600" color="$red1">
-                      {error}
+                    <SizableText
+                      padding="$2"
+                      fontFamily="$mono"
+                      fontSize={18}
+                      fontWeight="700"
+                      display="block"
+                      id="mnemonics"
+                    >
+                      {mnemonics.data?.join(' ')}
+                    </SizableText>
+                    <XStack>
+                      <Tooltip content="regenerate words">
+                        <Button
+                          id="btn-reload-mnemonics"
+                          flex={0}
+                          flexShrink={0}
+                          icon={Reload}
+                          onPress={() => mnemonics.refetch()}
+                          size="$2"
+                        />
+                      </Tooltip>
+                      <Tooltip content="Copy words to clipboard">
+                        <Button
+                          id="btn-copy-mnemonics"
+                          flex={0}
+                          flexShrink={0}
+                          icon={Copy}
+                          onPress={onCopy}
+                          size="$2"
+                        />
+                      </Tooltip>
+                    </XStack>
+                  </XStack>
+                  <XStack gap="$2">
+                    <Checkbox
+                      checked={check1}
+                      onCheckedChange={(v) => setCheck1(!!v)}
+                    >
+                      <Checkbox.Indicator>
+                        <Check />
+                      </Checkbox.Indicator>
+                    </Checkbox>
+                    <SizableText fontWeight="bold">
+                      I have stored my 12-word recovery phrase in a safe place.
                     </SizableText>
                   </XStack>
-                ) : null}
-              </YStack>
-            ) : mnemonics.isError ? (
+                  <XStack gap="$2">
+                    <Checkbox
+                      checked={check2}
+                      onCheckedChange={(v) => setCheck2(!!v)}
+                    >
+                      <Checkbox.Indicator>
+                        <Check />
+                      </Checkbox.Indicator>
+                    </Checkbox>
+                    <SizableText fontWeight="bold" color="$red11">
+                      I understand that after this point I will not be able to
+                      recover my 12-word recovery phrase. Mintter cannot help me
+                      recover them if I lose it.
+                    </SizableText>
+                  </XStack>
+                </YStack>
+              </Tabs.Content>
+              <Tabs.Content value="ownwords" paddingVertical="$4">
+                <YStack gap="$4">
+                  <StepParagraph>
+                    If you aready have a BIP-39 seed, you can reuse it with
+                    Mintter and we will derive a seprate Mintter-specific key
+                    from it
+                  </StepParagraph>
+                  <XStack
+                    backgroundColor="$backgroundHover"
+                    borderRadius="$5"
+                    elevation="$3"
+                  >
+                    <TextArea
+                      autoFocus
+                      fontSize={18}
+                      flex={1}
+                      id="mnemonics-input"
+                      placeholder={
+                        'Add your 12 mnemonics words \n(food barrel buzz, ...)'
+                      }
+                      minHeight={130}
+                      onChangeText={setOwnSeed}
+                      fontFamily="$mono"
+                      fontWeight="500"
+                      borderColor="$backgroundHover"
+                      borderWidth="$0.5"
+                    />
+                  </XStack>
+                  {error || register.status == 'error' ? (
+                    <XStack
+                      alignItems="center"
+                      gap="$2"
+                      backgroundColor="$red10"
+                      borderRadius="$1"
+                      paddingHorizontal="$4"
+                      paddingVertical={0}
+                    >
+                      <ErrorIcon size={12} color="$red1" />
+                      <SizableText size="$1" fontWeight="600" color="$red1">
+                        {error}
+                      </SizableText>
+                    </XStack>
+                  ) : null}
+                </YStack>
+              </Tabs.Content>
+            </Tabs>
+
+            {mnemonics.isError ? (
               <XStack
                 padding="$4"
                 theme="yellow"
@@ -278,102 +384,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   {JSON.stringify(mnemonics.error, null)}
                 </SizableText>
               </XStack>
-            ) : (
-              <>
-                <XStack
-                  padding="$2"
-                  space
-                  backgroundColor="$background"
-                  borderRadius="$5"
-                  elevation="$3"
-                  minHeight={130}
-                  borderColor="$backgroundHover"
-                  borderWidth="$0.5"
-                  alignItems="flex-start"
-                >
-                  <SizableText
-                    padding="$2"
-                    fontFamily="$mono"
-                    fontSize={18}
-                    fontWeight="700"
-                    display="block"
-                    id="mnemonics"
-                  >
-                    {mnemonics.data?.join(' ')}
-                  </SizableText>
-                  <XStack>
-                    <Tooltip content="regenerate words">
-                      <Button
-                        id="btn-reload-mnemonics"
-                        flex={0}
-                        flexShrink={0}
-                        icon={Reload}
-                        onPress={() => mnemonics.refetch()}
-                        size="$2"
-                      />
-                    </Tooltip>
-                    <Tooltip content="Copy words to clipboard">
-                      <Button
-                        id="btn-copy-mnemonics"
-                        flex={0}
-                        flexShrink={0}
-                        icon={Copy}
-                        onPress={onCopy}
-                        size="$2"
-                      />
-                    </Tooltip>
-                  </XStack>
-                </XStack>
-                <XStack gap="$2">
-                  <Checkbox
-                    checked={check1}
-                    onCheckedChange={(v) => setCheck1(!!v)}
-                  >
-                    <Checkbox.Indicator>
-                      <Check />
-                    </Checkbox.Indicator>
-                  </Checkbox>
-                  <SizableText fontWeight="bold">
-                    I have stored my 12-word recovery phrase in a safe place.
-                  </SizableText>
-                </XStack>
-                <XStack gap="$2">
-                  <Checkbox
-                    checked={check2}
-                    onCheckedChange={(v) => setCheck2(!!v)}
-                  >
-                    <Checkbox.Indicator>
-                      <Check />
-                    </Checkbox.Indicator>
-                  </Checkbox>
-                  <SizableText fontWeight="bold" color="$red10">
-                    I understand that after this point I will not be able to
-                    recover my 12-word recovery phrase. Mintter cannot help me
-                    recover them if I lose it.
-                  </SizableText>
-                </XStack>
-              </>
-            )}
-            <XStack>
-              <Button
-                size="$2"
-                theme="green"
-                id="btn-toggle-seed"
-                onPress={() => {
-                  setOwnSeed('')
-                  if (useOwnSeed) {
-                    // refetch here is so that user always sees new words when they click "generate a new seed"
-                    // so they feel like they're getting a secure fresh seed
-                    mnemonics.refetch()
-                    setUseOwnSeed(false)
-                  } else {
-                    setUseOwnSeed(true)
-                  }
-                }}
-              >
-                {useOwnSeed ? 'Generate a new seed' : 'Provide your own seed'}
-              </Button>
-            </XStack>
+            ) : null}
           </YStack>
         </YStack>
       </XStack>
