@@ -141,6 +141,9 @@ service Publications {
   // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 
+  // Push Local publication to the gateway.
+  rpc PushPublication(PushPublicationRequest) returns (google.protobuf.Empty);
+
   // Lists publications owned by a given account.
   rpc ListAccountPublications(ListAccountPublicationsRequest) returns (ListPublicationsResponse);
 }
@@ -163,6 +166,16 @@ message DeletePublicationRequest {
   // Document ID of the publication to be removed.
   // All versions will also be removed.
   string document_id = 1;
+}
+
+
+// Request for getting a single publication.
+message PushPublicationRequest {
+  // Required. ID of the published document to be pushed.
+  string document_id = 1;
+
+  // Required. Specific version of the published document.
+  string version = 2;
 }
 
 // Request for listing publications.

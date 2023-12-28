@@ -612,6 +612,55 @@ export class DeletePublicationRequest extends Message<DeletePublicationRequest> 
 }
 
 /**
+ * Request for getting a single publication.
+ *
+ * @generated from message com.mintter.documents.v1alpha.PushPublicationRequest
+ */
+export class PushPublicationRequest extends Message<PushPublicationRequest> {
+  /**
+   * Required. ID of the published document to be pushed.
+   *
+   * @generated from field: string document_id = 1;
+   */
+  documentId = "";
+
+  /**
+   * Required. Specific version of the published document.
+   *
+   * @generated from field: string version = 2;
+   */
+  version = "";
+
+  constructor(data?: PartialMessage<PushPublicationRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.PushPublicationRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PushPublicationRequest {
+    return new PushPublicationRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PushPublicationRequest {
+    return new PushPublicationRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PushPublicationRequest {
+    return new PushPublicationRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PushPublicationRequest | PlainMessage<PushPublicationRequest> | undefined, b: PushPublicationRequest | PlainMessage<PushPublicationRequest> | undefined): boolean {
+    return proto3.util.equals(PushPublicationRequest, a, b);
+  }
+}
+
+/**
  * Request for listing publications.
  *
  * @generated from message com.mintter.documents.v1alpha.ListPublicationsRequest

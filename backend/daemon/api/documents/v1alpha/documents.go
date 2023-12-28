@@ -443,6 +443,65 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 	return &emptypb.Empty{}, nil
 }
 
+// PushPublication implements the corresponding gRPC method.
+func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublicationRequest) (*emptypb.Empty, error) {
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID")
+	}
+
+	if in.Version == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify version")
+	}
+
+	eid := hyper.EntityID(in.DocumentId)
+
+	heads, err := hyper.Version(in.Version).Parse()
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "unable to parse version %s: %v", in.Version, err)
+	}
+
+	entity, err := api.blobs.LoadEntityFromHeads(ctx, eid, heads...)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to get blobs from head: %v", err)
+	}
+	conn, cancelFcn, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to get db connection: %v", err)
+	}
+	defer cancelFcn()
+
+	gdb, err := hypersql.EntitiesLookupID(conn, entity.ID().String())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to find entity id [%s]: %v", entity.ID().String(), err)
+	}
+	if gdb.ResourcesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "document %s not found", entity.ID().String())
+	}
+	return nil, status.Error(codes.Unimplemented, "Not implemented yet")
+	/*
+		sqlitex.ExecTransient()
+		return sqlitex.Exec(conn, qCollectBlobs(), func(stmt *sqlite.Stmt) error {
+			var (
+				id        int64
+				codec     int64
+				multihash []byte
+			)
+			stmt.Scan(&id, &codec, &multihash)
+
+			c := cid.NewCidV1(uint64(codec), multihash)
+			return fn(c)
+		}, gdb.ResourcesID)
+
+
+		gc, err := n.SiteClient(ctx, ai.ID)
+			if err != nil {
+				return fmt.Errorf("failed to get site client: %w", err)
+			}
+	*/
+	// return &emptypb.Empty{}, nil
+}
+
 // ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	var (
