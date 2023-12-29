@@ -119,8 +119,7 @@ function PublishGroupDialog({
           publishToSite
             .mutateAsync({
               groupId: input.groupId,
-              setupUrl:
-                'http://127.0.0.1:3000/secret-invite/bCuxcJX0D3_89Ec-NdryaA',
+              setupUrl,
             })
             .then(() => {
               onClose()
