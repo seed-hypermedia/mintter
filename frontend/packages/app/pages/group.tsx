@@ -568,7 +568,7 @@ function GroupContentItem({
           })
         }}
         variant={{key: 'group', groupId, pathName}}
-        menuItems={[
+        menuItems={() => [
           copyLinkMenuItem(
             idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
             'Group Publication',
