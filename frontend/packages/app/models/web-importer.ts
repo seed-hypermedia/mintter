@@ -1,5 +1,4 @@
 import {BlockNode, DocumentChange, GRPCClient} from '@mintter/shared'
-import {HMBlock} from './documents'
 
 export type WebCapture = {
   uploadedPNG: string
@@ -146,9 +145,7 @@ export async function importWebCapture(input: WebCapture, client: GRPCClient) {
   }
   const pageTitle = dom.head.getElementsByTagName('title').item(0)?.textContent
   const blockNodes = extractBlockNodes(bodyEl.childNodes)
-  console.log('blockNodes', blockNodes)
   const docChanges = produceBodyOperations('', blockNodes)
-  console.log('docChanges', docChanges)
 
   if (pageTitle) {
     docChanges.push(

@@ -22,7 +22,6 @@ const handleLocalMediaPastePlugin = new Plugin({
         if (item.type.indexOf('image') === 0) {
           const img = item.getAsFile()
           if (img) {
-            console.log('== IS IMAGE!', img)
             // return true
             uploadMedia(img)
               .then((data) => {
@@ -44,7 +43,6 @@ const handleLocalMediaPastePlugin = new Plugin({
         } else if (item.type.indexOf('video') === 0) {
           const vid = item.getAsFile()
           if (vid) {
-            console.log('== IS VIDEO!', vid)
             // return true
             uploadMedia(vid)
               .then((data) => {

@@ -144,7 +144,6 @@ export function usePinDocument(route: PublicationRoute) {
   const isPinned = isPinnedDoc || isPinnedGroup
   function pin() {
     if (route.variant?.key === 'group') {
-      console.log('yes mutate addGroupPin', route)
       addGroupPin.mutate({
         docId: route.documentId,
         groupId: route.variant.groupId,

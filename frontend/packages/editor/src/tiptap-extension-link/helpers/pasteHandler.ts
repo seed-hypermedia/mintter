@@ -300,7 +300,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             case 0:
               const embedPromise = fetchWebLink(options.client, link.href)
                 .then((res) => {
-                  console.log('fetchWebLink response', res)
                   if (res) {
                     const fullHmUrl = hmIdWithVersion(
                       res?.hmUrl || res?.hmId,

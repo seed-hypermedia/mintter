@@ -205,7 +205,6 @@ export function usePublishDocToGroup(
       version,
     }: PublishDocToGroupMutationInput): Promise<boolean> => {
       try {
-        console.log('updating group', {groupId, pathName, docId, version})
         await grpcClient.groups.updateGroup({
           id: groupId,
           updatedContent: {

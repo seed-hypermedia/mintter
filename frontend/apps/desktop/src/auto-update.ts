@@ -164,7 +164,7 @@ fetch(
     console.log('== AUTOUPDATE CATCH', res)
   })
   .finally(() => {
-    console.log('== AUTOUPDATE FINALLY')
+    // console.log('== AUTOUPDATE FINALLY')
   })
 
 function shouldCheckForUpdate() {

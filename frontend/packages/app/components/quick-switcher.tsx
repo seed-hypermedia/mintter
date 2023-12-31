@@ -35,7 +35,6 @@ function useURLHandler() {
   const connect = useConnectPeer({
     onSuccess: () => {
       // toast.success('Connection Added')
-      console.log('peer connected.')
     },
     onError: (err) => {
       console.error('Peer Connect Error:', err)
@@ -81,7 +80,6 @@ function useURLHandler() {
       }
     } else {
       const result = await fetchWebLink(queryClient, httpSearch)
-      console.log('🌐 Queried Web URL Result', httpSearch, result)
       const blockRef = extractBlockRefOfUrl(httpSearch)
       const fullHmId = hmIdWithVersion(
         result?.hmUrl || result?.hmId,

@@ -177,7 +177,6 @@ function DocumentTabs() {
             active={allDocs}
             onPress={() => {
               if (!allDocs) {
-                console.log('go to all')
                 replace({
                   ...route,
                   tab: 'all',

@@ -374,7 +374,6 @@ function CreateInvoiceStep({
       }/v2/invoice?source=${docId}${editorsUri}&amount=${amount * 1000}`,
     )
     let resp = await res.json()
-    console.log('Made Invoice', resp)
     if (!resp.pr) {
       throw new Error('Could not create invoice: ' + resp.reason)
     } else {
@@ -385,7 +384,6 @@ function CreateInvoiceStep({
       } as InternalInvoice)
       sendWeblnPayment(resp.pr)
         .then((output) => {
-          console.log('Done Paying with webln', output)
           if (!output) return
           onComplete(true)
         })
@@ -537,7 +535,6 @@ async function checkInvoice(invoice: InternalInvoice) {
 
   if (res.status !== 200) return {status: 'incomplete'}
   const invoiceResponse = await res.json()
-  console.log('Invoice Response', invoiceResponse)
   // isPaid is false for some reason even though the payment is complete, so we just check status.settled here
   if (invoiceResponse?.status === 'settled') return {status: 'complete'}
   return {status: 'incomplete'}
@@ -556,8 +553,6 @@ function PayInvoiceStep({
       checkInvoice(invoice)
         .then((out) => {
           if (out.status === 'complete') {
-            console.log('Invoice Completed')
-
             onComplete(true)
             interval.current && clearInterval(interval.current)
           }

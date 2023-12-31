@@ -289,7 +289,6 @@ export const draftMachine = createMachine(
         blocksMap: ({context, event}) => {
           if (event.type == 'GET.DRAFT.SUCCESS') {
             let newBm = createBlocksMap(event.draft.children, '')
-            console.log('== setCurrentBlocksmap', {context, event, newBm})
             return newBm
           }
         },
@@ -325,13 +324,11 @@ export const draftMachine = createMachine(
       }),
       setCurrentDraft: assign({
         draft: ({event, context}) => {
-          console.log('== setCurrentDraft', {context, event})
           return event.type == 'GET.DRAFT.SUCCESS' ? event.draft : null
         },
       }),
       setError: assign({
         errorMessage: ({event}) => {
-          console.log('== ERROR', event)
           return 'ERROR: '
         },
       }),

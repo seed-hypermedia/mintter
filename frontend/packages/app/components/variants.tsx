@@ -171,7 +171,6 @@ export function GroupPublishDialog({
   return (
     <Form
       onSubmit={() => {
-        console.log('submit ' + selectedGroupId)
         if (!selectedGroupId) {
           toast.error('Please select a group')
           return

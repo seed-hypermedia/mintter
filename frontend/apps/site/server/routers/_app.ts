@@ -29,7 +29,6 @@ const walletsRouter = router({
       })
       const res = await fetch(url)
       const output = await res.json()
-      console.log('hello', input, output)
       return output.existing_users || []
     }),
 })

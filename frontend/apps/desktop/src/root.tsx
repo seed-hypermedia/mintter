@@ -188,7 +188,6 @@ function MainApp({
   useEffect(() => {
     const sub = client.queryInvalidation.subscribe(undefined, {
       onData: (value: unknown[]) => {
-        console.log('== client.queryInvalidation.subscribe', value)
         if (!value) return
         if (value[0] === 'trpc.experiments.get') {
           utils.experiments.get.invalidate()

@@ -498,8 +498,6 @@ function VideoForm({
     }
   }
 
-  console.log('=== DEFAULT OPEN', block.props.defaultOpen, selected)
-
   return (
     <YStack
       //@ts-ignore

@@ -72,7 +72,6 @@ export function SitePublicationContentProvider({
       }}
       onCopyBlock={(blockId: string) => {
         if (unpackedId) {
-          console.log('window.location', window.location)
           copyUrlToClipboardWithFeedback(
             createPublicWebHmUrl('d', unpackedId.eid, {
               version: unpackedId.version,

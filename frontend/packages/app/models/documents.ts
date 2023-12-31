@@ -487,10 +487,6 @@ export function useDraftEditor({
             let editorBlocks = toHMBlock(event.draft.children)
             const tiptap = editor?._tiptapEditor
             // editor.removeBlocks(editor.topLevelBlocks)
-            console.log('== REPLACING BLOCKS', {
-              current: editor.topLevelBlocks,
-              new: editorBlocks,
-            })
             editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
             // this is a hack to set the current blockGroups in the editor to the correct type, because from the BN API we don't have access to those nodes.
             setGroupTypes(tiptap, editorBlocks)
@@ -503,7 +499,6 @@ export function useDraftEditor({
           }
         },
         onSaveSuccess: ({event}) => {
-          console.log('== onSaveSuccess', event)
           // because this action is called as a result of a promised actor, that's why there are errors and is not well typed
           // @ts-expect-error
           if (event.output) {
@@ -575,12 +570,6 @@ export function useDraftEditor({
 
             const newBlocksMap = createBlocksMap(newDraft.children, '')
             // prevDraft is the final result I want
-            //
-            console.log('== compare prev Draft!', {
-              prevDraft,
-              prevBlocksMap,
-              newDraft,
-            })
 
             let {changes, touchedBlocks} = compareDraftWithMap(
               newBlocksMap,
@@ -629,7 +618,6 @@ export function useDraftEditor({
                 })
             }
           } catch (error) {
-            console.log('RESTORE ERROR', error)
             return Promise.reject(`Error restoring: ${JSON.stringify(error)}`)
           }
         }),
@@ -647,7 +635,6 @@ export function useDraftEditor({
 
             return newDraft
           } catch (error) {
-            console.log('RESET ERROR', error)
             throw new Error(`Error resetting: ${JSON.stringify(error)}`)
           }
         }),
@@ -1208,9 +1195,6 @@ function observeBlocks(
   onChange: () => void,
 ) {
   blocks.forEach((block, index) => {
-    if (block.type == 'image') {
-      console.log('== IMG', block)
-    }
     if (block.type == 'imagePlaceholder' && block.props.src) {
       editor.updateBlock(block, {
         type: 'image',

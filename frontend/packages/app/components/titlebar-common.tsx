@@ -402,7 +402,6 @@ export function CopyReferenceButton() {
         onPress={() => {
           if (shouldOpen) {
             setShouldOpen(false)
-            console.log('open url', reference.url)
             externalOpen(reference.url)
           } else {
             setShouldOpen(true)

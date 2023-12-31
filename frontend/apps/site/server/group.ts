@@ -16,10 +16,6 @@ export async function prefetchGroup(
 ) {
   if (!groupId) return null
 
-  console.log('prefetching group', {
-    groupId,
-    version: groupVersion,
-  })
   const groupRecord = await helpers.group.get.fetch({
     groupId,
     version: groupVersion || '',
@@ -36,10 +32,6 @@ export async function prefetchGroup(
       }),
     ),
   )
-  console.log('prefetching group.listContent', {
-    groupId,
-    version: groupRecord.group?.version,
-  })
   const content = await helpers.group.listContent.fetch({
     groupId,
     version: groupRecord.group?.version,
