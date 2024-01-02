@@ -82,11 +82,9 @@ export function usePublicationList(
 export function usePublicationFullList(
   opts?: UseQueryOptions<ListPublicationsResponse> & {trustedOnly: boolean},
 ) {
-  console.log('usePublicationFullList', opts?.trustedOnly)
   const pubList = usePublicationList(opts)
   const accounts = useAllAccounts()
   const data = useMemo(() => {
-    console.log('rememoize usePublicationFullList')
     function lookupAccount(accountId: string | undefined) {
       if (!accountId) return undefined
       return accounts.data?.accounts.find((acc) => acc.id === accountId)

@@ -27,10 +27,8 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   useEffect(() => {
     async function getTitleOfRoute(route: NavRoute): Promise<string> {
       if (route.key === 'documents') return 'Documents'
-      if (route.key === 'drafts') return 'Drafts'
       if (route.key === 'contacts') return 'Contacts'
       if (route.key === 'groups') return 'Groups'
-      console.log(`== ~ getTitleOfRoute ~ route:`, route)
       return ''
     }
     getTitleOfRoute(route).then((title) => {
