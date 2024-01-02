@@ -132,17 +132,17 @@ func (idx *indexingCtx) SaveBlob(id int64, b structuralBlob) error {
 	for _, link := range b.BlobLinks {
 		tgt, err := idx.ensureBlob(link.Target)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to ensure link target blob %s: %w", link.Target, err)
 		}
 		if err := hypersql.BlobLinksInsertOrIgnore(idx.conn, id, link.Type, tgt); err != nil {
-			return err
+			return fmt.Errorf("failed to insert blob link: %w", err)
 		}
 	}
 
 	for _, link := range b.ResourceLinks {
 		tgt, err := idx.ensureResource(link.Target)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to ensure resource %s: %w", link.Target, err)
 		}
 
 		meta, err := json.Marshal(link.Meta)
@@ -151,7 +151,7 @@ func (idx *indexingCtx) SaveBlob(id int64, b structuralBlob) error {
 		}
 
 		if err := hypersql.ResourceLinksInsert(idx.conn, id, tgt, link.Type, link.IsPinned, meta); err != nil {
-			return err
+			return fmt.Errorf("failed to insert resource link: %w", err)
 		}
 	}
 

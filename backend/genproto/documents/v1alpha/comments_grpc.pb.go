@@ -24,6 +24,10 @@ const _ = grpc.SupportPackageIsVersion7
 type CommentsClient interface {
 	// Creates a new comment.
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*Comment, error)
+	// Creates a new reply to an existing comment.
+	CreateReply(ctx context.Context, in *CreateReplyRequest, opts ...grpc.CallOption) (*Comment, error)
+	// Gets a single comment by ID.
+	GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*Comment, error)
 	// Lists comments for a given target.
 	ListComments(ctx context.Context, in *ListCommentsRequest, opts ...grpc.CallOption) (*ListCommentsResponse, error)
 }
@@ -45,6 +49,24 @@ func (c *commentsClient) CreateComment(ctx context.Context, in *CreateCommentReq
 	return out, nil
 }
 
+func (c *commentsClient) CreateReply(ctx context.Context, in *CreateReplyRequest, opts ...grpc.CallOption) (*Comment, error) {
+	out := new(Comment)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Comments/CreateReply", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commentsClient) GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*Comment, error) {
+	out := new(Comment)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Comments/GetComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *commentsClient) ListComments(ctx context.Context, in *ListCommentsRequest, opts ...grpc.CallOption) (*ListCommentsResponse, error) {
 	out := new(ListCommentsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Comments/ListComments", in, out, opts...)
@@ -60,6 +82,10 @@ func (c *commentsClient) ListComments(ctx context.Context, in *ListCommentsReque
 type CommentsServer interface {
 	// Creates a new comment.
 	CreateComment(context.Context, *CreateCommentRequest) (*Comment, error)
+	// Creates a new reply to an existing comment.
+	CreateReply(context.Context, *CreateReplyRequest) (*Comment, error)
+	// Gets a single comment by ID.
+	GetComment(context.Context, *GetCommentRequest) (*Comment, error)
 	// Lists comments for a given target.
 	ListComments(context.Context, *ListCommentsRequest) (*ListCommentsResponse, error)
 }
@@ -70,6 +96,12 @@ type UnimplementedCommentsServer struct {
 
 func (UnimplementedCommentsServer) CreateComment(context.Context, *CreateCommentRequest) (*Comment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
+}
+func (UnimplementedCommentsServer) CreateReply(context.Context, *CreateReplyRequest) (*Comment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateReply not implemented")
+}
+func (UnimplementedCommentsServer) GetComment(context.Context, *GetCommentRequest) (*Comment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetComment not implemented")
 }
 func (UnimplementedCommentsServer) ListComments(context.Context, *ListCommentsRequest) (*ListCommentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListComments not implemented")
@@ -104,6 +136,42 @@ func _Comments_CreateComment_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Comments_CreateReply_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateReplyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentsServer).CreateReply(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Comments/CreateReply",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentsServer).CreateReply(ctx, req.(*CreateReplyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Comments_GetComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentsServer).GetComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Comments/GetComment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentsServer).GetComment(ctx, req.(*GetCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Comments_ListComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListCommentsRequest)
 	if err := dec(in); err != nil {
@@ -132,6 +200,14 @@ var Comments_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateComment",
 			Handler:    _Comments_CreateComment_Handler,
+		},
+		{
+			MethodName: "CreateReply",
+			Handler:    _Comments_CreateReply_Handler,
+		},
+		{
+			MethodName: "GetComment",
+			Handler:    _Comments_GetComment_Handler,
 		},
 		{
 			MethodName: "ListComments",

@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Comment, CreateCommentRequest, ListCommentsRequest, ListCommentsResponse } from "./comments_pb";
+import { Comment, CreateCommentRequest, CreateReplyRequest, GetCommentRequest, ListCommentsRequest, ListCommentsResponse } from "./comments_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -22,6 +22,28 @@ export const Comments = {
     createComment: {
       name: "CreateComment",
       I: CreateCommentRequest,
+      O: Comment,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Creates a new reply to an existing comment.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Comments.CreateReply
+     */
+    createReply: {
+      name: "CreateReply",
+      I: CreateReplyRequest,
+      O: Comment,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Gets a single comment by ID.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Comments.GetComment
+     */
+    getComment: {
+      name: "GetComment",
+      I: GetCommentRequest,
       O: Comment,
       kind: MethodKind.Unary,
     },

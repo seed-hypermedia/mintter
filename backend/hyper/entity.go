@@ -321,50 +321,6 @@ func SortCIDs(cids []cid.Cid) []cid.Cid {
 	return cids
 }
 
-// NewChange creates a new Change blob.
-func NewChange(eid EntityID, deps []cid.Cid, ts hlc.Time, signer core.KeyPair, delegation cid.Cid, patch map[string]any, opts ...ChangeOption) (hb Blob, err error) {
-	// Make sure deps field is not present in the patch if there're no deps.
-	if len(deps) == 0 {
-		deps = nil
-	}
-
-	if len(patch) == 0 {
-		return hb, fmt.Errorf("new changes must have a patch: nothing to update")
-	}
-
-	SortCIDs(deps)
-
-	ch := Change{
-		Type:       TypeChange,
-		Entity:     eid,
-		Deps:       deps,
-		Delegation: delegation,
-		HLCTime:    ts,
-		Patch:      patch,
-		Signer:     signer.Principal(),
-	}
-	for _, o := range opts {
-		o(&ch)
-	}
-
-	sigdata, err := cbornode.DumpObject(ch)
-	if err != nil {
-		return hb, fmt.Errorf("failed to encode signing bytes for change %w", err)
-	}
-
-	ch.Sig, err = signer.Sign(sigdata)
-	if err != nil {
-		return hb, fmt.Errorf("failed to sign change: %w", err)
-	}
-
-	hb, err = EncodeBlob(ch)
-	if err != nil {
-		return hb, err
-	}
-
-	return hb, nil
-}
-
 func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c cid.Cid, ch Change) error) (err error) {
 	conn, release, err := bs.db.Conn(ctx)
 	if err != nil {
@@ -409,6 +365,83 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 
 	return nil
 }
+
+func (bs *Storage) ForEachComment(ctx context.Context, target string, fn func(c cid.Cid, cmt Comment) error) (err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	rdb, err := hypersql.EntitiesLookupID(conn, target)
+	if err != nil {
+		return err
+	}
+	if rdb.ResourcesID == 0 {
+		return fmt.Errorf("resource %s not found: make sure resource ID doesn't have any additional parameters", target)
+	}
+
+	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
+	err = sqlitex.Exec(conn, qForEachComment(), func(stmt *sqlite.Stmt) error {
+		var (
+			codec = stmt.ColumnInt64(0)
+			hash  = stmt.ColumnBytesUnsafe(1)
+			data  = stmt.ColumnBytesUnsafe(2)
+		)
+
+		buf, err = bs.bs.decoder.DecodeAll(data, buf)
+		if err != nil {
+			return err
+		}
+
+		chcid := cid.NewCidV1(uint64(codec), hash)
+		var cmt Comment
+		if err := cbornode.DecodeInto(buf, &cmt); err != nil {
+			return fmt.Errorf("forEachComment: failed to decode comment %s for target %s: %w", chcid, target, err)
+		}
+
+		if err := fn(chcid, cmt); err != nil {
+			return err
+		}
+
+		buf = buf[:0] // reset the slice reusing the backing array
+
+		return nil
+	}, rdb.ResourcesID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var qForEachComment = dqb.Str(`
+	WITH
+		initial_comments (blob) AS (
+			SELECT
+				resource_links.source 
+			FROM resource_links
+			WHERE resource_links.target = :resource
+		),
+		replies (blob) AS (
+			SELECT
+				blob_links.source
+			FROM blob_links
+			JOIN initial_comments ON initial_comments.blob = blob_links.target
+		)
+	SELECT
+		blobs.codec,
+		blobs.multihash,
+		blobs.data
+	FROM blobs
+	JOIN (
+		SELECT blob FROM initial_comments
+		UNION
+		SELECT blob FROM replies
+	) ids ON ids.blob = blobs.id
+`)
 
 // LoadEntity from the database. If not found returns nil result and nil error.
 // It returns the latest version as per the owner of the entity.

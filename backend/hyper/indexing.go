@@ -11,6 +11,7 @@ import (
 	groups "mintter/backend/genproto/groups/v1alpha"
 	"mintter/backend/hyper/hypersql"
 	"net/url"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -153,6 +154,8 @@ func (bs *indexer) indexBlob(conn *sqlite.Conn, id int64, c cid.Cid, blobData an
 		return bs.indexKeyDelegation(idx, id, c, v)
 	case Change:
 		return bs.indexChange(idx, id, c, v)
+	case Comment:
+		return bs.indexComment(idx, id, c, v)
 	}
 
 	return nil
@@ -233,49 +236,8 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 	// Extracting author from the associated key delegation.
 	// TODO(burdiyan): need to improve this part, because it's kinda ugly.
 	// TODO(burdiyan): must verify the key delegation to make sure device really belongs to the account.
-	var author core.Principal
-	{
-		// TODO(burdiyan): this is also quite stupid having to get it from the DB.
-		iss, err := hypersql.KeyDelegationsGetIssuer(idx.conn, v.Delegation.Hash())
-		if err != nil {
-			return err
-		}
-		if iss.KeyDelegationsIssuer == 0 {
-			// Try to get the issuer from the actual blob. This can happen when we are reindexing all the blobs,
-			// and we happen to index a change before the key delegation.
-
-			blk, err := bs.bs.get(idx.conn, v.Delegation)
-			if err != nil {
-				return err
-			}
-
-			var del KeyDelegation
-			if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
-				return fmt.Errorf("failed to decode key delegation when indexing change %s: %w", c, err)
-			}
-
-			iss.KeyDelegationsIssuer, err = idx.ensurePubKey(del.Issuer)
-			if err != nil {
-				return err
-			}
-
-			if iss.KeyDelegationsIssuer == 0 {
-				return fmt.Errorf("missing key delegation info %s of change %s", v.Delegation, c)
-			}
-		}
-
-		issuerDB, err := hypersql.PublicKeysLookupPrincipal(idx.conn, iss.KeyDelegationsIssuer)
-		if err != nil {
-			return err
-		}
-
-		author, err = core.DecodePrincipal(issuerDB.PublicKeysPrincipal)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := idx.AssertBlobData(v.Delegation); err != nil {
+	author, err := bs.getAuthorFromDelegation(idx, v.Delegation)
+	if err != nil {
 		return err
 	}
 
@@ -354,10 +316,6 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 		sb.AddBlobLink("change/dep", dep)
 	}
 
-	// This resource link shouldn't be necessary, because the delegation already has it.
-	// But leaving it here commented just in case. TODO(burdiyan).
-	// sb.AddResourceLink("change/auth", IRI("hm://a/"+author.String()), false, nil)
-
 	sb.AddBlobLink("change/auth", v.Delegation)
 
 	// TODO(burdiyan): remove this when all the tests are fixed. Sometimes CBOR codec decodes into
@@ -405,12 +363,12 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 				blk.Id = id
 				blk.Revision = c.String()
 
-				if err := indexDocURL(&sb, bs.log, blk.Id, "doc/"+blk.Type, blk.Ref); err != nil {
+				if err := indexURL(&sb, bs.log, blk.Id, "doc/"+blk.Type, blk.Ref); err != nil {
 					return err
 				}
 
 				for _, ann := range blk.Annotations {
-					if err := indexDocURL(&sb, bs.log, blk.Id, "doc/"+ann.Type, ann.Ref); err != nil {
+					if err := indexURL(&sb, bs.log, blk.Id, "doc/"+ann.Type, ann.Ref); err != nil {
 						return err
 					}
 				}
@@ -496,7 +454,7 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 					continue
 				}
 
-				if err := indexDocURL(&sb, bs.log, path, "group/content", rawURL); err != nil {
+				if err := indexURL(&sb, bs.log, path, "group/content", rawURL); err != nil {
 					return err
 				}
 			}
@@ -535,7 +493,151 @@ func (bs *indexer) indexChange(idx *indexingCtx, id int64, c cid.Cid, v Change) 
 	return idx.SaveBlob(id, sb)
 }
 
-func indexDocURL(sb *structuralBlob, log *zap.Logger, anchor, linkType, rawURL string) error {
+func (bs *indexer) indexComment(idx *indexingCtx, id int64, c cid.Cid, v Comment) error {
+	if v.Target == "" {
+		return fmt.Errorf("comment must have a target")
+	}
+
+	if !strings.HasPrefix(v.Target, "hm://") {
+		return fmt.Errorf("comment target must be a hypermedia resource, got %s", v.Target)
+	}
+
+	if v.RepliedComment.Defined() && !strings.HasPrefix(v.Target, "hm://c/") {
+		return fmt.Errorf("reply comments must have thread root comment as target, got %s", v.Target)
+	}
+
+	if v.RepliedComment.Defined() {
+		blk, err := bs.bs.get(idx.conn, v.RepliedComment)
+		if err != nil {
+			return err
+		}
+
+		replied, err := DecodeBlob(blk.Cid(), blk.RawData())
+		if err != nil {
+			return fmt.Errorf("failed to decode replied comment %s: %w", v.RepliedComment, err)
+		}
+
+		rc, ok := replied.Decoded.(Comment)
+		if !ok {
+			return fmt.Errorf("replied comment is not a comment, got %T", replied.Decoded)
+		}
+
+		// If we reply to a reply, we must have the same target.
+		// If we reply to an initial comment, our target must be the ID of the replied comment.
+		isInitial := !strings.HasPrefix(rc.Target, "hm://c/")
+		if isInitial {
+			threadRoot := "hm://c/" + blk.Cid().String()
+			if v.Target != threadRoot {
+				return fmt.Errorf("reply comment target %s must match the thread root %s", v.Target, threadRoot)
+			}
+		} else {
+			if v.Target != rc.Target {
+				return fmt.Errorf("reply comment target %s must match the replied comment target %s", v.Target, rc.Target)
+			}
+		}
+
+		if v.HLCTime.Before(rc.HLCTime) {
+			return fmt.Errorf("reply must have a higher timestamp than the replied comment: failed to assert %s > %s", v.HLCTime, rc.HLCTime)
+		}
+	}
+
+	author, err := bs.getAuthorFromDelegation(idx, v.Delegation)
+	if err != nil {
+		return err
+	}
+
+	sb := newStructuralBlob(c, string(TypeComment), author, v.HLCTime.Time(), "", nil, time.Time{})
+
+	if err := indexURL(&sb, bs.log, "", "comment/target", v.Target); err != nil {
+		return err
+	}
+
+	if v.RepliedComment.Defined() {
+		sb.AddBlobLink("comment/reply-to", v.RepliedComment)
+	}
+
+	sb.AddBlobLink("comment/auth", v.Delegation)
+
+	var indexCommentContent func([]CommentBlock) error // workaround to allow recursive closure calls.
+	indexCommentContent = func(in []CommentBlock) error {
+		for _, blk := range in {
+			if err := indexURL(&sb, bs.log, blk.ID, "comment/"+blk.Type, blk.Ref); err != nil {
+				return err
+			}
+
+			for _, a := range blk.Annotations {
+				if err := indexURL(&sb, bs.log, blk.ID, "comment/"+a.Type, a.Ref); err != nil {
+					return err
+				}
+			}
+
+			if err := indexCommentContent(blk.Children); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if err := indexCommentContent(v.Body); err != nil {
+		return err
+	}
+
+	if err := idx.SaveBlob(id, sb); err != nil {
+		return fmt.Errorf("failed to index comment: %w", err)
+	}
+
+	return nil
+}
+
+func (bs *indexer) getAuthorFromDelegation(idx *indexingCtx, delegation cid.Cid) (core.Principal, error) {
+	// TODO(burdiyan): this is also quite stupid having to get it from the DB.
+	iss, err := hypersql.KeyDelegationsGetIssuer(idx.conn, delegation.Hash())
+	if err != nil {
+		return nil, err
+	}
+	if iss.KeyDelegationsIssuer == 0 {
+		// Try to get the issuer from the actual blob. This can happen when we are reindexing all the blobs,
+		// and we happen to index a change before the key delegation.
+
+		blk, err := bs.bs.get(idx.conn, delegation)
+		if err != nil {
+			return nil, err
+		}
+
+		var del KeyDelegation
+		if err := cbornode.DecodeInto(blk.RawData(), &del); err != nil {
+			return nil, fmt.Errorf("failed to decode key delegation %s: %w", delegation, err)
+		}
+
+		iss.KeyDelegationsIssuer, err = idx.ensurePubKey(del.Issuer)
+		if err != nil {
+			return nil, err
+		}
+
+		if iss.KeyDelegationsIssuer == 0 {
+			return nil, fmt.Errorf("missing key delegation info %s", delegation)
+		}
+	}
+
+	issuerDB, err := hypersql.PublicKeysLookupPrincipal(idx.conn, iss.KeyDelegationsIssuer)
+	if err != nil {
+		return nil, err
+	}
+
+	author, err := core.DecodePrincipal(issuerDB.PublicKeysPrincipal)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := idx.AssertBlobData(delegation); err != nil {
+		return nil, err
+	}
+
+	return author, nil
+}
+
+func indexURL(sb *structuralBlob, log *zap.Logger, anchor, linkType, rawURL string) error {
 	if rawURL == "" {
 		return nil
 	}
@@ -546,8 +648,8 @@ func indexDocURL(sb *structuralBlob, log *zap.Logger, anchor, linkType, rawURL s
 		return nil
 	}
 
-	switch u.Scheme {
-	case "hm":
+	switch {
+	case u.Scheme == "hm" && u.Host != "c":
 		linkMeta := DocLinkMeta{
 			Anchor:         anchor,
 			TargetFragment: u.Fragment,
@@ -565,7 +667,14 @@ func indexDocURL(sb *structuralBlob, log *zap.Logger, anchor, linkType, rawURL s
 		for _, vcid := range vblobs {
 			sb.AddBlobLink(linkType, vcid)
 		}
-	case "ipfs":
+	case u.Scheme == "hm" && u.Host == "c":
+		c, err := cid.Decode(strings.TrimPrefix(u.Path, "/"))
+		if err != nil {
+			return fmt.Errorf("failed to parse comment CID %s: %w", rawURL, err)
+		}
+
+		sb.AddBlobLink(linkType, c)
+	case u.Scheme == "ipfs":
 		c, err := cid.Decode(u.Hostname())
 		if err != nil {
 			return fmt.Errorf("failed to parse IPFS URL %s: %w", rawURL, err)

@@ -12,6 +12,12 @@ service Comments {
   // Creates a new comment.
   rpc CreateComment(CreateCommentRequest) returns (Comment);
 
+  // Creates a new reply to an existing comment.
+  rpc CreateReply(CreateReplyRequest) returns (Comment);
+
+  // Gets a single comment by ID.
+  rpc GetComment(GetCommentRequest) returns (Comment);
+
   // Lists comments for a given target.
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
 }
@@ -19,17 +25,27 @@ service Comments {
 // Request to create a comment.
 message CreateCommentRequest {
   // Required. The URI of the target hypermedia resource which is being commented.
-  // For initial comments this is normally a Hypermedia Document, but potentially can be anything.
-  // For replies this should be the ID of the initial root comment that has started the conversation tread,
-  // i.e. direct replies, and replies to replies should all have the same root comment as target.
+  // It's best to use versioned URIs to propagate better context and intent,
+  // even if the comments are "overlaid" onto the newer versions of the resource.
   string target = 1;
 
-  // Optional. Only required for replies.
-  // The ID of the comment to which this comment will be a reply.
-  string replied_comment = 2;
-
   // Required. Content of the comment.
-  repeated BlockNode content = 4;
+  repeated BlockNode content = 2;
+}
+
+// Request to create a reply.
+message CreateReplyRequest {
+  // Required. ID of the replied comment.
+  string replied_comment = 1;
+
+  // Required. Content of the reply.
+  repeated BlockNode content = 2;
+}
+
+// Request to get a comment.
+message GetCommentRequest {
+  // Required. ID of the comment to retrieve.
+  string id = 1;
 }
 
 // Request to list comments.
@@ -47,6 +63,7 @@ message ListCommentsRequest {
   string page_token = 4;
 }
 
+// Response with a list of comments.
 message ListCommentsResponse {
   // List of comments.
   repeated Comment comments = 1;

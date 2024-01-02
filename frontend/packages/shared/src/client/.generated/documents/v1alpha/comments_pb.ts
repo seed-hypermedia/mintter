@@ -15,23 +15,17 @@ import { BlockNode } from "./documents_pb";
 export class CreateCommentRequest extends Message<CreateCommentRequest> {
   /**
    * Required. The URI of the target hypermedia resource which is being commented.
+   * It's best to use versioned URIs to propagate better context and intent,
+   * even if the comments are "overlaid" onto the newer versions of the resource.
    *
    * @generated from field: string target = 1;
    */
   target = "";
 
   /**
-   * Optional. Only required for replies.
-   * The ID of the comment to which this comment will be a reply.
-   *
-   * @generated from field: string replied_comment = 2;
-   */
-  repliedComment = "";
-
-  /**
    * Required. Content of the comment.
    *
-   * @generated from field: repeated com.mintter.documents.v1alpha.BlockNode content = 4;
+   * @generated from field: repeated com.mintter.documents.v1alpha.BlockNode content = 2;
    */
   content: BlockNode[] = [];
 
@@ -44,8 +38,7 @@ export class CreateCommentRequest extends Message<CreateCommentRequest> {
   static readonly typeName = "com.mintter.documents.v1alpha.CreateCommentRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "target", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "replied_comment", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "content", kind: "message", T: BlockNode, repeated: true },
+    { no: 2, name: "content", kind: "message", T: BlockNode, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateCommentRequest {
@@ -62,6 +55,96 @@ export class CreateCommentRequest extends Message<CreateCommentRequest> {
 
   static equals(a: CreateCommentRequest | PlainMessage<CreateCommentRequest> | undefined, b: CreateCommentRequest | PlainMessage<CreateCommentRequest> | undefined): boolean {
     return proto3.util.equals(CreateCommentRequest, a, b);
+  }
+}
+
+/**
+ * Request to create a reply.
+ *
+ * @generated from message com.mintter.documents.v1alpha.CreateReplyRequest
+ */
+export class CreateReplyRequest extends Message<CreateReplyRequest> {
+  /**
+   * Required. ID of the replied comment.
+   *
+   * @generated from field: string replied_comment = 1;
+   */
+  repliedComment = "";
+
+  /**
+   * Required. Content of the reply.
+   *
+   * @generated from field: repeated com.mintter.documents.v1alpha.BlockNode content = 2;
+   */
+  content: BlockNode[] = [];
+
+  constructor(data?: PartialMessage<CreateReplyRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.CreateReplyRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "replied_comment", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "content", kind: "message", T: BlockNode, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateReplyRequest {
+    return new CreateReplyRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateReplyRequest {
+    return new CreateReplyRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateReplyRequest {
+    return new CreateReplyRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateReplyRequest | PlainMessage<CreateReplyRequest> | undefined, b: CreateReplyRequest | PlainMessage<CreateReplyRequest> | undefined): boolean {
+    return proto3.util.equals(CreateReplyRequest, a, b);
+  }
+}
+
+/**
+ * Request to get a comment.
+ *
+ * @generated from message com.mintter.documents.v1alpha.GetCommentRequest
+ */
+export class GetCommentRequest extends Message<GetCommentRequest> {
+  /**
+   * Required. ID of the comment to retrieve.
+   *
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<GetCommentRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.GetCommentRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetCommentRequest {
+    return new GetCommentRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetCommentRequest {
+    return new GetCommentRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetCommentRequest {
+    return new GetCommentRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetCommentRequest | PlainMessage<GetCommentRequest> | undefined, b: GetCommentRequest | PlainMessage<GetCommentRequest> | undefined): boolean {
+    return proto3.util.equals(GetCommentRequest, a, b);
   }
 }
 
@@ -131,6 +214,8 @@ export class ListCommentsRequest extends Message<ListCommentsRequest> {
 }
 
 /**
+ * Response with a list of comments.
+ *
  * @generated from message com.mintter.documents.v1alpha.ListCommentsResponse
  */
 export class ListCommentsResponse extends Message<ListCommentsResponse> {
