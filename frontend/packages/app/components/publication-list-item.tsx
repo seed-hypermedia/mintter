@@ -18,7 +18,7 @@ export function PublicationListItem({
   publication,
   hasDraft,
   variant,
-  menuItems,
+  menuItems = () => [],
   onPointerEnter,
   pathName,
   openRoute,

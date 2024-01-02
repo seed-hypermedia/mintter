@@ -573,7 +573,7 @@ function GroupContentItem({
             idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
             'Group Publication',
           ),
-          ...(userRole !== Role.ROLE_UNSPECIFIED ? memberMenuItems : []),
+          ...(userRole != Role.ROLE_UNSPECIFIED ? memberMenuItems : []),
         ]}
         openRoute={{
           key: 'publication',
