@@ -100,5 +100,5 @@
   overflow: hidden;
   font-size: 0.8em;
   line-height: 1.5;
-  padding: 2px var(--space-7);
+  /* padding: 2px var(--space-7); */
 }

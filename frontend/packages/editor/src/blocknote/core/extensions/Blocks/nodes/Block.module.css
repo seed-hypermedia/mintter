@@ -223,9 +223,9 @@ NESTED BLOCKS
 .blockContent[data-content-type='codeBlock'] {
   background-color: var(--color4);
   border-radius: 6px;
-  padding: 12px;
-  margin-left: -12px;
-  margin-right: -12px;
+  padding: 10px 16px;
+  margin-left: -16px;
+  margin-right: -16px;
   position: 'relative';
   white-space: pre-wrap;
 }
