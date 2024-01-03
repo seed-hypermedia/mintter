@@ -248,6 +248,7 @@ export function toHMBlock(
   children: Array<BlockNode>,
   opts: ServerToEditorRecursiveOpts & {
     childrenType?: HMBlockChildrenType
+    listLevel?: string
     start?: string
   } = {level: 1},
 ): Array<HMBlock> {
@@ -378,6 +379,10 @@ export function toHMBlock(
 
     if (serverBlock.block?.attributes.start) {
       res.props.start = serverBlock.block.attributes.start
+    }
+
+    if (serverBlock.block?.attributes.listLevel) {
+      res.props.listLevel = serverBlock.block.attributes.listLevel
     }
 
     if (serverBlock.children.length) {

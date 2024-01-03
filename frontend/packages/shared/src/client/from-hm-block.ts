@@ -263,6 +263,7 @@ function extractChildrenType(
 ): ServerBlock {
   if (editorBlock.props.childrenType) {
     block.attributes.childrenType = editorBlock.props.childrenType
+    block.attributes.listLevel = editorBlock.props.listLevel
   }
 
   if (editorBlock.props.start) {

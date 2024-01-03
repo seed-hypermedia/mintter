@@ -12,9 +12,17 @@ export const BlockGroup = Node.create<{
 
   addAttributes() {
     return {
+      listLevel: {
+        default: '1',
+        parseHTML: (element) => element.getAttribute('data-list-level'),
+        renderHTML: (attributes) => {
+          return {
+            'data-list-level': attributes.listLevel,
+          }
+        },
+      },
       listType: {
         default: 'div',
-        // instead of "level" attributes, use "data-level"
         parseHTML: (element) => element.getAttribute('data-list-type'),
         renderHTML: (attributes) => {
           return {
@@ -44,7 +52,7 @@ export const BlockGroup = Node.create<{
         find: new RegExp(`^[-+*]\\s$`),
         handler: ({state, chain, range}) => {
           chain()
-            .UpdateGroup(state.selection.from, 'ul')
+            .UpdateGroup(state.selection.from, 'ul', false)
             // Removes the "-", "+", or "*" character used to set the list.
             .deleteRange({from: range.from, to: range.to})
         },
@@ -56,6 +64,7 @@ export const BlockGroup = Node.create<{
             .UpdateGroup(
               state.selection.from,
               'ol',
+              false,
               this.editor.state.doc.textBetween(range.from, range.to - 1),
             )
             // Removes the "1." characters used to set the list.

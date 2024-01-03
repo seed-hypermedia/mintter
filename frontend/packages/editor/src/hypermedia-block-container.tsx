@@ -54,6 +54,7 @@ declare module '@tiptap/core' {
       UpdateGroup: (
         posInBlock: number,
         listType: HMBlockChildrenType,
+        tab: boolean,
         start?: string,
       ) => ReturnType
     }
@@ -513,7 +514,7 @@ export const HMBlockContainer = Node.create<{
         },
       // Updates a block group at a given position.
       UpdateGroup:
-        (posInBlock, listType, start) =>
+        (posInBlock, listType, tab, start) =>
         ({state, dispatch}) => {
           if (posInBlock < 0) posInBlock = state.selection.from
           const $pos = state.doc.resolve(posInBlock)
@@ -552,13 +553,14 @@ export const HMBlockContainer = Node.create<{
           if (
             group.firstChild &&
             container &&
-            group.firstChild.attrs.id !== container.attrs.id
+            group.firstChild.attrs.id !== container.attrs.id &&
+            !tab
           ) {
             setTimeout(() => {
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, start)
+                .UpdateGroup(-1, listType, tab, start)
                 .run()
 
               return true
@@ -571,13 +573,14 @@ export const HMBlockContainer = Node.create<{
           if (
             group.attrs.listType !== 'div' &&
             group.attrs.listType !== listType &&
-            container
+            container &&
+            !tab
           ) {
             setTimeout(() => {
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, start)
+                .UpdateGroup(-1, listType, tab, start)
                 .run()
 
               return true

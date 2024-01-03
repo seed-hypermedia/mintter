@@ -72,6 +72,14 @@ NESTED BLOCKS
   list-style-type: disc;
 }
 
+.blockGroup[data-list-level='2'] {
+  list-style-type: circle;
+}
+
+.blockGroup[data-list-level='3'] {
+  list-style-type: square;
+}
+
 .blockGroup[data-list-type='ol'] {
   margin-left: 1em;
   list-style-type: decimal;

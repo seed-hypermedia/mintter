@@ -825,11 +825,15 @@ function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
                     // @ts-expect-error
                     listType: block.props?.childrenType,
                     // @ts-expect-error
+                    listLevel: block.props?.listLevel,
+                    // @ts-expect-error
                     start: parseInt(block.props?.start),
                   })
                 : tr.setNodeMarkup(pos + childPos + 1, null, {
                     // @ts-expect-error
                     listType: block.props?.childrenType,
+                    // @ts-expect-error
+                    listLevel: block.props?.listLevel,
                   })
               tiptap.view.dispatch(tr)
             })
@@ -936,6 +940,8 @@ export function compareBlocksWithMap(
       // @ts-expect-error
       block.props.childrenType = childGroup.type ? childGroup.type : 'group'
       // @ts-expect-error
+      block.props.listLevel = childGroup.listLevel
+      // @ts-expect-error
       if (childGroup.start) block.props.start = childGroup.start.toString()
     }
     let currentBlockState = fromHMBlock(block)
@@ -1008,7 +1014,7 @@ export function compareBlocksWithMap(
     const tiptap = editor?._tiptapEditor
     if (tiptap) {
       const id = typeof blockId === 'string' ? blockId : blockId.id
-      let group: {type: string; start?: number} | undefined
+      let group: {type: string; listLevel: string; start?: number} | undefined
       tiptap.state.doc.firstChild!.descendants((node: Node) => {
         if (typeof group !== 'undefined') {
           return false
@@ -1023,6 +1029,7 @@ export function compareBlocksWithMap(
             group = {
               type: child.attrs.listType,
               start: child.attrs.start,
+              listLevel: child.attrs.listLevel,
             }
             return false
           }

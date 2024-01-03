@@ -25,7 +25,7 @@ import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
 
 const SelectionPluginKey = new PluginKey('selectionPluginKey')
-const ClickPluginKey = new PluginKey('clickPluginKey')
+const ClickSelectionPluginKey = new PluginKey('clickSelectionPluginKey')
 
 const SelectionPlugin = new Plugin({
   key: SelectionPluginKey,
@@ -44,8 +44,8 @@ const SelectionPlugin = new Plugin({
   },
 })
 
-const ClickPlugin = new Plugin({
-  key: ClickPluginKey,
+const ClickSelectionPlugin = new Plugin({
+  key: ClickSelectionPluginKey,
   props: {
     handleDOMEvents: {
       mousedown(view, event) {
@@ -63,10 +63,6 @@ const ClickPlugin = new Plugin({
             return undefined
           }
           const {selection} = state
-          const {id: selectedId} = getBlockInfoFromPos(
-            state.doc,
-            selection.from,
-          )
           const selectedPos = state.doc.resolve(selection.from)
           const nodePos = state.doc.resolve(pos.pos)
           if (
@@ -109,6 +105,7 @@ declare module '@tiptap/core' {
       UpdateGroup: (
         posInBlock: number,
         listType: HMBlockChildrenType,
+        tab: boolean,
         start?: string,
       ) => ReturnType
     }
@@ -453,14 +450,14 @@ export const BlockContainer = Node.create<{
         },
       // Updates a block group at a given position.
       UpdateGroup:
-        (posInBlock, listType, start) =>
+        (posInBlock, listType, tab, start) =>
         ({state, dispatch}) => {
           if (posInBlock < 0) posInBlock = state.selection.from
           const $pos = state.doc.resolve(posInBlock)
           const maxDepth = $pos.depth
           // Set group to first node found at position
           let group = $pos.node(maxDepth)
-          let container
+          let container: PMNode | undefined
           let depth = maxDepth
 
           // Find block group, block container and depth it is at
@@ -493,13 +490,14 @@ export const BlockContainer = Node.create<{
           if (
             group.firstChild &&
             container &&
-            group.firstChild.attrs.id !== container.attrs.id
+            group.firstChild.attrs.id !== container.attrs.id &&
+            !tab
           ) {
             setTimeout(() => {
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, start)
+                .UpdateGroup(-1, listType, tab, start)
                 .run()
 
               return true
@@ -512,13 +510,14 @@ export const BlockContainer = Node.create<{
           if (
             group.attrs.listType !== 'div' &&
             group.attrs.listType !== listType &&
-            container
+            container &&
+            !tab
           ) {
             setTimeout(() => {
               this.editor
                 .chain()
                 .sinkListItem('blockContainer')
-                .UpdateGroup(-1, listType, start)
+                .UpdateGroup(-1, listType, tab, start)
                 .run()
 
               return true
@@ -527,16 +526,47 @@ export const BlockContainer = Node.create<{
           }
 
           if (dispatch && group.type.name === 'blockGroup') {
+            let level = '1'
+            if (depth > 7) level = '3'
+            else {
+              switch (depth) {
+                case 7:
+                  level = '3'
+                  break
+                case 5:
+                  level = '2'
+                default:
+                  break
+              }
+            }
+
             start
               ? state.tr.setNodeMarkup($pos.before(depth), null, {
                   ...group.attrs,
                   listType: listType,
+                  listLevel: level,
                   start: parseInt(start),
                 })
               : state.tr.setNodeMarkup($pos.before(depth), null, {
                   ...group.attrs,
                   listType: listType,
+                  listLevel: level,
                 })
+
+            if (container) {
+              container.descendants((child, pos) => {
+                if (child.type.name === 'blockGroup') {
+                  state.tr.setNodeMarkup($pos.start() + pos - 1, null, {
+                    ...child.attrs,
+                    listType: listType,
+                    listLevel:
+                      parseInt(level) < 3
+                        ? (parseInt(level) + 1).toString()
+                        : level,
+                  })
+                }
+              })
+            }
           }
 
           return true
@@ -545,7 +575,7 @@ export const BlockContainer = Node.create<{
   },
 
   addProseMirrorPlugins() {
-    return [PreviousBlockTypePlugin(), SelectionPlugin, ClickPlugin]
+    return [PreviousBlockTypePlugin(), SelectionPlugin, ClickSelectionPlugin]
   },
 
   addKeyboardShortcuts() {
@@ -753,15 +783,62 @@ export const BlockContainer = Node.create<{
           }),
       ])
 
+    const handleTab = () =>
+      this.editor.commands.first(({commands}) => [
+        () =>
+          commands.command(({state}) => {
+            const $pos = state.doc.resolve(state.selection.from)
+            const maxDepth = $pos.depth
+            // Set group to first node found at position
+            let group = $pos.node(maxDepth)
+            let container
+            let depth = maxDepth
+
+            // Find block group, block container and depth it is at
+            while (true) {
+              if (depth < 0) {
+                break
+              }
+
+              if (group.type.name === 'blockGroup') {
+                break
+              }
+
+              if (group.type.name === 'blockContainer') {
+                container = group
+              }
+
+              depth -= 1
+              group = $pos.node(depth)
+            }
+
+            if (
+              group.type.name === 'blockGroup' &&
+              group.attrs.listType !== 'div'
+            ) {
+              setTimeout(() => {
+                this.editor
+                  .chain()
+                  .sinkListItem('blockContainer')
+                  .UpdateGroup(-1, group.attrs.listType, true, undefined)
+                  .run()
+              })
+              return true
+            }
+            return false
+          }),
+        () => {
+          commands.sinkListItem('blockContainer')
+          return true
+        },
+      ])
+
     return {
       Backspace: handleBackspace,
       Enter: handleEnter,
       // Always returning true for tab key presses ensures they're not captured by the browser. Otherwise, they blur the
       // editor since the browser will try to use tab for keyboard navigation.
-      Tab: () => {
-        this.editor.commands.sinkListItem('blockContainer')
-        return true
-      },
+      Tab: handleTab,
       'Shift-Tab': () => {
         this.editor.commands.liftListItem('blockContainer')
         return true
