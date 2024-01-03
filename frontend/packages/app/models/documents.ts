@@ -855,7 +855,9 @@ export function useDocTextContent(pub?: Publication) {
     let res = ''
     function extractContent(blocks: Array<BlockNode>) {
       blocks.forEach((bn) => {
-        res += extractBlockText(bn)
+        if (res.length < 300) {
+          res += extractBlockText(bn)
+        }
       })
 
       return res
