@@ -483,7 +483,7 @@ func (srv *Server) GetGroup(ctx context.Context, in *groups.GetGroupRequest) (*g
 
 	var e *hyper.Entity
 	if in.Version == "" {
-		v, err := srv.blobs.LoadEntity(ctx, eid)
+		v, err := srv.blobs.LoadEntityAll(ctx, eid)
 		if err != nil {
 			return nil, err
 		}
@@ -520,7 +520,7 @@ func (srv *Server) UpdateGroup(ctx context.Context, in *groups.UpdateGroupReques
 	}
 
 	eid := hyper.EntityID(in.Id)
-	e, err := srv.blobs.LoadEntity(ctx, eid)
+	e, err := srv.blobs.LoadEntityAll(ctx, eid)
 	if err != nil {
 		return nil, err
 	}
@@ -637,7 +637,7 @@ func (srv *Server) ListContent(ctx context.Context, in *groups.ListContentReques
 
 	var e *hyper.Entity
 	if in.Version == "" {
-		v, err := srv.blobs.LoadEntity(ctx, eid)
+		v, err := srv.blobs.LoadEntityAll(ctx, eid)
 		if err != nil {
 			return nil, err
 		}
