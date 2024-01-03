@@ -525,6 +525,47 @@ func TestGroupNonMembers(t *testing.T) {
 	require.Len(t, bobGroups.Items, 0, "bob must not be member of any groups")
 }
 
+func TestBug_MustConsiderMemberChangesToo(t *testing.T) {
+	t.Parallel()
+
+	alice := newTestSrv(t, "alice")
+	bob := newTestSrv(t, "bob")
+	ctx := context.Background()
+
+	group, err := alice.CreateGroup(ctx, &groups.CreateGroupRequest{Title: "Alice from the Wonderland"})
+	require.NoError(t, err)
+
+	group, err = alice.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id: group.Id,
+		UpdatedMembers: map[string]groups.Role{
+			bob.me.MustGet().Account().Principal().String(): groups.Role_EDITOR,
+		},
+	})
+	require.NoError(t, err)
+
+	syncBlobs(t, alice, bob)
+
+	newTitle := "Alice from the Wonderland and Bob from Mordor"
+
+	group, err = bob.UpdateGroup(ctx, &groups.UpdateGroupRequest{
+		Id:    group.Id,
+		Title: newTitle,
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, newTitle, group.Title)
+
+	gotGroup, err := bob.GetGroup(ctx, &groups.GetGroupRequest{Id: group.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, group, gotGroup, "get group response must match in Bob")
+
+	syncBlobs(t, bob, alice)
+
+	gotGroup, err = alice.GetGroup(ctx, &groups.GetGroupRequest{Id: group.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, group, gotGroup, "get group response must match in Alice")
+}
+
 func syncBlobs(t *testing.T, src, target *Server) {
 	ctx := context.Background()
 	srcKeys, err := src.blobs.IPFSBlockstore().AllKeysChan(ctx)

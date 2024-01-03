@@ -410,6 +410,80 @@ func (bs *Storage) ForEachChange(ctx context.Context, eid EntityID, fn func(c ci
 	return nil
 }
 
+// LoadEntityAll loads the entity with all the changes.
+//
+// TODO(burdiyan): DRY out all the loading methods.
+func (bs *Storage) LoadEntityAll(ctx context.Context, eid EntityID) (e *Entity, err error) {
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	edb, err := hypersql.EntitiesLookupID(conn, string(eid))
+	if err != nil {
+		return nil, err
+	}
+	if edb.ResourcesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "entity %q not found", eid)
+	}
+
+	entity := NewEntity(eid)
+	buf := make([]byte, 0, 1024*1024) // preallocating 1MB for decompression.
+	if err := sqlitex.Exec(conn, qLoadEntityAll(), func(stmt *sqlite.Stmt) error {
+		var (
+			codec = stmt.ColumnInt64(0)
+			hash  = stmt.ColumnBytesUnsafe(1)
+			data  = stmt.ColumnBytesUnsafe(2)
+		)
+
+		buf, err = bs.bs.decoder.DecodeAll(data, buf)
+		if err != nil {
+			return err
+		}
+
+		c := cid.NewCidV1(uint64(codec), hash)
+		var ch Change
+		if err := cbornode.DecodeInto(buf, &ch); err != nil {
+			return fmt.Errorf("loadEntity: failed to decode change %q for entity %q: %w", c, eid, err)
+		}
+
+		if err := entity.ApplyChange(c, ch); err != nil {
+			return err
+		}
+
+		// Reset the slice to reuse the underlying array for the next decompression.
+		buf = buf[:0]
+		return nil
+	}, edb.ResourcesID); err != nil {
+		return nil, err
+	}
+	// TODO(burdiyan): this is not a great way to handle not found errors.
+	// But in a lot of places we rely on that behavior, which was more of an accident.
+	// Need to clean up at some point.
+	if len(entity.changes) == 0 {
+		return nil, nil
+	}
+
+	return entity, nil
+}
+
+var qLoadEntityAll = dqb.Str(`
+	SELECT
+		blobs.codec,
+		blobs.multihash,
+		blobs.data
+	FROM structural_blobs
+	JOIN blobs ON blobs.id = structural_blobs.id
+	LEFT JOIN drafts ON drafts.resource = structural_blobs.resource AND drafts.blob = structural_blobs.id
+	WHERE structural_blobs.type = 'Change'
+	AND structural_blobs.resource = :entity
+	AND drafts.blob IS NULL
+	ORDER BY structural_blobs.ts;
+`)
+
 // LoadEntity from the database. If not found returns nil result and nil error.
 // It returns the latest version as per the owner of the entity.
 func (bs *Storage) LoadEntity(ctx context.Context, eid EntityID) (e *Entity, err error) {
