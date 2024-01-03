@@ -63,6 +63,13 @@ function createGroupQuery(
   }
 }
 
+/**
+ *
+ * @param groupId
+ * @param version
+ * @param opts
+ * @returns only the group metadata and the list of members
+ */
 export function useGroup(
   groupId: string | undefined,
   version?: string | undefined,
@@ -319,6 +326,12 @@ export function useCanEditGroup(groupId: string | undefined) {
   )
 }
 
+/**
+ *
+ * @param groupId
+ * @param version
+ * @returns the list of content for a particular group
+ */
 export function useGroupContent(
   groupId?: string | undefined,
   version?: string,
@@ -327,6 +340,11 @@ export function useGroupContent(
   return useQuery(getGroupContentQuery(grpcClient, groupId, version))
 }
 
+/**
+ *
+ * @param groupIds
+ * @returns returns all the content for a list of groupIds
+ */
 export function useGroupsContent(groupIds: string[]) {
   const grpcClient = useGRPCClient()
   return useQueries({
@@ -335,7 +353,12 @@ export function useGroupsContent(groupIds: string[]) {
     ),
   })
 }
-
+/**
+ *
+ * @param groupId
+ * @param version
+ * @returns returns everything from `useGroupContent` and all the publication's data
+ */
 export function useFullGroupContent(
   groupId?: string | undefined,
   version?: string,
