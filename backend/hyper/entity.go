@@ -423,13 +423,15 @@ var qForEachComment = dqb.Str(`
 			SELECT
 				resource_links.source 
 			FROM resource_links
-			WHERE resource_links.target = :resource
+			WHERE target = :resource
+			AND type = 'comment/target'
 		),
 		replies (blob) AS (
 			SELECT
 				blob_links.source
 			FROM blob_links
 			JOIN initial_comments ON initial_comments.blob = blob_links.target
+			AND type = 'comment/target'
 		)
 	SELECT
 		blobs.codec,
