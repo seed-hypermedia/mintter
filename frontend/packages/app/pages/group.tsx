@@ -95,6 +95,7 @@ import {AppPublicationContentProvider} from './publication'
 
 export default function GroupPage() {
   const route = useNavRoute()
+  const accessory = route?.accesory
   if (route.key !== 'group') throw new Error('Group page needs group route')
   const {groupId, version} = route
   const group = useGroup(groupId, version, {
@@ -168,8 +169,11 @@ export default function GroupPage() {
   return (
     <>
       <YStack flex={1} justifyContent="space-between" maxHeight={'100%'}>
-        <Allotment defaultSizes={[100]}>
-          <Allotment.Pane>
+        <Allotment
+          key={`${accessory}`}
+          defaultSizes={accessory ? [65, 35] : [100]}
+        >
+          <Allotment.Pane minSize={680}>
             <MainWrapper maxHeight={'100%'}>
               <Container>
                 <YStack group="header">
