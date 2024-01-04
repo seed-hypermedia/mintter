@@ -26,6 +26,7 @@ import {
   useHover,
 } from '@mintter/shared'
 import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {ResolvedPos} from '@tiptap/pm/model'
 import {
   NodeViewContent,
   NodeViewWrapper,
@@ -50,6 +51,12 @@ declare module '@tiptap/core' {
       BNCreateOrUpdateBlock: <BSchema extends BlockSchema>(
         posInBlock: number,
         block: PartialBlock<BSchema>,
+      ) => ReturnType
+      UpdateGroupChildren: (
+        group: PMNode,
+        groupPos: ResolvedPos,
+        listType: HMBlockChildrenType,
+        indent: number,
       ) => ReturnType
       UpdateGroup: (
         posInBlock: number,

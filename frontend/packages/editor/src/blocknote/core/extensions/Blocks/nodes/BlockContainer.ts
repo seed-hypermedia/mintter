@@ -13,6 +13,7 @@ import {
 } from '../../../api/nodeConversions/nodeConversions'
 
 import {HMBlockChildrenType} from '@mintter/shared'
+import {ResolvedPos} from '@tiptap/pm/model'
 import {mergeCSSClasses} from '../../../shared/utils'
 import {
   BlockNoteDOMAttributes,
@@ -101,6 +102,12 @@ declare module '@tiptap/core' {
       BNCreateOrUpdateBlock: <BSchema extends BlockSchema>(
         posInBlock: number,
         block: PartialBlock<BSchema>,
+      ) => ReturnType
+      UpdateGroupChildren: (
+        group: PMNode,
+        groupPos: ResolvedPos,
+        listType: HMBlockChildrenType,
+        indent: number,
       ) => ReturnType
       UpdateGroup: (
         posInBlock: number,
@@ -448,6 +455,45 @@ export const BlockContainer = Node.create<{
 
           return true
         },
+      // Updates group's child groups.
+      UpdateGroupChildren:
+        (group, groupPos, listType, indent) =>
+        ({state, dispatch}) => {
+          if (dispatch) {
+            let prevLevel = 0
+            group.descendants((child, pos) => {
+              if (
+                child.type.name === 'blockGroup' &&
+                child.attrs.listType === listType
+              ) {
+                let newLevel: string
+                if (indent > 0) {
+                  newLevel =
+                    parseInt(child.attrs.listLevel) < 3
+                      ? (parseInt(child.attrs.listLevel) + indent).toString()
+                      : child.attrs.listLevel
+                } else {
+                  if (prevLevel === 2) {
+                    newLevel = child.attrs.listLevel
+                  } else {
+                    newLevel =
+                      parseInt(child.attrs.listLevel) > 1
+                        ? (parseInt(child.attrs.listLevel) + indent).toString()
+                        : child.attrs.listLevel
+                  }
+                  if (prevLevel < 2) prevLevel = parseInt(newLevel)
+                }
+                state.tr.setNodeMarkup(groupPos.start() + pos - 1, null, {
+                  ...child.attrs,
+                  listType: listType,
+                  listLevel: newLevel,
+                })
+              }
+            })
+            return true
+          }
+          return false
+        },
       // Updates a block group at a given position.
       UpdateGroup:
         (posInBlock, listType, tab, start) =>
@@ -554,17 +600,13 @@ export const BlockContainer = Node.create<{
                 })
 
             if (container) {
-              container.descendants((child, pos) => {
-                if (child.type.name === 'blockGroup') {
-                  state.tr.setNodeMarkup($pos.start() + pos - 1, null, {
-                    ...child.attrs,
-                    listType: listType,
-                    listLevel:
-                      parseInt(level) < 3
-                        ? (parseInt(level) + 1).toString()
-                        : level,
-                  })
-                }
+              setTimeout(() => {
+                this.editor.commands.UpdateGroupChildren(
+                  container!,
+                  $pos,
+                  listType,
+                  1,
+                )
               })
             }
           }
@@ -833,16 +875,60 @@ export const BlockContainer = Node.create<{
         },
       ])
 
+    const handleShiftTab = () =>
+      this.editor.commands.first(({commands}) => [
+        () =>
+          commands.command(({state}) => {
+            const $pos = state.doc.resolve(state.selection.from)
+            const maxDepth = $pos.depth
+            // Set group to first node found at position
+            let group = $pos.node(maxDepth)
+            let container
+            let depth = maxDepth
+
+            // Find block group, block container and depth it is at
+            while (true) {
+              if (depth < 0) {
+                break
+              }
+
+              if (group.type.name === 'blockGroup') {
+                break
+              }
+
+              if (group.type.name === 'blockContainer') {
+                container = group
+              }
+
+              depth -= 1
+              group = $pos.node(depth)
+            }
+
+            if (container) {
+              setTimeout(() => {
+                this.editor.commands.UpdateGroupChildren(
+                  container,
+                  $pos,
+                  group.attrs.listType,
+                  -1,
+                )
+              })
+            }
+            return false
+          }),
+        () => {
+          commands.liftListItem('blockContainer')
+          return true
+        },
+      ])
+
     return {
       Backspace: handleBackspace,
       Enter: handleEnter,
       // Always returning true for tab key presses ensures they're not captured by the browser. Otherwise, they blur the
       // editor since the browser will try to use tab for keyboard navigation.
       Tab: handleTab,
-      'Shift-Tab': () => {
-        this.editor.commands.liftListItem('blockContainer')
-        return true
-      },
+      'Shift-Tab': handleShiftTab,
       'Mod-Alt-0': () =>
         this.editor.commands.BNCreateBlock(
           this.editor.state.selection.anchor + 2,
