@@ -9,7 +9,7 @@ export function AccessoryContainer({
   title?: string
 }) {
   return (
-    <Allotment.Pane preferredSize="35%">
+    <Allotment.Pane preferredSize="35%" maxSize={400} minSize={300}>
       {title ? (
         <XStack
           paddingHorizontal="$4"
