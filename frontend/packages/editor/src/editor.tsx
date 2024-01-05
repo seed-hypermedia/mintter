@@ -32,5 +32,14 @@ export function HyperMediaEditorView({
 }
 
 export function HMEditorContainer({children}: {children: React.ReactNode}) {
-  return <YStack className="editor">{children}</YStack>
+  return (
+    <YStack
+      className="editor"
+      onPress={(e) => {
+        e.stopPropagation()
+      }}
+    >
+      {children}
+    </YStack>
+  )
 }

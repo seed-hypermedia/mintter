@@ -55,7 +55,10 @@ export function createAppMenu() {
           label: 'New Document',
           accelerator: 'CmdOrCtrl+n',
           click: () => {
-            trpc.createAppWindow({routes: [{key: 'draft'}]})
+            trpc.createAppWindow({
+              routes: [{key: 'draft'}],
+              sidebarLocked: false,
+            })
           },
         },
         {

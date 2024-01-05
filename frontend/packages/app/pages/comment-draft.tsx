@@ -1,6 +1,7 @@
 import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
 import {StateStream, unpackHmId} from '@mintter/shared'
 import {Button, ChevronUp, SizableText, YStack, useStream} from '@mintter/ui'
+import {useEffect} from 'react'
 import {XStack} from 'tamagui'
 import {
   CommentPageTitlebarWithDocId,
@@ -115,29 +116,36 @@ export default function CommentDraftPage() {
     targetDocId,
     addReplyEmbed,
   } = useCommentEditor()
+  useEffect(() => {
+    editor._tiptapEditor.commands.focus()
+  }, [])
   return (
     <>
       <CommentPageTitlebarWithDocId targetDocId={targetDocId} />
       <MainWrapperStandalone backgroundColor={'$blue2'} theme="blue">
-        <TargetComment
-          targetCommentId={targetCommentId}
-          onReplyBlock={addReplyEmbed}
-        />
-        <AppPublicationContentProvider
-          disableEmbedClick
-          // onCopyBlock={(blockId: string) => {
-          //  //todo
-          // }}
-        >
-          <HMEditorContainer>
-            <HyperMediaEditorView editor={editor} editable />
-          </HMEditorContainer>
-        </AppPublicationContentProvider>
-        <CommitBar
-          isSaved={isSaved}
-          onSubmit={onSubmit}
-          targetCommentId={targetCommentId}
-        />
+        <YStack minHeight={'100vh'}>
+          <TargetComment
+            targetCommentId={targetCommentId}
+            onReplyBlock={addReplyEmbed}
+          />
+          <YStack
+            f={1}
+            onPress={() => {
+              editor._tiptapEditor.commands.focus()
+            }}
+          >
+            <AppPublicationContentProvider disableEmbedClick>
+              <HMEditorContainer>
+                <HyperMediaEditorView editor={editor} editable />
+              </HMEditorContainer>
+            </AppPublicationContentProvider>
+            <CommitBar
+              isSaved={isSaved}
+              onSubmit={onSubmit}
+              targetCommentId={targetCommentId}
+            />
+          </YStack>
+        </YStack>
       </MainWrapperStandalone>
     </>
   )
