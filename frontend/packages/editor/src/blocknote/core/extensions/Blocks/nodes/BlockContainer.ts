@@ -21,6 +21,7 @@ import {
   PartialBlock,
 } from '../api/blockTypes'
 import {getBlockInfoFromPos} from '../helpers/getBlockInfoFromPos'
+import {getGroupInfoFromPos} from '../helpers/getGroupInfoFromPos'
 import {PreviousBlockTypePlugin} from '../PreviousBlockTypePlugin'
 import styles from './Block.module.css'
 import BlockAttributes from './BlockAttributes'
@@ -498,31 +499,11 @@ export const BlockContainer = Node.create<{
       UpdateGroup:
         (posInBlock, listType, tab, start) =>
         ({state, dispatch}) => {
-          if (posInBlock < 0) posInBlock = state.selection.from
-          const $pos = state.doc.resolve(posInBlock)
-          const maxDepth = $pos.depth
-          // Set group to first node found at position
-          let group = $pos.node(maxDepth)
-          let container: PMNode | undefined
-          let depth = maxDepth
-
           // Find block group, block container and depth it is at
-          while (true) {
-            if (depth < 0) {
-              break
-            }
-
-            if (group.type.name === 'blockGroup') {
-              break
-            }
-
-            if (group.type.name === 'blockContainer') {
-              container = group
-            }
-
-            depth -= 1
-            group = $pos.node(depth)
-          }
+          const {group, container, depth, $pos} = getGroupInfoFromPos(
+            posInBlock < 0 ? state.selection.from : posInBlock,
+            state,
+          )
 
           // If block is first block in the document do nothing
           if (
@@ -664,6 +645,11 @@ export const BlockContainer = Node.create<{
                   (prevBlockInfo.contentType.name === 'image' &&
                     prevBlockInfo.contentNode.attrs.url.length === 0)
                 ) {
+                  const {group} = getGroupInfoFromPos(
+                    state.selection.from,
+                    state,
+                  )
+                  if (group.attrs.listType !== 'div') return false
                   let tr = state.tr
                   const selection = NodeSelection.create(
                     state.doc,
@@ -829,30 +815,8 @@ export const BlockContainer = Node.create<{
       this.editor.commands.first(({commands}) => [
         () =>
           commands.command(({state}) => {
-            const $pos = state.doc.resolve(state.selection.from)
-            const maxDepth = $pos.depth
-            // Set group to first node found at position
-            let group = $pos.node(maxDepth)
-            let container
-            let depth = maxDepth
-
             // Find block group, block container and depth it is at
-            while (true) {
-              if (depth < 0) {
-                break
-              }
-
-              if (group.type.name === 'blockGroup') {
-                break
-              }
-
-              if (group.type.name === 'blockContainer') {
-                container = group
-              }
-
-              depth -= 1
-              group = $pos.node(depth)
-            }
+            const {group} = getGroupInfoFromPos(state.selection.from, state)
 
             if (
               group.type.name === 'blockGroup' &&
@@ -879,30 +843,11 @@ export const BlockContainer = Node.create<{
       this.editor.commands.first(({commands}) => [
         () =>
           commands.command(({state}) => {
-            const $pos = state.doc.resolve(state.selection.from)
-            const maxDepth = $pos.depth
-            // Set group to first node found at position
-            let group = $pos.node(maxDepth)
-            let container
-            let depth = maxDepth
-
             // Find block group, block container and depth it is at
-            while (true) {
-              if (depth < 0) {
-                break
-              }
-
-              if (group.type.name === 'blockGroup') {
-                break
-              }
-
-              if (group.type.name === 'blockContainer') {
-                container = group
-              }
-
-              depth -= 1
-              group = $pos.node(depth)
-            }
+            const {group, container, $pos} = getGroupInfoFromPos(
+              state.selection.from,
+              state,
+            )
 
             if (container) {
               setTimeout(() => {
