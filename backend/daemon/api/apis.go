@@ -58,7 +58,7 @@ func New(
 		return nil
 	}
 
-	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, LogLevel)
+	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, &lazyGwClient{net: node}, LogLevel)
 	return Server{
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),
@@ -67,6 +67,20 @@ func New(
 		Entities:   entities.NewServer(blobs, &lazyDiscoverer{sync: sync}),
 		Groups:     groups.NewServer(repo.Identity(), logging.New("mintter/groups", LogLevel), groups.NewSQLiteDB(db), blobs, node),
 	}
+}
+
+type lazyGwClient struct {
+	net *future.ReadOnly[*mttnet.Node]
+}
+
+// Connect connects to a remote gateway. Necessary here for the grpc server to add a site
+// that needs to connect to the site under the hood.
+func (ld *lazyGwClient) GatewayClient(ctx context.Context) (mttnet.GatewayClient, error) {
+	node, ok := ld.net.Get()
+	if !ok {
+		return nil, fmt.Errorf("p2p node is not yet initialized")
+	}
+	return node.GatewayClient(ctx)
 }
 
 type lazyDiscoverer struct {

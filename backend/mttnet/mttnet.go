@@ -7,7 +7,6 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
-	documents_proto "mintter/backend/genproto/documents/v1alpha"
 	groups "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
@@ -40,7 +39,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
@@ -49,8 +47,8 @@ var userAgent = "mintter/<dev>"
 
 // GatewayClient is the bridge to talk to the gateway.
 type GatewayClient interface {
-	// PushPublication pushes given document to the gateway.
-	PushPublication(context.Context, *documents_proto.PushPublicationRequest, ...grpc.CallOption) (*emptypb.Empty, error)
+	// PublishBlobs pushes given blobs to the gateway.
+	PublishBlobs(context.Context, *groups.PublishBlobsRequest, ...grpc.CallOption) (*groups.PublishBlobsResponse, error)
 }
 
 // WebsiteClient is the bridge to talk to remote sites.
@@ -253,17 +251,25 @@ func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, erro
 	return groups.NewWebsiteClient(conn), nil
 }
 
-// GatewayClient opens a connection with a remote gateway.
-func (n *Node) GatewayClient(ctx context.Context, pid peer.ID) (GatewayClient, error) {
-	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+// GatewayClient opens a connection with the remote production gateway.
+func (n *Node) GatewayClient(ctx context.Context) (GatewayClient, error) {
+	ma, err := ipfs.ParseMultiaddrs([]string{ipfs.ProductionGateway})
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse gateway address: %v", err)
+	}
+	gwInfo, err := peer.AddrInfoFromP2pAddr(ma[0])
+	if err != nil {
+		return nil, fmt.Errorf("Could not decode gateway info: %v", err)
+	}
+	if err := n.Connect(ctx, *gwInfo); err != nil {
 		return nil, err
 	}
 
-	conn, err := n.client.dialPeer(ctx, pid)
+	conn, err := n.client.dialPeer(ctx, gwInfo.ID)
 	if err != nil {
 		return nil, err
 	}
-	return documents_proto.NewPublicationsClient(conn), nil
+	return groups.NewWebsiteClient(conn), nil
 }
 
 // ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
