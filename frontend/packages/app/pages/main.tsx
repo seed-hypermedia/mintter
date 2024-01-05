@@ -5,12 +5,13 @@ import {TitleBar} from '@mintter/app/components/titlebar'
 import {getRouteKey, NavRoute, useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Spinner, YStack} from '@mintter/ui'
-import {lazy, useMemo} from 'react'
+import {lazy, ReactElement, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {QuickSwitcher} from '../components/quick-switcher'
 import {AppSidebar} from '../components/sidebar'
 import {DraftStatusContext} from '../models/draft-machine'
 import {SidebarContextProvider} from '../src/sidebar-context'
+import {getWindowType} from '../utils/window-types'
 import {NotFoundPage} from './base'
 import {DocumentPlaceholder} from './document-placeholder'
 import './polyfills'
@@ -23,6 +24,8 @@ var Groups = lazy(() => import('@mintter/app/pages/groups'))
 var Publication = lazy(() => import('@mintter/app/pages/publication'))
 var Draft = lazy(() => import('@mintter/app/pages/draft'))
 var Settings = lazy(() => import('@mintter/app/pages/settings'))
+var Comment = lazy(() => import('@mintter/app/pages/comment'))
+var CommentDraft = lazy(() => import('@mintter/app/pages/comment-draft'))
 
 function BaseLoading() {
   return (
@@ -74,6 +77,16 @@ function getPageComponent(navRoute: NavRoute) {
         PageComponent: Settings,
         Fallback: BaseLoading,
       }
+    case 'comment':
+      return {
+        PageComponent: Comment,
+        Fallback: BaseLoading,
+      }
+    case 'comment-draft':
+      return {
+        PageComponent: CommentDraft,
+        Fallback: BaseLoading,
+      }
     default:
       return {
         PageComponent: NotFoundPage,
@@ -99,7 +112,13 @@ export default function Main({className}: {className?: string}) {
     },
     [navigate],
   )
-  const routeHasSidebar = navR.key !== 'settings'
+  const windowType = getWindowType()
+  let titlebar: ReactElement | null = null
+  if (windowType === 'main') {
+    titlebar = <TitleBar />
+  } else if (windowType === 'settings') {
+    titlebar = <TitleBar clean />
+  }
   return (
     <YStack fullscreen className={className}>
       <SidebarContextProvider>
@@ -111,12 +130,12 @@ export default function Main({className}: {className?: string}) {
           }}
         >
           <DraftStatusContext.Provider>
-            <TitleBar clean={isSettings} />
+            {titlebar}
             <PageComponent />
             {!isSettings ? <QuickSwitcher /> : null}
           </DraftStatusContext.Provider>
         </ErrorBoundary>
-        {routeHasSidebar ? <AppSidebar /> : null}
+        {windowType === 'main' ? <AppSidebar /> : null}
       </SidebarContextProvider>
     </YStack>
   )

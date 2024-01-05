@@ -19,6 +19,16 @@ export function MainWrapper({children, ...props}: YStackProps & {}) {
   )
 }
 
+export function MainWrapperStandalone({children, ...props}: YStackProps & {}) {
+  return (
+    <XStack flex={1} {...props}>
+      {/* TODO: we cannot remove this ID here because the SlashMenu is referencing
+      this! */}
+      <ScrollView id="scroll-page-wrapper">{children}</ScrollView>
+    </XStack>
+  )
+}
+
 export function MainWrapperNoScroll({children, ...props}: YStackProps & {}) {
   return (
     <XStack flex={1} {...props}>

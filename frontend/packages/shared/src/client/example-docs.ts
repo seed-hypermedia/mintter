@@ -1,4 +1,9 @@
-import {Annotation, Block, BlockNode, Document} from '@mintter/shared'
+import {
+  Annotation,
+  Block,
+  BlockNode,
+  Document,
+} from '@mintter/shared/src/client/grpc-types'
 
 function createAnnotation(
   type: string,

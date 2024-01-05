@@ -2,6 +2,7 @@ import {createPromiseClient, PromiseClient} from '@connectrpc/connect'
 import {
   Accounts,
   Changes,
+  Comments,
   ContentGraph,
   Daemon,
   Drafts,
@@ -16,6 +17,7 @@ export type GRPCClient = {
   accounts: PromiseClient<typeof Accounts>
   contentGraph: PromiseClient<typeof ContentGraph>
   changes: PromiseClient<typeof Changes>
+  comments: PromiseClient<typeof Comments>
   groups: PromiseClient<typeof Groups>
   entities: PromiseClient<typeof Entities>
   drafts: PromiseClient<typeof Drafts>
@@ -30,6 +32,7 @@ export function createGRPCClient(transport: any): GRPCClient {
     accounts: createPromiseClient(Accounts, transport),
     contentGraph: createPromiseClient(ContentGraph, transport),
     changes: createPromiseClient(Changes, transport),
+    comments: createPromiseClient(Comments, transport),
     drafts: createPromiseClient(Drafts, transport),
     publications: createPromiseClient(Publications, transport),
     daemon: createPromiseClient(Daemon, transport),

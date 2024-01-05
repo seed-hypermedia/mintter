@@ -39,7 +39,8 @@ export const queryKeys = {
   GET_PUBLICATION: 'GET_PUBLICATION', //, docId: string, versionId?: string
 
   // comments
-  GET_PUBLICATION_CONVERSATIONS: 'GET_PUBLICATION_CONVERSATIONS', //, docId: string
+  COMMENT: 'COMMENT', //, commentId: string
+  PUBLICATION_COMMENTS: 'PUBLICATION_COMMENTS', //, docEid: string
 
   // changes
   PUBLICATION_CHANGES: 'PUBLICATION_CHANGES', //, docId: string

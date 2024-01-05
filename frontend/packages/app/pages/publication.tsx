@@ -29,7 +29,7 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {History} from '@tamagui/lucide-icons'
+import {History, MessageSquare} from '@tamagui/lucide-icons'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useCallback, useEffect} from 'react'
@@ -38,11 +38,13 @@ import {useAppContext} from '../app-context'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
 import {
   EmbedAccount,
+  EmbedComment,
   EmbedGroup,
   EmbedPublicationCard,
   EmbedPublicationContent,
 } from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
+import {EntityCommentsAccessory} from '../components/comments'
 import {useAppDialog} from '../components/dialog'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
@@ -80,6 +82,7 @@ export function AppPublicationContentProvider({
         GroupCard: EmbedGroup,
         PublicationCard: EmbedPublicationCard,
         PublicationContent: EmbedPublicationContent,
+        CommentCard: EmbedComment,
       }}
       onLinkClick={(href, e) => {
         e.preventDefault()
@@ -251,7 +254,8 @@ export default function PublicationPage() {
     }
   }, [firstPubDialog, showFirstPublicationMessage, route, pubVersion])
 
-  const displayVersion = publication.data?.publication?.version
+  const id = unpackDocId(docId)
+  const experiments = useExperiments()
 
   if (publication.data) {
     return (
@@ -321,16 +325,25 @@ export default function PublicationPage() {
                 </MainWrapper>
               </YStack>
             </Allotment.Pane>
-            {accessoryKey &&
-              (accessoryKey == 'versions' ? (
-                <EntityVersionsAccessory
-                  id={unpackDocId(docId)}
-                  variantVersion={publication.data?.variantVersion}
-                  activeVersion={publication.data?.publication?.version}
-                />
-              ) : (
-                <CitationsAccessory docId={docId} />
-              ))}
+
+            {accessoryKey == 'versions' ? (
+              <EntityVersionsAccessory
+                id={unpackDocId(docId)}
+                variantVersion={publication.data?.variantVersion}
+                activeVersion={publication.data?.publication?.version}
+              />
+            ) : null}
+            {accessoryKey == 'citations' ? (
+              <CitationsAccessory docId={docId} />
+            ) : null}
+            {accessoryKey == 'comments' &&
+            id &&
+            publication.data?.publication?.version ? (
+              <EntityCommentsAccessory
+                id={id}
+                activeVersion={publication.data?.publication?.version}
+              />
+            ) : null}
           </Allotment>
           <Footer>
             {publication.data?.variantVersion && (
@@ -351,6 +364,19 @@ export default function PublicationPage() {
                   if (route.accessory?.key === 'citations')
                     return replace({...route, accessory: null})
                   replace({...route, accessory: {key: 'citations'}})
+                }}
+              />
+            ) : null}
+
+            {experiments.data?.commenting ? (
+              <FooterButton
+                label="Commentary"
+                icon={MessageSquare}
+                active={accessoryKey === 'comments'}
+                onPress={() => {
+                  if (route.accessory?.key === 'comments')
+                    return replace({...route, accessory: null})
+                  replace({...route, accessory: {key: 'comments'}})
                 }}
               />
             ) : null}

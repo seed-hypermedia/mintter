@@ -5,6 +5,7 @@ export const HYPERMEDIA_ENTITY_TYPES = {
   a: 'Account',
   d: 'Document',
   g: 'Group',
+  c: 'Comment',
 } as const
 
 export function createPublicWebHmUrl(

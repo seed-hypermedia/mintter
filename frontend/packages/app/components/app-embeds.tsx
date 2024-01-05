@@ -1,4 +1,5 @@
 import {
+  BACKEND_FILE_URL,
   BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
@@ -8,23 +9,23 @@ import {
   PublicationCardView,
   blockStyles,
   createHmId,
+  formattedDateMedium,
   getBlockNodeById,
   usePublicationContentContext,
 } from '@mintter/shared'
 import {hmGroup} from '@mintter/shared/src/to-json-hm'
-import {Spinner, YStack} from '@mintter/ui'
+import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {PropsWithChildren, useMemo} from 'react'
-import {useAccount} from '../models/accounts'
+import {useAccount, useMyAccount} from '../models/accounts'
+import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
 import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
-import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
 
 function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
   const {disableEmbedClick = false, layoutUnit} = usePublicationContentContext()
-  let spawn = useNavigate('spawn')
   const open = useOpenUrl()
   return (
     <YStack
@@ -36,7 +37,6 @@ function EmbedWrapper(props: PropsWithChildren<{hmRef: string}>) {
       hoverStyle={{
         cursor: 'pointer',
         backgroundColor: '$color5',
-        // borderColor: '$color6',
       }}
       margin={0}
       marginHorizontal={(-1 * layoutUnit) / 2}
@@ -134,6 +134,65 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
         AvatarComponent={AvatarComponent}
         date={pub.data?.document?.updateTime}
       />
+    </EmbedWrapper>
+  )
+}
+
+export function EmbedComment(props: EntityComponentProps) {
+  if (props?.type !== 'c')
+    throw new Error('Invalid props as ref for EmbedComment')
+  const comment = useComment(createHmId('c', props.eid), {
+    enabled: !!props,
+  })
+  let embedBlocks = useMemo(() => {
+    const selectedBlock =
+      props.blockRef && comment.data?.content
+        ? getBlockNodeById(comment.data.content, props.blockRef)
+        : null
+
+    const embedBlocks = selectedBlock ? [selectedBlock] : comment.data?.content
+
+    return embedBlocks
+  }, [props.blockRef, comment.data])
+  const account = useMyAccount() //todo replace with real author
+  if (comment.isLoading) return <Spinner />
+  return (
+    <EmbedWrapper hmRef={props.id}>
+      <XStack flexWrap="wrap" jc="space-between">
+        <XStack gap="$2">
+          <UIAvatar
+            label={account.data?.profile?.alias}
+            id={account.data?.id}
+            url={
+              account.data?.profile?.avatar
+                ? `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
+                : undefined
+            }
+          />
+          <SizableText>{account.data?.profile?.alias}</SizableText>
+        </XStack>
+        {comment.data.publishTime ? (
+          <SizableText fontSize="$2" color="$color10">
+            {formattedDateMedium(new Date(comment.data.publishTime))}
+          </SizableText>
+        ) : null}
+      </XStack>
+      {embedBlocks?.length ? (
+        <BlockNodeList childrenType="group">
+          {embedBlocks.map((bn, idx) => (
+            <BlockNodeContent
+              key={bn.block?.id}
+              depth={1}
+              blockNode={bn}
+              childrenType="group"
+              index={idx}
+              embedDepth={1}
+            />
+          ))}
+        </BlockNodeList>
+      ) : (
+        <BlockContentUnknown {...props} />
+      )}
     </EmbedWrapper>
   )
 }

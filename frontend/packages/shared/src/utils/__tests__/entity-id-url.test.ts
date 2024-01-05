@@ -10,45 +10,53 @@ describe('unpackHmId', () => {
   test('unpacks hm://d/abc', () => {
     expect(unpackHmId('hm://d/abc')).toEqual({
       id: 'hm://d/abc',
+      qid: 'hm://d/abc',
       scheme: 'hm',
       hostname: null,
       type: 'd',
       eid: 'abc',
       version: undefined,
       blockRef: null,
+      groupPathName: null,
     })
   })
   test('unpacks hm://g/abc?v=123#foo', () => {
     expect(unpackHmId('hm://g/abc?v=123#foo')).toEqual({
       id: 'hm://g/abc?v=123#foo',
+      qid: 'hm://g/abc',
       scheme: 'hm',
       hostname: null,
       type: 'g',
       eid: 'abc',
       version: '123',
       blockRef: 'foo',
+      groupPathName: null,
     })
   })
   test('unpacks hm://d/foo#bar', () => {
     expect(unpackHmId('hm://d/foo#bar')).toEqual({
       id: 'hm://d/foo#bar',
+      qid: 'hm://d/foo',
       scheme: 'hm',
       hostname: null,
       type: 'd',
       eid: 'foo',
       version: undefined,
       blockRef: 'bar',
+      groupPathName: null,
     })
   })
   test('unpacks hm://a/foo?v=bar', () => {
     expect(unpackHmId('hm://a/foo?v=bar')).toEqual({
       id: 'hm://a/foo?v=bar',
+      qid: 'hm://a/foo',
       scheme: 'hm',
       hostname: null,
       type: 'a',
       eid: 'foo',
       version: 'bar',
       blockRef: null,
+      groupPathName: null,
     })
   })
   test('unpacks https://foobar.com/d/1?v=2', () => {
@@ -60,6 +68,8 @@ describe('unpackHmId', () => {
       version: '2',
       blockRef: null,
       id: 'https://foobar.com/d/1?v=2',
+      qid: 'hm://d/1',
+      groupPathName: null,
     })
   })
   test('unpacks http://foobar.com/a/1#block', () => {
@@ -71,6 +81,8 @@ describe('unpackHmId', () => {
       version: undefined,
       blockRef: 'block',
       id: 'http://foobar.com/a/1#block',
+      qid: 'hm://a/1',
+      groupPathName: null,
     })
   })
 })

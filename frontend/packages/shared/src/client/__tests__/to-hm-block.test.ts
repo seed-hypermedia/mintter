@@ -1,7 +1,7 @@
-import {Block, BlockNode, toHMInlineContent} from '@mintter/shared'
+import {Block, BlockNode} from '@mintter/shared/src/client/grpc-types'
 import {describe, expect, test} from 'vitest'
 import {examples} from '../example-docs'
-import {toHMBlock} from '../to-hm-block'
+import {toHMBlock, toHMInlineContent} from '../to-hm-block'
 
 describe('Editor: ', () => {
   describe('Server to Editor: ', () => {
@@ -348,8 +348,6 @@ describe('Editor: ', () => {
             url: 'ipfs://ABC',
             name: undefined,
             childrenType: 'group',
-
-            textAlignment: 'left',
           },
           children: [],
           content: [{type: 'text', text: 'new video alt', styles: {}}],
@@ -379,7 +377,6 @@ describe('Editor: ', () => {
             url: 'https://youtube.com/watch?v=ABC',
             name: undefined,
             childrenType: 'group',
-            textAlignment: 'left',
           },
           children: [],
           content: [{type: 'text', text: 'new video alt', styles: {}}],
@@ -408,8 +405,9 @@ describe('Editor: ', () => {
           type: 'embed',
           props: {
             ref: 'hm://foobar',
-            textAlignment: 'left',
             childrenType: 'group',
+            textAlignment: 'left',
+            view: 'content',
           },
           children: [],
         },

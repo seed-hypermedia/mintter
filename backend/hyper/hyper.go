@@ -5,13 +5,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mintter/backend/core"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/dqb"
+	"mintter/backend/pkg/must"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/fxamacker/cbor/v2"
+	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/ipfs/boxo/blockstore"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
@@ -31,6 +34,7 @@ type Storage struct {
 	bs  *indexingBlockStore
 	log *zap.Logger
 
+	delegationCache *lru.Cache[cid.Cid, core.Principal]
 	*indexer
 }
 
@@ -45,10 +49,11 @@ func NewStorage(db *sqlitex.Pool, log *zap.Logger) *Storage {
 	}
 
 	return &Storage{
-		db:      db,
-		bs:      &indexingBlockStore{blockStore: bs, indexBlob: idx.indexBlob},
-		log:     log,
-		indexer: idx,
+		db:              db,
+		bs:              &indexingBlockStore{blockStore: bs, indexBlob: idx.indexBlob},
+		log:             log,
+		indexer:         idx,
+		delegationCache: must.Do2(lru.New[cid.Cid, core.Principal](256)),
 	}
 }
 
@@ -397,6 +402,39 @@ func (bs *Storage) LoadBlob(ctx context.Context, c cid.Cid, v any) error {
 	return nil
 }
 
+// GetDelegationIssuer returns the issuer of the given key delegation.
+func (bs *Storage) GetDelegationIssuer(ctx context.Context, c cid.Cid) (core.Principal, error) {
+	if v, ok := bs.delegationCache.Get(c); ok {
+		return v, nil
+	}
+
+	conn, release, err := bs.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	iss, err := hypersql.KeyDelegationsGetIssuer(conn, c.Hash())
+	if err != nil {
+		return nil, err
+	}
+	if iss.KeyDelegationsIssuer == 0 {
+		return nil, fmt.Errorf("key delegation %s not found", c)
+	}
+
+	pk, err := hypersql.PublicKeysLookupPrincipal(conn, iss.KeyDelegationsIssuer)
+	if err != nil {
+		return nil, err
+	}
+	if pk.PublicKeysPrincipal == nil {
+		return nil, fmt.Errorf("BUG: public key not found for issuer of %s", c)
+	}
+
+	bs.delegationCache.Add(c, pk.PublicKeysPrincipal)
+
+	return pk.PublicKeysPrincipal, nil
+}
+
 type IPFSBlockstoreReader interface {
 	Has(context.Context, cid.Cid) (bool, error)
 	Get(context.Context, cid.Cid) (blocks.Block, error)
@@ -466,6 +504,12 @@ func DecodeBlob(c cid.Cid, data []byte) (hb Blob, err error) {
 			hb.Decoded = v
 		case TypeChange:
 			var v Change
+			if err := cbornode.DecodeInto(data, &v); err != nil {
+				return hb, err
+			}
+			hb.Decoded = v
+		case TypeComment:
+			var v Comment
 			if err := cbornode.DecodeInto(data, &v); err != nil {
 				return hb, err
 			}

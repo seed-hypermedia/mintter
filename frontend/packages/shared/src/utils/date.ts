@@ -55,13 +55,14 @@ export function formattedDate(
   }
 }
 
-export function formattedDateLong(value?: Timestamp) {
+export function formattedDateLong(value?: Timestamp | Date) {
   if (!value) return ''
-  return format(value.toDate(), 'MMMM do yyyy, HH:mm:ss z')
+  let date = value instanceof Date ? value : value?.toDate()
+  return format(date, 'MMMM do yyyy, HH:mm:ss z')
 }
-export function formattedDateMedium(value?: Timestamp) {
-  const date = value?.toDate()
-  if (!date) return ''
+export function formattedDateMedium(value?: Timestamp | Date) {
+  if (!value) return ''
+  let date = value instanceof Date ? value : value?.toDate()
   // if (hasRelativeDate) {
   //   return relativeFormattedDate(date, {onlyRelative: false})
   // }

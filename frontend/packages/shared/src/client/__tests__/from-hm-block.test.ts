@@ -1,6 +1,6 @@
-import {Block} from '@mintter/shared'
+import {Block} from '@mintter/shared/src/client/grpc-types'
 import {describe, expect, test} from 'vitest'
-import {fromHMBlock, extractContent} from '../from-hm-block'
+import {extractContent, fromHMBlock} from '../from-hm-block'
 
 describe('Editor to Server: ', () => {
   describe('Extract Content: ', () => {

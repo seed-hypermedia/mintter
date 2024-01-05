@@ -32,7 +32,10 @@ func TestEntity(t *testing.T) {
 	bio, _ := e.Get("bio")
 	require.Nil(t, bio)
 
-	ch, err := e.CreateChange(e.NextTimestamp(), alice.Device, cid.Undef, map[string]any{
+	kd, err := NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now().Add(-1*time.Hour))
+	require.NoError(t, err)
+
+	ch, err := e.CreateChange(e.NextTimestamp(), alice.Device, kd.Blob().CID, map[string]any{
 		"name": "Alice",
 		"bio":  "Test User",
 	})
