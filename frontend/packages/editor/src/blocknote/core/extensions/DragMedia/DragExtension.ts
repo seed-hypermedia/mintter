@@ -56,7 +56,7 @@ export const DragExtension = Extension.create<DragOptions>({
                   }
                 }
 
-                if (files) {
+                if (files.length > 0) {
                   const pos = this.editor.view.posAtCoords({
                     left: event.clientX,
                     top: event.clientY,
