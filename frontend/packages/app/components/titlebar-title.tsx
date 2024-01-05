@@ -123,14 +123,14 @@ function AccountProfileTitle({
   const account = useAccount(route.accountId)
 
   useWindowTitle(
-    account.data.profile.alias
+    account.data?.profile?.alias
       ? `Account Profile: ${account.data.profile.alias}`
       : 'Account Profile',
   )
 
   return (
     <TitleText data-testid="titlebar-title" size={size}>
-      {account.data.profile.alias
+      {account.data?.profile?.alias
         ? `Account Profile: ${account.data.profile.alias}`
         : 'Account Profile'}
     </TitleText>

@@ -102,7 +102,7 @@ function AccountDocuments({accountId}: {accountId: string}) {
             hasDraft={undefined}
             author={author}
             editors={editors}
-            menuItems={[
+            menuItems={() => [
               copyLinkMenuItem(
                 idToUrl(docId, undefined, publication.version),
                 'Publication',
