@@ -5,6 +5,7 @@ export type GroupInfo = {
   group: Node
   container?: Node
   depth: number
+  level: number
   $pos: ResolvedPos
 }
 
@@ -41,6 +42,7 @@ export function getGroupInfoFromPos(
     group,
     container,
     depth,
+    level: (maxDepth - 1) / 2,
     $pos,
   }
 }

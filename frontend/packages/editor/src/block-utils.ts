@@ -1,10 +1,12 @@
-import {Block as BlockNoteBlock, BlockNoteEditor} from './blocknote'
-import {HMBlockSchema} from './schema'
-import {useEffect, useState} from 'react'
-import {getBlockInfoFromPos} from './blocknote'
-import {Node} from '@tiptap/pm/model'
 import {HMBlockChildrenType} from '@mintter/shared'
+import {useEffect, useState} from 'react'
+import {
+  Block as BlockNoteBlock,
+  BlockNoteEditor,
+  getBlockInfoFromPos,
+} from './blocknote'
 import {getNodeById} from './blocknote/core/api/util/nodeUtil'
+import {HMBlockSchema} from './schema'
 
 export function useSelected(
   block: BlockNoteBlock<HMBlockSchema>,
@@ -52,5 +54,5 @@ export function updateGroup(
 
   const {startPos} = posData
   editor.focus()
-  editor._tiptapEditor.commands.UpdateGroup(startPos, listType)
+  editor._tiptapEditor.commands.UpdateGroup(startPos, listType, false)
 }

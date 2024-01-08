@@ -55,6 +55,7 @@ declare module '@tiptap/core' {
       UpdateGroupChildren: (
         group: PMNode,
         groupPos: ResolvedPos,
+        groupLevel: number,
         listType: HMBlockChildrenType,
         indent: number,
       ) => ReturnType

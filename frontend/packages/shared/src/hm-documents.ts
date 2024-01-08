@@ -1,6 +1,6 @@
 import {HMTimestamp} from './utils'
 
-export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'blockquote'
+export type HMBlockChildrenType = 'group' | 'ol' | 'ul' | 'div'
 export type HMEmbedDisplay = 'content' | 'card'
 
 export type HMStyles = {

@@ -107,6 +107,7 @@ declare module '@tiptap/core' {
       UpdateGroupChildren: (
         group: PMNode,
         groupPos: ResolvedPos,
+        groupLevel: number,
         listType: HMBlockChildrenType,
         indent: number,
       ) => ReturnType
@@ -458,37 +459,30 @@ export const BlockContainer = Node.create<{
         },
       // Updates group's child groups.
       UpdateGroupChildren:
-        (group, groupPos, listType, indent) =>
+        (group, groupPos, groupLevel, listType, indent) =>
         ({state, dispatch}) => {
           if (dispatch) {
-            let prevLevel = 0
             group.descendants((child, pos) => {
+              // If child is group and has the same list type update its' level
               if (
                 child.type.name === 'blockGroup' &&
                 child.attrs.listType === listType
               ) {
+                const $pos = group.resolve(pos)
                 let newLevel: string
                 if (indent > 0) {
-                  newLevel =
-                    parseInt(child.attrs.listLevel) < 3
-                      ? (parseInt(child.attrs.listLevel) + indent).toString()
-                      : child.attrs.listLevel
+                  const numericLevel = $pos.depth / 2 + groupLevel
+                  newLevel = numericLevel < 4 ? numericLevel.toString() : '3'
                 } else {
-                  if (prevLevel === 2) {
-                    newLevel = child.attrs.listLevel
-                  } else {
-                    newLevel =
-                      parseInt(child.attrs.listLevel) > 1
-                        ? (parseInt(child.attrs.listLevel) + indent).toString()
-                        : child.attrs.listLevel
-                  }
-                  if (prevLevel < 2) prevLevel = parseInt(newLevel)
+                  const numericLevel = $pos.depth / 2 + groupLevel - 1
+                  newLevel = numericLevel < 4 ? numericLevel.toString() : '3'
                 }
-                state.tr.setNodeMarkup(groupPos.start() + pos - 1, null, {
-                  ...child.attrs,
-                  listType: listType,
-                  listLevel: newLevel,
-                })
+                if (newLevel !== child.attrs.listLevel)
+                  state.tr.setNodeMarkup(groupPos.start() + pos - 1, null, {
+                    ...child.attrs,
+                    listType: listType,
+                    listLevel: newLevel,
+                  })
               }
             })
             return true
@@ -500,7 +494,13 @@ export const BlockContainer = Node.create<{
         (posInBlock, listType, tab, start) =>
         ({state, dispatch}) => {
           // Find block group, block container and depth it is at
-          const {group, container, depth, $pos} = getGroupInfoFromPos(
+          const {
+            group,
+            container,
+            depth,
+            level: groupLevel,
+            $pos,
+          } = getGroupInfoFromPos(
             posInBlock < 0 ? state.selection.from : posInBlock,
             state,
           )
@@ -585,6 +585,7 @@ export const BlockContainer = Node.create<{
                 this.editor.commands.UpdateGroupChildren(
                   container!,
                   $pos,
+                  groupLevel,
                   listType,
                   1,
                 )
@@ -609,6 +610,42 @@ export const BlockContainer = Node.create<{
         () => commands.deleteSelection(),
         // Undoes an input rule if one was triggered in the last editor state change.
         () => commands.undoInputRule(),
+        () =>
+          commands.command(({state, view}) => {
+            const {group, container, depth, $pos} = getGroupInfoFromPos(
+              state.selection.from,
+              state,
+            )
+
+            if (group.attrs.listType !== 'div' && $pos.pos === $pos.start()) {
+              // If block is first in the group change group type
+              if (
+                container &&
+                group.firstChild?.attrs.id === container.attrs.id
+              ) {
+                setTimeout(() => {
+                  view.dispatch(
+                    state.tr.setNodeMarkup($pos.before(depth), null, {
+                      ...group.attrs,
+                      listType: 'div',
+                      listLevel: '1',
+                    }),
+                  )
+
+                  this.editor.commands.UpdateGroupChildren(
+                    container,
+                    $pos,
+                    2,
+                    group.attrs.listType,
+                    -1,
+                  )
+                })
+
+                return true
+              }
+            }
+            return false
+          }),
         // If previous block is media, node select it
         () =>
           commands.command(({state, view}) => {
@@ -645,11 +682,6 @@ export const BlockContainer = Node.create<{
                   (prevBlockInfo.contentType.name === 'image' &&
                     prevBlockInfo.contentNode.attrs.url.length === 0)
                 ) {
-                  const {group} = getGroupInfoFromPos(
-                    state.selection.from,
-                    state,
-                  )
-                  if (group.attrs.listType !== 'div') return false
                   let tr = state.tr
                   const selection = NodeSelection.create(
                     state.doc,
@@ -844,7 +876,7 @@ export const BlockContainer = Node.create<{
         () =>
           commands.command(({state}) => {
             // Find block group, block container and depth it is at
-            const {group, container, $pos} = getGroupInfoFromPos(
+            const {group, container, level, $pos} = getGroupInfoFromPos(
               state.selection.from,
               state,
             )
@@ -854,6 +886,7 @@ export const BlockContainer = Node.create<{
                 this.editor.commands.UpdateGroupChildren(
                   container,
                   $pos,
+                  level,
                   group.attrs.listType,
                   -1,
                 )
