@@ -39,17 +39,19 @@ type Website struct {
 
 	once        sync.Once
 	setupSecret string
+	allowPush   bool
 }
 
 var errNodeNotReadyYet = errors.New("P2P node is not ready yet")
 
 // NewServer creates a new server for the site.
-func NewServer(url string, blobs *future.ReadOnly[*hyper.Storage], n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool]) *Website {
+func NewServer(url string, blobs *future.ReadOnly[*hyper.Storage], n *future.ReadOnly[*mttnet.Node], db *future.ReadOnly[*sqlitex.Pool], allowPush bool) *Website {
 	return &Website{
-		blobs: blobs,
-		node:  n,
-		db:    db,
-		url:   url,
+		blobs:     blobs,
+		node:      n,
+		db:        db,
+		url:       url,
+		allowPush: allowPush,
 	}
 }
 func (ws *Website) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +240,7 @@ func (ws *Website) GetGroupID(ctx context.Context) (string, error) {
 	return groupID, nil
 }
 
-// PublishBlobs publish blobs to the website.
+// PublishBlobs publishes blobs to the website.
 func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequest) (*groups.PublishBlobsResponse, error) {
 	n, ok := ws.node.Get()
 	if !ok {
@@ -265,38 +267,38 @@ func (ws *Website) PublishBlobs(ctx context.Context, in *groups.PublishBlobsRequ
 	if err != nil {
 		return nil, err
 	}
-
-	var role groups.Role
-	if err := db.WithSave(ctx, func(conn *sqlite.Conn) error {
-		// Get the owner's view of the list of members.
-		groupID, err := storage.GetKV(ctx, conn, keySiteGroup)
-		if err != nil || groupID == "" {
-			return fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
-		}
-
-		groupOwner, err := storage.GetKV(ctx, conn, keySiteOwner)
-		if err != nil || groupOwner == "" {
-			return fmt.Errorf("error getting group owner on the site, is the site initialized?: %w", err)
-		}
-
-		if groupOwner == callerAccount.String() {
-			role = groups.Role_OWNER
-		} else {
-			r, err := hypersql.GetGroupRole(conn, groupID, "hm://a/"+callerAccount.String())
-			if err != nil {
-				return err
+	if !ws.allowPush { // if force push is not allowed (default) then only group members can push. Everyone otherwise.
+		var role groups.Role
+		if err := db.WithSave(ctx, func(conn *sqlite.Conn) error {
+			// Get the owner's view of the list of members.
+			groupID, err := storage.GetKV(ctx, conn, keySiteGroup)
+			if err != nil || groupID == "" {
+				return fmt.Errorf("error getting groupID on the site, is the site initialized?: %w", err)
 			}
-			role = groups.Role(r)
+
+			groupOwner, err := storage.GetKV(ctx, conn, keySiteOwner)
+			if err != nil || groupOwner == "" {
+				return fmt.Errorf("error getting group owner on the site, is the site initialized?: %w", err)
+			}
+
+			if groupOwner == callerAccount.String() {
+				role = groups.Role_OWNER
+			} else {
+				r, err := hypersql.GetGroupRole(conn, groupID, "hm://a/"+callerAccount.String())
+				if err != nil {
+					return err
+				}
+				role = groups.Role(r)
+			}
+			return nil
+		}); err != nil {
+			return nil, err
 		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
 
-	if role != groups.Role_OWNER && role != groups.Role_EDITOR {
-		return nil, status.Errorf(codes.PermissionDenied, "Caller %q does not have enough permissions to publish to this site.", callerAccount.String())
+		if role != groups.Role_OWNER && role != groups.Role_EDITOR {
+			return nil, status.Errorf(codes.PermissionDenied, "Caller %q does not have enough permissions to publish to this site.", callerAccount.String())
+		}
 	}
-
 	blobs, err := ws.blobs.Await(ctx)
 	if err != nil {
 		return nil, err
