@@ -487,7 +487,7 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 	}
 
 	if entity == nil {
-		return nil, status.Errorf(codes.Internal, "got nil entity on the id: %s", eid.String())
+		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", eid.String())
 	}
 
 	conn, cancelFcn, err := api.db.Conn(ctx)
