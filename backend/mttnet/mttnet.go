@@ -252,8 +252,12 @@ func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, erro
 }
 
 // GatewayClient opens a connection with the remote production gateway.
-func (n *Node) GatewayClient(ctx context.Context) (GatewayClient, error) {
-	ma, err := ipfs.ParseMultiaddrs([]string{ipfs.ProductionGateway})
+func (n *Node) GatewayClient(ctx context.Context, testnet bool) (GatewayClient, error) {
+	maStr := []string{ipfs.ProductionGateway}
+	if testnet {
+		maStr = []string{ipfs.TestGateway}
+	}
+	ma, err := ipfs.ParseMultiaddrs(maStr)
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse gateway address: %v", err)
 	}

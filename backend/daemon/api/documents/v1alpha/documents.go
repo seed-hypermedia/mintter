@@ -39,7 +39,7 @@ type Discoverer interface {
 // GatewayClient used to connect to the gateway and push content.
 type GatewayClient interface {
 	// GatewayClient used to connect to the gateway and push content.
-	GatewayClient(context.Context) (mttnet.GatewayClient, error)
+	GatewayClient(context.Context, bool) (mttnet.GatewayClient, error)
 }
 
 // Server implements DocumentsServer gRPC API.
@@ -49,16 +49,18 @@ type Server struct {
 	disc     Discoverer
 	blobs    *hyper.Storage
 	gwClient GatewayClient
+	testnet  bool
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, gwClient GatewayClient, LogLevel string) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, gwClient GatewayClient, LogLevel string, testnet bool) *Server {
 	srv := &Server{
 		db:       db,
 		me:       me,
 		disc:     disc,
 		blobs:    hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
 		gwClient: gwClient,
+		testnet:  testnet,
 	}
 
 	return srv
@@ -483,6 +485,11 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "unable to get blobs from head: %v", err)
 	}
+
+	if entity == nil {
+		return nil, status.Errorf(codes.Internal, "got nil entity on the id: %s", eid.String())
+	}
+
 	conn, cancelFcn, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "unable to get db connection: %v", err)
@@ -514,7 +521,7 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 		return nil, status.Errorf(codes.NotFound, "couldn't find referenced materials for document %s: %v", entity.ID().String(), err)
 	}
 
-	gc, err := api.gwClient.GatewayClient(ctx)
+	gc, err := api.gwClient.GatewayClient(ctx, api.testnet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get site client: %v", err)
 	}

@@ -858,7 +858,7 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db, nil, nil, "debug")
+	srv := NewServer(fut.ReadOnly, db, nil, nil, "debug", true)
 	bs := hyper.NewStorage(db, logging.New("mintter/hyper", "debug"))
 	_, err := daemon.Register(context.Background(), bs, u.Account, u.Device.PublicKey, time.Now())
 	require.NoError(t, err)
