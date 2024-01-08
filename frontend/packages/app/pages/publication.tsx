@@ -15,9 +15,11 @@ import {
   PublicationHeading,
   contentLayoutUnit,
   contentTextUnit,
+  createHmId,
   formattedDateMedium,
   pluralS,
   unpackDocId,
+  unpackHmId,
 } from '@mintter/shared'
 import {
   Button,
@@ -56,6 +58,7 @@ import {
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
+import {useCreateComment} from '../models/comments'
 import {useExperiments} from '../models/experiments'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
@@ -256,6 +259,7 @@ export default function PublicationPage() {
 
   const id = unpackDocId(docId)
   const experiments = useExperiments()
+  const createComment = useCreateComment()
 
   if (publication.data) {
     return (
@@ -292,6 +296,30 @@ export default function PublicationPage() {
                           return replace({...route, accessory: null})
                         replace({...route, accessory: {key: 'citations'}})
                       }}
+                      onBlockComment={
+                        experiments.data?.commenting
+                          ? (blockId) => {
+                              replace({...route, accessory: {key: 'comments'}})
+                              const version =
+                                publication.data?.publication?.version
+                              const doc = unpackHmId(docId)
+                              if (!doc) throw new Error('invalid doc id')
+                              if (!version)
+                                throw new Error(
+                                  'no publication version for commenting',
+                                )
+                              createComment(
+                                doc.eid,
+                                version,
+                                undefined,
+                                createHmId('d', doc.eid, {
+                                  version,
+                                  blockRef: blockId,
+                                }),
+                              )
+                            }
+                          : null
+                      }
                     >
                       <PublicationHeading
                         right={
