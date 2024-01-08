@@ -44,7 +44,7 @@ import {
   YStack,
   YStackProps,
 } from '@mintter/ui'
-import {AlertCircle, Book, Reply} from '@tamagui/lucide-icons'
+import {AlertCircle, Book, MessageSquare, Reply} from '@tamagui/lucide-icons'
 import {nip19, nip21, validateEvent, verifySignature} from 'nostr-tools'
 import {
   PropsWithChildren,
@@ -79,6 +79,7 @@ export type PublicationContentContextValue = {
   disableEmbedClick?: boolean
   onCopyBlock: null | ((blockId: string) => void)
   onReplyBlock?: null | ((blockId: string) => void)
+  onBlockComment?: null | ((blockId: string) => void)
   layoutUnit: number
   textUnit: number
   debug: boolean
@@ -339,7 +340,7 @@ export function BlockNodeContent({
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
 
-  const {onCitationClick, onCopyBlock, onReplyBlock, debug} =
+  const {onCitationClick, onBlockComment, onCopyBlock, onReplyBlock, debug} =
     usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
@@ -367,6 +368,7 @@ export function BlockNodeContent({
   }, [blockNode.block, headingMarginStyles])
 
   const isEmbed = blockNode.block?.type == 'embed'
+
   return (
     <YStack
       className="blocknode-content"
@@ -452,6 +454,27 @@ export function BlockNodeContent({
                       onReplyBlock(blockNode.block.id)
                     } else {
                       console.error('onReplyBlock Error: no blockId available')
+                    }
+                  }}
+                />
+              </Tooltip>
+            ) : null}
+            {onBlockComment ? (
+              <Tooltip content="Comment on this block" delay={800}>
+                <Button
+                  size="$2"
+                  opacity={hover ? 1 : 0}
+                  padding={layoutUnit / 4}
+                  borderRadius={layoutUnit / 4}
+                  chromeless
+                  icon={MessageSquare}
+                  onPress={() => {
+                    if (blockNode.block?.id) {
+                      onBlockComment(blockNode.block.id)
+                    } else {
+                      console.error(
+                        'onBlockComment Error: no blockId available',
+                      )
                     }
                   }}
                 />

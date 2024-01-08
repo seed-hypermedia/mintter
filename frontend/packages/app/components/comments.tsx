@@ -30,6 +30,7 @@ import {useAccount} from '../models/accounts'
 import type {CommentGroup} from '../models/comments'
 import {
   useCommentReplies,
+  useCreateComment,
   usePublicationCommentGroups,
 } from '../models/comments'
 import {usePublication} from '../models/documents'
@@ -47,7 +48,7 @@ export function CommentGroup({
   targetDocEid: string
   targetDocVersion: string
 }) {
-  const createComment = trpc.comments.createCommentDraft.useMutation()
+  const createComment = useCreateComment()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
@@ -73,18 +74,7 @@ export function CommentGroup({
                 label: 'Reply',
                 icon: Reply,
                 onPress: () => {
-                  createComment
-                    .mutateAsync({
-                      targetDocEid,
-                      targetDocVersion,
-                      targetCommentId: comment.id,
-                    })
-                    .then((commentId) => {
-                      navigate({
-                        key: 'comment-draft',
-                        commentId,
-                      })
-                    })
+                  createComment(targetDocEid, targetDocVersion, comment.id)
                 },
               },
               {
@@ -112,30 +102,14 @@ export function CommentGroup({
               if (!lastComment) return
               const targetId = unpackHmId(lastComment.id)
               if (!targetId) return
-              createComment
-                .mutateAsync({
-                  targetDocEid,
-                  targetCommentId: lastComment.id,
-                  targetDocVersion,
-                  blocks: [
-                    {
-                      block: {
-                        type: 'embed',
-                        attributes: {},
-                        ref: createHmId('c', targetId.eid, {
-                          blockRef: blockId,
-                        }),
-                      },
-                      children: [],
-                    },
-                  ],
-                })
-                .then((commentId) => {
-                  navigate({
-                    key: 'comment-draft',
-                    commentId,
-                  })
-                })
+              createComment(
+                targetDocEid,
+                targetDocVersion,
+                lastComment.id,
+                createHmId('c', targetId.eid, {
+                  blockRef: blockId,
+                }),
+              )
             }}
           />
         )

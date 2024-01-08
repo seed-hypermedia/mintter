@@ -345,3 +345,41 @@ export function useCommentEditor() {
     }
   }, [])
 }
+
+export function useCreateComment() {
+  const navigate = useNavigate()
+  const createComment = trpc.comments.createCommentDraft.useMutation()
+  return (
+    targetDocEid: string,
+    targetDocVersion: string,
+    targetCommentId?: string,
+    embedRef?: string,
+  ) => {
+    const content = embedRef
+      ? [
+          {
+            block: {
+              type: 'embed',
+              attributes: {},
+              ref: embedRef,
+            },
+            children: [],
+          },
+          {block: {type: 'paragraph', text: '', attributes: {}}, children: []},
+        ]
+      : [{type: 'paragraph', text: '', attributes: {}, children: []}]
+    createComment
+      .mutateAsync({
+        targetDocEid,
+        targetCommentId: targetCommentId || null,
+        targetDocVersion,
+        blocks: content,
+      })
+      .then((commentId) => {
+        navigate({
+          key: 'comment-draft',
+          commentId,
+        })
+      })
+  }
+}
