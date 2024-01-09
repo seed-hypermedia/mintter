@@ -705,7 +705,7 @@ type PushPublicationRequest struct {
 	DocumentId string `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
 	// Required. Specific version of the published document.
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	// Required. URL of the gateway to push to. Multiaddress format accepted (comma sepparated).
+	// Required. URL of the gateway to push to. Multiaddress format accepted (comma separated).
 	Url string `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
 }
 

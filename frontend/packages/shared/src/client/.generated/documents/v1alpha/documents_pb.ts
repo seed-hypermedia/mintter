@@ -632,7 +632,7 @@ export class PushPublicationRequest extends Message<PushPublicationRequest> {
   version = "";
 
   /**
-   * Required. URL of the gateway to push to. Multiaddress format accepted (comma sepparated).
+   * Required. URL of the gateway to push to. Multiaddress format accepted (comma separated).
    *
    * @generated from field: string url = 3;
    */
