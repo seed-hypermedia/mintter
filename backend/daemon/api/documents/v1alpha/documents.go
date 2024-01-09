@@ -466,6 +466,10 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 		return nil, status.Errorf(codes.InvalidArgument, "must specify version")
 	}
 
+	if in.Url == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify an url")
+	}
+
 	// If no gwClient is set we can't do anything else.
 	if api.gwClient == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "there is no gwClient definition")
