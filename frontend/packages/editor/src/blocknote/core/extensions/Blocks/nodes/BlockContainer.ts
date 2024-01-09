@@ -477,12 +477,22 @@ export const BlockContainer = Node.create<{
                   const numericLevel = $pos.depth / 2 + groupLevel - 1
                   newLevel = numericLevel < 4 ? numericLevel.toString() : '3'
                 }
+                const container = state.doc.resolve(
+                  groupPos.start() + pos - 1,
+                ).parent
+                const posAddition =
+                  container.type.name === 'blockContainer' ? -1 : 0
+
                 if (newLevel !== child.attrs.listLevel)
-                  state.tr.setNodeMarkup(groupPos.start() + pos - 1, null, {
-                    ...child.attrs,
-                    listType: listType,
-                    listLevel: newLevel,
-                  })
+                  state.tr.setNodeMarkup(
+                    groupPos.start() + pos + posAddition,
+                    null,
+                    {
+                      ...child.attrs,
+                      listType: listType,
+                      listLevel: newLevel,
+                    },
+                  )
               }
             })
             return true
@@ -504,6 +514,41 @@ export const BlockContainer = Node.create<{
             posInBlock < 0 ? state.selection.from : posInBlock,
             state,
           )
+
+          // Change group type to div
+          if (
+            group.attrs.listType !== 'div' &&
+            listType === 'div' &&
+            container
+          ) {
+            setTimeout(() => {
+              this.editor
+                .chain()
+                .command(({state, dispatch}) => {
+                  if (dispatch) {
+                    // setTimeout(() => {
+                    state.tr.setNodeMarkup($pos.before(depth), null, {
+                      ...group.attrs,
+                      listType: 'div',
+                      listLevel: '1',
+                    })
+                    // })
+                    return true
+                  }
+                  return false
+                })
+                .UpdateGroupChildren(
+                  container,
+                  $pos,
+                  2,
+                  group.attrs.listType,
+                  -1,
+                )
+                .run()
+            })
+
+            return true
+          }
 
           // If block is first block in the document do nothing
           if (

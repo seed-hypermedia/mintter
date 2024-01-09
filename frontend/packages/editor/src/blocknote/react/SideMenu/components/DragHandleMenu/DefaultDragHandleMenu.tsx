@@ -4,7 +4,13 @@ import {Box, Menu} from '@mantine/core'
 import {Forward, XStack} from '@mintter/ui'
 import {RefreshCcw} from '@tamagui/lucide-icons'
 import {useCallback, useRef, useState} from 'react'
-import {RiHeading, RiListOrdered, RiListUnordered, RiText} from 'react-icons/ri'
+import {
+  RiHeading,
+  RiListOrdered,
+  RiListUnordered,
+  RiMenuLine,
+  RiText,
+} from 'react-icons/ri'
 import {CopyLinkToBlockButton} from './DefaultButtons/CopyLinkToBlockButton'
 import {RemoveBlockButton} from './DefaultButtons/RemoveBlockButton'
 import {DragHandleMenu, DragHandleMenuProps} from './DragHandleMenu'
@@ -144,6 +150,20 @@ var turnIntoItems = [
     }) => {
       editor.focus()
       updateGroup(editor, block, 'ol')
+    },
+  },
+  {
+    label: 'Group item',
+    Icon: RiMenuLine,
+    onClick: ({
+      block,
+      editor,
+    }: {
+      block: BlockNoteEditor<HMBlockSchema>
+      editor: BlockNoteEditor<HMBlockSchema>
+    }) => {
+      editor.focus()
+      updateGroup(editor, block, 'div')
     },
   },
 ]
