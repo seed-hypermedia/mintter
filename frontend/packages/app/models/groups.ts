@@ -164,6 +164,7 @@ export function useUpdateGroup(
       opts?.onSuccess?.(result, input, context)
       invalidate([queryKeys.GET_GROUPS])
       invalidate([queryKeys.GET_GROUP, input.id])
+      invalidate([queryKeys.GET_GROUPS_FOR_ACCOUNT])
     },
   })
 }
