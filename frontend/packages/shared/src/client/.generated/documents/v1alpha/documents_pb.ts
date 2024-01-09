@@ -631,6 +631,13 @@ export class PushPublicationRequest extends Message<PushPublicationRequest> {
    */
   version = "";
 
+  /**
+   * Required. URL of the gateway to push to. Multiaddress format accepted (comma sepparated).
+   *
+   * @generated from field: string url = 3;
+   */
+  url = "";
+
   constructor(data?: PartialMessage<PushPublicationRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -641,6 +648,7 @@ export class PushPublicationRequest extends Message<PushPublicationRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PushPublicationRequest {

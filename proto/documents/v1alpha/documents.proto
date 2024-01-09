@@ -176,6 +176,9 @@ message PushPublicationRequest {
 
   // Required. Specific version of the published document.
   string version = 2;
+
+  // Required. URL of the gateway to push to. Multiaddress format accepted (comma sepparated).
+  string url = 3;
 }
 
 // Request for listing publications.

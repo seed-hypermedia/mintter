@@ -39,7 +39,7 @@ type Discoverer interface {
 // GatewayClient used to connect to the gateway and push content.
 type GatewayClient interface {
 	// GatewayClient used to connect to the gateway and push content.
-	GatewayClient(context.Context, bool) (mttnet.GatewayClient, error)
+	GatewayClient(context.Context, string) (mttnet.GatewayClient, error)
 }
 
 // Server implements DocumentsServer gRPC API.
@@ -521,7 +521,7 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 		return nil, status.Errorf(codes.NotFound, "couldn't find referenced materials for document %s: %v", entity.ID().String(), err)
 	}
 
-	gc, err := api.gwClient.GatewayClient(ctx, api.testnet)
+	gc, err := api.gwClient.GatewayClient(ctx, in.Url)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get site client: %v", err)
 	}

@@ -76,12 +76,12 @@ type lazyGwClient struct {
 
 // Connect connects to a remote gateway. Necessary here for the grpc server to add a site
 // that needs to connect to the site under the hood.
-func (ld *lazyGwClient) GatewayClient(ctx context.Context, testnet bool) (mttnet.GatewayClient, error) {
+func (ld *lazyGwClient) GatewayClient(ctx context.Context, url string) (mttnet.GatewayClient, error) {
 	node, ok := ld.net.Get()
 	if !ok {
 		return nil, fmt.Errorf("p2p node is not yet initialized")
 	}
-	return node.GatewayClient(ctx, testnet)
+	return node.GatewayClient(ctx, url)
 }
 
 type lazyDiscoverer struct {

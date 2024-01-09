@@ -9,6 +9,7 @@ import (
 	networking "mintter/backend/genproto/networking/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
@@ -130,8 +131,15 @@ func TestDaemonPushPublication(t *testing.T) {
 	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
 		Version:    pub.Version,
+		Url:        ipfs.TestGateway,
 	})
 	require.NoError(t, err)
+	_, err = alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
+		DocumentId: pub.Document.Id,
+		Version:    pub.Version,
+		Url:        "https://gabo.es/",
+	})
+	require.Error(t, err)
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
