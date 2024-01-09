@@ -1,25 +1,26 @@
-import {NextApiRequest, NextApiResponse} from 'next'
-import {setAllowAnyHostGetCORS} from 'server/cors'
-import svg2img from 'svg2img'
-import satori from 'satori'
-import {readFileSync} from 'fs'
-import {join} from 'path'
-import {serverHelpers} from 'server/ssr-helpers'
-import {OG_IMAGE_SIZE} from 'server/content-image-meta'
 import {
   HMBlock,
   HMBlockChildrenType,
   HMBlockImage,
   HMBlockNode,
+  HMGroup,
   HMPublication,
   createHmId,
   getCIDFromIPFSUrl,
   toHMInlineContent,
 } from '@mintter/shared'
+import {readFileSync} from 'fs'
+import {NextApiRequest, NextApiResponse} from 'next'
+import {join} from 'path'
+import satori from 'satori'
+import {OG_IMAGE_SIZE} from 'server/content-image-meta'
+import {setAllowAnyHostGetCORS} from 'server/cors'
+import {serverHelpers} from 'server/ssr-helpers'
+import svg2img from 'svg2img'
 
-import {ReactElement} from 'react'
 import {InlineContent} from '@mintter/editor'
-import {HMAccount, HMGroup} from '@mintter/shared/src/json-hm'
+import {HMAccount} from '@mintter/shared/src/json-hm'
+import {ReactElement} from 'react'
 
 function loadFont(fileName: string) {
   const path = join(process.cwd(), 'font', fileName)
@@ -181,9 +182,9 @@ function TitleMembersCard({
     >
       <div style={{padding: 60, display: 'flex', flexDirection: 'column'}}>
         {title && (
-          <span style={{fontSize: 72, fontWeight: 'bold', marginBottom: 100}}>
-            {title}
-          </span>
+          <div style={{display: 'flex', marginBottom: 20}}>
+            <span style={{fontSize: 72, fontWeight: 'bold'}}>{title}</span>
+          </div>
         )}
         {children}
       </div>
@@ -267,6 +268,42 @@ function GroupCard({
   )
 }
 
+// type HMBlockNode = {
+//   block: HMBlock
+//   children?: Array<HMBlockNode>
+// }
+
+// HMBlockNodes are recursive values. we want the output to have the same shape, but limit the total number of blocks
+// the first blocks will be included up until the totalBlock value is reached
+function clipContent(
+  content: HMBlockNode[] | undefined,
+  totalBlocks: number,
+): HMBlockNode[] | null {
+  if (!content) return null
+  const output: HMBlockNode[] = []
+  let blocksRemaining: number = totalBlocks
+  function walk(currentNode: HMBlockNode, outputNode: HMBlockNode[]): void {
+    if (blocksRemaining <= 0) {
+      return
+    }
+    let newNode: HMBlockNode = {
+      block: currentNode.block,
+      children: currentNode.children ? [] : undefined,
+    }
+    outputNode.push(newNode)
+    blocksRemaining--
+    if (currentNode.children && newNode.children) {
+      for (let child of currentNode.children) {
+        walk(child, newNode.children)
+      }
+    }
+  }
+  for (let root of content) {
+    walk(root, output)
+  }
+  return output
+}
+
 function PublicationCard({
   publication,
   editors,
@@ -274,13 +311,23 @@ function PublicationCard({
   publication: HMPublication
   editors: {account: HMAccount | null}[]
 }) {
+  const clippedContent = clipContent(
+    publication.document?.children,
+    8, // render a maximum of 8 blocks in the OG image
+  )
   return (
     <TitleMembersCard
       title={publication.document?.title || ''}
       accounts={editors}
     >
-      {publication.document?.children?.map((child, index) => {
-        if (index === 0) return null // hide title because we have already shown it
+      {clippedContent?.map((child, index) => {
+        if (
+          index === 0 &&
+          child.block.type === 'heading' &&
+          child.block.text === publication.document?.title &&
+          !child.children?.length
+        )
+          return null // hide title because we have already shown it
         return (
           <BlockNodeDisplay
             key={child.block.id}
