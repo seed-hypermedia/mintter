@@ -145,7 +145,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 		}
 	}
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.LogLevel, cfg.P2P.TestnetName != "", extraOpts...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPC.Port, &a.clean, a.g, a.Storage, a.DB, a.Blobs, a.Net, a.Syncing, a.Wallet, cfg.LogLevel, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +402,6 @@ func initGRPC(
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
 	LogLevel string,
-	testnet bool,
 	extras ...interface{},
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
@@ -418,7 +417,7 @@ func initGRPC(
 	}
 	srv = grpc.NewServer(opts...)
 
-	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, LogLevel, testnet)
+	rpc = api.New(ctx, repo, pool, blobs, node, sync, wallet, LogLevel)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

@@ -42,7 +42,6 @@ func New(
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
 	LogLevel string,
-	testnet bool,
 ) Server {
 	doSync := func() error {
 		s, ok := sync.Get()
@@ -59,7 +58,7 @@ func New(
 		return nil
 	}
 
-	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, &lazyGwClient{net: node}, LogLevel, testnet)
+	documentsSrv := documents.NewServer(repo.Identity(), db, &lazyDiscoverer{sync: sync, net: node}, &lazyGwClient{net: node}, LogLevel)
 	return Server{
 		Accounts:   accounts.NewServer(repo.Identity(), blobs),
 		Daemon:     daemon.NewServer(repo, blobs, wallet, doSync),

@@ -49,18 +49,16 @@ type Server struct {
 	disc     Discoverer
 	blobs    *hyper.Storage
 	gwClient GatewayClient
-	testnet  bool
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, gwClient GatewayClient, LogLevel string, testnet bool) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, gwClient GatewayClient, LogLevel string) *Server {
 	srv := &Server{
 		db:       db,
 		me:       me,
 		disc:     disc,
 		blobs:    hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
 		gwClient: gwClient,
-		testnet:  testnet,
 	}
 
 	return srv
