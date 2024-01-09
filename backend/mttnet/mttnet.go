@@ -259,11 +259,11 @@ func (n *Node) GatewayClient(ctx context.Context, testnet bool) (GatewayClient, 
 	}
 	ma, err := ipfs.ParseMultiaddrs(maStr)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse gateway address: %v", err)
+		return nil, fmt.Errorf("Could not parse gateway address: %w", err)
 	}
 	gwInfo, err := peer.AddrInfoFromP2pAddr(ma[0])
 	if err != nil {
-		return nil, fmt.Errorf("Could not decode gateway info: %v", err)
+		return nil, fmt.Errorf("Could not decode gateway info: %w", err)
 	}
 	if err := n.Connect(ctx, *gwInfo); err != nil {
 		return nil, err

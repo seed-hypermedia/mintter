@@ -385,7 +385,6 @@ func TestTrustedPeers(t *testing.T) {
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
-
 	}
 
 	{

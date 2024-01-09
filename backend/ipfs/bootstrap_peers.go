@@ -13,7 +13,7 @@ const (
 	TestGateway       = "/dns4/mintter.xyz/tcp/55001/p2p/12D3KooWSTPg42qfgeHdjqxLM3mWSaXVUefkPNXrm1knfaB568dW"
 )
 
-// DefaultBootstrapAddresses are the addresses to use as a gate to the network
+// DefaultBootstrapAddresses are the addresses to use as a gate to the network.
 var DefaultBootstrapAddresses = []string{
 	"/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
 	"/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",

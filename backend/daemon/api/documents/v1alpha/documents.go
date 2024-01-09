@@ -253,7 +253,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 }
 
 // ListDrafts implements the corresponding gRPC method.
-func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	entities, err := api.blobs.ListEntities(ctx, "hm://d/*")
 	if err != nil {
 		return nil, err
@@ -498,7 +498,7 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 
 	gdb, err := hypersql.EntitiesLookupID(conn, entity.ID().String())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to find entity id [%s]: %v", entity.ID().String(), err)
+		return nil, status.Errorf(codes.NotFound, "unable to find entity id [%s]: %v", entity.ID().String(), err)
 	}
 	if gdb.ResourcesID == 0 {
 		return nil, status.Errorf(codes.NotFound, "document %s not found", entity.ID().String())
@@ -523,13 +523,13 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 
 	gc, err := api.gwClient.GatewayClient(ctx, api.testnet)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get site client: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to get site client: %v", err)
 	}
 
 	if _, err := gc.PublishBlobs(ctx, &groups_proto.PublishBlobsRequest{
 		Blobs: colx.SliceMap(cids, cid.Cid.String),
 	}); err != nil {
-		return nil, fmt.Errorf("failed to push blobs to the gateway: %w", err)
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to push blobs to the gateway: %v", err)
 	}
 	return &emptypb.Empty{}, nil
 }

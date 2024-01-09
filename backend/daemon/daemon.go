@@ -114,7 +114,7 @@ func Load(ctx context.Context, cfg config.Config, r *storage.Dir, extraOpts ...i
 
 	otel.SetTracerProvider(tp)
 
-	a.DB, err = initSQLite(ctx, &a.clean, a.Storage.SQLitePath())
+	a.DB, err = initSQLite(&a.clean, a.Storage.SQLitePath())
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +254,7 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
+func initSQLite(clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
 	poolSize := int(float64(runtime.NumCPU()) / 2)
 	if poolSize == 0 {
 		poolSize = 2
