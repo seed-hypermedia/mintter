@@ -140,18 +140,7 @@ export function CommentGroup({
             onPress={() => {
               const lastComment = group.comments.at(-1)
               if (!lastComment) return
-              createComment
-                .mutateAsync({
-                  targetDocEid,
-                  targetDocVersion,
-                  targetCommentId: lastComment.id,
-                })
-                .then((draftId) => {
-                  navigate({
-                    key: 'comment-draft',
-                    commentId: draftId,
-                  })
-                })
+              createComment(targetDocEid, targetDocVersion, lastComment.id)
             }}
             icon={Reply}
           >
