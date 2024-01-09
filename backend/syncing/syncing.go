@@ -424,15 +424,21 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 		}
 	}
 
+	log := s.log.With(
+		zap.String("remotePeer", pid.String()),
+	)
+
 	sess := s.bitswap.NewSession(ctx)
 	for _, c := range want {
 		blk, err := sess.GetBlock(ctx, c)
 		if err != nil {
-			return fmt.Errorf("failed to sync blob %s: %w", c, err)
+			log.Debug("FailedToGetWantedBlob", zap.String("cid", c.String()), zap.Error(err))
+			continue
 		}
 
 		if err := bs.Put(ctx, blk); err != nil {
-			return fmt.Errorf("failed to save blob %s: %w", c, err)
+			log.Debug("FailedToSaveWantedBlob", zap.String("cid", c.String()), zap.Error(err))
+			continue
 		}
 	}
 
