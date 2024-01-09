@@ -884,9 +884,9 @@ export function useDocTextContent(pub?: Publication) {
   }, [pub])
 }
 
-export type BlocksMap = Record<string, BlocksMapIten>
+export type BlocksMap = Record<string, BlocksMapItem>
 
-export type BlocksMapIten = {
+export type BlocksMapItem = {
   parent: string
   left: string
   block: Block
@@ -948,7 +948,11 @@ export function compareBlocksWithMap(
     }
     let currentBlockState = fromHMBlock(block)
 
-    if (!prevBlockState) {
+    if (
+      !prevBlockState ||
+      prevBlockState.block.attributes.listLevel !==
+        currentBlockState.attributes.listLevel
+    ) {
       const serverBlock = fromHMBlock(block)
 
       // add moveBlock change by default to all blocks
