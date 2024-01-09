@@ -149,6 +149,7 @@ export function useAllPublicationComments(docEid: string | undefined) {
       return res.comments as unknown as HMComment[]
     },
     enabled: !!docEid,
+    refetchInterval: 10000,
     queryKey: [queryKeys.PUBLICATION_COMMENTS, docEid],
   })
 }
