@@ -4,7 +4,6 @@ import {useOpenUrl} from '@mintter/app/open-url'
 import {slashMenuItems} from '@mintter/app/src/slash-menu-items'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
-  BlockIdentifier,
   BlockNoteEditor,
   Block as EditorBlock,
   createHypermediaDocLinkPlugin,
@@ -36,10 +35,9 @@ import {
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
-import {Editor, Extension, findParentNode} from '@tiptap/core'
+import {Extension, findParentNode} from '@tiptap/core'
 import {useMachine} from '@xstate/react'
 import _ from 'lodash'
-import {Node} from 'prosemirror-model'
 import {useEffect, useMemo, useRef} from 'react'
 import {ContextFrom, fromPromise} from 'xstate'
 import {useGRPCClient} from '../app-context'
@@ -48,6 +46,7 @@ import {pathNameify} from '../utils/path'
 import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
+import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {useGroupContent} from './groups'
 import {queryKeys} from './query-keys'
 
@@ -805,51 +804,6 @@ function generateBlockId(length: number = 8): string {
   return result
 }
 
-function setGroupTypes(tiptap: Editor, blocks: Array<Partial<HMBlock>>) {
-  blocks.forEach((block: Partial<HMBlock>) => {
-    tiptap.state.doc.descendants((node: Node, pos: number) => {
-      if (
-        node.attrs.id === block.id &&
-        // @ts-expect-error
-        block.props &&
-        // @ts-expect-error
-        block.props.childrenType
-      ) {
-        node.descendants((child: Node, childPos: number) => {
-          if (child.type.name === 'blockGroup') {
-            setTimeout(() => {
-              let tr = tiptap.state.tr
-              // @ts-expect-error
-              tr = block.props?.start
-                ? tr.setNodeMarkup(pos + childPos + 1, null, {
-                    // @ts-expect-error
-                    listType: block.props?.childrenType,
-                    // @ts-expect-error
-                    listLevel: block.props?.listLevel,
-                    // @ts-expect-error
-                    start: parseInt(block.props?.start),
-                  })
-                : tr.setNodeMarkup(pos + childPos + 1, null, {
-                    // @ts-expect-error
-                    listType: block.props?.childrenType,
-                    // @ts-expect-error
-                    listLevel: block.props?.listLevel,
-                  })
-              tiptap.view.dispatch(tr)
-            })
-            return false
-          }
-        })
-      }
-    })
-    // @ts-expect-error
-    if (block.children) {
-      // @ts-expect-error
-      setGroupTypes(tiptap, block.children)
-    }
-  })
-}
-
 export function useDocTextContent(pub?: Publication) {
   return useMemo(() => {
     let res = ''
@@ -1015,41 +969,6 @@ export function compareBlocksWithMap(
       touchedBlocks = [...touchedBlocks, ...nestedResults.touchedBlocks]
     }
   })
-
-  function getBlockGroup(editor: BlockNoteEditor, blockId: BlockIdentifier) {
-    const tiptap = editor?._tiptapEditor
-    if (tiptap) {
-      const id = typeof blockId === 'string' ? blockId : blockId.id
-      let group: {type: string; listLevel: string; start?: number} | undefined
-      tiptap.state.doc.firstChild!.descendants((node: Node) => {
-        if (typeof group !== 'undefined') {
-          return false
-        }
-
-        if (node.attrs.id !== id) {
-          return true
-        }
-
-        node.descendants((child: Node) => {
-          if (child.attrs.listType && child.type.name === 'blockGroup') {
-            group = {
-              type: child.attrs.listType,
-              start: child.attrs.start,
-              listLevel: child.attrs.listLevel,
-            }
-            return false
-          }
-          return true
-        })
-
-        return true
-      })
-
-      return group
-    }
-
-    return undefined
-  }
 
   return {
     changes,
