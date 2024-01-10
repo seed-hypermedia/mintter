@@ -9,7 +9,7 @@ import {Button, ChevronUp, Copy, Spinner, XStack, YStack} from '@mintter/ui'
 import {Reply} from '@tamagui/lucide-icons'
 import {
   CommentGroup,
-  CommentPageTitlebar,
+  CommentPageTitlebarWithDocId,
   CommentPresentation,
   CommentThread,
 } from '../components/comments'
@@ -163,7 +163,7 @@ export default function CommentPage() {
     : null
   return (
     <>
-      <CommentPageTitlebar />
+      <CommentPageTitlebarWithDocId targetDocId={targetDocId?.qid} />
       <MainWrapperStandalone backgroundColor={'$blue2'}>
         {comment.isLoading ? <Spinner /> : null}
         {route.showThread && targetDocId && comment.data?.repliedComment ? (

@@ -137,7 +137,7 @@ export default function CommentDraftPage() {
   const discardComment = useDeleteCommentDraftDialog()
   return (
     <>
-      <CommentPageTitlebarWithDocId targetDocId={targetDocId} />
+      <CommentPageTitlebarWithDocId targetDocIdStream={targetDocId} />
       <MainWrapperStandalone backgroundColor={'$blue2'} theme="blue">
         <YStack minHeight={'100vh'}>
           <TargetComment

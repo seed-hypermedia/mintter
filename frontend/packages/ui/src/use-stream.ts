@@ -2,13 +2,13 @@ import type {StateStream} from '@mintter/shared/src/utils/stream'
 import {useEffect, useState, useSyncExternalStore} from 'react'
 
 export function useStream<StreamValue>(
-  stream: StateStream<StreamValue>,
-): StreamValue {
+  stream?: StateStream<StreamValue> | undefined,
+): StreamValue | undefined {
   return useSyncExternalStore(
     (onStoreChange) => {
-      return stream.subscribe(onStoreChange)
+      return stream ? stream.subscribe(onStoreChange) : () => {}
     },
-    () => stream.get(),
+    () => stream?.get(),
   )
 }
 

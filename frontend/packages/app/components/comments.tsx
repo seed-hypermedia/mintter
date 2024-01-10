@@ -11,7 +11,9 @@ import {
 } from '@mintter/shared'
 import {
   Button,
+  ButtonText,
   SizableText,
+  Text,
   UIAvatar,
   View,
   XStack,
@@ -25,6 +27,7 @@ import {
   Reply,
 } from '@tamagui/lucide-icons'
 import {YStack} from 'tamagui'
+import {useAppContext} from '../app-context'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccount} from '../models/accounts'
 import type {CommentGroup} from '../models/comments'
@@ -38,6 +41,7 @@ import {AppPublicationContentProvider} from '../pages/publication'
 import {useNavigate} from '../utils/useNavigate'
 import {AccessoryContainer} from './accessory-sidebar'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
+import {WindowsLinuxWindowControls} from './titlebar-windows-linux'
 
 export function CommentGroup({
   group,
@@ -288,11 +292,13 @@ export function CommentPresentation({
 
 export function CommentPageTitlebar({
   icon,
-  title,
+  children,
 }: {
   icon?: React.ReactNode
-  title?: string
+  children?: React.ReactNode
 }) {
+  const {platform} = useAppContext()
+  const isWindowsLinux = platform !== 'darwin'
   return (
     <XStack
       height={40}
@@ -304,28 +310,62 @@ export function CommentPageTitlebar({
       paddingHorizontal="$2"
       className="window-drag"
     >
-      <XStack ai="center" gap="$2">
-        {icon || <MessageSquare size={12} />}
-        <SizableText size="$4">{title || 'Comment'}</SizableText>
+      {isWindowsLinux ? null : <View width={72} />}
+      <XStack ai="center" jc="flex-start" f={1} paddingHorizontal="$2">
+        <XStack ai="center" gap="$2">
+          {icon || <MessageSquare size={12} />}
+          {children}
+        </XStack>
       </XStack>
+      {isWindowsLinux ? <WindowsLinuxWindowControls /> : null}
     </XStack>
   )
 }
 
 export function CommentPageTitlebarWithDocId({
   targetDocId,
+  targetDocIdStream,
 }: {
-  targetDocId: StateStream<string | null>
+  targetDocId?: string | null
+  targetDocIdStream?: StateStream<string | null>
 }) {
-  const docId = useStream(targetDocId)
-  const pub = usePublication({id: docId || undefined})
+  const docId = useStream(targetDocIdStream)
+  const usableDocId = targetDocId || docId || undefined
+  const pub = usePublication({id: usableDocId})
+  const publication = pub.data
+  const spawn = useNavigate('spawn')
+  const author = publication?.document?.author
+  const title = publication?.document?.title
+  if (!publication || !author || !title || !usableDocId)
+    return (
+      <CommentPageTitlebar>
+        <Text fontSize="$4">Comment</Text>
+      </CommentPageTitlebar>
+    )
   return (
-    <CommentPageTitlebar
-      title={
-        pub.data?.document?.title
-          ? `Comment on ${pub.data?.document?.title}`
-          : 'Comment'
-      }
-    />
+    <CommentPageTitlebar>
+      <Text fontSize="$4" numberOfLines={1}>
+        Comment on{' '}
+        <ButtonText
+          size="$4"
+          fontSize="$4"
+          className="no-window-drag"
+          textDecorationLine="underline"
+          onPress={() => {
+            spawn({
+              key: 'publication',
+              documentId: usableDocId,
+              versionId: pub.data?.version,
+              variant: {
+                key: 'authors',
+                authors: [author],
+              },
+            })
+          }}
+        >
+          {title}
+        </ButtonText>
+      </Text>
+    </CommentPageTitlebar>
   )
 }
