@@ -48,14 +48,12 @@ To run the dev build with the production network, use the following command:
 MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
 ```
 
-## Web Build
+## Group sites
 
-You can build docker images for different modules of the system. Always from the
-repo root path you can issue the following commands:
-
-daemon: `docker build -t mintterd . -f ./backend/cmd/mintterd/Dockerfile`
-
-gateway: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
+Group sites need two programs to run. The daemon which includes the P2P node (go app) 
+and the forntend that renders documents (nextjs app). However for a production 
+deployment everything is orchestrated by docker compose. Read next sections for how to 
+either deploy a site on a production server or run it locally in dev mode
 
 ### Deploy a Group Site
 
@@ -81,3 +79,21 @@ just execute the installation command with the `--auto-update` flag. Ex:
 ```shell
 sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com --auto-update
 ```
+
+### Build Group sites (devs only)
+
+You can build docker images for different modules of the system. Always from the
+repo root path you can issue the following commands:
+
+daemon: `docker build -t mintterd . -f ./backend/cmd/mintterd/Dockerfile`
+
+gateway: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
+
+### Debug Group sites (devs only)
+
+To launch group sites building blocks independently, always from the
+repo root path you can issue the following commands:
+
+daemon: `MINTTER_P2P_TESTNET_NAME="" go run ./backend/cmd/mintter-site -data-dir=~/.mttsite-dev -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay "http://localhost:3000"`
+
+gateway: `NEXT_PUBLIC_GRPC_HOST="http://localhost:57001/" PORT=3000 GW_NEXT_HOST="http://localhost:3000" yarn site`
