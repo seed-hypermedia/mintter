@@ -58,7 +58,7 @@ import {
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
-import {useCreateComment} from '../models/comments'
+import {useAllPublicationComments, useCreateComment} from '../models/comments'
 import {useExperiments} from '../models/experiments'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
@@ -397,16 +397,7 @@ export default function PublicationPage() {
             ) : null}
 
             {experiments.data?.commenting ? (
-              <FooterButton
-                label="Commentary"
-                icon={MessageSquare}
-                active={accessoryKey === 'comments'}
-                onPress={() => {
-                  if (route.accessory?.key === 'comments')
-                    return replace({...route, accessory: null})
-                  replace({...route, accessory: {key: 'comments'}})
-                }}
-              />
+              <PublicationCommentaryButton />
             ) : null}
           </Footer>
         </CitationsProvider>
@@ -417,6 +408,37 @@ export default function PublicationPage() {
   return null
   // TODO: show loading only if it takes more than 1 second to load the publication
   // return <DocumentPlaceholder />
+}
+
+function PublicationCommentaryButton() {
+  const route = useNavRoute()
+  if (route.key !== 'publication')
+    throw new Error('Publication page expects publication actor')
+
+  const docId = route?.documentId ? unpackHmId(route?.documentId) : null
+  const accessory = route?.accessory
+  const accessoryKey = accessory?.key
+  const replace = useNavigate('replace')
+  let label = 'Comment'
+  const comments = useAllPublicationComments(docId?.eid)
+  if (comments.data?.length) {
+    label = `${comments.data.length} ${pluralS(
+      comments.data.length,
+      'Comment',
+    )}`
+  }
+  return (
+    <FooterButton
+      label={label}
+      icon={MessageSquare}
+      active={accessoryKey === 'comments'}
+      onPress={() => {
+        if (route.accessory?.key === 'comments')
+          return replace({...route, accessory: null})
+        replace({...route, accessory: {key: 'comments'}})
+      }}
+    />
+  )
 }
 
 function PublicationVersionsFooterButton({
