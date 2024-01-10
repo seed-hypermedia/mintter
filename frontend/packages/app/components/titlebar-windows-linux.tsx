@@ -93,11 +93,7 @@ export function WindowsLinuxTitleBar({
         </TitlebarSection>
         <XStack flex={1} />
         <TitlebarSection space>
-          <XStack className="no-window-drag">
-            <MinimizeButton />
-            <MaximizeOrRestoreButton />
-            <CloseButton />
-          </XStack>
+          <WindowsLinuxWindowControls />
         </TitlebarSection>
       </TitlebarRow>
       <TitlebarRow>
@@ -133,6 +129,16 @@ export function WindowsLinuxTitleBar({
         </XStack>
       </TitlebarRow>
     </TitlebarWrapper>
+  )
+}
+
+export function WindowsLinuxWindowControls() {
+  return (
+    <XStack className="no-window-drag">
+      <MinimizeButton />
+      <MaximizeOrRestoreButton />
+      <CloseButton />
+    </XStack>
   )
 }
 

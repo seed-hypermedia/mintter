@@ -214,7 +214,7 @@ export function createAppWindow(input: {
   windowNavState[windowId] = {
     routes: initRoutes,
     routeIndex: initRouteIndex,
-    sidebarLocked: input.sidebarLocked || true,
+    sidebarLocked: input.sidebarLocked || false,
   }
 
   browserWindow.webContents.ipc.on('initWindow', (e) => {
