@@ -162,7 +162,7 @@ export function usePublicationCommentGroups(
   return useCommentGroups(comments.data, commentId)
 }
 
-export function useCommentEditor() {
+export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
   const route = useNavRoute()
   if (route.key !== 'comment-draft')
     throw new Error('useCommentEditor must be used in comment route')
@@ -173,6 +173,11 @@ export function useCommentEditor() {
   const write = trpc.comments.writeCommentDraft.useMutation({
     onError: (err) => {
       toast.error(err.message)
+    },
+  })
+  const removeDraft = trpc.comments.removeCommentDraft.useMutation({
+    onError: (err) => {
+      opts.onDiscard?.()
     },
   })
   const openUrl = useOpenUrl()
@@ -336,9 +341,20 @@ export function useCommentEditor() {
         'after',
       )
     }
+    function onDiscard() {
+      if (!editCommentId) throw new Error('no editCommentId')
+      removeDraft
+        .mutateAsync({
+          commentId: editCommentId,
+        })
+        .then(() => {
+          client.closeAppWindow.mutate(window.windowId)
+        })
+    }
     return {
       editor,
       onSubmit,
+      onDiscard,
       isSaved,
       targetCommentId,
       targetDocId,

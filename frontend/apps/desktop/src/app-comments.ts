@@ -78,4 +78,24 @@ export const commentsApi = t.router({
       })
       return commentId
     }),
+  removeCommentDraft: t.procedure
+    .input(
+      z.object({
+        commentId: z.string(),
+        // targetDocEid: z.string(),
+      }),
+    )
+    .mutation(async ({input}) => {
+      const commentId = input.commentId
+      const comment = commentDraftStore.get(`Comment-${commentId}`)
+      if (!comment) throw new Error('Comment with this commentId not found')
+      commentDraftStore.delete(`Comment-${commentId}`)
+      const index = commentDraftStore.get(`Doc-${comment.targetDocEid}`)
+      if (!index) throw new Error('Comment index not found')
+      commentDraftStore.set(`Doc-${comment.targetDocEid}`, {
+        ...index,
+        [commentId]: undefined,
+      })
+      return commentId
+    }),
 })

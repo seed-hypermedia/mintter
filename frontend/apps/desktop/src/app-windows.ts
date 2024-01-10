@@ -24,6 +24,13 @@ export function getFocusedWindow(): BrowserWindow | null | undefined {
   return BrowserWindow.getFocusedWindow()
 }
 
+export function closeAppWindow(windowId: string) {
+  const window = allWindows.get(windowId)
+  if (!window) return null
+  window.close()
+  allWindows.delete(windowId)
+}
+
 function windowFocused(windowId: string) {
   focusedWindowKey = windowId
 }
