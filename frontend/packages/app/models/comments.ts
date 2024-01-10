@@ -221,6 +221,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
     linkExtensionOptions: {
       openOnClick: false,
       queryClient,
+      grpcClient,
       openUrl,
     },
 
