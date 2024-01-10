@@ -25,13 +25,33 @@ import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import {getBlockGroup, setGroupTypes} from './editor-utils'
 import {queryKeys} from './query-keys'
 
-function serverBlockNodesFromEditorBlocks(editorBlocks: Block[]) {
-  return editorBlocks.map((block: Block) => ({
-    block: fromHMBlock(block),
-    children: serverBlockNodesFromEditorBlocks(block.children),
-  }))
+function serverBlockNodesFromEditorBlocks(
+  editor: BlockNoteEditor,
+  editorBlocks: Block[],
+) {
+  if (!editorBlocks) return []
+  return editorBlocks.map((block: Block) => {
+    const childGroup = getBlockGroup(editor, block.id) || {}
+    const serverBlock = fromHMBlock(block)
+    if (childGroup) {
+      // @ts-expect-error
+      serverBlock.attributes.childrenType = childGroup.type
+        ? childGroup.type
+        : 'group'
+      // @ts-expect-error
+      serverBlock.attributes.listLevel = childGroup.listLevel
+      // @ts-expect-error
+      if (childGroup.start)
+        serverBlock.attributes.start = childGroup.start.toString()
+    }
+    return {
+      block: serverBlock,
+      children: serverBlockNodesFromEditorBlocks(editor, block.children),
+    }
+  })
 }
 
 export type CommentGroup = {
@@ -200,13 +220,17 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
     const editorBlocks = toHMBlock(draft.blocks)
     editor.removeBlocks(editor.topLevelBlocks)
     editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
+    setGroupTypes(editor._tiptapEditor, editorBlocks)
   }
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       setIsSaved(false)
       clearTimeout(saveTimeoutRef.current)
       saveTimeoutRef.current = setTimeout(() => {
-        const blocks = serverBlockNodesFromEditorBlocks(editor.topLevelBlocks)
+        const blocks = serverBlockNodesFromEditorBlocks(
+          editor,
+          editor.topLevelBlocks,
+        )
         write
           .mutateAsync({
             blocks,
@@ -302,7 +326,10 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       if (!editCommentId) throw new Error('no editCommentId')
       const draft = initCommentDraft.current
       if (!draft) throw new Error('no draft found to publish')
-      const content = serverBlockNodesFromEditorBlocks(editor.topLevelBlocks)
+      const content = serverBlockNodesFromEditorBlocks(
+        editor,
+        editor.topLevelBlocks,
+      )
       const contentWithoutLastEmptyBlock = content.filter((block, index) => {
         const isLast = index === content.length - 1
         if (!isLast) return true
