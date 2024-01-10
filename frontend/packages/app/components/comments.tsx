@@ -198,8 +198,6 @@ export function EntityCommentsAccessory({
   const createComment = trpc.comments.createCommentDraft.useMutation()
   return (
     <AccessoryContainer
-      backgroundColor={'$blue2'}
-      theme="blue"
       title="Comments"
       footer={
         <YStack padding="$4" borderTopWidth={1} borderColor="$borderColor">
@@ -306,7 +304,6 @@ export function CommentPageTitlebar({
       height={40}
       borderBottomWidth={1}
       borderColor="$borderColor"
-      backgroundColor={'$blue2'}
       ai="center"
       jc="center"
       paddingHorizontal="$2"

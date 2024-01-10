@@ -31,7 +31,6 @@ function CommitBar({
   return (
     <XStack
       ai="center"
-      backgroundColor={'$blue2'}
       padding="$4"
       paddingHorizontal="$5"
       theme="blue"
@@ -138,7 +137,7 @@ export default function CommentDraftPage() {
   return (
     <>
       <CommentPageTitlebarWithDocId targetDocIdStream={targetDocId} />
-      <MainWrapperStandalone backgroundColor={'$blue2'} theme="blue">
+      <MainWrapperStandalone>
         <YStack minHeight={'100vh'}>
           <TargetComment
             targetCommentId={targetCommentId}
