@@ -1,18 +1,20 @@
 import {ScrollView, SizableText, XStack, YStack} from '@mintter/ui'
 import {Allotment} from 'allotment'
+import {ComponentProps} from 'react'
 
 export function AccessoryContainer({
   children,
   footer,
   title,
+  ...props
 }: {
   children: React.ReactNode
   footer?: React.ReactNode
   title?: string
-}) {
+} & ComponentProps<typeof YStack>) {
   return (
     <Allotment.Pane preferredSize="35%" maxSize={400} minSize={300}>
-      <YStack height="100%">
+      <YStack height="100%" {...props}>
         {title ? (
           <XStack
             paddingHorizontal="$4"
