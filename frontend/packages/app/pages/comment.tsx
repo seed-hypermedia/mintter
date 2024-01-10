@@ -164,7 +164,7 @@ export default function CommentPage() {
   return (
     <>
       <CommentPageTitlebarWithDocId targetDocId={targetDocId?.qid} />
-      <MainWrapperStandalone backgroundColor={'$blue2'} theme="blue">
+      <MainWrapperStandalone>
         {comment.isLoading ? <Spinner /> : null}
         {route.showThread && targetDocId && comment.data?.repliedComment ? (
           <CommentThread
