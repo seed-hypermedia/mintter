@@ -41,6 +41,7 @@ contextBridge.exposeInMainWorld('appInfo', AppInfo)
 
 const windowInfo = ipcRenderer.sendSync('initWindow')
 
+contextBridge.exposeInMainWorld('windowId', windowInfo.windowId)
 contextBridge.exposeInMainWorld('windowType', windowInfo.windowType)
 contextBridge.exposeInMainWorld('initNavState', windowInfo.navState)
 
@@ -48,8 +49,6 @@ const [updateDarkMode, darkMode] = writeableStateStream<GoDaemonState>(
   windowInfo.darkMode,
 )
 contextBridge.exposeInMainWorld('darkMode', darkMode)
-
-const windowId = windowInfo.windowId
 
 const [updateDaemonState, daemonState] = writeableStateStream<GoDaemonState>(
   windowInfo.daemonState,

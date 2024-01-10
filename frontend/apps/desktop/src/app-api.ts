@@ -24,6 +24,7 @@ import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
 import {welcomingApi} from './app-welcoming'
 import {
+  closeAppWindow,
   createAppWindow,
   ensureFocusedWindowVisible,
   getAllWindows,
@@ -114,6 +115,10 @@ export const router = t.router({
   webImporting: webImportingApi,
   pins: pinsApi,
   comments: commentsApi,
+  closeAppWindow: t.procedure.input(z.string()).mutation(async ({input}) => {
+    closeAppWindow(input)
+    return null
+  }),
   createAppWindow: t.procedure
     .input(
       z.object({

@@ -8,6 +8,7 @@ import {
   CommentPresentation,
   CommentThread,
 } from '../components/comments'
+import {useDeleteCommentDraftDialog} from '../components/delete-comment-draft-dialog'
 import {MainWrapperStandalone} from '../components/main-wrapper'
 import {useComment, useCommentEditor} from '../models/comments'
 import {useNavRoute} from '../utils/navigation'
@@ -16,17 +17,31 @@ import {AppPublicationContentProvider} from './publication'
 
 function CommitBar({
   onSubmit,
+  onDiscard,
   isSaved,
   targetCommentId,
 }: {
   onSubmit: () => void
+  onDiscard: () => void
   isSaved: StateStream<boolean>
   targetCommentId: StateStream<string | null>
 }) {
   const _isSaved = useStream(isSaved)
   const _targetCommentId = useStream(targetCommentId)
   return (
-    <XStack ai="center" margin="$2" paddingHorizontal={54}>
+    <XStack
+      ai="center"
+      backgroundColor={'$blue2'}
+      padding="$4"
+      paddingHorizontal="$5"
+      theme="blue"
+      jc="space-between"
+      borderTopWidth={1}
+      borderColor="$borderColor"
+    >
+      <Button size="$2" onPress={onDiscard}>
+        Discard Draft
+      </Button>
       <Button
         className="no-window-drag"
         disabled={!_isSaved}
@@ -36,11 +51,6 @@ function CommitBar({
       >
         {_targetCommentId ? 'Submit Reply' : 'Submit Comment'}
       </Button>
-      {!_isSaved ? (
-        <SizableText position="absolute" right={54} color="$color8">
-          Saving
-        </SizableText>
-      ) : null}
     </XStack>
   )
 }
@@ -111,14 +121,20 @@ export default function CommentDraftPage() {
   const {
     editor,
     onSubmit,
+    onDiscard,
     isSaved,
     targetCommentId,
     targetDocId,
     addReplyEmbed,
-  } = useCommentEditor()
+  } = useCommentEditor({
+    onDiscard: () => {
+      window.close()
+    },
+  })
   useEffect(() => {
     editor._tiptapEditor.commands.focus()
   }, [])
+  const discardComment = useDeleteCommentDraftDialog()
   return (
     <>
       <CommentPageTitlebarWithDocId targetDocId={targetDocId} />
@@ -139,14 +155,16 @@ export default function CommentDraftPage() {
                 <HyperMediaEditorView editor={editor} editable />
               </HMEditorContainer>
             </AppPublicationContentProvider>
-            <CommitBar
-              isSaved={isSaved}
-              onSubmit={onSubmit}
-              targetCommentId={targetCommentId}
-            />
           </YStack>
         </YStack>
       </MainWrapperStandalone>
+      <CommitBar
+        isSaved={isSaved}
+        onSubmit={onSubmit}
+        onDiscard={() => discardComment.open({onConfirm: onDiscard})}
+        targetCommentId={targetCommentId}
+      />
+      {discardComment.content}
     </>
   )
 }
