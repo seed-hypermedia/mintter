@@ -130,13 +130,11 @@ func TestDaemonPushPublication(t *testing.T) {
 	pub := publishDocument(t, ctx, alice)
 	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
-		Version:    pub.Version,
 		Url:        ipfs.TestGateway,
 	})
 	require.NoError(t, err)
 	_, err = alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
 		DocumentId: pub.Document.Id,
-		Version:    pub.Version,
 		Url:        "https://gabo.es/",
 	})
 	require.Error(t, err)

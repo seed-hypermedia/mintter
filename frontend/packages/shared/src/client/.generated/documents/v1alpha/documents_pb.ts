@@ -625,16 +625,9 @@ export class PushPublicationRequest extends Message<PushPublicationRequest> {
   documentId = "";
 
   /**
-   * Required. Specific version of the published document.
-   *
-   * @generated from field: string version = 2;
-   */
-  version = "";
-
-  /**
    * Required. URL of the gateway to push to. Multiaddress format accepted (comma separated).
    *
-   * @generated from field: string url = 3;
+   * @generated from field: string url = 2;
    */
   url = "";
 
@@ -647,8 +640,7 @@ export class PushPublicationRequest extends Message<PushPublicationRequest> {
   static readonly typeName = "com.mintter.documents.v1alpha.PushPublicationRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PushPublicationRequest {

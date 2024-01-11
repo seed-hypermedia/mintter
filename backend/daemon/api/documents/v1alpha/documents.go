@@ -462,10 +462,6 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID")
 	}
 
-	if in.Version == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "must specify version")
-	}
-
 	if in.Url == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "must specify an url")
 	}
@@ -477,15 +473,10 @@ func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublic
 
 	eid := hyper.EntityID(in.DocumentId)
 
-	heads, err := hyper.Version(in.Version).Parse()
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "unable to parse version %s: %v", in.Version, err)
-	}
-
-	entity, err := api.blobs.LoadEntityFromHeads(ctx, eid, heads...)
+	entity, err := api.blobs.LoadEntity(ctx, eid)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to get blobs from head: %v", err)
+		return nil, status.Errorf(codes.Internal, "unable to get entity[%s]: %v", eid.String(), err)
 	}
 
 	if entity == nil {
