@@ -16,6 +16,12 @@ export const middleware = async (req: NextRequest) => {
   const pathTerms = originalPathName.split('/')
   const [_zeroTerm, term1, term2, term3] = pathTerms
 
+  console.log('originalPathName', originalPathName)
+  if (originalPathName === '/.well-known/hypermedia-site') {
+    url.pathname = '/api/well-known-hypermedia-site'
+    return NextResponse.rewrite(url)
+  }
+
   if (term1 === 'ipfs') return NextResponse.next()
 
   // rewrite front document to the special pathName `-`

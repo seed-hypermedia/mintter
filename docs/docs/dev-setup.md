@@ -86,7 +86,14 @@ You can also run against the production network:
 MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
 ```
 
-## Running Web Site
+## Web App Builds
+
+You can build docker images for different modules of the system.
+
+Daemon: `docker build -t mintterd . -f ./backend/cmd/mintterd/Dockerfile`
+Frontend: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
+
+## Dev: Run Site
 
 #### 1. Run the Daemon
 
@@ -97,7 +104,7 @@ go run ./backend/cmd/mintter-site -data-dir=~/.mttsite -p2p.port=59000 --http.po
 ```
 
 
-### 2. Start the Next.js Web App
+### 2. Start the Frontend Web App
 
 In the Mintter directory, start by running `yarn`. Then:
 
@@ -105,7 +112,23 @@ In the Mintter directory, start by running `yarn`. Then:
 HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000 yarn site
 ```
 
-### Debugging Data
+## Dev: Run Gateway
+
+Run the daemon:
+
+```
+MINTTER_P2P_TESTNET_NAME="" go run ./backend/cmd/mintter-site -data-dir=~/.mttgateway -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay -syncing.allow-push "http://localhost:3000"
+```
+
+Simultaneously run the Frontend:
+
+```
+NEXT_PUBLIC_GRPC_HOST="http://localhost:57001/" PORT=3300 GW_NEXT_HOST="http://localhost:3300" yarn site
+```
+
+Now your dev gateway is running at `http://localhost:3300`
+
+## Debugging JSON-CBOR Blobs
 
 Use this URL:
 
