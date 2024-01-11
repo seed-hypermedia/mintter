@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAccountPublicationsRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, PushPublicationRequest, UpdateDraftRequest, UpdateDraftResponse } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -122,6 +122,17 @@ export const Publications = {
       name: "ListPublications",
       I: ListPublicationsRequest,
       O: ListPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Push Local publication to the gateway.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Publications.PushPublication
+     */
+    pushPublication: {
+      name: "PushPublication",
+      I: PushPublicationRequest,
+      O: Empty,
       kind: MethodKind.Unary,
     },
     /**

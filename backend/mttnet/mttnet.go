@@ -7,7 +7,7 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
-	groups "mintter/backend/genproto/groups/v1alpha"
+	groups_proto "mintter/backend/genproto/groups/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
@@ -15,6 +15,8 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/libp2px"
 	"mintter/backend/pkg/must"
+	"net/http"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -39,22 +41,29 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 
 var userAgent = "mintter/<dev>"
 
+// GatewayClient is the bridge to talk to the gateway.
+type GatewayClient interface {
+	// PublishBlobs pushes given blobs to the gateway.
+	PublishBlobs(context.Context, *groups_proto.PublishBlobsRequest, ...grpc.CallOption) (*groups_proto.PublishBlobsResponse, error)
+}
+
 // WebsiteClient is the bridge to talk to remote sites.
 type WebsiteClient interface {
 	// InitializeServer instruct the website that starts serving a given group.
-	InitializeServer(context.Context, *groups.InitializeServerRequest, ...grpc.CallOption) (*groups.InitializeServerResponse, error)
+	InitializeServer(context.Context, *groups_proto.InitializeServerRequest, ...grpc.CallOption) (*groups_proto.InitializeServerResponse, error)
 
 	// GetSiteInfo gets public site information, to be also found in /.well-known/hypermedia-site
-	GetSiteInfo(context.Context, *groups.GetSiteInfoRequest, ...grpc.CallOption) (*groups.PublicSiteInfo, error)
+	GetSiteInfo(context.Context, *groups_proto.GetSiteInfoRequest, ...grpc.CallOption) (*groups_proto.PublicSiteInfo, error)
 
 	// PublishBlobs pushes given blobs to the site.
-	PublishBlobs(context.Context, *groups.PublishBlobsRequest, ...grpc.CallOption) (*groups.PublishBlobsResponse, error)
+	PublishBlobs(context.Context, *groups_proto.PublishBlobsRequest, ...grpc.CallOption) (*groups_proto.PublishBlobsResponse, error)
 }
 
 // DefaultRelays bootstrap mintter-owned relays so they can reserve slots to do holepunch.
@@ -182,8 +191,8 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 	p2p.RegisterP2PServer(n.grpc, rpc)
 
 	for _, extra := range extraServers {
-		if extraServer, ok := extra.(groups.WebsiteServer); ok {
-			groups.RegisterWebsiteServer(n.grpc, extraServer)
+		if extraServer, ok := extra.(groups_proto.WebsiteServer); ok {
+			groups_proto.RegisterWebsiteServer(n.grpc, extraServer)
 			break
 		}
 	}
@@ -242,7 +251,64 @@ func (n *Node) SiteClient(ctx context.Context, pid peer.ID) (WebsiteClient, erro
 	if err != nil {
 		return nil, err
 	}
-	return groups.NewWebsiteClient(conn), nil
+	return groups_proto.NewWebsiteClient(conn), nil
+}
+
+// GatewayClient opens a connection with the remote production gateway.
+func (n *Node) GatewayClient(ctx context.Context, url string) (cli GatewayClient, err error) {
+	var maStr []string
+	var ma []multiaddr.Multiaddr
+	if url == "" {
+		return nil, fmt.Errorf("URL cannot be empty")
+	}
+	if strings.Contains(ipfs.TestGateway, url) {
+		maStr = []string{ipfs.TestGateway}
+		ma, err = ipfs.ParseMultiaddrs(maStr)
+	} else if strings.Contains(ipfs.ProductionGateway, url) {
+		maStr = []string{ipfs.ProductionGateway}
+		ma, err = ipfs.ParseMultiaddrs(maStr)
+	} else {
+		noSpaces := strings.Replace(url, " ", "", -1)
+		maStr = strings.Split(noSpaces, ",")
+		ma, err = ipfs.ParseMultiaddrs(maStr)
+		if err != nil { // The user did not enter valid multiaddress, so we have to get the address by the well known url
+			siteURL := url
+			if url[len(url)-1] == '/' {
+				siteURL = url[0 : len(url)-1]
+			}
+			var info *groups_proto.PublicSiteInfo
+			info, err = getSiteInfoHTTP(ctx, nil, siteURL)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get site info: %w", err)
+			}
+			maStr = []string{}
+			for _, addr := range info.PeerInfo.Addrs {
+				maStr = append(maStr, addr+"/p2p/"+info.PeerInfo.PeerId)
+			}
+			ma, err = ipfs.ParseMultiaddrs(maStr)
+		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse gateway address: %w", err)
+	}
+	info, err := peer.AddrInfosFromP2pAddrs(ma...)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get ID from ma: %w", err)
+	}
+	gwInfo := peer.AddrInfo{
+		ID:    info[0].ID,
+		Addrs: ma,
+	}
+
+	if err := n.Connect(ctx, gwInfo); err != nil {
+		return nil, err
+	}
+
+	conn, err := n.client.dialPeer(ctx, gwInfo.ID)
+	if err != nil {
+		return nil, err
+	}
+	return groups_proto.NewWebsiteClient(conn), err
 }
 
 // ArePrivateIPsAllowed check if private IPs (local) are allowed to connect.
@@ -550,4 +616,42 @@ func newProtocolInfo(prefix, version string) protocolInfo {
 		prefix:  prefix,
 		version: version,
 	}
+}
+
+func getSiteInfoHTTP(ctx context.Context, client *http.Client, siteURL string) (*groups_proto.PublicSiteInfo, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	if siteURL[len(siteURL)-1] == '/' {
+		return nil, fmt.Errorf("site URL must not have trailing slash: %s", siteURL)
+	}
+
+	requestURL := siteURL + "/.well-known/hypermedia-site"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request to well-known site: %w ", err)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not contact to provided site [%s]: %w ", requestURL, err)
+	}
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("site info url %q not working, status code: %d, response body: %s", requestURL, res.StatusCode, data)
+	}
+	resp := &groups_proto.PublicSiteInfo{}
+	if err := protojson.Unmarshal(data, resp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON body: %w", err)
+	}
+
+	return resp, nil
 }

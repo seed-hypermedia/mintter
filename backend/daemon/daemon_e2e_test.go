@@ -9,6 +9,7 @@ import (
 	networking "mintter/backend/genproto/networking/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
+	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
@@ -116,6 +117,27 @@ func TestDaemonListPublications(t *testing.T) {
 	list, err := client.ListPublications(context.Background(), &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 0, "account object must not be listed as publication")
+}
+
+func TestDaemonPushPublication(t *testing.T) {
+	t.Parallel()
+	t.Skip("Test uses real infra")
+	cfg := makeTestConfig(t)
+	cfg.P2P.TestnetName = "dev"
+	alice := makeTestApp(t, "alice", cfg, true)
+	ctx := context.Background()
+
+	pub := publishDocument(t, ctx, alice)
+	_, err := alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
+		DocumentId: pub.Document.Id,
+		Url:        ipfs.TestGateway,
+	})
+	require.NoError(t, err)
+	_, err = alice.RPC.Documents.PushPublication(ctx, &documents.PushPublicationRequest{
+		DocumentId: pub.Document.Id,
+		Url:        "https://gabo.es/",
+	})
+	require.Error(t, err)
 }
 
 func TestAPIGetRemotePublication(t *testing.T) {
@@ -369,7 +391,6 @@ func TestTrustedPeers(t *testing.T) {
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.ElementsMatch(t, []peer.ID{alice.Storage.Device().PeerID(), bob.Storage.Device().PeerID()}, sr.Peers)
-
 	}
 
 	{

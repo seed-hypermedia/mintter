@@ -6,10 +6,15 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
+	groups "mintter/backend/daemon/api/groups/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	groups_proto "mintter/backend/genproto/groups/v1alpha"
+	"mintter/backend/mttnet"
+
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/logging"
+	"mintter/backend/pkg/colx"
 	"mintter/backend/pkg/future"
 
 	"crawshaw.io/sqlite"
@@ -31,21 +36,29 @@ type Discoverer interface {
 	Connect(context.Context, peer.AddrInfo) error
 }
 
+// GatewayClient used to connect to the gateway and push content.
+type GatewayClient interface {
+	// GatewayClient used to connect to the gateway and push content.
+	GatewayClient(context.Context, string) (mttnet.GatewayClient, error)
+}
+
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db    *sqlitex.Pool
-	me    *future.ReadOnly[core.Identity]
-	disc  Discoverer
-	blobs *hyper.Storage
+	db       *sqlitex.Pool
+	me       *future.ReadOnly[core.Identity]
+	disc     Discoverer
+	blobs    *hyper.Storage
+	gwClient GatewayClient
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, LogLevel string) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, gwClient GatewayClient, LogLevel string) *Server {
 	srv := &Server{
-		db:    db,
-		me:    me,
-		disc:  disc,
-		blobs: hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
+		db:       db,
+		me:       me,
+		disc:     disc,
+		blobs:    hyper.NewStorage(db, logging.New("mintter/hyper", LogLevel)),
+		gwClient: gwClient,
 	}
 
 	return srv
@@ -238,7 +251,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 }
 
 // ListDrafts implements the corresponding gRPC method.
-func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+func (api *Server) ListDrafts(ctx context.Context, _ *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	entities, err := api.blobs.ListEntities(ctx, "hm://d/*")
 	if err != nil {
 		return nil, err
@@ -440,6 +453,77 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 		return nil, err
 	}
 
+	return &emptypb.Empty{}, nil
+}
+
+// PushPublication implements the corresponding gRPC method.
+func (api *Server) PushPublication(ctx context.Context, in *documents.PushPublicationRequest) (*emptypb.Empty, error) {
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify publication ID")
+	}
+
+	if in.Url == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "must specify an url")
+	}
+
+	// If no gwClient is set we can't do anything else.
+	if api.gwClient == nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "there is no gwClient definition")
+	}
+
+	eid := hyper.EntityID(in.DocumentId)
+
+	entity, err := api.blobs.LoadEntity(ctx, eid)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to get entity[%s]: %v", eid.String(), err)
+	}
+
+	if entity == nil {
+		return nil, status.Errorf(codes.NotFound, "no published changes for entity %s", eid.String())
+	}
+
+	conn, cancelFcn, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to get db connection: %v", err)
+	}
+	defer cancelFcn()
+
+	gdb, err := hypersql.EntitiesLookupID(conn, entity.ID().String())
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "unable to find entity id [%s]: %v", entity.ID().String(), err)
+	}
+	if gdb.ResourcesID == 0 {
+		return nil, status.Errorf(codes.NotFound, "document %s not found", entity.ID().String())
+	}
+
+	cids := []cid.Cid{}
+	err = sqlitex.Exec(conn, groups.QCollectBlobs(), func(stmt *sqlite.Stmt) error {
+		var (
+			id        int64
+			codec     int64
+			multihash []byte
+		)
+		stmt.Scan(&id, &codec, &multihash)
+
+		c := cid.NewCidV1(uint64(codec), multihash)
+		cids = append(cids, c)
+		return nil
+	}, gdb.ResourcesID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "couldn't find referenced materials for document %s: %v", entity.ID().String(), err)
+	}
+
+	gc, err := api.gwClient.GatewayClient(ctx, in.Url)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get site client: %v", err)
+	}
+
+	if _, err := gc.PublishBlobs(ctx, &groups_proto.PublishBlobsRequest{
+		Blobs: colx.SliceMap(cids, cid.Cid.String),
+	}); err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to push blobs to the gateway: %v", err)
+	}
 	return &emptypb.Empty{}, nil
 }
 

@@ -112,7 +112,7 @@ func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn f
 		return status.Errorf(codes.NotFound, "group %s not found", group)
 	}
 
-	return sqlitex.Exec(conn, qCollectBlobs(), func(stmt *sqlite.Stmt) error {
+	return sqlitex.Exec(conn, QCollectBlobs(), func(stmt *sqlite.Stmt) error {
 		var (
 			id        int64
 			codec     int64
@@ -152,7 +152,7 @@ func (db *DB) ForEachRelatedBlob(ctx context.Context, group hyper.EntityID, fn f
 //	            if resource_link.is_pinned:
 //	                continue
 //	            enqueue(resource_link.target, kind=0)
-var qCollectBlobs = dqb.Str(`
+var QCollectBlobs = dqb.Str(`
 	WITH RECURSIVE selected (id, kind) AS (
 		SELECT :group, 0
 		UNION

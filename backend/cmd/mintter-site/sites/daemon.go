@@ -53,7 +53,7 @@ func Load(ctx context.Context, address string, cfg config.Config, dir *storage.D
 	dbPromise := future.New[*sqlitex.Pool]()
 	blobsPromise := future.New[*hyper.Storage]()
 
-	site := NewServer(address, blobsPromise.ReadOnly, nodePromise.ReadOnly, dbPromise.ReadOnly)
+	site := NewServer(address, blobsPromise.ReadOnly, nodePromise.ReadOnly, dbPromise.ReadOnly, cfg.Syncing.AllowPush)
 
 	app, err := daemon.Load(ctx, cfg, dir, site, daemon.GenericHandler{
 		Path:    "/.well-known/hypermedia-site",
