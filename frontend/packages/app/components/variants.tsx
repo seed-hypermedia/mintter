@@ -20,7 +20,7 @@ import {
 import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  BACKEND_FILE_URL,
+  API_FILE_URL,
   Publication,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
@@ -731,7 +731,7 @@ function AuthorIcon({author}: {author: string}) {
       size={20}
       url={
         account.data?.profile?.avatar &&
-        `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
+        `${API_FILE_URL}/${account.data?.profile?.avatar}`
       }
       label={getAccountName(account.data?.profile) || author}
     />
@@ -788,7 +788,7 @@ function AuthorVariantItem({
             size={28}
             url={
               author.data?.profile?.avatar &&
-              `${BACKEND_FILE_URL}/${author.data?.profile?.avatar}`
+              `${API_FILE_URL}/${author.data?.profile?.avatar}`
             }
             label={author.data?.profile?.alias || authorVersion.author}
           />

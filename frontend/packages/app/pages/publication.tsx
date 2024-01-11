@@ -6,7 +6,7 @@ import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  BACKEND_FILE_URL,
+  API_FILE_URL,
   MttLink,
   Publication,
   PublicationContent,
@@ -98,7 +98,7 @@ export function AppPublicationContentProvider({
           copyUrlToClipboardWithFeedback(url, reference?.label)
         }
       }}
-      ipfsBlobPrefix={`${BACKEND_FILE_URL}/`}
+      ipfsBlobPrefix={`${API_FILE_URL}/`}
       saveCidAsFile={saveCidAsFile}
       {...overrides}
     >

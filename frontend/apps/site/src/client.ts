@@ -8,6 +8,10 @@ import type {Interceptor} from '@connectrpc/connect'
 import {createGrpcWebTransport} from '@connectrpc/connect-node'
 import {createGRPCClient} from '@mintter/shared'
 
+const IS_DEV = process.env.NODE_ENV == 'development'
+const IS_PROD = process.env.NODE_ENV == 'production'
+const IS_CLIENT = !!global.window
+
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
@@ -42,22 +46,20 @@ const prodInter: Interceptor = (next) => async (req) => {
   return result
 }
 
+// const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
+const DEV_INTERCEPTORS = [loggingInterceptor, prodInter]
+
 function getGRPCHost() {
   if (process.env.GRPC_HOST) {
     return process.env.GRPC_HOST
   }
 
-  if (process.env.NODE_ENV == 'development') {
-    return 'http://127.0.0.1:56001'
+  if (IS_PROD) {
+    return 'https://hyper.media'
   }
 
-  return 'https://hyper.media'
+  return 'http://127.0.0.1:56001'
 }
-
-const IS_DEV = process.env.NODE_ENV == 'development'
-const IS_CLIENT = !!global.window
-// const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
-const DEV_INTERCEPTORS = [loggingInterceptor, prodInter]
 
 let grpcBaseURL = getGRPCHost()
 

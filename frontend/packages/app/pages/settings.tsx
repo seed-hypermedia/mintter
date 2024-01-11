@@ -3,8 +3,8 @@ import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
-import {client, trpc} from '@mintter/desktop/src/trpc'
-import {APP_VERSION, LightningWallet, Profile, useHover} from '@mintter/shared'
+import {trpc} from '@mintter/desktop/src/trpc'
+import {LightningWallet, Profile, VERSION, useHover} from '@mintter/shared'
 import {
   ArrowDownRight,
   Button,
@@ -238,26 +238,6 @@ export function DeveloperSettings() {
       </SettingsSection>
       {/* <TestURLCheck /> */}
     </>
-  )
-}
-
-function TestURLCheck() {
-  return (
-    <Button
-      onPress={() => {
-        client.webImporting.checkWebUrl
-          .mutate('https://gabo.es')
-          // .mutate('http://localhost:3000/mintter-software-release-process')
-          .then((response) => {
-            toast(JSON.stringify(response))
-          })
-          .catch((e) => {
-            toast.error(e.message)
-          })
-      }}
-    >
-      Test URL Check
-    </Button>
   )
 }
 
@@ -686,7 +666,7 @@ function AppSettings() {
                 size="$2"
                 icon={Copy}
                 onPress={() => {
-                  copyTextToClipboard(`App Version: ${APP_VERSION}
+                  copyTextToClipboard(`App Version: ${VERSION}
 Electron Version: ${versions.electron}
 Chrome Version: ${versions.chrome}
 Node Version: ${versions.node}
@@ -699,7 +679,7 @@ Go Build Info:
             </Tooltip>
           }
         />
-        <InfoListItem label="App Version" value={APP_VERSION} />
+        <InfoListItem label="App Version" value={VERSION} />
         <Separator />
         <InfoListItem label="Electron Version" value={versions.electron} />
         <Separator />

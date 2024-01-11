@@ -1,0 +1,149 @@
+name: Desktop Test
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+      - e2e
+      - release/*
+    paths:
+      - frontend/*
+      - ".github/workflows/test-desktop.yml"
+
+  pull_request:
+    branches:
+      - main
+      - e2e
+      - release/*
+    paths:
+      - frontend/*
+      - ".github/workflows/test-desktop.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build-binaries:
+    name: Test on ${{ matrix.config.os }} @ ${{ matrix.config.arch }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - os: macos-latest-xl
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-apple-darwin
+          #   - os: macos-latest-xl
+          #     arch: arm64
+          #     goarch: arm64
+          #     daemon_name: aarch64-apple-darwin
+          # - os: ubuntu-20.04
+          #   arch: x64
+          #   goarch: amd64
+          #   daemon_name: x86_64-unknown-linux-gnu
+        #   - os: windows-latest-l
+        #     arch: x64
+        #     goarch: amd64
+        #     daemon_name: x86_64-pc-windows-msvc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - uses: ./.github/actions/ci-setup
+        with:
+          matrix-os: ${{ matrix.config.os }}
+          # matrix-target: ${{ matrix.config.daemon_name }}
+          # matrix-arch: ${{ matrix.config.arch }}
+
+      - name: Build Backend (Unix)
+        if: matrix.config.os != 'windows-latest-l'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }} ./backend/cmd/mintterd
+        env:
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Build Backend (Windows)
+        if: matrix.config.os == 'windows-latest-l'
+        run: |
+          mkdir -p plz-out/bin/backend
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.daemon_name }}.exe ./backend/cmd/mintterd
+        env:
+          GOOS: "windows"
+          GOARCH: ${{ matrix.config.goarch }}
+          CGO_ENABLED: 1
+
+      - name: Set temporal version in package.json
+        run: |
+          node scripts/set-desktop-version.mjs
+        env:
+          VITE_VERSION: "100.0.0"
+
+      - name: Build, package & make (Unix)
+        if: matrix.config.os != 'windows-latest-l'
+        run: |
+          yarn desktop:package --arch=${{ matrix.config.arch }}
+        env:
+          NODE_ENV: test
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          VITE_VERSION: "100.0.0"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "58000"
+          VITE_DESKTOP_HTTP_PORT: "58001"
+          VITE_DESKTOP_GRPC_PORT: "58002"
+          VITE_DESKTOP_DESKTOP_APPDATA: "Mintter.test"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+
+      - name: Build, package and make (Win32)
+        if: matrix.config.os == 'windows-latest-l'
+        run: |
+          $env:DEBUG='electron-osx-sign*,electron-notarize*'
+          yarn desktop:package --arch=${{ matrix.config.arch }}
+        env:
+          NODE_ENV: test
+          DAEMON_NAME: ${{ matrix.config.daemon_name }}
+          VITE_VERSION: "100.0.0"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "58000"
+          VITE_DESKTOP_HTTP_PORT: "58001"
+          VITE_DESKTOP_GRPC_PORT: "58002"
+          VITE_DESKTOP_DESKTOP_APPDATA: "Mintter.test"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
+
+      - name: Validate code
+        run: |
+          yarn validate
+
+      - name: Install Playwright Browsers
+        run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npx playwright install
+
+      - name: Run Tests
+        run: yarn workspace @mintter/desktop e2e
+        env:
+          CI: "1"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report-${{ matrix.config.daemon_name }}
+          path: frontend/apps/desktop/playwright-report/**/*
+#   - name: Setup Pages
+#       uses: actions/configure-pages@v2
+#   - name: Upload artifact
+#     uses: actions/upload-pages-artifact@v1
+#     with:
+#       # Upload entire repository
+#       path: playwright-report/
+#   - name: Deploy to GitHub Pages
+#     id: deployment
+#     uses: actions/deploy-pages@v1

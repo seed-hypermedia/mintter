@@ -3,7 +3,7 @@ import {existsSync, rmSync} from 'fs'
 import {join} from 'path'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
-import {APP_USER_DATA_PATH} from './app-paths'
+import {IS_PROD, userDataPath} from './app-paths'
 
 export const legacyLogsFilePath = legacyLogger.transports.file.getFile().path
 
@@ -12,7 +12,7 @@ if (existsSync(legacyLogsFilePath)) {
   rmSync(legacyLogsFilePath)
 }
 
-export const loggingDir = join(APP_USER_DATA_PATH, 'logs')
+export const loggingDir = join(userDataPath, 'logs')
 
 const winstonLogger = winston.createLogger({
   level: 'info',
@@ -40,7 +40,7 @@ const winstonLogger = winston.createLogger({
   ],
 })
 
-if (process.env.NODE_ENV !== 'production') {
+if (!IS_PROD) {
   winstonLogger.add(
     new winston.transports.Console({
       format: winston.format.simple(),

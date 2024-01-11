@@ -18,6 +18,8 @@ import {saveCidAsFile} from './save-cid-as-file'
 
 const OS_REGISTER_SCHEME = 'hm'
 
+initPaths()
+
 if (IS_PROD_DESKTOP) {
   if (squirrelStartup) {
     app.quit()
@@ -33,8 +35,6 @@ if (IS_PROD_DESKTOP) {
     app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
   }
 }
-
-initPaths()
 
 startMainDaemon()
 

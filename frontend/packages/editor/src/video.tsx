@@ -1,6 +1,6 @@
 import {toast} from '@mintter/app/toast'
 import {client} from '@mintter/desktop/src/trpc'
-import {BACKEND_FILE_UPLOAD_URL, BACKEND_FILE_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL, API_FILE_URL} from '@mintter/shared'
 import {
   Button,
   Form,
@@ -204,7 +204,7 @@ function VideoComponent({
     formData.append('file', file)
 
     try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      const response = await fetch(API_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
       })
@@ -221,7 +221,7 @@ function VideoComponent({
     // editor.setTextCursorPosition(editor.topLevelBlocks.slice(-1)[0], 'end')
   }
 
-  let mediaUrl = `${BACKEND_FILE_URL}/${block.props.url.replace('ipfs://', '')}`
+  let mediaUrl = `${API_FILE_URL}/${block.props.url.replace('ipfs://', '')}`
 
   return (
     <YStack
@@ -420,7 +420,7 @@ function VideoForm({
     formData.append('file', files[0])
 
     try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      const response = await fetch(API_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
       })
@@ -438,7 +438,7 @@ function VideoForm({
       formData.append('file', files[i])
 
       try {
-        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        const response = await fetch(API_FILE_UPLOAD_URL, {
           method: 'POST',
           body: formData,
         })

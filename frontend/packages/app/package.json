@@ -7,10 +7,8 @@
     "*.css"
   ],
   "scripts": {
-    "lint": "eslint .",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
-    "test": "vitest --run",
-    "test:w": "vitest",
+    "test": "echo 'APP: NO TESTS';",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -50,7 +48,6 @@
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "copy-text-to-clipboard": "3.1.0",
-    "eslint-config-custom": "*",
     "happy-dom": "7.8.1",
     "jsdom": "22.1.0",
     "prettier": "3.0.2",

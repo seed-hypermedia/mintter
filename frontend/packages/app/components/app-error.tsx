@@ -1,3 +1,4 @@
+import {GRPC_PORT, HTTP_PORT, P2P_PORT} from '@mintter/shared'
 import {
   Button,
   Heading,
@@ -40,6 +41,16 @@ export function AppErrorContent({
   message: string
   resetErrorBoundary?: () => void
 }) {
+  console.log(`
+==================================
+
+vars:
+VITE_HTTP_PORT: ${HTTP_PORT}
+process.env.VITE_P2P_PORT: ${P2P_PORT}
+process.env.VITE_GRPC_PORT: ${GRPC_PORT}
+
+
+==================================`)
   return (
     <XStack jc="center" ai="center" f={1} backgroundColor={'$color2'}>
       <YStack

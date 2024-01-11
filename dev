@@ -87,6 +87,23 @@ def main():
 
         return run("yarn desktop", args=args)
 
+    @cmd(
+        cmds,
+        "run-desktop-mainnet",
+        "Run frontend desktop app for development in Mainnet.",
+    )
+    def run_desktop_mainnet(args):
+        run("./scripts/cleanup-desktop.sh")
+        run("yarn install")
+        run("yarn workspace @mintter/ui generate")
+        run("plz build //backend:mintterd //:yarn")
+
+        testnet_var = "MINTTER_P2P_TESTNET_NAME"
+        if testnet_var not in os.environ:
+            os.environ[testnet_var] = "dev"
+
+        return run("MINTTER_P2P_TESTNET_NAME='' yarn desktop", args=args)
+
     @cmd(cmds, "build-desktop", "Builds the desktop app for the current platform.")
     def build_desktop(args):
         run("./scripts/cleanup-frontend.sh")
@@ -94,6 +111,17 @@ def main():
         run("yarn install")
         run("plz build //backend:mintterd //:yarn")
         run("yarn desktop:make")
+
+    @cmd(cmds, "test-desktop", "Run frontend desktop tests.")
+    def test_desktop(args):
+        run("yarn workspace @mintter/ui generate")
+        run("plz build //backend:mintterd //:yarn")
+
+        testnet_var = "MINTTER_P2P_TESTNET_NAME"
+        if testnet_var not in os.environ:
+            os.environ[testnet_var] = "dev"
+
+        return run("yarn desktop:test", args=args)
 
     @cmd(cmds, "run-site", "Run sites app for development.")
     def run_site(args):
@@ -121,10 +149,6 @@ def main():
     @cmd(cmds, "frontend-validate", "Formats, Validates")
     def frontend_validate(args):
         run("yarn validate")
-
-    @cmd(cmds, "frontend-test", "Tests frontend code")
-    def frontend_test(args):
-        run("APP_FOLDER_NAME=Mintter.test && yarn test")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):

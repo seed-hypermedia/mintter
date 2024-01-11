@@ -1,6 +1,6 @@
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
-  BACKEND_FILE_URL,
+  API_FILE_URL,
   BlocksContent,
   HMComment,
   StateStream,
@@ -257,7 +257,7 @@ export function CommentPresentation({
             id={account.data?.id}
             url={
               account.data?.profile?.avatar
-                ? `${BACKEND_FILE_URL}/${account.data?.profile?.avatar}`
+                ? `${API_FILE_URL}/${account.data?.profile?.avatar}`
                 : undefined
             }
           />

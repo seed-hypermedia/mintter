@@ -141,7 +141,7 @@ module.exports = withSentryConfig(
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
     // Suppresses source map uploading logs during build
-    silent: true,
+    silent: process.env.NODE_ENV == 'production',
     org: 'mintter',
     project: 'sites',
   },
@@ -162,6 +162,6 @@ module.exports = withSentryConfig(
     hideSourceMaps: true,
 
     // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true,
+    disableLogger: process.env.NODE_ENV == 'development',
   },
 )

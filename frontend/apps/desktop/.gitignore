@@ -72,3 +72,8 @@ sentry.properties
 
 # Sentry Auth Token
 .sentryclirc
+
+# Playwright test
+screenshots/
+playwright-report/
+test-results/

@@ -1,6 +1,6 @@
 import {HMBlockSchema} from '@/schema'
 import {toast} from '@mintter/app/toast'
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@mintter/shared'
 import {Extension} from '@tiptap/core'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
@@ -177,7 +177,7 @@ export async function handleDragMedia(file: File) {
   formData.append('file', file)
 
   try {
-    const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+    const response = await fetch(API_FILE_UPLOAD_URL, {
       method: 'POST',
       body: formData,
     })

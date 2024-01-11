@@ -3,7 +3,7 @@ import type {NavRoute, NavState} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
 import {getRouteWindowType} from '@mintter/app/utils/window-types'
 import {BrowserWindow, app, nativeTheme} from 'electron'
-import path from 'path'
+import path from 'node:path'
 import {appStore} from './app-store'
 import {getDaemonState, subscribeDaemonState} from './daemon'
 import {childLogger, info, warn} from './logger'
@@ -65,9 +65,6 @@ type AppWindow = {
   bounds: any
   sidebarLocked: boolean
 }
-
-const userData = app.getPath('userData')
-info('App UserData: ', userData)
 
 const WINDOW_STATE_STORAGE_KEY = 'WindowState-v003'
 
@@ -323,8 +320,6 @@ export function createAppWindow(input: {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     )
   }
-
-  // if (!IS_PROD_DESKTOP) browserWindow.webContents.openDevTools()
 
   return browserWindow
 }

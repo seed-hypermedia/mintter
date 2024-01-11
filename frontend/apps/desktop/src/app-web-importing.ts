@@ -1,4 +1,4 @@
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@mintter/shared'
 import * as cheerio from 'cheerio'
 import http from 'http'
 import https from 'https'
@@ -9,7 +9,7 @@ export async function uploadFile(file: Blob | string) {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+  const response = await fetch(API_FILE_UPLOAD_URL, {
     method: 'POST',
     body: formData,
   })

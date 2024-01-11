@@ -1,12 +1,10 @@
 // This file configures the initialization of Sentry on the client.
 // The config you add here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
 import * as Sentry from '@sentry/nextjs'
-console.log('=== SENTRY SETUP: NODE_ENV ====', process.env.NODE_ENV)
 if (process.env.NODE_ENV == 'production') {
   Sentry.init({
-    dsn: process.env.HM_SENTRY_SITE_DSN,
+    dsn: process.env.HM_SENTRY_DESKTOP_DSN,
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1,
 
