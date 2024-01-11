@@ -40,18 +40,18 @@ jobs:
             arch: x64
             goarch: amd64
             daemon_name: x86_64-apple-darwin
-          #   - os: macos-latest-xl
-          #     arch: arm64
-          #     goarch: arm64
-          #     daemon_name: aarch64-apple-darwin
+          - os: macos-latest-xl
+            arch: arm64
+            goarch: arm64
+            daemon_name: aarch64-apple-darwin
           # - os: ubuntu-20.04
           #   arch: x64
           #   goarch: amd64
           #   daemon_name: x86_64-unknown-linux-gnu
-        #   - os: windows-latest-l
-        #     arch: x64
-        #     goarch: amd64
-        #     daemon_name: x86_64-pc-windows-msvc
+          - os: windows-latest-l
+            arch: x64
+            goarch: amd64
+            daemon_name: x86_64-pc-windows-msvc
     steps:
       - name: Checkout
         uses: actions/checkout@v1
