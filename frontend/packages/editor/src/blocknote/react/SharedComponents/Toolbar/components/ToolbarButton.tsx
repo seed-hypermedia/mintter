@@ -17,6 +17,7 @@ export type ToolbarButtonProps = {
 /**
  * Helper for basic buttons that show in the formatting toolbar.
  */
+// eslint-disable-next-line react/display-name
 export const ToolbarButton = forwardRef(
   (props: ToolbarButtonProps, ref: ForwardedRef<HTMLButtonElement>) => {
     const ButtonIcon = props.icon

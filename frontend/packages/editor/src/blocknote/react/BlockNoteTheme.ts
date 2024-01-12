@@ -180,9 +180,9 @@ export const blockNoteToMantineTheme = (theme: Theme): MantineThemeOverride => {
                   '.mantine-TextInput-wrapper': {
                     '.mantine-TextInput-input': {
                       border: 'none',
-                      color: theme.colors.menu.text,
+                      color: '#3F3F3F',
                       fontSize: '12px',
-                      padding: 0,
+                      paddingLeft: '5px',
                     },
                   },
                 },

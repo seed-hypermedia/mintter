@@ -74,6 +74,8 @@ export const LinkToolbarButton = (props: HyperlinkButtonProps) => {
         secondaryTooltip={props.secondaryTooltip}
         icon={props.icon}
         ref={buttonRef}
+        // @ts-ignore
+        onClick={handleClick}
       />
     </Tippy>
   )
