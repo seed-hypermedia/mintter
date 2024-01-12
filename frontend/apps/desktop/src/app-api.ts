@@ -18,6 +18,7 @@ import z from 'zod'
 import {commentsApi} from './app-comments'
 import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
+import {gatewaySettingsApi} from './app-gateway-settings'
 import {grpcClient} from './app-grpc'
 import {pinsApi} from './app-pins'
 import {t} from './app-trpc'
@@ -115,6 +116,7 @@ export const router = t.router({
   webImporting: webImportingApi,
   pins: pinsApi,
   comments: commentsApi,
+  gatewaySettings: gatewaySettingsApi,
   closeAppWindow: t.procedure.input(z.string()).mutation(async ({input}) => {
     closeAppWindow(input)
     return null

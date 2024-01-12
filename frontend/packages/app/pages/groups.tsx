@@ -18,6 +18,7 @@ import {
   copyLinkMenuItem,
 } from '../components/list-item'
 import {MainWrapper} from '../components/main-wrapper'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {useGroupMembers, useGroups} from '../models/groups'
 import {usePinGroup} from '../models/pins'
 import {useOpenUrl} from '../open-url'
@@ -125,6 +126,8 @@ function GroupListItem({group}: {group: Group}) {
   const goToItem = (e: any) => {
     navigate(groupRoute, e)
   }
+  const gwUrl = useGatewayUrl()
+
   return (
     <ListItem
       title={group.title}
@@ -148,7 +151,7 @@ function GroupListItem({group}: {group: Group}) {
       }
       onPress={goToItem}
       menuItems={[
-        copyLinkMenuItem(idToUrl(group.id), 'Group'),
+        copyLinkMenuItem(idToUrl(group.id, gwUrl.data), 'Group'),
         {
           label: 'Open in new Window',
           key: 'spawn',

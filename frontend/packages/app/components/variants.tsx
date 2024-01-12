@@ -74,6 +74,7 @@ import {
 import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
 import {GroupVariant, PublicationVariant} from '../utils/navigation'
@@ -445,6 +446,7 @@ export function VersionContext({route}: {route: NavRoute}) {
   let unpackedId: UnpackedHypermediaId | null = null
   let routeWithoutVersion: NavRoute | null = null
   let latestVersionLabel = 'Latest Version'
+  const gwUrl = useGatewayUrl()
   if (route.key === 'group') {
     const {groupId, accessory, version} = route
     unpackedId = unpackHmId(groupId)
@@ -475,6 +477,7 @@ export function VersionContext({route}: {route: NavRoute}) {
     exactVersion &&
     createPublicWebHmUrl(unpackedId.type, unpackedId.eid, {
       version: exactVersion,
+      hostname: gwUrl.data,
     })
   if (!unpackedId || !exactVersion || !fullUrl) return null
   return (

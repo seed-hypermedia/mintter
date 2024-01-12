@@ -16,6 +16,7 @@ import {
 
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {usePublication} from '@mintter/app/models/documents'
+import {useGatewayUrl} from '@mintter/app/models/gateway-settings'
 import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
@@ -84,6 +85,7 @@ function BlockHelper({
     version: route.key == 'publication' ? route.versionId : undefined,
     enabled: route.key == 'publication' && !!route.documentId,
   })
+  const gwUrl = useGatewayUrl()
 
   function onCopy() {
     const docId = pub.data?.document?.id
@@ -95,6 +97,7 @@ function BlockHelper({
         createPublicWebHmUrl('d', docId.eid, {
           version: docVersion,
           blockRef: blockId,
+          hostname: gwUrl.data,
         }),
       )
       toast.success('Block reference copied!')

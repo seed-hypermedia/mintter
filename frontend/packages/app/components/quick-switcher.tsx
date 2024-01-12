@@ -17,6 +17,7 @@ import {toast} from 'react-hot-toast'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {useConnectPeer, useContactsList} from '../models/contacts'
+import {useGatewayHost} from '../models/gateway-settings'
 import {useGroups} from '../models/groups'
 import {importWebCapture} from '../models/web-importer'
 import {AppQueryClient} from '../query-client'
@@ -117,7 +118,7 @@ export function QuickSwitcher() {
   const grpcClient = useGRPCClient()
   const queryClient = useAppContext().queryClient
   const [actionPromise, setActionPromise] = useState<Promise<void> | null>(null)
-
+  const gwHost = useGatewayHost()
   const handleUrl = useURLHandler()
 
   return (
@@ -153,7 +154,7 @@ export function QuickSwitcher() {
                 const searched = await resolveHmIdToAppRoute(search, grpcClient)
                 if (
                   (searched?.scheme === HYPERMEDIA_SCHEME ||
-                    searched?.hostname === 'hyper.media') &&
+                    searched?.hostname === gwHost) &&
                   searched?.navRoute
                 ) {
                   setOpen(false)

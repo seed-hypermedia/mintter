@@ -32,6 +32,7 @@ import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {useOpenDraft} from '../utils/open-draft'
 import {AppPublicationContentProvider} from './publication'
 
@@ -72,6 +73,8 @@ export default function DraftPage() {
     }
   }, [])
 
+  const gwUrl = useGatewayUrl()
+
   if (data.state.matches('ready')) {
     return (
       <ErrorBoundary
@@ -90,7 +93,10 @@ export default function DraftPage() {
               if (!id?.eid)
                 throw new Error('eid could not be extracted from draft route')
               copyUrlToClipboardWithFeedback(
-                createPublicWebHmUrl('d', id.eid, {blockRef: blockId}),
+                createPublicWebHmUrl('d', id.eid, {
+                  blockRef: blockId,
+                  hostname: gwUrl.data,
+                }),
                 'Block',
               )
             }}

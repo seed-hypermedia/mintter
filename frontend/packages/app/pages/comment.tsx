@@ -49,7 +49,7 @@ function MainComment({
               icon: Copy,
               onPress: () => {
                 copyUrlToClipboardWithFeedback(
-                  createPublicWebHmUrl('c', comment.id),
+                  createPublicWebHmUrl('c', comment.id, {hostname: null}),
                   'Comment',
                 )
               },

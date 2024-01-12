@@ -76,6 +76,7 @@ import appError from '../errors'
 import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useDraftList, usePublication} from '../models/documents'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {
   useAddGroupMember,
   useFullGroupContent,
@@ -531,6 +532,7 @@ function GroupContentItem({
 }) {
   const removeDoc = useRemoveDocFromGroup()
   const renameDialog = useAppDialog(RenamePubDialog)
+  const gwUrl = useGatewayUrl()
   if (!pub) return null
   const memberMenuItems = [
     {
@@ -574,7 +576,7 @@ function GroupContentItem({
         variant={{key: 'group', groupId, pathName}}
         menuItems={() => [
           copyLinkMenuItem(
-            idToUrl(docId, undefined, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
+            idToUrl(docId, gwUrl.data, version), // this will produce a /d/eid URL but we really want a /g/eid/pathName URL here :(
             'Group Publication',
           ),
           ...(userRole != Role.ROLE_UNSPECIFIED ? memberMenuItems : []),

@@ -39,6 +39,7 @@ import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {
   useCanEditGroup,
   useGroup,
@@ -63,6 +64,7 @@ export function DocOptionsButton() {
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
     )
+  const gwUrl = useGatewayUrl()
   const pin = usePinDocument(route)
   const menuItems: MenuItemType[] = [
     {
@@ -73,7 +75,10 @@ export function DocOptionsButton() {
         const id = unpackHmId(route.documentId)
         if (!id) return
         copyTextToClipboard(
-          createPublicWebHmUrl('d', id.eid, {version: route.versionId}),
+          createPublicWebHmUrl('d', id.eid, {
+            version: route.versionId,
+            hostname: gwUrl.data,
+          }),
         )
         toast.success('Copied Public Document URL')
       },
@@ -148,6 +153,7 @@ export function GroupOptionsButton() {
   const isGroupOwner =
     myAccount.data?.id && group.data?.ownerAccountId === myAccount.data?.id
   const cloneGroup = useAppDialog(CloneGroupDialog)
+  const gwUrl = useGatewayUrl()
   const menuItems: MenuItemType[] = [
     {
       key: 'clone',
@@ -165,7 +171,10 @@ export function GroupOptionsButton() {
         const id = unpackHmId(groupId)
         if (!id) return
         copyTextToClipboard(
-          createPublicWebHmUrl('g', id.eid, {version: groupRouteVersion}),
+          createPublicWebHmUrl('g', id.eid, {
+            version: groupRouteVersion,
+            hostname: gwUrl.data,
+          }),
         )
         toast.success('Copied Public Group URL')
       },
@@ -237,6 +246,7 @@ export function useFullReferenceUrl(
   const group = useGroup(variantGroupId || routeGroupId)
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(variantGroupId)
+  const gwUrl = useGatewayUrl()
 
   // let redirectedContext: undefined | PublicationRouteContext = undefined
 
@@ -253,7 +263,7 @@ export function useFullReferenceUrl(
     }
     return getReferenceUrlOfRoute(
       route,
-      undefined,
+      gwUrl.data,
       groupExactVersion || group.data?.version,
     )
   }
@@ -262,7 +272,7 @@ export function useFullReferenceUrl(
     const docId = unpackHmId(pubRoute.documentId)
     if (!docId) return null
 
-    let hostname = variantGroupId ? group.data?.siteInfo?.baseUrl : undefined
+    let hostname = variantGroupId ? group.data?.siteInfo?.baseUrl : gwUrl.data
 
     const entityVersion = pub.data?.publication?.version
 
@@ -331,7 +341,7 @@ export function useFullReferenceUrl(
     }
   }
 
-  const reference = getReferenceUrlOfRoute(route)
+  const reference = getReferenceUrlOfRoute(route, gwUrl.data)
   return reference
 }
 

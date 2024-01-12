@@ -40,10 +40,12 @@ import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
+import {DialogTitle, useAppDialog} from '../components/dialog'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {TableList} from '../components/table-list'
 import appError from '../errors'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
+import {useGatewayUrl, useSetGatewayUrl} from '../models/gateway-settings'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
 import {useOpenUrl} from '../open-url'
@@ -68,6 +70,11 @@ export default function Settings() {
         <Tabs.Tab value="account" data-testid="tab-account" borderRadius={0}>
           <SizableText flex={1} textAlign="left">
             Account
+          </SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="gateway" data-testid="tab-gateway" borderRadius={0}>
+          <SizableText flex={1} textAlign="left">
+            Gateway
           </SizableText>
         </Tabs.Tab>
         <Tabs.Tab value="settings" data-testid="tab-settings" borderRadius={0}>
@@ -109,6 +116,9 @@ export default function Settings() {
       <TabsContent value="account">
         <ProfileInfo />
         <DevicesInfo />
+      </TabsContent>
+      <TabsContent value="gateway">
+        <GatewaySettings />
       </TabsContent>
       <TabsContent value="settings">
         <AppSettings />
@@ -530,6 +540,70 @@ const EXPERIMENTS: ExperimentType[] = [
     description: 'Embed Nostr notes into documents for permanent referencing.',
   },
 ]
+
+function GatewaySettings({}: {}) {
+  const gatewayUrl = useGatewayUrl()
+  const setGateway = useAppDialog(SetGatewayDialog)
+  return (
+    <YStack gap="$3">
+      <Heading>Gateway Settings</Heading>
+      {setGateway.content}
+      <YStack space marginVertical="$4" alignSelf="stretch">
+        {gatewayUrl.data ? (
+          <>
+            <SizableText>
+              Current Gateway:{' '}
+              <SizableText fontWeight="bold">{gatewayUrl.data}</SizableText>
+            </SizableText>
+            <Button
+              onPress={() => {
+                setGateway.open(gatewayUrl.data)
+              }}
+            >
+              Change Gateway URL
+            </Button>
+          </>
+        ) : null}
+      </YStack>
+    </YStack>
+  )
+}
+
+function SetGatewayDialog({
+  input,
+  onClose,
+}: {
+  input: string
+  onClose: () => void
+}) {
+  const [gwUrl, setGWUrl] = useState(input)
+  const setGatewayUrl = useSetGatewayUrl()
+  return (
+    <>
+      <DialogTitle>Hypermedia Gateway URL</DialogTitle>
+      <YStack>
+        <Label htmlFor="gwUrl">Base URL</Label>
+        <Input
+          value={gwUrl}
+          id="gwUrl"
+          onChangeText={setGWUrl}
+          placeholder="https://hyper.media"
+        />
+      </YStack>
+      <XStack>
+        <Button
+          onPress={() => {
+            setGatewayUrl.mutate(gwUrl)
+            onClose()
+          }}
+        >
+          Save
+        </Button>
+        <Button onPress={onClose}>Cancel</Button>
+      </XStack>
+    </>
+  )
+}
 
 function ExperimentsSettings({}: {}) {
   const experiments = useExperiments()

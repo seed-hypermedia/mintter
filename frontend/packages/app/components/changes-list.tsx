@@ -27,6 +27,7 @@ import {createContext, useContext} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import appError from '../errors'
 import {useDocHistory} from '../models/changes'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {
   useCurrentDocumentGroups,
   useGroup,
@@ -174,10 +175,12 @@ function ChangeItem({
     }
   }
   const parsedEntityId = unpackHmId(entityId)
+  const gwUrl = useGatewayUrl()
   const publicWebUrl =
     parsedEntityId &&
     createPublicWebHmUrl(parsedEntityId?.type, parsedEntityId?.eid, {
       version: change.id,
+      hostname: gwUrl.data,
     })
   const spawn = useNavigate('spawn')
   const postToGroup = useContext(PostToGroup)

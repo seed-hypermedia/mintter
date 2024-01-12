@@ -31,6 +31,7 @@ import {PinAccountButton} from '../components/pin-entity'
 import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAllAccounts, useMyAccount} from '../models/accounts'
 import {useAccountPublications} from '../models/documents'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {getAvatarUrl} from '../utils/account-url'
 import {useNavigate} from '../utils/useNavigate'
 
@@ -89,6 +90,7 @@ function AccountDocuments({accountId}: {accountId: string}) {
       }
     })
   }, [list.data, accounts.data])
+  const gwUrl = useGatewayUrl()
   return (
     <Section>
       {data?.map((item) => {
@@ -104,7 +106,7 @@ function AccountDocuments({accountId}: {accountId: string}) {
             editors={editors}
             menuItems={() => [
               copyLinkMenuItem(
-                idToUrl(docId, undefined, publication.version),
+                idToUrl(docId, gwUrl.data, publication.version),
                 'Publication',
               ),
             ]}

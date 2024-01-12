@@ -117,16 +117,16 @@ describe('createHmId', () => {
 
 describe('unpackDocId', () => {
   it('should return values from matching URLs', () => {
-    const result = unpackDocId('https://hyper.media/d/foo?v=bar#block')
+    const result = unpackDocId('https://hyper.xyz/d/foo?v=bar#block')
     expect(result).toEqual({
       docId: 'hm://d/foo',
       eid: 'foo',
-      hostname: 'hyper.media',
+      hostname: 'hyper.xyz',
       scheme: 'https',
       type: 'd',
       version: 'bar',
       blockRef: 'block',
-      id: 'https://hyper.media/d/foo?v=bar#block',
+      id: 'https://hyper.xyz/d/foo?v=bar#block',
     })
   })
 

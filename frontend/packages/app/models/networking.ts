@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'
 import {useGRPCClient} from '../app-context'
+import {useGatewayUrl} from './gateway-settings'
 import {queryKeys} from './query-keys'
 import {WebLinkMeta, fetchWebLinkMeta} from './web-links'
 
@@ -30,8 +31,8 @@ export function useIsOnline() {
   return isOnline
 }
 
-async function checkGatewayConnected(): Promise<0 | 1 | 2> {
-  return await fetch('https://hyper.media/.well-known/hypermedia-site')
+async function checkGatewayConnected(gwUrl: string): Promise<0 | 1 | 2> {
+  return await fetch(`${gwUrl}/.well-known/hypermedia-site`)
     .then(async (res) => {
       if (res.status === 200) return 2
       return 0
@@ -45,11 +46,13 @@ async function checkGatewayConnected(): Promise<0 | 1 | 2> {
 export function useIsGatewayConnected() {
   const [isConnected, setIsConnected] = useState<0 | 1 | 2 | null>(null)
   const promise = useRef<Promise<unknown> | boolean>(true) // true is ready to start, false is stopped, promise is in progress
+  const gwUrl = useGatewayUrl()
   useEffect(() => {
     if (!promise.current) promise.current = true
     function start() {
+      if (!gwUrl.data) return
       if (promise.current === false) return
-      promise.current = checkGatewayConnected()
+      promise.current = checkGatewayConnected(gwUrl.data)
         .then((status) => setIsConnected(status))
         .then(() => {
           return new Promise<void>((resolve) =>
@@ -67,7 +70,7 @@ export function useIsGatewayConnected() {
     return () => {
       promise.current = false
     }
-  }, [])
+  }, [gwUrl.data])
   return isConnected
 }
 

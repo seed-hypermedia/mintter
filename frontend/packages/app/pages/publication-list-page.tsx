@@ -39,6 +39,7 @@ import {
   queryPublication,
   usePublicationFullList,
 } from '../models/documents'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {useWaitForPublication} from '../models/web-links'
 import {toast} from '../toast'
 import {AuthorsVariant, DraftRoute, useNavRoute} from '../utils/navigation'
@@ -101,7 +102,8 @@ export function PublishedFirstDocDialog({
   const {externalOpen} = useAppContext()
   const id = unpackHmId(input.docId)
   if (!id) throw new Error('invalid doc id')
-  const url = createPublicWebHmUrl('d', id.eid)
+  const gwUrl = useGatewayUrl()
+  const url = createPublicWebHmUrl('d', id.eid, {hostname: gwUrl.data})
   const {resultMeta, timedOut} = useWaitForPublication(url, 120)
   return (
     <>
@@ -215,6 +217,7 @@ function PublicationsList({}: {}) {
   const [containerWidth, setContainerWidth] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
   const items = publications.data
+  const gwUrl = useGatewayUrl()
   if (!items) return <Spinner />
   return (
     <YStack
@@ -287,7 +290,7 @@ function PublicationsList({}: {}) {
                 editors={editors}
                 menuItems={() => [
                   copyLinkMenuItem(
-                    idToUrl(docId, undefined, publication.version),
+                    idToUrl(docId, gwUrl.data, publication.version),
                     'Publication',
                   ),
                   {

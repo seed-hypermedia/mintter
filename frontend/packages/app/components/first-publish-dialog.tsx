@@ -9,8 +9,9 @@ import {
   XStack,
 } from '@mintter/ui'
 import {useAppContext} from '../app-context'
-import {PublicationRoute} from '../utils/navigation'
+import {useGatewayUrl} from '../models/gateway-settings'
 import {useIsHMUrlReady} from '../models/networking'
+import {PublicationRoute} from '../utils/navigation'
 
 export function FirstPublishDialog({
   input,
@@ -18,10 +19,12 @@ export function FirstPublishDialog({
   input: {route: PublicationRoute; version: string}
 }) {
   const id = unpackDocId(input.route.documentId)
+  const gwUrl = useGatewayUrl()
   const webUrl =
     id &&
     createPublicWebHmUrl('d', id.eid, {
       version: input.version,
+      hostname: gwUrl.data,
     })
   const {externalOpen} = useAppContext()
   const {didTimeout, linkMeta} = useIsHMUrlReady(webUrl, 45)
