@@ -1,73 +1,33 @@
-import {
-  BACKEND_GRPC_PORT,
-  BACKEND_HTTP_PORT,
-  BACKEND_P2P_PORT,
-} from '@mintter/shared'
+import {GRPC_PORT, HTTP_PORT, P2P_PORT} from '@mintter/shared'
 import {spawn} from 'child_process'
 import {app} from 'electron'
-import path, {join} from 'path'
-import {APP_USER_DATA_PATH} from './app-paths'
+import path from 'path'
+import {IS_PROD, userDataPath} from './app-paths'
+import {getDaemonBinaryPath} from './daemon-path'
 import {childLogger, info} from './logger'
-
 const logger = childLogger('Go Daemon')
 
-const LLVM_TRIPLES = {
-  'darwin/x64': 'x86_64-apple-darwin',
-  'darwin/arm64': 'aarch64-apple-darwin',
-  'win32/x64': 'x86_64-pc-windows-msvc',
-  'linux/x64': 'x86_64-unknown-linux-gnu',
-  'linux/arm64': 'aarch64-unknown-linux-gnu',
-}
+let goDaemonExecutablePath = getDaemonBinaryPath()
 
-const getPlatformTriple = (): string => {
-  return (
-    process.env.DAEMON_NAME ||
-    LLVM_TRIPLES[`${process.platform}/${process.arch}`]
-  )
-}
-
-const devProjectRoot = join(process.cwd(), '../../..')
-const devDaemonBinaryPath = join(
-  devProjectRoot,
-  // TODO: parametrize this for each platform
-  `plz-out/bin/backend/mintterd-${getPlatformTriple()}`,
-)
-
-const prodDaemonBinaryPath = join(
-  process.resourcesPath,
-  `mintterd-${getPlatformTriple()}`,
-)
-
-const userDataDir =
-  process.env.NODE_ENV == 'development'
-    ? join(path.resolve('../../..'), 'db.local')
-    : join(APP_USER_DATA_PATH, 'daemon')
-
-let goDaemonExecutablePath =
-  process.env.NODE_ENV == 'development'
-    ? devDaemonBinaryPath
-    : prodDaemonBinaryPath
-
-let lndhubFlags =
-  process.env.NODE_ENV == 'development'
-    ? '-lndhub.mainnet=false'
-    : '-lndhub.mainnet=true'
+let lndhubFlags = IS_PROD ? '-lndhub.mainnet=true' : '-lndhub.mainnet=false'
 
 const daemonArguments = [
   '-http.port',
-  String(BACKEND_HTTP_PORT),
+  String(HTTP_PORT),
 
   '-grpc.port',
-  String(BACKEND_GRPC_PORT),
+  String(GRPC_PORT),
 
   '-p2p.port',
-  String(BACKEND_P2P_PORT),
+  String(P2P_PORT),
 
   '-data-dir',
-  userDataDir,
+  `${userDataPath}/daemon`,
 
   lndhubFlags,
 ]
+
+console.log(`== ~ daemonArguments:`, daemonArguments)
 
 type ReadyState = {t: 'ready'}
 type ErrorState = {t: 'error'; message: string}
@@ -100,7 +60,7 @@ export function startMainDaemon() {
 
   const daemonProcess = spawn(goDaemonExecutablePath, daemonArguments, {
     // daemon env
-    cwd: devProjectRoot,
+    cwd: path.join(process.cwd(), '../../..'),
     env: {
       ...process.env,
     },
@@ -109,12 +69,13 @@ export function startMainDaemon() {
   let expectingDaemonClose = false
   daemonProcess.on('error', (err) => {
     logger.error('Error:', err)
+    console.log('ERROR', err)
   })
   daemonProcess.on('close', (code, signal) => {
     if (!expectingDaemonClose) {
       updateGoDaemonState({
         t: 'error',
-        message: 'Service Error: ' + lastStderr,
+        message: 'Service Error: !!!' + lastStderr,
       })
       logger.error('Closed:', code, signal)
     }
@@ -157,9 +118,9 @@ export function startMainDaemon() {
   })
 
   const mainDaemon = {
-    httpPort: BACKEND_HTTP_PORT,
-    grpcPort: BACKEND_GRPC_PORT,
-    p2pPort: BACKEND_P2P_PORT,
+    httpPort: process.env.VITE_VITE_DESKTOP_HTTP_PORT,
+    grpcPort: process.env.VITE_VITE_DESKTOP_GRPC_PORT,
+    p2pPort: process.env.VITE_VITE_DESKTOP_P2P_PORT,
   }
   return mainDaemon
 }

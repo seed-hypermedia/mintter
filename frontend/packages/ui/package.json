@@ -14,13 +14,11 @@
   ],
   "scripts": {
     "build": "tamagui-build ./src",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "watch": "tamagui-build --watch",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "clean": "tamagui-build clean",
     "clean:build": "tamagui-build clean:build",
-    "test": "echo TODO",
+    "test": "echo NO TESTS",
     "typecheck": "tsc --noEmit",
     "generate": "tamagui generate-themes ./src/themes/theme.ts ./src/themes-generated.ts"
   },
@@ -45,7 +43,6 @@
   },
   "devDependencies": {
     "@mintter/prettier": "*",
-    "@tamagui/build": "latest",
-    "eslint-config-custom": "*"
+    "@tamagui/build": "latest"
   }
 }

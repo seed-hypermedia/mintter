@@ -1,6 +1,6 @@
 import {
-  BACKEND_GRAPHQL_ENDPOINT,
-  LIGHTNING_SERVER_URL,
+  API_GRAPHQL_ENDPOINT,
+  LIGHTNING_API_URL,
   Mutation,
 } from '@mintter/shared'
 import {UseMutationOptions, useMutation, useQuery} from '@tanstack/react-query'
@@ -33,7 +33,7 @@ let insertDefaultWalletMutation = gql`
 `
 
 export async function checkWalletAccounts(accountIds: string[]) {
-  let url = `${LIGHTNING_SERVER_URL}/v2/check`
+  let url = `${LIGHTNING_API_URL}/v2/check`
   accountIds.forEach((accountId, index) => {
     url += `${index === 0 ? '?' : '&'}user=${accountId}`
   })
@@ -66,11 +66,11 @@ export function useWalletOptIn(opts?: UseMutationOptions) {
   const optIn = useMutation({
     mutationFn: async (input) => {
       const exported: Mutation = await request(
-        BACKEND_GRAPHQL_ENDPOINT,
+        API_GRAPHQL_ENDPOINT,
         exportBuiltInWalletMutation,
       )
       const imported: Mutation = await request(
-        BACKEND_GRAPHQL_ENDPOINT,
+        API_GRAPHQL_ENDPOINT,
         insertDefaultWalletMutation,
         {credentials: exported.exportWallet.credentials},
       )

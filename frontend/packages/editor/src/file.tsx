@@ -1,7 +1,7 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
 import {client} from '@mintter/desktop/src/trpc'
-import {BACKEND_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
   Button,
   File,
@@ -209,7 +209,7 @@ export function FileComponent({
     formData.append('file', file)
 
     try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      const response = await fetch(API_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
       })
@@ -391,7 +391,7 @@ function FileForm({
     formData.append('file', files[0])
 
     try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      const response = await fetch(API_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
       })
@@ -412,7 +412,7 @@ function FileForm({
       formData.append('file', files[i])
 
       try {
-        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        const response = await fetch(API_FILE_UPLOAD_URL, {
           method: 'POST',
           body: formData,
         })

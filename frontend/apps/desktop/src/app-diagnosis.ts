@@ -1,16 +1,16 @@
-import {z} from 'zod'
-import {t} from './app-trpc'
-import {dirname} from 'path'
-import {appendFile, exists, mkdirp, move, rmdir, writeFile} from 'fs-extra'
-import {APP_USER_DATA_PATH} from './app-paths'
-import open from 'open'
 import {unpackHmId} from '@mintter/shared/src/utils/entity-id-url'
+import {appendFile, exists, mkdirp, move, rmdir, writeFile} from 'fs-extra'
+import open from 'open'
+import {dirname} from 'path'
+import {z} from 'zod'
+import {userDataPath} from './app-paths'
+import {t} from './app-trpc'
 
 function draftFilePath(draftId: string) {
-  return `${APP_USER_DATA_PATH}/DraftLog/Draft_${draftId}.json`
+  return `${userDataPath}/DraftLog/Draft_${draftId}.json`
 }
 function createPubFilePath(docId: string) {
-  return `${APP_USER_DATA_PATH}/DraftLog/Publication_${getFormattedDateTime()}_${docId}.json`
+  return `${userDataPath}/DraftLog/Publication_${getFormattedDateTime()}_${docId}.json`
 }
 
 function getFormattedDateTime() {
@@ -66,9 +66,9 @@ export const diagnosisApi = t.router({
     await open(draftFilePath(id.eid))
   }),
   openDraftLogFolder: t.procedure.mutation(async () => {
-    await open(`${APP_USER_DATA_PATH}/DraftLog`)
+    await open(`${userDataPath}/DraftLog`)
   }),
   destroyDraftLogFolder: t.procedure.mutation(async () => {
-    await rmdir(`${APP_USER_DATA_PATH}/DraftLog`, {recursive: true})
+    await rmdir(`${userDataPath}/DraftLog`, {recursive: true})
   }),
 })

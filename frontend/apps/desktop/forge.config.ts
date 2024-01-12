@@ -5,7 +5,7 @@ import {MakerZIP} from '@electron-forge/maker-zip'
 import type {ForgeConfig} from '@electron-forge/shared-types'
 // import {MakerRpm} from '@electron-forge/maker-rpm'
 import {VitePlugin} from '@electron-forge/plugin-vite'
-import path from 'path'
+import path from 'node:path'
 import packageJson from './package.json'
 // import setLanguages from 'electron-packager-languages'
 
@@ -54,7 +54,7 @@ const commonLinuxConfig: MakerDebConfig = {
 
 const config: ForgeConfig = {
   packagerConfig: {
-    appVersion: process.env.APP_VERSION,
+    appVersion: process.env.VITE_VERSION,
     asar: true,
     darwinDarkModeSupport: true,
     icon: iconsPath,

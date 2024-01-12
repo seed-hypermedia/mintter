@@ -1,5 +1,5 @@
 import {toast} from '@mintter/app/toast'
-import {BACKEND_HTTP_URL} from '@mintter/shared'
+import {API_HTTP_URL} from '@mintter/shared'
 import {app, dialog, net} from 'electron'
 import fs from 'fs'
 
@@ -7,7 +7,7 @@ const {debug, error} = console
 
 export async function saveCidAsFile(event, args) {
   const {cid, name} = args
-  const request = net.request(`${BACKEND_HTTP_URL}/ipfs/${cid}`)
+  const request = net.request(`${API_HTTP_URL}/ipfs/${cid}`)
   debug('Saving cid to ' + app.getPath('downloads'))
   request.on('response', (response) => {
     if (response.statusCode === 200) {

@@ -1,4 +1,4 @@
-import {Account, BACKEND_FILE_URL, PeerInfo} from '@mintter/shared'
+import {Account, API_FILE_URL, PeerInfo} from '@mintter/shared'
 import {
   ArrowUpRight,
   Button,
@@ -186,7 +186,7 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
               label={account.profile?.alias}
               url={
                 account.profile?.avatar &&
-                `${BACKEND_FILE_URL}/${account.profile?.avatar}`
+                `${API_FILE_URL}/${account.profile?.avatar}`
               }
             />
           ) : null}

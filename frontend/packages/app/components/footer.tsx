@@ -1,7 +1,7 @@
 import {useConnectionSummary} from '@mintter/app/models/contacts'
 import {useDaemonReady} from '@mintter/app/node-status-context'
 import {useNavRoute} from '@mintter/app/utils/navigation'
-import {APP_VERSION} from '@mintter/shared'
+import {VERSION} from '@mintter/shared'
 import {
   Button,
   ButtonProps,
@@ -89,7 +89,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           }}
           color="$color8"
         >
-          {`Mintter ${APP_VERSION}`}
+          {`Mintter ${VERSION}`}
           {/* To do: include release date of this version. when this is clicked, we should help the user upgrade  */}
         </SizableText>
       </XStack>

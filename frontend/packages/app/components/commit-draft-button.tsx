@@ -1,6 +1,6 @@
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {BACKEND_FILE_URL} from '@mintter/shared'
+import {API_FILE_URL} from '@mintter/shared'
 import {
   AlertCircle,
   Button,
@@ -213,7 +213,7 @@ export default function CommitDraftButton() {
                         size={28}
                         url={
                           myAccount.data?.profile?.avatar &&
-                          `${BACKEND_FILE_URL}/${myAccount.data?.profile?.avatar}`
+                          `${API_FILE_URL}/${myAccount.data?.profile?.avatar}`
                         }
                         label={
                           myAccount.data?.profile?.alias || myAccount.data?.id

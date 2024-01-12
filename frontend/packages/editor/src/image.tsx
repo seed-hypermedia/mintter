@@ -2,7 +2,7 @@ import {useAppContext} from '@mintter/app/app-context'
 import {toast} from '@mintter/app/toast'
 import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
-  BACKEND_FILE_UPLOAD_URL,
+  API_FILE_UPLOAD_URL,
   getCIDFromIPFSUrl,
   usePublicationContentContext,
 } from '@mintter/shared'
@@ -207,7 +207,7 @@ function ImageComponent({
       formData.append('file', file)
 
       try {
-        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        const response = await fetch(API_FILE_UPLOAD_URL, {
           method: 'POST',
           body: formData,
         })
@@ -434,7 +434,7 @@ function ImageForm({
     formData.append('file', files[0])
 
     try {
-      const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+      const response = await fetch(API_FILE_UPLOAD_URL, {
         method: 'POST',
         body: formData,
       })
@@ -451,7 +451,7 @@ function ImageForm({
       formData.append('file', files[i])
 
       try {
-        const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+        const response = await fetch(API_FILE_UPLOAD_URL, {
           method: 'POST',
           body: formData,
         })

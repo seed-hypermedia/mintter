@@ -1,6 +1,6 @@
 import {sentryVitePlugin} from '@sentry/vite-plugin'
 import {tamaguiPlugin} from '@tamagui/vite-plugin'
-import {defineConfig, loadEnv} from 'vite'
+import {defineConfig} from 'vite'
 import tsConfigPaths from 'vite-tsconfig-paths'
 
 const _tamaguiPlugin = tamaguiPlugin({
@@ -16,7 +16,6 @@ const _tamaguiPlugin = tamaguiPlugin({
 export default defineConfig(({command, mode}) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '')
   return {
     build: {
       sourcemap: true,

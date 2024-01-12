@@ -1,6 +1,6 @@
 import {Avatar} from '@mintter/app/components/avatar'
 import {useMyAccount} from '@mintter/app/models/accounts'
-import {BACKEND_FILE_UPLOAD_URL} from '@mintter/shared'
+import {API_FILE_UPLOAD_URL} from '@mintter/shared'
 import {Stack, Tooltip} from '@mintter/ui'
 import {ChangeEvent} from 'react'
 import appError from '../errors'
@@ -32,7 +32,7 @@ export function AvatarForm({
   const handleUpload = async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    const response = await fetch(BACKEND_FILE_UPLOAD_URL, {
+    const response = await fetch(API_FILE_UPLOAD_URL, {
       method: 'POST',
       body: formData,
     })

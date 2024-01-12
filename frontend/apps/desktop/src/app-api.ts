@@ -1,12 +1,10 @@
 import type {NavRoute} from '@mintter/app/utils/navigation'
 import {resolveHmIdToAppRoute} from '@mintter/app/utils/navigation'
 import type {AppWindowEvent} from '@mintter/app/utils/window-events'
-import {BACKEND_HTTP_PORT} from '@mintter/shared'
 import {observable} from '@trpc/server/observable'
 import {
   BrowserWindow,
   NativeImage,
-  app,
   dialog,
   ipcMain,
   nativeTheme,
@@ -20,6 +18,7 @@ import {diagnosisApi} from './app-diagnosis'
 import {experimentsApi} from './app-experiments'
 import {gatewaySettingsApi} from './app-gateway-settings'
 import {grpcClient} from './app-grpc'
+import {userDataPath} from './app-paths'
 import {pinsApi} from './app-pins'
 import {t} from './app-trpc'
 import {uploadFile, webImportingApi} from './app-web-importing'
@@ -67,8 +66,7 @@ nativeTheme.addListener('updated', () => {
   })
 })
 
-const userData = app.getPath('userData')
-info('App UserData: ', userData)
+info('App UserData: ', userDataPath)
 
 export function openInitialWindows() {
   const windowsState = getWindowsState()
@@ -223,14 +221,14 @@ export const router = t.router({
   }),
 
   getDaemonInfo: t.procedure.query(async () => {
-    const buildInfoUrl = `http://localhost:${BACKEND_HTTP_PORT}/debug/buildinfo`
+    const buildInfoUrl = `${process.env.VITE_DESKTOP_HOSTNAME}:${process.env.VITE_VITE_DESKTOP_HTTP_PORT}/debug/buildinfo`
     const daemonVersionReq = await fetch(buildInfoUrl)
     const daemonVersion = await daemonVersionReq.text()
     return daemonVersion
   }),
 
   getAppInfo: t.procedure.query(() => {
-    return {dataDir: userData, loggingDir, grpcHost: process.env.GRPC_HOST}
+    return {dataDir: userDataPath, loggingDir, grpcHost: process.env.GRPC_HOST}
   }),
 })
 

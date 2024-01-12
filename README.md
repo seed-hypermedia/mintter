@@ -38,6 +38,7 @@ installed.
 [./dev](./dev) is the main dev CLI. Run `./dev` to list commands, including:
 
 - `./dev run-desktop`
+- `./dev run-desktop-mainnet`
 - `./dev build-desktop`
 - `./dev run-site`
 - `./dev build-site`
@@ -47,6 +48,16 @@ To run the dev build with the production network, use the following command:
 ```
 MINTTER_P2P_TESTNET_NAME="" ./dev run-desktop
 ```
+
+## Frontend Testing
+
+```bash
+yarn test               # test all the packages
+yarn desktop:test       # test desktop app (e2e only now)
+yarn site:test          # test only site code (WIP)
+```
+
+## Web Build
 
 ## Group sites
 

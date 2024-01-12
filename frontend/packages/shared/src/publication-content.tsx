@@ -1,6 +1,6 @@
 import {PartialMessage, Timestamp} from '@bufbuild/protobuf'
 import {
-  BACKEND_HTTP_URL,
+  API_HTTP_URL,
   Block,
   BlockNode,
   HMBlock,
@@ -1213,7 +1213,7 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
     (content === undefined || verified === undefined)
   ) {
     const cid = getCIDFromIPFSUrl(block.ref)
-    fetch(`${BACKEND_HTTP_URL}/ipfs/${cid}`, {
+    fetch(`${API_HTTP_URL}/ipfs/${cid}`, {
       method: 'GET',
     }).then((response) => {
       if (response) {

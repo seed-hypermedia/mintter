@@ -64,7 +64,6 @@ export function Onboarding({onComplete}: {onComplete: () => void}) {
 export function OnboardingSteps() {
   let ctx = useOnboarding()
   const key = ctx.state.key
-  let direction = ctx.state.direction
   return (
     <>
       {key == 'welcome' && <Welcome key={key} {...ctx} />}
@@ -229,10 +228,10 @@ function Mnemonics(props: OnboardingStepProps) {
               }}
             >
               <Tabs.List>
-                <Tabs.Tab value="generated" flex={1}>
+                <Tabs.Tab value="generated" flex={1} id="btn-tab-generated">
                   <SizableText>Generate new words</SizableText>
                 </Tabs.Tab>
-                <Tabs.Tab value="ownwords" flex={1}>
+                <Tabs.Tab value="ownwords" flex={1} id="btn-tab-ownwords">
                   <SizableText>Use my own words</SizableText>
                 </Tabs.Tab>
               </Tabs.List>
@@ -260,7 +259,7 @@ function Mnemonics(props: OnboardingStepProps) {
                       fontSize={18}
                       fontWeight="700"
                       display="block"
-                      id="mnemonics"
+                      id="recovery-phrase-words"
                     >
                       {mnemonics.data?.join(' ')}
                     </SizableText>
@@ -289,6 +288,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   </XStack>
                   <XStack gap="$2">
                     <Checkbox
+                      id="check1"
                       checked={check1}
                       onCheckedChange={(v) => setCheck1(!!v)}
                     >
@@ -302,6 +302,7 @@ function Mnemonics(props: OnboardingStepProps) {
                   </XStack>
                   <XStack gap="$2">
                     <Checkbox
+                      id="check2"
                       checked={check2}
                       onCheckedChange={(v) => setCheck2(!!v)}
                     >
@@ -333,7 +334,7 @@ function Mnemonics(props: OnboardingStepProps) {
                       autoFocus
                       fontSize={18}
                       flex={1}
-                      id="mnemonics-input"
+                      id="ownwords-input"
                       placeholder={
                         'Add your 12 mnemonics words \n(food barrel buzz, ...)'
                       }
@@ -353,6 +354,7 @@ function Mnemonics(props: OnboardingStepProps) {
                       borderRadius="$1"
                       paddingHorizontal="$4"
                       paddingVertical={0}
+                      id="mnemonics-error-box"
                     >
                       <ErrorIcon size={12} color="$red1" />
                       <SizableText size="$1" fontWeight="600" color="$red1">
@@ -476,8 +478,8 @@ function NewDevice(props: OnboardingStepProps) {
         <YStack flex={2}>
           <YStack gap="$5" maxWidth={500}>
             <StepParagraph>
-              Add your account&apos;s mnemonics in the input below separated by
-              commas.
+              Add your account&apos;s Secret Recovery phrase in the input below
+              separated by commas.
             </StepParagraph>
             <YStack gap="$2">
               <XStack
@@ -489,7 +491,7 @@ function NewDevice(props: OnboardingStepProps) {
                   autoFocus
                   fontSize={18}
                   flex={1}
-                  id="mnemonic-input"
+                  id="new-device-input"
                   placeholder={
                     'Add your 12 mnemonics words \n(food, barrel, buzz, ...)'
                   }
@@ -509,6 +511,7 @@ function NewDevice(props: OnboardingStepProps) {
                   borderRadius="$1"
                   paddingHorizontal="$4"
                   paddingVertical={0}
+                  id="mnemonics-error-box"
                 >
                   <ErrorIcon size={12} color="$red1" />
                   <SizableText size="$1" fontWeight="600" color="$red1">
@@ -570,7 +573,6 @@ function Profile(props: OnboardingStepProps) {
                   </Label>
                   <Input
                     id="alias"
-                    testID="input-alias"
                     onChangeText={(val) => (submitValue.current.alias = val)}
                     placeholder="Readable alias or username. Doesn't have to be unique."
                   />
@@ -654,7 +656,9 @@ function Wallet(props: OnboardingStepProps) {
         </StepTitleSection>
         <YStack flex={2}>
           {wallets.data?.length && wallets.data?.length > 0 ? (
-            <StepParagraph>Your wallet is ready to use!</StepParagraph>
+            <StepParagraph id="wallet-success-mssg">
+              Your wallet is ready to use!
+            </StepParagraph>
           ) : wallets.data?.length === 0 ? (
             <YStack gap="$5" maxWidth={500}>
               <StepParagraph>
@@ -662,6 +666,7 @@ function Wallet(props: OnboardingStepProps) {
               </StepParagraph>
               <XStack>
                 <Button
+                  id="btn-accept-wallet"
                   onPress={() => {
                     optIn.mutate()
                   }}
@@ -773,7 +778,7 @@ function ConnectSite(props: OnboardingStepProps) {
       </XStack>
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         {connectPeer.isLoading || !isDaemonReady ? <Spinner /> : null}
-        <Button onPress={() => props.complete()} size="$4">
+        <Button id="btn-skip" onPress={() => props.complete()} size="$4">
           Skip
         </Button>
         <NextButton
@@ -802,18 +807,14 @@ function StepWrapper({children, ...props}: PropsWithChildren<unknown>) {
       fullscreen
       x={0}
       opacity={1}
-      animation={
-        import.meta.env.VITE_NO_ANIMS
-          ? undefined
-          : [
-              'medium',
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]
-      }
+      animation={[
+        'medium',
+        {
+          opacity: {
+            overshootClamping: true,
+          },
+        },
+      ]}
       {...props}
     >
       <YStack
@@ -902,11 +903,11 @@ let machine = {
     },
     'add new device': {
       on: {
-        NEXT: {
-          target: 'connect site',
-        },
         PREV: {
           target: 'welcome',
+        },
+        NEXT: {
+          target: 'connect site',
         },
       },
     },
@@ -920,38 +921,38 @@ let machine = {
         },
       },
     },
-    'connect site': {
-      final: true,
-    },
     profile: {
       on: {
-        NEXT: {
-          target: 'wallet',
-        },
         PREV: {
           target: 'create new account',
+        },
+        NEXT: {
+          target: 'wallet',
         },
       },
     },
     wallet: {
       on: {
-        NEXT: {
-          target: 'analytics',
-        },
         PREV: {
           target: 'profile',
+        },
+        NEXT: {
+          target: 'analytics',
         },
       },
     },
     analytics: {
       on: {
+        PREV: {
+          target: 'wallet',
+        },
         NEXT: {
           target: 'connect site',
         },
-        PREV: {
-          target: 'profile',
-        },
       },
+    },
+    'connect site': {
+      final: true,
     },
   },
 }

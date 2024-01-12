@@ -10,7 +10,7 @@ import {toast} from '@mintter/app/toast'
 import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
-import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
+import {API_HTTP_URL, createGRPCClient} from '@mintter/shared'
 import type {StateStream} from '@mintter/shared/src/utils/stream'
 import {Spinner, YStack, useStream} from '@mintter/ui'
 import '@tamagui/core/reset.css'
@@ -94,7 +94,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 const transport = createGrpcWebTransport({
-  baseUrl: BACKEND_HTTP_URL,
+  baseUrl: API_HTTP_URL,
   interceptors: [loggingInterceptor],
 })
 

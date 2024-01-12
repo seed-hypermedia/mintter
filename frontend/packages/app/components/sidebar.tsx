@@ -1,4 +1,4 @@
-import {Account, BACKEND_FILE_URL} from '@mintter/shared'
+import {Account, API_FILE_URL} from '@mintter/shared'
 import {
   Button,
   ListItem,
@@ -8,11 +8,11 @@ import {
   Spinner,
   Tooltip,
   UIAvatar,
+  useStream,
   View,
   XStack,
   YGroup,
   YStack,
-  useStream,
 } from '@mintter/ui'
 import {
   Book,
@@ -23,7 +23,7 @@ import {
   Search,
   Settings,
 } from '@tamagui/lucide-icons'
-import {ReactNode, memo, useEffect, useState} from 'react'
+import {memo, ReactNode, useEffect, useState} from 'react'
 import {useAppContext} from '../app-context'
 import appError from '../errors'
 import {useAccount, useAccounts, useMyAccount} from '../models/accounts'
@@ -616,7 +616,7 @@ function PinnedDocument({
                     <UIAvatar
                       id={account.id}
                       size={22}
-                      url={`${BACKEND_FILE_URL}/${account?.profile?.avatar}`}
+                      url={`${API_FILE_URL}/${account?.profile?.avatar}`}
                       label={account.profile?.alias || account.id}
                     />
                   </XStack>

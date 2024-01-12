@@ -3,7 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
-console.log('=== SENTRY SETUP: NODE_ENV ====', process.env.NODE_ENV)
+
 if (process.env.NODE_ENV == 'production') {
   Sentry.init({
     dsn: process.env.HM_SENTRY_SITE_DSN,
@@ -12,7 +12,7 @@ if (process.env.NODE_ENV == 'production') {
     tracesSampleRate: 1,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
-    debug: true,
+    debug: false,
   })
 } else {
   console.log(

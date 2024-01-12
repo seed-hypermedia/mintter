@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "scripts": {
-    "lint": "eslint .",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "test": "vitest --run",
     "test:w": "vitest",
@@ -14,7 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "@mintter/prettier": "*",
-    "eslint-config-custom": "*",
     "typescript": "5.1.6",
     "vitest": "0.34.2"
   },

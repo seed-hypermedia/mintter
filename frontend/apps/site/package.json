@@ -8,7 +8,6 @@
     "next:build": "yarn next build",
     "start": "yarn next start",
     "serve": "NODE_ENV=production yarn next start --port 8151",
-    "lint": "next lint",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
     "test": "echo 'SITE: NO TESTS';",
     "with-env": "TAMAGUI_TARGET=web"
@@ -60,7 +59,6 @@
     "@types/react-dom": "18.2.7",
     "@types/react-native": "0.71.8",
     "@types/unist": "2.0.6",
-    "eslint-config-custom": "*",
     "expo-modules-core": "0.6.5",
     "expo-screen-orientation": "4.3.0",
     "next-transpile-modules": "10.0.1",

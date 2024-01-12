@@ -2,8 +2,8 @@ import * as Ariakit from '@ariakit/react'
 import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
 import {
+  API_FILE_URL,
   Account,
-  BACKEND_FILE_URL,
   Document,
   Group,
   Profile,
@@ -970,7 +970,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
                 <Avatar
                   label={alias}
                   id={value}
-                  url={avatar ? `${BACKEND_FILE_URL}/${avatar}` : undefined}
+                  url={avatar ? `${API_FILE_URL}/${avatar}` : undefined}
                 />
                 <SizableText size="$3">
                   {alias
@@ -1072,7 +1072,7 @@ export const TagInputItem = forwardRef<HTMLDivElement, TagInputItemProps>(
             id={props.value}
             url={
               props.account?.profile?.avatar
-                ? `${BACKEND_FILE_URL}/${props.account?.profile?.avatar}`
+                ? `${API_FILE_URL}/${props.account?.profile?.avatar}`
                 : undefined
             }
           />

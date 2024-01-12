@@ -1,6 +1,6 @@
 import type {Interceptor} from '@connectrpc/connect'
 import {createGrpcWebTransport} from '@connectrpc/connect-node'
-import {BACKEND_HTTP_URL, createGRPCClient} from '@mintter/shared'
+import {API_HTTP_URL, createGRPCClient} from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
@@ -40,7 +40,7 @@ const IS_DEV = process.env.NODE_ENV == 'development'
 const DEV_INTERCEPTORS = [loggingInterceptor, prodInter]
 
 export const transport = createGrpcWebTransport({
-  baseUrl: BACKEND_HTTP_URL,
+  baseUrl: API_HTTP_URL,
   httpVersion: '1.1',
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })

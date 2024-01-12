@@ -52,26 +52,22 @@ function AddConnectionForm({
     },
   })
 
-  const connectInfo = useMemo(
-    () => {
-      if (!deviceId || !peerInfo.data?.addrs?.length) return null
-      return compressToEncodedURIComponent(
-        JSON.stringify({
-          a: peerInfo.data?.addrs.map((addr) => {
-            return addr.split('/p2p/').slice(0, -1).join('/p2p/')
-          }),
-          n: account.data?.profile?.alias,
-          d: deviceId,
+  const connectInfo = useMemo(() => {
+    if (!deviceId || !peerInfo.data?.addrs?.length) return null
+    return compressToEncodedURIComponent(
+      JSON.stringify({
+        a: peerInfo.data?.addrs.map((addr) => {
+          return addr.split('/p2p/').slice(0, -1).join('/p2p/')
         }),
-      )
-    },
-    // @eslint-ignore-next-line
-    [
-      deviceId,
-      peerInfo.data?.addrs?.length, // explicitly using addrs length because the address list is being polled and frequently changes order, which does not affect connecivity
-      account.data?.profile?.alias,
-    ],
-  )
+        n: account.data?.profile?.alias,
+        d: deviceId,
+      }),
+    )
+  }, [
+    deviceId,
+    peerInfo.data?.addrs?.length, // explicitly using addrs length because the address list is being polled and frequently changes order, which does not affect connecivity
+    account.data?.profile?.alias,
+  ])
   return (
     <>
       <DialogTitle>Add Connection</DialogTitle>

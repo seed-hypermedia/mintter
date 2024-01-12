@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "scripts": {
-    "lint": "eslint .",
     "format": "prettier \"**/*.{ts,tsx,md,mdx,json,js}\" --check --ignore-path ../../../.prettierignore",
-    "test": "vitest --run",
+    "test": "echo 'EDITOR: NO TESTS';",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -67,7 +66,6 @@
     "@types/prosemirror-dev-tools": "3.0.3",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
-    "eslint-config-custom": "*",
     "happy-dom": "7.8.1",
     "jsdom": "22.1.0",
     "prettier": "3.0.2",

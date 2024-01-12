@@ -1,6 +1,8 @@
 import {zodResolver} from '@hookform/resolvers/zod'
+import {Group} from '@mintter/shared'
 import {
   Button,
+  Check as CheckIcon,
   Checkbox,
   Form,
   Input,
@@ -8,8 +10,6 @@ import {
   Spinner,
   XStack,
   YStack,
-  Check as CheckIcon,
-  UIAvatar,
 } from '@mintter/ui'
 import {useEffect} from 'react'
 import {
@@ -22,18 +22,17 @@ import {
 } from 'react-hook-form'
 import {toast} from 'react-hot-toast'
 import * as z from 'zod'
+import {useAccount, useMyAccount} from '../models/accounts'
 import {
   useCreateGroup,
   useGroup,
   useGroupContent,
   useGroupMembers,
 } from '../models/groups'
-import {useNavigate} from '../utils/useNavigate'
-import {DialogTitle} from './dialog'
-import {BACKEND_FILE_URL, Group, Role} from '@mintter/shared'
-import {useAccount, useMyAccount} from '../models/accounts'
 import {getAvatarUrl} from '../utils/account-url'
+import {useNavigate} from '../utils/useNavigate'
 import {Avatar} from './avatar'
+import {DialogTitle} from './dialog'
 
 const cloneGroupSchema = z.object({
   title: z.string().min(1, {message: 'Group title is required'}),

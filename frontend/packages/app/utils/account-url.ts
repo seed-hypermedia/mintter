@@ -1,7 +1,7 @@
-import {BACKEND_FILE_URL} from '@mintter/shared'
+import {API_FILE_URL} from '@mintter/shared'
 
 export function getAvatarUrl(avatarCID?: string) {
   if (avatarCID) {
-    return `${BACKEND_FILE_URL}/${avatarCID}`
+    return `${API_FILE_URL}/${avatarCID}`
   }
 }
