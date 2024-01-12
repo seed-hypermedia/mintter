@@ -118,9 +118,9 @@ export function startMainDaemon() {
   })
 
   const mainDaemon = {
-    httpPort: process.env.VITE_VITE_DESKTOP_HTTP_PORT,
-    grpcPort: process.env.VITE_VITE_DESKTOP_GRPC_PORT,
-    p2pPort: process.env.VITE_VITE_DESKTOP_P2P_PORT,
+    httpPort: process.env.VITE_DESKTOP_HTTP_PORT,
+    grpcPort: process.env.VITE_DESKTOP_GRPC_PORT,
+    p2pPort: process.env.VITE_DESKTOP_P2P_PORT,
   }
   return mainDaemon
 }
