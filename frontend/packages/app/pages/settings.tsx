@@ -96,20 +96,6 @@ export default function Settings() {
           <SizableText flex={1} textAlign="left">
             Developers
           </SizableText>
-
-          <SizableText
-            size="$1"
-            fontSize={10}
-            paddingHorizontal="$2"
-            paddingVertical="$1"
-            borderRadius="$1"
-            overflow="hidden"
-            backgroundColor="$color8"
-            color="$color1"
-            theme="yellow"
-          >
-            NEW
-          </SizableText>
         </Tabs.Tab>
       </Tabs.List>
       <Separator vertical />
