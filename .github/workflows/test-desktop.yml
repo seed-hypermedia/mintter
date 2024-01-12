@@ -5,22 +5,25 @@ permissions:
 
 on:
   push:
-    branches:
-      - main
-      - e2e
-      - release/*
-    paths:
-      - frontend/*
-      - ".github/workflows/test-desktop.yml"
+    # disabling this job until we can make tests run without relying on external services
+    branches: [none]
+  # push:
+  #   branches:
+  #     - main
+  #     - e2e
+  #     - release/*
+  #   paths:
+  #     - frontend/*
+  #     - ".github/workflows/test-desktop.yml"
 
-  pull_request:
-    branches:
-      - main
-      - e2e
-      - release/*
-    paths:
-      - frontend/*
-      - ".github/workflows/test-desktop.yml"
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - e2e
+  #     - release/*
+  #   paths:
+  #     - frontend/*
+  #     - ".github/workflows/test-desktop.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
