@@ -33,13 +33,15 @@ import {
   PinOff,
   Plus,
   Send,
+  UploadCloud,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
-import {useGatewayUrl} from '../models/gateway-settings'
+import {usePushPublication} from '../models/documents'
+import {useGatewayHost, useGatewayUrl} from '../models/gateway-settings'
 import {
   useCanEditGroup,
   useGroup,
@@ -65,7 +67,9 @@ export function DocOptionsButton() {
       'DocOptionsButton can only be rendered on publication route',
     )
   const gwUrl = useGatewayUrl()
+  const gwHost = useGatewayHost()
   const pin = usePinDocument(route)
+  const push = usePushPublication()
   const menuItems: MenuItemType[] = [
     {
       key: 'link',
@@ -81,6 +85,18 @@ export function DocOptionsButton() {
           }),
         )
         toast.success('Copied Public Document URL')
+      },
+    },
+    {
+      key: 'push',
+      label: 'Push to Gateway',
+      icon: UploadCloud,
+      onPress: () => {
+        toast.promise(push.mutateAsync(route.documentId), {
+          loading: 'Pushing...',
+          success: `Pushed to ${gwHost}`,
+          error: (err) => `Could not push to ${gwHost}: ${err.message}`,
+        })
       },
     },
   ]

@@ -47,6 +47,7 @@ import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
+import {useGatewayUrl} from './gateway-settings'
 import {useGroupContent} from './groups'
 import {queryKeys} from './query-keys'
 
@@ -871,6 +872,20 @@ export function createBlocksMap(
   })
 
   return result
+}
+
+export function usePushPublication() {
+  const gatewayUrl = useGatewayUrl()
+  const grpcClient = useGRPCClient()
+  return useMutation({
+    mutationFn: async (docId: string) => {
+      if (!gatewayUrl.data) throw new Error('Cannot determine Gateway URL')
+      await grpcClient.publications.pushPublication({
+        documentId: docId,
+        url: gatewayUrl.data,
+      })
+    },
+  })
 }
 
 export function compareBlocksWithMap(
