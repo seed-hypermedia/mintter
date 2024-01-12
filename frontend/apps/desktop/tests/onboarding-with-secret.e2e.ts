@@ -17,8 +17,12 @@ test('Onboarding With recovery phrase', async ({onboardingPage}) => {
     let elNextBtn = await appWindow.locator('#btn-next')
 
     await elOwnWordsTabBtn.click()
-    expect(elOwnWordsInput).toBeVisible()
+    await expect(elOwnWordsInput).toBeVisible()
+    let elCheck3 = await appWindow.locator('#check3')
+    await expect(elNextBtn).toBeDisabled()
     await elOwnWordsInput.fill('foo')
+    await elCheck3.check()
+    await expect(elNextBtn).not.toBeDisabled()
     await elNextBtn.click()
     await expect(await appWindow.locator('#mnemonics-error-box')).toBeVisible()
     await elOwnWordsInput.clear()

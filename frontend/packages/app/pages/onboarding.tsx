@@ -129,6 +129,7 @@ function Mnemonics(props: OnboardingStepProps) {
   const mnemonics = useMnemonics()
   const [check1, setCheck1] = useState(false)
   const [check2, setCheck2] = useState(false)
+  const [check3, setCheck3] = useState(false)
 
   const register = useAccountRegistration({
     onError: () => {
@@ -346,6 +347,22 @@ function Mnemonics(props: OnboardingStepProps) {
                       borderWidth="$0.5"
                     />
                   </XStack>
+                  <XStack gap="$2">
+                    <Checkbox
+                      id="check3"
+                      checked={check3}
+                      onCheckedChange={(v) => setCheck3(!!v)}
+                    >
+                      <Checkbox.Indicator>
+                        <Check />
+                      </Checkbox.Indicator>
+                    </Checkbox>
+                    <SizableText fontWeight="bold" color="$red11">
+                      I understand that after this point I will not be able to
+                      recover my 12-word recovery phrase. Mintter cannot help me
+                      recover them if I lose it.
+                    </SizableText>
+                  </XStack>
                   {error || register.status == 'error' ? (
                     <XStack
                       alignItems="center"
@@ -393,7 +410,13 @@ function Mnemonics(props: OnboardingStepProps) {
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
         {useOwnSeed ? (
-          <NextButton onPress={handleSubmit}>NEXT</NextButton>
+          <NextButton
+            onPress={handleSubmit}
+            disabled={!check3}
+            opacity={check3 ? 1 : 0.1}
+          >
+            NEXT
+          </NextButton>
         ) : (
           <NextButton
             onPress={handleSubmit}
@@ -411,6 +434,7 @@ function Mnemonics(props: OnboardingStepProps) {
 function NewDevice(props: OnboardingStepProps) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [error, setError] = useState('')
+  const [check1, setCheck1] = useState(false)
 
   const register = useAccountRegistration({
     onError: () => {
@@ -481,7 +505,7 @@ function NewDevice(props: OnboardingStepProps) {
               Add your account&apos;s Secret Recovery phrase in the input below
               separated by commas.
             </StepParagraph>
-            <YStack gap="$2">
+            <YStack gap="$4">
               <XStack
                 backgroundColor="$backgroundHover"
                 borderRadius="$5"
@@ -502,6 +526,22 @@ function NewDevice(props: OnboardingStepProps) {
                   borderColor="$backgroundHover"
                   borderWidth="$0.5"
                 />
+              </XStack>
+              <XStack gap="$2">
+                <Checkbox
+                  id="check1"
+                  checked={check1}
+                  onCheckedChange={(v) => setCheck1(!!v)}
+                >
+                  <Checkbox.Indicator>
+                    <Check />
+                  </Checkbox.Indicator>
+                </Checkbox>
+                <SizableText fontWeight="bold" color="$red11">
+                  I understand that after this point I will not be able to
+                  recover my 12-word recovery phrase. Mintter cannot help me
+                  recover them if I lose it.
+                </SizableText>
               </XStack>
               {error || register.status == 'error' ? (
                 <XStack
@@ -525,7 +565,13 @@ function NewDevice(props: OnboardingStepProps) {
       </XStack>
       <XStack alignItems="center" justifyContent="flex-end" gap="$4">
         <PrevButton onPress={() => props.send('PREV')}>PREV</PrevButton>
-        <NextButton onPress={handleSubmit}>NEXT</NextButton>
+        <NextButton
+          onPress={handleSubmit}
+          disabled={!check1}
+          opacity={check1 ? 1 : 0.1}
+        >
+          NEXT
+        </NextButton>
       </XStack>
     </StepWrapper>
   )

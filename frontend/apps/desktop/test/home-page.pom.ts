@@ -20,6 +20,7 @@ export class HomePage {
       .fill(
         'rib canal floor bubble hundred wild bring olive minimum veteran tip snack',
       )
+    await this.appData.appWindow.locator('#check3').check()
     await this.appData.appWindow.locator('#btn-next').click()
 
     await this.appData.appWindow.locator('#alias').fill(this.alias)
