@@ -221,7 +221,7 @@ export const router = t.router({
   }),
 
   getDaemonInfo: t.procedure.query(async () => {
-    const buildInfoUrl = `${process.env.VITE_DESKTOP_HOSTNAME}:${process.env.VITE_VITE_DESKTOP_HTTP_PORT}/debug/buildinfo`
+    const buildInfoUrl = `${process.env.VITE_DESKTOP_HOSTNAME}:${process.env.VITE_DESKTOP_HTTP_PORT}/debug/buildinfo`
     const daemonVersionReq = await fetch(buildInfoUrl)
     const daemonVersion = await daemonVersionReq.text()
     return daemonVersion
