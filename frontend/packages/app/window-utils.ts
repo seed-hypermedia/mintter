@@ -5,4 +5,5 @@ export type WindowUtils = {
   minimize: () => void
   hide: () => void
   isMaximized: boolean | undefined
+  quit: () => void
 }

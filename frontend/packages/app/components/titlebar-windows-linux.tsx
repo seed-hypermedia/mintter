@@ -144,7 +144,7 @@ export function WindowsLinuxWindowControls() {
 
 export function SystemMenu() {
   const createDraft = useOpenDraft('spawn')
-  const {hide, close} = useWindowUtils()
+  const {hide, close, quit} = useWindowUtils()
   const spawn = useNavigate('spawn')
   const push = useNavigate('push')
   const navDispatch = useNavigationDispatch()
@@ -187,7 +187,7 @@ export function SystemMenu() {
           {
             id: 'quit',
             title: 'Quit Mintter',
-            onSelect: () => process.exit(0),
+            onSelect: () => quit(),
             icon: Delete,
           },
         ],

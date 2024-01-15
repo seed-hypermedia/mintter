@@ -104,6 +104,10 @@ ipcMain.on('open-external-link', (_event, linkUrl) => {
   shell.openExternal(linkUrl)
 })
 
+ipcMain.on('quit_app', () => {
+  app.quit()
+})
+
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {

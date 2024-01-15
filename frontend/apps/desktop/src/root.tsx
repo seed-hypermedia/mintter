@@ -129,6 +129,9 @@ function useWindowUtils(ipc: AppIPC): WindowUtils {
       // win.hide()
     },
     isMaximized,
+    quit: () => {
+      ipc.send('quit_app')
+    },
   }
   return windowUtils
 }
