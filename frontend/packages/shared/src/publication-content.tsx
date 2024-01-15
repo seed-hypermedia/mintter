@@ -646,7 +646,7 @@ export function PublicationHeading({
               {...headingTextStyles}
               maxWidth="95%"
             >
-              {children || 'Untitled document'}
+              {children}
             </Text>
           </YStack>
           {right}

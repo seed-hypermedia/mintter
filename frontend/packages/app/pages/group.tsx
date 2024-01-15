@@ -174,7 +174,7 @@ export default function GroupPage() {
           key={`${accessory}`}
           defaultSizes={accessory ? [65, 35] : [100]}
         >
-          <Allotment.Pane minSize={680}>
+          <Allotment.Pane>
             <MainWrapper maxHeight={'100%'}>
               <Container>
                 <YStack group="header">

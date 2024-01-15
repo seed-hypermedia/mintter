@@ -2,7 +2,7 @@
 .editor {
   --text-unit: 18;
   --layout-unit: 24;
-  max-width: calc(80ch + 108px);
+  max-width: calc(90ch + 108px);
   width: 100%;
   margin: 0px auto;
 }

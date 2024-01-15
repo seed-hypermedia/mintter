@@ -299,7 +299,7 @@ export default function PublicationPage() {
             key={`${accessory}`}
             defaultSizes={accessory ? [65, 35] : [100]}
           >
-            <Allotment.Pane minSize={680}>
+            <Allotment.Pane>
               <YStack height="100%">
                 <MainWrapper>
                   <YStack
