@@ -41,7 +41,7 @@ let iconsPath = process.env.CI
 const commonLinuxConfig: MakerDebConfig = {
   options: {
     categories: ['Development', 'Utility'],
-    icon: `${iconsPath}.png`,
+    icon: `${iconsPath}`,
     maintainer: 'Mintter Inc.',
     description: 'Mintter: a hyper.media protocol client',
     productName: 'Mintter',

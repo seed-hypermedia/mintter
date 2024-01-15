@@ -12,6 +12,7 @@ import {
 import {createIPCHandler} from 'electron-trpc/main'
 import {writeFile} from 'fs-extra'
 import {decompressFromEncodedURIComponent} from 'lz-string'
+import path from 'path'
 import z from 'zod'
 import {commentsApi} from './app-comments'
 import {diagnosisApi} from './app-diagnosis'
@@ -159,6 +160,9 @@ export const router = t.router({
         webPreferences: {
           offscreen: true,
         },
+        icon: process.env.CI
+          ? path.resolve(__dirname, '../assets/icons-nightly/icon.png')
+          : path.resolve(__dirname, '../assets/icons/icon.png'),
       })
       await webView.webContents.loadURL(webUrl)
       const htmlValue = await webView.webContents.executeJavaScript(
