@@ -227,13 +227,17 @@ NESTED BLOCKS
   outline-width: 0;
 }
 
+.blockContent {
+  margin-top: 4px;
+}
+
 /* CODE BLOCK */
 .blockContent[data-content-type='codeBlock'] {
   background-color: var(--color4);
   border-radius: 6px;
   padding: 10px 16px;
-  margin-left: -16px;
-  margin-right: -16px;
+  /* margin-left: -16px;
+  margin-right: -16px; */
   position: 'relative';
   white-space: pre-wrap;
 }
