@@ -1,10 +1,8 @@
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
-import {Account, Document, Publication, unpackDocId} from '@mintter/shared'
+import {Account, Document, Publication} from '@mintter/shared'
 import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
-import {MessageSquare} from '@tamagui/lucide-icons'
-import {useAllPublicationComments} from '../models/comments'
 import {NavRoute, PublicationVariant} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
@@ -44,9 +42,6 @@ export function PublicationListItem({
   const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const route = useNavRoute()
-  const unpackedId = unpackDocId(docId!)
-
-  const comments = useAllPublicationComments(unpackedId?.eid)
 
   if (!docId) throw new Error('PublicationListItem requires id')
 
@@ -106,14 +101,6 @@ export function PublicationListItem({
               {pathName}
             </ButtonText>
           )}
-          {comments.data?.length ? (
-            <XStack ai="center" gap="$1.5" padding="$1">
-              <MessageSquare size={12} color="$color9" />
-              <ButtonText fontFamily="$body" size="$1" color="$color9">
-                {comments.data?.length}
-              </ButtonText>
-            </XStack>
-          ) : null}
           <XStack>
             {editors && editors.length
               ? editors.map((editor, idx) => {
