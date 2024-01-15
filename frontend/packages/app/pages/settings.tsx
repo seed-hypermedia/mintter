@@ -37,11 +37,11 @@ import {
 } from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ReactNode, useMemo, useState} from 'react'
+import {ReactNode, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
-import {DialogTitle, useAppDialog} from '../components/dialog'
+import {DialogTitle} from '../components/dialog'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {TableList} from '../components/table-list'
 import appError from '../errors'
@@ -517,13 +517,43 @@ const EXPERIMENTS: ExperimentType[] = [
 
 function GatewaySettings({}: {}) {
   const gatewayUrl = useGatewayUrl()
-  const setGateway = useAppDialog(SetGatewayDialog)
+
+  const setGatewayUrl = useSetGatewayUrl()
+  const [gwUrl, setGWUrl] = useState('')
+
+  console.log(`== ~ GatewaySettings ~ gwUrl:`, {
+    gatewayUrl: gatewayUrl.data,
+    gwUrl,
+  })
+
+  useEffect(() => {
+    if (gatewayUrl.data) {
+      setGWUrl(gatewayUrl.data)
+    }
+  }, [gatewayUrl.data])
+
   return (
     <YStack gap="$3">
       <Heading>Gateway Settings</Heading>
-      {setGateway.content}
       <YStack space marginVertical="$4" alignSelf="stretch">
-        {gatewayUrl.data ? (
+        <YStack
+          backgroundColor={'$color1'}
+          borderWidth={1}
+          borderColor="$borderColor"
+          borderRadius="$3"
+          padding="$4"
+          gap="$3"
+        >
+          <SizableText fontWeight="bold">URL</SizableText>
+          <XStack gap="$3">
+            <Input size="$3" flex={1} value={gwUrl} onChangeText={setGWUrl} />
+            <Button size="$3" onPress={() => setGatewayUrl.mutate(gwUrl)}>
+              Save
+            </Button>
+          </XStack>
+        </YStack>
+
+        {/* {gatewayUrl.data ? (
           <>
             <SizableText>
               Current Gateway:{' '}
@@ -537,7 +567,7 @@ function GatewaySettings({}: {}) {
               Change Gateway URL
             </Button>
           </>
-        ) : null}
+        ) : null} */}
         <PushOnPublishSetting />
         <PushOnCopySetting />
       </YStack>
