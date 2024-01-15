@@ -1,8 +1,10 @@
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
-import {Account, Document, Publication, shortenPath} from '@mintter/shared'
+import {Account, Document, Publication, unpackDocId} from '@mintter/shared'
 import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
+import {MessageSquare} from '@tamagui/lucide-icons'
+import {useAllPublicationComments} from '../models/comments'
 import {NavRoute, PublicationVariant} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'
@@ -11,7 +13,7 @@ import {MenuItemType} from './options-dropdown'
 
 export function getDocumentTitle(document?: Document) {
   let res = document?.title || 'Untitled Document'
-  return shortenPath(res)
+  return res
 }
 
 export function PublicationListItem({
@@ -42,6 +44,9 @@ export function PublicationListItem({
   const title = getDocumentTitle(publication.document)
   const docId = publication.document?.id
   const route = useNavRoute()
+  const unpackedId = unpackDocId(docId!)
+
+  const comments = useAllPublicationComments(unpackedId?.eid)
 
   if (!docId) throw new Error('PublicationListItem requires id')
 
@@ -55,7 +60,7 @@ export function PublicationListItem({
       title={title}
       onPointerEnter={onPointerEnter}
       accessory={
-        <XStack gap="$3">
+        <XStack gap="$3" ai="center" flex={0}>
           {hasDraft && (
             <Button
               theme="yellow"
@@ -78,6 +83,10 @@ export function PublicationListItem({
           )}
           {pathName && (
             <ButtonText
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+              overflow="hidden"
+              flex={1}
               size="$2"
               color="$color9"
               onPress={(e) => {
@@ -94,9 +103,17 @@ export function PublicationListItem({
                   : undefined
               }
             >
-              {shortenPath(pathName)}
+              {pathName}
             </ButtonText>
           )}
+          {comments.data?.length ? (
+            <XStack ai="center" gap="$1.5" padding="$1">
+              <MessageSquare size={12} color="$color9" />
+              <ButtonText fontFamily="$body" size="$1" color="$color9">
+                {comments.data?.length}
+              </ButtonText>
+            </XStack>
+          ) : null}
           <XStack>
             {editors && editors.length
               ? editors.map((editor, idx) => {

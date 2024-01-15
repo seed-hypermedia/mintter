@@ -35,6 +35,7 @@ export function ListItem({
       group="item"
       maxWidth={900}
       f={1}
+      width="100%"
     >
       <ButtonText
         onPress={(e) => {
@@ -42,7 +43,7 @@ export function ListItem({
           onPress?.(e)
         }}
         fontWeight="700"
-        flex={1}
+        flex={2}
         textAlign="left"
       >
         {title}
