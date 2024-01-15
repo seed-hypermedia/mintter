@@ -4,7 +4,7 @@ import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
 import {trpc} from '@mintter/desktop/src/trpc'
-import {LightningWallet, Profile, VERSION, useHover} from '@mintter/shared'
+import {LightningWallet, Profile, VERSION} from '@mintter/shared'
 import {
   ArrowDownRight,
   Button,
@@ -17,16 +17,19 @@ import {
   ExternalLink,
   H3,
   Heading,
+  InfoListHeader,
+  InfoListItem,
   Input,
   Label,
   Pencil,
-  RadioOptionSection,
+  RadioGroup,
   ScrollView,
   Select,
   Separator,
   Share,
   SizableText,
   Spinner,
+  TableList,
   Tabs,
   TabsContentProps,
   Tooltip,
@@ -37,13 +40,11 @@ import {
 } from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ReactNode, useEffect, useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useGRPCClient, useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
-import {DialogTitle} from '../components/dialog'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
-import {TableList} from '../components/table-list'
 import appError from '../errors'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
 import {
@@ -56,7 +57,6 @@ import {
 } from '../models/gateway-settings'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
-import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 
 export default function Settings() {
@@ -349,83 +349,6 @@ function DevicesInfo({}: {}) {
   )
 }
 
-function InfoListHeader({title, right}: {title: string; right?: ReactNode}) {
-  return (
-    <TableList.Header>
-      <SizableText fontWeight="700">{title}</SizableText>
-      <XStack flex={1} alignItems="center" justifyContent="flex-end">
-        {right}
-      </XStack>
-    </TableList.Header>
-  )
-}
-
-function InfoListItem({
-  label,
-  value,
-  copyable,
-  openable,
-}: {
-  label: string
-  value?: string | string[]
-  copyable?: boolean
-  openable?: boolean
-}) {
-  const openUrl = useOpenUrl()
-  const values = Array.isArray(value) ? value : [value]
-  const {hover, ...hoverProps} = useHover()
-  return (
-    <TableList.Item {...hoverProps}>
-      <SizableText size="$1" flex={0} minWidth={140} width={140}>
-        {label}:
-      </SizableText>
-      <YStack flex={1}>
-        {values.map((value, index) => (
-          <SizableText
-            flex={1}
-            key={index}
-            fontFamily="$mono"
-            size="$1"
-            width="100%"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            userSelect="text"
-          >
-            {value}
-          </SizableText>
-        ))}
-      </YStack>
-      {!!value && copyable ? (
-        <Tooltip content={`Copy ${label}`}>
-          <Button
-            opacity={hover ? 1 : 0}
-            size="$2"
-            marginLeft="$2"
-            icon={Copy}
-            onPress={() => {
-              copyTextToClipboard(value)
-              toast.success(`${label} copied!`)
-            }}
-          />
-        </Tooltip>
-      ) : null}
-      {!!value && openable ? (
-        <Tooltip content={`Open ${label}`}>
-          <Button
-            opacity={hover ? 1 : 0}
-            size="$2"
-            marginLeft="$2"
-            icon={ExternalLink}
-            onPress={() => {
-              openUrl(`file://${value}`)
-            }}
-          />
-        </Tooltip>
-      ) : null}
-    </TableList.Item>
-  )
-}
-
 export function ExperimentSection({
   experiment,
   onValue,
@@ -535,123 +458,112 @@ function GatewaySettings({}: {}) {
   return (
     <YStack gap="$3">
       <Heading>Gateway Settings</Heading>
-      <YStack space marginVertical="$4" alignSelf="stretch">
-        <YStack
-          backgroundColor={'$color1'}
-          borderWidth={1}
-          borderColor="$borderColor"
-          borderRadius="$3"
-          padding="$4"
-          gap="$3"
-        >
-          <SizableText fontWeight="bold">URL</SizableText>
-          <XStack gap="$3">
-            <Input size="$3" flex={1} value={gwUrl} onChangeText={setGWUrl} />
-            <Button size="$3" onPress={() => setGatewayUrl.mutate(gwUrl)}>
-              Save
-            </Button>
-          </XStack>
-        </YStack>
-
-        {/* {gatewayUrl.data ? (
-          <>
-            <SizableText>
-              Current Gateway:{' '}
-              <SizableText fontWeight="bold">{gatewayUrl.data}</SizableText>
-            </SizableText>
-            <Button
-              onPress={() => {
-                setGateway.open(gatewayUrl.data)
-              }}
-            >
-              Change Gateway URL
-            </Button>
-          </>
-        ) : null} */}
-        <PushOnPublishSetting />
-        <PushOnCopySetting />
-      </YStack>
+      {gatewayUrl.data ? (
+        <TableList>
+          <InfoListHeader title="URL" />
+          <TableList.Item>
+            <XStack gap="$3" width="100%">
+              <Input size="$3" flex={1} value={gwUrl} onChangeText={setGWUrl} />
+              <Button
+                size="$3"
+                onPress={() => {
+                  setGatewayUrl.mutate(gwUrl)
+                  toast.success('Public Gateway URL changed!')
+                }}
+              >
+                Save
+              </Button>
+            </XStack>
+          </TableList.Item>
+        </TableList>
+      ) : null}
+      <PushOnPublishSetting />
+      <PushOnCopySetting />
     </YStack>
   )
 }
 
 function PushOnCopySetting({}: {}) {
   const pushOnCopy = usePushOnCopy()
+  const id = React.useId()
   const setPushOnCopy = useSetPushOnCopy()
   if (!pushOnCopy.data) return null
   return (
-    <RadioOptionSection
-      title="Push on Copy"
-      onValue={(value) => {
-        setPushOnCopy.mutate(value)
-      }}
-      value={pushOnCopy.data}
-      options={
-        [
-          {value: 'always', label: 'Always'},
-          {value: 'never', label: 'Never'},
-          {value: 'ask', label: 'Ask'},
-        ] as const
-      }
-    />
+    <TableList>
+      <InfoListHeader title="Push on Copy" />
+      <TableList.Item>
+        <RadioGroup
+          value={pushOnCopy.data}
+          onValueChange={(value) => {
+            setPushOnCopy.mutate(value)
+            toast.success('Push on copy changed!')
+          }}
+        >
+          {[
+            {value: 'always', label: 'Always'},
+            {value: 'never', label: 'Never'},
+            {value: 'ask', label: 'Ask'},
+          ].map((option) => {
+            return (
+              <XStack key={option.value} gap="$3" ai="center">
+                <RadioGroup.Item
+                  size="$2"
+                  value={option.value}
+                  id={`${id}-${option.value}`}
+                >
+                  <RadioGroup.Indicator />
+                </RadioGroup.Item>
+                <Label size="$2" htmlFor={`${id}-${option.value}`}>
+                  {option.label}
+                </Label>
+              </XStack>
+            )
+          })}
+        </RadioGroup>
+      </TableList.Item>
+    </TableList>
   )
 }
 
 function PushOnPublishSetting({}: {}) {
-  const pushOnCopy = usePushOnPublish()
-  const setPushOnCopy = useSetPushOnPublish()
-  if (!pushOnCopy.data) return null
+  const pushOnPublish = usePushOnPublish()
+  const id = React.useId()
+  const setPushOnPublish = useSetPushOnPublish()
+  if (!pushOnPublish.data) return null
   return (
-    <RadioOptionSection
-      title="Push on Publish"
-      onValue={(value) => {
-        setPushOnCopy.mutate(value)
-      }}
-      value={pushOnCopy.data}
-      options={
-        [
-          {value: 'always', label: 'Always'},
-          {value: 'never', label: 'Never'},
-          {value: 'ask', label: 'Ask'},
-        ] as const
-      }
-    />
-  )
-}
-
-function SetGatewayDialog({
-  input,
-  onClose,
-}: {
-  input: string
-  onClose: () => void
-}) {
-  const [gwUrl, setGWUrl] = useState(input)
-  const setGatewayUrl = useSetGatewayUrl()
-  return (
-    <>
-      <DialogTitle>Hypermedia Gateway URL</DialogTitle>
-      <YStack>
-        <Label htmlFor="gwUrl">Base URL</Label>
-        <Input
-          value={gwUrl}
-          id="gwUrl"
-          onChangeText={setGWUrl}
-          placeholder="https://hyper.media"
-        />
-      </YStack>
-      <XStack>
-        <Button
-          onPress={() => {
-            setGatewayUrl.mutate(gwUrl)
-            onClose()
+    <TableList>
+      <InfoListHeader title="Push on Publish" />
+      <TableList.Item>
+        <RadioGroup
+          value={pushOnPublish.data}
+          onValueChange={(value) => {
+            setPushOnPublish.mutate(value)
+            toast.success('Push on publish changed!')
           }}
         >
-          Save
-        </Button>
-        <Button onPress={onClose}>Cancel</Button>
-      </XStack>
-    </>
+          {[
+            {value: 'always', label: 'Always'},
+            {value: 'never', label: 'Never'},
+            {value: 'ask', label: 'Ask'},
+          ].map((option) => {
+            return (
+              <XStack key={option.value} gap="$3" ai="center">
+                <RadioGroup.Item
+                  size="$2"
+                  value={option.value}
+                  id={`${id}-${option.value}`}
+                >
+                  <RadioGroup.Indicator />
+                </RadioGroup.Item>
+                <Label size="$2" htmlFor={`${id}-${option.value}`}>
+                  {option.label}
+                </Label>
+              </XStack>
+            )
+          })}
+        </RadioGroup>
+      </TableList.Item>
+    </TableList>
   )
 }
 
@@ -703,14 +615,14 @@ function DeviceItem({id}: {id: string}) {
         }
       />
 
-      <InfoListItem label="Peer ID" value={id} copyable />
+      <InfoListItem label="Peer ID" value={id} onCopy={() => {}} />
 
       <Separator />
 
       <InfoListItem
         label="Device Address"
         value={data?.addrs.sort().join(', ')}
-        copyable
+        onCopy={() => {}}
       />
     </TableList>
   )
