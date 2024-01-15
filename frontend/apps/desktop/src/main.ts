@@ -74,6 +74,12 @@ if (IS_PROD_DESKTOP) {
 
 app.on('did-become-active', () => {
   log.debug('[MAIN]: Mintter active')
+  if (BrowserWindow.getAllWindows().length === 0) {
+    log.debug('[MAIN]: will open the home window')
+    trpc.createAppWindow({
+      routes: [{key: 'documents'}],
+    })
+  }
 })
 app.on('did-resign-active', () => {
   log.debug('[MAIN]: Mintter no longer active')

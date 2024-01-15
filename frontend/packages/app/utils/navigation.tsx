@@ -56,6 +56,7 @@ export type PublicationRoute = {
     | PublicationCitationsAccessory
     | PublicationCommentsAccessory
   showFirstPublicationMessage?: boolean
+  immediatelyPromptPush?: boolean
 }
 export type DraftRoute = {
   key: 'draft'

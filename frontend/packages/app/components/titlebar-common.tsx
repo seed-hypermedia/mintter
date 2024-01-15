@@ -52,6 +52,7 @@ import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
 import {GroupVariant} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {CloneGroupDialog} from './clone-group'
+import {useCopyGatewayReference} from './copy-gateway-reference'
 import {useAppDialog} from './dialog'
 import {useEditGroupInfoDialog} from './edit-group-info'
 import {CreateGroupButton} from './new-group'
@@ -66,25 +67,22 @@ export function DocOptionsButton() {
     throw new Error(
       'DocOptionsButton can only be rendered on publication route',
     )
-  const gwUrl = useGatewayUrl()
   const gwHost = useGatewayHost()
   const pin = usePinDocument(route)
   const push = usePushPublication()
+  const [copyContent, onCopy, host] = useCopyGatewayReference()
   const menuItems: MenuItemType[] = [
     {
       key: 'link',
-      label: 'Copy Public Document URL',
+      label: `Copy ${host} URL`,
       icon: Link,
       onPress: () => {
         const id = unpackHmId(route.documentId)
-        if (!id) return
-        copyTextToClipboard(
-          createPublicWebHmUrl('d', id.eid, {
-            version: route.versionId,
-            hostname: gwUrl.data,
-          }),
-        )
-        toast.success('Copied Public Document URL')
+        if (!id) {
+          toast.error('Failed to identify document URL')
+          return
+        }
+        onCopy(id)
       },
     },
     {
@@ -118,6 +116,7 @@ export function DocOptionsButton() {
 
   return (
     <>
+      {copyContent}
       <OptionsDropdown menuItems={menuItems} />
     </>
   )
@@ -243,9 +242,12 @@ export function GroupOptionsButton() {
   )
 }
 
-export function useFullReferenceUrl(
-  route: NavRoute,
-): {label: string; url: string} | null {
+export function useFullReferenceUrl(route: NavRoute): {
+  label: string
+  url: string
+  onCopy: (blockId?: string | undefined) => void
+  content: ReactNode
+} | null {
   const pubRoute = route.key === 'publication' ? route : null
   const groupRoute = route.key === 'group' ? route : null
   const pub = usePublicationVariant({
@@ -263,7 +265,8 @@ export function useFullReferenceUrl(
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(variantGroupId)
   const gwUrl = useGatewayUrl()
-
+  const [copyDialogContent, onCopyPublicDoc, gatewayHost] =
+    useCopyGatewayReference()
   // let redirectedContext: undefined | PublicationRouteContext = undefined
 
   // const navigateReplace = useNavigate('replace')
@@ -272,16 +275,31 @@ export function useFullReferenceUrl(
     const groupExactVersion = groupRoute?.version || group?.data?.version
     const baseUrl = group.data?.siteInfo?.baseUrl
     if (baseUrl) {
+      const url = groupExactVersion
+        ? `${baseUrl}/?v=${groupExactVersion}`
+        : baseUrl
       return {
         label: 'Site',
-        url: groupExactVersion ? `${baseUrl}/?v=${groupExactVersion}` : baseUrl,
+        url,
+        content: null,
+        onCopy: () => {
+          copyUrlToClipboardWithFeedback(url, 'Site')
+        },
       }
     }
-    return getReferenceUrlOfRoute(
+    const ref = getReferenceUrlOfRoute(
       route,
       gwUrl.data,
       groupExactVersion || group.data?.version,
     )
+    if (!ref) return null
+    return {
+      ...ref,
+      content: null,
+      onCopy: () => {
+        copyUrlToClipboardWithFeedback(ref.url, ref.label)
+      },
+    }
   }
 
   if (pubRoute) {
@@ -307,6 +325,13 @@ export function useFullReferenceUrl(
         return {
           url: sitePrettyUrl,
           label: 'Site Document',
+          content: null,
+          onCopy: (blockId?: string | undefined) => {
+            copyUrlToClipboardWithFeedback(
+              blockId ? `${sitePrettyUrl}#${blockId}` : sitePrettyUrl,
+              'Site Document',
+            )
+          },
         }
       }
       if (hostname && entityTimeline.data && entityVersion) {
@@ -354,11 +379,27 @@ export function useFullReferenceUrl(
         hostname,
       }),
       label: hostname ? 'Site Version' : 'Doc Version',
+      content: copyDialogContent,
+      onCopy: (blockId: string | undefined) => {
+        onCopyPublicDoc({
+          ...docId,
+          hostname: hostname || null,
+          version: pub.data?.publication?.version || null,
+          blockRef: blockId || null,
+        })
+      },
     }
   }
 
   const reference = getReferenceUrlOfRoute(route, gwUrl.data)
-  return reference
+  if (!reference) return null
+  return {
+    ...reference,
+    content: null,
+    onCopy: () => {
+      copyUrlToClipboardWithFeedback(reference.url, reference.label)
+    },
+  }
 }
 
 function getReferenceUrlOfRoute(
@@ -412,34 +453,39 @@ export function CopyReferenceButton() {
   const {externalOpen} = useAppContext()
   if (!reference) return null
   return (
-    <Tooltip
-      content={
-        shouldOpen ? `Open ${reference.label}` : `Copy ${reference.label} Link`
-      }
-    >
-      <Button
-        onHoverOut={() => {
-          setShouldOpen(false)
-        }}
-        aria-label={`${shouldOpen ? 'Open' : 'Copy'} ${reference.label} Link`}
-        chromeless
-        size="$2"
-        icon={shouldOpen ? ExternalLink : Link}
-        onPress={() => {
-          if (shouldOpen) {
+    <>
+      <Tooltip
+        content={
+          shouldOpen
+            ? `Open ${reference.label}`
+            : `Copy ${reference.label} Link`
+        }
+      >
+        <Button
+          onHoverOut={() => {
             setShouldOpen(false)
-            externalOpen(reference.url)
-          } else {
-            setShouldOpen(true)
-            // in theory we should save this timeout in a ref and deal with it upon unmount. in practice it doesn't matter
-            setTimeout(() => {
+          }}
+          aria-label={`${shouldOpen ? 'Open' : 'Copy'} ${reference.label} Link`}
+          chromeless
+          size="$2"
+          icon={shouldOpen ? ExternalLink : Link}
+          onPress={() => {
+            if (shouldOpen) {
               setShouldOpen(false)
-            }, 5000)
-            copyUrlToClipboardWithFeedback(reference.url, reference.label)
-          }
-        }}
-      ></Button>
-    </Tooltip>
+              externalOpen(reference.url)
+            } else {
+              setShouldOpen(true)
+              // in theory we should save this timeout in a ref and deal with it upon unmount. in practice it doesn't matter
+              setTimeout(() => {
+                setShouldOpen(false)
+              }, 5000)
+              reference.onCopy()
+            }
+          }}
+        ></Button>
+      </Tooltip>
+      {reference.content}
+    </>
   )
 }
 

@@ -64,15 +64,14 @@ export const getDocStaticProps: GetStaticProps<EveryPageProps> = async (
   const versionId = (context.params?.versionId as string) || ''
   const {helpers} = await getSiteServerHelpers()
   const docId = createHmId('d', docEid)
-  await impatiently(
-    helpers.publication.get.prefetch({
-      documentId: docId,
-      versionId: versionId || '',
-    }),
-  )
-  const revalidationTimeSeconds = versionId
+  const loadedDoc = await helpers.publication.get.fetch({
+    documentId: docId,
+    versionId: versionId || '',
+  })
+  const versionRevalidationTime = loadedDoc
     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change
-    : 20 // 20 seconds if no version, doc may have been updated
+    : 10 // 10 seconds because maybe the doc will load next time
+  const revalidationTimeSeconds = versionId ? versionRevalidationTime : 20 // 20 seconds if no version, doc may have been updated
   return {
     props: await getPageProps(helpers, context, {}),
     revalidate: revalidationTimeSeconds,

@@ -66,6 +66,7 @@ const publicationRouter = router({
         .getPublication({
           documentId: input.documentId,
           version: input.versionId || '',
+          localOnly: true, // avoid DHT fetching
         })
         .catch((e) => undefined)
       if (!resolvedPub) {

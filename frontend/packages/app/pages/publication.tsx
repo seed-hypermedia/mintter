@@ -47,6 +47,7 @@ import {
 } from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {EntityCommentsAccessory} from '../components/comments'
+import {PushToGatewayDialog} from '../components/copy-gateway-reference'
 import {useAppDialog} from '../components/dialog'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
@@ -55,11 +56,11 @@ import {
   CopyReferenceButton,
   useFullReferenceUrl,
 } from '../components/titlebar-common'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useAllPublicationComments, useCreateComment} from '../models/comments'
 import {useExperiments} from '../models/experiments'
+import {useGatewayHost} from '../models/gateway-settings'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
 import {useOpenUrl} from '../open-url'
@@ -75,35 +76,37 @@ export function AppPublicationContentProvider({
   const reference = useFullReferenceUrl(route)
   const experiments = useExperiments()
   return (
-    <PublicationContentProvider
-      showDevMenu={experiments.data?.pubContentDevMenu}
-      layoutUnit={contentLayoutUnit}
-      textUnit={contentTextUnit}
-      debug={false}
-      entityComponents={{
-        AccountCard: EmbedAccount,
-        GroupCard: EmbedGroup,
-        PublicationCard: EmbedPublicationCard,
-        PublicationContent: EmbedPublicationContent,
-        CommentCard: EmbedComment,
-      }}
-      onLinkClick={(href, e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        openUrl(href)
-      }}
-      onCopyBlock={(blockId: string) => {
-        if (blockId && reference?.url) {
-          const url = `${reference.url}#${blockId}`
-          copyUrlToClipboardWithFeedback(url, reference?.label)
-        }
-      }}
-      ipfsBlobPrefix={`${API_FILE_URL}/`}
-      saveCidAsFile={saveCidAsFile}
-      {...overrides}
-    >
-      {children}
-    </PublicationContentProvider>
+    <>
+      <PublicationContentProvider
+        showDevMenu={experiments.data?.pubContentDevMenu}
+        layoutUnit={contentLayoutUnit}
+        textUnit={contentTextUnit}
+        debug={false}
+        entityComponents={{
+          AccountCard: EmbedAccount,
+          GroupCard: EmbedGroup,
+          PublicationCard: EmbedPublicationCard,
+          PublicationContent: EmbedPublicationContent,
+          CommentCard: EmbedComment,
+        }}
+        onLinkClick={(href, e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          openUrl(href)
+        }}
+        onCopyBlock={(blockId: string) => {
+          if (blockId && reference) {
+            reference.onCopy(blockId)
+          }
+        }}
+        ipfsBlobPrefix={`${API_FILE_URL}/`}
+        saveCidAsFile={saveCidAsFile}
+        {...overrides}
+      >
+        {children}
+      </PublicationContentProvider>
+      {reference?.content}
+    </>
   )
 }
 
@@ -260,6 +263,22 @@ export default function PublicationPage() {
   const id = unpackDocId(docId)
   const experiments = useExperiments()
   const createComment = useCreateComment()
+  const pushToGatewayDialog = useAppDialog(PushToGatewayDialog, {
+    onClose: () => {
+      if (route.immediatelyPromptPush) {
+        replace({...route, immediatelyPromptPush: false})
+      }
+    },
+  })
+  const gwHost = useGatewayHost()
+  useEffect(() => {
+    if (id && route.immediatelyPromptPush)
+      pushToGatewayDialog.open({
+        context: 'publish',
+        host: gwHost,
+        ...id,
+      })
+  }, [docId, gwHost, route.immediatelyPromptPush])
 
   if (publication.data) {
     return (
@@ -268,6 +287,7 @@ export default function PublicationPage() {
         onReset={() => publication.refetch()}
       >
         {firstPubDialog.content}
+        {pushToGatewayDialog.content}
         <CitationsProvider
           documentId={docId}
           onCitationsOpen={(citations: Array<MttLink>) => {
@@ -302,17 +322,16 @@ export default function PublicationPage() {
                               replace({...route, accessory: {key: 'comments'}})
                               const version =
                                 publication.data?.publication?.version
-                              const doc = unpackHmId(docId)
-                              if (!doc) throw new Error('invalid doc id')
+                              if (!id) throw new Error('invalid doc id')
                               if (!version)
                                 throw new Error(
                                   'no publication version for commenting',
                                 )
                               createComment(
-                                doc.eid,
+                                id.eid,
                                 version,
                                 undefined,
-                                createHmId('d', doc.eid, {
+                                createHmId('d', id.eid, {
                                   version,
                                   blockRef: blockId,
                                 }),

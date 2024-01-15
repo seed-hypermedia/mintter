@@ -198,6 +198,10 @@ function MainApp({
           utils.comments.getCommentDrafts.invalidate()
         } else if (value[0] === 'trpc.gatewaySettings.getGatewayUrl') {
           utils.gatewaySettings.getGatewayUrl.invalidate()
+        } else if (value[0] === 'trpc.gatewaySettings.getPushOnCopy') {
+          utils.gatewaySettings.getPushOnCopy.invalidate()
+        } else if (value[0] === 'trpc.gatewaySettings.getPushOnPublish') {
+          utils.gatewaySettings.getPushOnPublish.invalidate()
         } else if (queryClient.client) {
           queryClient.client.invalidateQueries(value)
         }

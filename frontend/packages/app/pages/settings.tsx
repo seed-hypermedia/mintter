@@ -20,6 +20,7 @@ import {
   Input,
   Label,
   Pencil,
+  RadioOptionSection,
   ScrollView,
   Select,
   Separator,
@@ -45,7 +46,14 @@ import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import {TableList} from '../components/table-list'
 import appError from '../errors'
 import {useExperiments, useWriteExperiments} from '../models/experiments'
-import {useGatewayUrl, useSetGatewayUrl} from '../models/gateway-settings'
+import {
+  useGatewayUrl,
+  usePushOnCopy,
+  usePushOnPublish,
+  useSetGatewayUrl,
+  useSetPushOnCopy,
+  useSetPushOnPublish,
+} from '../models/gateway-settings'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
 import {useOpenUrl} from '../open-url'
@@ -530,8 +538,54 @@ function GatewaySettings({}: {}) {
             </Button>
           </>
         ) : null}
+        <PushOnPublishSetting />
+        <PushOnCopySetting />
       </YStack>
     </YStack>
+  )
+}
+
+function PushOnCopySetting({}: {}) {
+  const pushOnCopy = usePushOnCopy()
+  const setPushOnCopy = useSetPushOnCopy()
+  if (!pushOnCopy.data) return null
+  return (
+    <RadioOptionSection
+      title="Push on Copy"
+      onValue={(value) => {
+        setPushOnCopy.mutate(value)
+      }}
+      value={pushOnCopy.data}
+      options={
+        [
+          {value: 'always', label: 'Always'},
+          {value: 'never', label: 'Never'},
+          {value: 'ask', label: 'Ask'},
+        ] as const
+      }
+    />
+  )
+}
+
+function PushOnPublishSetting({}: {}) {
+  const pushOnCopy = usePushOnPublish()
+  const setPushOnCopy = useSetPushOnPublish()
+  if (!pushOnCopy.data) return null
+  return (
+    <RadioOptionSection
+      title="Push on Publish"
+      onValue={(value) => {
+        setPushOnCopy.mutate(value)
+      }}
+      value={pushOnCopy.data}
+      options={
+        [
+          {value: 'always', label: 'Always'},
+          {value: 'never', label: 'Never'},
+          {value: 'ask', label: 'Ask'},
+        ] as const
+      }
+    />
   )
 }
 

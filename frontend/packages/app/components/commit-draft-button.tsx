@@ -19,8 +19,13 @@ import {Check, ChevronDown, Upload} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect} from 'react'
 import {useGRPCClient} from '../app-context'
 import {useMyAccount} from '../models/accounts'
-import {useDraftTitle, usePublishDraft} from '../models/documents'
+import {
+  useDraftTitle,
+  usePublishDraft,
+  usePushPublication,
+} from '../models/documents'
 import {DraftStatusContext} from '../models/draft-machine'
+import {useGatewayHost, usePushOnPublish} from '../models/gateway-settings'
 import {
   useAccountGroups,
   useDocumentGroups,
@@ -69,9 +74,12 @@ export default function CommitDraftButton() {
   const hasUpdateError = DraftStatusContext.useSelector((s) =>
     s.matches('error'),
   )
+  const pushOnPublish = usePushOnPublish()
+  const push = usePushPublication()
+  const gwHost = useGatewayHost()
   const publish = usePublishDraft({
     onSuccess: ({pub: publishedDoc, groupVariant}) => {
-      if (!publishedDoc || !draftId) return
+      if (!publishedDoc || !draftId || !myAuthorVariant) return
       if (
         route.contextRoute?.key === 'group' &&
         groupVariant?.key === 'group' &&
@@ -84,10 +92,24 @@ export default function CommitDraftButton() {
           documentId: draftId,
           versionId: undefined, // hopefully this new version will match the latest version in the pubContext!
           variant: groupVariant || myAuthorVariant,
+          immediatelyPromptPush:
+            pushOnPublish.data !== 'always' && pushOnPublish.data !== 'never',
           // showFirstPublicationMessage: isFirstPublish, // disabled until gateway publish works again for fresh installations
         })
       }
-      toast.success('Document Committed.')
+      if (pushOnPublish.data === 'always') {
+        toast.promise(push.mutateAsync(draftId), {
+          loading: `Document published. Pushing to ${gwHost}...`,
+          success: `Document published to ${gwHost}`,
+          error: (err) =>
+            `Document published. Failed to push to ${gwHost}: ${err.message}`,
+        })
+      } else if (pushOnPublish.data === 'never') {
+        toast.success('Document Committed.')
+      } else {
+        // ask
+        toast.success('Document Committed...')
+      }
     },
     onError: (e: any) => {
       toast.error('Failed to publish: ' + e.message)
