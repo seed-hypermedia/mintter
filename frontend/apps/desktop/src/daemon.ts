@@ -86,13 +86,17 @@ export function startMainDaemon() {
 
   daemonProcess.stdout.on('data', (data) => {
     const multilineString = data.toString()
-    multilineString.split('\n').forEach((msg) => msg && logger.info(msg))
+    multilineString
+      .split('\n')
+      .forEach((msg: string) => msg && logger.info(msg))
   })
   let lastStderr = ''
   daemonProcess.stderr.on('data', (data) => {
     const multilineString = data.toString()
     lastStderr = multilineString
-    multilineString.split('\n').forEach((msg) => msg && logger.warn(msg))
+    multilineString
+      .split('\n')
+      .forEach((msg: string) => msg && logger.warn(msg))
     if (
       multilineString.match('INFO') &&
       multilineString.match('DaemonStarted')
@@ -106,7 +110,8 @@ export function startMainDaemon() {
   daemonProcess.stderr.on('error', (err) => {
     logger.error('output (stderr) error:', err)
   })
-  daemonProcess.stdout.on('close', (code, signal) => {
+  // TODO: review types
+  daemonProcess.stdout.on('close', (code: string, signal: string) => {
     if (!expectingDaemonClose)
       logger.error('unexpected stdout close', code, signal)
   })

@@ -8,7 +8,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     // @ts-ignore
     // console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
-  } catch (e) {
+  } catch (e: any) {
     let error = e
     if (e.message.match('stream.getReader is not a function')) {
       error = new Error('RPC broken, try running yarn and ./dev gen')

@@ -1,5 +1,5 @@
-import { trpc } from '@mintter/desktop/src/trpc'
-import { useQueryInvalidator } from '../app-context'
+import {trpc} from '@mintter/desktop/src/trpc'
+import {useQueryInvalidator} from '../app-context'
 
 export function useGatewayUrl() {
   const gatewayUrl = trpc.gatewaySettings.getGatewayUrl.useQuery()

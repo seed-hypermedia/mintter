@@ -308,15 +308,14 @@ export const draftMachine = createMachine(
         window.location.reload()
       },
       updateContextAfterSave: assign(({context, event}) => {
-        if (event.output && typeof event.output != 'string') {
+        //TODO: check types
+        let output = (event as any).output
+        if (output && typeof output != 'string') {
           return {
-            blocksMap: createBlocksMap(
-              event.output.updatedDocument.children,
-              '',
-            ),
-            draft: event.output.updatedDocument,
+            blocksMap: createBlocksMap(output.updatedDocument.children, ''),
+            draft: output.updatedDocument,
             hasChangedWhileSaving: false,
-            title: event.output.updatedDocument.title,
+            title: output.updatedDocument.title,
           }
         } else {
           return context

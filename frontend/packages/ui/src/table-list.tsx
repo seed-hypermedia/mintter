@@ -1,5 +1,10 @@
-import {useHover} from '@mintter/shared'
-import {ComponentProps, PropsWithChildren, ReactNode} from 'react'
+import {
+  ComponentProps,
+  PropsWithChildren,
+  ReactNode,
+  useMemo,
+  useState,
+} from 'react'
 import {
   Button,
   ButtonProps,
@@ -12,6 +17,19 @@ import {
 } from 'tamagui'
 import {Copy, ExternalLink} from './icons'
 import {Tooltip} from './tooltip'
+
+function useHover() {
+  const [hover, setHover] = useState(false)
+
+  return useMemo(
+    () => ({
+      hover,
+      onHoverIn: () => setHover(true),
+      onHoverOut: () => setHover(false),
+    }),
+    [hover],
+  )
+}
 
 TableList.Header = TableHeader
 TableList.Item = TableItem

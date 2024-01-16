@@ -1,12 +1,14 @@
 import Store from 'electron-store'
 import {userDataPath} from './app-paths'
 
-export const appStore = new Store({
+// TODO: add types
+export const appStore = new Store<Record<string, any>>({
   name: 'AppStore',
   cwd: userDataPath,
 })
 
-export const commentDraftStore = new Store({
+// TODO: add types
+export const commentDraftStore = new Store<Record<string, any>>({
   name: 'CommentDraft',
   cwd: userDataPath,
 })
