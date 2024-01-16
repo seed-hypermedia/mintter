@@ -30,7 +30,7 @@ test('Onboarding from scratch', async ({onboardingPage}) => {
     let elBio = appWindow.locator('#bio')
     let elNextBtn = await appWindow.locator('#btn-next')
 
-    await elAlias.fill()
+    await elAlias.fill('testAlias')
     await elBio.fill('test bio')
 
     await elNextBtn.click()

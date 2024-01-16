@@ -26,11 +26,10 @@ export class HomePage {
     await this.appData.appWindow.locator('#alias').fill(this.alias)
     await this.appData.appWindow.locator('#bio').fill(this.bio)
     await this.appData.appWindow.locator('#btn-next').click()
-
     await this.appData.appWindow.locator('#btn-next').click()
     await this.appData.appWindow.waitForTimeout(10)
     await this.appData.appWindow.locator('#btn-next').click()
     await this.appData.appWindow.waitForTimeout(10)
-    await this.appData.appWindow.locator('#btn-next').click()
+    await this.appData.appWindow.locator('#btn-skip').click()
   }
 }
