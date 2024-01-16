@@ -189,7 +189,9 @@ export function EmbedPublicationCard(props: EntityComponentProps) {
     if (pubData?.publication?.document?.children?.length) {
       let content = ''
       pubData?.publication?.document?.children.forEach((bn) => {
-        content += bn.block.text + ' '
+        if (bn.block.text) {
+          content += bn.block.text + ' '
+        }
       })
       return content
     }
