@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/daemon/api/documents/v1alpha/docmodel"
 	groups "mintter/backend/daemon/api/groups/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	groups_proto "mintter/backend/genproto/groups/v1alpha"
@@ -123,7 +124,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	dm, err := createDocument(me, del)
+	dm, err := docmodel.Create(me, del)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}
 
 	return api.GetDraft(ctx, &documents.GetDraftRequest{
-		DocumentId: string(dm.e.ID()),
+		DocumentId: string(dm.Entity().ID()),
 	})
 }
 
@@ -168,12 +169,12 @@ func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftReq
 		return nil, err
 	}
 
-	mut, err := newDocModel(draft.Entity, me.DeviceKey(), del)
+	mut, err := docmodel.New(draft.Entity, me.DeviceKey(), del)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := mut.restoreDraft(draft.CID, draft.Change); err != nil {
+	if err := mut.RestoreDraft(draft.CID, draft.Change); err != nil {
 		return nil, fmt.Errorf("failed to restore draft: %w", err)
 	}
 
@@ -242,12 +243,12 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 		return nil, err
 	}
 
-	mut, err := newDocModel(entity, me.DeviceKey(), del)
+	mut, err := docmodel.New(entity, me.DeviceKey(), del)
 	if err != nil {
 		return nil, err
 	}
 
-	return mut.hydrate(ctx, api.blobs)
+	return mut.Hydrate(ctx, api.blobs)
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -424,12 +425,12 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 		return nil, err
 	}
 
-	mut, err := newDocModel(entity, me.DeviceKey(), del)
+	mut, err := docmodel.New(entity, me.DeviceKey(), del)
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := mut.hydrate(ctx, api.blobs)
+	doc, err := mut.Hydrate(ctx, api.blobs)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +438,7 @@ func (api *Server) loadPublication(ctx context.Context, docid hyper.EntityID, ve
 
 	return &documents.Publication{
 		Document: doc,
-		Version:  mut.e.Version().String(),
+		Version:  mut.Entity().Version().String(),
 	}, nil
 }
 

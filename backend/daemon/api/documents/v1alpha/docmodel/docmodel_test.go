@@ -1,4 +1,4 @@
-package documents
+package docmodel
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func TestDocument_IgnoreRedundantReplaces(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, entity)
 
-	dm, err = newDocModel(entity, alice.Device, dm.delegation)
+	dm, err = New(entity, alice.Device, dm.delegation)
 	require.NoError(t, err)
 	dm.nextHLC = entity.NextTimestamp()
 
@@ -154,11 +154,6 @@ func TestDocument_Cleanup(t *testing.T) {
 		Text: "New Front 2",
 	}))
 
-	touched := map[string]struct{}{}
-	for _, blk := range dm.tree.localMoves {
-		touched[blk] = struct{}{}
-	}
-
 	dm.cleanupPatch()
 
 	want := map[string]any{
@@ -255,7 +250,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	var c1 hyper.Blob
 	{
 		entity := hyper.NewEntity("hm://d/foo")
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
 		must.Do(model.SetAuthor(alice.Account.Principal()))
@@ -266,8 +261,8 @@ func TestBug_RedundantMoves(t *testing.T) {
 	// Update draft in place.
 	{
 		entity := hyper.NewEntity("hm://d/foo")
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
-		must.Do(model.restoreDraft(c1.CID, c1.Decoded.(hyper.Change)))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
+		must.Do(model.RestoreDraft(c1.CID, c1.Decoded.(hyper.Change)))
 		must.Do(model.MoveBlock("b1", "", ""))
 		must.Do(model.ReplaceBlock(&documents.Block{
 			Id:   "b1",
@@ -286,7 +281,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	{
 		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		must.Do(model.MoveBlock("b1", "", ""))
 		must.Do(model.MoveBlock("b2", "", "b1"))
@@ -304,7 +299,7 @@ func TestBug_RedundantMoves(t *testing.T) {
 	entity := hyper.NewEntity("hm://d/foo")
 	must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
 	must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
-	model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+	model := must.Do2(New(entity, alice.Device, kd.CID))
 	_ = model
 }
 
@@ -316,7 +311,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	var c1 hyper.Blob
 	{
 		entity := hyper.NewEntity("hm://d/foo")
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
 		must.Do(model.SetAuthor(alice.Account.Principal()))
@@ -329,7 +324,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	{
 		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		must.Do(model.SetTitle("Changing title 1"))
 		c2 = must.Do2(model.Change())
@@ -339,7 +334,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	{
 		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		must.Do(model.SetTitle("Changing title 2"))
 		c3 = must.Do2(model.Change())
@@ -353,7 +348,7 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
 
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		require.Len(t, model.e.Heads(), 2, "current document state must have 2 heads")
 		must.Do(model.SetTitle("The final title!"))
@@ -367,9 +362,9 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 		must.Do(entity.ApplyChange(c2.CID, c2.Decoded.(hyper.Change)))
 		must.Do(entity.ApplyChange(c3.CID, c3.Decoded.(hyper.Change)))
 
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
-		must.Do(model.restoreDraft(draft.CID, draft.Decoded.(hyper.Change)))
+		must.Do(model.RestoreDraft(draft.CID, draft.Decoded.(hyper.Change)))
 		require.Len(t, model.e.Heads(), 2, "current document state must have 2 heads")
 		must.Do(model.SetTitle("The final title updated!"))
 		draft = must.Do2(model.Change())
@@ -378,16 +373,17 @@ func TestBug_DraftWithMultipleDeps(t *testing.T) {
 	require.Equal(t, hyper.SortCIDs([]cid.Cid{c2.CID, c3.CID}), draft.Decoded.(hyper.Change).Deps, "draft must have concurrent changes as deps")
 }
 
-func TestBug_UndeletableBlock_Model(t *testing.T) {
+func TestBug_UndeletableBlock(t *testing.T) {
 	t.Parallel()
 
 	alice := coretest.NewTester("alice")
 	kd := must.Do2(hyper.NewKeyDelegation(alice.Account, alice.Device.PublicKey, time.Now())).Blob()
 
+	// Alice creates a block.
 	var c1 hyper.Blob
 	{
 		entity := hyper.NewEntity("hm://d/foo")
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		must.Do(model.SetCreateTime(time.Now()))
 		must.Do(model.SetTitle("Hello World!"))
@@ -398,17 +394,34 @@ func TestBug_UndeletableBlock_Model(t *testing.T) {
 		c1 = must.Do2(model.Change())
 	}
 
+	want := map[string]any{
+		"moves": map[string]any{
+			"#list": map[string]any{
+				"#ins": []any{
+					map[string]any{
+						"b": "b1",
+						"p": "",
+						"l": "",
+					},
+				},
+			},
+		},
+	}
+
+	require.Equal(t, want["moves"], c1.Decoded.(hyper.Change).Patch["moves"], "c1 must create a block")
+
+	// Alice deletes a block in a new change.
 	var c2 hyper.Blob
 	{
 		entity := hyper.NewEntity("hm://d/foo")
 		must.Do(entity.ApplyChange(c1.CID, c1.Decoded.(hyper.Change)))
-		model := must.Do2(newDocModel(entity, alice.Device, kd.CID))
+		model := must.Do2(New(entity, alice.Device, kd.CID))
 		model.nextHLC = entity.NextTimestamp()
 		must.Do(model.DeleteBlock("b1"))
 		c2 = must.Do2(model.Change())
 	}
 
-	want := map[string]any{
+	want = map[string]any{
 		"moves": map[string]any{
 			"#list": map[string]any{
 				"#ins": []any{
@@ -422,10 +435,10 @@ func TestBug_UndeletableBlock_Model(t *testing.T) {
 		},
 	}
 
-	require.Equal(t, want, c2.Decoded.(hyper.Change).Patch, "change must have a move to trash")
+	require.Equal(t, want, c2.Decoded.(hyper.Change).Patch, "c2 must delete a block")
 }
 
-func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.KeyPair) *docModel {
+func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.KeyPair) *Document {
 	clock := hlc.NewClock()
 	ts := clock.Now()
 	now := ts.Time().Unix()
@@ -435,7 +448,7 @@ func newTestDocModel(t *testing.T, blobs *hyper.Storage, account, device core.Ke
 	require.NoError(t, err)
 
 	entity := hyper.NewEntity(hyper.EntityID(id))
-	dm, err := newDocModel(entity, device, delegation)
+	dm, err := New(entity, device, delegation)
 	require.NoError(t, err)
 
 	dm.patch["nonce"] = nonce

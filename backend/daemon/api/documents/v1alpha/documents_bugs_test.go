@@ -9,9 +9,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func TestBug_CorruptedDraftWithRevertingMoves(t *testing.T) {
-	t.Skip()
-
+func TestBug_CorruptedDraftWithIneffectualMoves(t *testing.T) {
 	t.Parallel()
 
 	api := newTestDocsAPI(t, "alice")
@@ -72,7 +70,7 @@ func TestBug_CorruptedDraftWithRevertingMoves(t *testing.T) {
 	})
 }
 
-func TestBug_CorruptedDraftWithMultipleNestedMoves(t *testing.T) {
+func TestBug_CorruptedDraftWithMultipleNestedIneffectualMoves(t *testing.T) {
 	t.Parallel()
 
 	api := newTestDocsAPI(t, "alice")
@@ -115,7 +113,7 @@ func TestBug_CorruptedDraftWithMultipleNestedMoves(t *testing.T) {
 	require.Equal(t, pub.Version, pub2.Version, "ineffectual publish must return previous version")
 }
 
-func TestBug_UnchangedPublish(t *testing.T) {
+func TestBug_IneffectualPublish(t *testing.T) {
 	t.Parallel()
 
 	api := newTestDocsAPI(t, "alice")

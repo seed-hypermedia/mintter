@@ -41,7 +41,7 @@ require (
 	github.com/sanity-io/litter v1.5.5
 	github.com/sethvargo/go-retry v0.2.4
 	github.com/stretchr/testify v1.8.4
-	github.com/tidwall/btree v1.6.0
+	github.com/tidwall/btree v1.7.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.25.0
@@ -55,12 +55,13 @@ require (
 	google.golang.org/grpc v1.53.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf v1.31.0
+	roci.dev/fracdex v0.0.0-00010101000000-000000000000
 )
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
-	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/ipfs/go-bitfield v1.1.0 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.4 // indirect
@@ -212,6 +213,8 @@ require (
 )
 
 replace crawshaw.io/sqlite => ./third_party/sqlite
+
+replace roci.dev/fracdex => github.com/rocicorp/fracdex v0.0.0-20231009204907-ebc26eac9486
 
 // LND imports etcd, which imports some very old version of OpenTelemetry,
 // and it break the build in many different but miserable ways.

@@ -1,4 +1,4 @@
-package documents
+package docmodel
 
 import (
 	"context"
@@ -22,11 +22,13 @@ import (
 // WARNING! There's some very ugly type-unsafe code in here.
 // Can do better, but no time for that now.
 
-type docModel struct {
+// Document is a mutable document.
+type Document struct {
 	e          *hyper.Entity
 	signer     core.KeyPair
 	delegation cid.Cid
-	tree       *Tree
+	tree       *treeCRDT
+	mut        *treeMutation
 	patch      map[string]any
 	oldDraft   cid.Cid
 	oldChange  hyper.Change
@@ -39,7 +41,8 @@ type docModel struct {
 	deletedBlocks map[string]struct{}
 }
 
-func createDocument(owner core.Identity, delegation cid.Cid) (*docModel, error) {
+// Create a new document.
+func Create(owner core.Identity, delegation cid.Cid) (*Document, error) {
 	clock := hlc.NewClock()
 	ts := clock.Now()
 	now := ts.Time().Unix()
@@ -49,7 +52,7 @@ func createDocument(owner core.Identity, delegation cid.Cid) (*docModel, error) 
 
 	entity := hyper.NewEntityWithClock(eid, clock)
 
-	dm, err := newDocModel(entity, owner.DeviceKey(), delegation)
+	dm, err := New(entity, owner.DeviceKey(), delegation)
 	if err != nil {
 		return nil, err
 	}
@@ -62,16 +65,17 @@ func createDocument(owner core.Identity, delegation cid.Cid) (*docModel, error) 
 	return dm, nil
 }
 
-func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*docModel, error) {
+// New creates a new mutable document.
+func New(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*Document, error) {
 	if !delegation.Defined() {
 		return nil, fmt.Errorf("must provide delegation to mutate a document")
 	}
 
-	dm := &docModel{
+	dm := &Document{
 		e:             e,
 		signer:        signer,
 		delegation:    delegation,
-		tree:          NewTree(),
+		tree:          newTreeCRDT(),
 		patch:         map[string]any{},
 		origins:       make(map[string]cid.Cid),
 		createdBlocks: make(map[string]struct{}),
@@ -90,7 +94,8 @@ func newDocModel(e *hyper.Entity, signer core.KeyPair, delegation cid.Cid) (*doc
 	return dm, nil
 }
 
-func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
+// RestoreDraft restores a draft from a change.
+func (dm *Document) RestoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	if len(dm.patch) != 0 {
 		panic("BUG: restoring draft when patch is not empty")
 	}
@@ -146,18 +151,19 @@ func (dm *docModel) restoreDraft(c cid.Cid, ch hyper.Change) (err error) {
 	return nil
 }
 
-func (dm *docModel) replayMoves() (err error) {
+func (dm *Document) replayMoves() (err error) {
 	dm.e.State().ForEachListChunk([]string{"moves"}, func(time int64, origin string, items []any) bool {
 		for idx, move := range items {
 			mm := move.(map[string]any)
 			block := mm["b"].(string)
 			parent := mm["p"].(string)
 			leftShadow := mm["l"].(string)
-			if strings.HasSuffix(leftShadow, "@") {
-				leftShadow += origin
+			left, leftOrigin, _ := strings.Cut(leftShadow, "@")
+			if left != "" && leftOrigin == "" {
+				leftOrigin = origin
 			}
-			_, err = dm.tree.MoveRemote(NewOpID(time, origin, idx), block, parent, leftShadow)
-			if err != nil {
+
+			if err = dm.tree.integrate(newOpID(origin, time, idx), block, parent, left, leftOrigin); err != nil {
 				err = fmt.Errorf("failed move %v: %w", move, err)
 				return false
 			}
@@ -171,7 +177,8 @@ func (dm *docModel) replayMoves() (err error) {
 	return nil
 }
 
-func (dm *docModel) SetCreateTime(ct time.Time) error {
+// SetCreateTime sets the create time of the document.
+func (dm *Document) SetCreateTime(ct time.Time) error {
 	_, ok := dm.e.Get("createTime")
 	if ok {
 		return fmt.Errorf("create time is already set")
@@ -182,7 +189,8 @@ func (dm *docModel) SetCreateTime(ct time.Time) error {
 	return nil
 }
 
-func (dm *docModel) SetAuthor(author core.Principal) error {
+// SetAuthor sets the author of the document.
+func (dm *Document) SetAuthor(author core.Principal) error {
 	_, ok := dm.e.Get("owner")
 	if ok {
 		return fmt.Errorf("author is already set")
@@ -193,7 +201,8 @@ func (dm *docModel) SetAuthor(author core.Principal) error {
 	return nil
 }
 
-func (dm *docModel) SetTitle(title string) error {
+// SetTitle sets the title of the document.
+func (dm *Document) SetTitle(title string) error {
 	v, ok := dm.e.Get("title")
 	if ok && v.(string) == title {
 		return nil
@@ -203,20 +212,23 @@ func (dm *docModel) SetTitle(title string) error {
 	return nil
 }
 
-func (dm *docModel) DeleteBlock(block string) error {
-	deleted, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, TrashNodeID, "")
+// DeleteBlock deletes a block.
+func (dm *Document) DeleteBlock(block string) error {
+	mut := dm.ensureMutation()
+	me, err := mut.move(block, TrashNodeID, "")
 	if err != nil {
 		return err
 	}
 
-	if deleted {
+	if me == moveEffectMoved {
 		dm.deletedBlocks[block] = struct{}{}
 	}
 
 	return nil
 }
 
-func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
+// ReplaceBlock replaces a block.
+func (dm *Document) ReplaceBlock(blk *documents.Block) error {
 	if blk.Id == "" {
 		return fmt.Errorf("blocks must have ID")
 	}
@@ -236,27 +248,40 @@ func (dm *docModel) ReplaceBlock(blk *documents.Block) error {
 	return nil
 }
 
-func (dm *docModel) MoveBlock(block, parent, left string) error {
+// MoveBlock moves a block.
+func (dm *Document) MoveBlock(block, parent, left string) error {
 	if parent == TrashNodeID {
 		panic("BUG: use DeleteBlock to delete a block")
 	}
 
-	firstMove := dm.tree.nodes[block] == nil
-	moved, err := dm.tree.MoveLocal(dm.nextHLC.Pack(), len(dm.tree.localMoves), block, parent, left)
+	mut := dm.ensureMutation()
+
+	me, err := mut.move(block, parent, left)
 	if err != nil {
 		return err
 	}
 
-	if moved && firstMove {
+	switch me {
+	case moveEffectCreated:
 		dm.createdBlocks[block] = struct{}{}
+	case moveEffectMoved:
+		// We might move a block out of trash.
+		delete(dm.deletedBlocks, block)
 	}
-
-	delete(dm.deletedBlocks, block)
 
 	return nil
 }
 
-func (dm *docModel) Change() (hb hyper.Blob, err error) {
+func (dm *Document) ensureMutation() *treeMutation {
+	if dm.mut == nil {
+		dm.mut = dm.tree.mutate()
+	}
+
+	return dm.mut
+}
+
+// Change creates a change.
+func (dm *Document) Change() (hb hyper.Blob, err error) {
 	// TODO(burdiyan): we should make them reusable.
 	if dm.done {
 		return hb, fmt.Errorf("using already committed mutation")
@@ -287,7 +312,8 @@ func (dm *docModel) Change() (hb hyper.Blob, err error) {
 	return dm.e.CreateChange(dm.nextHLC, dm.signer, dm.delegation, dm.patch, hyper.WithAction(action))
 }
 
-func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
+// Commit commits a change.
+func (dm *Document) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blob, err error) {
 	hb, err = dm.Change()
 	if err != nil {
 		return hb, err
@@ -300,63 +326,41 @@ func (dm *docModel) Commit(ctx context.Context, bs *hyper.Storage) (hb hyper.Blo
 	return hb, bs.SaveDraftBlob(ctx, dm.e.ID(), hb)
 }
 
-func (dm *docModel) cleanupPatch() {
-	// We want to only keep last move per each block touched in this change.
-	// If blocks were moved but end up where they initially were - we don't want any moves.
-	// If blocks were created and then deleted within the same change - we don't want to leave any traces.
-	touched := make(map[string]struct{}, len(dm.tree.localMoves))
-	for _, blk := range dm.tree.localMoves {
-		if _, ok := touched[blk]; ok {
-			continue
-		}
-		touched[blk] = struct{}{}
+func (dm *Document) cleanupPatch() {
+	if dm.mut == nil {
+		return
 	}
 
 	var moves []any
-
-	it := dm.tree.Iterator()
-	for n := it.Next(); n != nil; n = it.Next() {
-		if _, ok := touched[n.id]; !ok {
-			continue
+	dm.mut.forEachMove(func(block, parent, left, leftOrigin string) bool {
+		var l string
+		if left != "" {
+			l = left + "@" + leftOrigin
 		}
-
-		// Handle move turnaround. If we move the block but it ends up in the same place
-		// we don't need to generate move operations.
-		curLeft := dm.tree.nodes[n.id].pos.Prev().Value.(ShadowPosition)
-		oldPos := dm.tree.initialLefts[n.id]
-		if oldPos != nil {
-			op := oldPos.Value.(ShadowPosition)
-			oldParent := op.parent
-			oldLeft := op.BlockID()
-			if curLeft.parent == oldParent && curLeft.BlockID() == oldLeft {
-				continue
-			}
-		}
-
-		parent := n.pos.Value.(ShadowPosition).parent
-		leftShadow := n.pos.Prev().Value.(ShadowPosition).shadowID
-
 		moves = append(moves, map[string]any{
-			"b": n.id,
+			"b": block,
 			"p": parent,
-			"l": leftShadow,
+			"l": l,
 		})
+
+		return true
+	})
+
+	// If we have some moves after cleaning up, add them to the patch.
+	if moves != nil {
+		dm.patch["moves"] = map[string]any{
+			"#list": map[string]any{
+				"#ins": moves,
+			},
+		}
 	}
 
-	// Handle delete turnaround. If we created the block and then removed it
-	// in the same change, then we don't want any trace of them.
+	// Remove state of those blocks that we created and deleted in the same change.
 	for blk := range dm.deletedBlocks {
-		_, mustIgnore := dm.createdBlocks[blk]
-		if mustIgnore {
+		if _, mustIgnore := dm.createdBlocks[blk]; mustIgnore {
 			colx.ObjectDelete(dm.patch, []string{"blocks", blk})
 			continue
 		}
-
-		moves = append(moves, map[string]any{
-			"b": blk,
-			"p": TrashNodeID,
-			"l": "",
-		})
 	}
 
 	// Remove the blocks key from the patch if we end up with no blocks after cleanup.
@@ -365,20 +369,19 @@ func (dm *docModel) cleanupPatch() {
 			delete(dm.patch, "blocks")
 		}
 	}
-
-	if len(moves) == 0 {
-		return
-	}
-
-	// If we have some moves after cleaning up, add them to the patch.
-	dm.patch["moves"] = map[string]any{
-		"#list": map[string]any{
-			"#ins": moves,
-		},
-	}
 }
 
-func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
+// Entity returns the underlying entity.
+func (dm *Document) Entity() *hyper.Entity {
+	return dm.e
+}
+
+// Hydrate hydrates a document.
+func (dm *Document) Hydrate(ctx context.Context, blobs *hyper.Storage) (*documents.Document, error) {
+	if dm.mut != nil {
+		panic("BUG: can't hydrate a document with uncommitted changes")
+	}
+
 	e := dm.e
 
 	first := e.AppliedChanges()[0]
@@ -452,18 +455,15 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 		blk.Children = append(blk.Children, child)
 	}
 
-	it := dm.tree.Iterator()
-	for n := it.Next(); n != nil; n = it.Next() {
-		sp := n.pos.Value.(ShadowPosition)
-		parent := sp.parent
-		id := n.id
-		// TODO(burdiyan): block revision would change only if block itself was change.
+	var err error
+	dm.tree.mutate().walkDFT(func(m *move) bool {
+		// TODO(burdiyan): block revision would change only if block itself was changed.
 		// If block is only moved it's revision won't change. Need to check if that's what we want.
-		mm, origin, ok := dm.e.State().GetWithOrigin("blocks", id)
+		mm, origin, ok := dm.e.State().GetWithOrigin("blocks", m.Block)
 		if !ok {
 			// If we got some moves but no block state
 			// we just skip them, we don't want to blow up here.
-			continue
+			return true
 		}
 
 		oo := dm.origins[origin]
@@ -471,13 +471,20 @@ func (dm *docModel) hydrate(ctx context.Context, blobs *hyper.Storage) (*documen
 			oo = dm.oldDraft
 		}
 
-		blk, err := blockFromMap(id, oo.String(), mm.(map[string]any))
+		var blk *documents.Block
+		blk, err = blockFromMap(m.Block, oo.String(), mm.(map[string]any))
 		if err != nil {
-			return nil, err
+			return false
 		}
+
 		child := &documents.BlockNode{Block: blk}
-		appendChild(parent, child)
-		blockMap[id] = child
+		appendChild(m.Parent, child)
+		blockMap[m.Block] = child
+
+		return true
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return docpb, nil
