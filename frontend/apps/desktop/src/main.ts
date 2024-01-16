@@ -108,6 +108,10 @@ ipcMain.on('quit_app', () => {
   app.quit()
 })
 
+ipcMain.on('open_path', (event, path) => {
+  shell.openPath(path)
+})
+
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {

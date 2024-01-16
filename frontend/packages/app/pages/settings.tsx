@@ -42,7 +42,7 @@ import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import React, {useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {useGRPCClient, useIPC} from '../app-context'
+import {useIPC} from '../app-context'
 import {AvatarForm} from '../components/avatar-form'
 import {useEditProfileDialog} from '../components/edit-profile-dialog'
 import appError from '../errors'
@@ -57,6 +57,7 @@ import {
 } from '../models/gateway-settings'
 import {useExportWallet} from '../models/payments'
 import {useWalletOptIn} from '../models/wallet'
+import {useOpenUrl} from '../open-url'
 import {getAvatarUrl} from '../utils/account-url'
 
 export default function Settings() {
@@ -444,11 +445,6 @@ function GatewaySettings({}: {}) {
   const setGatewayUrl = useSetGatewayUrl()
   const [gwUrl, setGWUrl] = useState('')
 
-  console.log(`== ~ GatewaySettings ~ gwUrl:`, {
-    gatewayUrl: gatewayUrl.data,
-    gwUrl,
-  })
-
   useEffect(() => {
     if (gatewayUrl.data) {
       setGWUrl(gatewayUrl.data)
@@ -615,25 +611,35 @@ function DeviceItem({id}: {id: string}) {
         }
       />
 
-      <InfoListItem label="Peer ID" value={id} onCopy={() => {}} />
+      <InfoListItem
+        label="Peer ID"
+        value={id}
+        onCopy={() => {
+          copyTextToClipboard(id)
+          toast.success('Copied peerID successfully')
+        }}
+      />
 
       <Separator />
 
       <InfoListItem
         label="Device Address"
         value={data?.addrs.sort().join(', ')}
-        onCopy={() => {}}
+        onCopy={() => {
+          copyTextToClipboard(data?.addrs.sort().join(', '))
+          toast.success('Copied device address successfully')
+        }}
       />
     </TableList>
   )
 }
 
 function AppSettings() {
-  const grpcClient = useGRPCClient()
   const ipc = useIPC()
   const versions = useMemo(() => ipc.versions(), [ipc])
   const appInfo = trpc.getAppInfo.useQuery().data
   const daemonInfo = trpc.getDaemonInfo.useQuery().data
+  const openUrl = useOpenUrl()
   return (
     <YStack gap="$5">
       <Heading>Application Settings</Heading>
@@ -642,15 +648,35 @@ function AppSettings() {
         <InfoListItem
           label="Data Directory"
           value={appInfo?.dataDir}
-          copyable
-          openable
+          onCopy={() => {
+            if (appInfo?.dataDir) {
+              copyTextToClipboard(appInfo?.dataDir)
+              toast.success('Copied path successfully')
+            }
+          }}
+          onOpen={() => {
+            if (appInfo?.dataDir) {
+              ipc.send('open_path', appInfo?.dataDir)
+              // openUrl(`file://${appInfo?.dataDir}`)
+            }
+          }}
         />
         <Separator />
         <InfoListItem
           label="Log Directory"
           value={appInfo?.loggingDir}
-          copyable
-          openable
+          onCopy={() => {
+            if (appInfo?.loggingDir) {
+              copyTextToClipboard(appInfo?.loggingDir)
+              toast.success('Copied path successfully')
+            }
+          }}
+          onOpen={() => {
+            if (appInfo?.loggingDir) {
+              ipc.send('open_path', appInfo?.loggingDir)
+              // openUrl(`file://${appInfo?.loggingDir}`)
+            }
+          }}
         />
       </TableList>
       <TableList>
@@ -662,12 +688,13 @@ function AppSettings() {
                 size="$2"
                 icon={Copy}
                 onPress={() => {
-                  copyTextToClipboard(`App Version: ${VERSION}
+                  copyTextToClipboard(`
+App Version: ${VERSION}
 Electron Version: ${versions.electron}
 Chrome Version: ${versions.chrome}
 Node Version: ${versions.node}
 Go Build Info:
-    ${daemonInfo?.replace(/\n/g, '\n    ')}`)
+  ${daemonInfo?.replace(/\n/g, '\n    ')}`)
                 }}
               >
                 Copy Debug Info
