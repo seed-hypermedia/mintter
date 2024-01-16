@@ -16,7 +16,7 @@ import {
 import {hmGroup} from '@mintter/shared/src/to-json-hm'
 import {SizableText, Spinner, UIAvatar, XStack, YStack} from '@mintter/ui'
 import {PropsWithChildren, useMemo} from 'react'
-import {useAccount, useMyAccount} from '../models/accounts'
+import {useAccount} from '../models/accounts'
 import {useComment} from '../models/comments'
 import {usePublication} from '../models/documents'
 import {useGroup} from '../models/groups'
@@ -154,7 +154,7 @@ export function EmbedComment(props: EntityComponentProps) {
 
     return embedBlocks
   }, [props.blockRef, comment.data])
-  const account = useMyAccount() //todo replace with real author
+  const account = useAccount(comment.data?.author)
   if (comment.isLoading) return <Spinner />
   return (
     <EmbedWrapper hmRef={props.id}>
