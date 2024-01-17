@@ -46,11 +46,15 @@ export default function DraftPage() {
 
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
+  const hasCreatedDraft = useRef(false)
   useEffect(() => {
-    if (route.key === 'draft' && route.draftId === undefined) {
+    if (documentId === undefined) {
+      if (hasCreatedDraft.current) return
+      console.log('CREATING DRAFT', JSON.stringify(route))
       openDraft()
+      hasCreatedDraft.current = true
     }
-  }, [route])
+  }, [documentId])
 
   const isSaved = DraftStatusContext.useSelector((s) => s.matches('saved'))
 
