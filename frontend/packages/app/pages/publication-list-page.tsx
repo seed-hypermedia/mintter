@@ -23,7 +23,12 @@ import {
   idToUrl,
   unpackHmId,
 } from '@mintter/shared'
-import {Globe, Pencil, Trash, Verified} from '@tamagui/lucide-icons'
+import {
+  Globe,
+  Pencil,
+  Trash,
+  BadgeCheck as Verified,
+} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ComponentProps, memo, useRef, useState} from 'react'
 import {useAppContext} from '../app-context'
@@ -224,6 +229,7 @@ function PublicationsList({}: {}) {
       f={1}
       height={'100%'}
       onLayout={(e) => {
+        console.log('======', e.nativeEvent)
         setContainerHeight(e.nativeEvent.layout.height)
         setContainerWidth(e.nativeEvent.layout.width)
       }}
