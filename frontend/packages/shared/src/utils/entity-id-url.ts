@@ -8,6 +8,8 @@ export const HYPERMEDIA_ENTITY_TYPES = {
   c: 'Comment',
 } as const
 
+export type HMEntityType = keyof typeof HYPERMEDIA_ENTITY_TYPES
+
 export function createPublicWebHmUrl(
   type: keyof typeof HYPERMEDIA_ENTITY_TYPES,
   eid: string,
