@@ -12,8 +12,8 @@ export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
   if (route.key === 'settings')
     return {
       key: 'settings',
-      minWidth: 600,
-      minHeight: 600,
+      minWidth: 960,
+      minHeight: 720,
       maxWidth: undefined,
       maxHeight: undefined,
     } as const
@@ -27,8 +27,8 @@ export function getRouteWindowType(route: NavRoute): WindowTypeInfo {
     } as const
   return {
     key: 'main',
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 1280,
+    minHeight: 960,
     maxWidth: undefined,
     maxHeight: undefined,
   } as const

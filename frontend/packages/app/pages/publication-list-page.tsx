@@ -229,7 +229,6 @@ function PublicationsList({}: {}) {
       f={1}
       height={'100%'}
       onLayout={(e) => {
-        console.log('======', e.nativeEvent)
         setContainerHeight(e.nativeEvent.layout.height)
         setContainerWidth(e.nativeEvent.layout.width)
       }}
