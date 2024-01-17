@@ -1,6 +1,14 @@
 import {Timestamp} from '@bufbuild/protobuf'
 import {formattedDate, formattedDateLong, useHover} from '@mintter/shared'
-import {Button, ButtonProps, ButtonText, Link, Tooltip, View} from '@mintter/ui'
+import {
+  Button,
+  ButtonProps,
+  ButtonText,
+  Link,
+  Tooltip,
+  View,
+  XStack,
+} from '@mintter/ui'
 import {ComponentProps, ReactElement, useState} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
@@ -49,7 +57,9 @@ export function ListItem({
       >
         {title}
       </ButtonText>
-      {accessory}
+      <XStack flexShrink={0} paddingHorizontal="$2">
+        {accessory}
+      </XStack>
       {currentMenuItems ? (
         <OptionsDropdown
           hover={hover}
