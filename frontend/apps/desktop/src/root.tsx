@@ -256,6 +256,11 @@ function MainApp({
               }
             >
               <DaemonStatusProvider>
+                <button popovertarget="mypopover">Toggle the popover</button>
+                <div id="mypopover" popover>
+                  Popover content
+                </div>
+
                 <Main
                   className={
                     // this is used by editor.css which doesn't know tamagui styles, boooo!
