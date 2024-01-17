@@ -4,14 +4,8 @@ import {
   isPublicGatewayLink,
   normlizeHmId,
 } from '@mintter/shared'
-import {
-  FileText,
-  Globe,
-  Link,
-  Spinner,
-  SquareAsterisk,
-  XCircle,
-} from '@mintter/ui'
+import {Link, Spinner} from '@mintter/ui'
+import {FileText, Globe, SquareAsterisk, XCircle} from '@tamagui/lucide-icons'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
