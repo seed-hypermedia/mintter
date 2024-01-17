@@ -55,7 +55,7 @@ export function PublicationListItem({
       title={title}
       onPointerEnter={onPointerEnter}
       accessory={
-        <XStack gap="$3" ai="center" flex={0}>
+        <XStack gap="$3" ai="center">
           {hasDraft && (
             <Button
               theme="yellow"

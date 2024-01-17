@@ -390,7 +390,6 @@ function DraftListItem({draft}: {draft: Document}) {
           )
         }}
         onPress={goToItem}
-        accessory={<></>}
         menuItems={[
           {
             label: 'Delete Draft',
