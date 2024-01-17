@@ -30,7 +30,7 @@ import {
   BadgeCheck as Verified,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, memo, useRef, useState} from 'react'
+import {ComponentProps, ReactNode, memo, useRef, useState} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
@@ -210,20 +210,20 @@ function DocumentTabs() {
   )
 }
 
-function PublicationsList({}: {}) {
-  const route = useNavRoute()
-  if (route.key !== 'documents') throw new Error('invalid route')
-  const trustedOnly = route.tab === 'trusted' || route.tab == null
-  const publications = usePublicationFullList({trustedOnly})
-  const drafts = useDraftList()
-  const {queryClient, grpcClient} = useAppContext()
-  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+function List<Item>({
+  items,
+  renderItem,
+  header,
+  footer,
+}: {
+  items: Item[]
+  renderItem: (row: {item: Item; containerWidth: number}) => ReactNode
+  header: ReactNode | null
+  footer?: ReactNode | null
+}) {
   const virtuoso = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
-  const items = publications.data
-  const gwUrl = useGatewayUrl()
-  if (!items) return <Spinner />
   return (
     <YStack
       f={1}
@@ -234,7 +234,6 @@ function PublicationsList({}: {}) {
       }}
     >
       <Virtuoso
-        key={trustedOnly ? 'trusted' : 'all'}
         fixedItemHeight={42}
         ref={virtuoso}
         style={{
@@ -248,14 +247,44 @@ function PublicationsList({}: {}) {
           bottom: 800,
         }}
         components={{
-          Header: () => <DocumentTabs />,
-          Footer: () => <View style={{height: 30}} />,
+          Header: () => header || null,
+          Footer: () => footer || <View style={{height: 30}} />,
         }}
-        id="scroll-page-wrapper"
+        className="main-scroll-wrapper"
         totalCount={items?.length || 0}
         itemContent={(index) => {
           const item = items?.[index]
           if (!item) return null
+          return (
+            <XStack jc="center" width={containerWidth}>
+              {renderItem({item, containerWidth})}
+            </XStack>
+          )
+        }}
+      />
+    </YStack>
+  )
+}
+
+function PublicationsList({}: {}) {
+  const route = useNavRoute()
+  if (route.key !== 'documents') throw new Error('invalid route')
+  const trustedOnly = route.tab === 'trusted' || route.tab == null
+  const publications = usePublicationFullList({trustedOnly})
+  const drafts = useDraftList()
+  const {queryClient, grpcClient} = useAppContext()
+  const deleteDialog = useAppDialog(DeleteDocumentDialog, {isAlert: true})
+
+  const items = publications.data
+  const gwUrl = useGatewayUrl()
+  if (!items) return <Spinner />
+  return (
+    <>
+      <List
+        key={trustedOnly ? 'trusted' : 'all'}
+        items={items}
+        header={<DocumentTabs />}
+        renderItem={({item}) => {
           const {publication, author, editors} = item
           if (!publication.document) return null
           const docId = publication.document.id
@@ -264,84 +293,80 @@ function PublicationsList({}: {}) {
             authors: [publication.document.author],
           }
           return (
-            <XStack
-              key={publication.document?.id}
-              jc="center"
-              width={containerWidth}
-            >
-              <PublicationListItem
-                variant={variant}
-                openRoute={{
-                  key: 'publication',
-                  documentId: docId,
-                  variant,
-                }}
-                hasDraft={drafts.data?.documents.find(
-                  (d) => d.id == publication.document?.id,
-                )}
-                onPointerEnter={() => {
-                  if (publication.document?.id) {
-                    queryClient.client.prefetchQuery(
-                      queryPublication(
-                        grpcClient,
-                        publication.document.id,
-                        publication.version,
-                      ),
-                    )
-                  }
-                }}
-                publication={publication}
-                author={author}
-                editors={editors}
-                menuItems={() => [
-                  copyLinkMenuItem(
-                    idToUrl(docId, gwUrl.data, publication.version),
-                    'Publication',
-                  ),
-                  {
-                    key: 'delete',
-                    label: 'Delete Publication',
-                    icon: Delete,
-                    onPress: () => {
-                      deleteDialog.open(docId)
-                    },
+            <PublicationListItem
+              variant={variant}
+              openRoute={{
+                key: 'publication',
+                documentId: docId,
+                variant,
+              }}
+              hasDraft={drafts.data?.documents.find(
+                (d) => d.id == publication.document?.id,
+              )}
+              onPointerEnter={() => {
+                if (publication.document?.id) {
+                  queryClient.client.prefetchQuery(
+                    queryPublication(
+                      grpcClient,
+                      publication.document.id,
+                      publication.version,
+                    ),
+                  )
+                }
+              }}
+              publication={publication}
+              author={author}
+              editors={editors}
+              menuItems={() => [
+                copyLinkMenuItem(
+                  idToUrl(docId, gwUrl.data, publication.version),
+                  'Publication',
+                ),
+                {
+                  key: 'delete',
+                  label: 'Delete Publication',
+                  icon: Delete,
+                  onPress: () => {
+                    deleteDialog.open(docId)
                   },
-                ]}
-              />
-            </XStack>
+                },
+              ]}
+            />
           )
         }}
       />
       {deleteDialog.content}
-    </YStack>
+    </>
   )
 }
 
 function DraftsList() {
   const drafts = useDraftList()
   const openDraft = useOpenDraft('push')
-  return (
-    <YStack f={1}>
-      <DocumentTabs />
+  if (drafts.isInitialLoading || !drafts.data) {
+    return <Spinner />
+  }
+  if (drafts.data?.documents.length === 0) {
+    return (
       <Container>
-        {drafts.isInitialLoading ? (
-          <Spinner />
-        ) : drafts.data?.documents.length ? (
-          <YStack>
-            {drafts.data.documents.map((draft) => (
-              <DraftListItem key={draft.id} draft={draft} />
-            ))}
-          </YStack>
-        ) : (
-          <EmptyList
-            description="You have no current Drafts."
-            action={() => {
-              openDraft()
-            }}
-          />
-        )}
+        <DocumentTabs />
+        <EmptyList
+          description="You have no current Drafts."
+          action={() => {
+            openDraft()
+          }}
+        />
       </Container>
-    </YStack>
+    )
+  }
+  return (
+    <List
+      header={<DocumentTabs />}
+      items={drafts.data.documents}
+      renderItem={({item}) => {
+        return <DraftListItem draft={item} />
+      }}
+    />
   )
 }
 

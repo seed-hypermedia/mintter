@@ -33,3 +33,7 @@ body {
 #scroll-page-wrapper::-webkit-scrollbar {
   display: auto;
 }
+
+.main-scroll-wrapper::-webkit-scrollbar {
+  display: auto;
+}
