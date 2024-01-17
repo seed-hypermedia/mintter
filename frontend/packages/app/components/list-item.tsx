@@ -1,5 +1,5 @@
 import {Timestamp} from '@bufbuild/protobuf'
-import {formattedDate, formattedDateLong} from '@mintter/shared'
+import {formattedDate, formattedDateLong, useHover} from '@mintter/shared'
 import {Button, ButtonProps, ButtonText, Link, Tooltip, View} from '@mintter/ui'
 import {ComponentProps, ReactElement, useState} from 'react'
 import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
@@ -18,6 +18,7 @@ export function ListItem({
   onPointerEnter?: () => void
   menuItems?: (MenuItemType | null)[] | (() => (MenuItemType | null)[])
 }) {
+  let {hover, ...hoverProps} = useHover()
   const [currentMenuItems, setMenuItems] = useState(
     typeof menuItems === 'function' ? undefined : menuItems,
   )
@@ -32,7 +33,7 @@ export function ListItem({
       // onPointerLeave={() => setIsHovering(false)}
       chromeless
       onPress={onPress}
-      group="item"
+      {...hoverProps}
       maxWidth={900}
       f={1}
       width="100%"
@@ -50,7 +51,11 @@ export function ListItem({
       </ButtonText>
       {accessory}
       {currentMenuItems ? (
-        <OptionsDropdown hiddenUntilItemHover menuItems={currentMenuItems} />
+        <OptionsDropdown
+          hover={hover}
+          hiddenUntilItemHover
+          menuItems={currentMenuItems}
+        />
       ) : (
         <View width={20} />
       )}
