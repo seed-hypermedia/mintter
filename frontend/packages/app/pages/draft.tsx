@@ -1,8 +1,11 @@
-import {AppBanner, BannerText} from '@mintter/app/components/app-banner'
 import Footer from '@mintter/app/components/footer'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {trpc} from '@mintter/desktop/src/trpc'
-import {HMEditorContainer, HyperMediaEditorView} from '@mintter/editor'
+import {
+  BlockNoteEditor,
+  HMEditorContainer,
+  HyperMediaEditorView,
+} from '@mintter/editor'
 import {
   StateStream,
   blockStyles,
@@ -23,6 +26,7 @@ import {
   YStack,
   useStream,
 } from '@mintter/ui'
+import {Selection} from '@tiptap/pm/state'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
@@ -75,13 +79,40 @@ export default function DraftPage() {
 
   const gwUrl = useGatewayUrl()
 
+  function handleFocusAtMousePos(event) {
+    let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
+    let editorView = ttEditor.view
+    let editorRect = editorView.dom.getBoundingClientRect()
+    let centerEditor = editorRect.left + editorRect.width / 2
+
+    const pos = editorView.posAtCoords({
+      left: editorRect.left + 1,
+      top: event.clientY + editorView.dom.offsetTop,
+    })
+
+    if (pos) {
+      // console.log('=== WTF: ', editorView.domAtPos(pos.pos).node)
+      console.log('=== WTF: ')
+      let node = editorView.state.doc.nodeAt(pos.pos)
+
+      let sel = Selection.near(
+        editorView.state.doc.resolve(
+          event.clientX < centerEditor ? pos.pos : pos.pos + node.nodeSize - 1,
+        ),
+      )
+
+      ttEditor.commands.focus()
+      ttEditor.commands.setTextSelection(sel)
+    }
+  }
+
   if (data.state.matches('ready')) {
     return (
       <ErrorBoundary
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
-        <MainWrapper>
+        <MainWrapper onPress={handleFocusAtMousePos}>
           <AppPublicationContentProvider
             disableEmbedClick
             onCopyBlock={(blockId: string) => {
@@ -376,16 +407,6 @@ function DraftDevTools({
         </code>
       )}
     </YStack>
-  )
-}
-
-function NotSavingBanner() {
-  return (
-    <AppBanner>
-      <BannerText>
-        The Draft might not be saved because your Local peer is not ready (yet!)
-      </BannerText>
-    </AppBanner>
   )
 }
 
