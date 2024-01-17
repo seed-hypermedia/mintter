@@ -1,11 +1,9 @@
 // @ts-nocheck
 export {
+  AlertCircle,
   Medal as Acknowledgements,
   Plus as Add,
   PlusSquare as AddSquare,
-  AlertCircle,
-  ArrowDownRight,
-  ArrowRight,
   ArrowUpRight,
   ChevronLeft as Back,
   Quote as BlockQuote,
@@ -23,14 +21,13 @@ export {
   Scissors as Cut,
   Delete,
   BookOpen as Documentation,
-  FilePen as Draft,
+  FileEdit as Draft,
   ChevronsUpDown as Drag,
   Italic as Emphasis,
   AlertOctagon as ErrorIcon,
   ExternalLink,
   Star as Favorite,
   File,
-  FileText,
   ChevronRight as Forward,
   Globe,
   ListPlus as GroupIcon,
@@ -53,8 +50,6 @@ export {
   Search,
   BoxSelect as SelectAll,
   Settings2 as Settings,
-  Share,
-  AsteriskSquare as SquareAsterisk,
   Star,
   Square as Statement,
   Strikethrough,
@@ -67,7 +62,9 @@ export {
   List as UnorderedList,
   User,
   Video as VideoIcon,
-  XCircle,
+  Share,
+  ArrowDownRight,
+  ArrowRight,
 } from '@tamagui/lucide-icons'
 
 export function AppleIcon(props) {
