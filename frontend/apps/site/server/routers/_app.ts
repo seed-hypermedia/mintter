@@ -389,8 +389,28 @@ const siteInfoRouter = router({
   }),
 })
 
+const entitiesRouter = router({
+  discover: procedure
+    .input(z.object({id: z.string(), version: z.string().optional()}))
+    .mutation(async ({input}) => {
+      try {
+        const result = await queryClient.entities.discoverEntity({
+          id: input.id,
+          version: input.version,
+        })
+        return {foundVersion: true, foundEntity: true}
+      } catch (e) {
+        if (e.message.match('desired version')) {
+          return {foundVersion: false, foundEntity: true}
+        }
+        throw e
+      }
+    }),
+})
+
 export const appRouter = router({
   publication: publicationRouter,
+  entities: entitiesRouter,
   account: accountRouter,
   group: groupRouter,
   siteInfo: siteInfoRouter,

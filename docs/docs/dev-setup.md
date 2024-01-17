@@ -117,7 +117,7 @@ HM_BASE_URL="http://localhost:3000" GRPC_HOST="http://localhost:59001" PORT=3000
 Run the daemon:
 
 ```
-MINTTER_P2P_TESTNET_NAME="" go run ./backend/cmd/mintter-site -data-dir=~/.mttgateway -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay -syncing.allow-push "http://localhost:3000"
+MINTTER_P2P_TESTNET_NAME="" go run ./backend/cmd/mintter-site -data-dir=~/.mttgateway -p2p.port=57000  -grpc.port=57002 -http.port=57001 -p2p.no-relay -syncing.allow-push -syncing.no-discovery=false "http://localhost:3000"
 ```
 
 Simultaneously run the Frontend:
