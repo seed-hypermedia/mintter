@@ -163,7 +163,7 @@ function DocumentTabs() {
 
   return (
     <XStack jc="center">
-      <YStack alignItems="flex-start" f={1} maxWidth={898} paddingVertical="$4">
+      <YStack alignItems="flex-start" f={1} maxWidth={898} padding="$3">
         <XGroup separator={<Separator backgroundColor={'red'} />}>
           <ToggleGroupItem
             label="Trusted Creators"
