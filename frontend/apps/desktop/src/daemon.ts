@@ -25,7 +25,12 @@ const daemonArguments = [
   `${userDataPath}/daemon`,
 
   lndhubFlags,
+  'SENTRY_DSN=https://8d3089ffb71045dc911bc66efbd3463a@o4504088793841664.ingest.sentry.io/4505527460429824',
 ]
+
+if (process.env.SENTRY_AUTH_TOKEN) {
+  daemonArguments.push(`SENTRY_AUTH_TOKEN=${process.env.SENTRY_AUTH_TOKEN}`)
+}
 
 console.log(`== ~ daemonArguments:`, daemonArguments)
 
