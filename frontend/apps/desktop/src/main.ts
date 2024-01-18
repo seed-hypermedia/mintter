@@ -1,4 +1,4 @@
-import {HM_SENTRY_DESKTOP_DSN, IS_PROD_DESKTOP} from '@mintter/shared'
+import {IS_PROD_DESKTOP} from '@mintter/shared'
 import * as Sentry from '@sentry/electron/main'
 import {BrowserWindow, Menu, app, ipcMain, nativeTheme, shell} from 'electron'
 import log from 'electron-log/main'
@@ -34,25 +34,10 @@ if (IS_PROD_DESKTOP) {
   } else {
     app.setAsDefaultProtocolClient(OS_REGISTER_SCHEME)
   }
-}
 
-startMainDaemon()
-
-Menu.setApplicationMenu(createAppMenu())
-
-autoUpdate()
-
-//Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
-log.initialize({
-  preload: true,
-  // It makes a renderer logger available trough a global electronLog instance
-  spyRendererConsole: true,
-})
-
-if (IS_PROD_DESKTOP) {
   Sentry.init({
     debug: true,
-    dsn: HM_SENTRY_DESKTOP_DSN,
+    dsn: 'https://8d3089ffb71045dc911bc66efbd3463a@o4504088793841664.ingest.sentry.io/4505527460429824',
     transportOptions: {
       // The maximum number of days to keep an event in the queue.
       maxQueueAgeDays: 30,
@@ -71,6 +56,19 @@ if (IS_PROD_DESKTOP) {
     },
   })
 }
+
+startMainDaemon()
+
+Menu.setApplicationMenu(createAppMenu())
+
+autoUpdate()
+
+//Simple logging module Electron/Node.js/NW.js application. No dependencies. No complicated configuration.
+log.initialize({
+  preload: true,
+  // It makes a renderer logger available trough a global electronLog instance
+  spyRendererConsole: true,
+})
 
 app.on('did-become-active', () => {
   log.debug('[MAIN]: Mintter active')
