@@ -20,7 +20,7 @@ import {
 } from '@mintter/shared'
 import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {Extension} from '@tiptap/core'
-import {useEffect, useMemo, useRef} from 'react'
+import {useMemo, useRef} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
 import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
@@ -271,21 +271,36 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       ],
     },
   })
-  useEffect(() => {
-    if (!editCommentId) return
-    client.comments.getCommentDraft
-      .query({
-        commentDraftId: editCommentId,
-      })
-      .then((draft) => {
+  trpc.comments.getCommentDraft.useQuery(
+    {
+      commentDraftId: editCommentId,
+    },
+    {
+      onSuccess: (draft) => {
         if (!draft)
           throw new Error('no valid draft in route for getCommentDraft')
         initCommentDraft.current = draft
         setTargetCommentId(draft.targetCommentId)
         setTargetDocId(createHmId('d', draft.targetDocEid))
         initDraft()
-      })
-  }, [editCommentId])
+      },
+    },
+  )
+  // useEffect(() => {
+  //   if (!editCommentId) return
+  //   client.comments.getCommentDraft
+  //     .query({
+  //       commentDraftId: editCommentId,
+  //     })
+  //     .then((draft) => {
+  //       if (!draft)
+  //         throw new Error('no valid draft in route for getCommentDraft')
+  //       initCommentDraft.current = draft
+  //       setTargetCommentId(draft.targetCommentId)
+  //       setTargetDocId(createHmId('d', draft.targetDocEid))
+  //       initDraft()
+  //     })
+  // }, [editCommentId])
   const invalidate = useQueryInvalidator()
   const publishComment = useMutation({
     mutationFn: async ({
