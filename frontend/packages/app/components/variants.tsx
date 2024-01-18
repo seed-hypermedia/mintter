@@ -8,7 +8,6 @@ import {
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
 import {usePublicationVariant} from '@mintter/app/models/publication'
-import {RenamePubDialog} from '@mintter/app/pages/group'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   NavContextProvider,
@@ -77,6 +76,7 @@ import {useEntityTimeline} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useCurrentDocumentGroups} from '../models/groups'
 import {getAccountName} from '../pages/account-page'
+import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {GroupVariant, PublicationVariant} from '../utils/navigation'
 import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
@@ -150,6 +150,7 @@ export function GroupPublishDialog({
     version?: string | undefined
     docTitle?: string | undefined
     onComplete?: () => void
+    editDraftId?: string | undefined
   }
   onClose: () => void
 }) {
@@ -678,7 +679,7 @@ function GroupVariantState({
         size="$2"
         disabled={!isOpen}
         hoverStyle={{
-          textDecorationLine: isOpen ? 'underline' : null,
+          textDecorationLine: isOpen ? 'underline' : 'none',
         }}
         onPress={() => {
           navigate({
@@ -1137,7 +1138,7 @@ export function PublishDialogInstance({
           <NavContextProvider value={nav}>
             <GroupPublishDialog
               input={{docId, version, editDraftId, docTitle}}
-              dialogState={props}
+              onClose={() => closePopover?.()}
             />
           </NavContextProvider>
         </Dialog.Content>

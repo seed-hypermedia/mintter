@@ -13,7 +13,7 @@ import {MainWrapperStandalone} from '../components/main-wrapper'
 import {useComment, useCommentEditor} from '../models/comments'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 function CommitBar({
   onSubmit,

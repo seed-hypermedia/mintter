@@ -38,7 +38,7 @@ import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useOpenDraft} from '../utils/open-draft'
-import {AppPublicationContentProvider} from './publication'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function DraftPage() {
   let route = useNavRoute()

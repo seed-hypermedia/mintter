@@ -1,7 +1,7 @@
 import {XStack} from '@mintter/ui'
 import {AlertCircle} from '@tamagui/lucide-icons'
-import {WindowsLinuxTitleBar} from './titlebar-windows-linux'
 import {NavMenuButton, NavigationButtons} from './titlebar-common'
+import {WindowsLinuxTitleBar} from './windows-linux-titlebar'
 
 export default function ErrorBarWindowsLinux() {
   return (
