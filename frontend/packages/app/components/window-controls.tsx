@@ -1,5 +1,5 @@
 import {useWindowUtils} from '@mintter/app/app-context'
-import {Button, Close, useTheme} from '@mintter/ui'
+import {Button, Close, XStack, useTheme} from '@mintter/ui'
 
 export function CloseButton() {
   const {close} = useWindowUtils()
@@ -91,5 +91,15 @@ function ButtonWrapper(props: any) {
       height={20}
       {...props}
     />
+  )
+}
+
+export function WindowsLinuxWindowControls() {
+  return (
+    <XStack className="no-window-drag">
+      <MinimizeButton />
+      <MaximizeOrRestoreButton />
+      <CloseButton />
+    </XStack>
   )
 }

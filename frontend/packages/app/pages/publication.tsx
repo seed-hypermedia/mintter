@@ -6,15 +6,10 @@ import {useDocCitations} from '@mintter/app/models/content-graph'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
-  API_FILE_URL,
   MttLink,
   Publication,
   PublicationContent,
-  PublicationContentContextValue,
-  PublicationContentProvider,
   PublicationHeading,
-  contentLayoutUnit,
-  contentTextUnit,
   createHmId,
   formattedDateMedium,
   pluralS,
@@ -36,15 +31,7 @@ import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useCallback, useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {useAppContext} from '../app-context'
 import {BaseAccountLinkAvatar} from '../components/account-link-avatar'
-import {
-  EmbedAccount,
-  EmbedComment,
-  EmbedGroup,
-  EmbedPublicationCard,
-  EmbedPublicationContent,
-} from '../components/app-embeds'
 import {EntityVersionsAccessory} from '../components/changes-list'
 import {EntityCommentsAccessory} from '../components/comments'
 import {PushToGatewayDialog} from '../components/copy-gateway-reference'
@@ -52,10 +39,7 @@ import {useAppDialog} from '../components/dialog'
 import {FirstPublishDialog} from '../components/first-publish-dialog'
 import {MainWrapper} from '../components/main-wrapper'
 import {PinDocumentButton} from '../components/pin-entity'
-import {
-  CopyReferenceButton,
-  useFullReferenceUrl,
-} from '../components/titlebar-common'
+import {CopyReferenceButton} from '../components/titlebar-common'
 import {useAccounts} from '../models/accounts'
 import {useDocHistory} from '../models/changes'
 import {useAllPublicationComments, useCreateComment} from '../models/comments'
@@ -63,52 +47,8 @@ import {useExperiments} from '../models/experiments'
 import {useGatewayHost} from '../models/gateway-settings'
 import {useCurrentDocumentGroups, useGroup} from '../models/groups'
 import {usePublicationVariant} from '../models/publication'
-import {useOpenUrl} from '../open-url'
 import {getAccountName} from './account-page'
-
-export function AppPublicationContentProvider({
-  children,
-  ...overrides
-}: React.PropsWithChildren<Partial<PublicationContentContextValue>>) {
-  const {saveCidAsFile} = useAppContext()
-  const openUrl = useOpenUrl()
-  const route = useNavRoute()
-  const reference = useFullReferenceUrl(route)
-  const experiments = useExperiments()
-  return (
-    <>
-      <PublicationContentProvider
-        showDevMenu={experiments.data?.pubContentDevMenu}
-        layoutUnit={contentLayoutUnit}
-        textUnit={contentTextUnit}
-        debug={false}
-        entityComponents={{
-          AccountCard: EmbedAccount,
-          GroupCard: EmbedGroup,
-          PublicationCard: EmbedPublicationCard,
-          PublicationContent: EmbedPublicationContent,
-          CommentCard: EmbedComment,
-        }}
-        onLinkClick={(href, e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          openUrl(href)
-        }}
-        onCopyBlock={(blockId: string) => {
-          if (blockId && reference) {
-            reference.onCopy(blockId)
-          }
-        }}
-        ipfsBlobPrefix={`${API_FILE_URL}/`}
-        saveCidAsFile={saveCidAsFile}
-        {...overrides}
-      >
-        {children}
-      </PublicationContentProvider>
-      {reference?.content}
-    </>
-  )
-}
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 function PublicationPageMeta({publication}: {publication: Publication}) {
   const editors = useAccounts(publication.document?.editors || [])

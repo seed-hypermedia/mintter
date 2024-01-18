@@ -8,6 +8,7 @@ import {
   createHmId,
   formattedDateMedium,
   unpackHmId,
+  useHover,
 } from '@mintter/shared'
 import {
   Button,
@@ -37,11 +38,11 @@ import {
   usePublicationCommentGroups,
 } from '../models/comments'
 import {usePublication} from '../models/documents'
-import {AppPublicationContentProvider} from '../pages/publication'
+import {AppPublicationContentProvider} from '../pages/publication-content-provider'
 import {useNavigate} from '../utils/useNavigate'
 import {AccessoryContainer} from './accessory-sidebar'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
-import {WindowsLinuxWindowControls} from './titlebar-windows-linux'
+import {WindowsLinuxWindowControls} from './window-controls'
 
 export function CommentGroup({
   group,
@@ -248,8 +249,14 @@ export function CommentPresentation({
   onReplyBlock?: (blockId: string) => void
 }) {
   const account = useAccount(comment.author)
+  const {hover, ...hoverProps} = useHover()
   return (
-    <YStack group="item" marginVertical="$3" paddingHorizontal="$3">
+    <YStack
+      group="item"
+      marginVertical="$3"
+      paddingHorizontal="$3"
+      {...hoverProps}
+    >
       <XStack jc="space-between" paddingHorizontal="$2" marginBottom="$2">
         <XStack gap="$2">
           <UIAvatar
@@ -265,7 +272,11 @@ export function CommentPresentation({
         </XStack>
 
         {menuItems ? (
-          <OptionsDropdown menuItems={menuItems || []} hiddenUntilItemHover />
+          <OptionsDropdown
+            menuItems={menuItems || []}
+            hiddenUntilItemHover
+            hover={hover}
+          />
         ) : null}
       </XStack>
       {comment.createTime ? (

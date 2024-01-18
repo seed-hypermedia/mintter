@@ -24,7 +24,6 @@ import {
   Form,
   H1,
   Heading,
-  Input,
   Label,
   ListItem,
   Separator,
@@ -84,15 +83,14 @@ import {
   useGroupContent,
   useGroupMembers,
   useRemoveDocFromGroup,
-  useRenameGroupDoc,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
+import {RenamePubDialog} from '../src/rename-publication-dialog'
 import {GroupRoute, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
-import {pathNameify} from '../utils/path'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication'
+import {AppPublicationContentProvider} from './publication-content-provider'
 
 export default function GroupPage() {
   const route = useNavRoute()
@@ -453,57 +451,6 @@ export default function GroupPage() {
         {editGroupInfo.content}
       </YStack>
     </>
-  )
-}
-
-export function RenamePubDialog({
-  input: {groupId, pathName, docTitle},
-  onClose,
-}: {
-  input: {groupId: string; pathName: string; docTitle: string}
-  onClose: () => void
-}) {
-  const [renamed, setRenamed] = useState(pathName)
-  const renameDoc = useRenameGroupDoc()
-  return (
-    <Form
-      onSubmit={() => {
-        onClose()
-        toast.promise(
-          renameDoc.mutateAsync({
-            pathName,
-            groupId,
-            newPathName: pathNameify(renamed),
-          }),
-          {
-            success: 'Renamed',
-            loading: 'Renaming..',
-            error: 'Failed to rename',
-          },
-        )
-      }}
-    >
-      <DialogTitle>Change short path</DialogTitle>
-      <DialogDescription>
-        Choose a new short name for &quot;{docTitle}&quot; in this group. Be
-        careful, as this will change web URLs.
-      </DialogDescription>
-      <Input
-        value={renamed}
-        onChangeText={(value) => {
-          setRenamed(
-            value
-              .toLocaleLowerCase()
-              .replace(/\s+/g, '-')
-              .replace(/[^a-z0-9-_]/g, '')
-              .replace(/-{2,}/g, '-'),
-          )
-        }}
-      />
-      <Form.Trigger asChild>
-        <Button>Save</Button>
-      </Form.Trigger>
-    </Form>
   )
 }
 
