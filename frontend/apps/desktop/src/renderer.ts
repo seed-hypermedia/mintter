@@ -31,6 +31,7 @@ import './root.tsx'
 
 if (IS_PROD_DESKTOP) {
   Sentry.init({
+    dsn: 'https://8d3089ffb71045dc911bc66efbd3463a@o4504088793841664.ingest.sentry.io/4505527460429824',
     debug: true,
   })
 }
