@@ -101,3 +101,6 @@ scratch.*.*
 
 # pixi environments
 .pixi
+
+# sentry
+.sentryclirc
