@@ -508,17 +508,19 @@ export function VersionContext({route}: {route: NavRoute}) {
           </ButtonText>
         </Tooltip>
         {routeWithoutVersion ? (
-          <Tooltip content={`View ${latestVersionLabel}`}>
-            <Button
-              size="$1"
-              className="no-window-drag"
-              chromeless
-              onPress={() => {
-                routeWithoutVersion && navigate(routeWithoutVersion)
-              }}
-              icon={X}
-            />
-          </Tooltip>
+          <View className="no-window-drag">
+            <Tooltip content={`View ${latestVersionLabel}`}>
+              <Button
+                size="$1"
+                className="no-window-drag"
+                chromeless
+                onPress={() => {
+                  routeWithoutVersion && navigate(routeWithoutVersion)
+                }}
+                icon={X}
+              />
+            </Tooltip>
+          </View>
         ) : null}
       </XStack>
     </>
