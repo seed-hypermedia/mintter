@@ -265,7 +265,8 @@ export function useFullReferenceUrl(route: NavRoute): {
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(variantGroupId)
   const gwUrl = useGatewayUrl()
-  const [copyDialogContent] = useCopyGatewayReference()
+  const [copyDialogContent, onCopyPublicDoc, gatewayHost] =
+    useCopyGatewayReference()
 
   if (groupRoute) {
     const groupExactVersion = groupRoute?.version || group?.data?.version
@@ -368,20 +369,20 @@ export function useFullReferenceUrl(route: NavRoute): {
       // })
       // }
     }
-    let url = createPublicWebHmUrl('d', docId.eid, {
-      version: pub.data?.publication?.version,
-      hostname,
-    })
-    let label = hostname ? 'Site Version' : 'Doc Version'
     return {
-      url,
-      label,
+      url: createPublicWebHmUrl('d', docId.eid, {
+        version: pub.data?.publication?.version,
+        hostname,
+      }),
+      label: hostname ? 'Site Version' : 'Doc Version',
       content: copyDialogContent,
       onCopy: (blockId: string | undefined) => {
-        copyUrlToClipboardWithFeedback(
-          blockId ? `${url}#${blockId}` : url,
-          label,
-        )
+        onCopyPublicDoc({
+          ...docId,
+          hostname: hostname || null,
+          version: pub.data?.publication?.version || null,
+          blockRef: blockId || null,
+        })
       },
     }
   }
