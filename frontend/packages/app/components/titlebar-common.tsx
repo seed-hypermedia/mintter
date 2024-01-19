@@ -265,11 +265,7 @@ export function useFullReferenceUrl(route: NavRoute): {
   const entityTimeline = useEntityTimeline(routeGroupId || pubRouteDocId)
   const invertedGroupContent = useInvertedGroupContent(variantGroupId)
   const gwUrl = useGatewayUrl()
-  const [copyDialogContent, onCopyPublicDoc, gatewayHost] =
-    useCopyGatewayReference()
-  // let redirectedContext: undefined | PublicationRouteContext = undefined
-
-  // const navigateReplace = useNavigate('replace')
+  const [copyDialogContent] = useCopyGatewayReference()
 
   if (groupRoute) {
     const groupExactVersion = groupRoute?.version || group?.data?.version
@@ -316,7 +312,6 @@ export function useFullReferenceUrl(route: NavRoute): {
       if (matchedPrettyPath && !pubRoute.versionId) {
         const displayPrettyPath =
           matchedPrettyPath === '/' ? '' : matchedPrettyPath
-        const groupVersion = variantGroup.data?.version
         let sitePrettyUrl = `${hostname}/${displayPrettyPath}`
         // Version is temporarily disabled
         // if (groupVersion) {
@@ -373,20 +368,20 @@ export function useFullReferenceUrl(route: NavRoute): {
       // })
       // }
     }
+    let url = createPublicWebHmUrl('d', docId.eid, {
+      version: pub.data?.publication?.version,
+      hostname,
+    })
+    let label = hostname ? 'Site Version' : 'Doc Version'
     return {
-      url: createPublicWebHmUrl('d', docId.eid, {
-        version: pub.data?.publication?.version,
-        hostname,
-      }),
-      label: hostname ? 'Site Version' : 'Doc Version',
+      url,
+      label,
       content: copyDialogContent,
       onCopy: (blockId: string | undefined) => {
-        onCopyPublicDoc({
-          ...docId,
-          hostname: hostname || null,
-          version: pub.data?.publication?.version || null,
-          blockRef: blockId || null,
-        })
+        copyUrlToClipboardWithFeedback(
+          blockId ? `${url}#${blockId}` : url,
+          label,
+        )
       },
     }
   }
@@ -482,7 +477,7 @@ export function CopyReferenceButton() {
               reference.onCopy()
             }
           }}
-        ></Button>
+        />
       </Tooltip>
       {reference.content}
     </>

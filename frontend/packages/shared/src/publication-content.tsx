@@ -335,13 +335,17 @@ export function BlockNodeContent({
   childrenType?: HMBlockChildrenType | string
   embedDepth?: number
 }) {
-  const {layoutUnit} = usePublicationContentContext()
+  const {
+    layoutUnit,
+    onCitationClick,
+    onBlockComment,
+    onCopyBlock,
+    onReplyBlock,
+    debug,
+  } = usePublicationContentContext()
   const headingMarginStyles = useHeadingMarginStyles(depth, layoutUnit)
   const {hover, ...hoverProps} = useHover()
   const {citations} = useBlockCitations(blockNode.block?.id)
-
-  const {onCitationClick, onBlockComment, onCopyBlock, onReplyBlock, debug} =
-    usePublicationContentContext()
 
   let bnChildren = blockNode.children?.length
     ? blockNode.children.map((bn, index) => (
