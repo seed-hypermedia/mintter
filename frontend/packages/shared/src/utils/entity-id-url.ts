@@ -1,3 +1,5 @@
+import {StateStream} from './stream'
+
 export const HYPERMEDIA_PUBLIC_WEB_GATEWAY = 'https://hyper.media'
 
 export const HYPERMEDIA_SCHEME = 'hm'
@@ -189,8 +191,8 @@ export function isHypermediaScheme(url?: string) {
   return !!url?.startsWith(`${HYPERMEDIA_SCHEME}://`)
 }
 
-export function isPublicGatewayLink(text: string) {
-  const matchesGateway = text.indexOf(HYPERMEDIA_PUBLIC_WEB_GATEWAY) === 0
+export function isPublicGatewayLink(text: string, gwUrl: StateStream<string>) {
+  const matchesGateway = text.indexOf(gwUrl.get()) === 0
   return !!matchesGateway
 }
 
@@ -209,9 +211,12 @@ export function idToUrl(
   })
 }
 
-export function normlizeHmId(urlMaybe: string): string | undefined {
+export function normlizeHmId(
+  urlMaybe: string,
+  gwUrl: StateStream<string>,
+): string | undefined {
   if (isHypermediaScheme(urlMaybe)) return urlMaybe
-  if (isPublicGatewayLink(urlMaybe)) {
+  if (isPublicGatewayLink(urlMaybe, gwUrl)) {
     const unpacked = unpackHmId(urlMaybe)
 
     if (unpacked?.eid && unpacked.type) {
