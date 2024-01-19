@@ -17,7 +17,7 @@ export function OptionsDropdown({
 }: {
   menuItems: (MenuItemType | null)[]
   hiddenUntilItemHover?: boolean
-  hover: boolean
+  hover?: boolean
 }) {
   const popoverState = usePopoverState()
   return (

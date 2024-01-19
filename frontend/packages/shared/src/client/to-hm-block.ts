@@ -331,11 +331,14 @@ export function toHMBlock(
         id: serverBlock.block.id,
         props: {
           ref: serverBlock.block.ref,
+          sourceUrl: serverBlock.block.attributes.sourceUrl || '',
+          sourceRef: serverBlock.block.attributes.sourceRef || '',
+          latest: serverBlock.block.attributes.latest || false,
+          view: serverBlock.block.attributes.view || 'content',
           textAlignment: 'left',
           childrenType: extractChildrenType(
             serverBlock.block.attributes.childrenType,
           ),
-          view: serverBlock.block.attributes.view || 'content',
         },
         children: [],
       }
