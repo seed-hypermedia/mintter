@@ -111,9 +111,6 @@ export type HMBlockEmbed = HMBlockBase & {
   ref: string
   attributes: {
     view?: 'content' | 'card'
-    latest?: boolean
-    sourceUrl?: string
-    sourceRef?: string
   }
 }
 
