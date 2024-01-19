@@ -1,4 +1,5 @@
 import {useAppContext} from '@mintter/app/app-context'
+import {useGatewayUrlStream} from '@mintter/app/models/gateway-settings'
 import {fetchWebLink} from '@mintter/app/models/web-links'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {
@@ -394,10 +395,10 @@ function EmbedForm({
   })
   const theme = useTheme()
   const {queryClient} = useAppContext()
-
+  const gwUrl = useGatewayUrlStream()
   function submitEmbed(url: string) {
-    if (isPublicGatewayLink(url) || isHypermediaScheme(url)) {
-      const hmLink = normlizeHmId(url)
+    if (isPublicGatewayLink(url, gwUrl) || isHypermediaScheme(url)) {
+      const hmLink = normlizeHmId(url, gwUrl)
       const ref = hmLink ? hmLink : url
       assign({props: {ref: ref}} as EmbedType)
     } else {

@@ -1,5 +1,6 @@
 import {youtubeParser} from '@/utils'
 import {
+  StateStream,
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
@@ -25,6 +26,7 @@ export function getLinkMenuItems({
   sourceRef,
   fileName,
   docTitle,
+  gwUrl,
 }: {
   isLoading: boolean // true is spinner needs to be shown
   isHmLink: boolean // true if the link is an embeddable link
@@ -33,6 +35,7 @@ export function getLinkMenuItems({
   sourceRef?: string // the HM url the sourceUrl it resolved to
   fileName?: string // file name if any
   docTitle?: string | null // document title if any
+  gwUrl: StateStream<string>
 }) {
   const linkMenuItems: LinkMenuItem[] = [
     {
@@ -64,8 +67,8 @@ export function getLinkMenuItems({
         disabled: false,
         icon: <SquareAsterisk size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
-          if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
-            const hmId = normlizeHmId(ref)
+          if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
+            const hmId = normlizeHmId(ref, gwUrl)
             if (!hmId) return
             ref = hmId
           }
@@ -92,8 +95,8 @@ export function getLinkMenuItems({
         disabled: false,
         icon: <FileText size={18} />,
         execute: (editor: BlockNoteEditor, ref: string) => {
-          if (isPublicGatewayLink(ref) || isHypermediaScheme(ref)) {
-            const hmId = normlizeHmId(ref)
+          if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
+            const hmId = normlizeHmId(ref, gwUrl)
             if (!hmId) return
             ref = hmId
           }
@@ -120,7 +123,7 @@ export function getLinkMenuItems({
           disabled: false,
           icon: <Link size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
-            const hmId = normlizeHmId(ref)
+            const hmId = normlizeHmId(ref, gwUrl)
             const {state, schema, view} = editor._tiptapEditor
             const {selection} = state
             const pos = selection.from - sourceUrl!.length

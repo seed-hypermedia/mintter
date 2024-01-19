@@ -47,7 +47,7 @@ import {useNavigate} from '../utils/useNavigate'
 import {useAllAccounts} from './accounts'
 import {DraftStatusContext, draftMachine} from './draft-machine'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
-import {useGatewayUrl} from './gateway-settings'
+import {useGatewayUrl, useGatewayUrlStream} from './gateway-settings'
 import {useGroupContent} from './groups'
 import {queryKeys} from './query-keys'
 
@@ -646,6 +646,8 @@ export function useDraftEditor({
     }),
   )
 
+  const gwUrl = useGatewayUrlStream()
+
   // create editor
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
@@ -662,6 +664,7 @@ export function useDraftEditor({
       openOnClick: false,
       queryClient,
       grpcClient,
+      gwUrl,
       openUrl,
     },
 

@@ -1,9 +1,25 @@
 import {trpc} from '@mintter/desktop/src/trpc'
+import {
+  HYPERMEDIA_PUBLIC_WEB_GATEWAY,
+  StateStream,
+  writeableStateStream,
+} from '@mintter/shared'
+import {useEffect, useMemo} from 'react'
 import {useQueryInvalidator} from '../app-context'
 
 export function useGatewayUrl() {
   const gatewayUrl = trpc.gatewaySettings.getGatewayUrl.useQuery()
   return gatewayUrl
+}
+export function useGatewayUrlStream(): StateStream<string> {
+  const gatewayUrl = trpc.gatewaySettings.getGatewayUrl.useQuery()
+  const [writeGwUrl, gwStateStream] = useMemo(() => {
+    return writeableStateStream<string>(HYPERMEDIA_PUBLIC_WEB_GATEWAY)
+  }, [])
+  useEffect(() => {
+    gatewayUrl.data && writeGwUrl(gatewayUrl.data)
+  }, [gatewayUrl.data])
+  return gwStateStream
 }
 
 export function useGatewayHost() {

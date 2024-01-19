@@ -6,6 +6,7 @@ import {client} from '@mintter/desktop/src/trpc'
 import {
   GRPCClient,
   HYPERMEDIA_SCHEME,
+  StateStream,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -26,6 +27,7 @@ type PasteHandlerOptions = {
   editor: Editor
   type: MarkType
   linkOnPaste?: boolean
+  gwUrl: StateStream<string>
 }
 
 export function pasteHandler(options: PasteHandlerOptions): Plugin {
@@ -95,12 +97,14 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
         )
 
         const nativeHyperLink =
-          isHypermediaScheme(textContent) || isPublicGatewayLink(textContent)
-            ? normlizeHmId(textContent)
+          isHypermediaScheme(textContent) ||
+          isPublicGatewayLink(textContent, options.gwUrl)
+            ? normlizeHmId(textContent, options.gwUrl)
             : null
 
         const unpackedHmId =
-          isHypermediaScheme(textContent) || isPublicGatewayLink(textContent)
+          isHypermediaScheme(textContent) ||
+          isPublicGatewayLink(textContent, options.gwUrl)
             ? unpackHmId(textContent)
             : null
 
@@ -183,6 +187,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       sourceUrl: link?.href,
                       sourceRef: normalizedHmUrl,
                       docTitle: title,
+                      gwUrl: options.gwUrl,
                     }),
                   }),
                 )
@@ -206,6 +211,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       isHmLink: true,
                       sourceUrl: link?.href,
                       sourceRef: normalizedHmUrl,
+                      gwUrl: options.gwUrl,
                     }),
                   }),
                 )
@@ -230,6 +236,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     isLoading: false,
                     isHmLink: true,
                     sourceRef: normalizedHmUrl,
+                    gwUrl: options.gwUrl,
                   }),
                 }),
               )
@@ -260,7 +267,11 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
             view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
               activate: true,
               ref: link.href,
-              items: getLinkMenuItems({isLoading: true, isHmLink: false}),
+              items: getLinkMenuItems({
+                isLoading: true,
+                isHmLink: false,
+                gwUrl: options.gwUrl,
+              }),
             }),
           )
 
@@ -275,6 +286,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     media: 'image',
                     sourceUrl: link.href,
                     fileName: fileName,
+                    gwUrl: options.gwUrl,
                   }),
                 }),
               )
@@ -289,6 +301,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     media: 'file',
                     sourceUrl: link.href,
                     fileName: fileName,
+                    gwUrl: options.gwUrl,
                   }),
                 }),
               )
@@ -303,6 +316,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     media: 'video',
                     sourceUrl: link.href,
                     fileName: fileName,
+                    gwUrl: options.gwUrl,
                   }),
                 }),
               )
@@ -327,6 +341,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                             sourceUrl: link.href,
                             sourceRef: fullHmUrl,
                             docTitle: res.hmTitle,
+                            gwUrl: options.gwUrl,
                           }),
                         }),
                       )
@@ -352,6 +367,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                             isHmLink: false,
                             media: type,
                             sourceUrl: link.href,
+                            originalRef: link.href,
+                            gwUrl: options.gwUrl,
                           }),
                         }),
                       )
@@ -371,6 +388,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                         items: getLinkMenuItems({
                           isLoading: false,
                           isHmLink: false,
+                          gwUrl: options.gwUrl,
                         }),
                       }),
                     )
