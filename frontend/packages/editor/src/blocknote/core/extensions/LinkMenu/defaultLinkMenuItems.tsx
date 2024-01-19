@@ -17,7 +17,8 @@ export function getLinkMenuItems({
   isLoading,
   hmId,
   media,
-  originalRef,
+  sourceUrl,
+  sourceRef,
   fileName,
   docTitle,
   gwUrl,
@@ -25,14 +26,15 @@ export function getLinkMenuItems({
   isLoading: boolean // true is spinner needs to be shown
   hmId?: UnpackedHypermediaId | null // if the link is an embeddable link
   media?: string // type of media block if link points to a media file
-  originalRef?: string // the inserted link into the editor. needed to correctly replace the link with block
+  sourceUrl?: string // the inserted link into the editor. needed to correctly replace the link with block
+  sourceRef?: string // the HM url the sourceUrl it resolved to
   fileName?: string // file name if any
   docTitle?: string | null // document title if any
   gwUrl: StateStream<string>
 }) {
   const linkMenuItems: LinkMenuItem[] = []
 
-  if (originalRef && !isHypermediaScheme(originalRef)) {
+  if (sourceRef && !isHypermediaScheme(sourceRef)) {
     linkMenuItems.unshift({
       name: 'Web Link',
       disabled: false,
@@ -49,7 +51,7 @@ export function getLinkMenuItems({
               pos,
               pos + docTitle!.length,
               schema.mark('link', {
-                href: originalRef,
+                href: sourceUrl,
               }),
             ),
         )
@@ -131,7 +133,7 @@ export function getLinkMenuItems({
         })
       }
 
-      if (docTitle && docTitle !== originalRef) {
+      if (docTitle && docTitle !== sourceUrl) {
         linkMenuItems.unshift({
           name: `Link as "${docTitle}"`,
           disabled: false,
@@ -173,7 +175,7 @@ export function getLinkMenuItems({
             src: embedUrl ? '' : ref,
             name: fileName ? fileName : '',
           })
-          insertNode(editor, originalRef ? originalRef : ref, node)
+          insertNode(editor, sourceUrl ? sourceUrl : ref, node)
         },
       }
 

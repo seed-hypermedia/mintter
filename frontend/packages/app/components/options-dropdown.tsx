@@ -1,7 +1,7 @@
-import {Button, MoreHorizontal, Popover, Separator, YGroup} from '@mintter/ui'
-import {FC} from 'react'
-import {usePopoverState} from '../use-popover-state'
-import {MenuItem} from './dropdown'
+import { Button, MoreHorizontal, Popover, Separator, YGroup } from '@mintter/ui'
+import { FC } from 'react'
+import { usePopoverState } from '../use-popover-state'
+import { MenuItem } from './dropdown'
 
 export type MenuItemType = {
   key: string
@@ -16,6 +16,7 @@ export function OptionsDropdown({
 }: {
   menuItems: (MenuItemType | null)[]
   hiddenUntilItemHover?: boolean
+  hover?: boolean
 }) {
   const popoverState = usePopoverState()
   return (

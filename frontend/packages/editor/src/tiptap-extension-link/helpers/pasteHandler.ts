@@ -180,7 +180,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     items: getLinkMenuItems({
                       isLoading: false,
                       hmId: unpackHmId(normalizedHmUrl),
-                      originalRef: normalizedHmUrl,
+                      sourceUrl: link?.href,
+                      sourceRef: normalizedHmUrl,
                       docTitle: title,
                       gwUrl: options.gwUrl,
                     }),
@@ -203,7 +204,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     ref: normalizedHmUrl,
                     items: getLinkMenuItems({
                       isLoading: false,
-                      hmId: unpackHmId(normalizedHmUrl),
+                      sourceUrl: link?.href,
+                      sourceRef: normalizedHmUrl,
                       gwUrl: options.gwUrl,
                     }),
                   }),
@@ -227,7 +229,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: normalizedHmUrl,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    hmId: unpackHmId(normalizedHmUrl),
+                    sourceRef: normalizedHmUrl,
                     gwUrl: options.gwUrl,
                   }),
                 }),
@@ -274,7 +276,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   items: getLinkMenuItems({
                     isLoading: false,
                     media: 'image',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,
                   }),
@@ -288,7 +290,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   items: getLinkMenuItems({
                     isLoading: false,
                     media: 'file',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,
                   }),
@@ -302,7 +304,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   items: getLinkMenuItems({
                     isLoading: false,
                     media: 'video',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                     gwUrl: options.gwUrl,
                   }),
@@ -342,7 +344,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                           items: getLinkMenuItems({
                             hmId: unpackHmId(fullHmUrl),
                             isLoading: false,
-                            originalRef: link.href,
+                            sourceUrl: link.href,
+                            sourceRef: fullHmUrl,
                             docTitle: res.hmTitle,
                             gwUrl: options.gwUrl,
                           }),
@@ -368,6 +371,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                           items: getLinkMenuItems({
                             isLoading: false,
                             media: type,
+                            sourceUrl: link.href,
                             gwUrl: options.gwUrl,
                           }),
                         }),
@@ -387,7 +391,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       view.state.tr.setMeta(linkMenuPluginKey, {
                         items: getLinkMenuItems({
                           isLoading: false,
-                          originalRef: link.href,
+                          sourceUrl: link.href,
                           gwUrl: options.gwUrl,
                         }),
                       }),

@@ -4,6 +4,7 @@ import {fetchWebLink} from '@mintter/app/models/web-links'
 import {useOpenUrl} from '@mintter/app/open-url'
 import {
   BlockContentEmbed,
+  createHmDocLink,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -14,8 +15,10 @@ import {
 import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
   Button,
+  Checkbox,
   Form,
   Input,
+  Label,
   Popover,
   Select,
   SizableText,
@@ -26,12 +29,13 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {Check, ChevronDown, ExternalLink} from '@tamagui/lucide-icons'
+import {Check, ExternalLink, MoreHorizontal} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {RiArticleLine} from 'react-icons/ri'
 import {Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos} from '.'
 import {createReactBlockSpec} from './blocknote/react'
+import {usePopoverState} from './use-popover-state'
 type LinkType = null | 'basic' | 'hypermedia'
 
 function EmbedError() {
@@ -51,6 +55,16 @@ export const EmbedBlock = createReactBlockSpec({
     view: {
       values: ['content', 'card'], // TODO: convert HMEmbedDisplay type to array items
       default: 'content',
+    },
+    latest: {
+      values: ['false', 'true'],
+      default: 'false',
+    },
+    sourceUrl: {
+      default: '',
+    },
+    sourceRef: {
+      default: '',
     },
   },
   containsInlineContent: true,
@@ -214,9 +228,29 @@ function EmbedControl({
     }
     return false
   }, [block.props.ref])
-
   const openUrl = useOpenUrl()
+  const popoverState = usePopoverState()
 
+  function removeVersionFromRef(currentRef: string) {
+    let unpackedRef = unpackHmId(block.props.ref)
+
+    console.log(`== ~ removeVersionFromRef ~ unpackedRef:`, unpackedRef)
+
+    let res = unpackedRef
+      ? createHmDocLink(unpackedRef?.qid, null, unpackedRef?.blockRef)
+      : currentRef
+    console.log(`== ~ removeVersionFromRef ~ res:`, res)
+    return res
+  }
+
+  function handleLatestChange(val: boolean | 'indeterminate') {
+    if (val != 'indeterminate') {
+      let newRef = val
+        ? removeVersionFromRef(block.props.sourceRef)
+        : block.props.sourceRef
+      assign({props: {ref: newRef, latest: val ? 'true' : 'false'}})
+    }
+  }
   return (
     <XStack
       position="absolute"
@@ -225,7 +259,7 @@ function EmbedControl({
       zIndex={100}
       width="100%"
       justifyContent="flex-end"
-      opacity={0}
+      opacity={popoverState.open ? 1 : 0}
       $group-item-hover={{opacity: 1}}
     >
       <XStack
@@ -256,50 +290,92 @@ function EmbedControl({
           />
         </Tooltip>
 
-        {isDocument ? (
-          <Select
-            id="view"
-            size="$2"
-            value={block.props.view}
-            onValueChange={(view) => {
-              assign({props: {view}})
-            }}
+        <Popover {...popoverState} placement="left-start">
+          <Popover.Trigger asChild>
+            <Button size="$2" icon={MoreHorizontal} />
+          </Popover.Trigger>
+          <Popover.Content
+            borderWidth={1}
+            borderColor="$borderColor"
+            enterStyle={{y: -10, opacity: 0}}
+            exitStyle={{y: -10, opacity: 0}}
+            elevate
+            elevation="$2"
+            padding="$2"
+            animation={[
+              'fast',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
           >
-            <Select.Trigger width={220}>
-              <XStack
-                gap="$1"
-                alignItems="center"
-                paddingVertical="$1"
-                paddingHorizontal="$2"
-                backgroundColor="$background"
-                borderRadius="$1"
-                hoverStyle={{
-                  backgroundColor: '$backgroundFocus',
-                  cursor: 'pointer',
-                }}
-              >
-                <SizableText size="$1">View</SizableText>
-                <ChevronDown size={12} />
+            <YStack paddingHorizontal="$2">
+              <XStack ai="center">
+                <Label f={1} fb={0}>
+                  use Latest
+                </Label>
+                <XStack ai="center" jc="center">
+                  <Checkbox
+                    id={`latest-${block.id}`}
+                    checked={block.props.latest == 'true'}
+                    onCheckedChange={handleLatestChange}
+                  >
+                    <Checkbox.Indicator>
+                      <Check />
+                    </Checkbox.Indicator>
+                  </Checkbox>
+                </XStack>
               </XStack>
-            </Select.Trigger>
-            <Select.Content zIndex={200000}>
-              <Select.Viewport disableScroll minWidth={200}>
-                <Select.Item index={1} value="content" gap="$2" minWidth={100}>
-                  <Select.ItemText>Content</Select.ItemText>
-                  <Select.ItemIndicator marginLeft="auto">
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-                <Select.Item index={2} value="card" gap="$2" minWidth={100}>
-                  <Select.ItemText>Card</Select.ItemText>
-                  <Select.ItemIndicator>
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-              </Select.Viewport>
-            </Select.Content>
-          </Select>
-        ) : null}
+              {isDocument ? (
+                <XStack ai="center" space>
+                  <Label f={1} fb={0}>
+                    View
+                  </Label>
+                  <Select
+                    id="view"
+                    size="$2"
+                    value={block.props.view}
+                    onValueChange={(view) => {
+                      assign({props: {view}})
+                    }}
+                  >
+                    <Select.Trigger width={120}>
+                      <Select.Value placeholder="..." />
+                    </Select.Trigger>
+                    <Select.Content zIndex={200000}>
+                      <Select.Viewport disableScroll minWidth={120}>
+                        <Select.Item
+                          index={1}
+                          value="content"
+                          gap="$2"
+                          minWidth={100}
+                        >
+                          <Select.ItemText>Content</Select.ItemText>
+                          <Select.ItemIndicator marginLeft="auto">
+                            <Check size={16} />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                        <Select.Item
+                          index={2}
+                          value="card"
+                          gap="$2"
+                          minWidth={100}
+                        >
+                          <Select.ItemText>Card</Select.ItemText>
+                          <Select.ItemIndicator>
+                            <Check size={16} />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                      </Select.Viewport>
+                    </Select.Content>
+                  </Select>
+                </XStack>
+              ) : null}
+            </YStack>
+          </Popover.Content>
+        </Popover>
       </XStack>
     </XStack>
   )
