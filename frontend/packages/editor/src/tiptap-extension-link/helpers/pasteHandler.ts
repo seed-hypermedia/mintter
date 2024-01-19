@@ -180,7 +180,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     items: getLinkMenuItems({
                       isLoading: false,
                       isHmLink: true,
-                      originalRef: title,
+                      sourceUrl: link?.href,
+                      sourceRef: normalizedHmUrl,
                       docTitle: title,
                     }),
                   }),
@@ -200,7 +201,12 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
                     activate: true,
                     ref: normalizedHmUrl,
-                    items: getLinkMenuItems({isLoading: false, isHmLink: true}),
+                    items: getLinkMenuItems({
+                      isLoading: false,
+                      isHmLink: true,
+                      sourceUrl: link?.href,
+                      sourceRef: normalizedHmUrl,
+                    }),
                   }),
                 )
               }
@@ -220,7 +226,11 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                 view.state.tr.scrollIntoView().setMeta(linkMenuPluginKey, {
                   activate: true,
                   ref: normalizedHmUrl,
-                  items: getLinkMenuItems({isLoading: false, isHmLink: true}),
+                  items: getLinkMenuItems({
+                    isLoading: false,
+                    isHmLink: true,
+                    sourceRef: normalizedHmUrl,
+                  }),
                 }),
               )
             })
@@ -263,7 +273,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     isLoading: false,
                     isHmLink: false,
                     media: 'image',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                   }),
                 }),
@@ -277,7 +287,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     isLoading: false,
                     isHmLink: false,
                     media: 'file',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                   }),
                 }),
@@ -291,7 +301,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     isLoading: false,
                     isHmLink: false,
                     media: 'video',
-                    originalRef: link.href,
+                    sourceUrl: link.href,
                     fileName: fileName,
                   }),
                 }),
@@ -314,7 +324,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                           items: getLinkMenuItems({
                             isLoading: false,
                             isHmLink: true,
-                            originalRef: link.href,
+                            sourceUrl: link.href,
+                            sourceRef: fullHmUrl,
                             docTitle: res.hmTitle,
                           }),
                         }),
@@ -340,7 +351,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                             isLoading: false,
                             isHmLink: false,
                             media: type,
-                            originalRef: link.href,
+                            sourceUrl: link.href,
                           }),
                         }),
                       )

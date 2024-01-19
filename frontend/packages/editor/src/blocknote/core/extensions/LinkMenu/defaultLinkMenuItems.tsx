@@ -21,23 +21,25 @@ export function getLinkMenuItems({
   isLoading,
   isHmLink,
   media,
-  originalRef,
+  sourceUrl,
+  sourceRef,
   fileName,
   docTitle,
 }: {
   isLoading: boolean // true is spinner needs to be shown
   isHmLink: boolean // true if the link is an embeddable link
   media?: string // type of media block if link points to a media file
-  originalRef?: string // the inserted link into the editor. needed to correctly replace the link with block
+  sourceUrl?: string // the inserted link into the editor. needed to correctly replace the link with block
+  sourceRef?: string // the HM url the sourceUrl it resolved to
   fileName?: string // file name if any
   docTitle?: string | null // document title if any
 }) {
   const linkMenuItems: LinkMenuItem[] = [
     {
-      name: docTitle && docTitle !== originalRef ? 'Web Link' : 'Dismiss',
+      name: docTitle && docTitle !== sourceUrl ? 'Web Link' : 'Dismiss',
       disabled: false,
       icon:
-        docTitle && docTitle !== originalRef ? (
+        docTitle && docTitle !== sourceUrl ? (
           <Globe size={18} />
         ) : (
           <XCircle size={18} />
@@ -74,11 +76,14 @@ export function getLinkMenuItems({
             {
               ref: ref,
               view: 'card',
+              latest: false,
+              sourceUrl,
+              sourceRef,
             },
             schema.text(' '),
           )
 
-          insertNode(editor, originalRef || ref, node)
+          insertNode(editor, sourceUrl || ref, node)
         },
       })
 
@@ -98,15 +103,18 @@ export function getLinkMenuItems({
           const node = schema.nodes.embed.create(
             {
               ref: ref,
+              latest: false,
+              sourceUrl,
+              sourceRef,
             },
             schema.text(' '),
           )
 
-          insertNode(editor, originalRef || ref, node)
+          insertNode(editor, sourceUrl || ref, node)
         },
       })
 
-      if (docTitle && docTitle !== originalRef) {
+      if (docTitle && docTitle !== sourceUrl) {
         linkMenuItems.unshift({
           name: `Link as "${docTitle}"`,
           disabled: false,
@@ -115,16 +123,16 @@ export function getLinkMenuItems({
             const hmId = normlizeHmId(ref)
             const {state, schema, view} = editor._tiptapEditor
             const {selection} = state
-            const pos = selection.from - originalRef!.length
+            const pos = selection.from - sourceUrl!.length
             view.dispatch(
               view.state.tr
-                .deleteRange(pos, pos + originalRef!.length)
+                .deleteRange(pos, pos + sourceUrl!.length)
                 .insertText(docTitle!, pos)
                 .addMark(
                   pos,
                   pos + docTitle!.length,
                   schema.mark('link', {
-                    href: hmId || originalRef,
+                    href: hmId || sourceUrl,
                   }),
                 ),
             )
@@ -163,7 +171,7 @@ export function getLinkMenuItems({
             src: embedUrl ? '' : ref,
             name: fileName ? fileName : '',
           })
-          insertNode(editor, originalRef ? originalRef : ref, node)
+          insertNode(editor, sourceUrl ? sourceUrl : ref, node)
         },
       }
 

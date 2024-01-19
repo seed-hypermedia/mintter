@@ -233,6 +233,9 @@ export function fromHMBlock(
       annotations: [],
       attributes: {
         view: editorBlock.props.view,
+        latest: editorBlock.props.latest,
+        sourceUrl: editorBlock.props.sourceUrl,
+        sourceRef: editorBlock.props.sourceRef,
       },
     })
   }
