@@ -137,6 +137,12 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           VITE_HM_SENTRY_DESKTOP_DSN: "${{ secrets.HM_SENTRY_SITE_DSN }}"
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          timeout-minutes: 10
+          VITE_DESKTOP_P2P_PORT: "55000"
+          VITE_DESKTOP_HTTP_PORT: "55001"
+          VITE_DESKTOP_GRPC_PORT: "55002"
+          VITE_DESKTOP_DESKTOP_APPDATA: "Mintter"
+          VITE_DESKTOP_HOSTNAME: "http://localhost"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
