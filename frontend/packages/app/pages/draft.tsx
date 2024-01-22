@@ -84,6 +84,7 @@ export default function DraftPage() {
   const gwUrl = useGatewayUrl()
 
   function handleFocusAtMousePos(event) {
+    console.log('== handleFocusAtMousePos', event.clientX, event.clientY)
     let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
     let editorView = ttEditor.view
     let editorRect = editorView.dom.getBoundingClientRect()
@@ -95,8 +96,6 @@ export default function DraftPage() {
     })
 
     if (pos) {
-      // console.log('=== WTF: ', editorView.domAtPos(pos.pos).node)
-      console.log('=== WTF: ')
       let node = editorView.state.doc.nodeAt(pos.pos)
 
       let sel = Selection.near(
@@ -107,6 +106,9 @@ export default function DraftPage() {
 
       ttEditor.commands.focus()
       ttEditor.commands.setTextSelection(sel)
+    } else {
+      ttEditor.commands.focus()
+      ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
     }
   }
 
