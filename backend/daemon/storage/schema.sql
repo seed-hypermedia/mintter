@@ -31,14 +31,14 @@ CREATE TABLE blobs (
     -- Size 0 indicates that data is stored inline in the multihash.
     -- Size -1 indicates that we somehow know about this hash, but don't have the data yet.
     size INTEGER DEFAULT (-1) NOT NULL,
-    -- Subjective (locally perceived) time when this block was inserted into the table for the first time.
+    -- Subjective (locally perceived) time when this blob was inserted.
     insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 );
 
 -- Stores some relevant attributes for structural blobs,
 -- which are those blobs that we can understand more deeply than just an opaque blob.
 CREATE TABLE structural_blobs (
-    id INTEGER PRIMARY KEY REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     -- Type of the structural blob.
     type TEXT NOT NULL,
     -- For structural blobs that have timestamps,
@@ -73,7 +73,7 @@ JOIN resources ON structural_blobs.resource = resources.id;
 
 -- Stores extra information for key delegation blobs.
 CREATE TABLE key_delegations (
-    id INTEGER PRIMARY KEY REFERENCES blobs (id) NOT NULL,
+    id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,
     issuer INTEGER REFERENCES public_keys (id),
     delegate INTEGER REFERENCES public_keys (id)
 ) WITHOUT ROWID;
@@ -112,8 +112,8 @@ CREATE INDEX resources_by_owner ON resources (owner) WHERE owner IS NOT NULL;
 -- Stores content-addressable links between blobs.
 -- Links are typed (rel) and directed.
 CREATE TABLE blob_links (
-    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
-    target INTEGER REFERENCES blobs (id) NOT NULL,
+    source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    target INTEGER REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,
     type TEXT NOT NULL,
     PRIMARY KEY (source, type, target)
 ) WITHOUT ROWID;
@@ -127,7 +127,7 @@ CREATE UNIQUE INDEX blob_backlinks ON blob_links (target, type, source);
 -- Non-pinned links point to the latest version of the resource we can find.
 -- Extra metadata can be stored along with the link, probably in JSON format.
 CREATE TABLE resource_links (
-    source INTEGER REFERENCES blobs (id) ON DELETE CASCADE NOT NULL,
+    source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     target INTEGER REFERENCES resources (id) NOT NULL,
     type TEXT NOT NULL,
     is_pinned INTEGER NOT NULL DEFAULT (0),
@@ -212,3 +212,9 @@ CREATE TABLE group_sites (
     last_sync_error TEXT NOT NULL DEFAULT (''),
     PRIMARY KEY (group_id)
 );
+
+-- Stores offset cursors for syncing all blobs with peers.
+CREATE TABLE syncing_cursors (
+    peer INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+    cursor TEXT NOT NULL
+) WITHOUT ROWID;

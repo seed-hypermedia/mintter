@@ -18,6 +18,12 @@ service P2P {
   // every time. Eventually this will be improved and made more efficient.
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
 
+  // ListBlobs returns a stream of blobs that the peer has.
+  // It's assumed that all peers have a way to list their blobs in a monotonic order,
+  // i.e. blobs that a peer receives later will have a higher index/cursor.
+  // This allows peers to sync more efficiently by remembering the cursor from the previous request,
+  // and only asking for what's new since then in the next request.
+  // Clients must treat the cursor as an opaque string.
   rpc ListBlobs(ListBlobsRequest) returns (stream Blob);
 
   // Request a peer to issue a lightning BOLT-11 invoice
@@ -45,7 +51,11 @@ message ListObjectsResponse {
   repeated Object objects = 1;
 }
 
-message ListBlobsRequest {}
+// Request to list blobs.
+message ListBlobsRequest {
+  // Optional. A cursor obtained from a previous request to resume the stream.
+  string cursor = 1;
+}
 
 // Request Invoice request.
 message RequestInvoiceRequest {
@@ -75,5 +85,11 @@ message Object {
 }
 
 message Blob {
+  // CID of the blob.
   bytes cid = 1;
+
+  // Cursor can be used to resume the stream to get only newer blobs than this one.
+  // Clients must not expect that all blobs will have a cursor (might be done as an optimization),
+  // but whenever they see a cursor for a blob they have already processed, they should remember it for future requests.
+  string cursor = 2;
 }

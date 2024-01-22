@@ -282,6 +282,20 @@ const (
 	C_StructuralBlobsViewTs         = "structural_blobs_view.ts"
 )
 
+// Table syncing_cursors.
+const (
+	SyncingCursors       sqlitegen.Table  = "syncing_cursors"
+	SyncingCursorsCursor sqlitegen.Column = "syncing_cursors.cursor"
+	SyncingCursorsPeer   sqlitegen.Column = "syncing_cursors.peer"
+)
+
+// Table syncing_cursors. Plain strings.
+const (
+	T_SyncingCursors       = "syncing_cursors"
+	C_SyncingCursorsCursor = "syncing_cursors.cursor"
+	C_SyncingCursorsPeer   = "syncing_cursors.peer"
+)
+
 // Table trusted_accounts.
 const (
 	TrustedAccounts   sqlitegen.Table  = "trusted_accounts"
@@ -386,6 +400,8 @@ var Schema = sqlitegen.Schema{
 		StructuralBlobsViewResourceID:   {Table: StructuralBlobsView, SQLType: "INTEGER"},
 		StructuralBlobsViewSize:         {Table: StructuralBlobsView, SQLType: "INTEGER"},
 		StructuralBlobsViewTs:           {Table: StructuralBlobsView, SQLType: "INTEGER"},
+		SyncingCursorsCursor:            {Table: SyncingCursors, SQLType: "TEXT"},
+		SyncingCursorsPeer:              {Table: SyncingCursors, SQLType: "INTEGER"},
 		TrustedAccountsID:               {Table: TrustedAccounts, SQLType: "INTEGER"},
 		WalletsAddress:                  {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:                  {Table: Wallets, SQLType: "INTEGER"},

@@ -38,14 +38,6 @@ func generateQueries() error {
 			"FROM", s.Blobs, '\n',
 			"WHERE", s.BlobsMultihash, "=", qb.VarCol(s.BlobsMultihash),
 		),
-		qb.MakeQuery(s.Schema, "BlobsUpdate", sgen.QueryKindExec,
-			"UPDATE", s.Blobs, '\n',
-			"SET", qb.ListColShort(
-				s.BlobsData,
-				s.BlobsSize,
-			), "=", qb.List(qb.VarCol(s.BlobsData), qb.VarCol(s.BlobsSize)), '\n',
-			"WHERE", s.BlobsID, "=", qb.VarCol(s.BlobsID),
-		),
 		qb.MakeQuery(s.Schema, "BlobsInsert", sgen.QueryKindSingle,
 			"INSERT INTO", s.Blobs, qb.ListColShort(
 				s.BlobsID,

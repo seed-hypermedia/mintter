@@ -9,6 +9,7 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
 	"mintter/backend/hyper/hypersql"
+	"mintter/backend/pkg/dqb"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -397,9 +398,21 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 		return err
 	}
 
+	pk, err := pid.ExtractPublicKey()
+	if err != nil {
+		return fmt.Errorf("failed to extract public key from peer id %s: %w", pid, err)
+	}
+
+	remotePrincipal := core.PrincipalFromPubKey(pk)
+
 	bs := s.blobs.IPFSBlockstore()
 
-	var want []cid.Cid
+	type wantBlob struct {
+		cid    cid.Cid
+		cursor string
+	}
+
+	var want []wantBlob
 	for {
 		obj, err := stream.Recv()
 		if err != nil {
@@ -420,8 +433,12 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 		}
 
 		if !ok {
-			want = append(want, c)
+			want = append(want, wantBlob{cid: c, cursor: obj.Cursor})
 		}
+	}
+
+	if len(want) == 0 {
+		return nil
 	}
 
 	log := s.log.With(
@@ -429,16 +446,32 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 	)
 
 	sess := s.bitswap.NewSession(ctx)
-	for _, c := range want {
-		blk, err := sess.GetBlock(ctx, c)
+	var lastSavedCursor string
+	for i, c := range want {
+		blk, err := sess.GetBlock(ctx, c.cid)
 		if err != nil {
-			log.Debug("FailedToGetWantedBlob", zap.String("cid", c.String()), zap.Error(err))
+			log.Debug("FailedToGetWantedBlob", zap.String("cid", c.cid.String()), zap.Error(err))
 			continue
 		}
 
 		if err := bs.Put(ctx, blk); err != nil {
-			log.Debug("FailedToSaveWantedBlob", zap.String("cid", c.String()), zap.Error(err))
+			log.Debug("FailedToSaveWantedBlob", zap.String("cid", c.cid.String()), zap.Error(err))
 			continue
+		}
+
+		if i%50 == 0 {
+			if err := SaveCursor(ctx, s.db, remotePrincipal, c.cursor); err != nil {
+				return err
+			}
+			lastSavedCursor = c.cursor
+		}
+	}
+
+	lastCursor := want[len(want)-1].cursor
+
+	if lastSavedCursor != lastCursor {
+		if err := SaveCursor(ctx, s.db, remotePrincipal, lastCursor); err != nil {
+			return err
 		}
 	}
 
@@ -502,3 +535,62 @@ func (s *Service) SyncWithPeer(ctx context.Context, device peer.ID, initialObjec
 	}
 	return nil
 }
+
+// GetCursor from the last sync with the given peer.
+func GetCursor[T *sqlite.Conn | *sqlitex.Pool](ctx context.Context, db T, peer core.Principal) (cursor string, err error) {
+	var conn *sqlite.Conn
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(ctx)
+		if err != nil {
+			return "", err
+		}
+		defer release()
+		conn = c
+	}
+
+	err = sqlitex.Exec(conn, qGetCursor(), func(stmt *sqlite.Stmt) error {
+		cursor = stmt.ColumnText(0)
+		return nil
+	}, peer)
+	return cursor, err
+}
+
+var qGetCursor = dqb.Str(`
+	SELECT cursor
+	FROM syncing_cursors
+	WHERE peer = (
+		SELECT id
+		FROM public_keys
+		WHERE principal = ?
+	)
+	LIMIT 1;
+`)
+
+// SaveCursor for the given peer.
+func SaveCursor[T *sqlite.Conn | *sqlitex.Pool](ctx context.Context, db T, peer core.Principal, cursor string) error {
+	var conn *sqlite.Conn
+	switch v := any(db).(type) {
+	case *sqlite.Conn:
+		conn = v
+	case *sqlitex.Pool:
+		c, release, err := v.Conn(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+		conn = c
+	}
+
+	return sqlitex.Exec(conn, qSaveCursor(), nil, peer, cursor)
+}
+
+var qSaveCursor = dqb.Str(`
+	INSERT OR REPLACE INTO syncing_cursors (peer, cursor)
+	VALUES (
+		(SELECT id FROM public_keys WHERE principal = :peer),
+		:cursor
+	);
+`)

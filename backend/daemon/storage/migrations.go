@@ -7,6 +7,7 @@ import (
 	"mintter/backend/core"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -267,6 +268,78 @@ var migrations = []migration{
 			CREATE INDEX IF NOT EXISTS structural_blobs_by_resource ON structural_blobs (resource, author) WHERE resource IS NOT NULL;
 			
 			DELETE FROM kv WHERE key = 'last_reindex_time';
+		`))
+	}},
+	{Version: "2024-01-22.01", Run: func(d *Dir, conn *sqlite.Conn) error {
+		if err := sqlitex.ExecScript(conn, sqlfmt(`
+			CREATE TABLE IF NOT EXISTS syncing_cursors (
+				peer INTEGER PRIMARY KEY REFERENCES public_keys (id) ON DELETE CASCADE NOT NULL,
+				cursor TEXT NOT NULL
+			) WITHOUT ROWID;
+			COMMIT;
+		`)); err != nil {
+			return err
+		}
+
+		if err := sqlitex.ExecTransient(conn, "BEGIN IMMEDIATE", nil); err != nil {
+			return err
+		}
+
+		var schemaVersion int
+		if err := sqlitex.ExecTransient(conn, "PRAGMA schema_version", func(stmt *sqlite.Stmt) error {
+			schemaVersion = stmt.ColumnInt(0)
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		return sqlitex.ExecScript(conn, sqlfmt(`
+			PRAGMA writable_schema = ON;
+
+			UPDATE sqlite_schema
+			SET sql = 'CREATE TABLE structural_blobs (
+				id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+				type TEXT NOT NULL,
+				ts INTEGER,
+				author INTEGER REFERENCES public_keys (id),
+				resource INTEGER REFERENCES resources (id)
+			) WITHOUT ROWID'
+			WHERE type = 'table'
+			AND name = 'structural_blobs';
+			
+			UPDATE sqlite_schema
+			SET sql = 'CREATE TABLE key_delegations (
+				id INTEGER PRIMARY KEY REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,
+				issuer INTEGER REFERENCES public_keys (id),
+				delegate INTEGER REFERENCES public_keys (id)
+			) WITHOUT ROWID'
+			WHERE type = 'table'
+			AND name = 'key_delegations';
+
+			UPDATE sqlite_schema
+			SET sql = 'CREATE TABLE blob_links (
+				source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES blobs (id) ON UPDATE CASCADE NOT NULL,
+				type TEXT NOT NULL,
+				PRIMARY KEY (source, type, target)
+			) WITHOUT ROWID'
+			WHERE type = 'table'
+			AND name = 'blob_links';
+
+			UPDATE sqlite_schema
+			SET sql = 'CREATE TABLE resource_links (
+				source INTEGER REFERENCES blobs (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+				target INTEGER REFERENCES resources (id) NOT NULL,
+				type TEXT NOT NULL,
+				is_pinned INTEGER NOT NULL DEFAULT (0),
+				meta BLOB
+			)'
+			WHERE type = 'table'
+			AND name = 'resource_links';
+
+			PRAGMA schema_version = `+strconv.Itoa(schemaVersion+1)+`;
+			PRAGMA writable_schema = OFF;
+			PRAGMA integrity_check;
 		`))
 	}},
 }

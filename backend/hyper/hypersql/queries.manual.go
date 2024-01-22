@@ -19,6 +19,21 @@ func IsResourceOwner(conn *sqlite.Conn, resource, account int64) (bool, error) {
 	return account == owner, nil
 }
 
+// BlobsUpdate updates a blob.
+func BlobsUpdate(conn *sqlite.Conn, blobsData []byte, blobsSize int64, blobsID int64) error {
+	return sqlitex.Exec(conn, qBlobsUpdate(), nil, blobsData, blobsSize, blobsID)
+}
+
+var qBlobsUpdate = dqb.Str(`
+	UPDATE blobs
+	SET data = :blobsData,
+		size = :blobsSize,
+		-- We update the ID to propagate the blob for the syncing peers
+		-- when we discover the data for a blob we knew about but didn't have data for.
+		id = (SELECT seq+1 FROM sqlite_sequence WHERE name = 'blobs')
+	WHERE id = :blobsID;
+`)
+
 // ResourceGetOwner returns the owner of the resource.
 func ResourceGetOwner(conn *sqlite.Conn, resource int64) (int64, error) {
 	var owner int64

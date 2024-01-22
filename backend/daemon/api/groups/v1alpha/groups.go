@@ -20,6 +20,7 @@ import (
 	"mintter/backend/pkg/dqb"
 	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
+	"mintter/backend/syncing"
 	"net/http"
 	"net/url"
 	"strings"
@@ -256,15 +257,32 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 		return err
 	}
 
-	stream, err := client.ListBlobs(ctx, &p2p.ListBlobsRequest{})
+	pubKey, err := ai.ID.ExtractPublicKey()
+	if err != nil {
+		return fmt.Errorf("failed to extract public key from peer ID %s: %w", ai.ID, err)
+	}
+
+	remotePrincipal := core.PrincipalFromPubKey(pubKey)
+
+	cursor, err := syncing.GetCursor(ctx, srv.db.db, remotePrincipal)
+	if err != nil {
+		return err
+	}
+
+	stream, err := client.ListBlobs(ctx, &p2p.ListBlobsRequest{Cursor: cursor})
 	if err != nil {
 		return err
 	}
 
 	bs := srv.blobs.IPFSBlockstore()
 
+	type wantBlob struct {
+		ID     cid.Cid
+		Cursor string
+	}
+
 	// Pull from the site.
-	var want []cid.Cid
+	var want []wantBlob
 	onSite := map[cid.Cid]struct{}{}
 	for {
 		blob, err := stream.Recv()
@@ -290,20 +308,35 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 			continue
 		}
 
-		want = append(want, c)
+		want = append(want, wantBlob{ID: c, Cursor: blob.Cursor})
 	}
 
 	// Pulling those blobs we want from site.
 	if len(want) > 0 {
 		sess := n.Bitswap().NewSession(ctx)
-		for _, c := range want {
-			blk, err := sess.GetBlock(ctx, c)
+		var lastSavedCursor string
+		for i, c := range want {
+			blk, err := sess.GetBlock(ctx, c.ID)
 			if err != nil {
 				return fmt.Errorf("failed to get blob %s from site: %w", c, err)
 			}
 
 			if err := bs.Put(ctx, blk); err != nil {
 				return fmt.Errorf("failed to put blob %s from site: %w", c, err)
+			}
+
+			if i%50 == 0 {
+				if err := syncing.SaveCursor(ctx, srv.db.db, remotePrincipal, c.Cursor); err != nil {
+					return err
+				}
+				lastSavedCursor = c.Cursor
+			}
+		}
+
+		lastCursor := want[len(want)-1].Cursor
+		if lastSavedCursor != lastCursor {
+			if err := syncing.SaveCursor(ctx, srv.db.db, remotePrincipal, lastCursor); err != nil {
+				return err
 			}
 		}
 	}
@@ -329,7 +362,7 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 				return nil
 			}
 
-			missingOnSite = append(missingOnSite, c)
+			missingOnSite = append(missingOnSite, wantBlob{ID: c}) // no cursor here.
 
 			return nil
 		}); err != nil {
@@ -341,7 +374,9 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 		}
 
 		if _, err := sc.PublishBlobs(ctx, &groups.PublishBlobsRequest{
-			Blobs: colx.SliceMap(missingOnSite, cid.Cid.String),
+			Blobs: colx.SliceMap(missingOnSite, func(w wantBlob) string {
+				return w.ID.String()
+			}),
 		}); err != nil {
 			return fmt.Errorf("failed to push blobs to the site: %w", err)
 		}

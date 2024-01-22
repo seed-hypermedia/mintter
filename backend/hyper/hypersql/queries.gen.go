@@ -119,29 +119,6 @@ WHERE blobs.multihash = :blobsMultihash`
 	return out, err
 }
 
-func BlobsUpdate(conn *sqlite.Conn, blobsData []byte, blobsSize int64, blobsID int64) error {
-	const query = `UPDATE blobs
-SET (data, size) = (:blobsData, :blobsSize)
-WHERE blobs.id = :blobsID`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":blobsData", blobsData)
-		stmt.SetInt64(":blobsSize", blobsSize)
-		stmt.SetInt64(":blobsID", blobsID)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: BlobsUpdate: %w", err)
-	}
-
-	return err
-}
-
 type BlobsInsertResult struct {
 	BlobsID int64
 }

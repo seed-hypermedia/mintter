@@ -32,6 +32,12 @@ type P2PClient interface {
 	// This is a very naive syncing protocol, it returns all the objects and all the changes
 	// every time. Eventually this will be improved and made more efficient.
 	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
+	// ListBlobs returns a stream of blobs that the peer has.
+	// It's assumed that all peers have a way to list their blobs in a monotonic order,
+	// i.e. blobs that a peer receives later will have a higher index/cursor.
+	// This allows peers to sync more efficiently by remembering the cursor from the previous request,
+	// and only asking for what's new since then in the next request.
+	// Clients must treat the cursor as an opaque string.
 	ListBlobs(ctx context.Context, in *ListBlobsRequest, opts ...grpc.CallOption) (P2P_ListBlobsClient, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(ctx context.Context, in *RequestInvoiceRequest, opts ...grpc.CallOption) (*RequestInvoiceResponse, error)
@@ -118,6 +124,12 @@ type P2PServer interface {
 	// This is a very naive syncing protocol, it returns all the objects and all the changes
 	// every time. Eventually this will be improved and made more efficient.
 	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
+	// ListBlobs returns a stream of blobs that the peer has.
+	// It's assumed that all peers have a way to list their blobs in a monotonic order,
+	// i.e. blobs that a peer receives later will have a higher index/cursor.
+	// This allows peers to sync more efficiently by remembering the cursor from the previous request,
+	// and only asking for what's new since then in the next request.
+	// Clients must treat the cursor as an opaque string.
 	ListBlobs(*ListBlobsRequest, P2P_ListBlobsServer) error
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error)

@@ -82,7 +82,7 @@ func TestEntityMutation(t *testing.T) {
 	require.Equal(t, []cid.Cid{ch1.CID}, ch2.Decoded.(Change).Deps, "new change must have previous heads")
 	require.NoError(t, blobs.SaveBlob(ctx, ch2))
 
-	ee, err = blobs.LoadEntity(ctx, "foo")
+	_, err = blobs.LoadEntity(ctx, "foo")
 	require.NoError(t, err)
 }
 
