@@ -62,7 +62,7 @@ yarn site:test          # test only site code (WIP)
 ## Group sites
 
 Group sites need two programs to run. The daemon which includes the P2P node (go app)
-and the forntend that renders documents (nextjs app). However for a production
+and the frontend that renders documents (nextjs app). However for a production
 deployment everything is orchestrated by docker compose. Read next sections for how to
 either deploy a site on a production server or run it locally in dev mode
 
@@ -70,7 +70,7 @@ either deploy a site on a production server or run it locally in dev mode
 
 To deploy a group into a site, make sure you have a domain name and
 a server with at least 1GB RAM and 512MB free space in root partition. Run the
-folloging command in the server:
+following command in the server:
 
 ```shell
 sh <(curl -sL https://go.hyper.media/website_deployment.sh) https://example.com
