@@ -52,7 +52,6 @@
     "graphql-codegen": "0.4.0",
     "node-gyp": "9.3.1",
     "prettier": "3.0.2",
-    "react-virtuoso": "4.6.2",
     "sort-package-json": "2.5.1",
     "superjson": "1.13.3",
     "tamagui": "1.79.1",

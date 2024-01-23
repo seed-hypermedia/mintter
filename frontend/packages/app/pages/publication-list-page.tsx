@@ -8,14 +8,13 @@ import {
   Delete,
   DialogDescription,
   DialogTitle,
+  List,
   Separator,
   Spinner,
-  View,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
-import {Virtuoso} from 'react-virtuoso'
 
 import {
   Document,
@@ -30,7 +29,7 @@ import {
   BadgeCheck as Verified,
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ComponentProps, ReactNode, memo, useRef, useState} from 'react'
+import {ComponentProps, memo} from 'react'
 import {useAppContext} from '../app-context'
 import {DeleteDocumentDialog} from '../components/delete-dialog'
 import {useDeleteDraftDialog} from '../components/delete-draft-dialog'
@@ -207,62 +206,6 @@ function DocumentTabs() {
         </XGroup>
       </YStack>
     </XStack>
-  )
-}
-
-function List<Item>({
-  items,
-  renderItem,
-  header,
-  footer,
-}: {
-  items: Item[]
-  renderItem: (row: {item: Item; containerWidth: number}) => ReactNode
-  header: ReactNode | null
-  footer?: ReactNode | null
-}) {
-  const virtuoso = useRef(null)
-  const [containerWidth, setContainerWidth] = useState(0)
-  const [containerHeight, setContainerHeight] = useState(0)
-  return (
-    <YStack
-      f={1}
-      height={'100%'}
-      onLayout={(e) => {
-        setContainerHeight(e.nativeEvent.layout.height)
-        setContainerWidth(e.nativeEvent.layout.width)
-      }}
-    >
-      <Virtuoso
-        fixedItemHeight={42}
-        ref={virtuoso}
-        style={{
-          height: containerHeight,
-          display: 'flex',
-          overflowY: 'scroll',
-          overflowX: 'hidden',
-        }}
-        increaseViewportBy={{
-          top: 800,
-          bottom: 800,
-        }}
-        components={{
-          Header: () => header || null,
-          Footer: () => footer || <View style={{height: 30}} />,
-        }}
-        className="main-scroll-wrapper"
-        totalCount={items?.length || 0}
-        itemContent={(index) => {
-          const item = items?.[index]
-          if (!item) return null
-          return (
-            <XStack jc="center" width={containerWidth}>
-              {renderItem({item, containerWidth})}
-            </XStack>
-          )
-        }}
-      />
-    </YStack>
   )
 }
 

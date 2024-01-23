@@ -6,12 +6,13 @@ import {
   Copy,
   Dialog,
   ExternalLink,
-  ScrollView,
+  List,
   Separator,
   SizableText,
   Spinner,
   Tooltip,
   UIAvatar,
+  View,
   XGroup,
   XStack,
   YStack,
@@ -122,9 +123,10 @@ export function NetworkDialog() {
           </Button>
         </XGroup.Item>
       </XGroup>
-      <ScrollView f={1}>
-        <YStack space="$1">
-          {displayPeers?.map((peer) => {
+      <View flexDirection="column" minHeight={500}>
+        <List
+          items={displayPeers || []}
+          renderItem={({item: peer, containerWidth}) => {
             return (
               <PeerRow
                 key={peer.id}
@@ -132,9 +134,9 @@ export function NetworkDialog() {
                 account={accounts[peer.accountId]}
               />
             )
-          })}
-        </YStack>
-      </ScrollView>
+          }}
+        />
+      </View>
     </>
   )
 }
@@ -160,7 +162,14 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
   }
   if (!account) return null
   return (
-    <XStack jc="space-between" space minHeight={'$2'} ai="center" group="item">
+    <XStack
+      jc="space-between"
+      f={1}
+      space
+      minHeight={'$2'}
+      ai="center"
+      group="item"
+    >
       <XStack space="$2" ai="center">
         <Tooltip content={connectionStatus ? 'Connected' : 'Disconnected'}>
           <XStack
@@ -177,7 +186,7 @@ function PeerRow({peer, account}: {peer: PeerInfo; account?: Account}) {
           </ButtonText>
         </Tooltip>
       </XStack>
-      <XStack space marginRight="$1">
+      <XStack space marginHorizontal="$3">
         <XStack space="$2">
           {account && !isSite ? (
             <UIAvatar
