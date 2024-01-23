@@ -1,10 +1,5 @@
 import {trpc} from '@mintter/desktop/src/trpc'
-import {
-  HMComment,
-  createHmId,
-  createPublicWebHmUrl,
-  unpackHmId,
-} from '@mintter/shared'
+import {HMComment, createHmId, unpackHmId} from '@mintter/shared'
 import {Button, ChevronUp, Copy, Spinner, XStack, YStack} from '@mintter/ui'
 import {Reply} from '@tamagui/lucide-icons'
 import {
@@ -48,10 +43,7 @@ function MainComment({
               label: 'Copy Link',
               icon: Copy,
               onPress: () => {
-                copyUrlToClipboardWithFeedback(
-                  createPublicWebHmUrl('c', comment.id, {hostname: null}),
-                  'Comment',
-                )
+                copyUrlToClipboardWithFeedback(comment.id, 'Comment')
               },
             },
             {
