@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/hyper/hypersql"
 	"mintter/backend/ipfs"
+	"mintter/backend/pkg/dqb"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -194,12 +195,52 @@ func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash 
 	}
 
 	if update {
-		return size.BlobsID, false, hypersql.BlobsUpdate(conn, compressed, int64(len(data)), size.BlobsID)
+		newID, err := allocateBlobID(conn)
+		if err != nil {
+			return 0, false, err
+		}
+		return size.BlobsID, false, blobsUpdateMissingData(conn, compressed, int64(len(data)), newID, size.BlobsID)
 	}
 
 	ins, err := hypersql.BlobsInsert(conn, inID, hash, int64(codec), compressed, int64(len(data)))
 	return ins.BlobsID, false, err
 }
+
+func allocateBlobID(conn *sqlite.Conn) (int64, error) {
+	var id int64
+	if err := sqlitex.Exec(conn, qAllocateBlobID(), func(stmt *sqlite.Stmt) error {
+		id = stmt.ColumnInt64(0)
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	if id == 0 {
+		return 0, fmt.Errorf("BUG: couldn't allocate blob ID for some reason")
+	}
+
+	return id, nil
+}
+
+var qAllocateBlobID = dqb.Str(`
+	UPDATE sqlite_sequence
+	SET seq = seq + 1
+	WHERE name = 'blobs'
+	RETURNING seq;
+`)
+
+// blobsUpdateMissingData updates a blob.
+func blobsUpdateMissingData(conn *sqlite.Conn, blobsData []byte, blobsSize int64, newID, blobsID int64) error {
+	return sqlitex.Exec(conn, qBlobsUpdateMissingData(), nil, blobsData, blobsSize, newID, blobsID)
+}
+
+var qBlobsUpdateMissingData = dqb.Str(`
+	UPDATE blobs
+	SET data = :blobsData,
+		size = :blobsSize,
+		id = :newID
+	WHERE id = :oldID;
+`)
 
 // DeleteBlock implements blockstore.Blockstore interface.
 func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
