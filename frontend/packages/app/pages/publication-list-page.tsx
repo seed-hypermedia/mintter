@@ -9,11 +9,11 @@ import {
   DialogDescription,
   DialogTitle,
   List,
+  PageContainer,
   Separator,
   Spinner,
   XGroup,
   XStack,
-  YStack,
 } from '@mintter/ui'
 
 import {
@@ -161,8 +161,8 @@ function DocumentTabs() {
   const replace = useNavigate('replace')
 
   return (
-    <XStack jc="center">
-      <YStack alignItems="flex-start" f={1} maxWidth={898} padding="$3">
+    <PageContainer>
+      <XStack>
         <XGroup separator={<Separator backgroundColor={'red'} />}>
           <ToggleGroupItem
             label="Trusted Creators"
@@ -204,8 +204,8 @@ function DocumentTabs() {
             }}
           />
         </XGroup>
-      </YStack>
-    </XStack>
+      </XStack>
+    </PageContainer>
   )
 }
 
