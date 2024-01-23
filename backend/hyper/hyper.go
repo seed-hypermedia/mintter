@@ -263,7 +263,12 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 			return err
 		}
 
-		if err := sqlitex.Exec(conn, qBlobsTouch(), nil, res.DraftsViewBlobID); err != nil {
+		newID, err := allocateBlobID(conn)
+		if err != nil {
+			return err
+		}
+
+		if err := sqlitex.Exec(conn, qBlobsTouch(), nil, newID, res.DraftsViewBlobID); err != nil {
 			return err
 		}
 
@@ -283,8 +288,8 @@ func (bs *Storage) PublishDraft(ctx context.Context, eid EntityID) (cid.Cid, err
 
 var qBlobsTouch = dqb.Str(`
 	UPDATE blobs
-	SET id = (SELECT seq+1 FROM sqlite_sequence WHERE name = 'blobs')
-	WHERE id = ?
+	SET id = :newID
+	WHERE id = :oldID;
 `)
 
 func (bs *Storage) DeleteDraft(ctx context.Context, eid EntityID) error {
