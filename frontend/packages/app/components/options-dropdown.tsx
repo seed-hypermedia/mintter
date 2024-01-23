@@ -12,12 +12,10 @@ export type MenuItemType = {
 
 export function OptionsDropdown({
   menuItems,
-  hover = false,
   hiddenUntilItemHover,
 }: {
   menuItems: (MenuItemType | null)[]
   hiddenUntilItemHover?: boolean
-  hover: boolean
 }) {
   const popoverState = usePopoverState()
   return (
@@ -27,10 +25,13 @@ export function OptionsDropdown({
           size="$1"
           circular
           data-trigger
-          opacity={!popoverState.open && !hover && hiddenUntilItemHover ? 0 : 1}
+          opacity={!popoverState.open && hiddenUntilItemHover ? 0 : 1}
           onPress={(e) => {
             // because we are nested in the outer button, we need to stop propagation or else onPress is triggered by parent button
             e.stopPropagation()
+          }}
+          $group-item-hover={{
+            opacity: 1,
           }}
           icon={MoreHorizontal}
         />

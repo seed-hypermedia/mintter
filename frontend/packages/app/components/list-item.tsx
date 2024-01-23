@@ -38,7 +38,7 @@ export function ListItem({
           setMenuItems(menuItems())
         }
       }}
-      // onPointerLeave={() => setIsHovering(false)}
+      group="item"
       chromeless
       onPress={onPress}
       {...hoverProps}
