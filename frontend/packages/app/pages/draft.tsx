@@ -50,7 +50,6 @@ export default function DraftPage() {
   useEffect(() => {
     if (documentId === undefined) {
       if (hasCreatedDraft.current) return
-      console.log('CREATING DRAFT', JSON.stringify(route))
       openDraft()
       hasCreatedDraft.current = true
     }
@@ -84,7 +83,6 @@ export default function DraftPage() {
   const gwUrl = useGatewayUrl()
 
   function handleFocusAtMousePos(event) {
-    console.log('== handleFocusAtMousePos', event.clientX, event.clientY)
     let ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
     let editorView = ttEditor.view
     let editorRect = editorView.dom.getBoundingClientRect()
@@ -107,8 +105,12 @@ export default function DraftPage() {
       ttEditor.commands.focus()
       ttEditor.commands.setTextSelection(sel)
     } else {
-      ttEditor.commands.focus()
-      ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
+      if (event.clientY > editorRect.top) {
+        // this is needed because if the user clicks on one of the sides of the title we don't want to jump to the bottom of the document to focus the document.
+        // if the window is scrolled and the title is not visible this will not matter because a block will be at its place so the normal focus should work.
+        ttEditor.commands.focus()
+        ttEditor.commands.setTextSelection(ttEditor.state.doc.nodeSize)
+      }
     }
   }
 
@@ -186,7 +188,12 @@ export default function DraftPage() {
                 </XStack>
               </Theme>
             ) : null}
-            <YStack id="editor-title">
+            <YStack
+              id="editor-title"
+              onPress={(e) => {
+                e.stopPropagation()
+              }}
+            >
               <DraftTitleInput
                 draftActor={data.actor}
                 onEnter={() => {
