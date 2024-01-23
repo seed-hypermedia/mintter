@@ -33,6 +33,9 @@ const conf = {
     size,
   }),
   media,
+  settings: {
+    webContainerType: 'inherit',
+  },
 } satisfies Parameters<typeof createTamagui>['0']
 
 // @ts-ignore - passing this directly breaks TS types
