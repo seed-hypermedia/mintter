@@ -331,6 +331,27 @@ export async function resolveHmIdToAppRoute(
       }
     }
   }
+  if (hmIds?.type === 'd') {
+    const docId = createHmId('d', hmIds.eid)
+    const pub = await grpcClient.publications.getPublication({
+      documentId: docId,
+      version: hmIds.version || '',
+    })
+    if (!pub.document) return null
+    return {
+      ...hmIds,
+      navRoute: {
+        key: 'publication',
+        documentId: docId,
+        versionId: hmIds.version || undefined,
+        blockId: hmIds.blockRef || undefined,
+        variant: {
+          key: 'authors',
+          authors: [pub.document.author],
+        },
+      },
+    }
+  }
   if (!hmIds) return null
   const navRoute = appRouteOfId(hmIds)
   if (!navRoute) return null
