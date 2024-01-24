@@ -1,7 +1,7 @@
 import {zodResolver} from '@hookform/resolvers/zod'
 import {Button, Form, Label} from '@mintter/ui'
 import {Plus} from '@tamagui/lucide-icons'
-import {useEffect} from 'react'
+import {ForwardedRef, forwardRef, useEffect} from 'react'
 import {SubmitHandler, useForm} from 'react-hook-form'
 import {toast} from 'react-hot-toast'
 import * as z from 'zod'
@@ -78,13 +78,16 @@ function AddGroupForm({
   )
 }
 
-function NewGroupButton(props: React.ComponentProps<typeof Button>) {
+const NewGroupButton = forwardRef(function NewGroupButton(
+  props: React.ComponentProps<typeof Button>,
+  ref: ForwardedRef<HTMLButtonElement>,
+) {
   return (
-    <Button chromeless size="$2" icon={Plus} {...props}>
+    <Button chromeless size="$2" ref={ref} icon={Plus} {...props}>
       {props.children}
     </Button>
   )
-}
+})
 
 export function CreateGroupButton({
   triggerLabel = '',
