@@ -311,6 +311,9 @@ func (srv *Server) syncGroupSite(ctx context.Context, group string, interval tim
 		want = append(want, wantBlob{ID: c, Cursor: blob.Cursor})
 	}
 
+	syncing.MSyncingWantBlobs.WithLabelValues("groups").Set(float64(len(want)))
+	defer syncing.MSyncingWantBlobs.WithLabelValues("groups").Set(0)
+
 	// Pulling those blobs we want from site.
 	if len(want) > 0 {
 		sess := n.Bitswap().NewSession(ctx)

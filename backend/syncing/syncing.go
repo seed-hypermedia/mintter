@@ -20,8 +20,24 @@ import (
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 )
+
+// Metrics. This is exported as a temporary measure,
+// because we have mostly the same code duplicated in groups and in syncing.
+//
+// TODO(burdiyan): refactor this to unify group syncing and normal periodic syncing.
+var (
+	MSyncingWantBlobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "mintter_syncing_wanted_blobs",
+		Help: "Number of blobs we want to sync at this time.",
+	}, []string{"package"})
+)
+
+func init() {
+	prometheus.MustRegister(MSyncingWantBlobs)
+}
 
 // NetDialFunc is a function of the Mintter P2P node that creates an instance
 // of a P2P RPC client for a given remote Device ID.
@@ -434,8 +450,12 @@ func (s *Service) SyncAllBlobs(ctx context.Context, pid peer.ID) error {
 
 		if !ok {
 			want = append(want, wantBlob{cid: c, cursor: obj.Cursor})
+			MSyncingWantBlobs.WithLabelValues("syncing").Inc()
 		}
 	}
+
+	MSyncingWantBlobs.WithLabelValues("syncing").Set(float64(len(want)))
+	defer MSyncingWantBlobs.WithLabelValues("syncing").Set(0)
 
 	if len(want) == 0 {
 		return nil
