@@ -222,6 +222,13 @@ func (api *Server) GetEntityTimeline(ctx context.Context, in *entities.GetEntity
 			return err
 		}
 
+		// Sometimes we know about a document from a link,
+		// but don't have any changes for it. We don't want this to be an error,
+		// so we just stop further processing and return an empty timeline.
+		if len(changeLookup) == 0 {
+			return nil
+		}
+
 		owner, ok := accountLookup[edb.ResourcesOwner]
 		if !ok {
 			return fmt.Errorf("BUG: missing owner for entity %q after processing the timeline", in.Id)
