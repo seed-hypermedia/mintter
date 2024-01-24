@@ -82,6 +82,7 @@ export function findLatestBuild(): string {
   const outDir = path.join(rootDir, 'out')
   // list of files in the out directory
   const builds = fs.readdirSync(outDir)
+
   const platforms = [
     'win32',
     'win',
@@ -249,6 +250,27 @@ export function parseElectronApp(buildDir: string): ElectronAppInfo {
 
     let packageJson: {main: string; name: string}
 
+    if (asar) {
+      const asarPath = path.join(resourcesDir, 'app.asar')
+      packageJson = JSON.parse(
+        ASAR.extractFile(asarPath, 'package.json').toString('utf8'),
+      )
+      main = path.join(asarPath, packageJson.main)
+    } else {
+      packageJson = JSON.parse(
+        fs.readFileSync(path.join(resourcesDir, 'app', 'package.json'), 'utf8'),
+      )
+      main = path.join(resourcesDir, 'app', packageJson.main)
+    }
+    name = packageJson.name
+  } else if (platform == 'linux') {
+    const buildFolderName = buildDir.split('/').reverse()[0]
+    const appName = buildFolderName.split('-')[0]
+    executable = path.join(buildDir, appName)
+    resourcesDir = path.join(buildDir, 'resources')
+    const resourcesList = fs.readdirSync(resourcesDir)
+    asar = resourcesList.includes('app.asar')
+    let packageJson: {main: string; name: string}
     if (asar) {
       const asarPath = path.join(resourcesDir, 'app.asar')
       packageJson = JSON.parse(
