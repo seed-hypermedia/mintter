@@ -7,8 +7,7 @@ import {Profile as ProfileType} from '@mintter/shared'
 import {
   Button,
   ButtonProps,
-  Check,
-  Checkbox,
+  CheckboxField,
   Copy,
   ErrorIcon,
   Fieldset,
@@ -287,36 +286,30 @@ function Mnemonics(props: OnboardingStepProps) {
                       </Tooltip>
                     </XStack>
                   </XStack>
-                  <XStack gap="$2">
-                    <Checkbox
-                      id="check1"
-                      checked={check1}
-                      onCheckedChange={(v) => setCheck1(!!v)}
-                    >
-                      <Checkbox.Indicator>
-                        <Check />
-                      </Checkbox.Indicator>
-                    </Checkbox>
-                    <SizableText fontWeight="bold">
-                      I have stored my 12-word recovery phrase in a safe place.
-                    </SizableText>
-                  </XStack>
-                  <XStack gap="$2">
-                    <Checkbox
-                      id="check2"
-                      checked={check2}
-                      onCheckedChange={(v) => setCheck2(!!v)}
-                    >
-                      <Checkbox.Indicator>
-                        <Check />
-                      </Checkbox.Indicator>
-                    </Checkbox>
-                    <SizableText fontWeight="bold" color="$red11">
-                      I understand that after this point I will not be able to
-                      recover my 12-word recovery phrase. Mintter cannot help me
-                      recover them if I lose it.
-                    </SizableText>
-                  </XStack>
+                  <CheckboxField
+                    value={check1}
+                    onValue={(v) => setCheck1(!!v)}
+                    labelProps={{
+                      unstyled: true,
+                      fontWeight: 'bold',
+                      color: '$color12',
+                    }}
+                  >
+                    I have stored my 12-word recovery phrase in a safe place.
+                  </CheckboxField>
+                  <CheckboxField
+                    value={check2}
+                    onValue={(v) => setCheck2(!!v)}
+                    labelProps={{
+                      unstyled: true,
+                      fontWeight: 'bold',
+                      color: '$red11',
+                    }}
+                  >
+                    I understand that after this point I will not be able to
+                    recover my 12-word recovery phrase. Mintter cannot help me
+                    recover them if I lose it.
+                  </CheckboxField>
                 </YStack>
               </Tabs.Content>
               <Tabs.Content value="ownwords" paddingVertical="$4">
@@ -347,22 +340,20 @@ function Mnemonics(props: OnboardingStepProps) {
                       borderWidth="$0.5"
                     />
                   </XStack>
-                  <XStack gap="$2">
-                    <Checkbox
-                      id="check3"
-                      checked={check3}
-                      onCheckedChange={(v) => setCheck3(!!v)}
-                    >
-                      <Checkbox.Indicator>
-                        <Check />
-                      </Checkbox.Indicator>
-                    </Checkbox>
-                    <SizableText fontWeight="bold" color="$red11">
-                      I understand that after this point I will not be able to
-                      recover my 12-word recovery phrase. Mintter cannot help me
-                      recover them if I lose it.
-                    </SizableText>
-                  </XStack>
+                  <CheckboxField
+                    value={check3}
+                    onValue={(v) => setCheck3(!!v)}
+                    labelProps={{
+                      unstyled: true,
+                      fontWeight: 'bold',
+                      color: '$red11',
+                    }}
+                  >
+                    I understand that after this point I will not be able to
+                    recover my 12-word recovery phrase. Mintter cannot help me
+                    recover them if I lose it.
+                  </CheckboxField>
+
                   {error || register.status == 'error' ? (
                     <XStack
                       alignItems="center"
@@ -505,7 +496,7 @@ function NewDevice(props: OnboardingStepProps) {
               Add your account&apos;s Secret Recovery phrase in the input below
               separated by commas.
             </StepParagraph>
-            <YStack gap="$4">
+            <YStack gap="$4" justifyContent="flex-start">
               <XStack
                 backgroundColor="$backgroundHover"
                 borderRadius="$5"
@@ -527,22 +518,19 @@ function NewDevice(props: OnboardingStepProps) {
                   borderWidth="$0.5"
                 />
               </XStack>
-              <XStack gap="$2">
-                <Checkbox
-                  id="check1"
-                  checked={check1}
-                  onCheckedChange={(v) => setCheck1(!!v)}
-                >
-                  <Checkbox.Indicator>
-                    <Check />
-                  </Checkbox.Indicator>
-                </Checkbox>
-                <SizableText fontWeight="bold" color="$red11">
-                  I understand that after this point I will not be able to
-                  recover my 12-word recovery phrase. Mintter cannot help me
-                  recover them if I lose it.
-                </SizableText>
-              </XStack>
+              <CheckboxField
+                value={check1}
+                onValue={(v) => setCheck1(!!v)}
+                labelProps={{
+                  unstyled: true,
+                  fontWeight: 'bold',
+                  color: '$red11',
+                }}
+              >
+                I understand that after this point I will not be able to recover
+                my 12-word recovery phrase. Mintter cannot help me recover them
+                if I lose it.
+              </CheckboxField>
               {error || register.status == 'error' ? (
                 <XStack
                   alignItems="center"

@@ -5,16 +5,16 @@ import {Checkbox, Label, XStack} from 'tamagui'
 export function CheckboxField({
   value,
   onValue,
+  labelProps,
   children,
   ...props
 }: {
   value: boolean
-
   onValue: (value: boolean) => void
+  labelProps: React.ComponentProps<typeof Label>
   children: React.ReactNode | string
 } & React.ComponentProps<typeof XStack>) {
   const fieldId = React.useId()
-  console.log('value', value)
   return (
     <XStack {...props} gap="$3" ai="center">
       <Checkbox
@@ -26,7 +26,7 @@ export function CheckboxField({
           <Check />
         </Checkbox.Indicator>
       </Checkbox>
-      <Label color="$color10" htmlFor={fieldId}>
+      <Label color="$color10" {...labelProps} htmlFor={fieldId}>
         {children}
       </Label>
     </XStack>
