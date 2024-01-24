@@ -151,30 +151,26 @@ export function createAppWindow(input: {
     : prevWindowBounds
     ? {
         ...prevWindowBounds,
-        width:
-          windowType.initWidth ||
-          Math.max(
-            windowType.minWidth,
-            Math.min(
-              prevWindowBounds.width,
-              windowType.maxWidth || windowType.minWidth,
-            ),
+        width: Math.max(
+          windowType.minWidth,
+          Math.min(
+            prevWindowBounds.width,
+            windowType.maxWidth || windowType.minWidth,
           ),
-        height:
-          windowType.initHeight ||
-          Math.max(
-            windowType.minHeight,
-            Math.min(
-              prevWindowBounds.height,
-              windowType.maxHeight || windowType.minHeight,
-            ),
+        ),
+        height: Math.max(
+          windowType.minHeight,
+          Math.min(
+            prevWindowBounds.height,
+            windowType.maxHeight || windowType.minHeight,
           ),
+        ),
         x: prevWindowBounds.x + 60,
         y: prevWindowBounds.y + 60,
       }
     : {
-        width: windowType.minWidth,
-        height: windowType.minWidth,
+        width: windowType.initWidth || windowType.minWidth,
+        height: windowType.initHeight || windowType.minHeight,
       }
   const browserWindow = new BrowserWindow({
     show: false,
