@@ -104,5 +104,5 @@ func (b *Bitswap) Close() error {
 
 // NewProviderSystem creates a new provider.System. Users must call Run() to start and Close() to shutdown.
 func NewProviderSystem(ds datastore.Batching, rt routing.ContentRouting, strategy provider.KeyChanFunc) (provider.System, error) {
-	return provider.New(ds, provider.Online(rt), provider.KeyProvider(strategy), provider.ReproviderInterval(time.Minute*5))
+	return provider.New(ds, provider.Online(rt), provider.KeyProvider(strategy), provider.ReproviderInterval(defaultReprovideInterval))
 }
