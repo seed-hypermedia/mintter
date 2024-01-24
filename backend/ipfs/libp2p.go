@@ -197,7 +197,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
-		libp2p.ResourceManager(must.Do2(rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(rcmgr.InfiniteLimits)))),
+		libp2p.ResourceManager( /*must.Do2(rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(rcmgr.InfiniteLimits)))*/ rm),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			if ds == nil {
 				panic("BUG: must provide datastore for DHT")
