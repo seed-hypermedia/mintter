@@ -166,7 +166,7 @@ func New(cfg config.P2P, db *sqlitex.Pool, blobs *hyper.Storage, me core.Identit
 		testnetSuffix = "-" + cfg.TestnetName
 	}
 
-	protoInfo := newProtocolInfo("/hypermedia/", "0.2.0"+testnetSuffix)
+	protoInfo := newProtocolInfo("/hypermedia/", "0.3.0"+testnetSuffix)
 
 	client := newClient(me, host, protoInfo.ID)
 	clean.Add(client)
