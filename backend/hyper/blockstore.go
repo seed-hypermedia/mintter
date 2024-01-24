@@ -199,7 +199,7 @@ func (b *blockStore) putBlock(conn *sqlite.Conn, inID int64, codec uint64, hash 
 		if err != nil {
 			return 0, false, err
 		}
-		return size.BlobsID, false, blobsUpdateMissingData(conn, compressed, int64(len(data)), newID, size.BlobsID)
+		return newID, false, blobsUpdateMissingData(conn, compressed, int64(len(data)), newID, size.BlobsID)
 	}
 
 	ins, err := hypersql.BlobsInsert(conn, inID, hash, int64(codec), compressed, int64(len(data)))
