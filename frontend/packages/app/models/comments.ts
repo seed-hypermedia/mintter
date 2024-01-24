@@ -26,6 +26,7 @@ import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
+import {useGatewayUrlStream} from './gateway-settings'
 import {queryKeys} from './query-keys'
 
 function serverBlockNodesFromEditorBlocks(
@@ -222,6 +223,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
     editor.replaceBlocks(editor.topLevelBlocks, editorBlocks)
     setGroupTypes(editor._tiptapEditor, editorBlocks)
   }
+  const gwUrl = useGatewayUrlStream()
   const editor = useBlockNote<typeof hmBlockSchema>({
     onEditorContentChange(editor: BlockNoteEditor<typeof hmBlockSchema>) {
       setIsSaved(false)
@@ -247,6 +249,7 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       queryClient,
       grpcClient,
       openUrl,
+      gwUrl,
     },
 
     onEditorReady: (e) => {
