@@ -5,7 +5,6 @@ import {
   BlockNode,
   HMBlock,
   HMBlockChildrenType,
-  HMBlockCodeBlock,
   HMBlockFile,
   HMBlockNode,
   HMInlineContent,
@@ -374,10 +373,10 @@ export function BlockNodeContent({
       className="blocknode-content"
       id={blockNode.block?.id}
       borderRadius={layoutUnit / 4}
-      onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
-      onHoverOut={() =>
-        props.embedDepth ? undefined : hoverProps.onHoverOut()
-      }
+      // onHoverIn={() => (props.embedDepth ? undefined : hoverProps.onHoverIn())}
+      // onHoverOut={() =>
+      //   props.embedDepth ? undefined : hoverProps.onHoverOut()
+      // }
     >
       <XStack
         padding={isEmbed ? 0 : layoutUnit / 3}
@@ -391,7 +390,7 @@ export function BlockNodeContent({
           index={props.index}
           start={props.start}
         />
-        <BlockContent block={blockNode.block!} depth={depth} />
+        <BlockContent block={blockNode.block!} depth={depth} {...hoverProps} />
         {!props.embedDepth ? (
           <XStack
             position="absolute"
@@ -405,6 +404,12 @@ export function BlockNodeContent({
                 // disabled because it intersects with the sidebar at narrow screen widths:
                 // right: isEmbed ? layoutUnit * -1.5 : layoutUnit * -1.5,
               }
+            }
+            onHoverIn={() =>
+              props.embedDepth ? undefined : hoverProps.onHoverIn()
+            }
+            onHoverOut={() =>
+              props.embedDepth ? undefined : hoverProps.onHoverOut()
             }
           >
             {citations?.length ? (
@@ -486,12 +491,12 @@ export function BlockNodeContent({
       {bnChildren ? (
         <BlockNodeList
           paddingLeft={layoutUnit}
-          onHoverIn={() =>
-            props.embedDepth ? undefined : hoverProps.onHoverIn()
-          }
-          onHoverOut={() =>
-            props.embedDepth ? undefined : hoverProps.onHoverOut()
-          }
+          // onHoverIn={() =>
+          //   props.embedDepth ? undefined : hoverProps.onHoverIn()
+          // }
+          // onHoverOut={() =>
+          //   props.embedDepth ? undefined : hoverProps.onHoverOut()
+          // }
           childrenType={childrenType as HMBlockChildrenType}
           start={props.start}
           display="block"
@@ -525,6 +530,8 @@ function inlineContentSize(unit: number): TextProps {
 export type BlockContentProps = {
   block: Block | HMBlock
   depth: number
+  onHoverIn: () => void
+  onHoverOut: () => void
 }
 
 function BlockContent(props: BlockContentProps) {
@@ -546,9 +553,9 @@ function BlockContent(props: BlockContentProps) {
 
   if (props.block.type == 'file') {
     if (props.block.attributes.subType?.startsWith('nostr:')) {
-      return <BlockContentNostr block={props.block} />
+      return <BlockContentNostr {...props} block={props.block} />
     } else {
-      return <BlockContentFile block={props.block} />
+      return <BlockContentFile {...props} block={props.block} />
     }
   }
 
@@ -557,19 +564,20 @@ function BlockContent(props: BlockContentProps) {
   }
 
   if (props.block.type == 'codeBlock') {
-    return <BlockContentCode block={props.block} />
+    return <BlockContentCode {...props} block={props.block} />
   }
 
   return <BlockContentUnknown {...props} />
 }
 
-function BlockContentParagraph({block, depth}: BlockContentProps) {
+function BlockContentParagraph({block, ...props}: BlockContentProps) {
   const {debug, textUnit, ffSerif} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
 
   return (
     <YStack
       {...blockStyles}
+      {...props}
       {...debugStyles(debug, 'blue')}
       className="block-static block-paragraph"
     >
@@ -584,7 +592,11 @@ function BlockContentParagraph({block, depth}: BlockContentProps) {
   )
 }
 
-export function BlockContentHeading({block, depth}: BlockContentProps) {
+export function BlockContentHeading({
+  block,
+  depth,
+  ...props
+}: BlockContentProps) {
   const {textUnit, debug, ffSerif} = usePublicationContentContext()
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   let headingTextStyles = useHeadingTextStyles(depth, textUnit)
@@ -593,6 +605,7 @@ export function BlockContentHeading({block, depth}: BlockContentProps) {
   return (
     <YStack
       {...blockStyles}
+      {...props}
       {...debugStyles(debug, 'blue')}
       className="block-content block-heading"
     >
@@ -737,7 +750,7 @@ export function useHeadingMarginStyles(depth: number, unit: number) {
   }, [depth, unit])
 }
 
-function BlockContentImage({block, depth}: BlockContentProps) {
+function BlockContentImage({block, ...props}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   const cid = getCIDFromIPFSUrl(block?.ref)
   const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
@@ -746,6 +759,7 @@ function BlockContentImage({block, depth}: BlockContentProps) {
   return (
     <YStack
       {...blockStyles}
+      {...props}
       className="block-static block-image"
       paddingVertical="$3"
       gap="$2"
@@ -760,7 +774,7 @@ function BlockContentImage({block, depth}: BlockContentProps) {
   )
 }
 
-function BlockContentVideo({block, depth}: BlockContentProps) {
+function BlockContentVideo({block, ...props}: BlockContentProps) {
   let inline = useMemo(() => toHMInlineContent(new Block(block)), [])
   const ref = block.ref || ''
   const {ipfsBlobPrefix, textUnit} = usePublicationContentContext()
@@ -768,6 +782,7 @@ function BlockContentVideo({block, depth}: BlockContentProps) {
   return (
     <YStack
       {...blockStyles}
+      {...props}
       className="block-static block-video"
       paddingVertical="$3"
       gap="$2"
@@ -1196,7 +1211,7 @@ export function BlockContentFile({block}: {block: HMBlockFile}) {
   )
 }
 
-export function BlockContentNostr({block}: {block: HMBlockFile}) {
+export function BlockContentNostr({block, ...props}: BlockContentProps) {
   const {layoutUnit} = usePublicationContentContext()
   const name = block.attributes.name ?? ''
   const nostrNpud = nip19.npubEncode(name) ?? ''
@@ -1242,6 +1257,7 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
       hoverStyle={{
         backgroundColor: '$backgroundHover',
       }}
+      {...props}
     >
       <XStack justifyContent="space-between">
         <SizableText
@@ -1290,12 +1306,13 @@ export function BlockContentNostr({block}: {block: HMBlockFile}) {
   )
 }
 
-export function BlockContentCode({block}: {block: HMBlockCodeBlock}) {
+export function BlockContentCode({block, ...props}: BlockContentProps) {
   const {layoutUnit, debug, textUnit} = usePublicationContentContext()
 
   return (
     <YStack
       {...blockStyles}
+      {...props}
       borderColor="$color6"
       backgroundColor="$color4"
       borderWidth={1}
