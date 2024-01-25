@@ -8,7 +8,6 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/hyper"
-	"mintter/backend/hyper/hypersql"
 	"mintter/backend/pkg/dqb"
 	"sync"
 	"sync/atomic"
@@ -197,6 +196,14 @@ type SyncResult struct {
 	Errs          []error
 }
 
+var qListPeersToSync = dqb.Str(`
+	SELECT
+		del.principal AS delegate
+	FROM key_delegations
+	JOIN trusted_accounts ON trusted_accounts.id = key_delegations.issuer
+	JOIN public_keys del ON del.id = key_delegations.delegate
+`)
+
 // Sync attempts to sync the objects with connected peers.
 func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	if !s.mu.TryLock() {
@@ -204,18 +211,24 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	}
 	defer s.mu.Unlock()
 
-	var delegations []hypersql.KeyDelegationsListAllResult
+	var peers []peer.ID
 	if err := s.blobs.Query(ctx, func(conn *sqlite.Conn) error {
-		delegations, err = hypersql.KeyDelegationsListAll(conn)
-		return err
+		return sqlitex.Exec(conn, qListPeersToSync(), func(stmt *sqlite.Stmt) error {
+			pid, err := core.Principal(stmt.ColumnBytesUnsafe(0)).PeerID()
+			if err != nil {
+				return err
+			}
+			peers = append(peers, pid)
+			return nil
+		})
 	}); err != nil {
 		return res, err
 	}
 
-	res.Peers = make([]peer.ID, len(delegations))
-	res.Errs = make([]error, len(delegations))
+	res.Peers = make([]peer.ID, len(peers))
+	res.Errs = make([]error, len(peers))
 	var wg sync.WaitGroup
-	wg.Add(len(delegations))
+	wg.Add(len(peers))
 
 	// In order not to create a CPU overhead we spread sync routines throughout the
 	// syncing interval
@@ -225,12 +238,12 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 
 	if !s.burstSync {
 		roundSleep = (s.syncInterval * 85 / 100) / numSlots
-		if len(delegations) > numSlots {
-			every = 1 + len(delegations)/numSlots
+		if len(peers) > numSlots {
+			every = 1 + len(peers)/numSlots
 		}
 	}
-	for i, del := range delegations {
-		go func(i int, del hypersql.KeyDelegationsListAllResult) {
+	for i, pid := range peers {
+		go func(i int, pid peer.ID) {
 			var err error
 			defer func() {
 				res.Errs[i] = err
@@ -243,19 +256,12 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 				wg.Done()
 			}()
 
-			var pid peer.ID
-			device := core.Principal(del.KeyDelegationsViewDelegate)
-			pid, err = core.Principal(del.KeyDelegationsViewDelegate).PeerID()
-			if err != nil {
-				s.log.Warn("FailedToParsePeerID", zap.String("principal", device.String()))
-				return
-			}
 			res.Peers[i] = pid
 
 			if xerr := s.SyncWithPeer(ctx, pid); xerr != nil {
 				err = errors.Join(err, fmt.Errorf("failed to sync objects: %w", xerr))
 			}
-		}(i, del)
+		}(i, pid)
 		if i%every == 0 {
 			time.Sleep(roundSleep)
 		}
