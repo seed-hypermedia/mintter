@@ -22,7 +22,7 @@ services:
   grafana:
     image: grafana/grafana:main
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/dashboards
@@ -30,6 +30,7 @@ services:
     environment:
       GF_LOG_MODE: console
       GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"
+      GF_SERVER_HTTP_PORT: 3001
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
