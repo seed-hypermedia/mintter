@@ -24,7 +24,16 @@ import (
 )
 
 // Connect to a peer using provided addr info.
-func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
+func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) error {
+	return n.connect(ctx, info, false)
+}
+
+// ForceConnect is like Connext, but it ignores any backoffs that the network might have.
+func (n *Node) ForceConnect(ctx context.Context, info peer.AddrInfo) error {
+	return n.connect(ctx, info, true)
+}
+
+func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err error) {
 	if info.ID == "" {
 		return fmt.Errorf("must specify peer ID to connect")
 	}
@@ -47,7 +56,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 
 	// Since we're explicitly connecting to a peer, we want to clear any backoffs
 	// that the network might have at the moment.
-	{
+	if force {
 		sw, ok := n.p2p.Host.Network().(*swarm.Swarm)
 		if ok {
 			sw.Backoff().Clear(info.ID)

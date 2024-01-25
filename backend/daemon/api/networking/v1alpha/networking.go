@@ -53,7 +53,7 @@ func (srv *Server) Connect(ctx context.Context, in *networking.ConnectRequest) (
 		return nil, err
 	}
 
-	if err := net.Connect(ctx, info); err != nil {
+	if err := net.ForceConnect(ctx, info); err != nil {
 		return nil, err
 	}
 
