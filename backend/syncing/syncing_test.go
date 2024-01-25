@@ -40,6 +40,8 @@ func TestSync(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, alice.Blobs.SaveBlob(ctx, blob))
 
+	require.NoError(t, bob.Blobs.SetAccountTrust(ctx, alice.Syncer.me.Account().Principal()))
+
 	res, err := bob.Syncer.Sync(ctx)
 	require.NoError(t, err)
 	require.Equalf(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures: %v", res.Errs)
