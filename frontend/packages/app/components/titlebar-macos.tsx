@@ -4,7 +4,6 @@ import {
   NavMenuButton,
   NavigationButtons,
   PageActionButtons,
-  PageContextControl,
 } from './titlebar-common'
 import {Title} from './titlebar-title'
 
@@ -41,7 +40,6 @@ export default function TitleBarMacos(props: TitleBarProps) {
               }
             />
             <NavigationButtons />
-            <PageContextControl {...props} />
           </XStack>
         </XStack>
         <XStack flex={1} alignItems="center">
@@ -54,9 +52,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
           flexBasis={0}
           alignItems="center"
         >
-          <XStack className="no-window-drag">
-            <PageActionButtons {...props} />
-          </XStack>
+          <PageActionButtons {...props} />
         </XStack>
       </XStack>
     </TitlebarWrapper>

@@ -9,7 +9,6 @@ import {
   NavMenuButton,
   NavigationButtons,
   PageActionButtons,
-  PageContextControl,
 } from './titlebar-common'
 import {Title} from './titlebar-title'
 import './titlebar-windows-linux.css'
@@ -42,7 +41,6 @@ export default function TitleBarWindows(props: TitleBarProps) {
         <XStack paddingHorizontal={0} paddingVertical="$2" space="$2">
           <NavMenuButton />
           <NavigationButtons />
-          <PageContextControl {...props} />
         </XStack>
       }
       title={<Title />}

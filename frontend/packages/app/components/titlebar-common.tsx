@@ -552,12 +552,6 @@ export function PageActionButtons(props: TitleBarProps) {
   return <TitlebarSection>{buttonGroup}</TitlebarSection>
 }
 
-export function PageContextControl(props: TitleBarProps) {
-  return (
-    <XStack className="no-window-drag">{/* <PageContextButton /> */}</XStack>
-  )
-}
-
 export function NavigationButtons() {
   const state = useNavigationState()
   const dispatch = useNavigationDispatch()
