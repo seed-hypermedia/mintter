@@ -16,12 +16,28 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sethvargo/go-retry"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
 )
+
+var (
+	mConnectsInflight = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_connects_inflight",
+		Help: "Number of connection attempts in progress.",
+	})
+)
+
+// Increasing the default temporary TTL for peerstore, to ensure that we
+// don't forget the addresses between sync intervals.
+func init() {
+	peerstore.TempAddrTTL = 5 * time.Minute
+}
 
 // Connect to a peer using provided addr info.
 func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) error {
@@ -34,6 +50,9 @@ func (n *Node) ForceConnect(ctx context.Context, info peer.AddrInfo) error {
 }
 
 func (n *Node) connect(ctx context.Context, info peer.AddrInfo, force bool) (err error) {
+	mConnectsInflight.Inc()
+	defer mConnectsInflight.Dec()
+
 	if info.ID == "" {
 		return fmt.Errorf("must specify peer ID to connect")
 	}

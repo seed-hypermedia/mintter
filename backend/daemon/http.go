@@ -26,6 +26,7 @@ import (
 	"github.com/ipld/go-ipld-prime/multicodec"
 	"github.com/peterbourgon/trc/eztrc"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
@@ -256,32 +257,28 @@ func buildInfoHandler() http.Handler {
 }
 
 var (
-	mInFlightGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "http_in_flight_requests",
-		Help: "A gauge of HTTP requests currently being served.",
+	mInFlightGauge = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "mintter_http_requests_in_flight",
+		Help: "Number of HTTP requests currently being served.",
 	})
 
-	mCounter = prometheus.NewCounterVec(
+	mCounter = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "A counter for HTTP requests.",
+			Name: "mintter_http_requests_total",
+			Help: "Total number of HTTP requests served.",
 		},
 		[]string{"code", "method"},
 	)
 
-	mDuration = prometheus.NewHistogramVec(
+	mDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "A histogram of HTTP latencies for requests.",
+			Name:    "mintter_http_request_duration_seconds",
+			Help:    "HTTP request latencies.",
 			Buckets: []float64{.25, .5, 1, 2.5, 5, 10},
 		},
 		[]string{"handler", "method"},
 	)
 )
-
-func init() {
-	prometheus.MustRegister(mInFlightGauge, mCounter, mDuration)
-}
 
 var ctxKeyHandlerName struct{}
 

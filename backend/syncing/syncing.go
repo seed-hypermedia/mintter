@@ -21,6 +21,7 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.uber.org/zap"
 )
 
@@ -29,15 +30,11 @@ import (
 //
 // TODO(burdiyan): refactor this to unify group syncing and normal periodic syncing.
 var (
-	MSyncingWantBlobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	MSyncingWantBlobs = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "mintter_syncing_wanted_blobs",
 		Help: "Number of blobs we want to sync at this time.",
 	}, []string{"package"})
 )
-
-func init() {
-	prometheus.MustRegister(MSyncingWantBlobs)
-}
 
 // NetDialFunc is a function of the Mintter P2P node that creates an instance
 // of a P2P RPC client for a given remote Device ID.
