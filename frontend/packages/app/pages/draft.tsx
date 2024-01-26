@@ -37,6 +37,13 @@ import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'
 import {useGatewayUrl} from '../models/gateway-settings'
+import {
+  chromiumSupportedImageMimeTypes,
+  chromiumSupportedVideoMimeTypes,
+  generateBlockId,
+  getBlockInfoFromPos,
+  handleDragMedia,
+} from '../utils/media-drag'
 import {useOpenDraft} from '../utils/open-draft'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
@@ -47,6 +54,7 @@ export default function DraftPage() {
   const openDraft = useOpenDraft('replace')
   const documentId = route.draftId! // TODO, clean this up when draftId != docId
   const hasCreatedDraft = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
   useEffect(() => {
     if (documentId === undefined) {
       if (hasCreatedDraft.current) return
@@ -120,7 +128,133 @@ export default function DraftPage() {
         FallbackComponent={DraftError}
         onReset={() => window.location.reload()}
       >
-        <MainWrapper onPress={handleFocusAtMousePos}>
+        <MainWrapper
+          onPress={handleFocusAtMousePos}
+          // @ts-ignore
+          onDragStart={(event) => {
+            setIsDragging(true)
+          }}
+          onDragEnd={(event) => {
+            setIsDragging(false)
+          }}
+          onDragOver={(event) => {
+            setIsDragging(true)
+            event.preventDefault()
+          }}
+          onDrop={(event: DragEvent) => {
+            if (!isDragging) return
+            const dataTransfer = event.dataTransfer
+
+            if (dataTransfer) {
+              const ttEditor = (data.editor as BlockNoteEditor)._tiptapEditor
+              const files: File[] = []
+
+              if (dataTransfer.files.length) {
+                for (let i = 0; i < dataTransfer.files.length; i++) {
+                  files.push(dataTransfer.files[i])
+                }
+              } else if (dataTransfer.items.length) {
+                for (let i = 0; i < dataTransfer.items.length; i++) {
+                  const item = dataTransfer.items[i].getAsFile()
+                  if (item) {
+                    files.push(item)
+                  }
+                }
+              }
+
+              if (files.length > 0) {
+                const editorElement = document.getElementsByClassName(
+                  'mantine-Editor-root',
+                )[0]
+                const editorBoundingBox = editorElement.getBoundingClientRect()
+                const pos = ttEditor.view.posAtCoords({
+                  left: editorBoundingBox.left + editorBoundingBox.width / 2,
+                  top: event.clientY,
+                })
+
+                let lastId: string
+
+                // using reduce so files get inserted sequentially
+                files
+                  .reduce((previousPromise, file, index) => {
+                    return previousPromise.then(() => {
+                      event.preventDefault()
+                      event.stopPropagation()
+
+                      if (pos && pos.inside !== -1) {
+                        return handleDragMedia(file).then((props) => {
+                          if (!props) return false
+
+                          const {state} = ttEditor.view
+                          let blockNode
+                          const newId = generateBlockId()
+
+                          if (chromiumSupportedImageMimeTypes.has(file.type)) {
+                            blockNode = {
+                              id: newId,
+                              type: 'image',
+                              props: {
+                                url: props.url,
+                                name: props.name,
+                              },
+                            }
+                          } else if (
+                            chromiumSupportedVideoMimeTypes.has(file.type)
+                          ) {
+                            blockNode = {
+                              id: newId,
+                              type: 'video',
+                              props: {
+                                url: props.url,
+                                name: props.name,
+                              },
+                            }
+                          } else {
+                            blockNode = {
+                              id: newId,
+                              type: 'file',
+                              props: {
+                                ...props,
+                              },
+                            }
+                          }
+
+                          const blockInfo = getBlockInfoFromPos(
+                            state.doc,
+                            pos.pos,
+                          )
+
+                          if (index === 0) {
+                            ;(data.editor as BlockNoteEditor).insertBlocks(
+                              [blockNode],
+                              blockInfo.id,
+                              blockInfo.node.textContent ? 'after' : 'before',
+                            )
+                          } else {
+                            ;(data.editor as BlockNoteEditor).insertBlocks(
+                              [blockNode],
+                              lastId,
+                              'after',
+                            )
+                          }
+
+                          lastId = newId
+                        })
+                      }
+                    })
+                  }, Promise.resolve())
+                  .then(() => true)
+                setIsDragging(false)
+                return true
+              }
+              setIsDragging(false)
+              return false
+            }
+            setIsDragging(false)
+
+            return false
+          }}
+        >
           <AppPublicationContentProvider
             disableEmbedClick
             onCopyBlock={(blockId: string) => {
@@ -193,6 +327,7 @@ export default function DraftPage() {
               onPress={(e) => {
                 e.stopPropagation()
               }}
+              // style={{border: '1px solid green'}}
             >
               <DraftTitleInput
                 draftActor={data.actor}

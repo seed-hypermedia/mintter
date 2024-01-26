@@ -41,6 +41,7 @@ export const DragExtension = Extension.create<DragOptions>({
               const data = event.dataTransfer
 
               if (data) {
+                console.log(data)
                 const files: File[] = []
 
                 if (data.files.length) {
@@ -77,12 +78,11 @@ export const DragExtension = Extension.create<DragOptions>({
 
                             const {state} = view
                             let blockNode
-                            let newId
+                            const newId = generateBlockId()
 
                             if (
                               chromiumSupportedImageMimeTypes.has(file.type)
                             ) {
-                              newId = generateBlockId()
                               blockNode = {
                                 id: newId,
                                 type: 'image',
@@ -94,7 +94,6 @@ export const DragExtension = Extension.create<DragOptions>({
                             } else if (
                               chromiumSupportedVideoMimeTypes.has(file.type)
                             ) {
-                              newId = generateBlockId()
                               blockNode = {
                                 id: newId,
                                 type: 'video',
@@ -104,7 +103,6 @@ export const DragExtension = Extension.create<DragOptions>({
                                 },
                               }
                             } else {
-                              newId = generateBlockId()
                               blockNode = {
                                 id: newId,
                                 type: 'file',
@@ -167,7 +165,7 @@ type FileType = {
   type: string
 }
 
-export async function handleDragMedia(file: File) {
+async function handleDragMedia(file: File) {
   if (file.size > 62914560) {
     toast.error(`The size of ${file.name} exceeds 60 MB.`)
     return null

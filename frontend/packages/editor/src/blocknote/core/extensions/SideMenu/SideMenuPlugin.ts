@@ -289,7 +289,12 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
   onDrop = (event: DragEvent) => {
     this.editor._tiptapEditor.commands.blur()
 
-    if ((event as any).synthetic || !this.isDragging) {
+    if (
+      (event as any).synthetic ||
+      (!this.isDragging &&
+        (!event.dataTransfer?.types ||
+          event.dataTransfer?.types[0] !== 'Files'))
+    ) {
       return
     }
 
@@ -321,7 +326,12 @@ export class SideMenuView<BSchema extends BlockSchema> implements PluginView {
    * when dragging / dropping to the side of the editor
    */
   onDragOver = (event: DragEvent) => {
-    if ((event as any).synthetic || !this.isDragging) {
+    if (
+      (event as any).synthetic ||
+      (!this.isDragging &&
+        (!event.dataTransfer?.types ||
+          event.dataTransfer?.types[0] !== 'Files'))
+    ) {
       return
     }
     const pos = this.pmView.posAtCoords({
