@@ -746,6 +746,38 @@ export const BlockContainer = Node.create<{
 
             return false
           }),
+        // move blockID with content if selection is at the start of block, the block has content AND the block above is empty
+        () =>
+          commands.command(({state, chain}) => {
+            const blockData = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+            const groupData = getGroupInfoFromPos(state.selection.from!, state)
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+
+            let prevBlockEndPos = blockData.startPos - 2
+            let prevBlockInfo = getBlockInfoFromPos(state.doc, prevBlockEndPos)
+
+            if (
+              // selection is at the start of the block
+              selectionAtBlockStart &&
+              // current block is not empty
+              blockData.node.textContent.length > 0 &&
+              // the selected block is not the first block of the child
+              groupData.group.firstChild?.attrs.id != blockData.id &&
+              // previous block is a blockContainer
+              prevBlockInfo.node.type.name == 'blockContainer' &&
+              // prev block is empty
+              prevBlockInfo.node.textContent.length == 0
+            ) {
+              chain().BNDeleteBlock(prevBlockInfo.startPos).run()
+
+              return true
+            }
+            return false
+          }),
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
           commands.command(({state}) => {
@@ -834,11 +866,11 @@ export const BlockContainer = Node.create<{
 
             return false
           }),
-        // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
-        // of the block.
+        // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
+        // empty & at the start of the block.
         () =>
-          commands.command(({state}) => {
-            const {node, depth} = getBlockInfoFromPos(
+          commands.command(({state, chain}) => {
+            const {node, endPos} = getBlockInfoFromPos(
               state.doc,
               state.selection.from,
             )!
@@ -848,15 +880,39 @@ export const BlockContainer = Node.create<{
             const selectionEmpty =
               state.selection.anchor === state.selection.head
             const blockEmpty = node.textContent.length === 0
-            const blockIndented = depth > 2
 
-            if (
-              selectionAtBlockStart &&
-              selectionEmpty &&
-              blockEmpty &&
-              blockIndented
-            ) {
-              return commands.liftListItem('blockContainer')
+            if (selectionAtBlockStart && selectionEmpty && blockEmpty) {
+              const newBlockInsertionPos = endPos + 1
+              const newBlockContentPos = newBlockInsertionPos + 2
+
+              chain()
+                .BNCreateBlock(newBlockInsertionPos)
+                .setTextSelection(newBlockContentPos)
+                .run()
+
+              return true
+            }
+
+            return false
+          }), // add a block on top of the current one so the block ID will follow the content
+        () =>
+          commands.command(({state, chain}) => {
+            const data = getBlockInfoFromPos(state.doc, state.selection.from)!
+
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+            const selectionEmpty =
+              state.selection.anchor === state.selection.head
+            const blockEmpty = data.node.textContent.length === 0
+            const newBlockInsertionPos = data.startPos - 1
+
+            if (selectionAtBlockStart && selectionEmpty && !blockEmpty) {
+              chain()
+                .BNCreateBlock(newBlockInsertionPos)
+                // .setTextSelection(newBlockContentPos)
+                .run()
+
+              return true
             }
 
             return false
@@ -890,6 +946,34 @@ export const BlockContainer = Node.create<{
 
             return false
           }),
+        // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
+        // of the block.
+        () =>
+          commands.command(({state}) => {
+            const {node, depth} = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+            const selectionEmpty =
+              state.selection.anchor === state.selection.head
+            const blockEmpty = node.textContent.length === 0
+            const blockIndented = depth > 2
+
+            if (
+              selectionAtBlockStart &&
+              selectionEmpty &&
+              blockEmpty &&
+              blockIndented
+            ) {
+              return commands.liftListItem('blockContainer')
+            }
+
+            return false
+          }),
+
         // Splits the current block, moving content inside that's after the cursor to a new text block below. Also
         // deletes the selection beforehand, if it's not empty.
         () =>
