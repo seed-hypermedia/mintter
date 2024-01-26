@@ -50,8 +50,9 @@ export async function prefetchGroupContent(
   const content = prefetched?.content
   const contentItem = content?.find((item) => item?.pathName === contentPath)
   if (!contentItem?.docId || contentItem?.docId.type !== 'd') return null
-  const publication = await helpers.publication.get.prefetch({
+  const publication = await helpers.publication.get.fetch({
     documentId: createHmId('d', contentItem.docId.eid),
     versionId: contentItem.docId.version || undefined,
   })
+  return publication?.publication
 }

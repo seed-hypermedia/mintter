@@ -33,13 +33,11 @@ export const getGroupDocStaticProps: GetStaticProps<EveryPageProps> = async (
     requestGroupId,
     versionId,
   )
-  await prefetchGroupContent(helpers, prefetchedGroup, pathName)
-  // await new Promise<void>((resolve) => setTimeout(resolve, 2_000))
-  const revalidationTimeSeconds = versionId
+  const pub = await prefetchGroupContent(helpers, prefetchedGroup, pathName)
+  const versionRevalidationTime = pub?.document
     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change
-    : 20 // 20 seconds if no version, doc may have been updated
-  // console.log('======= Running getStaticProps.', {pathName, versionId})
-  // console.log('------- Revalidation time (sec):', revalidationTimeSeconds)
+    : 10 // 10 seconds because maybe the doc will load next time
+  const revalidationTimeSeconds = versionId ? versionRevalidationTime : 20 // 20 seconds if no version, doc may have been updated
   return {
     props: await getPageProps(helpers, context, {}),
     revalidate: revalidationTimeSeconds,
@@ -68,7 +66,7 @@ export const getDocStaticProps: GetStaticProps<EveryPageProps> = async (
     documentId: docId,
     versionId: versionId || '',
   })
-  const versionRevalidationTime = loadedDoc
+  const versionRevalidationTime = loadedDoc.publication?.document
     ? 60 * 60 // 1 hour. doc will be unchanged but other content on the page may change
     : 10 // 10 seconds because maybe the doc will load next time
   const revalidationTimeSeconds = versionId ? versionRevalidationTime : 20 // 20 seconds if no version, doc may have been updated
