@@ -778,6 +778,32 @@ export const BlockContainer = Node.create<{
             }
             return false
           }),
+        //
+        () =>
+          commands.command(({state, chain}) => {
+            const blockData = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+            const groupData = getGroupInfoFromPos(state.selection.from!, state)
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+
+            let prevBlockEndPos = blockData.startPos - 2
+            let prevBlockInfo = getBlockInfoFromPos(state.doc, prevBlockEndPos)
+
+            if (
+              // selection is at the start of the block
+              selectionAtBlockStart &&
+              // the selected block is not the first block of the child
+              groupData.group.firstChild?.attrs.id != blockData.id &&
+              // previous block is a blockContainer
+              prevBlockInfo.node.type.name == 'blockContainer'
+            ) {
+              return commands.BNMergeBlocks(blockData.startPos - 1)
+            }
+            return false
+          }),
         // Reverts block content type to a paragraph if the selection is at the start of the block.
         () =>
           commands.command(({state}) => {
