@@ -1,7 +1,7 @@
+import {toast} from '@mintter/app/toast'
 import {Button, DialogDescription, DialogTitle, Form, Input} from '@mintter/ui'
 import 'allotment/dist/style.css'
 import {useState} from 'react'
-import {toast} from 'react-hot-toast'
 import '../components/accounts-combobox.css'
 import {useRenameGroupDoc} from '../models/groups'
 import {pathNameify} from '../utils/path'

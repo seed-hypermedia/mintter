@@ -2,6 +2,7 @@ import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
 import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {usePublicationVariant} from '@mintter/app/models/publication'
+import {toast} from '@mintter/app/toast'
 import {
   NavRoute,
   useNavRoute,
@@ -37,7 +38,6 @@ import {
 } from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ReactNode, useState} from 'react'
-import toast from 'react-hot-toast'
 import {useAppContext} from '../app-context'
 import {useEntityTimeline} from '../models/changes'
 import {usePushPublication} from '../models/documents'

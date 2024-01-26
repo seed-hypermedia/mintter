@@ -17,7 +17,6 @@ import {
   YStack,
   useStream,
 } from '@mintter/ui'
-import {AlertCircle, CheckCircle2} from '@tamagui/lucide-icons'
 import {ReactNode, useState} from 'react'
 import {copyTextToClipboard} from '../copy-to-clipboard'
 import {usePushPublication} from '../models/documents'
@@ -29,7 +28,7 @@ import {
   useSetPushOnPublish,
 } from '../models/gateway-settings'
 import {fetchWebLinkMeta} from '../models/web-links'
-import {toast} from '../toast'
+import {ErrorToastDecoration, SuccessToastDecoration, toast} from '../toast'
 import {DialogTitle, useAppDialog} from './dialog'
 
 type IsPublishedState = null | boolean // null: determined checked yet
@@ -89,7 +88,7 @@ export function useCopyGatewayReference() {
         setIsPublished(false)
       })
     copyTextToClipboard(publicUrl)
-    toast(
+    toast.custom(
       <CopiedToast
         host={gatewayHost}
         isPublished={isPublished}
@@ -125,19 +124,19 @@ function CopiedToast({
     indicator = <Spinner />
     message = `Copied Document URL, checking ${host}...`
   } else if (published === true) {
-    indicator = <CheckCircle2 />
+    indicator = <SuccessToastDecoration />
     message = `Copied Document URL, available on ${host}`
   } else {
-    indicator = <AlertCircle />
+    indicator = <ErrorToastDecoration />
     message = `Copied Document URL, not available on ${host}`
   }
   return (
     <YStack f={1} gap="$3">
-      <XStack gap="$4">
+      <XStack gap="$4" ai="center">
         {indicator}
         <SizableText flexWrap="wrap">{message}</SizableText>
       </XStack>
-      {pushing === null && published === false ? (
+      {(pushing === null || pushing === false) && published === false ? (
         <XStack jc="center">
           <Button
             size="$2"

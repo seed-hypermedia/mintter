@@ -19,10 +19,6 @@ body {
   -webkit-app-region: no-drag;
 }
 
-.toaster {
-  font-family: 'San Francisco', Helvetica, Arial, sans-serif;
-}
-
 .split-view-view {
   height: 100%;
 }

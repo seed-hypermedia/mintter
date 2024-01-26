@@ -6,7 +6,7 @@ import {AppErrorContent, RootAppError} from '@mintter/app/components/app-error'
 import {DaemonStatusProvider} from '@mintter/app/node-status-context'
 import Main from '@mintter/app/pages/main'
 import {AppQueryClient, getQueryClient} from '@mintter/app/query-client'
-import {toast} from '@mintter/app/toast'
+import {Toaster, toast} from '@mintter/app/toast'
 import {NavigationContainer} from '@mintter/app/utils/navigation-container'
 import {useListenAppEvent} from '@mintter/app/utils/window-events'
 import {WindowUtils} from '@mintter/app/window-utils'
@@ -20,7 +20,6 @@ import {ipcLink} from 'electron-trpc/renderer'
 import React, {Suspense, useEffect, useMemo, useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Toaster} from 'react-hot-toast'
 import superjson from 'superjson'
 import type {GoDaemonState} from './app-api'
 import {createIPC} from './ipc'
@@ -265,8 +264,8 @@ function MainApp({
               </DaemonStatusProvider>
             </NavigationContainer>
             <Toaster
-              position="bottom-center"
-              toastOptions={{className: 'toaster'}}
+            // position="bottom-center"
+            // toastOptions={{className: 'toaster'}}
             />
           </ErrorBoundary>
         </Suspense>

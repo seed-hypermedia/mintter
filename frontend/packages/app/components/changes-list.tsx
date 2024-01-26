@@ -24,7 +24,7 @@ import {
 } from '@mintter/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext} from 'react'
-import {copyTextToClipboard} from '../copy-to-clipboard'
+import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import appError from '../errors'
 import {useDocHistory} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -200,7 +200,7 @@ function ChangeItem({
       key: 'copyLink',
       icon: Copy,
       onPress: () => {
-        copyTextToClipboard(publicWebUrl)
+        copyUrlToClipboardWithFeedback(publicWebUrl, 'Version')
       },
       label: 'Copy Link to Version',
     })

@@ -1,5 +1,5 @@
+import {toast} from '@mintter/app/toast'
 import * as Sentry from '@sentry/electron'
-import {toast} from 'react-hot-toast'
 
 export default function appError(message: string, metadata?: any) {
   toast.error(message)

@@ -1,5 +1,6 @@
 import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useOpenUrl} from '@mintter/app/open-url'
+import {toast} from '@mintter/app/toast'
 import {
   Button,
   Copy,
@@ -10,7 +11,6 @@ import {
   XGroup,
 } from '@mintter/ui'
 import {ComponentProps, FC, useState} from 'react'
-import {toast} from 'react-hot-toast'
 
 export function AccessURLRow({
   url,

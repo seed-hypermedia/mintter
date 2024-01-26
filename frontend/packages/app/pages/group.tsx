@@ -1,6 +1,7 @@
 import * as Ariakit from '@ariakit/react'
-import {CompositeInput} from '@ariakit/react-core/composite/composite-input'
+import { CompositeInput } from '@ariakit/react-core/composite/composite-input'
 import Footer from '@mintter/app/components/footer'
+import { toast } from '@mintter/app/toast'
 import {
   API_FILE_URL,
   Account,
@@ -43,9 +44,9 @@ import {
   Trash,
   X,
 } from '@tamagui/lucide-icons'
-import {Allotment} from 'allotment'
+import { Allotment } from 'allotment'
 import 'allotment/dist/style.css'
-import {matchSorter} from 'match-sorter'
+import { matchSorter } from 'match-sorter'
 import {
   forwardRef,
   useDeferredValue,
@@ -55,27 +56,26 @@ import {
   useRef,
   useState,
 } from 'react'
-import {toast} from 'react-hot-toast'
-import {AccountLinkAvatar} from '../components/account-link-avatar'
+import { AccountLinkAvatar } from '../components/account-link-avatar'
 import '../components/accounts-combobox.css'
-import {Avatar} from '../components/avatar'
-import {EntityVersionsAccessory} from '../components/changes-list'
-import {useAppDialog} from '../components/dialog'
-import {EditDocButton} from '../components/edit-doc-button'
-import {useEditGroupInfoDialog} from '../components/edit-group-info'
-import {FooterButton} from '../components/footer'
-import {AppLinkText} from '../components/link'
-import {copyLinkMenuItem} from '../components/list-item'
-import {MainWrapper} from '../components/main-wrapper'
-import {OptionsDropdown} from '../components/options-dropdown'
-import {PinGroupButton} from '../components/pin-entity'
-import {PublicationListItem} from '../components/publication-list-item'
-import {CopyReferenceButton} from '../components/titlebar-common'
+import { Avatar } from '../components/avatar'
+import { EntityVersionsAccessory } from '../components/changes-list'
+import { useAppDialog } from '../components/dialog'
+import { EditDocButton } from '../components/edit-doc-button'
+import { useEditGroupInfoDialog } from '../components/edit-group-info'
+import { FooterButton } from '../components/footer'
+import { AppLinkText } from '../components/link'
+import { copyLinkMenuItem } from '../components/list-item'
+import { MainWrapper } from '../components/main-wrapper'
+import { OptionsDropdown } from '../components/options-dropdown'
+import { PinGroupButton } from '../components/pin-entity'
+import { PublicationListItem } from '../components/publication-list-item'
+import { CopyReferenceButton } from '../components/titlebar-common'
 import appError from '../errors'
-import {useAccount, useAllAccounts, useMyAccount} from '../models/accounts'
-import {useEntityTimeline} from '../models/changes'
-import {useDraftList, usePublication} from '../models/documents'
-import {useGatewayUrl} from '../models/gateway-settings'
+import { useAccount, useAllAccounts, useMyAccount } from '../models/accounts'
+import { useEntityTimeline } from '../models/changes'
+import { useDraftList, usePublication } from '../models/documents'
+import { useGatewayUrl } from '../models/gateway-settings'
 import {
   useAddGroupMember,
   useFullGroupContent,
@@ -84,13 +84,13 @@ import {
   useGroupMembers,
   useRemoveDocFromGroup,
 } from '../models/groups'
-import {useOpenUrl} from '../open-url'
-import {RenamePubDialog} from '../src/rename-publication-dialog'
-import {GroupRoute, useNavRoute} from '../utils/navigation'
-import {useOpenDraft} from '../utils/open-draft'
-import {hostnameStripProtocol} from '../utils/site-hostname'
-import {useNavigate} from '../utils/useNavigate'
-import {AppPublicationContentProvider} from './publication-content-provider'
+import { useOpenUrl } from '../open-url'
+import { RenamePubDialog } from '../src/rename-publication-dialog'
+import { GroupRoute, useNavRoute } from '../utils/navigation'
+import { useOpenDraft } from '../utils/open-draft'
+import { hostnameStripProtocol } from '../utils/site-hostname'
+import { useNavigate } from '../utils/useNavigate'
+import { AppPublicationContentProvider } from './publication-content-provider'
 
 export default function GroupPage() {
   const route = useNavRoute()

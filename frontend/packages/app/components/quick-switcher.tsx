@@ -1,6 +1,7 @@
 import {useAppContext} from '@mintter/app/app-context'
 import {useDraftList, usePublicationList} from '@mintter/app/models/documents'
 import {fetchWebLink} from '@mintter/app/models/web-links'
+import {toast} from '@mintter/app/toast'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {
@@ -13,7 +14,6 @@ import {
 import {Spinner, YStack} from '@mintter/ui'
 import {Command} from 'cmdk'
 import {useState} from 'react'
-import {toast} from 'react-hot-toast'
 import {useGRPCClient} from '../app-context'
 import appError from '../errors'
 import {useConnectPeer, useContactsList} from '../models/contacts'

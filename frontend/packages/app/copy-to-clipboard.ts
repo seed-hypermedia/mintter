@@ -1,4 +1,3 @@
-import appError from './errors'
 import {error} from './logger'
 import {toast} from './toast'
 
@@ -6,13 +5,11 @@ export async function copyUrlToClipboardWithFeedback(
   url: string,
   label: string,
 ) {
-  await copyTextToClipboard(url)
-    .then(() => {
-      toast.success(`${label} Link Copied to Clipboard`)
-    })
-    .catch((e) => {
-      appError(`${label} Link Failed to Copy`, {error: e})
-    })
+  toast.promise(copyTextToClipboard(url), {
+    loading: '',
+    success: `${label} Link Copied to Clipboard`,
+    error: (err) => `${label} Link Failed to Copy: ${err.message}`,
+  })
 }
 
 export function copyTextToClipboard(text: string) {

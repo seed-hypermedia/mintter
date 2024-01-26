@@ -1,11 +1,11 @@
 import {useGRPCClient} from '@mintter/app/app-context'
 import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
+import {toast} from '@mintter/app/toast'
 import {NavMode, NavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {Button, Tooltip, XGroup} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
-import toast from 'react-hot-toast'
 import appError from '../errors'
 import {PublicationVariant} from '../utils/navigation'
 

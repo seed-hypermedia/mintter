@@ -2,6 +2,7 @@ import {MintterIcon} from '@mintter/app/components/mintter-icon'
 import appError from '@mintter/app/errors'
 import {useSetProfile} from '@mintter/app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@mintter/app/models/daemon'
+import {toast} from '@mintter/app/toast'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {Profile as ProfileType} from '@mintter/shared'
 import {
@@ -44,7 +45,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import toast from 'react-hot-toast'
 import {useConnectPeer} from '../models/contacts'
 import {useWalletOptIn} from '../models/wallet'
 import {useDaemonReady} from '../node-status-context'

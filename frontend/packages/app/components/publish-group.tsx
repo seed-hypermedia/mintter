@@ -1,3 +1,4 @@
+import {toast} from '@mintter/app/toast'
 import {
   Button,
   ButtonText,
@@ -9,7 +10,6 @@ import {
 } from '@mintter/ui'
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'
-import {toast} from 'react-hot-toast'
 import {usePublishGroupToSite} from '../models/groups'
 import {useOpenUrl} from '../open-url'
 import {useNavigate} from '../utils/useNavigate'

@@ -1,4 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod'
+import {toast} from '@mintter/app/toast'
 import {Group} from '@mintter/shared'
 import {
   Button,
@@ -20,7 +21,6 @@ import {
   useController,
   useForm,
 } from 'react-hook-form'
-import {toast} from 'react-hot-toast'
 import * as z from 'zod'
 import {useAccount, useMyAccount} from '../models/accounts'
 import {

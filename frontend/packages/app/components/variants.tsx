@@ -7,6 +7,7 @@ import {
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
 import {usePublicationVariant} from '@mintter/app/models/publication'
+import {toast} from '@mintter/app/toast'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   NavContextProvider,
@@ -69,7 +70,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import toast from 'react-hot-toast'
 import {useAccount} from '../models/accounts'
 import {useEntityTimeline} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
