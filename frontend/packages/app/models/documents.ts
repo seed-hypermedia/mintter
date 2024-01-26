@@ -1173,7 +1173,9 @@ function observeBlocks(
         block.id,
         'after',
       )
-      editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock!)
+      if (editor.getTextCursorPosition().nextBlock) {
+        editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock)
+      }
     }
   })
 }
