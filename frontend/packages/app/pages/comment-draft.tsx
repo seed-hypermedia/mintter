@@ -13,6 +13,7 @@ import {MainWrapperStandalone} from '../components/main-wrapper'
 import {useComment, useCommentEditor} from '../models/comments'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
+import './comment-draft.css'
 import {AppPublicationContentProvider} from './publication-content-provider'
 
 function CommitBar({
@@ -145,6 +146,7 @@ export default function CommentDraftPage() {
           />
           <YStack
             f={1}
+            className="comment-draft"
             onPress={() => {
               editor._tiptapEditor.commands.focus()
             }}

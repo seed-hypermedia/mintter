@@ -83,6 +83,7 @@ export type PublicationContentContextValue = {
   textUnit: number
   debug: boolean
   ffSerif?: boolean
+  comment?: boolean
 }
 
 export const publicationContentContext =
@@ -95,6 +96,7 @@ export function PublicationContentProvider({
   children,
   debugTop = 0,
   showDevMenu = false,
+  comment = false,
   ...PubContentContext
 }: PropsWithChildren<
   PublicationContentContextValue & {
@@ -112,9 +114,10 @@ export function PublicationContentProvider({
       value={{
         ...PubContentContext,
         layoutUnit: lUnit,
-        textUnit: tUnit,
+        textUnit: comment ? tUnit * 0.9 : tUnit,
         debug,
         ffSerif,
+        comment,
       }}
     >
       {showDevMenu ? (
@@ -571,9 +574,9 @@ function BlockContent(props: BlockContentProps) {
 }
 
 function BlockContentParagraph({block, ...props}: BlockContentProps) {
-  const {debug, textUnit, ffSerif} = usePublicationContentContext()
-  let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
+  const {debug, textUnit, comment} = usePublicationContentContext()
 
+  let inline = useMemo(() => toHMInlineContent(new Block(block)), [block])
   return (
     <YStack
       {...blockStyles}
@@ -582,8 +585,7 @@ function BlockContentParagraph({block, ...props}: BlockContentProps) {
       className="block-static block-paragraph"
     >
       <Text
-        className="content-inline"
-        // fontFamily={ffSerif ? '$editorBody' : '$body'}
+        className={`content-inline${comment ? 'is-comment' : ''}`}
         {...inlineContentSize(textUnit)}
       >
         <InlineContentView inline={inline} />

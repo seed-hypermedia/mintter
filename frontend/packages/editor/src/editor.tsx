@@ -14,7 +14,6 @@ import './editor.css'
 
 export function HyperMediaEditorView({
   editor,
-  editable = true,
 }: {
   editor: HyperDocsEditor
   editable: boolean

@@ -6,3 +6,22 @@
 .block-paragraph .content-inline * {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
 }
+
+.block-paragraph .content-inline.is-comment,
+.block-paragraph .content-inline.is-comment * {
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+}

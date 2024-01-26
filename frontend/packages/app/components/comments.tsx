@@ -288,6 +288,7 @@ export function CommentPresentation({
       ) : null}
       <YStack paddingHorizontal="$2" paddingLeft={28}>
         <AppPublicationContentProvider
+          comment
           onReplyBlock={onReplyBlock}
           onCopyBlock={(blockId: string) => {
             const url = `${comment.id}#${blockId}`

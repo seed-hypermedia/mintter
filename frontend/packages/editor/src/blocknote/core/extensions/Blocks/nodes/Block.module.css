@@ -95,7 +95,7 @@ NESTED BLOCKS
 
 .inlineContent {
   font-size: 0.9em;
-  font-family:
+  /* font-family:
     'Inter',
     'SF Pro Display',
     -apple-system,
@@ -109,7 +109,10 @@ NESTED BLOCKS
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',
-    sans-serif;
+    sans-serif; */
+  font-family: Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* [data-theme='light']
