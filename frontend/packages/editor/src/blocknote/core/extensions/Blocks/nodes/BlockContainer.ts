@@ -895,28 +895,29 @@ export const BlockContainer = Node.create<{
 
             return false
           }), // add a block on top of the current one so the block ID will follow the content
-        () =>
-          commands.command(({state, chain}) => {
-            const data = getBlockInfoFromPos(state.doc, state.selection.from)!
+        // () =>
+        //   commands.command(({state, chain}) => {
+        //     const data = getBlockInfoFromPos(state.doc, state.selection.from)!
 
-            const selectionAtBlockStart =
-              state.selection.$anchor.parentOffset === 0
-            const selectionEmpty =
-              state.selection.anchor === state.selection.head
-            const blockEmpty = data.node.textContent.length === 0
-            const newBlockInsertionPos = data.startPos - 1
+        //     const selectionAtBlockStart =
+        //       state.selection.$anchor.parentOffset === 0
+        //     const selectionEmpty =
+        //       state.selection.anchor === state.selection.head
+        //     const blockEmpty = data.node.textContent.length === 0
+        //     const newBlockInsertionPos = data.startPos - 1
 
-            if (selectionAtBlockStart && selectionEmpty && !blockEmpty) {
-              chain()
-                .BNCreateBlock(newBlockInsertionPos)
-                // .setTextSelection(newBlockContentPos)
-                .run()
+        //     if (selectionAtBlockStart && selectionEmpty && !blockEmpty) {
+        //       return true
+        //       chain()
+        //         .BNCreateBlock(newBlockInsertionPos)
+        //         // .setTextSelection(newBlockContentPos)
+        //         .run()
 
-              return true
-            }
+        //       return true
+        //     }
 
-            return false
-          }),
+        //     return false
+        //   }),
         // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
         // empty & at the start of the block.
         () =>
