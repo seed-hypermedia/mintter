@@ -19,6 +19,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	routing "github.com/libp2p/go-libp2p/core/routing"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
@@ -163,22 +164,49 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 	scaledDefaultLimits := scalingLimits.AutoScale()
 
 	// Tweak certain settings
-	cfg := rcmgr.PartialLimitConfig{
-		System: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		Transient: rcmgr.ResourceLimits{
-			Streams: rcmgr.Unlimited,
-			Conns:   rcmgr.Unlimited,
-			FD:      rcmgr.Unlimited,
-			Memory:  rcmgr.Unlimited64,
-		},
-		// Everything else is default. The exact values will come from `scaledDefaultLimits` above.
+	permissive := rcmgr.ResourceLimits{
+		Streams:         rcmgr.Unlimited,
+		StreamsInbound:  rcmgr.Unlimited,
+		StreamsOutbound: rcmgr.Unlimited,
+		Conns:           rcmgr.Unlimited,
+		ConnsInbound:    rcmgr.Unlimited,
+		ConnsOutbound:   rcmgr.Unlimited,
+		FD:              rcmgr.Unlimited,
+		Memory:          rcmgr.Unlimited64,
 	}
 
+	strict := rcmgr.ResourceLimits{
+		Streams:         10,
+		StreamsInbound:  10,
+		StreamsOutbound: 10,
+		Conns:           10,
+		ConnsInbound:    10,
+		ConnsOutbound:   10,
+		FD:              50,
+		Memory:          15000,
+	}
+	protocolLimits := map[protocol.ID]rcmgr.ResourceLimits{
+		"/hypermedia/0.3.0":   permissive,
+		"/ipfs/bitswap/1.2.0": permissive,
+		"/ipfs/kad/1.0.0":     strict}
+	cfg := rcmgr.PartialLimitConfig{
+		System:               permissive,
+		Transient:            permissive,
+		AllowlistedSystem:    permissive,
+		AllowlistedTransient: permissive,
+		ServiceDefault:       permissive,
+		//Service:              map[string]rcmgr.ResourceLimits{},
+		ServicePeerDefault: permissive,
+		//ServicePeer:          map[string]rcmgr.ResourceLimits{},
+		ProtocolDefault:     permissive,
+		Protocol:            protocolLimits,
+		ProtocolPeerDefault: permissive,
+		//ProtocolPeer:         map[protocol.ID]rcmgr.ResourceLimits{},
+		PeerDefault: permissive,
+		//Peer:                 map[peer.ID]rcmgr.ResourceLimits{},
+		Conn:   permissive,
+		Stream: permissive,
+	}
 	// Create our limits by using our cfg and replacing the default values with values from `scaledDefaultLimits`
 	limits := cfg.Build(scaledDefaultLimits)
 
