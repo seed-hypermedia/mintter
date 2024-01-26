@@ -19,7 +19,6 @@ import {useAccount} from '../models/accounts'
 import {useGroup} from '../models/groups'
 import {AccountRoute, GroupRoute, NavRoute} from '../utils/navigation'
 import {getDocumentTitle} from './publication-list-item'
-import {VersionContext} from './variants'
 
 export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
   const route = useNavRoute()
@@ -80,7 +79,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
     return (
       <>
         <GroupTitle route={route} />
-        <VersionContext route={route} />
+        {/* <VersionContext route={route} /> */}
       </>
     )
   }
@@ -97,7 +96,7 @@ export function TitleContent({size = '$4'}: {size?: FontSizeTokens}) {
         {/* <PageContextButton />
         <Slash /> */}
         <PublicationTitle route={route} />
-        <VersionContext route={route} />
+        {/* <VersionContext route={route} /> */}
       </>
     )
   }

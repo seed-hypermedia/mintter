@@ -59,7 +59,11 @@ import {CreateGroupButton} from './new-group'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 import {usePublishGroupDialog} from './publish-group'
 import {TitleBarProps} from './titlebar'
-import {DraftPublicationButtons, PublicationVariants} from './variants'
+import {
+  DraftPublicationButtons,
+  PublicationVariants,
+  VersionContext,
+} from './variants'
 
 export function DocOptionsButton() {
   const route = useNavRoute()
@@ -530,6 +534,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'group') {
     buttonGroup = [
+      <VersionContext key="versionContext" route={route} />,
       <GroupOptionsButton key="groupOptions" />,
       <NewDocumentButton
         key="newDocument"
@@ -543,6 +548,7 @@ export function PageActionButtons(props: TitleBarProps) {
     ]
   } else if (route.key === 'publication') {
     buttonGroup = [
+      <VersionContext key="versionContext" route={route} />,
       <PublicationVariants key="variants" route={route} />,
       <DocOptionsButton key="options" />,
     ]

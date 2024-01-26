@@ -1,4 +1,3 @@
-import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {getDefaultShortname} from '@mintter/app/models/documents'
 import {
@@ -20,11 +19,11 @@ import {pathNameify} from '@mintter/app/utils/path'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
   API_FILE_URL,
+  HYPERMEDIA_ENTITY_TYPES,
   Publication,
   UnpackedHypermediaId,
   createPublicWebHmUrl,
   formattedDateMedium,
-  labelOfEntityType,
   shortenPath,
   unpackDocId,
   unpackHmId,
@@ -56,12 +55,12 @@ import {
   YStack,
 } from '@mintter/ui'
 import {
+  ArrowRight,
   Book,
   ChevronDown,
   ChevronUp,
   Pencil,
   Upload,
-  X,
 } from '@tamagui/lucide-icons'
 import {
   ComponentProps,
@@ -82,7 +81,6 @@ import CommitDraftButton from './commit-draft-button'
 import {useAppDialog} from './dialog'
 import DiscardDraftButton from './discard-draft-button'
 import {EditDocButton, useEditDraft} from './edit-doc-button'
-import {Slash} from './slash'
 
 export function RenameShortnameDialog({
   input: {groupId, pathName, docTitle, draftId},
@@ -445,32 +443,44 @@ export function VersionContext({route}: {route: NavRoute}) {
   let fullUrl: string | null = null
   const navigate = useNavigate()
   let unpackedId: UnpackedHypermediaId | null = null
-  let routeWithoutVersion: NavRoute | null = null
-  let latestVersionLabel = 'Latest Version'
+  let latestVersionRoute: NavRoute | null = null
   const gwUrl = useGatewayUrl()
+  const pubRoute = route.key === 'publication' ? route : null
+  const groupRoute = route.key === 'group' ? route : null
+  const pub = usePublicationVariant({
+    documentId: pubRoute?.documentId,
+    variant: pubRoute?.variant,
+    enabled: !!pubRoute?.documentId,
+  })
+  const group = useGroup(groupRoute?.groupId, {enabled: !!groupRoute?.groupId})
   if (route.key === 'group') {
     const {groupId, accessory, version} = route
     unpackedId = unpackHmId(groupId)
     exactVersion = version || null
-    routeWithoutVersion = {
-      key: 'group',
-      groupId,
-      accessory,
-      version: undefined,
+    if (version && group.data.version && group.data.version !== version) {
+      latestVersionRoute = {
+        key: 'group',
+        groupId,
+        accessory,
+        version: undefined,
+      }
     }
   } else if (route.key === 'publication') {
     const {accessory, documentId, versionId, variant} = route
     unpackedId = unpackHmId(documentId)
     exactVersion = versionId || null
-    routeWithoutVersion = {
-      key: 'publication',
-      documentId,
-      accessory,
-      versionId: undefined,
-      variant,
-    }
-    if (variant?.key === 'group') {
-      latestVersionLabel = 'Latest Version in this Group'
+    if (
+      versionId &&
+      pub.data?.publication?.version &&
+      pub.data?.publication?.version !== versionId
+    ) {
+      latestVersionRoute = {
+        key: 'publication',
+        documentId,
+        accessory,
+        versionId: undefined,
+        variant,
+      }
     }
   }
   fullUrl =
@@ -481,44 +491,27 @@ export function VersionContext({route}: {route: NavRoute}) {
       hostname: gwUrl.data,
     })
   if (!unpackedId || !exactVersion || !fullUrl) return null
+  if (!latestVersionRoute) return null
   return (
     <>
-      <Slash />
       <XStack gap="$2" ai="center">
-        <Tooltip
-          content={`You are viewing the exact version: @${exactVersion.slice(
-            -6,
-          )}. Click to Copy Version URL`}
-        >
-          <ButtonText
-            hoverStyle={{textDecorationLine: 'underline'}}
-            className="no-window-drag"
-            onPress={() => {
-              if (!unpackedId || !exactVersion || !fullUrl) return
-              copyUrlToClipboardWithFeedback(
-                fullUrl,
-                `Exact ${labelOfEntityType(unpackedId.type)} Version`,
-              )
-            }}
-            color={'$color10'}
-            fontFamily={'$mono'}
-            fontSize="$2"
-          >
-            @{exactVersion.slice(-6)}
-          </ButtonText>
-        </Tooltip>
-        {routeWithoutVersion ? (
+        {latestVersionRoute ? (
           <View className="no-window-drag">
-            <Tooltip content={`View ${latestVersionLabel}`}>
+            <Tooltip
+              content={`You are looking at an older version of this ${HYPERMEDIA_ENTITY_TYPES[
+                unpackedId.type
+              ].toLowerCase()}. Click to go to the latest in this variant`}
+            >
               <Button
-                size="$1"
-                className="no-window-drag"
-                chromeless
+                size="$2"
+                theme="blue"
                 onPress={() => {
-                  routeWithoutVersion && navigate(routeWithoutVersion)
+                  navigate(latestVersionRoute)
                 }}
-                icon={X}
-              />
+                iconAfter={ArrowRight}
+              >
+                Latest Version
+              </Button>
             </Tooltip>
           </View>
         ) : null}
