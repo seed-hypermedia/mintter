@@ -811,6 +811,29 @@ export const BlockContainer = Node.create<{
 
     const handleEnter = () =>
       this.editor.commands.first(({commands}) => [
+        // add a block on top of the current one so the block ID will follow the content
+        () =>
+          commands.command(({state, chain}) => {
+            const data = getBlockInfoFromPos(state.doc, state.selection.from)!
+
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+            const selectionEmpty =
+              state.selection.anchor === state.selection.head
+            const blockEmpty = data.node.textContent.length === 0
+            const newBlockInsertionPos = data.startPos - 1
+
+            if (selectionAtBlockStart && selectionEmpty && !blockEmpty) {
+              chain()
+                .BNCreateBlock(newBlockInsertionPos)
+                // .setTextSelection(newBlockContentPos)
+                .run()
+
+              return true
+            }
+
+            return false
+          }),
         // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
         // of the block.
         () =>
