@@ -155,14 +155,14 @@ export function createAppWindow(input: {
           windowType.minWidth,
           Math.min(
             prevWindowBounds.width,
-            windowType.maxWidth || windowType.minWidth,
+            windowType.maxWidth || windowType.initWidth,
           ),
         ),
         height: Math.max(
           windowType.minHeight,
           Math.min(
             prevWindowBounds.height,
-            windowType.maxHeight || windowType.minHeight,
+            windowType.maxHeight || windowType.initHeight,
           ),
         ),
         x: prevWindowBounds.x + 60,
