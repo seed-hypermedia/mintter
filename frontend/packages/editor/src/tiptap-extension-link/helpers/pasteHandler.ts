@@ -7,6 +7,7 @@ import {
   GRPCClient,
   HYPERMEDIA_SCHEME,
   StateStream,
+  UnpackedHypermediaId,
   extractBlockRefOfUrl,
   hmIdWithVersion,
   isHypermediaScheme,
@@ -159,13 +160,8 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
           if (unpackedHmId?.blockRef)
             normalizedHmUrl += `#${unpackedHmId.blockRef}`
 
-          options.grpcClient.publications
-            .getPublication({
-              documentId: unpackedHmId.qid,
-              version: unpackedHmId.version ? unpackedHmId.version : undefined,
-            })
-            .then((publication) => {
-              const title = publication.document?.title
+          fetchEntityTitle(unpackedHmId, options.grpcClient)
+            .then((title) => {
               if (title) {
                 view.dispatch(
                   tr.insertText(title, pos).addMark(
@@ -183,7 +179,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     ref: normalizedHmUrl,
                     items: getLinkMenuItems({
                       isLoading: false,
-                      isHmLink: true,
+                      hmId: unpackHmId(normalizedHmUrl),
                       originalRef: title,
                       docTitle: title,
                       gwUrl: options.gwUrl,
@@ -207,7 +203,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     ref: normalizedHmUrl,
                     items: getLinkMenuItems({
                       isLoading: false,
-                      isHmLink: true,
+                      hmId: unpackHmId(normalizedHmUrl),
                       gwUrl: options.gwUrl,
                     }),
                   }),
@@ -231,7 +227,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: normalizedHmUrl,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    isHmLink: true,
+                    hmId: unpackHmId(normalizedHmUrl),
                     gwUrl: options.gwUrl,
                   }),
                 }),
@@ -265,7 +261,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               ref: link.href,
               items: getLinkMenuItems({
                 isLoading: true,
-                isHmLink: false,
                 gwUrl: options.gwUrl,
               }),
             }),
@@ -278,7 +273,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: link.href,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    isHmLink: false,
                     media: 'image',
                     originalRef: link.href,
                     fileName: fileName,
@@ -293,7 +287,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: link.href,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    isHmLink: false,
                     media: 'file',
                     originalRef: link.href,
                     fileName: fileName,
@@ -308,7 +301,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                   ref: link.href,
                   items: getLinkMenuItems({
                     isLoading: false,
-                    isHmLink: false,
                     media: 'video',
                     originalRef: link.href,
                     fileName: fileName,
@@ -333,7 +325,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                           ref: fullHmUrl,
                           items: getLinkMenuItems({
                             isLoading: false,
-                            isHmLink: true,
                             originalRef: link.href,
                             docTitle: res.hmTitle,
                             gwUrl: options.gwUrl,
@@ -359,7 +350,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                           ref: link.href,
                           items: getLinkMenuItems({
                             isLoading: false,
-                            isHmLink: false,
                             media: type,
                             gwUrl: options.gwUrl,
                           }),
@@ -380,7 +370,6 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       view.state.tr.setMeta(linkMenuPluginKey, {
                         items: getLinkMenuItems({
                           isLoading: false,
-                          isHmLink: false,
                           gwUrl: options.gwUrl,
                         }),
                       }),
@@ -478,4 +467,29 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
   }
 
   return pastePlugin
+}
+
+async function fetchEntityTitle(
+  hmId: UnpackedHypermediaId,
+  grpcClient: GRPCClient,
+) {
+  if (hmId.type === 'd') {
+    const pub = await grpcClient.publications.getPublication({
+      documentId: hmId.qid,
+      version: hmId.version ? hmId.version : undefined,
+    })
+    return pub?.document?.title || null
+  } else if (hmId.type === 'a') {
+    const account = await grpcClient.accounts.getAccount({
+      id: hmId.eid,
+    })
+    return account?.profile?.alias || null
+  } else if (hmId.type === 'g') {
+    const group = await grpcClient.groups.getGroup({
+      id: hmId.qid,
+      version: hmId.version ? hmId.version : undefined,
+    })
+    return group?.title || null
+  }
+  return null
 }
