@@ -18,7 +18,7 @@ import {getGroupView} from 'server/group'
 import {AccountAvatarLink} from './account-row'
 import {ErrorPage} from './error-page'
 import {GroupMetadata} from './group-metadata'
-import {BasicOGMeta, OGImageMeta} from './head'
+import {BasicOGMeta, OGImageMeta, getTruncatedDescription} from './head'
 import {useGroupContentUrl} from './publication-page'
 import {SitePublicationContentProvider} from './site-embeds'
 import {SiteHead} from './site-head'
@@ -131,7 +131,10 @@ export function GroupPage() {
             <meta name="hypermedia-entity-title" content={loadedGroup.title} />
             <BasicOGMeta
               title={loadedGroup.title}
-              description={loadedGroup.description}
+              description={
+                loadedGroup.description &&
+                getTruncatedDescription(loadedGroup.description)
+              }
             />
             {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
           </>

@@ -1,7 +1,8 @@
-import {PageSection, XStack, SizableText} from '@mintter/ui'
+import {PageSection, SizableText, XStack} from '@mintter/ui'
 import Head from 'next/head'
-import {NextLink} from './next-link'
 import {trpc} from 'src/trpc'
+import {SiteOGMeta} from './head'
+import {NextLink} from './next-link'
 
 export function SiteHead({pageTitle}: {pageTitle?: string}) {
   const siteInfo = trpc.siteInfo.get.useQuery()
@@ -16,7 +17,7 @@ export function SiteHead({pageTitle}: {pageTitle?: string}) {
     >
       <Head>
         <title>{pageTitle}</title>
-        {siteTitle && <meta property="og:site_name" content={siteTitle} />}
+        {siteTitle && <SiteOGMeta siteName={siteTitle} />}
       </Head>
       <PageSection.Side />
       <PageSection.Content>

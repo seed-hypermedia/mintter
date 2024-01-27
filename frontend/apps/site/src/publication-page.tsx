@@ -26,7 +26,7 @@ import {
 import {DehydratedState} from '@tanstack/react-query'
 import Head from 'next/head'
 import {useEffect} from 'react'
-import {BasicOGMeta, OGImageMeta} from 'src/head'
+import {BasicOGMeta, OGImageMeta, getPublicationDescription} from 'src/head'
 import {SitePublicationContentProvider} from 'src/site-embeds'
 import {WebTipping} from 'src/web-tipping'
 import {ErrorPage, SmallContainer} from './error-page'
@@ -170,7 +170,11 @@ export function PublicationPage({
         )}
         <meta name="hypermedia-entity-version" content={pub?.version} />
         <meta name="hypermedia-entity-title" content={pub?.document?.title} />
-        <BasicOGMeta title={pub?.document?.title} />
+        <BasicOGMeta
+          title={pub?.document?.title}
+          userName={pub?.document?.author} // todo: if we see any social media use this field, look up the actual alias
+          description={getPublicationDescription(pub)}
+        />
         {ogImageUrl && <OGImageMeta url={ogImageUrl} />}
       </Head>
       <MainSiteLayout
