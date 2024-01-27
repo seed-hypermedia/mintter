@@ -1,6 +1,8 @@
 import {youtubeParser} from '@/utils'
 import {
+  HYPERMEDIA_ENTITY_TYPES,
   StateStream,
+  UnpackedHypermediaId,
   isHypermediaScheme,
   isPublicGatewayLink,
   normlizeHmId,
@@ -20,7 +22,7 @@ import {LinkMenuItem} from './LinkMenuItem'
 
 export function getLinkMenuItems({
   isLoading,
-  isHmLink,
+  hmId,
   media,
   originalRef,
   fileName,
@@ -28,7 +30,7 @@ export function getLinkMenuItems({
   gwUrl,
 }: {
   isLoading: boolean // true is spinner needs to be shown
-  isHmLink: boolean // true if the link is an embeddable link
+  hmId?: UnpackedHypermediaId | null // if the link is an embeddable link
   media?: string // type of media block if link points to a media file
   originalRef?: string // the inserted link into the editor. needed to correctly replace the link with block
   fileName?: string // file name if any
@@ -59,55 +61,65 @@ export function getLinkMenuItems({
 
     linkMenuItems.unshift(loadingItem)
   } else {
-    if (isHmLink) {
-      linkMenuItems.unshift({
-        name: `Insert ${docTitle ? '"' + docTitle + '"' : 'link'} as Card`,
-        disabled: false,
-        icon: <SquareAsterisk size={18} />,
-        execute: (editor: BlockNoteEditor, ref: string) => {
-          if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-            const hmId = normlizeHmId(ref, gwUrl)
-            if (!hmId) return
-            ref = hmId
-          }
-          const {state, schema} = editor._tiptapEditor
-          const {selection} = state
-          if (!selection.empty) return
-          const node = schema.nodes.embed.create(
-            {
-              ref: ref,
-              view: 'card',
-            },
-            schema.text(' '),
-          )
+    if (hmId) {
+      if (hmId.type !== 'c') {
+        // comments are not supported for card embeds yet
 
-          insertNode(editor, originalRef || ref, node)
-        },
-      })
+        linkMenuItems.unshift({
+          name: `Insert ${
+            docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
+          } as Card`,
+          disabled: false,
+          icon: <SquareAsterisk size={18} />,
+          execute: (editor: BlockNoteEditor, ref: string) => {
+            if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
+              const hmId = normlizeHmId(ref, gwUrl)
+              if (!hmId) return
+              ref = hmId
+            }
+            const {state, schema} = editor._tiptapEditor
+            const {selection} = state
+            if (!selection.empty) return
+            const node = schema.nodes.embed.create(
+              {
+                ref: ref,
+                view: 'card',
+              },
+              schema.text(' '),
+            )
 
-      linkMenuItems.unshift({
-        name: `Embed ${docTitle ? '"' + docTitle + '"' : 'link'}`,
-        disabled: false,
-        icon: <FileText size={18} />,
-        execute: (editor: BlockNoteEditor, ref: string) => {
-          if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
-            const hmId = normlizeHmId(ref, gwUrl)
-            if (!hmId) return
-            ref = hmId
-          }
-          const {state, schema} = editor._tiptapEditor
-          const {selection} = state
-          if (!selection.empty) return
-          const node = schema.nodes.embed.create(
-            {
-              ref: ref,
-            },
-            schema.text(' '),
-          )
+            insertNode(editor, originalRef || ref, node)
+          },
+        })
+      }
+      if (hmId.type === 'd' || hmId.type === 'c') {
+        // embeds must be documents or comments. groups and accounts may be cards
+        linkMenuItems.unshift({
+          name: `Embed ${
+            docTitle ? '"' + docTitle + '"' : HYPERMEDIA_ENTITY_TYPES[hmId.type]
+          }`,
+          disabled: false,
+          icon: <FileText size={18} />,
+          execute: (editor: BlockNoteEditor, ref: string) => {
+            if (isPublicGatewayLink(ref, gwUrl) || isHypermediaScheme(ref)) {
+              const hmId = normlizeHmId(ref, gwUrl)
+              if (!hmId) return
+              ref = hmId
+            }
+            const {state, schema} = editor._tiptapEditor
+            const {selection} = state
+            if (!selection.empty) return
+            const node = schema.nodes.embed.create(
+              {
+                ref: ref,
+              },
+              schema.text(' '),
+            )
 
-          insertNode(editor, originalRef || ref, node)
-        },
-      })
+            insertNode(editor, originalRef || ref, node)
+          },
+        })
+      }
 
       if (docTitle && docTitle !== originalRef) {
         linkMenuItems.unshift({
