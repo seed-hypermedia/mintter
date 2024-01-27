@@ -1,4 +1,4 @@
-import {toast} from '@mintter/app/toast'
+import {toast} from '@mintter/ui'
 import * as Sentry from '@sentry/electron'
 
 export default function appError(message: string, metadata?: any) {

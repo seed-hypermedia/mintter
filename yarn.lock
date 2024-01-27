@@ -4992,7 +4992,6 @@ __metadata:
     raf: 3.4.1
     react: 18.2.0
     react-dom: 18.2.0
-    react-hot-toast: 2.4.1
     react-native-web: ~0.19.6
     react-qr-code: 2.0.11
     satori: 0.10.9
@@ -5030,7 +5029,6 @@ __metadata:
     "@tamagui/shorthands": 1.79.1
     "@tamagui/theme-builder": 1.79.1
     "@tamagui/themes": 1.79.1
-    "@tamagui/toast": 1.79.1
     "@tamagui/web": 1.79.1
     react-virtuoso: 4.6.2
     tamagui: 1.79.1
@@ -9343,28 +9341,6 @@ __metadata:
   version: 1.85.8
   resolution: "@tamagui/timer@npm:1.85.8"
   checksum: 4408091766a11b57a2e9577f0c4a8c4727d015cc254e218bfd30225c08a4a4f1869a92f90241abe80a1bb010e74c52a998d66934ce49fa5c021f51359cc3e9be
-  languageName: node
-  linkType: hard
-
-"@tamagui/toast@npm:1.79.1":
-  version: 1.79.1
-  resolution: "@tamagui/toast@npm:1.79.1"
-  dependencies:
-    "@tamagui/animate-presence": 1.79.1
-    "@tamagui/compose-refs": 1.79.1
-    "@tamagui/core": 1.79.1
-    "@tamagui/create-context": 1.79.1
-    "@tamagui/dismissable": 1.79.1
-    "@tamagui/polyfill-dev": 1.79.1
-    "@tamagui/portal": 1.79.1
-    "@tamagui/stacks": 1.79.1
-    "@tamagui/text": 1.79.1
-    "@tamagui/use-controllable-state": 1.79.1
-    "@tamagui/visually-hidden": 1.79.1
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 806bf78300f2649190ef80e31736fff7f1a19b4e5468f7c78e59cee51d3bf1b382d3c7b29d16a6e209afbd9d043ec800edaf0483ee8718fdec1f2d45181ca9dd
   languageName: node
   linkType: hard
 
@@ -17297,15 +17273,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"goober@npm:^2.1.10":
-  version: 2.1.14
-  resolution: "goober@npm:2.1.14"
-  peerDependencies:
-    csstype: ^3.0.10
-  checksum: 78978b7192d6a1af5cfbf1fd64b661b5f53ee6c733554b1f1b2ad3e1e2c979847fc080434390647640bb8358c0b193895d0007432c0886d12001f02f8f56b5e6
-  languageName: node
-  linkType: hard
-
 "gopd@npm:^1.0.1":
   version: 1.0.1
   resolution: "gopd@npm:1.0.1"
@@ -24372,18 +24339,6 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18
   checksum: 9c11ba454ce5b2a16e7499f2ca710e0c0cff227f39689b8e7985902f27f99bfc7a2c49f145ef228528764cf8286bf6101fc8a0f5094ce652eb31cab1684518d1
-  languageName: node
-  linkType: hard
-
-"react-hot-toast@npm:2.4.1":
-  version: 2.4.1
-  resolution: "react-hot-toast@npm:2.4.1"
-  dependencies:
-    goober: ^2.1.10
-  peerDependencies:
-    react: ">=16"
-    react-dom: ">=16"
-  checksum: 3e337816db574782454bf09c63a8aca546bf9c5be3f83d0494d24bdcfd97ca2db64d4c151c4ab0184d2342d7a7226403e6812e70caf03c8b55a07787bb4ad0f2
   languageName: node
   linkType: hard
 

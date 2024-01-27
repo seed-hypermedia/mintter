@@ -20,11 +20,10 @@ import {
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 
-import {TamaguiProvider} from '@mintter/ui'
+import {TamaguiProvider, Toaster} from '@mintter/ui'
 import type {AppProps} from 'next/app'
 import Head from 'next/head'
 import React, {startTransition, useMemo, useState} from 'react'
-import {Toaster} from 'react-hot-toast'
 import {trpc} from '../src/trpc'
 import tamaguiConfig from '../tamagui.config'
 
@@ -88,7 +87,7 @@ function App({Component, pageProps}: AppProps<EveryPageProps>) {
       <Hydrate state={pageProps.trpcState}>
         <ThemeProvider>
           {contents}
-          <Toaster position="bottom-center" />
+          <Toaster />
         </ThemeProvider>
       </Hydrate>
       <ReactQueryDevtools />

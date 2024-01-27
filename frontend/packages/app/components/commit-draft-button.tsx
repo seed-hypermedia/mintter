@@ -14,6 +14,7 @@ import {
   XStack,
   YStack,
   YStackProps,
+  toast,
 } from '@mintter/ui'
 import {Check, ChevronDown, Upload} from '@tamagui/lucide-icons'
 import {PropsWithChildren, useEffect} from 'react'
@@ -33,7 +34,6 @@ import {
   useSelectedGroups,
 } from '../models/groups'
 import {useDaemonReady} from '../node-status-context'
-import {toast} from '../toast'
 import {usePopoverState} from '../use-popover-state'
 import {AuthorsVariant, DraftRoute, GroupVariant} from '../utils/navigation'
 import {useAppDialog} from './dialog'

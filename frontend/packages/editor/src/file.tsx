@@ -1,5 +1,4 @@
 import {useAppContext} from '@mintter/app/app-context'
-import {toast} from '@mintter/app/toast'
 import {client} from '@mintter/desktop/src/trpc'
 import {API_FILE_UPLOAD_URL, formatBytes} from '@mintter/shared'
 import {
@@ -11,6 +10,7 @@ import {
   Tabs,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {ChangeEvent, useEffect, useState} from 'react'
 import {

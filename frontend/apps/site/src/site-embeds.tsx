@@ -1,4 +1,3 @@
-import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {
   BlockNodeContent,
   BlockNodeList,
@@ -19,7 +18,12 @@ import {
   unpackHmId,
   usePublicationContentContext,
 } from '@mintter/shared'
-import {Spinner, UIAvatar, YStack} from '@mintter/ui'
+import {
+  Spinner,
+  UIAvatar,
+  YStack,
+  copyUrlToClipboardWithFeedback,
+} from '@mintter/ui'
 import {useRouter} from 'next/router'
 import {PropsWithChildren, ReactNode, useMemo} from 'react'
 import {NextLink} from 'src/next-link'

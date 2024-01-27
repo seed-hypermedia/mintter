@@ -18,6 +18,7 @@ import {
   UIAvatar,
   View,
   XStack,
+  copyUrlToClipboardWithFeedback,
   useStream,
 } from '@mintter/ui'
 import {
@@ -29,7 +30,6 @@ import {
 } from '@tamagui/lucide-icons'
 import {YStack} from 'tamagui'
 import {useAppContext} from '../app-context'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useAccount} from '../models/accounts'
 import type {CommentGroup} from '../models/comments'
 import {

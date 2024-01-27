@@ -1,14 +1,4 @@
-// import {Renderable, toast as realToast} from 'react-hot-toast'
-
-import {
-  AlertCircle,
-  AnimatePresence,
-  Button,
-  SizableText,
-  XStack,
-  YStack,
-} from '@mintter/ui'
-import {CheckCircle2} from '@tamagui/lucide-icons'
+import {AlertCircle, CheckCircle2} from '@tamagui/lucide-icons'
 import {
   ComponentProps,
   ReactElement,
@@ -17,7 +7,14 @@ import {
   useRef,
   useState,
 } from 'react'
-import {Spinner} from 'tamagui'
+import {
+  AnimatePresence,
+  Button,
+  SizableText,
+  Spinner,
+  XStack,
+  YStack,
+} from 'tamagui'
 
 function DecorationIcon({
   Icon,
@@ -337,13 +334,4 @@ toast.promise = function promiseToast<V>(
     ...opts,
     customContent: <PromiseToast promise={promise} messages={messages} />,
   })
-  // realToast.promise(
-  //   promise,
-  //   {
-  //     error: wrapClickable(messages.error, onClick),
-  //     loading: wrapClickable(messages.loading, onClick),
-  //     success: wrapClickable(messages.success, onClick),
-  //   },
-  //   {...toastOpts},
-  // )
 }

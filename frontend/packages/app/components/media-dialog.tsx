@@ -1,6 +1,5 @@
-import {AlertDialog, Button, XStack, YStack} from '@mintter/ui'
+import {AlertDialog, Button, XStack, YStack, toast} from '@mintter/ui'
 import {useAppDialog} from './dialog'
-import {toast} from '../toast'
 
 export function useMediaDialog() {
   return useAppDialog(MediaDialog, {isAlert: true})

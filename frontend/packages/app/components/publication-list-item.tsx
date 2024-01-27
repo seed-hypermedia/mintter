@@ -1,8 +1,13 @@
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useClickNavigate} from '@mintter/app/utils/useNavigate'
 import {Account, Document, Publication} from '@mintter/shared'
-import {ArrowUpRight, Button, ButtonText, XStack} from '@mintter/ui'
+import {
+  ArrowUpRight,
+  Button,
+  ButtonText,
+  XStack,
+  copyTextToClipboard,
+} from '@mintter/ui'
 import {NavRoute, PublicationVariant} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {BaseAccountLinkAvatar} from './account-link-avatar'

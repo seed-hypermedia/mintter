@@ -11,14 +11,17 @@ import {
   Button,
   CheckboxField,
   DialogDescription,
+  ErrorToastDecoration,
   SizableText,
   Spinner,
+  SuccessToastDecoration,
   XStack,
   YStack,
+  copyTextToClipboard,
+  toast,
   useStream,
 } from '@mintter/ui'
 import {ReactNode, useState} from 'react'
-import {copyTextToClipboard} from '../copy-to-clipboard'
 import {usePushPublication} from '../models/documents'
 import {
   useGatewayHost,
@@ -28,7 +31,6 @@ import {
   useSetPushOnPublish,
 } from '../models/gateway-settings'
 import {fetchWebLinkMeta} from '../models/web-links'
-import {ErrorToastDecoration, SuccessToastDecoration, toast} from '../toast'
 import {DialogTitle, useAppDialog} from './dialog'
 
 type IsPublishedState = null | boolean // null: determined checked yet

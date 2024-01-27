@@ -22,6 +22,7 @@ import {
   idToUrl,
   unpackHmId,
 } from '@mintter/shared'
+import {toast} from '@mintter/ui'
 import {
   Globe,
   Pencil,
@@ -45,7 +46,6 @@ import {
 } from '../models/documents'
 import {useGatewayUrl} from '../models/gateway-settings'
 import {useWaitForPublication} from '../models/web-links'
-import {toast} from '../toast'
 import {AuthorsVariant, DraftRoute, useNavRoute} from '../utils/navigation'
 import {useOpenDraft} from '../utils/open-draft'
 import {useClickNavigate, useNavigate} from '../utils/useNavigate'

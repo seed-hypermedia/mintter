@@ -1,5 +1,4 @@
 import {zodResolver} from '@hookform/resolvers/zod'
-import {toast} from '@mintter/app/toast'
 import {Group} from '@mintter/shared'
 import {
   Button,
@@ -11,6 +10,7 @@ import {
   Spinner,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {useEffect} from 'react'
 import {

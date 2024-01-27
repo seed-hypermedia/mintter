@@ -1,5 +1,4 @@
 import {
-  abbreviateCid,
   createHmId,
   createPublicWebHmUrl,
   formattedDate,
@@ -11,6 +10,7 @@ import {
   unpackDocId,
   unpackHmId,
 } from '@mintter/shared'
+import {HMChangeInfo, HMLink} from '@mintter/shared/src/json-hm'
 import {
   Button,
   SideSection,
@@ -20,41 +20,12 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {ChevronDown, ChevronUp, Clipboard} from '@tamagui/lucide-icons'
-import {AccountRow} from 'src/account-row'
+import {ChevronDown, ChevronUp} from '@tamagui/lucide-icons'
 import {format} from 'date-fns'
-import {NextLink} from 'src/next-link'
 import {ReactElement, useEffect, useMemo, useState} from 'react'
-import {toast} from 'react-hot-toast'
+import {AccountRow} from 'src/account-row'
+import {NextLink} from 'src/next-link'
 import {trpc} from './trpc'
-import {HMChangeInfo, HMLink} from '@mintter/shared/src/json-hm'
-
-function IDLabelRow({id, label}: {id?: string; label: string}) {
-  if (!id) return null
-  return (
-    <XStack>
-      <SizableText opacity={0.5}>{label}:&nbsp;</SizableText>
-      <Tooltip
-        content={
-          <>
-            <Clipboard size={12} /> Copy: {id}
-          </>
-        }
-      >
-        <Button
-          size="$2"
-          chromeless
-          onPress={() => {
-            window.navigator.clipboard.writeText(id)
-            toast.success(`Copied ${label}`)
-          }}
-        >
-          {abbreviateCid(id)}
-        </Button>
-      </Tooltip>
-    </XStack>
-  )
-}
 
 function useInterval(ms: number) {
   const [count, setCount] = useState(0)

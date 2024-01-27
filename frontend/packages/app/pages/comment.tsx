@@ -1,6 +1,14 @@
 import {trpc} from '@mintter/desktop/src/trpc'
 import {HMComment, createHmId, unpackHmId} from '@mintter/shared'
-import {Button, ChevronUp, Copy, Spinner, XStack, YStack} from '@mintter/ui'
+import {
+  Button,
+  ChevronUp,
+  Copy,
+  Spinner,
+  XStack,
+  YStack,
+  copyUrlToClipboardWithFeedback,
+} from '@mintter/ui'
 import {Reply} from '@tamagui/lucide-icons'
 import {
   CommentGroup,
@@ -9,7 +17,6 @@ import {
   CommentThread,
 } from '../components/comments'
 import {MainWrapperStandalone} from '../components/main-wrapper'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useComment, usePublicationCommentGroups} from '../models/comments'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'

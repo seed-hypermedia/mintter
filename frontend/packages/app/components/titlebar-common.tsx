@@ -1,8 +1,6 @@
 import {ContactsPrompt} from '@mintter/app/components/contacts-prompt'
-import {copyUrlToClipboardWithFeedback} from '@mintter/app/copy-to-clipboard'
 import {useMyAccount} from '@mintter/app/models/accounts'
 import {usePublicationVariant} from '@mintter/app/models/publication'
-import {toast} from '@mintter/app/toast'
 import {
   NavRoute,
   useNavRoute,
@@ -21,6 +19,8 @@ import {
   View,
   XGroup,
   XStack,
+  copyUrlToClipboardWithFeedback,
+  toast,
   useStream,
 } from '@mintter/ui'
 import {

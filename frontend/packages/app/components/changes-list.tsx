@@ -21,10 +21,11 @@ import {
   Spinner,
   XStack,
   YStack,
+  copyUrlToClipboardWithFeedback,
+  toast,
 } from '@mintter/ui'
 import {ArrowUpRight, Upload} from '@tamagui/lucide-icons'
 import {createContext, useContext} from 'react'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import appError from '../errors'
 import {useDocHistory} from '../models/changes'
 import {useGatewayUrl} from '../models/gateway-settings'
@@ -36,7 +37,6 @@ import {
   usePublishDocToGroup,
 } from '../models/groups'
 import {useOpenUrl} from '../open-url'
-import {toast} from '../toast'
 import {GroupVariant, NavRoute, useNavRoute} from '../utils/navigation'
 import {AccessoryContainer} from './accessory-sidebar'
 import {AccountLinkAvatar} from './account-link-avatar'

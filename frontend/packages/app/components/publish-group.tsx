@@ -1,4 +1,3 @@
-import {toast} from '@mintter/app/toast'
 import {
   Button,
   ButtonText,
@@ -7,6 +6,7 @@ import {
   SizableText,
   Spinner,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {UseMutationResult} from '@tanstack/react-query'
 import {ReactNode, useState} from 'react'

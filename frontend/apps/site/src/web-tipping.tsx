@@ -14,6 +14,7 @@ import {
   XGroup,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {Check, MinusCircle, PlusCircle, X, Zap} from '@tamagui/lucide-icons'
 import Link from 'next/link'
@@ -25,7 +26,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import {toast} from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {AccountRow} from 'src/account-row'
 import {trpc} from './trpc'

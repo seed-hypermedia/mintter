@@ -1,4 +1,3 @@
-import {toast} from '@mintter/app/toast'
 import {client} from '@mintter/desktop/src/trpc'
 import {API_FILE_UPLOAD_URL, API_FILE_URL} from '@mintter/shared'
 import {
@@ -11,6 +10,7 @@ import {
   Tabs,
   XStack,
   YStack,
+  toast,
   useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, PropsWithChildren, useEffect, useState} from 'react'

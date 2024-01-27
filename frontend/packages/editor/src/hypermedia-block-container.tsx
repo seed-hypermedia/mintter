@@ -7,17 +7,8 @@ import {
   inlineContentToNodes,
 } from './blocknote/core/api/nodeConversions/nodeConversions'
 
-import {
-  BlockNoteDOMAttributes,
-  BlockSchema,
-  getBlockInfoFromPos,
-  PartialBlock,
-} from './blocknote'
-
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {usePublication} from '@mintter/app/models/documents'
 import {useGatewayUrl} from '@mintter/app/models/gateway-settings'
-import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
 import {
@@ -26,14 +17,27 @@ import {
   unpackHmId,
   useHover,
 } from '@mintter/shared'
-import {Button, Copy, SizableText, XStack} from '@mintter/ui'
+import {
+  Button,
+  Copy,
+  copyTextToClipboard,
+  SizableText,
+  toast,
+  XStack,
+} from '@mintter/ui'
 import {ResolvedPos} from '@tiptap/pm/model'
 import {
   NodeViewContent,
   NodeViewWrapper,
   ReactNodeViewRenderer,
 } from '@tiptap/react'
-import {mergeCSSClasses} from './blocknote'
+import {
+  BlockNoteDOMAttributes,
+  BlockSchema,
+  getBlockInfoFromPos,
+  mergeCSSClasses,
+  PartialBlock,
+} from './blocknote'
 import styles from './blocknote/core/extensions/Blocks/nodes/Block.module.css'
 import BlockAttributes from './blocknote/core/extensions/Blocks/nodes/BlockAttributes'
 import {PreviousBlockTypePlugin} from './blocknote/core/extensions/Blocks/PreviousBlockTypePlugin'

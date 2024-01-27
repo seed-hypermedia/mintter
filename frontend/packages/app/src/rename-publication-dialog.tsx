@@ -1,5 +1,11 @@
-import {toast} from '@mintter/app/toast'
-import {Button, DialogDescription, DialogTitle, Form, Input} from '@mintter/ui'
+import {
+  Button,
+  DialogDescription,
+  DialogTitle,
+  Form,
+  Input,
+  toast,
+} from '@mintter/ui'
 import 'allotment/dist/style.css'
 import {useState} from 'react'
 import '../components/accounts-combobox.css'

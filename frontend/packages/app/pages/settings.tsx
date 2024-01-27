@@ -2,7 +2,6 @@ import {useMyAccount} from '@mintter/app/models/accounts'
 import {useDaemonInfo} from '@mintter/app/models/daemon'
 import {usePeerInfo} from '@mintter/app/models/networking'
 import {useInvoicesBywallet, useWallets} from '@mintter/app/models/payments'
-import {toast} from '@mintter/app/toast'
 import {ObjectKeys} from '@mintter/app/utils/object-keys'
 import {trpc} from '@mintter/desktop/src/trpc'
 import {LightningWallet, Profile, VERSION} from '@mintter/shared'
@@ -38,6 +37,7 @@ import {
   XGroup,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {Trash} from '@tamagui/lucide-icons'
 import copyTextToClipboard from 'copy-text-to-clipboard'

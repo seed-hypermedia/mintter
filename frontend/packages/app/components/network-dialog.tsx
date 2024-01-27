@@ -4,12 +4,14 @@ import {
   Button,
   ButtonText,
   Copy,
+  copyTextToClipboard,
   Dialog,
   ExternalLink,
   List,
   Separator,
   SizableText,
   Spinner,
+  toast,
   Tooltip,
   UIAvatar,
   View,
@@ -19,7 +21,6 @@ import {
 } from '@mintter/ui'
 import {useState} from 'react'
 import {ColorValue} from 'react-native'
-import {copyTextToClipboard} from '../copy-to-clipboard'
 import {useAllAccounts} from '../models/accounts'
 import {
   useIsGatewayConnected,
@@ -27,7 +28,6 @@ import {
   usePeers,
 } from '../models/networking'
 import {useOpenUrl} from '../open-url'
-import {toast} from '../toast'
 import {hostnameStripProtocol} from '../utils/site-hostname'
 import {useNavigate} from '../utils/useNavigate'
 import {useAppDialog} from './dialog'

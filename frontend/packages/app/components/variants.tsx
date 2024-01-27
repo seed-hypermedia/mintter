@@ -7,7 +7,6 @@ import {
   usePublishDocToGroup,
 } from '@mintter/app/models/groups'
 import {usePublicationVariant} from '@mintter/app/models/publication'
-import {toast} from '@mintter/app/toast'
 import {usePopoverState} from '@mintter/app/use-popover-state'
 import {
   NavContextProvider,
@@ -54,6 +53,7 @@ import {
   XGroup,
   XStack,
   YStack,
+  toast,
 } from '@mintter/ui'
 import {
   ArrowRight,

@@ -6,6 +6,7 @@ import {
   Separator,
   SizableText,
   Spinner,
+  toast,
   Tooltip,
   UIAvatar,
   useStream,
@@ -38,7 +39,6 @@ import {
 } from '../models/pins'
 import {getAccountName} from '../pages/account-page'
 import {SidebarWidth, useSidebarContext} from '../src/sidebar-context'
-import {toast} from '../toast'
 import {getAvatarUrl} from '../utils/account-url'
 import {
   NavRoute,

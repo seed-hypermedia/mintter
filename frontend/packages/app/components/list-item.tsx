@@ -8,9 +8,9 @@ import {
   Tooltip,
   View,
   XStack,
+  copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
 import {ComponentProps, ReactElement, useState} from 'react'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {MenuItemType, OptionsDropdown} from './options-dropdown'
 
 export function ListItem({

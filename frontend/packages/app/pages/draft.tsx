@@ -24,6 +24,7 @@ import {
   Theme,
   XStack,
   YStack,
+  copyUrlToClipboardWithFeedback,
   useStream,
 } from '@mintter/ui'
 import {Selection} from '@tiptap/pm/state'
@@ -32,7 +33,6 @@ import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {ActorRefFrom} from 'xstate'
 import {MainWrapper} from '../components/main-wrapper'
-import {copyUrlToClipboardWithFeedback} from '../copy-to-clipboard'
 import {useDraftEditor} from '../models/documents'
 import {DraftStatusContext, draftMachine} from '../models/draft-machine'
 import {useHasDevTools} from '../models/experiments'

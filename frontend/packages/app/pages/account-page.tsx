@@ -2,10 +2,8 @@ import {Avatar} from '@mintter/app/components/avatar'
 import Footer from '@mintter/app/components/footer'
 import {OnlineIndicator} from '@mintter/app/components/indicator'
 import {PublicationListItem} from '@mintter/app/components/publication-list-item'
-import {copyTextToClipboard} from '@mintter/app/copy-to-clipboard'
 import {useAccountWithDevices} from '@mintter/app/models/contacts'
 import {useAccountGroups} from '@mintter/app/models/groups'
-import {toast} from '@mintter/app/toast'
 import {useNavRoute} from '@mintter/app/utils/navigation'
 import {Profile, abbreviateCid, pluralizer} from '@mintter/shared'
 import {idToUrl} from '@mintter/shared/src/utils/entity-id-url'
@@ -19,6 +17,8 @@ import {
   XStack,
   YGroup,
   YStack,
+  copyTextToClipboard,
+  toast,
 } from '@mintter/ui'
 import {PageContainer} from '@mintter/ui/src/container'
 import {Pencil} from '@tamagui/lucide-icons'

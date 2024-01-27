@@ -1,5 +1,4 @@
 import {useAppContext} from '@mintter/app/app-context'
-import {toast} from '@mintter/app/toast'
 import {client, trpc} from '@mintter/desktop/src/trpc'
 import {
   API_FILE_UPLOAD_URL,
@@ -17,6 +16,7 @@ import {
   Text,
   XStack,
   YStack,
+  toast,
   useTheme,
 } from '@mintter/ui'
 import {ChangeEvent, useCallback, useEffect, useState} from 'react'

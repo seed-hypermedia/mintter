@@ -1,6 +1,13 @@
-import {toast} from '@mintter/app/toast'
 import {Group} from '@mintter/shared'
-import {Button, Form, Input, Label, Spinner, TextInput} from '@mintter/ui'
+import {
+  Button,
+  Form,
+  Input,
+  Label,
+  Spinner,
+  TextInput,
+  toast,
+} from '@mintter/ui'
 import {useRef} from 'react'
 import {useGroup, useUpdateGroup} from '../models/groups'
 import {DialogTitle, useAppDialog} from './dialog'

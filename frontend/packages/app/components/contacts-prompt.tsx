@@ -1,6 +1,5 @@
-import {toast} from '@mintter/app/toast'
 import {HYPERMEDIA_PUBLIC_WEB_GATEWAY} from '@mintter/shared'
-import {Button, Spinner, TextArea, XStack} from '@mintter/ui'
+import {Button, Spinner, TextArea, XStack, toast} from '@mintter/ui'
 import {UserPlus} from '@tamagui/lucide-icons'
 import {compressToEncodedURIComponent} from 'lz-string'
 import {ComponentProps, useMemo, useState} from 'react'

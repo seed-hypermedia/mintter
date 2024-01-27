@@ -18,11 +18,11 @@ import {
   unpackHmId,
   writeableStateStream,
 } from '@mintter/shared'
+import {toast} from '@mintter/ui'
 import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {Extension} from '@tiptap/core'
 import {useMemo, useRef} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
-import {toast} from '../toast'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {getBlockGroup, setGroupTypes} from './editor-utils'

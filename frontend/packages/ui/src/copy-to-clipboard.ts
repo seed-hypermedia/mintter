@@ -1,4 +1,3 @@
-import {error} from './logger'
 import {toast} from './toast'
 
 export async function copyUrlToClipboardWithFeedback(
@@ -22,7 +21,7 @@ export function copyTextToClipboard(text: string) {
         resolve(text)
       },
       (err) => {
-        error('Async: Could not copy text: ', err)
+        console.error('Async: Could not copy text: ', err)
         reject(err)
       },
     )
@@ -47,7 +46,7 @@ function fallbackCopyTextToClipboard(text: string) {
     try {
       document.execCommand('copy')
     } catch (err) {
-      error('Fallback: Oops, unable to copy', err)
+      console.error('Fallback: Oops, unable to copy', err)
       reject(err)
     }
 

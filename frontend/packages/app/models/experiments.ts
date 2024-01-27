@@ -1,6 +1,6 @@
 import {trpc} from '@mintter/desktop/src/trpc'
+import {toast} from '@mintter/ui'
 import {useQueryInvalidator} from '../app-context'
-import {toast} from '../toast'
 
 export function useExperiments() {
   const experiments = trpc.experiments.get.useQuery()
