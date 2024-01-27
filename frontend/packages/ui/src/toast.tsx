@@ -14,6 +14,7 @@ import {
   Spinner,
   XStack,
   YStack,
+  styled,
 } from 'tamagui'
 
 function DecorationIcon({
@@ -34,6 +35,11 @@ export function ErrorToastDecoration() {
   return <DecorationIcon Icon={AlertCircle} color="$red9" />
 }
 
+const ToastXStack = styled(XStack, {
+  gap: '$3',
+  ai: 'center',
+})
+
 function ToastView({
   message,
   decoration,
@@ -50,13 +56,13 @@ function ToastView({
   customContent?: ReactElement
 }) {
   const content = customContent || (
-    <XStack gap="$3" ai="center">
+    <ToastXStack>
       {/* <AnimatePresence> */}
       {decoration === 'error' ? <ErrorToastDecoration /> : null}
       {decoration === 'success' ? <SuccessToastDecoration /> : null}
       {/* </AnimatePresence> */}
       <SizableText>{message}</SizableText>
-    </XStack>
+    </ToastXStack>
   )
   return (
     <Button
