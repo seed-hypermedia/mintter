@@ -2,6 +2,7 @@ package ipfs
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -18,13 +19,16 @@ import (
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	routing "github.com/libp2p/go-libp2p/core/routing"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
+	"golang.org/x/exp/constraints"
 )
 
 // DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
@@ -152,6 +156,12 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		return nil
 	})
 
+	rm, err := buildResourceManager(map[protocol.ID]rcmgr.LimitVal{"/hypermedia/0.3.0": 1000, "/hypermedia/0.2.0": 1000},
+		map[protocol.ID]rcmgr.LimitVal{"/ipfs/kad/1.0.0": 5000, "/ipfs/bitswap/1.2.0": 3000})
+	if err != nil {
+		return nil, err
+	}
+
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs,      // Users must explicitly start listening.
@@ -160,7 +170,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
-		libp2p.ResourceManager(must.Do2(rcmgr.NewResourceManager(rcmgr.NewFixedLimiter(rcmgr.InfiniteLimits)))),
+		libp2p.ResourceManager(rm),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			if ds == nil {
 				panic("BUG: must provide datastore for DHT")
@@ -254,4 +264,108 @@ func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers []peer.AddrInfo) B
 // Close the node and all the underlying systems.
 func (n *Libp2p) Close() error {
 	return n.clean.Close()
+}
+
+// buildResourceManager returns a resource manager given two sets of hard limits. for each protocol listed in ourProtocols (mintter protocols)
+// we apply the maximum limits of ourStreamsHardLimit. For their protocols (non mintter protocols) we apply the maximum limits of theirStreamsHardLimit
+func buildResourceManager(ourProtocolLimits map[protocol.ID]rcmgr.LimitVal, theirProtocolLimits map[protocol.ID]rcmgr.LimitVal) (network.ResourceManager, error) {
+	scalingLimits := rcmgr.DefaultLimits
+
+	// Add limits around included libp2p protocols
+	libp2p.SetDefaultServiceLimits(&scalingLimits)
+
+	// Turn the scaling limits into a concrete set of limits using `.AutoScale`. This
+	// scales the limits proportional to your system memory.
+	scaledDefaultLimits := scalingLimits.AutoScale()
+	const (
+		maxConns           = 12000
+		maxFileDescriptors = 1000
+		maxMemory          = 2048 * 1024 * 1024
+	)
+
+	absoluteLimits := rcmgr.ResourceLimits{
+		Streams:         maxConns,
+		StreamsInbound:  maxConns,
+		StreamsOutbound: maxConns,
+		Conns:           maxConns,
+		ConnsInbound:    maxConns,
+		ConnsOutbound:   maxConns,
+		FD:              maxFileDescriptors,
+		Memory:          maxMemory,
+	}
+
+	protocolsLimits := map[protocol.ID]rcmgr.ResourceLimits{}
+	for name, limit := range ourProtocolLimits {
+		if limit > maxConns {
+			return nil, fmt.Errorf("Provided limit %d can't be greater than absolute limit %d", limit, maxConns)
+		}
+		limits := rcmgr.ResourceLimits{
+			Streams:         limit,
+			StreamsInbound:  limit,
+			StreamsOutbound: limit,
+			Conns:           limit,
+			ConnsInbound:    limit,
+			ConnsOutbound:   limit,
+			FD:              maxFileDescriptors,
+			Memory:          maxMemory,
+		}
+
+		protocolsLimits[name] = limits
+	}
+	for name, limit := range theirProtocolLimits {
+		if limit > maxConns {
+			return nil, fmt.Errorf("Provided limit %d can't be greater than absolute limit %d", limit, maxConns)
+		}
+		limits := rcmgr.ResourceLimits{
+			Streams:         limit,
+			StreamsInbound:  limit,
+			StreamsOutbound: limit,
+			Conns:           limit,
+			ConnsInbound:    limit,
+			ConnsOutbound:   limit,
+			FD:              maxFileDescriptors,
+			Memory:          maxMemory,
+		}
+
+		protocolsLimits[name] = limits
+	}
+
+	// Defaults
+	cfg := rcmgr.PartialLimitConfig{
+		System:               absoluteLimits,
+		Transient:            absoluteLimits,
+		AllowlistedSystem:    absoluteLimits,
+		AllowlistedTransient: absoluteLimits,
+		ServiceDefault:       absoluteLimits,
+		//Service:              map[string]rcmgr.ResourceLimits{},
+		ServicePeerDefault: absoluteLimits,
+		//ServicePeer:          map[string]rcmgr.ResourceLimits{},
+		ProtocolDefault:     absoluteLimits,
+		Protocol:            protocolsLimits,
+		ProtocolPeerDefault: absoluteLimits,
+		//ProtocolPeer:         map[protocol.ID]rcmgr.ResourceLimits{},
+		PeerDefault: absoluteLimits,
+		//Peer:                 map[peer.ID]rcmgr.ResourceLimits{},
+		Conn:   absoluteLimits,
+		Stream: absoluteLimits,
+	}
+
+	limits := cfg.Build(scaledDefaultLimits)
+
+	// The resource manager expects a limiter, so we create one from our limits.
+	limiter := rcmgr.NewFixedLimiter(limits)
+
+	return rcmgr.NewResourceManager(limiter)
+}
+func min[T constraints.Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
+}
+func max[T constraints.Ordered](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
 }
