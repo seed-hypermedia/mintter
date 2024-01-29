@@ -201,7 +201,10 @@ export function PublicationPage({
                           pathName,
                           contextGroup.version,
                         )
-                      : createHmDocLink(documentId, pub?.version)
+                      : createHmDocLink({
+                          documentId,
+                          version: pub?.version,
+                        })
                   }
                 />
               </WebTipping>

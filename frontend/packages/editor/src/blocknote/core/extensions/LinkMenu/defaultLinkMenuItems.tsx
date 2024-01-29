@@ -18,7 +18,6 @@ export function getLinkMenuItems({
   hmId,
   media,
   sourceUrl,
-  sourceRef,
   fileName,
   docTitle,
   gwUrl,
@@ -27,14 +26,13 @@ export function getLinkMenuItems({
   hmId?: UnpackedHypermediaId | null // if the link is an embeddable link
   media?: string // type of media block if link points to a media file
   sourceUrl?: string // the inserted link into the editor. needed to correctly replace the link with block
-  sourceRef?: string // the HM url the sourceUrl it resolved to
   fileName?: string // file name if any
   docTitle?: string | null // document title if any
   gwUrl: StateStream<string>
 }) {
   const linkMenuItems: LinkMenuItem[] = []
 
-  if (sourceRef && !isHypermediaScheme(sourceRef)) {
+  if (sourceUrl && !isHypermediaScheme(sourceUrl)) {
     linkMenuItems.unshift({
       name: 'Web Link',
       disabled: false,
@@ -96,7 +94,7 @@ export function getLinkMenuItems({
               schema.text(' '),
             )
 
-            insertNode(editor, originalRef || ref, node)
+            insertNode(editor, sourceUrl || ref, node)
           },
         })
       }
@@ -128,7 +126,7 @@ export function getLinkMenuItems({
               schema.text(' '),
             )
 
-            insertNode(editor, originalRef || ref, node)
+            insertNode(editor, sourceUrl || ref, node)
           },
         })
       }

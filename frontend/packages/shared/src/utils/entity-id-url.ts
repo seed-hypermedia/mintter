@@ -226,13 +226,23 @@ export function normlizeHmId(
   }
 }
 
-export function createHmDocLink(
-  documentId: string,
-  version?: string | null,
-  blockRef?: string | null,
-): string {
+export function createHmDocLink({
+  documentId,
+  version,
+  blockRef,
+  latest,
+}: {
+  documentId: string
+  version?: string | null
+  blockRef?: string | null
+  latest?: boolean
+}): string {
   let res = documentId
-  if (version) res += `?v=${version}`
+  if (version || latest) {
+    res += `?`
+  }
+  if (version) res += `v=${version}`
+  if (latest) res += `&l`
   if (blockRef) res += `${!blockRef.startsWith('#') ? '#' : ''}${blockRef}`
   return res
 }

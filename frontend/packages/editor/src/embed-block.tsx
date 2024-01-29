@@ -56,16 +56,6 @@ export const EmbedBlock = createReactBlockSpec({
       values: ['content', 'card'], // TODO: convert HMEmbedDisplay type to array items
       default: 'content',
     },
-    latest: {
-      values: ['false', 'true'],
-      default: 'false',
-    },
-    sourceUrl: {
-      default: '',
-    },
-    sourceRef: {
-      default: '',
-    },
   },
   containsInlineContent: true,
 
@@ -231,24 +221,39 @@ function EmbedControl({
   const openUrl = useOpenUrl()
   const popoverState = usePopoverState()
 
-  function removeVersionFromRef(currentRef: string) {
+  function addLatestParamToRef(currentRef: string) {
     let unpackedRef = unpackHmId(block.props.ref)
 
-    console.log(`== ~ removeVersionFromRef ~ unpackedRef:`, unpackedRef)
+    let res = unpackedRef
+      ? createHmDocLink({
+          documentId: unpackedRef?.qid,
+          version: unpackedRef?.version,
+          blockRef: unpackedRef?.blockRef,
+          latest: true,
+        })
+      : currentRef
+    return res
+  }
+  function removeLatestParamToRef(currentRef: string) {
+    let unpackedRef = unpackHmId(block.props.ref)
 
     let res = unpackedRef
-      ? createHmDocLink(unpackedRef?.qid, null, unpackedRef?.blockRef)
+      ? createHmDocLink({
+          documentId: unpackedRef?.qid,
+          version: unpackedRef?.version,
+          blockRef: unpackedRef?.blockRef,
+          latest: false,
+        })
       : currentRef
-    console.log(`== ~ removeVersionFromRef ~ res:`, res)
     return res
   }
 
   function handleLatestChange(val: boolean | 'indeterminate') {
     if (val != 'indeterminate') {
       let newRef = val
-        ? removeVersionFromRef(block.props.sourceRef)
-        : block.props.sourceRef
-      assign({props: {ref: newRef, latest: val ? 'true' : 'false'}})
+        ? addLatestParamToRef(block.props.ref)
+        : removeLatestParamToRef(block.props.ref)
+      assign({props: {ref: newRef}})
     }
   }
   return (
@@ -319,7 +324,7 @@ function EmbedControl({
                 <XStack ai="center" jc="center">
                   <Checkbox
                     id={`latest-${block.id}`}
-                    checked={block.props.latest == 'true'}
+                    checked={block.props.ref.includes('&l')}
                     onCheckedChange={handleLatestChange}
                   >
                     <Checkbox.Indicator>
