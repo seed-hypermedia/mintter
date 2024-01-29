@@ -3,7 +3,6 @@ import {useDraftList} from '@mintter/app/models/documents'
 import {
   Button,
   ButtonText,
-  Container,
   Copy,
   Delete,
   DialogDescription,
@@ -291,15 +290,20 @@ function DraftsList() {
   }
   if (drafts.data?.documents.length === 0) {
     return (
-      <Container>
-        <DocumentTabs />
-        <EmptyList
-          description="You have no current Drafts."
-          action={() => {
-            openDraft()
-          }}
-        />
-      </Container>
+      <List
+        header={<DocumentTabs />}
+        items={['You have no current Drafts.']}
+        renderItem={({item}) => {
+          return (
+            <EmptyList
+              description={item}
+              action={() => {
+                openDraft()
+              }}
+            />
+          )
+        }}
+      />
     )
   }
   return (
