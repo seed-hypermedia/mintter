@@ -312,7 +312,7 @@ function NewDocumentButton({
   pubContext: PublicationRouteContext
   label?: string
 }) {
-  const openDraft = useOpenDraft()
+  const openDraft = useOpenDraft('push')
   return (
     <Tooltip content={`New ${label || 'Document'}`}>
       <Button
@@ -320,7 +320,7 @@ function NewDocumentButton({
         chromeless
         iconAfter={Plus}
         onPress={(e) => {
-          e.preventDefault()
+          e.stopPropagation()
           openDraft(pubContext)
         }}
       />
