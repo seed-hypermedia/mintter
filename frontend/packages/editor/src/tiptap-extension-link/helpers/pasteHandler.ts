@@ -180,7 +180,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                     items: getLinkMenuItems({
                       isLoading: false,
                       hmId: unpackHmId(normalizedHmUrl),
-                      originalRef: title,
+                      originalRef: normalizedHmUrl,
                       docTitle: title,
                       gwUrl: options.gwUrl,
                     }),
@@ -313,17 +313,34 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
               const embedPromise = fetchWebLink(options.client, link.href)
                 .then((res) => {
                   if (res) {
+                    const title = res.hmTitle
+                    // todo: use res?.hmUrl which may have format of hm://g/ID/PATH?v=G_VERSION.
+                    // the embed component does not load this group doc URL correctly
                     const fullHmUrl = hmIdWithVersion(
-                      res?.hmUrl || res?.hmId,
+                      res?.hmId,
                       res?.hmVersion,
                       extractBlockRefOfUrl(link.href),
                     )
-
+                    if (title && fullHmUrl) {
+                      view.dispatch(
+                        view.state.tr
+                          .deleteRange(pos, pos + link.href.length)
+                          .insertText(title, pos)
+                          .addMark(
+                            pos,
+                            pos + title.length,
+                            options.editor.schema.mark('link', {
+                              href: fullHmUrl,
+                            }),
+                          ),
+                      )
+                    }
                     if (fullHmUrl) {
                       view.dispatch(
                         view.state.tr.setMeta(linkMenuPluginKey, {
                           ref: fullHmUrl,
                           items: getLinkMenuItems({
+                            hmId: unpackHmId(fullHmUrl),
                             isLoading: false,
                             originalRef: link.href,
                             docTitle: res.hmTitle,
@@ -370,6 +387,7 @@ export function pasteHandler(options: PasteHandlerOptions): Plugin {
                       view.state.tr.setMeta(linkMenuPluginKey, {
                         items: getLinkMenuItems({
                           isLoading: false,
+                          originalRef: link.href,
                           gwUrl: options.gwUrl,
                         }),
                       }),
