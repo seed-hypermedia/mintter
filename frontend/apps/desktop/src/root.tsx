@@ -273,6 +273,7 @@ function MainApp({
   }
 
   if (daemonState?.t == 'error') {
+    console.error('Daemon error', daemonState?.message)
     return (
       <StyleProvider darkMode={darkMode}>
         <AppErrorContent message={daemonState?.message} />
