@@ -231,6 +231,7 @@ function ChangeItem({
       paddingVertical="$1"
       marginBottom="$1"
       backgroundColor={isActive ? '$blue5' : 'transparent'}
+      userSelect="none"
     >
       <YStack
         f={1}

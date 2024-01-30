@@ -320,6 +320,7 @@ export function ContextPopoverTitle({
       padding="$2"
       paddingHorizontal="$4"
       fontWeight="bold"
+      userSelect="none"
       {...props}
     >
       {children}
@@ -396,6 +397,7 @@ export function GroupVariantItem({
       color={isVersionMatched ? '$blue11' : '$color12'}
       disabled={isActive}
       onPress={onPress}
+      userSelect="none"
     >
       <XStack gap="$4" jc="space-between" flex={1} ai="center" mr={-8}>
         <YStack alignItems="flex-start">
@@ -776,6 +778,7 @@ function AuthorVariantItem({
           },
         })
       }}
+      userSelect="none"
     >
       <XStack jc="space-between" f={1} gap="$4" ai="center">
         <XStack gap="$2" f={1} ai="center">

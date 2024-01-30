@@ -16,7 +16,6 @@ import {
   SideSection,
   SideSectionTitle,
   SizableText,
-  Tooltip,
   XStack,
   YStack,
 } from '@mintter/ui'
@@ -493,50 +492,6 @@ export function PublicationMetadata({
       <VersionsMeta publication={publication} pathName={pathName} />
       <CitationsMeta publication={publication} />
     </>
-  )
-}
-
-function LatestVersionBanner({
-  record,
-  pathName,
-}: {
-  record: {
-    versionId: string
-    documentId: string
-    publishTime: string
-  }
-  pathName: string
-}) {
-  const publishTimeRelative = useFormattedTime(record?.publishTime, true)
-  if (!pathName || !record) return null
-
-  const docId = unpackDocId(record.documentId)
-  if (!docId?.eid) return null
-
-  return (
-    <NextLink
-      href={createPublicWebHmUrl('d', docId?.eid, {
-        version: record.versionId,
-        hostname: null,
-      })}
-      style={{textDecoration: 'none'}}
-    >
-      <SideSectionTitle>Latest Version:&nbsp;</SideSectionTitle>
-      <SizableText textDecorationLine="underline" color="$blue11">
-        {publishTimeRelative}
-      </SizableText>
-
-      <Tooltip
-        content={format(
-          new Date(record.publishTime),
-          'MMMM do yyyy, HH:mm:ss z',
-        )}
-      >
-        <SizableText color="$blue11">
-          {format(new Date(record.publishTime), 'EEEE, MMMM do, yyyy')}
-        </SizableText>
-      </Tooltip>
-    </NextLink>
   )
 }
 
