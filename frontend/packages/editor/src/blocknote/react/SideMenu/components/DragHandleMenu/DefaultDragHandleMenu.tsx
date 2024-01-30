@@ -1,8 +1,7 @@
 import {updateGroup} from '@/block-utils'
 import {BlockNoteEditor, HMBlockSchema} from '@/index'
 import {Box, Menu} from '@mantine/core'
-import {Forward, XStack} from '@mintter/ui'
-import {RefreshCcw} from '@tamagui/lucide-icons'
+import {Forward, RefreshCcw, XStack} from '@mintter/ui'
 import {useCallback, useRef, useState} from 'react'
 import {
   RiHeading,

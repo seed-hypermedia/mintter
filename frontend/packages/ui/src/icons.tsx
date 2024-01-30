@@ -49,6 +49,7 @@ export {
   Pencil,
   ArrowLeft as Prev,
   Redo2 as Redo,
+  RefreshCcw,
   CheckCircle2 as ReleaseNotes,
   RefreshCw as Reload,
   Search,

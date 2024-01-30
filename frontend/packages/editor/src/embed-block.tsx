@@ -15,6 +15,9 @@ import {
 import {ErrorBlock} from '@mintter/shared/src/publication-content'
 import {
   Button,
+  Check,
+  ChevronDown,
+  ExternalLink,
   Form,
   Input,
   Popover,
@@ -26,7 +29,6 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {Check, ExternalLink} from '@tamagui/lucide-icons'
 import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {RiArticleLine} from 'react-icons/ri'
@@ -283,7 +285,7 @@ function EmbedControl({
             }}
             disablePreventBodyScroll
           >
-            <Select.Trigger>
+            <Select.Trigger iconAfter={ChevronDown}>
               <Select.Value placeholder="Embed view" />
             </Select.Trigger>
             <Select.Content zIndex={200000}>
@@ -307,7 +309,9 @@ function EmbedControl({
             id="version"
             size="$2"
             value={block.props.ref.includes('&l') ? 'latest' : 'exact'}
+            {...popoverLatestState}
             onOpenChange={(open) => {
+              popoverLatestState.onOpenChange(open)
               popoverState.onOpenChange(open)
             }}
             onValueChange={(value: 'latest' | 'exact') => {
