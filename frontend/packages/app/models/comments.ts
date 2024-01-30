@@ -23,6 +23,7 @@ import {UseQueryOptions, useMutation, useQuery} from '@tanstack/react-query'
 import {Extension} from '@tiptap/core'
 import {useMemo, useRef} from 'react'
 import {useGRPCClient, useQueryInvalidator} from '../app-context'
+import appError from '../errors'
 import {useNavRoute} from '../utils/navigation'
 import {useNavigate} from '../utils/useNavigate'
 import {getBlockGroup, setGroupTypes} from './editor-utils'
@@ -206,12 +207,13 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
   const saveTimeoutRef = useRef<number | undefined>()
   const readyEditor = useRef<BlockNoteEditor>()
   const initCommentDraft = useRef<HMCommentDraft | null | undefined>()
-  const [setTargetCommentId, targetCommentId] = writeableStateStream<
-    string | null
-  >(null)
-  const [setTargetDocId, targetDocId] = writeableStateStream<string | null>(
-    null,
-  )
+  const streams = useRef<{
+    targetCommentId: ReturnType<typeof writeableStateStream>
+    targetDocId: ReturnType<typeof writeableStateStream>
+  }>({
+    targetCommentId: writeableStateStream<string | null>(null),
+    targetDocId: writeableStateStream<string | null>(null),
+  })
   const grpcClient = useGRPCClient()
   const replace = useNavigate('replace')
   function initDraft() {
@@ -279,12 +281,15 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       commentDraftId: editCommentId,
     },
     {
+      onError: (err) =>
+        appError(`Could not load comment draft: ${err.message}`),
       onSuccess: (draft) => {
         if (!draft)
           throw new Error('no valid draft in route for getCommentDraft')
         initCommentDraft.current = draft
-        setTargetCommentId(draft.targetCommentId)
-        setTargetDocId(createHmId('d', draft.targetDocEid))
+        streams.current.targetCommentId[0](draft.targetCommentId)
+        const docId = createHmId('d', draft.targetDocEid)
+        streams.current.targetDocId[0](docId)
         initDraft()
       },
     },
@@ -402,8 +407,8 @@ export function useCommentEditor(opts: {onDiscard?: () => void} = {}) {
       onSubmit,
       onDiscard,
       isSaved,
-      targetCommentId,
-      targetDocId,
+      targetCommentId: streams.current.targetCommentId[1],
+      targetDocId: streams.current.targetDocId[1],
       addReplyEmbed,
     }
   }, [])
