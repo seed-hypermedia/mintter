@@ -7,14 +7,7 @@ import {
   isPublicGatewayLink,
   normlizeHmId,
 } from '@mintter/shared'
-import {
-  FileText,
-  Globe,
-  Link,
-  Spinner,
-  SquareAsterisk,
-  XCircle,
-} from '@mintter/ui'
+import {FileText, Globe, Link, Spinner, SquareAsterisk} from '@mintter/ui'
 import {Node} from '@tiptap/pm/model'
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {getBlockInfoFromPos} from '../Blocks/helpers/getBlockInfoFromPos'
@@ -37,19 +30,32 @@ export function getLinkMenuItems({
   docTitle?: string | null // document title if any
   gwUrl: StateStream<string>
 }) {
-  const linkMenuItems: LinkMenuItem[] = [
-    {
-      name: docTitle && docTitle !== originalRef ? 'Web Link' : 'Dismiss',
+  const linkMenuItems: LinkMenuItem[] = []
+
+  if (originalRef && !isHypermediaScheme(originalRef)) {
+    linkMenuItems.unshift({
+      name: 'Web Link',
       disabled: false,
-      icon:
-        docTitle && docTitle !== originalRef ? (
-          <Globe size={18} />
-        ) : (
-          <XCircle size={18} />
-        ),
-      execute: (editor: BlockNoteEditor, ref: string) => {},
-    },
-  ]
+      icon: <Globe size={18} />,
+      execute: (editor: BlockNoteEditor, ref: string) => {
+        const {state, schema, view} = editor._tiptapEditor
+        const {selection} = state
+        const pos = selection.from - docTitle!.length
+        view.dispatch(
+          view.state.tr
+            .deleteRange(pos, pos + docTitle!.length)
+            .insertText(docTitle!, pos)
+            .addMark(
+              pos,
+              pos + docTitle!.length,
+              schema.mark('link', {
+                href: originalRef,
+              }),
+            ),
+        )
+      },
+    })
+  }
 
   if (isLoading) {
     const loadingItem = {
@@ -92,7 +98,11 @@ export function getLinkMenuItems({
           },
         })
       }
-      if (hmId.type === 'd' || hmId.type === 'c') {
+      if (
+        hmId.type === 'd' ||
+        hmId.type === 'c' ||
+        (hmId.type === 'g' && hmId.groupPathName)
+      ) {
         // embeds must be documents or comments. groups and accounts may be cards
         linkMenuItems.unshift({
           name: `Embed ${
@@ -127,22 +137,7 @@ export function getLinkMenuItems({
           disabled: false,
           icon: <Link size={18} />,
           execute: (editor: BlockNoteEditor, ref: string) => {
-            const hmId = normlizeHmId(ref, gwUrl)
-            const {state, schema, view} = editor._tiptapEditor
-            const {selection} = state
-            const pos = selection.from - originalRef!.length
-            view.dispatch(
-              view.state.tr
-                .deleteRange(pos, pos + originalRef!.length)
-                .insertText(docTitle!, pos)
-                .addMark(
-                  pos,
-                  pos + docTitle!.length,
-                  schema.mark('link', {
-                    href: hmId || originalRef,
-                  }),
-                ),
-            )
+            // this is the default behavior of HM links and is already applied by this time
           },
         })
       }

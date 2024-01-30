@@ -61,7 +61,7 @@ export async function fetchWebLinkMeta(
     const htmlData = await webResponse.text()
     const doc = parseHTML(htmlData)
     const hmId = extractMetaTagValue(doc, 'hypermedia-entity-id')
-    const hmUrl = extractMetaTagValue(doc, 'hypermedia-entity-url')
+    const hmUrl = extractMetaTagValue(doc, 'hypermedia-url')
     const hmVersion = extractMetaTagValue(doc, 'hypermedia-entity-version')
     const hmTitle = extractMetaTagValue(doc, 'hypermedia-entity-title')
     return {
