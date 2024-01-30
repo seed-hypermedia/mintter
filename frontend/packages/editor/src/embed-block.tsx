@@ -29,10 +29,10 @@ import {
   YStack,
   useTheme,
 } from '@mintter/ui'
-import {useEffect, useMemo, useState} from 'react'
+import {useCallback, useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {RiArticleLine} from 'react-icons/ri'
-import {Select} from 'tamagui'
+import {ListItem, Separator, YGroup} from 'tamagui'
 import {Block, BlockNoteEditor, HMBlockSchema, getBlockInfoFromPos} from '.'
 import {createReactBlockSpec} from './blocknote/react'
 import {usePopoverState} from './use-popover-state'
@@ -218,32 +218,37 @@ function EmbedControl({
   const popoverViewState = usePopoverState()
   const popoverLatestState = usePopoverState()
 
-  function addLatestParamToRef(currentRef: string) {
-    let unpackedRef = unpackHmId(block.props.ref)
+  let versionValue = block.props.ref.includes('&l') ? 'latest' : 'exact'
+  let isVersionLatest = versionValue == 'latest'
 
-    let res = unpackedRef
-      ? createHmDocLink({
-          documentId: unpackedRef?.qid,
-          version: unpackedRef?.version,
-          blockRef: unpackedRef?.blockRef,
-          latest: true,
-        })
-      : currentRef
-    return res
-  }
-  function removeLatestParamToRef(currentRef: string) {
-    let unpackedRef = unpackHmId(block.props.ref)
+  const handleViewSelect = useCallback((view: 'content' | 'card') => {
+    return () => {
+      assign({props: {view}})
+      popoverViewState.onOpenChange(false)
+    }
+  }, [])
 
-    let res = unpackedRef
-      ? createHmDocLink({
-          documentId: unpackedRef?.qid,
-          version: unpackedRef?.version,
-          blockRef: unpackedRef?.blockRef,
-          latest: false,
-        })
-      : currentRef
-    return res
-  }
+  const handleVersionSelect = useCallback(
+    (version: 'exact' | 'latest') => {
+      let unpackedRef = unpackHmId(block.props.ref)
+      return () => {
+        popoverLatestState.onOpenChange(false)
+        if (unpackedRef) {
+          assign({
+            props: {
+              ref: createHmDocLink({
+                documentId: unpackedRef?.qid,
+                version: unpackedRef?.version,
+                blockRef: unpackedRef?.blockRef,
+                latest: version == 'latest',
+              }),
+            },
+          })
+        }
+      }
+    },
+    [block.props.ref],
+  )
 
   return (
     <XStack
@@ -262,7 +267,7 @@ function EmbedControl({
       <Tooltip content="Open in a new window">
         <Button
           size="$2"
-          iconAfter={<ExternalLink />}
+          icon={<ExternalLink />}
           backgroundColor="$backgroundStrong"
           onPress={() => {
             openUrl(block.props.ref, true)
@@ -271,79 +276,83 @@ function EmbedControl({
       </Tooltip>
       {isDocument ? (
         <>
-          <Select
-            id="view"
-            size="$2"
-            value={block.props.view}
-            onValueChange={(view) => {
-              assign({props: {view}})
-            }}
+          <Popover
             {...popoverViewState}
             onOpenChange={(open) => {
               popoverState.onOpenChange(open)
               popoverViewState.onOpenChange(open)
             }}
-            disablePreventBodyScroll
+            placement="bottom-end"
           >
-            <Select.Trigger iconAfter={ChevronDown}>
-              <Select.Value placeholder="Embed view" />
-            </Select.Trigger>
-            <Select.Content zIndex={200000}>
-              <Select.Viewport disableScroll>
-                <Select.Item index={1} value="content" gap="$2" minWidth={100}>
-                  <Select.ItemText>Content</Select.ItemText>
-                  <Select.ItemIndicator marginLeft="auto">
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-                <Select.Item index={2} value="card" gap="$2" minWidth={100}>
-                  <Select.ItemText>Card</Select.ItemText>
-                  <Select.ItemIndicator>
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-              </Select.Viewport>
-            </Select.Content>
-          </Select>
-          <Select
-            id="version"
-            size="$2"
-            value={block.props.ref.includes('&l') ? 'latest' : 'exact'}
+            <Popover.Trigger asChild>
+              <Button
+                backgroundColor="$backgroundStrong"
+                size="$2"
+                iconAfter={ChevronDown}
+              >{`view: ${block.props.view}`}</Button>
+            </Popover.Trigger>
+            <Popover.Content asChild>
+              <YGroup padding={0} width={120}>
+                <YGroup.Item>
+                  <ListItem
+                    size="$2"
+                    title="as Content"
+                    onPress={handleViewSelect('content')}
+                    iconAfter={block.props.view == 'content' ? Check : null}
+                    hoverStyle={{
+                      cursor: 'pointer',
+                    }}
+                  />
+                </YGroup.Item>
+                <Separator />
+                <YGroup.Item>
+                  <ListItem
+                    size="$2"
+                    title="as Card"
+                    onPress={handleViewSelect('card')}
+                    iconAfter={block.props.view == 'card' ? Check : null}
+                  />
+                </YGroup.Item>
+              </YGroup>
+            </Popover.Content>
+          </Popover>
+          <Popover
             {...popoverLatestState}
             onOpenChange={(open) => {
-              popoverLatestState.onOpenChange(open)
               popoverState.onOpenChange(open)
+              popoverLatestState.onOpenChange(open)
             }}
-            onValueChange={(value: 'latest' | 'exact') => {
-              const newRef =
-                value == 'latest'
-                  ? addLatestParamToRef(block.props.ref)
-                  : removeLatestParamToRef(block.props.ref)
-
-              assign({props: {ref: newRef}})
-            }}
-            disablePreventBodyScroll
+            placement="bottom-end"
           >
-            <Select.Trigger>
-              <Select.Value placeholder="version" />
-            </Select.Trigger>
-            <Select.Content zIndex={200000}>
-              <Select.Viewport disableScroll minWidth={120}>
-                <Select.Item index={1} value="latest" gap="$2" minWidth={100}>
-                  <Select.ItemText>Latest version</Select.ItemText>
-                  <Select.ItemIndicator marginLeft="auto">
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-                <Select.Item index={2} value="exact" gap="$2" minWidth={100}>
-                  <Select.ItemText>Exact version</Select.ItemText>
-                  <Select.ItemIndicator>
-                    <Check size={16} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-              </Select.Viewport>
-            </Select.Content>
-          </Select>
+            <Popover.Trigger asChild>
+              <Button
+                backgroundColor="$backgroundStrong"
+                size="$2"
+                iconAfter={ChevronDown}
+              >{`version: ${versionValue}`}</Button>
+            </Popover.Trigger>
+            <Popover.Content asChild>
+              <YGroup padding={0} width={120}>
+                <YGroup.Item>
+                  <ListItem
+                    size="$2"
+                    title="Latest"
+                    onPress={handleVersionSelect('latest')}
+                    iconAfter={isVersionLatest ? Check : null}
+                  />
+                </YGroup.Item>
+                <Separator />
+                <YGroup.Item>
+                  <ListItem
+                    size="$2"
+                    title="Exact"
+                    onPress={handleVersionSelect('exact')}
+                    iconAfter={!isVersionLatest ? Check : null}
+                  />
+                </YGroup.Item>
+              </YGroup>
+            </Popover.Content>
+          </Popover>
         </>
       ) : null}
     </XStack>
