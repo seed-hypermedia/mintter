@@ -22,7 +22,7 @@ export function AccessoryContainer({
             borderBottomColor="$borderColor"
             borderBottomWidth={1}
           >
-            <SizableText>{title}</SizableText>
+            <SizableText userSelect="none">{title}</SizableText>
           </XStack>
         ) : null}
         <ScrollView f={1}>

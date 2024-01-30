@@ -1,5 +1,5 @@
 import {GRPCClient} from '@mintter/shared'
-import {TamaguiProvider, TamaguiProviderProps} from '@mintter/ui'
+import {TamaguiProvider, TamaguiProviderProps, View} from '@mintter/ui'
 import {QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {ReactNode, createContext, useContext, useEffect, useMemo} from 'react'
@@ -71,7 +71,11 @@ export function AppContextProvider({
 
 function ReactQueryTools() {
   const {data: experiments} = useExperiments()
-  return experiments?.developerTools ? <ReactQueryDevtools /> : null
+  return experiments?.developerTools ? (
+    <View userSelect="none">
+      <ReactQueryDevtools />
+    </View>
+  ) : null
 }
 
 export function StyleProvider({

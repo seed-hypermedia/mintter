@@ -65,6 +65,7 @@ function PublicationPageMeta({publication}: {publication: Publication}) {
       borderBottomColor="$color6"
       borderBottomWidth={1}
       paddingBottom="$4"
+      userSelect="none"
     >
       <XStack separator={<Separator vertical />} flexWrap="wrap">
         <XStack marginHorizontal="$4" gap="$2" ai="center" paddingVertical="$2">
