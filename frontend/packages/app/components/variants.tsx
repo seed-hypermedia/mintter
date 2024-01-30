@@ -502,7 +502,9 @@ export function VersionContext({route}: {route: NavRoute}) {
             <Tooltip
               content={`You are looking at an older version of this ${HYPERMEDIA_ENTITY_TYPES[
                 unpackedId.type
-              ].toLowerCase()}. Click to go to the latest in this variant`}
+              ].toLowerCase()}. Click to go to the latest ${
+                unpackedId.type === 'd' ? 'in this variant' : 'version'
+              }.`}
             >
               <Button
                 size="$2"
