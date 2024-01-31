@@ -28,6 +28,7 @@ import BlockAttributes from './BlockAttributes'
 
 const SelectionPluginKey = new PluginKey('selectionPluginKey')
 const ClickSelectionPluginKey = new PluginKey('clickSelectionPluginKey')
+const PastePluginKey = new PluginKey('pastePluginKey')
 
 const SelectionPlugin = new Plugin({
   key: SelectionPluginKey,
@@ -85,6 +86,36 @@ const ClickSelectionPlugin = new Plugin({
         }
         return false
       },
+    },
+  },
+})
+
+const PastePlugin = new Plugin({
+  key: PastePluginKey,
+  props: {
+    handlePaste: (view, event) => {
+      if (!event.clipboardData) {
+        return false
+      }
+
+      const {state} = view
+      let {tr} = state
+      const {selection} = state
+      const {$from, $to} = selection
+
+      const targetNode = state.doc.resolve($from.pos).parent
+
+      if (targetNode.type.name === 'image') {
+        tr = tr.insertText(
+          event.clipboardData.getData('text/plain'),
+          $from.pos,
+          $to.pos,
+        )
+        view.dispatch(tr)
+        return true
+      }
+
+      return false
     },
   },
 })
@@ -644,7 +675,12 @@ export const BlockContainer = Node.create<{
   },
 
   addProseMirrorPlugins() {
-    return [PreviousBlockTypePlugin(), SelectionPlugin, ClickSelectionPlugin]
+    return [
+      PreviousBlockTypePlugin(),
+      SelectionPlugin,
+      ClickSelectionPlugin,
+      PastePlugin,
+    ]
   },
 
   addKeyboardShortcuts() {
