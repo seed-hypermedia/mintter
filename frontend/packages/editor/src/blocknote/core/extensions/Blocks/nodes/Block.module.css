@@ -93,6 +93,14 @@ NESTED BLOCKS
   display: list-item !important;
 }
 
+.blockGroup[data-list-type='ul'] > span[data-decoration-type='link-dropdown'] {
+  display: list-item !important;
+}
+
+.blockGroup[data-list-type='ol'] > span[data-decoration-type='link-dropdown'] {
+  display: list-item !important;
+}
+
 .inlineContent {
   font-size: 0.9em;
   /* font-family:

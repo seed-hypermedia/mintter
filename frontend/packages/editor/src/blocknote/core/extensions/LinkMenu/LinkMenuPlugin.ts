@@ -335,6 +335,7 @@ export const setupLinkMenu = <
                   nodeName: 'span',
                   class: 'link-dropdown-decorator',
                   'data-decoration-id': decorationId,
+                  'data-decoration-type': 'link-dropdown',
                 },
               ),
             ])
