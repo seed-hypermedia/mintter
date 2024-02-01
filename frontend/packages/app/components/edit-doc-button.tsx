@@ -3,7 +3,7 @@ import {useDraftList} from '@mintter/app/models/documents'
 import {usePublicationVariant} from '@mintter/app/models/publication'
 import {NavMode, NavRoute} from '@mintter/app/utils/navigation'
 import {useNavigate} from '@mintter/app/utils/useNavigate'
-import {Button, Tooltip, XGroup, toast} from '@mintter/ui'
+import {Button, Tooltip, toast} from '@mintter/ui'
 import {Pencil} from '@tamagui/lucide-icons'
 import appError from '../errors'
 import {PublicationVariant} from '../utils/navigation'
@@ -103,16 +103,14 @@ export function EditDocButton({
   return (
     <>
       <Tooltip content={hasExistingDraft ? 'Resume Editing' : 'Edit Document'}>
-        <XGroup.Item>
-          <Button
-            size="$2"
-            theme={hasExistingDraft ? 'yellow' : undefined}
-            onPress={() => handleEdit()}
-            icon={Pencil}
-          >
-            {hasExistingDraft ? 'Resume Editing' : 'Edit'}
-          </Button>
-        </XGroup.Item>
+        <Button
+          size="$2"
+          theme={hasExistingDraft ? 'yellow' : undefined}
+          onPress={() => handleEdit()}
+          icon={Pencil}
+        >
+          {hasExistingDraft ? 'Resume Editing' : 'Edit'}
+        </Button>
       </Tooltip>
     </>
   )

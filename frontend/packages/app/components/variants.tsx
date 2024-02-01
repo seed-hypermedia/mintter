@@ -44,13 +44,11 @@ import {
   Popover,
   PopoverTrigger,
   Select,
-  Separator,
   SizableText,
   Spinner,
   Tooltip,
   UIAvatar,
   View,
-  XGroup,
   XStack,
   YStack,
   toast,
@@ -302,7 +300,7 @@ export function ContextPopover({...props}) {
     <Popover
       size="$5"
       allowFlip={true}
-      placement="bottom-start"
+      placement="bottom-end"
       keepChildrenMounted={true}
       {...props}
     />
@@ -359,7 +357,7 @@ export function ContextPopoverArrow(props) {
     <Popover.Arrow
       name="ContextPopoverArrow"
       borderWidth={1}
-      backgroundColor="$borderColor"
+      backgroundColor="$background"
       {...props}
     />
   )
@@ -557,69 +555,71 @@ export function PublicationVariants({route}: {route: PublicationRoute}) {
   const showEditButton = isAuthorVariantEditable || isGroupVariantEditable
   return (
     <>
-      <XGroup separator={<Separator vertical />}>
-        <ContextPopover {...popoverState}>
-          <XGroup.Item>
-            <PopoverTrigger asChild>
-              <Button size="$2" className="no-window-drag">
-                <VariantState
-                  variant={variant}
-                  isOpen={popoverState.open}
-                  publication={publication.data?.publication}
-                />
-              </Button>
-            </PopoverTrigger>
-          </XGroup.Item>
-          <ContextPopoverContent>
-            <ContextPopoverArrow />
-            <YStack alignSelf="stretch">
-              <ContextPopoverTitle marginVertical="$2">
-                Select Variant
-              </ContextPopoverTitle>
-              <TabsView
-                value={variantTab}
-                onValue={(tab) => {
-                  setVariantTab(tab)
-                }}
-                tabs={[
-                  {
-                    label: 'Authors',
-                    key: 'authors',
-                    element: (
-                      <AuthorVariants
-                        route={route}
-                        publication={publication.data?.publication}
-                      />
-                    ),
-                  },
-                  {
-                    label: 'Groups',
-                    key: 'groups',
-                    element: (
-                      <GroupVariants
-                        route={route}
-                        publication={publication.data?.publication}
-                        onCloseVariantPopover={() => {
-                          popoverState.onOpenChange(false)
-                        }}
-                      />
-                    ),
-                  },
-                ]}
+      <ContextPopover {...popoverState}>
+        <Tooltip content="open Variant switcher">
+          <PopoverTrigger asChild>
+            <Button
+              size="$2"
+              className="no-window-drag"
+              iconAfter={<ChevronDown size={12} />}
+            >
+              <VariantState
+                variant={variant}
+                isOpen={popoverState.open}
+                publication={publication.data?.publication}
               />
-            </YStack>
-          </ContextPopoverContent>
-        </ContextPopover>
-        {showEditButton && (
-          <EditDocButton
-            key="editActions"
-            contextRoute={route}
-            variant={route.variant || null}
-            docId={route.documentId}
-            baseVersion={route.versionId}
-          />
-        )}
-      </XGroup>
+            </Button>
+          </PopoverTrigger>
+        </Tooltip>
+        <ContextPopoverContent>
+          <ContextPopoverArrow />
+          <YStack alignSelf="stretch">
+            <ContextPopoverTitle marginVertical="$2">
+              Select Variant
+            </ContextPopoverTitle>
+            <TabsView
+              value={variantTab}
+              onValue={(tab) => {
+                setVariantTab(tab)
+              }}
+              tabs={[
+                {
+                  label: 'Authors',
+                  key: 'authors',
+                  element: (
+                    <AuthorVariants
+                      route={route}
+                      publication={publication.data?.publication}
+                    />
+                  ),
+                },
+                {
+                  label: 'Groups',
+                  key: 'groups',
+                  element: (
+                    <GroupVariants
+                      route={route}
+                      publication={publication.data?.publication}
+                      onCloseVariantPopover={() => {
+                        popoverState.onOpenChange(false)
+                      }}
+                    />
+                  ),
+                },
+              ]}
+            />
+          </YStack>
+        </ContextPopoverContent>
+      </ContextPopover>
+      {showEditButton && (
+        <EditDocButton
+          key="editActions"
+          contextRoute={route}
+          variant={route.variant || null}
+          docId={route.documentId}
+          baseVersion={route.versionId}
+        />
+      )}
       {renameDialog.content}
     </>
   )
