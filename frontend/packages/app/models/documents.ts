@@ -1160,23 +1160,24 @@ function observeBlocks(
       observeBlocks(editor, block.children, onChange)
     }
 
-    if (
-      index === blocks.length - 1 &&
-      ['image', 'video', 'file', 'embed'].includes(block.type)
-    ) {
-      editor.insertBlocks(
-        [
-          {
-            type: 'paragraph',
-          },
-        ],
-        block.id,
-        'after',
-      )
-      if (editor.getTextCursorPosition().nextBlock) {
-        editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock)
-      }
-    }
+    // TODO: this code was making impossible to remove a paragraph above a media element when it was nested. This was in place because it was also impossible to add a selection above a media element when this media element was the last one in the draft. Now it seems to both cases be fixed when this code is removed. 🤷‍♂️
+    // if (
+    //   index === blocks.length - 1 &&
+    //   ['image', 'video', 'file', 'embed'].includes(block.type)
+    // ) {
+    //   editor.insertBlocks(
+    //     [
+    //       {
+    //         type: 'paragraph',
+    //       },
+    //     ],
+    //     block.id,
+    //     'after',
+    //   )
+    //   if (editor.getTextCursorPosition().nextBlock) {
+    //     editor.setTextCursorPosition(editor.getTextCursorPosition().nextBlock)
+    //   }
+    // }
   })
 }
 
