@@ -928,6 +928,37 @@ export const BlockContainer = Node.create<{
 
             return false
           }),
+        // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
+        // of the block.
+        () =>
+          commands.command(({state}) => {
+            const {node, depth, endPos} = getBlockInfoFromPos(
+              state.doc,
+              state.selection.from,
+            )!
+
+            const {group} = getGroupInfoFromPos(state.selection.from, state)
+            const isLastBlock = group.lastChild?.attrs.id == node.attrs.id
+
+            const selectionAtBlockStart =
+              state.selection.$anchor.parentOffset === 0
+            const selectionEmpty =
+              state.selection.anchor === state.selection.head
+            const blockEmpty = node.textContent.length === 0
+            const blockIndented = depth > 2
+
+            if (
+              selectionAtBlockStart &&
+              selectionEmpty &&
+              blockEmpty &&
+              blockIndented &&
+              isLastBlock
+            ) {
+              return commands.liftListItem('blockContainer')
+            }
+
+            return false
+          }),
         // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
         // empty & at the start of the block.
         () =>
@@ -980,6 +1011,7 @@ export const BlockContainer = Node.create<{
 
         //     return false
         //   }),
+
         // Creates a new block and moves the selection to it if the current one is empty, while the selection is also
         // empty & at the start of the block.
         () =>
@@ -1005,33 +1037,6 @@ export const BlockContainer = Node.create<{
                 .run()
 
               return true
-            }
-
-            return false
-          }),
-        // Removes a level of nesting if the block is empty & indented, while the selection is also empty & at the start
-        // of the block.
-        () =>
-          commands.command(({state}) => {
-            const {node, depth} = getBlockInfoFromPos(
-              state.doc,
-              state.selection.from,
-            )!
-
-            const selectionAtBlockStart =
-              state.selection.$anchor.parentOffset === 0
-            const selectionEmpty =
-              state.selection.anchor === state.selection.head
-            const blockEmpty = node.textContent.length === 0
-            const blockIndented = depth > 2
-
-            if (
-              selectionAtBlockStart &&
-              selectionEmpty &&
-              blockEmpty &&
-              blockIndented
-            ) {
-              return commands.liftListItem('blockContainer')
             }
 
             return false
