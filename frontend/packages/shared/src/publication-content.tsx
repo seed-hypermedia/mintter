@@ -1129,12 +1129,12 @@ export function BlockContentUnknown(props: BlockContentProps) {
 }
 
 export function getBlockNodeById(
-  blocks: Array<BlockNode>,
+  blocks: Array<BlockNode | HMBlockNode>,
   blockId: string,
-): BlockNode | null {
+): BlockNode | HMBlockNode | null {
   if (!blockId) return null
 
-  let res: BlockNode | undefined
+  let res: BlockNode | HMBlockNode | undefined
   blocks.find((bn) => {
     if (bn.block?.id == blockId) {
       res = bn

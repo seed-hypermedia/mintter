@@ -1,4 +1,4 @@
-import {createHmId, unpackDocId, unpackHmId} from '@mintter/shared'
+import {HMComment, createHmId, unpackDocId, unpackHmId} from '@mintter/shared'
 import {HMAccount, HMChangeInfo} from '@mintter/shared/src/json-hm'
 import {
   hmAccount,
@@ -408,9 +408,26 @@ const entitiesRouter = router({
     }),
 })
 
+const commentRouter = router({
+  get: procedure.input(z.object({id: z.string()})).query(async ({input}) => {
+    try {
+      const result = await queryClient.comments.getComment({
+        id: input.id,
+      })
+      return result as unknown as HMComment
+    } catch (e) {
+      // if (e.message.match('desired version')) {
+      //   return {foundVersion: false, foundEntity: true}
+      // }
+      throw e
+    }
+  }),
+})
+
 export const appRouter = router({
   publication: publicationRouter,
   entities: entitiesRouter,
+  comment: commentRouter,
   account: accountRouter,
   group: groupRouter,
   siteInfo: siteInfoRouter,

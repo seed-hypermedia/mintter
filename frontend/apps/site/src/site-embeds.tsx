@@ -1,4 +1,5 @@
 import {
+  BlockContentUnknown,
   BlockNodeContent,
   BlockNodeList,
   EmbedContentAccount,
@@ -13,14 +14,17 @@ import {
   contentTextUnit,
   createHmId,
   createPublicWebHmUrl,
+  formattedDateMedium,
   getBlockNodeById,
   isHypermediaScheme,
   unpackHmId,
   usePublicationContentContext,
 } from '@mintter/shared'
 import {
+  SizableText,
   Spinner,
   UIAvatar,
+  XStack,
   YStack,
   copyUrlToClipboardWithFeedback,
 } from '@mintter/ui'
@@ -49,6 +53,7 @@ export function SitePublicationContentProvider({
         GroupCard: EmbedGroup,
         PublicationContent: EmbedPublicationContent,
         PublicationCard: EmbedPublicationCard,
+        CommentCard: EmbedComment,
       }}
       onLinkClick={(href, e) => {
         e.stopPropagation()
@@ -228,6 +233,68 @@ function AvatarComponent({accountId}: {accountId?: string}) {
           : undefined
       }
     />
+  )
+}
+
+export function EmbedComment(props: EntityComponentProps) {
+  if (props?.type !== 'c')
+    throw new Error('Invalid props as ref for EmbedComment')
+  const commentQuery = trpc.comment.get.useQuery({
+    id: createHmId('c', props.eid),
+  })
+  const comment = commentQuery.data
+
+  let embedBlocks = useMemo(() => {
+    const selectedBlock =
+      props.blockRef && comment?.content
+        ? getBlockNodeById(comment?.content, props.blockRef)
+        : null
+
+    const embedBlocks = selectedBlock ? [selectedBlock] : comment?.content
+
+    return embedBlocks
+  }, [props.blockRef, comment])
+  const accountQuery = trpc.account.get.useQuery({accountId: comment?.author})
+  const account = accountQuery.data?.account
+  if (commentQuery.isLoading) return <Spinner />
+  return (
+    <EmbedWrapper hmRef={props.id}>
+      <XStack flexWrap="wrap" jc="space-between">
+        <XStack gap="$2">
+          <UIAvatar
+            label={account?.profile?.alias}
+            id={account?.id}
+            url={
+              account?.profile?.avatar
+                ? `/ipfs/${account?.profile?.avatar}`
+                : undefined
+            }
+          />
+          <SizableText>{account?.profile?.alias}</SizableText>
+        </XStack>
+        {comment?.createTime ? (
+          <SizableText fontSize="$2" color="$color10">
+            {formattedDateMedium(comment?.createTime)}
+          </SizableText>
+        ) : null}
+      </XStack>
+      {embedBlocks?.length ? (
+        <BlockNodeList childrenType="group">
+          {embedBlocks.map((bn, idx) => (
+            <BlockNodeContent
+              key={bn.block?.id}
+              depth={1}
+              blockNode={bn}
+              childrenType="group"
+              index={idx}
+              embedDepth={1}
+            />
+          ))}
+        </BlockNodeList>
+      ) : (
+        <BlockContentUnknown {...props} />
+      )}
+    </EmbedWrapper>
   )
 }
 

@@ -171,9 +171,9 @@ export function EmbedComment(props: EntityComponentProps) {
           />
           <SizableText>{account.data?.profile?.alias}</SizableText>
         </XStack>
-        {comment.data.publishTime ? (
+        {comment.data?.createTime ? (
           <SizableText fontSize="$2" color="$color10">
-            {formattedDateMedium(new Date(comment.data.publishTime))}
+            {formattedDateMedium(comment.data.createTime)}
           </SizableText>
         ) : null}
       </XStack>

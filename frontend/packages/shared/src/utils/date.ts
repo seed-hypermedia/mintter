@@ -35,19 +35,13 @@ export function formattedDate(
   value?: string | Date | Timestamp | HMTimestamp | undefined,
   options?: {onlyRelative?: boolean},
 ) {
-  if (!value) return ''
-  let _value =
-    typeof value == 'string' ||
-    (value instanceof Date && !isNaN(value.valueOf()))
-      ? value
-      : (value as Timestamp).toDate()
-
+  let date = normalizeDate(value)
+  if (!date) return ''
   if (hasRelativeDate) {
     // Intl.RelativeTimeFormat is supported
-    return relativeFormattedDate(_value, options)
+    return relativeFormattedDate(date, options)
     // Use the rtf object for relative time formatting
   } else {
-    let date = new Date(_value)
     return date.toLocaleDateString('en', {
       day: '2-digit',
       month: '2-digit',
@@ -55,14 +49,31 @@ export function formattedDate(
   }
 }
 
+function normalizeDate(
+  value: undefined | string | Date | Timestamp | HMTimestamp,
+) {
+  let date: Date | null = null
+  if (typeof value == 'string') {
+    date = new Date(value)
+  } else if (value instanceof Date) {
+    date = value
+  } else if (value?.toDate) {
+    date = value.toDate()
+  }
+  return date
+}
+
 export function formattedDateLong(value?: Timestamp | Date) {
   if (!value) return ''
   let date = value instanceof Date ? value : value?.toDate()
   return format(date, 'MMMM do yyyy, HH:mm:ss z')
 }
-export function formattedDateMedium(value?: Timestamp | Date) {
-  if (!value) return ''
-  let date = value instanceof Date ? value : value?.toDate()
+
+export function formattedDateMedium(
+  value?: undefined | string | Date | Timestamp | HMTimestamp,
+) {
+  let date = normalizeDate(value)
+  if (!date) return ''
   // if (hasRelativeDate) {
   //   return relativeFormattedDate(date, {onlyRelative: false})
   // }
@@ -76,12 +87,13 @@ export function formattedDateMedium(value?: Timestamp | Date) {
   // return `${format(date, 'EEEE, MMMM do, yyyy')}`
 }
 export function relativeFormattedDate(
-  value: string | Date,
+  value?: undefined | string | Date | Timestamp | HMTimestamp,
   options?: {onlyRelative?: boolean},
 ) {
   const onlyRelative = !!options?.onlyRelative
   var now = new Date()
-  var date = new Date(value)
+  let date = normalizeDate(value)
+  if (!date) return ''
   let formatter = new Intl.RelativeTimeFormat('en-US', {
     style: 'short',
   })
