@@ -41,7 +41,7 @@ export const FileBlock = createReactBlockSpec({
     },
     defaultOpen: {
       values: ['false', 'true'],
-      default: 'true',
+      default: 'false',
     },
     size: {
       default: '0',
@@ -64,6 +64,7 @@ type FileType = {
     url: string
     name: string
     size: string
+    defaultOpen: 'true' | 'false'
   }
   children: []
   content: []
@@ -441,7 +442,7 @@ function FileForm({
       <Popover
         placement="bottom"
         size="$5"
-        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
+        defaultOpen={boolRegex.test(block.props.defaultOpen)}
         stayInFrame
       >
         <Popover.Trigger asChild>

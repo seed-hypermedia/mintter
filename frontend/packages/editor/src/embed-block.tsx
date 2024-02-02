@@ -46,7 +46,7 @@ export const EmbedBlock = createReactBlockSpec({
     },
     defaultOpen: {
       values: ['false', 'true'],
-      default: 'true',
+      default: 'false',
     },
     view: {
       values: ['content', 'card'], // TODO: convert HMEmbedDisplay type to array items
@@ -113,7 +113,16 @@ const Render = (
   }
 
   return (
-    <YStack>
+    <YStack
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$4"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+    >
       {block.props.ref ? (
         <EmbedComponent
           block={block}
@@ -299,7 +308,6 @@ function EmbedControl({
 function EmbedForm({
   block,
   assign,
-  editor,
   selected = false,
 }: {
   block: Block<HMBlockSchema>
@@ -365,7 +373,7 @@ function EmbedForm({
       <Popover
         placement="bottom"
         size="$5"
-        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
+        defaultOpen={boolRegex.test(block.props.defaultOpen)}
         stayInFrame
       >
         <Popover.Trigger asChild>
@@ -517,66 +525,3 @@ function EmbedForm({
     </YStack>
   )
 }
-
-// function useEmbed(ref: string): {
-//   isLoading: boolean
-//   embedBlocks: (BlockNode[] & PartialMessage<BlockNode>[]) | undefined
-//   group: Group | undefined
-//   account: Account | undefined
-// } {
-//   const id = unpackHmId(ref)
-//   const docId = id?.type === 'd' ? createHmId('d', id?.eid) : undefined
-//   let pubQuery = usePublication({
-//     documentId: docId,
-//     versionId: id?.version || undefined,
-//     enabled: !!docId,
-//   })
-//   const groupId = id?.type === 'g' ? createHmId('g', id?.eid) : undefined
-//   const groupQuery = useGroup(groupId, id?.version || undefined)
-//   const accountId = id?.type === 'a' ? id?.eid : undefined
-//   const accountQuery = useAccount(accountId)
-//   return useMemo(() => {
-//     const data = pubQuery.data
-
-//     const selectedBlock =
-//       id?.blockRef && data?.document?.children
-//         ? getBlockNodeById(data.document.children, id?.blockRef)
-//         : null
-
-//     const embedBlocks = selectedBlock
-//       ? [selectedBlock]
-//       : data?.document?.children
-
-//     return {
-//       isLoading:
-//         pubQuery.isLoading || accountQuery.isLoading || groupQuery.isLoading,
-//       error: pubQuery.error || accountQuery.error || groupQuery.error,
-//       embedBlocks,
-//       account: accountQuery.data,
-//       group: groupQuery.data,
-//     }
-//   }, [pubQuery, accountQuery, groupQuery, id?.blockRef])
-// }
-
-// function getBlockNodeById(
-//   blocks: Array<BlockNode>,
-//   blockId: string,
-// ): BlockNode | null {
-//   if (!blockId) return null
-
-//   let res: BlockNode | undefined
-//   blocks.find((bn) => {
-//     if (bn.block?.id == blockId) {
-//       res = bn
-//       return true
-//     } else if (bn.children.length) {
-//       const foundChild = getBlockNodeById(bn.children, blockId)
-//       if (foundChild) {
-//         res = foundChild
-//         return true
-//       }
-//     }
-//     return false
-//   })
-//   return res || null
-// }

@@ -47,7 +47,7 @@ export const ImageBlock = createReactBlockSpec({
     },
     defaultOpen: {
       values: ['false', 'true'],
-      default: 'true',
+      default: 'false',
     },
   },
   containsInlineContent: true,
@@ -66,6 +66,7 @@ type ImageType = {
   props: {
     url: string
     name: string
+    defaultOpen: 'true' | 'false'
   }
   children: []
   content: []
@@ -148,7 +149,16 @@ const Render = (
   }
 
   return (
-    <YStack overflow="hidden">
+    <YStack
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$4"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+    >
       {block.props.url ? (
         <ImageComponent
           block={block}
@@ -409,8 +419,6 @@ function ImageForm({
   const [drag, setDrag] = useState(false)
   const theme = useTheme()
 
-  useEffect(() => {})
-
   const handleUpload = async (files: File[]) => {
     const largeFileIndex = files.findIndex((file) => file.size > MaxFileSizeB)
     if (largeFileIndex > -1) {
@@ -501,7 +509,6 @@ function ImageForm({
       return false
     }
   }
-
   return (
     <YStack
       //@ts-ignore
@@ -513,7 +520,7 @@ function ImageForm({
       <Popover
         placement="bottom"
         size="$5"
-        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
+        defaultOpen={boolRegex.test(block.props.defaultOpen)}
         stayInFrame
       >
         <Popover.Trigger asChild>

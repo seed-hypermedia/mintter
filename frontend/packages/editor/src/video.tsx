@@ -41,7 +41,7 @@ export const VideoBlock = createReactBlockSpec({
     },
     defaultOpen: {
       values: ['false', 'true'],
-      default: 'true',
+      default: 'false',
     },
   },
   containsInlineContent: true,
@@ -60,6 +60,7 @@ type VideoType = {
   props: {
     url: string
     name: string
+    defaultOpen: 'true' | 'false'
   }
   children: []
   content: []
@@ -142,7 +143,16 @@ const Render = (
   }
 
   return (
-    <YStack overflow="hidden">
+    <YStack
+      backgroundColor={selected ? '$color4' : '$color3'}
+      borderColor={selected ? '$color8' : 'transparent'}
+      borderWidth={2}
+      borderRadius="$4"
+      overflow="hidden"
+      hoverStyle={{
+        backgroundColor: '$color4',
+      }}
+    >
       {block.props.url ? (
         <VideoComponent
           block={block}
@@ -509,7 +519,7 @@ function VideoForm({
       <Popover
         placement="bottom"
         size="$5"
-        defaultOpen={selected && boolRegex.test(block.props.defaultOpen)}
+        defaultOpen={boolRegex.test(block.props.defaultOpen)}
         stayInFrame
       >
         <Popover.Trigger asChild>

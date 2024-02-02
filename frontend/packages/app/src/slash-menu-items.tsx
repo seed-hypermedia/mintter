@@ -71,6 +71,7 @@ export const slashMenuItems = [
         type: 'image',
         props: {
           url: '',
+          defaultOpen: 'true',
         },
       } as PartialBlock<HMBlockSchema>)
       const {state, view} = editor._tiptapEditor
@@ -88,6 +89,7 @@ export const slashMenuItems = [
         type: 'video',
         props: {
           url: '',
+          defaultOpen: 'true',
         },
       } as PartialBlock<HMBlockSchema>)
       const {state, view} = editor._tiptapEditor
@@ -105,6 +107,7 @@ export const slashMenuItems = [
         type: 'file',
         props: {
           url: '',
+          defaultOpen: 'true',
         },
       } as PartialBlock<HMBlockSchema>)
       const {state, view} = editor._tiptapEditor

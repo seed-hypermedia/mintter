@@ -1,7 +1,7 @@
 import {BlockNoteEditor} from '../../BlockNoteEditor'
 import {BlockSchema, PartialBlock} from '../Blocks/api/blockTypes'
-import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 import {defaultBlockSchema} from '../Blocks/api/defaultBlocks'
+import {BaseSlashMenuItem} from './BaseSlashMenuItem'
 
 export function insertOrUpdateBlock<BSchema extends BlockSchema>(
   editor: BlockNoteEditor<BSchema>,
